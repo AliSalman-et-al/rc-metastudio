@@ -190,3 +190,11 @@ Native runs at QT_SCALE_FACTOR=1.25/1.5/2 establish Linux Qt scaling only; inspe
 retained frames for clipping. Screen readers, actual Windows/macOS OS scaling,
 all file-picker/failure states and all parameter combinations remain unqualified.
 See [round-five evidence](../../../../docs/ux-audit/2026-10-16-round5/README.md).
+
+Round-five review follow-up: `audit-round3-irr-context` checks all three styles,
+caption separation/readable size, exposure-header descender/rule clearance, normal
+inference typography, independently summed original events/person-time and pooled
+weight in the actual SVG and exported SVG. All eleven `plot-workflow-*` families
+check initial rendered identity as well as caption edit/reopen/Cancel/removal and
+four decoded exports. HR totals remain weight only when raw events/exposure are
+unavailable; the native long-forest drive retains top/footer views for every style.

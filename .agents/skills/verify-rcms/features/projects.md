@@ -85,3 +85,10 @@ File pickers remain substituted; native OS picker operation is not claimed.
 ## Outcome and arm naming
 
 `audit-round3-arm-names` creates default and custom comparative binary/continuous, single-arm mean and diagnostic datasets through the real wizard. It checks trimming, inline duplicate rejection, actual model group identity/order, grid/calculator labels, three comparative figure styles, report/copy/export, canonical CSV template/mapping/preview and silent legacy aliases, save/reopen, and preservation of an old project's stored tx A/tx B names. Native round-five evidence also runs this at Qt scale 2; OS scaling and screen readers remain unqualified.
+
+Round-five review follow-up: the shipped examples use readable arm names, while
+`audit-round3-arm-names` creates an explicitly legacy input from immutable test
+snapshots and proves it reopens without relabelling. The same drive checks integer
+count display in the real CSV preview and sentence-case binary calculator headers.
+`review1-design` exercises the single-row recent list with middle-elided paths,
+full accessible names/tooltips, missing state, Locate/Remove and reopening a sample.

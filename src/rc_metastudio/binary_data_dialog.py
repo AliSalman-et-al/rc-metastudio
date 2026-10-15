@@ -142,7 +142,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
     def _configure_raw_data_table(self):
         table = self.raw_data_table
-        table.setHorizontalHeaderLabels(["Event", "No Event", "Total"])
+        table.setHorizontalHeaderLabels(["Event", "No event", "Total"])
         table.setVerticalHeaderLabels(["", "", "Total"])
         horizontal_header = required(table.horizontalHeader(), "binary table header")
         vertical_header = required(table.verticalHeader(), "binary row header")

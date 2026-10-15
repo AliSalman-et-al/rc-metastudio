@@ -42,7 +42,7 @@
             <row><property name="text"><string>Group 2</string></property></row>
             <row><property name="text"><string>Total</string></property></row>
             <column><property name="text"><string>Event</string></property></column>
-            <column><property name="text"><string>No Event</string></property></column>
+            <column><property name="text"><string>No event</string></property></column>
             <column><property name="text"><string>Total</string></property></column>
            </widget>
           </item>

@@ -68,6 +68,8 @@ def run(app, window, work, record):
             def calculator(dialog):
                 table = dialog.raw_data_table if kind is BinaryDataDialog else dialog.simple_table
                 assert table.verticalHeaderItem(0).text() == expected[0]
+                if kind is BinaryDataDialog:
+                    assert table.horizontalHeaderItem(1).text() == "No event"
                 if len(entered)==2:
                     assert table.verticalHeaderItem(1).text() == expected[1]
                 record("round5-arm-calculator", dialog, case=case, groups=expected, capture_surface="desktop-composite")
@@ -106,6 +108,8 @@ def run(app, window, work, record):
                 assert page.isComplete(), page.import_status.text()
                 displayed=[page.preview_table.horizontalHeaderItem(i).text() for i in range(page.preview_table.columnCount())]
                 assert displayed == canonical, (displayed, canonical)
+                if data_type == "binary":
+                    assert [page.preview_table.item(0, i).text() for i in range(2, 6)] == ["4", "20", "6", "22"]
                 record("round5-arm-csv-preview", wizard, case=case, spelling=spelling, headers=displayed, exports={"template":str(template),"input":str(source)})
                 page.import_tabs.setCurrentWidget(page.mapping_table)
                 assert not any("tx " in control.itemText(i).casefold() for control in page.mapping_controls for i in range(control.count()))

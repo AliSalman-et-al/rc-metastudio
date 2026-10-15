@@ -1,10 +1,27 @@
 """The main window's starting surface, using the ordinary project actions."""
 
 from pathlib import Path
-from PyQt6 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 
 from rc_metastudio import app_error_handler, qt_layout
 from rc_metastudio.runtime_types import required
+
+
+class _RecentPathLabel(QtWidgets.QLabel):
+    def __init__(self, path, parent):
+        super().__init__(path, parent)
+        self.setToolTip(path)
+        self.setAccessibleName(path)
+        self.setTextFormat(QtCore.Qt.TextFormat.PlainText)
+        muted = QtWidgets.QGraphicsOpacityEffect(self)
+        muted.setOpacity(0.8)
+        self.setGraphicsEffect(muted)
+        self.setMinimumWidth(0)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Policy.Ignored, QtWidgets.QSizePolicy.Policy.Preferred)
+
+    def resizeEvent(self, a0: QtGui.QResizeEvent | None) -> None:
+        super().resizeEvent(a0)
+        self.setText(self.fontMetrics().elidedText(self.toolTip(), QtCore.Qt.TextElideMode.ElideMiddle, self.contentsRect().width()))
 
 
 class StartPage(QtWidgets.QScrollArea):
@@ -63,9 +80,11 @@ class StartPage(QtWidgets.QScrollArea):
         qt_layout.configure_heading(heading)
         layout.addWidget(heading)
         self.recent_projects = QtWidgets.QWidget(content)
-        self.recent_layout = QtWidgets.QVBoxLayout(self.recent_projects)
+        self.recent_layout = QtWidgets.QGridLayout(self.recent_projects)
         self.recent_layout.setContentsMargins(0, 0, 0, 0)
-        self.recent_layout.setSpacing(12)
+        self.recent_layout.setHorizontalSpacing(16)
+        self.recent_layout.setVerticalSpacing(8)
+        self.recent_layout.setColumnStretch(1, 1)
         layout.addWidget(self.recent_projects)
         heading = QtWidgets.QLabel('From data to results', content)
         qt_layout.configure_heading(heading)
@@ -91,31 +110,21 @@ class StartPage(QtWidgets.QScrollArea):
                 widget.deleteLater()
         if not paths:
             self.recent_layout.addWidget(QtWidgets.QLabel('Projects you open or save will appear here.', self.recent_projects))
-        for path in reversed(paths):
-            row = QtWidgets.QWidget(self.recent_projects)
-            layout = QtWidgets.QVBoxLayout(row)
-            layout.setContentsMargins(0, 0, 0, 0)
-            layout.setSpacing(4)
+        for index, path in enumerate(reversed(paths)):
             exists = Path(path).is_file()
-            button = QtWidgets.QPushButton(Path(path).name + ('' if exists else ' — Missing file'), row)
+            button = QtWidgets.QPushButton(Path(path).name, self.recent_projects)
             button.setEnabled(exists)
             button.setToolTip(str(path) if exists else 'Missing file: ' + str(path))
             button.clicked.connect(app_error_handler.safe_slot(lambda _checked=False, path=path: open_project(path), parent=self))
-            layout.addWidget(button, alignment=QtCore.Qt.AlignmentFlag.AlignLeft)
+            self.recent_layout.addWidget(button, index, 0)
+            self.recent_layout.addWidget(_RecentPathLabel(str(path), self.recent_projects), index, 1)
+            state = QtWidgets.QLabel('Available' if exists else 'Missing file', self.recent_projects)
+            self.recent_layout.addWidget(state, index, 2)
             if not exists:
-                recovery = QtWidgets.QHBoxLayout()
-                for caption, callback in (("Locate…", locate_project), ("Remove from list", remove_project)):
+                for column, (caption, callback) in enumerate((("Locate…", locate_project), ("Remove from list", remove_project)), 3):
                     if callback is None:
                         continue
-                    action = QtWidgets.QPushButton(caption, row)
+                    action = QtWidgets.QPushButton(caption, self.recent_projects)
                     action.setAccessibleName(caption + " " + Path(path).name)
                     action.clicked.connect(app_error_handler.safe_slot(lambda _checked=False, path=path, callback=callback: callback(path), parent=self))
-                    recovery.addWidget(action)
-                recovery.addStretch()
-                layout.addLayout(recovery)
-            label = QtWidgets.QLabel(str(path), row)
-            label.setTextFormat(QtCore.Qt.TextFormat.PlainText)
-            label.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
-            qt_layout.configure_context_label(label)
-            layout.addWidget(label)
-            self.recent_layout.addWidget(row)
+                    self.recent_layout.addWidget(action, index, column)

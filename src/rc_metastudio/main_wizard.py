@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from decimal import Decimal, InvalidOperation
 from typing import TYPE_CHECKING, TypedDict
 import csv
 from pathlib import Path
@@ -629,10 +630,26 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 preview_header_labels.extend(self.covariate_names)
                 self.preview_table.setHorizontalHeaderLabels(preview_header_labels)
 
-            # copy extracted data to table
+            info = self.wizard().require_dataset_info()
+            raw_columns, _ = DatasetTableModel.get_column_indices(info["data_type"], info["sub_type"])
+            count_columns = {
+                index + 2 for index in range(len(raw_columns))
+                if info["data_type"] in {"binary", "diagnostic"}
+                or info["data_type"] == "continuous" and index % 3 == 0
+                or info["data_type"] == "event_rates" and index % 2 == 0
+            }
+            # Preview formatting must not alter the imported values.
             for row in range(num_rows):
                 for col in range(num_cols):
-                    item = QTableWidgetItem(self.imported_data[row][col])
+                    value = self.imported_data[row][col]
+                    if col in count_columns and value:
+                        try:
+                            number = Decimal(value)
+                            if number.is_finite() and number == number.to_integral_value():
+                                value = str(int(number))
+                        except InvalidOperation:
+                            pass
+                    item = QTableWidgetItem(value)
                     item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
                     self.preview_table.setItem(row, col, item)
             self.preview_table.resizeColumnsToContents()

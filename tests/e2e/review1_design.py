@@ -27,10 +27,15 @@ def run(app, window, work, root, record, analyze):
     settings.add_file_to_recent_files(str(missing))
     settings.add_file_to_recent_files(str(present))
     window.populate_open_recent_menu()
+    app.processEvents()
     entries = window.start_page.recent_projects.findChildren(QtWidgets.QPushButton)
     assert len(entries) == 4
     assert any(not button.isEnabled() and 'Missing file' in button.toolTip() for button in entries)
-    assert str(present) in [label.text() for label in window.start_page.recent_projects.findChildren(QtWidgets.QLabel)]
+    paths = [label for label in window.start_page.recent_projects.findChildren(QtWidgets.QLabel) if label.toolTip() == str(present)]
+    assert len(paths) == 1 and paths[0].accessibleName() == str(present)
+    assert "…" in paths[0].text(), paths[0].text()
+    name_button = next(button for button in entries if button.text() == present.name)
+    assert abs(name_button.geometry().center().y() - paths[0].geometry().center().y()) <= 2
     remove = next(button for button in entries if button.text() == "Remove from list")
     window.start_page.ensureWidgetVisible(remove)
     record('round5-recent-missing', window, missing=str(missing))
