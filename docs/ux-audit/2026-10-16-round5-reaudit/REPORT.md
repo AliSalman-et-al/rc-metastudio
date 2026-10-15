@@ -100,13 +100,15 @@ The five additional round-four findings are tracked separately:
 
 | ID | Provisional verdict | Observation / scope | Evidence |
 |---|---|---|---|
-| F11 | **fixed** | Exterior bubble guide removed on inspected paths; full metric/export finishing pending. | [bubble](screenshots/matrix-onearm-proportion-meta-regression-figure.png) |
+| F11 | **fixed** | Exterior bubble guide removed; fresh 18-case metric/explicit-bound geometry sweep passed; decoded editor exports are separately recorded. | [bubble](screenshots/matrix-onearm-proportion-meta-regression-figure.png) |
 | F12 | **fixed** | Legacy scene weights removed; report/Tables retain structured rows and existing component identities. | [figure](screenshots/matrix-twoarm-proportion-standard-figure.png) / [report](screenshots/matrix-onearm-proportion-standard-report.png) |
 | F13 | **fixed** | Content-sized cards and Locate/Remove recovery; Qt scale finishing pending. | [start](screenshots/design-00-review1-start-before-check.png) / [recovery](screenshots/design-01-round5-recent-missing.png) |
 | F14 | **fixed** | Labelled Analyses group and actual prerequisite tooltip. | [toolbar](screenshots/design-12-round5-analysis-prerequisite-tooltip.png) |
 | F15 | **fixed** | Navigator/results label/value spacing is consistent. | [grid](screenshots/design-08-round5-grid-cues.png) |
 
 ## 3. Regressions and the round-five claims
+
+**One confirmed presentation regression: R5-04.** No wrong fitted estimate/CI or confirmed new functional regression has been established on exercised paths. The fresh 18-case bubble sweep passed displayed/production geometry checks across16metrics, including explicit bounds. Visually inspected [proportion](screenshots/bubble-explicit-proportion.png) and [IRR](screenshots/bubble-explicit-irr.png) examples support F11; four-format editor qualification remains independently bounded by completed runs.
 
 Early binary standard evidence: [figure](screenshots/matrix-twoarm-proportion-standard-figure.png) and [report](screenshots/matrix-twoarm-proportion-standard-report.png) agree on OR 0.761368, 95% CI 0.458516–1.264253, P 0.292012. Intervention/Control names are readable. Duplicate scene weights are absent; standalone context is present. All 50 first figure/report pairs have now been inspected; the arm/context and weights improvements hold on those paths. The shared precision claim remains incomplete (R5-03), and long subgroup marks regress (R5-04).
 
@@ -169,7 +171,24 @@ The real exported UTF-8 report was opened in [native xedit](screenshots/shell-ex
 
 ## 6. Coverage matrix
 
-Native doctor and all five binary matrix workflows passed. The independent public-package authority sweep passed 91/91; [receipt](AUTHORITIES.json). All ten families × five workflows passed; every first figure/report pair is visually inspected in [MATRIX](MATRIX.md). Shell/design replay and all seven bundled samples passed. Sample figure/report pairs are inspected, original source bytes unchanged and saved/reopened names preserved; [native sample proof](SAMPLE-NATIVE.json), [BCG original-source comparison](BCG-SOURCE.json). Remaining maintained calculator/editor/variant/scaling runs are in progress.
+The independent public-package authority sweep passed91/91; [receipt](AUTHORITIES.json). All ten families × five workflows passed; every first figure/report pair is visually inspected in [MATRIX](MATRIX.md). Completed runs below are fresh Linux native runs. The remaining registry/scaling finish is explicitly pending, rather than inferred from round-five claims.
+
+| Area | Exercised / inspected | Scope and limits |
+|---|---|---|
+| Runtime | Native doctor; R4.6.1; current-source/install receipts |55source/24installed hashes; no system-library modification. |
+| Start and recents | Light/dark start; missing-file Locate cancel/relocation/same-path recovery/Remove | Content-sized cards; application Qt scales still finishing. |
+| Menus and toolbar | Recursive actual menus/submenus and tooltips, enabled/disabled states; labelled Analyses and prerequisite tooltip | Exact text/shortcut inventory; not every desktop-environment mnemonic combination. |
+| Creation and CSV | All ten type paths in matrix; optional blank/custom/duplicate arm names; new/legacy CSV header mapping, templates and preview | Native Gtk Save template picker actually driven; other pickers are test-owned substitutions. Dialect/filesystem fault combinations not universal. |
+| Grid and structure | Ten-family data, context/menu inventories171states; inclusion/covariates; structure tabs/settings; Save As/recent reopen | Some offscreen header-coordinate samples repeat adjacent menus; do not infer every individual column gesture from the inventory. |
+| Samples | All7bundled archives opened/analyzed/saved/reopened;14figure/report images inspected | Original bytes unchanged. BCG13/13rows agree with original pinned data; readable names preserved. [Proof](SAMPLE-NATIVE.json), [source comparison](BCG-SOURCE.json). |
+| Core analysis |50cells:10families × standard/cumulative/leave-one-out/subgroup/meta-regression | Each first figure/report pair inspected; selected endpoint/pooled/statistic agreement recorded. Not every cell of every long table manually transcribed. |
+| Diagnostics and small-study | Joint Reitsma SROC, combined metrics, moderator shapes; extended binary/continuous and diagnostic Deeks; IRR contour error/recovery | Existing procedures only. Dedicated remaining maintained variants are finishing; no new statistical method recommended. |
+| Results | Text, selectable Tables, copy/export identity, zoom/Fit width, Change settings/rerun; no legacy scene weights | Real UTF-8 export opened in native xedit; host editor Unicode limitation retained. |
+| Figure presentation | Three long-figure styles, three realistic-name styles; editable standalone context;18bubblemetric/bound cases; IRR exposure/totals | Some collisions are real findings despite passing render assertions. All four export-format/editor finishing remains separately enumerated by run. |
+| Help and states | Both Help actions: Quick start/shortcuts and About/licenses; empty start/grid/covariates; duplicate-name/invalid-contour recoveries | No documentation claim substitutes for interaction. Dirty Open Cancel driven; Yes/No/save-cancel follow-up queued. |
+| Access and scale | Native Tab/arrow/Escape for main/setup/results, named controls and non-colour grid cues | Calculator traversal, complete loaded-project keyboard task and Qt1.25/1.5/2scale follow-ups finishing. No screen-reader/OS-DPI/cross-platform qualification. |
+
+[OUTCOMES](OUTCOMES.json) binds exact commands, observed exit statuses, logs and helper manifest/artifact hashes; [INSPECTIONS](INSPECTIONS.json) records visual observations. Inventoried choices are not equivalent to every possible value combination being executed.
 
 ## 7. Accessibility
 

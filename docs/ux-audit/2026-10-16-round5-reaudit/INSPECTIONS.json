@@ -947,5 +947,15 @@
     "path": "screenshots/arms-blank-defaults.png",
     "sha256": "1c4002ebff196c82df8bfaa2c29f1b84c5c2e1c74485430a986b99bb30fc29e2",
     "observation": "Blank optional name fields show Intervention/Control placeholders and explicit default guidance; Create enabled with named outcome."
+  },
+  {
+    "path": "screenshots/bubble-explicit-proportion.png",
+    "sha256": "76776860ea9c554f89719efc272472d3486bf2c50430d2da3a92ed210342942f",
+    "observation": "Explicit-bound proportion bubble has no exterior null guide; bands and line clear labels and stay within plot."
+  },
+  {
+    "path": "screenshots/bubble-explicit-irr.png",
+    "sha256": "53683bdc5e47f66d8f0bab43d74a0bb3137f0f74a7472d74acdbaa6aedd7a230",
+    "observation": "IRR explicit-bound bubble null at1 is panel-bounded; wrapped actual clinical caption and log-scale label readable."
   }
 ]
