@@ -246,6 +246,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
 
     raw.effect <- rcmetar.forest.journal.effect.intervals(bundle)
     accent.color <- rcmetar.forest.accent.color(bundle$params)
+    forest.color <- if (rcmetar.forest.style(bundle$params) == "default" || manual.sequential.labels) accent.color else "black"
     forest.args <- list(
         slab = rep("", length(bundle$slab)),
         ilab = if (ncol(bundle$ilab$matrix) > 0) bundle$ilab$matrix else NULL,
@@ -266,7 +267,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
         ylim = ylim,
         annotate = FALSE,
         xaxt = "n",
-        col = accent.color,
+        col = forest.color,
         colshade = "#eeeeee",
         shade = "zebra",
         lty = c("solid", "blank", "blank"),

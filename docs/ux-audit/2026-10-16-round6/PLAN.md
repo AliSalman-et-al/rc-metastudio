@@ -270,3 +270,8 @@ render study names once at the existing text position with the existing cex and
 black ink; keep sequential's existing manual text path. Extend the native SVG
 colour assertion to require black study labels before this correction. Existing
 row/interval geometry checks remain unchanged.
+
+The journal subgroup renderers reuse Default layout with their original style in
+`params`. Bound the colour change to the persisted Default key; preserve the old
+journal fallback ink selection. Native PFT subgroup drives will explicitly assert
+black study CI lines for RevMan/BMJ while checking the new PI values separately.

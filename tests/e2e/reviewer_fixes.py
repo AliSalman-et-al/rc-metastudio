@@ -67,6 +67,10 @@ def run_predictions(app, window, work, record):
                     observed = [list(row[-2:]) for t in tables for row in t.rows]
                     assert observed == [item['display'] for item in reference], (observed, reference)
                     assert 'sample size is unspecified' not in text
+                if workflow == 'subgroup' and style != 'default':
+                    lines = [node for node in ET.parse(artifact.display_path()).iter('{http://www.w3.org/2000/svg}line')
+                             if 'stroke-width: 1.01' in node.attrib.get('style','') and abs(float(node.attrib['y1'])-float(node.attrib['y2'])) < .02]
+                    assert lines and all(node.attrib.get('stroke') == '#000000' for node in lines), ('journal subgroup ink changed',style)
                 footer = [line for line in figure if 'prediction interval:' in line]
                 assert footer, (workflow, style, figure)
                 assert ', '.join(reference[-1]['display']) in footer[-1], (footer, reference)
