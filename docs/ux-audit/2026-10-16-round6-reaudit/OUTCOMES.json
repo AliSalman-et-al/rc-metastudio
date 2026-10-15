@@ -141,6 +141,58 @@
         "axis_apply.py": "9a6f81ac20313c950672fe18f8c6c7323167680cccc4704a9fcba264e7301a82",
         "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
       },
+      "label": "helper-audit-round3-onearm-proportion",
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "scripts/verify_rcms.py",
+        "audit-round3-onearm-proportion",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T18:55:58.227096+00:00",
+      "finished": "2026-10-15T18:56:46.660013+00:00",
+      "seconds": 48.43025891401339,
+      "exit_code": 0,
+      "revision": "fb519ee182f5fb2fa2a2d4a0764ea43f0a689ce5",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-audit-round3-onearm-proportion.log",
+      "sha256": "3478d4547884746a2edc1b947730196b721c98bb51d0a3529137798040b4bada",
+      "receipt": "raw/helper-audit-round3-onearm-proportion.json",
+      "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185558Z-f35ba4f8-audit-round3-onearm-proportion",
+      "manifest_sha256": "6fa9ac381838bfea4002bc6d1266008bfc06be4b243af7a304a5625a273e42e0",
+      "passed": true,
+      "artifacts": 84
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "589584fe0ca55d2d64e5fe86326b172861f65d4d254df8e11bf75ca3eae2f280",
+        "contact.py": "5bcf9514e8a057a33d6040b9dc753769e5239faebe5fb22c16c96a6302d3b1b8",
+        "native_design.py": "800eda5de297974494be235c0e702c28e0042b411b0d9ecc401a89e687ff99c5",
+        "native_options.py": "2353538134d27d01f532640f05c374d038157a8e4b94e0bcc4f69cea384d5223",
+        "native_matrix.py": "6fb8167df0e1a2795e17156cb1340c7a9e8e5bc55ad8601a8fbb5897f013744e",
+        "collect.py": "7013b882014f170e2f115e8ceea0d93a831deecce70e3c03f7e1926302534642",
+        "native_shell.py": "3310a8b121f23a65ab19c6c6ef146ce52aa446fe6cc91b2a0a1feacbfc061dc7",
+        "after.py": "138635c5e1226d8eb3c2b3ab94b7c38b3df5733b8e964ceacbc6410d6b5c32f9",
+        "prediction_remaining.py": "f8f2b92955e87014c03e98ae1b6caa7d5550496de8d88a86caa6c638fda8c00e",
+        "report.py": "3293a5cd707da0657d9c48af278172084a122c807ce5bf17f36806ac3d7165ca",
+        "journal_status.py": "ceb1b862b0b20c40e0823b52952f3cae621b8913837546e625255e9e4afae317",
+        "inspect_frames.py": "7cd8fa9f9bfd8fec989ead9de54690856dcd9ab2c1515b5f82470f4136666cc3",
+        "drive.py": "4137cd24a6d95b43d9798648555a86949d38ff8e6b60a7b84f99dfce240175f7",
+        "scorecard.py": "3ebcca421852ba024ea002cbf438b46e981eb07b7b14e2b1d6b6d93c2a0a454d",
+        "axis_apply.py": "9a6f81ac20313c950672fe18f8c6c7323167680cccc4704a9fcba264e7301a82",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
       "label": "helper-calculator-grid-precision",
       "command": [
         "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
@@ -378,6 +430,58 @@
       "manifest_sha256": "8b9de73b0f46d6541eb519ed4c52ab1fc81acc91cfb5471e2e2383a91f60331a",
       "passed": true,
       "artifacts": 77
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "589584fe0ca55d2d64e5fe86326b172861f65d4d254df8e11bf75ca3eae2f280",
+        "contact.py": "5bcf9514e8a057a33d6040b9dc753769e5239faebe5fb22c16c96a6302d3b1b8",
+        "native_design.py": "800eda5de297974494be235c0e702c28e0042b411b0d9ecc401a89e687ff99c5",
+        "native_options.py": "2353538134d27d01f532640f05c374d038157a8e4b94e0bcc4f69cea384d5223",
+        "native_matrix.py": "6fb8167df0e1a2795e17156cb1340c7a9e8e5bc55ad8601a8fbb5897f013744e",
+        "collect.py": "7013b882014f170e2f115e8ceea0d93a831deecce70e3c03f7e1926302534642",
+        "native_shell.py": "3310a8b121f23a65ab19c6c6ef146ce52aa446fe6cc91b2a0a1feacbfc061dc7",
+        "after.py": "138635c5e1226d8eb3c2b3ab94b7c38b3df5733b8e964ceacbc6410d6b5c32f9",
+        "prediction_remaining.py": "f8f2b92955e87014c03e98ae1b6caa7d5550496de8d88a86caa6c638fda8c00e",
+        "report.py": "3293a5cd707da0657d9c48af278172084a122c807ce5bf17f36806ac3d7165ca",
+        "journal_status.py": "ceb1b862b0b20c40e0823b52952f3cae621b8913837546e625255e9e4afae317",
+        "inspect_frames.py": "7cd8fa9f9bfd8fec989ead9de54690856dcd9ab2c1515b5f82470f4136666cc3",
+        "drive.py": "4137cd24a6d95b43d9798648555a86949d38ff8e6b60a7b84f99dfce240175f7",
+        "scorecard.py": "3ebcca421852ba024ea002cbf438b46e981eb07b7b14e2b1d6b6d93c2a0a454d",
+        "axis_apply.py": "9a6f81ac20313c950672fe18f8c6c7323167680cccc4704a9fcba264e7301a82",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-project-display-labels",
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "scripts/verify_rcms.py",
+        "project-display-labels",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T18:53:50.268015+00:00",
+      "finished": "2026-10-15T18:55:58.173056+00:00",
+      "seconds": 127.90256935899379,
+      "exit_code": 0,
+      "revision": "0ae7676fea1871f64952061638b6ba80c2c766ba",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-project-display-labels.log",
+      "sha256": "a759e42105f05f67976bb176d67e66ce5d05d84e6c2678a8b6f30d9e76a0fd58",
+      "receipt": "raw/helper-project-display-labels.json",
+      "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels",
+      "manifest_sha256": "8336d2128ee487d2b1f0f7f3b3144a21dfd89c748e5c3be8da48efe1ce105e22",
+      "passed": true,
+      "artifacts": 211
     },
     {
       "audit_scripts_sha256": {

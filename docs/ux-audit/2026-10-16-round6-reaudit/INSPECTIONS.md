@@ -87,3 +87,12 @@ is an audit harness failure, not a product defect.
   all five HR/IRR source modes, exact input and post-reopen independent fits.
   Stress IRR numeric strings overflow journal output columns (R6-05 low); inputs
   and fitted references remain correct. Ordinary log/SE views remain readable.
+- project-display-labels sheets 00–06, all 26 selected frames: ten workspaces and
+  actual calculators, six contextual metric popups, diagnostic selector. Mean,
+  Regression coefficient and Entered effect are readable; no built-in TX prefix.
+  Actual Intervention/Control and clinical ratio arm names remain. Recursive
+  attached action/choice/tooltip inventory passes for all ten families and is
+  retained in REACHABLE-MENUS.json. Grid screenshots alone are not screenshots of
+  expanded menus; the later shell/options drive supplies visible menu captures.
+  Continuous calculator whitespace and diagnostic horizontal scrolling remain
+  existing G07/F06/N11 layout debt, not closed by naming/input integrity fixes.
