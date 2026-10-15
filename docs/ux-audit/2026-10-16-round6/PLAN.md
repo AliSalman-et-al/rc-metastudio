@@ -168,3 +168,11 @@ The unchanged-default contour drive caught a related validation boundary: the UI
 showed suggested levels only as a placeholder, while the new validator correctly
 rejected its empty value. Populate the established 90, 95, 99 defaults as editable
 text. Explicitly clearing the field must still fail inline. Retain both triggers.
+
+Selected precision also needs a univariate diagnostic check: a hard minimum of
+three SE decimals can override a two-decimal selection. Before changing that
+formatter, extend the real cumulative/subgroup report drive to require the chosen
+SE precision while retaining scientific notation for genuinely small nonzero SEs.
+Original default three-decimal numerical fields remain exact.
+
+The broadened SE formatting attempt failed the frozen contract for three historical regression SE fields at digits=2 (0.004, 0.002 and 0.003 differences). Restrict removal of the three-decimal SE floor to diagnostic summaries/sequential/subgroup reports; retain the original non-diagnostic numerical presentation contract. No golden numerical refresh.

@@ -38,6 +38,28 @@ def run(app, window, work, record):
                    raw_coefficients=raw, tables={name: dict(headers=tables[name].headers, rows=tables[name].rows) for name in raw})
             view.close()
 
+    for workflow in ('cumulative', 'subgroup'):
+        window.workspace.mark_saved()
+        view = matrix(app, window, 'analysis-diagnostic-' + workflow, record,
+                      keep_results=True, parameters={'digits':2})
+        found = []
+        for section in view.results.sections:
+            for table in section.tables:
+                for column, header in enumerate(table.headers):
+                    if not header.startswith('SE ('):
+                        continue
+                    found.append(table.title)
+                    for row in table.rows:
+                        value = float(row[column])
+                        if value and float(f'{value:.2f}') == 0:
+                            assert 'e' in row[column].lower(), row
+                        else:
+                            assert row[column] == f'{value:.2f}', (workflow, header, row)
+        assert found, (workflow, [table.headers for section in view.results.sections for table in section.tables])
+        check_report(app, view, work, record)
+        record('diagnostic-sequential-selected-precision', view, workflow=workflow, digits=2)
+        view.close()
+
     root = Path(__file__).resolve().parents[2]
     window.workspace.mark_saved()
     assert window.open(str(root / 'sample_projects/NielWeise2008-IRR.rcms'), raise_on_error=True)

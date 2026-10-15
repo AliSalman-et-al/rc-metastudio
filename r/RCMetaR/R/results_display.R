@@ -10,7 +10,7 @@ display.standard.error.label <- function(params) {
 
 create.summary.disp <- function(om.data, params, res, model.title) {
   result.digits <- display.digits(params)
-  se.digits <- display.digits(params, minimum=3L)
+  se.digits <- display.digits(params, minimum=if (is(om.data, "DiagnosticData")) 0L else 3L)
   digits.str <- paste("%.", result.digits, "f", sep="")
   transform.name <- get.transform.name(om.data)
   scale.str <- get.scale(params)
@@ -510,6 +510,7 @@ adjusted_means_display <- function(res, params, display.data) {
 
   mult <- get.mult.from.conf.level(params$conf.level)
   digits.str <- paste("%.", display.digits(params), "f", sep="")
+
   se.digits.str <- paste("%.", display.digits(params, minimum=3L), "f", sep="")
 
   design.matrix <- cbind(
@@ -595,7 +596,7 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
     lb.disp <- rcmetar.format.effect.number(lb.disp, display.digits(params), scale=scale)
     ub.disp <- rcmetar.format.effect.number(ub.disp, display.digits(params), scale=scale)
     y.disp[!is.finite(y)] <- "Not estimable"
-    se.disp <- rcmetar.format.effect.number(se, display.digits(params, minimum=3L))
+    se.disp <- rcmetar.format.effect.number(se, display.digits(params, minimum=if (data.type == "diagnostic") 0L else 3L))
 
     pVal <- format.p.value.display(res[[count]]$pval, params$digits)
     overall.array[count+1,] <- c(study.names[count], y.disp, lb.disp, ub.disp, se.disp, pVal)
@@ -654,7 +655,7 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
     y.disp <- rcmetar.format.effect.number(y.disp, display.digits(params), scale=scale)
     lb.disp <- rcmetar.format.effect.number(lb.disp, display.digits(params), scale=scale)
     ub.disp <- rcmetar.format.effect.number(ub.disp, display.digits(params), scale=scale)
-    se.disp <- rcmetar.format.effect.number(se, display.digits(params, minimum=3L))
+    se.disp <- rcmetar.format.effect.number(se, display.digits(params, minimum=if (data.type == "diagnostic") 0L else 3L))
     if (!display.value.is.missing(res[[count]]$QE)) {
       degf <- res[[count]]$k - res[[count]]$p
       QE <- sprintf(digits.str, res[[count]]$QE)
