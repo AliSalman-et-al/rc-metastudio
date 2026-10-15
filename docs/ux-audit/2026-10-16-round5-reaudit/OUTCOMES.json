@@ -1,10 +1,10 @@
 {
   "scope": "Fresh independent native read-and-report audit; in progress until report finalized",
   "counts": {
-    "recorded_runs": 50,
-    "passed": 45,
+    "recorded_runs": 52,
+    "passed": 47,
     "failed": 5,
-    "helper_scenarios_passed": 20
+    "helper_scenarios_passed": 21
   },
   "doctor_manifest": "artifacts/verification/rcms/20261015T082425Z-d75ac4d2-doctor/manifest.json",
   "doctor_manifest_sha256": "ca53ee2ad19092c867915eded8191e5db37a4545e09c432808adf0d32f9b7f48",
@@ -97,7 +97,6 @@
     ]
   },
   "helper_scenarios_not_freshly_run": [
-    "audit-round3-presentation-twoarm-smd",
     "audit-round3-presentation-reg-coef",
     "audit-round3-presentation-generic-effect",
     "audit-round3-presentation-sequential",
@@ -968,6 +967,56 @@
         "directory": "artifacts/verification/rcms/20261015T092542Z-c4c12b0a-audit-round3-presentation-twoarm-proportion",
         "manifest_sha256": "50000c455cde36c4331d8887a04427dce49960f16705c997929b548e590d1fe9",
         "files_verified": 216,
+        "passed": true,
+        "mismatches": []
+      }
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "helper-audit-round3-presentation-twoarm-smd",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "audit-round3-presentation-twoarm-smd",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T09:33:50.918355+00:00",
+      "finished": "2026-10-15T09:36:15.446984+00:00",
+      "seconds": 144.526486414994,
+      "exit_code": 0,
+      "revision": "84b832be7735708c26ba084c976a150b64e1850f",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "helper-audit-round3-presentation-twoarm-smd.log",
+      "sha256": "27ddfd3001d626b0721f1ed8b78da7651bc50fd8c8386cc47b084dc529da9cdd",
+      "receipt": "raw/helper-audit-round3-presentation-twoarm-smd.json",
+      "helper_evidence": {
+        "directory": "artifacts/verification/rcms/20261015T093351Z-ae0ee0a0-audit-round3-presentation-twoarm-smd",
+        "manifest_sha256": "f9acebe1a7868764d546c920c1a25ddbb0f76b416267ff1bf8bcb2d284089a7d",
+        "files_verified": 190,
         "passed": true,
         "mismatches": []
       }
@@ -2207,6 +2256,56 @@
       "log": "native-extra-serial.log",
       "sha256": "8f25694474173f79f7e77357ef4bacaac8de734b320b961e6b22b500e381ae14",
       "receipt": "raw/native-extra-serial.json"
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "f10d970398053eac713d7a57f6e4148fc9ca33cc33bec592b279f9664958dcf3",
+        "native_design.py": "7876221fa0156801032b97fbb1eef3ca25d7b9e427cdf75a051dbb1adcb0721d",
+        "native_options.py": "7b4547fe9a736756c61a7818e63e1b85e79ad5262031a0f18fe13132bc1703b2",
+        "native_matrix.py": "70a54abd5baef468ecd1adca3f73ee306803925f5b41ed7bf0e2fcfa09b7a94c",
+        "native_extra.py": "e51eb57828ce72302c9dadafce3836f135fc72f0a1fccfc52cd47ad2d2159557",
+        "native_shell.py": "f20951c127c9154c33e9d491118e4f16133a294639b0a406d317f109099ea04c",
+        "native_editor.py": "c46434ee93fb127db4bb1adc627e1d00643efdafc094071f9105b39e32ef1c28",
+        "native_precision.py": "712ba6bb28c9ade3486b4facd976546d28acf544cbf58630f314ccf7f91a21f5",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "native-guard-keyboard-finalreplay",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "300",
+        "--label",
+        "native guard and keyboard replay",
+        "--",
+        "uv",
+        "run",
+        "python",
+        "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native_guard_keyboard.py"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T09:36:17.481143+00:00",
+      "finished": "2026-10-15T09:36:39.275775+00:00",
+      "seconds": 21.79246415599482,
+      "exit_code": 0,
+      "revision": "26cc7a9a908878e8248885b4ca2bc9845fcfa34a",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-guard-keyboard-finalreplay.log",
+      "sha256": "14fe57e9212620b104eab17a985df8b137801ea3c57520f69ba307f914f59dbf",
+      "receipt": "raw/native-guard-keyboard-finalreplay.json"
     },
     {
       "audit_scripts_sha256": {

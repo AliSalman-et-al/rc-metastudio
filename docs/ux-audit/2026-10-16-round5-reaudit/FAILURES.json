@@ -55,7 +55,8 @@
     "native-design-serial": "Audit wrapper reused directory from interrupted attempt; fresh replay passed.",
     "native-shell-serial": "Audit wrapper final editor depended on missing design export; replay passed.",
     "native-all-samples": "Audit wrapper chose continuous method for binary meantime project; corrected stored-family replay passed.",
-    "native-guard-keyboard-priority": "Audit wrapper assumed F10 opened a menu; no active popup appeared. Save/Discard/cancelled Save As assertions before keyboard continuation passed. Supported toolbar Tab/Space replay is recorded separately."
+    "native-guard-keyboard-priority": "Audit wrapper assumed F10 opened a menu; no active popup appeared. Dirty guards before continuation passed. Final supported toolbar Tab/Space replay passed.",
+    "native-guard-keyboard-replay": "Toolbar Tab/Space entry passed; wrapper assumed Home/Down selected Meta-analysis but active action was Effect-size tools. Corrected bounded arrow traversal finalreplay passed."
   },
   "setup_verbatim": [
     "/bin/bash: line 2: python: command not found",

@@ -987,5 +987,40 @@
     "path": "screenshots/scale20-setup.png",
     "sha256": "3b55b947429994af88afeb0a4123bae5cfd9c9fa59a26f7cc915189ddf73179d",
     "observation": "Qt2.0: method panel scrolls; focused correction selector and pinned Run/Cancel remain reachable and readable."
+  },
+  {
+    "path": "screenshots/guard-open-no.png",
+    "sha256": "7115fd9acf91efb135854b814a8a2b6964dd65163fd7635d501ecf137f928e3c",
+    "observation": "Visually inspected final passing native guard/keyboard continuation. Prompt is recoverable; saved edit survives reopen; cancelled Save As retains dirty edit; Tab focus/menu selection/Run/report copy and byte-identical export are recorded in the exact passing run."
+  },
+  {
+    "path": "screenshots/guard-open-yes-reopened.png",
+    "sha256": "c9ce3a507fe469a1bddc9ac5903c77ed21ce0d805e0047fe9a003196bce27b99",
+    "observation": "Visually inspected final passing native guard/keyboard continuation. Prompt is recoverable; saved edit survives reopen; cancelled Save As retains dirty edit; Tab focus/menu selection/Run/report copy and byte-identical export are recorded in the exact passing run."
+  },
+  {
+    "path": "screenshots/guard-save-as-cancel-preserved.png",
+    "sha256": "47a82b583524455ab05d1d04a1ad3764ece168532c95f296f8b0af6bea455d2d",
+    "observation": "Visually inspected final passing native guard/keyboard continuation. Prompt is recoverable; saved edit survives reopen; cancelled Save As retains dirty edit; Tab focus/menu selection/Run/report copy and byte-identical export are recorded in the exact passing run."
+  },
+  {
+    "path": "screenshots/keyboard-toolbar-focus.png",
+    "sha256": "abffa8da7944114325f68d96169c118e824e3bd09fbae91117927eb53f58e0ad",
+    "observation": "Visually inspected final passing native guard/keyboard continuation. Prompt is recoverable; saved edit survives reopen; cancelled Save As retains dirty edit; Tab focus/menu selection/Run/report copy and byte-identical export are recorded in the exact passing run."
+  },
+  {
+    "path": "screenshots/keyboard-analysis-menu.png",
+    "sha256": "2e27a30c28a5b123a0f3292a4ba5e8fda543278a74d07668e92f052db89b4f1b",
+    "observation": "Visually inspected final passing native guard/keyboard continuation. Prompt is recoverable; saved edit survives reopen; cancelled Save As retains dirty edit; Tab focus/menu selection/Run/report copy and byte-identical export are recorded in the exact passing run."
+  },
+  {
+    "path": "screenshots/keyboard-analysis-setup.png",
+    "sha256": "b5ee75fc03a941cab5f932d2d3b8bcda2902c965cca3de3c5de6a595544969de",
+    "observation": "Visually inspected final passing native guard/keyboard continuation. Prompt is recoverable; saved edit survives reopen; cancelled Save As retains dirty edit; Tab focus/menu selection/Run/report copy and byte-identical export are recorded in the exact passing run."
+  },
+  {
+    "path": "screenshots/keyboard-report-copied-exported.png",
+    "sha256": "7548de4342dab0f96e688418137f763c0a26cd98c3fd3dc255f42c2312fb719e",
+    "observation": "Visually inspected final passing native guard/keyboard continuation. Prompt is recoverable; saved edit survives reopen; cancelled Save As retains dirty edit; Tab focus/menu selection/Run/report copy and byte-identical export are recorded in the exact passing run."
   }
 ]
