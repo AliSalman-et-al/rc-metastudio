@@ -748,5 +748,39 @@
     "path": "screenshots/sample-NielWeise2008-IRR-report.png",
     "sha256": "5d2bbab36de1905151b6aeb2ba7cb2e1dc6891c9fe1b64b4d820af219d68a20c",
     "observation": "Fresh native bundled sample figure/report pair visually inspected at selected three decimals. Readable actual arms/test, clinical identity, unchanged source bytes and saved/reopened names. Pooled displayed values/CI match across views. BCG OR0.474[0.325,0.690]; meantime0.734[0.676,0.798]; amino0.770[0.485,1.222]; continuousSMD0.358[0.152,0.565]; lymphSens0.666[0.594,0.732]; HR0.874[0.814,0.938]; IRR0.679[0.440,1.046]."
+  },
+  {
+    "path": "screenshots/long-arm-default-matrix-twoarm-proportion-standard-figure.png",
+    "sha256": "2d073bd6197015680606f1a0736f9f11895c976c512918fe62c5587b48ca6d59",
+    "observation": "Native long actual-name output inspected. Default and RevMan wrap first group cleanly; BMJ count rule intersects first wrapped group line (R5-06). Fit0.761[0.459,1.264], P0.292 agrees across styles/report."
+  },
+  {
+    "path": "screenshots/long-arm-revman-matrix-twoarm-proportion-standard-figure.png",
+    "sha256": "e1e020ddb86ce7b1f4457900bc4122e0d3dab4d13ea5d2656c8eba0ab6a8af60",
+    "observation": "Native long actual-name output inspected. Default and RevMan wrap first group cleanly; BMJ count rule intersects first wrapped group line (R5-06). Fit0.761[0.459,1.264], P0.292 agrees across styles/report."
+  },
+  {
+    "path": "screenshots/long-arm-bmj-matrix-twoarm-proportion-standard-figure.png",
+    "sha256": "584adc65bc7697812ff46b3bac9f8e5f2d4ac81c31fe9d31912261742ae24731",
+    "observation": "Native long actual-name output inspected. Default and RevMan wrap first group cleanly; BMJ count rule intersects first wrapped group line (R5-06). Fit0.761[0.459,1.264], P0.292 agrees across styles/report."
+  },
+  {
+    "path": "screenshots/long-arm-bmj-matrix-twoarm-proportion-standard-report.png",
+    "sha256": "f6115037889deef00861d5357ad27ea885f322249501427dbe100e79073350d6",
+    "observation": "Native long actual-name output inspected. Default and RevMan wrap first group cleanly; BMJ count rule intersects first wrapped group line (R5-06). Fit0.761[0.459,1.264], P0.292 agrees across styles/report."
+  },
+  {
+    "path": "screenshots/arms-duplicate-rejected.png",
+    "sha256": "e50b515736b89c381c401e2a67b9eff0a23ea1e0a3f72d5d42a363dab8b8afc5",
+    "source": "raw/long-arm-default/04-0-round5-arm-duplicate.png",
+    "capture": "QWidget.grab on visible native xcb wizard",
+    "observation": "Visually inspected: whitespace-trimmed duplicate arm names show inline different-names message and disabled Create; custom full clinical names fit in optional fields."
+  },
+  {
+    "path": "screenshots/arms-custom-wizard.png",
+    "sha256": "8ac02cb0be381df624188492087dda823161378ff75b48e2844ba284c816fc5f",
+    "source": "raw/long-arm-default/05-0-round5-arm-wizard.png",
+    "capture": "QWidget.grab on visible native xcb wizard",
+    "observation": "Visually inspected: whitespace-trimmed duplicate arm names show inline different-names message and disabled Create; custom full clinical names fit in optional fields."
   }
 ]

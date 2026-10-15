@@ -35,7 +35,8 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
  app,window=automation.start_automation();ns['app']=app;sys.excepthook=sys.__excepthook__
  try:
   ns['doctor'](app,window)
-  for family in ('onearm-proportion','onearm-mean','reg-coef','generic-effect','twoarm-proportion','twoarm-mean','twoarm-smd','diagnostic','hr','irr'):
+  # Diagnostic/HR/IRR continue in native_options_remaining; diagnostics opens a metric selector first.
+  for family in ('onearm-proportion','onearm-mean','reg-coef','generic-effect','twoarm-proportion','twoarm-mean','twoarm-smd'):
    window.workspace.mark_saved();assert window.open(str(HERE/'raw'/('matrix-'+family)/'standard-input.rcms'),raise_on_error=True)
    # Enumerate actual type-dependent menu actions, not UI resource strings.
    menu_rows=[]

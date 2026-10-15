@@ -1,0 +1,15 @@
+{
+  "source": "docs/ux-audit/2026-10-16-round5-reaudit/raw/long-arm-bmj/10-0-forest-4afc76db3817.display.svg",
+  "sha256": "94904eff2193926b4f7f29ed331103a51b75385a73a80ea87e222847c0e83584",
+  "arm": "Cognitive behavioural therapy plus usual care",
+  "first_line": "Cognitive behavioural",
+  "baseline": 73.88,
+  "font_size": 12.96,
+  "font_file": "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+  "font_sha256": "3973aa5054fb467dd5627245d3dc82e37bf16fe075756156a570455871351582",
+  "glyph_ink_top": 64.49,
+  "glyph_ink_bottom": 76.63,
+  "rule_y": 66.62,
+  "rule_crosses_ink": true,
+  "interpretation": "Native screenshot confirms the count-header rule crosses the first wrapped arm-name line; same sample/selected fit remains unchanged."
+}
