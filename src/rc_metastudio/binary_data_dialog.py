@@ -32,6 +32,7 @@ from rc_metastudio.meta_globals import (
     BINARY_ONE_ARM_METRICS,
     BINARY_TWO_ARM_METRICS,
     EMPTY_VALS,
+    DEFAULT_GROUP_NAMES,
     is_nan,
     is_empty,
 )
@@ -112,6 +113,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self._field_history = calc_fncs.TransientEditHistory()
 
         self.raw_data_table.setVerticalHeaderLabels([str(name) for name in self.current_groups] + ["Total"])
+        self.raw_data_table.setAccessibleDescription("Whole-number study counts for " + " and ".join(self.current_groups) + ".")
         self.input_mode_combo.addItem("Study counts", "counts")
         self.input_mode_combo.addItem("Entered estimate", "estimate")
         self.input_mode_combo.setAccessibleName("Study input method")
@@ -141,7 +143,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
     def _configure_raw_data_table(self):
         table = self.raw_data_table
         table.setHorizontalHeaderLabels(["Event", "No Event", "Total"])
-        table.setVerticalHeaderLabels(["Group 1", "Group 2", "Total"])
+        table.setVerticalHeaderLabels(["", "", "Total"])
         horizontal_header = required(table.horizontalHeader(), "binary table header")
         vertical_header = required(table.verticalHeader(), "binary row header")
         horizontal_header.setVisible(True)
@@ -393,7 +395,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             return None
         try:
             if len(list(imputed.keys())) > 1:
-                dialog = BinaryBackCalculationDialog(imputed, parent=self)
+                dialog = BinaryBackCalculationDialog(imputed, self.current_groups, parent=self)
                 if dialog.exec():
                     choice = dialog.get_choice()
                 else:  # don't do anything if cancelled
@@ -620,6 +622,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         # Change color of bottom rows of table according one or two-arm metric
         current_effect_is_one_arm = self.current_effect in BINARY_ONE_ARM_METRICS
         for row in (1, 2):
+            self.raw_data_table.setRowHidden(row, current_effect_is_one_arm)
             for col in range(3):
                 item = self.raw_data_table.item(row, col)
                 item = required(item, f"binary table cell ({row}, {col})")
@@ -1113,9 +1116,11 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 class BinaryBackCalculationDialog(
     QDialog, _ui_binary_back_calculation_dialog.Ui_BinaryBackCalculationDialog
 ):
-    def __init__(self, imputed_data, parent=None):
+    def __init__(self, imputed_data, group_names=None, parent=None):
         super(BinaryBackCalculationDialog, self).__init__(parent)
         self.setupUi(self)
+        if group_names is None:
+            group_names = DEFAULT_GROUP_NAMES
         for widget in self.content_widget.findChildren(QWidget):
             widget.installEventFilter(self)
         self._layout_controller = adaptive_window.register_adaptive_window(
@@ -1126,7 +1131,7 @@ class BinaryBackCalculationDialog(
         a, b, c, d = op1["a"], op1["b"], op1["c"], op1["d"]
         a, b, c, d = int(round(a)), int(round(b)), int(round(c)), int(round(d))
         option1_txt = (
-            "Group 1:\n  #events: %d\n  Total: %d\n\nGroup 2:\n  #events: %d\n  Total: %d"
+            f"{group_names[0]}:\n  Events: %d\n  Total: %d\n\n{group_names[1]}:\n  Events: %d\n  Total: %d"
             % (a, b, c, d)
         )
 
@@ -1134,7 +1139,7 @@ class BinaryBackCalculationDialog(
         a, b, c, d = op2["a"], op2["b"], op2["c"], op2["d"]
         a, b, c, d = int(round(a)), int(round(b)), int(round(c)), int(round(d))
         option2_txt = (
-            "Group 1:\n  #events: %d\n  Total: %d\n\nGroup 2:\n  #events: %d\n  Total: %d"
+            f"{group_names[0]}:\n  Events: %d\n  Total: %d\n\n{group_names[1]}:\n  Events: %d\n  Total: %d"
             % (a, b, c, d)
         )
 

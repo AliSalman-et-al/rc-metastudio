@@ -139,6 +139,7 @@ def run(
     metrics_override=None,
     prepare=None,
     fixed_effects=False,
+    group_names=None,
 ):
     import json
     import re
@@ -332,6 +333,20 @@ def run(
                 wizard.currentPage().outcome_name_LineEdit.setText(
                     "Verification outcome"
                 )
+                page = wizard.currentPage()
+                record("data-outcome-naming", wizard, data_type=name)
+                if group_names is not None:
+                    assert page.first_group_name.isVisible()
+                    if len(group_names) == 2:
+                        page.first_group_name.setText(" Same ")
+                        page.second_group_name.setText("Same")
+                        assert not page.isComplete() and page.validation_label.text()
+                        record("round5-arm-duplicate", wizard)
+                    page.first_group_name.setText(group_names[0])
+                    if len(group_names) == 2:
+                        page.second_group_name.setText(group_names[1])
+                    assert page.isComplete(), page.validation_label.text()
+                    record("round5-arm-wizard", wizard, names=group_names)
                 click(wizard.button(QtWidgets.QWizard.WizardButton.FinishButton))
             except Exception as error:  # noqa: BLE001 - propagate modal callback failures after exec.
                 callback_errors.append(error)

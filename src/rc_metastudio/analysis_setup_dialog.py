@@ -306,7 +306,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.col1_str_edit.setText("Subgroup")
         else:
             self.col1_str_edit.setText("Study")
-        if self.data_type in {"binary", "continuous"}:
+        if self.data_type in {"binary", "continuous", "time_to_event", "event_rates"}:
             for field, name in zip((self.col3_str_edit, self.col4_str_edit), self.model.current_groups):
                 field.setText(name)
         for checkbox, label in zip((self.show_1, self.show_2, self.show_3, self.show_4), ("study", "estimate", "first group", "second group")):

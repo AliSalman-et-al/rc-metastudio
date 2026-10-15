@@ -470,6 +470,9 @@ def run(app, window, work, record, scenario):
         target.enable_menu_options_that_require_dataset()
 
     family_name = scenario.removeprefix("audit-round3-")
+    if family_name == "arm-names":
+        from tests.e2e.arm_names import run as naming
+        return naming(app, window, work, record)
     if family_name == "irr-context":
         return run_irr_context(app, window, record)
     if family_name in {"round5", "bubble-metrics"}:
@@ -576,11 +579,11 @@ def run(app, window, work, record, scenario):
             app.processEvents()
             page = wizard.currentPage()
             assert isinstance(page, main_wizard.CsvImportPage)
-            assert "TX Mean" in page.required_header_labels, page.required_header_labels
+            assert "Estimate" in page.required_header_labels and "TX Mean" not in page.required_header_labels, page.required_header_labels
             source = work / "entered-estimate-alias.csv"
             with source.open("w", newline="", encoding="utf-8") as stream:
                 writer = csv.writer(stream)
-                writer.writerow(page.required_header_labels)
+                writer.writerow(["Study", "Year", "TX Mean", "SE"])
                 writer.writerow(["Entered row", 2026, .2, .1])
             with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(source), "")):
                 click(app, page.select_file_btn)

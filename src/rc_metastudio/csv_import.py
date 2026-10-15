@@ -58,6 +58,7 @@ def parse_csv(
     year_column: int = 1,
     optional_headers: Mapping[str, str] | None = None,
     column_mapping: tuple[int, ...] | None = None,
+    header_aliases: Mapping[str, str] | None = None,
 ) -> CsvImportResult:
     """Read, normalize, and validate one CSV file."""
     with Path(path).open(encoding="utf-8-sig", newline="") as stream:
@@ -68,6 +69,8 @@ def parse_csv(
         )
         headers = next(reader, []) if has_headers else []
         rows = list(reader)
+    if header_aliases:
+        headers = [header_aliases.get(header.casefold(), header) for header in headers]
 
     if column_mapping is not None:
         if not has_headers:

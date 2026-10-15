@@ -6,6 +6,8 @@ import pytest
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 from rc_metastudio import adaptive_window, calculator_service
+from rc_metastudio.analysis_dataset import Outcome
+from rc_metastudio.meta_globals import CONTINUOUS
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -21,6 +23,7 @@ prepare_generated_ui_imports()
 
 class FakeContinuousAnalysisUnit:
     def __init__(self, raw_data=None, effects=None):
+        self.outcome = Outcome("Measured outcome", CONTINUOUS, sub_type="means")
         self.raw_data = raw_data or {
             "Group 1": [10, 94, 2],
             "Group 2": [12, 90, 3],

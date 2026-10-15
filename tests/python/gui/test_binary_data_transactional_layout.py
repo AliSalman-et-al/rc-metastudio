@@ -463,7 +463,7 @@ def test_binary_back_calculation_chooser_accept_commits_selected_option(monkeypa
         _close(app, window, dialog)
 
 
-def test_binary_data_focus_reveals_offscreen_controls_without_moving_actions(
+def test_binary_data_focus_keeps_pinned_controls_and_actions_visible(
     monkeypatch,
 ):
     app, window, dialog = _open_binary_dialog(monkeypatch)
@@ -475,10 +475,8 @@ def test_binary_data_focus_reveals_offscreen_controls_without_moving_actions(
         dialog.upper_text_box.setFocus()
         app.processEvents()
 
-        viewport_rect = dialog.content_scroll.viewport().rect()
-        mapped = dialog.upper_text_box.mapTo(
-            dialog.content_scroll.viewport(), QtCore.QPoint()
-        )
+        viewport_rect = dialog.rect()
+        mapped = dialog.upper_text_box.mapTo(dialog, QtCore.QPoint())
         assert viewport_rect.intersects(
             QtCore.QRect(mapped, dialog.upper_text_box.size())
         )
@@ -552,14 +550,8 @@ def test_binary_validation_message_wraps_and_is_revealed(monkeypatch):
         assert dialog.inconsistencyLabel.isVisible()
         assert dialog.inconsistencyLabel.wordWrap()
         assert "whole number" in dialog.inconsistencyLabel.text()
-        mapped = dialog.inconsistencyLabel.mapTo(
-            dialog.content_scroll.viewport(), QtCore.QPoint()
-        )
-        assert (
-            dialog.content_scroll.viewport()
-            .rect()
-            .intersects(QtCore.QRect(mapped, dialog.inconsistencyLabel.size()))
-        )
+        mapped = dialog.inconsistencyLabel.mapTo(dialog, QtCore.QPoint())
+        assert dialog.rect().contains(QtCore.QRect(mapped, dialog.inconsistencyLabel.size()))
         assert not dialog.buttonBox.button(
             QtWidgets.QDialogButtonBox.StandardButton.Ok
         ).isEnabled()

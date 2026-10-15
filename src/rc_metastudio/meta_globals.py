@@ -159,7 +159,15 @@ THRESHOLD = 1e-5
 ERROR_COLOR = QColor("red")
 OK_COLOR = QColor("black")
 
-DEFAULT_GROUP_NAMES = ["tx A", "tx B"]
+DEFAULT_GROUP_NAMES = ["Intervention", "Control"]
+
+
+def default_group_names(data_type, sub_type=None):
+    if data_type == DIAGNOSTIC:
+        return ["Index test"]
+    if sub_type in {"proportion", "mean", "reg_coef", "generic_effect"}:
+        return ["Group", "Other group"]
+    return list(DEFAULT_GROUP_NAMES)
 
 
 def equal_close_enough(x, y):

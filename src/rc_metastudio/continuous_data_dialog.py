@@ -164,6 +164,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         ]
         self.group_one_label.setText(str(self.current_groups[0]))
         self.group_two_label.setText(str(self.current_groups[1]))
+        for table, group in zip((self.g1_pre_post_table, self.g2_pre_post_table), self.current_groups):
+            table.setAccessibleName(f"{group} pre/post summaries")
+            table.setAccessibleDescription(f"Pre-treatment and post-treatment summary values for {group}.")
 
         self.setup_clear_button_palettes()  # Color for clear_button_pallette
         self.initialize_form()  # initialize cells to empty items
@@ -1433,12 +1436,12 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
         # Choose one of the values if multiple ones were returned in the output
         keys_to_names = {
-            "n1": "group 1 sample size",
-            "n2": "group 2 sample size",
-            "sd1": "group 1 standard deviation",
-            "sd2": "group 2 standard deviation",
-            "mean1": "group 1 mean",
-            "mean2": "group 2 mean",
+            "n1": f"{self.current_groups[0]} sample size",
+            "n2": f"{self.current_groups[1]} sample size",
+            "sd1": f"{self.current_groups[0]} standard deviation",
+            "sd2": f"{self.current_groups[1]} standard deviation",
+            "mean1": f"{self.current_groups[0]} mean",
+            "mean2": f"{self.current_groups[1]} mean",
         }
         for key, value in imputed.items():
             # The R imputation code can theoretically yield up to four values

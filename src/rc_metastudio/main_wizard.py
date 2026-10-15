@@ -68,6 +68,7 @@ class DatasetInfo(TypedDict, total=False):
     effect: str | None
     metric_choices: list[str]
     name: str | None
+    groups: list[str]
 
 
 class MainWizardPage(QWizardPage):
@@ -499,7 +500,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.required_fmt_table.setRowCount(2)
         self.required_fmt_table.setColumnCount(len(self.required_header_labels))
 
-        self.required_fmt_table.setHorizontalHeaderLabels(self._display_headers(self.required_header_labels))
+        self.required_fmt_table.setHorizontalHeaderLabels(self.required_header_labels)
         self.required_fmt_table.resizeColumnsToContents()
         self.required_fmt_table.resizeRowsToContents()
 
@@ -603,6 +604,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 year_column=DatasetTableModel.YEAR - 1,
                 optional_headers=self._optional_ratio_headers(),
                 column_mapping=column_mapping,
+                header_aliases=self._legacy_header_aliases(),
             )
             payload = self._import_result.to_payload()
             self.headers = payload["headers"]
@@ -621,11 +623,11 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             self.preview_table.setRowCount(num_rows)
             self.preview_table.setColumnCount(num_cols)
             if self.headers != []:
-                self.preview_table.setHorizontalHeaderLabels(self._display_headers(self.headers))
+                self.preview_table.setHorizontalHeaderLabels(self.headers)
             else:
                 preview_header_labels = self.required_header_labels[:]
                 preview_header_labels.extend(self.covariate_names)
-                self.preview_table.setHorizontalHeaderLabels(self._display_headers(preview_header_labels))
+                self.preview_table.setHorizontalHeaderLabels(preview_header_labels)
 
             # copy extracted data to table
             for row in range(num_rows):
@@ -671,9 +673,11 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             headers = next(reader, [])
         if not headers:
             return
+        aliases = self._legacy_header_aliases()
+        headers = [aliases.get(header.casefold(), header) for header in headers]
         self.mapping_table.setRowCount(len(self.required_header_labels))
         for row, field in enumerate(self.required_header_labels):
-            item = QTableWidgetItem(self._display_headers([field])[0])
+            item = QTableWidgetItem(field)
             item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
             self.mapping_table.setItem(row, 0, item)
             control = QComboBox(self.mapping_table)
@@ -698,15 +702,21 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 csv.writer(stream).writerow(self.required_header_labels)
             self.import_status.setText(f"Saved template: {Path(path).resolve()}")
 
-    def _display_headers(self, headers):
-        if "TX Mean" not in headers:
-            return list(headers)
-        subtype = self.wizard().require_dataset_info()["sub_type"]
-        if subtype in {"reg_coef", "generic_effect"}:
-            return ["Estimate" if header == "TX Mean" else header for header in headers]
-        return list(headers)
+    def _legacy_header_aliases(self):
+        aliases = {header.casefold(): header for header in self.required_header_labels}
+        aliases["study"] = self.required_header_labels[0]
+        for old, current in zip(self._get_required_header_labels(legacy=True), self.required_header_labels, strict=True):
+            old = old.casefold()
+            aliases[old] = current
+            words = old.replace("#evts", "events").replace("#total", "total")
+            aliases[words] = current
+            for value in (old, words):
+                aliases[value.replace("tx a", "txa").replace("tx b", "txb")] = current
+                if value.startswith("tx a "):
+                    aliases.setdefault("tx " + value[5:], current)
+        return aliases
 
-    def _get_required_header_labels(self):
+    def _get_required_header_labels(self, legacy=False):
         """Provides column header labels based on chosen datatype and subtype
         ** Must be updated if header_data() is dataset_table_model is changed
         """
@@ -732,8 +742,9 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 raw_columns=raw_cols,
                 outcome_columns=outcome_cols,
                 current_effect=effect,
-                groups=meta_globals.DEFAULT_GROUP_NAMES,
-                csv_schema=True,
+                groups=(["Tx A", "Tx B"] if legacy else dataset_info.get("groups") or
+                        meta_globals.default_group_names(meta_globals.STR_TO_TYPE_DICT[data_type], data_subtype)),
+                csv_schema=legacy,
             )
             col_name = _qt_item_text(col_name)
             header_labels.append(col_name)
@@ -771,36 +782,68 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
 
 class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
     def __init__(self, parent=None):
-        super(OutcomeNamePage, self).__init__(parent)
+        super().__init__(parent)
         self.setupUi(self)
-
+        self._naming_defaults = list(meta_globals.DEFAULT_GROUP_NAMES)
+        self._comparative = True
         self.registerField("outcomeName*", self.outcome_name_LineEdit)
-        self.outcome_name_LineEdit.textChanged.connect(
-            lambda _text: self.completeChanged.emit()
-        )
+        for field in (self.outcome_name_LineEdit, self.first_group_name, self.second_group_name):
+            field.textChanged.connect(lambda _text: self.completeChanged.emit())
 
     def initializePage(self):
         info = self.wizard().require_dataset_info()
+        self._comparative = info["effect"] in meta_globals.TWO_ARM_METRICS
+        data_type = meta_globals.STR_TO_TYPE_DICT[info["data_type"]]
+        self._naming_defaults = meta_globals.default_group_names(data_type, info["sub_type"])
         metric = "Mean" if info["effect"] == "TX Mean" else meta_globals.ALL_METRIC_NAMES.get(info["effect"], info["effect"])
         if info["sub_type"] in {"reg_coef", "generic_effect"}:
             metric = "Regression coefficient" if info["sub_type"] == "reg_coef" else "Entered effect"
         task = "Import CSV" if self.wizard().get_wizard_path() == "csv_import" else "Create dataset"
-        self.setSubTitle(f"<p>{task} · {info['data_type']}<br>{metric}</p>")
+        kind = {"binary": "Two-arm binary" if self._comparative else "Single-arm proportion",
+                "continuous": "Two-arm continuous" if self._comparative else "Single-arm continuous",
+                "diagnostic": "Diagnostic accuracy", "time_to_event": "Time-to-event", "event_rates": "Event rates"}[info["data_type"]]
+        self.setSubTitle(f"<p>{task} · {kind}" + (f"<br>{metric}" if metric else "") + "</p>")
+        self.setTitle("Name the outcome and arms" if self._comparative else "Name the outcome")
+        first_label = "Intervention name" if self._comparative else "Index test name" if data_type == meta_globals.DIAGNOSTIC else "Group name"
+        self.first_group_label.setText(first_label)
+        self.first_group_name.setAccessibleName(first_label)
+        self.first_group_name.setPlaceholderText(self._naming_defaults[0])
+        self.second_group_label.setVisible(self._comparative)
+        self.second_group_name.setVisible(self._comparative)
+        defaults = " and ".join(self._naming_defaults if self._comparative else self._naming_defaults[:1])
+        self.name_note.setText(f"Names below the outcome are optional. Leave them blank to use {defaults}.")
+        for field in (self.first_group_name, self.second_group_name):
+            field.setAccessibleDescription("Optional. Leave blank to use " + field.placeholderText() + ".")
+        self.completeChanged.emit()
+
+    def group_names(self):
+        names = list(self._naming_defaults)
+        names[0] = self.first_group_name.text().strip() or names[0]
+        if self._comparative:
+            names[1] = self.second_group_name.text().strip() or names[1]
+        elif len(names) == 2 and names[0].casefold() == names[1].casefold():
+            names[1] = "Additional group"
+        return names
 
     def isComplete(self):
-        try:
-            name_validation.validate_required_name(
-                "outcome", self.outcome_name_LineEdit.text()
-            )
-        except ValueError:
+        if not self.outcome_name_LineEdit.text().strip():
+            self.validation_label.setText("Enter an outcome name.")
             return False
+        names = self.group_names()
+        if self._comparative and names[0].casefold() == names[1].casefold():
+            self.validation_label.setText("The two arms need different names.")
+            return False
+        self.validation_label.clear()
+        return True
+
+    def validatePage(self):
+        if not self.isComplete():
+            return False
+        self.wizard().require_dataset_info()["groups"] = self.group_names()
         return True
 
     def nextId(self):
-        if self.wizard().get_wizard_path() == "csv_import":
-            return Page_CsvImport
-        else:  # normal case
-            return -1
+        return Page_CsvImport if self.wizard().get_wizard_path() == "csv_import" else -1
 
 
 Page_Welcome, Page_DataType, Page_ChooseMetric, Page_OutcomeName, Page_CsvImport = list(

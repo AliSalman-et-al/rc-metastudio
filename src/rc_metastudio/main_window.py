@@ -818,7 +818,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def show_quick_start(self):
         QMessageBox.information(self, "RC MetaStudio quick start",
-            "1. Create a dataset, import a UTF-8 CSV, or open a sample project. CSV templates and column mapping are on the import page.\n\n"
+            "1. Create a dataset and name its outcome and arms. Intervention / Control are the comparative defaults; use the actual treatment names when available. Single-arm data use Group, and diagnostic data use Index test. Existing projects retain their names; rename groups from a column header. Import a UTF-8 CSV using the template and mapping on the import page, or open a sample project.\n\n"
             "2. Enter studies in the table. Click the row calculator to edit study data. Calculated effects use complete raw data where available.\n\n"
             "3. Choose an effect metric matching your data. Add a Numeric or Category covariate for meta-regression; subgroup analysis needs a Category.\n\n"
             "4. Run an analysis, then use the result navigation to select a section or plot. Text report exposes selectable output. Tables provides selectable cells: copy a selection or export the table as CSV. Copy report and Export report keep the analysis identity and table rows. Select a plot to edit or export it.\n\n"
@@ -959,7 +959,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             if len(group_names) >= 2:
                 new_state_dict["current_groups"] = group_names[:2]
             else:
-                new_state_dict["current_groups"] = meta_globals.DEFAULT_GROUP_NAMES
+                new_state_dict["current_groups"] = group_names or meta_globals.default_group_names(
+                    self.model.get_current_outcome_type(get_str=False), self.model.get_current_outcome_subtype())
             modified_dataset = edit_window.dataset
 
             self._commit_model_operation(
@@ -1224,7 +1225,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
             def redo_f():
                 return self._add_new_outcome(
-                    new_outcome_name, new_outcome_type, new_outcome_subtype
+                    new_outcome_name, new_outcome_type, new_outcome_subtype, startup_outcome.get("groups")
                 )
 
             previous_outcome = str(self.model.current_outcome_name)
@@ -1295,9 +1296,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model.remove_outcome(added_outcome)
         self.display_outcome(previously_displayed_outcome)
 
-    def _add_new_outcome(self, outcome_name, outcome_type, sub_type=None):
-        self.model.add_new_outcome(outcome_name, outcome_type, sub_type=sub_type)
-        self.display_outcome(outcome_name)
+    def _add_new_outcome(self, outcome_name, outcome_type, sub_type=None, group_names=None):
+        if group_names is not None:
+            self.model.current_groups = list(group_names)
+        self.model.add_new_outcome(outcome_name, outcome_type, sub_type=sub_type, group_names=group_names)
+        self.display_outcome(outcome_name, group_names=group_names)
 
     def _add_new_follow_up_for_cur_outcome(self, follow_up_lbl):
         self.model.add_follow_up_to_current_outcome(follow_up_lbl)
@@ -1906,9 +1909,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         return True
 
     def _make_new_dataset_and_setup_spreadsheet(self, dataset_info):
+        dataset_info = dict(dataset_info)
+        dataset_info["groups"] = dataset_info.get("groups") or meta_globals.default_group_names(
+            meta_globals.STR_TO_TYPE_DICT[dataset_info["data_type"]], dataset_info.get("sub_type"))
         is_diagnostic = dataset_info["data_type"] == "diagnostic"
         self.new_dataset(is_diagnostic=is_diagnostic)
         self.model.dataset.summary = copy.deepcopy(dataset_info)
+        self.model.dataset.summary.pop("groups", None)
 
         tmp = self.current_dimension
         self.current_dimension = "outcome"

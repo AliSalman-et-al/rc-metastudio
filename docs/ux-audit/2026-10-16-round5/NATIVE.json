@@ -37726,5 +37726,370 @@
         "capture": "QScreen.grabWindow"
       }
     ]
+  },
+  "native-arms-baseline": {
+    "attempt": {
+      "label": "native-arms-baseline",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "analysis-data-twoarm-proportion",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T03:44:17.390092+00:00",
+      "finished": "2026-10-15T03:44:31.117021+00:00",
+      "seconds": 13.723865207008203,
+      "exit_code": 0,
+      "revision": "3625b3a1233fa6cf90cf85fa57599b367d07b666",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-arms-baseline.log",
+      "sha256": "38c9a7fbc640c839beff2c289bce4b36af8e7a0330642b9c32482e8bbdc658b1"
+    },
+    "evidence": "artifacts/verification/rcms/20261015T034417Z-9afabe8e-analysis-data-twoarm-proportion",
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-s618awol"
+    },
+    "manifest_sha256": "c6d668ab2d7699df761d31780e3d8e692f6e463ee34dea058c8a4cacd61a2155",
+    "observed": [
+      {
+        "step": 1,
+        "action": "ready",
+        "utc": "2026-10-15T03:44:23.100264+00:00",
+        "captures": [
+          "01-0-ready.png"
+        ],
+        "artifacts": {},
+        "runtime": {
+          "r": "R version 4.6.1 (2026-06-24)",
+          "r_libraries": [
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+          ],
+          "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "authorities": {
+            "mada": "0.5.12",
+            "metafor": "5.0-1",
+            "meta": "8.5-0",
+            "svglite": "2.2.2",
+            "rsvg": "2.7.0",
+            "tiff": "0.1-12"
+          },
+          "rcmetar": "0.4.2",
+          "rpy2": "3.6.7",
+          "qt": "6.11.1",
+          "pyqt": "6.11.0",
+          "platform_plugin": "xcb",
+          "application": "RCMetaStudio",
+          "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-s618awol"
+        }
+      },
+      {
+        "step": 2,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:44:23.309535+00:00",
+        "captures": [
+          "02-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-proportion"
+      },
+      {
+        "step": 3,
+        "action": "data-outcome-naming",
+        "utc": "2026-10-15T03:44:23.499982+00:00",
+        "captures": [
+          "03-0-data-outcome-naming.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-proportion"
+      },
+      {
+        "step": 4,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:44:24.089403+00:00",
+        "captures": [
+          "04-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-proportion",
+        "metric": "OR",
+        "included": 6
+      },
+      {
+        "step": 5,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:44:24.779111+00:00",
+        "captures": [
+          "05-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-proportion",
+        "metric": "OR",
+        "cells": [
+          [
+            "Fixture 1",
+            "4.0",
+            "20.0",
+            "6.0",
+            "22.0",
+            "0.67",
+            "0.16",
+            "2.82"
+          ],
+          [
+            "Fixture 2",
+            "5.0",
+            "21.0",
+            "7.0",
+            "23.0",
+            "0.71",
+            "0.19",
+            "2.73"
+          ],
+          [
+            "Fixture 3",
+            "6.0",
+            "22.0",
+            "8.0",
+            "24.0",
+            "0.75",
+            "0.21",
+            "2.66"
+          ],
+          [
+            "Fixture 4",
+            "7.0",
+            "23.0",
+            "9.0",
+            "25.0",
+            "0.78",
+            "0.23",
+            "2.60"
+          ],
+          [
+            "Fixture 5",
+            "8.0",
+            "24.0",
+            "10.0",
+            "26.0",
+            "0.80",
+            "0.25",
+            "2.55"
+          ],
+          [
+            "Fixture 6",
+            "9.0",
+            "25.0",
+            "11.0",
+            "27.0",
+            "0.82",
+            "0.27",
+            "2.51"
+          ]
+        ]
+      },
+      {
+        "step": 6,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:44:24.956888+00:00",
+        "captures": [
+          "06-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-proportion",
+        "workflow": "standard",
+        "method": "binary.random"
+      },
+      {
+        "step": 7,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:44:25.200509+00:00",
+        "captures": [
+          "07-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "binary.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 3,
+          "adjust": 0.5,
+          "to": "only0"
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 8,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:44:29.889531+00:00",
+        "captures": [
+          "08-0-matrix-results.png",
+          "08-0-matrix-results-report.png",
+          "08-0-matrix-results-table.png",
+          "08-0-matrix-results-figure.png",
+          "08-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "08-0-forest-e72c2c877792.display.svg"
+        },
+        "texts": {
+          "Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.761                    0.459                 1.264    0.292\n\nHeterogeneity\n Q      df  p-value    I²     τ²\n 0.066   5    1.000  0.0%  0.000\n\nTest for overall effect\n Z       p-value\n -1.054    0.292\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.459                                1.264\n\nCalculation scale: log - estimate: -0.273, lower: -0.780, upper: 0.234, std. error: 0.259\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names  Weights\nFixture 1: 12.4%\nFixture 2: 14.3%\nFixture 3: 16.1%\nFixture 4: 17.7%\nFixture 5: 19.1%\nFixture 6: 20.5%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-s618awol/analysis/forest-e72c2c877792.display.svg"
+        }
+      },
+      {
+        "step": 9,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:44:30.164436+00:00",
+        "captures": [
+          "09-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "binary.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 3,
+          "adjust": 0.5,
+          "to": "only0",
+          "plot_caption": "Verification outcome · Two-arm binary · Odds Ratio\nComparison: tx A / tx B · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "revman",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "tx A",
+          "fp_show_col4": true,
+          "fp_col4_str": "tx B",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-s618awol/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-s618awol/analysis/forest-e72c2c877792.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#000000",
+          "fp_point_size_multiplier": 1.0,
+          "measure": "OR",
+          "metric.label": "Odds Ratio"
+        }
+      },
+      {
+        "step": 10,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:44:30.425370+00:00",
+        "captures": [
+          "10-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "binary.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 11,
+        "action": "workflow-passed",
+        "utc": "2026-10-15T03:44:30.621742+00:00",
+        "captures": [
+          "11-0-workflow-passed.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-proportion"
+      }
+    ],
+    "frames": [
+      {
+        "path": "screenshots/native-arms-baseline-03-0-data-outcome-naming.png",
+        "sha256": "675a8e870516af7cc5786b706ed88e4495353b65465a1a939e68af5fb70f1979",
+        "step": 3,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-arms-baseline-04-0-data-populated.png",
+        "sha256": "32335c63b4f68dcfb1e5fe66669cf1797ddc5c961512fe69a251a6959ea037d0",
+        "step": 4,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-arms-baseline-08-0-matrix-results.png",
+        "sha256": "68f3c8da463013e66b3e4f452f9335fb0a80112713d65be0a66759031b60d638",
+        "step": 8,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-arms-baseline-08-0-matrix-results-report.png",
+        "sha256": "1f7f9e642e0a26685927dc80c885df5cdf94c85022d333553966f44aac5e593e",
+        "step": 8,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-arms-baseline-08-0-matrix-results-table.png",
+        "sha256": "817dd1c433ba6dbe085c63f837473fccd348e61bffa98b36c4f82d0b7cdcc754",
+        "step": 8,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-arms-baseline-08-0-matrix-results-figure.png",
+        "sha256": "226acb2cbe9999c368c8acd94a71596a50bce4ed8d4b545ffd8565eb72d62eae",
+        "step": 8,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-arms-baseline-08-0-matrix-results-bottom.png",
+        "sha256": "226acb2cbe9999c368c8acd94a71596a50bce4ed8d4b545ffd8565eb72d62eae",
+        "step": 8,
+        "capture": "QScreen.grabWindow"
+      }
+    ]
   }
 }
