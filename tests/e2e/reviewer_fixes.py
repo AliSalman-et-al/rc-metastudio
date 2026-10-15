@@ -236,6 +236,16 @@ def run_colours(app, window, work, record):
                 click(app,dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel))
             modal(app,EditPlotDialog,editor,view.edit_plot_action.trigger)
             # One full export set per family, including sequential and clinical variants.
+            if scenario == 'analysis-data-twoarm-proportion':
+                def clipped(dialog):
+                    dialog.plot_lb_le.setText('0.4')
+                    dialog.plot_ub_le.setText('2')
+                    click(app,dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+                modal(app,EditPlotDialog,clipped,view.edit_plot_action.trigger)
+                arrows = [node for node in ET.parse(artifact.display_path()).iter('{http://www.w3.org/2000/svg}polygon') if len(node.attrib['points'].split()) == 3]
+                assert arrows, 'narrow limits did not exercise clipped CI arrows'
+                check_colours(artifact.display_path())
+                record('reviewer-default-clipped-arrows',view,arrows=len(arrows),plots={artifact.title:artifact.display_path()})
             files = export_formats(app,view,work/f'colour-{scenario}-{index}',scenario,record)
             check_colours(files['svg'])
             from PIL import Image
