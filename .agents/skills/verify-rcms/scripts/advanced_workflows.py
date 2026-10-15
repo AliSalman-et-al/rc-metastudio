@@ -1063,8 +1063,12 @@ def calculators(app, window, mode, record):
                 assert dialog.simple_group.isVisible() and not dialog.pre_post_group_box.isVisible()
                 dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
             app.processEvents()
-            primary = (dialog.effect_text_box, dialog.clear_button, dialog.back_calculate_button,
+            primary = (dialog.effect_text_box, dialog.clear_button,
                        dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+            if mode in {"onearm-proportion", "onearm-mean"}:
+                assert not dialog.back_calculate_button.isVisible()
+            else:
+                primary += (dialog.back_calculate_button,)
             positions = [widget.mapTo(dialog, QtCore.QPoint()).y() for widget in primary]
             scrollbar = dialog.content_scroll.verticalScrollBar()
             for position in (0, scrollbar.maximum()):

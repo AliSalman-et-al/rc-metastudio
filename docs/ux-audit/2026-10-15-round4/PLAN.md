@@ -129,3 +129,28 @@ will use official RevMan/metafor documentation: aligned table columns, a compact
 overall-test line, deliberate header leading, separate direction labels and
 publication exports with the same layout as the app. No new analysis, fitted
 quantity, configuration framework or navigation subsystem is introduced.
+
+## Final fresh-profile follow-up (before repair)
+
+`review1-full-gates` exposed three failures after the earlier focused checks:
+
+- The Reitsma moderator coefficient plot has its own existing renderer and saved
+  bundle, but the new automatic-tooltip reader invokes the metafor forest planner
+  merely because `fp_style` exists. Use the existing Reitsma coefficient bundle
+  predicate at that boundary so each renderer keeps its own defaults. Failure
+  modes: editor cannot open, another renderer receives wrong defaults, custom
+  axis edits or saved geometry lost. Proof: preserve the full failed E2E receipt,
+  then drive `plot-workflow-coefficient` natively and offscreen through edit,
+  Cancel/reopen and all four decoded exports. Inspect native before/after frames.
+- The single-arm calculator assertions demand a visible Back-calculate button,
+  although those metrics intentionally have no back-calculation capability.
+  Assert that it is hidden in single-arm modes; retain full visibility and fixed
+  screen-position checks for every supported action at both scroll extremes.
+  Failure modes: accidentally accepting hidden applicable controls, losing the
+  estimate or Clear/OK reachability, changed persisted values. Proof: existing
+  one-arm proportion/mean E2Es natively and offscreen, including independent
+  preview and post-reopen analysis, plus their native screenshots.
+
+No fitted quantity or R calculation changes. After these focused proofs, repeat
+the full fresh profile and exact 415-field comparison; retain the failed full
+run without treating its other successes as final qualification.

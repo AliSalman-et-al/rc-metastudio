@@ -1188,6 +1188,7 @@ def load_vars_for_plot(params_path, return_params_dict=False):
         if os.path.exists(plot_path):
             load_in_r(plot_path)
             defaults = r_object_to_python(execute_r_string("""local({
+                if (RCMetaR:::rcmetar.is.reitsma.coefficient.bundle(plot.data)) return(NULL)
                 if (is.null(plot.data$fp_style)) return(NULL)
                 plan <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data)
                 list(xlabel=plan$x$xlab, lower=plan$x$alim[[1]], upper=plan$x$alim[[2]],
