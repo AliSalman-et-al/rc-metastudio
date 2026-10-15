@@ -33,6 +33,7 @@ Capture before/after screenshots and observed values; retain failing baseline.
 | Item | Failure to prevent | Real-system proof planned |
 | --- | --- | --- |
 | R5-09 | Internal key used instead of contextual display identity | Attached menu recursion for ten families, open dialogs/choices/tooltips and result text; fail forbidden built-in labels, preserve user names; retain sweep in E2E |
+| Axis conventions | Misleading spacing, stale axes or altered fitted data | Source-verified defaults and persisted editor option; native three-style family matrix, endpoint/tick geometry and exports |
 | R5-04 | CI caps larger than study spacing | Short/65-study standard/subgroup, default/RevMan/BMJ; measure SVG cap-to-row geometry, display and export; fitted horizontal values unchanged |
 | R5-06 | Headers cross unequal wrapped arm names | Three styles with long custom names; measured SVG header blocks and native/export inspection |
 | R5-03 | Diagnostic coefficient/ML tables bypass precision | Two and six digits, numeric/factor/interaction diagnostic regressions; Text/Tables/copy/export equality; independent fitted fields unchanged |
@@ -48,6 +49,71 @@ Capture before/after screenshots and observed values; retain failing baseline.
 No isolated tests are planned initially; extend actual Qt/R drivers and existing
 R geometry/authority checks. If isolation becomes necessary, list its distinct
 failure modes and write that check before implementing the corresponding change.
+
+## Axis conventions — added after R5-09, before implementation
+
+Failure modes: natural labels on transformed positions mistaken for a linear axis;
+transforming fitted inputs/SEs/weights instead of coordinates; double transformation;
+study-specific Freeman–Tukey inverses confused with the pooled harmonic-mean inverse;
+summary/subgroup diamonds, whiskers, cap endpoints or nulls left on the old scale;
+round tick labels drifting from actual positions; stale axis titles; editor choice
+lost on Apply/Cancel/reopen, regeneration or export; changing funnel/ROC conventions
+through a shared helper. Proof is required before claiming this item complete.
+
+Documentation checked 2026-10-15:
+
+- [RevMan manual-input analyses](https://documentation.cochrane.org/revman-kb/manual-input-analyses-259686817.html)
+  documents graph controls. Its default scale value of 100 describes plot range;
+  it does not independently establish the coordinate transformation.
+- [Cochrane chapter 6, §6.1.2.1](https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-06)
+  explicitly recommends log graphical scales for ratios, with symmetric intervals;
+  ratios have null 1, differences null 0. Use natural measure names on the axes.
+- [Chapter 10, §§10.2–10.3 and 10.11.4](https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-10)
+  distinguishes effect estimation, inverse-variance weighting and meta-regression.
+  Axis edits must leave those calculations intact.
+- [Chapter 15, §15.4](https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-15)
+  supports interpreting relative effects as ratios and absolute effects in natural
+  units; it does not prescribe a proportion-bubble coordinate default.
+- [RevMan DTA graphs](https://documentation.cochrane.org/revman-kb/analysis-graphs-in-dta-reviews-236847627.html)
+  separates sensitivity/specificity forests from SROC graphs.
+  [DTA Handbook v1 chapter 10, §§10.3.3–10.3.4, p17](https://methods.cochrane.org/sites/methods.cochrane.org.sdt/files/public/uploads/Chapter%2010%20-%20Version%201.0.pdf)
+  shows both forest axes at evenly spaced 0, .2, .4, .6, .8, 1 without a null line.
+  Downloaded the actual PDF and inspected page 17; retained source in ignored
+  raw/sources/dta-ch10 and rendered page in raw/sources/dta-page17.png.
+- [metafor forest.rma, Applying a Transformation](https://wviechtb.github.io/metafor/reference/forest.rma.html)
+  distinguishes `transf` (coordinates and intervals) from `atransf` (labels only).
+  `atransf=exp` retains logarithmic ratio spacing. A linear natural axis needs
+  transformed coordinates, including asymmetric confidence intervals.
+- [meta forest.meta](https://guido-s.r-universe.dev/meta/doc/manual.html#forest.meta)
+  documents `backtransf=TRUE`; transformed proportions are displayed as proportions.
+  Verified spacing against the [maintainer's implementation](https://github.com/guido-s/meta/blob/master/R/forest.R):
+  `log.xaxis <- backtransf & is_relative`, then non-relative coordinates and bounds
+  are back-transformed. Thus natural-scale proportion forests are linear. Retained
+  retrieved source raw/sources/meta-forest. PFT pooled inversion uses its effective N.
+- [metafor regplot](https://wviechtb.github.io/metafor/reference/regplot.html)
+  permits both coordinate and label transformations, including curved natural-scale
+  regression lines; it does not mandate natural-scale proportion bubbles. Retain
+  the fitted transformed axis as their default and label the transformation clearly.
+  Ratio bubbles retain straight fitted lines with log spacing and natural labels.
+  The CMA regression manual download returned HTTP 403; no unsupported CMA-specific
+  claim is used to choose behavior.
+
+Decision: ratio forests/bubbles default log spacing, natural labels/titles; forest
+editor offers linear natural ratio coordinates. Transformed proportion and diagnostic
+sensitivity/specificity forests default linear natural coordinates (0–1), with no
+arbitrary null line; transformed coordinates are opt-in with an explicit scale title.
+MD/SMD/RD/mean/coefficient/entered-effect axes remain linear. Proportion bubbles keep
+clearly labelled fitted-scale coordinates. Funnel, contour, trim-and-fill, Deeks and
+SROC keep their existing family-specific conventions.
+
+E2E proof: retain before figures, then keyboard/UI editor changes for ratios,
+log/logit/arcsine/PFT proportions and diagnostic sensitivity/specificity across all
+three styles. Measure tick positions in actual SVG, compare study/summary endpoints
+to independently transformed original effects, and verify weights/fit bytes remain
+unchanged. Reopen the editor, rerun and export saved plot parameters; exercise Cancel.
+Retain native screenshots and decoded exports plus original input/observed state.
+Run the 415-field exact comparison and golden gates; use the sanctioned tool only
+for reviewed presentation labels. Do not refresh numerical contracts.
 
 ## Execution and evidence
 

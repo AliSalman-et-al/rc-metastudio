@@ -14,7 +14,10 @@ All failed recorded attempts are preserved verbatim in [FAILURES](FAILURES.md); 
 - `calculator-invalid-and-grid-native`: exit 0, 103.44 s.
 - `calculator-native-all`: exit 1, 173.73 s.
 - `calculator-native-replay`: exit 0, 158.19 s.
+- `changed-code-types`: exit 1, 1.78 s.
+- `changed-types-replay`: exit 0, 1.92 s.
 - `diagnostic-and-legend-first`: exit 0, 40.97 s.
+- `forest-gallery`: exit 0, 150.56 s.
 - `golden-before-refresh`: exit 1, 4.10 s.
 - `golden-presentation-capture`: exit 1, 62.74 s.
 - `golden-presentation-refresh`: exit 0, 1.60 s.
@@ -24,6 +27,7 @@ All failed recorded attempts are preserved verbatim in [FAILURES](FAILURES.md); 
 - `grid-precision-routed`: exit 1, 24.66 s.
 - `grid-precision-second`: exit 1, 6.22 s.
 - `grid-precision-third`: exit 1, 10.75 s.
+- `install-explicit-se-headings`: exit 0, 34.03 s.
 - `install-polish`: exit 0, 21.91 s.
 - `labels-expanded`: exit 1, 88.96 s.
 - `labels-final-routing`: exit 0, 80.01 s.

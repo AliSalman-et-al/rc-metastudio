@@ -919,6 +919,28 @@ AssertionError: [AssertionError(('onearm-proportion', 0, 0))]
 
 ```
 
+## changed-code-types
+
+Command: `uv run ty check --extra-search-path build/qt6-verification/generated/rc_metastudio --extra-search-path build/qt6-verification/generated/rc_metastudio/forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio tests/e2e/precision_inputs.py tests/e2e/display_labels.py tests/e2e/ratio_precision.py tests/e2e/round6_polish.py`
+
+```text
+["uv", "run", "ty", "check", "--extra-search-path", "build/qt6-verification/generated/rc_metastudio", "--extra-search-path", "build/qt6-verification/generated/rc_metastudio/forms", "--extra-search-path", ".", "--extra-search-path", "src/rc_metastudio", "--extra-search-path", "src", "--extra-search-path", "scripts", "--extra-search-path", "tests/python/gui", "src/rc_metastudio", "tests/e2e/precision_inputs.py", "tests/e2e/display_labels.py", "tests/e2e/ratio_precision.py", "tests/e2e/round6_polish.py"]
+error[not-subscriptable]: Cannot subscript object of type `None` with no `__getitem__` method
+  --> tests/e2e/round6_polish.py:90:34
+   |
+88 |                     if y >= first-5:
+89 |                         continue
+90 |                     size = float(re.search(r'font-size:\s*([\d.]+)px', node.attrib['style'])[1])
+   |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+91 |                     width = float(node.attrib.get('textLength', '0').removesuffix('px'))
+92 |                     anchor = node.attrib.get('text-anchor')
+   |
+info: rule `not-subscriptable` was selected in the configuration file
+
+Found 1 diagnostic
+
+```
+
 ## golden-before-refresh
 
 Command: `uv run python scripts/verify_golden_compatibility.py --output-root build/qt6-verification/golden-round6`
