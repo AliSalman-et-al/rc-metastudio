@@ -91,7 +91,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.axis_scale.setToolTip("Change axis spacing only. Fitted effects, confidence intervals and weights stay the same.")
         measure = str(self._scalar(self._params.get("measure", "")))
         proportion = measure in {"PR", "PLN", "PLO", "PAS", "PFT", "Sens", "Spec"}
-        ratio = measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"}
+        ratio = self._is_reitsma_coefficient or measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"}
         self.axis_scale.addItem("Linear, natural units", "natural")
         self.axis_scale.addItem("Logarithmic, natural labels" if ratio else "Fitted transformation", "transformed")
         default_scale = "natural" if proportion else "transformed"
@@ -101,7 +101,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         row = self.style_layout.rowCount()
         self.style_layout.addWidget(axis_label, row, 0)
         self.style_layout.addWidget(self.axis_scale, row, 1)
-        axis_label.setVisible((ratio or proportion) and plot_type != "regression" and plot_type != "sroc" and not self._is_reitsma_coefficient)
+        axis_label.setVisible((ratio or proportion) and plot_type != "regression" and plot_type != "sroc" )
         self.axis_scale.setVisible(not axis_label.isHidden())
         self.default_panel.setTitle("Forest options")
         self.favours_left = QLineEdit(str(self._params.get("fp_favours_left") or ""), self)

@@ -26,8 +26,12 @@ with patch('rc_metastudio.settings.get_base_path', return_value=str(work)):
         ns.update(app=app, window=window)
         sys.excepthook = sys.__excepthook__
         ns['doctor'](app, window)
-        from tests.e2e.round6_polish import run_headers
-        run_headers(app, window, work, ns['record_step'])
+        if mode.startswith('headers') or mode.startswith('baseline'):
+            from tests.e2e.round6_polish import run_headers
+            run_headers(app, window, work, ns['record_step'])
+        else:
+            from tests.e2e.release_fixes import run_coefficients
+            run_coefficients(app, window, work, ns['record_step'])
         print('WORKFLOW PASSED', flush=True)
     finally:
         window.workspace.mark_saved()

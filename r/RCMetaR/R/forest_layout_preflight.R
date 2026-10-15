@@ -453,6 +453,10 @@ rcmetar.forest.journal.ratio.alim <- function(bundle) {
     upper.explicit <- rcmetar.forest.has.explicit.axis.bound(bundle, "upper")
     include.null <- (!lower.explicit || base[[1]] <= 0) && (!upper.explicit || base[[2]] >= 0)
     observed <- range(c(base, if (include.null) 0 else numeric(0)), finite=TRUE)
+    rcmetar.forest.round.ratio.range(observed, lower.explicit, upper.explicit)
+}
+
+rcmetar.forest.round.ratio.range <- function(observed, lower.explicit=FALSE, upper.explicit=FALSE) {
     displayed <- exp(observed)
     candidates <- sort(as.vector(outer(c(1, 2, 5), 10^(-8:8))))
     lower <- max(candidates[candidates <= displayed[[1]]], na.rm=TRUE)
@@ -461,8 +465,8 @@ rcmetar.forest.journal.ratio.alim <- function(bundle) {
         return(observed)
     }
     rounded <- log(c(lower, upper))
-    if (lower.explicit) rounded[[1]] <- base[[1]]
-    if (upper.explicit) rounded[[2]] <- base[[2]]
+    if (lower.explicit) rounded[[1]] <- observed[[1]]
+    if (upper.explicit) rounded[[2]] <- observed[[2]]
     rounded
 }
 

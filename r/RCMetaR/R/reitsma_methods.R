@@ -586,9 +586,11 @@ rcmetar.draw.reitsma.coefficient <- function(plot.data, outpath) {
         parsed <- scalar.number(value)
         if (is.null(parsed)) fallback else parsed
     }
+    logarithmic <- !identical(as.character(style$fp_axis_scale %||% "transformed"), "natural")
+    coordinate <- if (logarithmic) log else identity
     tick.values <- function(value, limits) {
         if (is.null(value) || !length(value) || identical(as.character(value[[1L]]), "[default]")) {
-            return(pretty(limits, n=4))
+            return(if (logarithmic) exp(rcmetar.forest.journal.ratio.ticks(log(limits))) else pretty(limits, n=4))
         }
         parsed <- rcmetar.numeric.values(value)
         parsed <- as.numeric(parsed)
@@ -599,6 +601,7 @@ rcmetar.draw.reitsma.coefficient <- function(plot.data, outpath) {
         y <- rev(seq_along(labels))
         graphics::par(mai=size$margins, las=1)
         xlim <- range(c(plot.data$ci.lb, plot.data$ci.ub, 1), finite=TRUE)
+        if (logarithmic) xlim <- exp(rcmetar.forest.round.ratio.range(log(xlim)))
         xlim <- sort(c(bound(style$fp_plot_lb, xlim[[1L]]), bound(style$fp_plot_ub, xlim[[2L]])))
         if (diff(xlim) <= 0) xlim <- xlim + c(-.5, .5)
         xlab <- style$fp_xlabel
@@ -606,7 +609,7 @@ rcmetar.draw.reitsma.coefficient <- function(plot.data, outpath) {
             xlab <- "Odds ratio"
         }
         show.annotation <- rcmetar.param.is.true(style, "fp_show_annotation", TRUE)
-        plot(plot.data$estimate, y, xlim=xlim, yaxt="n", xaxt="n", ylab="",
+        plot(coordinate(plot.data$estimate), y, xlim=coordinate(xlim), yaxt="n", xaxt="n", ylab="",
              xlab=if (show.annotation) as.character(xlab[[1L]]) else "",
              pch=19, col=color, cex=multiplier)
         axis(2, at=y, labels=labels, las=2)
@@ -617,10 +620,10 @@ rcmetar.draw.reitsma.coefficient <- function(plot.data, outpath) {
             tick.labels <- rcmetar.format.effect.number(x_ticks, digits)
             fixed <- grepl("\\.", tick.labels) & !grepl("e", tick.labels, fixed=TRUE)
             tick.labels[fixed] <- sub("\\.$", "", sub("0+$", "", tick.labels[fixed]))
-            axis(1, at=x_ticks, labels=tick.labels)
+            axis(1, at=coordinate(x_ticks), labels=tick.labels)
         }
-        segments(plot.data$ci.lb, y, plot.data$ci.ub, y, col=color)
-        abline(v=1, lty=2, col="grey50")
+        segments(coordinate(plot.data$ci.lb), y, coordinate(plot.data$ci.ub), y, col=color)
+        abline(v=coordinate(1), lty=2, col="grey50")
         title(main=sprintf("%s moderator coefficients", plot.data$scale))
     }
     dir.create(dirname(outpath), recursive=TRUE, showWarnings=FALSE)
