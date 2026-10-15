@@ -34,7 +34,10 @@
     "Start page light/dark, full/missing recent paths, Create/Import Cancel and recent opening pass. Maximized no-recents cards have conspicuous empty area beneath text; normal-size cards are substantially tighter.",
     "Toolbar hover: cumulative/omission icons remain unlabelled; disabled subgroup/meta-regression tooltips explain prerequisite. Small-study tooltip still says Publication Bias and Small-Study Effects. Follow-up:first lacks a space.",
     "Text report headings are readable and only moderately larger than body, but repeated Summary/Model Results and Weights/Study weights plus margins make hierarchy feel heavy.",
-    "Serial binary/proportion recapture pairs all inspected after resume; obscured early frames superseded."
+    "Serial binary/proportion recapture pairs all inspected after resume; obscured early frames superseded.",
+    "BMJ six-digit binary/MD/SMD/entered/coefficient frames inspected: contextual headers, no weight/estimate collision, round ticks, whole confidence, concise null wording; legacy scene weights persist. MD spacing is close but separate.",
+    "Recursive actual menu/submenu screenshots inspected: File/Recent/Edit/View/Analysis/effect-metric submenus/Dataset/Help; disabled prerequisites retained.",
+    "Binary report bottom inspected: table Study/Weight (%) 12.4,14.3,16.1,17.7,19.1,20.5; scene weights agree."
   ],
   "rejected": [
     "screenshots/matrix-twoarm-proportion-subgroup-figure-bottom.png: covered by another audit window; recapture required"
@@ -298,5 +301,91 @@
     "Structure tabs, duplicate covariate validation, About and readable grid inspected. Follow-up:first spacing persists.",
     "Intentional invalid contour 101 produces actionable details but generic unexpected-error framing; recovery to valid funnel result succeeds.",
     "Initial editor frame rejected: wrapper selected intermediate report text rather than actual export; replacement required."
+  ],
+  "supplement_final": [
+    {
+      "path": "screenshots/helper-audit-round3-presentation-twoarm-mean-84-0-round4-annotations.png",
+      "source": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean/84-0-round4-annotations.png",
+      "sha256": "4dfff38381706d735e2a8b66bcb13f831586d53fbb4368285c323f2d3f2e9fe2",
+      "scenario": "audit-round3-presentation-twoarm-mean",
+      "action": "round4-annotations",
+      "capture": "QWidget.grab in visible xcb helper"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-generic-effect-84-0-round4-annotations.png",
+      "source": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect/84-0-round4-annotations.png",
+      "sha256": "95fb4c71b63efaff81fc10cc3ae8948416ba1352e2a502987302881ca91a5862",
+      "scenario": "audit-round3-presentation-generic-effect",
+      "action": "round4-annotations",
+      "capture": "QWidget.grab in visible xcb helper"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-reg-coef-84-0-round4-annotations.png",
+      "source": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef/84-0-round4-annotations.png",
+      "sha256": "fae2237f0c13ed89b65b1259cb7ea83fcc5af629fb6d4e029fbd21862ff8294a",
+      "scenario": "audit-round3-presentation-reg-coef",
+      "action": "round4-annotations",
+      "capture": "QWidget.grab in visible xcb helper"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-twoarm-proportion-84-0-round4-annotations.png",
+      "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/84-0-round4-annotations.png",
+      "sha256": "2c905f59d0a5303eb5604f6b544e69d40871d544f6e47d8b99c4af2f44119a35",
+      "scenario": "audit-round3-presentation-twoarm-proportion",
+      "action": "round4-annotations",
+      "capture": "QWidget.grab in visible xcb helper"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-twoarm-smd-84-0-round4-annotations.png",
+      "source": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd/84-0-round4-annotations.png",
+      "sha256": "6f9eb447a850bca9bac3cd2638cd5e101bc6f2262cce6960044ffc3f3bc61674",
+      "scenario": "audit-round3-presentation-twoarm-smd",
+      "action": "round4-annotations",
+      "capture": "QWidget.grab in visible xcb helper"
+    },
+    {
+      "path": "screenshots/menu-1.png",
+      "sha256": "58cf14c682c5c1ee21bd2e9e315abb666f1e36d634cb298f4caab7b99b52e712"
+    },
+    {
+      "path": "screenshots/menu-0.png",
+      "sha256": "a389c41853f3be7fabb29afe819eb106d8b4b4ac373633a5be94c36469be6932"
+    },
+    {
+      "path": "screenshots/menu-6.png",
+      "sha256": "7430fcb90599c8b5bfb9bdfdd832f162bd6ceaf38fba8fc6641288aceeaeeb6e"
+    },
+    {
+      "path": "screenshots/menu-7.png",
+      "sha256": "5a7fd9afcd49d1e632e2d746d6700a5a49e06b7d105de90ba273317b06ffc28c"
+    },
+    {
+      "path": "screenshots/menu-8.png",
+      "sha256": "38fe2688f7f1c163aa5a8459f2ef23dc520752e11203a6c9cba55ff05b89f9c6"
+    },
+    {
+      "path": "screenshots/menu-5.png",
+      "sha256": "8e26657ab65fba72f94d74a12098ef3f42a95e4e240faaeccc660c63568286c0"
+    },
+    {
+      "path": "screenshots/menu-2.png",
+      "sha256": "acee6b37b45a5e180ba5a6908d991ce05e85a469f8cd4bb41dfedf0cb2f81df6"
+    },
+    {
+      "path": "screenshots/menu-9.png",
+      "sha256": "f728a4749093d38ebc85c64f3952ae75f0d3b5f0ac54c96ab0740d7fb037235e"
+    },
+    {
+      "path": "screenshots/menu-3.png",
+      "sha256": "e8aaf7423a32ec4b0f39ca5ad070f85b708003b2a97f06a6c38632ff70166951"
+    },
+    {
+      "path": "screenshots/menu-4.png",
+      "sha256": "a87694c9d32aa5fdecf371b9bb9ecdf16fc0deebc934bfc548bf7aea8a66327c"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-proportion-standard-report-bottom.png",
+      "sha256": "4922c4df4f19e6b6614f9370dc31d9dbfc59c0128d61cfca52048a9af180d600"
+    }
   ]
 }

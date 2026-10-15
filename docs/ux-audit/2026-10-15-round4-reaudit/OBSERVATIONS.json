@@ -1,5 +1,234 @@
 [
   {
+    "scenario": "calculator-binary",
+    "evidence": "artifacts/verification/rcms/20261015T013601Z-be90eac1-calculator-binary",
+    "step": {
+      "step": 3,
+      "action": "calculator-effect-preview",
+      "utc": "2026-10-15T01:36:07.817890+00:00",
+      "captures": [
+        "03-0-calculator-effect-preview.png"
+      ],
+      "artifacts": {},
+      "family": "binary",
+      "previews": [
+        "0.6667",
+        "0.2066",
+        "2.1508"
+      ]
+    }
+  },
+  {
+    "scenario": "calculator-continuous",
+    "evidence": "artifacts/verification/rcms/20261015T013618Z-a26b296f-calculator-continuous",
+    "step": {
+      "step": 3,
+      "action": "calculator-effect-preview",
+      "utc": "2026-10-15T01:36:24.762962+00:00",
+      "captures": [
+        "03-0-calculator-effect-preview.png"
+      ],
+      "artifacts": {},
+      "family": "continuous",
+      "previews": [
+        "0.1654",
+        "-0.193",
+        "0.5239"
+      ]
+    }
+  },
+  {
+    "scenario": "calculator-diagnostic",
+    "evidence": "artifacts/verification/rcms/20261015T013632Z-b4b26dac-calculator-diagnostic",
+    "step": {
+      "step": 3,
+      "action": "calculator-effect-preview",
+      "utc": "2026-10-15T01:36:38.950443+00:00",
+      "captures": [
+        "03-0-calculator-effect-preview.png"
+      ],
+      "artifacts": {},
+      "family": "diagnostic",
+      "previews": [
+        "0.6667",
+        "0.4835",
+        "0.8103"
+      ]
+    }
+  },
+  {
+    "scenario": "ux-improvements",
+    "evidence": "artifacts/verification/rcms/20261015T013426Z-938a8ef8-ux-improvements",
+    "step": {
+      "step": 4,
+      "action": "ux-inline-analysis-error",
+      "utc": "2026-10-15T01:34:34.130479+00:00",
+      "captures": [
+        "04-0-ux-inline-analysis-error.png"
+      ],
+      "artifacts": {},
+      "message": "Sorry, this analysis could not be completed:\n\nError in rma.uni(yi = binary.data@y, sei = binary.data@SE, slab = binary.data@study.names,  : \n  Unknown 'method' specified.\n"
+    }
+  },
+  {
+    "scenario": "ux-improvements",
+    "evidence": "artifacts/verification/rcms/20261015T013426Z-938a8ef8-ux-improvements",
+    "step": {
+      "step": 13,
+      "action": "ux-native-result-table",
+      "utc": "2026-10-15T01:34:46.364428+00:00",
+      "captures": [
+        "13-0-ux-native-result-table.png"
+      ],
+      "artifacts": {},
+      "title": "Model Results",
+      "headers": [
+        "Estimate",
+        "Lower bound (95% CI)",
+        "Upper bound (95% CI)",
+        "p-value"
+      ],
+      "rows": [
+        [
+          "0.770",
+          "0.485",
+          "1.222",
+          "0.267"
+        ]
+      ],
+      "csv": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-7xwq32y7/model-results.csv"
+    }
+  },
+  {
+    "scenario": "ux-improvements",
+    "evidence": "artifacts/verification/rcms/20261015T013426Z-938a8ef8-ux-improvements",
+    "step": {
+      "step": 14,
+      "action": "ux-independent-view-zoom",
+      "utc": "2026-10-15T01:34:46.607822+00:00",
+      "captures": [
+        "14-0-ux-independent-view-zoom.png"
+      ],
+      "artifacts": {},
+      "report_zoom": 200,
+      "report_font": 22.0,
+      "figure_zoom": 125
+    }
+  },
+  {
+    "scenario": "ux-improvements",
+    "evidence": "artifacts/verification/rcms/20261015T013426Z-938a8ef8-ux-improvements",
+    "step": {
+      "step": 17,
+      "action": "ux-csv-invalid",
+      "utc": "2026-10-15T01:34:47.715047+00:00",
+      "captures": [
+        "17-0-ux-csv-invalid.png"
+      ],
+      "artifacts": {},
+      "message": "Select a CSV column for required field \"Study Name\"."
+    }
+  },
+  {
+    "scenario": "ux-improvements",
+    "evidence": "artifacts/verification/rcms/20261015T013426Z-938a8ef8-ux-improvements",
+    "step": {
+      "step": 19,
+      "action": "ux-csv-mapped",
+      "utc": "2026-10-15T01:34:48.148563+00:00",
+      "captures": [
+        "19-0-ux-csv-mapped.png"
+      ],
+      "artifacts": {},
+      "headers": [
+        "Study Name",
+        "Year",
+        "Tx A #evts",
+        "Tx A #total",
+        "Tx B #evts",
+        "Tx B #total",
+        "OR",
+        "Lower",
+        "Upper",
+        "Dose"
+      ],
+      "template": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-7xwq32y7/template.csv"
+    }
+  },
+  {
+    "scenario": "ux-improvements",
+    "evidence": "artifacts/verification/rcms/20261015T013426Z-938a8ef8-ux-improvements",
+    "step": {
+      "step": 26,
+      "action": "ux-covariate-error",
+      "utc": "2026-10-15T01:34:54.581420+00:00",
+      "captures": [
+        "26-0-ux-covariate-error.png"
+      ],
+      "artifacts": {},
+      "error": "A covariate named Dose already exists. Please pick another name."
+    }
+  },
+  {
+    "scenario": "review-workflows",
+    "evidence": "artifacts/verification/rcms/20261015T013345Z-b1887a78-review-workflows",
+    "step": {
+      "step": 5,
+      "action": "review-properties-prefilled",
+      "utc": "2026-10-15T01:33:58.665499+00:00",
+      "captures": [
+        "05-0-review-properties-prefilled.png"
+      ],
+      "artifacts": {},
+      "parameters": {
+        "rm.method": "DL",
+        "inference.method": "z",
+        "conf.level": 95.0,
+        "digits": 3,
+        "adjust": 0.5,
+        "to": "only0",
+        "fp_study_order": "table",
+        "fp_style": "revman",
+        "fp_show_col1": true,
+        "fp_col1_str": "Study",
+        "fp_show_col2": true,
+        "fp_col2_str": "[default]",
+        "fp_show_col3": true,
+        "fp_col3_str": "tx A",
+        "fp_show_col4": true,
+        "fp_col4_str": "tx B",
+        "fp_xlabel": null,
+        "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-3b2gdb39/analysis/forest.png",
+        "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-3b2gdb39/analysis/forest-38d1f5a58b23.display.svg",
+        "fp_plot_lb": "[default]",
+        "fp_plot_ub": "[default]",
+        "fp_xticks": "[default]",
+        "fp_show_summary_line": true,
+        "fp_show_raw_counts": true,
+        "fp_show_headers": true,
+        "fp_show_annotation": true,
+        "fp_accent_color": "#000000",
+        "fp_point_size_multiplier": 1.0,
+        "measure": "OR",
+        "metric.label": "Odds Ratio"
+      }
+    }
+  },
+  {
+    "scenario": "review-workflows",
+    "evidence": "artifacts/verification/rcms/20261015T013345Z-b1887a78-review-workflows",
+    "step": {
+      "step": 8,
+      "action": "review-study-order-options",
+      "utc": "2026-10-15T01:34:00.148280+00:00",
+      "captures": [
+        "08-0-review-study-order-options.png",
+        "08-1-review-study-order-options.png"
+      ],
+      "artifacts": {}
+    }
+  },
+  {
     "scenario": "audit-round3-precision",
     "evidence": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision",
     "step": {
@@ -381,6 +610,132 @@
       },
       "plots": {
         "analysis.cumulative.cumulative forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-h2xq6mgk/analysis/forest-5038574c44ec.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "calculator-mode-binary-metrics",
+    "evidence": "artifacts/verification/rcms/20261015T013658Z-e5e4b835-calculator-mode-binary-metrics",
+    "step": {
+      "step": 3,
+      "action": "calculator-mode-preview",
+      "utc": "2026-10-15T01:37:05.924823+00:00",
+      "captures": [
+        "03-0-calculator-mode-preview.png"
+      ],
+      "artifacts": {},
+      "mode": "binary-metrics",
+      "observations": {
+        "OR": {
+          "actual": 0.5714,
+          "expected": 0.5714285714285714
+        },
+        "RR": {
+          "actual": 0.6667,
+          "expected": 0.6666666666666666
+        },
+        "RD": {
+          "actual": -0.0833,
+          "expected": -0.08333333333333331
+        },
+        "accepted_raw": [
+          7,
+          28,
+          9,
+          27
+        ],
+        "metric": "RD"
+      }
+    }
+  },
+  {
+    "scenario": "calculator-mode-continuous-metrics",
+    "evidence": "artifacts/verification/rcms/20261015T013716Z-5ea51732-calculator-mode-continuous-metrics",
+    "step": {
+      "step": 3,
+      "action": "calculator-mode-preview",
+      "utc": "2026-10-15T01:37:22.310158+00:00",
+      "captures": [
+        "03-0-calculator-mode-preview.png"
+      ],
+      "artifacts": {},
+      "mode": "continuous-metrics",
+      "observations": {
+        "MD": {
+          "actual": 2.0,
+          "expected": 2.0
+        },
+        "SMD": {
+          "actual": 0.1418,
+          "expected": 0.14178623778049457
+        },
+        "accepted_raw": [
+          60.0,
+          95.0,
+          22.0,
+          60.0,
+          92.0,
+          20.0
+        ],
+        "metric": "SMD"
+      }
+    }
+  },
+  {
+    "scenario": "calculator-mode-diagnostic-metrics",
+    "evidence": "artifacts/verification/rcms/20261015T013728Z-71bb4a10-calculator-mode-diagnostic-metrics",
+    "step": {
+      "step": 2,
+      "action": "calculator-mode-preview",
+      "utc": "2026-10-15T01:37:34.952523+00:00",
+      "captures": [
+        "02-0-calculator-mode-preview.png"
+      ],
+      "artifacts": {},
+      "mode": "diagnostic-metrics",
+      "observations": {
+        "Sens": {
+          "actual": 0.6552,
+          "expected": 0.6551724137931034
+        },
+        "Spec": {
+          "actual": 0.9878,
+          "expected": 0.9878048780487805
+        },
+        "accepted_raw": [
+          20.0,
+          10.0,
+          1.0,
+          81.0
+        ],
+        "metric": "Spec"
+      }
+    }
+  },
+  {
+    "scenario": "calculator-mode-onearm-proportion",
+    "evidence": "artifacts/verification/rcms/20261015T013744Z-ca067674-calculator-mode-onearm-proportion",
+    "step": {
+      "step": 11,
+      "action": "calculator-mode-preview",
+      "utc": "2026-10-15T01:37:57.025398+00:00",
+      "captures": [
+        "11-0-calculator-mode-preview.png"
+      ],
+      "artifacts": {},
+      "mode": "onearm-proportion",
+      "observations": {
+        "PR": {
+          "actual": 0.2381,
+          "expected": 0.23809523809523808
+        },
+        "accepted_raw": [
+          5,
+          21,
+          null,
+          null
+        ],
+        "metric": "PR"
       }
     }
   },
@@ -1339,6 +1694,966 @@
       ],
       "artifacts": {},
       "family": "twoarm-proportion",
+      "digits": 6,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "evidence": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean",
+    "step": {
+      "step": 14,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:23:24.962004+00:00",
+      "captures": [
+        "14-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "14-0-forest-23fe22894447.display.svg"
+      },
+      "family": "twoarm-mean",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-j3eachw1/analysis/forest-23fe22894447.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "evidence": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean",
+    "step": {
+      "step": 15,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:23:25.186824+00:00",
+      "captures": [
+        "15-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-mean",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "evidence": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean",
+    "step": {
+      "step": 28,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:23:41.132471+00:00",
+      "captures": [
+        "28-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "28-0-forest-23fe22894447.display.svg"
+      },
+      "family": "twoarm-mean",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-j3eachw1/analysis/forest-23fe22894447.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "evidence": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean",
+    "step": {
+      "step": 29,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:23:41.329631+00:00",
+      "captures": [
+        "29-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-mean",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "evidence": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean",
+    "step": {
+      "step": 42,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:23:56.331585+00:00",
+      "captures": [
+        "42-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "42-0-forest-23fe22894447.display.svg"
+      },
+      "family": "twoarm-mean",
+      "digits": 3,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-j3eachw1/analysis/forest-23fe22894447.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "evidence": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean",
+    "step": {
+      "step": 43,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:23:56.560933+00:00",
+      "captures": [
+        "43-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-mean",
+      "digits": 3,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "evidence": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean",
+    "step": {
+      "step": 56,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:24:14.806568+00:00",
+      "captures": [
+        "56-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "56-0-forest-23fe22894447.display.svg"
+      },
+      "family": "twoarm-mean",
+      "digits": 6,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-j3eachw1/analysis/forest-23fe22894447.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "evidence": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean",
+    "step": {
+      "step": 57,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:24:14.993515+00:00",
+      "captures": [
+        "57-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-mean",
+      "digits": 6,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "evidence": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean",
+    "step": {
+      "step": 70,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:24:28.028793+00:00",
+      "captures": [
+        "70-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "70-0-forest-23fe22894447.display.svg"
+      },
+      "family": "twoarm-mean",
+      "digits": 6,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-j3eachw1/analysis/forest-23fe22894447.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "evidence": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean",
+    "step": {
+      "step": 71,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:24:28.256772+00:00",
+      "captures": [
+        "71-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-mean",
+      "digits": 6,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "evidence": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean",
+    "step": {
+      "step": 84,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:24:45.143436+00:00",
+      "captures": [
+        "84-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "84-0-forest-23fe22894447.display.svg"
+      },
+      "family": "twoarm-mean",
+      "digits": 6,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-j3eachw1/analysis/forest-23fe22894447.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "evidence": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean",
+    "step": {
+      "step": 85,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:24:45.331950+00:00",
+      "captures": [
+        "85-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-mean",
+      "digits": 6,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "evidence": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd",
+    "step": {
+      "step": 14,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:25:29.642651+00:00",
+      "captures": [
+        "14-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "14-0-forest-cd0c9c7fde87.display.svg"
+      },
+      "family": "twoarm-smd",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-mg1kwy4g/analysis/forest-cd0c9c7fde87.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "evidence": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd",
+    "step": {
+      "step": 15,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:25:29.836425+00:00",
+      "captures": [
+        "15-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-smd",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "evidence": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd",
+    "step": {
+      "step": 28,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:25:43.086781+00:00",
+      "captures": [
+        "28-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "28-0-forest-cd0c9c7fde87.display.svg"
+      },
+      "family": "twoarm-smd",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-mg1kwy4g/analysis/forest-cd0c9c7fde87.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "evidence": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd",
+    "step": {
+      "step": 29,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:25:43.271289+00:00",
+      "captures": [
+        "29-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-smd",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "evidence": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd",
+    "step": {
+      "step": 42,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:25:59.382244+00:00",
+      "captures": [
+        "42-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "42-0-forest-cd0c9c7fde87.display.svg"
+      },
+      "family": "twoarm-smd",
+      "digits": 3,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-mg1kwy4g/analysis/forest-cd0c9c7fde87.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "evidence": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd",
+    "step": {
+      "step": 43,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:25:59.570966+00:00",
+      "captures": [
+        "43-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-smd",
+      "digits": 3,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "evidence": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd",
+    "step": {
+      "step": 56,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:26:17.236631+00:00",
+      "captures": [
+        "56-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "56-0-forest-cd0c9c7fde87.display.svg"
+      },
+      "family": "twoarm-smd",
+      "digits": 6,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-mg1kwy4g/analysis/forest-cd0c9c7fde87.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "evidence": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd",
+    "step": {
+      "step": 57,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:26:17.437274+00:00",
+      "captures": [
+        "57-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-smd",
+      "digits": 6,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "evidence": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd",
+    "step": {
+      "step": 70,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:26:30.658978+00:00",
+      "captures": [
+        "70-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "70-0-forest-cd0c9c7fde87.display.svg"
+      },
+      "family": "twoarm-smd",
+      "digits": 6,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-mg1kwy4g/analysis/forest-cd0c9c7fde87.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "evidence": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd",
+    "step": {
+      "step": 71,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:26:30.854376+00:00",
+      "captures": [
+        "71-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-smd",
+      "digits": 6,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "evidence": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd",
+    "step": {
+      "step": 84,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:26:44.521824+00:00",
+      "captures": [
+        "84-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "84-0-forest-cd0c9c7fde87.display.svg"
+      },
+      "family": "twoarm-smd",
+      "digits": 6,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-mg1kwy4g/analysis/forest-cd0c9c7fde87.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "evidence": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd",
+    "step": {
+      "step": 85,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:26:44.734217+00:00",
+      "captures": [
+        "85-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "twoarm-smd",
+      "digits": 6,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-reg-coef",
+    "evidence": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef",
+    "step": {
+      "step": 14,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:27:09.919510+00:00",
+      "captures": [
+        "14-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "14-0-forest-5d5fa8cd8586.display.svg"
+      },
+      "family": "reg-coef",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-zv8cl0nt/analysis/forest-5d5fa8cd8586.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-reg-coef",
+    "evidence": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef",
+    "step": {
+      "step": 15,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:27:10.119227+00:00",
+      "captures": [
+        "15-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "reg-coef",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-reg-coef",
+    "evidence": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef",
+    "step": {
+      "step": 28,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:27:23.871912+00:00",
+      "captures": [
+        "28-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "28-0-forest-5d5fa8cd8586.display.svg"
+      },
+      "family": "reg-coef",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-zv8cl0nt/analysis/forest-5d5fa8cd8586.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-reg-coef",
+    "evidence": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef",
+    "step": {
+      "step": 29,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:27:24.062225+00:00",
+      "captures": [
+        "29-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "reg-coef",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-reg-coef",
+    "evidence": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef",
+    "step": {
+      "step": 42,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:27:36.044692+00:00",
+      "captures": [
+        "42-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "42-0-forest-5d5fa8cd8586.display.svg"
+      },
+      "family": "reg-coef",
+      "digits": 3,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-zv8cl0nt/analysis/forest-5d5fa8cd8586.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-reg-coef",
+    "evidence": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef",
+    "step": {
+      "step": 43,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:27:36.279676+00:00",
+      "captures": [
+        "43-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "reg-coef",
+      "digits": 3,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-reg-coef",
+    "evidence": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef",
+    "step": {
+      "step": 56,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:27:52.715181+00:00",
+      "captures": [
+        "56-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "56-0-forest-5d5fa8cd8586.display.svg"
+      },
+      "family": "reg-coef",
+      "digits": 6,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-zv8cl0nt/analysis/forest-5d5fa8cd8586.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-reg-coef",
+    "evidence": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef",
+    "step": {
+      "step": 57,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:27:52.937724+00:00",
+      "captures": [
+        "57-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "reg-coef",
+      "digits": 6,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-reg-coef",
+    "evidence": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef",
+    "step": {
+      "step": 70,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:28:05.910383+00:00",
+      "captures": [
+        "70-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "70-0-forest-5d5fa8cd8586.display.svg"
+      },
+      "family": "reg-coef",
+      "digits": 6,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-zv8cl0nt/analysis/forest-5d5fa8cd8586.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-reg-coef",
+    "evidence": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef",
+    "step": {
+      "step": 71,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:28:06.096128+00:00",
+      "captures": [
+        "71-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "reg-coef",
+      "digits": 6,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-reg-coef",
+    "evidence": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef",
+    "step": {
+      "step": 84,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:28:20.947968+00:00",
+      "captures": [
+        "84-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "84-0-forest-5d5fa8cd8586.display.svg"
+      },
+      "family": "reg-coef",
+      "digits": 6,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-zv8cl0nt/analysis/forest-5d5fa8cd8586.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-reg-coef",
+    "evidence": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef",
+    "step": {
+      "step": 85,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:28:21.133680+00:00",
+      "captures": [
+        "85-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "reg-coef",
+      "digits": 6,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-generic-effect",
+    "evidence": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect",
+    "step": {
+      "step": 14,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:28:44.440773+00:00",
+      "captures": [
+        "14-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "14-0-forest-fad92a5b571a.display.svg"
+      },
+      "family": "generic-effect",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-72m_uy4y/analysis/forest-fad92a5b571a.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-generic-effect",
+    "evidence": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect",
+    "step": {
+      "step": 15,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:28:44.658352+00:00",
+      "captures": [
+        "15-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "generic-effect",
+      "digits": 3,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-generic-effect",
+    "evidence": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect",
+    "step": {
+      "step": 28,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:28:55.815374+00:00",
+      "captures": [
+        "28-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "28-0-forest-fad92a5b571a.display.svg"
+      },
+      "family": "generic-effect",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-72m_uy4y/analysis/forest-fad92a5b571a.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-generic-effect",
+    "evidence": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect",
+    "step": {
+      "step": 29,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:28:56.001119+00:00",
+      "captures": [
+        "29-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "generic-effect",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-generic-effect",
+    "evidence": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect",
+    "step": {
+      "step": 42,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:29:10.159967+00:00",
+      "captures": [
+        "42-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "42-0-forest-fad92a5b571a.display.svg"
+      },
+      "family": "generic-effect",
+      "digits": 3,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-72m_uy4y/analysis/forest-fad92a5b571a.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-generic-effect",
+    "evidence": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect",
+    "step": {
+      "step": 43,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:29:10.345950+00:00",
+      "captures": [
+        "43-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "generic-effect",
+      "digits": 3,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-generic-effect",
+    "evidence": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect",
+    "step": {
+      "step": 56,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:29:23.863743+00:00",
+      "captures": [
+        "56-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "56-0-forest-fad92a5b571a.display.svg"
+      },
+      "family": "generic-effect",
+      "digits": 6,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-72m_uy4y/analysis/forest-fad92a5b571a.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-generic-effect",
+    "evidence": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect",
+    "step": {
+      "step": 57,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:29:24.088260+00:00",
+      "captures": [
+        "57-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "generic-effect",
+      "digits": 6,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-generic-effect",
+    "evidence": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect",
+    "step": {
+      "step": 70,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:29:36.717860+00:00",
+      "captures": [
+        "70-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "70-0-forest-fad92a5b571a.display.svg"
+      },
+      "family": "generic-effect",
+      "digits": 6,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-72m_uy4y/analysis/forest-fad92a5b571a.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-generic-effect",
+    "evidence": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect",
+    "step": {
+      "step": 71,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:29:36.906861+00:00",
+      "captures": [
+        "71-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "generic-effect",
+      "digits": 6,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1"
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-generic-effect",
+    "evidence": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect",
+    "step": {
+      "step": 84,
+      "action": "round4-annotations",
+      "utc": "2026-10-15T01:29:51.854044+00:00",
+      "captures": [
+        "84-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "84-0-forest-fad92a5b571a.display.svg"
+      },
+      "family": "generic-effect",
+      "digits": 6,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "metric": null,
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-72m_uy4y/analysis/forest-fad92a5b571a.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-presentation-generic-effect",
+    "evidence": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect",
+    "step": {
+      "step": 85,
+      "action": "round4-annotations-bottom",
+      "utc": "2026-10-15T01:29:52.080990+00:00",
+      "captures": [
+        "85-0-round4-annotations-bottom.png"
+      ],
+      "artifacts": {},
+      "family": "generic-effect",
       "digits": 6,
       "style": "bmj",
       "title": "analysis.standard.forest_plot.1"
