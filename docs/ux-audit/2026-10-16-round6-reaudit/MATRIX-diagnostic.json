@@ -1,0 +1,50 @@
+[
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-standard-report.png",
+    "sha256": "277d538109670ead542f0cc517a770e25556ba2d2cf958b9942f66e993172879",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-standard-report-bottom.png",
+    "sha256": "0e6cb03b8b93370cef2c692c1d865a890c00d770cd875531e8d222ab6aceb811",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-standard-figure.png",
+    "sha256": "8850c3c7f6aa35071c919f4ece63d8b285d7d79422a083cf2f022d52d53d02d0",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-standard-figure-bottom.png",
+    "sha256": "41412903e9b213e6c29560976000b1b8c3653324cc027211efa861154555e98a",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-standard-figure-1.png",
+    "sha256": "1b9970fe2abf6db530e867a353c603304e0d875e7bf37548f32888cb88eb4835",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-diagnostic/captures/matrix-diagnostic-standard-figure-1-bottom.png",
+    "sha256": "1b9970fe2abf6db530e867a353c603304e0d875e7bf37548f32888cb88eb4835",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first"
+  }
+]

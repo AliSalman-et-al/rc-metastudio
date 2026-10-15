@@ -166,3 +166,7 @@ Viewed `inspect-MATRIX-reg-coef-00..02` (10 primary frames) and `inspect-lower-M
 ### Default matrix: generic entered effects
 
 Viewed `inspect-MATRIX-generic-effect-00..02` (10 primary frames) and `inspect-lower-MATRIX-generic-effect-00..01` (8 distinct lower frames). All five cells pass. Entered-effect identity, linear effect/SE scale and actual null are explicit. Subgroup rows/overall intervals/difference test remain separate; regression notes distinguish model weights from rescaled bubble sizes. No new layout, wording or numerical finding in these 18 frames. Dedicated investigator units remain absent as the inherited scorecard states.
+
+### Default matrix: comparative binary and mean difference
+
+Viewed all primary `inspect-MATRIX-twoarm-{proportion,mean}-00..02` sheets (20 frames) and lower `inspect-lower-MATRIX-twoarm-{proportion,mean}-00..01` sheets (16 frames). Ten cells pass. OR ratios are naturally labelled on logarithmic spacing; Text explicitly states fitted log scales and the clinical equal-odds null. MD is linear with Intervention minus Control stated in outcome units. Raw comparative counts or N/mean/SD align with arm labels. Subgroup totals, group-difference tests, model/PI summaries and footer axes remain clear. Regression labels distinguish fitted coefficient scale from natural ratio output. No new finding across these 36 frames.

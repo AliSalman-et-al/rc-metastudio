@@ -9,7 +9,8 @@ for index in sorted(HERE.glob('SELECTED-*.json')):
  rows=json.loads(index.read_text());name=index.stem.removeprefix('SELECTED-')
  for row in rows:
   target=HERE/'thumbnails'/(Path(row['path']).stem+'.jpg')
-  source=Image.open(HERE/row['path']).convert('RGB');source.thumbnail((800,800));source.save(target,quality=85,optimize=True)
+  if not target.exists() or target.stat().st_mtime_ns < (HERE/row['path']).stat().st_mtime_ns:
+   source=Image.open(HERE/row['path']).convert('RGB');source.thumbnail((800,800));source.save(target,quality=85,optimize=True)
   row['thumbnail']=str(target.relative_to(HERE))
  options.append('<option value="'+html.escape(name)+'">'+html.escape(name)+' ('+str(len(rows))+')</option>')
  sections.append('<section data-group="'+html.escape(name)+'"><h2>'+html.escape(name)+'</h2><div class="grid">'+''.join('<figure><a href="'+html.escape(r['path'])+'"><img loading="lazy" src="'+html.escape(r['thumbnail'])+'"></a><figcaption>'+html.escape(Path(r['path']).name)+'</figcaption></figure>' for r in rows)+'</div></section>')
