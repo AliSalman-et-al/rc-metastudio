@@ -1,0 +1,18 @@
+[
+  {
+    "path": "screenshots/plot-workflow-forest-08-0-family-editor-controls.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201207Z-b258c418-plot-workflow-forest/08-0-family-editor-controls.png",
+    "sha256": "415d0d0f5c55eb137d80f66294abcba39c76d23761cf8eb338b0ae8fa3eca564",
+    "action": "family-editor-controls",
+    "step": 8,
+    "scenario": "plot-workflow-forest"
+  },
+  {
+    "path": "screenshots/plot-workflow-forest-11-0-family-plot-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201207Z-b258c418-plot-workflow-forest/11-0-family-plot-reopened.png",
+    "sha256": "b389543d1804bcac65e637573116ff7b736ca801d008a59426abc1dcc67696e2",
+    "action": "family-plot-reopened",
+    "step": 11,
+    "scenario": "plot-workflow-forest"
+  }
+]

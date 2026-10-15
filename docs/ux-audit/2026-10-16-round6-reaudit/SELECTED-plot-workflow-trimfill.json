@@ -1,0 +1,10 @@
+[
+  {
+    "path": "screenshots/plot-workflow-trimfill-05-0-family-editor-controls.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201748Z-123bff70-plot-workflow-trimfill/05-0-family-editor-controls.png",
+    "sha256": "ece9fba974ed0e04b7f0512c331488599004957d5442b767787889fe84afe606",
+    "action": "family-editor-controls",
+    "step": 5,
+    "scenario": "plot-workflow-trimfill"
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "path": "screenshots/plot-workflow-regression-08-0-family-editor-controls.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201530Z-2ec003a4-plot-workflow-regression/08-0-family-editor-controls.png",
+    "sha256": "5b19de37483bad3cb16b4f1c14734a661c8ca00a4e55a0e7d43b712ed61e80b4",
+    "action": "family-editor-controls",
+    "step": 8,
+    "scenario": "plot-workflow-regression"
+  },
+  {
+    "path": "screenshots/plot-workflow-regression-23-0-family-plot-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201530Z-2ec003a4-plot-workflow-regression/23-0-family-plot-reopened.png",
+    "sha256": "8e4c3356af159b1dbcd9aa6d743ef1f30157861f4f2de7587d8bcd98fbfb8f15",
+    "action": "family-plot-reopened",
+    "step": 23,
+    "scenario": "plot-workflow-regression"
+  }
+]

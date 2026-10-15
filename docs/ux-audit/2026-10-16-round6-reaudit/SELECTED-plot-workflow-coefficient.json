@@ -1,0 +1,18 @@
+[
+  {
+    "path": "screenshots/plot-workflow-coefficient-08-0-family-editor-controls.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201638Z-b4341c3a-plot-workflow-coefficient/08-0-family-editor-controls.png",
+    "sha256": "f44b978f0d6e198c8a6a4fadf7b65f8418c8c1e30b8034ad14e365b774ce2a0b",
+    "action": "family-editor-controls",
+    "step": 8,
+    "scenario": "plot-workflow-coefficient"
+  },
+  {
+    "path": "screenshots/plot-workflow-coefficient-11-0-family-plot-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201638Z-b4341c3a-plot-workflow-coefficient/11-0-family-plot-reopened.png",
+    "sha256": "36b031bc2b584ce9abdf3ad7529e1a0df30d5d06316b58508dec275cd77b98f4",
+    "action": "family-plot-reopened",
+    "step": 11,
+    "scenario": "plot-workflow-coefficient"
+  }
+]

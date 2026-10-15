@@ -1,0 +1,18 @@
+[
+  {
+    "path": "screenshots/plot-workflow-deeks-05-0-family-editor-controls.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201810Z-0928c861-plot-workflow-deeks/05-0-family-editor-controls.png",
+    "sha256": "ceec12317a8f91a9f9cdc49eb36ab11558ec5c4875d5cd2aa4a1cca7dd50ed47",
+    "action": "family-editor-controls",
+    "step": 5,
+    "scenario": "plot-workflow-deeks"
+  },
+  {
+    "path": "screenshots/plot-workflow-deeks-08-0-family-plot-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201810Z-0928c861-plot-workflow-deeks/08-0-family-plot-reopened.png",
+    "sha256": "13f50a58158bbc5d67595a4a386cc0115997e5629da55d74c28c58d6c71f73d0",
+    "action": "family-plot-reopened",
+    "step": 8,
+    "scenario": "plot-workflow-deeks"
+  }
+]

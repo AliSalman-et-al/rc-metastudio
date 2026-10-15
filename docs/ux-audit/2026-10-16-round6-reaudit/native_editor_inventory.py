@@ -57,9 +57,14 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
      d.reject()
     modal(app,QtWidgets.QDialog,editor,view.edit_plot_action.trigger)
     assert all(hashlib.sha256(Path(p).read_bytes()).hexdigest()==digest for p,digest in before.items())
+    view.fit_width_action.trigger();app.processEvents()
+    QTest.mouseClick(view.nav_tree.viewport(),QtCore.Qt.MouseButton.LeftButton,pos=view.nav_tree.visualItemRect(items[0]).center());app.processEvents()
+    capture(view,kind+'-figure-top')
+    bar=view.graphics_view.verticalScrollBar();bar.setValue(min(bar.maximum(),bar.value()+view.graphics_view.viewport().height()//2));capture(view,kind+'-figure-lower')
     if kind=='sroc':
      for style in ('Default','RevMan','BMJ'):
       def style_editor(d):
+       assert d.style_cbo.isVisible() and d.style_cbo.isEnabled()
        d.style_cbo.setCurrentText(style);assert d.style_cbo.currentText()==style
        click(app,d.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply));capture(d,'sroc-'+style+'-applied');d.reject()
       modal(app,QtWidgets.QDialog,style_editor,view.edit_plot_action.trigger)
