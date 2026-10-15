@@ -469,7 +469,9 @@ rcmetar.forest.bmj.device.metrics <- function(bundle) {
         right.margin <- 0.35
         left.width <- max(study.width + study.gap + left.table.width + left.plot.gap, footer.width + 0.85)
         right.width <- right.plot.gap + weight.width + weight.effect.gap + effect.width + right.margin
-        width <- max(10.8, left.width + plot.width + right.width)
+        # The coordinate range includes 16% of the panel on each side. Include
+        # that space and the right graphics margin so measured text stays in inches.
+        width <- max(10.8, left.width + plot.width + right.width + 0.32 * plot.width + 0.16)
         height.extra <- max(0, header.lines - 2) * 0.28 + max(0, direction.lines - 2) * 0.20
         list(
             width=width,

@@ -39,7 +39,7 @@
                 <item row="0" column="1"><widget class="QComboBox" name="sampling_confidence_combo"><item><property name="text"><string>90</string></property></item><item><property name="text"><string>95</string></property></item><item><property name="text"><string>99</string></property></item></widget></item>
                 <item row="1" column="0" colspan="2"><widget class="QCheckBox" name="include_tau2_check"><property name="text"><string>Include τ² in pseudo-confidence region</string></property></widget></item>
                 <item row="2" column="0"><widget class="QLabel" name="contour_levels_label"><property name="text"><string>Contour levels:</string></property></widget></item>
-                <item row="2" column="1"><widget class="QLineEdit" name="contour_levels_edit"><property name="placeholderText"><string>90, 95, 99</string></property></widget></item>
+                <item row="2" column="1"><widget class="QLineEdit" name="contour_levels_edit"><property name="text"><string>90, 95, 99</string></property></widget></item>
                </layout>
               </item>
              </layout>

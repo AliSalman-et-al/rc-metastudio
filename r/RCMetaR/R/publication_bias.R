@@ -1089,17 +1089,22 @@ publication.bias.effects <- function(om.data, params) {
     params
 }
 
+.small.study.standard.error.label <- function(params) {
+    params$measure <- as.character(params$measure %||%
+        .small.study.plot.setting(params, "metric", .small.study.funnel.index(params), "TXMean"))
+    sub("^SE", "Standard error", display.standard.error.label(params))
+}
+
 .small.study.base.plot <- function(kind, index, plot.data, pooled, params, metric,
                                    common.center, prepared, diagnostic.model) {
     title <- if (kind == "ordinary") "Ordinary Funnel Plot" else if (kind == "deeks")
         "Deeks Effective-Sample-Size Funnel Plot" else "Contour Funnel Plot"
-    metric.label <- if (metric %in% c("OR", "RR", "HR", "IRR"))
-        paste0(metric, " (back-transformed scale)") else metric
+    metric.label <- .small.study.metric.label(metric)
     xlab <- .small.study.plot.setting(
         params, "funnel.xlab", index, if (kind == "deeks") "1/sqrt(ESS)" else metric.label)
     ylab <- .small.study.plot.setting(
         params, "funnel.ylab", index,
-        if (kind == "deeks") "Log diagnostic odds ratio" else "Standard error")
+        if (kind == "deeks") "Log diagnostic odds ratio" else .small.study.standard.error.label(params))
     run.params <- params
     run.params$funnel.kind <- kind
     run.params$funnel.index <- index
@@ -1130,12 +1135,11 @@ publication.bias.effects <- function(om.data, params) {
     run.params$funnel.center <- scenario$display.center
     run.params$prepared.effects <- scenario$augmented.effects
     run.params$prepared.standard.errors <- scenario$augmented.standard.errors
-    label <- if (metric %in% c("OR", "RR", "HR", "IRR"))
-        paste0(metric, " (back-transformed scale)") else metric
+    label <- .small.study.metric.label(metric)
     run.params$funnel.xlab <- as.character(
         .small.study.plot.setting(params, "funnel.xlab", 1L, label))
     run.params$funnel.ylab <- as.character(
-        .small.study.plot.setting(params, "funnel.ylab", 1L, "Standard error"))
+        .small.study.plot.setting(params, "funnel.ylab", 1L, .small.study.standard.error.label(params)))
     key <- paste0("small-study.trim-and-fill.", tolower(name))
     path <- tempfile(pattern="small-study-trimfill-", fileext=".png")
     .small.study.plot.artifact(
@@ -1351,11 +1355,9 @@ rcmetar.run.small.study.effects <- function(om.data, params=list()) {
     value <- function(name, default) .small.study.plot.setting(params, name, index, default)
     kind <- as.character(params$funnel.kind %||% "ordinary")
     metric <- as.character(value("metric", ""))
-    default.xlab <- if (metric %in% c("OR", "RR", "HR", "IRR"))
-        paste0(value("metric", "Effect"), " (back-transformed scale)")
-    else value("metric", "Effect")
+    default.xlab <- if (nzchar(metric)) .small.study.metric.label(metric) else "Effect"
     xlab <- if (identical(kind, "deeks")) "1/sqrt(ESS)" else default.xlab
-    ylab <- if (identical(kind, "deeks")) "Log diagnostic odds ratio" else "Standard error"
+    ylab <- if (identical(kind, "deeks")) "Log diagnostic odds ratio" else .small.study.standard.error.label(params)
     limits <- .small.study.funnel.limits(params, index)
     list(
         kind=kind,

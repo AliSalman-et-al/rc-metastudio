@@ -1,23 +1,41 @@
 """Inspect attached menus and real dialog/result surfaces across dataset families."""
 import re
 from pathlib import Path
+from xml.etree import ElementTree as ET
 
 from PyQt6 import QtCore, QtWidgets
 
-FORBIDDEN = re.compile(r'\b(?:TX|Tx|tx)\b|\[default\]|\b(?:rm\.method|inference\.method|conf\.level|fp_\w+|bp_\w+|intrcpt|tsens|tfpr|pval)\b')
+FORBIDDEN = re.compile(r'\b(?:TX|Tx|tx)(?:\s*Mean)?\b|\[default\]|\b(?:rm\.method|inference\.method|conf\.level|fp_\w+|bp_\w+|intrcpt|tsens|tfpr|pval)\b')
 METRICS = {'OR','RR','RD','AS','YUQ','YUY','PR','PLN','PLO','PAS','PFT','MD','SMD','Sens','Spec','DOR','PLR','NLR','HR','IRR','TX Mean'}
+
+
+def check_label(text, surface, user_names=()):
+    text = str(text).replace('&', '').strip()
+    for name in user_names:
+        text = text.replace(name, '')
+    assert not FORBIDDEN.search(text), (surface, text)
+    assert text not in METRICS, ('metric needs a readable name', surface, text)
+    return dict(surface=surface, text=text) if text else None
+
+
+def plot_label_inventory(paths, user_names=()):
+    inventory = []
+    for path in sorted(set(paths)):
+        if Path(path).suffix != '.svg' or not Path(path).is_file():
+            continue
+        for node in ET.parse(path).iter('{http://www.w3.org/2000/svg}text'):
+            item = check_label(''.join(node.itertext()), str(path), user_names)
+            if item is not None:
+                inventory.append(item)
+    return inventory
 
 
 def visible_label_inventory(widget, user_names=()):
     inventory = []
     def check(text, surface):
-        text = str(text).replace('&', '').strip()
-        for name in user_names:
-            text = text.replace(name, '')
-        assert not FORBIDDEN.search(text), (surface, text)
-        assert text not in METRICS, ('metric needs a readable name', surface, text)
-        if text:
-            inventory.append(dict(surface=surface, text=text))
+        item = check_label(text, surface, user_names)
+        if item is not None:
+            inventory.append(item)
     for child in [widget, *widget.findChildren(QtWidgets.QWidget)]:
         if not child.isVisible():
             continue

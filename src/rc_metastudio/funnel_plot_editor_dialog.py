@@ -334,9 +334,13 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             if self.kind == "deeks"
             else self._value("axis.label", "[default]")
         )
-        default_y_label = (
-            "Log diagnostic odds ratio" if self.kind == "deeks" else "Standard error"
-        )
+        measure = self._value("measure", self._value("metric", ""))
+        scale = ("log" if measure in {"OR", "RR", "HR", "IRR", "PLR", "NLR", "DOR", "PLN"} else
+                 "logit" if measure in {"PLO", "Sens", "Spec", "PPV", "NPV", "Acc"} else
+                 "arcsine" if measure == "PAS" else "Freeman-Tukey" if measure == "PFT" else
+                 "standardized" if measure == "SMD" else "outcome")
+        default_y_label = ("Log diagnostic odds ratio" if self.kind == "deeks" else
+                           f"Standard error ({scale} scale)")
         self.x_label_edit.setText(str(self._value("funnel.xlab", default_x_label)))
         self.y_label_edit.setText(str(self._value("funnel.ylab", default_y_label)))
         self.x_lower_edit.setText(str(self._value("funnel.xlim.lower", "[default]")))

@@ -377,6 +377,24 @@
     "checked_artifacts": 14,
     "manifest_sha256": "fe5ebed07d6550b57ff99aae108381ec0599190904ac99d97c99d3602702e561"
   },
+  "artifacts/verification/rcms/20261015T122957Z-0bae0679-plot-workflow-funnel": {
+    "scenario": "plot-workflow-funnel",
+    "exit_code": 1,
+    "passed": false,
+    "native": false,
+    "revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "checked_artifacts": 9,
+    "manifest_sha256": "c7e35da3c243e076815cd6016137b4f608948366846a1a7887274ef88e8283c3"
+  },
+  "artifacts/verification/rcms/20261015T122716Z-9d41f42d-plot-workflow-funnel": {
+    "scenario": "plot-workflow-funnel",
+    "exit_code": 1,
+    "passed": false,
+    "native": false,
+    "revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "checked_artifacts": 7,
+    "manifest_sha256": "ef22f596b2e4f1bd30fa4f517d0e062fe75ae744cd766aaec1e8b9f9bdc71eb9"
+  },
   "artifacts/verification/rcms/20261015T110629Z-9acec180-calculator-grid-precision": {
     "scenario": "calculator-grid-precision",
     "exit_code": 0,
@@ -493,6 +511,42 @@
     "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
     "checked_artifacts": 15,
     "manifest_sha256": "78c57ad5f500f393cd03901f508de04de6ee4611e486c59dc2dd11835e47f11e"
+  },
+  "artifacts/verification/rcms/20261015T121256Z-5211bc48-project-display-labels": {
+    "scenario": "project-display-labels",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "checked_artifacts": 211,
+    "manifest_sha256": "0e38f6cce3f7bcfbf15bc120ff4c927766a5b83d6209cf7f9c9876e23a6785b8"
+  },
+  "artifacts/verification/rcms/20261015T121509Z-be2576db-plot-workflow-regression": {
+    "scenario": "plot-workflow-regression",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "checked_artifacts": 73,
+    "manifest_sha256": "f5d9e3dd45639401ae191d57b5f0fa9351985e3c67e99dfa923fe33f420f6953"
+  },
+  "artifacts/verification/rcms/20261015T121551Z-f81290e9-project-axis-sequential": {
+    "scenario": "project-axis-sequential",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "checked_artifacts": 77,
+    "manifest_sha256": "184dbc6949049e525e319af39978362757c1a8a682e2e3ff5655d1eb44289652"
+  },
+  "artifacts/verification/rcms/20261015T121638Z-438dee76-audit-round3-presentation-transforms": {
+    "scenario": "audit-round3-presentation-transforms",
+    "exit_code": 1,
+    "passed": false,
+    "native": true,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "checked_artifacts": 359,
+    "manifest_sha256": "201a97cf868e324c176f5b49fab63439d3cfed04f70b3f9f3e84508041f6750f"
   },
   "artifacts/verification/rcms/20261015T112502Z-e307d7e9-project-round6-polish": {
     "scenario": "project-round6-polish",

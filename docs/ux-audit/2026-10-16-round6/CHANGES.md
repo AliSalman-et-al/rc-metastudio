@@ -62,3 +62,25 @@ missing sample-size context. Cumulative/omission/subgroup inverses now use each
 actual subset; independent displayed endpoint/diamond comparisons passed. Removed
 unneeded legacy binary figure construction before the current renderer. Analysis
 rerun axis persistence and final full/native qualification are still in progress.
+
+## Final native finishing checkpoint
+
+- The unchanged-default small-study drive caught empty contour text hidden behind
+  a suggestion placeholder. New dialogs now contain editable `90, 95, 99` text;
+  explicitly empty input still fails inline. Default and recovery routes are driven.
+- Funnel axes use the fitted SE scale and existing readable metric identities;
+  ordinary/contour/trim-fill plot editor and decoded-export replays passed.
+- The retained label guard now inspects actual SVG text as well as captured Qt
+  labels, choices, tooltips and report widgets, preserving investigator names.
+- Native four-format PFT export geometry exposed BMJ's compressed measured footer
+  width at the natural zero tick. Device width now includes its coordinate padding
+  and physical margin. The unchanged geometry check is being replayed.
+- The initial full fresh attempt was intentionally interrupted at R CMD check when
+  that native geometry failure arrived. Its exact `! Interrupting test` / `Status:
+  1 ERROR` output is retained. It is not a passing profile; qualification must use
+  the corrected source and a fresh run.
+- The closed-window ownership assertion failed before the one-line lifecycle fix.
+  Both real matrix helpers subsequently passed, including report-view reruns and
+  deferred QObject deletion. Their wrapper session ended with exit 143 without a
+  final recorder receipt; see raw/axis-owned-window-replay.interruption.txt. Final
+  qualification repeats them instead of relabelling that wrapper as passing.

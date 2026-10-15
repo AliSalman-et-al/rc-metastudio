@@ -2471,6 +2471,139 @@ Found 3 diagnostics
 
 ```
 
+## full-final
+
+Command: `uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh`
+
+```text
+["uv", "run", "python", ".agents/skills/verify-rcms/scripts/verify_all.py", "--full", "--fresh"]
+Complete-run evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T121950Z-69157af3-complete
+Running /home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/verify.py r-stack --rscript /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript
+Failed; inspect /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T121950Z-69157af3-complete/00.log
+
+```
+
+## funnel-se-and-label-replay
+
+Command: `bash -c for scenario in plot-workflow-funnel plot-workflow-contour plot-workflow-trimfill project-round6-polish; do uv run python scripts/verify_rcms.py "$scenario" || exit; done`
+
+```text
+["bash", "-c", "for scenario in plot-workflow-funnel plot-workflow-contour plot-workflow-trimfill project-round6-polish; do uv run python scripts/verify_rcms.py \"$scenario\" || exit; done"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T122957Z-0bae0679-plot-workflow-funnel
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+R callback write-console: Error in .small.study.metric.label(metric) : 
+  argument "params" is missing, with no default
+  
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+UNEXPECTED DIALOG: Sorry, an unexpected error occurred. RC MetaStudio is still running, but the action could not be completed.
+
+Details: Error in .small.study.metric.label(metric) : 
+  argument "params" is missing, with no default
+
+
+A diagnostic trace was written to:
+/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-z9g042su/rc-metastudio-error.log
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 785, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1881, in run
+    plots(app, window, scenario.removeprefix("plot-workflow-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 368, in plots
+    view = matrix(app, window, producer, record, keep_results=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 477, in run
+    assert not callback_errors, callback_errors
+           ^^^^^^^^^^^^^^^^^^^
+AssertionError: [AssertionError('Error in .small.study.metric.label(metric) : \n  argument "params" is missing, with no default\n')]
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 785, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1881, in run
+    plots(app, window, scenario.removeprefix("plot-workflow-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 368, in plots
+    view = matrix(app, window, producer, record, keep_results=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 477, in run
+    assert not callback_errors, callback_errors
+           ^^^^^^^^^^^^^^^^^^^
+AssertionError: [AssertionError('Error in .small.study.metric.label(metric) : \n  argument "params" is missing, with no default\n')]
+
+
+```
+
+## funnel-se-axis-baseline
+
+Command: `uv run python scripts/verify_rcms.py plot-workflow-funnel`
+
+```text
+["uv", "run", "python", "scripts/verify_rcms.py", "plot-workflow-funnel"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T122716Z-9d41f42d-plot-workflow-funnel
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 775, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1881, in run
+    plots(app, window, scenario.removeprefix("plot-workflow-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 368, in plots
+    view = matrix(app, window, producer, record, keep_results=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 477, in run
+    assert not callback_errors, callback_errors
+           ^^^^^^^^^^^^^^^^^^^
+AssertionError: [AssertionError('Contour levels must be numbers between 0 and 100, separated by commas (for example, 90, 95, 99).')]
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 775, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1881, in run
+    plots(app, window, scenario.removeprefix("plot-workflow-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 368, in plots
+    view = matrix(app, window, producer, record, keep_results=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 477, in run
+    assert not callback_errors, callback_errors
+           ^^^^^^^^^^^^^^^^^^^
+AssertionError: [AssertionError('Contour levels must be numbers between 0 and 100, separated by commas (for example, 90, 95, 99).')]
+
+
+```
+
 ## golden-axis-capture
 
 Command: `uv run python scripts/verify_golden_compatibility.py --output-root build/qt6-verification/golden-compatibility-round6-axis`
@@ -10675,6 +10808,55 @@ Traceback (most recent call last):
     assert not callback_errors, callback_errors
            ^^^^^^^^^^^^^^^^^^^
 AssertionError: [AssertionError(('metric needs a readable name', 'twoarm_smds_Button', 'SMD'))]
+
+
+```
+
+## native-label-and-legend-frames
+
+Command: `bash -c for scenario in project-display-labels plot-workflow-regression project-axis-sequential audit-round3-presentation-transforms audit-round3-round5; do uv run python scripts/verify_rcms.py "$scenario" --native || exit; done`
+
+```text
+["bash", "-c", "for scenario in project-display-labels plot-workflow-regression project-axis-sequential audit-round3-presentation-transforms audit-round3-round5; do uv run python scripts/verify_rcms.py \"$scenario\" --native || exit; done"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T121256Z-5211bc48-project-display-labels
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T121509Z-be2576db-plot-workflow-regression
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T121551Z-f81290e9-project-axis-sequential
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T121638Z-438dee76-audit-round3-presentation-transforms
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 739, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 529, in run
+    check_annotation_spacing(view)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 129, in check_annotation_spacing
+    assert b[0]-a[1] >= 4 or a[0]-b[1] >= 4, ("model/footer collision", text, "".join(other.itertext()), a, b)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('model/footer collision', 'Test for overall effect (H₀: Freeman–Tukey transformed proportion = 0): Z = 13.525 (P < 0.001)', '0', (46.88, 587.88, 341.31, 354.27), (588.77, 595.97, 347.52000000000004, 360.48))
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 739, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 529, in run
+    check_annotation_spacing(view)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 129, in check_annotation_spacing
+    assert b[0]-a[1] >= 4 or a[0]-b[1] >= 4, ("model/footer collision", text, "".join(other.itertext()), a, b)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('model/footer collision', 'Test for overall effect (H₀: Freeman–Tukey transformed proportion = 0): Z = 13.525 (P < 0.001)', '0', (46.88, 587.88, 341.31, 354.27), (588.77, 595.97, 347.52000000000004, 360.48))
 
 
 ```

@@ -414,6 +414,12 @@ def plots(app, window, family, record, *, view=None):
         initial_svg = Path(sys.argv[2]) / (family + "-initial.svg")
         view.plot_service.export(regenerator=artifact.capability.regenerator, params_path=artifact.params_path, output_path=str(initial_svg))
     check_caption(initial_svg, dataset_identity(window.model))
+    if family in {"funnel", "contour", "trimfill"}:
+        from xml.etree import ElementTree as ET
+        labels = {"".join(node.itertext()) for node in ET.parse(initial_svg).iter("{http://www.w3.org/2000/svg}text")}
+        assert "Standard error (log scale)" in labels, labels
+        assert "Odds Ratio" in labels or "Odds ratio" in labels, labels
+
     section = next(section for section in view.results.sections if section.source_key == artifact.title)
     navigation = view.nav_tree.findItems(section.title, QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)
     assert len(navigation) == 1, (family, section.title)

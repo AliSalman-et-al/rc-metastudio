@@ -150,3 +150,21 @@ with the retained timeout and process-memory observation; do not relax the deadl
 The native before/after numerical matrix excludes only metafor's `time` field
 (elapsed computation time, recorded separately). All numeric statistical fields
 and weights use bit-exact equality; the original 415-field gate is unchanged.
+
+## Final presentation checks caught by native driving
+
+- BMJ's padded x-coordinate range compressed its measured footer width. The new
+  natural zero tick exposed a PFT null-test collision. Keep measured physical
+  column widths by including the range padding and right margin in device width;
+  retain the native SVG text-gap assertion and four-format transformed exports.
+- R5-01 includes funnel SE axes. Existing ordinary/contour/trim-fill defaults must
+  state the fitted scale; Deeks stays in its established diagnostic coordinates.
+  Use readable metric names rather than bare codes. Add default-axis assertions
+  to the existing real plot-editor drives before changing these labels. Extend
+  the retained label sweep to actual SVG text, alongside Qt widgets. These are
+  label-only funnel changes; positions, fitted values and variances stay exact.
+
+The unchanged-default contour drive caught a related validation boundary: the UI
+showed suggested levels only as a placeholder, while the new validator correctly
+rejected its empty value. Populate the established 90, 95, 99 defaults as editable
+text. Explicitly clearing the field must still fail inline. Retain both triggers.
