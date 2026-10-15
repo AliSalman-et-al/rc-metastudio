@@ -63,7 +63,16 @@ def record_step(action, *widgets, **observations):
             widget.activateWindow()
             app.processEvents()
             cast(Callable[[int], None], QTest.qWait)(100)
-            capture = widget.screen().grabWindow(int(widget.winId()))
+            if observations.get("capture_surface") == "desktop-composite":
+                capture = widget.screen().grabWindow(0)
+                ratio = capture.devicePixelRatio()
+                geometry = widget.frameGeometry()
+                origin = widget.screen().geometry().topLeft()
+                capture = capture.copy(round((geometry.x() - origin.x()) * ratio),
+                                       round((geometry.y() - origin.y()) * ratio),
+                                       round(geometry.width() * ratio), round(geometry.height() * ratio))
+            else:
+                capture = widget.screen().grabWindow(int(widget.winId()))
         else:
             capture = widget.grab()
         assert capture.save(str(path), "PNG"), path

@@ -13,6 +13,9 @@ def run(app, window, work, root, record, analyze):
 
     window.start()
     app.processEvents()
+    for card in window.start_page.findChildren(QtWidgets.QGroupBox):
+        for label in card.findChildren(QtWidgets.QLabel):
+            assert label.height() >= label.heightForWidth(label.width()), ("clipped start description", label.text(), label.size(), label.heightForWidth(label.width()), card.hasHeightForWidth())
     record('review1-start-before-check', window)
     assert window.start_page.isVisible() and not window.tableView.isVisible()
     assert not app.activeModalWidget()
@@ -86,6 +89,25 @@ def run(app, window, work, root, record, analyze):
     assert window.current_dimension == 'group'
     window.navigation_dimension.setCurrentIndex(0)
     assert window.current_dimension == 'outcome'
+    def luminance(color):
+        values = [value / 12.92 if value <= .04045 else ((value + .055) / 1.055) ** 2.4
+                  for value in (color.redF(), color.greenF(), color.blueF())]
+        return sum(value * coefficient for value, coefficient in zip(values, (.2126, .7152, .0722)))
+    cell = window.model.index(0, window.model.OUTCOMES[0])
+    assert window.model.data(cell, QtCore.Qt.ItemDataRole.FontRole).italic()
+    assert window.model.data(cell, QtCore.Qt.ItemDataRole.AccessibleTextRole)
+    assert window.model.data(cell, QtCore.Qt.ItemDataRole.AccessibleDescriptionRole)
+    palette = window.tableView.palette()
+    pairs = [(window.model.data(cell, QtCore.Qt.ItemDataRole.ForegroundRole),
+              window.model.data(cell, QtCore.Qt.ItemDataRole.BackgroundRole)),
+             (palette.color(QtGui.QPalette.ColorRole.HighlightedText), palette.color(QtGui.QPalette.ColorRole.Highlight))]
+    cues = []
+    for foreground, background in pairs:
+        light, dark = sorted((luminance(foreground), luminance(background)), reverse=True)
+        ratio = (light + .05) / (dark + .05)
+        assert ratio >= 4.5, (foreground.name(), background.name(), ratio)
+        cues.append(dict(foreground=foreground.name(), background=background.name(), contrast=ratio))
+    record('round5-grid-cues', window, italic_effect_cells=True, colors=cues)
     record('review1-workspace-navigation', window)
     keyboard_traversal(app, window, [window.analysis_button, window.navigation_dimension, window.tableView], record, "workspace")
     window.tableView.setFocus()

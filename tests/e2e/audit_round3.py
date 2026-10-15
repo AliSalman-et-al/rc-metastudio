@@ -463,8 +463,8 @@ def run(app, window, work, record, scenario):
         target.enable_menu_options_that_require_dataset()
 
     family_name = scenario.removeprefix("audit-round3-")
-    if family_name == "round5":
-        return run_round5(app, window, work, record, prepare)
+    if family_name in {"round5", "bubble-metrics"}:
+        return run_round5(app, window, work, record, prepare, only_bubbles=family_name == "bubble-metrics")
     if family_name.startswith("presentation-"):
         from PyQt6 import QtCore
         selected_family = family_name.removeprefix("presentation-")
@@ -844,14 +844,14 @@ def run(app, window, work, record, scenario):
         view.close()
 
 
-def run_round5(app, window, work, record, prepare):
+def run_round5(app, window, work, record, prepare, only_bubbles=False):
     """Retain actual long figures and panel geometry through normal Qt/R routes."""
     from PyQt6 import QtCore
     from analysis_matrix import DATA_TYPES, run as matrix
     from rc_metastudio import r_bridge
     root = Path(__file__).resolve().parents[2]
     measurements = []
-    for style in ("default", "revman", "bmj"):
+    for style in (() if only_bubbles else ("default", "revman", "bmj")):
         window.workspace.mark_saved()
         assert window.open(str(root / "sample_projects/Pignon2000-HR.rcms"), raise_on_error=True)
         prepare(window)
@@ -881,6 +881,9 @@ def run_round5(app, window, work, record, prepare):
             assert destination.is_file()
             measurements.append(dict(style=style, workflow=workflow, **layout))
             view.close()
+    if not only_bubbles:
+        record("round5-readable-type-matrix", window, measurements=measurements)
+        return
     from rc_metastudio import meta_globals
     from rc_metastudio.analysis_dataset import Covariate
     def add_dose(target):
@@ -890,7 +893,14 @@ def run_round5(app, window, work, record, prepare):
         target.model.reset_model()
         target.enable_menu_options_that_require_dataset()
     def check_panel(view, family, metric):
-        for title, path in view.results.display_images.items():
+        paths = list(view.results.display_images.items())
+        exported = {}
+        for title, _path in paths.copy():
+            destination = work / ("bubble-" + family + "-" + str(metric).replace(" ", "-") + ".svg")
+            view.plot_service.export(regenerator="regression", params_path=view.params_paths[title], output_path=str(destination))
+            paths.append((title, str(destination)))
+            exported[title] = str(destination)
+        for title, path in paths:
             svg = ET.parse(path)
             point_group = next(group for group in svg.iter("{http://www.w3.org/2000/svg}g")
                                if group.find("{http://www.w3.org/2000/svg}circle") is not None)
@@ -909,7 +919,7 @@ def run_round5(app, window, work, record, prepare):
                         assert group.attrib.get("clip-path") == point_group.attrib["clip-path"], ("null guide lacks panel clipping", line.attrib)
             assert any("Follow-up:" in "".join(n.itertext()) for n in svg.iter("{http://www.w3.org/2000/svg}text"))
         record("round5-bubble-bounds", view, family=family, metric=metric,
-               explicit_x=[1,4], plots=dict(view.results.display_images))
+               explicit_x=[1,4], plots=dict(view.results.display_images), exports=exported)
     cases = [(family, None) for family in DATA_TYPES if family != "diagnostic"]
     cases += [("onearm-proportion", metric) for metric in meta_globals.BINARY_ONE_ARM_METRICS if metric != "PR"]
     cases += [("twoarm-proportion", metric) for metric in meta_globals.BINARY_TWO_ARM_METRICS if metric != "OR"]
@@ -936,4 +946,4 @@ def run_round5(app, window, work, record, prepare):
         view._show_report(False)
         check_panel(view, family, window.model.current_effect)
         view.close()
-    record("round5-readable-type-matrix", window, measurements=measurements)
+    record("round5-bubble-metric-matrix", window, cases=len(cases)+2)

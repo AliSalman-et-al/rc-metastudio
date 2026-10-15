@@ -475,7 +475,10 @@ def plots(app, window, family, record, *, view=None):
         if family == "forest":
             dialog.content_scroll.ensureWidgetVisible(dialog.favours_right)
             app.processEvents()
-        record("family-editor-controls", dialog, family=family)
+        dialog.content_scroll.ensureWidgetVisible(dialog.figure_caption)
+        dialog.repaint()
+        QTest.qWait(250)
+        record("family-editor-controls", dialog, family=family, capture_surface="desktop-composite")
         click(app, box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
         assert path.read_bytes() != before
         if funnel:
@@ -645,7 +648,7 @@ def plots(app, window, family, record, *, view=None):
         without = Path(sys.argv[2]) / (family + "-without-caption.svg")
         view.plot_service.export(regenerator=artifact.capability.regenerator, params_path=artifact.params_path, output_path=str(without))
         assert "Edited outcome / comparison / follow-up" not in without.read_text()
-        record("round5-caption-removed", dialog, family=family, exports={"svg":str(without)})
+        record("round5-caption-removed", dialog, family=family, exports={"svg":str(without)}, capture_surface="desktop-composite")
         dialog.reject()
     modal(app, FunnelPlotEditorDialog if funnel else EditPlotDialog, remove_caption, lambda: context("Edit plot…"))
     def reopen_without_caption(dialog):
