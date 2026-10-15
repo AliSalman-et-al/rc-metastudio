@@ -17,7 +17,8 @@ no browser console messages before publication.
 | Diagnostic drive: 29 primary frames | `raw/reviewer-diagnostic-page-00.png` through `07.png` | Logit/OR bounds fit the actual two/six-digit coefficient tables for continuous, factor and multiple moderators. Multiple-moderator report overview requires scrolling; curated Tables views show all coefficients and headers. |
 | Complete SVG lower devices: 28 crops | `raw/reviewer-vector-footer-00.png` through `27.png`; pages `reviewer-footer-page-01.png` through `06.png` | First four crops viewed individually; remaining crops viewed on the six pages. Footer text, pooled/subgroup intervals, axes and lower summaries have no observed collisions. |
 
-The vector crops are derived inspection images rendered with QtSvg 6.11.0 from the
+The vector crops are derived inspection images rendered with QtSvg runtime 6.11.1
+(PyQt compiled Qt version 6.11.0) from the
 actual native-drive SVG files, not new native screenshots. Their input/output
 hashes, device sizes and steps are in `REVIEWER-VECTOR-FOOTERS.json`; exact command
 and exit are in the reviewer command ledger. Native long plots legitimately scroll

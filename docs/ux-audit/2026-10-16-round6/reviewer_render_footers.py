@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import re
 
-from PyQt6.QtCore import QT_VERSION_STR
+from PyQt6.QtCore import QT_VERSION_STR, qVersion
 from PyQt6.QtGui import QGuiApplication,QImage,QPainter
 from PyQt6.QtSvg import QSvgRenderer
 
@@ -31,7 +31,7 @@ for label,action in [('reviewer-predictions-visible-page','reviewer-prediction-a
         assert footer.save(str(target))
         rows.append(dict(source=str(source.relative_to(ROOT)),source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
             image=str(target.relative_to(ROOT)),sha256=hashlib.sha256(target.read_bytes()).hexdigest(),
-            qt=QT_VERSION_STR,label=label,step=step['step'],measure=step.get('measure'),workflow=step.get('workflow'),
+            qt_compiled=QT_VERSION_STR,qt_runtime=qVersion(),label=label,step=step['step'],measure=step.get('measure'),workflow=step.get('workflow'),
             style=step.get('style'),scenario=step.get('scenario'),size=[size.width(),size.height()]))
 (HERE/'REVIEWER-VECTOR-FOOTERS.json').write_text(json.dumps(rows,indent=2)+'\n')
 app.quit()
