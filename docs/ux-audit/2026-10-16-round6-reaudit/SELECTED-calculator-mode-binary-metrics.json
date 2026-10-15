@@ -1,0 +1,18 @@
+[
+  {
+    "path": "screenshots/calculator-mode-binary-metrics-02-0-calculator-mode-layout.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201830Z-3dc14a13-calculator-mode-binary-metrics/02-0-calculator-mode-layout.png",
+    "sha256": "e20dc12dbdfb6a4c95717cf82bb45f84c7981c71638c2670e9a964838d45e494",
+    "action": "calculator-mode-layout",
+    "step": 2,
+    "scenario": "calculator-mode-binary-metrics"
+  },
+  {
+    "path": "screenshots/calculator-mode-binary-metrics-05-0-calculator-mode-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201830Z-3dc14a13-calculator-mode-binary-metrics/05-0-calculator-mode-reopened.png",
+    "sha256": "f7d803683ca03a10e9f7dd06946da272a1bb62186d46b165360cf9f18744842c",
+    "action": "calculator-mode-reopened",
+    "step": 5,
+    "scenario": "calculator-mode-binary-metrics"
+  }
+]

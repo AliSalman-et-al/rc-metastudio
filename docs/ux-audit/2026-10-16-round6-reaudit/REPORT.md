@@ -66,7 +66,7 @@ The empty subheader predates round six; removing the meaningless Group spanner
 makes the remaining blank particularly visible. This is a newly identified
 presentation gap, not evidence of changed statistics. It need not block merge.
 
-## R6-02 — Low: About opens as an unnecessarily narrow scrolling panel
+## R6-02 — Low: About and reconstruction prompts open needlessly small
 
 Reproduce: Help → About and Legal at ordinary native scaling on this 1600×860
 Linux desktop. The initial dialog is 278×246 pixels. Its issue URL wraps across
@@ -76,6 +76,21 @@ screen space. [Inspected full-size capture](screenshots/project-reviewer-groups-
 Use a screen-bounded preferred width/height that exposes this short information
 page comfortably, retaining scrolling for smaller screens. The title correctly
 shows 0.5.0, the Close control is visible and no information is inaccessible.
+
+The same initial-sizing problem affects reconstruction decisions. Reproduce in
+the continuous row calculator: clear inputs, select MD, set Intervention N=20,
+mean=10, SD=2; Control N=20, mean blank, SD=2; estimate=2 and 95% CI approximately
+[0.76041, 3.23959], then Reconstruct group data. The relationship-of-SDs prompt
+opens only 190×222 pixels and hides much of its question/options behind a
+scrollbar. [Continuous prompt](screenshots/calculator-mode-back-continuous-02-0-back-calculation-nested-cancel.png).
+The binary alternative-count decision also hides choices in its initial short
+viewport: clear inputs, totals=100 per arm, OR=2.111111111111111 and CI
+[0.6946538052093257, 6.415843557405645], then Reconstruct group data.
+[Binary prompt](screenshots/calculator-mode-back-binary-02-0-back-calculation-nested-cancel.png).
+Cancel remains visible and preserves calculator state. Give these short decision
+prompts enough initial space to show the question and alternatives. This is
+workflow/reading friction, not another numerical or persistence defect.
+
 This is existing polish debt (the round-five shell-about.png has the same
 278×246 dimensions), not a release identity failure or merge blocker.
 

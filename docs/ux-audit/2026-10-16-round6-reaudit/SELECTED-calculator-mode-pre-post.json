@@ -1,0 +1,18 @@
+[
+  {
+    "path": "screenshots/calculator-mode-pre-post-06-0-calculator-mode-layout.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T202121Z-81dd2a44-calculator-mode-pre-post/06-0-calculator-mode-layout.png",
+    "sha256": "99542ff38deaa360a50cac7a90171f84140641f12d666993405209bd96b8d43a",
+    "action": "calculator-mode-layout",
+    "step": 6,
+    "scenario": "calculator-mode-pre-post"
+  },
+  {
+    "path": "screenshots/calculator-mode-pre-post-09-0-calculator-mode-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T202121Z-81dd2a44-calculator-mode-pre-post/09-0-calculator-mode-reopened.png",
+    "sha256": "25d75cb1e53503d4dacdc1a2b174a76b03b90405eede1c8a8513f1de29f7ea48",
+    "action": "calculator-mode-reopened",
+    "step": 9,
+    "scenario": "calculator-mode-pre-post"
+  }
+]

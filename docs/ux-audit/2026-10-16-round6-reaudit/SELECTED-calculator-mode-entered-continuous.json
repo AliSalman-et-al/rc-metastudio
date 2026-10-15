@@ -1,0 +1,26 @@
+[
+  {
+    "path": "screenshots/calculator-mode-entered-continuous-02-0-calculator-invalid-ci-blocked.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T202040Z-0cd3e1e2-calculator-mode-entered-continuous/02-0-calculator-invalid-ci-blocked.png",
+    "sha256": "f1bd80b50909d21bfc315b1f6b69ae0424c28d6079ea0caea72593bd4bcb6e2c",
+    "action": "calculator-invalid-ci-blocked",
+    "step": 2,
+    "scenario": "calculator-mode-entered-continuous"
+  },
+  {
+    "path": "screenshots/calculator-mode-entered-continuous-04-0-calculator-mode-layout.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T202040Z-0cd3e1e2-calculator-mode-entered-continuous/04-0-calculator-mode-layout.png",
+    "sha256": "1d6035dd5b8762cfb94c3e2bb692c9cbcc53acb2fddeb9c0c7ac0191d815b1b6",
+    "action": "calculator-mode-layout",
+    "step": 4,
+    "scenario": "calculator-mode-entered-continuous"
+  },
+  {
+    "path": "screenshots/calculator-mode-entered-continuous-07-0-calculator-mode-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T202040Z-0cd3e1e2-calculator-mode-entered-continuous/07-0-calculator-mode-reopened.png",
+    "sha256": "2a7d7dd1c04f56db740e693b39b07d8e3d311a87de9e631d18fa59acbd8fb2ef",
+    "action": "calculator-mode-reopened",
+    "step": 7,
+    "scenario": "calculator-mode-entered-continuous"
+  }
+]

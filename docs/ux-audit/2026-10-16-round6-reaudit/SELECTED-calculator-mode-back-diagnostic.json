@@ -1,0 +1,10 @@
+[
+  {
+    "path": "screenshots/calculator-mode-back-diagnostic-04-0-calculator-mode-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T202236Z-e083d152-calculator-mode-back-diagnostic/04-0-calculator-mode-reopened.png",
+    "sha256": "a28690a19e638cf35674d11e2eefcf5dc9e336049fc771d7d64c99fe96c2f964",
+    "action": "calculator-mode-reopened",
+    "step": 4,
+    "scenario": "calculator-mode-back-diagnostic"
+  }
+]

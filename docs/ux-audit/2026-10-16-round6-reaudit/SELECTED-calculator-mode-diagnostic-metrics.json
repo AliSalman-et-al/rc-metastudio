@@ -1,0 +1,10 @@
+[
+  {
+    "path": "screenshots/calculator-mode-diagnostic-metrics-04-0-calculator-mode-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201908Z-90fea2e0-calculator-mode-diagnostic-metrics/04-0-calculator-mode-reopened.png",
+    "sha256": "0caa9cf75b7d25fdb662ad305b145d9b1c25776d383cd6cfcf52c38eb0f04711",
+    "action": "calculator-mode-reopened",
+    "step": 4,
+    "scenario": "calculator-mode-diagnostic-metrics"
+  }
+]
