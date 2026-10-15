@@ -16,7 +16,7 @@ Early binary standard evidence: [figure](screenshots/matrix-twoarm-proportion-st
 
 ## 4. New and remaining findings
 
-Pending evidence.
+F11 is fixed on the fresh single-arm proportion bubble: [native figure](screenshots/matrix-onearm-proportion-meta-regression-figure.png) has no exterior zero line between ticks and Dose. Remaining metric/explicit-bound/export proof is pending. No new finding yet confirmed.
 
 ## 5. Microcopy and information design
 

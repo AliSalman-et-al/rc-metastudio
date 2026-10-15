@@ -43,5 +43,60 @@
     "path": "screenshots/matrix-twoarm-proportion-leave-one-out-report.png",
     "sha256": "ab3ba7fc692d5bfb14db6bf4198e8a06aa6265f271520fb75b698dcd3c8d3730",
     "observation": "Visually inspected native frame. Subgroup values 0.746519/0.775087 and overall 0.761368 agree across figure/report; omission rows/intervals agree; regression presentation shows bounded curves/guide, readable log-scale identity and slope 0.038764. No new defect observed."
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-cumulative-report.png",
+    "sha256": "6348ad8d8b8e6d1faa1bfd73b4ebfcf54ca445a47284d45fae2bebe7781a2975",
+    "observation": "Visually inspected native figure/report pair. Proportion standard 0.282110 [0.206772, 0.357447], cumulative final same; omission and subgroup printed row CIs agree. Regression zero guide no longer outside panel (F11); contextual identity and single structured weights retained."
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-standard-figure.png",
+    "sha256": "01b58f9c828a4d1f0a6887639b536511b3731630aa95b8ca200e5158c308d9e4",
+    "observation": "Visually inspected native figure/report pair. Proportion standard 0.282110 [0.206772, 0.357447], cumulative final same; omission and subgroup printed row CIs agree. Regression zero guide no longer outside panel (F11); contextual identity and single structured weights retained."
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-standard-report.png",
+    "sha256": "fd689929d10fecf93aec428e52f909e269dcfd3aab3a7d90e77c8d9fbd948612",
+    "observation": "Visually inspected native figure/report pair. Proportion standard 0.282110 [0.206772, 0.357447], cumulative final same; omission and subgroup printed row CIs agree. Regression zero guide no longer outside panel (F11); contextual identity and single structured weights retained."
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-cumulative-figure.png",
+    "sha256": "7f2e0d5e2d5b63cf75bf843bd95503bee0ff8ab4852e9c197bb40eb4516aa185",
+    "observation": "Visually inspected native figure/report pair. Proportion standard 0.282110 [0.206772, 0.357447], cumulative final same; omission and subgroup printed row CIs agree. Regression zero guide no longer outside panel (F11); contextual identity and single structured weights retained."
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-cumulative-report.png",
+    "sha256": "d921f9db5d4b00c099a571320c7fb088177833f9cba82c96fb9ebd714b72fe36",
+    "observation": "Visually inspected native figure/report pair. Proportion standard 0.282110 [0.206772, 0.357447], cumulative final same; omission and subgroup printed row CIs agree. Regression zero guide no longer outside panel (F11); contextual identity and single structured weights retained."
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-leave-one-out-figure.png",
+    "sha256": "594474bfde4045b9d786ed55c56e161b052c49f8001bab9029e8ad907e9da3a4",
+    "observation": "Visually inspected native figure/report pair. Proportion standard 0.282110 [0.206772, 0.357447], cumulative final same; omission and subgroup printed row CIs agree. Regression zero guide no longer outside panel (F11); contextual identity and single structured weights retained."
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-leave-one-out-report.png",
+    "sha256": "05f83e0d05191df7a37a392f635af71d1f8d47278e34fec219cc3d683c209a1b",
+    "observation": "Visually inspected native figure/report pair. Proportion standard 0.282110 [0.206772, 0.357447], cumulative final same; omission and subgroup printed row CIs agree. Regression zero guide no longer outside panel (F11); contextual identity and single structured weights retained."
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-subgroup-figure.png",
+    "sha256": "6e1b8af602556f56f2038cd41b6d7d701bb069af6724bd0d56c3b63420e18f53",
+    "observation": "Visually inspected native figure/report pair. Proportion standard 0.282110 [0.206772, 0.357447], cumulative final same; omission and subgroup printed row CIs agree. Regression zero guide no longer outside panel (F11); contextual identity and single structured weights retained."
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-subgroup-report.png",
+    "sha256": "6d9dd406afcf455b7f47d5a536588a24be715abf645e70d122885dd2a3a91361",
+    "observation": "Visually inspected native figure/report pair. Proportion standard 0.282110 [0.206772, 0.357447], cumulative final same; omission and subgroup printed row CIs agree. Regression zero guide no longer outside panel (F11); contextual identity and single structured weights retained."
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-meta-regression-figure.png",
+    "sha256": "dd2a656f2fe6d4cf784bfda43b7f73a72c14dbae2c5d81c74cced29703ea358f",
+    "observation": "Visually inspected native figure/report pair. Proportion standard 0.282110 [0.206772, 0.357447], cumulative final same; omission and subgroup printed row CIs agree. Regression zero guide no longer outside panel (F11); contextual identity and single structured weights retained."
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-meta-regression-report.png",
+    "sha256": "672ef5e5f70ffe3d01559aeae0ba9640808777a3ec786d54f2870e80bb9ed180",
+    "observation": "Visually inspected native figure/report pair. Proportion standard 0.282110 [0.206772, 0.357447], cumulative final same; omission and subgroup printed row CIs agree. Regression zero guide no longer outside panel (F11); contextual identity and single structured weights retained."
   }
 ]

@@ -1,0 +1,37 @@
+[
+  {
+    "sheet": "raw/pair-onearm-proportion-0.png",
+    "members": [
+      "screenshots/matrix-onearm-proportion-standard-figure.png",
+      "screenshots/matrix-onearm-proportion-standard-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-onearm-proportion-1.png",
+    "members": [
+      "screenshots/matrix-onearm-proportion-cumulative-figure.png",
+      "screenshots/matrix-onearm-proportion-cumulative-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-onearm-proportion-2.png",
+    "members": [
+      "screenshots/matrix-onearm-proportion-leave-one-out-figure.png",
+      "screenshots/matrix-onearm-proportion-leave-one-out-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-onearm-proportion-3.png",
+    "members": [
+      "screenshots/matrix-onearm-proportion-subgroup-figure.png",
+      "screenshots/matrix-onearm-proportion-subgroup-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-onearm-proportion-4.png",
+    "members": [
+      "screenshots/matrix-onearm-proportion-meta-regression-figure.png",
+      "screenshots/matrix-onearm-proportion-meta-regression-report.png"
+    ]
+  }
+]
