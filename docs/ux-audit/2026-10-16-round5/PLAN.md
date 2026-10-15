@@ -49,3 +49,5 @@ Arm/Tx sweep decisions before implementation:
 - Setup/figures: include HR/IRR when seeding actual arm headings; retain editable plot headings. Existing Automatic placeholders continue to encode the internal [default] sentinel.
 - Remove the unused legacy R raw-array/CSV writer functions that hard-code tx names (no production callers or exports); their old documentation aliases go with them. Keep numerical/internal g1/g2 and TX Mean identifiers.
 - Quick start explains outcome/arm naming and editable stored names. Fixture study names and explicitly stored legacy project names remain user/test data, not new defaults.
+
+Final native actual-name IRR inspection rejected wrapped group labels touching the Events / Person-time headings in default/RevMan. The original rule-crossing assertion only proved BMJ rules. Before correcting rendering, extend the real IRR drive to require separation of every overlapping-x header text box, including wrapped arm lines; demonstrate failure, then measure shared raw/group vertical placement and repeat three styles plus final gates.

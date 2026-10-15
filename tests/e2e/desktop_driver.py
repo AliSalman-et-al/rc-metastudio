@@ -62,7 +62,7 @@ def record_step(action, *widgets, **observations):
             widget.raise_()
             widget.activateWindow()
             app.processEvents()
-            cast(Callable[[int], None], QTest.qWait)(100)
+            cast(Callable[[int], None], QTest.qWait)(400)
             if observations.get("capture_surface") == "desktop-composite":
                 capture = widget.screen().grabWindow(0)
                 ratio = capture.devicePixelRatio()
@@ -82,7 +82,7 @@ def record_step(action, *widgets, **observations):
             original_nav_item = widget.nav_tree.currentItem()
             widget.report_action.setChecked(True)
             app.processEvents()
-            cast(Callable[[int], None], QTest.qWait)(100)
+            cast(Callable[[int], None], QTest.qWait)(400)
             report_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-report.png"
             assert widget.screen().grabWindow(int(widget.winId())).save(str(report_path), "PNG")
             captures.append(report_path.name)
@@ -90,7 +90,7 @@ def record_step(action, *widgets, **observations):
             if widget.tables_action.isEnabled():
                 widget.tables_action.trigger()
                 app.processEvents()
-                cast(Callable[[int], None], QTest.qWait)(100)
+                cast(Callable[[int], None], QTest.qWait)(400)
                 table_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-table.png"
                 assert widget.screen().grabWindow(int(widget.winId())).save(str(table_path), "PNG")
                 captures.append(table_path.name)
@@ -98,7 +98,7 @@ def record_step(action, *widgets, **observations):
                     if table.title == "Test of subgroup differences":
                         widget.table_selector.setCurrentIndex(table_index)
                         app.processEvents()
-                        cast(Callable[[int], None], QTest.qWait)(100)
+                        cast(Callable[[int], None], QTest.qWait)(400)
                         subgroup_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-subgroup-test.png"
                         assert widget.screen().grabWindow(int(widget.winId())).save(str(subgroup_path), "PNG")
                         captures.append(subgroup_path.name)
@@ -113,7 +113,7 @@ def record_step(action, *widgets, **observations):
             position = scroll.value()
             widget._scroll_to_section(widget.nav_tree.currentItem())
             app.processEvents()
-            cast(Callable[[int], None], QTest.qWait)(100)
+            cast(Callable[[int], None], QTest.qWait)(400)
             figure_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-figure.png"
             assert widget.screen().grabWindow(int(widget.winId())).save(str(figure_path), "PNG")
             captures.append(figure_path.name)
@@ -122,7 +122,7 @@ def record_step(action, *widgets, **observations):
                 bottom = selected_plot[1].sceneBoundingRect().bottom() * widget.graphics_view.transform().m22()
                 scroll.setValue(round(bottom - widget.graphics_view.viewport().height() + 30))
             app.processEvents()
-            cast(Callable[[int], None], QTest.qWait)(100)
+            cast(Callable[[int], None], QTest.qWait)(400)
             bottom_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-bottom.png"
             assert widget.screen().grabWindow(int(widget.winId())).save(str(bottom_path), "PNG")
             captures.append(bottom_path.name)

@@ -246,7 +246,6 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
     rows <- plan$rows$study_rows
     alim <- plan$x$alim
     layout <- plan$layout
-    group.headers <- plan$headers$group
     manual.sequential.labels <- plan$rows$manual_sequential_labels
     plot.margin <- if (manual.sequential.labels) c(3.6, 1.0, 1.0, 1.0) else c(4.8, 1.0, 1.4, 1.0)
     directions <- rcmetar.revman.direction.labels(bundle)
@@ -260,7 +259,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
     forest.args <- list(
         slab = if (manual.sequential.labels) rep("", length(bundle$slab)) else bundle$slab,
         ilab = if (ncol(bundle$ilab$matrix) > 0) bundle$ilab$matrix else NULL,
-        ilab.lab = if (ncol(bundle$ilab$matrix) > 0 && rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE)) bundle$ilab$headers else NULL,
+        ilab.lab = NULL,
         ilab.xpos = if (ncol(bundle$ilab$matrix) > 0) layout$ilab.xpos else NULL,
         textpos = c(rcmetar.forest.study.x(layout), rcmetar.forest.annotation.x(layout)),
         xlim = plan$x$xlim,
@@ -334,16 +333,10 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
         rcmetar.draw.default.subgroups(bundle, rcmetar.forest.study.x(layout), size$cex, layout)
     }
 
-    header.offset <- plan$headers$offset
-    text.y <- if (!is.null(plot.info$ylim)) plot.info$ylim[2] - header.offset else top - header.offset
-    if (length(bundle$ilab$groups) > 0 && rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE)) {
-        graphics::text(
-            layout$group.xpos,
-            text.y,
-            group.headers,
-            font=2,
-            cex=size$cex
-        )
+    if (length(bundle$ilab$headers) > 0 && plan$headers$show && !manual.sequential.labels) {
+        header.par <- graphics::par(cex=size$cex, font=2)
+        rcmetar.draw.forest.column.headers(bundle, layout, plot.info$ylim[2] - 1.55)
+        graphics::par(header.par)
     }
     rcmetar.draw.default.heterogeneity(bundle, rcmetar.forest.study.x(layout), cex=size$cex)
     rcmetar.draw.forest.direction(bundle, alim, size$cex)

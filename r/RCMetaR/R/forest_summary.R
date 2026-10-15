@@ -138,3 +138,19 @@ rcmetar.draw.forest.header <- function(x, y, label, adj=0.5) {
     positions <- y + ((length(lines) - 1) / 2 - seq_along(lines) + 1) * leading
     graphics::text(x, positions, lines, adj=adj)
 }
+
+rcmetar.draw.forest.column.headers <- function(bundle, layout, y) {
+    headers <- bundle$ilab$headers
+    leading <- graphics::strheight("Mg", units="user") * 1.65
+    lines <- function(label) length(strsplit(label, "\n", fixed=TRUE)[[1]])
+    raw.height <- if (length(headers)) max(vapply(headers, lines, integer(1))) else 1
+    for (index in seq_along(headers)) {
+        rcmetar.draw.forest.header(layout$ilab.xpos[[index]], y, headers[[index]])
+    }
+    for (index in seq_along(layout$group.xpos)) {
+        label <- rcmetar.revman.wrap.header(names(layout$group.xpos)[[index]])
+        # Reserve both multiline blocks before placing the arm above its columns.
+        group.y <- y + (raw.height + lines(label)) / 2 * leading + leading * 0.4
+        rcmetar.draw.forest.header(layout$group.xpos[[index]], group.y, label)
+    }
+}

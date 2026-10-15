@@ -341,8 +341,6 @@ rcmetar.forest.default.layout.preflight <- function(bundle, style="default", siz
     }
     layout <- rcmetar.forest.default.layout.coordinates(bundle, size, alim)
     rows <- rcmetar.forest.default.rows(bundle)
-    group.headers <- rcmetar.metafor.group.headers(bundle)
-    header.offset <- if (rows$max_group_header_lines > 1) 0.35 else 0.2
     rcmetar.forest.layout.plan(
         style=style,
         template=if (rows$manual_sequential_labels) "compact" else if (identical(style, "revman")) "compact" else "default",
@@ -362,11 +360,9 @@ rcmetar.forest.default.layout.preflight <- function(bundle, style="default", siz
             annotation.xpos=rcmetar.forest.annotation.x(layout)
         ),
         headers=list(
-            group=group.headers,
             show=rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE),
             study=rcmetar.metafor.study.header(bundle),
-            effect=rcmetar.metafor.effect.header(bundle),
-            offset=header.offset
+            effect=rcmetar.metafor.effect.header(bundle)
         ),
         warnings=rcmetar.forest.layout.cap.warnings(size),
         metrics=size,

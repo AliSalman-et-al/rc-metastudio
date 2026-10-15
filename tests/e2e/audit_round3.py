@@ -986,6 +986,22 @@ def run_irr_context(app, window, record):
         unit = window.model.get_current_analysis_unit_for_study(0).ratio_input(window.model.current_groups).unit
         assert any(unit in label for label in labels), (unit, labels)
         svg = ET.parse(path)
+        nodes = list(svg.iter("{http://www.w3.org/2000/svg}text"))
+        first_study = min(float(node.attrib["y"]) for node in nodes if "Bong" in "".join(node.itertext()))
+        headers = [node for node in nodes if float(node.attrib["y"]) < first_study - 5]
+        def header_box(node):
+            x, y = float(node.attrib["x"]), float(node.attrib["y"])
+            width = float(node.attrib["textLength"].removesuffix("px"))
+            height = float(re.search(r"font-size:\s*([\d.]+)px", node.attrib["style"])[1]) * .8
+            anchor = node.attrib.get("text-anchor", "start")
+            left = x - (width if anchor == "end" else width/2 if anchor == "middle" else 0)
+            return left, left+width, y-height, y
+        for index, node in enumerate(headers):
+            a = header_box(node)
+            for other in headers[index+1:]:
+                b = header_box(other)
+                if min(a[1],b[1])-max(a[0],b[0]) > 1:
+                    assert a[2]-b[3] >= 1 or b[2]-a[3] >= 1, ("IRR header collision", style, "".join(node.itertext()), "".join(other.itertext()), a, b)
         for node in svg.iter("{http://www.w3.org/2000/svg}text"):
             if "Person-time" not in "".join(node.itertext()):
                 continue

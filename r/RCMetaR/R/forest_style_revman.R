@@ -423,10 +423,7 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
     graphics::par(cex=plot.info$cex, font=2)
     if (show.headers) {
         graphics::text(rcmetar.forest.study.x(layout), k + 2, rcmetar.revman.study.header(bundle), pos=4)
-        graphics::text(layout$ilab.xpos, k + 2, ilab$headers)
-    }
-    if (show.headers && length(layout$group.xpos) > 0) {
-        graphics::text(layout$group.xpos, k + 3, vapply(names(layout$group.xpos), rcmetar.revman.wrap.header, character(1)))
+        rcmetar.draw.forest.column.headers(bundle, layout, k + 1.8)
     }
     if (show.headers) {
         header <- paste(metric, paste0(method, ","), paste0(bundle$params$conf.level, "% CI"), sep="\n")

@@ -1,0 +1,86 @@
+[
+  {
+    "title": "F11 \u00b7 Panel-clipped bubble guides",
+    "description": "PLO regression: historical automatic range versus explicit-bound proof. Fixtures differ. All 16 supported metrics have panel checks for display and production SVG.",
+    "before": "screenshots/before-matrix-onearm-proportion-meta-regression-figure.png",
+    "after": "screenshots/native-bubble-exports-82-0-round5-bubble-bounds.png"
+  },
+  {
+    "title": "F12 \u00b7 One structured representation of weights",
+    "description": "Six-study binary input; the legacy graphics-scene paragraph is retired. Report, Tables, copy/export retain structured weight rows.",
+    "before": "screenshots/before-matrix-twoarm-proportion-standard-figure.png",
+    "after": "screenshots/native-final-arm-normal-10-0-matrix-results-figure.png"
+  },
+  {
+    "title": "Long forests \u00b7 Readable study rows",
+    "description": "Same 65-study Pignon HR input. Height grows and scrolls; typography keeps the short-figure scale.",
+    "before": "screenshots/before-matrix-hr-standard-figure.png",
+    "after": "screenshots/native-diamond-after-05-0-round5-long-figure.png"
+  },
+  {
+    "title": "Subgroup figures \u00b7 Consistent typography",
+    "description": "Same HR studies; after uses test-owned A/B grouping. All three styles are checked.",
+    "before": "screenshots/before-matrix-hr-subgroup-figure.png",
+    "after": "screenshots/native-diamond-after-30-0-round5-long-figure.png"
+  },
+  {
+    "title": "IRR \u00b7 Standalone context and original exposure",
+    "description": "Same Niel-Weise sample with actual stored arm names and catheter-days. Caption is editable/removable; model values unchanged.",
+    "before": "screenshots/before-matrix-irr-standard-figure.png",
+    "after": "screenshots/native-irr-header-after-04-0-round5-irr-context.png"
+  },
+  {
+    "title": "Editor \u00b7 Editable figure caption",
+    "description": "Funnel controls before/after. Historical direct-window before has paint-through; after uses desktop-root capture. No opacity fix is claimed.",
+    "before": "screenshots/before-funnel-editor.png",
+    "after": "screenshots/native-root-funnel-04-0-family-editor-controls.png"
+  },
+  {
+    "title": "Precision \u00b7 Suppress arithmetic residue",
+    "description": "Same MD regression fixture. Row-relative presentation preserves fitted coefficient and interval.",
+    "before": "screenshots/before-matrix-twoarm-mean-meta-regression-report.png",
+    "after": "screenshots/native-bubble-exports-52-0-matrix-results-report.png"
+  },
+  {
+    "title": "Coefficient ticks \u00b7 Concise numeric labels",
+    "description": "Diagnostic regression workflows; fixture/control state differs. Shared tick formatter trims padding; effects/intervals keep selected precision.",
+    "before": "screenshots/before-matrix-diagnostic-meta-regression-figure-1.png",
+    "after": "screenshots/native-qualified-final-plot-workflow-coefficient-10-0-family-plot-reopened.png"
+  },
+  {
+    "title": "Reports \u00b7 Calmer hierarchy",
+    "description": "Existing amino project before/after. Result sentence uses body weight and headings are proportionate.",
+    "before": "screenshots/before-design-07-review1-report-top.png",
+    "after": "screenshots/native-final-shell-recovered-19-0-review1-report-top.png"
+  },
+  {
+    "title": "IRR subgroup \u00b7 Structured model values",
+    "description": "Same workflow; test-owned grouping differs. Existing QM, degrees of freedom and p-value use table rows rather than a package printout.",
+    "before": "screenshots/before-matrix-irr-subgroup-report.png",
+    "after": "screenshots/native-qualified-final-audit-round3-irr-15-0-round3-report-copy-export.png"
+  },
+  {
+    "title": "Workspace \u00b7 Labelled analyses and non-colour cues",
+    "description": "Stored amino arm names remain verbatim. Compact Analyses group, Follow-up spacing, italic derived cells and selected-cell contrast.",
+    "before": "screenshots/before-design-06-review1-workspace-navigation.png",
+    "after": "screenshots/native-final-shell-recovered-10-0-round5-grid-cues.png"
+  },
+  {
+    "title": "Start \u00b7 Cards fit their content",
+    "description": "Ordinary desktop width; spare height falls below the cards.",
+    "before": "screenshots/before-design-00-review1-start-before-check.png",
+    "after": "screenshots/native-final-shell-recovered-02-0-review1-start-before-check.png"
+  },
+  {
+    "title": "Recent projects \u00b7 Recover or remove missing paths",
+    "description": "Paths/settings are test-owned. Locate validates before modifying storage; Cancel preserves it.",
+    "before": "screenshots/before-design-01-review1-start-recents.png",
+    "after": "screenshots/native-final-shell-recovered-03-0-round5-recent-missing.png"
+  },
+  {
+    "title": "Qt scale 2 \u00b7 Read wrapped descriptions",
+    "description": "Rejected development frame versus corrected 200% Qt page. Proves Linux Qt scaling, not Windows/macOS OS scaling.",
+    "before": "screenshots/native-scale-2-02-0-review1-start-before-check.png",
+    "after": "screenshots/native-qualified-final-scale-2-02-0-review1-start-before-check.png"
+  }
+]

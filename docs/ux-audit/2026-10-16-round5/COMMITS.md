@@ -20,4 +20,6 @@ bfc0dac fix(plots): apply BMJ text scale once and omit absent caption metrics
 f342079 test(ux): correct caption contract indentation and retain diagnostic proof
 4abaabd polish(setup): finish sentence-case analysis and plot labels
 3625b3a polish(forests): draw pooled summaries once at readable row scale
+93ee4b9 feat(dataset): name arms in the wizard and replace opaque Tx labels
+6c5b3bc Finish arm naming proof across custom groups and scaled workflows
 ```
