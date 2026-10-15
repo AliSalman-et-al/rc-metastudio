@@ -346,7 +346,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
     rcmetar.draw.forest.direction(bundle, alim, size$cex)
 
     invisible(bundle$changed.params)
-    }, display.path=display.path)
+    }, display.path=display.path, caption=bundle$params$plot_caption)
 }
 
 rcmetar.draw.default.metafor.forest <- function(bundle, outpath) {

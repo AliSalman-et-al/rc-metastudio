@@ -424,5 +424,5 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
         }
         rcmetar.bubble.draw.legend(bundle, args)
         invisible(result)
-    }, display.path=display.path)
+    }, display.path=display.path, caption=bundle$params$plot_caption)
 }

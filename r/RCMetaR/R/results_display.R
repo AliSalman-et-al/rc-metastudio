@@ -189,7 +189,7 @@ rcmetar.regression.display.value <- function(value, digits, percent=FALSE) {
   if (percent) {
     return(sprintf(paste0("%.", digits, "f%%"), as.numeric(value)))
   }
-  sprintf(paste0("%.", digits, "f"), as.numeric(value))
+  rcmetar.format.effect.number(as.numeric(value), digits)
 }
 
 rcmetar.regression.summary.array <- function(rows, headers=c("Statistic", "Value")) {
@@ -275,10 +275,11 @@ create.regression.display <- function(res, params, display.data) {
 
   reg.array <- array(dim=c(length(cov.display.col) + 1, length(col.labels)), dimnames=list(NULL, col.labels))
   reg.array[1,] <- col.labels
-  display.values <- function(values, digits) {
+  display.values <- function(values, digits, scale=abs(values)) {
     vapply(seq_along(res$b), function(index) {
       value <- if (length(values) >= index) values[index] else NULL
-      rcmetar.regression.display.value(value, digits)
+      if (display.value.is.missing(value)) "Not estimable" else
+        rcmetar.format.effect.number(value, digits, scale=scale[index])
     }, character(1))
   }
   display.p.values <- function(values) {
@@ -291,9 +292,10 @@ create.regression.display <- function(res, params, display.data) {
       }
     }, character(1))
   }
-  coeffs <- display.values(res$b, result.digits)
-  lbs <- display.values(res$ci.lb, result.digits)
-  ubs <- display.values(res$ci.ub, result.digits)
+  coefficient.scale <- pmax(abs(res$b), abs(res$ci.lb), abs(res$ci.ub))
+  coeffs <- display.values(res$b, result.digits, coefficient.scale)
+  lbs <- display.values(res$ci.lb, result.digits, coefficient.scale)
+  ubs <- display.values(res$ci.ub, result.digits, coefficient.scale)
   coeffs.tmp <- coeffs[1:n.cont.rows]
   lbs.tmp <- lbs[1:n.cont.rows]
   ubs.tmp <- ubs[1:n.cont.rows]
@@ -301,7 +303,7 @@ create.regression.display <- function(res, params, display.data) {
   if (bootstrap.type != "boot.meta.reg") {
     se <- display.values(res$se, se.digits)
     pvals <- display.p.values(res$pval)
-    statistics <- display.values(res$zval, se.digits)
+    statistics <- display.values(res$zval, se.digits, pmax(abs(res$zval), coefficient.scale / res$se))
     dfs <- rep(if (!is.null(res$ddf)) res$ddf else res$k - res$p, length(res$b))
     se.tmp <- se[1:n.cont.rows]
     pvals.tmp <- pvals[1:n.cont.rows]

@@ -425,6 +425,8 @@ def plots(app, window, family, record, *, view=None):
                 dialog.point_size_spin if funnel else dialog.point_size_multiplier
             ).value()
         }
+        if not funnel:
+            values["caption"] = dialog.figure_caption.text()
         if family == "contour":
             values["contour_levels"] = dialog.contour_levels_edit.text()
         elif family == "deeks":
@@ -452,6 +454,8 @@ def plots(app, window, family, record, *, view=None):
             if family == "deeks":
                 dialog.regression_visible_check.setChecked(False)
         else:
+            assert dialog.figure_caption.text(), "standalone figure lacks context"
+            dialog.figure_caption.setText("Edited outcome / comparison / follow-up")
             dialog.point_size_multiplier.setValue(1.8)
             if family == "regression":
                 dialog.show_confidence_band.setChecked(False)
@@ -491,6 +495,9 @@ def plots(app, window, family, record, *, view=None):
             if family == "regression"
             else "fp_point_size_multiplier": 1.8,
         }
+        if not funnel:
+            expected_params["plot_caption"] = "Edited outcome / comparison / follow-up"
+            assert "Edited outcome / comparison / follow-up" in path.read_text()
         if family == "contour":
             expected_params["funnel.contour.levels"] = "85,95,99"
         elif family == "deeks":
@@ -596,6 +603,8 @@ def plots(app, window, family, record, *, view=None):
         assert selected_controls(dialog) == accepted["controls"]
         assert (dialog.x_label_edit if funnel else dialog.x_lbl_le).text() == label
         (dialog.x_label_edit if funnel else dialog.x_lbl_le).setText("Second draft")
+        if not funnel:
+            dialog.figure_caption.clear()
         QTest.mouseClick(
             (dialog.button_box if funnel else dialog.buttonBox).button(
                 QtWidgets.QDialogButtonBox.StandardButton.Cancel

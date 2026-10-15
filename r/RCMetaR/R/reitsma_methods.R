@@ -529,7 +529,7 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
         }
     }
     dir.create(dirname(outpath), recursive=TRUE, showWarnings=FALSE)
-    rcmetar.render.plot_file(outpath, size, draw, display.path=plot.data$display.path)
+    rcmetar.render.plot_file(outpath, size, draw, display.path=plot.data$display.path, caption=plot.data$params$plot_caption)
     invisible(outpath)
 }
 
@@ -612,7 +612,10 @@ rcmetar.draw.reitsma.coefficient <- function(plot.data, outpath) {
         if (length(x_ticks)) {
             digits <- suppressWarnings(as.integer(style$digits %||% 3L))
             if (length(digits) != 1L || is.na(digits) || digits < 0L || digits > 15L) digits <- 3L
-            axis(1, at=x_ticks, labels=vapply(x_ticks, rcmetar.reitsma.display.number, character(1), digits=digits))
+            tick.labels <- rcmetar.format.effect.number(x_ticks, digits)
+            fixed <- grepl("\\.", tick.labels) & !grepl("e", tick.labels, fixed=TRUE)
+            tick.labels[fixed] <- sub("\\.$", "", sub("0+$", "", tick.labels[fixed]))
+            axis(1, at=x_ticks, labels=tick.labels)
         }
         segments(plot.data$ci.lb, y, plot.data$ci.ub, y, col=color)
         abline(v=1, lty=2, col="grey50")
@@ -625,7 +628,7 @@ rcmetar.draw.reitsma.coefficient <- function(plot.data, outpath) {
         list(width=max(8, label.width + 4.6), height=max(4.5, 1.8 + length(lines) * 0.42),
              dpi=300, bg="white", margins=c(0.9, label.width + 0.25, 0.7, 0.3))
     })
-    rcmetar.render.plot_file(outpath, size, draw)
+    rcmetar.render.plot_file(outpath, size, draw, caption=plot.data$params$plot_caption)
     invisible(outpath)
 }
 

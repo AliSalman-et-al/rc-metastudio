@@ -747,7 +747,7 @@ rcmetar.draw.bmj.forest <- function(bundle, outpath) {
     rcmetar.draw.bmj.bottom.blocks(bundle, rcmetar.forest.study.x(layout), plot.info$cex, layout, summary$res)
 
     invisible(bundle$changed.params)
-    }, display.path=display.path)
+    }, display.path=display.path, caption=bundle$params$plot_caption)
 }
 
 rcmetar.bmj.summary.effect <- function(bundle) {

@@ -94,6 +94,16 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             caption.setBuddy(field)
             self.default_layout.addWidget(caption, row, 0)
             self.default_layout.addWidget(field, row, 1)
+        self.figure_caption = QLineEdit(self)
+        self.figure_caption.setText(str(self._scalar(self._params.get("plot_caption", "")) or "").replace("\n", " | "))
+        self.figure_caption.setAccessibleName("Figure caption")
+        self.figure_caption.setToolTip("Outcome, comparison and follow-up for standalone figures. Edit or clear to remove.")
+        self.figure_caption.setMaxLength(1000)
+        caption_label = QLabel("Figure caption:", self)
+        caption_label.setBuddy(self.figure_caption)
+        caption_row = self.default_layout.rowCount()
+        self.default_layout.addWidget(caption_label, caption_row, 0)
+        self.default_layout.addWidget(self.figure_caption, caption_row, 1)
         self._sroc_group = None
         if self.plot_type == "sroc":
             self._build_sroc_controls()
@@ -600,4 +610,5 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             params["reitsma.moderator.coding"] = self._params.get(
                 "reitsma.moderator.coding", {}
             )
+        params["plot_caption"] = self.figure_caption.text().strip()
         return params

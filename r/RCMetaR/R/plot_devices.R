@@ -232,7 +232,20 @@ rcmetar.export.svg_render <- function(svg.path, outpath, size) {
     invisible(ext)
 }
 
-rcmetar.render.plot_file <- function(outpath, size, draw, display.path=NULL) {
+rcmetar.render.plot_file <- function(outpath, size, draw, display.path=NULL, caption=NULL) {
+    if (length(caption) && !is.na(caption[[1]]) && nzchar(caption[[1]])) {
+        lines <- strwrap(as.character(caption[[1]]), width=max(40, floor(size$width * 11)))
+        caption.height <- 0.22 * length(lines) + 0.18
+        size$height <- size$height + caption.height
+        draw.plot <- draw
+        draw <- function() {
+            graphics::par(omi=c(0, 0, caption.height, 0))
+            result <- draw.plot()
+            graphics::mtext(paste(lines, collapse="\n"), side=3, outer=TRUE,
+                            line=0.4, adj=0, cex=0.85, family="sans")
+            result
+        }
+    }
     ext <- rcmetar.plot.file.extension(outpath)
     display.path <- rcmetar.plot.scalar_path(display.path)
     if (identical(ext, "svg") || identical(ext, "svgz")) {

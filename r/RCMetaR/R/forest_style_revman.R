@@ -132,8 +132,25 @@ rcmetar.revman.arm.labels <- function(params) {
 rcmetar.revman.ilab.for.data <- function(om.data, params, res=NULL) {
     if (is(om.data, "RatioData")) {
         n <- length(om.data@study.names)
-        return(rcmetar.revman.ilab(list(list(key="weight", group="", header="Weight",
-            values=rcmetar.revman.format.weight(rcmetar.metafor.weights(res), n))), n))
+        columns <- list()
+        if (om.data@metric == "IRR" && rcmetar.param.is.true(params, "fp_show_raw_counts", TRUE) &&
+                any(is.finite(om.data@t1) & is.finite(om.data@t2))) {
+            arms <- rcmetar.revman.arm.labels(params)
+            units <- unique(as.character(om.data@unit))
+            time.header <- if (length(units) == 1) paste0("Person-time\n(", units, ")") else "Person-time (unit)"
+            for (arm in 1:2) {
+                events <- slot(om.data, paste0("x", arm))
+                exposure <- slot(om.data, paste0("t", arm))
+                times <- rcmetar.format.metafor.raw(exposure)
+                if (length(units) > 1) times[is.finite(exposure)] <- paste(times[is.finite(exposure)], om.data@unit[is.finite(exposure)])
+                columns <- c(columns, list(
+                    list(key=paste0("events", arm), group=arms[[arm]], header="Events", values=rcmetar.format.metafor.raw(events)),
+                    list(key=paste0("person_time", arm), group=arms[[arm]], header=time.header, values=times)))
+            }
+        }
+        columns <- c(columns, list(list(key="weight", group="", header="Weight",
+            values=rcmetar.revman.format.weight(rcmetar.metafor.weights(res), n))))
+        return(rcmetar.revman.ilab(columns, n))
     }
     if ("BinaryData" %in% class(om.data)) {
         return(rcmetar.revman.binary.ilab(om.data, params, res))
@@ -429,7 +446,7 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
     rcmetar.draw.revman.bottom.blocks(bundle, rcmetar.forest.study.x(layout), plot.info$cex, layout)
 
     invisible(bundle$changed.params)
-    }, display.path=display.path)
+    }, display.path=display.path, caption=bundle$params$plot_caption)
 }
 
 rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
@@ -502,7 +519,7 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
     graphics::axis(1, at=ticks, labels=rcmetar.revman.axis.labels(bundle, ticks), cex.axis=plan$typography$cex.axis)
     rcmetar.draw.metafor.sequential.text(bundle, rows, layout, k, plan$typography$cex)
     invisible(bundle$changed.params)
-    }, display.path=display.path)
+    }, display.path=display.path, caption=bundle$params$plot_caption)
 }
 
 rcmetar.revman.method.label <- function(bundle) {

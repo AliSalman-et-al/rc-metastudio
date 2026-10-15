@@ -1572,6 +1572,7 @@ def _display_svg_path(output_path):
 
 
 def add_plot_params(specs_form):
+    specs_form.current_param_vals.setdefault("plot_caption", analysis_identity.dataset_identity(specs_form.model))
     if getattr(specs_form, "analysis_type", None) == "meta-regression":
         bubble_outpath = _text_value(specs_form.image_path)
         specs_form.current_param_vals.update(
@@ -1729,6 +1730,7 @@ def _diagnostic_analysis_requests(specs_form):
             continue
 
         param_vals = copy.deepcopy(param_vals)
+        param_vals["plot_caption"] = specs_form.current_param_vals.get("plot_caption", "")
 
         # update the forest plot path
         split_fp_path = specs_form.current_param_vals["fp_outpath"].split(".")

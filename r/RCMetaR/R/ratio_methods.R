@@ -190,7 +190,10 @@ ratio.subgroup <- function(data, request, suppressed) {
         moderation <- metafor::rma.uni(data@y, sei=data@SE, mods=~factor(cov@cov.vals),
             method=if (endsWith(method, ".random")) params$rm.method else "FE",
             test=rcmetar.inference.method(params), level=params$conf.level)
-        result[["Test of subgroup differences"]] <- capture.output.and.collapse(moderation)
+        test <- list(QM=moderation$QM, QMp=moderation$QMp,
+                     df=moderation$QMdf[[1]], df2=moderation$QMdf[[2]], test=moderation$test)
+        disp <- rcmetar.add.subgroup.test(disp, list(subgroups=list(difference_test=test)), params)
+        result[["Subgroup Summary"]] <- disp
     } else if (endsWith(method, ".mh")) result[["Subgroup differences"]] <- "Mantel-Haenszel supplies within-subgroup summaries; no moderator test."
     title <- "Subgroup Forest Plot"
     plot.name <- "subgroup_forest_plot"
