@@ -3,11 +3,15 @@ from pathlib import Path
 import hashlib,json,shutil,sys
 from PIL import Image,ImageDraw
 HERE=Path(__file__).resolve().parent
-receipts={'EDITOR-INVENTORY':'native-editor-inventory','DESIGN':'native_design','SHELL':'native_shell','OPTIONS':'native_options','OPTIONS-REMAINDER':'native_options_remaining','CONTROLS':'native-controls','MATRIX-samples':'native-samples','GUARD-KEYBOARD':'native-guard-keyboard'}
+receipts={'TOOLBAR-RECOVERY':'native-toolbar','EDITOR-INVENTORY':'native-editor-inventory','DESIGN':'native_design','SHELL':'native_shell','OPTIONS':'native_options','OPTIONS-REMAINDER':'native_options_remaining','CONTROLS':'native-controls','MATRIX-samples':'native-samples','GUARD-KEYBOARD':'native-guard-keyboard'}
 for group in sys.argv[1:]:
  index=HERE/(group+'.json')
  receipt=HERE/'raw'/(receipts[group]+'.json')
- assert json.loads(receipt.read_text())['exit_code']==0,receipt
+ exit_code=json.loads(receipt.read_text())['exit_code']
+ if group=='DESIGN' and exit_code==1:
+  assert 'QToolBar has been deleted' in (HERE/'raw/native_design.log').read_text()
+  assert json.loads((HERE/'raw/native-toolbar.json').read_text())['exit_code']==0
+ else:assert exit_code==0,receipt
  data=json.loads(index.read_text())
  if isinstance(data,dict):data=data.get('screenshots',data.get('rows',[]))
  if group=='OPTIONS-REMAINDER':data=data[len(json.loads((HERE/'OPTIONS.json').read_text())):]

@@ -1,0 +1,265 @@
+[
+  {
+    "path": "screenshots/shell-empty.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "06f9458b71ebb8490d018249da154981d433ecfa813edf96acb8b03a105b96f4",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-empty.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-startup-normal.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "06f9458b71ebb8490d018249da154981d433ecfa813edf96acb8b03a105b96f4",
+    "observation": "{\"initial\": {\"maximized\": true, \"full_screen\": false}, \"settled\": {\"maximized\": true, \"full_screen\": false, \"size\": [1600, 828]}}",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-startup-normal.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-startup-full-screen.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "06f9458b71ebb8490d018249da154981d433ecfa813edf96acb8b03a105b96f4",
+    "observation": "{\"initial\": {\"maximized\": true, \"full_screen\": false}, \"settled\": {\"maximized\": true, \"full_screen\": false, \"size\": [1600, 828]}}",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-startup-full-screen.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-launcher.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "06f9458b71ebb8490d018249da154981d433ecfa813edf96acb8b03a105b96f4",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-launcher.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-types.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "77be4e174b249f94c11a1038a5121a5a3b43a614e0363b11417af43923d20b68",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-types.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-generic-metric.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "5e0a94cc9c09d5e28c02944b3d7c0f17ca8d348b34714068bd50a9451b59a194",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-generic-metric.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-empty-outcome.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "dc4a92fc760013a083ee32dbe4456343bc61f2297aa10b0cc13c4c0ab7286c5f",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-empty-outcome.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-grid.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "d9bb3540fe7e95a1164db68d6125092bf01c8c15049e44791cf491ee607f38bc",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-grid.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-dirty-open-prompt.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "6449f1ec08e553a55e12f06b835d1f005f26e03db71e6d758e97eea67d13ada5",
+    "observation": "You've made unsaved changes to your data. Do you want to save your changes?",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-dirty-open-prompt.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-save-recent-reopened.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "90f0e63826c336a0a63bac04860afa14364aba6de020e89c3ab7cfb6058fe202",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-save-recent-reopened.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/menu-0.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "a389c41853f3be7fabb29afe819eb106d8b4b4ac373633a5be94c36469be6932",
+    "observation": "File",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/menu-0.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/menu-1.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "58cf14c682c5c1ee21bd2e9e315abb666f1e36d634cb298f4caab7b99b52e712",
+    "observation": "File / Open Recent",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/menu-1.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/menu-2.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "acee6b37b45a5e180ba5a6908d991ce05e85a469f8cd4bb41dfedf0cb2f81df6",
+    "observation": "Edit",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/menu-2.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/menu-3.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "e8aaf7423a32ec4b0f39ca5ad070f85b708003b2a97f06a6c38632ff70166951",
+    "observation": "View",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/menu-3.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/menu-4.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "a87694c9d32aa5fdecf371b9bb9ecdf16fc0deebc934bfc548bf7aea8a66327c",
+    "observation": "Analysis",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/menu-4.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/menu-5.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "8e26657ab65fba72f94d74a12098ef3f42a95e4e240faaeccc660c63568286c0",
+    "observation": "Analysis / Effect-size tools",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/menu-5.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/menu-6.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "4df07f0a69323d629e2a08a1a131f3c1f5bef50f1e5d0cb28878fe54345a6e57",
+    "observation": "Analysis / Effect-size tools / Two-arm metrics",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/menu-6.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/menu-7.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "f144e50137fc54bca3f4c691ceb7178d2538963555634d756a0323bc73baac22",
+    "observation": "Analysis / Effect-size tools / One-arm metrics",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/menu-7.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/menu-8.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "38fe2688f7f1c163aa5a8459f2ef23dc520752e11203a6c9cba55ff05b89f9c6",
+    "observation": "Dataset",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/menu-8.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/menu-9.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "f728a4749093d38ebc85c64f3952ae75f0d3b5f0ac54c96ab0740d7fb037235e",
+    "observation": "Help",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/menu-9.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-structure.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "daab0c2820108666bd9d191348228050309fc293970260c7243ef0102e1441b3",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-structure.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-studies.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "68928df18626cab1a4d0d5064bf7c671c15efe8a77ad2040ad150752c3db3912",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-studies.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-covariates.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "c159b490262f81e628519fc9788158687d6e7e64b3e2735c641132aaea7e324d",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-covariates.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-add-covariate.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "947053bb3ca7dd7498c50d7c859d4a739f02fe13b00f662f178295fab8df2f4c",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-add-covariate.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-duplicate-covariate.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "b40309a0152342af48abfbef559a01ec36a0b246b2094727f366fa5b025a745b",
+    "observation": "A covariate named Dose already exists. Please pick another name.",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-duplicate-covariate.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-confidence.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "bdb88b9df2b81468683198de9b29cb2c499f8d8720735f279af856cc5b890e8e",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-confidence.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-about.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "9cb9611cde2db2b94dcf6a4f767fc741eb7b851f0a430de51d0f596e67c9f168",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-about.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-quick-start.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "f663c69bf7723a61061d6d1203374502e030bc1210c8ef823673fc4be92de9c1",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-quick-start.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-import-types.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "2fc79cba6a426f719649390c6aef78eae068bd650fa986ac364b42c6ebdc2077",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-import-types.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-csv-entry.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "1e8e119799994b18c8a9b25ab9ecb633043dedb2c21a7bf1326be4360c5a8c34",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-csv-entry.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-template-native-picker.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "30082173ab96fd4a1610b0024812d6c12440e92f9ce7640e407ddf8c57152340",
+    "observation": "Native Gtk chooser; Qt proxy has no visible button widgets",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-template-native-picker.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-template-saved.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "25f3d992d65016f0ba8f63105a423374858ad1336fd1c5fd735c06dc41a01840",
+    "observation": "",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-template-saved.png",
+    "scenario": "SHELL"
+  },
+  {
+    "path": "screenshots/shell-exported-report-editor.png",
+    "capture": "QScreen.grabWindow external xedit",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/shell/captures/shell-exported-report-editor.png",
+    "sha256": "ee419df8b357a8d68b1412005335d7536c9b1abd234cc0f8a868cd6f2d3f7289",
+    "scenario": "SHELL"
+  }
+]
