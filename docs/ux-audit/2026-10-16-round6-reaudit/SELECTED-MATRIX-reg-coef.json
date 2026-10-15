@@ -1,0 +1,102 @@
+[
+  {
+    "path": "screenshots/matrix-reg-coef-standard-report.png",
+    "sha256": "1fa808359244a98e73bc472c6d54dfd7b2fd22d938690bf48375e3ab6925ba64",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-reg-coef/captures/matrix-reg-coef-standard-report.png",
+    "scenario": "MATRIX-reg-coef"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-standard-figure.png",
+    "sha256": "5420a97ccec33bd8cad8a4d23e154bcea146cdae22984c2d3d67de3b9970c4fc",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-reg-coef/captures/matrix-reg-coef-standard-figure.png",
+    "scenario": "MATRIX-reg-coef"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-cumulative-report.png",
+    "sha256": "657e6ed02c1bbdb6f94af663dc16ccccf5226e6330c54f0277ea4c93d4cad087",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-reg-coef/captures/matrix-reg-coef-cumulative-report.png",
+    "scenario": "MATRIX-reg-coef"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-cumulative-figure.png",
+    "sha256": "fe815b93497afc044ef09af905b86623acb71d9eef6b0a37eb25fcecaa7d1170",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-reg-coef/captures/matrix-reg-coef-cumulative-figure.png",
+    "scenario": "MATRIX-reg-coef"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-leave-one-out-report.png",
+    "sha256": "adab2ca2292a3b1cd3fe9420b540fb432500355db2db4e89b09e2b047ab38842",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-reg-coef/captures/matrix-reg-coef-leave-one-out-report.png",
+    "scenario": "MATRIX-reg-coef"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-leave-one-out-figure.png",
+    "sha256": "6cba84b0e540a55ab2169a4491d1d6178b85f7bdc4b6c6d9d03e8b3bd8880c68",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-reg-coef/captures/matrix-reg-coef-leave-one-out-figure.png",
+    "scenario": "MATRIX-reg-coef"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-subgroup-report.png",
+    "sha256": "3558b8b389a04644cbcd2a33158f5f9c0f69633fde43a2598517f322d54afc25",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-reg-coef/captures/matrix-reg-coef-subgroup-report.png",
+    "scenario": "MATRIX-reg-coef"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-subgroup-figure.png",
+    "sha256": "9b0160cd75f9a4162312b2df4a59dd5b8240d9d69f5ecf3194a23a487ac419f7",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-reg-coef/captures/matrix-reg-coef-subgroup-figure.png",
+    "scenario": "MATRIX-reg-coef"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-meta-regression-report.png",
+    "sha256": "f75bba6e8655eee4408a81cf2b56066e7aea2fb29ccde4ac0a81f08adccd286e",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-reg-coef/captures/matrix-reg-coef-meta-regression-report.png",
+    "scenario": "MATRIX-reg-coef"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-meta-regression-figure.png",
+    "sha256": "6f28e2087065f0e986292c884584b15f7f1c36a44f4d57a24f942cdbd08a6252",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-reg-coef/captures/matrix-reg-coef-meta-regression-figure.png",
+    "scenario": "MATRIX-reg-coef"
+  }
+]

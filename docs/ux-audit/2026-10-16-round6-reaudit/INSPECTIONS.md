@@ -158,3 +158,11 @@ Continuous forms still spend much of their height around one/two table rows, and
 ### Default matrix: single-arm proportion and mean
 
 Viewed primary sheets `inspect-MATRIX-onearm-proportion-00..02` and `inspect-MATRIX-onearm-mean-00..02` (20 frames), plus distinct lower sheets `inspect-lower-MATRIX-onearm-proportion-00..01` (7 frames) and `inspect-lower-MATRIX-onearm-mean-00..01` (8 frames). All ten workflow cells pass. Standard/cumulative/omission/subgroup/regression Text and figures use readable metric headings, explicit SE outcome scales, PI interpretation, subgroup-difference tests and model configuration. Lower report views retain weights/references and the warning that bubble sizes are rescaled for legibility. Subgroup overall rows/tests/PI and axes clear the footer. Mean plots use entered-effect-style columns even for the raw group-summary fixture, so no unobserved raw-data spanner is claimed. Context/caption identifies the investigator outcome and mean. No new finding in these 35 frames.
+
+### Default matrix: regression coefficients
+
+Viewed `inspect-MATRIX-reg-coef-00..02` (10 primary frames) and `inspect-lower-MATRIX-reg-coef-00..01` (8 distinct lower frames). Five workflow cells pass. Linear coefficient axes and the true zero lower bound remain intact; structured subgroup tests/PI match visible figure summaries. Dose/reference identity and extrapolated-intercept wording are explicit. The lower regression report retains model/weights/reference context. No new finding across these 18 frames.
+
+### Default matrix: generic entered effects
+
+Viewed `inspect-MATRIX-generic-effect-00..02` (10 primary frames) and `inspect-lower-MATRIX-generic-effect-00..01` (8 distinct lower frames). All five cells pass. Entered-effect identity, linear effect/SE scale and actual null are explicit. Subgroup rows/overall intervals/difference test remain separate; regression notes distinguish model weights from rescaled bubble sizes. No new layout, wording or numerical finding in these 18 frames. Dedicated investigator units remain absent as the inherited scorecard states.
