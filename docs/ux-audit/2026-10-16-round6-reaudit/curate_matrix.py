@@ -12,6 +12,7 @@ for index in sorted(HERE.glob('MATRIX-*.json')):
  for r in json.loads(index.read_text()):
   src=HERE/r['path'];name=src.name
   if '-bottom' in name:continue
+  if index.stem.endswith(('-revman','-bmj')) and '-report' in name:continue
   dst=HERE/'screenshots'/name;shutil.copy2(src,dst)
   rows.append({**r,'path':str(dst.relative_to(HERE)),'source':str(src),'scenario':index.stem,'sha256':hashlib.sha256(src.read_bytes()).hexdigest()})
  if not rows:continue

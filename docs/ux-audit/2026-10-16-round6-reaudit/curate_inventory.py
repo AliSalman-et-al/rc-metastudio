@@ -10,6 +10,7 @@ for group in sys.argv[1:]:
  assert json.loads(receipt.read_text())['exit_code']==0,receipt
  data=json.loads(index.read_text())
  if isinstance(data,dict):data=data.get('screenshots',data.get('rows',[]))
+ if group=='OPTIONS-REMAINDER':data=data[len(json.loads((HERE/'OPTIONS.json').read_text())):]
  rows=[]
  for r in data:
   if 'path' not in r:continue
