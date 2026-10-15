@@ -137,6 +137,17 @@ def run(app, window, work, root, record, analyze):
             assert all(action in menu.actions() for action in (window.action_go, window.action_cum_ma, window.action_loo_ma,
                        window.action_subgroup_ma, window.action_meta_regression, window.action_publication_bias))
             assert all(action.toolTip() for action in menu.actions() if not action.isSeparator())
+            assert menu.toolTipsVisible(), "Analysis menu prerequisite tooltips are hidden"
+            if app.platformName() == "xcb":
+                prerequisite = window.action_subgroup_ma
+                assert not prerequisite.isEnabled()
+                QTest.mouseRelease(menu, QtCore.Qt.MouseButton.LeftButton, pos=menu.actionGeometry(prerequisite).center())
+                QTest.mouseMove(menu, menu.actionGeometry(window.action_go).center())
+                QTest.mouseMove(menu, menu.actionGeometry(prerequisite).center())
+                QTest.qWait(1200)
+                assert QtWidgets.QToolTip.isVisible() and QtWidgets.QToolTip.text() == prerequisite.toolTip(), QtWidgets.QToolTip.text()
+                record('round5-analysis-prerequisite-tooltip', window, tooltip=QtWidgets.QToolTip.text(), capture_surface="desktop-composite")
+                QtWidgets.QToolTip.hideText()
             record('round5-analysis-menu', menu, actions=[dict(text=action.text(), enabled=action.isEnabled(), tooltip=action.toolTip()) for action in menu.actions()])
             QTest.mouseClick(menu, QtCore.Qt.MouseButton.LeftButton, pos=menu.actionGeometry(window.action_go).center())
         except Exception as error:

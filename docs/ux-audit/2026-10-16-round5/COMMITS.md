@@ -24,4 +24,7 @@ f342079 test(ux): correct caption contract indentation and retain diagnostic pro
 6c5b3bc Finish arm naming proof across custom groups and scaled workflows
 74b17d9 Measure wrapped arm and exposure headings as separate forest blocks
 2450544 Keep bubble predictions within selected drawing ranges
+8f92e77 Curate native before-and-after proof and retain failure transcripts
+a90ddd0 Preserve blank grouped headers in BMJ fallback figures
+fe0dd07 Qualify blank-header rendering through the native subgroup workflow
 ```

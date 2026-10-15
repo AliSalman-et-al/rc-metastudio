@@ -223,6 +223,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.setupUi(self)
         qt_layout.configure_analysis_menu(self.menuAnalysis)
+        self.menuAnalysis.setToolTipsVisible(True)
         for action, icon_name in (
             (self.action_go, "meta-analysis"),
             (self.action_cum_ma, "cumulative-analysis"),

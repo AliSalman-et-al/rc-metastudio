@@ -31,3 +31,5 @@ Final inspected captures:
 The earlier reopened coefficient frame proves concise ticks but has a partially scrolled title. SVG geometry confirms the title is inside the paper; do not call that frame whole-figure visual acceptance. The new top-of-view native capture will replace it in the contact sheet.
 
 - native-coefficient-top step 10: whole editable caption and title clear at top; the lower axis intentionally falls below the scrolling viewport. The previous scrolled tick frame plus this top frame document both areas. The standalone SVG includes both within the paper, and four export formats decode. Contact sheet explicitly declares the tick-frame scroll position.
+
+- native-empty-header-qualified step 45: BMJ binary subgroup, actual Intervention/Control names, event/total cells, separate weights, readable summaries/inference. Intentional lower-page scrolling; upper/header and subgroup rows clear. The existing native geometry and public-package checks also pass.

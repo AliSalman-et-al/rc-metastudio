@@ -1,13 +1,17 @@
 {
-  "native_receipts": 41,
-  "verified_original_native_artifacts": 5107,
-  "curated_bound_frames": 274,
+  "native_receipts": 43,
+  "verified_original_native_artifacts": 5265,
+  "curated_bound_frames": 276,
   "contact_pairs": 19,
-  "source_sha256": "6b437ca65e3949ffb67753c932dd596f9c9a8e51b6414e093e4515674c418198",
-  "frozen_implementation_revision": "2450544",
+  "source_sha256": "1fb8bfb30db99bd195d64c958b84866fa02e6651206306995d2937ed02e7b51e",
+  "frozen_implementation_revision": "fe0dd07",
   "installed_source_matches": true,
   "installed_package_matches": true,
   "unchanged_original_golden_fixture_paths": true,
-  "contact_sheet_sha256": "d7e4afef8b876064a887f83f60fdbd82768515991bab7ee68e1341dad6fa00b1",
-  "full_profile": "pending"
+  "unchanged_paths_checked": [
+    "tests/fixtures",
+    "tests/analysis_regression/baseline"
+  ],
+  "contact_sheet_sha256": "cb6950e873bf86d49f4511ed77872921a9834a2c3a742c2f1dbd0616bad350bd",
+  "full_profile": "pending: full-round5-accepted"
 }
