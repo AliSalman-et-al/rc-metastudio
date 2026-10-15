@@ -6,7 +6,7 @@ Round six is substantially better at preserving input, identifying scales and pr
 
 This audit started at **b48c802**, branch **ux/audit-improvements**. Only audit artifacts/scripts changed. Actual host/run timestamps are 15 October UTC (continuations may be later); the folder date follows the requested 16 October naming. All native drives use DISPLAY=:0/xcb, pinned R 4.6.1 and the test-owned retained library. [Provenance](PROVENANCE.json) checks all 80 RCMetaR source/install hashes. No system R library was changed.
 
-Across **100 prior IDs: 15 fixed, 21 improved, 64 unchanged, 0 confirmed regressions**. This includes the 99 round-five IDs plus historical F16, accidentally omitted from that scorecard and restored here. Unchanged includes retained fixes and qualification gaps; improved does not imply universal closure. [Scorecard](SCORECARD.json).
+Across **100 prior IDs: 14 fixed, 22 improved, 64 unchanged, 0 confirmed regressions**. This includes the 99 round-five IDs plus historical F16, accidentally omitted from that scorecard and restored here. Unchanged includes retained fixes and qualification gaps; improved does not imply universal closure. [Scorecard](SCORECARD.json).
 
 ## Evidence and scope
 
@@ -160,106 +160,106 @@ Status is comparative to round five (F16 restored from round four). Detailed sco
 
 | ID | Status | Observation | Evidence |
 |---|---|---|---|
-| L01 | **unchanged** | Type tiles remain readable; no step indicator and field-page scrolling remain. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| L02 | **unchanged** | Pristine Untitled dataset and no welcome modal retained. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| L03 | **unchanged** | Canonical CSV/template headers use actual arm names and readable field names. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| L04 | **unchanged** | Entered-effect identity now travels in editable standalone context; dedicated units remain absent. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| L05 | **unchanged** | Required outcome and optional meaningful arm-name fields improve the final naming step. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| L06 | **unchanged** | Integer count preview and named headers improve import; all dialect/filesystem faults unqualified. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| G01 | **unchanged** | Linux grid is readable; old persisted Windows width trigger remains unqualified. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| G02 | **improved** | Built-in TX Mean/menu identity repaired in ten-family label sweep; investigator names preserved. General terminology polish remains. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| G03 | **unchanged** | Calculator glyphs and italic derived values add non-colour cues; assistive-tech qualification remains open. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| G04 | **unchanged** | Named navigation retained and metadata spacing now reads Follow-up: first consistently. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| G05 | **unchanged** | Intervention/Control defaults, optional wizard names and preserved investigator/legacy names retained. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| G06 | **unchanged** | Readable diagnostic input/CI fields retained; exact leading zeros visible in fresh native edit preview. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| G07 | **improved** | Calculator exact entry/provenance and live derived summaries repaired; dense layouts remain. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| G08 | **unchanged** | Numeric/Category wording and separated destructive actions retained. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| M01 | **unchanged** | A labelled Analyses group gives analysis actions one recognition rule; minor case remnants persist. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| M02 | **unchanged** | Missing recent files expose Locate/Remove and recover to real project entries. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| M03 | **unchanged** | Actual disabled subgroup prerequisite tooltip works within the labelled analysis menu. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| M04 | **unchanged** | Structure tabs remain a dense three-pane editor; actual arm names are readable. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| S01 | **unchanged** | Separate report/figure zoom and scoped confidence controls retained. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| D01 | **unchanged** | Pinned actions and named controls retained; native Qt 1.25/1.5/2.0 design runs passed (application scaling only). | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| D02 | **improved** | Contextual metric labels improved; some general method-family descriptions still need translation. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| D03 | **unchanged** | Editable context and actual group headings improve setup/editing; hex colour fields and long forms remain. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| D04 | **fixed** | Invalid contour input is inline, stops busy state, stays editable and recovers to real output. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| D05 | **unchanged** | Existing corrections and eligibility retained; universal affected-study accounting remains incomplete. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R01 | **improved** | Readable package-owned labels and reduced duplicate identity; remaining report hierarchy is coherent. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R02 | **unchanged** | Existing outcome/comparison/follow-up identity is in editable standalone captions; IRR exposure is explicit. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R03 | **improved** | Long-figure caps and wrapped arm headers repaired; long outputs still require deliberate zoom/scroll. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R04 | **unchanged** | Previously fixed sequential reference bounds retained on inspected paths. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R05 | **unchanged** | Original coefficient Fixture 2 lower bound remains zero; tiny-effect protection retained. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R06 | **unchanged** | Study added (k) and sequence/display-order guidance retained. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R07 | **unchanged** | HR/IRR omitted-study identity and visible row intervals remain aligned. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R08 | **fixed** | Structured subgroup results now identify fitted SE scales alongside natural-scale effects. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R09 | **fixed** | Bubble legend entries/samples follow visible regression/CI/PI components; panel-bounded guides retained. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R10 | **unchanged** | Single-arm proportion's actual tested null remains explicit. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R11 | **unchanged** | Mean caption carries investigator context and can state units; no dedicated unit field. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R12 | **improved** | Duplicate default metric/type captions removed; investigator context retained. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R13 | **unchanged** | Actual arm names clarify comparative interpretation without invented clinical conclusions. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R14 | **unchanged** | MD/SMD subtraction explicitly names Intervention minus Control; existing scale guidance retained. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R15 | **improved** | Diagnostic coefficient precision and readable logit/OR interval headings finish the shared table surfaces. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R16 | **improved** | Reference/moderator identities retained with selected precision and readable coefficient headings. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R17 | **fixed** | Dense Default/subgroup CI caps now follow row spacing; prior long-forest regression closed. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R18 | **unchanged** | IRR actual arms, catheter-day exposure, raw columns and independently checked totals are explicit. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R19 | **unchanged** | Existing small-study cautions/eligibility retained; corrected contour recovery is tracked under D04/R5-07. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| E01 | **improved** | Exports preserve axes, colours and semantic legends; the long RevMan header/caption defect R6-03 limits layout acceptance. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| E02 | **improved** | Raw calculator/grid input integrity repaired through undo and save/reopen; existing dirty guards retained. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| H01 | **unchanged** | Quick start explains naming, existing legacy names, row calculators and output tools. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| X01 | **unchanged** | Blank/duplicate validation remains recoverable; arm duplicates now have explicit inline feedback. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| X02 | **unchanged** | Local covariate empty-state guidance remains; broader contextual workflow help is modest. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| A01 | **unchanged** | Named controls and selectable tables improve access; no screen-reader qualification. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| A02 | **improved** | Sampled normal/selection contrast and non-colour cues; universal high-contrast qualification remains open. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| A03 | **improved** | Readable growing figures retain bounded caps; actual OS scaling/platform limits remain. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| A04 | **unchanged** | Consistent labelled Analyses group replaces the mixed labelled/icon-only analysis toolbar. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| A05 | **unchanged** | Actual Tab/arrow/Escape paths run for workspace/setup/results; full no-mouse and assistive-tech scope remains open. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| RG01 | **improved** | Diagnostic overview and coefficient tables have readable selected-precision clinical/fitted scale identity. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| RG02 | **unchanged** | Independent report/figure zoom retained; Fit width remains figure-scoped. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| RG03 | **unchanged** | Diagnostic shared notes precede components and executed-method identity remains intact. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| RG04 | **unchanged** | CSV guidance stays outside the scrolling field area. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| N01 | **unchanged** | Prior contextual BMJ coefficient identity is retained at six digits; new long-name header defect is separate. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| N02 | **improved** | Diagnostic moderator tables now honour precision and label logit/OR intervals; arbitrary long labels remain unqualified. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| N03 | **unchanged** | Previously bounded sequential guides/round ticks now joined by clipped bubble guides on inspected paths. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| N04 | **fixed** | Subgroup structured report retains tests and explicitly identifies SE scale. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| N05 | **unchanged** | Existing subgroup-difference tests are present in figures and reports. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| N06 | **unchanged** | Report identity and tab-separated export rows remain intact. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| N07 | **unchanged** | HR/IRR cumulative/omission study labels and intervals remain correct on inspected rows. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| N08 | **improved** | Calculator exact input, derived preview and persistence improve; historical Windows-width trigger remains unqualified. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| N09 | **unchanged** | Existing named dimension navigation gains consistent metadata spacing. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| N10 | **improved** | Built-in internal menu/report vocabulary repaired; minor case/method-family wording remains. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| N11 | **improved** | Round-trip-safe editors preserve data precision; the ordinary diagnostic form still needs horizontal scrolling and long fields remain a visibility gap. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R2-01 | **unchanged** | Previously repaired HR/IRR omission identities remain correct. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R2-02 | **unchanged** | Copy/export retains executed identity and matches saved bytes. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R2-03 | **unchanged** | Structured table exports remain tab-separated, not one-cell-per-line text. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| F01 | **unchanged** | Fixed-model inactive tau-squared omission retained; fresh fixed-IV figure/report agree on estimate, CI and heterogeneity. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| F02 | **unchanged** | Applicable executed methods and fitted references retained. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| F03 | **unchanged** | HR/IRR subgroup tables now remove legacy prose while retaining tests and prediction intervals. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| F04 | **improved** | Diagnostic selected precision and tiny numeric entry repaired while retaining genuine small effects; no universal formatting claim. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| F05 | **unchanged** | Prior comparative test and named actual-null presentation retained. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| F06 | **improved** | Raw precision/provenance and live derived summaries repaired; calculator layout remains dense. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| F07 | **improved** | Readable internal labels and Default style name repaired; case consistency and action-labelled dirty prompts remain polish. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| F08 | **unchanged** | Prior BMJ coefficient/entered-effect identity retained at six digits; three-style presentation/export sweeps passed. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| F09 | **unchanged** | Prior short-label numerical annotation clearance retained; new BMJ wrapped-name collision is R5-06. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| F10 | **unchanged** | IRR duplicate-author subgroup rows retain distinct identities and overall weights. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R3-01 | **unchanged** | Sequential null guide stays within study rows clear of the footer. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R3-02 | **unchanged** | Round linear bubble ticks and title clearance remain readable. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| F11 | **unchanged** | Exterior bubble guide removed; fresh 18-case metric/explicit-bound geometry sweep passed; decoded editor exports are separately recorded. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| F12 | **unchanged** | Legacy scene weights removed; report/Tables retain structured rows and existing component identities. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| F13 | **unchanged** | Content-sized cards and Locate/Remove recovery; fresh native Qt 1.25/1.5/2.0 design runs passed. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| F14 | **unchanged** | Labelled Analyses group and actual prerequisite tooltip. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| F15 | **unchanged** | Navigator/results label/value spacing is consistent. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R5-01 | **fixed** | Sequential/subgroup SE headings explicitly identify fitted scale; funnel SE axes do likewise. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R5-02 | **fixed** | Default duplicate type/metric captions and Group: Group context removed; investigator text preserved. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R5-03 | **fixed** | Diagnostic coefficients/ML tests honour two/six digits; logit/OR bounds explicit across Text/Tables/copy/export. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R5-04 | **fixed** | Long standard/subgroup CI caps bounded by row spacing in all three styles. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R5-05 | **fixed** | Package-owned Intercept/Moderator/Statistic labels are readable; internal keys remain internal. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R5-06 | **improved** | BMJ measured unequal wrapped headers improve; longest RevMan header overlaps caption/device top (R6-03), so not fully closed. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R5-07 | **fixed** | Eligibility explains usable study count and invalid contours recover inline without stuck progress. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R5-08 | **fixed** | Subgroup setup/editor explicitly explain shared layout with journal accents. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R5-09 | **fixed** | Attached menus/calculators/reports use contextual readable metrics; no built-in TX Mean prefix. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R5-10 | **fixed** | Tiny/huge/decimal/exponent input survives real editing, Accept, undo/save/reopen and independent post-reopen fit. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| R5-11 | **fixed** | Legend entries and samples follow actual regression/CI/PI visibility in display/export. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
-| F16 | **unchanged** | Historical report-hierarchy finding omitted from the round-five scorecard, restored here. Calmer hierarchy retained; diagnostic overviews still need scrolling and retain multiple headings. No new round-six closure claimed. | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |
+| L01 | **unchanged** | Type tiles remain readable; no step indicator and field-page scrolling remain. | [Native wizard/import/help/validation inventory](DESIGN.json) |
+| L02 | **unchanged** | Pristine Untitled dataset and no welcome modal retained. | [Native wizard/import/help/validation inventory](DESIGN.json) |
+| L03 | **unchanged** | Canonical CSV/template headers use actual arm names and readable field names. | [Native wizard/import/help/validation inventory](DESIGN.json) |
+| L04 | **unchanged** | Entered-effect identity now travels in editable standalone context; dedicated units remain absent. | [Native wizard/import/help/validation inventory](DESIGN.json) |
+| L05 | **unchanged** | Required outcome and optional meaningful arm-name fields improve the final naming step. | [Native wizard/import/help/validation inventory](DESIGN.json) |
+| L06 | **unchanged** | Integer count preview and named headers improve import; all dialect/filesystem faults unqualified. | [Native wizard/import/help/validation inventory](DESIGN.json) |
+| G01 | **unchanged** | Linux grid is readable; old persisted Windows width trigger remains unqualified. | [Actual input edits and save/reopen](SELECTED-calculator-grid-precision.json) |
+| G02 | **improved** | Built-in TX Mean/menu identity repaired in ten-family label sweep; investigator names preserved. General terminology polish remains. | [Ten-family live labels and selectors](SELECTED-project-display-labels.json) |
+| G03 | **unchanged** | Calculator glyphs and italic derived values add non-colour cues; assistive-tech qualification remains open. | [Actual input edits and save/reopen](SELECTED-calculator-grid-precision.json) |
+| G04 | **unchanged** | Named navigation retained and metadata spacing now reads Follow-up: first consistently. | [Workspace navigation and structure dialogs](SHELL.json) |
+| G05 | **unchanged** | Intervention/Control defaults, optional wizard names and preserved investigator/legacy names retained. | [Workspace navigation and structure dialogs](SHELL.json) |
+| G06 | **unchanged** | Readable diagnostic input/CI fields retained; exact leading zeros visible in fresh native edit preview. | [Actual input edits and save/reopen](SELECTED-calculator-grid-precision.json) |
+| G07 | **improved** | Calculator exact entry/provenance and live derived summaries repaired; dense layouts remain. | [Actual input edits and save/reopen](SELECTED-calculator-grid-precision.json) |
+| G08 | **unchanged** | Numeric/Category wording and separated destructive actions retained. | [Workspace navigation and structure dialogs](SHELL.json) |
+| M01 | **unchanged** | A labelled Analyses group gives analysis actions one recognition rule; minor case remnants persist. | [Opened native menus and recovery/eligibility](SHELL.json) |
+| M02 | **unchanged** | Missing recent files expose Locate/Remove and recover to real project entries. | [Opened native menus and recovery/eligibility](SHELL.json) |
+| M03 | **unchanged** | Actual disabled subgroup prerequisite tooltip works within the labelled analysis menu. | [Opened native menus and recovery/eligibility](SHELL.json) |
+| M04 | **unchanged** | Structure tabs remain a dense three-pane editor; actual arm names are readable. | [Workspace navigation and structure dialogs](SHELL.json) |
+| S01 | **unchanged** | Separate report/figure zoom and scoped confidence controls retained. | [Result navigation/zoom and dialog sizing](DESIGN.json) |
+| D01 | **unchanged** | Pinned actions and named controls retained; native Qt 1.25/1.5/2.0 design runs passed (application scaling only). | [Result navigation/zoom and dialog sizing](DESIGN.json) |
+| D02 | **improved** | Contextual metric labels improved; some general method-family descriptions still need translation. | [Ten-family live labels and selectors](SELECTED-project-display-labels.json) |
+| D03 | **unchanged** | Editable context and actual group headings improve setup/editing; hex colour fields and long forms remain. | [Actual unnamed/named arms and reopened context](SELECTED-project-reviewer-groups.json) |
+| D04 | **fixed** | Invalid contour input is inline, stops busy state, stays editable and recovers to real output. | [Eligibility and invalid-contour recovery](SELECTED-project-round6-polish.json) |
+| D05 | **unchanged** | Existing corrections and eligibility retained; universal affected-study accounting remains incomplete. | [Eligibility and invalid-contour recovery](SELECTED-project-round6-polish.json) |
+| R01 | **improved** | Readable package-owned labels and reduced duplicate identity; remaining report hierarchy is coherent. | [Live report overview and structured tables](SELECTED-project-round6-polish.json) |
+| R02 | **unchanged** | Existing outcome/comparison/follow-up identity is in editable standalone captions; IRR exposure is explicit. | [Actual unnamed/named arms and reopened context](SELECTED-project-reviewer-groups.json) |
+| R03 | **improved** | Long-figure caps and wrapped arm headers repaired; long outputs still require deliberate zoom/scroll. | [Dense 65-study upper/lower figures in all styles](SELECTED-audit-round3-round5.json) |
+| R04 | **unchanged** | Previously fixed sequential reference bounds retained on inspected paths. | [Sequential reference/scale paths](SELECTED-project-axis-sequential.json) |
+| R05 | **unchanged** | Original coefficient Fixture 2 lower bound remains zero; tiny-effect protection retained. | [Sequential reference/scale paths](SELECTED-project-axis-sequential.json) |
+| R06 | **unchanged** | Study added (k) and sequence/display-order guidance retained. | [HR cumulative and omission identities](MATRIX-hr.json) |
+| R07 | **unchanged** | HR/IRR omitted-study identity and visible row intervals remain aligned. | [HR cumulative and omission identities](MATRIX-hr.json) |
+| R08 | **fixed** | Structured subgroup results now identify fitted SE scales alongside natural-scale effects. | [Sequential/subgroup clinical and fitted scales](SELECTED-project-reviewer-predictions.json) |
+| R09 | **fixed** | Bubble legend entries/samples follow visible regression/CI/PI components; panel-bounded guides retained. | [Metric-specific bubbles and guide bounds](SELECTED-audit-round3-bubble-metrics.json) |
+| R10 | **unchanged** | Single-arm proportion's actual tested null remains explicit. | [Single-arm natural-scale null/interval presentation](SELECTED-project-reviewer-predictions.json) |
+| R11 | **unchanged** | Mean caption carries investigator context and can state units; no dedicated unit field. | [Actual unnamed/named arms and reopened context](SELECTED-project-reviewer-groups.json) |
+| R12 | **improved** | Duplicate default metric/type captions removed; investigator context retained. | [Live report overview and structured tables](SELECTED-project-round6-polish.json) |
+| R13 | **unchanged** | Actual arm names clarify comparative interpretation without invented clinical conclusions. | [Actual unnamed/named arms and reopened context](SELECTED-project-reviewer-groups.json) |
+| R14 | **unchanged** | MD/SMD subtraction explicitly names Intervention minus Control; existing scale guidance retained. | [Actual unnamed/named arms and reopened context](SELECTED-project-reviewer-groups.json) |
+| R15 | **improved** | Diagnostic coefficient precision and readable logit/OR interval headings finish the shared table surfaces. | [Diagnostic coefficients at two/six digits; Tables/copy/CSV](SELECTED-project-round6-polish.json) |
+| R16 | **improved** | Reference/moderator identities retained with selected precision and readable coefficient headings. | [Diagnostic coefficients at two/six digits; Tables/copy/CSV](SELECTED-project-round6-polish.json) |
+| R17 | **fixed** | Dense Default/subgroup CI caps now follow row spacing; prior long-forest regression closed. | [Dense 65-study upper/lower figures in all styles](SELECTED-audit-round3-round5.json) |
+| R18 | **unchanged** | IRR actual arms, catheter-day exposure, raw columns and independently checked totals are explicit. | [IRR raw exposure, totals and subgroup identities](MATRIX-irr.json) |
+| R19 | **unchanged** | Existing small-study cautions/eligibility retained; corrected contour recovery is tracked under D04/R5-07. | [Eligibility and invalid-contour recovery](SELECTED-project-round6-polish.json) |
+| E01 | **improved** | Exports preserve axes, colours and semantic legends; the long RevMan header/caption defect R6-03 limits layout acceptance. | [Retained actual vectors and long-heading defects](EXPORT-EVIDENCE.json) |
+| E02 | **improved** | Raw calculator/grid input integrity repaired through undo and save/reopen; existing dirty guards retained. | [Actual input edits and save/reopen](SELECTED-calculator-grid-precision.json) |
+| H01 | **unchanged** | Quick start explains naming, existing legacy names, row calculators and output tools. | [Native wizard/import/help/validation inventory](DESIGN.json) |
+| X01 | **unchanged** | Blank/duplicate validation remains recoverable; arm duplicates now have explicit inline feedback. | [Native wizard/import/help/validation inventory](DESIGN.json) |
+| X02 | **unchanged** | Local covariate empty-state guidance remains; broader contextual workflow help is modest. | [Covariate and analysis setup empty-state controls](OPTIONS.json) |
+| A01 | **unchanged** | Named controls and selectable tables improve access; no screen-reader qualification. | [Named controls, contrast samples; bounded accessibility scope](DESIGN.json) |
+| A02 | **improved** | Sampled normal/selection contrast and non-colour cues; universal high-contrast qualification remains open. | [Named controls, contrast samples; bounded accessibility scope](DESIGN.json) |
+| A03 | **improved** | Readable growing figures retain bounded caps; actual OS scaling/platform limits remain. | [Result navigation/zoom and dialog sizing](DESIGN.json) |
+| A04 | **unchanged** | Consistent labelled Analyses group replaces the mixed labelled/icon-only analysis toolbar. | [Opened native menus and recovery/eligibility](SHELL.json) |
+| A05 | **unchanged** | Actual Tab/arrow/Escape paths run for workspace/setup/results; full no-mouse and assistive-tech scope remains open. | [Loaded-project keyboard/report/dirty-guard task](GUARD-KEYBOARD.json) |
+| RG01 | **improved** | Diagnostic overview and coefficient tables have readable selected-precision clinical/fitted scale identity. | [Live report overview and structured tables](SELECTED-project-round6-polish.json) |
+| RG02 | **unchanged** | Independent report/figure zoom retained; Fit width remains figure-scoped. | [Result navigation/zoom and dialog sizing](DESIGN.json) |
+| RG03 | **unchanged** | Diagnostic shared notes precede components and executed-method identity remains intact. | [Live report overview and structured tables](SELECTED-project-round6-polish.json) |
+| RG04 | **unchanged** | CSV guidance stays outside the scrolling field area. | [Native wizard/import/help/validation inventory](DESIGN.json) |
+| N01 | **unchanged** | Prior contextual BMJ coefficient identity is retained at six digits; new long-name header defect is separate. | [Retained actual vectors and long-heading defects](EXPORT-EVIDENCE.json) |
+| N02 | **improved** | Diagnostic moderator tables now honour precision and label logit/OR intervals; arbitrary long labels remain unqualified. | [Diagnostic coefficients at two/six digits; Tables/copy/CSV](SELECTED-project-round6-polish.json) |
+| N03 | **unchanged** | Previously bounded sequential guides/round ticks now joined by clipped bubble guides on inspected paths. | [Sequential reference/scale paths](SELECTED-project-axis-sequential.json) |
+| N04 | **fixed** | Subgroup structured report retains tests and explicitly identifies SE scale. | [Sequential/subgroup clinical and fitted scales](SELECTED-project-reviewer-predictions.json) |
+| N05 | **unchanged** | Existing subgroup-difference tests are present in figures and reports. | [Sequential/subgroup clinical and fitted scales](SELECTED-project-reviewer-predictions.json) |
+| N06 | **unchanged** | Report identity and tab-separated export rows remain intact. | [Maintained report/Tables copy/export assertions and manifest paths](OUTCOMES.json) |
+| N07 | **unchanged** | HR/IRR cumulative/omission study labels and intervals remain correct on inspected rows. | [HR cumulative and omission identities](MATRIX-hr.json) |
+| N08 | **improved** | Calculator exact input, derived preview and persistence improve; historical Windows-width trigger remains unqualified. | [Actual input edits and save/reopen](SELECTED-calculator-grid-precision.json) |
+| N09 | **unchanged** | Existing named dimension navigation gains consistent metadata spacing. | [Workspace navigation and structure dialogs](SHELL.json) |
+| N10 | **improved** | Built-in internal menu/report vocabulary repaired; minor case/method-family wording remains. | [Ten-family live labels and selectors](SELECTED-project-display-labels.json) |
+| N11 | **improved** | Round-trip-safe editors preserve data precision; the ordinary diagnostic form still needs horizontal scrolling and long fields remain a visibility gap. | [Actual input edits and save/reopen](SELECTED-calculator-grid-precision.json) |
+| R2-01 | **unchanged** | Previously repaired HR/IRR omission identities remain correct. | [HR cumulative and omission identities](MATRIX-hr.json) |
+| R2-02 | **unchanged** | Copy/export retains executed identity and matches saved bytes. | [Maintained report/Tables copy/export assertions and manifest paths](OUTCOMES.json) |
+| R2-03 | **unchanged** | Structured table exports remain tab-separated, not one-cell-per-line text. | [Maintained report/Tables copy/export assertions and manifest paths](OUTCOMES.json) |
+| F01 | **unchanged** | Fixed-model inactive tau-squared omission retained; fresh fixed-IV figure/report agree on estimate, CI and heterogeneity. | [Fixed/clinical-null authority and rendered presentation scenarios](OUTCOMES.json) |
+| F02 | **unchanged** | Applicable executed methods and fitted references retained. | [Fixed/clinical-null authority and rendered presentation scenarios](OUTCOMES.json) |
+| F03 | **unchanged** | HR/IRR subgroup tables now remove legacy prose while retaining tests and prediction intervals. | [Sequential/subgroup clinical and fitted scales](SELECTED-project-reviewer-predictions.json) |
+| F04 | **improved** | Diagnostic selected precision and tiny numeric entry repaired while retaining genuine small effects; no universal formatting claim. | [Diagnostic coefficients at two/six digits; Tables/copy/CSV](SELECTED-project-round6-polish.json) |
+| F05 | **unchanged** | Prior comparative test and named actual-null presentation retained. | [Fixed/clinical-null authority and rendered presentation scenarios](OUTCOMES.json) |
+| F06 | **improved** | Raw precision/provenance and live derived summaries repaired; calculator layout remains dense. | [Actual input edits and save/reopen](SELECTED-calculator-grid-precision.json) |
+| F07 | **improved** | Readable internal labels and Default style name repaired; case consistency and action-labelled dirty prompts remain polish. | [Ten-family live labels and selectors](SELECTED-project-display-labels.json) |
+| F08 | **unchanged** | Prior BMJ coefficient/entered-effect identity retained at six digits; three-style presentation/export sweeps passed. | [Retained actual vectors and long-heading defects](EXPORT-EVIDENCE.json) |
+| F09 | **unchanged** | Short-label annotation clearance retained; former BMJ long-name layout improved. RevMan collision/truncation remain R6-03/R6-06. | [Retained actual vectors and long-heading defects](EXPORT-EVIDENCE.json) |
+| F10 | **unchanged** | IRR duplicate-author subgroup rows retain distinct identities and overall weights. | [IRR raw exposure, totals and subgroup identities](MATRIX-irr.json) |
+| R3-01 | **unchanged** | Sequential null guide stays within study rows clear of the footer. | [Sequential reference/scale paths](SELECTED-project-axis-sequential.json) |
+| R3-02 | **unchanged** | Round linear bubble ticks and title clearance remain readable. | [Metric-specific bubbles and guide bounds](SELECTED-audit-round3-bubble-metrics.json) |
+| F11 | **unchanged** | Exterior bubble guide removed; fresh 18-case metric/explicit-bound geometry sweep passed; decoded editor exports are separately recorded. | [Metric-specific bubbles and guide bounds](SELECTED-audit-round3-bubble-metrics.json) |
+| F12 | **unchanged** | Legacy scene weights removed; report/Tables retain structured rows and existing component identities. | [Structured results navigation and component identities](DESIGN.json) |
+| F13 | **unchanged** | Content-sized cards and Locate/Remove recovery; fresh native Qt 1.25/1.5/2.0 design runs passed. | [Opened native menus and recovery/eligibility](SHELL.json) |
+| F14 | **unchanged** | Labelled Analyses group and actual prerequisite tooltip. | [Opened native menus and recovery/eligibility](SHELL.json) |
+| F15 | **unchanged** | Navigator/results label/value spacing is consistent. | [Workspace navigation and structure dialogs](SHELL.json) |
+| R5-01 | **fixed** | Sequential/subgroup SE headings explicitly identify fitted scale; funnel SE axes do likewise. | [Sequential/subgroup clinical and fitted scales](SELECTED-project-reviewer-predictions.json) |
+| R5-02 | **improved** | Identical type/metric captions and Group: Group context removed; generated Follow-up: first still exposes the container default, so copy finishing remains partial. | [Live report overview and structured tables](SELECTED-project-round6-polish.json) |
+| R5-03 | **fixed** | Diagnostic coefficients/ML tests honour two/six digits; logit/OR bounds explicit across Text/Tables/copy/export. | [Diagnostic coefficients at two/six digits; Tables/copy/CSV](SELECTED-project-round6-polish.json) |
+| R5-04 | **fixed** | Long standard/subgroup CI caps bounded by row spacing in all three styles. | [Dense 65-study upper/lower figures in all styles](SELECTED-audit-round3-round5.json) |
+| R5-05 | **fixed** | Package-owned Intercept/Moderator/Statistic labels are readable; internal keys remain internal. | [Diagnostic coefficients at two/six digits; Tables/copy/CSV](SELECTED-project-round6-polish.json) |
+| R5-06 | **improved** | BMJ measured unequal wrapped headers improve; longest RevMan header overlaps caption/device top (R6-03), so not fully closed. | [Retained actual vectors and long-heading defects](EXPORT-EVIDENCE.json) |
+| R5-07 | **fixed** | Eligibility explains usable study count and invalid contours recover inline without stuck progress. | [Eligibility and invalid-contour recovery](SELECTED-project-round6-polish.json) |
+| R5-08 | **fixed** | Subgroup setup/editor explicitly explain shared layout with journal accents. | [Subgroup setup/editor shared-layout wording](OPTIONS.json) |
+| R5-09 | **fixed** | Attached menus/calculators/reports use contextual readable metrics; no built-in TX Mean prefix. | [Ten-family live labels and selectors](SELECTED-project-display-labels.json) |
+| R5-10 | **fixed** | Tiny/huge/decimal/exponent input survives real editing, Accept, undo/save/reopen and independent post-reopen fit. | [Exact HR/IRR modes and post-reopen authority fit](SELECTED-calculator-ratio-precision.json) |
+| R5-11 | **fixed** | Legend entries and samples follow actual regression/CI/PI visibility in display/export. | [Metric-specific bubbles and guide bounds](SELECTED-audit-round3-bubble-metrics.json) |
+| F16 | **unchanged** | Historical report-hierarchy finding omitted from the round-five scorecard, restored here. Calmer hierarchy retained; diagnostic overviews still need scrolling and retain multiple headings. No new round-six closure claimed. | [Live report overview and structured tables](SELECTED-project-round6-polish.json) |
 
 ## Changelog and further work
 

@@ -54,7 +54,7 @@ findings=(HERE/'FINDINGS.md').read_text().split('\n',1)[1]
 head+='## New findings\n'+findings+'\n\n## Every prior ID\n\n'
 head+='Status is comparative to round five (F16 restored from round four). Detailed scope is bounded by the evidence map above and the inspection journal.\n\n| ID | Status | Observation | Evidence |\n|---|---|---|---|\n'
 for r in score['rows']:
- head+=f"| {r['id']} | **{r['verdict']}** | {r['observation'].replace('|','/')} | [native receipts](OUTCOMES.json), [inspections](INSPECTIONS.md) |\n"
+ head+=f"| {r['id']} | **{r['verdict']}** | {r['observation'].replace('|','/')} | [{r['evidence']['label']}]({r['evidence']['path']}) |\n"
 head+='''
 ## Changelog and further work
 

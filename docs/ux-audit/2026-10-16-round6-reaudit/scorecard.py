@@ -1,5 +1,6 @@
 """Retain every prior ID; comparative statuses are editorial, not inferred tests."""
-import json,collections
+import json,collections,sys
+from evidence_map import routes
 from pathlib import Path
 HERE=Path(__file__).resolve().parent
 old=json.loads((HERE.parent/'2026-10-16-round5-reaudit/SCORECARD.json').read_text())['rows']
@@ -35,6 +36,7 @@ for row in old:
  id=row['id'];status,note=changes.get(id,('unchanged',row['observation']))
  # Stale already-fixed baseline issues must not be carried into current observations.
  if id=='G05':note='Intervention/Control defaults, optional wizard names and preserved investigator/legacy names retained.'
+ if id=='F09':note='Short-label annotation clearance retained; former BMJ long-name layout improved. RevMan collision/truncation remain R6-03/R6-06.'
  if id=='R19':note='Existing small-study cautions/eligibility retained; corrected contour recovery is tracked under D04/R5-07.'
  rows.append({'id':id,'verdict':status,'observation':note,'evidence':'OUTCOMES.json; INSPECTIONS.md; report coverage map'})
 fixes={
@@ -52,5 +54,6 @@ fixes={
 for num,note in fixes.items():rows.append({'id':'R5-'+num,'verdict':'improved' if num in {'02','06'} else 'fixed','observation':note,'evidence':'OUTCOMES.json; INSPECTIONS.md; round-six acceptance table in REPORT.md'})
 rows.append({'id':'F16','verdict':'unchanged','observation':'Historical report-hierarchy finding omitted from the round-five scorecard, restored here. Calmer hierarchy retained; diagnostic overviews still need scrolling and retain multiple headings. No new round-six closure claimed.','evidence':'project-round6-polish report screenshots; INSPECTIONS.md'})
 assert len(rows)==100 and len({r['id'] for r in rows})==100
-out={'baseline':'../2026-10-16-round5-reaudit/REPORT.md','status':'DRAFT: statuses require final completed evidence review','counts':dict(collections.Counter(r['verdict'] for r in rows)),'rows':rows}
+for row in rows: row['evidence']=routes(rows)[row['id']]
+out={'baseline':'../2026-10-16-round5-reaudit/REPORT.md','status':'Final comparative editorial review' if '--final' in sys.argv else 'DRAFT: statuses require final completed evidence review','counts':dict(collections.Counter(r['verdict'] for r in rows)),'rows':rows}
 (HERE/'SCORECARD.json').write_text(json.dumps(out,indent=2)+'\n');print(out['counts'])
