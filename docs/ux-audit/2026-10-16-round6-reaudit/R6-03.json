@@ -1,0 +1,186 @@
+[
+  {
+    "path": "artifacts/verification/rcms/20261015T183920Z-6f0c618b-project-round6-polish/180-0-forest-ed36c600231c.display.svg",
+    "sha256": "57236906f3981e158b537f459f39a3cc75fffb77cbde7dc6e60b73430bbf7560",
+    "device": {
+      "width": "1208.04pt",
+      "height": "413.28pt",
+      "viewBox": "0 0 1208.04 413.28"
+    },
+    "arm_header_nodes": [
+      {
+        "text": "Events",
+        "x": "368.66",
+        "y": "110.54",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "42.47px",
+        "lengthAdjust": "spacingAndGlyphs"
+      },
+      {
+        "text": "Total",
+        "x": "427.15",
+        "y": "110.78",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "29.95px",
+        "lengthAdjust": "spacingAndGlyphs"
+      },
+      {
+        "text": "Intensive",
+        "x": "397.91",
+        "y": "1.95",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "56.12px",
+        "lengthAdjust": "spacingAndGlyphs"
+      },
+      {
+        "text": "individualized",
+        "x": "397.91",
+        "y": "16.65",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "85.59px",
+        "lengthAdjust": "spacingAndGlyphs"
+      },
+      {
+        "text": "cognitive",
+        "x": "397.91",
+        "y": "30.05",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "56.83px",
+        "lengthAdjust": "spacingAndGlyphs"
+      },
+      {
+        "text": "behavioural",
+        "x": "397.91",
+        "y": "46.07",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "72.67px",
+        "lengthAdjust": "spacingAndGlyphs"
+      },
+      {
+        "text": "therapy plus",
+        "x": "397.91",
+        "y": "59.50",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "76.98px",
+        "lengthAdjust": "spacingAndGlyphs"
+      },
+      {
+        "text": "structured",
+        "x": "397.91",
+        "y": "75.48",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "64.05px",
+        "lengthAdjust": "spacingAndGlyphs"
+      },
+      {
+        "text": "clinical",
+        "x": "397.91",
+        "y": "90.19",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "43.89px",
+        "lengthAdjust": "spacingAndGlyphs"
+      }
+    ]
+  },
+  {
+    "path": "artifacts/verification/rcms/20261015T183920Z-6f0c618b-project-round6-polish/workflow/headers-revman-89.svg",
+    "sha256": "57236906f3981e158b537f459f39a3cc75fffb77cbde7dc6e60b73430bbf7560",
+    "device": {
+      "width": "1208.04pt",
+      "height": "413.28pt",
+      "viewBox": "0 0 1208.04 413.28"
+    },
+    "arm_header_nodes": [
+      {
+        "text": "Events",
+        "x": "368.66",
+        "y": "110.54",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "42.47px",
+        "lengthAdjust": "spacingAndGlyphs"
+      },
+      {
+        "text": "Total",
+        "x": "427.15",
+        "y": "110.78",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "29.95px",
+        "lengthAdjust": "spacingAndGlyphs"
+      },
+      {
+        "text": "Intensive",
+        "x": "397.91",
+        "y": "1.95",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "56.12px",
+        "lengthAdjust": "spacingAndGlyphs"
+      },
+      {
+        "text": "individualized",
+        "x": "397.91",
+        "y": "16.65",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "85.59px",
+        "lengthAdjust": "spacingAndGlyphs"
+      },
+      {
+        "text": "cognitive",
+        "x": "397.91",
+        "y": "30.05",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "56.83px",
+        "lengthAdjust": "spacingAndGlyphs"
+      },
+      {
+        "text": "behavioural",
+        "x": "397.91",
+        "y": "46.07",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "72.67px",
+        "lengthAdjust": "spacingAndGlyphs"
+      },
+      {
+        "text": "therapy plus",
+        "x": "397.91",
+        "y": "59.50",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "76.98px",
+        "lengthAdjust": "spacingAndGlyphs"
+      },
+      {
+        "text": "structured",
+        "x": "397.91",
+        "y": "75.48",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "64.05px",
+        "lengthAdjust": "spacingAndGlyphs"
+      },
+      {
+        "text": "clinical",
+        "x": "397.91",
+        "y": "90.19",
+        "text-anchor": "middle",
+        "style": "font-size: 12.96px; font-weight: bold; font-family: \"Liberation Sans\";",
+        "textLength": "43.89px",
+        "lengthAdjust": "spacingAndGlyphs"
+      }
+    ]
+  }
+]

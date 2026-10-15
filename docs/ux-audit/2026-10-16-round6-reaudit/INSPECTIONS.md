@@ -57,6 +57,6 @@ is an audit harness failure, not a product defect.
   six report overviews, cumulative/subgroup DOR reports, four inline invalid
   contour states and nine three-style short/unequal/long arm-name figures reviewed.
   Coefficient headers distinguish logit and OR; values fit the native Tables.
-  Long multiline headers clear rules and data. Contour errors preserve editable
+  Long multiline headers clear rules and data, but full-size review rejects the longest RevMan case: its arm header crosses the caption/device top (R6-03). Contour errors preserve editable
   input, show a useful local reason and leave OK usable. Copy/CSV equality and
-  independent raw coefficient comparisons passed. No new issue in this set.
+  independent raw coefficient comparisons passed. The initial thumbnail-level acceptance of all headers is superseded by the full-size R6-03 inspection; this is a product output defect despite the passing driver.

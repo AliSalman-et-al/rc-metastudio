@@ -35,3 +35,27 @@ page comfortably, retaining scrolling for smaller screens. The title correctly
 shows 0.5.0, the Close control is visible and no information is inaccessible.
 This is existing polish debt (the round-five shell-about.png has the same
 278×246 dimensions), not a release identity failure or merge blocker.
+
+## R6-03 — Medium / merge blocker: long RevMan arm header crosses the caption and device edge
+
+Reproduce: create two-arm proportions, name the arms `Intensive individualized
+cognitive behavioural therapy plus structured clinical follow-up` and `Standard
+clinical care`; enter events/totals 4–9/20–25 versus 6–11/22–27; run random DL OR
+at six digits with RevMan style and the default caption. The first arm wraps
+upward through the caption and above the figure boundary.
+[Full native screenshot](screenshots/project-round6-polish-180-0-measured-wrapped-arm-headers.png).
+
+This is also present in `workflow/headers-revman-89.svg`, not merely a viewport
+crop. [Exact artifact hashes and nodes](R6-03.json) show the first arm baseline
+at y=1.95 with 12.96-pixel type (measured top −8.418); `cognitive` at y=30.05
+crosses the caption at y=28.80. The final `follow-up` word is absent from the arm
+header nodes although the full name remains in the caption. Estimates/intervals
+are unchanged. Default/BMJ cases in the same drive do not show this collision.
+
+Reserve actual top device/caption clearance for the entire wrapped block. Keep
+all words, readable type and the repaired rule/data clearance. Verify full native
+figure and actual exports, including the device top and caption. The current
+passing header assertions only check inter-column/rule clearance, so their exit
+zero is not visual acceptance. R5-06 is improved rather than fully fixed. This
+publication-output defect should be repaired before merging the 0.5.0 candidate;
+no product change is made by this audit.

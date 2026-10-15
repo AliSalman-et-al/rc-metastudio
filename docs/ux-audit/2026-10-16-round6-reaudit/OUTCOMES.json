@@ -78,6 +78,53 @@
     {
       "audit_scripts_sha256": {
         "native_options_remaining.py": "589584fe0ca55d2d64e5fe86326b172861f65d4d254df8e11bf75ca3eae2f280",
+        "contact.py": "5bcf9514e8a057a33d6040b9dc753769e5239faebe5fb22c16c96a6302d3b1b8",
+        "native_design.py": "800eda5de297974494be235c0e702c28e0042b411b0d9ecc401a89e687ff99c5",
+        "native_options.py": "2353538134d27d01f532640f05c374d038157a8e4b94e0bcc4f69cea384d5223",
+        "native_matrix.py": "6fb8167df0e1a2795e17156cb1340c7a9e8e5bc55ad8601a8fbb5897f013744e",
+        "collect.py": "7013b882014f170e2f115e8ceea0d93a831deecce70e3c03f7e1926302534642",
+        "native_shell.py": "3310a8b121f23a65ab19c6c6ef146ce52aa446fe6cc91b2a0a1feacbfc061dc7",
+        "prediction_remaining.py": "f8f2b92955e87014c03e98ae1b6caa7d5550496de8d88a86caa6c638fda8c00e",
+        "journal_status.py": "ceb1b862b0b20c40e0823b52952f3cae621b8913837546e625255e9e4afae317",
+        "inspect_frames.py": "7cd8fa9f9bfd8fec989ead9de54690856dcd9ab2c1515b5f82470f4136666cc3",
+        "drive.py": "4137cd24a6d95b43d9798648555a86949d38ff8e6b60a7b84f99dfce240175f7",
+        "scorecard.py": "0c97ab129c2a23adbc58850b3d2b591f87650ffe9d29b80d9941b5f58bb6cc43",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "golden",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_golden_compatibility.py",
+        "--output-root",
+        "build/qt6-verification/golden-compatibility-round6-reaudit"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T18:43:02.736546+00:00",
+      "finished": "2026-10-15T18:43:52.260315+00:00",
+      "seconds": 49.521123762009665,
+      "exit_code": 0,
+      "revision": "9ac89b40d4d7a89e56cb25e84c575ed067609f6b",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "golden.log",
+      "sha256": "20f6557cb8cc8c87db4ab4908b31bbfe77ca7628006fe5b2df3025320aa7af86",
+      "receipt": "raw/golden.json"
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "589584fe0ca55d2d64e5fe86326b172861f65d4d254df8e11bf75ca3eae2f280",
         "native_design.py": "800eda5de297974494be235c0e702c28e0042b411b0d9ecc401a89e687ff99c5",
         "native_options.py": "2353538134d27d01f532640f05c374d038157a8e4b94e0bcc4f69cea384d5223",
         "native_matrix.py": "6fb8167df0e1a2795e17156cb1340c7a9e8e5bc55ad8601a8fbb5897f013744e",
@@ -227,6 +274,53 @@
       "manifest_sha256": "837924bdb76ca47fbeb5eba9ef2e5a235852ec7cbee54b77101043989d35195b",
       "passed": true,
       "artifacts": 438
+    },
+    {
+      "audit_scripts_sha256": {
+        "native_options_remaining.py": "589584fe0ca55d2d64e5fe86326b172861f65d4d254df8e11bf75ca3eae2f280",
+        "contact.py": "5bcf9514e8a057a33d6040b9dc753769e5239faebe5fb22c16c96a6302d3b1b8",
+        "native_design.py": "800eda5de297974494be235c0e702c28e0042b411b0d9ecc401a89e687ff99c5",
+        "native_options.py": "2353538134d27d01f532640f05c374d038157a8e4b94e0bcc4f69cea384d5223",
+        "native_matrix.py": "6fb8167df0e1a2795e17156cb1340c7a9e8e5bc55ad8601a8fbb5897f013744e",
+        "collect.py": "7013b882014f170e2f115e8ceea0d93a831deecce70e3c03f7e1926302534642",
+        "native_shell.py": "3310a8b121f23a65ab19c6c6ef146ce52aa446fe6cc91b2a0a1feacbfc061dc7",
+        "prediction_remaining.py": "f8f2b92955e87014c03e98ae1b6caa7d5550496de8d88a86caa6c638fda8c00e",
+        "journal_status.py": "ceb1b862b0b20c40e0823b52952f3cae621b8913837546e625255e9e4afae317",
+        "inspect_frames.py": "7cd8fa9f9bfd8fec989ead9de54690856dcd9ab2c1515b5f82470f4136666cc3",
+        "drive.py": "4137cd24a6d95b43d9798648555a86949d38ff8e6b60a7b84f99dfce240175f7",
+        "scorecard.py": "0c97ab129c2a23adbc58850b3d2b591f87650ffe9d29b80d9941b5f58bb6cc43",
+        "run.py": "48c79703aa33e32715d7f05aeb669c4bc4234b6829a7bc409b5209a91343bf91"
+      },
+      "label": "numerical",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "docs/ux-audit/2026-10-14-round3/numerical_equivalence.py",
+        "--capture",
+        "build/qt6-verification/golden-compatibility-round6-reaudit"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T18:43:52.372765+00:00",
+      "finished": "2026-10-15T18:43:52.573158+00:00",
+      "seconds": 0.19796953999320976,
+      "exit_code": 0,
+      "revision": "b3eca993a224c2d2ba1fca926cf77bc19bf80a91",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "numerical.log",
+      "sha256": "e3f825f150df91d8c7108b5e41acf62168d0a0d4819ee94a04089ddf61ecdc0b",
+      "receipt": "raw/numerical.json"
     },
     {
       "audit_scripts_sha256": {

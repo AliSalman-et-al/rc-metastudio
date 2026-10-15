@@ -43,13 +43,13 @@ fixes={
 '03':'Diagnostic coefficients/ML tests honour two/six digits; logit/OR bounds explicit across Text/Tables/copy/export.',
 '04':'Long standard/subgroup CI caps bounded by row spacing in all three styles.',
 '05':'Package-owned Intercept/Moderator/Statistic labels are readable; internal keys remain internal.',
-'06':'Measured unequal wrapped arm headers remain clear in display/export across all styles.',
+'06':'BMJ measured unequal wrapped headers improve; longest RevMan header overlaps caption/device top (R6-03), so not fully closed.',
 '07':'Eligibility explains usable study count and invalid contours recover inline without stuck progress.',
 '08':'Subgroup setup/editor explicitly explain shared layout with journal accents.',
 '09':'Attached menus/calculators/reports use contextual readable metrics; no built-in TX Mean prefix.',
 '10':'Tiny/huge/decimal/exponent input survives real editing, Accept, undo/save/reopen and independent post-reopen fit.',
 '11':'Legend entries and samples follow actual regression/CI/PI visibility in display/export.'}
-for num,note in fixes.items():rows.append({'id':'R5-'+num,'verdict':'fixed','observation':note,'evidence':'OUTCOMES.json; INSPECTIONS.md; round-six acceptance table in REPORT.md'})
+for num,note in fixes.items():rows.append({'id':'R5-'+num,'verdict':'improved' if num=='06' else 'fixed','observation':note,'evidence':'OUTCOMES.json; INSPECTIONS.md; round-six acceptance table in REPORT.md'})
 assert len(rows)==99 and len({r['id'] for r in rows})==99
 out={'baseline':'../2026-10-16-round5-reaudit/REPORT.md','status':'DRAFT: statuses require final completed evidence review','counts':dict(collections.Counter(r['verdict'] for r in rows)),'rows':rows}
 (HERE/'SCORECARD.json').write_text(json.dumps(out,indent=2)+'\n');print(out['counts'])

@@ -3,8 +3,8 @@
   "status": "DRAFT: statuses require final completed evidence review",
   "counts": {
     "unchanged": 63,
-    "improved": 20,
-    "fixed": 16
+    "improved": 21,
+    "fixed": 15
   },
   "rows": [
     {
@@ -567,8 +567,8 @@
     },
     {
       "id": "R5-06",
-      "verdict": "fixed",
-      "observation": "Measured unequal wrapped arm headers remain clear in display/export across all styles.",
+      "verdict": "improved",
+      "observation": "BMJ measured unequal wrapped headers improve; longest RevMan header overlaps caption/device top (R6-03), so not fully closed.",
       "evidence": "OUTCOMES.json; INSPECTIONS.md; round-six acceptance table in REPORT.md"
     },
     {
