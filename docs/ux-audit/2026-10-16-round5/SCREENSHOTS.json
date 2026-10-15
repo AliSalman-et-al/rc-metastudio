@@ -82,5 +82,33 @@
     "original": "artifacts/verification/rcms/20261015T024244Z-5aa184e3-audit-round3-bubble-metrics/52-0-matrix-results-report.png",
     "provenance": "NATIVE.json native-bubble-exports, observed step 52; manifest binds original file",
     "capture": "QScreen.grabWindow native xcb"
+  },
+  {
+    "path": "screenshots/before-funnel-editor.png",
+    "sha256": "127d574cd2ac24778c30e1aeb17f2c7e4aff5712efb76d3fdbe2fe2f0e044142",
+    "original": "artifacts/verification/rcms/20261015T014315Z-ca1e15bd-plot-workflow-funnel/04-0-family-editor-controls.png",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md and OUTCOMES.json",
+    "capture": "historical native; original capture method retained"
+  },
+  {
+    "path": "screenshots/before-matrix-diagnostic-meta-regression-figure-1.png",
+    "sha256": "b0aced885ef26a00d1d9ca662904e6294e8db33dd2cd07a734f829dc77eb2450",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/matrix-diagnostic-meta-regression-figure-1.png",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md and OUTCOMES.json",
+    "capture": "historical native; original capture method retained"
+  },
+  {
+    "path": "screenshots/before-helper-audit-round3-presentation-diagnostic-126-0-round4-annotations.png",
+    "sha256": "61c4fefc01b2430a963c840da041e7aedd23fe2e5fe56465177119d29fe4563e",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/helper-audit-round3-presentation-diagnostic-126-0-round4-annotations.png",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md and OUTCOMES.json",
+    "capture": "historical native; original capture method retained"
+  },
+  {
+    "path": "screenshots/before-helper-calculator-diagnostic-03-0-calculator-effect-preview.png",
+    "sha256": "2683f059cc09a338c18c5e2f010d87856ff434205750fe0a9f3f7f1a9854b288",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/helper-calculator-diagnostic-03-0-calculator-effect-preview.png",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md and OUTCOMES.json",
+    "capture": "historical native; original capture method retained"
   }
 ]

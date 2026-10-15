@@ -17986,5 +17986,2763 @@
         "capture": "QScreen.grabWindow"
       }
     ]
+  },
+  "native-diagnostic-scale-recovered": {
+    "attempt": {
+      "label": "native-diagnostic-scale-recovered",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "audit-round3-presentation-diagnostic",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T03:18:49.558714+00:00",
+      "finished": "2026-10-15T03:21:47.479510+00:00",
+      "seconds": 177.91849049800658,
+      "exit_code": 0,
+      "revision": "2e9b0d70fbacc1963de7668abca984843e2cb298",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-diagnostic-scale-recovered.log",
+      "sha256": "da77b2dc5c199d7263d411684cd9bbc426689d4be7281cba92feececddac3de0"
+    },
+    "evidence": "artifacts/verification/rcms/20261015T031849Z-cd674812-audit-round3-presentation-diagnostic",
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez"
+    },
+    "manifest_sha256": "71a42dbc19794a37c69eb5a7e8f9400614afff14f28697cc6e6102f35d77c34a",
+    "observed": [
+      {
+        "step": 1,
+        "action": "ready",
+        "utc": "2026-10-15T03:18:55.675506+00:00",
+        "captures": [
+          "01-0-ready.png"
+        ],
+        "artifacts": {},
+        "runtime": {
+          "r": "R version 4.6.1 (2026-06-24)",
+          "r_libraries": [
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+          ],
+          "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "authorities": {
+            "mada": "0.5.12",
+            "metafor": "5.0-1",
+            "meta": "8.5-0",
+            "svglite": "2.2.2",
+            "rsvg": "2.7.0",
+            "tiff": "0.1-12"
+          },
+          "rcmetar": "0.4.2",
+          "rpy2": "3.6.7",
+          "qt": "6.11.1",
+          "pyqt": "6.11.0",
+          "platform_plugin": "xcb",
+          "application": "RCMetaStudio",
+          "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez"
+        }
+      },
+      {
+        "step": 2,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:18:55.893236+00:00",
+        "captures": [
+          "02-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic"
+      },
+      {
+        "step": 3,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:18:56.490568+00:00",
+        "captures": [
+          "03-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "included": 6
+      },
+      {
+        "step": 4,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:18:57.231861+00:00",
+        "captures": [
+          "04-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "cells": [
+          [
+            "Fixture 1",
+            "19.0",
+            "10.0",
+            "1.0",
+            "81.0",
+            "0.655",
+            "0.469",
+            "0.803",
+            "0.988",
+            "0.919",
+            "0.998"
+          ],
+          [
+            "Fixture 2",
+            "20.0",
+            "11.0",
+            "2.0",
+            "82.0",
+            "0.645",
+            "0.466",
+            "0.791",
+            "0.976",
+            "0.910",
+            "0.994"
+          ],
+          [
+            "Fixture 3",
+            "21.0",
+            "12.0",
+            "3.0",
+            "83.0",
+            "0.636",
+            "0.463",
+            "0.781",
+            "0.965",
+            "0.897",
+            "0.989"
+          ],
+          [
+            "Fixture 4",
+            "22.0",
+            "13.0",
+            "4.0",
+            "84.0",
+            "0.629",
+            "0.460",
+            "0.771",
+            "0.955",
+            "0.885",
+            "0.983"
+          ],
+          [
+            "Fixture 5",
+            "23.0",
+            "14.0",
+            "5.0",
+            "85.0",
+            "0.622",
+            "0.458",
+            "0.761",
+            "0.944",
+            "0.873",
+            "0.977"
+          ],
+          [
+            "Fixture 6",
+            "24.0",
+            "15.0",
+            "6.0",
+            "86.0",
+            "0.615",
+            "0.456",
+            "0.753",
+            "0.935",
+            "0.862",
+            "0.970"
+          ]
+        ]
+      },
+      {
+        "step": 5,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:18:57.418708+00:00",
+        "captures": [
+          "05-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-diagnostic",
+        "workflow": "standard",
+        "method": "diagnostic.random"
+      },
+      {
+        "step": 6,
+        "action": "diagnostic-metrics",
+        "utc": "2026-10-15T03:18:57.548820+00:00",
+        "captures": [
+          "06-0-diagnostic-metrics.png"
+        ],
+        "artifacts": {},
+        "metrics": [
+          "sens",
+          "spec"
+        ]
+      },
+      {
+        "step": 7,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:18:57.909079+00:00",
+        "captures": [
+          "07-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 3,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0"
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 8,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:19:07.097884+00:00",
+        "captures": [
+          "08-0-matrix-results.png",
+          "08-0-matrix-results-report.png",
+          "08-0-matrix-results-table.png",
+          "08-0-matrix-results-figure.png",
+          "08-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "08-0-forest_sens-6b7d53688c5a.display.svg",
+          "diagnostic.Spec.forest": "08-1-forest_spec-de65daa8c0d3.display.svg"
+        },
+        "texts": {
+          "diagnostic.Sens.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSensitivity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.632                    0.564                 0.696  < 0.001\n\nSensitivity -Heterogeneity\n Q      df  p-value    I²     τ²\n 0.158   5    1.000  0.0%  0.000\n\nSensitivity -Test for overall effect (H₀: sensitivity = 0.5)\n Z      p-value\n 3.730  < 0.001\n\nSensitivity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.564                                0.696\n\nCalculation scale: logit - estimate: 0.542, lower: 0.257, upper: 0.827, std. error: 0.145\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "diagnostic.Spec.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSpecificity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.955                    0.932                 0.971  < 0.001\n\nSpecificity -Heterogeneity\n Q      df  p-value    I²     τ²\n 3.919   5    0.561  0.0%  0.000\n\nSpecificity -Test for overall effect (H₀: specificity = 0.5)\n Z       p-value\n 13.677  < 0.001\n\nSpecificity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.932                                0.971\n\nCalculation scale: logit - estimate: 3.059, lower: 2.621, upper: 3.498, std. error: 0.224\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_sens-6b7d53688c5a.display.svg",
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_spec-de65daa8c0d3.display.svg"
+        }
+      },
+      {
+        "step": 9,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:19:07.400675+00:00",
+        "captures": [
+          "09-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 3,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0",
+          "plot_caption": "Verification outcome · Diagnostic · None\nGroup: test 1 · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "default",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "[default]",
+          "fp_show_col4": false,
+          "fp_col4_str": "Control",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest-88403b5f5fea.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#2f5597",
+          "fp_point_size_multiplier": 1.0
+        }
+      },
+      {
+        "step": 10,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:19:07.692190+00:00",
+        "captures": [
+          "10-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "diagnostic.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 11,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:19:08.193219+00:00",
+        "captures": [
+          "11-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-3-diagnostic.Sens.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-default-3-diagnostic.Sens.forest.pdf"
+        }
+      },
+      {
+        "step": 12,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:19:12.467334+00:00",
+        "captures": [
+          "12-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-3-diagnostic.Sens.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-default-3-diagnostic.Sens.forest.png"
+        }
+      },
+      {
+        "step": 13,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:19:18.108528+00:00",
+        "captures": [
+          "13-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-3-diagnostic.Sens.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-default-3-diagnostic.Sens.forest.tiff"
+        }
+      },
+      {
+        "step": 14,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:19:18.474796+00:00",
+        "captures": [
+          "14-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-3-diagnostic.Sens.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-default-3-diagnostic.Sens.forest.svg"
+        }
+      },
+      {
+        "step": 15,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:19:18.680210+00:00",
+        "captures": [
+          "15-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "15-0-forest_sens-6b7d53688c5a.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "default",
+        "title": "diagnostic.Sens.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_sens-6b7d53688c5a.display.svg"
+        }
+      },
+      {
+        "step": 16,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:19:18.878069+00:00",
+        "captures": [
+          "16-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "default",
+        "title": "diagnostic.Sens.forest"
+      },
+      {
+        "step": 17,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:19:19.332143+00:00",
+        "captures": [
+          "17-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-3-diagnostic.Spec.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-default-3-diagnostic.Spec.forest.pdf"
+        }
+      },
+      {
+        "step": 18,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:19:23.579106+00:00",
+        "captures": [
+          "18-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-3-diagnostic.Spec.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-default-3-diagnostic.Spec.forest.png"
+        }
+      },
+      {
+        "step": 19,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:19:28.720065+00:00",
+        "captures": [
+          "19-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-3-diagnostic.Spec.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-default-3-diagnostic.Spec.forest.tiff"
+        }
+      },
+      {
+        "step": 20,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:19:29.276056+00:00",
+        "captures": [
+          "20-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-3-diagnostic.Spec.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-default-3-diagnostic.Spec.forest.svg"
+        }
+      },
+      {
+        "step": 21,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:19:29.482950+00:00",
+        "captures": [
+          "21-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Spec.forest": "21-0-forest_spec-de65daa8c0d3.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "default",
+        "title": "diagnostic.Spec.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_spec-de65daa8c0d3.display.svg"
+        }
+      },
+      {
+        "step": 22,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:19:29.672885+00:00",
+        "captures": [
+          "22-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "default",
+        "title": "diagnostic.Spec.forest"
+      },
+      {
+        "step": 23,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:19:29.917823+00:00",
+        "captures": [
+          "23-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic"
+      },
+      {
+        "step": 24,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:19:30.506440+00:00",
+        "captures": [
+          "24-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "included": 6
+      },
+      {
+        "step": 25,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:19:31.251223+00:00",
+        "captures": [
+          "25-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "cells": [
+          [
+            "Fixture 1",
+            "19.0",
+            "10.0",
+            "1.0",
+            "81.0",
+            "0.655",
+            "0.469",
+            "0.803",
+            "0.988",
+            "0.919",
+            "0.998"
+          ],
+          [
+            "Fixture 2",
+            "20.0",
+            "11.0",
+            "2.0",
+            "82.0",
+            "0.645",
+            "0.466",
+            "0.791",
+            "0.976",
+            "0.910",
+            "0.994"
+          ],
+          [
+            "Fixture 3",
+            "21.0",
+            "12.0",
+            "3.0",
+            "83.0",
+            "0.636",
+            "0.463",
+            "0.781",
+            "0.965",
+            "0.897",
+            "0.989"
+          ],
+          [
+            "Fixture 4",
+            "22.0",
+            "13.0",
+            "4.0",
+            "84.0",
+            "0.629",
+            "0.460",
+            "0.771",
+            "0.955",
+            "0.885",
+            "0.983"
+          ],
+          [
+            "Fixture 5",
+            "23.0",
+            "14.0",
+            "5.0",
+            "85.0",
+            "0.622",
+            "0.458",
+            "0.761",
+            "0.944",
+            "0.873",
+            "0.977"
+          ],
+          [
+            "Fixture 6",
+            "24.0",
+            "15.0",
+            "6.0",
+            "86.0",
+            "0.615",
+            "0.456",
+            "0.753",
+            "0.935",
+            "0.862",
+            "0.970"
+          ]
+        ]
+      },
+      {
+        "step": 26,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:19:31.466257+00:00",
+        "captures": [
+          "26-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-diagnostic",
+        "workflow": "standard",
+        "method": "diagnostic.random"
+      },
+      {
+        "step": 27,
+        "action": "diagnostic-metrics",
+        "utc": "2026-10-15T03:19:31.604057+00:00",
+        "captures": [
+          "27-0-diagnostic-metrics.png"
+        ],
+        "artifacts": {},
+        "metrics": [
+          "sens",
+          "spec"
+        ]
+      },
+      {
+        "step": 28,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:19:31.976341+00:00",
+        "captures": [
+          "28-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 3,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0"
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 29,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:19:38.416900+00:00",
+        "captures": [
+          "29-0-matrix-results.png",
+          "29-0-matrix-results-report.png",
+          "29-0-matrix-results-table.png",
+          "29-0-matrix-results-figure.png",
+          "29-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "29-0-forest_sens-6b7d53688c5a.display.svg",
+          "diagnostic.Spec.forest": "29-1-forest_spec-de65daa8c0d3.display.svg"
+        },
+        "texts": {
+          "diagnostic.Sens.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSensitivity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.632                    0.564                 0.696  < 0.001\n\nSensitivity -Heterogeneity\n Q      df  p-value    I²     τ²\n 0.158   5    1.000  0.0%  0.000\n\nSensitivity -Test for overall effect (H₀: sensitivity = 0.5)\n Z      p-value\n 3.730  < 0.001\n\nSensitivity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.564                                0.696\n\nCalculation scale: logit - estimate: 0.542, lower: 0.257, upper: 0.827, std. error: 0.145\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "diagnostic.Spec.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSpecificity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.955                    0.932                 0.971  < 0.001\n\nSpecificity -Heterogeneity\n Q      df  p-value    I²     τ²\n 3.919   5    0.561  0.0%  0.000\n\nSpecificity -Test for overall effect (H₀: specificity = 0.5)\n Z       p-value\n 13.677  < 0.001\n\nSpecificity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.932                                0.971\n\nCalculation scale: logit - estimate: 3.059, lower: 2.621, upper: 3.498, std. error: 0.224\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_sens-6b7d53688c5a.display.svg",
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_spec-de65daa8c0d3.display.svg"
+        }
+      },
+      {
+        "step": 30,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:19:38.739793+00:00",
+        "captures": [
+          "30-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 3,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0",
+          "plot_caption": "Verification outcome · Diagnostic · None\nGroup: test 1 · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "revman",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "[default]",
+          "fp_show_col4": false,
+          "fp_col4_str": "Control",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest-88403b5f5fea.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#000000",
+          "fp_point_size_multiplier": 1.0
+        }
+      },
+      {
+        "step": 31,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:19:39.009877+00:00",
+        "captures": [
+          "31-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "diagnostic.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 32,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:19:39.329686+00:00",
+        "captures": [
+          "32-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-3-diagnostic.Sens.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-revman-3-diagnostic.Sens.forest.pdf"
+        }
+      },
+      {
+        "step": 33,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:19:41.805656+00:00",
+        "captures": [
+          "33-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-3-diagnostic.Sens.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-revman-3-diagnostic.Sens.forest.png"
+        }
+      },
+      {
+        "step": 34,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:19:45.329628+00:00",
+        "captures": [
+          "34-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-3-diagnostic.Sens.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-revman-3-diagnostic.Sens.forest.tiff"
+        }
+      },
+      {
+        "step": 35,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:19:45.592847+00:00",
+        "captures": [
+          "35-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-3-diagnostic.Sens.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-revman-3-diagnostic.Sens.forest.svg"
+        }
+      },
+      {
+        "step": 36,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:19:45.790267+00:00",
+        "captures": [
+          "36-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "36-0-forest_sens-6b7d53688c5a.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "revman",
+        "title": "diagnostic.Sens.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_sens-6b7d53688c5a.display.svg"
+        }
+      },
+      {
+        "step": 37,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:19:46.009124+00:00",
+        "captures": [
+          "37-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "revman",
+        "title": "diagnostic.Sens.forest"
+      },
+      {
+        "step": 38,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:19:46.336667+00:00",
+        "captures": [
+          "38-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-3-diagnostic.Spec.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-revman-3-diagnostic.Spec.forest.pdf"
+        }
+      },
+      {
+        "step": 39,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:19:49.966745+00:00",
+        "captures": [
+          "39-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-3-diagnostic.Spec.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-revman-3-diagnostic.Spec.forest.png"
+        }
+      },
+      {
+        "step": 40,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:19:54.422292+00:00",
+        "captures": [
+          "40-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-3-diagnostic.Spec.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-revman-3-diagnostic.Spec.forest.tiff"
+        }
+      },
+      {
+        "step": 41,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:19:54.700391+00:00",
+        "captures": [
+          "41-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-3-diagnostic.Spec.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-revman-3-diagnostic.Spec.forest.svg"
+        }
+      },
+      {
+        "step": 42,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:19:54.890589+00:00",
+        "captures": [
+          "42-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Spec.forest": "42-0-forest_spec-de65daa8c0d3.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "revman",
+        "title": "diagnostic.Spec.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_spec-de65daa8c0d3.display.svg"
+        }
+      },
+      {
+        "step": 43,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:19:55.104487+00:00",
+        "captures": [
+          "43-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "revman",
+        "title": "diagnostic.Spec.forest"
+      },
+      {
+        "step": 44,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:19:55.325072+00:00",
+        "captures": [
+          "44-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic"
+      },
+      {
+        "step": 45,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:19:55.937242+00:00",
+        "captures": [
+          "45-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "included": 6
+      },
+      {
+        "step": 46,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:19:56.702199+00:00",
+        "captures": [
+          "46-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "cells": [
+          [
+            "Fixture 1",
+            "19.0",
+            "10.0",
+            "1.0",
+            "81.0",
+            "0.655",
+            "0.469",
+            "0.803",
+            "0.988",
+            "0.919",
+            "0.998"
+          ],
+          [
+            "Fixture 2",
+            "20.0",
+            "11.0",
+            "2.0",
+            "82.0",
+            "0.645",
+            "0.466",
+            "0.791",
+            "0.976",
+            "0.910",
+            "0.994"
+          ],
+          [
+            "Fixture 3",
+            "21.0",
+            "12.0",
+            "3.0",
+            "83.0",
+            "0.636",
+            "0.463",
+            "0.781",
+            "0.965",
+            "0.897",
+            "0.989"
+          ],
+          [
+            "Fixture 4",
+            "22.0",
+            "13.0",
+            "4.0",
+            "84.0",
+            "0.629",
+            "0.460",
+            "0.771",
+            "0.955",
+            "0.885",
+            "0.983"
+          ],
+          [
+            "Fixture 5",
+            "23.0",
+            "14.0",
+            "5.0",
+            "85.0",
+            "0.622",
+            "0.458",
+            "0.761",
+            "0.944",
+            "0.873",
+            "0.977"
+          ],
+          [
+            "Fixture 6",
+            "24.0",
+            "15.0",
+            "6.0",
+            "86.0",
+            "0.615",
+            "0.456",
+            "0.753",
+            "0.935",
+            "0.862",
+            "0.970"
+          ]
+        ]
+      },
+      {
+        "step": 47,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:19:56.884758+00:00",
+        "captures": [
+          "47-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-diagnostic",
+        "workflow": "standard",
+        "method": "diagnostic.random"
+      },
+      {
+        "step": 48,
+        "action": "diagnostic-metrics",
+        "utc": "2026-10-15T03:19:57.015888+00:00",
+        "captures": [
+          "48-0-diagnostic-metrics.png"
+        ],
+        "artifacts": {},
+        "metrics": [
+          "sens",
+          "spec"
+        ]
+      },
+      {
+        "step": 49,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:19:57.356301+00:00",
+        "captures": [
+          "49-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 3,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0"
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 50,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:20:04.151090+00:00",
+        "captures": [
+          "50-0-matrix-results.png",
+          "50-0-matrix-results-report.png",
+          "50-0-matrix-results-table.png",
+          "50-0-matrix-results-figure.png",
+          "50-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "50-0-forest_sens-6b7d53688c5a.display.svg",
+          "diagnostic.Spec.forest": "50-1-forest_spec-de65daa8c0d3.display.svg"
+        },
+        "texts": {
+          "diagnostic.Sens.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSensitivity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.632                    0.564                 0.696  < 0.001\n\nSensitivity -Heterogeneity\n Q      df  p-value    I²     τ²\n 0.158   5    1.000  0.0%  0.000\n\nSensitivity -Test for overall effect (H₀: sensitivity = 0.5)\n Z      p-value\n 3.730  < 0.001\n\nSensitivity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.564                                0.696\n\nCalculation scale: logit - estimate: 0.542, lower: 0.257, upper: 0.827, std. error: 0.145\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "diagnostic.Spec.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSpecificity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.955                    0.932                 0.971  < 0.001\n\nSpecificity -Heterogeneity\n Q      df  p-value    I²     τ²\n 3.919   5    0.561  0.0%  0.000\n\nSpecificity -Test for overall effect (H₀: specificity = 0.5)\n Z       p-value\n 13.677  < 0.001\n\nSpecificity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.932                                0.971\n\nCalculation scale: logit - estimate: 3.059, lower: 2.621, upper: 3.498, std. error: 0.224\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_sens-6b7d53688c5a.display.svg",
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_spec-de65daa8c0d3.display.svg"
+        }
+      },
+      {
+        "step": 51,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:20:04.467348+00:00",
+        "captures": [
+          "51-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 3,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0",
+          "plot_caption": "Verification outcome · Diagnostic · None\nGroup: test 1 · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "bmj",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "[default]",
+          "fp_show_col4": false,
+          "fp_col4_str": "Control",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest-88403b5f5fea.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#6b58a6",
+          "fp_point_size_multiplier": 1.0
+        }
+      },
+      {
+        "step": 52,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:20:04.749962+00:00",
+        "captures": [
+          "52-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "diagnostic.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 53,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:20:05.057474+00:00",
+        "captures": [
+          "53-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-3-diagnostic.Sens.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-bmj-3-diagnostic.Sens.forest.pdf"
+        }
+      },
+      {
+        "step": 54,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:20:08.334227+00:00",
+        "captures": [
+          "54-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-3-diagnostic.Sens.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-bmj-3-diagnostic.Sens.forest.png"
+        }
+      },
+      {
+        "step": 55,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:20:12.383579+00:00",
+        "captures": [
+          "55-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-3-diagnostic.Sens.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-bmj-3-diagnostic.Sens.forest.tiff"
+        }
+      },
+      {
+        "step": 56,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:20:12.629811+00:00",
+        "captures": [
+          "56-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-3-diagnostic.Sens.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-bmj-3-diagnostic.Sens.forest.svg"
+        }
+      },
+      {
+        "step": 57,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:20:12.841569+00:00",
+        "captures": [
+          "57-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "57-0-forest_sens-6b7d53688c5a.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "bmj",
+        "title": "diagnostic.Sens.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_sens-6b7d53688c5a.display.svg"
+        }
+      },
+      {
+        "step": 58,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:20:13.044345+00:00",
+        "captures": [
+          "58-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "bmj",
+        "title": "diagnostic.Sens.forest"
+      },
+      {
+        "step": 59,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:20:13.353192+00:00",
+        "captures": [
+          "59-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-3-diagnostic.Spec.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-bmj-3-diagnostic.Spec.forest.pdf"
+        }
+      },
+      {
+        "step": 60,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:20:16.628103+00:00",
+        "captures": [
+          "60-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-3-diagnostic.Spec.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-bmj-3-diagnostic.Spec.forest.png"
+        }
+      },
+      {
+        "step": 61,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:20:20.594990+00:00",
+        "captures": [
+          "61-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-3-diagnostic.Spec.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-bmj-3-diagnostic.Spec.forest.tiff"
+        }
+      },
+      {
+        "step": 62,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:20:20.842931+00:00",
+        "captures": [
+          "62-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-3-diagnostic.Spec.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-bmj-3-diagnostic.Spec.forest.svg"
+        }
+      },
+      {
+        "step": 63,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:20:21.054226+00:00",
+        "captures": [
+          "63-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Spec.forest": "63-0-forest_spec-de65daa8c0d3.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "bmj",
+        "title": "diagnostic.Spec.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_spec-de65daa8c0d3.display.svg"
+        }
+      },
+      {
+        "step": 64,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:20:21.261082+00:00",
+        "captures": [
+          "64-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 3,
+        "style": "bmj",
+        "title": "diagnostic.Spec.forest"
+      },
+      {
+        "step": 65,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:20:21.492231+00:00",
+        "captures": [
+          "65-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic"
+      },
+      {
+        "step": 66,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:20:22.142367+00:00",
+        "captures": [
+          "66-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "included": 6
+      },
+      {
+        "step": 67,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:20:22.886469+00:00",
+        "captures": [
+          "67-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "cells": [
+          [
+            "Fixture 1",
+            "19.0",
+            "10.0",
+            "1.0",
+            "81.0",
+            "0.655",
+            "0.469",
+            "0.803",
+            "0.988",
+            "0.919",
+            "0.998"
+          ],
+          [
+            "Fixture 2",
+            "20.0",
+            "11.0",
+            "2.0",
+            "82.0",
+            "0.645",
+            "0.466",
+            "0.791",
+            "0.976",
+            "0.910",
+            "0.994"
+          ],
+          [
+            "Fixture 3",
+            "21.0",
+            "12.0",
+            "3.0",
+            "83.0",
+            "0.636",
+            "0.463",
+            "0.781",
+            "0.965",
+            "0.897",
+            "0.989"
+          ],
+          [
+            "Fixture 4",
+            "22.0",
+            "13.0",
+            "4.0",
+            "84.0",
+            "0.629",
+            "0.460",
+            "0.771",
+            "0.955",
+            "0.885",
+            "0.983"
+          ],
+          [
+            "Fixture 5",
+            "23.0",
+            "14.0",
+            "5.0",
+            "85.0",
+            "0.622",
+            "0.458",
+            "0.761",
+            "0.944",
+            "0.873",
+            "0.977"
+          ],
+          [
+            "Fixture 6",
+            "24.0",
+            "15.0",
+            "6.0",
+            "86.0",
+            "0.615",
+            "0.456",
+            "0.753",
+            "0.935",
+            "0.862",
+            "0.970"
+          ]
+        ]
+      },
+      {
+        "step": 68,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:20:23.067383+00:00",
+        "captures": [
+          "68-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-diagnostic",
+        "workflow": "standard",
+        "method": "diagnostic.random"
+      },
+      {
+        "step": 69,
+        "action": "diagnostic-metrics",
+        "utc": "2026-10-15T03:20:23.199270+00:00",
+        "captures": [
+          "69-0-diagnostic-metrics.png"
+        ],
+        "artifacts": {},
+        "metrics": [
+          "sens",
+          "spec"
+        ]
+      },
+      {
+        "step": 70,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:20:23.508204+00:00",
+        "captures": [
+          "70-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 6,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0"
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 71,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:20:30.489936+00:00",
+        "captures": [
+          "71-0-matrix-results.png",
+          "71-0-matrix-results-report.png",
+          "71-0-matrix-results-table.png",
+          "71-0-matrix-results-figure.png",
+          "71-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "71-0-forest_sens-6b7d53688c5a.display.svg",
+          "diagnostic.Spec.forest": "71-1-forest_spec-de65daa8c0d3.display.svg"
+        },
+        "texts": {
+          "diagnostic.Sens.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSensitivity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)   p-value\n 0.632248              0.563938              0.695632  0.000191\n\nSensitivity -Heterogeneity\n Q         df   p-value    I²        τ²\n 0.157803   5  0.999503  0.0%  0.000000\n\nSensitivity -Test for overall effect (H₀: sensitivity = 0.5)\n Z          p-value\n 3.730256  0.000191\n\nSensitivity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.563938                          0.695632\n\nCalculation scale: logit - estimate: 0.541872, lower: 0.257159, upper: 0.826584, std. error: 0.145264\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "diagnostic.Spec.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSpecificity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.955188              0.932201              0.970627  < 1e-06\n\nSpecificity -Heterogeneity\n Q         df   p-value    I²        τ²\n 3.918679   5  0.561183  0.0%  0.000000\n\nSpecificity -Test for overall effect (H₀: specificity = 0.5)\n Z          p-value\n 13.676940  < 1e-06\n\nSpecificity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.932201                          0.970627\n\nCalculation scale: logit - estimate: 3.059432, lower: 2.621002, upper: 3.497862, std. error: 0.223693\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_sens-6b7d53688c5a.display.svg",
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_spec-de65daa8c0d3.display.svg"
+        }
+      },
+      {
+        "step": 72,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:20:30.813808+00:00",
+        "captures": [
+          "72-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 6,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0",
+          "plot_caption": "Verification outcome · Diagnostic · None\nGroup: test 1 · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "default",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "[default]",
+          "fp_show_col4": false,
+          "fp_col4_str": "Control",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest-88403b5f5fea.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#2f5597",
+          "fp_point_size_multiplier": 1.0
+        }
+      },
+      {
+        "step": 73,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:20:31.026986+00:00",
+        "captures": [
+          "73-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "diagnostic.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 74,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:20:31.510976+00:00",
+        "captures": [
+          "74-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-6-diagnostic.Sens.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-default-6-diagnostic.Sens.forest.pdf"
+        }
+      },
+      {
+        "step": 75,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:20:34.740590+00:00",
+        "captures": [
+          "75-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-6-diagnostic.Sens.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-default-6-diagnostic.Sens.forest.png"
+        }
+      },
+      {
+        "step": 76,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:20:39.396392+00:00",
+        "captures": [
+          "76-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-6-diagnostic.Sens.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-default-6-diagnostic.Sens.forest.tiff"
+        }
+      },
+      {
+        "step": 77,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:20:39.756057+00:00",
+        "captures": [
+          "77-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-6-diagnostic.Sens.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-default-6-diagnostic.Sens.forest.svg"
+        }
+      },
+      {
+        "step": 78,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:20:39.947335+00:00",
+        "captures": [
+          "78-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "78-0-forest_sens-6b7d53688c5a.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "default",
+        "title": "diagnostic.Sens.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_sens-6b7d53688c5a.display.svg"
+        }
+      },
+      {
+        "step": 79,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:20:40.139814+00:00",
+        "captures": [
+          "79-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "default",
+        "title": "diagnostic.Sens.forest"
+      },
+      {
+        "step": 80,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:20:40.652191+00:00",
+        "captures": [
+          "80-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-6-diagnostic.Spec.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-default-6-diagnostic.Spec.forest.pdf"
+        }
+      },
+      {
+        "step": 81,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:20:43.824699+00:00",
+        "captures": [
+          "81-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-6-diagnostic.Spec.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-default-6-diagnostic.Spec.forest.png"
+        }
+      },
+      {
+        "step": 82,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:20:48.070992+00:00",
+        "captures": [
+          "82-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-6-diagnostic.Spec.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-default-6-diagnostic.Spec.forest.tiff"
+        }
+      },
+      {
+        "step": 83,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:20:48.447733+00:00",
+        "captures": [
+          "83-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-default-6-diagnostic.Spec.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-default-6-diagnostic.Spec.forest.svg"
+        }
+      },
+      {
+        "step": 84,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:20:48.660138+00:00",
+        "captures": [
+          "84-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Spec.forest": "84-0-forest_spec-de65daa8c0d3.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "default",
+        "title": "diagnostic.Spec.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_spec-de65daa8c0d3.display.svg"
+        }
+      },
+      {
+        "step": 85,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:20:48.862510+00:00",
+        "captures": [
+          "85-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "default",
+        "title": "diagnostic.Spec.forest"
+      },
+      {
+        "step": 86,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:20:49.094945+00:00",
+        "captures": [
+          "86-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic"
+      },
+      {
+        "step": 87,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:20:49.714509+00:00",
+        "captures": [
+          "87-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "included": 6
+      },
+      {
+        "step": 88,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:20:50.428334+00:00",
+        "captures": [
+          "88-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "cells": [
+          [
+            "Fixture 1",
+            "19.0",
+            "10.0",
+            "1.0",
+            "81.0",
+            "0.655",
+            "0.469",
+            "0.803",
+            "0.988",
+            "0.919",
+            "0.998"
+          ],
+          [
+            "Fixture 2",
+            "20.0",
+            "11.0",
+            "2.0",
+            "82.0",
+            "0.645",
+            "0.466",
+            "0.791",
+            "0.976",
+            "0.910",
+            "0.994"
+          ],
+          [
+            "Fixture 3",
+            "21.0",
+            "12.0",
+            "3.0",
+            "83.0",
+            "0.636",
+            "0.463",
+            "0.781",
+            "0.965",
+            "0.897",
+            "0.989"
+          ],
+          [
+            "Fixture 4",
+            "22.0",
+            "13.0",
+            "4.0",
+            "84.0",
+            "0.629",
+            "0.460",
+            "0.771",
+            "0.955",
+            "0.885",
+            "0.983"
+          ],
+          [
+            "Fixture 5",
+            "23.0",
+            "14.0",
+            "5.0",
+            "85.0",
+            "0.622",
+            "0.458",
+            "0.761",
+            "0.944",
+            "0.873",
+            "0.977"
+          ],
+          [
+            "Fixture 6",
+            "24.0",
+            "15.0",
+            "6.0",
+            "86.0",
+            "0.615",
+            "0.456",
+            "0.753",
+            "0.935",
+            "0.862",
+            "0.970"
+          ]
+        ]
+      },
+      {
+        "step": 89,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:20:50.650271+00:00",
+        "captures": [
+          "89-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-diagnostic",
+        "workflow": "standard",
+        "method": "diagnostic.random"
+      },
+      {
+        "step": 90,
+        "action": "diagnostic-metrics",
+        "utc": "2026-10-15T03:20:50.801474+00:00",
+        "captures": [
+          "90-0-diagnostic-metrics.png"
+        ],
+        "artifacts": {},
+        "metrics": [
+          "sens",
+          "spec"
+        ]
+      },
+      {
+        "step": 91,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:20:51.125714+00:00",
+        "captures": [
+          "91-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 6,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0"
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 92,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:20:58.840980+00:00",
+        "captures": [
+          "92-0-matrix-results.png",
+          "92-0-matrix-results-report.png",
+          "92-0-matrix-results-table.png",
+          "92-0-matrix-results-figure.png",
+          "92-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "92-0-forest_sens-6b7d53688c5a.display.svg",
+          "diagnostic.Spec.forest": "92-1-forest_spec-de65daa8c0d3.display.svg"
+        },
+        "texts": {
+          "diagnostic.Sens.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSensitivity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)   p-value\n 0.632248              0.563938              0.695632  0.000191\n\nSensitivity -Heterogeneity\n Q         df   p-value    I²        τ²\n 0.157803   5  0.999503  0.0%  0.000000\n\nSensitivity -Test for overall effect (H₀: sensitivity = 0.5)\n Z          p-value\n 3.730256  0.000191\n\nSensitivity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.563938                          0.695632\n\nCalculation scale: logit - estimate: 0.541872, lower: 0.257159, upper: 0.826584, std. error: 0.145264\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "diagnostic.Spec.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSpecificity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.955188              0.932201              0.970627  < 1e-06\n\nSpecificity -Heterogeneity\n Q         df   p-value    I²        τ²\n 3.918679   5  0.561183  0.0%  0.000000\n\nSpecificity -Test for overall effect (H₀: specificity = 0.5)\n Z          p-value\n 13.676940  < 1e-06\n\nSpecificity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.932201                          0.970627\n\nCalculation scale: logit - estimate: 3.059432, lower: 2.621002, upper: 3.497862, std. error: 0.223693\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_sens-6b7d53688c5a.display.svg",
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_spec-de65daa8c0d3.display.svg"
+        }
+      },
+      {
+        "step": 93,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:20:59.150672+00:00",
+        "captures": [
+          "93-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 6,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0",
+          "plot_caption": "Verification outcome · Diagnostic · None\nGroup: test 1 · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "revman",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "[default]",
+          "fp_show_col4": false,
+          "fp_col4_str": "Control",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest-88403b5f5fea.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#000000",
+          "fp_point_size_multiplier": 1.0
+        }
+      },
+      {
+        "step": 94,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:20:59.412840+00:00",
+        "captures": [
+          "94-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "diagnostic.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 95,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:20:59.732489+00:00",
+        "captures": [
+          "95-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-6-diagnostic.Sens.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-revman-6-diagnostic.Sens.forest.pdf"
+        }
+      },
+      {
+        "step": 96,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:21:03.539437+00:00",
+        "captures": [
+          "96-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-6-diagnostic.Sens.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-revman-6-diagnostic.Sens.forest.png"
+        }
+      },
+      {
+        "step": 97,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:21:08.115334+00:00",
+        "captures": [
+          "97-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-6-diagnostic.Sens.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-revman-6-diagnostic.Sens.forest.tiff"
+        }
+      },
+      {
+        "step": 98,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:21:08.365891+00:00",
+        "captures": [
+          "98-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-6-diagnostic.Sens.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-revman-6-diagnostic.Sens.forest.svg"
+        }
+      },
+      {
+        "step": 99,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:21:08.549887+00:00",
+        "captures": [
+          "99-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "99-0-forest_sens-6b7d53688c5a.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "revman",
+        "title": "diagnostic.Sens.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_sens-6b7d53688c5a.display.svg"
+        }
+      },
+      {
+        "step": 100,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:21:08.781273+00:00",
+        "captures": [
+          "100-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "revman",
+        "title": "diagnostic.Sens.forest"
+      },
+      {
+        "step": 101,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:21:09.050067+00:00",
+        "captures": [
+          "101-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-6-diagnostic.Spec.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-revman-6-diagnostic.Spec.forest.pdf"
+        }
+      },
+      {
+        "step": 102,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:21:12.725685+00:00",
+        "captures": [
+          "102-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-6-diagnostic.Spec.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-revman-6-diagnostic.Spec.forest.png"
+        }
+      },
+      {
+        "step": 103,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:21:17.267034+00:00",
+        "captures": [
+          "103-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-6-diagnostic.Spec.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-revman-6-diagnostic.Spec.forest.tiff"
+        }
+      },
+      {
+        "step": 104,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:21:17.527487+00:00",
+        "captures": [
+          "104-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-revman-6-diagnostic.Spec.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-revman-6-diagnostic.Spec.forest.svg"
+        }
+      },
+      {
+        "step": 105,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:21:17.746949+00:00",
+        "captures": [
+          "105-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Spec.forest": "105-0-forest_spec-de65daa8c0d3.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "revman",
+        "title": "diagnostic.Spec.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_spec-de65daa8c0d3.display.svg"
+        }
+      },
+      {
+        "step": 106,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:21:17.979711+00:00",
+        "captures": [
+          "106-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "revman",
+        "title": "diagnostic.Spec.forest"
+      },
+      {
+        "step": 107,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:21:18.224731+00:00",
+        "captures": [
+          "107-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic"
+      },
+      {
+        "step": 108,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:21:18.824869+00:00",
+        "captures": [
+          "108-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "included": 6
+      },
+      {
+        "step": 109,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:21:19.646813+00:00",
+        "captures": [
+          "109-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "diagnostic",
+        "metric": null,
+        "cells": [
+          [
+            "Fixture 1",
+            "19.0",
+            "10.0",
+            "1.0",
+            "81.0",
+            "0.655",
+            "0.469",
+            "0.803",
+            "0.988",
+            "0.919",
+            "0.998"
+          ],
+          [
+            "Fixture 2",
+            "20.0",
+            "11.0",
+            "2.0",
+            "82.0",
+            "0.645",
+            "0.466",
+            "0.791",
+            "0.976",
+            "0.910",
+            "0.994"
+          ],
+          [
+            "Fixture 3",
+            "21.0",
+            "12.0",
+            "3.0",
+            "83.0",
+            "0.636",
+            "0.463",
+            "0.781",
+            "0.965",
+            "0.897",
+            "0.989"
+          ],
+          [
+            "Fixture 4",
+            "22.0",
+            "13.0",
+            "4.0",
+            "84.0",
+            "0.629",
+            "0.460",
+            "0.771",
+            "0.955",
+            "0.885",
+            "0.983"
+          ],
+          [
+            "Fixture 5",
+            "23.0",
+            "14.0",
+            "5.0",
+            "85.0",
+            "0.622",
+            "0.458",
+            "0.761",
+            "0.944",
+            "0.873",
+            "0.977"
+          ],
+          [
+            "Fixture 6",
+            "24.0",
+            "15.0",
+            "6.0",
+            "86.0",
+            "0.615",
+            "0.456",
+            "0.753",
+            "0.935",
+            "0.862",
+            "0.970"
+          ]
+        ]
+      },
+      {
+        "step": 110,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:21:19.867829+00:00",
+        "captures": [
+          "110-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-diagnostic",
+        "workflow": "standard",
+        "method": "diagnostic.random"
+      },
+      {
+        "step": 111,
+        "action": "diagnostic-metrics",
+        "utc": "2026-10-15T03:21:20.010863+00:00",
+        "captures": [
+          "111-0-diagnostic-metrics.png"
+        ],
+        "artifacts": {},
+        "metrics": [
+          "sens",
+          "spec"
+        ]
+      },
+      {
+        "step": 112,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:21:20.330195+00:00",
+        "captures": [
+          "112-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 6,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0"
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 113,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:21:27.685312+00:00",
+        "captures": [
+          "113-0-matrix-results.png",
+          "113-0-matrix-results-report.png",
+          "113-0-matrix-results-table.png",
+          "113-0-matrix-results-figure.png",
+          "113-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "113-0-forest_sens-6b7d53688c5a.display.svg",
+          "diagnostic.Spec.forest": "113-1-forest_spec-de65daa8c0d3.display.svg"
+        },
+        "texts": {
+          "diagnostic.Sens.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSensitivity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)   p-value\n 0.632248              0.563938              0.695632  0.000191\n\nSensitivity -Heterogeneity\n Q         df   p-value    I²        τ²\n 0.157803   5  0.999503  0.0%  0.000000\n\nSensitivity -Test for overall effect (H₀: sensitivity = 0.5)\n Z          p-value\n 3.730256  0.000191\n\nSensitivity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.563938                          0.695632\n\nCalculation scale: logit - estimate: 0.541872, lower: 0.257159, upper: 0.826584, std. error: 0.145264\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "diagnostic.Spec.summary": "Diagnostic Random-Effects Model (k = 6)\n\nSpecificity -Model Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.955188              0.932201              0.970627  < 1e-06\n\nSpecificity -Heterogeneity\n Q         df   p-value    I²        τ²\n 3.918679   5  0.561183  0.0%  0.000000\n\nSpecificity -Test for overall effect (H₀: specificity = 0.5)\n Z          p-value\n 13.676940  < 1e-06\n\nSpecificity -Prediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.932201                          0.970627\n\nCalculation scale: logit - estimate: 3.059432, lower: 2.621002, upper: 3.497862, std. error: 0.223693\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_sens-6b7d53688c5a.display.svg",
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_spec-de65daa8c0d3.display.svg"
+        }
+      },
+      {
+        "step": 114,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:21:27.996340+00:00",
+        "captures": [
+          "114-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "diagnostic.random",
+        "parameters": {
+          "estimator": "REML",
+          "conf.level": 95.0,
+          "adjust": 0.5,
+          "correction.policy": "All studies if any zero exists",
+          "digits": 6,
+          "rm.method": "DL",
+          "inference.method": "z",
+          "to": "only0",
+          "plot_caption": "Verification outcome · Diagnostic · None\nGroup: test 1 · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "bmj",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "[default]",
+          "fp_show_col4": false,
+          "fp_col4_str": "Control",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest-88403b5f5fea.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#6b58a6",
+          "fp_point_size_multiplier": 1.0
+        }
+      },
+      {
+        "step": 115,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:21:28.205441+00:00",
+        "captures": [
+          "115-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "diagnostic.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 116,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:21:28.574440+00:00",
+        "captures": [
+          "116-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-6-diagnostic.Sens.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-bmj-6-diagnostic.Sens.forest.pdf"
+        }
+      },
+      {
+        "step": 117,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:21:32.362407+00:00",
+        "captures": [
+          "117-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-6-diagnostic.Sens.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-bmj-6-diagnostic.Sens.forest.png"
+        }
+      },
+      {
+        "step": 118,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:21:36.674385+00:00",
+        "captures": [
+          "118-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-6-diagnostic.Sens.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-bmj-6-diagnostic.Sens.forest.tiff"
+        }
+      },
+      {
+        "step": 119,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:21:36.970933+00:00",
+        "captures": [
+          "119-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-6-diagnostic.Sens.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-bmj-6-diagnostic.Sens.forest.svg"
+        }
+      },
+      {
+        "step": 120,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:21:37.188904+00:00",
+        "captures": [
+          "120-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Sens.forest": "120-0-forest_sens-6b7d53688c5a.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "bmj",
+        "title": "diagnostic.Sens.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_sens-6b7d53688c5a.display.svg"
+        }
+      },
+      {
+        "step": 121,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:21:37.395896+00:00",
+        "captures": [
+          "121-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "bmj",
+        "title": "diagnostic.Sens.forest"
+      },
+      {
+        "step": 122,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:21:37.696441+00:00",
+        "captures": [
+          "122-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-6-diagnostic.Spec.forest",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-bmj-6-diagnostic.Spec.forest.pdf"
+        }
+      },
+      {
+        "step": 123,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:21:41.285490+00:00",
+        "captures": [
+          "123-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-6-diagnostic.Spec.forest",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-bmj-6-diagnostic.Spec.forest.png"
+        }
+      },
+      {
+        "step": 124,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:21:45.720007+00:00",
+        "captures": [
+          "124-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-6-diagnostic.Spec.forest",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-bmj-6-diagnostic.Spec.forest.tiff"
+        }
+      },
+      {
+        "step": 125,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:21:45.982879+00:00",
+        "captures": [
+          "125-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic-bmj-6-diagnostic.Spec.forest",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/diagnostic-bmj-6-diagnostic.Spec.forest.svg"
+        }
+      },
+      {
+        "step": 126,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:21:46.176875+00:00",
+        "captures": [
+          "126-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "diagnostic.Spec.forest": "126-0-forest_spec-de65daa8c0d3.display.svg"
+        },
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "bmj",
+        "title": "diagnostic.Spec.forest",
+        "metric": null,
+        "plots": {
+          "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-40z1o4ez/analysis/forest_spec-de65daa8c0d3.display.svg"
+        }
+      },
+      {
+        "step": 127,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:21:46.362218+00:00",
+        "captures": [
+          "127-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "diagnostic",
+        "digits": 6,
+        "style": "bmj",
+        "title": "diagnostic.Spec.forest"
+      },
+      {
+        "step": 128,
+        "action": "workflow-passed",
+        "utc": "2026-10-15T03:21:46.570329+00:00",
+        "captures": [
+          "128-0-workflow-passed.png"
+        ],
+        "artifacts": {},
+        "scenario": "audit-round3-presentation-diagnostic"
+      }
+    ],
+    "frames": [
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-15-0-round4-annotations.png",
+        "sha256": "b2416c91a2ac7db31546815ee15d47b600ce5b6cfc7a41f411635b0958614fb4",
+        "step": 15,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-16-0-round4-annotations-bottom.png",
+        "sha256": "e4287eb5e07ec8cdcf7a8dd3ffa97fb34d7bb6085713434e17c0c8896ef7e2b0",
+        "step": 16,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-21-0-round4-annotations.png",
+        "sha256": "77e29f58172ed9d6f41f7be643337b34e662232e927a9b59b2df398ce22faf5c",
+        "step": 21,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-22-0-round4-annotations-bottom.png",
+        "sha256": "77e29f58172ed9d6f41f7be643337b34e662232e927a9b59b2df398ce22faf5c",
+        "step": 22,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-36-0-round4-annotations.png",
+        "sha256": "da7914a780d85a125ca68242ce640f922dd4fcb65d4589afa187914c5e02a59b",
+        "step": 36,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-37-0-round4-annotations-bottom.png",
+        "sha256": "8e26c1f24da349dfd74afb57e4744e1ef6691defda0108db1d22a60922f5953f",
+        "step": 37,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-42-0-round4-annotations.png",
+        "sha256": "0d2b3f1dd2cd5b54adc5cd5cc34d4bbb30ffcd5f265ff70033f3ae6a8b27c393",
+        "step": 42,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-43-0-round4-annotations-bottom.png",
+        "sha256": "0d2b3f1dd2cd5b54adc5cd5cc34d4bbb30ffcd5f265ff70033f3ae6a8b27c393",
+        "step": 43,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-57-0-round4-annotations.png",
+        "sha256": "2ada5015431a09fcc9d916fe9ee75367aa8511fc1c0f5fba6baefbcd9b3aa126",
+        "step": 57,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-58-0-round4-annotations-bottom.png",
+        "sha256": "8c8d1f747075c1527cfd9317af368ce7ae3c19bb384c45fb972629dd71dbd2a9",
+        "step": 58,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-63-0-round4-annotations.png",
+        "sha256": "478b74f4da58d3100c72239f7410c7bb47c45ea5fcaccf021ef1afbcbed6871e",
+        "step": 63,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-64-0-round4-annotations-bottom.png",
+        "sha256": "478b74f4da58d3100c72239f7410c7bb47c45ea5fcaccf021ef1afbcbed6871e",
+        "step": 64,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-78-0-round4-annotations.png",
+        "sha256": "2e73b262dbf4031861d7a46620f877574281b7a723ebf55d86778f266935d89c",
+        "step": 78,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-79-0-round4-annotations-bottom.png",
+        "sha256": "8608926ea6015d019db89bfcced468013e8aae3fd8f90ee11c03e555e0f2f898",
+        "step": 79,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-84-0-round4-annotations.png",
+        "sha256": "e8fc9504887fd7ade9bce0b3934a92c0fbc5e587aa9a474623bc42e6d77355e5",
+        "step": 84,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-85-0-round4-annotations-bottom.png",
+        "sha256": "e8fc9504887fd7ade9bce0b3934a92c0fbc5e587aa9a474623bc42e6d77355e5",
+        "step": 85,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-99-0-round4-annotations.png",
+        "sha256": "4d28ee3a5131fbebadd8c5d91530e3ba5eaf38cbada9c64c3e9f73da5377942f",
+        "step": 99,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-100-0-round4-annotations-bottom.png",
+        "sha256": "d6e21d370e15cfbd626f2c12320b92d4710951c63cee548273ca6453e73f5fd7",
+        "step": 100,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-105-0-round4-annotations.png",
+        "sha256": "304665869e89e94f033dd39ba0759ca55acc415c150511cb841fbd0effc0f8fd",
+        "step": 105,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-106-0-round4-annotations-bottom.png",
+        "sha256": "304665869e89e94f033dd39ba0759ca55acc415c150511cb841fbd0effc0f8fd",
+        "step": 106,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-120-0-round4-annotations.png",
+        "sha256": "08e109d68f64c681ea42114fd1b5753525b0f4803e1a2d26dc1faa782d3e3790",
+        "step": 120,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-121-0-round4-annotations-bottom.png",
+        "sha256": "ac056d1f83d2c4d3891f6a7d66a7410f7a53ed170a6f9702851203e184a8d3d5",
+        "step": 121,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-126-0-round4-annotations.png",
+        "sha256": "11cf8180345cc00c7297de509c0aea85474e30c433683bddea993268556abdd1",
+        "step": 126,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-diagnostic-scale-recovered-127-0-round4-annotations-bottom.png",
+        "sha256": "11cf8180345cc00c7297de509c0aea85474e30c433683bddea993268556abdd1",
+        "step": 127,
+        "capture": "QScreen.grabWindow"
+      }
+    ]
   }
 }

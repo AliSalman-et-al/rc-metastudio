@@ -629,7 +629,7 @@ def run(app, window, work, record, scenario):
         for path in view.results.display_images.values():
             nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
             captions = ["".join(node.itertext()) for node in nodes]
-        assert not any(" · None" in caption for caption in captions), captions
+            assert not any(" · None" in caption for caption in captions), captions
             assert any("[0.000000, 0.400000]" in caption for caption in captions), captions
             assert not any("e-16" in caption or "e-17" in caption for caption in captions), captions
             for weight in (node for node in nodes if re.fullmatch(r"[\d.]+%", "".join(node.itertext()))):
