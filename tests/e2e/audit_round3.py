@@ -933,6 +933,14 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
             top = float(frame.attrib["y"])
             bottom = top + float(frame.attrib["height"])
             for group in svg.iter("{http://www.w3.org/2000/svg}g"):
+                for shape in list(group):
+                    if shape.tag.rsplit("}",1)[-1] not in {"polyline", "polygon"} or "#2F5597" not in shape.attrib.get("style", "").upper():
+                        continue
+                    points = [float(value) for value in re.findall(r"[-+]?[\d.]+", shape.attrib["points"])]
+                    if max(points[::2])-min(points[::2]) > float(frame.attrib["width"]) / 2:
+                        assert group.attrib.get("clip-path") == point_group.attrib["clip-path"], ("bubble data layer lacks panel clipping", shape.attrib)
+                        left = float(frame.attrib["x"])
+                        assert min(points[::2]) >= left-.1 and max(points[::2]) <= left+float(frame.attrib["width"])+.1, ("bubble prediction outside selected range", metric, min(points[::2]), max(points[::2]), frame.attrib)
                 for line in group.findall("{http://www.w3.org/2000/svg}line"):
                     style = line.attrib.get("style", "").upper()
                     if abs(float(line.attrib["y1"]) - float(line.attrib["y2"])) > .01:

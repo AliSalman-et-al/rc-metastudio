@@ -13,3 +13,12 @@ Inspected during implementation:
 - Main/setup/results and binary/continuous/diagnostic calculator frames listed in NATIVE: deliberate keyboard path, focus indication, named controls and readable labels. Measured grid contrast is recorded with the actual palette; derived cells also use italic type.
 
 The final contact-sheet pairs and final scale/long/precision captures are reviewed after curation; acceptance is appended below. No claim covers Orca/screen readers, actual Windows/macOS OS scaling, native picker behavior, every parameter combination, or exported files not separately inspected. Decoded export checks establish format/content routing; they do not establish every exported pixel's aesthetics.
+
+Final inspected captures:
+
+- native-arm-settled, steps 40/51/52: custom Drug A / Usual care grid, calculator and canonical CSV preview. No ghosting in the settled frames; labels readable, counts/effects intact, form actions visible. Earlier native-final-arm-names-all at 200% and native-final-arm-normal calculator frames retain compositor transitions and are not accepted for aesthetics. Their model/geometry checks remain valid.
+- native-final-arm-names-all step 32: custom naming wizard at 200%, optional fields and help fit with no clipped labels.
+- native-diamond-after steps 06/31: lower default standard and BMJ subgroup figures, study text/summary/heterogeneity/test/prediction and ticks readable with separate baselines.
+- native-qualified-final-audit-round3-presentation-twoarm-mean step 84: six-decimal BMJ columns, pooled model label/totals, footer and axis clear. Stored tx names in this pre-default-change fixture are intentional.
+- native-irr-header-after 04/07: actual arm names no longer touch Events / Person-time. Default footer was bold after the temporary header graphics state; rejected and restored graphics parameters, then repeated native proof.
+- native-bubble-exports step 82: null guide fixed, but regression/CI curves escape the panel in Qt's SVG view on the narrowed range. Rejected this development frame for final bubble aesthetics; explicit prediction-domain correction and fresh native proof follow.

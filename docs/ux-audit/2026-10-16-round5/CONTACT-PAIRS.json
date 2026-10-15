@@ -9,25 +9,25 @@
     "title": "F12 \u00b7 One structured representation of weights",
     "description": "Six-study binary input; the legacy graphics-scene paragraph is retired. Report, Tables, copy/export retain structured weight rows.",
     "before": "screenshots/before-matrix-twoarm-proportion-standard-figure.png",
-    "after": "screenshots/native-final-arm-normal-10-0-matrix-results-figure.png"
+    "after": "screenshots/native-arm-settled-10-0-matrix-results-figure.png"
   },
   {
     "title": "Long forests \u00b7 Readable study rows",
     "description": "Same 65-study Pignon HR input. Height grows and scrolls; typography keeps the short-figure scale.",
     "before": "screenshots/before-matrix-hr-standard-figure.png",
-    "after": "screenshots/native-diamond-after-05-0-round5-long-figure.png"
+    "after": "screenshots/native-long-settled-05-0-round5-long-figure.png"
   },
   {
     "title": "Subgroup figures \u00b7 Consistent typography",
     "description": "Same HR studies; after uses test-owned A/B grouping. All three styles are checked.",
     "before": "screenshots/before-matrix-hr-subgroup-figure.png",
-    "after": "screenshots/native-diamond-after-30-0-round5-long-figure.png"
+    "after": "screenshots/native-long-settled-30-0-round5-long-figure.png"
   },
   {
     "title": "IRR \u00b7 Standalone context and original exposure",
     "description": "Same Niel-Weise sample with actual stored arm names and catheter-days. Caption is editable/removable; model values unchanged.",
     "before": "screenshots/before-matrix-irr-standard-figure.png",
-    "after": "screenshots/native-irr-header-after-04-0-round5-irr-context.png"
+    "after": "screenshots/native-irr-settled-04-0-round5-irr-context.png"
   },
   {
     "title": "Editor \u00b7 Editable figure caption",
@@ -82,5 +82,35 @@
     "description": "Rejected development frame versus corrected 200% Qt page. Proves Linux Qt scaling, not Windows/macOS OS scaling.",
     "before": "screenshots/native-scale-2-02-0-review1-start-before-check.png",
     "after": "screenshots/native-qualified-final-scale-2-02-0-review1-start-before-check.png"
+  },
+  {
+    "title": "Arm names \u00b7 Wizard",
+    "description": "Same binary wizard before/after. Optional custom names trim whitespace; duplicates are rejected inline.",
+    "before": "screenshots/native-arms-baseline-03-0-data-outcome-naming.png",
+    "after": "screenshots/native-arm-settled-32-0-round5-arm-wizard.png"
+  },
+  {
+    "title": "Arm names \u00b7 Actual grid headers",
+    "description": "Same six studies. Drug A / Usual care flow through the stored model groups.",
+    "before": "screenshots/native-arms-baseline-04-0-data-populated.png",
+    "after": "screenshots/native-arm-settled-40-0-round5-arm-grid.png"
+  },
+  {
+    "title": "Arm names \u00b7 Default forest",
+    "description": "Same six studies and RevMan fit. New defaults Intervention / Control; old projects retain exact stored names.",
+    "before": "screenshots/native-arms-baseline-08-0-matrix-results-figure.png",
+    "after": "screenshots/native-arm-settled-10-0-matrix-results-figure.png"
+  },
+  {
+    "title": "Calculator \u00b7 Actual arm labels",
+    "description": "Historical binary calculator versus custom-name study counts; inputs differ. Actual rows and clear effect/interval labels.",
+    "before": "screenshots/before-helper-calculator-binary.png",
+    "after": "screenshots/native-arm-settled-51-0-round5-arm-calculator.png"
+  },
+  {
+    "title": "CSV \u00b7 Canonical headers after either input",
+    "description": "Both are after captures: left imports canonical custom-arm headers; right imports old Tx aliases. Both previews show the same actual names. Template bytes are retained in native artifacts.",
+    "before": "screenshots/native-arm-settled-52-0-round5-arm-csv-preview.png",
+    "after": "screenshots/native-arm-settled-54-0-round5-arm-csv-preview.png"
   }
 ]

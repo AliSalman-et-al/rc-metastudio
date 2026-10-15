@@ -110,5 +110,12 @@
     "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/helper-calculator-diagnostic-03-0-calculator-effect-preview.png",
     "provenance": "../2026-10-15-round4-reaudit/REPORT.md and OUTCOMES.json",
     "capture": "historical native; original capture method retained"
+  },
+  {
+    "path": "screenshots/before-helper-calculator-binary.png",
+    "sha256": "2ba3f890f87fffe392d1d55e77a6cfa741c7facb01b8f58d74c18f500d5b4b49",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/helper-calculator-binary-03-0-calculator-effect-preview.png",
+    "capture": "historical native; see independent audit receipt"
   }
 ]

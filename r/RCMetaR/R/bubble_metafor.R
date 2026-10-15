@@ -354,7 +354,8 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
             mar=c(4.6, 5.2, 1.1, if (rcmetar.bubble.param.is.true(bundle, "bp_show_legend", FALSE)) 7.2 else 1.1),
             mgp=c(2.9, 0.75, 0),
             cex=size$cex,
-            family="sans"
+            family="sans",
+            xpd=FALSE
         )
         args <- rcmetar.bubble.style.args(bundle)
         ylim <- rcmetar.bubble.ylim(bundle)
@@ -372,7 +373,7 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
                 ylab="",
                 xlim=rcmetar.bubble.xlim(bundle),
                 ylim=ylim,
-                predlim=range(as.numeric(bundle$moderator$values), na.rm=TRUE),
+                predlim=if (is.null(rcmetar.bubble.xlim(bundle))) range(as.numeric(bundle$moderator$values), na.rm=TRUE) else rcmetar.bubble.xlim(bundle),
                 refline=NA,
                 atransf=rcmetar.bubble.atransf(bundle),
                 at=at,
