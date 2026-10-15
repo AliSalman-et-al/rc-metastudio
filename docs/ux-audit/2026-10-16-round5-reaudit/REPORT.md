@@ -108,11 +108,11 @@ The five additional round-four findings are tracked separately:
 
 ## 3. Regressions and the round-five claims
 
-Early binary standard evidence: [figure](screenshots/matrix-twoarm-proportion-standard-figure.png) and [report](screenshots/matrix-twoarm-proportion-standard-report.png) agree on OR 0.761368, 95% CI 0.458516–1.264253, P 0.292012. Intervention/Control names are readable. Duplicate scene weights are absent; standalone context is present. This is not yet a verdict across all families.
+Early binary standard evidence: [figure](screenshots/matrix-twoarm-proportion-standard-figure.png) and [report](screenshots/matrix-twoarm-proportion-standard-report.png) agree on OR 0.761368, 95% CI 0.458516–1.264253, P 0.292012. Intervention/Control names are readable. Duplicate scene weights are absent; standalone context is present. All 50 first figure/report pairs have now been inspected; the arm/context and weights improvements hold on those paths. The shared precision claim remains incomplete (R5-03), and long subgroup marks regress (R5-04).
 
 ## 4. New and remaining findings
 
-F11 is fixed on the fresh single-arm proportion bubble: [native figure](screenshots/matrix-onearm-proportion-meta-regression-figure.png) has no exterior zero line between ticks and Dose. Remaining metric/explicit-bound/export proof is pending. ### R5-01 — Medium: transformed-effect tables leave the standard-error scale implicit
+### R5-01 — Medium: transformed-effect tables leave the standard-error scale implicit
 
 The [OR subgroup table](screenshots/matrix-twoarm-proportion-subgroup-report.png) puts clinical OR 0.746519 beside “Std. error” 0.375206. The estimate/CI are exponentiated; the SE remains on the fitted log scale (`results_display.R`, sequential/subgroup formatters). Sequential rows do the same. The [diagnostic cumulative table](screenshots/matrix-diagnostic-cumulative-report.png) similarly pairs sensitivity 0.632248 with fitted logit-scale SE 0.145264 under the same bare label. A reader copying the table can mistake that number for an SE of the displayed OR. The [round-four counterpart](../2026-10-15-round4-reaudit/screenshots/matrix-twoarm-proportion-subgroup-report.png) already has this label: **pre-existing, not a round-five regression**. No wrong fitted value is alleged.
 
@@ -139,7 +139,7 @@ The [fresh 65-study default subgroup forest](screenshots/matrix-hr-subgroup-figu
 
 [SVG geometry](HR-CAP-GEOMETRY.json) measures cap height about 33.22 pt against 23.54 pt row spacing (1.41 rows), versus about 14.61/14.42 pt (1.01 rows) before. These are vector geometry measurements, independent of window zoom; they explain the visible overlap. This is a confirmed round-five presentation regression, not changed CI endpoints or fitted values.
 
-**Principle:** each study's marks must stay visually associated with its row. **Recommendation:** bound CI cap height by actual study-row spacing in the existing default renderer; check short/65-study standard and subgroup figures and their exports. Keep horizontal endpoints, weights and estimates unchanged. This needs the same row-aware treatment already applied to pooled diamonds.
+**Principle:** each study's marks must stay visually associated with its row. **Recommendation:** bound CI cap height by actual study-row spacing in the existing default renderer; check short/65-study standard and subgroup figures and their exports. Keep horizontal endpoints, weights and estimates unchanged. This needs the same row-aware treatment already applied to pooled diamonds. Additional inspected [default standard](screenshots/long-default-standard.png), [RevMan subgroup](screenshots/long-revman-subgroup-footer.png) and [BMJ subgroup](screenshots/long-bmj-subgroup-footer.png) frames also show over-tall caps; [RevMan standard](screenshots/long-revman-standard-footer.png) and [BMJ standard](screenshots/long-bmj-standard.png) are cleaner. Only the default subgroup has the measured same-input round-four comparison.
 
 ### R5-05 — Low: raw model vocabulary survives in polished reports
 
@@ -173,7 +173,9 @@ Native doctor and all five binary matrix workflows passed. The independent publi
 
 ## 7. Accessibility
 
-Keyboard and QT_SCALE_FACTOR=1.5 pending. Screen readers, other platforms and actual OS scaling unqualified.
+Fresh native Tab/arrow/Escape traversal passed for the workspace, both setup pages and Results table/selector/sidebar; focus sequences are retained in [DESIGN](DESIGN.json). [Grid cues](screenshots/design-08-round5-grid-cues.png) show calculator glyphs and italic derived values as well as gold colour. The labelled Analyses control has real prerequisite tooltips, and the selectable Results table has a meaningful accessible name. Empty accessibleName properties alone are not treated as defects: labelled Qt controls may derive their names through buddy/label relations.
+
+The finishing queue adds native calculator traversal and QT_SCALE_FACTOR=1.5; independent 1.25/2.0 follow-ups are queued serially. Those are still pending and must not be counted passed yet. These are application-level Qt scale checks, not actual OS display-scaling or screen-reader qualification. Complete keyboard-only tasks without initial programmatic focus, Orca/AT-SPI relationships, high contrast, measured contrast, multi-monitor behavior and Windows/macOS remain unqualified.
 
 ## 8. Ranked round-six list (provisional until finishing runs complete)
 
@@ -193,7 +195,7 @@ RCMS is substantially closer to a coherent, polished analysis workbench. Actual 
 
 ## 9. Limits, replay and evidence inventory
 
-Source `docs/ux-audit/2026-10-14-round3/ENV.sh` and export DISPLAY=:0. Run `uv run python scripts/verify_rcms.py doctor --native` first. Its fresh receipt is `artifacts/verification/rcms/20261015T082425Z-d75ac4d2-doctor` (exit 0). Read-only native wrappers copied from round four own settings and inputs under ignored raw/. Run exact commands through `uv run python docs/ux-audit/2026-10-16-round5-reaudit/run.py LABEL COMMAND...`. No screenshots are yet cited as inspected.
+Source `docs/ux-audit/2026-10-14-round3/ENV.sh` and export DISPLAY=:0. Run `uv run python scripts/verify_rcms.py doctor --native` first. Its fresh receipt is `artifacts/verification/rcms/20261015T082425Z-d75ac4d2-doctor` (exit 0). Read-only native wrappers copied from round four own settings and inputs under ignored raw/. Run exact commands through `uv run python docs/ux-audit/2026-10-16-round5-reaudit/run.py LABEL COMMAND...`. Every cited screenshot is recorded with an inspection observation and SHA-256 in [INSPECTIONS](INSPECTIONS.json). Uninspected incidental captures are retained only in ignored raw storage.
 
 Setup attempt: shell reported `/bin/bash: line 2: python: command not found`; no writes occurred. Corrected to python3 for audit-document setup; application commands use uv run python.
 

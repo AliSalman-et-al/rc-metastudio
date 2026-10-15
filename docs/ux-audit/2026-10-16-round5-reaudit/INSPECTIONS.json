@@ -802,5 +802,30 @@
     "path": "screenshots/extra-irr-invalid-contour-recoverable.png",
     "sha256": "47dd70818ab9599f0d6e7d3ab17d8c9cadbfcbbe9f48c49523794dd1a367f940",
     "observation": "Native supplemental frame inspected. Reitsma SROC context and operating point agree with report65.762% sensitivity/80.975% specificity. Invalid contour95,100 shows exact error; modal remains recoverable with enabledOK and corrected retry passes, but busy indicator remains until retry (pre-existing D04). IRR nine-study preview wrong eligibility reason is R5-07."
+  },
+  {
+    "path": "screenshots/long-default-standard.png",
+    "sha256": "1a3f39bc09b2a54c3b261b4e4b6a4cf3850886ace46bab7ced9b1139eddec7c5",
+    "observation": "65-study default standard: readable labels/banding; oversized CI caps visibly extend outside rows."
+  },
+  {
+    "path": "screenshots/long-revman-standard-footer.png",
+    "sha256": "739c41faba6eeb87a2cafbc5dca4090bebe02101ca46212aa9fe53f1ffcd961b",
+    "observation": "RevMan standard footer is readable, pooled HR/CI 0.873766 [0.814094, 0.937813] matches matrix; clean footer spacing."
+  },
+  {
+    "path": "screenshots/long-bmj-standard.png",
+    "sha256": "1982f3183eea43b5fb36db3b2afa51750bdae1e50d4d26ae046603c6719b410b",
+    "observation": "BMJ standard long figure: readable study/header/weight columns and caption, compact caps."
+  },
+  {
+    "path": "screenshots/long-bmj-subgroup-footer.png",
+    "sha256": "56fc2f9daa5c594b26bdda11ac9c059feadfd28dc90350f03345e4642369fd67",
+    "observation": "BMJ subgroup footer: row banding and pooled statistics readable, oversized caps also appear in subgroup rendering."
+  },
+  {
+    "path": "screenshots/long-revman-subgroup-footer.png",
+    "sha256": "9a7a7e9acf6fdc3377796d80994d5231e3352cd909d227a5718c04f6a939ebc8",
+    "observation": "RevMan subgroup footer: oversized study CI caps extend into neighbours; readable footer statistics and caption preserved."
   }
 ]
