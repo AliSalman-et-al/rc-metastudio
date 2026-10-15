@@ -1,0 +1,52 @@
+[
+  {
+    "path": "screenshots/matrix-twoarm-mean-standard-figure-revman.png",
+    "sha256": "af86cca23a4aa385afd0ed5d678de3cc98508433e39526d5ed30903289e7d06d",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-mean-revman/captures/matrix-twoarm-mean-standard-figure-revman.png",
+    "scenario": "MATRIX-twoarm-mean-revman"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-cumulative-figure-revman.png",
+    "sha256": "8964e364fdd10e7845a9105418d416a7412be1d1fc77c4b64d0b769e7ac20783",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-mean-revman/captures/matrix-twoarm-mean-cumulative-figure-revman.png",
+    "scenario": "MATRIX-twoarm-mean-revman"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-leave-one-out-figure-revman.png",
+    "sha256": "ed2249bedc14f8bc1ad8017f113507648673df3a46cfdda291c84c7bb6db339e",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-mean-revman/captures/matrix-twoarm-mean-leave-one-out-figure-revman.png",
+    "scenario": "MATRIX-twoarm-mean-revman"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-subgroup-figure-revman.png",
+    "sha256": "c45a29a829fdcccda559ef3c4cca2337ca9b6d902fd4c03cca8429ce71573461",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-mean-revman/captures/matrix-twoarm-mean-subgroup-figure-revman.png",
+    "scenario": "MATRIX-twoarm-mean-revman"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-meta-regression-figure-revman.png",
+    "sha256": "435cc8052f7f72cb864851eec751cd1d2425a4fd43fcffb721c0e6a644382a8a",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-mean-revman/captures/matrix-twoarm-mean-meta-regression-figure-revman.png",
+    "scenario": "MATRIX-twoarm-mean-revman"
+  }
+]

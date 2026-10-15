@@ -1,0 +1,162 @@
+[
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-standard-report-revman.png",
+    "sha256": "f2a22a494e9cfdd3b8ec181e72395e84cfeb6e314985fb79d8f6df912acbf8c8",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-standard-report-bottom-revman.png",
+    "sha256": "e5be07d1f6578e06d51bd70b2f1dbe1fff01daacad8220a3026786d1b5b2efea",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-standard-figure-revman.png",
+    "sha256": "06b7f19bc0b1a145f24f5627d367552cc106207e5bee0e096e50d5f5fdf781ec",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-standard-figure-bottom-revman.png",
+    "sha256": "06b7f19bc0b1a145f24f5627d367552cc106207e5bee0e096e50d5f5fdf781ec",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-cumulative-report-revman.png",
+    "sha256": "4823bb734cc9d98cb609578ee9443d10ceddb993b8fe1bea443b968d0ccd7130",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-cumulative-report-bottom-revman.png",
+    "sha256": "4823bb734cc9d98cb609578ee9443d10ceddb993b8fe1bea443b968d0ccd7130",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-cumulative-figure-revman.png",
+    "sha256": "37b6d462acba9d5ed3c3aa49066b40c6cd98091ea73eea67d430e91a43faacef",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-cumulative-figure-bottom-revman.png",
+    "sha256": "cb7bc544ba5223f65514a20fec3b580f036d0a199e44638c537bf1c603ef0176",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-leave-one-out-report-revman.png",
+    "sha256": "3f91eff50acf75e9e2190fd8081c2286d0f4814c3467b0761adafc50cbeef778",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-leave-one-out-report-bottom-revman.png",
+    "sha256": "0331f91f668bd05b46edd4cdf052635c13f8e210044e303617e3f2d670a0f4fa",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-leave-one-out-figure-revman.png",
+    "sha256": "515320a8b437ad5a025b86403c78409be65336eb11866fe77590291829797965",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-leave-one-out-figure-bottom-revman.png",
+    "sha256": "64917018b1d548f4514540425baeb05ac5dcf729fd9abc5bcc5ddfc1f14a71a9",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-subgroup-report-revman.png",
+    "sha256": "8e163a51099c4e110e705339a2f6165f9feffc569a0c224c172e827ba8a9eb0f",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-subgroup-report-bottom-revman.png",
+    "sha256": "adc67c65a3004d45f7a6e2c9adc8aff75d5236c3dda95637adfc79797cf6daf9",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-subgroup-figure-revman.png",
+    "sha256": "f71124b92f48f3dcf05d7faae5cff8f22275d0881076961fb1dd7948e9d11c97",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-subgroup-figure-bottom-revman.png",
+    "sha256": "ea3d16763dff42bd74cd4af8c3b5bd2f2e38e85c8914d1c81d945f18c485f082",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-meta-regression-report-revman.png",
+    "sha256": "5c06f3d1b4d8b93fb56e4d3866ff20e66572de9be1f8f8e4e96c299a546d92ae",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-meta-regression-report-bottom-revman.png",
+    "sha256": "a6cc2c8692cd902abeb106d0535aa3c9547134cc88525a6e15c0ecdd14abf9ae",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-meta-regression-figure-revman.png",
+    "sha256": "13658b5915148b82d8f828697aa23cc254cd053494abb2b8a815d3974a137324",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-meta-regression-figure-bottom-revman.png",
+    "sha256": "ddb36c84d89be2d249e9bb9161d5657a880f09c911780f86a025200cfe7e365a",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first"
+  }
+]

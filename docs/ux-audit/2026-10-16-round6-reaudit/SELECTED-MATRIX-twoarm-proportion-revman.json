@@ -1,0 +1,52 @@
+[
+  {
+    "path": "screenshots/matrix-twoarm-proportion-standard-figure-revman.png",
+    "sha256": "06b7f19bc0b1a145f24f5627d367552cc106207e5bee0e096e50d5f5fdf781ec",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-standard-figure-revman.png",
+    "scenario": "MATRIX-twoarm-proportion-revman"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-cumulative-figure-revman.png",
+    "sha256": "37b6d462acba9d5ed3c3aa49066b40c6cd98091ea73eea67d430e91a43faacef",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-cumulative-figure-revman.png",
+    "scenario": "MATRIX-twoarm-proportion-revman"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-leave-one-out-figure-revman.png",
+    "sha256": "515320a8b437ad5a025b86403c78409be65336eb11866fe77590291829797965",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-leave-one-out-figure-revman.png",
+    "scenario": "MATRIX-twoarm-proportion-revman"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-subgroup-figure-revman.png",
+    "sha256": "f71124b92f48f3dcf05d7faae5cff8f22275d0881076961fb1dd7948e9d11c97",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-subgroup-figure-revman.png",
+    "scenario": "MATRIX-twoarm-proportion-revman"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-meta-regression-figure-revman.png",
+    "sha256": "13658b5915148b82d8f828697aa23cc254cd053494abb2b8a815d3974a137324",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-proportion-revman/captures/matrix-twoarm-proportion-meta-regression-figure-revman.png",
+    "scenario": "MATRIX-twoarm-proportion-revman"
+  }
+]

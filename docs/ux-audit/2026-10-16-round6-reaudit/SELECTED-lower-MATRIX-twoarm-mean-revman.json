@@ -1,0 +1,32 @@
+[
+  {
+    "path": "screenshots/matrix-twoarm-mean-cumulative-figure-bottom-revman.png",
+    "sha256": "2c9b3478f24ef52b23281c5761a33c5ef1e17dee32905bb3f6ce4458befb891e",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-mean-revman/captures/matrix-twoarm-mean-cumulative-figure-bottom-revman.png",
+    "scenario": "lower-MATRIX-twoarm-mean-revman"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-subgroup-figure-bottom-revman.png",
+    "sha256": "ace59771a7a485773d7825db616011ffbf6dde92021eda75679352a2c810dd33",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-mean-revman/captures/matrix-twoarm-mean-subgroup-figure-bottom-revman.png",
+    "scenario": "lower-MATRIX-twoarm-mean-revman"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-meta-regression-figure-bottom-revman.png",
+    "sha256": "804903a898f4e08a2e64bcfd981951f52b7f65baf6992c50d188e9983c5b8f89",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-mean-revman/captures/matrix-twoarm-mean-meta-regression-figure-bottom-revman.png",
+    "scenario": "lower-MATRIX-twoarm-mean-revman"
+  }
+]
