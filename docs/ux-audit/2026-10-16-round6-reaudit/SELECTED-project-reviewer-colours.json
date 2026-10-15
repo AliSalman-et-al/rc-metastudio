@@ -1,0 +1,170 @@
+[
+  {
+    "path": "screenshots/project-reviewer-colours-07-0-reviewer-colour-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/07-0-reviewer-colour-after.png",
+    "sha256": "4d27dfb91b2f7cec0a8c8b3827e978e0dabda0556607aef0de2214e7bbf835f5",
+    "action": "reviewer-colour-after",
+    "step": 7,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-08-0-reviewer-default-style-editor.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/08-0-reviewer-default-style-editor.png",
+    "sha256": "d2489208f5a16c8efba70c9f979ac15c0c8a339cd2ca5fff0fad7885ba09a846",
+    "action": "reviewer-default-style-editor",
+    "step": 8,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-19-0-reviewer-colour-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/19-0-reviewer-colour-after.png",
+    "sha256": "21642ba9ebf0a6bb293ceb32f5c4af76c01620d9d8d05436db9d0d80c0cc17c7",
+    "action": "reviewer-colour-after",
+    "step": 19,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-20-0-reviewer-default-style-editor.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/20-0-reviewer-default-style-editor.png",
+    "sha256": "3dc4c0c514ceef20bffb4c573b697759869689077393740a06461e818f517b4d",
+    "action": "reviewer-default-style-editor",
+    "step": 20,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-31-0-reviewer-colour-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/31-0-reviewer-colour-after.png",
+    "sha256": "c435aa727f965503b9b597f68213149831c44aa96d78b9d6d337a54f82d8014d",
+    "action": "reviewer-colour-after",
+    "step": 31,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-32-0-reviewer-default-style-editor.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/32-0-reviewer-default-style-editor.png",
+    "sha256": "d0d063665ad7ed5b4fbd1a8be2849a77e911b23734e14044f2f527fa52c2989b",
+    "action": "reviewer-default-style-editor",
+    "step": 32,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-47-0-reviewer-colour-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/47-0-reviewer-colour-after.png",
+    "sha256": "f3ea73c1810951654459103a6dac3c83851551a9720a9a471975efce401bcd56",
+    "action": "reviewer-colour-after",
+    "step": 47,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-48-0-reviewer-default-style-editor.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/48-0-reviewer-default-style-editor.png",
+    "sha256": "1d0509f0e9a2fe3aa002d0d63179a2058b7b1d5aa3390777aa40ef5c0d6fc5aa",
+    "action": "reviewer-default-style-editor",
+    "step": 48,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-49-0-reviewer-default-clipped-arrows.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/49-0-reviewer-default-clipped-arrows.png",
+    "sha256": "fa696e605b5079f72c56386c3fa6b3c52b056427d697a634b1eec8f6311c20d8",
+    "action": "reviewer-default-clipped-arrows",
+    "step": 49,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-64-0-reviewer-colour-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/64-0-reviewer-colour-after.png",
+    "sha256": "7e5c0f8f817964dc255f7f7fca9e04b86065b0f23a22dde848b40f5f75ed826c",
+    "action": "reviewer-colour-after",
+    "step": 64,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-65-0-reviewer-default-style-editor.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/65-0-reviewer-default-style-editor.png",
+    "sha256": "c39202486c5e1942e151f2e3d1f0bfee074980712a82672ed1a033c76e8d7e93",
+    "action": "reviewer-default-style-editor",
+    "step": 65,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-80-0-reviewer-colour-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/80-0-reviewer-colour-after.png",
+    "sha256": "5f4f9367073e326bccace9b66a812dbaa95afb1e58da977b39ff84018f26732b",
+    "action": "reviewer-colour-after",
+    "step": 80,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-81-0-reviewer-default-style-editor.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/81-0-reviewer-default-style-editor.png",
+    "sha256": "720400698dcf34a0fc98b099aef9dc40ec7f9587081acd8fd4c537ca8eb84854",
+    "action": "reviewer-default-style-editor",
+    "step": 81,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-97-0-reviewer-colour-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/97-0-reviewer-colour-after.png",
+    "sha256": "e223f8d9283bf03fb759aeec4f95cbd3fdfac5204aadd69020d42e380b31330d",
+    "action": "reviewer-colour-after",
+    "step": 97,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-98-0-reviewer-default-style-editor.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/98-0-reviewer-default-style-editor.png",
+    "sha256": "90f07660a83828c215c997639edad3c1588af83cfff4fddb21b1020efc18f318",
+    "action": "reviewer-default-style-editor",
+    "step": 98,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-104-0-reviewer-colour-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/104-0-reviewer-colour-after.png",
+    "sha256": "5dfa2bb361e2556cce6a2e4023b203b36696a9c3a2d656dd7aa49443e7df9a1d",
+    "action": "reviewer-colour-after",
+    "step": 104,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-105-0-reviewer-default-style-editor.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/105-0-reviewer-default-style-editor.png",
+    "sha256": "90f07660a83828c215c997639edad3c1588af83cfff4fddb21b1020efc18f318",
+    "action": "reviewer-default-style-editor",
+    "step": 105,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-113-0-reviewer-colour-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/113-0-reviewer-colour-after.png",
+    "sha256": "6a4aa53995870dcc36f3bcf8933bf3459538b152f729471d7eb2e0e3d8ecd3a8",
+    "action": "reviewer-colour-after",
+    "step": 113,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-114-0-reviewer-default-style-editor.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/114-0-reviewer-default-style-editor.png",
+    "sha256": "2761d276d171ff81b715f15b26f888d3f27fa12e4215dc2a2e5fbc77995d7928",
+    "action": "reviewer-default-style-editor",
+    "step": 114,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-122-0-reviewer-colour-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/122-0-reviewer-colour-after.png",
+    "sha256": "b26a4eb2dffd878d9c4fcb6b3b65a81d020f42af231e58fb73427da5d94eead9",
+    "action": "reviewer-colour-after",
+    "step": 122,
+    "scenario": "project-reviewer-colours"
+  },
+  {
+    "path": "screenshots/project-reviewer-colours-123-0-reviewer-default-style-editor.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183419Z-9516aa51-project-reviewer-colours/123-0-reviewer-default-style-editor.png",
+    "sha256": "b6aea319940df74858511eaf9d0b73f0a4492351ed4c41cefad6c41a3d9baaad",
+    "action": "reviewer-default-style-editor",
+    "step": 123,
+    "scenario": "project-reviewer-colours"
+  }
+]

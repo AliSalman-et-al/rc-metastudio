@@ -42,3 +42,13 @@ is an audit harness failure, not a product defect.
   About visibly says 0.5.0; reopened project grid and application.version assertion
   agree. Mean fixture is entered-effect and has no raw-data spanner. About is
   unnecessarily narrow (R6-02); its version and Close control are correct.
+- project-reviewer-colours sheets 00–05, all 21 selected frames: standard,
+  cumulative, omission, subgroup, PFT, mean, diagnostic Sens/Spec, HR and IRR
+  Default figures/editors plus actual clipped-arrow view reviewed. Blue intervals,
+  caps/markers/arrows and diamonds agree; study text remains black. Defaults show
+  log spacing/natural labels for ratios and linear natural units for proportions
+  and diagnostics. All four export formats pass retained decoder/colour checks.
+- project-round6-polish initial sheets 00–01 (seven frames through step 63):
+  continuous/factor/multiple diagnostic reports at two/six digits and cumulative
+  DOR report. Logit/OR CI headings and fitted SE scale are explicit. Multiple
+  moderators require scrolling; dedicated Tables capture review follows.

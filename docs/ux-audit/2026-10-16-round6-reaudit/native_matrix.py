@@ -8,7 +8,10 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / '.agents/skills/verify-rcms/scripts'))
 family = sys.argv[1]
-work = HERE / 'raw' / ('matrix-' + family)
+style = os.environ.get('RCMS_AUDIT_STYLE', 'default')
+assert style in ('default','revman','bmj')
+suffix = '' if style == 'default' else '-' + style
+work = HERE / 'raw' / ('matrix-' + family + suffix)
 work.mkdir(parents=True, exist_ok=True)
 sys.argv = ['native_matrix.py', 'doctor', str(work)]
 os.environ['RCMS_E2E_EVIDENCE_DIR'] = str(work)
@@ -30,10 +33,10 @@ def native(widget, name):
     widget.raise_(); widget.activateWindow(); app.processEvents(); QTest.qWait(500)
     assert app.platformName() == 'xcb' and widget.isVisible()
     assert widget.windowHandle().isExposed()
-    output = HERE / 'screenshots' / (name + '.png')
+    output = HERE / 'screenshots' / (name + suffix + '.png')
     assert widget.screen().grabWindow(int(widget.winId())).save(str(output),'PNG')
     index.append(dict(path=output.relative_to(HERE).as_posix(),sha256=hashlib.sha256(output.read_bytes()).hexdigest(),capture='QScreen.grabWindow',family=family,workflow=workflow,identity=getattr(getattr(widget,'results',None),'identity',None)))
-    (HERE / ('MATRIX-'+family+'.json')).write_text(json.dumps(index,indent=2)+'\n')
+    (HERE / ('MATRIX-'+family+suffix+'.json')).write_text(json.dumps(index,indent=2)+'\n')
 def prepare(target):
     model=target.model
     if workflow in ('subgroup','meta-regression'):
@@ -50,7 +53,7 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
         for workflow in ('standard','cumulative','leave-one-out','subgroup','meta-regression'):
             window.workspace.mark_saved()
             if family not in ('hr','irr'):
-                view=matrix(app,window,'analysis-data-'+family,record,keep_results=True,workflow_override=workflow,parameters={'digits':6},prepare=prepare)
+                view=matrix(app,window,'analysis-data-'+family,record,keep_results=True,workflow_override=workflow,parameters={'digits':6,'fp_style':style},prepare=prepare)
             else:
                 sample='Pignon2000-HR' if family=='hr' else 'NielWeise2008-IRR'
                 assert window.open(str(ROOT/'sample_projects'/(sample+'.rcms')),raise_on_error=True)
@@ -63,6 +66,7 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
                     for cov,checkbox in dialog.covs_and_check_boxes: checkbox.setChecked(cov.name=='Dose')
                     from analysis_matrix import set_parameter
                     set_parameter(app,dialog,'digits',6)
+                    set_parameter(app,dialog,'fp_style',style)
                     QTest.mouseClick(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok),QtCore.Qt.MouseButton.LeftButton);app.processEvents()
                     view=next(w for w in app.topLevelWidgets() if isinstance(w,results_window.ResultsWindow) and w.isVisible())
             view.resize(1500,850); app.processEvents(); QTest.qWait(500)
@@ -81,6 +85,7 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
                 items=view.nav_tree.findItems(heading,Qt.MatchFlag.MatchExactly|Qt.MatchFlag.MatchRecursive)
                 assert len(items)==1
                 view.nav_tree.scrollToItem(items[0]);QTest.mouseClick(view.nav_tree.viewport(),QtCore.Qt.MouseButton.LeftButton,pos=view.nav_tree.visualItemRect(items[0]).center());app.processEvents()
+                assert view.content_stack.currentWidget() is view.figure_page and view.figure_page.isVisible()
                 stem='matrix-'+family+'-'+workflow+'-figure'+('' if component==0 else '-'+str(component))
                 native(view,stem)
                 view.graphics_view.verticalScrollBar().setValue(view.graphics_view.verticalScrollBar().maximum())

@@ -1,0 +1,58 @@
+[
+  {
+    "path": "screenshots/project-round6-polish-08-0-diagnostic-selected-precision.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183920Z-6f0c618b-project-round6-polish/08-0-diagnostic-selected-precision.png",
+    "sha256": "065939d243654670f1220c91356f17a43fecce275fdb28b0959d9dc114ff4884",
+    "action": "diagnostic-selected-precision",
+    "step": 8,
+    "scenario": "project-round6-polish"
+  },
+  {
+    "path": "screenshots/project-round6-polish-17-0-diagnostic-selected-precision.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183920Z-6f0c618b-project-round6-polish/17-0-diagnostic-selected-precision.png",
+    "sha256": "5d871c6d2ac0078090749cd3d2e9d8b6343db381a7c428d38a3521b627d6797a",
+    "action": "diagnostic-selected-precision",
+    "step": 17,
+    "scenario": "project-round6-polish"
+  },
+  {
+    "path": "screenshots/project-round6-polish-26-0-diagnostic-selected-precision.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183920Z-6f0c618b-project-round6-polish/26-0-diagnostic-selected-precision.png",
+    "sha256": "8b6bd171fba78ffdfd64cf8dc1c54b74f2e05c350ba7a542e4e6860999b57943",
+    "action": "diagnostic-selected-precision",
+    "step": 26,
+    "scenario": "project-round6-polish"
+  },
+  {
+    "path": "screenshots/project-round6-polish-35-0-diagnostic-selected-precision.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183920Z-6f0c618b-project-round6-polish/35-0-diagnostic-selected-precision.png",
+    "sha256": "4bbc635b8155b31a973bc8d406332eba30909af07bc0ef68e119660bbdec1d12",
+    "action": "diagnostic-selected-precision",
+    "step": 35,
+    "scenario": "project-round6-polish"
+  },
+  {
+    "path": "screenshots/project-round6-polish-44-0-diagnostic-selected-precision.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183920Z-6f0c618b-project-round6-polish/44-0-diagnostic-selected-precision.png",
+    "sha256": "3a17c9fdd1097862711f11b32e34188e04c5f4e38030efaa4198985d2caae402",
+    "action": "diagnostic-selected-precision",
+    "step": 44,
+    "scenario": "project-round6-polish"
+  },
+  {
+    "path": "screenshots/project-round6-polish-53-0-diagnostic-selected-precision.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183920Z-6f0c618b-project-round6-polish/53-0-diagnostic-selected-precision.png",
+    "sha256": "8e8c3bf05a8fccb8cb35acde13fcc68876d5404053a60732fe08b448b1bf229e",
+    "action": "diagnostic-selected-precision",
+    "step": 53,
+    "scenario": "project-round6-polish"
+  },
+  {
+    "path": "screenshots/project-round6-polish-63-0-diagnostic-sequential-selected-precision.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183920Z-6f0c618b-project-round6-polish/63-0-diagnostic-sequential-selected-precision.png",
+    "sha256": "fd6dd68c47c4300b47ba6060bf706746aa910c54add31bc5db56c1abada37c19",
+    "action": "diagnostic-sequential-selected-precision",
+    "step": 63,
+    "scenario": "project-round6-polish"
+  }
+]
