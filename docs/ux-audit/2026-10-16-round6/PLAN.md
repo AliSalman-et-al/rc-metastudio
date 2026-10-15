@@ -194,3 +194,48 @@ The full offscreen profile fails the valid correction after an invalid upper CI 
 ## Final-profile shared funnel metric identity
 
 The final two HR/IRR workflows exposed a new test-helper assumption: the shared funnel label check hard-coded Odds ratio. Both actual figures correctly show Hazard ratio / Incidence rate ratio and fitted log SE. Use the current contextual readable metric identity in that shared check, preserving its SE-scale and all numerical/export assertions. Replay the complete HR/IRR scenarios (all editor families/four-format exports), then repeat full fresh qualification. The failed profile (117 passes, two assertion failures) remains explicit.
+
+## Reviewer fixes — accepted round-six follow-up, before implementation
+
+Starting revision dc235ab. Preserve the existing fits, weights, statistical tests,
+415-field exact contract and numerical golden oracles. Use only pinned R 4.6.1.
+
+1. **PFT prediction intervals.** Failure modes: transformed PI printed beside a
+   natural-scale pooled result; different inverses in forest/report/Table/export;
+   whole-dataset N reused for a subset; unavailable/invalid N silently mapped to a
+   proportion; a fitted-scale zero test misread as testing proportion zero. Extend
+   the real Qt/R axis drives before product edits to compare each displayed PI
+   against public `meta::metaprop(sm="PFT")` and/or `metafor::transf.ipft.hm`
+   with the actual fit's harmonic mean N. Retain raw and inverse bounds, fitted N,
+   authority/package versions and differences for bundled/single-arm fixtures and
+   sequential/subgroup subsets. Exercise PFT/PLO/PAS in Default/RevMan/BMJ, Text,
+   Tables, copy and export. Undefined inverses must retain explicitly labelled
+   transformed bounds. Clarify the existing PFT null wording without new tests.
+2. **Single-arm group spanners.** Failure modes: default `Group` printed above raw
+   counts/means/rates; custom group names lost; one style behaving differently.
+   Before changing the renderer, extend native single-arm drives to assert absent
+   unnamed spanners and preserved meaningful names in all three styles, including
+   proportion, mean and rate families. Retain before/after figures and SVG text.
+3. **Diagnostic regression headers.** Failure modes: logit bounds ambiguous;
+   exponentiated bounds inconsistently labelled; Text/Tables/copy/export disagree;
+   presentation edits alter coefficients. Extend the existing native diagnostic
+   precision drive first to require compact, explicit logit/odds-ratio CI headings
+   on all surfaces at two/six digits, retaining fitted numerical comparisons.
+4. **0.5.0 release identity.** Failure modes: Python/R/About/project/package version
+   disagreement; duplicate VERSION drifts; bump script breaks after deduplication;
+   stale installed-source/qualification bindings. Use `__version__` for runtime
+   identity, update current release surfaces and lock metadata, leave historical
+   records intact. Native About and save/reopen must observe 0.5.0, including the
+   saved `application.version`. Reinstall RCMetaR and record installed 0.5.0 plus
+   source hashes. Replace Unreleased with today's dated 0.5.0 entry and concise
+   user-facing rounds 3–6 changes; inspect packaging consumers and current docs.
+
+Retain exact commands, exits and verbatim failures in additive REVIEWER-* records,
+curated inspected before/after screenshots and contact-sheet entries. Reinstall
+changed RCMetaR before native drives. Run affected fresh native workflows, strict
+goldens and the unchanged 415-field gate, then one final
+`verify_all.py --full --fresh`. Refresh installed-source/provenance records rather
+than loosening bindings. Update CHANGES/TESTS/COMMITS and HANDOFF. Small commits,
+each immediately fast-forward pushed; on push failure wait 30 seconds, retry once,
+then stop/report. No force push, history rewrite or PR. Finish clean and pushed;
+state any unproved release/platform surfaces explicitly.
