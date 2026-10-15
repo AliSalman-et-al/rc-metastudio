@@ -33,4 +33,6 @@ fe0dd07 Qualify blank-header rendering through the native subgroup workflow
 bc9e990 Record exact final-source numerical and strict golden preflight
 f3c2911 Fix SROC caption overlays and retire legacy scene-text contracts
 613c2d5 Name the selected arms in continuous-effect interpretations
+5b2297a docs(ux): retain final arm, SROC and help proof with failure transcripts
+90312ac docs(verification): replay all eleven figure editors natively
 ```

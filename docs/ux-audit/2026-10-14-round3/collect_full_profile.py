@@ -19,9 +19,17 @@ log = (HERE / "raw" / attempt["log"]).read_text()
 directory = Path(re.search(r"Complete-run evidence: (.+)", log)[1])
 summary = json.loads((directory / "summary.json").read_text())
 assert summary["passed"] and len(summary["commands"]) == 3, summary
+stack_log = (directory / "00.log").read_text()
+signatures = set(re.findall(r"input signature: ([a-f0-9]{64})", stack_log))
+assert len(signatures) == 1, signatures
+signature = signatures.pop()
+doctor_evidence = summary["commands"][2]["evidence"]
+assert len(doctor_evidence) == 1, doctor_evidence
+doctor_directory = Path(doctor_evidence[0]).resolve()
 start = datetime.fromisoformat(attempt["started"])
 end = datetime.fromisoformat(attempt["finished"])
 runs = []
+excluded = []
 for manifest in sorted((ROOT / "artifacts/verification/rcms").glob("*/manifest.json")):
     if not re.match(r"\d{8}T\d{6}Z-", manifest.parent.name):
         continue
@@ -30,6 +38,15 @@ for manifest in sorted((ROOT / "artifacts/verification/rcms").glob("*/manifest.j
         continue
     observed = json.loads(manifest.read_text())
     if observed.get("native_requested"):
+        continue
+    context = observed.get("verification_context") or {}
+    owned = (manifest.parent.resolve() == doctor_directory if observed["scenario"] == "doctor"
+             else context.get("sha256") == signature)
+    if not owned:
+        excluded.append(dict(evidence=str(manifest.parent.relative_to(ROOT)),
+                             manifest_sha256=hashlib.sha256(manifest.read_bytes()).hexdigest(),
+                             passed=observed["passed"],
+                             reason="Not the profile's recorded desktop context or explicit doctor receipt"))
         continue
     assert observed["passed"], manifest
     for retained in observed["files"]:
@@ -43,11 +60,11 @@ for manifest in sorted((ROOT / "artifacts/verification/rcms").glob("*/manifest.j
                      files=observed["files"]))
 assert len(runs) == len(SCENARIOS), len(runs)
 assert {run["scenario"] for run in runs} == set(SCENARIOS)
-stack_log = (directory / "00.log").read_text()
 desktop_count = len(SCENARIOS) - 1
 assert f"{desktop_count} passed" in stack_log and "Status: OK" in stack_log
 proof = dict(passed=True, command=attempt, summary=summary, desktop_scenarios=desktop_count,
-             doctor=1, runs=runs,
+             doctor=1, verification_context_sha256=signature, runs=runs,
+             excluded_unowned_receipts=excluded,
              stack_results_verbatim=[line for line in stack_log.splitlines()
                  if "passed" in line or "Status:" in line or "Reitsma visual" in line])
 (HERE / "FULL-PROFILE.json").write_text(json.dumps(proof, indent=2) + "\n")

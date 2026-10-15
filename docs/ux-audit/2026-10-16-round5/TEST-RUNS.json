@@ -600,6 +600,39 @@
     "sha256": "d061e29124744a2d67aec69316e0c6ec7d38a7dd9a35e4ab54fee8aa7d64c080"
   },
   {
+    "label": "collector-ownership-before",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "-c",
+      "import json; from pathlib import Path; p=Path(\"artifacts/verification/rcms/20261015T055018Z-7fa090ed-audit-round3-arm-names/manifest.json\"); m=json.loads(p.read_text()); assert m[\"native_requested\"] or m.get(\"verification_context\"), {\"manifest\":str(p), \"old_time_only_collector_admits\":True, \"passed\":m[\"passed\"], \"context\":m.get(\"verification_context\")}"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T06:17:48.181190+00:00",
+    "finished": "2026-10-15T06:17:48.254676+00:00",
+    "seconds": 0.0698725940019358,
+    "exit_code": 1,
+    "revision": "90312ace6be851154b5b6c91760bc770c99d85c9",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "collector-ownership-before.log",
+    "sha256": "88d1410cca1ca9d72d0054be8675ced6942e34fea1fa224400f175c9b7bcfbeb",
+    "failure_lines_verbatim": [
+      "AssertionError: {'manifest': 'artifacts/verification/rcms/20261015T055018Z-7fa090ed-audit-round3-arm-names/manifest.json', 'old_time_only_collector_admits': True, 'passed': False, 'context': None}"
+    ]
+  },
+  {
     "label": "continuous-name-types",
     "command": [
       "uv",
