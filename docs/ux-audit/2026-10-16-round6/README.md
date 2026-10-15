@@ -1,6 +1,6 @@
 # Round six implementation
 
-Product source is **036a1a5**, with test cleanup through **2af53d7** on `ux/audit-improvements`.
+Product source is **036a1a5**, with test cleanup through **f4fe5bf** on `ux/audit-improvements`.
 All 30 selected native workflows passed; final fresh qualification is running; this is a checkpoint until FULL-PROFILE
 and EVIDENCE-INTEGRITY exist and pass.
 

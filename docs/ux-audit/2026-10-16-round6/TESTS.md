@@ -32,6 +32,7 @@ All failed recorded attempts are preserved verbatim in [FAILURES](FAILURES.md); 
 - `calculator-boundary-final`: exit 0, 2.16 s.
 - `calculator-boundary-replay`: exit 1, 3.58 s.
 - `calculator-existing-boundary-tests`: exit 1, 3.18 s.
+- `calculator-focus-matrix`: exit 0, 233.32 s.
 - `calculator-invalid-and-grid-native`: exit 0, 103.44 s.
 - `calculator-native-all`: exit 1, 173.73 s.
 - `calculator-native-replay`: exit 0, 158.19 s.
@@ -48,6 +49,7 @@ All failed recorded attempts are preserved verbatim in [FAILURES](FAILURES.md); 
 - `forest-gallery`: exit 0, 150.56 s.
 - `full-final`: exit 1, 267.55 s.
 - `full-qualified-3`: exit 1, 1792.52 s.
+- `full-qualified-4`: exit 1, 2359.53 s.
 - `full-qualified`: exit 1, 923.50 s.
 - `funnel-defaults-and-se-replay`: exit 0, 150.59 s.
 - `funnel-se-and-label-replay`: exit 1, 9.51 s.
@@ -97,6 +99,8 @@ All failed recorded attempts are preserved verbatim in [FAILURES](FAILURES.md); 
 - `numerical-axis-capture`: exit 0, 0.14 s.
 - `numerical-final`: exit 0, 0.15 s.
 - `numerical-first`: exit 0, 0.16 s.
+- `offscreen-ci-focus-baseline`: exit 1, 12.46 s.
+- `offscreen-ci-focus-replay`: exit 0, 44.04 s.
 - `polish-native-first`: exit 1, 297.76 s.
 - `precision-and-contour-targeted`: exit 1, 26.57 s.
 - `precision-contour-headers`: exit 0, 69.38 s.

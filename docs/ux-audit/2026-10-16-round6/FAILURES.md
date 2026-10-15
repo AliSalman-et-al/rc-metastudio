@@ -2897,6 +2897,427 @@ verification failed: command failed with exit code 1: /home/ali/Documents/Code/r
 
 ```
 
+## full-qualified-4
+
+Command: `env PYTEST_ADDOPTS=-x uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh`
+
+```text
+["env", "PYTEST_ADDOPTS=-x", "uv", "run", "python", ".agents/skills/verify-rcms/scripts/verify_all.py", "--full", "--fresh"]
+Complete-run evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T134648Z-d315448c-complete
+Running /home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/verify.py r-stack --rscript /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript
+Failed; inspect /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T134648Z-d315448c-complete/00.log
+
+
+Complete-profile log: artifacts/verification/rcms/20261015T134648Z-d315448c-complete/00.log
+[18:46:48] Skipping dependency sync for warm local R verification
+[18:46:48] $ /home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/build_qt6.py generate --build-root /home/ali/Documents/Code/rc-metastudio/build/qt6-verification
+{"form": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification/generated/rc_metastudio/forms/ui_about_legal.py", "resource": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification/resources/icons.rcc"}
+[18:46:51] Delegating Full R Stack Evidence
+[18:46:51] $ /home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/verify_rcmetar_r_stack.py --rscript /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript --r-library-cache-root /home/ali/Documents/Code/rc-metastudio/artifacts/r-library-cache
+[RCMetaR-r-stack] Locked rpy2 identities verified: {"rpy2": "3.6.7", "rpy2-rinterface": "3.6.6", "rpy2-robjects": "3.6.5"}
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/validate_rcmetar_r_manifests.py --root /home/ali/Documents/Code/rc-metastudio
+validated RCMetaR R dependency and drift manifests
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/validate_rcmetar_r_manifests.py --root /home/ali/Documents/Code/rc-metastudio --report-installed-versions --rscript /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript
+[RCMetaR-r-stack] Manifest dependency versions are installed: {"packages": {"R": "4.6.1", "boot": "1.3-32", "grDevices": "4.6.1", "graphics": "4.6.1", "mada": "0.5.12", "meta": "8.5-0", "metafor": "5.0-1", "methods": "4.6.1", "png": "0.1-9", "roxygen2": "8.0.0", "rsvg": "2.7.0", "stats": "4.6.1", "svglite": "2.2.2", "testthat": "3.3.2", "tiff": "0.1-12", "utils": "4.6.1"}, "r_version": "4.6.1"}
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript -e missing <- commandArgs(trailingOnly=TRUE)[!vapply(commandArgs(trailingOnly=TRUE), requireNamespace, logical(1), quietly=TRUE)]; if (length(missing)) stop(paste(missing, collapse=', ')) CompQuadForm Formula Hmisc MatrixModels RColorBrewer Rcpp RcppEigen S7 SparseM acepack ape cli colorspace data.table ellipse farver ggplot2 glue gridExtra gtable htmlTable htmltools htmlwidgets irlba isoband knitr labeling latticeExtra lifecycle mada magrittr meta metabook metafor mice minqa mixmeta mvmeta mvtnorm nloptr png quantreg rlang rmarkdown roxygen2 rsvg scales stringi stringr svglite testthat tiff vctrs viridis viridisLite withr xml2
+Registered S3 method overwritten by 'ape':
+  method    from   
+  print.ace acepack
+[RCMetaR-r-stack] Using cached R dependency library at /home/ali/Documents/Code/rc-metastudio/artifacts/r-library-cache/R-4.6.1-x86_64-source-rdeps-72fc3df2a5ba/library
+[RCMetaR-r-stack] Using isolated R verification library at /tmp/RCMetaR-r-stack-6bauargk/library
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/R CMD build --no-build-vignettes /home/ali/Documents/Code/rc-metastudio/r/RCMetaR
+* checking for file ‘/home/ali/Documents/Code/rc-metastudio/r/RCMetaR/DESCRIPTION’ ... OK
+* preparing ‘RCMetaR’:
+* checking DESCRIPTION meta-information ... OK
+* checking for LF line-endings in source and make files and shell scripts
+* checking for empty or unneeded directories
+Removed empty directory ‘RCMetaR/tests/testthat/_snaps’
+* building ‘RCMetaR_0.4.2.tar.gz’
+
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/R CMD check --no-manual --no-build-vignettes --library=/tmp/RCMetaR-r-stack-6bauargk/library /tmp/RCMetaR-r-stack-6bauargk/RCMetaR_0.4.2.tar.gz
+* using log directory ‘/tmp/RCMetaR-r-stack-6bauargk/RCMetaR.Rcheck’
+* using R version 4.6.1 (2026-06-24)
+* using platform: x86_64-pc-linux-gnu
+* R was compiled by
+    gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+    GNU Fortran (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+* running under: Linux Mint 22.3
+* using session charset: UTF-8
+* current time: 2026-10-15 13:46:59 UTC
+* using options ‘--no-manual --no-build-vignettes’
+* checking for file ‘RCMetaR/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘RCMetaR’ version ‘0.4.2’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘RCMetaR’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking code files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... OK
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking examples ... NONE
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ...
+  Running ‘testthat.R’
+ OK
+* DONE
+
+Status: OK
+
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/R CMD INSTALL --library=/tmp/RCMetaR-r-stack-6bauargk/library /tmp/RCMetaR-r-stack-6bauargk/RCMetaR_0.4.2.tar.gz
+* installing *source* package ‘RCMetaR’ ...
+** this is package ‘RCMetaR’ version ‘0.4.2’
+** using staged installation
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (RCMetaR)
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/validate_rcmetar_r_manifests.py --root /home/ali/Documents/Code/rc-metastudio --report-installed-versions --rscript /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript
+[RCMetaR-r-stack] Manifest dependency versions are installed: {"packages": {"R": "4.6.1", "boot": "1.3-32", "grDevices": "4.6.1", "graphics": "4.6.1", "mada": "0.5.12", "meta": "8.5-0", "metafor": "5.0-1", "methods": "4.6.1", "png": "0.1-9", "roxygen2": "8.0.0", "rsvg": "2.7.0", "stats": "4.6.1", "svglite": "2.2.2", "testthat": "3.3.2", "tiff": "0.1-12", "utils": "4.6.1"}, "r_version": "4.6.1"}
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript scripts/verify_reitsma_visual_qa.R /tmp/RCMetaR-r-stack-6bauargk/reitsma-visual-qa-1
+REITSMA VISUAL QA 21 SEMANTIC CASES OK
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript scripts/verify_reitsma_visual_qa.R /tmp/RCMetaR-r-stack-6bauargk/reitsma-visual-qa-2
+REITSMA VISUAL QA 21 SEMANTIC CASES OK
+[RCMetaR-r-stack] Reitsma visual release evidence verified: 21 cases, deterministic hashes and normalized PDF/descriptor contracts
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/.venv/bin/python -m pytest tests/r_stack
+============================= test session starts ==============================
+platform linux -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/ali/Documents/Code/rc-metastudio
+configfile: pyproject.toml
+plugins: xdist-3.8.0
+collected 9 items
+
+tests/r_stack/test_inprocess_rpy2_backend.py ....                        [ 44%]
+tests/r_stack/test_r_metric_labels.py .                                  [ 55%]
+tests/r_stack/test_reitsma_golden.py ..                                  [ 77%]
+tests/r_stack/test_reitsma_meta_regression_contract.py .                 [ 88%]
+tests/r_stack/test_reitsma_result_formatting.py .                        [100%]
+
+============================== 9 passed in 54.99s ==============================
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/.venv/bin/python -m pytest tests/e2e -n auto --durations=10
+============================= test session starts ==============================
+platform linux -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0
+Desktop resource budget: {'cpus': 4, 'available_bytes': 8701632512, 'workers': 3} (override with -n 1); input signature: 3ea9aa4ba682da5f7cb26bf6ff82fbcd5ab060da340cc2c16f17a2c1274d0b1e
+rootdir: /home/ali/Documents/Code/rc-metastudio
+configfile: pyproject.toml
+plugins: xdist-3.8.0
+created: 3/3 workers
+3 workers [119 items]
+
+........................................................................ [ 60%]
+.....................................FFF
+=================================== FAILURES ===================================
+____________ test_desktop_workflow[calculator-mode-entered-binary] _____________
+[gw1] linux -- Python 3.11.9 /home/ali/Documents/Code/rc-metastudio/.venv/bin/python
+
+scenario = 'calculator-mode-entered-binary'
+
+    @pytest.mark.parametrize(
+        "scenario",
+        [scenario for scenario in SCENARIOS if scenario != "doctor"],
+    )
+    def test_desktop_workflow(scenario):
+        # The same launcher owns timeouts, isolation and durable evidence in CI.
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/verify_rcms.py"),
+                scenario,
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        evidence_lines = [line.removeprefix("Evidence: ") for line in result.stdout.splitlines() if line.startswith("Evidence: ")]
+        assert len(evidence_lines) == 1, result.stdout + result.stderr
+        evidence = Path(evidence_lines[0])
+        manifest = json.loads((evidence / "manifest.json").read_text(encoding="utf-8"))
+>       assert result.returncode == 0, result.stdout + result.stderr
+E       AssertionError: Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T142553Z-517c059c-calculator-mode-entered-binary
+E         stdout.log (last 20000 characters):
+E         
+E         stderr.log (last 20000 characters):
+E         R callback write-console: Loading required package: Matrix
+E           
+E         R callback write-console: Loading required package: metadat
+E           
+E         R callback write-console: Loading required package: numDeriv
+E           
+E         R callback write-console: 
+E         Loading the 'metafor' package (version 5.0-1). For an
+E         introduction to the package please type: help(metafor)
+E         
+E         An updated version of the package (version 5.2-1) is available!
+E         To update to this version type: install.packages("metafor")
+E         
+E           
+E         This plugin does not support propagateSizeHints()
+E         This plugin does not support propagateSizeHints()
+E         This plugin does not support propagateSizeHints()
+E         Traceback (most recent call last):
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 90, in ready
+E             drive(dialog)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1149, in drive
+E             assert not dialog._validation_failed
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         AssertionError
+E         Traceback (most recent call last):
+E           File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 785, in <module>
+E             run(app, window, scenario, record_step)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1883, in run
+E             calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1232, in calculators
+E             modal(app, kind, drive, launch)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 104, in modal
+E             assert not errors, errors
+E                    ^^^^^^^^^^
+E         AssertionError: [AssertionError()]
+E         Traceback (most recent call last):
+E           File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 785, in <module>
+E             run(app, window, scenario, record_step)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1883, in run
+E             calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1232, in calculators
+E             modal(app, kind, drive, launch)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 104, in modal
+E             assert not errors, errors
+E                    ^^^^^^^^^^
+E         AssertionError: [AssertionError()]
+E         
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/ali/Documents/Code/rc-metastudio/.venv/bin/python', '/home/ali/Documents/Code/rc-metastu...04, in modal\n    assert not errors, errors\n           ^^^^^^^^^^\nAssertionError: [AssertionError()]\n\n', stderr='').returncode
+
+tests/e2e/test_desktop_workflows.py:38: AssertionError
+__________ test_desktop_workflow[calculator-mode-entered-continuous] ___________
+[gw0] linux -- Python 3.11.9 /home/ali/Documents/Code/rc-metastudio/.venv/bin/python
+
+scenario = 'calculator-mode-entered-continuous'
+
+    @pytest.mark.parametrize(
+        "scenario",
+        [scenario for scenario in SCENARIOS if scenario != "doctor"],
+    )
+    def test_desktop_workflow(scenario):
+        # The same launcher owns timeouts, isolation and durable evidence in CI.
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/verify_rcms.py"),
+                scenario,
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        evidence_lines = [line.removeprefix("Evidence: ") for line in result.stdout.splitlines() if line.startswith("Evidence: ")]
+        assert len(evidence_lines) == 1, result.stdout + result.stderr
+        evidence = Path(evidence_lines[0])
+        manifest = json.loads((evidence / "manifest.json").read_text(encoding="utf-8"))
+>       assert result.returncode == 0, result.stdout + result.stderr
+E       AssertionError: Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T142556Z-c39d01e7-calculator-mode-entered-continuous
+E         stdout.log (last 20000 characters):
+E         
+E         stderr.log (last 20000 characters):
+E         R callback write-console: Loading required package: Matrix
+E           
+E         R callback write-console: Loading required package: metadat
+E           
+E         R callback write-console: Loading required package: numDeriv
+E           
+E         R callback write-console: 
+E         Loading the 'metafor' package (version 5.0-1). For an
+E         introduction to the package please type: help(metafor)
+E         
+E         An updated version of the package (version 5.2-1) is available!
+E         To update to this version type: install.packages("metafor")
+E         
+E           
+E         This plugin does not support propagateSizeHints()
+E         This plugin does not support propagateSizeHints()
+E         This plugin does not support propagateSizeHints()
+E         This plugin does not support propagateSizeHints()
+E         This plugin does not support propagateSizeHints()
+E         This plugin does not support propagateSizeHints()
+E         Traceback (most recent call last):
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 90, in ready
+E             drive(dialog)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1149, in drive
+E             assert not dialog._validation_failed
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         AssertionError
+E         Traceback (most recent call last):
+E           File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 785, in <module>
+E             run(app, window, scenario, record_step)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1883, in run
+E             calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1232, in calculators
+E             modal(app, kind, drive, launch)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 104, in modal
+E             assert not errors, errors
+E                    ^^^^^^^^^^
+E         AssertionError: [AssertionError()]
+E         Traceback (most recent call last):
+E           File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 785, in <module>
+E             run(app, window, scenario, record_step)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1883, in run
+E             calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1232, in calculators
+E             modal(app, kind, drive, launch)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 104, in modal
+E             assert not errors, errors
+E                    ^^^^^^^^^^
+E         AssertionError: [AssertionError()]
+E         
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/ali/Documents/Code/rc-metastudio/.venv/bin/python', '/home/ali/Documents/Code/rc-metastu...04, in modal\n    assert not errors, errors\n           ^^^^^^^^^^\nAssertionError: [AssertionError()]\n\n', stderr='').returncode
+
+tests/e2e/test_desktop_workflows.py:38: AssertionError
+__________ test_desktop_workflow[calculator-mode-entered-diagnostic] ___________
+[gw2] linux -- Python 3.11.9 /home/ali/Documents/Code/rc-metastudio/.venv/bin/python
+
+scenario = 'calculator-mode-entered-diagnostic'
+
+    @pytest.mark.parametrize(
+        "scenario",
+        [scenario for scenario in SCENARIOS if scenario != "doctor"],
+    )
+    def test_desktop_workflow(scenario):
+        # The same launcher owns timeouts, isolation and durable evidence in CI.
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/verify_rcms.py"),
+                scenario,
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        evidence_lines = [line.removeprefix("Evidence: ") for line in result.stdout.splitlines() if line.startswith("Evidence: ")]
+        assert len(evidence_lines) == 1, result.stdout + result.stderr
+        evidence = Path(evidence_lines[0])
+        manifest = json.loads((evidence / "manifest.json").read_text(encoding="utf-8"))
+>       assert result.returncode == 0, result.stdout + result.stderr
+E       AssertionError: Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T142556Z-a04beb03-calculator-mode-entered-diagnostic
+E         stdout.log (last 20000 characters):
+E         
+E         stderr.log (last 20000 characters):
+E         R callback write-console: Loading required package: Matrix
+E           
+E         R callback write-console: Loading required package: metadat
+E           
+E         R callback write-console: Loading required package: numDeriv
+E           
+E         R callback write-console: 
+E         Loading the 'metafor' package (version 5.0-1). For an
+E         introduction to the package please type: help(metafor)
+E         
+E         An updated version of the package (version 5.2-1) is available!
+E         To update to this version type: install.packages("metafor")
+E         
+E           
+E         This plugin does not support propagateSizeHints()
+E         This plugin does not support propagateSizeHints()
+E         Traceback (most recent call last):
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 90, in ready
+E             drive(dialog)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1149, in drive
+E             assert not dialog._validation_failed
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         AssertionError
+E         Traceback (most recent call last):
+E           File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 785, in <module>
+E             run(app, window, scenario, record_step)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1883, in run
+E             calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1232, in calculators
+E             modal(app, kind, drive, launch)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 104, in modal
+E             assert not errors, errors
+E                    ^^^^^^^^^^
+E         AssertionError: [AssertionError()]
+E         Traceback (most recent call last):
+E           File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 785, in <module>
+E             run(app, window, scenario, record_step)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1883, in run
+E             calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1232, in calculators
+E             modal(app, kind, drive, launch)
+E           File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 104, in modal
+E             assert not errors, errors
+E                    ^^^^^^^^^^
+E         AssertionError: [AssertionError()]
+E         
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/ali/Documents/Code/rc-metastudio/.venv/bin/python', '/home/ali/Documents/Code/rc-metastu...04, in modal\n    assert not errors, errors\n           ^^^^^^^^^^\nAssertionError: [AssertionError()]\n\n', stderr='').returncode
+
+tests/e2e/test_desktop_workflows.py:38: AssertionError
+============================= slowest 10 durations =============================
+259.47s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-references]
+252.45s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-presentation-diagnostic]
+247.03s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-presentation-transforms]
+214.57s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[project-axis-proportions]
+211.39s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[project-axis-others]
+175.40s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-hr]
+170.10s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-presentation-twoarm-mean]
+149.85s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-presentation-twoarm-proportion]
+142.67s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-arm-names]
+141.52s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-presentation-twoarm-smd]
+=========================== short test summary info ============================
+FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[calculator-mode-entered-binary]
+FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[calculator-mode-entered-continuous]
+FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[calculator-mode-entered-diagnostic]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 3 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!! xdist.dsession.Interrupted: stopping after 1 failures !!!!!!!!!!!!!
+================== 3 failed, 109 passed in 1909.31s (0:31:49) ==================
+error: command failed with exit code 2: /home/ali/Documents/Code/rc-metastudio/.venv/bin/python -m pytest tests/e2e -n auto --durations=10
+verification failed: command failed with exit code 1: /home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/verify_rcmetar_r_stack.py --rscript /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript --r-library-cache-root /home/ali/Documents/Code/rc-metastudio/artifacts/r-library-cache
+
+```
+
 ## full-qualified
 
 Command: `uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh`
@@ -15539,6 +15960,66 @@ Traceback (most recent call last):
     assert box[2]-other[3] >= 4 or other[2]-box[3] >= 4, ("axis title/tick gap", box, other)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 AssertionError: ('axis title/tick gap', (583.385, 641.6949999999999, 364.38, 377.34), (576.62, 594.62, 347.52000000000004, 360.48))
+
+
+```
+
+## offscreen-ci-focus-baseline
+
+Command: `uv run python scripts/verify_rcms.py calculator-mode-entered-binary`
+
+```text
+["uv", "run", "python", "scripts/verify_rcms.py", "calculator-mode-entered-binary"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T142758Z-4c0ee3cc-calculator-mode-entered-binary
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+This plugin does not support propagateSizeHints()
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 90, in ready
+    drive(dialog)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1159, in drive
+    assert not dialog._validation_failed
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 785, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1893, in run
+    calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1242, in calculators
+    modal(app, kind, drive, launch)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 104, in modal
+    assert not errors, errors
+           ^^^^^^^^^^
+AssertionError: [AssertionError()]
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 785, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1893, in run
+    calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1242, in calculators
+    modal(app, kind, drive, launch)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 104, in modal
+    assert not errors, errors
+           ^^^^^^^^^^
+AssertionError: [AssertionError()]
 
 
 ```

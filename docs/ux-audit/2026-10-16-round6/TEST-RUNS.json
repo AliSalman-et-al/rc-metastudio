@@ -873,6 +873,49 @@
     "helper_evidence": []
   },
   {
+    "label": "calculator-focus-matrix",
+    "command": [
+      "bash",
+      "-c",
+      "for mode in entered-binary entered-continuous entered-diagnostic; do uv run python scripts/verify_rcms.py calculator-mode-\"$mode\" --native || exit; done; for mode in binary-metrics continuous-metrics diagnostic-metrics onearm-proportion onearm-mean pre-post back-binary back-continuous back-diagnostic; do uv run python scripts/verify_rcms.py calculator-mode-\"$mode\" || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T14:30:43.762068+00:00",
+    "finished": "2026-10-15T14:34:37.084920+00:00",
+    "seconds": 233.31968701699225,
+    "exit_code": 0,
+    "revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "calculator-focus-matrix.log",
+    "sha256": "d7efcce39f8efd00838adde3106100091ebc0eec90f8083bb54d4cc41dce931f",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/calculator-focus-matrix.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T143043Z-d99dc511-calculator-mode-entered-binary",
+      "artifacts/verification/rcms/20261015T143105Z-65fa9cf9-calculator-mode-entered-continuous",
+      "artifacts/verification/rcms/20261015T143126Z-ee560299-calculator-mode-entered-diagnostic",
+      "artifacts/verification/rcms/20261015T143152Z-fcc3264a-calculator-mode-binary-metrics",
+      "artifacts/verification/rcms/20261015T143212Z-64eb8b6f-calculator-mode-continuous-metrics",
+      "artifacts/verification/rcms/20261015T143228Z-4e9546a4-calculator-mode-diagnostic-metrics",
+      "artifacts/verification/rcms/20261015T143249Z-c5f999ec-calculator-mode-onearm-proportion",
+      "artifacts/verification/rcms/20261015T143307Z-c896813d-calculator-mode-onearm-mean",
+      "artifacts/verification/rcms/20261015T143324Z-5d29bcd6-calculator-mode-pre-post",
+      "artifacts/verification/rcms/20261015T143342Z-0f1f4a29-calculator-mode-back-binary",
+      "artifacts/verification/rcms/20261015T143400Z-86d698ef-calculator-mode-back-continuous",
+      "artifacts/verification/rcms/20261015T143419Z-79804fc8-calculator-mode-back-diagnostic"
+    ]
+  },
+  {
     "label": "calculator-invalid-and-grid-native",
     "command": [
       "bash",
@@ -1488,6 +1531,41 @@
     "log": "full-qualified-3.log",
     "sha256": "261fc39d6db14d758c183b79175f21818399549d5d27d951faa52939d9e3a7f6",
     "receipt": "docs/ux-audit/2026-10-16-round6/raw/full-qualified-3.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "full-qualified-4",
+    "command": [
+      "env",
+      "PYTEST_ADDOPTS=-x",
+      "uv",
+      "run",
+      "python",
+      ".agents/skills/verify-rcms/scripts/verify_all.py",
+      "--full",
+      "--fresh"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T13:46:47.841562+00:00",
+    "finished": "2026-10-15T14:26:07.374097+00:00",
+    "seconds": 2359.530118000999,
+    "exit_code": 1,
+    "revision": "2af53d75ca4137614972129e6445aa14f646da94",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "full-qualified-4.log",
+    "sha256": "46e5e8cc1487bb72d21577a190484a8f5bd52afe704a4bb43b6c072a241bdeba",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/full-qualified-4.json",
     "helper_evidence": []
   },
   {
@@ -3113,6 +3191,74 @@
     "sha256": "d846613ab9dd4269426af24c2b9a5e5e8173b9421fedd1715e3bace8c322edaa",
     "receipt": "docs/ux-audit/2026-10-16-round6/raw/numerical-first.json",
     "helper_evidence": []
+  },
+  {
+    "label": "offscreen-ci-focus-baseline",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "calculator-mode-entered-binary"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T14:27:57.826934+00:00",
+    "finished": "2026-10-15T14:28:10.291137+00:00",
+    "seconds": 12.461482259997865,
+    "exit_code": 1,
+    "revision": "beb6cb33761fd0e5c9c5f68d7761b07a2aad5e98",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "offscreen-ci-focus-baseline.log",
+    "sha256": "a61d84a7c6cce95a5496659f291ba50e9cffab8eeadbfb20725bf50f1a2d65b6",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/offscreen-ci-focus-baseline.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T142758Z-4c0ee3cc-calculator-mode-entered-binary"
+    ]
+  },
+  {
+    "label": "offscreen-ci-focus-replay",
+    "command": [
+      "bash",
+      "-c",
+      "for mode in entered-binary entered-continuous entered-diagnostic; do uv run python scripts/verify_rcms.py calculator-mode-\"$mode\" || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T14:29:28.331521+00:00",
+    "finished": "2026-10-15T14:30:12.375047+00:00",
+    "seconds": 44.04100642699632,
+    "exit_code": 0,
+    "revision": "beb6cb33761fd0e5c9c5f68d7761b07a2aad5e98",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "offscreen-ci-focus-replay.log",
+    "sha256": "516eccc63a0a4c3691604eee241533ebfb213591f9fa6b65ad5a0c61dbadeb62",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/offscreen-ci-focus-replay.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T142928Z-6db88982-calculator-mode-entered-binary",
+      "artifacts/verification/rcms/20261015T142944Z-e40f2574-calculator-mode-entered-continuous",
+      "artifacts/verification/rcms/20261015T142955Z-f6b28741-calculator-mode-entered-diagnostic"
+    ]
   },
   {
     "label": "polish-native-first",

@@ -40,3 +40,5 @@ The final diagnostic comparisons show both sensitivity and specificity at their 
 The final diagnostic six native replacements were reinspected in updated final-inspect-5/6 montages. AXIS-TITLE-GEOMETRY measures all twelve diagnostic configurations in both displayed and exported SVG: minimum 6.49 physical points against the unchanged four-point requirement.
 
 All twelve final native proportion replacements were reinspected in updated final-inspect-1 through final-inspect-4 montages after the owned export replay completed with a manifest.
+
+The tiny-SD and diagnostic-formatting pairs use different historical/current fixtures, explicitly stated in their contact-sheet notes. They illustrate input/formatting behaviour. The 24 axis pairs use matching controlled inputs and have a separate exact fitted-value/weight comparison.

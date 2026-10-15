@@ -3,7 +3,7 @@
 Final full-profile status is pending. The definitive outcome will be FULL-PROFILE
 and EVIDENCE-INTEGRITY, with exact invocation/environment/exits in TEST-RUNS.
 
-Product source is frozen at 036a1a5; final executable/test qualification is frozen at 2af53d7. A second fresh attempt reached the desktop matrix and found diagnostic BMJ axis-title clearance of 2.73 points; it was stopped after the actual failure and retained as failed. The first point-size formula still measured 3.90 points and failed the unchanged check. Device character-line height, including leading, now determines spacing. Final qualification must use the subsequent complete replay. Documentation/evidence commits after it
+Product source is frozen at 036a1a5; final executable/test qualification is frozen at f4fe5bf. A second fresh attempt reached the desktop matrix and found diagnostic BMJ axis-title clearance of 2.73 points; it was stopped after the actual failure and retained as failed. The first point-size formula still measured 3.90 points and failed the unchanged check. Device character-line height, including leading, now determines spacing. Final qualification must use the subsequent complete replay. Documentation/evidence commits after it
 are outside the guarded executable digest. INSTALLED-SOURCE independently binds
 all RCMetaR source and installed package bytes; matching version strings alone are
 not used as provenance.
@@ -79,4 +79,8 @@ A later full-run tool process tree ended with exit 143 during R CMD check, befor
 
 The next full profile found one remaining stale E2E label expectation in review-workflows, after 66 other desktop cases passed. 2af53d7 checks the actual natural Odds ratio title below the ticks and retains all numerical/order comparisons. Its native replay passed before the final fail-fast full fresh restart. No product or numerical change was made for this expectation cleanup.
 
-Auxiliary R-check copies now use profile-specific filenames. While refreshing them, the earlier generic copies were overwritten and then restored byte-exact against their prior committed SHA-256 values; raw/r-check-copy-recovery.json records both successful hash checks. Final R-CHECK binds only the uniquely named full-qualified-4 copies. No original run log or numerical result changed.
+Auxiliary R-check copies now use profile-specific filenames. While refreshing them, the earlier generic copies were overwritten and then restored byte-exact against their prior committed SHA-256 values; raw/r-check-copy-recovery.json records both successful hash checks. Final R-CHECK binds only the uniquely named full-qualified-5 copies. No original run log or numerical result changed.
+
+The following fresh profile ended with 109 desktop passes and three entered-calculator recovery failures. A real-UI trace showed no focused widget and zero editingFinished events after the warning: QTest was sending keys to an unfocused field. f4fe5bf activates the owned dialog, waits for actual editor focus, and asserts a real correction commit. All three offscreen recovery replays and their native repeats passed, without changing production validation or numerical comparisons. The complete remaining calculator matrix and final full fresh replay follow.
+
+The full calculator focus matrix completed with exit zero: three native entered-effect modes and nine other offscreen modes, retaining model/Accept/save/reopen and public-fit assertions. Final full-qualified-5 uses the same f4fe5bf test bytes; product source remains 036a1a5.

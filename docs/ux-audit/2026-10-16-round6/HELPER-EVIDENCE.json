@@ -170,6 +170,114 @@
     "checked_artifacts": 7,
     "manifest_sha256": "507571e4226e1f6be489d414bf2832a60e6ead5d34eeb1a0e0d1a8286ae9c500"
   },
+  "artifacts/verification/rcms/20261015T143043Z-d99dc511-calculator-mode-entered-binary": {
+    "scenario": "calculator-mode-entered-binary",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "checked_artifacts": 23,
+    "manifest_sha256": "8f7c695a1c4d44ab31488e1f066e66f3e756d45bdf7cb1cbb38da797aef70d1b"
+  },
+  "artifacts/verification/rcms/20261015T143105Z-65fa9cf9-calculator-mode-entered-continuous": {
+    "scenario": "calculator-mode-entered-continuous",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "checked_artifacts": 23,
+    "manifest_sha256": "d7d73343e87b2b9c963642c7bb26a7cfb65bb25464181a39838a61e269ac543c"
+  },
+  "artifacts/verification/rcms/20261015T143126Z-ee560299-calculator-mode-entered-diagnostic": {
+    "scenario": "calculator-mode-entered-diagnostic",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "checked_artifacts": 25,
+    "manifest_sha256": "534a8077126021641d8cb4961a7186c7b74e0f484369abbee7a41d0366ec9716"
+  },
+  "artifacts/verification/rcms/20261015T143152Z-fcc3264a-calculator-mode-binary-metrics": {
+    "scenario": "calculator-mode-binary-metrics",
+    "exit_code": 0,
+    "passed": true,
+    "native": false,
+    "revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "checked_artifacts": 21,
+    "manifest_sha256": "562f60f8375cff93ee5e81dad419ac0b86892348066affbef23f1b8a25c40760"
+  },
+  "artifacts/verification/rcms/20261015T143212Z-64eb8b6f-calculator-mode-continuous-metrics": {
+    "scenario": "calculator-mode-continuous-metrics",
+    "exit_code": 0,
+    "passed": true,
+    "native": false,
+    "revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "checked_artifacts": 25,
+    "manifest_sha256": "f7ca3958cd1e7e4f24b3d8682bee7c326852d0c622b8ee3bc65527516e02d389"
+  },
+  "artifacts/verification/rcms/20261015T143228Z-4e9546a4-calculator-mode-diagnostic-metrics": {
+    "scenario": "calculator-mode-diagnostic-metrics",
+    "exit_code": 0,
+    "passed": true,
+    "native": false,
+    "revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "checked_artifacts": 21,
+    "manifest_sha256": "3ff11bf071000ff460a5dc7c5f068aba8fabd2b7e4d6280710864da0012a7168"
+  },
+  "artifacts/verification/rcms/20261015T143249Z-c5f999ec-calculator-mode-onearm-proportion": {
+    "scenario": "calculator-mode-onearm-proportion",
+    "exit_code": 0,
+    "passed": true,
+    "native": false,
+    "revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "checked_artifacts": 36,
+    "manifest_sha256": "496a072eb10f6df533d5b79a3a9dbd1f0c573371caad9835d940f28061e26577"
+  },
+  "artifacts/verification/rcms/20261015T143307Z-c896813d-calculator-mode-onearm-mean": {
+    "scenario": "calculator-mode-onearm-mean",
+    "exit_code": 0,
+    "passed": true,
+    "native": false,
+    "revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "checked_artifacts": 40,
+    "manifest_sha256": "ef00dfaabebb8dac9e3de1863dd55ac6a2a8b8f8cf8eab6639643514d20a8154"
+  },
+  "artifacts/verification/rcms/20261015T143324Z-5d29bcd6-calculator-mode-pre-post": {
+    "scenario": "calculator-mode-pre-post",
+    "exit_code": 0,
+    "passed": true,
+    "native": false,
+    "revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "checked_artifacts": 25,
+    "manifest_sha256": "f5ca7813b38f254b503e96cb467e89712c03dd3f70cce9ead89709a53fa21a0f"
+  },
+  "artifacts/verification/rcms/20261015T143342Z-0f1f4a29-calculator-mode-back-binary": {
+    "scenario": "calculator-mode-back-binary",
+    "exit_code": 0,
+    "passed": true,
+    "native": false,
+    "revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "checked_artifacts": 22,
+    "manifest_sha256": "796f29eef12c58f413298244535fcfe31c805f216931a2d65f7a32ec4da16170"
+  },
+  "artifacts/verification/rcms/20261015T143400Z-86d698ef-calculator-mode-back-continuous": {
+    "scenario": "calculator-mode-back-continuous",
+    "exit_code": 0,
+    "passed": true,
+    "native": false,
+    "revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "checked_artifacts": 26,
+    "manifest_sha256": "9f51656137de6365452f54f9da0f0f348b1f66fb158e1ba5f9d3f1e7c04c991d"
+  },
+  "artifacts/verification/rcms/20261015T143419Z-79804fc8-calculator-mode-back-diagnostic": {
+    "scenario": "calculator-mode-back-diagnostic",
+    "exit_code": 0,
+    "passed": true,
+    "native": false,
+    "revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "checked_artifacts": 21,
+    "manifest_sha256": "00931da37128f2cefc11fc008c5ef5e1c97b9c69c4a88ddd31b3cc8e6756463a"
+  },
   "artifacts/verification/rcms/20261015T110753Z-95b19da2-calculator-mode-entered-binary": {
     "scenario": "calculator-mode-entered-binary",
     "exit_code": 0,
@@ -772,6 +880,42 @@
     "revision": "2af53d75ca4137614972129e6445aa14f646da94",
     "checked_artifacts": 71,
     "manifest_sha256": "916ac744b0f5437f5ac7af4148081a49ce1a6ef8068e2331722366bfcb7de2df"
+  },
+  "artifacts/verification/rcms/20261015T142758Z-4c0ee3cc-calculator-mode-entered-binary": {
+    "scenario": "calculator-mode-entered-binary",
+    "exit_code": 1,
+    "passed": false,
+    "native": false,
+    "revision": "beb6cb33761fd0e5c9c5f68d7761b07a2aad5e98",
+    "checked_artifacts": 8,
+    "manifest_sha256": "c02a49957498840f33e2d0d706e23bb37841211652b5a662bdb3433e9cdafdd2"
+  },
+  "artifacts/verification/rcms/20261015T142928Z-6db88982-calculator-mode-entered-binary": {
+    "scenario": "calculator-mode-entered-binary",
+    "exit_code": 0,
+    "passed": true,
+    "native": false,
+    "revision": "beb6cb33761fd0e5c9c5f68d7761b07a2aad5e98",
+    "checked_artifacts": 23,
+    "manifest_sha256": "a92e3f85a560ef0994e817509e2eb643fad670a7a7ccffccc1501ea53c04b531"
+  },
+  "artifacts/verification/rcms/20261015T142944Z-e40f2574-calculator-mode-entered-continuous": {
+    "scenario": "calculator-mode-entered-continuous",
+    "exit_code": 0,
+    "passed": true,
+    "native": false,
+    "revision": "beb6cb33761fd0e5c9c5f68d7761b07a2aad5e98",
+    "checked_artifacts": 23,
+    "manifest_sha256": "c3a576f751ad4f25ae3aa3d358cac76a1e59522ef8e41f6e369ebff99605d5ca"
+  },
+  "artifacts/verification/rcms/20261015T142955Z-f6b28741-calculator-mode-entered-diagnostic": {
+    "scenario": "calculator-mode-entered-diagnostic",
+    "exit_code": 0,
+    "passed": true,
+    "native": false,
+    "revision": "beb6cb33761fd0e5c9c5f68d7761b07a2aad5e98",
+    "checked_artifacts": 25,
+    "manifest_sha256": "a8c6fad37851c3f1e82ed8525242b6e0026ba01da1031f550711a9e7fb86e6ea"
   },
   "artifacts/verification/rcms/20261015T111318Z-b875900e-audit-round3-round5": {
     "scenario": "audit-round3-round5",

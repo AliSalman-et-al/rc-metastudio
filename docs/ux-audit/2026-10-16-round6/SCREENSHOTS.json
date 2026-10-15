@@ -17,7 +17,7 @@
       "step": 2,
       "action": "calculator-precision-input"
     },
-    "observation": "Full-precision input is stored separately from compact display. Accept/save/reopen and independent effects are asserted in the native helper."
+    "observation": "Historical before and current after use different continuous-data fixtures. Both enter SD 0.00001; exact storage, Accept/save/reopen and independent effects are asserted in the native helpers for single- and two-arm modes."
   },
   {
     "key": "metric-label",
@@ -97,7 +97,7 @@
       "step": 15,
       "action": "diagnostic-selected-precision"
     },
-    "observation": "Text, Tables, copy and export use selected precision. Two/six digits and three moderator shapes are checked."
+    "observation": "The historical before uses six audit studies; the after uses seventeen lymph studies. This pair shows formatting. Text/Tables/copy/export at two/six digits and three moderator shapes are checked against their own raw coefficients; numerical equivalence is proved separately."
   },
   {
     "key": "visible-legend",

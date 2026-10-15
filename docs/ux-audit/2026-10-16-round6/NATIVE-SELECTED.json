@@ -225,13 +225,14 @@
   },
   {
     "scenario": "calculator-mode-entered-binary",
-    "evidence": "artifacts/verification/rcms/20261015T110753Z-95b19da2-calculator-mode-entered-binary",
-    "manifest_sha256": "e8e9a1708845ce1d7e1307d7bdb4b3c5dbf3adc6d2c31fa54175adfc6758cfdf",
-    "source_revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
-    "checked_artifacts": 22,
+    "evidence": "artifacts/verification/rcms/20261015T143043Z-d99dc511-calculator-mode-entered-binary",
+    "manifest_sha256": "8f7c695a1c4d44ab31488e1f066e66f3e756d45bdf7cb1cbb38da797aef70d1b",
+    "source_revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "checked_artifacts": 23,
     "actions": [
       "ready",
       "calculator-invalid-ci-blocked",
+      "calculator-ci-correction-state",
       "calculator-mode-layout",
       "round5-keyboard-calculator-entered-binary",
       "calculator-mode-preview",
@@ -262,18 +263,19 @@
       "platform_plugin": "xcb",
       "application": "RCMetaStudio",
       "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
-      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-6t_rg65u"
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-376hh0h3"
     }
   },
   {
     "scenario": "calculator-mode-entered-continuous",
-    "evidence": "artifacts/verification/rcms/20261015T110813Z-5438523b-calculator-mode-entered-continuous",
-    "manifest_sha256": "2d5b8331664eb1e3a2f5a2016aad4e0ea1cd3b134f0079841b733802426ce1c5",
-    "source_revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
-    "checked_artifacts": 22,
+    "evidence": "artifacts/verification/rcms/20261015T143105Z-65fa9cf9-calculator-mode-entered-continuous",
+    "manifest_sha256": "d7d73343e87b2b9c963642c7bb26a7cfb65bb25464181a39838a61e269ac543c",
+    "source_revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "checked_artifacts": 23,
     "actions": [
       "ready",
       "calculator-invalid-ci-blocked",
+      "calculator-ci-correction-state",
       "calculator-mode-layout",
       "round5-keyboard-calculator-entered-continuous",
       "calculator-mode-preview",
@@ -304,18 +306,19 @@
       "platform_plugin": "xcb",
       "application": "RCMetaStudio",
       "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
-      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-xw9_sltn"
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-yfk13_yp"
     }
   },
   {
     "scenario": "calculator-mode-entered-diagnostic",
-    "evidence": "artifacts/verification/rcms/20261015T110830Z-41ba5f16-calculator-mode-entered-diagnostic",
-    "manifest_sha256": "f458c6dd270c857d8517e1a9322a333fe521cd5e6fe8d58e90d132c4339debc6",
-    "source_revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
-    "checked_artifacts": 24,
+    "evidence": "artifacts/verification/rcms/20261015T143126Z-ee560299-calculator-mode-entered-diagnostic",
+    "manifest_sha256": "534a8077126021641d8cb4961a7186c7b74e0f484369abbee7a41d0366ec9716",
+    "source_revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "checked_artifacts": 25,
     "actions": [
       "ready",
       "calculator-invalid-ci-blocked",
+      "calculator-ci-correction-state",
       "round5-keyboard-calculator-entered-diagnostic",
       "calculator-mode-preview",
       "calculator-mode-reopened",
@@ -346,7 +349,7 @@
       "platform_plugin": "xcb",
       "application": "RCMetaStudio",
       "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
-      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-9bj6brog"
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-kol9l5g_"
     }
   },
   {

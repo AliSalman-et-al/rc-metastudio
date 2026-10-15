@@ -18,5 +18,7 @@ Every commit is pushed fast-forward to origin/ux/audit-improvements. No PR or hi
 - `dc46664` — docs: finish native curation and preserve interrupted runner provenance
 - `53cdc77` — docs: retain final R check transcript and source binding
 - `2af53d7` — test: assert the reviewed natural ratio axis title in the figure
+- `beb6cb3` — docs: bind the final test revision and current R qualification
+- `f4fe5bf` — test: acquire real calculator focus before keyboard corrections
 
-Product source is frozen at 036a1a5; final executable/test qualification is frozen at 2af53d7. Later evidence-only commits remain visible in branch history.
+Product source is frozen at 036a1a5; final executable/test qualification is frozen at f4fe5bf. Later evidence-only commits remain visible in branch history.
