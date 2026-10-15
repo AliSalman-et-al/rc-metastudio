@@ -188,3 +188,7 @@ Viewed all 33 native shell frames in `inspect-SHELL-00..08`, individually. Start
 ### Main method and plot-option inventory
 
 Viewed all 139 frames in `inspect-OPTIONS-00..34`, individually, covering seven families through SMD. All offered fixed/random method forms and enabled plot tabs/scroll positions are readable. Binary Peto/Mantel–Haenszel/inverse-variance alternatives and continuity controls are visible. Plot options remain dense with repeated Show labels, technical capitalization and generic disabled second-group controls; these support existing polish findings, not a new blocker. The six-study small-study dialog clearly disables formal asymmetry tests. Repeated effect header captures cannot prove every header right-click target; attached menu inventories supply the action labels.
+
+### Diagnostic and time-to-event option inventory
+
+Viewed all 72 frames in `inspect-OPTIONS-REMAINDER-00..17`, individually. Diagnostic metric selection, Reitsma/independent fixed/random method forms, HR fixed/random and IRR fixed/random/raw Mantel–Haenszel forms and all enabled plot-tab scroll regions are readable. The joint method identifies mada 0.5.12. IRR exposes double-zero exclusion and continuity controls. Nine-study asymmetry guard is explicit. Existing inconsistent method capitalization and generic disabled group headings remain low polish concerns. HR/IRR offscreen covariate header repetitions are capture limitations, not distinct menu gesture proof. No additional merge blocker.
