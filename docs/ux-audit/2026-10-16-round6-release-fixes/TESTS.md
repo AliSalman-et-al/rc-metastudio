@@ -45,3 +45,24 @@ verify_golden_compatibility.py: error: unrecognized arguments: --output-dir buil
 ```
 
 Corrected `--output-root` command, golden-1, exited 0 with `passed: true`. No refresh of any golden was needed. `uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-release-fixes` exited 0: `415 original fields exactly unchanged; maximum difference 0; original numerical contracts, tolerances, and exceptions unchanged.`
+
+## Native header and retained GUI proof
+
+`uv run python docs/ux-audit/2026-10-16-round6-release-fixes/native.py headers-fixed-3` exited 0, WORKFLOW PASSED. Twelve style/name cases; six long-name cases export all four formats. Both initial names, every wrapped word, device top, caption and rule clearance pass in actual display/export SVGs. INSPECTIONS.md records personal inspection of six native after frames and all 24 export renderings.
+
+Retained GUI command: `env QT_QPA_PLATFORM=offscreen uv run python -m pytest tests/python/gui/test_main_window_automation_launch.py tests/python/gui/test_analysis_configuration_layout.py -q`. gui-retained-1 exited 1: 89 passed, 1 skipped; stale popup-scroll assertion requires scroll even when the shown popup fits its complete choices. Verbatim assertion:
+
+```
+E                   AssertionError: assert 0 > 0
+FAILED tests/python/gui/test_analysis_configuration_layout.py::test_method_parameters_variants_stay_bounded_and_stable
+```
+
+A detached test-owned c37e427 worktree reproduced the same failure (`gui-baseline-popup`: 1 failed, 23 deselected). The broader baseline attempt additionally failed its subprocess form-manifest path because forms were not generated in that checkout; its full error remains raw/gui-baseline-check.log. No baseline product file was edited. The owned clean worktree was removed after the comparison. Corrected the assertion to evaluate overflow against the **shown** popup viewport, retaining the scroll requirement when content actually overflows. gui-retained-2 exited 0: **90 passed, 1 skipped**, 18.60s.
+
+Curation initially failed before PDF rendering (`curate-1`):
+
+```
+TypeError: QPdfDocument(parent: QObject|None): not enough arguments
+```
+
+Passing the required parent argument fixed the evidence script; curate-2 completed, retaining 55 artifacts. A pre-start queue waiter was stopped by exact owned PID to correct timeout-runner flags; no native child had started (raw/QUEUE-RESTART.json).

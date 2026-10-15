@@ -146,3 +146,21 @@ through the metric menu, records the included inputs, and verifies round,
 unpadded OR/PLO bubble ticks across the rendered range with readable spacing.
 Six identical entered effects (1, SE 1e-20) exercise nonzero forest ranges in all
 three styles alongside the retained 1e-10 small-effect proof.
+
+
+## v0.5.0 release finishing
+
+`project-round6-polish` now checks complete generated arm names (including two
+that differ after character 80), actual SVG device-top/caption/rule clearance,
+and four-format exports in Default/RevMan/BMJ. The caption is excluded from the
+arm identity assertion. `project-release-coefficients` drives dedicated Reitsma
+OR plots through logarithmic default → linear → reopen/Cancel and four decoded
+exports, comparing the coefficient arrays exactly; beta/logit plots remain
+linear. `calculator-ratio-precision` additionally analyzes its saved/reopened
+extreme inputs in both journal styles, checking annotation spacing/scientific
+notation alongside its existing exact-input/public-conversion proof. The full
+profile includes these strengthened paths. Native BMJ unnamed/custom single-arm
+standard/subgroup, About and HR/IRR secondary-table proofs are retained in
+`docs/ux-audit/2026-10-16-round6-release-fixes/` with a replay script. Linux source
+and the particular input cases are the scope; arbitrary names/values, OS DPI,
+assistive technology and packaged targets are separate qualifications.
