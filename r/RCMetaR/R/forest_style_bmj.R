@@ -942,7 +942,7 @@ rcmetar.draw.bmj.bottom.blocks <- function(bundle, x, cex, layout=NULL, summary.
     }
     if (nzchar(bundle$style_blocks$axis_label)) {
         # Row spacing varies with figure density; keep title clearance in physical points.
-        label.spacing.inches <- (graphics::par("ps") * graphics::par("cex") * cex + 5) / 72
+        label.spacing.inches <- graphics::par("csi") * graphics::par("cex") * cex + 5 / 72
         label.spacing <- abs(diff(graphics::grconvertY(c(0, label.spacing.inches), from="inches", to="user")))
         label.y <- min(axis.footer$axis.label.y, -2.18 - label.spacing)
         graphics::text(axis.footer$axis.x, label.y, bundle$style_blocks$axis_label, cex=cex)

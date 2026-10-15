@@ -180,3 +180,5 @@ The broadened SE formatting attempt failed the frozen contract for three histori
 ## Final-profile diagnostic axis-title clearance
 
 The final fresh profile exposed an actual retained geometry failure in `audit-round3-presentation-diagnostic`: BMJ axis title/tick gap was 2.73 physical points, below the unchanged 4-point bound. Fixed row coordinates place larger six-digit diagnostic typography too close. Before changing the renderer, retain this failing native-equivalent vector artifact and its exact assertion; then derive title spacing from the device font height and a physical 5-point gap. Reuse the existing diagnostic presentation driver at digits 3/6 in all three styles and exports, then repeat final full fresh qualification. Do not loosen its assertion.
+
+The first physical-spacing replay measured 3.90 points and correctly failed the unchanged four-point check: point size alone excludes device character leading and text anchor differences. Use the device character-line height (`par("csi")`) at actual cex plus the same five-point gap, then replay before full qualification.
