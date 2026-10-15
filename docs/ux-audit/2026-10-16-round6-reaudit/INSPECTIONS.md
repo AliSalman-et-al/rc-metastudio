@@ -216,3 +216,7 @@ Viewed `inspect-MATRIX-{twoarm-mean,twoarm-smd}-bmj-00..01` and corresponding lo
 ### BMJ HR exposure interruption
 
 The BMJ HR custom run completed standard and cumulative cases, then stopped at the native `isExposed()` capture precondition for the leave-one-out report. Its original nonzero receipt and partial index remain untouched. Only the waiting final-target queue (exact PID 1833387, verified empty child list) was stopped/restarted to add the three missing workflows under a fresh `--exposure-recovery` suffix. Native capture still requires xcb/visibility/exposure, now allowing a bounded three-second exposure wait. No product change or passing reinterpretation of the original failure. `raw/FINAL-QUEUE-RESTART.json` records ownership.
+
+### BMJ matrix: diagnostic and incidence rates
+
+Viewed all primary and lower sheets for `MATRIX-diagnostic-bmj` (10+10 frames) and `MATRIX-irr-bmj` (5+4 frames). Ten workflow cells complete. Natural diagnostic 0–1 axes and IRR log spacing/natural labels remain clear; moderator OR coefficient axes repeat R6-07. IRR leave-one-out omits the all-studies annotation block, matching RevMan; native scrolling exposes remaining axes and Dose labels. Copy/export wording still carries R6-08, explicitly permitted only for capture. No additional blocker.
