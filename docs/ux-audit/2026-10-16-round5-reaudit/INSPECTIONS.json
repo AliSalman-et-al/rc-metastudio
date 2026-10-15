@@ -957,5 +957,35 @@
     "path": "screenshots/bubble-explicit-irr.png",
     "sha256": "53683bdc5e47f66d8f0bab43d74a0bb3137f0f74a7472d74acdbaa6aedd7a230",
     "observation": "IRR explicit-bound bubble null at1 is panel-bounded; wrapped actual clinical caption and log-scale label readable."
+  },
+  {
+    "path": "screenshots/scale125-start.png",
+    "sha256": "88c576f993ddc1a5eb2a2d1b6fd8635ede39e8c9c0eb3f341aeca96a5f4ba7ef",
+    "observation": "Qt1.25: content-sized start cards, descriptions, recent empty-state and three-step guidance readable."
+  },
+  {
+    "path": "screenshots/scale125-setup-focus.png",
+    "sha256": "b5d713af52a5810382e6ef90ce976392542db23371cad02ca4f9f0dbc274125c",
+    "observation": "Qt1.25: actual group headings, Automatic placeholder, visible keyboard focus, scrollable options and pinned Run/Cancel reachable."
+  },
+  {
+    "path": "screenshots/scale15-start.png",
+    "sha256": "81d97cabd5c5099f16e06edf289a5dc54d5eeb700cfa851e17c7cfc6ad3dd15d",
+    "observation": "Qt1.5: all three start cards readable, guidance accessible in scrollable page; full toolbar labels fit."
+  },
+  {
+    "path": "screenshots/scale15-setup.png",
+    "sha256": "e629125c880d2fd9ae57be1d4a38d7696911228486fea9aaf64b89fe92485045",
+    "observation": "Qt1.5: all current method controls, confidence/precision/correction, focused choice and pinned Run/Cancel readable and contained."
+  },
+  {
+    "path": "screenshots/scale20-start.png",
+    "sha256": "40d169eee5679b4e3aa830af1485f7042ca72557ba6af44f22fa7b3feb5f1d10",
+    "observation": "Qt2.0: scaled three start cards and descriptions readable; recent/guidance lower down remain in page scroller."
+  },
+  {
+    "path": "screenshots/scale20-setup.png",
+    "sha256": "3b55b947429994af88afeb0a4123bae5cfd9c9fa59a26f7cc915189ddf73179d",
+    "observation": "Qt2.0: method panel scrolls; focused correction selector and pinned Run/Cancel remain reachable and readable."
   }
 ]

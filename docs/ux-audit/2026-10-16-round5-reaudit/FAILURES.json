@@ -15,6 +15,20 @@
       "verbatim": "Traceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/native_design.py\", line 31, in <module>\n    run(app,window,work,ROOT,record,ns['analyze'])\n  File \"/home/ali/Documents/Code/rc-metastudio/tests/e2e/review1_design.py\", line 25, in run\n    present.parent.mkdir(parents=True)\n  File \"/home/ali/.local/share/uv/python/cpython-3.11.9-linux-x86_64-gnu/lib/python3.11/pathlib.py\", line 1116, in mkdir\n    os.mkdir(self, mode)\nFileExistsError: [Errno 17] File exists: '/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native-design/projects/a long path for evidence a long path for evidence a long path for evidence '\n"
     },
     {
+      "run": "native-guard-keyboard-priority",
+      "exit_code": 1,
+      "log": "raw/native-guard-keyboard-priority.log",
+      "log_sha256": "aba4ac02009d38dcf46859f3fbed30594e1f0daf112d1f0af39817706d6d07e7",
+      "verbatim": "Traceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native_guard_keyboard.py\", line 62, in <module>\n    menu=app.activePopupWidget();assert isinstance(menu,QtWidgets.QMenu),(type(menu),window.menu_bar.activeAction())\n                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: (<class 'NoneType'>, None)\n"
+    },
+    {
+      "run": "native-guard-keyboard-replay",
+      "exit_code": 1,
+      "log": "raw/native-guard-keyboard-replay.log",
+      "log_sha256": "79a8216115dffa1f89a3b6d34fddf96a1b79a5ddbd14d8816e2470f2cfd87a78",
+      "verbatim": "Traceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native_guard_keyboard.py\", line 83, in <module>\n    assert not menu_errors,menu_errors\n           ^^^^^^^^^^^^^^^\nAssertionError: [\"AssertionError('Effect-size tools')\"]\n"
+    },
+    {
       "run": "native-shell-serial",
       "exit_code": 1,
       "log": "raw/native-shell-serial.log",
@@ -40,7 +54,8 @@
   "classification": {
     "native-design-serial": "Audit wrapper reused directory from interrupted attempt; fresh replay passed.",
     "native-shell-serial": "Audit wrapper final editor depended on missing design export; replay passed.",
-    "native-all-samples": "Audit wrapper chose continuous method for binary meantime project; corrected stored-family replay passed."
+    "native-all-samples": "Audit wrapper chose continuous method for binary meantime project; corrected stored-family replay passed.",
+    "native-guard-keyboard-priority": "Audit wrapper assumed F10 opened a menu; no active popup appeared. Save/Discard/cancelled Save As assertions before keyboard continuation passed. Supported toolbar Tab/Space replay is recorded separately."
   },
   "setup_verbatim": [
     "/bin/bash: line 2: python: command not found",
