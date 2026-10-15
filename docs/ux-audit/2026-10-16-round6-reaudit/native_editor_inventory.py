@@ -13,7 +13,7 @@ from PyQt6 import QtCore,QtWidgets
 from PyQt6.QtTest import QTest
 from rc_metastudio import automation
 from analysis_matrix import run as matrix
-from advanced_workflows import modal
+from advanced_workflows import modal,click,export_formats
 producers=['analysis-binary.fixed.inv.var','analysis-amino-binary-cumulative','analysis-amino-binary-leave-one-out','analysis-amino-binary-subgroup','analysis-amino-binary-meta-regression','analysis-diagnostic-joint','analysis-diagnostic-regression-continuous','small-study-binary-extended','small-study-diagnostic']
 rows=[];kinds=set()
 def capture(d,tag):
@@ -57,6 +57,15 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
      d.reject()
     modal(app,QtWidgets.QDialog,editor,view.edit_plot_action.trigger)
     assert all(hashlib.sha256(Path(p).read_bytes()).hexdigest()==digest for p,digest in before.items())
+    if kind=='sroc':
+     for style in ('Default','RevMan','BMJ'):
+      def style_editor(d):
+       d.style_cbo.setCurrentText(style);assert d.style_cbo.currentText()==style
+       click(app,d.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply));capture(d,'sroc-'+style+'-applied');d.reject()
+      modal(app,QtWidgets.QDialog,style_editor,view.edit_plot_action.trigger)
+      view.graphics_view.verticalScrollBar().setValue(0);capture(view,'sroc-'+style+'-result-top')
+      view.graphics_view.verticalScrollBar().setValue(view.graphics_view.verticalScrollBar().maximum());capture(view,'sroc-'+style+'-result-bottom')
+      export_formats(app,view,work/('sroc-'+style),'sroc-'+style,ns['record_step'])
     kinds.add(kind);print(kind,'SCROLL/CANCEL PASSED',flush=True)
    view.close();app.processEvents()
   expected={'forest','coefficient','cumulative_forest','leave_one_out_forest','subgroup_forest','regression','sroc','funnel','contour_funnel','trimfill_funnel','deeks_funnel'}

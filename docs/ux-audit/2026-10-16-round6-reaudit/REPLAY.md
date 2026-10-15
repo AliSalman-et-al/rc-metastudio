@@ -21,8 +21,10 @@ artifacts/verification/rcms paths. Only curated PNGs and summary receipts enter 
 
 After the main queue finishes its final native_options_remaining receipt,
 `after.py` serially runs axis Apply transactions, the RevMan/BMJ five-workflow
-matrix and Qt 1.5/2 scaling. Its two-hour waiting bound prevents starting a second
-GUI lane if the first never finishes. `native_samples.py` and
+matrix and Qt 1.5/2 scaling. Its four-hour waiting bound prevents starting a second
+GUI lane if the first never finishes. The initial inactive two-hour waiter was replaced
+with this longer bound after verifying its exact command and empty child list;
+raw/WAIT-EXTENSION.json retains that operation and after-initial.log is preserved. `native_samples.py` and
 `native_guard_keyboard.py` add seven bundled sample save/reopen checks and the
 complete loaded-project keyboard/report/dirty-guard task; run them after both
 queues close. All drivers use test-owned state. Existing run labels are rejected

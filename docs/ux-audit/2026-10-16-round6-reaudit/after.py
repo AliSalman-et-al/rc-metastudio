@@ -2,10 +2,10 @@
 import json,os,subprocess,sys,time
 from pathlib import Path
 HERE=Path(__file__).resolve().parent;ROOT=HERE.parents[2]
-for attempt in range(240):
+for attempt in range(288):
  if (HERE/'raw/native_options_remaining.json').exists():break
- time.sleep(30)
-else:raise SystemExit('Main native queue did not finish within two hours; no second GUI started.')
+ time.sleep(50)
+else:raise SystemExit('Main native queue did not finish within four hours; no second GUI started.')
 commands=[('axis-apply', [sys.executable,'scripts/run_with_timeout.py','--timeout-seconds','1200','--label','axis-apply','--',sys.executable,str(HERE/'axis_apply.py')],{})]
 for style in ('revman','bmj'):
  for family in ('onearm-proportion','onearm-mean','reg-coef','generic-effect','twoarm-proportion','twoarm-mean','twoarm-smd','diagnostic','hr','irr'):

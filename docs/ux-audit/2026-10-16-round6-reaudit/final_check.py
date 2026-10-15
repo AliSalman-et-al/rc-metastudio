@@ -17,7 +17,7 @@ for scenario in scenarios:
 families=('onearm-proportion','onearm-mean','reg-coef','generic-effect','twoarm-proportion','twoarm-mean','twoarm-smd','diagnostic','hr','irr')
 for style in ('','-revman','-bmj'):
  for family in families:assert by['matrix-'+family+style]['exit_code']==0,(family,style)
-for label in ('native_design','native_shell','native_options','native_options_remaining','axis-apply','scale-1.5','scale-2.0','native-samples','native-guard-keyboard','native-controls'):
+for label in ('native_design','native_shell','native_options','native_options_remaining','axis-apply','scale-1.5','scale-2.0','native-samples','native-guard-keyboard','native-controls','native-editor-inventory'):
  assert by[label]['exit_code']==0,label
 images={}
 for index in sorted(HERE.glob('SELECTED-*.json')):
