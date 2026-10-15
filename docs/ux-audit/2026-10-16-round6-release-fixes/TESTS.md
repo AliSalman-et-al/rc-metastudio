@@ -35,3 +35,13 @@ Headers-fixed-2 passed geometry through the short/medium names, then correctly f
 ```
 AssertionError: ('arm header lost words', '/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-2/analysis-scratch/forest-453bf8d763a8.display.svg', 'Intensive individualized cognitive behavioural therapy plus structured clinical follow-up', [{'text': 'Intensive', 'box': (401.65, 78.982, 457.77, 91.942)}])
 ```
+
+## Initial statistical/presentation gates
+
+`uv run python scripts/verify_golden_compatibility.py --output-dir build/qt6-verification/golden-compatibility-release-fixes` exited 2 (harness CLI typo):
+
+```
+verify_golden_compatibility.py: error: unrecognized arguments: --output-dir build/qt6-verification/golden-compatibility-release-fixes
+```
+
+Corrected `--output-root` command, golden-1, exited 0 with `passed: true`. No refresh of any golden was needed. `uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-release-fixes` exited 0: `415 original fields exactly unchanged; maximum difference 0; original numerical contracts, tolerances, and exceptions unchanged.`

@@ -91,6 +91,8 @@ def run_predictions(app, window, work, record):
                     observed = [list(row[-2:]) for t in tables for row in t.rows]
                     assert observed == [item['display'] for item in reference], (observed, reference)
                     assert 'sample size is unspecified' not in text
+                if style == 'bmj' and workflow in ('standard', 'subgroup'):
+                    assert 'Events / Total' in figure, figure
                 if workflow == 'subgroup' and style != 'default':
                     lines = [node for node in ET.parse(artifact.display_path()).iter('{http://www.w3.org/2000/svg}line')
                              if 'stroke-width: 1.01' in node.attrib.get('style','') and abs(float(node.attrib['y1'])-float(node.attrib['y2'])) < .02]
