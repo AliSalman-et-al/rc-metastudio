@@ -463,5 +463,55 @@
     "path": "screenshots/matrix-hr-standard-figure-bottom.png",
     "sha256": "a5f880c64586d1c9822e54f2bb49f7e6f83e13b90420ce1362ed5ec75f5b300b",
     "observation": "Native long HR bottom inspected: 100% pooled weight, no invented event totals; reported CI/test/PI agree with text."
+  },
+  {
+    "path": "screenshots/matrix-irr-standard-figure.png",
+    "sha256": "ae8a3a6f396292c884d119af0ed6a6a3b565992b08e928b025c46017310d41ae",
+    "observation": "Native IRR pair inspected. Pooled0.678701 [0.440365,1.046031], P0.079078 and sequential/subgroup/omission visible rows agree. Independent original-input sums48/25778 and77/25605 match displayed totals. Exposure catheter-days/actual arms readable; regression0.004257, ratio1.004266 agrees. intrcpt remnant R5-05."
+  },
+  {
+    "path": "screenshots/matrix-irr-standard-report.png",
+    "sha256": "50f6c3468cccafad481a1c3a6fd3a149867aa66875e5a8d938276d6f1da35495",
+    "observation": "Native IRR pair inspected. Pooled0.678701 [0.440365,1.046031], P0.079078 and sequential/subgroup/omission visible rows agree. Independent original-input sums48/25778 and77/25605 match displayed totals. Exposure catheter-days/actual arms readable; regression0.004257, ratio1.004266 agrees. intrcpt remnant R5-05."
+  },
+  {
+    "path": "screenshots/matrix-irr-cumulative-figure.png",
+    "sha256": "2e2276a4bb92fc21a09e323b42f8991f4799cdf7dea25025a34af562512c85f7",
+    "observation": "Native IRR pair inspected. Pooled0.678701 [0.440365,1.046031], P0.079078 and sequential/subgroup/omission visible rows agree. Independent original-input sums48/25778 and77/25605 match displayed totals. Exposure catheter-days/actual arms readable; regression0.004257, ratio1.004266 agrees. intrcpt remnant R5-05."
+  },
+  {
+    "path": "screenshots/matrix-irr-cumulative-report.png",
+    "sha256": "1a567abefdbc219f6223eb51abdb50d526dbfd05b85a5892f470e6eff40c99d4",
+    "observation": "Native IRR pair inspected. Pooled0.678701 [0.440365,1.046031], P0.079078 and sequential/subgroup/omission visible rows agree. Independent original-input sums48/25778 and77/25605 match displayed totals. Exposure catheter-days/actual arms readable; regression0.004257, ratio1.004266 agrees. intrcpt remnant R5-05."
+  },
+  {
+    "path": "screenshots/matrix-irr-leave-one-out-figure.png",
+    "sha256": "dd2b1a1141d91e9ac3ff1681738d8947f201a324fee1423b1eac3334704c7fb3",
+    "observation": "Native IRR pair inspected. Pooled0.678701 [0.440365,1.046031], P0.079078 and sequential/subgroup/omission visible rows agree. Independent original-input sums48/25778 and77/25605 match displayed totals. Exposure catheter-days/actual arms readable; regression0.004257, ratio1.004266 agrees. intrcpt remnant R5-05."
+  },
+  {
+    "path": "screenshots/matrix-irr-leave-one-out-report.png",
+    "sha256": "8f790e6b17bc480e27fe8a3c8304c12cfc33a2ff0b43fc7a430e61ec4851b23b",
+    "observation": "Native IRR pair inspected. Pooled0.678701 [0.440365,1.046031], P0.079078 and sequential/subgroup/omission visible rows agree. Independent original-input sums48/25778 and77/25605 match displayed totals. Exposure catheter-days/actual arms readable; regression0.004257, ratio1.004266 agrees. intrcpt remnant R5-05."
+  },
+  {
+    "path": "screenshots/matrix-irr-subgroup-figure.png",
+    "sha256": "938854c5e749587881e5254dd4d9129f4900dae60d252f996d97aa97aa067148",
+    "observation": "Native IRR pair inspected. Pooled0.678701 [0.440365,1.046031], P0.079078 and sequential/subgroup/omission visible rows agree. Independent original-input sums48/25778 and77/25605 match displayed totals. Exposure catheter-days/actual arms readable; regression0.004257, ratio1.004266 agrees. intrcpt remnant R5-05."
+  },
+  {
+    "path": "screenshots/matrix-irr-subgroup-report.png",
+    "sha256": "f258b53bb16e5e63e91106dd2016ea2196a5d68d8c7e44363c6a9d692add34f7",
+    "observation": "Native IRR pair inspected. Pooled0.678701 [0.440365,1.046031], P0.079078 and sequential/subgroup/omission visible rows agree. Independent original-input sums48/25778 and77/25605 match displayed totals. Exposure catheter-days/actual arms readable; regression0.004257, ratio1.004266 agrees. intrcpt remnant R5-05."
+  },
+  {
+    "path": "screenshots/matrix-irr-meta-regression-figure.png",
+    "sha256": "f229defe8f2531685034c701c63b612e7faeb12630612a94d52746019a8fa06e",
+    "observation": "Native IRR pair inspected. Pooled0.678701 [0.440365,1.046031], P0.079078 and sequential/subgroup/omission visible rows agree. Independent original-input sums48/25778 and77/25605 match displayed totals. Exposure catheter-days/actual arms readable; regression0.004257, ratio1.004266 agrees. intrcpt remnant R5-05."
+  },
+  {
+    "path": "screenshots/matrix-irr-meta-regression-report.png",
+    "sha256": "7348c07d09181334e483a69cbd579c552a117e19a300b767f3beafdfb499c413",
+    "observation": "Native IRR pair inspected. Pooled0.678701 [0.440365,1.046031], P0.079078 and sequential/subgroup/omission visible rows agree. Independent original-input sums48/25778 and77/25605 match displayed totals. Exposure catheter-days/actual arms readable; regression0.004257, ratio1.004266 agrees. intrcpt remnant R5-05."
   }
 ]

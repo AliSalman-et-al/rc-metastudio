@@ -45,13 +45,19 @@ The [fresh 65-study default subgroup forest](screenshots/matrix-hr-subgroup-figu
 
 **Principle:** each study's marks must stay visually associated with its row. **Recommendation:** bound CI cap height by actual study-row spacing in the existing default renderer; check short/65-study standard and subgroup figures and their exports. Keep horizontal endpoints, weights and estimates unchanged. This needs the same row-aware treatment already applied to pooled diamonds.
 
+### R5-05 — Low: raw model vocabulary survives in polished reports
+
+The [IRR moderator report](screenshots/matrix-irr-meta-regression-report.png) labels the main coefficient “Intercept” but reverts to `intrcpt` in its exponentiated-coefficient table; HR does the same. The [diagnostic regression report](screenshots/matrix-diagnostic-meta-regression-report.png) exposes lowercase `moderator` / `statistic`, and diagnostic navigation retains “Sens Forest Plot” / “Spec Forest Plot” beside full-name reports. `DTA` is still the raw-count superheading instead of the actual index-test name. These are pre-existing remnants, not round-five regressions; actual user-supplied covariate names must remain intact.
+
+**Principle:** users should recognize one concept by one clear name. **Recommendation:** normalize package-owned row/column/navigation labels at the display boundary (Intercept, Moderator, Test statistic, Sensitivity/Specificity; actual test name for the count block). Leave internal keys and stored researcher names alone. This finishes existing output rather than extending analyses.
+
 ## 5. Microcopy and information design
 
 Pending live and source-string review.
 
 ## 6. Coverage matrix
 
-Native doctor and all five binary matrix workflows passed. The independent public-package authority sweep passed 91/91; [receipt](AUTHORITIES.json). Seven of ten matrix families have passed; diagnostic, HR/IRR and shell/output paths are in progress.
+Native doctor and all five binary matrix workflows passed. The independent public-package authority sweep passed 91/91; [receipt](AUTHORITIES.json). All ten families × five workflows passed; every first figure/report pair is visually inspected in [MATRIX](MATRIX.md). Shell/output follow-up is in progress.
 
 ## 7. Accessibility
 
