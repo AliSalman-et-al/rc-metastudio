@@ -26,7 +26,9 @@ def run(app, window, work, root, record, analyze):
         try:
             assert isinstance(dialog, QtWidgets.QMessageBox)
             dialog.setProperty("verificationExpectedMessage", True)
-            assert "CSV templates and column mapping" in dialog.text()
+            guide = dialog.text()
+            assert all(name in guide for name in ("Intervention / Control", "Index test", "UTF-8 CSV")), guide
+            assert "template" in guide.casefold() and "mapping" in guide.casefold(), guide
             record("ux-quick-start", dialog, text=dialog.text())
         except Exception as error:
             guide_errors.append(str(error))
@@ -192,7 +194,7 @@ def run(app, window, work, root, record, analyze):
     scrollbar.setValue(0)
     record("ux-csv-page-entry", wizard, scroll=scrollbar.value())
     source = work / "mapped.csv"
-    source.write_text('Study,Year,A events,A total,B events,B total,OR,Lower,Upper,Dose\n"Alpha, München",2020,1,10,2,12,,,,5\nBeta,2021,3,11,4,13,,,,7\n', encoding="utf-8")
+    source.write_text('Citation,Year,A events,A total,B events,B total,OR,Lower,Upper,Dose\n"Alpha, München",2020,1,10,2,12,,,,5\nBeta,2021,3,11,4,13,,,,7\n', encoding="utf-8")
     with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(source), "")):
         mouse_click(page.select_file_btn, QtCore.Qt.MouseButton.LeftButton)
     assert not page.isComplete()

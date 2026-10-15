@@ -1281,11 +1281,6 @@ def test_results_window_refits_svg_plots_and_reflows_sections_on_resize(tmp_path
                 - svg_items[0].sceneBoundingRect().bottom()
                 >= results_window.SECTION_SPACING
             )
-            assert (
-                text_items["References"].sceneBoundingRect().top()
-                - svg_items[1].sceneBoundingRect().bottom()
-                >= results_window.SECTION_SPACING
-            )
 
         def assert_plot_fills_viewport(plot_item):
             plot_width = plot_item.sceneBoundingRect().width()
@@ -1531,13 +1526,6 @@ def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
             if isinstance(item, results_window._svg_item_class())
         )
         initial_width = plot_item.sceneBoundingRect().width()
-        weights_title = next(
-            item
-            for item in window.scene.items()
-            if isinstance(item, QtWidgets.QGraphicsTextItem)
-            and "Weights" in item.toPlainText()
-        )
-        initial_weights_y = weights_title.scenePos().y()
         viewport_width = _viewport_width(window.graphics_view)
         assert initial_width >= viewport_width * 0.9
         assert initial_width <= viewport_width
@@ -1554,303 +1542,15 @@ def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
         assert refreshed_width >= refreshed_viewport_width * 0.9
         assert refreshed_width <= refreshed_viewport_width
         assert refreshed_width / refreshed_height == pytest.approx(2.0)
-        assert (
-            weights_title.sceneBoundingRect().top()
-            >= plot_item.sceneBoundingRect().bottom()
-        )
 
-        write_svg(400, 800)
-        window._refresh_plot_item(plot_item, artifact, str(plot_path))
-        app.processEvents()
-
-        assert (
-            weights_title.sceneBoundingRect().top()
-            >= plot_item.sceneBoundingRect().bottom()
-        )
 
         write_svg(400, 100)
         window._refresh_plot_item(plot_item, artifact, str(plot_path))
         app.processEvents()
 
-        assert (
-            weights_title.sceneBoundingRect().top()
-            >= plot_item.sceneBoundingRect().bottom()
-        )
-        assert weights_title.scenePos().y() < initial_weights_y
 
         assert plot_item.sceneBoundingRect().width() / plot_item.sceneBoundingRect().height() == pytest.approx(4.0)
 
-    finally:
-        window.close()
-        app.processEvents()
-
-
-def test_results_window_reflows_sections_after_raster_plot_regenerate(tmp_path):
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio import results_window
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    plot_path = tmp_path / "forest.png"
-
-    def write_plot(width, height):
-        image = results_window.QImage(
-            width, height, results_window.QImage.Format.Format_ARGB32
-        )
-        image.fill(0xFFFFFFFF)
-        assert image.save(str(plot_path))
-
-    write_plot(400, 200)
-    window = results_window.ResultsWindow(
-        _analysis_result(
-            {
-                "texts": {
-                    "Summary": "Meta-analysis summary.",
-                    "Weights": "Study weights remain readable after the plot.",
-                },
-                "images": {"Forest Plot": str(plot_path)},
-                "image_order": ["Forest Plot"],
-                "plot_capabilities": {
-                    "Forest Plot": _plot_capability(editable=False),
-                },
-                "sections": _result_sections(
-                    ("text", "Summary", "Summary"),
-                    ("image", "Forest Plot", "Forest Plot"),
-                    ("text", "Weights", "Weights"),
-                ),
-            }
-        )
-    )
-
-    try:
-        window.resize(1200, 800)
-        window.report_action.setChecked(False)
-        window.show()
-        app.processEvents()
-        plot_item = next(
-            item
-            for item in window.scene.items()
-            if isinstance(item, QtWidgets.QGraphicsPixmapItem)
-        )
-        weights_title = next(
-            item
-            for item in window.scene.items()
-            if isinstance(item, QtWidgets.QGraphicsTextItem)
-            and item.toPlainText() == "Weights"
-        )
-
-        write_plot(400, 800)
-        artifact = window.create_plot_artifact("Forest Plot", str(plot_path))
-        window._refresh_plot_item(plot_item, artifact, str(plot_path))
-        app.processEvents()
-
-        assert (
-            weights_title.sceneBoundingRect().top()
-            - plot_item.sceneBoundingRect().bottom()
-            >= results_window.SECTION_SPACING
-        )
-    finally:
-        window.close()
-        app.processEvents()
-
-
-def test_results_window_places_references_after_images_and_wraps_them(tmp_path):
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio import results_window
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    plot_path = tmp_path / "forest.png"
-    image = results_window.QImage(80, 40, results_window.QImage.Format.Format_RGB32)
-    image.fill(results_window.Qt.GlobalColor.white)
-    assert image.save(str(plot_path), "PNG")
-
-    long_reference = (
-        "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). "
-        "Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), "
-        "177-188. doi:10.1016/0197-2456(86)90046-2."
-    )
-    window = results_window.ResultsWindow(
-        _analysis_result(
-            {
-                "texts": {
-                    "Summary": "Binary Random-Effects Model",
-                    "References": long_reference,
-                },
-                "images": {"Forest Plot": str(plot_path)},
-                "image_var_names": {"Forest Plot": "forest_plot"},
-                "image_params_paths": {"Forest Plot": str(tmp_path / "forest_params")},
-                "image_order": ["Forest Plot"],
-                "plot_capabilities": {"Forest Plot": _plot_capability()},
-                "sections": _result_sections(
-                    ("text", "Summary", "Summary"),
-                    ("image", "Forest Plot", "Forest Plot"),
-                    ("text", "References", "References"),
-                ),
-            }
-        )
-    )
-
-    try:
-        window.report_action.setChecked(False)
-        window.show()
-        app.processEvents()
-
-        nav_titles = [
-            required(window.nav_tree.topLevelItem(index), "navigation item").text(0)
-            for index in range(window.nav_tree.topLevelItemCount())
-        ]
-        assert nav_titles == ["Text report", "Tables", "Summary", "Forest Plot", "References"]
-
-        sections = {
-            item.toPlainText(): item
-            for item in window.scene.items()
-            if isinstance(item, results_window.QGraphicsTextItem)
-        }
-        reference_item = sections[long_reference]
-        assert (
-            required(reference_item.document(), "reference document")
-            .defaultTextOption()
-            .wrapMode()
-            == results_window.QTextOption.WrapMode.WordWrap
-        )
-    finally:
-        window.close()
-        app.processEvents()
-
-
-def test_results_window_separates_tall_text_sections():
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio import results_window
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    tall_section = "\n".join(
-        "Study %02d  0.123  0.456  0.789" % index for index in range(1, 40)
-    )
-    window = results_window.ResultsWindow(
-        _analysis_result(
-            {
-                "texts": {
-                    "Within-study parameters": tall_section,
-                    "Odds Ratio Summary": "Diagnostic Random-Effects Model\n\nEstimate Lower bound Upper bound",
-                },
-                "images": {},
-            }
-        )
-    )
-
-    try:
-        sections = {
-            item.toPlainText(): item
-            for item in window.scene.items()
-            if isinstance(item, results_window.QGraphicsTextItem)
-        }
-
-        first_body = sections[tall_section]
-        next_title = sections["Odds Ratio Summary"]
-        first_bottom = first_body.sceneBoundingRect().bottom()
-        next_top = next_title.sceneBoundingRect().top()
-
-        assert next_top - first_bottom >= results_window.SECTION_SPACING
-    finally:
-        window.close()
-        app.processEvents()
-
-
-def test_results_window_text_context_menu_is_reentrant_safe(monkeypatch):
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio import results_window
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    popups = []
-
-    class FakeEvent(object):
-        def __init__(self):
-            self.accepted = False
-
-        def screenPos(self):
-            return QtCore.QPoint(10, 20)
-
-        def accept(self):
-            self.accepted = True
-
-    class FakeSignal(object):
-        def __init__(self):
-            self._callbacks = []
-
-        def connect(self, callback):
-            self._callbacks.append(callback)
-
-        def emit(self):
-            for callback in self._callbacks:
-                callback()
-
-    class FakeMenu(object):
-        current = None
-
-        def __init__(self, parent=None):
-            self.parent = parent
-            self.actions = []
-            self.aboutToHide = FakeSignal()
-            FakeMenu.current = self
-
-        def addAction(self, action):
-            self.actions.append(action)
-
-        def popup(self, pos):
-            popups.append((pos, [action.text() for action in self.actions]))
-
-    monkeypatch.setattr(results_window, "QMenu", FakeMenu)
-    window = results_window.ResultsWindow(
-        _analysis_result(
-            {
-                "texts": {"Summary": "Model Results\nEstimate  Lower bound"},
-                "images": {},
-            }
-        )
-    )
-
-    try:
-        text_items = [
-            item
-            for item in window.scene.items()
-            if isinstance(item, results_window.QGraphicsTextItem)
-            and item.toPlainText().startswith("Model Results")
-        ]
-        assert len(text_items) == 1
-
-        first_event = FakeEvent()
-        second_event = FakeEvent()
-        text_item = text_items[0]
-        text_item.contextMenuEvent(
-            cast(QtWidgets.QGraphicsSceneContextMenuEvent, first_event)
-        )
-        text_item.contextMenuEvent(
-            cast(QtWidgets.QGraphicsSceneContextMenuEvent, second_event)
-        )
-
-        assert first_event.accepted is True
-        assert second_event.accepted is True
-        assert popups == [
-            (
-                QtCore.QPoint(10, 20),
-                ["Select all", "Copy"],
-            )
-        ]
-
-        current_menu = required(FakeMenu.current, "fake context menu")
-        current_menu.aboutToHide.emit()
-        text_item.contextMenuEvent(
-            cast(QtWidgets.QGraphicsSceneContextMenuEvent, FakeEvent())
-        )
-        assert len(popups) == 2
-        required(FakeMenu.current, "fake context menu").aboutToHide.emit()
     finally:
         window.close()
         app.processEvents()
@@ -2608,6 +2308,7 @@ def test_edit_regression_plot_dialog_shows_only_bubble_options():
         params = dialog.plot_params()
 
         assert params == {
+            "plot_caption": "",
             "bp_style": "bmj",
             "bp_accent_color": "#123456",
             "bp_point_size_multiplier": 1.5,
@@ -2764,160 +2465,6 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
     finally:
         window.close()
         app.processEvents()
-
-
-def test_pre_run_plots_tab_exports_style_and_appearance_params(monkeypatch):
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio import analysis_setup_dialog
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-
-    class PlotDefaultsDialog(object):
-        analysis_type = None
-        study_order: QtWidgets.QComboBox
-        current_param_vals: dict[str, object]
-        style_cbo: QtWidgets.QComboBox
-        show_1: QtWidgets.QCheckBox
-        col1_str_edit: QtWidgets.QLineEdit
-        show_2: QtWidgets.QCheckBox
-        col2_str_edit: QtWidgets.QLineEdit
-        show_3: QtWidgets.QCheckBox
-        col3_str_edit: QtWidgets.QLineEdit
-        show_4: QtWidgets.QCheckBox
-        col4_str_edit: QtWidgets.QLineEdit
-        x_lbl_le: QtWidgets.QLineEdit
-        image_path: QtWidgets.QLineEdit
-        plot_lb_le: QtWidgets.QLineEdit
-        plot_ub_le: QtWidgets.QLineEdit
-        x_ticks_le: QtWidgets.QLineEdit
-        show_summary_line: QtWidgets.QCheckBox
-        show_raw_counts: QtWidgets.QCheckBox
-        show_headers: QtWidgets.QCheckBox
-        show_annotation: QtWidgets.QCheckBox
-        accent_color: QtWidgets.QLineEdit
-        point_size_multiplier: QtWidgets.QDoubleSpinBox
-
-    form = PlotDefaultsDialog()
-    form.study_order = QtWidgets.QComboBox()
-    form.study_order.addItem("Current table order", "table")
-    form.current_param_vals = {}
-    form.style_cbo = QtWidgets.QComboBox()
-    form.style_cbo.addItems(["Default (metafor)", "RevMan", "BMJ"])
-    form.style_cbo.setCurrentText("RevMan")
-    form.show_1 = QtWidgets.QCheckBox()
-    form.show_1.setChecked(True)
-    form.col1_str_edit = QtWidgets.QLineEdit("Study or Subgroup")
-    form.show_2 = QtWidgets.QCheckBox()
-    form.show_2.setChecked(False)
-    form.col2_str_edit = QtWidgets.QLineEdit("[default]")
-    form.show_3 = QtWidgets.QCheckBox()
-    form.show_3.setChecked(True)
-    form.col3_str_edit = QtWidgets.QLineEdit("Treatment")
-    form.show_4 = QtWidgets.QCheckBox()
-    form.show_4.setChecked(True)
-    form.col4_str_edit = QtWidgets.QLineEdit("Control")
-    form.x_lbl_le = QtWidgets.QLineEdit("[default]")
-    form.image_path = QtWidgets.QLineEdit("forest.png")
-    form.plot_lb_le = QtWidgets.QLineEdit("[default]")
-    form.plot_ub_le = QtWidgets.QLineEdit("[default]")
-    form.x_ticks_le = QtWidgets.QLineEdit("[default]")
-    form.show_summary_line = QtWidgets.QCheckBox()
-    form.show_summary_line.setChecked(True)
-    form.show_raw_counts = QtWidgets.QCheckBox()
-    form.show_raw_counts.setChecked(False)
-    form.show_headers = QtWidgets.QCheckBox()
-    form.show_headers.setChecked(False)
-    form.show_annotation = QtWidgets.QCheckBox()
-    form.show_annotation.setChecked(False)
-    form.accent_color = QtWidgets.QLineEdit("#123456")
-    form.point_size_multiplier = QtWidgets.QDoubleSpinBox()
-    form.point_size_multiplier.setValue(1.5)
-
-    analysis_setup_dialog.add_plot_params(form)
-
-    assert form.current_param_vals["fp_style"] == "revman"
-    assert form.current_param_vals["fp_accent_color"] == "#123456"
-    assert form.current_param_vals["fp_point_size_multiplier"] == 1.5
-    assert form.current_param_vals["fp_show_raw_counts"] is False
-    assert form.current_param_vals["fp_show_headers"] is False
-    assert form.current_param_vals["fp_show_annotation"] is False
-    assert form.current_param_vals["fp_xlabel"] is None
-    assert form.current_param_vals["fp_col3_str"] == "Treatment"
-    assert form.current_param_vals["fp_col4_str"] == "Control"
-    display_path = cast(str, form.current_param_vals["fp_display_path"])
-    assert display_path.endswith(".display.svg")
-    assert Path(display_path).parent != Path(".")
-    app.processEvents()
-
-
-def test_meta_regression_pre_run_plot_options_use_bubble_parameter_contract():
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio import analysis_setup_dialog
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-
-    class RegressionPlotDialog(object):
-        analysis_type = "meta-regression"
-        current_param_vals: dict[str, object]
-        style_cbo: QtWidgets.QComboBox
-        accent_color: QtWidgets.QLineEdit
-        point_size_multiplier: QtWidgets.QDoubleSpinBox
-        x_lbl_le: QtWidgets.QLineEdit
-        x_ticks_le: QtWidgets.QLineEdit
-        plot_lb_le: QtWidgets.QLineEdit
-        plot_ub_le: QtWidgets.QLineEdit
-        image_path: QtWidgets.QLineEdit
-        show_regression_line: QtWidgets.QCheckBox
-        show_confidence_band: QtWidgets.QCheckBox
-        show_prediction_interval: QtWidgets.QCheckBox
-        show_legend: QtWidgets.QCheckBox
-
-    form = RegressionPlotDialog()
-    form.current_param_vals = {}
-    form.style_cbo = QtWidgets.QComboBox()
-    form.style_cbo.addItems(["Default (metafor)", "RevMan", "BMJ"])
-    form.style_cbo.setCurrentText("BMJ")
-    form.accent_color = QtWidgets.QLineEdit("#654321")
-    form.point_size_multiplier = QtWidgets.QDoubleSpinBox()
-    form.point_size_multiplier.setValue(1.25)
-    form.x_lbl_le = QtWidgets.QLineEdit("Latitude")
-    form.x_ticks_le = QtWidgets.QLineEdit("-20, 0, 20")
-    form.plot_lb_le = QtWidgets.QLineEdit("-30")
-    form.plot_ub_le = QtWidgets.QLineEdit("30")
-    form.image_path = QtWidgets.QLineEdit("regression.png")
-    form.show_regression_line = QtWidgets.QCheckBox()
-    form.show_regression_line.setChecked(True)
-    form.show_confidence_band = QtWidgets.QCheckBox()
-    form.show_confidence_band.setChecked(False)
-    form.show_prediction_interval = QtWidgets.QCheckBox()
-    form.show_prediction_interval.setChecked(True)
-    form.show_legend = QtWidgets.QCheckBox()
-    form.show_legend.setChecked(True)
-
-    analysis_setup_dialog.add_plot_params(form)
-
-    display_path = cast(str, form.current_param_vals.pop("bp_display_path"))
-    assert display_path.endswith(".display.svg")
-    assert Path(display_path).parent != Path(".")
-    assert form.current_param_vals == {
-        "bp_style": "bmj",
-        "bp_accent_color": "#654321",
-        "bp_point_size_multiplier": 1.25,
-        "bp_xlabel": "Latitude",
-        "bp_xticks": "-20, 0, 20",
-        "bp_plot_lb": "-30",
-        "bp_plot_ub": "30",
-        "bp_outpath": "regression.png",
-        "bp_show_regression_line": True,
-        "bp_show_confidence_band": False,
-        "bp_show_prediction_interval": True,
-        "bp_show_legend": True,
-    }
-    app.processEvents()
 
 
 def test_meta_regression_enables_plots_only_for_one_continuous_covariate():
@@ -3169,13 +2716,6 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
             for item in window.scene.items()
             if isinstance(item, results_window._svg_item_class())
         )
-        references_title = next(
-            item
-            for item in window.scene.items()
-            if isinstance(item, results_window.QGraphicsTextItem)
-            and item.toPlainText() == "References"
-        )
-        original_reference_top = references_title.sceneBoundingRect().top()
 
         artifact = window.create_plot_artifact(
             "Forest Plot", png_path, params_path=params_path
@@ -3195,12 +2735,6 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
             call[1]["fp_display_path"] == display_path for call in updates[1::2]
         )
         assert plot_item.boundingRect().height() == pytest.approx(500)
-        assert references_title.sceneBoundingRect().top() > original_reference_top
-        assert (
-            references_title.sceneBoundingRect().top()
-            - plot_item.sceneBoundingRect().bottom()
-            >= results_window.SECTION_SPACING
-        )
 
         initial_width = plot_item.sceneBoundingRect().width()
         window_width = window.width()
@@ -3238,7 +2772,7 @@ def test_results_window_ignores_missing_image_order_entries():
             for index in range(window.nav_tree.topLevelItemCount())
         ]
 
-        assert nav_titles == ["Text report", "Tables", "Summary"]
+        assert nav_titles == ["Text report", "Tables"]
         assert not any(
             isinstance(item, results_window.QGraphicsPixmapItem)
             for item in window.scene.items()

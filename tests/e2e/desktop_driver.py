@@ -296,15 +296,6 @@ def sample_analysis(app, window, sample):
     actual_sections = parsed_numeric_sections(view.results)
     expected = expected_sections[section]
     actual = actual_sections[section]
-    rendered_text = "\n".join(
-        item.toPlainText()
-        for item in view.scene.items()
-        if isinstance(item, QtWidgets.QGraphicsTextItem)
-    )
-    source_key = next(
-        item.source_key for item in view.results.sections if item.title == section
-    )
-    assert view.texts[source_key].strip() in rendered_text, "summary was not displayed"
     policy = contract["tolerance_policy"]
     for title, values in expected_sections.items():
         assert title in actual_sections, (title, actual_sections)
@@ -317,6 +308,14 @@ def sample_analysis(app, window, sample):
                 actual_sections[title][key],
                 value,
             )
+    summary_section = next(item for item in view.results.sections if item.title == section)
+    assert summary_section.tables, "summary has no structured table"
+    view.report_action.setChecked(True)
+    app.processEvents()
+    assert view.report_text.isVisible()
+    rendered_text = view.report_text.toPlainText()
+    for row in summary_section.tables[0].rows:
+        assert all(cell in rendered_text for cell in row), (row, rendered_text)
     record_step(
         "numerical-oracle",
         view,

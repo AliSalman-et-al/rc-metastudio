@@ -413,6 +413,7 @@ rcmetar.reitsma.plot.data <- function(fit, diagnostic.data, level, extrapolate=F
         text.cex=as.numeric(params$fp_text_cex %||% 0.8),
         point.pch=as.integer(params$fp_point_pch %||% 21),
         show.labels=isTRUE(params$fp_show_labels %||% FALSE))
+    if (!is.null(params$plot_caption)) style$caption <- as.character(params$plot_caption)
     marginal.capture <- rcmetar.reitsma.capture.warnings(
         rcmetar.reitsma.marginal.prediction(fit, level))
     marginal.prediction <- marginal.capture$value
@@ -529,7 +530,7 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
         }
     }
     dir.create(dirname(outpath), recursive=TRUE, showWarnings=FALSE)
-    rcmetar.render.plot_file(outpath, size, draw, display.path=plot.data$display.path, caption=plot.data$params$plot_caption)
+    rcmetar.render.plot_file(outpath, size, draw, display.path=plot.data$display.path, caption=plot.data$style$caption)
     invisible(outpath)
 }
 
@@ -547,7 +548,8 @@ rcmetar.reitsma.apply.saved.style <- function(plot.data, params) {
         ylabel="fp_ylabel", plot.lb="fp_plot_lb", plot.ub="fp_plot_ub", xticks="fp_xticks",
         y.plot.lb="fp_sroc_plot_lb", y.plot.ub="fp_sroc_plot_ub", yticks="fp_sroc_yticks",
         curve.lty="fp_curve_lty", confidence.lty="fp_confidence_lty", prediction.lty="fp_prediction_lty",
-        text.cex="fp_text_cex", point.pch="fp_point_pch", show.labels="fp_show_labels")
+        text.cex="fp_text_cex", point.pch="fp_point_pch", show.labels="fp_show_labels",
+        caption="plot_caption")
     for (field in names(fields)) {
         value <- params[[fields[[field]]]]
         if (!is.null(value) && length(value)) style[[field]] <- value

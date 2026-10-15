@@ -518,7 +518,10 @@ def run(app, window, work, record, scenario):
                             expected_null = {"PLN": "proportion = 1", "PLO": "proportion = 0.5", "PAS": "proportion = 0", "PFT": "Freeman–Tukey transformed proportion = 0"}[metric]
                             assert any("H₀: " + expected_null in "".join(node.itertext()) for node in nodes), (metric, ["".join(node.itertext()) for node in nodes])
                             assert "Pooled Proportion:" in view.report_text.toPlainText()
-                            assert not any("transformed Proportion" in "".join(node.itertext()) for node in nodes), metric
+                            last_study_y = max(float(node.attrib["y"]) for node in nodes if "".join(node.itertext()).startswith("Fixture "))
+                            axis_labels = ["".join(node.itertext()) for node in nodes if float(node.attrib["y"]) > last_study_y]
+                            assert any(label.startswith("Proportion") for label in axis_labels), (metric, axis_labels)
+                            assert not any("transformed Proportion" in label for label in axis_labels), metric
                             annotations = [node for node in nodes if re.fullmatch(r"[+\-\d.eE]+ (?:\[.*\]|\(.* to .*\))", "".join(node.itertext()))]
                             for index, expected in enumerate(reference["studies"]):
                                 name = next(node for node in nodes if "".join(node.itertext()) == "Fixture " + str(index+1))

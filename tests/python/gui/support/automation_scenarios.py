@@ -1747,6 +1747,10 @@ def _assert_visible_children_are_laid_out(page, scenario_name):
         object_name = child.objectName()
         if not object_name or object_name.startswith("qt_"):
             continue
+        if isinstance(child, QtWidgets.QLabel) and not child.text():
+            pixmap = child.pixmap()
+            if pixmap is None or pixmap.isNull():
+                continue
         if child.width() <= 0 or child.height() <= 0:
             raise SystemExit(
                 "Wizard child was not laid out in %s: %s"
