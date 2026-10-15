@@ -59,6 +59,7 @@ from rc_metastudio.settings import (
     recent_file_display_name,
     save_main_window_placement,
     save_settings,
+    update_setting,
 )
 from rc_metastudio.runtime_types import required
 
@@ -231,6 +232,20 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             (self.action_publication_bias, "publication-bias"),
         ):
             qt_layout.configure_analysis_action_icon(action, icon_name)
+        self.analysis_button = QtWidgets.QToolButton(self.toolBar)
+        self.analysis_button.setText("Analyses")
+        self.analysis_button.setIcon(self.action_go.icon())
+        self.analysis_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.analysis_button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.analysis_button.setMenu(self.menuAnalysis)
+        self.analysis_button.setAccessibleName("Analyses")
+        self.analysis_button.setAccessibleDescription("Choose an analysis. Unavailable analyses explain their prerequisites in the menu.")
+        self.analysis_button.setToolTip("Choose an analysis")
+        self.analysis_button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.toolBar.insertWidget(self.action_go, self.analysis_button)
+        for action in (self.action_go, self.action_cum_ma, self.action_loo_ma, self.action_subgroup_ma,
+                       self.action_meta_regression, self.action_publication_bias, self.action_change_confidence_level):
+            self.toolBar.removeAction(action)
         qt_layout.configure_main_toolbar(self.toolBar)
         dataset_file_label = ElidingStatusLabel(
             self.dataset_file_lbl.text(), self.centralwidget
@@ -238,6 +253,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.verticalLayout_3.replaceWidget(self.dataset_file_lbl, dataset_file_label)
         self.dataset_file_lbl.deleteLater()
         self.dataset_file_lbl = dataset_file_label
+        self.gridLayout.setHorizontalSpacing(8)
         self.current_outcome_label.setTextFormat(Qt.TextFormat.PlainText)
         self.current_follow_up_label.setTextFormat(Qt.TextFormat.PlainText)
         self.workspace_hint = QLabel(self)
@@ -285,6 +301,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.navigation_dimension.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
         self.navigation_dimension.currentIndexChanged.connect(lambda _index: self.update_dimension())
         self.update_dimension()
+        for before, after in zip(
+            (self.analysis_button, self.navigation_dimension, self.nav_left_btn, self.nav_right_btn, self.nav_add_btn),
+            (self.navigation_dimension, self.nav_left_btn, self.nav_right_btn, self.nav_add_btn, self.tableView),
+        ):
+            self.setTabOrder(before, after)
         self._model_signal_connections = []
         self._setup_connections()
         self._configure_standard_shortcuts()
@@ -542,7 +563,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def populate_open_recent_menu(self):
         recent_datasets = get_recent_files()
-        self.start_page.set_recent_projects(recent_datasets, self.dataset_selected)
+        self.start_page.set_recent_projects(recent_datasets, self.dataset_selected, self._locate_recent_project, self._remove_recent_project)
         self.action_open_recent_2.clear()
         for dataset in reversed(recent_datasets):
             action_item = QAction(
@@ -558,6 +579,19 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             _connect_action(
                 action_item, lambda dataset=dataset: self.dataset_selected(dataset)
             )
+
+    def _remove_recent_project(self, path):
+        update_setting("recent_files", [entry for entry in get_recent_files() if entry != path])
+        save_settings()
+        self.populate_open_recent_menu()
+
+    def _locate_recent_project(self, path):
+        replacement, _filter = QFileDialog.getOpenFileName(self, "Locate project", os.path.dirname(path), "RC MetaStudio projects (*.rcms)")
+        if replacement:
+            # Validate the replacement before removing the unavailable path.
+            project_format.load_project(replacement)
+            add_file_to_recent_files(replacement)
+            self._remove_recent_project(path)
 
     def dataset_selected(self, dataset_path):
         self.open(file_path=dataset_path)

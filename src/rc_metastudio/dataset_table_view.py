@@ -5,7 +5,7 @@
 import copy
 from typing import TYPE_CHECKING, Protocol, cast
 
-from PyQt6 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtWidgets, QtGui
 from PyQt6.QtCore import (
     QEvent,
     QObject,
@@ -108,6 +108,8 @@ class DatasetTableView(QtWidgets.QTableView):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self._batch_editing = False
+        self.setAccessibleName("Study data")
+        self.setAccessibleDescription("Study rows and input columns. Italic effect cells show estimates and intervals; gold marks the effect columns. Press Enter to edit a cell or use the row calculator. Ctrl+Tab leaves the grid.")
 
         # the main gui is assumed to be the form
         # that owns this table view, i.e., the 'main'
@@ -129,6 +131,11 @@ class DatasetTableView(QtWidgets.QTableView):
         # Additional covariate sort columns are registered as they become visible.
         self.reverse_column_sorts = {0: False, 1: False}
         self.setAlternatingRowColors(True)
+        palette = self.palette()
+        for group in (QtGui.QPalette.ColorGroup.Active, QtGui.QPalette.ColorGroup.Inactive):
+            palette.setColor(group, QtGui.QPalette.ColorRole.Highlight, QtGui.QColor("#245a81"))
+            palette.setColor(group, QtGui.QPalette.ColorRole.HighlightedText, QtGui.QColor("#ffffff"))
+        self.setPalette(palette)
 
         self.contextMenuEvent = self._make_context_menu()
 
@@ -403,7 +410,10 @@ class DatasetTableView(QtWidgets.QTableView):
         if event is None:
             return
         if event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier:
-            if event.key() == QtCore.Qt.Key.Key_Z:
+            if event.key() in (QtCore.Qt.Key.Key_Tab, QtCore.Qt.Key.Key_Backtab):
+                self.focusNextPrevChild(event.key() != QtCore.Qt.Key.Key_Backtab and not event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier)
+                event.accept()
+            elif event.key() == QtCore.Qt.Key.Key_Z:
                 self._main_gui().undo()
             elif event.key() == QtCore.Qt.Key.Key_Y:
                 self._main_gui().redo()

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Edit Plot</string>
+   <string>Edit plot</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -31,7 +31,7 @@
    <item>
     <widget class="QGroupBox" name="style_group">
      <property name="title">
-      <string>Plot Style</string>
+      <string>Plot style</string>
      </property>
      <layout class="QGridLayout" name="style_layout">
       <item row="0" column="0">

@@ -60,6 +60,7 @@ def configure_analysis_action_icon(action, icon_name):
 def configure_navigation_tool_buttons(buttons):
     """Give outcome-navigation controls a coherent cross-platform scale."""
     for button in buttons:
+        button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         # layout-audit: allow=semantic-icon-control; reason=outcome navigation uses a surface-specific optical icon size
         button.setIconSize(
             QSize(OUTCOME_NAVIGATION_ICON_EXTENT, OUTCOME_NAVIGATION_ICON_EXTENT)
@@ -107,6 +108,9 @@ def configure_main_toolbar(toolbar):
         if action is None:
             continue
         action.setToolTip(action.toolTip() or action.text().replace("&", ""))
+        button.setAccessibleName(action.text().replace("&", ""))
+        button.setAccessibleDescription(action.toolTip())
+        button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         if action.objectName() in {"action_new_dataset", "action_open", "action_import_csv", "action_save", "action_go"}:
             button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         # layout-audit: allow=semantic-icon-control; reason=toolbar actions need consistent cross-platform click targets

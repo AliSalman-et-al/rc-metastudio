@@ -1401,7 +1401,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self._rebuild_shared_diagnostic_params()
 
     def _finish_combined_diagnostic_ui(self):
-        self.setWindowTitle("Method & Parameters")
+        self.setWindowTitle("Method and parameters")
         self.method_lbl.setText(diagnostic_metric_group_display_label("sens_spec"))
 
         self.shared_diagnostic_params_box.show()
@@ -1521,18 +1521,18 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             # parameter of this model and must not remain visible or imply
             # that fixed effects can be requested.
             self.regression_model_group.hide()
-            window_title = "Reitsma Meta-Regression"
+            window_title = "Reitsma meta-regression"
             method_label = "Reitsma bivariate model"
         elif self._combined_diagnostic:
-            window_title = "Method & Parameters"
+            window_title = "Method and parameters"
             method_label = diagnostic_metric_group_display_label("sens_spec")
         elif self.sens_spec:
             metric_group_label = diagnostic_metric_group_display_label("sens_spec")
-            window_title = "Method & Parameters for %s" % metric_group_label
+            window_title = "Method and parameters for %s" % metric_group_label
             method_label = "Method for %s" % metric_group_label
         else:
             metric_group_label = diagnostic_metric_group_display_label("lr_dor")
-            window_title = "Method & Parameters for %s" % metric_group_label
+            window_title = "Method and parameters for %s" % metric_group_label
             method_label = "Method for %s" % metric_group_label
 
         self.setWindowTitle(QtCore.QCoreApplication.translate("Dialog", window_title))

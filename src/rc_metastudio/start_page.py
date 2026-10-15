@@ -51,7 +51,7 @@ class StartPage(QtWidgets.QScrollArea):
             label = QtWidgets.QLabel(description, card)
             qt_layout.configure_context_label(label)
             card_layout.addWidget(label)
-            card_layout.addStretch()
+            card.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Maximum)
             actions.addWidget(card, 1)
         layout.addLayout(actions)
         heading = QtWidgets.QLabel('Recent projects', content)
@@ -76,7 +76,7 @@ class StartPage(QtWidgets.QScrollArea):
         outer.addStretch()
         self.setWidget(page)
 
-    def set_recent_projects(self, paths, open_project):
+    def set_recent_projects(self, paths, open_project, locate_project=None, remove_project=None):
         while self.recent_layout.count():
             item = required(self.recent_layout.takeAt(0), "recent project row")
             widget = item.widget()
@@ -97,6 +97,17 @@ class StartPage(QtWidgets.QScrollArea):
             button.setToolTip(str(path) if exists else 'Missing file: ' + str(path))
             button.clicked.connect(app_error_handler.safe_slot(lambda _checked=False, path=path: open_project(path), parent=self))
             layout.addWidget(button, alignment=QtCore.Qt.AlignmentFlag.AlignLeft)
+            if not exists:
+                recovery = QtWidgets.QHBoxLayout()
+                for caption, callback in (("Locate…", locate_project), ("Remove from list", remove_project)):
+                    if callback is None:
+                        continue
+                    action = QtWidgets.QPushButton(caption, row)
+                    action.setAccessibleName(caption + " " + Path(path).name)
+                    action.clicked.connect(app_error_handler.safe_slot(lambda _checked=False, path=path, callback=callback: callback(path), parent=self))
+                    recovery.addWidget(action)
+                recovery.addStretch()
+                layout.addLayout(recovery)
             label = QtWidgets.QLabel(str(path), row)
             label.setTextFormat(QtCore.Qt.TextFormat.PlainText)
             label.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)

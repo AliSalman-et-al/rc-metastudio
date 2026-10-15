@@ -25,9 +25,26 @@ def run(app, window, work, root, record, analyze):
     settings.add_file_to_recent_files(str(present))
     window.populate_open_recent_menu()
     entries = window.start_page.recent_projects.findChildren(QtWidgets.QPushButton)
-    assert len(entries) == 2
+    assert len(entries) == 4
     assert any(not button.isEnabled() and 'Missing file' in button.toolTip() for button in entries)
     assert str(present) in [label.text() for label in window.start_page.recent_projects.findChildren(QtWidgets.QLabel)]
+    remove = next(button for button in entries if button.text() == "Remove from list")
+    mouse_click(remove, QtCore.Qt.MouseButton.LeftButton)
+    assert str(missing) not in settings.get_recent_files()
+    settings.add_file_to_recent_files(str(missing))
+    window.populate_open_recent_menu()
+    locate = next(button for button in window.start_page.recent_projects.findChildren(QtWidgets.QPushButton) if button.text() == "Locate…")
+    with patch.object(QtWidgets.QFileDialog, 'getOpenFileName', return_value=('', '')):
+        mouse_click(locate, QtCore.Qt.MouseButton.LeftButton)
+    assert str(missing) in settings.get_recent_files()
+    relocated = work / 'relocated.rcms'
+    relocated.write_bytes(present.read_bytes())
+    with patch.object(QtWidgets.QFileDialog, 'getOpenFileName', return_value=(str(relocated), '')):
+        mouse_click(locate, QtCore.Qt.MouseButton.LeftButton)
+    assert str(missing) not in settings.get_recent_files()
+    assert str(relocated) in settings.get_recent_files()
+    record('round5-recent-recovered', window, recent=settings.get_recent_files())
+    entries = window.start_page.recent_projects.findChildren(QtWidgets.QPushButton)
     window.showNormal()
     window.resize(1000, 720)
     app.processEvents()
@@ -56,7 +73,7 @@ def run(app, window, work, root, record, analyze):
     with patch.object(QtWidgets.QFileDialog, 'getOpenFileName', return_value=('', '')):
         mouse_click(window.start_page.open_button, QtCore.Qt.MouseButton.LeftButton)
     assert window.start_page.isVisible()
-    present_button = next(button for button in entries if button.isEnabled())
+    present_button = next(button for button in entries if button.text() == present.name)
     mouse_click(present_button, QtCore.Qt.MouseButton.LeftButton)
     app.processEvents()
     assert window.tableView.isVisible() and not window.start_page.isVisible()
@@ -70,6 +87,12 @@ def run(app, window, work, root, record, analyze):
     window.navigation_dimension.setCurrentIndex(0)
     assert window.current_dimension == 'outcome'
     record('review1-workspace-navigation', window)
+    keyboard_traversal(app, window, [window.analysis_button, window.navigation_dimension, window.tableView], record, "workspace")
+    window.tableView.setFocus()
+    QTest.keyClick(window.tableView, QtCore.Qt.Key.Key_Tab, QtCore.Qt.KeyboardModifier.ControlModifier)
+    app.processEvents()
+    assert app.focusWidget() is not window.tableView, "Ctrl+Tab cannot leave the study grid"
+    record("round5-grid-keyboard-exit", window)
 
     view = analyze(app, window, 'binary.random')
     view.export_format_control.setCurrentIndex(view.export_format_control.findData('svg'))
@@ -101,6 +124,7 @@ def run(app, window, work, root, record, analyze):
     assert view.result_table.isVisible()
     assert not view.export_plot_action.isEnabled() and not view.edit_plot_action.isEnabled()
     record('review1-report-tables', view)
+    keyboard_traversal(app, view, [view.table_selector, view.result_table, view.nav_tree, view.zoom_control], record, "results")
     plot = next(item for item in view.nav_tree.findItems('Forest Plot', QtCore.Qt.MatchFlag.MatchExactly))
     view.nav_tree.setCurrentItem(plot)
     assert view.export_format_control.currentData() == 'svg'
@@ -114,3 +138,28 @@ def run(app, window, work, root, record, analyze):
     assert rerun.export_format_control.currentData() == 'svg'
     record('review1-export-format-remembered', rerun, selected='svg')
     rerun.close()
+
+
+def keyboard_traversal(app, window, controls, record, surface):
+    """Use actual Tab events; retain the visited focus sequence and final ring."""
+    controls = [control for control in controls if control.isEnabled() and control.isVisible()]
+    assert controls, surface
+    window.raise_()
+    window.activateWindow()
+    controls[0].setFocus(QtCore.Qt.FocusReason.TabFocusReason)
+    QTest.qWait(80)
+    visited, reached = [], set()
+    for _ in range(300):
+        focus = app.focusWidget()
+        assert focus is not None, (surface, visited)
+        for index, control in enumerate(controls):
+            if control is focus or control.isAncestorOf(focus):
+                reached.add(index)
+        visited.append(focus.accessibleName() or focus.objectName() or type(focus).__name__)
+        if len(reached) == len(controls):
+            break
+        modifier = QtCore.Qt.KeyboardModifier.NoModifier
+        QTest.keyClick(focus, QtCore.Qt.Key.Key_Tab, modifier)
+        app.processEvents()
+    assert len(reached) == len(controls), (surface, reached, [c.objectName() for c in controls], visited)
+    record("round5-keyboard-" + surface, window, focus_sequence=visited)

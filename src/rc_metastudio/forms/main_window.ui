@@ -519,10 +519,10 @@
     <string>Publication Bias</string>
    </property>
    <property name="toolTip">
-    <string>Publication Bias and Small-Study Effects</string>
+    <string>Small-study effects</string>
    </property>
    <property name="statusTip">
-    <string>Publication Bias and Small-Study Effects</string>
+    <string>Small-study effects</string>
    </property>
   </action>
   <action name="action_undo">

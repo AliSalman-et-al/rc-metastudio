@@ -346,38 +346,6 @@ def test_results_splitter_proportions_persist_independently_of_outer_geometry(
         _dispose(window, qapp)
 
 
-def test_results_long_text_reflows_inside_constrained_viewport_without_window_growth(
-    qapp, tmp_path
-):
-    _use_isolated_settings(tmp_path)
-    long_summary = " ".join(["Long analysis summary"] * 120)
-    window = results_window.ResultsWindow(_empty_results(long_summary))
-    try:
-        window.showNormal()
-        window.resize(560, 420)
-        window.show()
-        qapp.processEvents()
-        before = QtCore.QRect(window.geometry())
-
-        window.results_nav_splitter.setSizes([280, 280])
-        for _ in range(8):
-            window._schedule_viewport_refit()
-        qapp.processEvents()
-
-        text_item = next(
-            item
-            for item in window.scene.items()
-            if isinstance(item, results_window.SelectableResultsTextItem)
-        )
-        assert window.geometry() == before
-        assert text_item.textWidth() > 0
-        viewport = required(window.graphics_view.viewport(), "graphics viewport")
-        assert text_item.textWidth() <= viewport.width()
-        assert window.scene.width() <= viewport.width() + 2
-    finally:
-        _dispose(window, qapp)
-
-
 def test_results_resize_burst_runs_one_expensive_reflow_per_event_loop_turn(
     qapp, monkeypatch, tmp_path
 ):

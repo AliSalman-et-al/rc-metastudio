@@ -7,7 +7,7 @@ from functools import cmp_to_key
 import math
 
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSignal
-from PyQt6.QtGui import QColor, QIcon
+from PyQt6.QtGui import QColor, QIcon, QFont
 
 from rc_metastudio import analysis_identity, name_validation, qt_text, workspace_editing
 from rc_metastudio.meta_globals import TIME_TO_EVENT, EVENT_RATES, RATIO_DATA_TYPES
@@ -609,6 +609,16 @@ class DatasetTableModel(QAbstractTableModel):
         return f"Reported {self.current_effect}; input scale: {record.scale}; original CI: {record.confidence:g}%. Click the study row number to edit input details."
 
     def _role_data(self, index, role, study):
+        if role == Qt.ItemDataRole.AccessibleTextRole:
+            value = self._display_data(index, Qt.ItemDataRole.DisplayRole, study)
+            header = self._horizontal_header_display(index.column())
+            return f"{study.name}, {header}: {value or ''}"
+        if role == Qt.ItemDataRole.AccessibleDescriptionRole:
+            return self._effect_tooltip(index, study) or "Editable study data. Press Enter to edit; use the row calculator for study inputs."
+        if role == Qt.ItemDataRole.FontRole and index.column() in self.OUTCOMES and self._study_has_entered_data(index.row()):
+            font = QFont()
+            font.setItalic(True)
+            return font
         if role == Qt.ItemDataRole.ToolTipRole:
             tooltip = self._effect_tooltip(index, study)
             if tooltip is not None:
@@ -963,7 +973,7 @@ class DatasetTableModel(QAbstractTableModel):
 
     def _vertical_header_data(self, section, role):
         if role == Qt.ItemDataRole.ToolTipRole and self._study_has_entered_data(section):
-            return "Use calculator to fill-in missing information"
+            return "Open the study calculator to enter or complete inputs"
         if role == Qt.ItemDataRole.DecorationRole:
             return (
                 QIcon(":/icons/table/calculator.svg")
