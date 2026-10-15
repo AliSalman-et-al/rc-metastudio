@@ -189,4 +189,4 @@ and removal. Calculator-mode drives traverse the effective form controls.
 Native runs at QT_SCALE_FACTOR=1.25/1.5/2 establish Linux Qt scaling only; inspect
 retained frames for clipping. Screen readers, actual Windows/macOS OS scaling,
 all file-picker/failure states and all parameter combinations remain unqualified.
-See [round-five evidence](../../../../../docs/ux-audit/2026-10-16-round5/README.md).
+See [round-five evidence](../../../../docs/ux-audit/2026-10-16-round5/README.md).
