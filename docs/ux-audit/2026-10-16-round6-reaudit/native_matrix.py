@@ -60,7 +60,7 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
                 assert window.open(str(ROOT/'sample_projects'/(sample+'.rcms')),raise_on_error=True)
                 prepare(window)
                 if workflow!='meta-regression':
-                    view=analyze_existing(app,window,workflow,('time_to_event' if family=='hr' else 'event_rates')+'.random',record,{'digits':6})
+                    view=analyze_existing(app,window,workflow,('time_to_event' if family=='hr' else 'event_rates')+'.random',record,{'digits':6,'fp_style':style})
                 else:
                     window.action_meta_regression.trigger();app.processEvents()
                     dialog=next(w for w in app.topLevelWidgets() if isinstance(w,analysis_setup_dialog.AnalysisSetupDialog) and w.isVisible())

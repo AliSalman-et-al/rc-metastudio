@@ -112,3 +112,9 @@ is an audit harness failure, not a product defect.
   row bands, type stays readable, subgroup/overall blocks and axis/footer clear.
   Direct cap/diamond-to-row geometry and exported SVG checks pass. This closes
   the observed R5-04/R17 regression on the retained long-figure paths.
+
+### Diagnostic forests and metric-specific bubbles
+
+Viewed `inspect-audit-round3-presentation-diagnostic-00` through `05`: all 24 selected native upper/lower annotation frames, sensitivity and specificity in Default/RevMan/BMJ at three and six digits. Natural 0–1 forest axes, explicit counts and effect/CI columns, bounded caps and matching Default blue remain coherent. Journal six-digit columns fit this ordinary six-study fixture. RevMan's repeated numeric/graphic measure heading and BMJ's Study or subgroup heading remain familiar journal conventions. The generated Follow-up: first copy remains a minor unfinished default (R5-02 improved, not fixed).
+
+Viewed `inspect-audit-round3-bubble-metrics-00` through `05`: all 24 selected frames, 16 metric-specific bubbles plus HR/IRR setup tabs and results. CI legend samples, panel-bounded guides, meaningful natural ratio labels and explicit transformed proportion scale labels are legible. PAS has relatively long inverse tick labels; this is similar numeric polish to R6-04, not a wrong transformation. Plot bottom labels require scrolling in some current viewports; retained full-device evidence and later matrix lower captures distinguish viewport clipping from export clipping. The HR/IRR three setup tabs expose real covariates, method/inference/precision and plot options; selected controls have visible focus.
