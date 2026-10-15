@@ -1046,6 +1046,12 @@ def _observe_accept_action(
         )
         if not isinstance(accept, QtWidgets.QPushButton):
             raise RuntimeError("accept-cancel surface has no accept action")
+        from rc_metastudio.add_new_dialogs import AddCovariateDialog
+        if isinstance(accept_dialog, AddCovariateDialog):
+            if accept.isEnabled():
+                raise RuntimeError("blank covariate name unexpectedly enables acceptance")
+            accept_dialog.covariate_name_le.setText("Baseline risk")
+            app.processEvents()
         accepted: list[bool] = []
         accept_dialog.accepted.connect(lambda: accepted.append(True))
         default_accept = accept.isVisible() and accept.isEnabled() and accept.isDefault()

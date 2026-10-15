@@ -111,6 +111,7 @@ def run_git(root: Path, *args: str) -> str:
             check=True,
             capture_output=True,
             text=True,
+            encoding="utf-8",
         )
     except (OSError, subprocess.CalledProcessError) as exc:
         raise CodeHealthError(f"git {' '.join(args)} failed") from exc

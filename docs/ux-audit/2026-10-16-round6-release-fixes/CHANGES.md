@@ -45,3 +45,10 @@ validation, continuous arm labels, forest marks/annotations/headers, Reitsma
 appearance/axis/visibility settings, summary prediction intervals and subgroup
 rows. Fit calls, transformations, operation order, output values and style-field
 order are preserved. Strict goldens pass without refresh.
+
+Remaining Surfaces now first requires blank-covariate acceptance to be disabled,
+then enters a valid name before testing default-button acceptance. Local real-Qt
+reproduction changed from `(false, false)` to `(true, true)` for enabled/accepted;
+no validator was loosened. Git source/metadata decoding is explicitly UTF-8 in
+code-health (no metric or policy change), resolving the reproduced cp1252 byte
+0x9d decode error. The existing process contract now displays stderr on failure.
