@@ -77,4 +77,8 @@ def dataset_identity(model, metric=None):
     groups = " / ".join(model.current_groups if comparison else model.current_groups[:1])
     group_label = "Comparison" if comparison else "Group"
     follow_up = model.get_current_follow_up_name()
-    return f"{model.current_outcome_name} · {dataset_label(model)} · {metric or metric_label(model)}\n{group_label}: {groups} · Follow-up: {follow_up}"
+    labels = [model.current_outcome_name, dataset_label(model)]
+    quantity = metric or metric_label(model)
+    if quantity:
+        labels.append(quantity)
+    return " · ".join(labels) + f"\n{group_label}: {groups} · Follow-up: {follow_up}"

@@ -75,5 +75,12 @@
     "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
     "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/design-07-review1-report-top.png",
     "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/native-bubble-exports-52-0-matrix-results-report.png",
+    "sha256": "e21fb0146e3f878f1db3ddd2394fef299f5ce63d50723d14a9548aab14d4256c",
+    "original": "artifacts/verification/rcms/20261015T024244Z-5aa184e3-audit-round3-bubble-metrics/52-0-matrix-results-report.png",
+    "provenance": "NATIVE.json native-bubble-exports, observed step 52; manifest binds original file",
+    "capture": "QScreen.grabWindow native xcb"
   }
 ]

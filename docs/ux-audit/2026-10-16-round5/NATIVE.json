@@ -13004,5 +13004,4987 @@
         "capture": "QScreen.grabWindow"
       }
     ]
+  },
+  "native-freeze-audit-round3-presentation-twoarm-mean": {
+    "attempt": {
+      "label": "native-freeze-audit-round3-presentation-twoarm-mean",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "audit-round3-presentation-twoarm-mean",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T03:13:51.285182+00:00",
+      "finished": "2026-10-15T03:15:55.617835+00:00",
+      "seconds": 124.33031832998677,
+      "exit_code": 0,
+      "revision": "a90ef4d990608b1773f8a5ae3dce8bb9d84f53fc",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-freeze-audit-round3-presentation-twoarm-mean.log",
+      "sha256": "35a4b6a0349d9eab4094bef4cc8eb848f7a2be305e7d8f76ad3dc12658302432"
+    },
+    "evidence": "artifacts/verification/rcms/20261015T031351Z-92bddb3a-audit-round3-presentation-twoarm-mean",
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo"
+    },
+    "manifest_sha256": "5ff45835c74855a9a30d2de6d7eb2587ea91dbed632525a681ddce50567ec41a",
+    "observed": [
+      {
+        "step": 1,
+        "action": "ready",
+        "utc": "2026-10-15T03:13:56.739453+00:00",
+        "captures": [
+          "01-0-ready.png"
+        ],
+        "artifacts": {},
+        "runtime": {
+          "r": "R version 4.6.1 (2026-06-24)",
+          "r_libraries": [
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+          ],
+          "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "authorities": {
+            "mada": "0.5.12",
+            "metafor": "5.0-1",
+            "meta": "8.5-0",
+            "svglite": "2.2.2",
+            "rsvg": "2.7.0",
+            "tiff": "0.1-12"
+          },
+          "rcmetar": "0.4.2",
+          "rpy2": "3.6.7",
+          "qt": "6.11.1",
+          "pyqt": "6.11.0",
+          "platform_plugin": "xcb",
+          "application": "RCMetaStudio",
+          "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo"
+        }
+      },
+      {
+        "step": 2,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:13:56.957089+00:00",
+        "captures": [
+          "02-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean"
+      },
+      {
+        "step": 3,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:13:57.559348+00:00",
+        "captures": [
+          "03-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "included": 6
+      },
+      {
+        "step": 4,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:13:58.276467+00:00",
+        "captures": [
+          "04-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "cells": [
+          [
+            "Fixture 1",
+            "20.0",
+            "4.00",
+            "2.00",
+            "22.0",
+            "3.00",
+            "2.50",
+            "1.00",
+            "-0.36",
+            "2.36"
+          ],
+          [
+            "Fixture 2",
+            "21.0",
+            "5.00",
+            "3.00",
+            "23.0",
+            "4.00",
+            "3.50",
+            "1.00",
+            "-0.92",
+            "2.92"
+          ],
+          [
+            "Fixture 3",
+            "22.0",
+            "6.00",
+            "4.00",
+            "24.0",
+            "5.00",
+            "4.50",
+            "1.00",
+            "-1.46",
+            "3.46"
+          ],
+          [
+            "Fixture 4",
+            "23.0",
+            "7.00",
+            "5.00",
+            "25.0",
+            "6.00",
+            "5.50",
+            "1.00",
+            "-1.97",
+            "3.97"
+          ],
+          [
+            "Fixture 5",
+            "24.0",
+            "8.00",
+            "6.00",
+            "26.0",
+            "7.00",
+            "6.50",
+            "1.00",
+            "-2.46",
+            "4.46"
+          ],
+          [
+            "Fixture 6",
+            "25.0",
+            "9.00",
+            "7.00",
+            "27.0",
+            "8.00",
+            "7.50",
+            "1.00",
+            "-2.94",
+            "4.94"
+          ]
+        ]
+      },
+      {
+        "step": 5,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:13:58.492118+00:00",
+        "captures": [
+          "05-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-mean",
+        "workflow": "standard",
+        "method": "continuous.random"
+      },
+      {
+        "step": 6,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:13:58.766477+00:00",
+        "captures": [
+          "06-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 3
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 7,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:14:04.494702+00:00",
+        "captures": [
+          "07-0-matrix-results.png",
+          "07-0-matrix-results-report.png",
+          "07-0-matrix-results-table.png",
+          "07-0-matrix-results-figure.png",
+          "07-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "07-0-forest-5ada7737f444.display.svg"
+        },
+        "texts": {
+          "Summary": "Continuous Random-Effects Model\n\nMetric: Mean Difference\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value\n 1.000                    0.100                 1.900       0.459    0.029\n\nHeterogeneity\n Q      df  p-value    I²     τ²\n 0.000   5    1.000  0.0%  0.000\n\nTest for overall effect\n Z      p-value\n 2.178    0.029\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.100                                1.900\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names  Weights\nFixture 1: 43.5%\nFixture 2: 21.9%\nFixture 3: 13.4%\nFixture 4:  9.2%\nFixture 5:  6.7%\nFixture 6:  5.2%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg"
+        }
+      },
+      {
+        "step": 8,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:14:04.770742+00:00",
+        "captures": [
+          "08-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 3,
+          "plot_caption": "Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "default",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "tx A",
+          "fp_show_col4": true,
+          "fp_col4_str": "tx B",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#2f5597",
+          "fp_point_size_multiplier": 1.0,
+          "measure": "MD",
+          "metric.label": "Mean Difference"
+        }
+      },
+      {
+        "step": 9,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:14:05.022228+00:00",
+        "captures": [
+          "09-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 10,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:14:05.473799+00:00",
+        "captures": [
+          "10-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-default-3-analysis.standard.forest_plot.1",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-default-3-analysis.standard.forest_plot.1.pdf"
+        }
+      },
+      {
+        "step": 11,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:14:10.364548+00:00",
+        "captures": [
+          "11-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-default-3-analysis.standard.forest_plot.1",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-default-3-analysis.standard.forest_plot.1.png"
+        }
+      },
+      {
+        "step": 12,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:14:16.740574+00:00",
+        "captures": [
+          "12-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-default-3-analysis.standard.forest_plot.1",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-default-3-analysis.standard.forest_plot.1.tiff"
+        }
+      },
+      {
+        "step": 13,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:14:17.110701+00:00",
+        "captures": [
+          "13-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-default-3-analysis.standard.forest_plot.1",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-default-3-analysis.standard.forest_plot.1.svg"
+        }
+      },
+      {
+        "step": 14,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:14:17.338644+00:00",
+        "captures": [
+          "14-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "14-0-forest-5ada7737f444.display.svg"
+        },
+        "family": "twoarm-mean",
+        "digits": 3,
+        "style": "default",
+        "title": "analysis.standard.forest_plot.1",
+        "metric": null,
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg"
+        }
+      },
+      {
+        "step": 15,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:14:17.562066+00:00",
+        "captures": [
+          "15-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean",
+        "digits": 3,
+        "style": "default",
+        "title": "analysis.standard.forest_plot.1"
+      },
+      {
+        "step": 16,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:14:17.789423+00:00",
+        "captures": [
+          "16-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean"
+      },
+      {
+        "step": 17,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:14:18.379988+00:00",
+        "captures": [
+          "17-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "included": 6
+      },
+      {
+        "step": 18,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:14:19.056597+00:00",
+        "captures": [
+          "18-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "cells": [
+          [
+            "Fixture 1",
+            "20.0",
+            "4.00",
+            "2.00",
+            "22.0",
+            "3.00",
+            "2.50",
+            "1.00",
+            "-0.36",
+            "2.36"
+          ],
+          [
+            "Fixture 2",
+            "21.0",
+            "5.00",
+            "3.00",
+            "23.0",
+            "4.00",
+            "3.50",
+            "1.00",
+            "-0.92",
+            "2.92"
+          ],
+          [
+            "Fixture 3",
+            "22.0",
+            "6.00",
+            "4.00",
+            "24.0",
+            "5.00",
+            "4.50",
+            "1.00",
+            "-1.46",
+            "3.46"
+          ],
+          [
+            "Fixture 4",
+            "23.0",
+            "7.00",
+            "5.00",
+            "25.0",
+            "6.00",
+            "5.50",
+            "1.00",
+            "-1.97",
+            "3.97"
+          ],
+          [
+            "Fixture 5",
+            "24.0",
+            "8.00",
+            "6.00",
+            "26.0",
+            "7.00",
+            "6.50",
+            "1.00",
+            "-2.46",
+            "4.46"
+          ],
+          [
+            "Fixture 6",
+            "25.0",
+            "9.00",
+            "7.00",
+            "27.0",
+            "8.00",
+            "7.50",
+            "1.00",
+            "-2.94",
+            "4.94"
+          ]
+        ]
+      },
+      {
+        "step": 19,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:14:19.274675+00:00",
+        "captures": [
+          "19-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-mean",
+        "workflow": "standard",
+        "method": "continuous.random"
+      },
+      {
+        "step": 20,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:14:19.515388+00:00",
+        "captures": [
+          "20-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 3
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 21,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:14:24.326201+00:00",
+        "captures": [
+          "21-0-matrix-results.png",
+          "21-0-matrix-results-report.png",
+          "21-0-matrix-results-table.png",
+          "21-0-matrix-results-figure.png",
+          "21-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "21-0-forest-5ada7737f444.display.svg"
+        },
+        "texts": {
+          "Summary": "Continuous Random-Effects Model\n\nMetric: Mean Difference\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value\n 1.000                    0.100                 1.900       0.459    0.029\n\nHeterogeneity\n Q      df  p-value    I²     τ²\n 0.000   5    1.000  0.0%  0.000\n\nTest for overall effect\n Z      p-value\n 2.178    0.029\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.100                                1.900\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names  Weights\nFixture 1: 43.5%\nFixture 2: 21.9%\nFixture 3: 13.4%\nFixture 4:  9.2%\nFixture 5:  6.7%\nFixture 6:  5.2%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg"
+        }
+      },
+      {
+        "step": 22,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:14:24.584595+00:00",
+        "captures": [
+          "22-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 3,
+          "plot_caption": "Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "revman",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "tx A",
+          "fp_show_col4": true,
+          "fp_col4_str": "tx B",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#000000",
+          "fp_point_size_multiplier": 1.0,
+          "measure": "MD",
+          "metric.label": "Mean Difference"
+        }
+      },
+      {
+        "step": 23,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:14:24.844639+00:00",
+        "captures": [
+          "23-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 24,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:14:25.125284+00:00",
+        "captures": [
+          "24-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-revman-3-analysis.standard.forest_plot.1",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-revman-3-analysis.standard.forest_plot.1.pdf"
+        }
+      },
+      {
+        "step": 25,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:14:29.254688+00:00",
+        "captures": [
+          "25-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-revman-3-analysis.standard.forest_plot.1",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-revman-3-analysis.standard.forest_plot.1.png"
+        }
+      },
+      {
+        "step": 26,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:14:34.375322+00:00",
+        "captures": [
+          "26-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-revman-3-analysis.standard.forest_plot.1",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-revman-3-analysis.standard.forest_plot.1.tiff"
+        }
+      },
+      {
+        "step": 27,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:14:34.823485+00:00",
+        "captures": [
+          "27-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-revman-3-analysis.standard.forest_plot.1",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-revman-3-analysis.standard.forest_plot.1.svg"
+        }
+      },
+      {
+        "step": 28,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:14:35.006356+00:00",
+        "captures": [
+          "28-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "28-0-forest-5ada7737f444.display.svg"
+        },
+        "family": "twoarm-mean",
+        "digits": 3,
+        "style": "revman",
+        "title": "analysis.standard.forest_plot.1",
+        "metric": null,
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg"
+        }
+      },
+      {
+        "step": 29,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:14:35.225645+00:00",
+        "captures": [
+          "29-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean",
+        "digits": 3,
+        "style": "revman",
+        "title": "analysis.standard.forest_plot.1"
+      },
+      {
+        "step": 30,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:14:35.448373+00:00",
+        "captures": [
+          "30-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean"
+      },
+      {
+        "step": 31,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:14:36.075307+00:00",
+        "captures": [
+          "31-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "included": 6
+      },
+      {
+        "step": 32,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:14:36.768153+00:00",
+        "captures": [
+          "32-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "cells": [
+          [
+            "Fixture 1",
+            "20.0",
+            "4.00",
+            "2.00",
+            "22.0",
+            "3.00",
+            "2.50",
+            "1.00",
+            "-0.36",
+            "2.36"
+          ],
+          [
+            "Fixture 2",
+            "21.0",
+            "5.00",
+            "3.00",
+            "23.0",
+            "4.00",
+            "3.50",
+            "1.00",
+            "-0.92",
+            "2.92"
+          ],
+          [
+            "Fixture 3",
+            "22.0",
+            "6.00",
+            "4.00",
+            "24.0",
+            "5.00",
+            "4.50",
+            "1.00",
+            "-1.46",
+            "3.46"
+          ],
+          [
+            "Fixture 4",
+            "23.0",
+            "7.00",
+            "5.00",
+            "25.0",
+            "6.00",
+            "5.50",
+            "1.00",
+            "-1.97",
+            "3.97"
+          ],
+          [
+            "Fixture 5",
+            "24.0",
+            "8.00",
+            "6.00",
+            "26.0",
+            "7.00",
+            "6.50",
+            "1.00",
+            "-2.46",
+            "4.46"
+          ],
+          [
+            "Fixture 6",
+            "25.0",
+            "9.00",
+            "7.00",
+            "27.0",
+            "8.00",
+            "7.50",
+            "1.00",
+            "-2.94",
+            "4.94"
+          ]
+        ]
+      },
+      {
+        "step": 33,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:14:36.951635+00:00",
+        "captures": [
+          "33-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-mean",
+        "workflow": "standard",
+        "method": "continuous.random"
+      },
+      {
+        "step": 34,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:14:37.181243+00:00",
+        "captures": [
+          "34-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 3
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 35,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:14:41.446933+00:00",
+        "captures": [
+          "35-0-matrix-results.png",
+          "35-0-matrix-results-report.png",
+          "35-0-matrix-results-table.png",
+          "35-0-matrix-results-figure.png",
+          "35-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "35-0-forest-5ada7737f444.display.svg"
+        },
+        "texts": {
+          "Summary": "Continuous Random-Effects Model\n\nMetric: Mean Difference\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error  p-value\n 1.000                    0.100                 1.900       0.459    0.029\n\nHeterogeneity\n Q      df  p-value    I²     τ²\n 0.000   5    1.000  0.0%  0.000\n\nTest for overall effect\n Z      p-value\n 2.178    0.029\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.100                                1.900\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names  Weights\nFixture 1: 43.5%\nFixture 2: 21.9%\nFixture 3: 13.4%\nFixture 4:  9.2%\nFixture 5:  6.7%\nFixture 6:  5.2%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg"
+        }
+      },
+      {
+        "step": 36,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:14:41.768188+00:00",
+        "captures": [
+          "36-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 3,
+          "plot_caption": "Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "bmj",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "tx A",
+          "fp_show_col4": true,
+          "fp_col4_str": "tx B",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#6b58a6",
+          "fp_point_size_multiplier": 1.0,
+          "measure": "MD",
+          "metric.label": "Mean Difference"
+        }
+      },
+      {
+        "step": 37,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:14:41.957965+00:00",
+        "captures": [
+          "37-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 38,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:14:42.258418+00:00",
+        "captures": [
+          "38-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-bmj-3-analysis.standard.forest_plot.1",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-bmj-3-analysis.standard.forest_plot.1.pdf"
+        }
+      },
+      {
+        "step": 39,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:14:46.017387+00:00",
+        "captures": [
+          "39-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-bmj-3-analysis.standard.forest_plot.1",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-bmj-3-analysis.standard.forest_plot.1.png"
+        }
+      },
+      {
+        "step": 40,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:14:50.432618+00:00",
+        "captures": [
+          "40-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-bmj-3-analysis.standard.forest_plot.1",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-bmj-3-analysis.standard.forest_plot.1.tiff"
+        }
+      },
+      {
+        "step": 41,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:14:50.694099+00:00",
+        "captures": [
+          "41-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-bmj-3-analysis.standard.forest_plot.1",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-bmj-3-analysis.standard.forest_plot.1.svg"
+        }
+      },
+      {
+        "step": 42,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:14:50.927602+00:00",
+        "captures": [
+          "42-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "42-0-forest-5ada7737f444.display.svg"
+        },
+        "family": "twoarm-mean",
+        "digits": 3,
+        "style": "bmj",
+        "title": "analysis.standard.forest_plot.1",
+        "metric": null,
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg"
+        }
+      },
+      {
+        "step": 43,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:14:51.118162+00:00",
+        "captures": [
+          "43-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean",
+        "digits": 3,
+        "style": "bmj",
+        "title": "analysis.standard.forest_plot.1"
+      },
+      {
+        "step": 44,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:14:51.338248+00:00",
+        "captures": [
+          "44-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean"
+      },
+      {
+        "step": 45,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:14:51.964918+00:00",
+        "captures": [
+          "45-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "included": 6
+      },
+      {
+        "step": 46,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:14:52.631616+00:00",
+        "captures": [
+          "46-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "cells": [
+          [
+            "Fixture 1",
+            "20.0",
+            "4.00",
+            "2.00",
+            "22.0",
+            "3.00",
+            "2.50",
+            "1.00",
+            "-0.36",
+            "2.36"
+          ],
+          [
+            "Fixture 2",
+            "21.0",
+            "5.00",
+            "3.00",
+            "23.0",
+            "4.00",
+            "3.50",
+            "1.00",
+            "-0.92",
+            "2.92"
+          ],
+          [
+            "Fixture 3",
+            "22.0",
+            "6.00",
+            "4.00",
+            "24.0",
+            "5.00",
+            "4.50",
+            "1.00",
+            "-1.46",
+            "3.46"
+          ],
+          [
+            "Fixture 4",
+            "23.0",
+            "7.00",
+            "5.00",
+            "25.0",
+            "6.00",
+            "5.50",
+            "1.00",
+            "-1.97",
+            "3.97"
+          ],
+          [
+            "Fixture 5",
+            "24.0",
+            "8.00",
+            "6.00",
+            "26.0",
+            "7.00",
+            "6.50",
+            "1.00",
+            "-2.46",
+            "4.46"
+          ],
+          [
+            "Fixture 6",
+            "25.0",
+            "9.00",
+            "7.00",
+            "27.0",
+            "8.00",
+            "7.50",
+            "1.00",
+            "-2.94",
+            "4.94"
+          ]
+        ]
+      },
+      {
+        "step": 47,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:14:52.828435+00:00",
+        "captures": [
+          "47-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-mean",
+        "workflow": "standard",
+        "method": "continuous.random"
+      },
+      {
+        "step": 48,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:14:53.058903+00:00",
+        "captures": [
+          "48-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 49,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:14:57.703383+00:00",
+        "captures": [
+          "49-0-matrix-results.png",
+          "49-0-matrix-results-report.png",
+          "49-0-matrix-results-table.png",
+          "49-0-matrix-results-figure.png",
+          "49-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "49-0-forest-5ada7737f444.display.svg"
+        },
+        "texts": {
+          "Summary": "Continuous Random-Effects Model\n\nMetric: Mean Difference\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error   p-value\n 1.000000              0.100264              1.899736    0.459058  0.029378\n\nHeterogeneity\n Q         df   p-value    I²        τ²\n 0.000000   5  1.000000  0.0%  0.000000\n\nTest for overall effect\n Z          p-value\n 2.178376  0.029378\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.100264                          1.899736\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names  Weights\nFixture 1: 43.5%\nFixture 2: 21.9%\nFixture 3: 13.4%\nFixture 4:  9.2%\nFixture 5:  6.7%\nFixture 6:  5.2%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg"
+        }
+      },
+      {
+        "step": 50,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:14:58.011722+00:00",
+        "captures": [
+          "50-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "plot_caption": "Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "default",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "tx A",
+          "fp_show_col4": true,
+          "fp_col4_str": "tx B",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#2f5597",
+          "fp_point_size_multiplier": 1.0,
+          "measure": "MD",
+          "metric.label": "Mean Difference"
+        }
+      },
+      {
+        "step": 51,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:14:58.293004+00:00",
+        "captures": [
+          "51-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 52,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:14:58.718261+00:00",
+        "captures": [
+          "52-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-default-6-analysis.standard.forest_plot.1",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-default-6-analysis.standard.forest_plot.1.pdf"
+        }
+      },
+      {
+        "step": 53,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:15:02.210351+00:00",
+        "captures": [
+          "53-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-default-6-analysis.standard.forest_plot.1",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-default-6-analysis.standard.forest_plot.1.png"
+        }
+      },
+      {
+        "step": 54,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:15:07.248353+00:00",
+        "captures": [
+          "54-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-default-6-analysis.standard.forest_plot.1",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-default-6-analysis.standard.forest_plot.1.tiff"
+        }
+      },
+      {
+        "step": 55,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:15:07.778850+00:00",
+        "captures": [
+          "55-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-default-6-analysis.standard.forest_plot.1",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-default-6-analysis.standard.forest_plot.1.svg"
+        }
+      },
+      {
+        "step": 56,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:15:08.014694+00:00",
+        "captures": [
+          "56-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "56-0-forest-5ada7737f444.display.svg"
+        },
+        "family": "twoarm-mean",
+        "digits": 6,
+        "style": "default",
+        "title": "analysis.standard.forest_plot.1",
+        "metric": null,
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg"
+        }
+      },
+      {
+        "step": 57,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:15:08.236328+00:00",
+        "captures": [
+          "57-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean",
+        "digits": 6,
+        "style": "default",
+        "title": "analysis.standard.forest_plot.1"
+      },
+      {
+        "step": 58,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:15:08.462035+00:00",
+        "captures": [
+          "58-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean"
+      },
+      {
+        "step": 59,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:15:09.077327+00:00",
+        "captures": [
+          "59-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "included": 6
+      },
+      {
+        "step": 60,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:15:09.737342+00:00",
+        "captures": [
+          "60-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "cells": [
+          [
+            "Fixture 1",
+            "20.0",
+            "4.00",
+            "2.00",
+            "22.0",
+            "3.00",
+            "2.50",
+            "1.00",
+            "-0.36",
+            "2.36"
+          ],
+          [
+            "Fixture 2",
+            "21.0",
+            "5.00",
+            "3.00",
+            "23.0",
+            "4.00",
+            "3.50",
+            "1.00",
+            "-0.92",
+            "2.92"
+          ],
+          [
+            "Fixture 3",
+            "22.0",
+            "6.00",
+            "4.00",
+            "24.0",
+            "5.00",
+            "4.50",
+            "1.00",
+            "-1.46",
+            "3.46"
+          ],
+          [
+            "Fixture 4",
+            "23.0",
+            "7.00",
+            "5.00",
+            "25.0",
+            "6.00",
+            "5.50",
+            "1.00",
+            "-1.97",
+            "3.97"
+          ],
+          [
+            "Fixture 5",
+            "24.0",
+            "8.00",
+            "6.00",
+            "26.0",
+            "7.00",
+            "6.50",
+            "1.00",
+            "-2.46",
+            "4.46"
+          ],
+          [
+            "Fixture 6",
+            "25.0",
+            "9.00",
+            "7.00",
+            "27.0",
+            "8.00",
+            "7.50",
+            "1.00",
+            "-2.94",
+            "4.94"
+          ]
+        ]
+      },
+      {
+        "step": 61,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:15:09.955542+00:00",
+        "captures": [
+          "61-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-mean",
+        "workflow": "standard",
+        "method": "continuous.random"
+      },
+      {
+        "step": 62,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:15:10.195406+00:00",
+        "captures": [
+          "62-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 63,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:15:13.952073+00:00",
+        "captures": [
+          "63-0-matrix-results.png",
+          "63-0-matrix-results-report.png",
+          "63-0-matrix-results-table.png",
+          "63-0-matrix-results-figure.png",
+          "63-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "63-0-forest-5ada7737f444.display.svg"
+        },
+        "texts": {
+          "Summary": "Continuous Random-Effects Model\n\nMetric: Mean Difference\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error   p-value\n 1.000000              0.100264              1.899736    0.459058  0.029378\n\nHeterogeneity\n Q         df   p-value    I²        τ²\n 0.000000   5  1.000000  0.0%  0.000000\n\nTest for overall effect\n Z          p-value\n 2.178376  0.029378\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.100264                          1.899736\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names  Weights\nFixture 1: 43.5%\nFixture 2: 21.9%\nFixture 3: 13.4%\nFixture 4:  9.2%\nFixture 5:  6.7%\nFixture 6:  5.2%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg"
+        }
+      },
+      {
+        "step": 64,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:15:14.237792+00:00",
+        "captures": [
+          "64-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "plot_caption": "Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "revman",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "tx A",
+          "fp_show_col4": true,
+          "fp_col4_str": "tx B",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#000000",
+          "fp_point_size_multiplier": 1.0,
+          "measure": "MD",
+          "metric.label": "Mean Difference"
+        }
+      },
+      {
+        "step": 65,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:15:14.426865+00:00",
+        "captures": [
+          "65-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 66,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:15:14.693565+00:00",
+        "captures": [
+          "66-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-revman-6-analysis.standard.forest_plot.1",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-revman-6-analysis.standard.forest_plot.1.pdf"
+        }
+      },
+      {
+        "step": 67,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:15:17.569201+00:00",
+        "captures": [
+          "67-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-revman-6-analysis.standard.forest_plot.1",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-revman-6-analysis.standard.forest_plot.1.png"
+        }
+      },
+      {
+        "step": 68,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:15:21.619283+00:00",
+        "captures": [
+          "68-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-revman-6-analysis.standard.forest_plot.1",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-revman-6-analysis.standard.forest_plot.1.tiff"
+        }
+      },
+      {
+        "step": 69,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:15:21.892535+00:00",
+        "captures": [
+          "69-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-revman-6-analysis.standard.forest_plot.1",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-revman-6-analysis.standard.forest_plot.1.svg"
+        }
+      },
+      {
+        "step": 70,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:15:22.106993+00:00",
+        "captures": [
+          "70-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "70-0-forest-5ada7737f444.display.svg"
+        },
+        "family": "twoarm-mean",
+        "digits": 6,
+        "style": "revman",
+        "title": "analysis.standard.forest_plot.1",
+        "metric": null,
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg"
+        }
+      },
+      {
+        "step": 71,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:15:22.314626+00:00",
+        "captures": [
+          "71-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean",
+        "digits": 6,
+        "style": "revman",
+        "title": "analysis.standard.forest_plot.1"
+      },
+      {
+        "step": 72,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:15:22.555810+00:00",
+        "captures": [
+          "72-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean"
+      },
+      {
+        "step": 73,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:15:23.330669+00:00",
+        "captures": [
+          "73-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "included": 6
+      },
+      {
+        "step": 74,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:15:24.048707+00:00",
+        "captures": [
+          "74-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "cells": [
+          [
+            "Fixture 1",
+            "20.0",
+            "4.00",
+            "2.00",
+            "22.0",
+            "3.00",
+            "2.50",
+            "1.00",
+            "-0.36",
+            "2.36"
+          ],
+          [
+            "Fixture 2",
+            "21.0",
+            "5.00",
+            "3.00",
+            "23.0",
+            "4.00",
+            "3.50",
+            "1.00",
+            "-0.92",
+            "2.92"
+          ],
+          [
+            "Fixture 3",
+            "22.0",
+            "6.00",
+            "4.00",
+            "24.0",
+            "5.00",
+            "4.50",
+            "1.00",
+            "-1.46",
+            "3.46"
+          ],
+          [
+            "Fixture 4",
+            "23.0",
+            "7.00",
+            "5.00",
+            "25.0",
+            "6.00",
+            "5.50",
+            "1.00",
+            "-1.97",
+            "3.97"
+          ],
+          [
+            "Fixture 5",
+            "24.0",
+            "8.00",
+            "6.00",
+            "26.0",
+            "7.00",
+            "6.50",
+            "1.00",
+            "-2.46",
+            "4.46"
+          ],
+          [
+            "Fixture 6",
+            "25.0",
+            "9.00",
+            "7.00",
+            "27.0",
+            "8.00",
+            "7.50",
+            "1.00",
+            "-2.94",
+            "4.94"
+          ]
+        ]
+      },
+      {
+        "step": 75,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:15:24.246426+00:00",
+        "captures": [
+          "75-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-mean",
+        "workflow": "standard",
+        "method": "continuous.random"
+      },
+      {
+        "step": 76,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:15:24.481234+00:00",
+        "captures": [
+          "76-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 77,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:15:29.028531+00:00",
+        "captures": [
+          "77-0-matrix-results.png",
+          "77-0-matrix-results-report.png",
+          "77-0-matrix-results-table.png",
+          "77-0-matrix-results-figure.png",
+          "77-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "77-0-forest-5ada7737f444.display.svg"
+        },
+        "texts": {
+          "Summary": "Continuous Random-Effects Model\n\nMetric: Mean Difference\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error   p-value\n 1.000000              0.100264              1.899736    0.459058  0.029378\n\nHeterogeneity\n Q         df   p-value    I²        τ²\n 0.000000   5  1.000000  0.0%  0.000000\n\nTest for overall effect\n Z          p-value\n 2.178376  0.029378\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.100264                          1.899736\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+          "Weights": "Study names  Weights\nFixture 1: 43.5%\nFixture 2: 21.9%\nFixture 3: 13.4%\nFixture 4:  9.2%\nFixture 5:  6.7%\nFixture 6:  5.2%\n",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        },
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg"
+        }
+      },
+      {
+        "step": 78,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:15:29.304072+00:00",
+        "captures": [
+          "78-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": null,
+        "method": "continuous.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "plot_caption": "Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "bmj",
+          "fp_show_col1": true,
+          "fp_col1_str": "Study",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "tx A",
+          "fp_show_col4": true,
+          "fp_col4_str": "tx B",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#6b58a6",
+          "fp_point_size_multiplier": 1.0,
+          "measure": "MD",
+          "metric.label": "Mean Difference"
+        }
+      },
+      {
+        "step": 79,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:15:29.554344+00:00",
+        "captures": [
+          "79-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "standard",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 80,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:15:29.835923+00:00",
+        "captures": [
+          "80-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-bmj-6-analysis.standard.forest_plot.1",
+        "format": "pdf",
+        "exports": {
+          "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-bmj-6-analysis.standard.forest_plot.1.pdf"
+        }
+      },
+      {
+        "step": 81,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:15:33.835907+00:00",
+        "captures": [
+          "81-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-bmj-6-analysis.standard.forest_plot.1",
+        "format": "png",
+        "exports": {
+          "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-bmj-6-analysis.standard.forest_plot.1.png"
+        }
+      },
+      {
+        "step": 82,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:15:38.775586+00:00",
+        "captures": [
+          "82-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-bmj-6-analysis.standard.forest_plot.1",
+        "format": "tiff",
+        "exports": {
+          "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-bmj-6-analysis.standard.forest_plot.1.tiff"
+        }
+      },
+      {
+        "step": 83,
+        "action": "family-export-decoded",
+        "utc": "2026-10-15T03:15:39.056223+00:00",
+        "captures": [
+          "83-0-family-export-decoded.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean-bmj-6-analysis.standard.forest_plot.1",
+        "format": "svg",
+        "exports": {
+          "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/twoarm-mean-bmj-6-analysis.standard.forest_plot.1.svg"
+        }
+      },
+      {
+        "step": 84,
+        "action": "round4-annotations",
+        "utc": "2026-10-15T03:15:39.289615+00:00",
+        "captures": [
+          "84-0-round4-annotations.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "84-0-forest-5ada7737f444.display.svg"
+        },
+        "family": "twoarm-mean",
+        "digits": 6,
+        "style": "bmj",
+        "title": "analysis.standard.forest_plot.1",
+        "metric": null,
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg"
+        }
+      },
+      {
+        "step": 85,
+        "action": "round4-annotations-bottom",
+        "utc": "2026-10-15T03:15:39.514385+00:00",
+        "captures": [
+          "85-0-round4-annotations-bottom.png"
+        ],
+        "artifacts": {},
+        "family": "twoarm-mean",
+        "digits": 6,
+        "style": "bmj",
+        "title": "analysis.standard.forest_plot.1"
+      },
+      {
+        "step": 86,
+        "action": "data-type-selected",
+        "utc": "2026-10-15T03:15:39.745378+00:00",
+        "captures": [
+          "86-0-data-type-selected.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean"
+      },
+      {
+        "step": 87,
+        "action": "data-populated",
+        "utc": "2026-10-15T03:15:40.342258+00:00",
+        "captures": [
+          "87-0-data-populated.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "included": 6
+      },
+      {
+        "step": 88,
+        "action": "data-reopened",
+        "utc": "2026-10-15T03:15:41.023703+00:00",
+        "captures": [
+          "88-0-data-reopened.png"
+        ],
+        "artifacts": {},
+        "data_type": "twoarm-mean",
+        "metric": "MD",
+        "cells": [
+          [
+            "Fixture 1",
+            "20.0",
+            "4.00",
+            "2.00",
+            "22.0",
+            "3.00",
+            "2.50",
+            "1.00",
+            "-0.36",
+            "2.36"
+          ],
+          [
+            "Fixture 2",
+            "21.0",
+            "5.00",
+            "3.00",
+            "23.0",
+            "4.00",
+            "3.50",
+            "1.00",
+            "-0.92",
+            "2.92"
+          ],
+          [
+            "Fixture 3",
+            "22.0",
+            "6.00",
+            "4.00",
+            "24.0",
+            "5.00",
+            "4.50",
+            "1.00",
+            "-1.46",
+            "3.46"
+          ],
+          [
+            "Fixture 4",
+            "23.0",
+            "7.00",
+            "5.00",
+            "25.0",
+            "6.00",
+            "5.50",
+            "1.00",
+            "-1.97",
+            "3.97"
+          ],
+          [
+            "Fixture 5",
+            "24.0",
+            "8.00",
+            "6.00",
+            "26.0",
+            "7.00",
+            "6.50",
+            "1.00",
+            "-2.46",
+            "4.46"
+          ],
+          [
+            "Fixture 6",
+            "25.0",
+            "9.00",
+            "7.00",
+            "27.0",
+            "8.00",
+            "7.50",
+            "1.00",
+            "-2.94",
+            "4.94"
+          ]
+        ]
+      },
+      {
+        "step": 89,
+        "action": "matrix-action",
+        "utc": "2026-10-15T03:15:41.293698+00:00",
+        "captures": [
+          "89-0-matrix-action.png"
+        ],
+        "artifacts": {},
+        "scenario": "analysis-data-twoarm-mean",
+        "workflow": "subgroup",
+        "method": "continuous.random"
+      },
+      {
+        "step": 90,
+        "action": "matrix-configured",
+        "utc": "2026-10-15T03:15:41.584811+00:00",
+        "captures": [
+          "90-0-matrix-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "subgroup",
+        "method": "continuous.random",
+        "parameters": {
+          "cov_name": "Group",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6
+        },
+        "lr_dor_method": null,
+        "lr_dor_parameters": null
+      },
+      {
+        "step": 91,
+        "action": "matrix-results",
+        "utc": "2026-10-15T03:15:53.202791+00:00",
+        "captures": [
+          "91-0-matrix-results.png",
+          "91-0-matrix-results-report.png",
+          "91-0-matrix-results-table.png",
+          "91-0-matrix-results-subgroup-test.png",
+          "91-0-matrix-results-figure.png",
+          "91-0-matrix-results-bottom.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroups_forest_plot.1": "91-0-forest-5ada7737f444.display.svg"
+        },
+        "texts": {
+          "Subgroup Summary": "Continuous Random-Effects Model\n\nMetric: Mean Difference\n\nModel Results\n Subgroups   k  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error   p-value   z-value\n Subgroup B  3  1.000000             -0.127412              2.127412    0.575221  0.082129  1.738464\n Subgroup A  3  1.000000             -0.493128              2.493128    0.761814  0.189299  1.312657\n Overall     6  1.000000              0.100264              1.899736    0.459058  0.029378  2.178376\n\nHeterogeneity\n Subgroups          Q  df   p-value    I²        τ²\n Subgroup B  0.000000   2  1.000000  0.0%  0.000000\n Subgroup A  0.000000   2  1.000000  0.0%  0.000000\n Overall     0.000000   5  1.000000  0.0%  0.000000\n\nPrediction interval\n Subgroups   Lower bound (95% PI)  Upper bound (95% PI)\n Subgroup B             -0.127412              2.127412\n Subgroup A             -0.493128              2.493128\n Overall                 0.100264              1.899736\n\nTest of subgroup differences\n Test                       Statistic     df   p-value\n Subgroup differences (Qm)  1.428745e-31   1  1.000000\n\nSubgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.",
+          "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Subgroup Meta-Analysis: estimates are recomputed within covariate-defined study groups using the selected base meta-analysis method.\n"
+        },
+        "plots": {
+          "analysis.subgroup.subgroups_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg"
+        }
+      },
+      {
+        "step": 92,
+        "action": "properties-prefilled",
+        "utc": "2026-10-15T03:15:53.490322+00:00",
+        "captures": [
+          "92-0-properties-prefilled.png"
+        ],
+        "artifacts": {},
+        "workflow": "subgroup",
+        "method": "continuous.random",
+        "parameters": {
+          "cov_name": "Group",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "plot_caption": "Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first",
+          "fp_study_order": "table",
+          "fp_style": "revman",
+          "fp_show_col1": true,
+          "fp_col1_str": "Subgroup",
+          "fp_show_col2": true,
+          "fp_col2_str": "[default]",
+          "fp_show_col3": true,
+          "fp_col3_str": "tx A",
+          "fp_show_col4": true,
+          "fp_col4_str": "tx B",
+          "fp_xlabel": null,
+          "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest.png",
+          "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg",
+          "fp_plot_lb": "[default]",
+          "fp_plot_ub": "[default]",
+          "fp_xticks": "[default]",
+          "fp_show_summary_line": true,
+          "fp_show_raw_counts": true,
+          "fp_show_headers": true,
+          "fp_show_annotation": true,
+          "fp_accent_color": "#000000",
+          "fp_point_size_multiplier": 1.0,
+          "measure": "MD",
+          "metric.label": "Mean Difference"
+        }
+      },
+      {
+        "step": 93,
+        "action": "matrix-routing-proof",
+        "utc": "2026-10-15T03:15:53.830381+00:00",
+        "captures": [
+          "93-0-matrix-routing-proof.png"
+        ],
+        "artifacts": {},
+        "method": "continuous.random",
+        "workflow": "subgroup",
+        "scope": "UI execution/rendering; numerical authority requires R-stack lane"
+      },
+      {
+        "step": 94,
+        "action": "review1-subgroup-footer-order",
+        "utc": "2026-10-15T03:15:54.128210+00:00",
+        "captures": [
+          "94-0-review1-subgroup-footer-order.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroups_forest_plot.1": "94-0-forest-5ada7737f444.display.svg"
+        },
+        "title": "analysis.subgroup.subgroups_forest_plot.1",
+        "plots": {
+          "analysis.subgroup.subgroups_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg"
+        }
+      },
+      {
+        "step": 95,
+        "action": "round4-subgroup-weights",
+        "utc": "2026-10-15T03:15:54.427300+00:00",
+        "captures": [
+          "95-0-round4-subgroup-weights.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroups_forest_plot.1": "95-0-forest-5ada7737f444.display.svg"
+        },
+        "title": "analysis.subgroup.subgroups_forest_plot.1",
+        "weights": {
+          "expected": [
+            43.53186851204144,
+            13.413798181648936,
+            6.743482176774421,
+            21.92448769104769,
+            9.174480057839512,
+            5.211883380647996
+          ],
+          "actual": [
+            43.53186851204145,
+            13.413798181648936,
+            6.743482176774421,
+            21.924487691047688,
+            9.174480057839512,
+            5.211883380647998
+          ],
+          "order": [
+            1,
+            3,
+            5,
+            2,
+            4,
+            6
+          ],
+          "names": [
+            "Fixture 1",
+            "Fixture 3",
+            "Fixture 5",
+            "Fixture 1",
+            "Fixture 4",
+            "Fixture 6"
+          ],
+          "total": 100,
+          "inputs": {
+            "names": [
+              "Fixture 1",
+              "Fixture 1",
+              "Fixture 3",
+              "Fixture 4",
+              "Fixture 5",
+              "Fixture 6"
+            ],
+            "yi": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "vi": [
+              0.4840909090909091,
+              0.9611801242236024,
+              1.5710227272727273,
+              2.2969565217391303,
+              3.125,
+              4.043333333333333
+            ]
+          }
+        },
+        "plots": {
+          "analysis.subgroup.subgroups_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg"
+        }
+      },
+      {
+        "step": 96,
+        "action": "round3-subgroup-public-reference",
+        "utc": "2026-10-15T03:15:54.619667+00:00",
+        "captures": [
+          "96-0-round3-subgroup-public-reference.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroups_forest_plot.1": "96-0-forest-5ada7737f444.display.svg"
+        },
+        "title": "analysis.subgroup.subgroups_forest_plot.1",
+        "expected": [
+          {
+            "k": 3,
+            "Q": 0,
+            "df": 2,
+            "p": 1,
+            "I2": 0,
+            "tau2": 0,
+            "z": 1.7384636114867664,
+            "lower": -0.12741156708126677,
+            "upper": 2.1274115670812677,
+            "measure": "MD"
+          },
+          {
+            "k": 3,
+            "Q": 0,
+            "df": 2,
+            "p": 1,
+            "I2": 0,
+            "tau2": 0,
+            "z": 1.3126565096551517,
+            "lower": -0.493127844278894,
+            "upper": 2.4931278442788942,
+            "measure": "MD"
+          },
+          {
+            "k": 6,
+            "Q": 0,
+            "df": 5,
+            "p": 1,
+            "I2": 0,
+            "tau2": 0,
+            "z": 2.178376193590917,
+            "lower": 0.1002637697260289,
+            "upper": 1.8997362302739704,
+            "measure": "MD"
+          }
+        ],
+        "tables": {
+          "Model Results": {
+            "headers": [
+              "Subgroups",
+              "k",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value",
+              "z-value"
+            ],
+            "rows": [
+              [
+                "Subgroup B",
+                "3",
+                "1.000000",
+                "-0.127412",
+                "2.127412",
+                "0.575221",
+                "0.082129",
+                "1.738464"
+              ],
+              [
+                "Subgroup A",
+                "3",
+                "1.000000",
+                "-0.493128",
+                "2.493128",
+                "0.761814",
+                "0.189299",
+                "1.312657"
+              ],
+              [
+                "Overall",
+                "6",
+                "1.000000",
+                "0.100264",
+                "1.899736",
+                "0.459058",
+                "0.029378",
+                "2.178376"
+              ]
+            ]
+          },
+          "Heterogeneity": {
+            "headers": [
+              "Subgroups",
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "Subgroup B",
+                "0.000000",
+                "2",
+                "1.000000",
+                "0.0%",
+                "0.000000"
+              ],
+              [
+                "Subgroup A",
+                "0.000000",
+                "2",
+                "1.000000",
+                "0.0%",
+                "0.000000"
+              ],
+              [
+                "Overall",
+                "0.000000",
+                "5",
+                "1.000000",
+                "0.0%",
+                "0.000000"
+              ]
+            ]
+          },
+          "Prediction interval": {
+            "headers": [
+              "Subgroups",
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "Subgroup B",
+                "-0.127412",
+                "2.127412"
+              ],
+              [
+                "Subgroup A",
+                "-0.493128",
+                "2.493128"
+              ],
+              [
+                "Overall",
+                "0.100264",
+                "1.899736"
+              ]
+            ]
+          },
+          "Test of subgroup differences": {
+            "headers": [
+              "Test",
+              "Statistic",
+              "df",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Subgroup differences (Qm)",
+                "1.428745e-31",
+                "1",
+                "1.000000"
+              ]
+            ]
+          }
+        },
+        "plots": {
+          "analysis.subgroup.subgroups_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-lvviilyo/analysis/forest-5ada7737f444.display.svg"
+        }
+      },
+      {
+        "step": 97,
+        "action": "workflow-passed",
+        "utc": "2026-10-15T03:15:54.834543+00:00",
+        "captures": [
+          "97-0-workflow-passed.png"
+        ],
+        "artifacts": {},
+        "scenario": "audit-round3-presentation-twoarm-mean"
+      }
+    ],
+    "frames": [
+      {
+        "path": "screenshots/native-freeze-audit-round3-presentation-twoarm-mean-14-0-round4-annotations.png",
+        "sha256": "8730a71f33dcd1b4737a78e3f310edf1b89d7983e8d271372cd267ffe6fd00c4",
+        "step": 14,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-freeze-audit-round3-presentation-twoarm-mean-15-0-round4-annotations-bottom.png",
+        "sha256": "8730a71f33dcd1b4737a78e3f310edf1b89d7983e8d271372cd267ffe6fd00c4",
+        "step": 15,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-freeze-audit-round3-presentation-twoarm-mean-28-0-round4-annotations.png",
+        "sha256": "5f138bc93c28eae4f62e36aef216b084c430211514abe4699127701d9f1d85e9",
+        "step": 28,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-freeze-audit-round3-presentation-twoarm-mean-29-0-round4-annotations-bottom.png",
+        "sha256": "5f138bc93c28eae4f62e36aef216b084c430211514abe4699127701d9f1d85e9",
+        "step": 29,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-freeze-audit-round3-presentation-twoarm-mean-42-0-round4-annotations.png",
+        "sha256": "4f914aca68a3f9f6e6e1174dc41efd856c5c10783bd1157ec25197dd536c7262",
+        "step": 42,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-freeze-audit-round3-presentation-twoarm-mean-43-0-round4-annotations-bottom.png",
+        "sha256": "4f914aca68a3f9f6e6e1174dc41efd856c5c10783bd1157ec25197dd536c7262",
+        "step": 43,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-freeze-audit-round3-presentation-twoarm-mean-56-0-round4-annotations.png",
+        "sha256": "00f8de68b6e3ed1cc9dd366f4b67ddaaf7f5f48e8296458005385a367f49237e",
+        "step": 56,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-freeze-audit-round3-presentation-twoarm-mean-57-0-round4-annotations-bottom.png",
+        "sha256": "00f8de68b6e3ed1cc9dd366f4b67ddaaf7f5f48e8296458005385a367f49237e",
+        "step": 57,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-freeze-audit-round3-presentation-twoarm-mean-70-0-round4-annotations.png",
+        "sha256": "2a33e0ec1a7616140855762de55eff7ccdeeca3be54d4ffc42f548c41f987805",
+        "step": 70,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-freeze-audit-round3-presentation-twoarm-mean-71-0-round4-annotations-bottom.png",
+        "sha256": "2a33e0ec1a7616140855762de55eff7ccdeeca3be54d4ffc42f548c41f987805",
+        "step": 71,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-freeze-audit-round3-presentation-twoarm-mean-84-0-round4-annotations.png",
+        "sha256": "aa83b6515044c9f09811a02f3d26a463ed60538273c5a286dcbbbccda14da4df",
+        "step": 84,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-freeze-audit-round3-presentation-twoarm-mean-85-0-round4-annotations-bottom.png",
+        "sha256": "aa83b6515044c9f09811a02f3d26a463ed60538273c5a286dcbbbccda14da4df",
+        "step": 85,
+        "capture": "QScreen.grabWindow"
+      }
+    ]
+  },
+  "native-context-irr": {
+    "attempt": {
+      "label": "native-context-irr",
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "scripts/verify_rcms.py",
+        "audit-round3-irr",
+        "--native"
+      ],
+      "cwd": "/home/ali/Documents/Code/rc-metastudio",
+      "started": "2026-10-15T02:08:56.776498+00:00",
+      "finished": "2026-10-15T02:09:58.983088+00:00",
+      "seconds": 62.204314746995806,
+      "exit_code": 0,
+      "revision": "76e0d13ea048290a2bc5ea0fd9c33a5f4188bf88",
+      "environment": {
+        "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+        "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+        "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "QT_QPA_PLATFORM": null,
+        "QT_SCALE_FACTOR": null,
+        "DISPLAY": ":0",
+        "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+        "RCMETASTUDIO_QA_ROOT": null
+      },
+      "log": "native-context-irr.log",
+      "sha256": "af0778e5dcce5fcf73f86e942c371e7f62cbb51c2644869a5cce7abc94628c8b"
+    },
+    "evidence": "artifacts/verification/rcms/20261015T020856Z-9fcfcb0b-audit-round3-irr",
+    "runtime": {
+      "r": "R version 4.6.1 (2026-06-24)",
+      "r_libraries": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+      ],
+      "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "authorities": {
+        "mada": "0.5.12",
+        "metafor": "5.0-1",
+        "meta": "8.5-0",
+        "svglite": "2.2.2",
+        "rsvg": "2.7.0",
+        "tiff": "0.1-12"
+      },
+      "rcmetar": "0.4.2",
+      "rpy2": "3.6.7",
+      "qt": "6.11.1",
+      "pyqt": "6.11.0",
+      "platform_plugin": "xcb",
+      "application": "RCMetaStudio",
+      "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d2h25al8"
+    },
+    "manifest_sha256": "177e40eefc53c7aefdf5f42da88127b201e97a55a981513b6f1178132585ab15",
+    "observed": [
+      {
+        "step": 1,
+        "action": "ready",
+        "utc": "2026-10-15T02:09:02.450078+00:00",
+        "captures": [
+          "01-0-ready.png"
+        ],
+        "artifacts": {},
+        "runtime": {
+          "r": "R version 4.6.1 (2026-06-24)",
+          "r_libraries": [
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+            "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+          ],
+          "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "authorities": {
+            "mada": "0.5.12",
+            "metafor": "5.0-1",
+            "meta": "8.5-0",
+            "svglite": "2.2.2",
+            "rsvg": "2.7.0",
+            "tiff": "0.1-12"
+          },
+          "rcmetar": "0.4.2",
+          "rpy2": "3.6.7",
+          "qt": "6.11.1",
+          "pyqt": "6.11.0",
+          "platform_plugin": "xcb",
+          "application": "RCMetaStudio",
+          "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d2h25al8"
+        }
+      },
+      {
+        "step": 2,
+        "action": "round3-ratio-excluded-study",
+        "utc": "2026-10-15T02:09:03.089142+00:00",
+        "captures": [
+          "02-0-round3-ratio-excluded-study.png"
+        ],
+        "artifacts": {},
+        "family": "event_rates",
+        "excluded": "Bong et al."
+      },
+      {
+        "step": 3,
+        "action": "round3-configured",
+        "utc": "2026-10-15T02:09:03.354952+00:00",
+        "captures": [
+          "03-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "cumulative",
+        "method": "event_rates.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0",
+          "drop00": "TRUE"
+        }
+      },
+      {
+        "step": 4,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T02:09:06.858549+00:00",
+        "captures": [
+          "04-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Cumulative meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first",
+        "text": "Cumulative meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first\n\nSequential Summary\n\nModel Results\nStudy added (k)\tEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\tp-value\nBong et al., 2003 (k = 1)\t0.941288\t0.364898\t2.428137\t0.483494\t0.900410\nHanna et al., 2004 (k = 2)\t0.453027\t0.097485\t2.105292\t0.783819\t0.312406\nHarter et al., 2002 (k = 3)\t0.515143\t0.219249\t1.210372\t0.435844\t0.128035\nJaeger et al., 2001 (k = 4)\t0.556430\t0.265389\t1.166642\t0.377733\t0.120680\nJaeger et al., 2005 (k = 5)\t0.488124\t0.237992\t1.001149\t0.366503\t0.050367\nLogghe et al., 1997 (k = 6)\t0.617993\t0.326199\t1.170803\t0.326010\t0.139872\nOstendorf et al., 2005 (k = 7)\t0.593338\t0.337126\t1.044269\t0.288427\t0.070330\nPemberton et al., 1996 (k = 8)\t0.626686\t0.377663\t1.039909\t0.258394\t0.070526\n\nIncidence Rate Ratio Cumulative Meta-analysis\n\nModel configuration\n\nProject: NielWeise2008-IRR.rcms\nModel: Random-effects inverse variance\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nOrder: current study order; each row adds a study to the preceding studies.\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Study added (k)",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Bong et al., 2003 (k = 1)",
+                "0.941288",
+                "0.364898",
+                "2.428137",
+                "0.483494",
+                "0.900410"
+              ],
+              [
+                "Hanna et al., 2004 (k = 2)",
+                "0.453027",
+                "0.097485",
+                "2.105292",
+                "0.783819",
+                "0.312406"
+              ],
+              [
+                "Harter et al., 2002 (k = 3)",
+                "0.515143",
+                "0.219249",
+                "1.210372",
+                "0.435844",
+                "0.128035"
+              ],
+              [
+                "Jaeger et al., 2001 (k = 4)",
+                "0.556430",
+                "0.265389",
+                "1.166642",
+                "0.377733",
+                "0.120680"
+              ],
+              [
+                "Jaeger et al., 2005 (k = 5)",
+                "0.488124",
+                "0.237992",
+                "1.001149",
+                "0.366503",
+                "0.050367"
+              ],
+              [
+                "Logghe et al., 1997 (k = 6)",
+                "0.617993",
+                "0.326199",
+                "1.170803",
+                "0.326010",
+                "0.139872"
+              ],
+              [
+                "Ostendorf et al., 2005 (k = 7)",
+                "0.593338",
+                "0.337126",
+                "1.044269",
+                "0.288427",
+                "0.070330"
+              ],
+              [
+                "Pemberton et al., 1996 (k = 8)",
+                "0.626686",
+                "0.377663",
+                "1.039909",
+                "0.258394",
+                "0.070526"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 5,
+        "action": "round3-sequential-rows",
+        "utc": "2026-10-15T02:09:07.107882+00:00",
+        "captures": [
+          "05-0-round3-sequential-rows.png"
+        ],
+        "artifacts": {
+          "analysis.cumulative.cumulative_forest_plot.1": "05-0-forest-44cde7f9bc7a.display.svg"
+        },
+        "title": "analysis.cumulative.cumulative_forest_plot.1",
+        "workflow": "cumulative",
+        "rows": [
+          [
+            "Bong et al., 2003 (k = 1)",
+            "0.941288",
+            "0.364898",
+            "2.428137",
+            "0.483494",
+            "0.900410"
+          ],
+          [
+            "Hanna et al., 2004 (k = 2)",
+            "0.453027",
+            "0.097485",
+            "2.105292",
+            "0.783819",
+            "0.312406"
+          ],
+          [
+            "Harter et al., 2002 (k = 3)",
+            "0.515143",
+            "0.219249",
+            "1.210372",
+            "0.435844",
+            "0.128035"
+          ],
+          [
+            "Jaeger et al., 2001 (k = 4)",
+            "0.556430",
+            "0.265389",
+            "1.166642",
+            "0.377733",
+            "0.120680"
+          ],
+          [
+            "Jaeger et al., 2005 (k = 5)",
+            "0.488124",
+            "0.237992",
+            "1.001149",
+            "0.366503",
+            "0.050367"
+          ],
+          [
+            "Logghe et al., 1997 (k = 6)",
+            "0.617993",
+            "0.326199",
+            "1.170803",
+            "0.326010",
+            "0.139872"
+          ],
+          [
+            "Ostendorf et al., 2005 (k = 7)",
+            "0.593338",
+            "0.337126",
+            "1.044269",
+            "0.288427",
+            "0.070330"
+          ],
+          [
+            "Pemberton et al., 1996 (k = 8)",
+            "0.626686",
+            "0.377663",
+            "1.039909",
+            "0.258394",
+            "0.070526"
+          ]
+        ],
+        "figure": {
+          "slab": [
+            "Bong et al., 2003 (k = 1)",
+            "Hanna et al., 2004 (k = 2)",
+            "Harter et al., 2002 (k = 3)",
+            "Jaeger et al., 2001 (k = 4)",
+            "Jaeger et al., 2005 (k = 5)",
+            "Logghe et al., 1997 (k = 6)",
+            "Ostendorf et al., 2005 (k = 7)",
+            "Pemberton et al., 1996 (k = 8)"
+          ],
+          "labels": [
+            "0.941288 [0.364898, 2.428137]",
+            "0.453027 [0.097485, 2.105292]",
+            "0.515143 [0.219249, 1.210372]",
+            "0.556430 [0.265389, 1.166642]",
+            "0.488124 [0.237992, 1.001149]",
+            "0.617993 [0.326199, 1.170803]",
+            "0.593338 [0.337126, 1.044269]",
+            "0.626686 [0.377663, 1.039909]"
+          ],
+          "has_overall": false,
+          "estimates": [
+            0.941287878787879,
+            0.4530272499064424,
+            0.5151434585779391,
+            0.5564298388679593,
+            0.48812437563832,
+            0.6179927808164665,
+            0.5933383274120353,
+            0.6266862843896188
+          ],
+          "measure": "IRR",
+          "range": [
+            -2.995732273553991,
+            1.6094379124341003
+          ]
+        },
+        "plots": {
+          "analysis.cumulative.cumulative_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d2h25al8/analysis/forest-44cde7f9bc7a.display.svg"
+        }
+      },
+      {
+        "step": 6,
+        "action": "round3-sequential-bottom",
+        "utc": "2026-10-15T02:09:07.305379+00:00",
+        "captures": [
+          "06-0-round3-sequential-bottom.png"
+        ],
+        "artifacts": {},
+        "title": "analysis.cumulative.cumulative_forest_plot.1",
+        "workflow": "cumulative"
+      },
+      {
+        "step": 7,
+        "action": "round3-configured",
+        "utc": "2026-10-15T02:09:07.604087+00:00",
+        "captures": [
+          "07-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "leave-one-out",
+        "method": "event_rates.random",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0",
+          "drop00": "TRUE"
+        }
+      },
+      {
+        "step": 8,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T02:09:10.753182+00:00",
+        "captures": [
+          "08-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Leave-one-out meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first",
+        "text": "Leave-one-out meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first\n\nSequential Summary\n\nModel Results\nStudy omitted\tEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\tp-value\nStudy omitted: Bong et al., 2003\t0.555970\t0.303023\t1.020063\t0.309651\t0.057985\nStudy omitted: Hanna et al., 2004\t0.794990\t0.516663\t1.223253\t0.219871\t0.296738\nStudy omitted: Harter et al., 2002\t0.611396\t0.330255\t1.131866\t0.314229\t0.117402\nStudy omitted: Jaeger et al., 2001\t0.599554\t0.347684\t1.033883\t0.278011\t0.065753\nStudy omitted: Jaeger et al., 2005\t0.689856\t0.424846\t1.120174\t0.247329\t0.133323\nStudy omitted: Logghe et al., 1997\t0.519627\t0.310855\t0.868610\t0.262139\t0.012514\nStudy omitted: Ostendorf et al., 2005\t0.654768\t0.373396\t1.148167\t0.286557\t0.139461\nStudy omitted: Pemberton et al., 1996\t0.593338\t0.337126\t1.044269\t0.288427\t0.070330\n\nIncidence Rate Ratio Leave-one-out Meta-analysis\n\nModel configuration\n\nProject: NielWeise2008-IRR.rcms\nModel: Random-effects inverse variance\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nOmission-only fits: each row omits the named study. No all-studies fit is included.\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Study omitted",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Study omitted: Bong et al., 2003",
+                "0.555970",
+                "0.303023",
+                "1.020063",
+                "0.309651",
+                "0.057985"
+              ],
+              [
+                "Study omitted: Hanna et al., 2004",
+                "0.794990",
+                "0.516663",
+                "1.223253",
+                "0.219871",
+                "0.296738"
+              ],
+              [
+                "Study omitted: Harter et al., 2002",
+                "0.611396",
+                "0.330255",
+                "1.131866",
+                "0.314229",
+                "0.117402"
+              ],
+              [
+                "Study omitted: Jaeger et al., 2001",
+                "0.599554",
+                "0.347684",
+                "1.033883",
+                "0.278011",
+                "0.065753"
+              ],
+              [
+                "Study omitted: Jaeger et al., 2005",
+                "0.689856",
+                "0.424846",
+                "1.120174",
+                "0.247329",
+                "0.133323"
+              ],
+              [
+                "Study omitted: Logghe et al., 1997",
+                "0.519627",
+                "0.310855",
+                "0.868610",
+                "0.262139",
+                "0.012514"
+              ],
+              [
+                "Study omitted: Ostendorf et al., 2005",
+                "0.654768",
+                "0.373396",
+                "1.148167",
+                "0.286557",
+                "0.139461"
+              ],
+              [
+                "Study omitted: Pemberton et al., 1996",
+                "0.593338",
+                "0.337126",
+                "1.044269",
+                "0.288427",
+                "0.070330"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 9,
+        "action": "round3-sequential-rows",
+        "utc": "2026-10-15T02:09:10.961394+00:00",
+        "captures": [
+          "09-0-round3-sequential-rows.png"
+        ],
+        "artifacts": {
+          "analysis.leave-one-out.leave_one_out_forest_plot.1": "09-0-forest-44cde7f9bc7a.display.svg"
+        },
+        "title": "analysis.leave-one-out.leave_one_out_forest_plot.1",
+        "workflow": "leave-one-out",
+        "rows": [
+          [
+            "Study omitted: Bong et al., 2003",
+            "0.555970",
+            "0.303023",
+            "1.020063",
+            "0.309651",
+            "0.057985"
+          ],
+          [
+            "Study omitted: Hanna et al., 2004",
+            "0.794990",
+            "0.516663",
+            "1.223253",
+            "0.219871",
+            "0.296738"
+          ],
+          [
+            "Study omitted: Harter et al., 2002",
+            "0.611396",
+            "0.330255",
+            "1.131866",
+            "0.314229",
+            "0.117402"
+          ],
+          [
+            "Study omitted: Jaeger et al., 2001",
+            "0.599554",
+            "0.347684",
+            "1.033883",
+            "0.278011",
+            "0.065753"
+          ],
+          [
+            "Study omitted: Jaeger et al., 2005",
+            "0.689856",
+            "0.424846",
+            "1.120174",
+            "0.247329",
+            "0.133323"
+          ],
+          [
+            "Study omitted: Logghe et al., 1997",
+            "0.519627",
+            "0.310855",
+            "0.868610",
+            "0.262139",
+            "0.012514"
+          ],
+          [
+            "Study omitted: Ostendorf et al., 2005",
+            "0.654768",
+            "0.373396",
+            "1.148167",
+            "0.286557",
+            "0.139461"
+          ],
+          [
+            "Study omitted: Pemberton et al., 1996",
+            "0.593338",
+            "0.337126",
+            "1.044269",
+            "0.288427",
+            "0.070330"
+          ]
+        ],
+        "figure": {
+          "slab": [
+            "Study omitted: Bong et al., 2003",
+            "Study omitted: Hanna et al., 2004",
+            "Study omitted: Harter et al., 2002",
+            "Study omitted: Jaeger et al., 2001",
+            "Study omitted: Jaeger et al., 2005",
+            "Study omitted: Logghe et al., 1997",
+            "Study omitted: Ostendorf et al., 2005",
+            "Study omitted: Pemberton et al., 1996"
+          ],
+          "labels": [
+            "0.555970 [0.303023, 1.020063]",
+            "0.794990 [0.516663, 1.223253]",
+            "0.611396 [0.330255, 1.131866]",
+            "0.599554 [0.347684, 1.033883]",
+            "0.689856 [0.424846, 1.120174]",
+            "0.519627 [0.310855, 0.868610]",
+            "0.654768 [0.373396, 1.148167]",
+            "0.593338 [0.337126, 1.044269]"
+          ],
+          "has_overall": false,
+          "estimates": [
+            0.5559702484213668,
+            0.7949904968152358,
+            0.6113955422283915,
+            0.5995538766380443,
+            0.6898561478231228,
+            0.5196266476598937,
+            0.6547675829699593,
+            0.5933383274120353
+          ],
+          "measure": "IRR",
+          "range": [
+            -1.6094379124341003,
+            0.6931471805599453
+          ]
+        },
+        "plots": {
+          "analysis.leave-one-out.leave_one_out_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d2h25al8/analysis/forest-44cde7f9bc7a.display.svg"
+        }
+      },
+      {
+        "step": 10,
+        "action": "round3-sequential-bottom",
+        "utc": "2026-10-15T02:09:11.184600+00:00",
+        "captures": [
+          "10-0-round3-sequential-bottom.png"
+        ],
+        "artifacts": {},
+        "title": "analysis.leave-one-out.leave_one_out_forest_plot.1",
+        "workflow": "leave-one-out"
+      },
+      {
+        "step": 11,
+        "action": "round3-configured",
+        "utc": "2026-10-15T02:09:11.688195+00:00",
+        "captures": [
+          "11-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "subgroup",
+        "method": "event_rates.random",
+        "parameters": {
+          "cov_name": "Group",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0",
+          "drop00": "TRUE"
+        }
+      },
+      {
+        "step": 12,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T02:09:18.313236+00:00",
+        "captures": [
+          "12-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Subgroup meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first",
+        "text": "Subgroup meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first\n\nSubgroup Summary\n\nModel Results\nSubgroups\tk\tEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\tp-value\tz-value\nB\t5\t0.754806\t0.385051\t1.479628\t0.343417\t0.412726\t-0.819105\nA\t3\t0.435168\t0.204531\t0.925880\t0.385217\t0.030782\t-2.159879\nOverall\t8\t0.626686\t0.377663\t1.039909\t0.258394\t0.070526\t-1.808515\n\nHeterogeneity\nSubgroups\tQ\tdf\tp-value\tI²\tτ²\nB\t6.176874\t4\t0.186323\t35.2%\t0.198624\nA\t1.287272\t2\t0.525379\t0.0%\t0.000000\nOverall\t9.414339\t7\t0.224261\t25.6%\t0.130823\n\nTest of subgroup differences\nTest\tStatistic\tdf\tp-value\nSubgroup differences (Qm)\t1.356369\t1\t0.244168\n\nPrediction interval\nSubgroups\tLower bound (95% PI)\tUpper bound (95% PI)\nB\t0.250564\t2.273800\nA\t0.204531\t0.925880\nOverall\t0.262229\t1.497680\n\nSubgroup meta-analysis\n\nModel configuration\n\nProject: NielWeise2008-IRR.rcms\nModel: Random-effects inverse variance\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nSubgroups by Group. Use the test of subgroup differences to compare groups.\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.\n\nReferences\n\n1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Subgroups",
+              "k",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value",
+              "z-value"
+            ],
+            "rows": [
+              [
+                "B",
+                "5",
+                "0.754806",
+                "0.385051",
+                "1.479628",
+                "0.343417",
+                "0.412726",
+                "-0.819105"
+              ],
+              [
+                "A",
+                "3",
+                "0.435168",
+                "0.204531",
+                "0.925880",
+                "0.385217",
+                "0.030782",
+                "-2.159879"
+              ],
+              [
+                "Overall",
+                "8",
+                "0.626686",
+                "0.377663",
+                "1.039909",
+                "0.258394",
+                "0.070526",
+                "-1.808515"
+              ]
+            ]
+          },
+          {
+            "title": "Heterogeneity",
+            "headers": [
+              "Subgroups",
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "B",
+                "6.176874",
+                "4",
+                "0.186323",
+                "35.2%",
+                "0.198624"
+              ],
+              [
+                "A",
+                "1.287272",
+                "2",
+                "0.525379",
+                "0.0%",
+                "0.000000"
+              ],
+              [
+                "Overall",
+                "9.414339",
+                "7",
+                "0.224261",
+                "25.6%",
+                "0.130823"
+              ]
+            ]
+          },
+          {
+            "title": "Prediction interval",
+            "headers": [
+              "Subgroups",
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "B",
+                "0.250564",
+                "2.273800"
+              ],
+              [
+                "A",
+                "0.204531",
+                "0.925880"
+              ],
+              [
+                "Overall",
+                "0.262229",
+                "1.497680"
+              ]
+            ]
+          },
+          {
+            "title": "Test of subgroup differences",
+            "headers": [
+              "Test",
+              "Statistic",
+              "df",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Subgroup differences (Qm)",
+                "1.356369",
+                "1",
+                "0.244168"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 13,
+        "action": "review1-subgroup-footer-order",
+        "utc": "2026-10-15T02:09:18.649380+00:00",
+        "captures": [
+          "13-0-review1-subgroup-footer-order.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroup_forest_plot.1": "13-0-forest-44cde7f9bc7a.display.svg"
+        },
+        "title": "analysis.subgroup.subgroup_forest_plot.1",
+        "plots": {
+          "analysis.subgroup.subgroup_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d2h25al8/analysis/forest-44cde7f9bc7a.display.svg"
+        }
+      },
+      {
+        "step": 14,
+        "action": "round4-subgroup-weights",
+        "utc": "2026-10-15T02:09:18.950399+00:00",
+        "captures": [
+          "14-0-round4-subgroup-weights.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroup_forest_plot.1": "14-0-forest-44cde7f9bc7a.display.svg"
+        },
+        "title": "analysis.subgroup.subgroup_forest_plot.1",
+        "weights": {
+          "expected": [
+            18.31304025092388,
+            12.466255069644435,
+            3.1334086338546037,
+            26.049132315168162,
+            6.924954477711243,
+            16.797260557679945,
+            5.316624170856254,
+            10.999324524161484
+          ],
+          "actual": [
+            18.31304025092388,
+            12.466255069644433,
+            3.1334086338546037,
+            26.049132315168162,
+            6.924954477711243,
+            16.797260557679948,
+            5.3166241708562545,
+            10.999324524161484
+          ],
+          "order": [
+            1,
+            2,
+            4,
+            6,
+            8,
+            3,
+            5,
+            7
+          ],
+          "names": [
+            "Bong et al. 2003",
+            "Hanna et al. 2004",
+            "Jaeger et al. 2001",
+            "Logghe et al. 1997",
+            "Pemberton et al. 1996",
+            "Harter et al. 2002",
+            "Jaeger et al. 2005",
+            "Ostendorf et al. 2005"
+          ],
+          "total": 100,
+          "inputs": {
+            "names": [
+              "Bong et al.",
+              "Hanna et al.",
+              "Harter et al.",
+              "Jaeger et al.",
+              "Jaeger et al.",
+              "Logghe et al.",
+              "Ostendorf et al.",
+              "Pemberton et al."
+            ],
+            "yi": [
+              -0.06050625760963246,
+              -1.6319164444443084,
+              -0.5325441477206336,
+              0.26651364801430244,
+              -1.8543793930935255,
+              0.13692798453359245,
+              -0.9340629016199529,
+              -0.08701137698962924
+            ],
+            "vi": [
+              0.23376623376623376,
+              0.40476190476190477,
+              0.26666666666666666,
+              2,
+              1.125,
+              0.12549019607843137,
+              0.47619047619047616,
+              0.8333333333333333
+            ]
+          }
+        },
+        "plots": {
+          "analysis.subgroup.subgroup_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d2h25al8/analysis/forest-44cde7f9bc7a.display.svg"
+        }
+      },
+      {
+        "step": 15,
+        "action": "round3-subgroup-public-reference",
+        "utc": "2026-10-15T02:09:19.161732+00:00",
+        "captures": [
+          "15-0-round3-subgroup-public-reference.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroup_forest_plot.1": "15-0-forest-44cde7f9bc7a.display.svg"
+        },
+        "title": "analysis.subgroup.subgroup_forest_plot.1",
+        "expected": [
+          {
+            "k": 5,
+            "Q": 6.176874076196815,
+            "df": 4,
+            "p": 0.18632286377031299,
+            "I2": 35.24232563823198,
+            "tau2": 0.19862437795100293,
+            "z": -0.8191051004632711,
+            "lower": -1.3840416279331964,
+            "upper": 0.8214523029151684,
+            "measure": "IRR"
+          },
+          {
+            "k": 3,
+            "Q": 1.287271795084109,
+            "df": 2,
+            "p": 0.5253787239315117,
+            "I2": 0,
+            "tau2": 0,
+            "z": -2.1598790315778764,
+            "lower": -1.5870350559163322,
+            "upper": -0.07701074691752408,
+            "measure": "IRR"
+          },
+          {
+            "k": 8,
+            "Q": 9.414339066807916,
+            "df": 7,
+            "p": 0.2242605778047053,
+            "I2": 25.64533792202299,
+            "tau2": 0.13082312334959645,
+            "z": -1.808515018607838,
+            "lower": -1.3385358383237036,
+            "upper": 0.40391742344532766,
+            "measure": "IRR"
+          }
+        ],
+        "tables": {
+          "Model Results": {
+            "headers": [
+              "Subgroups",
+              "k",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value",
+              "z-value"
+            ],
+            "rows": [
+              [
+                "B",
+                "5",
+                "0.754806",
+                "0.385051",
+                "1.479628",
+                "0.343417",
+                "0.412726",
+                "-0.819105"
+              ],
+              [
+                "A",
+                "3",
+                "0.435168",
+                "0.204531",
+                "0.925880",
+                "0.385217",
+                "0.030782",
+                "-2.159879"
+              ],
+              [
+                "Overall",
+                "8",
+                "0.626686",
+                "0.377663",
+                "1.039909",
+                "0.258394",
+                "0.070526",
+                "-1.808515"
+              ]
+            ]
+          },
+          "Heterogeneity": {
+            "headers": [
+              "Subgroups",
+              "Q",
+              "df",
+              "p-value",
+              "I²",
+              "τ²"
+            ],
+            "rows": [
+              [
+                "B",
+                "6.176874",
+                "4",
+                "0.186323",
+                "35.2%",
+                "0.198624"
+              ],
+              [
+                "A",
+                "1.287272",
+                "2",
+                "0.525379",
+                "0.0%",
+                "0.000000"
+              ],
+              [
+                "Overall",
+                "9.414339",
+                "7",
+                "0.224261",
+                "25.6%",
+                "0.130823"
+              ]
+            ]
+          },
+          "Prediction interval": {
+            "headers": [
+              "Subgroups",
+              "Lower bound (95% PI)",
+              "Upper bound (95% PI)"
+            ],
+            "rows": [
+              [
+                "B",
+                "0.250564",
+                "2.273800"
+              ],
+              [
+                "A",
+                "0.204531",
+                "0.925880"
+              ],
+              [
+                "Overall",
+                "0.262229",
+                "1.497680"
+              ]
+            ]
+          },
+          "Test of subgroup differences": {
+            "headers": [
+              "Test",
+              "Statistic",
+              "df",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Subgroup differences (Qm)",
+                "1.356369",
+                "1",
+                "0.244168"
+              ]
+            ]
+          }
+        },
+        "plots": {
+          "analysis.subgroup.subgroup_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d2h25al8/analysis/forest-44cde7f9bc7a.display.svg"
+        }
+      },
+      {
+        "step": 16,
+        "action": "round3-configured",
+        "utc": "2026-10-15T02:09:19.689657+00:00",
+        "captures": [
+          "16-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "leave-one-out",
+        "method": "event_rates.mh",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0",
+          "drop00": "TRUE"
+        }
+      },
+      {
+        "step": 17,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T02:09:22.935269+00:00",
+        "captures": [
+          "17-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Leave-one-out meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first",
+        "text": "Leave-one-out meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first\n\nSequential Summary\n\nModel Results\nStudy omitted\tEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\tp-value\nStudy omitted: Bong et al., 2003\tNot estimable\t\t\t\t\nStudy omitted: Hanna et al., 2004\t0.069249\t0.023275\t0.206031\t0.556295\t0.000002\nStudy omitted: Harter et al., 2002\t0.063668\t0.021597\t0.187690\t0.551595\t< 1e-06\nStudy omitted: Jaeger et al., 2001\t0.054681\t0.018698\t0.159915\t0.547523\t< 1e-06\nStudy omitted: Jaeger et al., 2005\t0.060438\t0.020705\t0.176416\t0.546554\t< 1e-06\nStudy omitted: Logghe et al., 1997\t0.069615\t0.023562\t0.205678\t0.552731\t0.000001\nStudy omitted: Ostendorf et al., 2005\t0.060643\t0.020579\t0.178706\t0.551410\t< 1e-06\nStudy omitted: Pemberton et al., 1996\t0.056103\t0.019208\t0.163863\t0.546873\t< 1e-06\n\nIncidence Rate Ratio Leave-one-out Meta-analysis\n\nNon-estimable rows\n\nStudy omitted: Bong et al., 2003 Non-estimable: zero total events in an arm.\n\nModel configuration\n\nProject: NielWeise2008-IRR.rcms\nModel: Mantel-Haenszel (raw IRR)\nConfidence level: 95%\nOmission-only fits: each row omits the named study. No all-studies fit is included.\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.\n\nReferences\n\n1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Study omitted",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Study omitted: Bong et al., 2003",
+                "Not estimable",
+                "",
+                "",
+                "",
+                ""
+              ],
+              [
+                "Study omitted: Hanna et al., 2004",
+                "0.069249",
+                "0.023275",
+                "0.206031",
+                "0.556295",
+                "0.000002"
+              ],
+              [
+                "Study omitted: Harter et al., 2002",
+                "0.063668",
+                "0.021597",
+                "0.187690",
+                "0.551595",
+                "< 1e-06"
+              ],
+              [
+                "Study omitted: Jaeger et al., 2001",
+                "0.054681",
+                "0.018698",
+                "0.159915",
+                "0.547523",
+                "< 1e-06"
+              ],
+              [
+                "Study omitted: Jaeger et al., 2005",
+                "0.060438",
+                "0.020705",
+                "0.176416",
+                "0.546554",
+                "< 1e-06"
+              ],
+              [
+                "Study omitted: Logghe et al., 1997",
+                "0.069615",
+                "0.023562",
+                "0.205678",
+                "0.552731",
+                "0.000001"
+              ],
+              [
+                "Study omitted: Ostendorf et al., 2005",
+                "0.060643",
+                "0.020579",
+                "0.178706",
+                "0.551410",
+                "< 1e-06"
+              ],
+              [
+                "Study omitted: Pemberton et al., 1996",
+                "0.056103",
+                "0.019208",
+                "0.163863",
+                "0.546873",
+                "< 1e-06"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 18,
+        "action": "round3-sequential-rows",
+        "utc": "2026-10-15T02:09:23.160735+00:00",
+        "captures": [
+          "18-0-round3-sequential-rows.png"
+        ],
+        "artifacts": {
+          "analysis.leave-one-out.leave_one_out_forest_plot.1": "18-0-forest-44cde7f9bc7a.display.svg"
+        },
+        "title": "analysis.leave-one-out.leave_one_out_forest_plot.1",
+        "workflow": "leave-one-out",
+        "rows": [
+          [
+            "Study omitted: Bong et al., 2003",
+            "Not estimable",
+            "",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Study omitted: Hanna et al., 2004",
+            "0.069249",
+            "0.023275",
+            "0.206031",
+            "0.556295",
+            "0.000002"
+          ],
+          [
+            "Study omitted: Harter et al., 2002",
+            "0.063668",
+            "0.021597",
+            "0.187690",
+            "0.551595",
+            "< 1e-06"
+          ],
+          [
+            "Study omitted: Jaeger et al., 2001",
+            "0.054681",
+            "0.018698",
+            "0.159915",
+            "0.547523",
+            "< 1e-06"
+          ],
+          [
+            "Study omitted: Jaeger et al., 2005",
+            "0.060438",
+            "0.020705",
+            "0.176416",
+            "0.546554",
+            "< 1e-06"
+          ],
+          [
+            "Study omitted: Logghe et al., 1997",
+            "0.069615",
+            "0.023562",
+            "0.205678",
+            "0.552731",
+            "0.000001"
+          ],
+          [
+            "Study omitted: Ostendorf et al., 2005",
+            "0.060643",
+            "0.020579",
+            "0.178706",
+            "0.551410",
+            "< 1e-06"
+          ],
+          [
+            "Study omitted: Pemberton et al., 1996",
+            "0.056103",
+            "0.019208",
+            "0.163863",
+            "0.546873",
+            "< 1e-06"
+          ]
+        ],
+        "figure": {
+          "slab": [
+            "Study omitted: Bong et al., 2003",
+            "Study omitted: Hanna et al., 2004",
+            "Study omitted: Harter et al., 2002",
+            "Study omitted: Jaeger et al., 2001",
+            "Study omitted: Jaeger et al., 2005",
+            "Study omitted: Logghe et al., 1997",
+            "Study omitted: Ostendorf et al., 2005",
+            "Study omitted: Pemberton et al., 1996"
+          ],
+          "labels": [
+            "Not estimable",
+            "0.069249 [0.023275, 0.206031]",
+            "0.063668 [0.021597, 0.187690]",
+            "0.054681 [0.018698, 0.159915]",
+            "0.060438 [0.020705, 0.176416]",
+            "0.069615 [0.023562, 0.205678]",
+            "0.060643 [0.020579, 0.178706]",
+            "0.056103 [0.019208, 0.163863]"
+          ],
+          "has_overall": false,
+          "estimates": [
+            "NA",
+            0.06924887418838108,
+            0.06366813522428867,
+            0.054681061367609494,
+            0.060437989740281986,
+            0.06961504175825825,
+            0.060642708777289535,
+            0.056102565995349025
+          ],
+          "measure": "IRR",
+          "range": [
+            -4.605170185988091,
+            0
+          ]
+        },
+        "plots": {
+          "analysis.leave-one-out.leave_one_out_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d2h25al8/analysis/forest-44cde7f9bc7a.display.svg"
+        }
+      },
+      {
+        "step": 19,
+        "action": "round3-sequential-bottom",
+        "utc": "2026-10-15T02:09:23.368156+00:00",
+        "captures": [
+          "19-0-round3-sequential-bottom.png"
+        ],
+        "artifacts": {},
+        "title": "analysis.leave-one-out.leave_one_out_forest_plot.1",
+        "workflow": "leave-one-out"
+      },
+      {
+        "step": 20,
+        "action": "round3-configured",
+        "utc": "2026-10-15T02:09:24.218194+00:00",
+        "captures": [
+          "20-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "cumulative",
+        "method": "event_rates.fixed",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0",
+          "drop00": "TRUE"
+        }
+      },
+      {
+        "step": 21,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T02:09:27.823405+00:00",
+        "captures": [
+          "21-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Cumulative meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first",
+        "text": "Cumulative meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first\n\nSequential Summary\n\nModel Results\nStudy added (k)\tEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\tp-value\nBong et al., 2003 (k = 1)\t0.941288\t0.364898\t2.428137\t0.483494\t0.900410\nBong et al., 1996 (k = 2)\t0.927572\t0.469348\t1.833160\t0.347571\t0.828742\nHanna et al., 2004 (k = 3)\t0.648554\t0.356707\t1.179179\t0.305020\t0.155721\nHarter et al., 2002 (k = 4)\t0.632070\t0.377760\t1.057583\t0.262628\t0.080674\nJaeger et al., 2001 (k = 5)\t0.647539\t0.390368\t1.074130\t0.258213\t0.092372\nJaeger et al., 2005 (k = 6)\t0.598090\t0.365774\t0.977959\t0.250886\t0.040482\nLogghe et al., 1997 (k = 7)\t0.743359\t0.497650\t1.110383\t0.204739\t0.147461\nOstendorf et al., 2005 (k = 8)\t0.705991\t0.480533\t1.037229\t0.196282\t0.076107\nPemberton et al., 1996 (k = 9)\t0.714185\t0.490307\t1.040287\t0.191897\t0.079406\n\nIncidence Rate Ratio Cumulative Meta-analysis\n\nModel configuration\n\nProject: NielWeise2008-IRR.rcms\nModel: Fixed-effect inverse variance\nInference: Normal approximation\nConfidence level: 95%\nOrder: current study order; each row adds a study to the preceding studies.\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.\n\nReferences\n\n1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Study added (k)",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Bong et al., 2003 (k = 1)",
+                "0.941288",
+                "0.364898",
+                "2.428137",
+                "0.483494",
+                "0.900410"
+              ],
+              [
+                "Bong et al., 1996 (k = 2)",
+                "0.927572",
+                "0.469348",
+                "1.833160",
+                "0.347571",
+                "0.828742"
+              ],
+              [
+                "Hanna et al., 2004 (k = 3)",
+                "0.648554",
+                "0.356707",
+                "1.179179",
+                "0.305020",
+                "0.155721"
+              ],
+              [
+                "Harter et al., 2002 (k = 4)",
+                "0.632070",
+                "0.377760",
+                "1.057583",
+                "0.262628",
+                "0.080674"
+              ],
+              [
+                "Jaeger et al., 2001 (k = 5)",
+                "0.647539",
+                "0.390368",
+                "1.074130",
+                "0.258213",
+                "0.092372"
+              ],
+              [
+                "Jaeger et al., 2005 (k = 6)",
+                "0.598090",
+                "0.365774",
+                "0.977959",
+                "0.250886",
+                "0.040482"
+              ],
+              [
+                "Logghe et al., 1997 (k = 7)",
+                "0.743359",
+                "0.497650",
+                "1.110383",
+                "0.204739",
+                "0.147461"
+              ],
+              [
+                "Ostendorf et al., 2005 (k = 8)",
+                "0.705991",
+                "0.480533",
+                "1.037229",
+                "0.196282",
+                "0.076107"
+              ],
+              [
+                "Pemberton et al., 1996 (k = 9)",
+                "0.714185",
+                "0.490307",
+                "1.040287",
+                "0.191897",
+                "0.079406"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 22,
+        "action": "round3-fixed-references",
+        "utc": "2026-10-15T02:09:28.015147+00:00",
+        "captures": [
+          "22-0-round3-fixed-references.png"
+        ],
+        "artifacts": {},
+        "method": "IV",
+        "identity": "Cumulative meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first",
+        "text": "Sequential Summary\nModel Results\nStudy added (k)\nEstimate [95% CI]\nStd. error\nP\nBong et al., 2003 (k = 1)\n0.941288 [0.364898, 2.428137]\n0.483494\n0.900410\nBong et al., 1996 (k = 2)\n0.927572 [0.469348, 1.833160]\n0.347571\n0.828742\nHanna et al., 2004 (k = 3)\n0.648554 [0.356707, 1.179179]\n0.305020\n0.155721\nHarter et al., 2002 (k = 4)\n0.632070 [0.377760, 1.057583]\n0.262628\n0.080674\nJaeger et al., 2001 (k = 5)\n0.647539 [0.390368, 1.074130]\n0.258213\n0.092372\nJaeger et al., 2005 (k = 6)\n0.598090 [0.365774, 0.977959]\n0.250886\n0.040482\nLogghe et al., 1997 (k = 7)\n0.743359 [0.497650, 1.110383]\n0.204739\n0.147461\nOstendorf et al., 2005 (k = 8)\n0.705991 [0.480533, 1.037229]\n0.196282\n0.076107\nPemberton et al., 1996 (k = 9)\n0.714185 [0.490307, 1.040287]\n0.191897\n0.079406\n\nIncidence Rate Ratio Cumulative Meta-analysis\nModel configuration\nProject: NielWeise2008-IRR.rcms\nModel: Fixed-effect inverse variance\nInference: Normal approximation\nConfidence level: 95%\nOrder: current study order; each row adds a study to the preceding studies.\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.\nReferences\nFixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.\nImplementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03."
+      },
+      {
+        "step": 23,
+        "action": "round3-sequential-rows",
+        "utc": "2026-10-15T02:09:28.244974+00:00",
+        "captures": [
+          "23-0-round3-sequential-rows.png"
+        ],
+        "artifacts": {
+          "analysis.cumulative.cumulative_forest_plot.1": "23-0-forest-44cde7f9bc7a.display.svg"
+        },
+        "title": "analysis.cumulative.cumulative_forest_plot.1",
+        "workflow": "cumulative",
+        "rows": [
+          [
+            "Bong et al., 2003 (k = 1)",
+            "0.941288",
+            "0.364898",
+            "2.428137",
+            "0.483494",
+            "0.900410"
+          ],
+          [
+            "Bong et al., 1996 (k = 2)",
+            "0.927572",
+            "0.469348",
+            "1.833160",
+            "0.347571",
+            "0.828742"
+          ],
+          [
+            "Hanna et al., 2004 (k = 3)",
+            "0.648554",
+            "0.356707",
+            "1.179179",
+            "0.305020",
+            "0.155721"
+          ],
+          [
+            "Harter et al., 2002 (k = 4)",
+            "0.632070",
+            "0.377760",
+            "1.057583",
+            "0.262628",
+            "0.080674"
+          ],
+          [
+            "Jaeger et al., 2001 (k = 5)",
+            "0.647539",
+            "0.390368",
+            "1.074130",
+            "0.258213",
+            "0.092372"
+          ],
+          [
+            "Jaeger et al., 2005 (k = 6)",
+            "0.598090",
+            "0.365774",
+            "0.977959",
+            "0.250886",
+            "0.040482"
+          ],
+          [
+            "Logghe et al., 1997 (k = 7)",
+            "0.743359",
+            "0.497650",
+            "1.110383",
+            "0.204739",
+            "0.147461"
+          ],
+          [
+            "Ostendorf et al., 2005 (k = 8)",
+            "0.705991",
+            "0.480533",
+            "1.037229",
+            "0.196282",
+            "0.076107"
+          ],
+          [
+            "Pemberton et al., 1996 (k = 9)",
+            "0.714185",
+            "0.490307",
+            "1.040287",
+            "0.191897",
+            "0.079406"
+          ]
+        ],
+        "figure": {
+          "slab": [
+            "Bong et al., 2003 (k = 1)",
+            "Bong et al., 1996 (k = 2)",
+            "Hanna et al., 2004 (k = 3)",
+            "Harter et al., 2002 (k = 4)",
+            "Jaeger et al., 2001 (k = 5)",
+            "Jaeger et al., 2005 (k = 6)",
+            "Logghe et al., 1997 (k = 7)",
+            "Ostendorf et al., 2005 (k = 8)",
+            "Pemberton et al., 1996 (k = 9)"
+          ],
+          "labels": [
+            "0.941288 [0.364898, 2.428137]",
+            "0.927572 [0.469348, 1.833160]",
+            "0.648554 [0.356707, 1.179179]",
+            "0.632070 [0.377760, 1.057583]",
+            "0.647539 [0.390368, 1.074130]",
+            "0.598090 [0.365774, 0.977959]",
+            "0.743359 [0.497650, 1.110383]",
+            "0.705991 [0.480533, 1.037229]",
+            "0.714185 [0.490307, 1.040287]"
+          ],
+          "has_overall": false,
+          "estimates": [
+            0.941287878787879,
+            0.9275721399475045,
+            0.648553649537944,
+            0.6320701470836813,
+            0.6475387466901718,
+            0.5980898172365946,
+            0.7433587103924827,
+            0.7059907673305053,
+            0.7141848226813897
+          ],
+          "measure": "IRR",
+          "range": [
+            -1.6094379124341003,
+            1.6094379124341003
+          ]
+        },
+        "plots": {
+          "analysis.cumulative.cumulative_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d2h25al8/analysis/forest-44cde7f9bc7a.display.svg"
+        }
+      },
+      {
+        "step": 24,
+        "action": "round3-sequential-bottom",
+        "utc": "2026-10-15T02:09:28.448888+00:00",
+        "captures": [
+          "24-0-round3-sequential-bottom.png"
+        ],
+        "artifacts": {},
+        "title": "analysis.cumulative.cumulative_forest_plot.1",
+        "workflow": "cumulative"
+      },
+      {
+        "step": 25,
+        "action": "round3-configured",
+        "utc": "2026-10-15T02:09:28.829543+00:00",
+        "captures": [
+          "25-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "leave-one-out",
+        "method": "event_rates.fixed",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0",
+          "drop00": "TRUE"
+        }
+      },
+      {
+        "step": 26,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T02:09:32.112012+00:00",
+        "captures": [
+          "26-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Leave-one-out meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first",
+        "text": "Leave-one-out meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first\n\nSequential Summary\n\nModel Results\nStudy omitted\tEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\tp-value\nStudy omitted: Bong et al., 2003\t0.678249\t0.450225\t1.021760\t0.209069\t0.063311\nStudy omitted: Bong et al., 1996\t0.684504\t0.455498\t1.028643\t0.207811\t0.068142\nStudy omitted: Hanna et al., 2004\t0.813039\t0.548012\t1.206238\t0.201270\t0.303786\nStudy omitted: Harter et al., 2002\t0.736959\t0.491476\t1.105059\t0.206698\t0.139767\nStudy omitted: Jaeger et al., 2001\t0.706151\t0.483092\t1.032202\t0.193688\t0.072443\nStudy omitted: Jaeger et al., 2005\t0.751825\t0.512901\t1.102047\t0.195116\t0.143753\nStudy omitted: Logghe et al., 1997\t0.586676\t0.375037\t0.917745\t0.228294\t0.019494\nStudy omitted: Ostendorf et al., 2005\t0.750857\t0.507583\t1.110727\t0.199776\t0.151486\nStudy omitted: Pemberton et al., 1996\t0.705991\t0.480533\t1.037229\t0.196282\t0.076107\n\nIncidence Rate Ratio Leave-one-out Meta-analysis\n\nModel configuration\n\nProject: NielWeise2008-IRR.rcms\nModel: Fixed-effect inverse variance\nInference: Normal approximation\nConfidence level: 95%\nOmission-only fits: each row omits the named study. No all-studies fit is included.\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.\n\nReferences\n\n1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Study omitted",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Study omitted: Bong et al., 2003",
+                "0.678249",
+                "0.450225",
+                "1.021760",
+                "0.209069",
+                "0.063311"
+              ],
+              [
+                "Study omitted: Bong et al., 1996",
+                "0.684504",
+                "0.455498",
+                "1.028643",
+                "0.207811",
+                "0.068142"
+              ],
+              [
+                "Study omitted: Hanna et al., 2004",
+                "0.813039",
+                "0.548012",
+                "1.206238",
+                "0.201270",
+                "0.303786"
+              ],
+              [
+                "Study omitted: Harter et al., 2002",
+                "0.736959",
+                "0.491476",
+                "1.105059",
+                "0.206698",
+                "0.139767"
+              ],
+              [
+                "Study omitted: Jaeger et al., 2001",
+                "0.706151",
+                "0.483092",
+                "1.032202",
+                "0.193688",
+                "0.072443"
+              ],
+              [
+                "Study omitted: Jaeger et al., 2005",
+                "0.751825",
+                "0.512901",
+                "1.102047",
+                "0.195116",
+                "0.143753"
+              ],
+              [
+                "Study omitted: Logghe et al., 1997",
+                "0.586676",
+                "0.375037",
+                "0.917745",
+                "0.228294",
+                "0.019494"
+              ],
+              [
+                "Study omitted: Ostendorf et al., 2005",
+                "0.750857",
+                "0.507583",
+                "1.110727",
+                "0.199776",
+                "0.151486"
+              ],
+              [
+                "Study omitted: Pemberton et al., 1996",
+                "0.705991",
+                "0.480533",
+                "1.037229",
+                "0.196282",
+                "0.076107"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 27,
+        "action": "round3-fixed-references",
+        "utc": "2026-10-15T02:09:32.321480+00:00",
+        "captures": [
+          "27-0-round3-fixed-references.png"
+        ],
+        "artifacts": {},
+        "method": "IV",
+        "identity": "Leave-one-out meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first",
+        "text": "Sequential Summary\nModel Results\nStudy omitted\nEstimate [95% CI]\nStd. error\nP\nStudy omitted: Bong et al., 2003\n0.678249 [0.450225, 1.021760]\n0.209069\n0.063311\nStudy omitted: Bong et al., 1996\n0.684504 [0.455498, 1.028643]\n0.207811\n0.068142\nStudy omitted: Hanna et al., 2004\n0.813039 [0.548012, 1.206238]\n0.201270\n0.303786\nStudy omitted: Harter et al., 2002\n0.736959 [0.491476, 1.105059]\n0.206698\n0.139767\nStudy omitted: Jaeger et al., 2001\n0.706151 [0.483092, 1.032202]\n0.193688\n0.072443\nStudy omitted: Jaeger et al., 2005\n0.751825 [0.512901, 1.102047]\n0.195116\n0.143753\nStudy omitted: Logghe et al., 1997\n0.586676 [0.375037, 0.917745]\n0.228294\n0.019494\nStudy omitted: Ostendorf et al., 2005\n0.750857 [0.507583, 1.110727]\n0.199776\n0.151486\nStudy omitted: Pemberton et al., 1996\n0.705991 [0.480533, 1.037229]\n0.196282\n0.076107\n\nIncidence Rate Ratio Leave-one-out Meta-analysis\nModel configuration\nProject: NielWeise2008-IRR.rcms\nModel: Fixed-effect inverse variance\nInference: Normal approximation\nConfidence level: 95%\nOmission-only fits: each row omits the named study. No all-studies fit is included.\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.\nReferences\nFixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.\nImplementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03."
+      },
+      {
+        "step": 28,
+        "action": "round3-sequential-rows",
+        "utc": "2026-10-15T02:09:32.558967+00:00",
+        "captures": [
+          "28-0-round3-sequential-rows.png"
+        ],
+        "artifacts": {
+          "analysis.leave-one-out.leave_one_out_forest_plot.1": "28-0-forest-44cde7f9bc7a.display.svg"
+        },
+        "title": "analysis.leave-one-out.leave_one_out_forest_plot.1",
+        "workflow": "leave-one-out",
+        "rows": [
+          [
+            "Study omitted: Bong et al., 2003",
+            "0.678249",
+            "0.450225",
+            "1.021760",
+            "0.209069",
+            "0.063311"
+          ],
+          [
+            "Study omitted: Bong et al., 1996",
+            "0.684504",
+            "0.455498",
+            "1.028643",
+            "0.207811",
+            "0.068142"
+          ],
+          [
+            "Study omitted: Hanna et al., 2004",
+            "0.813039",
+            "0.548012",
+            "1.206238",
+            "0.201270",
+            "0.303786"
+          ],
+          [
+            "Study omitted: Harter et al., 2002",
+            "0.736959",
+            "0.491476",
+            "1.105059",
+            "0.206698",
+            "0.139767"
+          ],
+          [
+            "Study omitted: Jaeger et al., 2001",
+            "0.706151",
+            "0.483092",
+            "1.032202",
+            "0.193688",
+            "0.072443"
+          ],
+          [
+            "Study omitted: Jaeger et al., 2005",
+            "0.751825",
+            "0.512901",
+            "1.102047",
+            "0.195116",
+            "0.143753"
+          ],
+          [
+            "Study omitted: Logghe et al., 1997",
+            "0.586676",
+            "0.375037",
+            "0.917745",
+            "0.228294",
+            "0.019494"
+          ],
+          [
+            "Study omitted: Ostendorf et al., 2005",
+            "0.750857",
+            "0.507583",
+            "1.110727",
+            "0.199776",
+            "0.151486"
+          ],
+          [
+            "Study omitted: Pemberton et al., 1996",
+            "0.705991",
+            "0.480533",
+            "1.037229",
+            "0.196282",
+            "0.076107"
+          ]
+        ],
+        "figure": {
+          "slab": [
+            "Study omitted: Bong et al., 2003",
+            "Study omitted: Bong et al., 1996",
+            "Study omitted: Hanna et al., 2004",
+            "Study omitted: Harter et al., 2002",
+            "Study omitted: Jaeger et al., 2001",
+            "Study omitted: Jaeger et al., 2005",
+            "Study omitted: Logghe et al., 1997",
+            "Study omitted: Ostendorf et al., 2005",
+            "Study omitted: Pemberton et al., 1996"
+          ],
+          "labels": [
+            "0.678249 [0.450225, 1.021760]",
+            "0.684504 [0.455498, 1.028643]",
+            "0.813039 [0.548012, 1.206238]",
+            "0.736959 [0.491476, 1.105059]",
+            "0.706151 [0.483092, 1.032202]",
+            "0.751825 [0.512901, 1.102047]",
+            "0.586676 [0.375037, 0.917745]",
+            "0.750857 [0.507583, 1.110727]",
+            "0.705991 [0.480533, 1.037229]"
+          ],
+          "has_overall": false,
+          "estimates": [
+            0.6782494699268998,
+            0.684503580089421,
+            0.8130393159309075,
+            0.7369594509816195,
+            0.7061506690855737,
+            0.7518249680747799,
+            0.586676184225844,
+            0.7508571042412397,
+            0.7059907673305053
+          ],
+          "measure": "IRR",
+          "range": [
+            -1.6094379124341003,
+            0.6931471805599453
+          ]
+        },
+        "plots": {
+          "analysis.leave-one-out.leave_one_out_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d2h25al8/analysis/forest-44cde7f9bc7a.display.svg"
+        }
+      },
+      {
+        "step": 29,
+        "action": "round3-sequential-bottom",
+        "utc": "2026-10-15T02:09:32.773636+00:00",
+        "captures": [
+          "29-0-round3-sequential-bottom.png"
+        ],
+        "artifacts": {},
+        "title": "analysis.leave-one-out.leave_one_out_forest_plot.1",
+        "workflow": "leave-one-out"
+      },
+      {
+        "step": 30,
+        "action": "round3-configured",
+        "utc": "2026-10-15T02:09:33.297172+00:00",
+        "captures": [
+          "30-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "subgroup",
+        "method": "event_rates.fixed",
+        "parameters": {
+          "cov_name": "Group",
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0",
+          "drop00": "TRUE"
+        }
+      },
+      {
+        "step": 31,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T02:09:42.221280+00:00",
+        "captures": [
+          "31-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Subgroup meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first",
+        "text": "Subgroup meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first\n\nSubgroup Summary\n\nModel Results\nSubgroups\tk\tEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\tp-value\tz-value\nB\t5\t0.824375\t0.508212\t1.337225\t0.246804\t0.433906\t-0.782525\nA\t4\t0.573519\t0.315355\t1.043028\t0.305155\t0.068469\t-1.821909\nOverall\t9\t0.714185\t0.490307\t1.040287\t0.191897\t0.079406\t-1.754141\n\nHeterogeneity\nSubgroups\tQ\tdf\tp-value\tI²\nB\t6.176874\t4\t0.186323\t35.2%\nA\t2.666036\t3\t0.446030\t0.0%\nOverall\t9.697597\t8\t0.286895\t17.5%\n\nTest of subgroup differences\nTest\tStatistic\tdf\tp-value\nSubgroup differences (Qm)\t0.854687\t1\t0.355230\n\nSubgroup meta-analysis\n\nModel configuration\n\nProject: NielWeise2008-IRR.rcms\nModel: Fixed-effect inverse variance\nInference: Normal approximation\nConfidence level: 95%\nSubgroups by Group. Use the test of subgroup differences to compare groups.\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.\n\nReferences\n\n1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Subgroups",
+              "k",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value",
+              "z-value"
+            ],
+            "rows": [
+              [
+                "B",
+                "5",
+                "0.824375",
+                "0.508212",
+                "1.337225",
+                "0.246804",
+                "0.433906",
+                "-0.782525"
+              ],
+              [
+                "A",
+                "4",
+                "0.573519",
+                "0.315355",
+                "1.043028",
+                "0.305155",
+                "0.068469",
+                "-1.821909"
+              ],
+              [
+                "Overall",
+                "9",
+                "0.714185",
+                "0.490307",
+                "1.040287",
+                "0.191897",
+                "0.079406",
+                "-1.754141"
+              ]
+            ]
+          },
+          {
+            "title": "Heterogeneity",
+            "headers": [
+              "Subgroups",
+              "Q",
+              "df",
+              "p-value",
+              "I²"
+            ],
+            "rows": [
+              [
+                "B",
+                "6.176874",
+                "4",
+                "0.186323",
+                "35.2%"
+              ],
+              [
+                "A",
+                "2.666036",
+                "3",
+                "0.446030",
+                "0.0%"
+              ],
+              [
+                "Overall",
+                "9.697597",
+                "8",
+                "0.286895",
+                "17.5%"
+              ]
+            ]
+          },
+          {
+            "title": "Test of subgroup differences",
+            "headers": [
+              "Test",
+              "Statistic",
+              "df",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Subgroup differences (Qm)",
+                "0.854687",
+                "1",
+                "0.355230"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 32,
+        "action": "round3-fixed-references",
+        "utc": "2026-10-15T02:09:42.413875+00:00",
+        "captures": [
+          "32-0-round3-fixed-references.png"
+        ],
+        "artifacts": {},
+        "method": "IV",
+        "identity": "Subgroup meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first",
+        "text": "Subgroup Summary\nModel Results\nSubgroups\nk\nEstimate [95% CI]\nStd. error\nP\nz-value\nB\n5\n0.824375 [0.508212, 1.337225]\n0.246804\n0.433906\n-0.782525\nA\n4\n0.573519 [0.315355, 1.043028]\n0.305155\n0.068469\n-1.821909\nOverall\n9\n0.714185 [0.490307, 1.040287]\n0.191897\n0.079406\n-1.754141\n\nHeterogeneity\nSubgroups\nQ\ndf\nP\nI²\nB\n6.176874\n4\n0.186323\n35.2%\nA\n2.666036\n3\n0.446030\n0.0%\nOverall\n9.697597\n8\n0.286895\n17.5%\n\nTest of subgroup differences\nTest\nStatistic\ndf\nP\nSubgroup differences (Qm)\n0.854687\n1\n0.355230\n\nSubgroup meta-analysis\nModel configuration\nProject: NielWeise2008-IRR.rcms\nModel: Fixed-effect inverse variance\nInference: Normal approximation\nConfidence level: 95%\nSubgroups by Group. Use the test of subgroup differences to compare groups.\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.\nReferences\nFixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.\nImplementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03."
+      },
+      {
+        "step": 33,
+        "action": "round4-subgroup-weights",
+        "utc": "2026-10-15T02:09:42.715874+00:00",
+        "captures": [
+          "33-0-round4-subgroup-weights.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroup_forest_plot.1": "33-0-forest-44cde7f9bc7a.display.svg"
+        },
+        "title": "analysis.subgroup.subgroup_forest_plot.1",
+        "weights": {
+          "expected": [
+            15.752603496801193,
+            9.097760308312989,
+            1.8412133957300094,
+            29.344338494447026,
+            4.418912149752024,
+            14.729707165840075,
+            13.809100467975071,
+            3.273268259075572,
+            7.73309626206604
+          ],
+          "actual": [
+            15.752603496801193,
+            9.097760308312987,
+            1.841213395730009,
+            29.344338494447026,
+            4.418912149752024,
+            14.729707165840075,
+            13.809100467975075,
+            3.273268259075573,
+            7.73309626206604
+          ],
+          "order": [
+            1,
+            3,
+            5,
+            7,
+            9,
+            2,
+            4,
+            6,
+            8
+          ],
+          "names": [
+            "Bong et al. 2003",
+            "Hanna et al. 2004",
+            "Jaeger et al. 2001",
+            "Logghe et al. 1997",
+            "Pemberton et al. 1996",
+            "Bong et al. 1996",
+            "Harter et al. 2002",
+            "Jaeger et al. 2005",
+            "Ostendorf et al. 2005"
+          ],
+          "total": 100,
+          "inputs": {
+            "names": [
+              "Bong et al.",
+              "Bong et al.",
+              "Hanna et al.",
+              "Harter et al.",
+              "Jaeger et al.",
+              "Jaeger et al.",
+              "Logghe et al.",
+              "Ostendorf et al.",
+              "Pemberton et al."
+            ],
+            "yi": [
+              -0.06050625760963246,
+              -0.09088249647717284,
+              -1.6319164444443084,
+              -0.5325441477206336,
+              0.26651364801430244,
+              -1.8543793930935255,
+              0.13692798453359245,
+              -0.9340629016199529,
+              -0.08701137698962924
+            ],
+            "vi": [
+              0.23376623376623376,
+              0.25,
+              0.40476190476190477,
+              0.26666666666666666,
+              2,
+              1.125,
+              0.12549019607843137,
+              0.47619047619047616,
+              0.8333333333333333
+            ]
+          }
+        },
+        "plots": {
+          "analysis.subgroup.subgroup_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d2h25al8/analysis/forest-44cde7f9bc7a.display.svg"
+        }
+      },
+      {
+        "step": 34,
+        "action": "round3-subgroup-public-reference",
+        "utc": "2026-10-15T02:09:42.905779+00:00",
+        "captures": [
+          "34-0-round3-subgroup-public-reference.png"
+        ],
+        "artifacts": {
+          "analysis.subgroup.subgroup_forest_plot.1": "34-0-forest-44cde7f9bc7a.display.svg"
+        },
+        "title": "analysis.subgroup.subgroup_forest_plot.1",
+        "expected": [
+          {
+            "k": 5,
+            "Q": 6.176874076196815,
+            "df": 4,
+            "p": 0.18632286377031299,
+            "I2": 35.24232563823198,
+            "tau2": 0,
+            "z": -0.7825249715536158,
+            "lower": null,
+            "upper": null,
+            "measure": "IRR"
+          },
+          {
+            "k": 4,
+            "Q": 2.666035743555838,
+            "df": 3,
+            "p": 0.44603005471401813,
+            "I2": 0,
+            "tau2": 0,
+            "z": -1.8219088877443217,
+            "lower": null,
+            "upper": null,
+            "measure": "IRR"
+          },
+          {
+            "k": 9,
+            "Q": 9.697597029464,
+            "df": 8,
+            "p": 0.2868953287088907,
+            "I2": 17.505336881974234,
+            "tau2": 0,
+            "z": -1.7541408485738508,
+            "lower": null,
+            "upper": null,
+            "measure": "IRR"
+          }
+        ],
+        "tables": {
+          "Model Results": {
+            "headers": [
+              "Subgroups",
+              "k",
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error",
+              "p-value",
+              "z-value"
+            ],
+            "rows": [
+              [
+                "B",
+                "5",
+                "0.824375",
+                "0.508212",
+                "1.337225",
+                "0.246804",
+                "0.433906",
+                "-0.782525"
+              ],
+              [
+                "A",
+                "4",
+                "0.573519",
+                "0.315355",
+                "1.043028",
+                "0.305155",
+                "0.068469",
+                "-1.821909"
+              ],
+              [
+                "Overall",
+                "9",
+                "0.714185",
+                "0.490307",
+                "1.040287",
+                "0.191897",
+                "0.079406",
+                "-1.754141"
+              ]
+            ]
+          },
+          "Heterogeneity": {
+            "headers": [
+              "Subgroups",
+              "Q",
+              "df",
+              "p-value",
+              "I²"
+            ],
+            "rows": [
+              [
+                "B",
+                "6.176874",
+                "4",
+                "0.186323",
+                "35.2%"
+              ],
+              [
+                "A",
+                "2.666036",
+                "3",
+                "0.446030",
+                "0.0%"
+              ],
+              [
+                "Overall",
+                "9.697597",
+                "8",
+                "0.286895",
+                "17.5%"
+              ]
+            ]
+          },
+          "Test of subgroup differences": {
+            "headers": [
+              "Test",
+              "Statistic",
+              "df",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "Subgroup differences (Qm)",
+                "0.854687",
+                "1",
+                "0.355230"
+              ]
+            ]
+          }
+        },
+        "plots": {
+          "analysis.subgroup.subgroup_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d2h25al8/analysis/forest-44cde7f9bc7a.display.svg"
+        }
+      },
+      {
+        "step": 35,
+        "action": "round3-configured",
+        "utc": "2026-10-15T02:09:43.256901+00:00",
+        "captures": [
+          "35-0-round3-configured.png"
+        ],
+        "artifacts": {},
+        "workflow": "standard",
+        "method": "event_rates.fixed",
+        "parameters": {
+          "rm.method": "DL",
+          "inference.method": "z",
+          "conf.level": 95.0,
+          "digits": 6,
+          "adjust": 0.5,
+          "to": "only0",
+          "drop00": "TRUE"
+        }
+      },
+      {
+        "step": 36,
+        "action": "round3-fixed-references",
+        "utc": "2026-10-15T02:09:47.666976+00:00",
+        "captures": [
+          "36-0-round3-fixed-references.png"
+        ],
+        "artifacts": {},
+        "method": "IV",
+        "identity": "Meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first",
+        "text": "Summary\nPooled Incidence Rate Ratio: 0.714185 (95% CI 0.490307 to 1.040287).\nModel Results\nEstimate [95% CI]\nP\n0.714185 [0.490307, 1.040287]\n0.079406\n\nHeterogeneity\nQ\ndf\nP\nI²\n9.697597\n8\n0.286895\n17.5%\n\nTest for overall effect\nZ\nP\n-1.754141\n0.079406\n\nModel configuration\nProject: NielWeise2008-IRR.rcms\nModel: Fixed-effect inverse variance\nInference: Normal approximation\nConfidence level: 95%\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.\nCalculation details\nCalculation scale (log)\nEstimate [95% CI]\nStd. error\n-0.336613 [-0.712724, 0.039497]\n0.191897\n\nReferences\nFixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.\nImplementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\nWeights\nStudy weights\nStudy\nWeight (%)\nBong et al.\n15.8%\nBong et al.\n14.7%\nHanna et al.\n9.1%\nHarter et al.\n13.8%\nJaeger et al.\n1.8%\nJaeger et al.\n3.3%\nLogghe et al.\n29.3%\nOstendorf et al.\n7.7%\nPemberton et al.\n4.4%\n"
+      },
+      {
+        "step": 37,
+        "action": "round3-standard-heterogeneity-public-reference",
+        "utc": "2026-10-15T02:09:47.883416+00:00",
+        "captures": [
+          "37-0-round3-standard-heterogeneity-public-reference.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "37-0-forest-44cde7f9bc7a.display.svg"
+        },
+        "expected": {
+          "data_type": "event_rates",
+          "Q": 9.697597029464,
+          "df": 8,
+          "p": 0.2868953287088907,
+          "I2": 17.505336881974234,
+          "tau2": 0,
+          "random": false
+        },
+        "headers": [
+          "Q",
+          "df",
+          "p-value",
+          "I²"
+        ],
+        "rows": [
+          [
+            "9.697597",
+            "8",
+            "0.286895",
+            "17.5%"
+          ]
+        ],
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d2h25al8/analysis/forest-44cde7f9bc7a.display.svg"
+        }
+      },
+      {
+        "step": 38,
+        "action": "round3-fixed-footer",
+        "utc": "2026-10-15T02:09:48.085510+00:00",
+        "captures": [
+          "38-0-round3-fixed-footer.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "38-0-forest-44cde7f9bc7a.display.svg"
+        },
+        "details": "Project: NielWeise2008-IRR.rcms\nModel: Fixed-effect inverse variance\nInference: Normal approximation\nConfidence level: 95%\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.",
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d2h25al8/analysis/forest-44cde7f9bc7a.display.svg"
+        }
+      },
+      {
+        "step": 39,
+        "action": "round3-fixed-footer-bottom",
+        "utc": "2026-10-15T02:09:48.265505+00:00",
+        "captures": [
+          "39-0-round3-fixed-footer-bottom.png"
+        ],
+        "artifacts": {},
+        "details": "Project: NielWeise2008-IRR.rcms\nModel: Fixed-effect inverse variance\nInference: Normal approximation\nConfidence level: 95%\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale."
+      },
+      {
+        "step": 40,
+        "action": "round3-report-copy-export",
+        "utc": "2026-10-15T02:09:48.949948+00:00",
+        "captures": [
+          "40-0-round3-report-copy-export.png"
+        ],
+        "artifacts": {},
+        "identity": "Meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first",
+        "text": "Meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first\n\nSummary\n\nPooled Incidence Rate Ratio: 0.714185 (95% CI 0.490307 to 1.040287).\n\nModel Results\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tp-value\n0.714185\t0.490307\t1.040287\t0.079406\n\nHeterogeneity\nQ\tdf\tp-value\tI²\n9.697597\t8\t0.286895\t17.5%\n\nTest for overall effect\nZ\tp-value\n-1.754141\t0.079406\n\nModel configuration\n\nProject: NielWeise2008-IRR.rcms\nModel: Fixed-effect inverse variance\nInference: Normal approximation\nConfidence level: 95%\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.\n\nCalculation details\n\nCalculation scale (log)\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\n-0.336613\t-0.712724\t0.039497\t0.191897\n\nReferences\n\n1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n\nWeights\n\nStudy weights\nStudy\tWeight (%)\nBong et al.\t15.8%\nBong et al.\t14.7%\nHanna et al.\t9.1%\nHarter et al.\t13.8%\nJaeger et al.\t1.8%\nJaeger et al.\t3.3%\nLogghe et al.\t29.3%\nOstendorf et al.\t7.7%\nPemberton et al.\t4.4%\n",
+        "tables": [
+          {
+            "title": "Model Results",
+            "headers": [
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "0.714185",
+                "0.490307",
+                "1.040287",
+                "0.079406"
+              ]
+            ]
+          },
+          {
+            "title": "Heterogeneity",
+            "headers": [
+              "Q",
+              "df",
+              "p-value",
+              "I²"
+            ],
+            "rows": [
+              [
+                "9.697597",
+                "8",
+                "0.286895",
+                "17.5%"
+              ]
+            ]
+          },
+          {
+            "title": "Test for overall effect",
+            "headers": [
+              "Z",
+              "p-value"
+            ],
+            "rows": [
+              [
+                "-1.754141",
+                "0.079406"
+              ]
+            ]
+          },
+          {
+            "title": "Calculation scale (log)",
+            "headers": [
+              "Estimate",
+              "Lower bound (95% CI)",
+              "Upper bound (95% CI)",
+              "Std. error"
+            ],
+            "rows": [
+              [
+                "-0.336613",
+                "-0.712724",
+                "0.039497",
+                "0.191897"
+              ]
+            ]
+          },
+          {
+            "title": "Study weights",
+            "headers": [
+              "Study",
+              "Weight (%)"
+            ],
+            "rows": [
+              [
+                "Bong et al.",
+                "15.8%"
+              ],
+              [
+                "Bong et al.",
+                "14.7%"
+              ],
+              [
+                "Hanna et al.",
+                "9.1%"
+              ],
+              [
+                "Harter et al.",
+                "13.8%"
+              ],
+              [
+                "Jaeger et al.",
+                "1.8%"
+              ],
+              [
+                "Jaeger et al.",
+                "3.3%"
+              ],
+              [
+                "Logghe et al.",
+                "29.3%"
+              ],
+              [
+                "Ostendorf et al.",
+                "7.7%"
+              ],
+              [
+                "Pemberton et al.",
+                "4.4%"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "step": 41,
+        "action": "round3-fixed-random-rerun",
+        "utc": "2026-10-15T02:09:52.812383+00:00",
+        "captures": [
+          "41-0-round3-fixed-random-rerun.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "41-0-forest-d1dc65f4e353-9178b5a9dd10.display.svg"
+        },
+        "method": "random",
+        "details": "Project: NielWeise2008-IRR.rcms\nModel: Random-effects inverse variance\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.",
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d2h25al8/analysis/forest-d1dc65f4e353-9178b5a9dd10.display.svg"
+        }
+      },
+      {
+        "step": 42,
+        "action": "round3-fixed-random-rerun",
+        "utc": "2026-10-15T02:09:57.885417+00:00",
+        "captures": [
+          "42-0-round3-fixed-random-rerun.png"
+        ],
+        "artifacts": {
+          "analysis.standard.forest_plot.1": "42-0-forest-4cafa1a92079-60e33a3e0244.display.svg"
+        },
+        "method": "fixed",
+        "details": "Project: NielWeise2008-IRR.rcms\nModel: Fixed-effect inverse variance\nInference: Normal approximation\nConfidence level: 95%\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.",
+        "plots": {
+          "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-d2h25al8/analysis/forest-4cafa1a92079-60e33a3e0244.display.svg"
+        }
+      },
+      {
+        "step": 43,
+        "action": "workflow-passed",
+        "utc": "2026-10-15T02:09:58.161842+00:00",
+        "captures": [
+          "43-0-workflow-passed.png"
+        ],
+        "artifacts": {},
+        "scenario": "audit-round3-irr"
+      }
+    ],
+    "frames": [
+      {
+        "path": "screenshots/native-context-irr-04-0-round3-report-copy-export.png",
+        "sha256": "4d1d484f085e711c7dc8d7f666afe4afdf4ef96cc9a868b963c72df933ff1ba6",
+        "step": 4,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-context-irr-08-0-round3-report-copy-export.png",
+        "sha256": "6ce83cccf83255ce6581207dbd2e63521c2d06b044786149247add77c833acb8",
+        "step": 8,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-context-irr-12-0-round3-report-copy-export.png",
+        "sha256": "9c34a8e85b53998f3d3c03b41fc27a63e0ddd147523980091b032cce70d4d331",
+        "step": 12,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-context-irr-17-0-round3-report-copy-export.png",
+        "sha256": "61ee88317b07d3b69894d375838982307882f8d23dd2d321a30a83fc2572573b",
+        "step": 17,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-context-irr-21-0-round3-report-copy-export.png",
+        "sha256": "fbf0a5871e518b897d446978f02bd97e9d61a64e32b7bcf648eb29f9ee37edf3",
+        "step": 21,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-context-irr-26-0-round3-report-copy-export.png",
+        "sha256": "23fc7a52194529dd2fa5f549d1ba21ea3059de08e5960793d014c56a96239e64",
+        "step": 26,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-context-irr-31-0-round3-report-copy-export.png",
+        "sha256": "a38f8dfa715eaa4b880745490f613d2152d5a6b356210ff8a3dde61e13ef516d",
+        "step": 31,
+        "capture": "QScreen.grabWindow"
+      },
+      {
+        "path": "screenshots/native-context-irr-40-0-round3-report-copy-export.png",
+        "sha256": "a671c42e690ae18f5752cb39b137f20e085a11de373b385359eca940835f7afc",
+        "step": 40,
+        "capture": "QScreen.grabWindow"
+      }
+    ]
   }
 }

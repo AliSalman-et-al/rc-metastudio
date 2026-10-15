@@ -13,4 +13,7 @@ d87cce9 docs(ux): retain round-five native figure and keyboard evidence
 340b752 test(ux): cover every bubble metric and normalize report captions
 90d8375 fix(start): preserve wrapped descriptions at fractional and double scale
 a90ef4d fix(workflows): order dynamic parameters and retain restored recent projects
+4ac1215 fix(figures): align exposure headers and qualify ratio context
+c655f6f docs(verification): map round-five figure and keyboard coverage
+2e9b0d7 docs(verification): correct round-five evidence link
 ```

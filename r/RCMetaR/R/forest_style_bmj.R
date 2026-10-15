@@ -701,9 +701,10 @@ rcmetar.draw.bmj.forest <- function(bundle, outpath) {
 
     graphics::text(layout$annotation.xpos, 0, summary$label, pos=4, font=1)
     rcmetar.draw.revman.summary.diamond(summary, 0, accent, layout$alim)
+    graphics::par(cex=1)
     rcmetar.draw.bmj.axis(bundle, layout, plot.info$cex)
 
-    graphics::par(cex=plot.info$cex, font=1, col="#111111")
+    graphics::par(cex=1, font=1, col="#111111")
     graphics::text(rcmetar.forest.study.x(layout), rows, bundle$slab, pos=4, cex=plot.info$cex, col="#111111")
     rcmetar.draw.bmj.study.effect.labels(bundle, effect, layout, rows, plot.info$cex)
     rcmetar.draw.bmj.bottom.blocks(bundle, rcmetar.forest.study.x(layout), plot.info$cex, layout, summary$res)

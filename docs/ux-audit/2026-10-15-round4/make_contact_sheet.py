@@ -44,7 +44,7 @@ external = HERE / 'CONTACT-PAIRS.json'
 if external.is_file():
     pairs = [(row['title'], row['description'], HERE / row['before'], HERE / row['after'])
              for row in json.loads(external.read_text())]
-body = ['<h2>Native UX comparison</h2><p>Unmodified Linux Qt screen captures with pinned R 4.6.1. Click a frame to inspect its full resolution. Historical before frames retain their original provenance. Workflow, fixture and range differences are stated beside each comparison.</p>']
+body = [('<h2>Native UX comparison</h2>' if not external.is_file() else '') + '<p>Unmodified Linux Qt screen captures with pinned R 4.6.1. Click a frame to inspect its full resolution. Historical before frames retain their original provenance. Workflow, fixture and range differences are stated beside each comparison.</p>']
 for title, description, before, after in pairs:
     body.append(f'<section><h3>{escape(title)}</h3><p>{escape(description)}</p><div class="pair">'+picture(before,'Before')+picture(after,'After')+'</div></section>')
 if not external.is_file():
@@ -57,4 +57,4 @@ const dialog=document.querySelector('dialog');document.querySelectorAll('figure 
 </script></html>'''
 target = HERE / ('raw/contact-sheet.preview.html' if os.environ.get('RCMS_CONTACT_LOCAL_IMAGES') else 'contact-sheet.html')
 target.write_text(html)
-print('Wrote self-contained contact-sheet.html with', len(pairs)*2+3, 'bound native frames')
+print('Wrote self-contained contact-sheet.html with', len(pairs)*2 + (0 if external.is_file() else 3), 'bound native frames')

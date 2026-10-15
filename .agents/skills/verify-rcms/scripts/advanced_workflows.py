@@ -448,6 +448,7 @@ def plots(app, window, family, record, *, view=None):
         field.setText(label)
         assert dialog.figure_caption.isVisible(), "figure caption cannot be edited"
         assert dialog.figure_caption.text(), "standalone figure lacks context"
+        assert " · None" not in dialog.figure_caption.text(), dialog.figure_caption.text()
         dialog.figure_caption.setText("Edited outcome / comparison / follow-up")
         if funnel:
             dialog.point_size_spin.setValue(1.8)
