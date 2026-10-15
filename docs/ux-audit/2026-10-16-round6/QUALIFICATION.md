@@ -74,3 +74,5 @@ parameter/data combinations remain unqualified. Counts/proportions retain valid
 statistical domains rather than accepting invalid huge numbers. No new statistical
 procedures were introduced. External Opus acceptance review and independent native
 re-audit remain subsequent work.
+
+A later full-run tool process tree ended with exit 143 during R CMD check, before either a recorder or full-profile finally receipt. No product assertion was observed. Its retained raw logs are hashed in INTERRUPTIONS.json, not relabelled as a completed invocation. The next full profile runs in an explicitly owned background session with PID/launch metadata and normal recorder completion.

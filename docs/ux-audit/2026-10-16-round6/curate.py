@@ -63,6 +63,9 @@ for family,scenario in [('proportion','project-axis-proportions'),('other','proj
         if measure in ('Sens', 'Spec'):
             source,evidence = native_step('audit-round3-presentation-diagnostic','round4-annotations',
                                           family='diagnostic',digits=3,style=style,title='diagnostic.'+measure+'.forest')
+        elif family == 'proportion':
+            source,evidence = native_step('audit-round3-presentation-transforms','round4-annotations',
+                                          metric=measure,digits=3,style=style)
         else:
             source,evidence = native_step(scenario,'axis-default',measure=measure,style=style)
         pair('axis-'+measure.lower()+'-'+style,measure+' axis · '+style,directory/step['captures'][0],source,evidence,

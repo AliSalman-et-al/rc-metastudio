@@ -2773,6 +2773,41 @@
     ]
   },
   {
+    "label": "native-owned-transforms",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-presentation-transforms",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T13:17:10.402693+00:00",
+    "finished": "2026-10-15T13:22:46.179647+00:00",
+    "seconds": 335.7700425499934,
+    "exit_code": 0,
+    "revision": "77bc0dba0e243a17d03d3875fd521331551dda30",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-owned-transforms.log",
+    "sha256": "ac3291be9238f629b33afcd6c677cce9d462425ced226fc656733d6586ad1041",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/native-owned-transforms.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T131710Z-0aeba99a-audit-round3-presentation-transforms"
+    ]
+  },
+  {
     "label": "native-physical-clearance",
     "command": [
       "uv",

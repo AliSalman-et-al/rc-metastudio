@@ -1,0 +1,59 @@
+[
+  {
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-owned-window-replay-interruption.json",
+    "passed": false,
+    "tool_exit_code": 143,
+    "tool_session_id": 84136,
+    "reason": "The unified execution tool reported exit_code 143 with empty output for session 84136. The recorder parent did not leave its final JSON receipt. Its command/log remain in axis-owned-window-replay.log. Both owned desktop helper receipts completed and passed: 20261015T121531Z-90b37a03-project-axis-proportions and 20261015T121814Z-f2fbebbf-project-axis-others. Do not treat the wrapper as a completed passing invocation. The final full fresh matrix must repeat these paths.",
+    "command": [
+      "bash",
+      "-c",
+      "for scenario in project-axis-proportions project-axis-others; do uv run python scripts/verify_rcms.py \"$scenario\" || exit; done"
+    ],
+    "files": {
+      "docs/ux-audit/2026-10-16-round6/raw/axis-owned-window-replay.log": "e34b044f64a5b0cae97597be5bfb37e0487344e26c789e4026612f53d8a42f3a",
+      "docs/ux-audit/2026-10-16-round6/raw/axis-owned-window-replay.interruption.txt": "0241bf5a62a5b9162dc55c83106d5394da5b220a53d15402ce3c5b14992fac34"
+    }
+  },
+  {
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/full-qualified-2-interruption.json",
+    "passed": false,
+    "tool_exit_code": 143,
+    "tool_session_id": 98236,
+    "reason": "Whole tool-owned process tree terminated before recorder or complete-profile finally receipt; cause unproven. No product assertion observed. Not qualification.",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      ".agents/skills/verify-rcms/scripts/verify_all.py",
+      "--full",
+      "--fresh"
+    ],
+    "files": {
+      "docs/ux-audit/2026-10-16-round6/raw/full-qualified-2.log": "4e2222dd8244acaee8b301f6194edd9a3497ac704a999aedad4969525570b537",
+      "artifacts/verification/rcms/20261015T130839Z-e91d3f4c-complete/00.log": "3f86efc14094f13070001ff6b3342e6e0dcfbf3bc3790455bed6dc1c4913aa19"
+    }
+  },
+  {
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/native-final-transformed-clearance-interruption.json",
+    "passed": false,
+    "tool_exit_code": 143,
+    "tool_session_id": 60202,
+    "orphan_child_pid": 1483656,
+    "reason": "Managed wrapper terminated with tool exit 143; its Qt child later printed WORKFLOW PASSED and exited. No completed helper manifest. Not qualification; repeated under owned background runner.",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-presentation-transforms",
+      "--native"
+    ],
+    "files": {
+      "docs/ux-audit/2026-10-16-round6/raw/native-final-transformed-clearance.log": "c2cf65adb7d1f82d7a18159c86b655a3cd01e04d8d52702b13917a4fc677094d",
+      "artifacts/verification/rcms/20261015T131117Z-48836c2d-audit-round3-presentation-transforms/stdout.log": "8a46711a4fdcaadf9bed4dcaeff58c6dc4688d3b5a2043b25199790e5b7d588f",
+      "artifacts/verification/rcms/20261015T131117Z-48836c2d-audit-round3-presentation-transforms/steps.jsonl": "f4c5a4aeef5bbe1c8c091205cd383d108e7d26535120e16bead4033c08d1c3a6"
+    },
+    "child_completed_marker": "WORKFLOW PASSED"
+  }
+]

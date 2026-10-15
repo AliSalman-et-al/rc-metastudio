@@ -911,9 +911,9 @@
   },
   {
     "scenario": "audit-round3-presentation-transforms",
-    "evidence": "artifacts/verification/rcms/20261015T123022Z-5b450b82-audit-round3-presentation-transforms",
-    "manifest_sha256": "5c10e91cf3099e68836929c5b70ff135a6032cac2f57ed1f4255f3d685b18f59",
-    "source_revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "evidence": "artifacts/verification/rcms/20261015T131710Z-0aeba99a-audit-round3-presentation-transforms",
+    "manifest_sha256": "38a9fa7bf82d7614f097bdd5fdd315bc2357820e028afd859fdbbb99437bcb80",
+    "source_revision": "77bc0dba0e243a17d03d3875fd521331551dda30",
     "checked_artifacts": 370,
     "actions": [
       "ready",
@@ -955,7 +955,7 @@
       "platform_plugin": "xcb",
       "application": "RCMetaStudio",
       "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
-      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-1h8_s36e"
+      "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-qhvr7njf"
     }
   },
   {

@@ -48,6 +48,17 @@ for receipt in sorted((HERE / 'raw').glob('*.json')):
                 text += '\n\nComplete-profile log: ' + str(nested.relative_to(ROOT)) + '\n'
                 text += nested.read_text(errors='replace')
         failures += ['## ' + receipt.stem, '', 'Command: `' + ' '.join(row['command']) + '`', '', '```text', text, '```', '']
+interruptions = []
+for receipt in sorted((HERE / 'raw').glob('*-interruption.json')):
+    row = json.loads(receipt.read_text())
+    body = []
+    for name, expected in row['files'].items():
+        path = ROOT / name
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == expected, path
+        body += [name, path.read_text(errors='replace')]
+    interruptions.append(dict(receipt=str(receipt.relative_to(ROOT)), **row))
+    failures += ['## ' + receipt.stem, '', row['reason'], '', '```text', '\n\n'.join(body), '```', '']
+(HERE / 'INTERRUPTIONS.json').write_text(json.dumps(interruptions, indent=2) + '\n')
 (HERE / 'TEST-RUNS.json').write_text(json.dumps(rows, indent=2) + '\n')
 (HERE / 'HELPER-EVIDENCE.json').write_text(json.dumps(helpers, indent=2) + '\n')
 (HERE / 'FAILURES.md').write_text('# Failed attempts (verbatim)\n\n' + '\n'.join(failures))

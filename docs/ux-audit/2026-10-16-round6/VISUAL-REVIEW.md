@@ -38,3 +38,5 @@ every data/parameter combination or every raster pixel.
 The final diagnostic comparisons show both sensitivity and specificity at their natural-scale defaults; opt-in transformed coordinates are exercised separately by the axis editor helper.
 
 The final diagnostic six native replacements were reinspected in updated final-inspect-5/6 montages. AXIS-TITLE-GEOMETRY measures all twelve diagnostic configurations in both displayed and exported SVG: minimum 6.49 physical points against the unchanged four-point requirement.
+
+All twelve final native proportion replacements were reinspected in updated final-inspect-1 through final-inspect-4 montages after the owned export replay completed with a manifest.

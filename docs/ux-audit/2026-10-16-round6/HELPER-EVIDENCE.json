@@ -683,6 +683,15 @@
     "checked_artifacts": 359,
     "manifest_sha256": "201a97cf868e324c176f5b49fab63439d3cfed04f70b3f9f3e84508041f6750f"
   },
+  "artifacts/verification/rcms/20261015T131710Z-0aeba99a-audit-round3-presentation-transforms": {
+    "scenario": "audit-round3-presentation-transforms",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "77bc0dba0e243a17d03d3875fd521331551dda30",
+    "checked_artifacts": 370,
+    "manifest_sha256": "38a9fa7bf82d7614f097bdd5fdd315bc2357820e028afd859fdbbb99437bcb80"
+  },
   "artifacts/verification/rcms/20261015T130157Z-305c6bc9-audit-round3-presentation-diagnostic": {
     "scenario": "audit-round3-presentation-diagnostic",
     "exit_code": 1,

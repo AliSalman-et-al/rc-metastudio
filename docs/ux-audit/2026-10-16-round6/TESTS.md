@@ -87,6 +87,7 @@ All failed recorded attempts are preserved verbatim in [FAILURES](FAILURES.md); 
 - `native-final-selected-precision-and-caps`: exit 0, 924.24 s.
 - `native-headers-and-accessibility`: exit 0, 323.76 s.
 - `native-label-and-legend-frames`: exit 1, 584.56 s.
+- `native-owned-transforms`: exit 0, 335.77 s.
 - `native-physical-clearance`: exit 1, 108.22 s.
 - `native-qualified-diagnostic-precision`: exit 0, 251.44 s.
 - `native-qualified-polish`: exit 0, 636.14 s.
