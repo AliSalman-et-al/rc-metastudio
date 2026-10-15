@@ -16,3 +16,10 @@ for scenario in scenarios:
     print('START',scenario,flush=True)
     subprocess.run([sys.executable,str(HERE/'run.py'),'helper-'+scenario,sys.executable,'scripts/verify_rcms.py',scenario,'--native'],cwd=ROOT)
     print('FINISH',scenario,flush=True)
+for family in ('onearm-proportion','onearm-mean','reg-coef','generic-effect','twoarm-proportion','twoarm-mean','twoarm-smd','diagnostic','hr','irr'):
+    label='matrix-'+family
+    if (HERE/'raw'/(label+'.json')).exists():continue
+    subprocess.run([sys.executable,str(HERE/'run.py'),label,sys.executable,'scripts/run_with_timeout.py','--timeout-seconds','600','--label',label,'--',sys.executable,str(HERE/'native_matrix.py'),family],cwd=ROOT)
+for script in ('native_design','native_shell','native_options','native_options_remaining'):
+    if (HERE/'raw'/(script+'.json')).exists():continue
+    subprocess.run([sys.executable,str(HERE/'run.py'),script,sys.executable,'scripts/run_with_timeout.py','--timeout-seconds','600','--label',script,'--',sys.executable,str(HERE/(script+'.py'))],cwd=ROOT)

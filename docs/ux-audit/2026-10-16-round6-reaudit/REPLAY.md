@@ -13,7 +13,7 @@ receipts, so failed attempts remain visible. Use a fresh owned raw directory for
 a fresh replay; never remove shared verification artifacts. Each helper itself
 runs fresh (no matrix-cache option). SCENARIOS.json records order.
 
-`inspect.py SCENARIO ACTION...` retains matching PNGs and builds local inspection
+`inspect_frames.py SCENARIO ACTION...` retains matching PNGs and builds local inspection
 sheets. It does not judge the images. INSPECTIONS.md records human/model review.
 Exact child commands, timestamps, observed exits, environment and log hashes are
 in raw/*.json. Helper manifests and raw transcripts remain under their printed
