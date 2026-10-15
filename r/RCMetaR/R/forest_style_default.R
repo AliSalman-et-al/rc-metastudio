@@ -400,7 +400,7 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex, layout) {
         summary.index <- sum(vapply(unique(bundle$study_groups)[seq_len(i)],
             function(group) sum(bundle$study_groups == group), integer(1))) + i
         rcmetar.draw.default.subgroup.estimate(bundle, layout, bundle$subgroups$polygon_rows[[i]], summary.index, cex)
-        rcmetar.draw.forest.inference(bundle, x, bundle$subgroups$polygon_rows[[i]], cex,
+        rcmetar.draw.forest.inference(group.bundle, x, bundle$subgroups$polygon_rows[[i]], cex,
             bundle$subgroups$results[[i]])
     }
     graphics::segments(

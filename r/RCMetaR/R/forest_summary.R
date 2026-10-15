@@ -86,14 +86,12 @@ rcmetar.forest.prediction.label <- function(bundle, res=bundle$res) {
     bounds <- c(prediction$pi.lb, prediction$pi.ub)
     if (length(bounds) != 2) return("")
     measure <- as.character(bundle$params$measure)
-    if (measure == "PAS") {
-        bounds <- metafor::transf.iarcsin(bounds)
-    } else if (measure != "PFT") {
-        bounds <- rcmetar.bundle.transform(bundle)$display.scale(bounds)
-    }
+    display <- rcmetar.prediction.display(bounds, bundle$params,
+        rcmetar.bundle.transform(bundle), bundle$sample_sizes)
     paste0(display.confidence.level(bundle$params), "% prediction interval: [",
-           paste(rcmetar.format.effect.number(bounds, display.digits(bundle$params)), collapse=", "), "]",
-           if (measure == "PFT") " (Freeman\u2013Tukey scale)" else "")
+           paste(rcmetar.format.effect.number(display$bounds, display.digits(bundle$params)), collapse=", "), "]",
+           if (measure == "PFT" && isTRUE(display$transformed))
+               " (Freeman-Tukey scale; proportion inverse undefined)" else "")
 }
 
 rcmetar.draw.forest.inference <- function(bundle, x, row, cex, res=bundle$res, difference=NULL) {

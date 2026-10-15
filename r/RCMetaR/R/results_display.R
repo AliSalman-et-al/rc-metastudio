@@ -86,11 +86,8 @@ create.summary.disp <- function(om.data, params, res, model.title) {
     prediction <- stats::predict(res, level=display.confidence.level(params))
     if (!is.null(prediction$pi.lb) && !is.null(prediction$pi.ub)) {
       bounds <- c(prediction$pi.lb, prediction$pi.ub)
-      if (params$measure == "PAS") {
-        bounds <- metafor::transf.iarcsin(bounds)
-      } else if (params$measure != "PFT") {
-        bounds <- transform$display.scale(bounds, ni=n)
-      }
+      display <- rcmetar.prediction.display(bounds, params, transform, n)
+      bounds <- display$bounds
       interval <- rbind(paste0(c("Lower bound (", "Upper bound ("),
                               display.confidence.level(params), "% PI)"),
                         rcmetar.format.effect.number(bounds, result.digits))
@@ -98,7 +95,7 @@ create.summary.disp <- function(om.data, params, res, model.title) {
       table.titles <- c(table.titles, "Prediction interval")
       notes <- c(notes, paste0(display.confidence.level(params),
         "% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
-        if (params$measure == "PFT") " Prediction bounds remain on the Freeman-Tukey calculation scale because a new-study sample size is unspecified." else ""))
+        if (!is.null(display$note)) paste0(" ", display$note) else ""))
     }
   }
 
@@ -634,7 +631,7 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
   prediction.array[1,] <- c("Subgroups", paste0("Lower bound (", display.confidence.level(params), "% PI)"),
                            paste0("Upper bound (", display.confidence.level(params), "% PI)"))
 
-  n <- length(study.names)
+  prediction.notes <- character()
 
   overall.test <- res[[length(res)]]$test
   statistic.label <- if (!is.null(overall.test) && overall.test %in% c("t", "knha", "adhoc")) "t-value" else "z-value"
@@ -679,8 +676,9 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
       prediction <- stats::predict(res[[count]], level=display.confidence.level(params))
       bounds <- c(prediction$pi.lb, prediction$pi.ub)
       if (length(bounds) == 2 && all(is.finite(bounds))) {
-        if (params$measure == "PAS") bounds <- metafor::transf.iarcsin(bounds)
-        else if (params$measure != "PFT") bounds <- transform$display.scale(bounds, ni=n)
+        display <- rcmetar.prediction.display(bounds, params, transform, sample.sizes[[count]])
+        bounds <- display$bounds
+        prediction.notes <- c(prediction.notes, display$note)
         prediction.array[count+1,2:3] <- rcmetar.format.effect.number(bounds, display.digits(params))
       }
     }
@@ -693,8 +691,7 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
     table.titles <- c(table.titles, "Prediction interval")
   }
   subgroup.disp <- list("model.title" = model.title, "table.titles" = table.titles, "arrays" = arrays,
-             "notes" = if (params$measure == "PFT" && any(nzchar(prediction.array[-1,2])))
-                 "Prediction bounds remain on the Freeman-Tukey calculation scale because a new-study sample size is unspecified." else NULL,
+             "notes" = unique(prediction.notes),
              "MAResults" = res )
   class(subgroup.disp) <- "summary.display"
   subgroup.disp
