@@ -89,6 +89,11 @@ def run(app, window, work, record):
                     labels = [''.join(n.itertext()) for path in view.results.display_images.values()
                               for n in ET.parse(path).iter('{http://www.w3.org/2000/svg}text')]
                     assert any('e-' in text or 'e+' in text for text in labels), ('stress notation absent', metric, mode, style, labels)
+                    if mode == 'ratio':
+                        import re
+                        row = next(text for text in labels if text.startswith(f'{expected["estimate"]:.6f} '))
+                        values = [float(value) for value in re.findall(r'[+-]?\d+(?:\.\d+)?(?:e[+-]?\d+)?', row)]
+                        assert values[1] > 0 and math.isclose(values[1], expected['lower'], rel_tol=1e-5), ('tiny positive bound lost', row, expected)
                     record('stress-journal-after-reopen', view, metric=metric, mode=mode, style=style,
                            source=expected, raw=raw, plots=dict(view.results.display_images))
                     view.close()

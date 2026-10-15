@@ -1,0 +1,332 @@
+[
+  {
+    "path": "screenshots/R6-03-R6-06-before-revman.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/screenshots/project-round6-polish-180-0-measured-wrapped-arm-headers.png",
+    "kind": "native before",
+    "sha256": "b6146848688fdc8c73b9a4349ae713eb525a72f34d61deaa770d9043da110092"
+  },
+  {
+    "path": "screenshots/R6-03-R6-06-after-default-long.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/103-0-measured-wrapped-arm-headers.png",
+    "kind": "native after",
+    "sha256": "1b19df7b1c03f2d5c50fb377e59d5c6fc325421ac3eba4c9363fcdb09f33993c"
+  },
+  {
+    "path": "screenshots/R6-03-R6-06-after-revman-long.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/121-0-measured-wrapped-arm-headers.png",
+    "kind": "native after",
+    "sha256": "e45d0aa6be11c3afbc77a9227c7fb674a1bb396aa025ad3514be1c84bfcece65"
+  },
+  {
+    "path": "screenshots/R6-03-R6-06-after-bmj-long.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/139-0-measured-wrapped-arm-headers.png",
+    "kind": "native after",
+    "sha256": "b178c858ab1fff25eda525720878f12333be664384bc5dec5bee459fea9e15f2"
+  },
+  {
+    "path": "screenshots/R6-03-R6-06-after-default-twins.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/157-0-measured-wrapped-arm-headers.png",
+    "kind": "native after",
+    "sha256": "100066fe980ab74a968d6dd1c6f2e4de123d8ba345c364e0a62323becdfca525"
+  },
+  {
+    "path": "screenshots/R6-03-R6-06-after-revman-twins.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/175-0-measured-wrapped-arm-headers.png",
+    "kind": "native after",
+    "sha256": "aeaa832f3a61b633b1947cd36dfa96acaa9b12b70f40f1c36ab89714e77af779"
+  },
+  {
+    "path": "screenshots/R6-03-R6-06-after-bmj-twins.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/193-0-measured-wrapped-arm-headers.png",
+    "kind": "native after",
+    "sha256": "0b7af773fcc8b9463cc14479e9496f892849e8c043252e71c9ef021907ccb0df"
+  },
+  {
+    "path": "exports/default-long.svg",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-default-22/full-arm.svg",
+    "kind": "actual export",
+    "sha256": "e6a23d40cb0d84e509fffb8a55a77ed81b18a4c9b9144da2599c13b858ec4bb0"
+  },
+  {
+    "path": "export-previews/default-long.svg.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-default-22/full-arm.svg",
+    "kind": "inspection rendering",
+    "sha256": "bc4af535fdae5cfb2df61c58a657a2a4d2df4e142fa700258b218f333abba40f"
+  },
+  {
+    "path": "exports/default-long.pdf",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-default-22/full-arm.pdf",
+    "kind": "actual export",
+    "sha256": "e6651b3918611b7cd2027191b3e19f1ed003d7d08a36ed464342fc335005d373"
+  },
+  {
+    "path": "export-previews/default-long.pdf.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-default-22/full-arm.pdf",
+    "kind": "inspection rendering",
+    "sha256": "80ce91b6b9bb754082009a91cf94bdce6fb5df459d18e8349c7f6af62ef1632c"
+  },
+  {
+    "path": "exports/default-long.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-default-22/full-arm.png",
+    "kind": "actual export",
+    "sha256": "e6f9b6d844117faf632d82edddd34717897547974814a2a7756cc5aa20d698df"
+  },
+  {
+    "path": "export-previews/default-long.png.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-default-22/full-arm.png",
+    "kind": "inspection rendering",
+    "sha256": "40e5ce51d2ecefc4d252e513d243d0d10f1a74415098ed57883d75bd8eab60d8"
+  },
+  {
+    "path": "exports/default-long.tiff",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-default-22/full-arm.tiff",
+    "kind": "actual export",
+    "sha256": "0b2a8871b842d42a14485d87f2ffc4cc186ca1aa2b908475e26f4610f5b08132"
+  },
+  {
+    "path": "export-previews/default-long.tiff.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-default-22/full-arm.tiff",
+    "kind": "inspection rendering",
+    "sha256": "28c99b50db755f274f4f072a56c66cca9e21609dfc94012a5bd67bb38d3f11a4"
+  },
+  {
+    "path": "exports/default-twins.svg",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-default-94/full-arm.svg",
+    "kind": "actual export",
+    "sha256": "5453928934984d69556f799091f2c908758a9a6691a51fa6de695ab04f0460ed"
+  },
+  {
+    "path": "export-previews/default-twins.svg.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-default-94/full-arm.svg",
+    "kind": "inspection rendering",
+    "sha256": "4c7961cf9df06fbe8fe948beb3052931e4a2c89ed8f2f5bae596a397e6fa2f87"
+  },
+  {
+    "path": "exports/default-twins.pdf",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-default-94/full-arm.pdf",
+    "kind": "actual export",
+    "sha256": "35a91dab3b45d0684002d0d901f9a91e358a6af13c6543aae6ef5a91f4e90e4d"
+  },
+  {
+    "path": "export-previews/default-twins.pdf.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-default-94/full-arm.pdf",
+    "kind": "inspection rendering",
+    "sha256": "c0cf683ec3d7a005e060177de17fdd6b4c5a8a8eb628ea4246e9f8fed10a9f3e"
+  },
+  {
+    "path": "exports/default-twins.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-default-94/full-arm.png",
+    "kind": "actual export",
+    "sha256": "4df9f6d149b5990a344761c1d4df5cd5f7c9f6acf2786aeaa4f4dd7fe291aa8d"
+  },
+  {
+    "path": "export-previews/default-twins.png.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-default-94/full-arm.png",
+    "kind": "inspection rendering",
+    "sha256": "014b0903e49d6e7adb1fdb3601d3f1f03d9a19af0cd0ec39dd28123f4954433e"
+  },
+  {
+    "path": "exports/default-twins.tiff",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-default-94/full-arm.tiff",
+    "kind": "actual export",
+    "sha256": "3c174b9afb7520a2af9da5c04df261c668e61d67b765d9afd9281873f77968db"
+  },
+  {
+    "path": "export-previews/default-twins.tiff.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-default-94/full-arm.tiff",
+    "kind": "inspection rendering",
+    "sha256": "55750c5c92264129fe51c55dd48f41a6b6e82b5d9fa52aa5a9f1368203fed519"
+  },
+  {
+    "path": "exports/revman-long.svg",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-revman-22/full-arm.svg",
+    "kind": "actual export",
+    "sha256": "009a6e837b4597983f0d5f9883ea0f76de716822ce233633fd9df2b498fa09e0"
+  },
+  {
+    "path": "export-previews/revman-long.svg.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-revman-22/full-arm.svg",
+    "kind": "inspection rendering",
+    "sha256": "8af21798a41fcd45ad14455655690f534048808ee304e8166293710143339032"
+  },
+  {
+    "path": "exports/revman-long.pdf",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-revman-22/full-arm.pdf",
+    "kind": "actual export",
+    "sha256": "113c7ad57396878230c9b64ec52fb934d6082c1c70af8e1a0470ca177cc15ca7"
+  },
+  {
+    "path": "export-previews/revman-long.pdf.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-revman-22/full-arm.pdf",
+    "kind": "inspection rendering",
+    "sha256": "8fbb5a9fabad0f3d3bf0eca044aa609f98690d29fa2d6f917c60044c7f02820a"
+  },
+  {
+    "path": "exports/revman-long.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-revman-22/full-arm.png",
+    "kind": "actual export",
+    "sha256": "bc5957c127c0239c605e55bad7609ee898a04245ae233ab022168c4826f544d6"
+  },
+  {
+    "path": "export-previews/revman-long.png.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-revman-22/full-arm.png",
+    "kind": "inspection rendering",
+    "sha256": "c102e13d9d94650c94b08d5edb5e480670776cb7cef9c5b0d2b6b74fedd68b1f"
+  },
+  {
+    "path": "exports/revman-long.tiff",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-revman-22/full-arm.tiff",
+    "kind": "actual export",
+    "sha256": "78d1f3430919cbfc063467245bd541cb5a025e2f2612f72c8999031054179fa9"
+  },
+  {
+    "path": "export-previews/revman-long.tiff.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-revman-22/full-arm.tiff",
+    "kind": "inspection rendering",
+    "sha256": "e2617819ba8786f1244122693874536117edeab12103405941ed8158c849864d"
+  },
+  {
+    "path": "exports/revman-twins.svg",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-revman-94/full-arm.svg",
+    "kind": "actual export",
+    "sha256": "802d46bf10ade65460903080be2203e400ee6f6bea7e79c1927af394f6d33f22"
+  },
+  {
+    "path": "export-previews/revman-twins.svg.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-revman-94/full-arm.svg",
+    "kind": "inspection rendering",
+    "sha256": "3a121b2dd1cebd1b74420dc7406ccde1d9866edb4e9c4523fb54bd9d5488143e"
+  },
+  {
+    "path": "exports/revman-twins.pdf",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-revman-94/full-arm.pdf",
+    "kind": "actual export",
+    "sha256": "e06b9f255765d3eed0e764dcbc502ea456d9a120a35e7753f9c0222ac1ab7fea"
+  },
+  {
+    "path": "export-previews/revman-twins.pdf.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-revman-94/full-arm.pdf",
+    "kind": "inspection rendering",
+    "sha256": "72200aad75f59685f412e997b304610d98ec22bbefdf7f2d8f5e69445fa5c034"
+  },
+  {
+    "path": "exports/revman-twins.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-revman-94/full-arm.png",
+    "kind": "actual export",
+    "sha256": "93132b5641697c8f3d212d2fd5d9a02026d18c439d5b0c820a51f12a2b2059f5"
+  },
+  {
+    "path": "export-previews/revman-twins.png.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-revman-94/full-arm.png",
+    "kind": "inspection rendering",
+    "sha256": "e5e8ebb565a7aacbc4c63c75108bb4456743d32ce51f991fa38bd0d9cd638c9a"
+  },
+  {
+    "path": "exports/revman-twins.tiff",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-revman-94/full-arm.tiff",
+    "kind": "actual export",
+    "sha256": "0600048a2e00802007643a20351dc12439800b0661ea58ee859fa458f22acbd9"
+  },
+  {
+    "path": "export-previews/revman-twins.tiff.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-revman-94/full-arm.tiff",
+    "kind": "inspection rendering",
+    "sha256": "8ecfb0fa19768f00dcb9a5328f3ac3ca7fb22c338d9b275903c61c7aea876ca8"
+  },
+  {
+    "path": "exports/bmj-long.svg",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-bmj-22/full-arm.svg",
+    "kind": "actual export",
+    "sha256": "37b77a1c75b5bcdc298757d26716be092cb1f33e247e78ff71da8d850f36ef35"
+  },
+  {
+    "path": "export-previews/bmj-long.svg.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-bmj-22/full-arm.svg",
+    "kind": "inspection rendering",
+    "sha256": "ccdcb2ff1c405a96c1793f99ae71baa9307dbed982dae96b9d02980e037cff39"
+  },
+  {
+    "path": "exports/bmj-long.pdf",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-bmj-22/full-arm.pdf",
+    "kind": "actual export",
+    "sha256": "13319dc2ea1c96180fcc40a37e130012c9ec8dd1a67cbc6b78a69723f399130d"
+  },
+  {
+    "path": "export-previews/bmj-long.pdf.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-bmj-22/full-arm.pdf",
+    "kind": "inspection rendering",
+    "sha256": "0baf35e217fa8ec53c0fffcc6d133a74f4fbec55fd6fc072649b8430bc473ed1"
+  },
+  {
+    "path": "exports/bmj-long.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-bmj-22/full-arm.png",
+    "kind": "actual export",
+    "sha256": "bb08fd0feafb60df87016be8db1371b6ddc7b2189cf947d0e88345224da0c97c"
+  },
+  {
+    "path": "export-previews/bmj-long.png.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-bmj-22/full-arm.png",
+    "kind": "inspection rendering",
+    "sha256": "ba640c04c66cd1360673e84975c7d97bfc067428fa18da2c0636205e07e214ca"
+  },
+  {
+    "path": "exports/bmj-long.tiff",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-bmj-22/full-arm.tiff",
+    "kind": "actual export",
+    "sha256": "8d91de534c875a3c7afc027d213d75ac6e7c7fb6718f0e90603906e9b6af82f2"
+  },
+  {
+    "path": "export-previews/bmj-long.tiff.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-bmj-22/full-arm.tiff",
+    "kind": "inspection rendering",
+    "sha256": "60687640811a6944415d864a6fadfcbefc803bd4bba82c6b72383d992fe09c93"
+  },
+  {
+    "path": "exports/bmj-twins.svg",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-bmj-94/full-arm.svg",
+    "kind": "actual export",
+    "sha256": "56e3cd78c74dcb02c90cec91b59c237cb5520a12aadfe3f1bdb8490aa7ca53af"
+  },
+  {
+    "path": "export-previews/bmj-twins.svg.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-bmj-94/full-arm.svg",
+    "kind": "inspection rendering",
+    "sha256": "c7c4563ef6ce1098d1d2f865131262b047d7486c126c685790c694070d5f59f1"
+  },
+  {
+    "path": "exports/bmj-twins.pdf",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-bmj-94/full-arm.pdf",
+    "kind": "actual export",
+    "sha256": "a7b6939ff9c4fcd1dfc3dbc3063b5e7aa105d824d1ebb15fd84f60dbf0ae4e69"
+  },
+  {
+    "path": "export-previews/bmj-twins.pdf.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-bmj-94/full-arm.pdf",
+    "kind": "inspection rendering",
+    "sha256": "094ed875f0313f3c238d930fc6fab71a1a95d6b32979abc0f5d733d984e04f3c"
+  },
+  {
+    "path": "exports/bmj-twins.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-bmj-94/full-arm.png",
+    "kind": "actual export",
+    "sha256": "4e1653ac21eaf5501768252f48206375e362ba6be7e9d14ce254043f515fbf69"
+  },
+  {
+    "path": "export-previews/bmj-twins.png.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-bmj-94/full-arm.png",
+    "kind": "inspection rendering",
+    "sha256": "2cf5c17b1d8f5bf8ef6e53382eb0e4d85f9b107a38ebab4e5d3c8a7709620d8a"
+  },
+  {
+    "path": "exports/bmj-twins.tiff",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-bmj-94/full-arm.tiff",
+    "kind": "actual export",
+    "sha256": "e950b88ab63c0a9f6514595f2f1c594ba0c9a30caa9db6c4336ee3fc2ac167d4"
+  },
+  {
+    "path": "export-previews/bmj-twins.tiff.png",
+    "source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/headers-fixed-3/headers-bmj-94/full-arm.tiff",
+    "kind": "inspection rendering",
+    "sha256": "58be96cc62c5d0f51ef37aa8b4312d6093ebf5cad98a99560a90b667245eeb83"
+  }
+]
