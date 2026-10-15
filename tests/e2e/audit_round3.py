@@ -877,6 +877,15 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
             nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
             captions = ["".join(n.itertext()) for n in nodes]
             assert any("Follow-up: first" in text for text in captions), captions[-5:]
+            study_names = {study.name for study in window.model.get_studies(only_if_included=True)}
+            study_y = sorted({float(node.attrib["y"]) for node in nodes if "".join(node.itertext()) in study_names})
+            row_gap = min(b-a for a, b in zip(study_y, study_y[1:]))
+            polygon_heights = []
+            for polygon in ET.parse(path).iter("{http://www.w3.org/2000/svg}polygon"):
+                points = [float(value) for value in re.findall(r"[-+]?[\d.]+", polygon.attrib["points"])]
+                polygon_heights.append(max(points[1::2])-min(points[1::2]))
+            layout.update(row_spacing_px=row_gap, max_polygon_height_px=max(polygon_heights))
+            assert max(polygon_heights) <= row_gap * .8, ("pooled polygon exceeds study row", style, workflow, layout)
             heading = next(s.title for s in view.results.sections if s.kind == "image" and s.source_key == title)
             view.nav_tree.setCurrentItem(view.nav_tree.findItems(heading, QtCore.Qt.MatchFlag.MatchExactly)[0])
             view.report_action.setChecked(False)

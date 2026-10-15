@@ -306,7 +306,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
             rcmetar.draw.metafor.single.study.accent(bundle, rows, alim, accent.color)
         }
     } else {
-        plot.info <- do.call(metafor::forest.rma, c(list(x = bundle$res), c(forest.args, list(mlab="", border=accent.color, colout=accent.color))))
+        plot.info <- do.call(metafor::forest.rma, c(list(x = bundle$res), c(forest.args, list(mlab="", addfit=FALSE, border=accent.color, colout=accent.color))))
         if (!identical(bundle$forest_variant, "subgroup")) {
             rcmetar.draw.default.summary.diamond(bundle$res, -1, accent.color, alim)
         }
@@ -357,8 +357,7 @@ rcmetar.draw.default.metafor.forest <- function(bundle, outpath) {
 }
 
 rcmetar.draw.default.summary.diamond <- function(res, row, color, alim) {
-    if (identical(color, "black") ||
-            is.null(res$b) || is.null(res$ci.lb) || is.null(res$ci.ub)) {
+    if (is.null(res$b) || is.null(res$ci.lb) || is.null(res$ci.ub)) {
         return(invisible(NULL))
     }
     center <- as.numeric(res$b)
@@ -367,8 +366,7 @@ rcmetar.draw.default.summary.diamond <- function(res, row, color, alim) {
     if (!all(is.finite(c(center, lower, upper)))) {
         return(invisible(NULL))
     }
-    rcmetar.draw.forest.diamond(center, lower, upper, row, 0.36, alim, "white")
-    rcmetar.draw.forest.diamond(center, lower, upper, row, 0.28, alim, color)
+    rcmetar.draw.forest.diamond(center, lower, upper, row, 0.32, alim, color)
     invisible(NULL)
 }
 
@@ -385,14 +383,8 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex, layout) {
             font=4,
             cex=cex
         )
-        metafor::addpoly.rma(
-            bundle$subgroups$results[[i]],
-            row=bundle$subgroups$polygon_rows[[i]],
-            mlab="",
-            col=accent,
-            border=accent,
-            cex=cex
-        )
+        rcmetar.draw.default.summary.diamond(bundle$subgroups$results[[i]],
+            bundle$subgroups$polygon_rows[[i]], accent, layout$alim)
         graphics::text(x, bundle$subgroups$polygon_rows[[i]],
             rcmetar.forest.model.label(bundle$subgroups$results[[i]]), pos=4, font=2, cex=cex)
         indexes <- which(bundle$study_groups == unique(bundle$study_groups)[[i]])
@@ -410,14 +402,8 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex, layout) {
         bundle$subgroups$overall_row + 1,
         lwd=1.15
     )
-    metafor::addpoly.rma(
-        bundle$subgroups$overall,
-        row=bundle$subgroups$overall_row,
-        mlab="",
-        col=accent,
-        border=accent,
-        cex=cex
-    )
+    rcmetar.draw.default.summary.diamond(bundle$subgroups$overall,
+        bundle$subgroups$overall_row, accent, layout$alim)
     graphics::text(x, bundle$subgroups$overall_row, rcmetar.forest.model.label(bundle$subgroups$overall), pos=4, font=2, cex=cex)
     rcmetar.draw.forest.totals(bundle, layout, bundle$subgroups$overall_row, cex)
     rcmetar.draw.default.subgroup.estimate(bundle, layout, bundle$subgroups$overall_row,

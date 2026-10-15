@@ -18,4 +18,5 @@ c655f6f docs(verification): map round-five figure and keyboard coverage
 2e9b0d7 docs(verification): correct round-five evidence link
 bfc0dac fix(plots): apply BMJ text scale once and omit absent caption metrics
 f342079 test(ux): correct caption contract indentation and retain diagnostic proof
+4abaabd polish(setup): finish sentence-case analysis and plot labels
 ```
