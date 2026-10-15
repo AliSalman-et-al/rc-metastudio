@@ -42,3 +42,30 @@ wrapper exit 143 is retained without inventing a passing wrapper receipt.
 The first complete desktop qualification also caught six-digit diagnostic BMJ axis-title/tick clearance below the unchanged four-point bound. 3600c2a/036a1a5 derive clearance from device character-line height plus a five-point gap; the exact failing driver is replayed before restarting the full profile.
 
 Final status: all requested implementation items have passing affected native proof and the complete fresh profile. The final profile has no failed or skipped desktop scenarios. R CMD check has its single documented opt-in gallery skip; the separate gallery scope/limits remain explicit in QUALIFICATION. External Opus acceptance review and independent native re-audit follow.
+
+## Reviewer fixes — implementation and targeted verification in progress
+
+- 8f997c1 prepares 0.5.0 (dated 2026-10-15), derives runtime VERSION from
+  `__version__`, updates the bump tool/lock/R DESCRIPTION and summarizes rounds 3–6.
+- 9e4dcdd / 9285a2c remove unnamed single-arm spanners in the shared/default
+  layouts, retaining meaningful names. Empty spanner names are absent from layout
+  metadata. Single-arm rates are not an offered RCMS data family; the supported
+  IRR workflow has two event/person-time arms and is included in native checks.
+- 548e354 back-transforms PFT PI endpoints with `transf.ipft.hm`, shares display
+  policy across standard/subgroup reports and all forest styles, and uses each
+  subgroup's N for its inference footer. Undefined inverse contexts retain labelled
+  transformed limits. The existing explicitly named FT-zero test is retained;
+  report notes distinguish its null from proportion zero. Public meta/metafor
+  inverses agree on six fits (REVIEWER-PFT-AUTHORITIES).
+- c7a04b4 labels diagnostic coefficient estimates/bounds as logit and exponentiated
+  bounds as OR, using the shared structured tables for Text/Tables/copy/export.
+  The R coefficient matrices and their internal keys are unchanged.
+- c52e797 shortens setup/editor/funnel style labels to Default, retaining `default`.
+- 9e4dcdd / 807656b route every Default forest mark through its existing shared
+  accent helper while preserving black study names. Bubble and funnel presets
+  already use consistent accents for points/fitted/reference lines; no colour
+  change is needed there. Reitsma coefficient marks already share the forest
+  accent. RevMan/BMJ renderer colours are unchanged.
+
+Native contracts were added before their product changes. Development failures
+are retained verbatim; final native/full-profile qualification is still pending.

@@ -107,7 +107,7 @@ def run_groups(app, window, work, record):
                        family=family, group=group, style=style, figure_text=text,
                        plots={artifact.title:artifact.display_path()})
                 if not baseline:
-                    assert ('Group' not in text) if group == 'Group' else ('Participants' in text), text
+                    assert ('Group' not in text) if group == 'Group' else any('Participants' in line for line in text), text
                     exported = work / f'group-{family}-{group}-{style}.svg'
                     view.plot_service.export(regenerator='forest', params_path=artifact.params_path, output_path=str(exported))
                     assert labels(exported) == text
@@ -234,8 +234,29 @@ def run_colours(app, window, work, record):
             # One full export set per family, including sequential and clinical variants.
             files = export_formats(app,view,work/f'colour-{scenario}-{index}',scenario,record)
             check_colours(files['svg'])
+            from PIL import Image
+            from PyQt6.QtPdf import QPdfDocument
+            from PyQt6 import QtGui
+            colour_samples = {}
+            for extension in ('png','tiff','pdf'):
+                if extension == 'pdf':
+                    document = QPdfDocument(view)
+                    assert document.load(files[extension]) == QPdfDocument.Error.None_
+                    raster = document.render(0,QtCore.QSize(1200,1200)).convertToFormat(QtGui.QImage.Format.Format_RGB888)
+                    image = Image.frombytes('RGB',(raster.width(),raster.height()),raster.bits().asstring(raster.sizeInBytes()),'raw','RGB',raster.bytesPerLine())
+                    document.close()
+                else:
+                    with Image.open(files[extension]) as source:
+                        image = source.convert('RGB')
+                colours = image.getcolors(1000000)
+                assert colours is not None
+                matches = sum(count for count,rgb in colours if max(abs(a-b) for a,b in zip(rgb,(47,85,151),strict=True)) <= 3)
+                assert matches > 0, ('export lacks Default blue',extension,files[extension])
+                colour_samples[extension] = matches
+                image.close()
+
             r_bridge.load_vars_for_plot(artifact.params_path,return_params_dict=True)
             assert bool(r_bridge.execute_r_string('identical(reviewer.numeric.before,lapply(plot.data$res[vapply(plot.data$res,is.numeric,logical(1))],as.numeric),num.eq=FALSE)')[0])
-            record('reviewer-colour-exports',view,scenario=scenario,title=artifact.title,observed=observed,exports=files,
+            record('reviewer-colour-exports',view,scenario=scenario,title=artifact.title,observed=observed,colour_samples=colour_samples,exports=files,
                    plots={artifact.title:artifact.display_path()})
         close(app,view)
