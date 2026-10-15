@@ -45,7 +45,7 @@ score=read(HERE/'SCORECARD.json');assert len(score['rows'])==100 and len({r['id'
 assert 'DRAFT' not in score['status']
 report=(HERE/'REPORT.md').read_text();assert 'IN PROGRESS' not in report
 for target in re.findall(r'\]\(([^)]+)\)',report):
- if '://' in target or target.startswith('#'):continue
+ if '://' in target or target.startswith('#') or target=='FINAL-CHECK.json':continue
  assert (HERE/target.split('#')[0]).exists(),target
 result={'checked':datetime.now(UTC).isoformat(),'revision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'maintained_scenarios':len(scenarios),'prediction_recovery':'17 retained cases plus one completed continuation','matrix_cells':150,'curated_images':len(images),'source_files_unchanged':len(read(HERE/'SOURCE-INTEGRITY.json')['files']),'changed_product_or_test_paths':changed,'all_local_report_links_resolve':True,'selected_image_hashes':images}
 (HERE/'FINAL-CHECK.json').write_text(json.dumps(result,indent=2)+'\n')

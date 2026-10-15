@@ -36,6 +36,8 @@ parameter/value Cartesian product. Control/choice inventories are distinguished
 from executing every possible choice combination. Four-format export decoding
 is distinguished from inspecting every exported pixel.
 
+Additional native matrix: **150 unique cells** across ten families × five workflows × Default/RevMan/BMJ, including standard, cumulative, leave-one-out, subgroup and regression. Text/Tables/copy/export assertions accompany the figure captures. The recoveries above preserve original failures. All eleven editor kinds were inspected through every scroll section; SROC styles additionally passed Apply/Cancel and twelve decoded exports. Seven bundled projects passed native open/analysis/copy/save/reopen. Shell menus, wizard routes, method forms, available choices, grid/context menus, native file/colour pickers, dirty guards and loaded-workspace keyboard paths were driven. The runtime text inventory covers 4,555 recorded steps and 1,087 unique strings; tooltip properties are distinguished from physically displayed tooltips. Qt scale factors 1.5/2.0 passed targeted drives, with increased scrolling and elided navigation at 2.0; this is not OS DPI qualification.
+
 ## Round-six acceptance review
 
 | Area | Observation / evidence |
@@ -84,8 +86,9 @@ were audit harness import shadowing and a missing recorder namespace binding;
 the exact failed/terminated logs remain raw. The final missing-case replay passed.
 The numerical helper's output was relocated into this audit and its historical
 file restored byte-exact; raw/NUMERICAL-RELOCATION.json records hashes.
-No failed receipt is relabelled as passing. Final cleanup and completion counts
-must be reconciled against OUTCOMES before acceptance.
+Additional custom failures remain visible: Default HR/IRR stopped on the real intrcpt wording defect (R6-08); their four completed cells were retained and only regression continued. BMJ HR stopped on a native window-exposure capture precondition; two cells were retained and three continued with bounded exposure waits. The design sweep completed before a stale QToolBar handle failed its postamble. Its targeted tooltip recovery then captured four buttons but failed an erroneous five-button audit expectation; a fresh four-button recovery passed. None of these failures is relabelled as a passing original run. [Ratio reconciliation](RATIO-MATRIX-RECOVERY.json), [BMJ HR reconciliation](BMJ-HR-RECOVERY.json).
+
+All owned native queues have exited, with no residual owned Qt/R process requiring termination at final inspection. The earlier exact-PID waiter stops are recorded in raw/WAIT-EXTENSION.json and raw/FINAL-QUEUE-RESTART.json. [Final checks](FINAL-CHECK.json) and [raw hashes](RAW-MANIFEST.json) reconcile retained evidence. Product/test files remain unchanged.
 '''
 (HERE/'REPORT.md').write_text(head)
 print('report rows',len(score['rows']),'final',final)

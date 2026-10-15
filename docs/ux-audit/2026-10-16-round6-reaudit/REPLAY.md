@@ -77,3 +77,5 @@ screens are reused. Future style matrices use corrected component scrolling.
 checks Cancel preservation and physically selects each figure. SROC additionally
 runs all three offered styles and decodes all four exports per style. This fills
 entry/view gaps without treating old top-only captures as complete screen proof.
+
+Final toolbar continuation uses native-toolbar-final with 180-second timeout and native_toolbar.py. The earlier native-toolbar receipt failed only its five-button count; four visible tooltip-bearing QAction buttons are recorded in TOOLBAR-RECOVERY.json. Original raw evidence remains intact. Final aggregation commands: collect.py; text_inventory.py; scorecard.py --final; report.py --final; contact.py; summary_html.py; raw_manifest.py; final_check.py (each via uv run python with this audit directory prefix).

@@ -1,7 +1,13 @@
 {
-  "html_sha256": "b2060a1fb60d5d923f778bf32259ae142905c8ebad6124d7493ab688fa61bc95",
-  "width": 728,
-  "contentHeight": 935,
-  "consoleMessages": [],
-  "status": "Draft visual layout checked; regenerate/reconcile at final acceptance."
+  "sha256": "ae4f13f14497eedf349055b106c0b9e58a6ce083b224c321663e74aaa5f715a9",
+  "widths": [
+    728,
+    360
+  ],
+  "heights": [
+    935,
+    1520
+  ],
+  "console_errors": 0,
+  "visually_inspected": true
 }

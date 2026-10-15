@@ -1,6 +1,6 @@
 # RC MetaStudio v0.5.0 — independent round-six native re-audit
 
-**IN PROGRESS. Current confirmed merge blockers: R6-03 and R6-06.** The longest supported RevMan arm name overlaps the caption and crosses the figure-device top in native and exported SVG output. Automatic arm headings also shorten a valid 89-character investigator name to 80 characters. Numerical results are unchanged. These are publication-output defects, not failed statistical fits.
+**Final verdict: do not merge this candidate until R6-03 and R6-06 are repaired.** The longest supported RevMan arm name overlaps the caption and crosses the figure-device top in native and exported SVG output. Automatic arm headings also shorten a valid 89-character investigator name to 80 characters. Numerical results are unchanged. These are publication-output defects, not failed statistical fits.
 
 Round six is substantially better at preserving input, identifying scales and presenting results. PFT prediction limits use the natural proportion scale; Default intervals/markers/caps/arrows match the summary blue while study names remain black; internal metric labels and the retired Default suffix are removed on inspected paths. About and new saved-project metadata show 0.5.0. The newly exercised exponentiated HR/IRR coefficient table still exposes intrcpt (R6-08), so model-label closure is partial. The remaining release concerns are publication layout and faithful generated heading text; the repaired calculator path is separate.
 
@@ -27,6 +27,8 @@ actual OS DPI, screen readers, every filesystem/dialect fault or an arbitrary
 parameter/value Cartesian product. Control/choice inventories are distinguished
 from executing every possible choice combination. Four-format export decoding
 is distinguished from inspecting every exported pixel.
+
+Additional native matrix: **150 unique cells** across ten families × five workflows × Default/RevMan/BMJ, including standard, cumulative, leave-one-out, subgroup and regression. Text/Tables/copy/export assertions accompany the figure captures. The recoveries above preserve original failures. All eleven editor kinds were inspected through every scroll section; SROC styles additionally passed Apply/Cancel and twelve decoded exports. Seven bundled projects passed native open/analysis/copy/save/reopen. Shell menus, wizard routes, method forms, available choices, grid/context menus, native file/colour pickers, dirty guards and loaded-workspace keyboard paths were driven. The runtime text inventory covers 4,555 recorded steps and 1,087 unique strings; tooltip properties are distinguished from physically displayed tooltips. Qt scale factors 1.5/2.0 passed targeted drives, with increased scrolling and elided navigation at 2.0; this is not OS DPI qualification.
 
 ## Round-six acceptance review
 
@@ -204,8 +206,7 @@ remaining internal token is unnecessary and inconsistent.
 
 The two original custom Default matrix receipts fail at the real visible-label
 assertion: `raw/matrix-hr.log` and `raw/matrix-irr.log`. Four earlier workflow
-cells completed in each run; they will be retained. **Targeted native screenshot
-and copy/export inspection pending** before final acceptance of this finding.
+cells completed in each run and were retained. Confirmed native views: [HR](screenshots/matrix-hr-meta-regression-report-exponentiated--wording-recovery.png), [IRR](screenshots/matrix-irr-meta-regression-report-exponentiated--wording-recovery.png). Actual exported text contains intrcpt at line 25 in both raw/matrix-hr--wording-recovery/round3-report.txt and raw/matrix-irr--wording-recovery/round3-report.txt; report copy/export equality is asserted in the receipts.
 The maintained 122-scenario registry still has no failed helper; this is a newly
 exercised report branch in the additional matrix.
 
@@ -352,5 +353,6 @@ were audit harness import shadowing and a missing recorder namespace binding;
 the exact failed/terminated logs remain raw. The final missing-case replay passed.
 The numerical helper's output was relocated into this audit and its historical
 file restored byte-exact; raw/NUMERICAL-RELOCATION.json records hashes.
-No failed receipt is relabelled as passing. Final cleanup and completion counts
-must be reconciled against OUTCOMES before acceptance.
+Additional custom failures remain visible: Default HR/IRR stopped on the real intrcpt wording defect (R6-08); their four completed cells were retained and only regression continued. BMJ HR stopped on a native window-exposure capture precondition; two cells were retained and three continued with bounded exposure waits. The design sweep completed before a stale QToolBar handle failed its postamble. Its targeted tooltip recovery then captured four buttons but failed an erroneous five-button audit expectation; a fresh four-button recovery passed. None of these failures is relabelled as a passing original run. [Ratio reconciliation](RATIO-MATRIX-RECOVERY.json), [BMJ HR reconciliation](BMJ-HR-RECOVERY.json).
+
+All owned native queues have exited, with no residual owned Qt/R process requiring termination at final inspection. The earlier exact-PID waiter stops are recorded in raw/WAIT-EXTENSION.json and raw/FINAL-QUEUE-RESTART.json. [Final checks](FINAL-CHECK.json) and [raw hashes](RAW-MANIFEST.json) reconcile retained evidence. Product/test files remain unchanged.
