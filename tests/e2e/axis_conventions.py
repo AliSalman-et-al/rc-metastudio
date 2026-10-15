@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
-from PyQt6 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtWidgets, sip
 
 
 GEOMETRY_R = """jsonlite::toJSON(local({
@@ -162,6 +162,7 @@ def run(app, window, work, record, family):
                     app.processEvents()
                     setup = next(widget for widget in app.topLevelWidgets() if isinstance(widget, AnalysisSetupDialog) and widget.isVisible())
                     assert setup.current_param_vals.get('fp_axis_scale') == other, ('axis lost on analysis rerun', measure, style)
+                    record('axis-analysis-rerun-settings', setup, measure=measure, style=style, choice=other)
                     click(app, setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
                     rerun = next(widget for widget in app.topLevelWidgets() if isinstance(widget, ResultsWindow) and widget.isVisible() and widget is not view)
                     repeated = next(candidate for candidate in rerun._nav_plot_artifacts.values() if candidate.title == artifact.title)
@@ -169,7 +170,11 @@ def run(app, window, work, record, family):
                     record('axis-analysis-rerun', rerun, measure=measure, style=style, choice=other,
                            plots={repeated.title:repeated.display_path()})
                     rerun.close()
+                    app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+                    assert sip.isdeleted(rerun), "closed result keeps its SVG scene alive"
             view.close()
+            app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+            assert sip.isdeleted(view), "closed result keeps its SVG scene alive"
 
 
 def run_sequential(app, window, work, record):

@@ -1,0 +1,319 @@
+{
+  "passed": true,
+  "cases": 24,
+  "max_absolute_difference": 0,
+  "rows": [
+    {
+      "case": "MD:bmj",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "weights", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 45,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/workflow/analysis/1792064461.66141.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/workflow/analysis/1792065296.69961.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.008,
+        "after": 0.011
+      }
+    },
+    {
+      "case": "MD:default",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "weights", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 45,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/workflow/analysis/1792064437.50541.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/workflow/analysis/1792065271.06166.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.015,
+        "after": 0.009
+      }
+    },
+    {
+      "case": "MD:revman",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "weights", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 45,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/workflow/analysis/1792064449.79065.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/workflow/analysis/1792065284.13539.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.014,
+        "after": 0.012
+      }
+    },
+    {
+      "case": "OR:bmj",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/workflow/analysis/1792064377.09106.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/workflow/analysis/1792065180.42121.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.009,
+        "after": 0.009
+      }
+    },
+    {
+      "case": "OR:default",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/workflow/analysis/1792064353.91175.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/workflow/analysis/1792065146.64555.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.031,
+        "after": 0.04
+      }
+    },
+    {
+      "case": "OR:revman",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/workflow/analysis/1792064365.7936.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/workflow/analysis/1792065164.25171.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.013,
+        "after": 0.013
+      }
+    },
+    {
+      "case": "PAS:bmj",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/workflow/analysis/1792064263.99543.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/workflow/analysis/1792064989.67602.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.018,
+        "after": 0.018
+      }
+    },
+    {
+      "case": "PAS:default",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/workflow/analysis/1792064241.65361.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/workflow/analysis/1792064949.82122.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.014,
+        "after": 0.016
+      }
+    },
+    {
+      "case": "PAS:revman",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/workflow/analysis/1792064252.76047.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/workflow/analysis/1792064969.69839.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.01,
+        "after": 0.014
+      }
+    },
+    {
+      "case": "PFT:bmj",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/workflow/analysis/1792064298.72239.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/workflow/analysis/1792065052.08805.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.01,
+        "after": 0.034
+      }
+    },
+    {
+      "case": "PFT:default",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/workflow/analysis/1792064275.7008.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/workflow/analysis/1792065011.00678.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.011,
+        "after": 0.018
+      }
+    },
+    {
+      "case": "PFT:revman",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/workflow/analysis/1792064287.18842.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/workflow/analysis/1792065031.94785.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.011,
+        "after": 0.014
+      }
+    },
+    {
+      "case": "PLN:bmj",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/workflow/analysis/1792064333.92423.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/workflow/analysis/1792065116.42702.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.012,
+        "after": 0.018
+      }
+    },
+    {
+      "case": "PLN:default",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/workflow/analysis/1792064310.35974.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/workflow/analysis/1792065074.87587.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.016,
+        "after": 0.017
+      }
+    },
+    {
+      "case": "PLN:revman",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/workflow/analysis/1792064321.8823.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/workflow/analysis/1792065095.22113.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.011,
+        "after": 0.015
+      }
+    },
+    {
+      "case": "PLO:bmj",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/workflow/analysis/1792064230.21697.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/workflow/analysis/1792064933.44682.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.008,
+        "after": 0.015
+      }
+    },
+    {
+      "case": "PLO:default",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/workflow/analysis/1792064207.38585.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/workflow/analysis/1792064901.12652.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.035,
+        "after": 0.023
+      }
+    },
+    {
+      "case": "PLO:revman",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ni", "ni.f", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/workflow/analysis/1792064218.80813.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/workflow/analysis/1792064917.53449.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.009,
+        "after": 0.018
+      }
+    },
+    {
+      "case": "Sens:bmj",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add", "study.weights", "study.years"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/workflow/analysis/1792064421.58997.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/workflow/analysis/1792065246.7673.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.009,
+        "after": 0.01
+      }
+    },
+    {
+      "case": "Sens:default",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add", "study.weights", "study.years"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/workflow/analysis/1792064389.88702.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/workflow/analysis/1792065197.06837.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.01,
+        "after": 0.009
+      }
+    },
+    {
+      "case": "Sens:revman",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add", "study.weights", "study.years"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/workflow/analysis/1792064405.79887.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/workflow/analysis/1792065222.96904.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.019,
+        "after": 0.016
+      }
+    },
+    {
+      "case": "Spec:bmj",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add", "study.weights", "study.years"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/workflow/analysis/1792064423.88801.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/workflow/analysis/1792065249.06339.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.006,
+        "after": 0.006
+      }
+    },
+    {
+      "case": "Spec:default",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add", "study.weights", "study.years"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/workflow/analysis/1792064392.77635.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/workflow/analysis/1792065200.28554.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.006,
+        "after": 0.011
+      }
+    },
+    {
+      "case": "Spec:revman",
+      "numeric_fields": ["b", "beta", "se", "zval", "pval", "ci.lb", "ci.ub", "vb", "tau2", "se.tau2", "tau2.f", "I2", "H2", "vt", "QE", "QEp", "QM", "QMdf", "QMp", "k", "k.f", "k.eff", "k.all", "p", "p.eff", "parms", "yi", "vi", "X", "yi.f", "vi.f", "X.f", "M", "ids", "dfs", "ddf", "s2w", "btt", "m", "digits", "level", "add", "study.weights", "study.years"],
+      "field_count": 44,
+      "before": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/workflow/analysis/1792064408.33539.plotdata",
+      "after": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/workflow/analysis/1792065225.53642.plotdata",
+      "exact": true,
+      "weights_exact": true,
+      "excluded_elapsed_time": {
+        "before": 0.006,
+        "after": 0.006
+      }
+    }
+  ]
+}

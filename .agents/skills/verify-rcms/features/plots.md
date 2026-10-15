@@ -198,3 +198,25 @@ weight in the actual SVG and exported SVG. All eleven `plot-workflow-*` families
 check initial rendered identity as well as caption edit/reopen/Cancel/removal and
 four decoded exports. HR totals remain weight only when raw events/exposure are
 unavailable; the native long-forest drive retains top/footer views for every style.
+
+## Round-six axis and presentation contracts
+
+`project-axis-proportions` drives PLO/PAS/PFT/PLN through all three forest styles.
+`project-axis-others` drives OR, sensitivity, specificity and MD. They measure actual
+SVG tick spacing and study/summary endpoints against public transformations, assert
+bit-exact numeric fitted fields and weights, edit the existing saved axis parameter,
+reopen/Cancel, export SVG and rerun from the text-report view. Natural proportion
+forests default to linear 0–1 with no null guide; ratio defaults retain logarithmic
+spacing with natural labels. Transformed proportion axes and linear ratio axes are
+explicit editor choices. `project-axis-sequential` independently fits each PFT
+cumulative/omission/subgroup subset and verifies its displayed inverse using the
+subset's sample sizes. These are presentation checks; original numerical gates
+remain separate.
+
+`project-round6-polish` checks selected two/six-digit diagnostic coefficient output
+for numeric, factor and multiple moderators; copy/export; recoverable contour input;
+and SVG header-rule clearance for three styles × three arm-name pairs. The long
+HR style matrix and short report checks measure cap height against row spacing.
+`plot-workflow-regression` checks twelve band/line visibility and legend combinations.
+Native captures require inspection; raw per-step inventories and independent values
+are retained. See [round six](../../../../docs/ux-audit/2026-10-16-round6/README.md).

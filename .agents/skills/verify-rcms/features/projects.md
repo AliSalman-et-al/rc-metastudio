@@ -92,3 +92,14 @@ snapshots and proves it reopens without relabelling. The same drive checks integ
 count display in the real CSV preview and sentence-case binary calculator headers.
 `review1-design` exercises the single-row recent list with middle-elided paths,
 full accessible names/tooltips, missing state, Locate/Remove and reopening a sample.
+
+`project-display-labels` recursively inspects attached menus for all ten families,
+opens actual calculators and records contextual action popups. The shared desktop
+recorder also rejects internal built-in vocabulary in visible labels, tooltips,
+combo choices and report widgets for every captured dialog in the complete matrix.
+Investigator group names are preserved. `project-shell` waits for stable real
+window-manager state before placement assertions and measures active normal-text
+palette contrast. `review1-design` additionally measures derived/selected grid
+contrast and keyboard traversal; native 1.5×/2× drives cover this host's scaling.
+These checks do not qualify assistive-technology behavior or every inactive/error
+colour on other operating systems.

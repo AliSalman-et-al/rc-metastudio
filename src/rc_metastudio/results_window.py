@@ -1055,6 +1055,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     ) -> None:
         save_results_window_state(self)
         super(ResultsWindow, self).closeEvent(event)
+        self.deleteLater()
 
     def create_pixmap_item(
         self, pixmap, position, title, image_path, params_path=None, matrix=QTransform()

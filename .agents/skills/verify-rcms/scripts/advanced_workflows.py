@@ -574,8 +574,11 @@ def plots(app, window, family, record, *, view=None):
                     assert ("Regression line" in labels) == line, labels
                     assert ("95% CI" in labels) == confidence, labels
                     assert ("95% PI" in labels) == prediction, labels
-                    record("bubble-visible-legend", dialog, style=style, line=line,
+                    dialog.hide()
+                    app.processEvents()
+                    record("bubble-visible-legend", view, style=style, line=line,
                            confidence=confidence, prediction=prediction, labels=sorted(labels), plots={artifact.title: str(path)})
+                    dialog.show()
             dialog.show_regression_line.setChecked(True)
             dialog.show_confidence_band.setChecked(False)
             dialog.show_prediction_interval.setChecked(False)

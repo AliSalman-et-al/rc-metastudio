@@ -30,7 +30,7 @@ for receipt in sorted((HERE / 'raw').glob('*.json')):
         key = str(directory.relative_to(ROOT))
         row['helper_evidence'].append(key)
         helpers[key] = dict(scenario=manifest['scenario'], exit_code=manifest['exit_code'],
-                            passed=manifest['passed'], native=manifest.get('native'),
+                            passed=manifest['passed'], native=manifest.get('native_requested'),
                             revision=manifest['head'], checked_artifacts=checked,
                             manifest_sha256=hashlib.sha256(manifest_path.read_bytes()).hexdigest())
     rows.append(row)

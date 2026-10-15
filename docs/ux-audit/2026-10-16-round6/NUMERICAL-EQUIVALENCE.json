@@ -3326,11 +3326,11 @@
     }
   ],
   "policy_sha256": {
-    "numeric-contract.json": "dd309a37dc5d86290497d24b747fca478745b5c4b0cf40b9920b95e828fc594f",
+    "numeric-contract.json": "556c580508bbaef4bf3c15484aa86a05c7d2d796617adbdc19c4260a486120fb",
     "exceptions.json": "9db851142fe3c73c8a37507a89eb63083c96d26cada8bfeac7dc7be05494ea05",
     "capture-manifest.json": "c9e8e26e7a847ed02041c1dd281af2f0f86b071c0b0c1ed7e7d0aea2ecaa9fc8",
-    "plot-descriptors.json": "8606ed483b4c6c885704beb2874158b85483d63ca5491882acc92aae2712bebe"
+    "plot-descriptors.json": "fb10edd31c1f912e94daff6d6d7d94b7f94e295696d3ea2a0d1d2261fa96b38d"
   },
-  "capture": "build/qt6-verification/golden-compatibility-round6-axis",
+  "capture": "build/qt6-verification/golden-compatibility-round6-final",
   "additional_fields": "Checked by the real audit's public-package subgroup comparisons."
 }

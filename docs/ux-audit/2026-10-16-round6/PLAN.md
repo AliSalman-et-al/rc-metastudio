@@ -135,3 +135,18 @@ COMMITS and REPRODUCE.sh. Update HANDOFF with proved paths and explicit limits.
 Run numerical equivalence, golden gates, affected fresh native drives, then once
 `verify_all.py --full --fresh`. Preserve every failed attempt and exact result.
 Extra taste changes require an addition to this plan before implementation.
+
+## Additional completion fix — closed result-window ownership
+
+Reason: repeated axis edits/reruns retain closed result widgets and their SVG scenes
+until application exit. The expanded real workflow grows to gigabytes and times out.
+Failure modes: hidden scenes/renderers remain owned by the main window; callbacks
+keep snapshots alive; queued refits target closed widgets; premature deletion loses
+settings or evidence. Before implementation, extend the real axis drive to close a
+result, flush Qt deferred deletion and assert the owned QObject is deleted. Keep
+all render/fit/persistence checks and the existing timeout. Compare the repeat run
+with the retained timeout and process-memory observation; do not relax the deadline.
+
+The native before/after numerical matrix excludes only metafor's `time` field
+(elapsed computation time, recorded separately). All numeric statistical fields
+and weights use bit-exact equality; the original 415-field gate is unchanged.

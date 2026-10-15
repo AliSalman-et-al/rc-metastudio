@@ -1,0 +1,602 @@
+[
+  {
+    "key": "tiny-sd",
+    "label": "Tiny SD survives real keyboard entry",
+    "before": {
+      "path": "screenshots/tiny-sd-before.png",
+      "source": "docs/ux-audit/2026-10-16-round5-reaudit/screenshots/calculator-tiny-keyboard-replay-preview.png",
+      "sha256": "4787f6b6e7cd5859be3b458cf03a8f4bf101b6d3fa1fbd32d85393dcfb020c23"
+    },
+    "after": {
+      "path": "screenshots/tiny-sd-after.png",
+      "source": "artifacts/verification/rcms/20261015T110721Z-15775ba1-calculator-mode-continuous-metrics/02-0-calculator-precision-input.png",
+      "sha256": "a0f3aa4d1e292cc7687f3c3f966171b4838233463bc761132651dd0023034332"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T110721Z-15775ba1-calculator-mode-continuous-metrics",
+      "step": 2,
+      "action": "calculator-precision-input"
+    },
+    "observation": "Full-precision input is stored separately from compact display. Accept/save/reopen and independent effects are asserted in the native helper."
+  },
+  {
+    "key": "metric-label",
+    "label": "Contextual mean action",
+    "before": {
+      "path": "screenshots/metric-label-before.png",
+      "source": "docs/ux-audit/2026-10-16-round5-reaudit/screenshots/metric-menu-visible-tx-mean.png",
+      "sha256": "9256cb3d8c8c7ac11d292f9a204d2ce8627245139fb631600f34d0b05145624e"
+    },
+    "after": {
+      "path": "screenshots/metric-label-after.png",
+      "source": "artifacts/verification/rcms/20261015T121256Z-5211bc48-project-display-labels/22-0-display-metric-popup.png",
+      "sha256": "f2261d6c5db4eb4b984150402e0a7e95fe3fca360aedf6c1963955c6dc1e080e"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T121256Z-5211bc48-project-display-labels",
+      "step": 22,
+      "action": "display-metric-popup"
+    },
+    "observation": "Attached one-arm menu uses the contextual display name. The sweep also covers coefficients, entered effects, MD/SMD and HR/IRR."
+  },
+  {
+    "key": "ci-caps",
+    "label": "65-study subgroup CI caps",
+    "before": {
+      "path": "screenshots/ci-caps-before.png",
+      "source": "docs/ux-audit/2026-10-16-round5-reaudit/screenshots/matrix-hr-subgroup-figure.png",
+      "sha256": "5e0eef9ce92809c50f46e982cc28ff4cd8a8eed7b2b592a05417c67b0c511b13"
+    },
+    "after": {
+      "path": "screenshots/ci-caps-after.png",
+      "source": "artifacts/verification/rcms/20261015T111318Z-b875900e-audit-round3-round5/10-0-round5-long-figure.png",
+      "sha256": "499a835a46395c09a75efb3be8a5063e19f01275a78b4f230f1694a581da88e8"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T111318Z-b875900e-audit-round3-round5",
+      "step": 10,
+      "action": "round5-long-figure"
+    },
+    "observation": "Caps are bounded in row units. Retained SVG checks cover short and long figures and exported vectors."
+  },
+  {
+    "key": "wrapped-headers",
+    "label": "BMJ wrapped arm headers",
+    "before": {
+      "path": "screenshots/wrapped-headers-before.png",
+      "source": "docs/ux-audit/2026-10-16-round5-reaudit/screenshots/long-arm-bmj-matrix-twoarm-proportion-standard-figure.png",
+      "sha256": "584adc65bc7697812ff46b3bac9f8e5f2d4ac81c31fe9d31912261742ae24731"
+    },
+    "after": {
+      "path": "screenshots/wrapped-headers-after.png",
+      "source": "artifacts/verification/rcms/20261015T115614Z-48deabbb-project-round6-polish/126-0-measured-wrapped-arm-headers.png",
+      "sha256": "11d271e29c33b5ed6b0a5eb528417d975634ddef822050f08b79b659be2e368e"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T115614Z-48deabbb-project-round6-polish",
+      "step": 126,
+      "action": "measured-wrapped-arm-headers"
+    },
+    "observation": "The rule and superheading follow measured wrapped text height. All three styles and three name-length pairs are measured."
+  },
+  {
+    "key": "diagnostic-precision",
+    "label": "Diagnostic report at six digits",
+    "before": {
+      "path": "screenshots/diagnostic-precision-before.png",
+      "source": "docs/ux-audit/2026-10-16-round5-reaudit/screenshots/matrix-diagnostic-meta-regression-report.png",
+      "sha256": "1e4114477daa8ac285de86da70eb4409820f335e00448f0a336688ed05dfb301"
+    },
+    "after": {
+      "path": "screenshots/diagnostic-precision-after.png",
+      "source": "artifacts/verification/rcms/20261015T115614Z-48deabbb-project-round6-polish/15-0-diagnostic-selected-precision.png",
+      "sha256": "ded2a5703db9e97f93160ca774776484e3e71472226c34f0d9e2ab3e3bbdaf4a"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T115614Z-48deabbb-project-round6-polish",
+      "step": 15,
+      "action": "diagnostic-selected-precision"
+    },
+    "observation": "Text, Tables, copy and export use selected precision. Two/six digits and three moderator shapes are checked."
+  },
+  {
+    "key": "visible-legend",
+    "label": "Legend follows visible bands",
+    "before": {
+      "path": "screenshots/visible-legend-before.png",
+      "source": "docs/ux-audit/2026-10-16-round5-reaudit/screenshots/bubble-hidden-ci-legend.png",
+      "sha256": "9af02b9f66df7b2193d94b17cf43f4538df6e09421b23541d89f0e7692edb776"
+    },
+    "after": {
+      "path": "screenshots/visible-legend-after.png",
+      "source": "artifacts/verification/rcms/20261015T121509Z-be2576db-plot-workflow-regression/17-0-bubble-visible-legend.png",
+      "sha256": "c8676919297c88c3334e48eff445b948aece48d1e862ffc594b254201994980c"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T121509Z-be2576db-plot-workflow-regression",
+      "step": 17,
+      "action": "bubble-visible-legend"
+    },
+    "observation": "Hidden confidence/prediction bands have no legend entries; twelve visibility/style combinations are asserted."
+  },
+  {
+    "key": "axis-plo-default",
+    "label": "PLO axis \u00b7 default",
+    "before": {
+      "path": "screenshots/axis-plo-default-before.png",
+      "source": "artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/11-0-axis-baseline.png",
+      "sha256": "8c63039524686c3da30bc165ca40f0d61b9db686af903dcce671d7aa46fe7677"
+    },
+    "after": {
+      "path": "screenshots/axis-plo-default-after.png",
+      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/11-0-axis-default.png",
+      "sha256": "6d7d3c4dc6b72cf47b89025ede4e5ba369034288c882bd3fc4bd66510fbbc0fa"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
+      "step": 11,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-plo-revman",
+    "label": "PLO axis \u00b7 revman",
+    "before": {
+      "path": "screenshots/axis-plo-revman-before.png",
+      "source": "artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/21-0-axis-baseline.png",
+      "sha256": "d06d052b79c20cfa9c0bad71443d5ee8120e1cc6f58b8873e28f0e826fd20dbb"
+    },
+    "after": {
+      "path": "screenshots/axis-plo-revman-after.png",
+      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/24-0-axis-default.png",
+      "sha256": "8d2512aca6cb0ed28be057567899fb11f19bf9d42f7ad7620e687150a6709fff"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
+      "step": 24,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-plo-bmj",
+    "label": "PLO axis \u00b7 bmj",
+    "before": {
+      "path": "screenshots/axis-plo-bmj-before.png",
+      "source": "artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/31-0-axis-baseline.png",
+      "sha256": "d6c44a2b4b382c446f909c96b6565635d14a11c50decf75f9ff19a3971419456"
+    },
+    "after": {
+      "path": "screenshots/axis-plo-bmj-after.png",
+      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/37-0-axis-default.png",
+      "sha256": "b3dcc232c2bcca9a764a86731f6bbc5e1dbf09c902622514f2ba679aad0d212c"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
+      "step": 37,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-pas-default",
+    "label": "PAS axis \u00b7 default",
+    "before": {
+      "path": "screenshots/axis-pas-default-before.png",
+      "source": "artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/41-0-axis-baseline.png",
+      "sha256": "c75cfb22bdcdd0aad0e90495bc247c32ee4a20ed39c5fb9e1212dc6a24d7743b"
+    },
+    "after": {
+      "path": "screenshots/axis-pas-default-after.png",
+      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/50-0-axis-default.png",
+      "sha256": "c0a29396c960ae010d80ef08735524f81403a916ec83fa3f20a34f6be4e65940"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
+      "step": 50,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-pas-revman",
+    "label": "PAS axis \u00b7 revman",
+    "before": {
+      "path": "screenshots/axis-pas-revman-before.png",
+      "source": "artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/51-0-axis-baseline.png",
+      "sha256": "c7fe03d25aaf4d085a4f064e2bc7a234c224d956fcaefc74443183f83dc6dec4"
+    },
+    "after": {
+      "path": "screenshots/axis-pas-revman-after.png",
+      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/63-0-axis-default.png",
+      "sha256": "f206bd4212495e82c484f25d9229b5dd19075dd6c5ec288ffc88fc322526cdf9"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
+      "step": 63,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-pas-bmj",
+    "label": "PAS axis \u00b7 bmj",
+    "before": {
+      "path": "screenshots/axis-pas-bmj-before.png",
+      "source": "artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/61-0-axis-baseline.png",
+      "sha256": "9cc17f541642290c06f6ada82795df1d37cec386ae3be5296e98e8f02df9e3b0"
+    },
+    "after": {
+      "path": "screenshots/axis-pas-bmj-after.png",
+      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/76-0-axis-default.png",
+      "sha256": "107f456daf6dce4423b7c882575b19c0ae22f2664d243af33d6b741020ff76c0"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
+      "step": 76,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-pft-default",
+    "label": "PFT axis \u00b7 default",
+    "before": {
+      "path": "screenshots/axis-pft-default-before.png",
+      "source": "artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/71-0-axis-baseline.png",
+      "sha256": "920c144b6675f7d19bb030a7bc6b739435d70d4490ae5486d7bbbf888ac13291"
+    },
+    "after": {
+      "path": "screenshots/axis-pft-default-after.png",
+      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/89-0-axis-default.png",
+      "sha256": "5071579baa131c2397539b9a1cb857cf0939b5ff06d8781fee1558ec6031d2fa"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
+      "step": 89,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-pft-revman",
+    "label": "PFT axis \u00b7 revman",
+    "before": {
+      "path": "screenshots/axis-pft-revman-before.png",
+      "source": "artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/81-0-axis-baseline.png",
+      "sha256": "fd7f6fd14e6d918528a28539e27ca5a06eb76ac8cb028ce770e8973478aa4e26"
+    },
+    "after": {
+      "path": "screenshots/axis-pft-revman-after.png",
+      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/102-0-axis-default.png",
+      "sha256": "3856f7d35d5ce085326691073a35ab464541bda91fac142ef389f225771fb9be"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
+      "step": 102,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-pft-bmj",
+    "label": "PFT axis \u00b7 bmj",
+    "before": {
+      "path": "screenshots/axis-pft-bmj-before.png",
+      "source": "artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/91-0-axis-baseline.png",
+      "sha256": "2e8e6d3f0b5c862e4d3d161f8338f5edb9afbf108c3db4acf807d2b39b3e9e94"
+    },
+    "after": {
+      "path": "screenshots/axis-pft-bmj-after.png",
+      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/115-0-axis-default.png",
+      "sha256": "7aa8af3633cb2290a14f1d5eb852d64b46ae72ab56c19890f51bbea14658d73c"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
+      "step": 115,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-pln-default",
+    "label": "PLN axis \u00b7 default",
+    "before": {
+      "path": "screenshots/axis-pln-default-before.png",
+      "source": "artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/101-0-axis-baseline.png",
+      "sha256": "41ac117baa277cc16da47fdf1b7bd9fd73ccabc3b8151e480d86b1fd300f6d44"
+    },
+    "after": {
+      "path": "screenshots/axis-pln-default-after.png",
+      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/128-0-axis-default.png",
+      "sha256": "5c75b8f80379459aa96f93ddf4b7dd76aaba0e7461ed6309c22304d4a3a41418"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
+      "step": 128,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-pln-revman",
+    "label": "PLN axis \u00b7 revman",
+    "before": {
+      "path": "screenshots/axis-pln-revman-before.png",
+      "source": "artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/111-0-axis-baseline.png",
+      "sha256": "ba673408ab204032528b2091676f6e4624a0210324113d75371d42ef2fcddbb5"
+    },
+    "after": {
+      "path": "screenshots/axis-pln-revman-after.png",
+      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/141-0-axis-default.png",
+      "sha256": "04c7b80c69a3ec8d93f4a63e809c7a17d2bcbbe7d6fae596a178cb3e2279eb00"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
+      "step": 141,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-pln-bmj",
+    "label": "PLN axis \u00b7 bmj",
+    "before": {
+      "path": "screenshots/axis-pln-bmj-before.png",
+      "source": "artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions/121-0-axis-baseline.png",
+      "sha256": "a5db239464b796f8474438f968090822ce70be88efbfdf4ddd69c01a5f6a784f"
+    },
+    "after": {
+      "path": "screenshots/axis-pln-bmj-after.png",
+      "source": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions/154-0-axis-default.png",
+      "sha256": "6520071a449f3796fdcc158526ed630f67b9a6498a01830c02c8bff2f93f8e1c"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
+      "step": 154,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-or-default",
+    "label": "OR axis \u00b7 default",
+    "before": {
+      "path": "screenshots/axis-or-default-before.png",
+      "source": "artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/11-0-axis-baseline.png",
+      "sha256": "fb4530f09f840463f13c927a2e31f91590c6da1d820c997cbb5e117c59115ae7"
+    },
+    "after": {
+      "path": "screenshots/axis-or-default-after.png",
+      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/11-0-axis-default.png",
+      "sha256": "434ab93c95451c390857aa8ca51a05174ab1bb48c024eb9afcdfb50115bdaead"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
+      "step": 11,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-or-revman",
+    "label": "OR axis \u00b7 revman",
+    "before": {
+      "path": "screenshots/axis-or-revman-before.png",
+      "source": "artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/21-0-axis-baseline.png",
+      "sha256": "4172463174cb6b852388cc360c3b674061dedffc080c9a3005b08af809676f4c"
+    },
+    "after": {
+      "path": "screenshots/axis-or-revman-after.png",
+      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/24-0-axis-default.png",
+      "sha256": "711e56382f73e56a4beb928f3c88fb77ab7c2530d88df14bf1a47a32a1f311d5"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
+      "step": 24,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-or-bmj",
+    "label": "OR axis \u00b7 bmj",
+    "before": {
+      "path": "screenshots/axis-or-bmj-before.png",
+      "source": "artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/31-0-axis-baseline.png",
+      "sha256": "9977759ca8150486972c1b3c06eacd0cd3943f74b137fde4e659ba163e634b9b"
+    },
+    "after": {
+      "path": "screenshots/axis-or-bmj-after.png",
+      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/37-0-axis-default.png",
+      "sha256": "894d58052d3ec6603b4d0c7f4da3ff47dce01fdd359758d1d4d1ff111e811ccf"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
+      "step": 37,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-sens-default",
+    "label": "Sens axis \u00b7 default",
+    "before": {
+      "path": "screenshots/axis-sens-default-before.png",
+      "source": "artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/42-0-axis-baseline.png",
+      "sha256": "b5aedff8d2a12af7b27a58efe4b03e0e9e4fae190d7021c00019e354041e4d61"
+    },
+    "after": {
+      "path": "screenshots/axis-sens-default-after.png",
+      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/51-0-axis-default.png",
+      "sha256": "cbfcddf7045f2031f5c5d9de07a9087119631f7dd79d88dafb7b3a39d84801cc"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
+      "step": 51,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-spec-default",
+    "label": "Spec axis \u00b7 default",
+    "before": {
+      "path": "screenshots/axis-spec-default-before.png",
+      "source": "artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/43-0-axis-baseline.png",
+      "sha256": "c1267ecb35e5b972d53e76a2b2ec98ab0c291f97a06d08621aebe1fd34897e17"
+    },
+    "after": {
+      "path": "screenshots/axis-spec-default-after.png",
+      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/55-0-axis-default.png",
+      "sha256": "78d6ead81c27a7e1305c8509d2a880ac528773fb2361a5923d88149951878a86"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
+      "step": 55,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-sens-revman",
+    "label": "Sens axis \u00b7 revman",
+    "before": {
+      "path": "screenshots/axis-sens-revman-before.png",
+      "source": "artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/54-0-axis-baseline.png",
+      "sha256": "000fa951c7adc93cae27c7f6513e893c693c07904588d1913a20982d78d8cde1"
+    },
+    "after": {
+      "path": "screenshots/axis-sens-revman-after.png",
+      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/69-0-axis-default.png",
+      "sha256": "abcec86e5841ddab4a4df1a0d022dd4805fb23ab280fba2613579904da8e6c09"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
+      "step": 69,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-spec-revman",
+    "label": "Spec axis \u00b7 revman",
+    "before": {
+      "path": "screenshots/axis-spec-revman-before.png",
+      "source": "artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/55-0-axis-baseline.png",
+      "sha256": "8499e08d77066a9a3df0c75d01b114f0786b44ddf97fde593ac0ef0a576b60d2"
+    },
+    "after": {
+      "path": "screenshots/axis-spec-revman-after.png",
+      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/73-0-axis-default.png",
+      "sha256": "c16f3b15d94f30817ce3a5a6aea23016443e98d8f368403ac74adbcb9a9c3a7e"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
+      "step": 73,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-sens-bmj",
+    "label": "Sens axis \u00b7 bmj",
+    "before": {
+      "path": "screenshots/axis-sens-bmj-before.png",
+      "source": "artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/66-0-axis-baseline.png",
+      "sha256": "69ed92cb28931918a9356ce7b50902afceec0b48dd3dce075efe7b052cc2ecd0"
+    },
+    "after": {
+      "path": "screenshots/axis-sens-bmj-after.png",
+      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/87-0-axis-default.png",
+      "sha256": "02916319a5814a8a96ae473d5e1be96a5f5915a019e96ba4820f08efd12ba994"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
+      "step": 87,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-spec-bmj",
+    "label": "Spec axis \u00b7 bmj",
+    "before": {
+      "path": "screenshots/axis-spec-bmj-before.png",
+      "source": "artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/67-0-axis-baseline.png",
+      "sha256": "dcde86655b8d77bdba12047a5ee47db0def0ce4943d6390fbcbce04eb6366559"
+    },
+    "after": {
+      "path": "screenshots/axis-spec-bmj-after.png",
+      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/91-0-axis-default.png",
+      "sha256": "ee36b70a502b2b722e1529389f4e016f4d84560f4e325b94415f8391f5dd2847"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
+      "step": 91,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-md-default",
+    "label": "MD axis \u00b7 default",
+    "before": {
+      "path": "screenshots/axis-md-default-before.png",
+      "source": "artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/77-0-axis-baseline.png",
+      "sha256": "b3fc0021bf2a0e21cc9bf0cf9c5ccdc9e241e2410394e8eb41a0ee26474ac007"
+    },
+    "after": {
+      "path": "screenshots/axis-md-default-after.png",
+      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/104-0-axis-default.png",
+      "sha256": "0c5f29ca8a8822c0ec3fbd156db58b220a4f637b1256e185718660b0e29a3366"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
+      "step": 104,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-md-revman",
+    "label": "MD axis \u00b7 revman",
+    "before": {
+      "path": "screenshots/axis-md-revman-before.png",
+      "source": "artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/87-0-axis-baseline.png",
+      "sha256": "ccab1800bdb32d517b84ab43cecf67d7462e5944aec1a931fa1713eda0569c4c"
+    },
+    "after": {
+      "path": "screenshots/axis-md-revman-after.png",
+      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/115-0-axis-default.png",
+      "sha256": "ccab1800bdb32d517b84ab43cecf67d7462e5944aec1a931fa1713eda0569c4c"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
+      "step": 115,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  },
+  {
+    "key": "axis-md-bmj",
+    "label": "MD axis \u00b7 bmj",
+    "before": {
+      "path": "screenshots/axis-md-bmj-before.png",
+      "source": "artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others/97-0-axis-baseline.png",
+      "sha256": "43b22a0c06d1d0059715e8f33efe94d1afd886a1e0d45557f634075cd8e620fc"
+    },
+    "after": {
+      "path": "screenshots/axis-md-bmj-after.png",
+      "source": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others/126-0-axis-default.png",
+      "sha256": "50bffb10bacf92342ff89c850be2603e56b6482a4c74fb95867cc039cf5eb376"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others",
+      "step": 126,
+      "action": "axis-default"
+    },
+    "observation": "Native default before/after. The same helper measures tick/interval geometry, exact numeric fit and weight equality, saved Edit plot choice, Cancel and exported SVG."
+  }
+]

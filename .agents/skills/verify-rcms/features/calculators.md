@@ -75,3 +75,17 @@ do not prove complete values. The diagnostic controls use Estimate rather than E
 See [ratios.md](ratios.md) for the compact input, original-source persistence, analysis, plot and small-study workflows. Run `ratios-hr` and `ratios-irr` after changes affecting these families; the broader shared-change lane remains required.
 
 `options-zero-cells` separately proves the generalized SMD table convention: Not estimable with interval dashes, save/reopen, finite recovery after correcting inputs, and blanks for incomplete input. This is grid evidence; it does not assert undefined labels inside calculator dialogs.
+
+## Round-six numeric entry integrity
+
+The twelve `calculator-mode-*` drives now use keyboard editing through real table
+and line editors. Applicable tiny/huge/many-decimal/exponent values, decimal commas,
+invalid entered intervals and correction, undo/redo and save/reopen are checked.
+Continuous SDs exercise all four precision classes with independent group intervals
+and public post-reopen fits. Compact summaries are paint-only; editor text stays
+full precision. `calculator-grid-precision` covers raw and entered-effect grids,
+unchanged commits, clipboard, CSV import, undo/redo and project reopening.
+`calculator-ratio-precision` covers all five HR/IRR source modes and original-source
+persistence with public effects. Domains remain constrained: counts are integers
+and proportions remain in range. This does not qualify every reconstruction input
+combination or a platform's native file picker.

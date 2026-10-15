@@ -87,7 +87,7 @@ def run(app, window, record):
             menu = window.oneArmMetricMenu
             menu.popup(window.mapToGlobal(QtCore.QPoint(100, 100)))
             app.processEvents()
-            record('display-metric-popup', window, family=family,
+            record('display-metric-popup', menu, family=family,
                    capture_surface='desktop-composite', labels=[action.text() for action in menu.actions()])
             menu.hide()
         kind = (BinaryDataDialog if window.model.get_current_outcome_type() == 'binary' else

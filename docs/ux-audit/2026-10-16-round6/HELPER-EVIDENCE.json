@@ -3,7 +3,7 @@
     "scenario": "project-axis-proportions",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": true,
     "revision": "354b7254781cb0274769db171d34892baf5020a1",
     "checked_artifacts": 15,
     "manifest_sha256": "7248329e979a4901b10c9f9716f7c7f02ebcd0e4401d1b05225cee471d656ec0"
@@ -12,7 +12,7 @@
     "scenario": "project-axis-proportions",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "354b7254781cb0274769db171d34892baf5020a1",
     "checked_artifacts": 262,
     "manifest_sha256": "ab7bdf5c7e666c8003216179d35336035f0d88c1c8f917df737ca212ae3e75a2"
@@ -21,7 +21,7 @@
     "scenario": "project-axis-others",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "354b7254781cb0274769db171d34892baf5020a1",
     "checked_artifacts": 229,
     "manifest_sha256": "96a7e990ecd8ebbae6bb2fad3cdbb3e895b47b5745b780147d6400bd45526e21"
@@ -30,7 +30,7 @@
     "scenario": "project-axis-proportions",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": true,
     "revision": "354b7254781cb0274769db171d34892baf5020a1",
     "checked_artifacts": 28,
     "manifest_sha256": "6cae4328675670a8a0e467b5193af15cbcd8b930e4f30f68feb22aaa315e1de6"
@@ -39,7 +39,7 @@
     "scenario": "project-axis-proportions",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
     "checked_artifacts": 334,
     "manifest_sha256": "35de39d002620492d2930893cd989b55e4a5ecb63f274247d651808819224472"
@@ -48,7 +48,7 @@
     "scenario": "project-axis-others",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
     "checked_artifacts": 292,
     "manifest_sha256": "accdd57c5eabc35f581dd6867f7d1806ea26d61873a34a3cc79566cbd6059299"
@@ -57,7 +57,7 @@
     "scenario": "project-axis-proportions",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": false,
     "revision": "354b7254781cb0274769db171d34892baf5020a1",
     "checked_artifacts": 26,
     "manifest_sha256": "70cd74c4053b037700756983ef3adf4aba781ad0b41f5257e9d319cb11889672"
@@ -66,7 +66,7 @@
     "scenario": "project-axis-proportions",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": false,
     "revision": "354b7254781cb0274769db171d34892baf5020a1",
     "checked_artifacts": 26,
     "manifest_sha256": "8f8ac42bbbfd30c484e8dad698c430aea91fbcb80d220ff19f5ab16a8358c285"
@@ -75,7 +75,7 @@
     "scenario": "project-axis-proportions",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": false,
     "revision": "354b7254781cb0274769db171d34892baf5020a1",
     "checked_artifacts": 26,
     "manifest_sha256": "ebcf5cc85a05e67b3600527906e3d591676fd109fb7b37160d506087cebb7b04"
@@ -84,7 +84,7 @@
     "scenario": "project-axis-sequential",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": false,
     "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
     "checked_artifacts": 14,
     "manifest_sha256": "124f378a55d50813d1178a3672b34ad5d33d60bc6e6842b88a472f76a5791d17"
@@ -93,7 +93,7 @@
     "scenario": "project-axis-sequential",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": false,
     "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
     "checked_artifacts": 61,
     "manifest_sha256": "9bfb36a669caec6233ab342c64792c05ed1dfabf9bf7e3b44036fd2be0e95d0e"
@@ -102,16 +102,25 @@
     "scenario": "project-axis-proportions",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": false,
     "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
     "checked_artifacts": 31,
     "manifest_sha256": "5053d42e0b91b36f1aab4afafbf9dca107c6f5a6018dfb0401706902b1581413"
+  },
+  "artifacts/verification/rcms/20261015T121139Z-51393a54-project-axis-others": {
+    "scenario": "project-axis-others",
+    "exit_code": 0,
+    "passed": true,
+    "native": false,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "checked_artifacts": 364,
+    "manifest_sha256": "af064f55ae93e37bb231239b827fff51e060c55706a8574bb5cf4eacba45c0f0"
   },
   "artifacts/verification/rcms/20261015T115816Z-c2e5630a-project-axis-others": {
     "scenario": "project-axis-others",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": false,
     "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
     "checked_artifacts": 31,
     "manifest_sha256": "dd9af161d777e6be9f399893b3690205d0edc46c4b01f904a771a1ccba99c33c"
@@ -120,16 +129,34 @@
     "scenario": "project-axis-proportions",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": false,
     "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
     "checked_artifacts": 31,
     "manifest_sha256": "c4510ab2d1e599553a51dc3717219aab5ac847fdc6c9e91268a5cea959a07ef8"
+  },
+  "artifacts/verification/rcms/20261015T115913Z-8bda0c8b-project-axis-others": {
+    "scenario": "project-axis-others",
+    "exit_code": 124,
+    "passed": false,
+    "native": false,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "checked_artifacts": 335,
+    "manifest_sha256": "5e7b5ecfce8cf14dad72d641dfe3e2902ce96ed40decd93fefdfa38bb61121f7"
+  },
+  "artifacts/verification/rcms/20261015T115912Z-0d4cfe45-project-axis-proportions": {
+    "scenario": "project-axis-proportions",
+    "exit_code": 124,
+    "passed": false,
+    "native": false,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "checked_artifacts": 367,
+    "manifest_sha256": "386a99269789b60dcf0bf9e2b98b57c6fb598dafc280f1e7274dbf25e9926c62"
   },
   "artifacts/verification/rcms/20261015T110013Z-6a0c0649-calculator-mode-continuous-metrics": {
     "scenario": "calculator-mode-continuous-metrics",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": true,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 7,
     "manifest_sha256": "0cb9cb84169ede3b7b3cbd17ad63b14159e1293f67714e56dc2fbe2892451b26"
@@ -138,7 +165,7 @@
     "scenario": "calculator-mode-continuous-metrics",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": true,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 7,
     "manifest_sha256": "507571e4226e1f6be489d414bf2832a60e6ead5d34eeb1a0e0d1a8286ae9c500"
@@ -147,7 +174,7 @@
     "scenario": "calculator-mode-entered-binary",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 22,
     "manifest_sha256": "e8e9a1708845ce1d7e1307d7bdb4b3c5dbf3adc6d2c31fa54175adfc6758cfdf"
@@ -156,7 +183,7 @@
     "scenario": "calculator-mode-entered-continuous",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 22,
     "manifest_sha256": "2d5b8331664eb1e3a2f5a2016aad4e0ea1cd3b134f0079841b733802426ce1c5"
@@ -165,7 +192,7 @@
     "scenario": "calculator-mode-entered-diagnostic",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 24,
     "manifest_sha256": "f458c6dd270c857d8517e1a9322a333fe521cd5e6fe8d58e90d132c4339debc6"
@@ -174,7 +201,7 @@
     "scenario": "calculator-grid-precision",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 68,
     "manifest_sha256": "d88d4bf48726ad0a8d8f32eda6772e1f95dc2196d67d40fde5ce3219f00724aa"
@@ -183,7 +210,7 @@
     "scenario": "calculator-mode-continuous-metrics",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 25,
     "manifest_sha256": "01595a96151d8f112b87d5edc5b495837664389b01012a364b0f06bceb44e5f8"
@@ -192,7 +219,7 @@
     "scenario": "calculator-mode-onearm-mean",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 45,
     "manifest_sha256": "75c029bfa8febc708cad41b380c614d50bf944559afb4816096a6e738d0b24dc"
@@ -201,7 +228,7 @@
     "scenario": "calculator-mode-pre-post",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 25,
     "manifest_sha256": "234cbb79f286cc19dfb1ba4504795d6fa5aca4d14284648912121247fbde62e4"
@@ -210,7 +237,7 @@
     "scenario": "calculator-mode-back-continuous",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 26,
     "manifest_sha256": "c1d7b97f0e03cab350ca82b5ccfda2dbd178d5a3b20e0461b8641b72bfaa8d4e"
@@ -219,7 +246,7 @@
     "scenario": "calculator-mode-entered-continuous",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 21,
     "manifest_sha256": "137eb8caa1f4bc34c47b21390119f5b3b6da9081974e5a8d14a8839b46575703"
@@ -228,7 +255,7 @@
     "scenario": "calculator-mode-binary-metrics",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 21,
     "manifest_sha256": "4ae77498597150f8cc9851f3e1d2ca009c6df068ff6849155c5e8e99a420a842"
@@ -237,7 +264,7 @@
     "scenario": "calculator-mode-diagnostic-metrics",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 21,
     "manifest_sha256": "9a4ce6739477bb1c2ba741e9366ce8384b956fdecd63785bef6e6d53bfd826d2"
@@ -246,7 +273,7 @@
     "scenario": "calculator-mode-onearm-proportion",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": true,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 28,
     "manifest_sha256": "6d4f610345d8c9014c3e15da41db3d4fc0edc1754b9fc8dc48fed8efb977800d"
@@ -255,7 +282,7 @@
     "scenario": "calculator-mode-onearm-proportion",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 41,
     "manifest_sha256": "ba64b83d7f4441dde4e26bf99a8a770873f1826ceba1c0d31a1066d71c2d79de"
@@ -264,7 +291,7 @@
     "scenario": "calculator-mode-entered-binary",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 21,
     "manifest_sha256": "282439552203275e4a108d549818ec63258e8765615cfbcc7e372c9bb8f3a9ba"
@@ -273,7 +300,7 @@
     "scenario": "calculator-mode-entered-diagnostic",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 23,
     "manifest_sha256": "50735bc3202683db3838aab6c3ebd3c3179b60abcc01aaba445fdebdc4030ce7"
@@ -282,7 +309,7 @@
     "scenario": "calculator-mode-back-binary",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 22,
     "manifest_sha256": "e2c577e71639ec6810b149b69f4965c84f1c69d6b817cc5b8a1b4ec591276396"
@@ -291,7 +318,7 @@
     "scenario": "calculator-mode-back-diagnostic",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 21,
     "manifest_sha256": "229e74f671d5a9cf89df9c638d5007504940000fbbbcd5f3322fbdaf5667ee5f"
@@ -300,7 +327,7 @@
     "scenario": "calculator-mode-continuous-metrics",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 25,
     "manifest_sha256": "e8f105f995376643775b1b113da8f471cb39945255ea252bf0f76c79703f6588"
@@ -309,16 +336,25 @@
     "scenario": "calculator-mode-pre-post",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 25,
     "manifest_sha256": "77cbc75c04a1338a255b02bd980cb0d95744d416a0d78a5e4127e18eeca8441a"
+  },
+  "artifacts/verification/rcms/20261015T121435Z-aff660c3-project-axis-proportions": {
+    "scenario": "project-axis-proportions",
+    "exit_code": 1,
+    "passed": false,
+    "native": false,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "checked_artifacts": 40,
+    "manifest_sha256": "168bb5bb9535bd9a9201bbe860a4b1d8827223a3ea9bc9601cb206726c1c77da"
   },
   "artifacts/verification/rcms/20261015T111655Z-96dc82c6-analysis-diagnostic-regression-continuous": {
     "scenario": "analysis-diagnostic-regression-continuous",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": false,
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 24,
     "manifest_sha256": "469e741153bc4327d07d84d892324075dabe46a3079a4d2317d546593c1ce051"
@@ -327,7 +363,7 @@
     "scenario": "plot-workflow-regression",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": false,
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 63,
     "manifest_sha256": "287f8bf5f8c67d583c2a9d61adefa85e9d86e86220fdaa848ce112920275dde5"
@@ -336,7 +372,7 @@
     "scenario": "project-shell",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": false,
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 14,
     "manifest_sha256": "fe5ebed07d6550b57ff99aae108381ec0599190904ac99d97c99d3602702e561"
@@ -345,7 +381,7 @@
     "scenario": "calculator-grid-precision",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": false,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 58,
     "manifest_sha256": "8cf9b07e5b10adec3ef432db6091ee317e13faff2ba8ea5c106dd47251f3b2b0"
@@ -354,7 +390,7 @@
     "scenario": "calculator-grid-precision",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": false,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 56,
     "manifest_sha256": "884b11525e97977401e76c971ba59c96c090d17cd76940a4becd33986351f1a1"
@@ -363,7 +399,7 @@
     "scenario": "calculator-grid-precision",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": false,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 6,
     "manifest_sha256": "12f3256b7d8ea40811bd34d8a6f64021fe2b8b3c49d298b3a305ab93b44f0910"
@@ -372,7 +408,7 @@
     "scenario": "calculator-grid-precision",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": false,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 39,
     "manifest_sha256": "36cedcbc9ee18cb7c1b963c79d79f582ad7c8a154d2f0be6446416741e4631ff"
@@ -381,7 +417,7 @@
     "scenario": "calculator-grid-precision",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": false,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 6,
     "manifest_sha256": "9c57f1ab6765471f4648312d5dcf102e851da5413dfe8ed942a3f3a18f99ac5c"
@@ -390,7 +426,7 @@
     "scenario": "calculator-grid-precision",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": false,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 6,
     "manifest_sha256": "480008bc5b43a11e0668fefe8ca0b841c5dcda2d8e5f4117e8666c1cf814daee"
@@ -399,7 +435,7 @@
     "scenario": "project-display-labels",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": false,
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 157,
     "manifest_sha256": "f840fd5b6553fabc8bd7abe3e918bef74d6772bbde4ad8b9a3a3a2803d565dab"
@@ -408,7 +444,7 @@
     "scenario": "project-display-labels",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": false,
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 166,
     "manifest_sha256": "1e326037f9759de9490cb441dbb345aac31b6b7d36cc3cf01636c891056bfbac"
@@ -417,16 +453,52 @@
     "scenario": "project-display-labels",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": false,
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 6,
     "manifest_sha256": "5de598640df8ef405bcc4947340bb6928f15c7ca8926c9f66293cbf933b5009a"
+  },
+  "artifacts/verification/rcms/20261015T115614Z-48deabbb-project-round6-polish": {
+    "scenario": "project-round6-polish",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "checked_artifacts": 375,
+    "manifest_sha256": "5329ee77a5deb408f919266f442e47151389ebd2ef02b93aaebb1b68cfd4df44"
+  },
+  "artifacts/verification/rcms/20261015T115917Z-4030619d-review1-design": {
+    "scenario": "review1-design",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "checked_artifacts": 60,
+    "manifest_sha256": "e9a9d13119f388abd3efb7eb87c9328cb052ec316e064261c9b208fb5a050349"
+  },
+  "artifacts/verification/rcms/20261015T120012Z-87b47122-review1-design": {
+    "scenario": "review1-design",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "checked_artifacts": 60,
+    "manifest_sha256": "76411159bbe60ed58b28b27652dfaca934fdc5e1d385d69f2072765b5cd6111a"
+  },
+  "artifacts/verification/rcms/20261015T120117Z-b22b7027-project-shell": {
+    "scenario": "project-shell",
+    "exit_code": 0,
+    "passed": true,
+    "native": true,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "checked_artifacts": 15,
+    "manifest_sha256": "78c57ad5f500f393cd03901f508de04de6ee4611e486c59dc2dd11835e47f11e"
   },
   "artifacts/verification/rcms/20261015T112502Z-e307d7e9-project-round6-polish": {
     "scenario": "project-round6-polish",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
     "checked_artifacts": 375,
     "manifest_sha256": "aed7762f5e9324598a53550bd7fce734275ea20c65b1a460e8deb23969821223"
@@ -435,7 +507,7 @@
     "scenario": "project-display-labels",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
     "checked_artifacts": 211,
     "manifest_sha256": "17271a53592a90e029d535fe8cbea9369d86c3f49bd26d256b24fd250b79793f"
@@ -444,7 +516,7 @@
     "scenario": "calculator-ratio-precision",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
     "checked_artifacts": 54,
     "manifest_sha256": "375cd483fce198369398c6a6daf39d2fcda00bad681f9bdd76b09e48a77b2aab"
@@ -453,7 +525,7 @@
     "scenario": "plot-workflow-regression",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
     "checked_artifacts": 73,
     "manifest_sha256": "4c1ba7c77e7bb8b7c749b91a9b279b5d5092433b0fc908195f3eb2393ace1021"
@@ -462,7 +534,7 @@
     "scenario": "project-shell",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
     "checked_artifacts": 15,
     "manifest_sha256": "103c926265dc605ba35b409d1e6c072668cc77a49a0131f45bed8ff4673eeebc"
@@ -471,7 +543,7 @@
     "scenario": "audit-round3-arm-names",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
     "checked_artifacts": 378,
     "manifest_sha256": "0cbd0ed969c3b98322fd4359e300d3f10ebed48f6ba2d54bb3c14b5dce98a0f8"
@@ -480,7 +552,7 @@
     "scenario": "audit-round3-round5",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 107,
     "manifest_sha256": "1e35d16aa18f737bc27b391b78cb70fd41cb4821b149b2d23dc4dbbfa3aea1ef"
@@ -489,7 +561,7 @@
     "scenario": "audit-round3-arm-names",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": true,
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 260,
     "manifest_sha256": "bcba985036e008330d54dfdb77ce9903b46af69c8fef125e036d74de932812a9"
@@ -498,7 +570,7 @@
     "scenario": "project-round6-polish",
     "exit_code": 1,
     "passed": false,
-    "native": null,
+    "native": false,
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 111,
     "manifest_sha256": "10d2b578737340e5b9dbf2889e83708f80baad04c7d28d25cba9106ca335ab5d"
@@ -507,7 +579,7 @@
     "scenario": "project-round6-polish",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": false,
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 300,
     "manifest_sha256": "97b525270506ba094909d6f3e886fd939b046d2d06aba3b69b0e48cc6577fdfd"
@@ -516,7 +588,7 @@
     "scenario": "calculator-mode-continuous-metrics",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": true,
     "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
     "checked_artifacts": 25,
     "manifest_sha256": "6621687cc62496b0d3b605c02865a9efa738ac172c45722cd992f773cae9ae13"
@@ -525,7 +597,7 @@
     "scenario": "calculator-ratio-precision",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": false,
     "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
     "checked_artifacts": 54,
     "manifest_sha256": "dbf45bf06e7a0f6bdd5ce965830e2a61d7d4c445cac64cd3fcdcfb70658ded57"
@@ -534,7 +606,7 @@
     "scenario": "project-display-labels",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": false,
     "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
     "checked_artifacts": 171,
     "manifest_sha256": "998e1e0685c7af969cc7351e20b25f88552229906b8db409d0cb8e22c34e266e"
@@ -543,7 +615,7 @@
     "scenario": "plot-workflow-regression",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": false,
     "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
     "checked_artifacts": 63,
     "manifest_sha256": "4fd0790aaf09d0ef7f3e4cf1d8ec2979115fd5b2eba6bc0f5ec9a170222471db"
@@ -552,7 +624,7 @@
     "scenario": "plot-workflow-sroc",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": false,
     "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
     "checked_artifacts": 40,
     "manifest_sha256": "bcad7aeddec4076b4b8030fda4e0255974e01bdeac198c680163258275f0e9a0"
@@ -561,7 +633,7 @@
     "scenario": "project-round6-polish",
     "exit_code": 0,
     "passed": true,
-    "native": null,
+    "native": false,
     "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
     "checked_artifacts": 300,
     "manifest_sha256": "c23dbe3ab766fd2310719afce39d8792e3abf7862a75e163f7babfcf75503cd3"
