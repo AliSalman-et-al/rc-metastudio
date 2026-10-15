@@ -137,7 +137,7 @@
     "script_sha256": "d0a309f060e54fc0ca5188654d142231be4e1308d11b48f8512978bfb59a86a7"
   },
   "final_source_revision": "ff03295",
-  "completion": "All targeted native batches have completed; final serialized install/reading/coefficient receipts pass. Final fresh aggregate is independently recorded in its own command receipt.",
+  "completion": "All targeted native batches completed successfully. Final fresh full profile review1-full-finished and numerical comparison review1-numerical-finished both exited zero; FULL-PROFILE verifies 108 desktop scenarios plus doctor and every retained artifact hash.",
   "application_revision": "ff03295",
   "rcmetar_revision": "8c8e8a3",
   "references_preflight": {

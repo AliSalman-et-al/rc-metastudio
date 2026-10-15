@@ -1,7 +1,6 @@
 # Opus review 1 — implementation and proof map
 
-Source commits are fast-forward pushed; no PR. Final aggregate qualification is
-pending until the final TESTS/FULL-PROFILE receipts are written. Earlier round-four
+Source commits are fast-forward pushed; no PR. Final aggregate qualification passed: 108 fresh desktop scenarios, doctor, current-source R gates, independent authorities and strict goldens. All 415 original numerical fields remain exact. Earlier round-four
 receipts and interrupted drafts remain historical evidence, including the user's
 successful recovery push of `ca6815c`.
 

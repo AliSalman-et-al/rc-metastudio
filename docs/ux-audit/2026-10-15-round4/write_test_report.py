@@ -19,7 +19,7 @@ lines = ['# Round 4 / Opus review 1 — verification', '',
     'The retained GUI boundary selection passed 186 checks with one Linux platform skip; '
     'the changed production Python files passed the configured type check. The full fresh profile '
     'is the final aggregate gate. Native drives use pinned R 4.6.1 and the test-owned library; '
-    'every source revision was reinstalled before driving. No numerical oracle or tolerance was refreshed. '
+    'every R source revision was reinstalled before driving. No numerical oracle or tolerance was refreshed. '
     'Only reviewed presentation text was refreshed with the sanctioned tool; see REVIEW1-GOLDEN-TEXT.md.', '',
     'Failures and interruptions below are retained development observations, not passing evidence. '
     'The first continuation full run was deliberately stopped after visual inspection found the wrong '
@@ -47,6 +47,8 @@ for row in records:
     content = (HERE / 'raw' / row['log']).read_text(errors='replace')
     failure = [line for line in content.splitlines() if re.search(
         r'(?:\w*Error:|^AssertionError$|^StopIteration$|^KeyboardInterrupt|^\s+assert |^FAILED |^error(?:\[|:)|timed out after|^ERROR|^Status:|^Found \d+ diagnostics|^Failed;)', line)]
+    if row['label'] in {'golden-before-refresh', 'review1-golden-review'}:
+        failure += re.findall(r'^      \{\n        \"classification\": \"text_artifact_drift\",.*?^      \},?$', content, re.M | re.S)
     if row['label'] == 'review1-verbatim-whitespace':
         failure = content.splitlines()
     if row['label'] == 'review1-full-qualified':

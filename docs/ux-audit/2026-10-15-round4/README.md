@@ -1,53 +1,46 @@
-# Round 4 — UX implementation and proof
+# Round 4 / Opus review 1 — implementation and proof
 
-> Historical draft retained from the interrupted session. The user successfully
-> pushed `ca6815c`; origin was observed at that exact commit. `resume-bmj-binary`
-> now passes natively at 3/6 digits, with 6-digit four-format exports. Fresh
-> captures were inspected: pooled-label/totals and footer/tick clearance are
-> correct. See REVIEW1-RESUME.json. Remaining review work and final aggregate
-> qualification are still open; statements below describe the earlier session.
+Implementation and qualification are complete on `ux/audit-improvements`, with
+application source through `ff03295`. Every continuation commit was fast-forward
+pushed; no PR or history rewrite. The user recovered the earlier `ca6815c` push.
+STOP/INTERRUPTION receipts preserve that history.
 
-Branch: `ux/audit-improvements`, baseline `7938292`. No PR; every commit was
-immediately fast-forward pushed through `0f21212`; the push after `ca6815c`
-exited 143 with no output. Work stopped under the hard scope rule. Opus review and the independent native re-audit
-remain separate, subsequent steps.
+Start with the [native before/after contact sheet](contact-sheet.html), then
+[CHANGES](CHANGES.md) for each finding/design item and commit, [PLAN](PLAN.md) for
+the pre-implementation choices, and [TESTS](TESTS.md) for exact commands, exits
+and failures verbatim. [COMMITS](COMMITS.md) lists source and evidence commits.
 
-[PLAN](PLAN.md) records failure modes before code, including the user's expanded
-design mandate. [CHANGES](CHANGES.md) maps each item to commits and evidence.
-[TESTS](TESTS.md) and [TEST-RUNS](TEST-RUNS.json) retain commands, exits, hashes and
-verbatim failures. [COMMITS](COMMITS.md) lists the commits. [REPRODUCE](REPRODUCE.sh)
-uses round-three's runtime, installer, command recorder and numerical oracle.
+The four review findings and D4-04..07 cover a native main-window start page,
+clear dataset navigation, consistent native controls, a result-first report with
+coherent sidebar/export behavior, and publication figure headers/ticks/footers.
+There are no new statistical features.
 
-The changes preserve fits and improve existing output and workflows: bounded
-sequential references; compact measured bubble axes; identity-correct subgroup
-weights; measured raw/weight/CI columns; contextual axes and row precision;
-named fitted nulls; active calculator inputs with pinned results/actions;
-consistent vocabulary/help; structured calculation/weight tables and pooled
-sentences; consistent actions and a genuinely pristine startup baseline.
+Qualification: **108 fresh desktop scenarios plus doctor**;
+R package `Status: OK`, retained statistical/rendering checks, independent
+public-package authorities, live bridge and strict golden gates. **415 original
+numerical fields exactly unchanged**, maximum difference 0. Only reviewed
+presentation text was refreshed through the sanctioned tool; see
+[the text review](REVIEW1-GOLDEN-TEXT.md). Original numerical fields, tolerances and
+exceptions remain fixed. The retained GUI selection passed 186 checks with one
+Linux platform skip; changed production Python files passed configured typing.
 
-Runtime: pinned R 4.6.1 and the persistent, test-owned round-three library.
-[INSTALLED-SOURCE](INSTALLED-SOURCE.json) binds source and installed RCMetaR bytes;
-[RUNTIME](RUNTIME.json) records the observed native runtime. Statistical authority
-packages were not modified, and no system R library was used.
+[FULL-PROFILE](FULL-PROFILE.json) verifies each expected scenario and every retained
+artifact hash. [NUMERICAL-EQUIVALENCE](NUMERICAL-EQUIVALENCE.json) contains every
+original field. [REVIEW1-NATIVE](REVIEW1-NATIVE.json) binds fresh xcb commands,
+R 4.6.1 identities, manifest hashes, inputs, observations and unmodified captures.
+[INSTALLED-SOURCE](INSTALLED-SOURCE.json) binds the exact source and test-owned R
+library. Authority packages and system libraries were not modified.
+[REVIEW1-EXPORTS](REVIEW1-EXPORTS.json) binds actual four-format publication bytes
+and clearly marked derived previews. [VISUAL-REVIEW](VISUAL-REVIEW.md) identifies
+frames actually inspected, including rejected development frames.
 
-[SCREENSHOTS](SCREENSHOTS.json) binds the unmodified native captures to their
-commands and observed state. [VISUAL-REVIEW](VISUAL-REVIEW.md) records which frames were actually
-inspected and which remain unreviewed. Curated before/after pairs preserve their original provenance.
-Public-package weight comparisons include duplicate HR/IRR and binary/continuous
-names, original included-row indexes, individual weights and 100% totals.
+[REPRODUCE](REPRODUCE.sh) uses the pinned runtime, owned-library installer, actual
+Qt/R driver and existing numerical oracle. Raw logs and complete desktop outputs
+remain ignored under raw/ and artifacts/verification; curated receipts and
+screenshots are committed.
 
-**Round four is unfinished.** Final qualification has not passed. Its first run
-failed 23 stale presentation assertions, and its next run was deliberately
-interrupted after native inspection found two BMJ collisions. The latest BMJ fix
-was installed but its native invocation ended without a sealed manifest when the
-required push exited 143. Full-profile and current-head numerical proof remain due.
-Evidence documentation and curated frames below are local, uncommitted drafts.
-See [STOP](STOP.json) and TESTS. The original
-415-field comparison is in [NUMERICAL-EQUIVALENCE](NUMERICAL-EQUIVALENCE.json).
-Only three reviewed null-description texts were refreshed with the sanctioned
-tool; numerical oracle values, tolerances and exceptions remain unchanged.
-
-Limits: Linux source verification only; screen reader, keyboard-only traversal,
-OS scaling, long-figure reading size and standalone exposure context remain for
-later rounds. These representative drives do not qualify every supported option
-combination, file-system failure or release package.
+Opus acceptance and the independent native re-audit are subsequent review steps.
+Linux source/controlled-fixture proof does not qualify native OS pickers,
+keyboard-only/screen-reader access, OS DPI, other platforms or release packaging.
+Historical development screenshots are retained without claiming blanket visual
+approval; final representative native inspection is recorded separately.

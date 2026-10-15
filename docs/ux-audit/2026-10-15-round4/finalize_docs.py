@@ -41,7 +41,7 @@ R package `Status: OK`, retained statistical/rendering checks, independent
 public-package authorities, live bridge and strict golden gates. **415 original
 numerical fields exactly unchanged**, maximum difference 0. Only reviewed
 presentation text was refreshed through the sanctioned tool; see
-[the text review](REVIEW1-GOLDEN-TEXT.md). Numerical contracts, tolerances and
+[the text review](REVIEW1-GOLDEN-TEXT.md). Original numerical fields, tolerances and
 exceptions remain fixed. The retained GUI selection passed 186 checks with one
 Linux platform skip; changed production Python files passed configured typing.
 
@@ -70,7 +70,9 @@ old = subprocess.check_output(['git','show','c1f4cb2:docs/ux-audit/2026-10-15-ro
 (HERE/'VISUAL-REVIEW.md').write_text('# Round 4 / review 1 — visual qualification\n\nCurrent inspection is recorded in [REVIEW1-VISUAL](REVIEW1-VISUAL.md). The self-contained [contact sheet](contact-sheet.html) compares bound native before/after captures. Final frames cover every changed presentation family; SVG geometry, public-package numerical comparisons and four-format export decoding are separate proof in REVIEW1-NATIVE/EXPORTS. Original SCREENSHOTS and rejected development frames remain historical evidence, without a claim that all historical captures are approved.\n\n## Historical interrupted-session review\n\nThe following describes the earlier stopped session; its pending work/status is superseded by README, TESTS and the current inspection log above.\n\n'+old)
 p=ROOT/'docs/ux-audit/HANDOFF.md'
 head=p.read_text().split('## Round four implementation — stopped at required push')[0]
+head=head.split('## Round four / Opus review 1 — ready for review')[0]
 head=head.replace('(2026-10-14)', '(2026-10-15)', 1)
+head=head.replace('F04 is improved, not closed:', 'Historical round-three status (superseded by round-four CHANGES): F04 is improved, not closed:')
 p.write_text(head+f'''## Round four / Opus review 1 — ready for review
 
 Application source is complete through `{source_revision}` on `ux/audit-improvements`.
@@ -90,7 +92,7 @@ comparisons. REVIEW1-VISUAL records actual inspections.
 Final `verify_all.py --full --fresh` passed {full['desktop_scenarios']} desktop
 scenarios plus doctor, R package Status OK, independent authorities/live bridge
 and strict goldens. All 415 original numerical fields are exact, maximum
-difference 0; no numeric contract/tolerance/exception was changed. Reviewed golden
+difference 0; no original numerical field, tolerance or exception was changed. Reviewed golden
 text only used the sanctioned presentation tool. Retained GUI checks: 186 passed,
 one Linux platform skip; changed production Python typing passed. Exact commands,
 all failures verbatim and hash-bound artifacts are in TESTS/TEST-RUNS/FULL-PROFILE.

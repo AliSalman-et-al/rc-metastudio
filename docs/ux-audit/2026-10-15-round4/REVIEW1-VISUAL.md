@@ -124,3 +124,9 @@ families and the two development frames used by the contact sheet remain copied.
   estimate, 95% confidence interval, Clear and OK are visible; unsupported
   Back-calculate is absent. The mean form retains generous unused vertical
   space; no new layout change is claimed for that existing form.
+
+- The recovered coefficient workflow's native frame 09-figure was also inspected:
+  Dose estimate and interval, null reference, round axis values and custom edited
+  label remain distinct. The 100% view scrolls vertically; four-format exports
+  are independently decoded by the workflow. No renderer/layout change is
+  claimed by the default-lookup repair.

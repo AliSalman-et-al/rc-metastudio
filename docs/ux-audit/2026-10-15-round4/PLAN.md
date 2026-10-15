@@ -20,8 +20,9 @@ driver; extend their existing paths rather than creating another composition.
 Each focused commit is immediately fast-forward pushed with
 `git push origin ux/audit-improvements`; on failure wait 30 seconds and retry
 once, then stop if it still fails. No force push or PR.
-Before each native R drive reinstall source into round-three's persistent owned
-library and retain source/install hashes. Retain exact commands, exits and failure
+After each R source change, reinstall that source into round-three's persistent
+owned library before native drives and retain source/install hashes. Drives
+sharing unchanged R bytes use that same verified installation. Retain exact commands, exits and failure
 text in ignored raw logs with curated results in this directory.
 
 Final gates: all 415 original numerical fields exactly equal; strict golden gates

@@ -1,4 +1,4 @@
-# UX audit work: handoff (2026-10-14)
+# UX audit work: handoff (2026-10-15)
 
 Branch: `ux/audit-improvements` (from `origin/master`). Not merged; no PR.
 
@@ -114,58 +114,35 @@ Historical round-three re-audit recommendations (the round-four brief supersedes
 9. Improve long-figure reading size and standalone clinical/exposure identity.
 10. Finish structured reports and F07 vocabulary/help; qualify native IO/recent/persisted preferences.
 
-F04 is improved, not closed: original coefficient Fixture 2 still prints 1.110223e-16 for a zero bound. F08/F09 introduction is unproven; F10 mapping predates round three. No new statistical analysis is requested. Linux evidence does not qualify other platforms, every option combination, filesystem failures, release packaging or full accessibility. Raw logs remain ignored under the new audit's raw directory.
+Historical round-three status (superseded by round-four CHANGES): Historical round-three status (superseded by round-four CHANGES): F04 is improved, not closed: original coefficient Fixture 2 still prints 1.110223e-16 for a zero bound. F08/F09 introduction is unproven; F10 mapping predates round three. No new statistical analysis is requested. Linux evidence does not qualify other platforms, every option combination, filesystem failures, release packaging or full accessibility. Raw logs remain ignored under the new audit's raw directory.
 
-## Round four implementation — stopped at required push
+## Round four / Opus review 1 — ready for review
 
-Round-four source work is on `ux/audit-improvements`, baseline `7938292`.
-[Local round-four README](2026-10-15-round4/README.md), PLAN, CHANGES, TESTS and
-COMMITS bind implementation and existing evidence. Every commit through
-`0f21212` was immediately fast-forward pushed. The required
-`git push origin ux/audit-improvements` after `ca6815c` exited **143**, with empty
-stdout/stderr. Work stopped under the hard push rule; branch remains ahead one.
-No retry, PR or history rewrite. Evidence documents/screenshots and the adjusted
-round-three full-profile collector remain uncommitted local drafts.
+Application source is complete through `ff03295` on `ux/audit-improvements`.
+All continuation commits were immediately fast-forward pushed; no PR. The user
+recovered the earlier `ca6815c` push before continuation. Original failure and
+interruption receipts remain in the [round-four folder](2026-10-15-round4/README.md).
 
-The nine priority items and three planned design improvements were implemented.
-Representative native checks passed for sequence/range/export contracts, compact
-bubble axes, independent duplicate-study weights, measured 3/6-digit columns,
-contextual labels, null prose, calculator modes and copy/CSV/help. Original 415
-fields matched exactly before the final BMJ layout repair. Only three reviewed
-null-description golden texts were refreshed through the sanctioned tool.
+The four review findings and ranked D4-04..07 are implemented: qualified BMJ
+3/6-digit/export clearance; measured multiline headers and round transformed
+ticks; concise actual-null wording; compact confidence/inference presentation;
+a native start page with full/missing recent paths; clearer dataset navigation;
+shared native control sizing/icons; result-first report reading and synchronized
+sidebar/export actions; publication finishing. CHANGES maps commits and proof.
+The [contact sheet](2026-10-15-round4/contact-sheet.html) gives before/after native
+comparisons. REVIEW1-VISUAL records actual inspections.
 
-**Round four is unfinished.** First full run failed 23 stale R presentation
-expectations, corrected in `58fa037`. Second full run was deliberately interrupted
-(SIGINT own PID 761953, exit 130) after screenshot inspection found BMJ pooled-label
-and footer/tick collisions. `0f21212` adds rendered proof; `ca6815c` fixes their
-measured layout. Installed provenance is recorded, but its native binary invocation
-ended with no sealed manifest and the full fresh/profile/golden/numerical repeat
-has not passed. Current final visual review covers 28 of 68 curated frames; full
-inspection and visible weight-table/menu/covariate curation remain due.
+Final `verify_all.py --full --fresh` passed 108 desktop
+scenarios plus doctor, R package Status OK, independent authorities/live bridge
+and strict goldens. All 415 original numerical fields are exact, maximum
+difference 0; no original numerical field, tolerance or exception was changed. Reviewed golden
+text only used the sanctioned presentation tool. Retained GUI checks: 186 passed,
+one Linux platform skip; changed production Python typing passed. Exact commands,
+all failures verbatim and hash-bound artifacts are in TESTS/TEST-RUNS/FULL-PROFILE.
+Pinned R 4.6.1 and the test-owned library were used, with installed-source proof.
 
-Resume by addressing the failed required push, then complete affected native BMJ
-and sparse RevMan collision checks, inspect all final frames, run
-`verify_all.py --full --fresh`, repeat 415-field equality and strict golden gates,
-and finish/commit/push the evidence. Do not treat the earlier passing receipts as
-current-head aggregate qualification. Opus review and independent native re-audit
-follow implementation acceptance; neither was started here.
-
-The broadened design mandate remains part of the process/scope rules above.
-Screen-reader, keyboard and OS scaling qualification, long-figure reading size
-and standalone exposure context remain deferred. Linux source verification is
-not release or cross-platform qualification.
-
-## Round four — Opus review 1 continuation
-
-The user resolved the transient push interruption: `ca6815c` is on origin,
-verified by `git ls-remote`. Original STOP/INTERRUPTION receipts remain historical.
-Reinstalled pinned source and `resume-bmj-binary` passed natively; inspected
-3/6-digit BMJ frames clear pooled labels/totals and test/ticks. Six-digit exports
-decode in four formats. REVIEW1-RESUME.json binds this proof. Earlier drafts are
-preserved with historical-status notices. The initial evidence commit omitted
-these notices after an unqualified `python` command failed; this follow-up
-corrects that documentation error.
-
-Review 1 findings and D4-04..07 are planned in PLAN.md before implementation.
-Final fresh qualification, 415 exact fields and strict goldens remain due after
-source work. No PR.
+Next: Opus acceptance review, then the requested independent low-effort native
+re-audit. Neither was started by the implementation agent. Accessibility,
+OS DPI/file pickers, other platforms and release packages remain unqualified;
+no all-option-combinations claim. Preserve the broadened design mandate and the
+process rules above for subsequent rounds.

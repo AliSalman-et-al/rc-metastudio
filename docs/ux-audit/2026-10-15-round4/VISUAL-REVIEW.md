@@ -1,3 +1,11 @@
+# Round 4 / review 1 — visual qualification
+
+Current inspection is recorded in [REVIEW1-VISUAL](REVIEW1-VISUAL.md). The self-contained [contact sheet](contact-sheet.html) compares bound native before/after captures. Final frames cover every changed presentation family; SVG geometry, public-package numerical comparisons and four-format export decoding are separate proof in REVIEW1-NATIVE/EXPORTS. Original SCREENSHOTS and rejected development frames remain historical evidence, without a claim that all historical captures are approved.
+
+## Historical interrupted-session review
+
+The following describes the earlier stopped session; its pending work/status is superseded by README, TESTS and the current inspection log above.
+
 # Round 4 — actual visual inspection, interrupted
 
 > Historical draft retained from the interrupted session. The user successfully
