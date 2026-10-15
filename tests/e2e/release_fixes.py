@@ -46,7 +46,8 @@ def run_coefficients(app, window, work, record):
         observed = check_axis(artifact.display_path(), 'transformed', ratio=True)
         record('coefficient-log-default', view, title=title, ticks=observed, coefficients=json.loads(before), plots={title:artifact.display_path()})
         def edit(dialog):
-            assert dialog.axis_scale.isVisible() and dialog.axis_scale.currentData() == 'transformed'
+            assert dialog.axis_scale.isVisible(), 'coefficient scale chooser hidden'
+            assert dialog.axis_scale.currentData() == 'transformed', dialog.axis_scale.currentData()
             dialog.axis_scale.setCurrentIndex(dialog.axis_scale.findData('natural'))
             record('coefficient-linear-choice', dialog, title=title)
             click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))

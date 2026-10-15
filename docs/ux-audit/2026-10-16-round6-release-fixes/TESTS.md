@@ -76,3 +76,35 @@ AssertionError: ('tiny positive bound lost', '0.123457 [1.371742e-11, 1.1111e+09
 ```
 
 Corrected the assertion to compare the displayed positive bound with the independently validated fitted effect/SE's 95% normal interval. No production estimate or stored input was changed. Stress-2 is a fresh replay; stress-1 remains failed.
+
+The corrected exact-input coefficient-2 drive failed the real editor-default assertion: the renderer defaulted to log spacing, but the editor still inferred the natural default from the parent Sens/Spec metric. Verbatim failure:
+
+```
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/release_fixes.py", line 49, in edit
+    assert dialog.axis_scale.isVisible() and dialog.axis_scale.currentData() == 'transformed'
+AssertionError
+```
+
+The dedicated OR coefficient editor now resolves ratio scale before its parent's proportion metric. This is a product correction, not a relaxed expectation.
+
+Renderer checks exited 1 on three obsolete blank-header expectations, and no other failure:
+
+```
+── 1. Failure ('test-forest-metafor-renderer.R:885:5'): BMJ Forest Style builds 
+Expected `bundle$ilab$headers` to equal `case$expected_headers`.
+Differences:
+`actual`:   "Events / Total" "Events / Total" "Weight (%)"
+`expected`: ""               ""               "Weight (%)"
+── 2. Failure ('test-forest-metafor-renderer.R:1438:3'): single-arm binary RevMa
+Expected `bmj.bundle$ilab$headers` to equal `c("", "Weight (%)")`.
+Differences:
+`actual`:   "Events / Total" "Weight (%)"
+`expected`: ""               "Weight (%)"
+── 3. Failure ('test-forest-metafor-renderer.R:1983:3'): subgroup workflow saves
+Expected `bundle$ilab$headers` to equal `c("", "", "Weight (%)")`.
+Differences:
+`actual`:   "Events / Total" "Events / Total" "Weight (%)"
+`expected`: ""               ""               "Weight (%)"
+```
+
+Updated those existing presentation assertions and removed the unused BMJ group-rule generator/assertions replaced by shared measured headers. Reinstall precedes further native driving.

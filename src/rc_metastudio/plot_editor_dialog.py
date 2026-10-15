@@ -90,7 +90,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.axis_scale.setAccessibleName("Effect axis scale")
         self.axis_scale.setToolTip("Change axis spacing only. Fitted effects, confidence intervals and weights stay the same.")
         measure = str(self._scalar(self._params.get("measure", "")))
-        proportion = measure in {"PR", "PLN", "PLO", "PAS", "PFT", "Sens", "Spec"}
+        proportion = not self._is_reitsma_coefficient and measure in {"PR", "PLN", "PLO", "PAS", "PFT", "Sens", "Spec"}
         ratio = self._is_reitsma_coefficient or measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"}
         self.axis_scale.addItem("Linear, natural units", "natural")
         self.axis_scale.addItem("Logarithmic, natural labels" if ratio else "Fitted transformation", "transformed")

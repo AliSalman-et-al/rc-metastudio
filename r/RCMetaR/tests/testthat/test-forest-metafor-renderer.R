@@ -843,7 +843,7 @@ test_that("BMJ Forest Style builds faithful family columns and renders smoke cas
   fixtures <- list(
     binary = list(
       fixture = metafor_binary_fixture(),
-      expected_headers = c("", "", "Weight (%)"),
+      expected_headers = c("Events / Total", "Events / Total", "Weight (%)"),
       expected_groups = c("Intervention", "Control"),
       axis_label = "Odds ratio",
       favours_left = "",
@@ -937,12 +937,6 @@ test_that("BMJ raw-column layouts measure long labels and wrapped headers", {
   long.bundle <- make_bundle(long.fixture)
   long.plan <- rcmetar.forest.layout.preflight(long.bundle)
 
-  continuous.fixture <- metafor_continuous_fixture()
-  continuous.fixture$params$fp_style <- "bmj"
-  continuous.bundle <- make_bundle(continuous.fixture)
-  continuous.plan <- rcmetar.forest.layout.preflight(continuous.bundle)
-  continuous.rules <- rcmetar.bmj.group.header.rules(continuous.bundle, continuous.plan$layout, continuous.bundle$ilab)
-
   expect_equal(long.plan$style$name, "bmj")
   expect_equal(long.plan$style$template, "standard")
   expect_gt(long.plan$device$width, short.plan$device$width)
@@ -956,11 +950,7 @@ test_that("BMJ raw-column layouts measure long labels and wrapped headers", {
   expect_match(rcmetar.bmj.wrap.header(long.bundle$ilab$groups[[1]]), "\n", fixed = TRUE)
   expect_match(rcmetar.bmj.wrap.direction(long.bundle$style_blocks$favours_right), "\n", fixed = TRUE)
   expect_false("layout_plan" %in% names(long.bundle))
-  expect_equal(continuous.rules$group, c("Treatment", "Control"))
-  expect_lt(continuous.rules$left[[1]], min(continuous.plan$layout$ilab.xpos[1:3]))
-  expect_gt(continuous.rules$right[[1]], max(continuous.plan$layout$ilab.xpos[1:3]))
-  expect_lt(continuous.rules$left[[2]], min(continuous.plan$layout$ilab.xpos[4:6]))
-  expect_gt(continuous.rules$right[[2]], max(continuous.plan$layout$ilab.xpos[4:6]))
+
 })
 
 test_that("unspecified forest style selects the complete RevMan layout", {
@@ -1435,7 +1425,7 @@ test_that("single-arm binary RevMan and BMJ styles use one-arm count columns and
   fixture$params$fp_style <- "bmj"
   bmj.bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
-  expect_equal(bmj.bundle$ilab$headers, c("", "Weight (%)"))
+  expect_equal(bmj.bundle$ilab$headers, c("Events / Total", "Weight (%)"))
   expect_equal(bmj.bundle$ilab$groups, "Cohort")
   expect_equal(unname(bmj.bundle$ilab$matrix[1, 1]), "4 / 100")
   expect_equal(bmj.bundle$style_blocks$favours_left, "")
@@ -1980,7 +1970,7 @@ test_that("subgroup workflow saves and renders BMJ subtotal diamonds", {
   expect_equal(bundle$render_engine, "metafor")
   expect_equal(bundle$forest_variant, "subgroup")
   expect_equal(bundle$fp_style, "bmj")
-  expect_equal(bundle$ilab$headers, c("", "", "Weight (%)"))
+  expect_equal(bundle$ilab$headers, c("Events / Total", "Events / Total", "Weight (%)"))
   expect_length(bundle$subgroups$polygon_rows, 2)
   expect_true(inherits(bundle$subgroups$overall, "rma"))
   expect_match(bundle$style_blocks$heterogeneity, "Heterogeneity: τ² = ")
