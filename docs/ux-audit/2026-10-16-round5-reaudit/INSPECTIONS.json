@@ -348,5 +348,65 @@
     "path": "screenshots/matrix-twoarm-smd-meta-regression-report.png",
     "sha256": "633f1c2af48d178c343abb5701519e57e0ce150c63d0480787e6f071d8f25604",
     "observation": "Native figure/report pair visually inspected. SMD 0.232538 [-0.002029,0.467106], subgroup/omission/cumulative rows agree. Regression slope -0.054424 and curve agree. Caption wraps clearly, arm identity/SD interpretation explicit."
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-standard-figure.png",
+    "sha256": "fa11a4f3f9ccfa54399d7bb2f17adb9926a901aa3d974afbb2fd8a689b893936",
+    "observation": "Native diagnostic pair inspected. Sensitivity 0.632248 [0.563938,0.695632], specificity 0.955188 [0.932201,0.970627]. Cumulative/omission/subgroups agree on visible rows; correct Index test context. Regression OR sensitivity0.9667/specificity0.7519 agrees with chart; report selected-digit inconsistency is R5-03."
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-standard-report.png",
+    "sha256": "214fa459cc1e5196b99b5037abc5ff1b14a9c0db6b0c1deea3c8c55d58fe6c03",
+    "observation": "Native diagnostic pair inspected. Sensitivity 0.632248 [0.563938,0.695632], specificity 0.955188 [0.932201,0.970627]. Cumulative/omission/subgroups agree on visible rows; correct Index test context. Regression OR sensitivity0.9667/specificity0.7519 agrees with chart; report selected-digit inconsistency is R5-03."
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-cumulative-figure.png",
+    "sha256": "33a0aa72d9c131251212fdb33b90048f0322e3ffefd6923088d063920b184aa5",
+    "observation": "Native diagnostic pair inspected. Sensitivity 0.632248 [0.563938,0.695632], specificity 0.955188 [0.932201,0.970627]. Cumulative/omission/subgroups agree on visible rows; correct Index test context. Regression OR sensitivity0.9667/specificity0.7519 agrees with chart; report selected-digit inconsistency is R5-03."
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-cumulative-report.png",
+    "sha256": "c03cfe80bf021f8d81fadab4141fb8575fc5cce18f930c22364ac687c1a5e363",
+    "observation": "Native diagnostic pair inspected. Sensitivity 0.632248 [0.563938,0.695632], specificity 0.955188 [0.932201,0.970627]. Cumulative/omission/subgroups agree on visible rows; correct Index test context. Regression OR sensitivity0.9667/specificity0.7519 agrees with chart; report selected-digit inconsistency is R5-03."
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-leave-one-out-figure.png",
+    "sha256": "95645bd97cdaa81d01ced03fb5fc7beaf1cdea5dcc83e52419d8f0b0eb3e1e37",
+    "observation": "Native diagnostic pair inspected. Sensitivity 0.632248 [0.563938,0.695632], specificity 0.955188 [0.932201,0.970627]. Cumulative/omission/subgroups agree on visible rows; correct Index test context. Regression OR sensitivity0.9667/specificity0.7519 agrees with chart; report selected-digit inconsistency is R5-03."
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-leave-one-out-report.png",
+    "sha256": "6846533b0c482281eb388d3f864ad099d1ede0b8fc2fb6b02496b319645e10cc",
+    "observation": "Native diagnostic pair inspected. Sensitivity 0.632248 [0.563938,0.695632], specificity 0.955188 [0.932201,0.970627]. Cumulative/omission/subgroups agree on visible rows; correct Index test context. Regression OR sensitivity0.9667/specificity0.7519 agrees with chart; report selected-digit inconsistency is R5-03."
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-subgroup-figure.png",
+    "sha256": "a3f771a578f350c428825f90e5f3eb0fa899b371a9fef8542fbaa451d7f89b4a",
+    "observation": "Native diagnostic pair inspected. Sensitivity 0.632248 [0.563938,0.695632], specificity 0.955188 [0.932201,0.970627]. Cumulative/omission/subgroups agree on visible rows; correct Index test context. Regression OR sensitivity0.9667/specificity0.7519 agrees with chart; report selected-digit inconsistency is R5-03."
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-subgroup-report.png",
+    "sha256": "263f54b7687bcfa50998d4ff51ba1f8f03a04d0107ce7c808249807081356d3c",
+    "observation": "Native diagnostic pair inspected. Sensitivity 0.632248 [0.563938,0.695632], specificity 0.955188 [0.932201,0.970627]. Cumulative/omission/subgroups agree on visible rows; correct Index test context. Regression OR sensitivity0.9667/specificity0.7519 agrees with chart; report selected-digit inconsistency is R5-03."
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-meta-regression-figure.png",
+    "sha256": "c8df39fef7bece075d244a1283b1339a262391ab65343f33ea23a3de319ce47e",
+    "observation": "Native diagnostic pair inspected. Sensitivity 0.632248 [0.563938,0.695632], specificity 0.955188 [0.932201,0.970627]. Cumulative/omission/subgroups agree on visible rows; correct Index test context. Regression OR sensitivity0.9667/specificity0.7519 agrees with chart; report selected-digit inconsistency is R5-03."
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-meta-regression-report.png",
+    "sha256": "1e4114477daa8ac285de86da70eb4409820f335e00448f0a336688ed05dfb301",
+    "observation": "Native diagnostic pair inspected. Sensitivity 0.632248 [0.563938,0.695632], specificity 0.955188 [0.932201,0.970627]. Cumulative/omission/subgroups agree on visible rows; correct Index test context. Regression OR sensitivity0.9667/specificity0.7519 agrees with chart; report selected-digit inconsistency is R5-03."
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-meta-regression-figure-bottom.png",
+    "sha256": "41ecdb3308189f3dd2bfc533806b938a695c8736ae4c3388ea83192007bf059e",
+    "observation": "Native specificity component inspected; standard clinical interval agrees with report; regression OR0.7519 CI0.5611\u20131.008 agrees with report and chart. Compact ticks and axis identity readable."
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-standard-figure-1.png",
+    "sha256": "e00399446a6be48c6c9ecc5be443d9aaa485eca4ac885449fe64d6af579728ab",
+    "observation": "Native specificity component inspected; standard clinical interval agrees with report; regression OR0.7519 CI0.5611\u20131.008 agrees with report and chart. Compact ticks and axis identity readable."
   }
 ]

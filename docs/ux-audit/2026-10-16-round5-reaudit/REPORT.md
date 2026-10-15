@@ -16,11 +16,11 @@ Early binary standard evidence: [figure](screenshots/matrix-twoarm-proportion-st
 
 ## 4. New and remaining findings
 
-F11 is fixed on the fresh single-arm proportion bubble: [native figure](screenshots/matrix-onearm-proportion-meta-regression-figure.png) has no exterior zero line between ticks and Dose. Remaining metric/explicit-bound/export proof is pending. ### R5-01 — Medium: ratio tables leave the standard-error scale implicit
+F11 is fixed on the fresh single-arm proportion bubble: [native figure](screenshots/matrix-onearm-proportion-meta-regression-figure.png) has no exterior zero line between ticks and Dose. Remaining metric/explicit-bound/export proof is pending. ### R5-01 — Medium: transformed-effect tables leave the standard-error scale implicit
 
-The [OR subgroup table](screenshots/matrix-twoarm-proportion-subgroup-report.png) puts clinical OR 0.746519 beside “Std. error” 0.375206. The estimate/CI are exponentiated; the SE remains on the fitted log scale (`results_display.R`, sequential/subgroup formatters). Sequential rows do the same. A reader copying the table can mistake that number for an SE of the displayed OR. The [round-four counterpart](../2026-10-15-round4-reaudit/screenshots/matrix-twoarm-proportion-subgroup-report.png) already has this label: **pre-existing, not a round-five regression**. No wrong fitted value is alleged.
+The [OR subgroup table](screenshots/matrix-twoarm-proportion-subgroup-report.png) puts clinical OR 0.746519 beside “Std. error” 0.375206. The estimate/CI are exponentiated; the SE remains on the fitted log scale (`results_display.R`, sequential/subgroup formatters). Sequential rows do the same. The [diagnostic cumulative table](screenshots/matrix-diagnostic-cumulative-report.png) similarly pairs sensitivity 0.632248 with fitted logit-scale SE 0.145264 under the same bare label. A reader copying the table can mistake that number for an SE of the displayed OR. The [round-four counterpart](../2026-10-15-round4-reaudit/screenshots/matrix-twoarm-proportion-subgroup-report.png) already has this label: **pre-existing, not a round-five regression**. No wrong fitted value is alleged.
 
-**Principle:** a quantity's scale belongs with its label. **Recommendation:** label the existing column “SE (log OR)” / corresponding HR, IRR or transformed metric, or add a concise table-local scale note shared by Text, Tables, copy and exports. Preserve existing fitted values and clinical CIs. Regression coefficient tables already explicitly name their log scale.
+**Principle:** a quantity's scale belongs with its label. **Recommendation:** label the existing column “SE (log OR)” / corresponding HR, IRR or transformed metric, and logit sensitivity/specificity where applicable, or add a concise table-local scale note shared by Text, Tables, copy and exports. Preserve existing fitted values and clinical CIs. Regression coefficient tables already explicitly name their log scale.
 
 
 ### R5-02 — Low: the new caption repeats the same identity
@@ -30,6 +30,12 @@ The [coefficient figure](screenshots/matrix-reg-coef-standard-figure.png) reads 
 **Principle:** every identity fragment should add information. **Recommendation:** collapse identical adjacent type/metric labels in the default caption and preserve investigator-authored captions verbatim. Retain actual outcome, arm and follow-up identity.
 
 Remaining F04 precision detail: the [MD regression report](screenshots/matrix-twoarm-mean-meta-regression-report.png) now prints slope/Z as zero, closing the observed negative-zero case. The [MD subgroup table](screenshots/matrix-twoarm-mean-subgroup-report.png) still prints Qm `1.428745e-31` while its figure uses `0.000000`; round four exported the identical tiny statistic. This is presentation consistency, not a numerical regression. Prefer the selected decimal policy for test statistics, retaining the separate protection for genuinely tiny effects/intervals.
+
+### R5-03 — Medium: diagnostic meta-regression bypasses selected output precision
+
+The [native diagnostic moderator report](screenshots/matrix-diagnostic-meta-regression-report.png) shows likelihood-ratio statistic `3.802`, P `0.149`, sensitivity coefficient `-0.03388`, CI `-0.2018` to `0.134`, and odds ratio `0.9667`. The actual configured/reopened method parameters in `raw/matrix-diagnostic/steps.jsonl`, step 71, record `digits: 6`. Its residual I² block does use six decimals, while coefficient/test data frames use package-style significant digits. The exported text retains the inconsistency. The round-four exported report contains the same strings: **pre-existing, not a new regression**. Thus the round-five “single precision policy” claim is incomplete for this existing analysis.
+
+**Principle:** a visible presentation setting must govern the whole output. **Recommendation:** render the existing numeric diagnostic regression coefficient/ML-test tables through the shared presentation policy, preserving raw fitted numbers and existing inference. Normalize `moderator`, `statistic`, `Std Error`, `p-value` into readable, consistently cased headings and explicitly distinguish modeled-scale coefficients from odds ratios. No new statistical quantity is needed.
 
 ## 5. Microcopy and information design
 
