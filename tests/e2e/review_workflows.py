@@ -84,8 +84,13 @@ def run(app, window, root, record, analyze):
         record("review-ordered-result-" + order, changed, labels=labels, numbers=baseline,
                plots=dict(changed.results.display_images))
         svg = ET.parse(next(iter(changed.results.display_images.values())))
-        captions = ["".join(node.itertext()) for node in svg.iter("{http://www.w3.org/2000/svg}text")]
-        assert "Odds ratio (log scale)" in captions, captions
+        nodes = list(svg.iter("{http://www.w3.org/2000/svg}text"))
+        captions = ["".join(node.itertext()) for node in nodes]
+        tick_baseline = max(float(node.attrib["y"]) for node in nodes
+                            if "".join(node.itertext()) in {"0.01", "0.1", "1", "10", "100"})
+        axis_titles = ["".join(node.itertext()) for node in nodes
+                       if float(node.attrib["y"]) > tick_baseline and "".join(node.itertext()) == "Odds ratio"]
+        assert len(axis_titles) == 1 and "Odds ratio (log scale)" not in captions, captions
         changed.close()
         app.processEvents()
     view.change_settings_action.trigger()
