@@ -95,7 +95,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             self.default_layout.addWidget(caption, row, 0)
             self.default_layout.addWidget(field, row, 1)
         self.figure_caption = QLineEdit(self)
-        self.figure_caption.setText(str(self._scalar(self._params.get("plot_caption", "")) or "").replace("\n", " | "))
+        self.figure_caption.setText(str(self._scalar(self._params.get("plot_caption", "")) or "").replace("\n", " · "))
         self.figure_caption.setAccessibleName("Figure caption")
         self.figure_caption.setToolTip("Outcome, comparison and follow-up for standalone figures. Edit or clear to remove.")
         self.figure_caption.setMaxLength(1000)

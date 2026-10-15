@@ -184,7 +184,7 @@ rcmetar.forest.default.device.metrics <- function(bundle) {
                 values <- c(bundle$ilab$matrix[, index], bundle$ilab$headers[[index]])
                 key <- bundle$ilab$columns[[index]]$key
                 if (key == "weight") values <- c(values, "100.0%")
-                if (grepl("events|total|_n$|true_|false_", key) &&
+                if (grepl("events|person_time|total|_n$|true_|false_", key) &&
                         rcmetar.raw.values.complete(bundle$ilab$matrix[, index])) {
                     values <- c(values, as.character(sum(as.numeric(bundle$ilab$matrix[, index]))))
                 }
@@ -310,7 +310,8 @@ rcmetar.forest.default.rows <- function(bundle) {
         ))
     }
     header.extra <- if (rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE)) {
-        max(0, max.group.header.lines - 1) * 0.55
+        max(0, max.group.header.lines - 1) * 0.65 +
+            max(0, max(vapply(strsplit(bundle$ilab$headers, "\n", fixed=TRUE), length, integer(1)), 1) - 1) * 0.65
     } else {
         0
     }

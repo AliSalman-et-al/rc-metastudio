@@ -8,6 +8,17 @@ from unittest.mock import patch
 from xml.etree import ElementTree as ET
 
 
+def check_caption(path, identity):
+    """Check the actual figure text, including wrapping, rather than its params."""
+    nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
+    text = " ".join("".join(node.itertext()) for node in nodes)
+    expected = " ".join(identity.replace("\n", " · ").split())
+    assert expected in " ".join(text.split()), (expected, text)
+    caption = nodes[-1]
+    size = float(re.search(r"font-size:\s*([\d.]+)px", caption.attrib["style"])[1])
+    assert size >= 12.9, ("unreadable caption", caption.attrib)
+
+
 def check_report(app, view, work, record):
     from rc_metastudio import results_window
 
@@ -1002,6 +1013,8 @@ def run_irr_context(app, window, record):
         view = analyze_existing(app, window, "standard", "event_rates.random", record, parameters={"fp_style":style})
         check_annotation_spacing(view)
         title, path = next(iter(view.results.display_images.items()))
+        from rc_metastudio.analysis_identity import dataset_identity
+        check_caption(path, dataset_identity(window.model))
         labels = ["".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text")]
         assert all(label == label.strip() for label in labels if re.fullmatch(r"\s*[-+\d.]+\s*", label)), labels
         assert "Events" in labels and any("Person-time" in label for label in labels), labels
@@ -1024,6 +1037,9 @@ def run_irr_context(app, window, record):
                 b = header_box(other)
                 if min(a[1],b[1])-max(a[0],b[0]) > 1:
                     assert a[2]-b[3] >= 1 or b[2]-a[3] >= 1, ("IRR header collision", style, "".join(node.itertext()), "".join(other.itertext()), a, b)
+        for node in nodes:
+            if "Heterogeneity:" in "".join(node.itertext()) or "Test for overall effect" in "".join(node.itertext()) or "prediction interval:" in "".join(node.itertext()):
+                assert "font-weight: bold" not in node.attrib["style"], node.attrib
         for node in svg.iter("{http://www.w3.org/2000/svg}text"):
             if "Person-time" not in "".join(node.itertext()):
                 continue
@@ -1032,10 +1048,18 @@ def run_irr_context(app, window, record):
             for line in svg.iter("{http://www.w3.org/2000/svg}line"):
                 if abs(float(line.attrib["y1"]) - float(line.attrib["y2"])) < .01:
                     left, right = sorted((float(line.attrib["x1"]), float(line.attrib["x2"])))
-                    assert not (left <= x <= right and y-height < float(line.attrib["y1"]) < y), ("rule crosses exposure header", node.attrib, line.attrib)
+                    assert not (left <= x <= right and y-height < float(line.attrib["y1"]) < y + height * .25), ("rule crosses exposure header", node.attrib, line.attrib)
+        raw = window.model.get_current_raw_data()
+        totals = [str(sum(column)) for column in zip(*raw, strict=True)]
+        weight = next(node for node in nodes if "".join(node.itertext()) in {"100.0%", "100.0"})
+        pooled = [node for node in nodes if abs(float(node.attrib["y"]) - float(weight.attrib["y"])) < 3]
+        pooled_text = ["".join(node.itertext()) for node in pooled]
+        assert all(total in pooled_text for total in totals), (style, totals, pooled_text)
+        assert all("font-weight: bold" in node.attrib["style"] for node in pooled if "".join(node.itertext()) in totals), pooled_text
         destination = Path(path).parent / ("irr-context-" + style + ".svg")
         view.plot_service.export(regenerator="forest", params_path=view.params_paths[title], output_path=str(destination))
         assert unit in destination.read_text()
+        check_caption(destination, dataset_identity(window.model))
         view.report_action.setChecked(False)
         view._show_report(False)
         record("round5-irr-context", view, style=style, unit=unit, raw=window.model.get_current_raw_data(), plots={title:path}, exports={"svg":str(destination)})

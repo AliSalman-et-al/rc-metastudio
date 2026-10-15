@@ -251,7 +251,6 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
     directions <- rcmetar.revman.direction.labels(bundle)
     if (nzchar(directions$left) || nzchar(directions$right)) plot.margin[[1]] <- 6
     graphics::par(bg="white", mar=plot.margin, fg="black", col.axis="black", col.lab="black")
-    top <- plan$rows$top
     ylim <- plan$rows$ylim
 
     accent.color <- rcmetar.forest.accent.color(bundle$params)
@@ -271,7 +270,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
         cex = plan$typography$cex,
         cex.lab = plan$typography$cex.lab,
         cex.axis = plan$typography$cex.axis,
-        header = if (manual.sequential.labels) FALSE else if (plan$headers$show) c(plan$headers$study, "") else FALSE,
+        header = FALSE,
         rows = rows,
         ylim = ylim,
         annotate = FALSE,
@@ -279,7 +278,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
         col = forest.color,
         colshade = "#eeeeee",
         shade = "zebra",
-        lty = rcmetar.metafor.forest.line.types(plan),
+        lty = c("solid", "blank", "blank"),
         pch = 15,
         psize = rcmetar.metafor.psize(bundle),
         lwd = 1.35,
@@ -289,7 +288,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
     forest.args <- forest.args[!vapply(forest.args, is.null, logical(1))]
 
     if (isTRUE(bundle$single_study)) {
-        plot.info <- do.call(metafor::forest.default, c(
+        do.call(metafor::forest.default, c(
             list(
                 x = bundle$effect$yi,
                 sei = bundle$effect$sei,
@@ -305,7 +304,7 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
             rcmetar.draw.metafor.single.study.accent(bundle, rows, alim, accent.color)
         }
     } else {
-        plot.info <- do.call(metafor::forest.rma, c(list(x = bundle$res), c(forest.args, list(mlab="", addfit=FALSE, border=accent.color, colout=accent.color))))
+        do.call(metafor::forest.rma, c(list(x = bundle$res), c(forest.args, list(mlab="", addfit=FALSE, border=accent.color, colout=accent.color))))
         if (!identical(bundle$forest_variant, "subgroup")) {
             rcmetar.draw.default.summary.diamond(bundle$res, -1, accent.color, alim)
         }
@@ -323,20 +322,26 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
     if (!manual.sequential.labels && rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
         labels <- rcmetar.metafor.effect.labels(bundle)
         label.rows <- if (length(labels) == length(rows) + 1L) c(rows, -1) else rows
-        graphics::text(rcmetar.forest.annotation.x(layout), label.rows, labels, pos=2, cex=size$cex)
-        if (plan$headers$show) {
-            graphics::text(rcmetar.forest.annotation.x(layout), top - 0.2, plan$headers$effect, pos=2, font=2, cex=size$cex)
-        }
+        fonts <- rep(1, length(labels))
+        if (length(labels) == length(rows) + 1L) fonts[[length(fonts)]] <- 2
+        graphics::text(rcmetar.forest.annotation.x(layout), label.rows, labels, pos=2, font=fonts, cex=size$cex)
     }
 
     if (identical(bundle$forest_variant, "subgroup")) {
         rcmetar.draw.default.subgroups(bundle, rcmetar.forest.study.x(layout), size$cex, layout)
     }
 
-    if (length(bundle$ilab$headers) > 0 && plan$headers$show && !manual.sequential.labels) {
+    if (plan$headers$show && !manual.sequential.labels) {
         header.par <- graphics::par(cex=size$cex, font=2)
-        rcmetar.draw.forest.column.headers(bundle, layout, plot.info$ylim[2] - 1.55)
+        rule.y <- max(rows) + 1
+        graphics::segments(layout$xlim[[1]], rule.y, layout$xlim[[2]], rule.y, lwd=0.8)
+        header.y <- rcmetar.draw.forest.column.headers(bundle, layout, rule.y)
+        graphics::text(rcmetar.forest.study.x(layout), header.y, plan$headers$study, pos=4)
+        graphics::text(rcmetar.forest.annotation.x(layout), header.y, plan$headers$effect, pos=2)
         graphics::par(header.par)
+    }
+    if (!isTRUE(bundle$single_study) && !identical(bundle$forest_variant, "subgroup")) {
+        rcmetar.draw.forest.totals(bundle, layout, -1, size$cex)
     }
     rcmetar.draw.default.heterogeneity(bundle, rcmetar.forest.study.x(layout), cex=size$cex)
     rcmetar.draw.forest.direction(bundle, alim, size$cex)

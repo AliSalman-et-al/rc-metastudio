@@ -234,15 +234,29 @@ rcmetar.export.svg_render <- function(svg.path, outpath, size) {
 
 rcmetar.render.plot_file <- function(outpath, size, draw, display.path=NULL, caption=NULL) {
     if (length(caption) && !is.na(caption[[1]]) && nzchar(caption[[1]])) {
-        lines <- strwrap(as.character(caption[[1]]), width=max(40, floor(size$width * 11)))
-        caption.height <- 0.22 * length(lines) + 0.18
+        caption <- gsub("[\r\n]+", " \u00b7 ", as.character(caption[[1]]))
+        caption.cex <- 1.08
+        lines <- rcmetar.forest.with.measurement.device({
+            words <- strsplit(caption, "[[:space:]]+")[[1]]
+            wrapped <- character(0)
+            line <- ""
+            for (word in words) {
+                candidate <- trimws(paste(line, word))
+                if (nzchar(line) && graphics::strwidth(candidate, units="inches", cex=caption.cex) > size$width - 0.6) {
+                    wrapped <- c(wrapped, line)
+                    line <- word
+                } else line <- candidate
+            }
+            c(wrapped, line)
+        })
+        caption.height <- 0.24 * length(lines) + 0.4
         size$height <- size$height + caption.height
         draw.plot <- draw
         draw <- function() {
             graphics::par(omi=c(0, 0, caption.height, 0))
             result <- draw.plot()
             graphics::mtext(paste(lines, collapse="\n"), side=3, outer=TRUE,
-                            line=0.4, at=0.02, adj=0, cex=0.85, family="sans")
+                            line=1.0, at=0.02, adj=0, cex=caption.cex, font=1, family="sans")
             result
         }
     }

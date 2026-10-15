@@ -163,7 +163,7 @@ rcmetar.bmj.total.values <- function(bundle) {
             totals[[key]] <- paste(sum(events), sum(totals.raw), sep=" / ")
         }
     }
-    for (key in c("experimental_total", "control_total")) {
+    for (key in c("experimental_total", "control_total", "events1", "person_time1", "events2", "person_time2")) {
         index <- rcmetar.bmj.column.index(bundle, key)
         if (length(index) == 1 && rcmetar.raw.values.complete(bundle$ilab$matrix[, index])) {
             totals[[key]] <- sum(suppressWarnings(as.numeric(bundle$ilab$matrix[, index])))
@@ -699,7 +699,7 @@ rcmetar.draw.bmj.forest <- function(bundle, outpath) {
     graphics::par(cex=plot.info$cex, font=2, col="#111111")
     rcmetar.draw.bmj.headers(bundle, layout, ilab, k, metric, method, plan$headers$show)
 
-    graphics::text(layout$annotation.xpos, 0, summary$label, pos=4, font=1)
+    graphics::text(layout$annotation.xpos, 0, summary$label, pos=4, font=2)
     rcmetar.draw.revman.summary.diamond(summary, 0, accent, layout$alim)
     graphics::par(cex=1)
     rcmetar.draw.bmj.axis(bundle, layout, plot.info$cex)
@@ -946,7 +946,7 @@ rcmetar.draw.bmj.total.row <- function(bundle, x, layout, cex) {
     for (key in names(bundle$style_blocks$totals)) {
         index <- rcmetar.bmj.column.index(bundle, key)
         if (length(index) == 1) {
-            graphics::text(layout$ilab.xpos[[index]], 0, bundle$style_blocks$totals[[key]], font=1, cex=cex)
+            graphics::text(layout$ilab.xpos[[index]], 0, bundle$style_blocks$totals[[key]], font=2, cex=cex)
         }
     }
     invisible(NULL)

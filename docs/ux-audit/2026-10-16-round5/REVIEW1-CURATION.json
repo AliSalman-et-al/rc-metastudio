@@ -1,0 +1,38 @@
+[
+  {
+    "source": "artifacts/verification/rcms/20261015T071146Z-259a350c-audit-round3-irr-context/04-0-round5-irr-context.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-irr-after-04-0-round5-irr-context.png",
+    "purpose": "native IRR after; inspected at full resolution",
+    "sha256": "c094c68a09dae6daf3f98135a0110619029a8241cc7dabd5dd31c750b552bf64"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T071146Z-259a350c-audit-round3-irr-context/07-0-round5-irr-context.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-irr-after-07-0-round5-irr-context.png",
+    "purpose": "native IRR after; inspected at full resolution",
+    "sha256": "5e84d3c1ac9e7827f734f1c9dda814fe7f7c99903e51dc56e8e5bd6caf506730"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T071146Z-259a350c-audit-round3-irr-context/10-0-round5-irr-context.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-irr-after-10-0-round5-irr-context.png",
+    "purpose": "native IRR after; inspected at full resolution",
+    "sha256": "8f9ac88f2b93d87c7579533ca81d7310850551277df2b5579ae25b6babbf5be0"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T070148Z-a626bb2d-audit-round3-irr-context/04-0-round5-irr-context.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-irr-before-04-0-round5-irr-context.png",
+    "purpose": "native IRR before; inspected at full resolution",
+    "sha256": "08c8a3b7e707c4096e0156b4b99591dd274a977ff2f24813cab7d12a73caa4b8"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T070148Z-a626bb2d-audit-round3-irr-context/07-0-round5-irr-context.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-irr-before-07-0-round5-irr-context.png",
+    "purpose": "native IRR before; inspected at full resolution",
+    "sha256": "3baf03aee16a0d5becce26f436a382eb19cec5eb81bb3f8ecba63d819b7e16af"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T070148Z-a626bb2d-audit-round3-irr-context/10-0-round5-irr-context.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-irr-before-10-0-round5-irr-context.png",
+    "purpose": "native IRR before; inspected at full resolution",
+    "sha256": "21adca33237f52ab3c1468434f76c03656206ca33101031dd4208b4af4df8d2d"
+  }
+]

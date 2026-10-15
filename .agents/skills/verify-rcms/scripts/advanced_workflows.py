@@ -400,6 +400,10 @@ def plots(app, window, family, record, *, view=None):
     texts = dict(view.texts)
     path = Path(artifact.display_path())
     before = path.read_bytes()
+    from tests.e2e.audit_round3 import check_caption
+    from rc_metastudio.analysis_identity import dataset_identity
+    check_caption(path, dataset_identity(window.model, "Diagnostic odds ratio" if family == "deeks" else None))
+    record("review1-caption-initial", view, family=family, plots={artifact.title: str(path)})
     from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
     from rc_metastudio.plot_editor_dialog import EditPlotDialog
 
@@ -449,6 +453,7 @@ def plots(app, window, family, record, *, view=None):
         assert dialog.figure_caption.isVisible(), "figure caption cannot be edited"
         assert dialog.figure_caption.text(), "standalone figure lacks context"
         assert " · None" not in dialog.figure_caption.text(), dialog.figure_caption.text()
+        assert " · Comparison:" in dialog.figure_caption.text() or " · Group:" in dialog.figure_caption.text(), dialog.figure_caption.text()
         dialog.figure_caption.setText("Edited outcome / comparison / follow-up")
         if funnel:
             dialog.point_size_spin.setValue(1.8)

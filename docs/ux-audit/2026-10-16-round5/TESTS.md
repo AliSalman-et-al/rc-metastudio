@@ -148,3 +148,9 @@ All commands inherit the pinned ENV.sh runtime/test-owned library already record
 The whole profile did not start on frozen Python source: R source was already f3c2911 at launch; the Qt-only MD sentence/proof 613c2d5 landed before desktop collection. Every desktop child matches source 62bc0d0c6feb0d728d491988397bec245b3913aa12dca306a3f80645b0adb43f and context e024df350fdeaa9800e89d45c05a11a2da694fbafe15e468f3c1af1597f27be3. Subsequent changes affect documentation/evidence only.
 
 - Final 25-comparison contact sheet: html_preview inspected its last two sections at 1280 px after earlier section previews; 50 native frames, no console errors. Published with html_render (1000 px scrolling frame). No screenshot image was edited. Final `git diff --check`: exit 0.
+
+## Opus review 1 follow-up
+
+Exact recorder receipts use `raw/review1-*.json`; the committed review inventory will preserve every command/exit and verbatim failure. The early golden comparison passes with no text refresh; all 415 original fields are exact (maximum difference 0). Project persistence/sample preservation: 54 passed. Native IRR final validates captions, exposure-header/rule clearance, normal inference and independently summed original events/person-time (48/25778 and 77/25605), with 100% weight in all three styles and SVG exports. Final full-profile qualification remains pending.
+
+Development failures retained: the first IRR pass caught metafor's third line-style element drawing a second rule across the exposure heading; the recovered pass removes that automatic rule. The initial recent-list assertion ran before queued layout events; waiting for the real layout resolves it. `ty` required the Qt override's actual `a0: QResizeEvent | None` signature; the corrected check passes. These attempts are not presented as final qualification.

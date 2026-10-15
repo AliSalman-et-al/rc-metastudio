@@ -47,7 +47,7 @@ rcmetar.draw.forest.totals <- function(bundle, layout, row, cex, indexes=seq_alo
         } else if (grepl("_events_total$", key) && all(grepl("/", values, fixed=TRUE))) {
             counts <- do.call(rbind, strsplit(values, "/", fixed=TRUE))
             total <- paste(colSums(matrix(as.numeric(counts), ncol=2)), collapse=" / ")
-        } else if (grepl("events|total|_n$|true_|false_", key) && rcmetar.raw.values.complete(values)) {
+        } else if (grepl("events|person_time|total|_n$|true_|false_", key) && rcmetar.raw.values.complete(values)) {
             total <- as.character(sum(as.numeric(values)))
         }
         if (nzchar(total)) graphics::text(layout$ilab.xpos[[column]], row, total, font=2, cex=cex)
@@ -102,7 +102,7 @@ rcmetar.draw.forest.inference <- function(bundle, x, row, cex, res=bundle$res, d
                 if (!is.null(difference)) rcmetar.default.subgroup.difference.label(difference, bundle$params),
                 rcmetar.forest.prediction.label(bundle, res))
     for (index in seq_along(labels)) {
-        if (nzchar(labels[[index]])) graphics::text(x, row - index, labels[[index]], pos=4, cex=cex)
+        if (nzchar(labels[[index]])) graphics::text(x, row - index, labels[[index]], pos=4, font=1, cex=cex)
     }
     invisible(NULL)
 }
@@ -140,11 +140,13 @@ rcmetar.draw.forest.header <- function(x, y, label, adj=0.5) {
     graphics::text(x, positions, lines, adj=adj)
 }
 
-rcmetar.draw.forest.column.headers <- function(bundle, layout, y) {
+rcmetar.draw.forest.column.headers <- function(bundle, layout, rule.y) {
     headers <- bundle$ilab$headers
     leading <- graphics::strheight("Mg", units="user") * 1.65
     lines <- function(label) length(strsplit(label, "\n", fixed=TRUE)[[1]])
     raw.height <- if (length(headers)) max(vapply(headers, lines, integer(1))) else 1
+    # Anchor the lowest raw-header line above the rule, including descenders.
+    y <- rule.y + graphics::strheight("Mg", units="user") * 1.6 + (raw.height - 1) / 2 * leading
     for (index in seq_along(headers)) {
         rcmetar.draw.forest.header(layout$ilab.xpos[[index]], y, headers[[index]])
     }
@@ -154,4 +156,5 @@ rcmetar.draw.forest.column.headers <- function(bundle, layout, y) {
         group.y <- y + (raw.height + lines(label)) / 2 * leading + leading * 0.4
         rcmetar.draw.forest.header(layout$group.xpos[[index]], group.y, label)
     }
+    invisible(y)
 }

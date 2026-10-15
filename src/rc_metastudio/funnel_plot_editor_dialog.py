@@ -62,7 +62,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self.figure_caption.setAccessibleName("Figure caption")
         self.figure_caption.setToolTip("Outcome, comparison and follow-up. Edit or clear to remove from standalone figures.")
         self.figure_caption.setMaxLength(1000)
-        self.figure_caption.setText(str(self._params.get("plot_caption", "") or "").replace("\n", " | "))
+        self.figure_caption.setText(str(self._params.get("plot_caption", "") or "").replace("\n", " · "))
         caption_label = QLabel("Figure caption:", self)
         caption_label.setBuddy(self.figure_caption)
         caption_row = self.appearance_layout.rowCount()

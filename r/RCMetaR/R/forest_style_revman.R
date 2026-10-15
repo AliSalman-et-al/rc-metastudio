@@ -259,7 +259,7 @@ rcmetar.revman.column.index <- function(bundle, key) {
 
 rcmetar.revman.total.values <- function(bundle) {
     totals <- list()
-    for (key in c("experimental_total", "control_total")) {
+    for (key in c("experimental_total", "control_total", "events1", "person_time1", "events2", "person_time2")) {
         index <- rcmetar.revman.column.index(bundle, key)
         if (length(index) == 1 && rcmetar.raw.values.complete(bundle$ilab$matrix[, index])) {
             totals[[key]] <- sum(suppressWarnings(as.numeric(bundle$ilab$matrix[, index])))
@@ -423,7 +423,7 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
     graphics::par(cex=plot.info$cex, font=2)
     if (show.headers) {
         graphics::text(rcmetar.forest.study.x(layout), k + 2, rcmetar.revman.study.header(bundle), pos=4)
-        rcmetar.draw.forest.column.headers(bundle, layout, k + 1.8)
+        rcmetar.draw.forest.column.headers(bundle, layout, k + 1)
     }
     if (show.headers) {
         header <- paste(metric, paste0(method, ","), paste0(bundle$params$conf.level, "% CI"), sep="\n")
@@ -435,9 +435,10 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
     graphics::segments(rcmetar.forest.study.x(layout), 0, layout$xlim[[2]], 0, lwd=0.6, col="#b8b8b8")
     graphics::text(layout$annotation.xpos, -1, summary$label, pos=2)
     rcmetar.draw.revman.summary.diamond(summary, -1, rcmetar.forest.accent.color(bundle$params), layout$alim)
+    graphics::par(cex=1, font=1)
     rcmetar.draw.revman.axis(bundle, layout, plot.info$cex)
 
-    graphics::par(cex=plot.info$cex, font=1)
+    graphics::par(cex=1, font=1)
     graphics::text(rcmetar.forest.study.x(layout), rows, bundle$slab, pos=4, cex=plot.info$cex, col="black")
     rcmetar.draw.revman.study.effect.labels(bundle, effect, layout, rows, plot.info$cex)
     rcmetar.draw.revman.bottom.blocks(bundle, rcmetar.forest.study.x(layout), plot.info$cex, layout)
