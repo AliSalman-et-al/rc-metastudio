@@ -96,3 +96,17 @@ is easier to follow and that file is byte-identical to c62df31. Also remove extr
 blank lines and correct extracted header-helper indentation. These are ordinary
 new changes, not history rewriting. Reinstalled current RCMetaR into the pinned
 private library; source/install hashes are in `raw/lexer/INSTALLED-SOURCE.json`.
+
+Latest-head CI exposed two further stale qualification-driver contracts. Native
+analysis smoke now constructs a real DatasetTableModel from bundled amino.rcms,
+using the existing project adapter; it no longer invents a partial model missing
+identity/state. Its owner accepts the actual typed-result callback keyword. On
+backend failure it records the visible inline error, live configuration and
+disposed progress, then cancels and retains every final teardown/leak assertion.
+The validator now requires that recoverable state in addition to the original
+Windows QPA, request, confidence, screenshot hash and four lifecycle checks.
+
+The packaged analysis hook's result-capture lambda accepts `change_settings`,
+matching actual delivery. The previous TypeError reached the global modal error
+handler and explained Windows qualification's 300-second timeout. The capture now
+completes through real Qt/R; timeout bounds and all package comparisons remain.

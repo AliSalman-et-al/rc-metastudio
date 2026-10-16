@@ -106,3 +106,24 @@ root causes, retry infrastructure flakes once, and stop on external/policy block
 Only after all required checks pass, squash PR #537 with the authorised release
 subject/body; preserve branch/tags/settings. Fetch and verify equal remote trees
 and all three 0.5.0 version sources; leave ux/audit-improvements checked out.
+
+### Additional latest-head CI failures, proof before repair
+
+The 9de179b check snapshot adds two real stale developer-driver contracts. Native
+Vertical Slice fails constructing AnalysisSetupDialog because its synthetic Model
+lacks outcome identity; the same fixture also cannot supply the real snapshot for
+Change settings, and its owner callback lacks the keyword delivered with typed
+results. Replace that incomplete model with the actual bundled-project table
+model. Keep explicit fake statistical operations and all lifecycle checks. Backend
+failure now intentionally preserves configuration with an inline error: assert that
+recoverable state and disposed progress, then cancel and prove complete teardown.
+
+The packaged workflow times out capturing binary.random. Reproduce the actual
+source hook with real Qt/R and a non-modal exception reporter before repair; inspect
+its callback's acceptance of the current `change_settings` keyword. Preserve all
+packaged numerical, locale, persistence and output comparisons and the 300-second
+bound. No timeout increase, skipped assertion or validator weakening is authorised.
+
+The new full retry is intentionally unqualified and stopped before changing its
+input bytes. Run a single new final fresh profile after these genuine repairs;
+the earlier terminal-SIGTERM attempt and this planned interruption stay explicit.

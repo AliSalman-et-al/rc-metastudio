@@ -518,3 +518,47 @@ artifact retains that head and original Git-derived timestamp. `uv run python
 docs/ux-audit/2026-10-16-round6-release-fixes/baseline_audit.py` passed: 30 changed
 functions, 200 false branches removed, all unchanged fields checked. See
 CI-BASELINE-AUDIT.json for per-function values, operators and old/new artifact hashes.
+
+### Further CI driver repairs (9de179b check results)
+
+Retained job logs: `raw/lexer/vertical-source-head.log` and
+`package-source-head.log`; original diagnostics ZIP is retained too. Native Vertical
+Slice failed before its first configuration because Model lacked
+`current_outcome_name`. Packaged Windows qualification timed out at its first
+`--automation-package-analyze`, with no analysis JSON. Source/platform checks on
+Linux/Windows/macOS and Remaining Surfaces had passed; Full R Stack was still running.
+
+`native-analysis-before` reproduces the exact constructor AttributeError locally.
+After using the real project/model, all four lifecycle observations have zero
+leaked top-level windows and final deletion of every owned surface. The backend
+failure additionally records visible configuration/error and disposed progress
+before Cancel. `NATIVE-ANALYSIS-LOCAL.json` binds these observations. The local
+script exits at the unchanged qwindows-only validator because Linux offscreen is
+not Windows qualification; no platform value was forged and that guard was not
+weakened. Actual Windows execution remains a required PR check.
+
+The first two source-hook probes failed readiness because their invocation did
+not request R library loading; both failed transcripts remain. With the documented
+`RCMS_REQUIRE_IN_PROCESS_RPY2=1`, `package-analysis-before-ready` reproduced:
+
+```text
+TypeError: _run_analysis.<locals>.<lambda>() got an unexpected keyword argument 'change_settings'
+```
+
+The identical real Qt/R source hook exits zero after its capture callback is
+corrected (`package-analysis-after`) and retains actual summary, weights and SVG.
+The only substituted boundaries are owned application/settings directories and a
+non-modal exception reporter, so the real exception is printed instead of hanging.
+This is source-hook proof; the packaged Windows check is still required.
+
+Strict Windows-target typing passes again (`typing-ci-drivers`). Focused existing
+packaged/configuration/failure checks: **52 passed, one platform skip**
+(`packaged-contracts-after-corrected`). The earlier invocation named a nonexistent
+lifecycle test file and ran no tests; its exit-four receipt remains explicit.
+
+The first full attempt was externally terminated with terminal exit 143 and no
+completion summary. The detached retry passed R CMD check and nine bridge tests,
+then was deliberately stopped before changing the newly failed CI driver inputs;
+it is also unqualified. `terminal-interruption.json` and `source-change-stop.json`
+retain reasons, logs, and exact owned process IDs/commands. No partial run is
+promoted to qualification. A final fresh profile follows this repair commit.

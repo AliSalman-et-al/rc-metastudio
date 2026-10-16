@@ -6,7 +6,6 @@ import hashlib
 import json
 import os
 from pathlib import Path
-from types import SimpleNamespace
 from typing import Callable
 
 from PyQt6 import QtCore, QtWidgets, sip
@@ -46,6 +45,13 @@ def validate_evidence(path: Path) -> dict[str, object]:
             raise ValueError("native %s surfaces did not complete teardown" % name)
         if scenario.get("top_level_delta") != 0:
             raise ValueError("native %s leaked a top-level widget" % name)
+    if scenarios["backend_failure"].get("failure_state") != {
+        "configuration_visible": True,
+        "progress_deleted": True,
+        "error_visible": True,
+        "error_message": "Sorry, this analysis could not be completed:\n\nnative backend failure",
+    }:
+        raise ValueError("native backend failure did not preserve recoverable configuration")
     image = path.parent / "analysis-configuration.png"
     if not image.is_file() or image.stat().st_size != evidence.get("image_size"):
         raise ValueError("native analysis screenshot is missing or has the wrong size")
@@ -74,6 +80,9 @@ def main() -> int:
     _phase("backend-installed")
     setattr(app_error_handler, "install_global_exception_handler", lambda: None)
     from rc_metastudio import analysis_setup_dialog, progress_dialog
+    from rc_metastudio.dataset_table_model import DatasetTableModel
+    from rc_metastudio.project_adapter import document_to_runtime_project
+    from rc_metastudio.project_format import load_project
 
     progress_class = progress_dialog.AnalysisProgressDialog
     created_progress_dialogs = []
@@ -118,20 +127,11 @@ def main() -> int:
         backend, "get_analysis_plot_capabilities", lambda *_args, **_kwargs: []
     )
 
-    class Model:
-        current_effect = "OR"
-        dataset = SimpleNamespace(covariates=[])
-
-        def get_current_outcome_type(self) -> str:
-            return "binary"
-
-        def included_studies_have_raw_data(self) -> bool:
-            return True
-
     class Owner(QtWidgets.QWidget):
         results = []
 
-        def analysis(self, _result: object) -> None:
+        def analysis(self, _result: object, *, change_settings: Callable[..., object] | None = None) -> None:
+            assert callable(change_settings)
             self.results.append(_result)
 
     app = app_error_handler.get_or_create_application([])
@@ -171,8 +171,11 @@ def main() -> int:
         app.processEvents()
 
     def make_configuration() -> analysis_setup_dialog.AnalysisSetupDialog:
+        project = document_to_runtime_project(load_project(repo_root / "sample_projects/amino.rcms"))
+        model = DatasetTableModel(dataset=project.dataset, add_blank_study=False)
+        model.set_state(project.model_state)
         dialog = analysis_setup_dialog.AnalysisSetupDialog(
-            Model(), parent=owner, confidence_level=95.0
+            model, parent=owner, confidence_level=95.0
         )
         dialog.show()
         app.processEvents()
@@ -263,7 +266,16 @@ def main() -> int:
     _phase("failure-progress-found")
     deferred_delete()
     _phase("failure-deferred-delete-return")
+    failure_state = {
+        "configuration_visible": failing.isVisible(),
+        "progress_deleted": sip.isdeleted(failing_progress),
+        "error_visible": failing.analysis_error_label.isVisible(),
+        "error_message": failing.analysis_error_label.text(),
+    }
+    failing.reject()
+    deferred_delete()
     scenarios["backend_failure"] = {
+        "failure_state": failure_state,
         "deleted": {
             "configuration": sip.isdeleted(failing),
             "progress": sip.isdeleted(failing_progress),

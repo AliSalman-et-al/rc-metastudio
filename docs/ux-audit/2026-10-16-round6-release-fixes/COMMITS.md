@@ -40,3 +40,5 @@ The final evidence/handoff commit containing this ledger follows 07c4f4a; its ex
 - This commit — repair custom infix lexer after retained failing tests; regenerate/audit same-head baseline. Immediate fast-forward push required.
 - ed380d3 — lexer/tests and audited same-head baseline correction; fast-forward push succeeded.
 - This commit — restore the simple Reitsma style list and record all 23 readability decisions; immediate fast-forward push required.
+- 9de179b — restore Reitsma's flat style list and retain all 23 readability decisions; fast-forward push succeeded.
+- This commit — repair real native-model/callback contracts, require recoverable error observations, preserve all package bounds and assertions; immediate fast-forward push required.
