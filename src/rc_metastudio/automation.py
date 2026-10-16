@@ -35,36 +35,20 @@ def _close_automation_window(app, window) -> None:
 
 def start_package_open_report(output_path: str, project_path: str) -> int:
     """Open one explicit project and report only resulting window facts."""
-    trace_path = os.environ.get("RCMS_AUTOMATION_HANG_TRACE")
-    trace_stream = Path(trace_path).open("a", encoding="utf-8") if trace_path else None
-
-    def record_phase(phase: str) -> None:
-        if trace_stream is not None:
-            trace_stream.write(f"[DEBUG-PACKAGED-OPEN] {phase}\n")
-            trace_stream.flush()
-
+    app, window = start_automation()
     try:
-        record_phase(f"project:{Path(project_path).name}")
-        record_phase("composition:start")
-        app, window = start_automation(phase_callback=record_phase)
-        try:
-            record_phase("project-open:start")
-            opened = window.open(os.path.abspath(project_path), raise_on_error=True)
-            record_phase("project-open:complete")
-            app.processEvents()
-            model = window.tableView.model()
-            _write_json(output_path, {
-                "project": os.path.abspath(project_path), "opened": bool(opened),
-                "rows": model.rowCount(), "visible": window.isVisible(),
-                "exposed": bool(window.windowHandle() and window.windowHandle().isExposed()),
-                "platform_plugin": app.platformName().lower(),
-            })
-            return 0
-        finally:
-            _close_automation_window(app, window)
+        opened = window.open(os.path.abspath(project_path), raise_on_error=True)
+        app.processEvents()
+        model = window.tableView.model()
+        _write_json(output_path, {
+            "project": os.path.abspath(project_path), "opened": bool(opened),
+            "rows": model.rowCount(), "visible": window.isVisible(),
+            "exposed": bool(window.windowHandle() and window.windowHandle().isExposed()),
+            "platform_plugin": app.platformName().lower(),
+        })
+        return 0
     finally:
-        if trace_stream is not None:
-            trace_stream.close()
+        _close_automation_window(app, window)
 
 
 def _model_column(model, column: str) -> int:
