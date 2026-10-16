@@ -33,7 +33,7 @@ def run(app, window, work, root, record, analyze):
     assert any(not button.isEnabled() and 'Missing file' in button.toolTip() for button in entries)
     paths = [label for label in window.start_page.recent_projects.findChildren(QtWidgets.QLabel) if label.toolTip() == str(present)]
     assert len(paths) == 1 and paths[0].accessibleName() == str(present)
-    assert "…" in paths[0].text(), paths[0].text()
+    assert "…" in paths[0].text(), (paths[0].text(), paths[0].width(), paths[0].font().toString())
     name_button = next(button for button in entries if button.text() == present.name)
     assert abs(name_button.geometry().center().y() - paths[0].geometry().center().y()) <= 2
     remove = next(button for button in entries if button.text() == "Remove from list")

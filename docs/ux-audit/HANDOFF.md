@@ -390,7 +390,7 @@ Actual Windows CI exposed stale package report/style observations and five
 desktop-driver boundary/layout/parser failures (118 cases passed). Final repairs
 observe the native base style, retain the established tau-glyph equivalence in
 the approved new header, bind approved c62df31 report identities, use explicit
-UTF-8 and a valid long fixture path, wait for actual native header refit under
+UTF-8 and a valid long fixture path, wait for actual queued Qt header refit under
 the unchanged three-line bound, and group SVG baselines directly within the
 original 0.1-point precision. Full-R CI now uploads its real evidence.
 [CI-PACKAGE](2026-10-16-round6-release-fixes/CI-PACKAGE.md) and
@@ -415,3 +415,29 @@ with the exact final branch SHA for an empty tree diff, and verify all three
 version sources are 0.5.0. Leave ux/audit-improvements checked out and clean.
 The completing thread's final receipt records checks, merge SHA, post-merge
 outputs and whether GitHub deleted the remote ref; no tags or releases.
+
+
+### Final-head follow-up: 19b5fd9 Windows font failure
+
+19b5fd9 was immediately fast-forward pushed. Ten checks, including exact-archive
+Windows packaging, pass. Windows full-R has 122 passing desktop cases and one
+failed recent-path assertion. Its original screenshot renders every character
+as a square; this is missing Windows offscreen fonts, not qualified UI evidence.
+[CI-FONTS](2026-10-16-round6-release-fixes/CI-FONTS.json) binds the original CRC/hash-
+verified records and personally inspected rejected frame. Native qwindows remains
+a separate proof; the failed matrix's runtime is offscreen on Windows.
+
+The verification child now loads existing WINDIR/Fonts (explicit override
+respected); every doctor requires real font families and Latin/tau/ellipsis glyphs
+and records resolved font identity. Font path/bytes enter evidence context.
+Console-safe failure printing fixes the secondary encoding error that hid the
+assertion, with two red-before/green-after cases and unchanged raw log bytes. The
+original recent-path ellipsis/accessibility/alignment assertions remain. No
+product UI, R source, mathematical result or golden oracle changes.
+
+Final follow-up local checks pass: 893 source/GUI/comparator/package cases (16
+existing skips), strict Windows typing, strict goldens and all 415 exact fields,
+font-aware doctor and original review1 workflow. A real-R fontless negative drive
+fails at the intended readiness assertion; startup-misconfigured probes remain
+unqualified. The next committed head must pass every actual GitHub check and
+produce readable Windows font evidence before the authorised squash merge.

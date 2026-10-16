@@ -49,3 +49,10 @@ Each listed implementation/evidence commit was immediately followed by an ordina
   Merge only after all latest-head required checks pass. Automatic remote head
   deletion is permitted; no local branch/checkout deletion, settings change,
   force push, history rewrite, tag or release.
+
+- 19b5fd9 — qualify approved package report/style identities and retained Windows
+  evidence; immediate fast-forward push succeeded. Its Windows package check
+  passed; its full-R run exposed the separately recorded fontless offscreen case.
+- This follow-up — `fix: load real fonts for Windows desktop verification`; binds
+  the rejected original frame, fail-closed glyph readiness and console-output
+  regression proof. Immediate ordinary fast-forward push required.

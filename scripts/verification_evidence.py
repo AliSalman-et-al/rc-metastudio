@@ -71,7 +71,7 @@ def verification_context() -> dict[str, object]:
         "runtime_trees": [tree_digest(path) for path in runtime_roots],
         "distributions": sorted((d.metadata["Name"], d.version) for d in importlib.metadata.distributions()),
         "environment": {name: os.environ.get(name) for name in (
-            "QT_SCALE_FACTOR", "QT_FONT_DPI", "LANG", "LC_ALL",
+            "QT_SCALE_FACTOR", "QT_FONT_DPI", "QT_QPA_FONTDIR", "LANG", "LC_ALL",
             "OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS",
         )},
     }
@@ -124,5 +124,7 @@ def _runtime_roots() -> list[Path]:
         font_roots = [Path(os.environ["WINDIR"]) / "Fonts"]
     elif sys.platform == "darwin":
         font_roots = [Path("/System/Library/Fonts"), Path("/Library/Fonts"), Path.home() / "Library/Fonts"]
+    if configured_fonts := os.environ.get("QT_QPA_FONTDIR"):
+        font_roots.append(Path(configured_fonts))
     runtime_roots.extend(path for path in font_roots if path.is_dir())
     return runtime_roots

@@ -126,7 +126,7 @@ Final qualification-only repairs address genuine Windows failures: observe the
 proxy's actual native base style; recognize the established tau-glyph equivalence
 in the release's reordered heterogeneity header; bind package presentation hashes
 to exact approved c62df31 reports; write/read arm evidence as UTF-8; use a valid
-long fixture path; wait for the actual native header refit under the same height
+long fixture path; wait for the actual queued Qt header refit under the same height
 bound; group real SVG baselines directly within the original 0.1-point precision.
 All endpoint, spacing, interval-projection, persistence and numerical assertions
 remain. Full-R CI now uploads its original evidence on success or failure. See
@@ -140,3 +140,24 @@ pass **891 tests**, with 16 existing opt-in/platform skips; Windows-target typin
 pass. The original failed package/Windows runs remain failed. Actual final-head
 GitHub qualification is required before the authorised squash merge. Automatic
 remote head deletion is accepted; repository settings and local checkout stay.
+
+
+### Windows offscreen font follow-up after 19b5fd9
+
+The next Windows full-R run passed 122 cases and exposed missing Qt fonts in its
+original PNGs; those images are rejected, not visual qualification. CI-FONTS.json
+and CI-WINDOWS.md bind the actual artifact/transcript and personally inspected
+frame. The recent-path ellipsis assertion stays; no speculative wait remains.
+Verification children on Windows offscreen select existing WINDIR/Fonts, and every
+doctor requires an actual font database plus Latin/tau/ellipsis glyphs, recording
+resolved font identity. Font-directory selection/bytes enter the evidence context.
+Child environment preparation is separated from process lifecycle. Failure
+transcripts use UTF-8 child output and console-safe escaping; two failing console
+cases were written before repair and pass afterward without changing log bytes.
+
+Local follow-up: **893 passed / 16 existing skips**, strict Windows typing, strict
+goldens and **415 exact fields, max difference zero**. The font-aware doctor and
+original review1 workflow pass; the real-R fontless negative doctor fails at the
+intended readiness assertion. Production UI, R source, fits, report/figure
+production, numerical oracles, thresholds and bounds are unchanged. Every actual
+final-head GitHub check is still required before squash merge.

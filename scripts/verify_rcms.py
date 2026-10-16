@@ -125,9 +125,36 @@ def _reuse_evidence(context, args) -> bool:
 
 
 def _print_failure_transcripts(evidence: Path) -> None:
+    encoding = sys.stdout.encoding or "utf-8"
     for name in ("stdout.log", "stderr.log"):
         transcript = (evidence / name).read_text(encoding="utf-8", errors="replace")
-        print(f"{name} (last 20000 characters):\n{transcript[-20000:]}", flush=True)
+        display = f"{name} (last 20000 characters):\n{transcript[-20000:]}"
+        print(display.encode(encoding, errors="backslashreplace").decode(encoding), flush=True)
+
+
+def _desktop_environment(work: Path, evidence: Path, native: bool) -> dict[str, str]:
+    r_temporary = work / "tmp"
+    r_temporary.mkdir()
+    env = os.environ | {
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONPATH": os.pathsep.join((str(ROOT / "src"), str(ROOT))),
+        "RCMS_REQUIRE_IN_PROCESS_RPY2": "1",
+        "RCMS_QT6_BUILD_ROOT": os.environ.get(
+            "RCMS_QT6_BUILD_ROOT", str(ROOT / "build/qt6-verification")
+        ),
+        "RCMS_ANALYSIS_SCRATCH_DIR": str(work / "analysis"),
+        "RCMS_E2E_EVIDENCE_DIR": str(evidence),
+        "TMPDIR": str(r_temporary),
+        "TMP": str(r_temporary),
+        "TEMP": str(r_temporary),
+    }
+    if native:
+        env.pop("QT_QPA_PLATFORM", None)
+    else:
+        env["QT_QPA_PLATFORM"] = "offscreen"
+        if sys.platform == "win32":
+            env.setdefault("QT_QPA_FONTDIR", str(Path(env["WINDIR"]) / "Fonts"))
+    return env
 
 
 def main() -> int:
@@ -157,24 +184,7 @@ def main() -> int:
             prefix="desktop-", dir=scratch_root
         ) as temporary:
             work = Path(temporary)
-            r_temporary = work / "tmp"
-            r_temporary.mkdir()
-            env = os.environ | {
-                "PYTHONPATH": os.pathsep.join((str(ROOT / "src"), str(ROOT))),
-                "RCMS_REQUIRE_IN_PROCESS_RPY2": "1",
-                "RCMS_QT6_BUILD_ROOT": os.environ.get(
-                    "RCMS_QT6_BUILD_ROOT", str(ROOT / "build/qt6-verification")
-                ),
-                "RCMS_ANALYSIS_SCRATCH_DIR": str(work / "analysis"),
-                "RCMS_E2E_EVIDENCE_DIR": str(evidence),
-                "TMPDIR": str(r_temporary),
-                "TMP": str(r_temporary),
-                "TEMP": str(r_temporary),
-            }
-            if args.native:
-                env.pop("QT_QPA_PLATFORM", None)
-            else:
-                env["QT_QPA_PLATFORM"] = "offscreen"
+            env = _desktop_environment(work, evidence, args.native)
             timeout_seconds = _scenario_timeout(args.scenario)
             command = [
                 sys.executable,

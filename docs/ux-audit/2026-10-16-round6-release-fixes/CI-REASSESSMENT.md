@@ -52,3 +52,24 @@ actual final-head Windows R/package CI is required before merge.
 The user permits automatic deletion of the remote head ref after squash merge;
 the earlier reviewer restriction is superseded. Repository settings and the local
 branch/checkout must remain unchanged.
+
+
+### Windows offscreen font follow-up after 19b5fd9
+
+The next Windows full-R run passed 122 cases and exposed missing Qt fonts in its
+original PNGs; those images are rejected, not visual qualification. CI-FONTS.json
+and CI-WINDOWS.md bind the actual artifact/transcript and personally inspected
+frame. The recent-path ellipsis assertion stays; no speculative wait remains.
+Verification children on Windows offscreen select existing WINDIR/Fonts, and every
+doctor requires an actual font database plus Latin/tau/ellipsis glyphs, recording
+resolved font identity. Font-directory selection/bytes enter the evidence context.
+Child environment preparation is separated from process lifecycle. Failure
+transcripts use UTF-8 child output and console-safe escaping; two failing console
+cases were written before repair and pass afterward without changing log bytes.
+
+Local follow-up: **893 passed / 16 existing skips**, strict Windows typing, strict
+goldens and **415 exact fields, max difference zero**. The font-aware doctor and
+original review1 workflow pass; the real-R fontless negative doctor fails at the
+intended readiness assertion. Production UI, R source, fits, report/figure
+production, numerical oracles, thresholds and bounds are unchanged. Every actual
+final-head GitHub check is still required before squash merge.

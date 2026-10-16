@@ -195,6 +195,12 @@ def doctor(app, window):
     assert r_bridge.get_r_package_version("RCMetaR") == rcmetar_version
     assert window.isVisible()
     assert Path(settings.get_base_path()).resolve() == WORK.resolve()
+    font_families = QtGui.QFontDatabase.families()
+    font = QtGui.QRawFont.fromFont(app.font())
+    assert font_families and font.isValid(), ("Qt has no usable fonts", app.font().toString())
+    assert all(font.supportsCharacter(ord(char)) for char in "Aa012τ…"), (
+        "Qt's default font lacks required glyphs", font.familyName(), app.font().toString()
+    )
     identity = {
         "r": r_version,
         "r_libraries": r_bridge.get_r_library_paths(),
@@ -205,6 +211,13 @@ def doctor(app, window):
         "qt": QtCore.qVersion(),
         "pyqt": QtCore.PYQT_VERSION_STR,
         "platform_plugin": app.platformName(),
+        "font": {
+            "family": font.familyName(),
+            "style": font.styleName(),
+            "family_count": len(font_families),
+            "required_glyphs": "Aa012τ…",
+            "directory": os.environ.get("QT_QPA_FONTDIR"),
+        },
         "application": app.applicationName(),
         "qt_build_root": os.environ.get("RCMS_QT6_BUILD_ROOT"),
         "application_base_path": settings.get_base_path(),

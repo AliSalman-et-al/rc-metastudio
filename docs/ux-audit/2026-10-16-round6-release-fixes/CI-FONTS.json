@@ -1,0 +1,100 @@
+{
+  "failed_head": "19b5fd9e7d80e133af38d6e4a795af6c2b92f8d2",
+  "job": 116760835848,
+  "checks": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/checks-19b5fd9-final.json",
+    "sha256": "3cb0b6378e6b57cef979f1ac65ad64e0125788db0c370bcf1242c3d10ed32c2c"
+  },
+  "job_log": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/full-r-19b5fd9.log",
+    "sha256": "2997c74709a88153fc22bfb5544a1d3ef7eb0d9f0deb758051da6cecacef682d"
+  },
+  "artifact_selection": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/full-r-19b5fd9-selected.json",
+    "sha256": "856ebfcd3cb1c57b98401ebb3ef7e8f5d89a487afb42ed4452da19d12a194252",
+    "artifact_id": 12018789956,
+    "archive_bytes": 486249257,
+    "selected_crc_verified_entries": [
+      {
+        "entry": "20261016T013313Z-259c432e-review1-design/01-0-ready.png",
+        "path": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/full-r-19b5fd9-review1/01-0-ready.png",
+        "sha256": "94bf6b3a63476d7a530819c31e427830771ef13a4ef4c0e0210acb1a246dd7cd",
+        "bytes": 10470
+      },
+      {
+        "entry": "20261016T013313Z-259c432e-review1-design/02-0-review1-start-before-check.png",
+        "path": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/full-r-19b5fd9-review1/02-0-review1-start-before-check.png",
+        "sha256": "bbec55a045de44c1afaea1fee12950b4cf9b806078df228d88cfd8e2dbd09d35",
+        "bytes": 11172
+      },
+      {
+        "entry": "20261016T013313Z-259c432e-review1-design/manifest.json",
+        "path": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/full-r-19b5fd9-review1/manifest.json",
+        "sha256": "2aecfe69f219db7cdb62f6f8cef97a701c3ab27351efae15852cbc6b16990946",
+        "bytes": 6221
+      },
+      {
+        "entry": "20261016T013313Z-259c432e-review1-design/stderr.log",
+        "path": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/full-r-19b5fd9-review1/stderr.log",
+        "sha256": "f7f49f1b5f128aeaf65d991d9d63626b6615bc90ab4548570263923374a420a7",
+        "bytes": 1250
+      },
+      {
+        "entry": "20261016T013313Z-259c432e-review1-design/stdout.log",
+        "path": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/full-r-19b5fd9-review1/stdout.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      {
+        "entry": "20261016T013313Z-259c432e-review1-design/steps.jsonl",
+        "path": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/full-r-19b5fd9-review1/steps.jsonl",
+        "sha256": "5fc3d3a4e4d5352a6cc7eee893f89977a56089a49d9d9527ed56cd26fd72ac7a",
+        "bytes": 4682
+      }
+    ]
+  },
+  "rejected_image": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/ci-windows/19b5fd9-fontless-rejected.png",
+    "sha256": "bbec55a045de44c1afaea1fee12950b4cf9b806078df228d88cfd8e2dbd09d35",
+    "reason": "Original Windows offscreen screenshot has missing glyphs everywhere; not visual qualification.",
+    "personally_inspected": true
+  },
+  "qt_primary_source_snapshots": [
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/qplatformfontdatabase.cpp",
+      "sha256": "09680cff97fdd7e4e703d4b2abf6b15e55f8cd008ff3be581e4c01c50cf6a0b1"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/qoffscreenintegration.cpp",
+      "sha256": "99210dcb6db18c3f11342625e00ccc87a875f9c5b1b01d2973d2e909180320f0"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/qfreetypefontdatabase.cpp",
+      "sha256": "af65c9803839f6dd9a60f1b9f250df5bcb94fa258acedafa34586588a6d2e5e6"
+    }
+  ],
+  "official_sources": [
+    "https://github.com/qt/qtbase/blob/dev/src/plugins/platforms/offscreen/qoffscreenintegration.cpp",
+    "https://github.com/qt/qtbase/blob/dev/src/gui/text/qplatformfontdatabase.cpp",
+    "https://github.com/qt/qtbase/blob/dev/src/gui/text/freetype/qfreetypefontdatabase.cpp"
+  ],
+  "negative_doctor": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/raw/font-doctor-negative-ready.json",
+    "sha256": "fcacf100e70433db676c7b8d26b43db41b8d28733b277e607bc9aa93d3267568",
+    "required_environment": {
+      "RCMS_REQUIRE_IN_PROCESS_RPY2": "1",
+      "PYTHONPATH": "/home/ali/Documents/Code/rc-metastudio/src:/home/ali/Documents/Code/rc-metastudio",
+      "QT_QPA_PLATFORM": "minimal",
+      "RCMS_E2E_EVIDENCE_DIR": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/negative-font/evidence",
+      "RCMS_ANALYSIS_SCRATCH_DIR": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/negative-font/work/analysis"
+    }
+  },
+  "positive_doctor": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/raw/fonts-final-doctor.json",
+    "sha256": "857ac93a40132401d097d7771d9945e02efbece9d71407ec07b6332346607068"
+  },
+  "positive_review": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/raw/fonts-final-review.json",
+    "sha256": "ac16f8c8506dc6c61737eb050b81ec882842b14712278cecd4c79119f176e3cb"
+  }
+}

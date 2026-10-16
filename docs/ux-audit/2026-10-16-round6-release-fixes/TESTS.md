@@ -636,10 +636,31 @@ inputs remain retained; CI-PACKAGE-IDENTITIES and CI-WINDOWS-PROBES bind them.
   validator; its old failed surface observation remains failed.
 - Native xcb `ux-native-before` and `ux-native-final` pass (70.89 / 64.18 s),
   retaining the original three-line header bound and added initial/settled
-  geometry. Actual Windows results must establish its native queued-refit case.
+  geometry. Actual Windows results must establish its Windows Qt refit case.
 
 Final production analyses/R/report/figure bytes are unchanged by these observer
 and driver repairs. The final GitHub head must pass every required check,
 including real Windows full-R and exact-archive package qualification. The merge
 receipt and post-merge tree/version/remote-ref observation are retained by the
 completing thread under raw/lexer; no tag/release/settings change is authorised.
+
+
+### Windows offscreen font follow-up after 19b5fd9
+
+The next Windows full-R run passed 122 cases and exposed missing Qt fonts in its
+original PNGs; those images are rejected, not visual qualification. CI-FONTS.json
+and CI-WINDOWS.md bind the actual artifact/transcript and personally inspected
+frame. The recent-path ellipsis assertion stays; no speculative wait remains.
+Verification children on Windows offscreen select existing WINDIR/Fonts, and every
+doctor requires an actual font database plus Latin/tau/ellipsis glyphs, recording
+resolved font identity. Font-directory selection/bytes enter the evidence context.
+Child environment preparation is separated from process lifecycle. Failure
+transcripts use UTF-8 child output and console-safe escaping; two failing console
+cases were written before repair and pass afterward without changing log bytes.
+
+Local follow-up: **893 passed / 16 existing skips**, strict Windows typing, strict
+goldens and **415 exact fields, max difference zero**. The font-aware doctor and
+original review1 workflow pass; the real-R fontless negative doctor fails at the
+intended readiness assertion. Production UI, R source, fits, report/figure
+production, numerical oracles, thresholds and bounds are unchanged. Every actual
+final-head GitHub check is still required before squash merge.
