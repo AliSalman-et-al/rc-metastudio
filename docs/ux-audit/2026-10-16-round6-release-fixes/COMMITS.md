@@ -1,6 +1,6 @@
 # Commit and push ledger
 
-Each listed commit was immediately followed by `git push origin ux/audit-improvements`, exit 0, fast-forward. No push retry, PR, merge, tag, force push or history rewrite.
+Each listed implementation/evidence commit was immediately followed by an ordinary fast-forward push to ux/audit-improvements. PR #537 was opened after the original release-fix handoff. Earlier no-PR/stop statements describe their original checkpoints; the final continuation below supersedes them. No force push or history rewrite.
 
 - 19292ca — audit: plan final v0.5.0 release fixes and proof
 - 873a2e5 — test: reject cropped captions and incomplete arm headings
@@ -18,27 +18,34 @@ Each listed commit was immediately followed by `git push origin ux/audit-improve
 - 92eb81d — test: retain visible coefficient axes and explicit small-screen bounds
 - 07c4f4a — audit: reconcile all release repros and inspected before-after evidence
 
-The final evidence/handoff commit containing this ledger follows 07c4f4a; its exact hash is the branch HEAD reported at handoff. Only documentation/evidence changed after qualified executable/test source 07c4f4a.
-
-- This final evidence commit — audit: qualify v0.5.0 release fixes and hand off for squash merge.
+- c62df31 — audit: qualify v0.5.0 release fixes and hand off for squash merge; documentation/evidence only, fast-forward push succeeded.
 
 ## CI fixes
 
 - 8585ed2 — record CI repair plan; fast-forward push succeeded.
-- Next commit — repair strict typing and stale native Results evidence contract;
-  20 existing evidence-contract cases pass; native/full qualification follows.
 - 5ed7730 — strict typing/current Results evidence repair; fast-forward push succeeded.
 - 8978162 — configuration, report and verification-helper refactors; fast-forward push succeeded.
 - 462afe4 — R forest/report refactors; fast-forward push succeeded.
 - 20c883c — valid covariate qualification and explicit UTF-8 Git decoding; fast-forward push succeeded.
 - 5906b86 — align Core GUI qualification with current workflows and retain CI replay/metrics; fast-forward push succeeded.
-- Final documentation commit — retain demonstrated measurement defect and stop checkpoint; no merge authorized under the explicit stop condition.
+- 09c240b — retain demonstrated measurement defect and stop checkpoint; fast-forward push succeeded. The later lexer authorisation superseded that stop.
 
 ## CI fixes — lexer and reassessment
 
 - bcf0b43 — record authorised lexer/reassessment/qualification plan; fast-forward push succeeded.
-- This commit — repair custom infix lexer after retained failing tests; regenerate/audit same-head baseline. Immediate fast-forward push required.
 - ed380d3 — lexer/tests and audited same-head baseline correction; fast-forward push succeeded.
-- This commit — restore the simple Reitsma style list and record all 23 readability decisions; immediate fast-forward push required.
 - 9de179b — restore Reitsma's flat style list and retain all 23 readability decisions; fast-forward push succeeded.
-- This commit — repair real native-model/callback contracts, require recoverable error observations, preserve all package bounds and assertions; immediate fast-forward push required.
+- 035ebd3 — repair real native-model/callback contracts, require recoverable error observations, preserve all package bounds and assertions; fast-forward push succeeded.
+
+
+## Final release continuation
+
+- Final continuation commit — `fix: qualify 0.5.0 package reports and Windows evidence`;
+  includes approved report identities, native style observation, preserved-bound
+  driver repairs, retained visual curation, complete full-profile artifact index
+  and reconciled release handoff. Its SHA/push receipt is recorded by the
+  completing thread; an immediate ordinary fast-forward push is required.
+- The authorised squash subject is `RC MetaStudio 0.5.0: UX polish rounds 3–6 (#537)`.
+  Merge only after all latest-head required checks pass. Automatic remote head
+  deletion is permitted; no local branch/checkout deletion, settings change,
+  force push, history rewrite, tag or release.

@@ -562,3 +562,84 @@ then was deliberately stopped before changing the newly failed CI driver inputs;
 it is also unqualified. `terminal-interruption.json` and `source-change-stop.json`
 retain reasons, logs, and exact owned process IDs/commands. No partial run is
 promoted to qualification. A final fresh profile follows this repair commit.
+
+Current-source replays at 035ebd3: exact code-health gate passes
+(`code-health-qualified`), strict goldens pass without refresh (`golden-qualified`),
+415 original fields remain exact with maximum difference zero
+(`numerical-qualified`), and fast/GUI passes **776 / eight platform skips**
+(`source-tests-qualified`). Seven actual source-hook packaged workflow operations
+pass in 63.91 seconds; English/decimal-comma summaries AND SVG hashes are exactly
+identical (SOURCE-WORKFLOW-IDENTITY.json). This supplements actual package CI.
+
+Native current arm-names passes in 244.79 seconds; generic-effect passes in 76.90
+seconds. Baseline arm-names passes in 202.04 seconds. The full visual comparison
+passes all **127 actual plot pairs** (120 SVG, seven raster), across eight families;
+830 total window/plot pairs are retained. CI-VISUAL records 28 accepted personally
+inspected PNGs and four additional inspected but rejected/limited frames. Nine
+blank baseline captures remain explicitly unusable, never counted as visual proof.
+
+
+## Final release continuation — collected fresh profile
+
+PID 1996148 completed normally. The exact recorded command, with the documented
+ENV.sh runtime and RCMS_AUDIT_DIR=.../raw/lexer, was:
+
+```sh
+uv run python docs/ux-audit/2026-10-14-round3/run.py full-qualified-final uv run python scripts/run_with_timeout.py --timeout-seconds 7200 --label release-full-final -- uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh
+```
+
+`raw/lexer/raw/full-qualified-final.json`: **exit 0**, 2026-10-16
+00:17:34.204558–01:10:18.692724 UTC, **3,164.486889 seconds**, frozen source/test
+head 035ebd3f88a64eaae2e31cb99d5db3d97e1cf92d. Evidence directory:
+`artifacts/verification/rcms/20261016T001734Z-8bfb7d17-complete`. All **123 desktop
+cases pass**, no desktop skips; doctor passes; R package Status OK; nine bridge
+checks; two 21-case Reitsma lanes; strict goldens; **91/91 independent authorities**.
+`numerical-full-qualified` rechecks the run's own golden capture: **415 exact, max
+difference 0**. `collect-full-qualified` verifies all **124 manifests / 9,469
+artifacts**. Raw FULL-PROFILE and its committed index/hash in CI-QUALIFICATION.json
+retain the exact command, environment, source context, every scenario and file.
+The worktree contained documentation/evidence changes; executable/test inputs
+stayed frozen throughout this profile. Earlier interruptions remain unqualified.
+
+### Post-profile qualification repairs and replays
+
+The actual 035ebd3 Windows package and full-R failures are recorded separately in
+CI-PACKAGE.md and CI-WINDOWS.md. The full-R run had five failed desktop drivers
+and 118 passes; the integration gate correctly failed. None was relabelled green.
+The original package ZIP, job logs, raw report snapshots and 44 real SVG probe
+inputs remain retained; CI-PACKAGE-IDENTITIES and CI-WINDOWS-PROBES bind them.
+
+- Extended the existing golden-comparator test before implementation: **one
+  failed / one passed / 41 deselected** on the reordered tau header. Existing
+  changed-number and narrative-tau rejection checks remain in both cases.
+- `golden-final`: strict fresh real-R capture **passes**, exit 0 in 85.354 s;
+  `numerical-final`: **415 exact, maximum difference zero**. No numerical oracle,
+  tolerance, exception or golden archive changed.
+- `source-contracts-final`: **891 passed / 16 existing skips** in 126.56 s, with
+  warnings treated as errors. Covers fast/GUI, the complete golden-comparator
+  tests and packaging contracts; no new skip or suppression.
+- `typing-final`: strict Windows-target scope **passes**, unchanged search paths
+  and rules.
+- `axis-parser-before-configured`: **11/44 real SVG rows mis-grouped**;
+  `axis-parser-after`: **44/44 pass** with the same SVG bytes. The old rounding
+  split labels only 0.09 points apart into adjacent bins. Direct row grouping
+  retains the original 0.1-point precision and all geometry assertions.
+- `package-style-before` fails on the real proxy's empty name; the identical
+  `package-style-after` command passes using its actual native base style.
+  The ordinary source hooks at scales **1.25 / 1.50 / 1.75** observe Fusion,
+  matching DPR, German decimal locale, loaded resources and clean teardown.
+  This is Linux offscreen proof; actual qwindows package CI remains required.
+- `package-identity-before` fails after proving approved-vs-Windows text differs
+  only by tau glyph; `package-identity-after` passes. Both approved source reports
+  (amino/BCG) equal current source exactly. The unchanged actual Windows workflow
+  record passes the corrected approved-release identity/locale/sample/persistence
+  validator; its old failed surface observation remains failed.
+- Native xcb `ux-native-before` and `ux-native-final` pass (70.89 / 64.18 s),
+  retaining the original three-line header bound and added initial/settled
+  geometry. Actual Windows results must establish its native queued-refit case.
+
+Final production analyses/R/report/figure bytes are unchanged by these observer
+and driver repairs. The final GitHub head must pass every required check,
+including real Windows full-R and exact-archive package qualification. The merge
+receipt and post-merge tree/version/remote-ref observation are retained by the
+completing thread under raw/lexer; no tag/release/settings change is authorised.

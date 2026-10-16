@@ -164,17 +164,18 @@ def test_analysis_regression_comparison_classifies_non_numeric_result_drift():
     assert row["id"] == "amino-binary-random"
 
 
-def test_text_normalization_is_limited_to_tau_squared_header():
+@pytest.mark.parametrize("header,values", [
+    (" t²     Q(df=18)  Het. p-value     I²", " 0.378    33.360         0.015  46.0%"),
+    (" Q       df  p-value     I²     t²", " 33.360  18    0.015  46.0%  0.378"),
+])
+def test_text_normalization_is_limited_to_tau_squared_header(header, values):
     baseline = _baseline()
     current = _current()
     expected = baseline["curated_golden_set"][0]
     actual = current["curated_golden_set"][0]
     expected["tool_versions"] = {"os": "Windows"}
     actual["tool_versions"] = {"os": "Darwin"}
-    expected["texts"]["Summary"] = (
-        "Heterogeneity\n t²     Q(df=18)  Het. p-value     I²\n"
-        " 0.378    33.360         0.015  46.0%"
-    )
+    expected["texts"]["Summary"] = f"Heterogeneity\n{header}\n{values}"
     actual["texts"]["Summary"] = expected["texts"]["Summary"].replace("t²", "τ²")
     assert (
         normalize_heterogeneity_header(actual["texts"]["Summary"])

@@ -21,7 +21,7 @@ def run(app, window, work, root, record, analyze):
     assert not app.activeModalWidget()
     assert not window.workspace.is_dirty
     missing = work / 'missing project.rcms'
-    present = work / 'projects' / ('a long path for evidence ' * 3) / 'amino.rcms'
+    present = work / 'projects' / ('a long path for evidence ' * 3).rstrip() / 'amino.rcms'
     present.parent.mkdir(parents=True)
     present.write_bytes((root / 'sample_projects/amino.rcms').read_bytes())
     settings.add_file_to_recent_files(str(missing))

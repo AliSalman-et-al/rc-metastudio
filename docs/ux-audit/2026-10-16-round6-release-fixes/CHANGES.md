@@ -1,6 +1,6 @@
 # v0.5.0 release fixes — complete
 
-All eight re-audit findings are fixed on the requested Linux source/native paths. Executable/test source is qualified at **07c4f4a**; later commits retain final evidence and handoff only. Presentation only; no new statistical procedure or numerical contract changes.
+All eight re-audit findings are fixed on the requested Linux source/native paths. The original release-fix qualification is **07c4f4a**. Subsequent PR #537 CI repairs and their final qualification are recorded below; the original evidence remains historical. Presentation only; no new statistical procedure or numerical contract changes.
 
 | Item | Implementation commits | Accepted proof / evidence |
 | --- | --- | --- |
@@ -110,3 +110,33 @@ The packaged analysis hook's result-capture lambda accepts `change_settings`,
 matching actual delivery. The previous TypeError reached the global modal error
 handler and explained Windows qualification's 300-second timeout. The capture now
 completes through real Qt/R; timeout bounds and all package comparisons remain.
+
+
+## Final release-completion qualification
+
+The frozen 035ebd3 fresh profile passed, exit 0 in **3,164.487 seconds**: all
+123 desktop scenarios, doctor, current-source R package Status OK, nine live
+bridge checks, both 21-case Reitsma visual runs, strict goldens and 91 independent
+authorities. The full capture preserves all 415 original numerical fields exactly.
+The collector verified **124 child manifests / 9,469 retained artifacts**.
+[CI-QUALIFICATION](CI-QUALIFICATION.json) indexes that original proof and every
+retained command receipt without replacing the earlier FULL-PROFILE history.
+
+Final qualification-only repairs address genuine Windows failures: observe the
+proxy's actual native base style; recognize the established tau-glyph equivalence
+in the release's reordered heterogeneity header; bind package presentation hashes
+to exact approved c62df31 reports; write/read arm evidence as UTF-8; use a valid
+long fixture path; wait for the actual native header refit under the same height
+bound; group real SVG baselines directly within the original 0.1-point precision.
+All endpoint, spacing, interval-projection, persistence and numerical assertions
+remain. Full-R CI now uploads its original evidence on success or failure. See
+[CI-PACKAGE](CI-PACKAGE.md) and [CI-WINDOWS](CI-WINDOWS.md) for pre-fix failures.
+
+These changes alter qualification observation/identity and driver boundaries,
+not fits, generated reports, figures, UI defaults or R source. Strict goldens and
+all 415 exact fields were rerun afterward and pass. Source/GUI/packaging contracts
+pass **891 tests**, with 16 existing opt-in/platform skips; Windows-target typing,
+44 real SVG parser cases, three offscreen scaled source hooks and native xcb UX
+pass. The original failed package/Windows runs remain failed. Actual final-head
+GitHub qualification is required before the authorised squash merge. Automatic
+remote head deletion is accepted; repository settings and local checkout stay.

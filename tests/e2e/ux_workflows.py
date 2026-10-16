@@ -74,8 +74,25 @@ def run(app, window, work, root, record, analyze):
     assert not view.report_action.isChecked()
     assert view.content_stack.currentWidget() is view.figure_page
     assert len(view.identity_label.text().splitlines()) <= 3
-    assert view.identity_label.height() <= 3 * view.identity_label.fontMetrics().lineSpacing()
-    record("ux-header-geometry", view, identity_height=view.identity_label.height(), measured_height=view.identity_label.heightForWidth(view.identity_label.width()), identity_width=view.identity_label.width(), font_height=view.identity_label.fontMetrics().height())
+    initial_identity_height = view.identity_label.height()
+    refit_waits = 0
+    while (
+        view.identity_label.height() > 3 * view.identity_label.fontMetrics().lineSpacing()
+        and refit_waits < 100
+    ):
+        wait(20)
+        refit_waits += 1
+    geometry = dict(
+        initial_identity_height=initial_identity_height,
+        identity_height=view.identity_label.height(),
+        measured_height=view.identity_label.heightForWidth(view.identity_label.width()),
+        identity_width=view.identity_label.width(),
+        font_height=view.identity_label.fontMetrics().height(),
+        line_spacing=view.identity_label.fontMetrics().lineSpacing(),
+        refit_waits=refit_waits,
+    )
+    assert view.identity_label.height() <= 3 * view.identity_label.fontMetrics().lineSpacing(), geometry
+    record("ux-header-geometry", view, **geometry)
     assert "Included input studies" not in view.identity_label.text()
     assert "Studies used in the model" not in view.identity_label.text()
     view.report_action.trigger()

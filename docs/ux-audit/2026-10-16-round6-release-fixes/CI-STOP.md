@@ -1,4 +1,8 @@
-# PR #537 CI repair — stopped on a demonstrated measurement defect
+# PR #537 CI repair — historical measurement-defect stop
+
+The authorised lexer repair and readability reassessment superseded this stop.
+Read [CI-REASSESSMENT](CI-REASSESSMENT.md) and the final [HANDOFF](../HANDOFF.md)
+for the continuation; retain this record and its failed/interrupted evidence.
 
 Implementation and merge work stopped on 16 October 2026 under the user's explicit
 rule: if the complexity gate demonstrably mis-measures, stop and report instead of

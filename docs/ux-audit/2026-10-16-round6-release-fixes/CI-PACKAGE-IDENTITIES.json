@@ -1,0 +1,62 @@
+{
+  "source_head": "035ebd3f88a64eaae2e31cb99d5db3d97e1cf92d",
+  "normalization": "Canonical whitespace, confidence heading and the exact heterogeneity header tau glyph; no number changed.",
+  "snapshots": [
+    {
+      "sample": "amino.rcms",
+      "approved_checkout_head": "c62df3134e706fb91a2b088ed13095e1667f0352",
+      "approved_summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.77                      0.48                  1.22    0.267\n\nHeterogeneity\n Q      df  p-value     I\u00b2    \u03c4\u00b2\n 33.36  18    0.015  46.0%  0.38\n\nTest for overall effect\n Z      p-value\n -1.11    0.267\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.21                                  2.80\n\nCalculation scale: log - estimate: -0.26, lower: -0.72, upper: 0.20, std. error: 0.236\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+      "canonical_summary": "Binary Random-Effects Model Metric: Odds Ratio Model Results Estimate Lower bound Upper bound p-value 0.77 0.48 1.22 0.267 Heterogeneity Q df p-value I\u00b2 t\u00b2 33.36 18 0.015 46.0% 0.38 Test for overall effect Z p-value -1.11 0.267 Prediction interval Lower bound (95% PI) Upper bound (95% PI) 0.21 2.80 Calculation scale: log - estimate: -0.26, lower: -0.72, upper: 0.20, std. error: 0.236 95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+      "canonical_sha256": "61ea84ba73eab657282ceabdf3ee1f29ab0ed55a1be574023017bc490d279ab5",
+      "all_current_report_text_exact": true,
+      "observations": [
+        {
+          "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/approved-amino-summary.json",
+          "sha256": "64442761b388fc43051c63b5346c724832c460f849005c21008e9da2ff7c1dea"
+        },
+        {
+          "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/current-amino-summary.json",
+          "sha256": "b370f5c8ea0b7feff7acbe8b1074764de40d09fe0dfea358583b72cc88eae818"
+        },
+        {
+          "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/raw/approved-amino-summary.json",
+          "sha256": "90590971e93cae840915e24e49a98797da59964b41d784e83ef6ad7d3cbc50a0"
+        },
+        {
+          "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/raw/current-amino-summary.json",
+          "sha256": "e2ae8522f2270dcdacf054be97cfca8957384f7ffb39b5879f8de4af377e4af2"
+        }
+      ]
+    },
+    {
+      "sample": "BCG.rcms",
+      "approved_checkout_head": "c62df3134e706fb91a2b088ed13095e1667f0352",
+      "approved_summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.47                      0.32                  0.69  < 0.001\n\nHeterogeneity\n Q       df  p-value     I\u00b2    \u03c4\u00b2\n 163.16  12  < 0.001  92.6%  0.37\n\nTest for overall effect\n Z      p-value\n -3.89  < 0.001\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.14                                  1.64\n\nCalculation scale: log - estimate: -0.75, lower: -1.12, upper: -0.37, std. error: 0.192\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+      "canonical_summary": "Binary Random-Effects Model Metric: Odds Ratio Model Results Estimate Lower bound Upper bound p-value 0.47 0.32 0.69 < 0.001 Heterogeneity Q df p-value I\u00b2 t\u00b2 163.16 12 < 0.001 92.6% 0.37 Test for overall effect Z p-value -3.89 < 0.001 Prediction interval Lower bound (95% PI) Upper bound (95% PI) 0.14 1.64 Calculation scale: log - estimate: -0.75, lower: -1.12, upper: -0.37, std. error: 0.192 95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+      "canonical_sha256": "b47d4f5347252350c0c6a5507221a41c3a65bbbedacfe34e0dd164c5f75c93cb",
+      "all_current_report_text_exact": true,
+      "observations": [
+        {
+          "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/approved-bcg-summary.json",
+          "sha256": "5755e61e36ffdb9f0b15760e3a314db5e17550c14d31e06137561cd296b207f0"
+        },
+        {
+          "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/current-bcg-summary.json",
+          "sha256": "45fd3064e4324759333c2a2f7429db4eb93182d3f5721660373cdc32ea12783d"
+        },
+        {
+          "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/raw/approved-bcg-summary.json",
+          "sha256": "0c3115b3b2ad578daec5badc0e223ab3632f0d474f05628dfc49afb70ef93a5b"
+        },
+        {
+          "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/raw/current-bcg-summary.json",
+          "sha256": "7000e9437244889a990bbd28d26f67f4b4e5919275750ca85960e98fc51c9234"
+        }
+      ]
+    }
+  ],
+  "probe": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/release_summary_probe.py",
+    "sha256": "a97699438168e1009f77b3fa70aeda2dd8c794f9b3f3066347c910b6ca858e03"
+  }
+}

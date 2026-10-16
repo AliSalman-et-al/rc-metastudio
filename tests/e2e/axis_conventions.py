@@ -33,7 +33,10 @@ def ticks(path):
             value = float(''.join(node.itertext()))
         except ValueError:
             continue
-        rows.setdefault(round(float(node.attrib['y']), 1), []).append((value, float(node.attrib['x'])))
+        y = float(node.attrib['y'])
+        # Glyph ascents shift svglite baselines slightly; rounding can split one row.
+        baseline = next((baseline for baseline in rows if abs(baseline - y) <= .1), y)
+        rows.setdefault(baseline, []).append((value, float(node.attrib['x'])))
     candidates = [(y,row) for y,row in rows.items() if len(row) >= 2 and len({v for v,x in row}) == len(row) and all(a[1] < b[1] for a,b in zip(sorted(row), sorted(row)[1:]))]
     assert candidates, ('axis ticks absent', path, rows)
     return sorted(max(candidates)[1])

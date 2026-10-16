@@ -36,3 +36,19 @@ No fit, transform, output oracle, threshold, exemption or operation order change
 Qualification must establish numerical and visual equivalence; metric success alone
 is insufficient. The full table of historical inflated counts remains in
 CI-COMPLEXITY.json and is not relabelled corrected evidence.
+
+
+## Release-completion continuation
+
+The 23 decisions above remain unchanged. Subsequent package-evidence repair is
+confined to observing the actual native base style and binding the approved
+release report presentation to the established cross-platform tau-glyph identity
+policy. It adds no statistical/presentation split and changes no fitted output.
+[CI-PACKAGE](CI-PACKAGE.md) records the failing actual package evidence and exact
+current-vs-c62df31 report comparison before implementation. Final fresh-profile,
+strict-golden, numerical and artifact receipts belong in CI-QUALIFICATION.json;
+actual final-head Windows R/package CI is required before merge.
+
+The user permits automatic deletion of the remote head ref after squash merge;
+the earlier reviewer restriction is superseded. Repository settings and the local
+branch/checkout must remain unchanged.

@@ -59,12 +59,12 @@ def run(app, window, work, record):
                     assert all(name in labels for name in expected), (style, expected, labels)
                     export = work / f"arms-{case}-{style}.svg"
                     view.plot_service.export(regenerator="forest", params_path=view.params_paths[title], output_path=str(export))
-                    assert all(name in export.read_text() for name in expected)
+                    assert all(name in export.read_text(encoding="utf-8") for name in expected)
             if expected[0] == "Group":
                 assert "Group: Group" not in view.identity_label.text(), view.identity_label.text()
             else:
                 assert expected[0] in view.identity_label.text(), view.identity_label.text()
-            (work/f"arms-{case}-{style}-report.txt").write_text(app.clipboard().text())
+            (work/f"arms-{case}-{style}-report.txt").write_text(app.clipboard().text(), encoding="utf-8")
             record("round5-arm-report", view, case=case, style=style, groups=expected, plots=dict(view.results.display_images))
             view.close()
         if family.startswith("twoarm") or family == "onearm-mean":
@@ -125,7 +125,7 @@ def run(app, window, work, record):
     # Frozen legacy input remains intentional test data, separate from bundled examples.
     import json
     from rc_metastudio.project_format import CURRENT_FORMAT_VERSION, save_project
-    snapshot = json.loads((Path(__file__).resolve().parents[1] / "python/fixtures/project_snapshots/amino.rcms.json").read_text())
+    snapshot = json.loads((Path(__file__).resolve().parents[1] / "python/fixtures/project_snapshots/amino.rcms.json").read_text(encoding="utf-8"))
     legacy = work / "legacy-input-arm-names.rcms"
     save_project(legacy, {"schema_version": CURRENT_FORMAT_VERSION, "dataset": snapshot["dataset"]},
                  {"schema_version": CURRENT_FORMAT_VERSION, "active_outcome": None, "active_follow_up": None,
