@@ -458,3 +458,38 @@ UTF-8 report through the ambient Windows codec. Specify UTF-8 and keep exact
 clipboard equality; the whole local workflow passes. CI-REPORT-UTF8.json binds
 the readable font scope, original artifact and failure/replay. No production
 change. Require all checks on the next committed head before squash merge.
+
+
+## Windows golden review continuation — recovering exact capture evidence
+
+The reviewer authorises only demonstrated intended rounds 3–6 presentation
+refreshes through the sanctioned tool; numerical contracts, tolerances, skips and
+exceptions remain frozen. See
+[WINDOWS-GOLDENS](2026-10-16-round6-release-fixes/WINDOWS-GOLDENS.md) and its
+machine-readable evidence. No oracle or product source has changed in this
+continuation; no merge has occurred.
+
+Two prerequisites were found. The original Windows job uploads desktop evidence,
+but its failing strict-golden capture directory is outside the upload path. The
+complete log contains drift descriptions, not raw text/image differences. A
+separate always-upload artifact now retains that existing capture directory;
+desktop layout and verification commands stay unchanged. Obtain the next actual
+`full-r-stack-windows-golden-capture` artifact and personally inspect all eleven
+old/new image pairs, then diagnose all three raw report differences.
+
+Archive history also disproves the premise that corresponding Linux plots were
+refreshed during rounds 3–6: all eleven plot hashes remain unchanged throughout
+those rounds. Seven were last refreshed by round-two 74ad86e, subgroup plots by
+round-two 0ada606, regression plots by September e1c7a88. There is one shared
+archive with retained Windows metadata; Linux's cross-platform policy does not
+require plot byte equality. Do not invent matching refresh commits. If the
+visual differences otherwise prove intended, the user's matching-Linux-refresh
+criterion still requires a reviewer decision before a refresh.
+
+Fresh local strict goldens pass (461 pass / 13 existing accepted exceptions / no
+drift), and all 415 original numerical fields are exact, maximum difference zero.
+All three named report sections equal the archive byte-for-byte on Linux; their
+Windows differences remain presumptive product defects pending exact text.
+No intended/defect classification or visual inspection is claimed from missing
+outputs. The completing agent must inspect the new CI evidence and require every
+latest-head check before any authorised squash merge and post-merge verification.

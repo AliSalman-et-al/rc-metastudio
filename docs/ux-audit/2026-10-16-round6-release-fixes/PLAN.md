@@ -1,5 +1,37 @@
 # v0.5.0 release fixes — plan before implementation
 
+## Windows golden classification and release completion (9caf474)
+
+Reviewer decision permits only reviewed rounds 3–6 presentation changes to be
+refreshed with `scripts/regenerate_golden_presentation.py`, using actual Windows
+run 38843274727 outputs. Download and hash the original evidence; retain its
+failure. Before changing the archive, classify all fourteen drifts in
+WINDOWS-GOLDENS.md. For every plot, cite the corresponding Linux refresh commit,
+render old Windows and new Windows bytes, personally inspect both and their diff,
+and reject unexplained glyph, font, clipping or layout changes. Compare all three
+report sections with the refreshed Linux text; Windows-only differences require
+a product root-cause fix unless the new text is identical to the intended Linux
+text. Numerical rows, tolerances, skips and exceptions remain frozen.
+
+Proof decided before implementation: preserve the failing Windows capture,
+commands and hashes; inspect all eleven image pairs; verify archive changes are
+limited to classified presentation and SHA bindings; run strict goldens and the
+415-field exact numerical comparison after any product change (and after refresh
+as a consistency check). Record final state in HANDOFF before merging. Commit and
+push small coherent changes immediately, fast-forward only; on failure wait 30
+seconds and retry once, then stop. Require every final-head PR check before the
+authorised squash merge. Fetch/prune afterward, prove origin/master and the final
+branch head have identical trees and all three version sources say 0.5.0, leaving
+the local branch checked out and clean. No tags, releases or settings changes.
+
+Evidence prerequisite found before any refresh: the Windows workflow uploads
+only desktop evidence, not the strict capture directory produced by the R-stack
+runner. Add a separate always-upload artifact for that existing directory; retain
+the desktop artifact layout and every verification command unchanged. Prove the
+missing original paths with the downloaded inventory, validate the workflow, then
+push and inspect the next actual Windows capture. No presentation classification
+or refresh can be completed from comparison-log descriptions alone.
+
 Starting point: c37e427, ux/audit-improvements. Presentation only; pinned test-owned R 4.6.1. No numerical contract, statistical procedure, tolerance or exception changes. Each commit is pushed immediately, fast-forward only; a failed push waits 30 seconds and retries once, then work stops.
 
 | Item | Failure modes to prevent | Proof decided before implementation |
