@@ -280,8 +280,9 @@ NULL
 #' files, and preserve plot data alongside analysis parameters.
 #'
 #' @section Display helpers:
-#' \code{print.summary.display()} and \code{print.summary.data()} provide S3
-#' print methods for RCMetaR summary objects. \code{create.repeat.string()},
+#' \code{format.summary.display()} and \code{format.summary.data()} return text
+#' without native console encoding. Their S3 print methods write that text.
+#' \code{create.repeat.string()},
 #' \code{pad.with.spaces()}, \code{round.display()},
 #' \code{capture.output.and.collapse()}, \code{results.short.list()}, and the
 #' \code{*.value.info()} helpers format display rows and labels.
@@ -291,7 +292,7 @@ NULL
 #' \code{save.data()}, and \code{write.results.to.file()} write generated data,
 #' analysis parameters, and formatted summaries to disk.
 #'
-#' @aliases capture.output.and.collapse create.repeat.string cumul.rma.mh.value.info cumul.rma.uni.value.info loo.rma.mh.value.info loo.rma.uni.value.info pad.with.spaces print.summary.data print.summary.display results.short.list rma.uni.value.info round.display save.data save.plot.data save.plot.data.and.params write.results.to.file
+#' @aliases capture.output.and.collapse create.repeat.string cumul.rma.mh.value.info cumul.rma.uni.value.info format.summary.data format.summary.display loo.rma.mh.value.info loo.rma.uni.value.info pad.with.spaces print.summary.data print.summary.display results.short.list rma.uni.value.info round.display save.data save.plot.data save.plot.data.and.params write.results.to.file
 #' @name RCMetaR-output-helpers
 NULL
 

@@ -2,6 +2,8 @@
 
 S3method(print,summary.data)
 S3method(print,summary.display)
+S3method(format,summary.data)
+S3method(format,summary.display)
 export(rcmetar.analysis.methods)
 export(rcmetar.analysis.plot.capabilities)
 export(rcmetar.available.methods)

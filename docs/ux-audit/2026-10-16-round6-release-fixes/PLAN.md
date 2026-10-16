@@ -32,6 +32,46 @@ missing original paths with the downloaded inventory, validate the workflow, the
 push and inspect the next actual Windows capture. No presentation classification
 or refresh can be completed from comparison-log descriptions alone.
 
+### Report character-loss proof before product changes
+
+The original Windows desktop subgroup reports provide supplementary raw text:
+each differs from the archive only by tau-squared becoming Latin t-squared. This
+does not substitute for the pending strict capture. The shared report path uses
+R `format()` and then `capture.output(print(...))`, both native-locale boundaries.
+Before changing it, extend the existing installed-real-R/production-bridge summary
+driver. Failure modes: Unicode titles, column headers, row labels and notes are
+transliterated/escaped; native `format()` expands characters and breaks measured
+column widths; whitespace, numbers or report block order changes; temporary
+locale changes leak into later analyses. Under a deliberately non-Unicode C
+locale, require exact text equality with the ordinary UTF-8 locale, Unicode
+preservation and unchanged locale after rendering. Keep the existing print/S3
+and actual-model summary assertions. Avoid a console roundtrip in application
+text and keep the existing Linux report byte layout. Run the failing driver
+before implementation, then re-drive it, strict goldens and all 415 exact fields.
+
+### Diagnostic PNG missing-glyph defect, proof before repair
+
+Actual strict capture from run 38848117604 (same production as 9caf474) confirms
+the diagnostic DOR PNG renders U+2080 in H-subscript-zero as a missing-glyph box.
+The full-resolution crop is retained; this plot must not be refreshed as-is.
+The Windows SVG still contains the correct Unicode caption, but svglite declares
+only the primary Arial family. The SVG-to-raster boundary needs an explicit usable
+Unicode fallback, preserving ordinary font choice and caption text.
+
+Before implementing, extend the existing real SVG normalization/export contract
+to cover a Unicode null caption with a primary family, unchanged text and geometry,
+explicit usable fallback and repeated normalization. Failure modes: no fallback
+leaves the glyph missing; replacing the primary font changes ordinary typography;
+duplicate fallbacks grow on repeat; Unicode/numbers or existing glyph paths are
+altered; an unavailable Windows fallback silently passes qualification. Verify
+the actual fallback's U+2080 coverage on Windows. Keep existing SVG caption
+identity assertions. After repair, run the device contracts, strict goldens,
+415-field equivalence, compare all eleven Linux PNGs before/after, native
+diagnostic rendering/exports, and personally inspect the new actual Windows PNG.
+Do not mutate the executable source during the in-progress fresh report-fix
+profile; qualify this subsequent graphics boundary change separately and through
+the final Windows full-R matrix.
+
 Starting point: c37e427, ux/audit-improvements. Presentation only; pinned test-owned R 4.6.1. No numerical contract, statistical procedure, tolerance or exception changes. Each commit is pushed immediately, fast-forward only; a failed push waits 30 seconds and retries once, then work stops.
 
 | Item | Failure modes to prevent | Proof decided before implementation |

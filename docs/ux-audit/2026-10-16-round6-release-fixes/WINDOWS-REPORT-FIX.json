@@ -1,0 +1,174 @@
+{
+  "status": "Targeted proof passed; full fresh profile and actual Windows strict-capture review pending",
+  "root_cause": "R format.character and capture.output(print()) pass report strings through native-locale encoding; this changes scientific characters and Unicode column padding.",
+  "fix": "Build Unicode report strings in S3 format methods, retain print wrappers, and let the application consume format() directly. Pad with Unicode display widths instead of native format.character.",
+  "failure_first": "Installed real-R/production-bridge summary driver failed locale text equality before implementation; C locale changed Group alpha/header spacing. Original Windows desktop subgroup texts differ only by tau-squared becoming Latin t-squared.",
+  "supplementary_windows_diffs": [
+    {
+      "id": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "steps": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/windows-goldens/ci/20261016T032045Z-dee741e1-analysis-amino-binary-subgroup/steps.jsonl",
+      "steps_sha256": "33d73ba89acfa9d65e76bf9b8337501c17f3471091141739cd790e89d3aee529",
+      "windows_text_sha256": "9f5e9ff80ec5ae6262d55628590b35314f8f3d7d3223e0634ad5b9c067e97ad7",
+      "only_change": "τ² -> t²",
+      "scope": "Supplementary production desktop text, not strict capture"
+    },
+    {
+      "id": "continuous-subgroup",
+      "section": "Subgroup Summary",
+      "steps": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/windows-goldens/ci/20261016T032100Z-35ff21a6-analysis-continuous-subgroup/steps.jsonl",
+      "steps_sha256": "ff02b236d10a0c2ce33496fb537fd748ac1add5f9487846d1a78373b319af20f",
+      "windows_text_sha256": "bb4af96ff4a0b2a6ad0f46540e6ee81da2febdce22458d36e22a48cab26b9637",
+      "only_change": "τ² -> t²",
+      "scope": "Supplementary production desktop text, not strict capture"
+    }
+  ],
+  "source_sha256": {
+    "r/RCMetaR/R/analysis_contracts.R": "7465038e1f01361dbe2f040dd4b3b0428c91d65cd2f8fa29273a8afd3f1a2711",
+    "src/rc_metastudio/r_bridge.py": "f832103731785e0c0b7b5ddb095c30c0d5f2acfb6b38dccc4e75c3cc60c1e1b3",
+    "r/RCMetaR/NAMESPACE": "005bc3a6c9f967ac8b7dc56d00af23d24afff273014f99562f62b6bd74ca0d96",
+    "r/RCMetaR/R/rcmetar-package.R": "f28e92b8e9f8f093f306eaf5533011f6c3158f38f6efd2bc40b0df4e743130f7",
+    "r/RCMetaR/R/rcmetar-reference.R": "e9814de58d4e50afc8b52b561f6664b366ca7f3e28bd5052c0e810b07f45ed58",
+    "r/RCMetaR/man/rcmetar-output-helpers.Rd": "51c34ebe6d4e914e7d82171a3d3cc9e4eb6aaa80d622e0d93154a6f63a44d63d",
+    "tests/r_stack/test_inprocess_rpy2_backend.py": "71199521a923e155e670dec5bd49f8572126816f68011869400bbb253cf5765e"
+  },
+  "logs": {
+    "report-unicode-before.log": {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/windows-goldens/report-unicode-before.log",
+      "sha256": "c8e9f8fa00934844024755ba3aa3d6f7a0459e90db6f0724cf14bd01a19fe3c0"
+    },
+    "report-unicode-stable.log": {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/windows-goldens/report-unicode-stable.log",
+      "sha256": "236a1c73b2a824017b0abf9d409675fc68cabe89303399b976bb12cae33d2eab"
+    },
+    "bridge-report-fixed.log": {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/windows-goldens/bridge-report-fixed.log",
+      "sha256": "763251041e8e36a35ecd8d81fe4dbb6ae4487e8e6716d42b6dc329763e7f7020"
+    },
+    "linux-strict-fixed.log": {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/windows-goldens/linux-strict-fixed.log",
+      "sha256": "122b2fcd9dc6ef862c218b9ea20052f2798384eb8626ff521abf5b49fb2b81ac"
+    },
+    "linux-strict-C-fixed.log": {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/windows-goldens/linux-strict-C-fixed.log",
+      "sha256": "122b2fcd9dc6ef862c218b9ea20052f2798384eb8626ff521abf5b49fb2b81ac"
+    },
+    "typing-report-fixed-ci-scope.log": {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/windows-goldens/typing-report-fixed-ci-scope.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "install-report-source-stable.log": {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/windows-goldens/install-report-source-stable.log",
+      "sha256": "a7ef34f3f4c44347c424fdbda9f5d0f25ef21e048a761ab5025d1dd3adb3f708"
+    },
+    "native-subgroup-fixed.log": {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/windows-goldens/native-subgroup-fixed.log",
+      "sha256": "b2de9f306756feefb18df38a3d8acb5364486447fd844a613244eb80e11ea0fd"
+    }
+  },
+  "installed_source": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/windows-goldens/INSTALLED-SOURCE.json",
+  "targeted": {
+    "report_boundary": "1 passed in 34.20s; explicit C locale; exact Unicode/spacing and unchanged locale",
+    "backend_contracts": "4 passed in 36.54s",
+    "strict_utf8": "461 pass / 13 existing accepted exceptions / zero drift",
+    "strict_C_locale": "461 pass / 13 existing accepted exceptions / zero drift",
+    "original_numeric_fields": 415,
+    "exact": true,
+    "max_difference": 0,
+    "typing": "Exact CI scope, Windows platform: All checks passed"
+  },
+  "linux_before_after": [
+    {
+      "id": "amino-binary-cumulative",
+      "plot_bytes_identical": true,
+      "texts_identical": true,
+      "sha256": "c4cf66278ab03cb43666a390e60c83745f3094bead480c56f0735679332d315a"
+    },
+    {
+      "id": "amino-binary-leave-one-out",
+      "plot_bytes_identical": true,
+      "texts_identical": true,
+      "sha256": "d71d32fe12f8503c0c930195e258aad161dd55247b749380b409a63c24bea2cf"
+    },
+    {
+      "id": "amino-binary-meta-regression",
+      "plot_bytes_identical": true,
+      "texts_identical": true,
+      "sha256": "48afe850563456418bb51c387960ed5126f98d6d42a7c91fa19a0f55e7b0c9d5"
+    },
+    {
+      "id": "amino-binary-random",
+      "plot_bytes_identical": true,
+      "texts_identical": true,
+      "sha256": "f6198c18428efd5405d30e4cd24e0f28fea0c962bf969ebea24c12bea37a10db"
+    },
+    {
+      "id": "amino-binary-subgroup",
+      "plot_bytes_identical": true,
+      "texts_identical": true,
+      "sha256": "fe5e2b9799ffc28f8b7c023974b7b05f342a1ee2fc5c6dfa46a1fa7422669c78"
+    },
+    {
+      "id": "continuous-cumulative",
+      "plot_bytes_identical": true,
+      "texts_identical": true,
+      "sha256": "a4dbd9969d8f42d6c6d914b93b5f95c725fa384a7741d066c595aaac9b824169"
+    },
+    {
+      "id": "continuous-leave-one-out",
+      "plot_bytes_identical": true,
+      "texts_identical": true,
+      "sha256": "59844c0cc49c767259e764e4f862a9d890a1bed38eeef0ec2f8823449eb2feaf"
+    },
+    {
+      "id": "continuous-meta-regression",
+      "plot_bytes_identical": true,
+      "texts_identical": true,
+      "sha256": "537b7dd1150b1db79acfb5f34f06e94ddaccfbb08a60ad2670ad1e3bdbd4cf8b"
+    },
+    {
+      "id": "continuous-random",
+      "plot_bytes_identical": true,
+      "texts_identical": true,
+      "sha256": "032a15a34f2caa943c4de2a2bd07f3d823219eb80d9788b9fe591abc93ca3416"
+    },
+    {
+      "id": "continuous-subgroup",
+      "plot_bytes_identical": true,
+      "texts_identical": true,
+      "sha256": "da9e3defb7d1c4293c3d7b29df7250ccd75ed4db3fbc2e1cda59c99b33a0635c"
+    },
+    {
+      "id": "lymph-diagnostic-random-dor",
+      "plot_bytes_identical": true,
+      "texts_identical": true,
+      "sha256": "85dc1e3c4ef041cc52dd82299c2bd0fea5f580337760c3c3e99acdc1305d6000"
+    }
+  ],
+  "native": {
+    "evidence": "artifacts/verification/rcms/20261016T040609Z-794a55b7-analysis-amino-binary-subgroup",
+    "passed": true,
+    "exit_code": 0,
+    "verified_file_hashes": 25,
+    "personally_inspected": "04-0-matrix-results-report.png; all subgroup/report rows readable, tau-squared present, no missing glyph/clipping observed",
+    "curated": "windows-goldens/native-subgroup-report.png"
+  },
+  "full_profile": {
+    "status": "Unqualified outer wrapper exit 143; all three child stages independently returned 0 and summary passed, but aggregate command must be rerun detached",
+    "evidence": "artifacts/verification/rcms/20261016T040506Z-e277b925-complete",
+    "command": "RCMS_R_STACK_REQUIRED=1 uv run python scripts/run_with_timeout.py --timeout-seconds 7200 --label release-unicode-full -- uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh",
+    "outer_exit_code": 143,
+    "child_summary_passed": true,
+    "desktop_passed": 123,
+    "authorities_passed": 91,
+    "doctor_passed": true
+  },
+  "unqualified_attempts": [
+    "report-unicode-after.log: skipped; package unavailable during concurrent library replacement",
+    "report-unicode-after-required.log: same package-loading failure, retained as failure",
+    "install-report-source.log: source-hash guard correctly rejected source edited during install; stable install rerun passed",
+    "typing-report-fixed.log: omitted explicit CI scopes and checked historical audit scripts; corrected exact CI scope passed"
+  ],
+  "oracle_changed": false,
+  "policy_changed": false
+}

@@ -6,6 +6,8 @@
 \alias{create.repeat.string}
 \alias{cumul.rma.mh.value.info}
 \alias{cumul.rma.uni.value.info}
+\alias{format.summary.data}
+\alias{format.summary.display}
 \alias{loo.rma.mh.value.info}
 \alias{loo.rma.uni.value.info}
 \alias{pad.with.spaces}
@@ -25,8 +27,9 @@ files, and preserve plot data alongside analysis parameters.
 }
 \section{Display helpers}{
 
-\code{print.summary.display()} and \code{print.summary.data()} provide S3
-print methods for RCMetaR summary objects. \code{create.repeat.string()},
+\code{format.summary.display()} and \code{format.summary.data()} return text
+without native console encoding. Their S3 print methods write that text.
+\code{create.repeat.string()},
 \code{pad.with.spaces()}, \code{round.display()},
 \code{capture.output.and.collapse()}, \code{results.short.list()}, and the
 \code{*.value.info()} helpers format display rows and labels.

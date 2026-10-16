@@ -1504,7 +1504,7 @@ def _add_result_text(texts, name, value, result, study_names):
     if "gui.ignore" in name:
         return
     if _is_summary_display(value):
-        texts[title] = _format_result_text(_capture_formatted_summary(value))
+        texts[title] = _format_result_text(_format_summary(value))
         return
     if _is_table_summary(value):
         texts.update(_format_table_summary(title, value, study_names=study_names))
@@ -1791,11 +1791,8 @@ def _is_summary_display(r_object):
 
 
 @serialized_r_call
-def _capture_formatted_summary(r_object):
-    capture_summary = _r_eval(
-        "function(x) paste(capture.output(print(x)), collapse='\\n')"
-    )
-    return _first_dynamic(_call_dynamic(capture_summary, r_object))
+def _format_summary(r_object):
+    return _first_dynamic(execute_r_function("format", r_object))
 
 
 def _format_table_summary(section_name, r_object, title=None, study_names=None):
