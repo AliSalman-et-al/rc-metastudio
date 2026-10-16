@@ -146,6 +146,14 @@ rcmetar.normalize.svglite.svg <- function(svg.path) {
     svg <- rcmetar.sanitize.svg.xml(svg)
 
     document <- xml2::read_xml(charToRaw(svg), options="NOBLANKS")
+    # Keep the primary face, but let Windows rasterizers find mathematical glyphs.
+    text <- xml2::xml_find_all(document,
+        "//*[local-name()='text' and contains(@style, 'font-family:') and not(contains(@style, 'Segoe UI Symbol'))]")
+    for (node in text) {
+        style <- xml2::xml_attr(node, "style")
+        xml2::xml_set_attr(node, "style",
+            sub("(font-family:[^;]+)", '\\1, "Segoe UI Symbol", sans-serif', style))
+    }
     shapes <- xml2::xml_find_all(
         document,
         "//*[local-name()='g' and contains(concat(' ', normalize-space(@class), ' '), ' svglite ')]//*[local-name()='line' or local-name()='polyline' or local-name()='polygon' or local-name()='path' or local-name()='rect' or local-name()='circle']"

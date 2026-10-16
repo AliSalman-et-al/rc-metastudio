@@ -50,6 +50,25 @@ test_that("normalized svglite defaults support compressed SVG artifacts", {
   expect_equal(xml2::xml_attr(line, "stroke"), "#000000")
 })
 
+test_that("exported Unicode captions retain a usable fallback and their primary font", {
+  svg.path <- tempfile(fileext=".svg")
+  caption <- paste0("Test for overall effect (H", intToUtf8(0x2080), ": DOR = 1)")
+  rcmetar.render.plot_svg(svg.path, list(width=4, height=1), function() {
+    graphics::par(mar=c(0, 0, 0, 0))
+    graphics::plot.new()
+    graphics::text(0.5, 0.5, caption)
+  })
+  document <- xml2::read_xml(svg.path)
+  text <- xml2::xml_find_first(document, "//*[local-name()='text']")
+  expect_identical(xml2::xml_text(text), caption)
+  family <- sub(".*font-family: ([^;]+).*", "\\1", xml2::xml_attr(text, "style"))
+  expect_match(family, ', "Segoe UI Symbol", sans-serif$', fixed=FALSE)
+  expect_false(startsWith(family, '"Segoe UI Symbol"'))
+  first.pass <- readBin(svg.path, "raw", n=file.info(svg.path)$size)
+  rcmetar.normalize.svglite.svg(svg.path)
+  expect_identical(readBin(svg.path, "raw", n=file.info(svg.path)$size), first.pass)
+})
+
 test_that("SVG normalization removes XML 1.0-invalid control characters", {
   svg.path <- tempfile(fileext = ".svg")
   bytes <- c(
