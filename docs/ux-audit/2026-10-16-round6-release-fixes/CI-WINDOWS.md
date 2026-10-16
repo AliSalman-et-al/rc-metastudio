@@ -109,3 +109,21 @@ retain the original exact encoding and unchanged-log-byte assertions. The focuse
 replay passes both cases. No production code, gate scope or numerical/visual
 assertion changes. CI-CONSOLE-NEWLINE.json binds the actual failed job and replay.
 The final head must still pass all required checks.
+
+
+### Read the exported review report using its declared UTF-8 protocol
+
+7f9839c's actual Windows full-R run passes 122 cases and fails review1-design
+later at `output.read_text() == copied`. Its font-aware doctor and path-elision
+assertions pass. Personal inspection accepts the original readable-font frame
+[here](ci-windows/7f9839c-fonts-readable.png): Arial / Regular, 56 families, required
+glyphs present, directory C:\Windows\Fonts. This is Windows offscreen font proof,
+not a passing entire workflow or native-DPI qualification. The executed GitHub
+merge-ref tree equals the branch tree; CI-REPORT-UTF8.json binds both identities,
+original manifests/CRC-verified entries, frame and exact failure log.
+
+The sole default-codec text read in this driver was reading a UTF-8 exported
+report through Windows' ambient codec. Specify encoding="utf-8" and retain the
+exact clipboard/file equality. The unchanged whole review1-design workflow passes
+locally in 21.84 s. No product, numerical/golden policy, threshold, tolerance,
+geometry or assertion change. All actual final-head checks remain required.

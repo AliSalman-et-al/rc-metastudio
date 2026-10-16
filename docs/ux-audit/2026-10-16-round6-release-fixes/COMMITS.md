@@ -62,3 +62,10 @@ Each listed implementation/evidence commit was immediately followed by an ordina
   console's platform newline translation; the two exact fixture assertions remain.
 - This commit — `test: pin console fixture newline translation`; no production
   change, immediate ordinary fast-forward push required.
+
+- 7f9839c — pin console fixture newline translation; immediate fast-forward push
+  succeeded. Windows source and package checks pass; full-R retained one later
+  default-codec report-read failure (122 desktop passes).
+- This commit — `test: decode exported review reports as UTF-8`; preserves exact
+  file/clipboard equality and binds readable Windows font proof. Immediate
+  ordinary fast-forward push required.

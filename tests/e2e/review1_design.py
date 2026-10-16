@@ -190,7 +190,7 @@ def run(app, window, work, root, record, analyze):
     output = work / 'review1-report.txt'
     with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', return_value=(str(output), '')):
         view.export_report_action.trigger()
-    assert output.read_text() == copied
+    assert output.read_text(encoding="utf-8") == copied
     tables_entry = next(item for item in view.nav_tree.findItems('Tables', QtCore.Qt.MatchFlag.MatchExactly))
     view.tables_action.trigger()
     assert view.nav_tree.currentItem() is tables_entry

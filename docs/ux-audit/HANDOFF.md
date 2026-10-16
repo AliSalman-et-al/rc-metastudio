@@ -448,3 +448,13 @@ fixture (429 pass / two fail). Pinning that test-owned stream to LF preserves
 its exact character/log-byte assertions; both local cases pass. No production
 change. CI-CONSOLE-NEWLINE.json retains the failure and replay. The completing
 thread must monitor every check on the following committed head before merge.
+
+
+7f9839c's font-aware Windows runtime is now verified: the original frame is
+readable and records Arial / Regular, 56 families and required glyph coverage
+from C:\Windows\Fonts. Its executed GitHub merge-ref tree equals the branch tree.
+Full-R still has one failure / 122 passes: the review driver reads an exported
+UTF-8 report through the ambient Windows codec. Specify UTF-8 and keep exact
+clipboard equality; the whole local workflow passes. CI-REPORT-UTF8.json binds
+the readable font scope, original artifact and failure/replay. No production
+change. Require all checks on the next committed head before squash merge.
