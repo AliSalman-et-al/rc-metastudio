@@ -1,0 +1,62 @@
+[
+  {
+    "path": "screenshots/guard-open-no.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "7115fd9acf91efb135854b814a8a2b6964dd65163fd7635d501ecf137f928e3c",
+    "observation": "You've made unsaved changes to your data. Do you want to save your changes?"
+  },
+  {
+    "path": "screenshots/guard-open-no-result.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "783936ee878a31eb0a4548f69340d549ecd24d79febf45dc9a292d73bf7a579b",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/guard-open-yes.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "7115fd9acf91efb135854b814a8a2b6964dd65163fd7635d501ecf137f928e3c",
+    "observation": "You've made unsaved changes to your data. Do you want to save your changes?"
+  },
+  {
+    "path": "screenshots/guard-open-yes-reopened.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "c9ce3a507fe469a1bddc9ac5903c77ed21ce0d805e0047fe9a003196bce27b99",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/guard-save-as-cancel.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "6b91c753918ac18f8337f0e8a0fbc9e8b30582caa31666f8035d4dda5f79a321",
+    "observation": "You've made unsaved changes to your data. Do you want to save your changes?"
+  },
+  {
+    "path": "screenshots/guard-save-as-cancel-preserved.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "47a82b583524455ab05d1d04a1ad3764ece168532c95f296f8b0af6bea455d2d",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/keyboard-toolbar-focus.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "abffa8da7944114325f68d96169c118e824e3bd09fbae91117927eb53f58e0ad",
+    "observation": "[\"QToolButton\", \"QToolButton\", \"QToolButton\", \"QToolButton\", \"QToolButton\"]"
+  },
+  {
+    "path": "screenshots/keyboard-analysis-menu.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "2e27a30c28a5b123a0f3292a4ba5e8fda543278a74d07668e92f052db89b4f1b",
+    "observation": "Meta-analysis\u2026"
+  },
+  {
+    "path": "screenshots/keyboard-analysis-setup.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "b5ee75fc03a941cab5f932d2d3b8bcda2902c965cca3de3c5de6a595544969de",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/keyboard-report-copied-exported.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "7548de4342dab0f96e688418137f763c0a26cd98c3fd3dc255f42c2312fb719e",
+    "observation": ""
+  }
+]

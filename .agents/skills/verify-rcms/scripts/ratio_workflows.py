@@ -411,7 +411,9 @@ def run(app, window, scenario, record):
             expected = json.loads(str(r_bridge.execute_r_string("{" + expression + 'jsonlite::toJSON(lapply(fits,function(f)list(estimate=exp(as.numeric(f$b)),lower_bound=exp(f$ci.lb),upper_bound=exp(f$ci.ub),standard_error=f$se)),auto_unbox=TRUE,digits=16)}')[0]))
             actual = _parse_result_table(view.texts["Subgroup Summary" if workflow == "subgroup" else "Sequential Summary"])
             names = [f"Study {i+1}" for i in range(12) if hazard or i != 2]
-            labels = (["B", "A", "Overall"] if workflow == "subgroup" else [("+ " if workflow == "cumulative" else "- ") + name for name in names])
+            labels = (["B", "A", "Overall"] if workflow == "subgroup" else
+                      [f"{name} (k = {i+1})" if workflow == "cumulative" else f"Study omitted: {name}"
+                       for i, name in enumerate(names)])
             for label, row in zip(labels, expected, strict=True):
                 for key, value in row.items():
                     assert abs(actual[f"model.{_result_row_key(label)}.{key}"]-value) <= 1.1e-6, (label, actual, expected)
@@ -463,7 +465,9 @@ def run(app, window, scenario, record):
             expression = f'x1 <- {vector(0)}; t1 <- {vector(1)}; x2 <- {vector(2)}; t2 <- {vector(3)}; fits <- lapply({indices},function(ix) {{ if(sum(x1[ix])==0 || sum(x2[ix])==0)return(NULL); f <- metafor::rma.mh(measure="IRR",x1i=x1[ix],t1i=t1[ix],x2i=x2[ix],t2i=t2[ix],add=c(.5,0),to=c("only0","none"),drop00=c(TRUE,FALSE)); list(estimate=exp(as.numeric(f$b)),lower_bound=exp(f$ci.lb),upper_bound=exp(f$ci.ub),standard_error=f$se) }}); jsonlite::toJSON(fits,auto_unbox=TRUE,digits=16)'
             expected = json.loads(str(r_bridge.execute_r_string("{" + expression + "}")[0]))
             actual = _parse_result_table(view.texts["Subgroup Summary" if workflow == "subgroup" else "Sequential Summary"])
-            labels = ["B", "A", "Overall"] if workflow == "subgroup" else [("+ " if workflow == "cumulative" else "- ") + f"Study {i+1}" for i in range(12)]
+            labels = (["B", "A", "Overall"] if workflow == "subgroup" else
+                      [f"Study {i+1}, {2020+i} (k = {i+1})" if workflow == "cumulative" else f"Study omitted: Study {i+1}, {2020+i}"
+                       for i in range(12)])
             for label, row in zip(labels, expected, strict=True):
                 if row is None or row == {}:
                     assert label in view.texts["Non-estimable rows"]

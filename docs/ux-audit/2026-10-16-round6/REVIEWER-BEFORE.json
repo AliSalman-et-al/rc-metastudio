@@ -1,0 +1,22 @@
+{
+  "FULL-PROFILE.json": {
+    "revision": "dc235ab",
+    "sha256": "10dbb55ac7c49f75849bc276eb0b1bfb93336b3fb936c68815665691f916ed8b"
+  },
+  "R-CHECK.json": {
+    "revision": "dc235ab",
+    "sha256": "0cc62f88015ece76f5e48dc13b77e80f50da7b705472724e531596f33d623e9c"
+  },
+  "EVIDENCE-INTEGRITY.json": {
+    "revision": "dc235ab",
+    "sha256": "b092b1f3c6a7e009cdedd76ea990e7cbf79813a05d76c868a75d96d3a533e02a"
+  },
+  "NATIVE-SELECTED.json": {
+    "revision": "dc235ab",
+    "sha256": "a5a1f563b0a58e67d7fc7906e66fafaa15f55b08a742c8eae5f9dc0a9a436cf6"
+  },
+  "INSTALLED-SOURCE.json": {
+    "revision": "dc235ab",
+    "sha256": "71340c32bef56703569af81b971851fa63061644206de4686d434182cd80b222"
+  }
+}

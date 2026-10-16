@@ -1,0 +1,6 @@
+args <- commandArgs(trailingOnly=TRUE)
+d <- read.csv(args[[1]], check.names=FALSE)
+e <- metafor::escalc(measure="IRR", x1i=d$events1, t1i=d$exposure1, x2i=d$events2, t2i=d$exposure2, add=.5, to="only0")
+f <- metafor::rma.uni(yi=e$yi, vi=e$vi, method="DL", test="z", level=95)
+output <- list(source="Saved native subgroup input; original counts and catheter-days", method=f$method, estimate=exp(as.numeric(f$b)), weights=data.frame(d[c("id","name","year")], weight=as.numeric(stats::weights(f))), sum=sum(stats::weights(f)))
+jsonlite::write_json(output,args[[2]],pretty=TRUE,auto_unbox=TRUE,digits=16)

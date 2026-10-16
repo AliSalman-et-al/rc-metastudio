@@ -45,8 +45,10 @@ from rc_metastudio.analysis_method_labels import (
 )
 from rc_metastudio.plot_defaults import apply_default_forest_arm_labels
 from rc_metastudio.plot_text import (
-    apply_plot_text_input_limits,
+    configure_plot_text_inputs,
     plot_parameter_text_value,
+    plot_text_value,
+    set_plot_text_value,
 )
 from rc_metastudio.meta_globals import (
     ALL_METRIC_NAMES,
@@ -75,7 +77,7 @@ else:
     from rc_metastudio.forms.ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
 
 PLOT_STYLE_LABELS = {
-    "default": "Default (metafor)",
+    "default": "Default",
     "revman": "RevMan",
     "bmj": "BMJ",
 }
@@ -240,6 +242,7 @@ class _DiagnosticMethodPanel(object):
             self.param_box.layout().addWidget(control, row, 1)
             self.widgets.extend((label, control))
             row += 1
+        self.owner._set_analysis_tab_order()
         self.owner._schedule_local_reflow()
 
 
@@ -274,6 +277,23 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.populate_parameter_controls()
         if self._combined_diagnostic:
             self._finish_combined_diagnostic_ui()
+        self._setup_result_context()
+        self.specs_tab.currentChanged.connect(self._fit_active_tab_contents)
+        self._fit_active_tab_contents(self.specs_tab.currentIndex())
+        adaptive_window.register_adaptive_window(
+            self, adaptive_window.WindowRole.TRANSACTIONAL
+        )
+        if initial_settings is not None:
+            self._restore_settings(initial_settings)
+        for field in self.findChildren(QLineEdit):
+            if field.text() == "[default]":
+                set_plot_text_value(field, "[default]")
+                if field is self.col2_str_edit:
+                    field.setToolTip("Automatic: " + self._result_metric_label())
+                elif field is self.col3_str_edit and self.data_type == "diagnostic":
+                    field.setToolTip("Automatic: diagnostic counts")
+
+    def _setup_result_context(self):
         workflow_label = analysis_identity.workflow_label(self.analysis_type)
         self.setWindowTitle(f"{workflow_label} — {self.model.current_outcome_name}")
         required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button").setText("Run analysis")
@@ -303,18 +323,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.col1_str_edit.setText("Subgroup")
         else:
             self.col1_str_edit.setText("Study")
-        if self.data_type in {"binary", "continuous"}:
+        if self.data_type in {"binary", "continuous", "time_to_event", "event_rates"}:
             for field, name in zip((self.col3_str_edit, self.col4_str_edit), self.model.current_groups):
-                field.setText(name)
+                set_plot_text_value(field, name)
         for checkbox, label in zip((self.show_1, self.show_2, self.show_3, self.show_4), ("study", "estimate", "first group", "second group")):
             checkbox.setAccessibleName(f"Show {label} column")
-        self.specs_tab.currentChanged.connect(self._fit_active_tab_contents)
-        self._fit_active_tab_contents(self.specs_tab.currentIndex())
-        adaptive_window.register_adaptive_window(
-            self, adaptive_window.WindowRole.TRANSACTIONAL
-        )
-        if initial_settings is not None:
-            self._restore_settings(initial_settings)
 
     def _restore_settings(self, saved):
         parameters = dict(saved["parameters"])
@@ -334,6 +347,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 checkbox.setChecked(covariate.name in saved["covariates"])
             self.fixed_effects_radio.setChecked(saved["fixed_effects"])
             self.random_effects_radio.setChecked(not saved["fixed_effects"])
+        self._restore_plot_settings(parameters)
+
+    def _restore_plot_settings(self, parameters):
         self._load_plot_params()
         self.study_order.setCurrentIndex(max(0, self.study_order.findData(parameters.get("fp_study_order", "table"))))
         prefix = "bp" if self.is_meta_regression else "fp"
@@ -342,7 +358,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                             (self.x_lbl_le, "bp_xlabel" if self.is_meta_regression else "fp_xlabel"),
                             (self.plot_lb_le, f"{prefix}_plot_lb"), (self.plot_ub_le, f"{prefix}_plot_ub"), (self.x_ticks_le, f"{prefix}_xticks")):
             if parameters.get(name) is not None:
-                field.setText(str(parameters[name]))
+                if field in (self.col1_str_edit, self.col2_str_edit, self.col3_str_edit, self.col4_str_edit, self.x_lbl_le):
+                    set_plot_text_value(field, parameters[name])
+                else:
+                    field.setText(str(parameters[name]))
         for checkbox, name in ((self.show_1, "fp_show_col1"), (self.show_2, "fp_show_col2"),
                                (self.show_3, "fp_show_col3"), (self.show_4, "fp_show_col4"),
                                (self.show_summary_line, "fp_show_summary_line")):
@@ -354,7 +373,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         model = DatasetTableModel(dataset=copy.deepcopy(self.model.dataset), add_blank_study=False)
         model.set_state(copy.deepcopy(self.model.get_state()))
         model.analysis_source_path = self.model.analysis_source_path
-        saved = dict(method=self.current_method, parameters=copy.deepcopy(self.current_param_vals),
+        saved_parameters = copy.deepcopy(self.current_param_vals)
+        saved = dict(method=self.current_method, parameters=saved_parameters,
                      covariates=[cov.name for cov in self._selected_covariates()] if self.is_meta_regression else [],
                      fixed_effects=self.fixed_effects_radio.isChecked())
         if self._combined_diagnostic:
@@ -365,12 +385,17 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         confidence = self.current_param_vals.get("conf.level", self.confidence_level)
         project_path = self._project_path
 
-        def reopen():
+        def reopen(axis_scale=None):
             import uuid
+            restored = copy.deepcopy(saved)
+            parameters = copy.deepcopy(saved_parameters)
+            if axis_scale is not None:
+                parameters["fp_axis_scale"] = axis_scale
+            restored["parameters"] = parameters
             form = AnalysisSetupDialog(model, parent=owner, analysis_type=workflow,
-                external_params=saved["parameters"], diagnostic_metrics=metrics,
+                external_params=restored["parameters"], diagnostic_metrics=metrics,
                 diagnostic_analysis_details=copy.deepcopy(details), confidence_level=confidence,
-                analysis_service=service, initial_settings=saved)
+                analysis_service=service, initial_settings=restored)
             form._project_path = project_path
             name = "regression" if workflow == "meta-regression" else "forest"
             form.image_path.setText(analysis_output_path(f"{name}-{uuid.uuid4().hex[:12]}.png"))
@@ -412,7 +437,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._focus_reveal_connected = False
         for combo in self.findChildren(QComboBox):
             self._configure_value_control(combo)
-        apply_plot_text_input_limits(self)
+        configure_plot_text_inputs(self)
         apply_default_forest_arm_labels(self)
         if _text_value(self.image_path) == "":
             self.image_path.setText(analysis_output_path("forest.png"))
@@ -621,7 +646,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.plot_tab.setToolTip(
             ""
             if bubble_available
-            else "Bubble plot options require exactly one continuous covariate."
+            else "Bubble plot options require exactly one Numeric covariate."
         )
 
     def _set_accepted_handler(self, handler):
@@ -646,6 +671,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.image_path.setText(out_f)
 
     def _setup_plot_controls(self):
+        if self.analysis_type == "subgroup":
+            note = QLabel("Subgroup figures use the default layout. RevMan and BMJ apply their accent colours; their standard-forest layouts are unavailable for subgroups.", self)
+            note.setWordWrap(True)
+            self.style_layout.addWidget(note, self.style_layout.rowCount(), 0, 1, 2)
         self.study_order = QComboBox(self)
         self.study_order.setAccessibleName("Forest study order")
         for label, key in (("Current table order", "table"), ("Year (earliest first)", "year"),
@@ -659,7 +688,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         row = self.style_layout.rowCount()
         self.style_layout.addWidget(self.study_order_label, row, 0)
         self.style_layout.addWidget(self.study_order, row, 1)
-        self.default_panel.setTitle("Forest options")
         self.color_btn.clicked.connect(
             app_error_handler.safe_slot(self._choose_plot_color, parent=self)
         )
@@ -899,39 +927,53 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             raise RuntimeError("analysis configuration has no results owner")
         from rc_metastudio.analysis_results import AnalysisResult
         if isinstance(result, AnalysisResult):
-            model_label = self.method_cbo_box.currentText()
-            if self.is_meta_regression and self.data_type != "diagnostic":
-                model_label = "Fixed-effect meta-regression" if self.fixed_effects_radio.isChecked() else "Random-effects meta-regression"
-            fits = []
-            if self.data_type == "diagnostic" and not self.is_meta_regression:
-                from rc_metastudio.analysis_method_labels import method_display_label
-                for metric, configuration in self.diagnostic_analysis_details.items():
-                    if configuration is not None:
-                        method, parameters = configuration
-                        fits.append((ALL_METRIC_NAMES.get(metric, metric),
-                                     method_display_label(method), parameters))
-            identity, details = analysis_identity.result_identity(
-                self.model, self.analysis_type, self._result_metric_label(),
-                model_label, self.current_param_vals, self.confidence_level,
-                [cov.name for cov in self._selected_covariates()] if self.is_meta_regression else [],
-                fits=fits,
-            )
-            project_path = self._project_path
-            if project_path:
-                from pathlib import Path
-                details = "Project: " + Path(project_path).name + "\n" + details
-            result = replace(result, identity=identity, details=details)
+            result = self._with_result_identity(result)
         if isinstance(result, AnalysisResult):
             callback(result, change_settings=self._change_settings_callback())
         else:
             callback(result)
+
+    def _with_result_identity(self, result):
+        model_label = self.method_cbo_box.currentText()
+        if self.is_meta_regression and self.data_type != "diagnostic":
+            model_label = "Fixed-effect meta-regression" if self.fixed_effects_radio.isChecked() else "Random-effects meta-regression"
+        fits = self._diagnostic_fit_details()
+        definitions, _, _, _ = self.analysis_service.parameters(self.current_method)
+        applied_parameters = {key: value for key, value in self.current_param_vals.items()
+                              if key in definitions or key == "cov_name"}
+        if self.is_meta_regression and self.data_type != "diagnostic" and self.fixed_effects_radio.isChecked():
+            applied_parameters.pop("rm.method", None)
+        identity, details = analysis_identity.result_identity(
+            self.model, self.analysis_type, self._result_metric_label(),
+            model_label, applied_parameters, self.confidence_level,
+            [cov.name for cov in self._selected_covariates()] if self.is_meta_regression else [],
+            fits=fits,
+        )
+        project_path = self._project_path
+        if project_path:
+            from pathlib import Path
+            details = "Project: " + Path(project_path).name + "\n" + details
+        return replace(result, identity=identity, details=details)
+
+    def _diagnostic_fit_details(self):
+        fits = []
+        if self.data_type == "diagnostic" and not self.is_meta_regression:
+            from rc_metastudio.analysis_method_labels import method_display_label
+            for metric, configuration in self.diagnostic_analysis_details.items():
+                if configuration is not None:
+                    method, parameters = configuration
+                    definitions, _, _, _ = self.analysis_service.parameters(method)
+                    parameters = {key: value for key, value in parameters.items() if key in definitions}
+                    fits.append((ALL_METRIC_NAMES.get(metric, metric),
+                                 method_display_label(method), parameters))
+        return fits
 
     def _result_metric_label(self):
         if self.data_type != "diagnostic":
             return analysis_identity.metric_label(self.model)
         if self.is_meta_regression:
             return "Sensitivity and Specificity"
-        labels = {"sens": "Sensitivity", "spec": "Specificity", "lr": "Positive and negative likelihood ratios", "dor": "Diagnostic Odds Ratio"}
+        labels = {"sens": "Sensitivity", "spec": "Specificity", "lr": "Positive and negative likelihood ratios", "dor": "Diagnostic odds ratio"}
         return ", ".join(labels[metric] for metric in self.diagnostic_metrics)
 
     def analysis_requests(self):
@@ -967,7 +1009,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         )
 
     def enable_diagnostic_fields(self):
-        self.col3_str_edit.setText("[default]")
+        set_plot_text_value(self.col3_str_edit, "[default]")
         self.show_3.setEnabled(True)
         self.show_3.setChecked(True)
 
@@ -1024,6 +1066,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.available_method_d = normalize_available_method_labels(
             self.available_method_d
         )
+        if self.data_type == "continuous" and metric == "TX Mean":
+            family = analysis_identity.metric_label(self.model)
+            self.available_method_d = {label.replace("Continuous", family, 1): key
+                                       for label, key in self.available_method_d.items()}
+        elif self.data_type == "binary" and metric in ONE_ARM_METRICS:
+            self.available_method_d = {label.replace("Binary", "Proportion", 1): key
+                                       for label, key in self.available_method_d.items()}
         method_names = self._available_method_names(metric)
         self._populate_method_combo(cbo_box, method_names)
         self.current_method = self.available_method_d[str(cbo_box.currentText())]
@@ -1112,7 +1161,22 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._add_parameter_controls(
             parameter_layout, self._ordered_parameter_definitions(), excluded_names
         )
+        self._set_analysis_tab_order()
         self._schedule_local_reflow()
+
+    def _set_analysis_tab_order(self):
+        """Dynamic fields are created after the buttons; restore their visual order."""
+        controls = [self.method_cbo_box]
+        controls.extend(widget for widget in self.current_widgets if widget.focusPolicy() & Qt.FocusPolicy.TabFocus)
+        panel = getattr(self, "lr_dor_panel", None)
+        if panel is not None:
+            controls.append(panel.combo)
+            controls.extend(widget for widget in panel.widgets if widget.focusPolicy() & Qt.FocusPolicy.TabFocus)
+        controls.extend(widget for widget in self._shared_diagnostic_widgets if widget.focusPolicy() & Qt.FocusPolicy.TabFocus)
+        controls.extend(button for button in (self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
+                                              self.buttonBox.button(QDialogButtonBox.StandardButton.Cancel)) if button is not None)
+        for before, after in zip(controls, controls[1:]):
+            self.setTabOrder(before, after)
 
     def _parameter_layout(self):
         parameter_layout = self.parameter_grp_box.layout()
@@ -1385,7 +1449,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self._rebuild_shared_diagnostic_params()
 
     def _finish_combined_diagnostic_ui(self):
-        self.setWindowTitle("Method & Parameters")
+        self.setWindowTitle("Method and parameters")
         self.method_lbl.setText(diagnostic_metric_group_display_label("sens_spec"))
 
         self.shared_diagnostic_params_box.show()
@@ -1427,6 +1491,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             layout.addWidget(label, row, 0)
             layout.addWidget(control, row, 1)
             self._shared_diagnostic_widgets.extend((label, control))
+        self._set_analysis_tab_order()
 
     def add_current_analysis_details(self):
         """This method only applicable for diagnostic data, wherein
@@ -1505,18 +1570,18 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             # parameter of this model and must not remain visible or imply
             # that fixed effects can be requested.
             self.regression_model_group.hide()
-            window_title = "Reitsma Meta-Regression"
+            window_title = "Reitsma meta-regression"
             method_label = "Reitsma bivariate model"
         elif self._combined_diagnostic:
-            window_title = "Method & Parameters"
+            window_title = "Method and parameters"
             method_label = diagnostic_metric_group_display_label("sens_spec")
         elif self.sens_spec:
             metric_group_label = diagnostic_metric_group_display_label("sens_spec")
-            window_title = "Method & Parameters for %s" % metric_group_label
+            window_title = "Method and parameters for %s" % metric_group_label
             method_label = "Method for %s" % metric_group_label
         else:
             metric_group_label = diagnostic_metric_group_display_label("lr_dor")
-            window_title = "Method & Parameters for %s" % metric_group_label
+            window_title = "Method and parameters for %s" % metric_group_label
             method_label = "Method for %s" % metric_group_label
 
         self.setWindowTitle(QtCore.QCoreApplication.translate("Dialog", window_title))
@@ -1556,6 +1621,7 @@ def _display_svg_path(output_path):
 
 
 def add_plot_params(specs_form):
+    specs_form.current_param_vals.setdefault("plot_caption", analysis_identity.dataset_identity(specs_form.model))
     if getattr(specs_form, "analysis_type", None) == "meta-regression":
         bubble_outpath = _text_value(specs_form.image_path)
         specs_form.current_param_vals.update(
@@ -1678,24 +1744,7 @@ def _diagnostic_analysis_requests(specs_form):
     method_names, list_of_param_vals = [], []
     missing_metrics = []
 
-    ordered_metrics = ["Sens", "Spec", "NLR", "PLR", "DOR"]
-    configured = [
-        metric
-        for metric in ordered_metrics
-        if metric in specs_form.diagnostic_analysis_details
-    ]
-    # Sensitivity and specificity are one Reitsma request.  The pair is a
-    # request-only joint metric and is never persisted as a project effect.
-    joint = None
-    if "Sens" in configured and "Spec" in configured:
-        sens_details = specs_form.diagnostic_analysis_details["Sens"]
-        spec_details = specs_form.diagnostic_analysis_details["Spec"]
-        if sens_details and spec_details and sens_details[0] == spec_details[0] == "diagnostic.reitsma":
-            joint = (sens_details[0], sens_details[1])
-            configured = [metric for metric in configured if metric not in ("Sens", "Spec")]
-
-    pending = [("Sens", joint)] if joint is not None else []
-    pending.extend((metric, specs_form.diagnostic_analysis_details[metric]) for metric in configured)
+    joint, pending = _diagnostic_pending_requests(specs_form)
     for diagnostic_metric, details in pending:
         if details is None:
             missing_metrics.append(diagnostic_metric)
@@ -1713,6 +1762,7 @@ def _diagnostic_analysis_requests(specs_form):
             continue
 
         param_vals = copy.deepcopy(param_vals)
+        param_vals["plot_caption"] = specs_form.current_param_vals.get("plot_caption", "")
 
         # update the forest plot path
         split_fp_path = specs_form.current_param_vals["fp_outpath"].split(".")
@@ -1747,4 +1797,26 @@ def _diagnostic_analysis_requests(specs_form):
 
 
 def _text_value(widget):
-    return qt_text.to_native_text(widget.text())
+    return qt_text.to_native_text(plot_text_value(widget))
+
+
+def _diagnostic_pending_requests(specs_form):
+    ordered_metrics = ["Sens", "Spec", "NLR", "PLR", "DOR"]
+    configured = [
+        metric
+        for metric in ordered_metrics
+        if metric in specs_form.diagnostic_analysis_details
+    ]
+    # Sensitivity and specificity are one Reitsma request.  The pair is a
+    # request-only joint metric and is never persisted as a project effect.
+    joint = None
+    if "Sens" in configured and "Spec" in configured:
+        sens_details = specs_form.diagnostic_analysis_details["Sens"]
+        spec_details = specs_form.diagnostic_analysis_details["Spec"]
+        if sens_details and spec_details and sens_details[0] == spec_details[0] == "diagnostic.reitsma":
+            joint = (sens_details[0], sens_details[1])
+            configured = [metric for metric in configured if metric not in ("Sens", "Spec")]
+
+    pending = [("Sens", joint)] if joint is not None else []
+    pending.extend((metric, specs_form.diagnostic_analysis_details[metric]) for metric in configured)
+    return joint, pending

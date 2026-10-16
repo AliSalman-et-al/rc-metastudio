@@ -1,0 +1,212 @@
+[
+  {
+    "path": "screenshots/matrix-hr-standard-report-bmj.png",
+    "sha256": "0f46e773265fc694d4e5ae5a3d88afa0f59e760bb789cc6569097c81dde71945",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj/captures/matrix-hr-standard-report-bmj.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-standard-report-bottom-bmj.png",
+    "sha256": "ce74c69eecbff62d2e5c820f4cdd3aea8c84690b5bbb81dd24ae227878938318",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj/captures/matrix-hr-standard-report-bottom-bmj.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-standard-figure-bmj.png",
+    "sha256": "4cb4b94052c9bc7722233d051da77b625f3e0c90881ae63bdb6481ff77d27f29",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj/captures/matrix-hr-standard-figure-bmj.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-standard-figure-bottom-bmj.png",
+    "sha256": "a4d20dc92ff94b3d9379d52a0babde36cf036674ff43ec26bf971359d9819735",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj/captures/matrix-hr-standard-figure-bottom-bmj.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-cumulative-report-bmj.png",
+    "sha256": "3731bc7caa4a23bb83de0281b271b19a20c2a4e357b480e2a967412676013560",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj/captures/matrix-hr-cumulative-report-bmj.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-cumulative-report-bottom-bmj.png",
+    "sha256": "20d832f6ac61b78557cf12f5aa4c923a8b8041bbcd4c2978ca66ab4a112a09d4",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj/captures/matrix-hr-cumulative-report-bottom-bmj.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-cumulative-figure-bmj.png",
+    "sha256": "7ec0da29a99ff587aa1dc95d3f4a429dd72a3c519fba26487f08e0b6c3bb2c08",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj/captures/matrix-hr-cumulative-figure-bmj.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-cumulative-figure-bottom-bmj.png",
+    "sha256": "b2a71c78ad5daf2c6838d1d031d14332f03e93fe51086cde20091f47efac01c0",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj/captures/matrix-hr-cumulative-figure-bottom-bmj.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-leave-one-out-report-bmj--exposure-recovery.png",
+    "sha256": "6cad16674de8bf9ad50155c35195fae272bdf109d9112c29962317429eaa364e",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj--exposure-recovery/captures/matrix-hr-leave-one-out-report-bmj--exposure-recovery.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-leave-one-out-report-bottom-bmj--exposure-recovery.png",
+    "sha256": "473014fdb8c8335a3b16879f071604fe56a31f9b67df0d9ec74dbb000d282b0a",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj--exposure-recovery/captures/matrix-hr-leave-one-out-report-bottom-bmj--exposure-recovery.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-leave-one-out-figure-bmj--exposure-recovery.png",
+    "sha256": "860a850809229857987ab47f98bb56ccdb14d27bc7ac8a5144ea5844499433e8",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj--exposure-recovery/captures/matrix-hr-leave-one-out-figure-bmj--exposure-recovery.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-leave-one-out-figure-bottom-bmj--exposure-recovery.png",
+    "sha256": "392c854c4076b7a03874d55d603c46cea7437647865d0d764ed1524b59e6e103",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj--exposure-recovery/captures/matrix-hr-leave-one-out-figure-bottom-bmj--exposure-recovery.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-subgroup-report-bmj--exposure-recovery.png",
+    "sha256": "38c5e451e937ed1d8d1a5e2952f6ef473a3d3348cdcc59dec01fbeffe9d960ca",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj--exposure-recovery/captures/matrix-hr-subgroup-report-bmj--exposure-recovery.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-subgroup-report-bottom-bmj--exposure-recovery.png",
+    "sha256": "b1a5d8599f87d186d0a6dd3c7f248288f468c06298a3c4657872977fb18148e3",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj--exposure-recovery/captures/matrix-hr-subgroup-report-bottom-bmj--exposure-recovery.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-subgroup-figure-bmj--exposure-recovery.png",
+    "sha256": "b5b270f52d3e122af3e60b7c3062c402c41f4b43a3b900ba7c188893e607f414",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj--exposure-recovery/captures/matrix-hr-subgroup-figure-bmj--exposure-recovery.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-subgroup-figure-bottom-bmj--exposure-recovery.png",
+    "sha256": "17dbf89df7a9a0302a9533c98e78300afb7636642ab11451e496ae1b008a186f",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj--exposure-recovery/captures/matrix-hr-subgroup-figure-bottom-bmj--exposure-recovery.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-meta-regression-report-bmj--exposure-recovery.png",
+    "sha256": "1b7dda13b21ad4bece55f52c65f0bbe33beefd3ae17f8ec162bb273b458c575a",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj--exposure-recovery/captures/matrix-hr-meta-regression-report-bmj--exposure-recovery.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-meta-regression-report-bottom-bmj--exposure-recovery.png",
+    "sha256": "df48cff9932f2684c3177ed2cd48c2471681417a94ae8031523d75883877482b",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj--exposure-recovery/captures/matrix-hr-meta-regression-report-bottom-bmj--exposure-recovery.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-meta-regression-report-exponentiated-bmj--exposure-recovery.png",
+    "sha256": "7e5b700ef6c340915966b95b8ed93770efd633fa0d4e687d04157e202f663d1f",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj--exposure-recovery/captures/matrix-hr-meta-regression-report-exponentiated-bmj--exposure-recovery.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-meta-regression-figure-bmj--exposure-recovery.png",
+    "sha256": "8bf385b7fc8374fed4b956b589a061139aec4cd9e40e9db8071bc27bbb2995d3",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj--exposure-recovery/captures/matrix-hr-meta-regression-figure-bmj--exposure-recovery.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  },
+  {
+    "path": "screenshots/matrix-hr-meta-regression-figure-bottom-bmj--exposure-recovery.png",
+    "sha256": "cdb8558e2b02d2a9544dd6d535faf91714ff1e58382530b0392cecfbaa1cf035",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-hr-bmj--exposure-recovery/captures/matrix-hr-meta-regression-figure-bottom-bmj--exposure-recovery.png",
+    "scenario": "MATRIX-hr-bmj-recovered"
+  }
+]

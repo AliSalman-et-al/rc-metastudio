@@ -1,0 +1,60 @@
+{
+  "branch_head": "7f9839c665bcf7970e248c44dd1eb8402aa74cfb",
+  "executed_merge_head": "f1d391d5514b7f65d502243b1c1b7ac3d752213d",
+  "equal_branch_and_executed_tree": "2a3b45ff3f3750a9213429443239abc62cd8bd7b",
+  "checks": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/checks-7f9839c-final.json",
+    "sha256": "f45472b56ed4cb691a0cea1a535fa302b2ce2f10b00bed712edfca93e6deb336"
+  },
+  "job_log": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/full-r-7f9839c.log",
+    "sha256": "f079b9e05bda6fcce9a5a70fc46d05e36bf0552e719abd27e9de32221c7450a4"
+  },
+  "selected_records": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/full-r-7f9839c-selected.json",
+    "sha256": "69dd1ece12cee6f384bb837ff808869c1c2d4657909e374dc22834bac93e8c94"
+  },
+  "runtime": {
+    "r": "R version 4.6.1 (2026-06-24 ucrt)",
+    "r_libraries": [
+      "C:/Users/runneradmin/AppData/Local/Temp/RCMetaR-r-stack-q0hod0fs/library",
+      "C:/R/library"
+    ],
+    "r_home": "C:/R",
+    "authorities": {
+      "mada": "0.5.12",
+      "metafor": "5.0-1",
+      "meta": "8.5-0",
+      "svglite": "2.2.2",
+      "rsvg": "2.7.0",
+      "tiff": "0.1-12"
+    },
+    "rcmetar": "0.5.0",
+    "rpy2": "3.6.7",
+    "qt": "6.11.1",
+    "pyqt": "6.11.0",
+    "platform_plugin": "offscreen",
+    "font": {
+      "family": "Arial",
+      "style": "Regular",
+      "family_count": 56,
+      "required_glyphs": "Aa012\u03c4\u2026",
+      "directory": "C:\\Windows\\Fonts"
+    },
+    "application": "RCMetaStudio",
+    "qt_build_root": "D:\\a\\rc-metastudio\\rc-metastudio\\build\\qt6-verification",
+    "application_base_path": "D:/a/rc-metastudio/rc-metastudio/build/verification/rcms/desktop-te156dfb"
+  },
+  "font_frame": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/ci-windows/7f9839c-fonts-readable.png",
+    "sha256": "a587ac1b4f5d9f53954db393681959aa36e47fee5a296cf53e398c07d1190cea",
+    "personally_inspected": true,
+    "scope": "Readable Windows offscreen font proof only; entire workflow still fails later at its default-codec report read."
+  },
+  "failure": "Report exported as UTF-8 was read through default Windows codec before exact clipboard equality.",
+  "repair": "Read exported report explicitly as UTF-8, retaining exact clipboard equality. No production change.",
+  "local_replay": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/raw/review-export-utf8-final.json",
+    "sha256": "25db01e7a60e745cfb869205dfc84c4d82fd6e0d25c4e1a625562f573cef58ea"
+  }
+}

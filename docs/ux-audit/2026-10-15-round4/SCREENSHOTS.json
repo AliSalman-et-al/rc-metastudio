@@ -1,0 +1,3335 @@
+[
+  {
+    "path": "screenshots/generic-effect-20-0-round4-annotations.png",
+    "sha256": "8a7ec6f28cf74aea48529b3f02dda2c63230274d7cafad641270d6ddc4a9929f",
+    "family": "generic-effect",
+    "action": "round4-annotations",
+    "step": 20,
+    "label": "native-publication-generic-effect",
+    "observed": {
+      "step": 20,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:44:11.274207+00:00",
+      "captures": [
+        "20-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "20-0-forest-5b9af567a736.display.svg"
+      },
+      "family": "generic-effect",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-doqq27zq/analysis/forest-5b9af567a736.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/generic-effect-44-0-round4-annotations.png",
+    "sha256": "c9ba742fd330f7a4ecd5fab796d7f2609287396c064d5f8d1050f8cb224e4046",
+    "family": "generic-effect",
+    "action": "round4-annotations",
+    "step": 44,
+    "label": "native-publication-generic-effect",
+    "observed": {
+      "step": 44,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:44:31.158194+00:00",
+      "captures": [
+        "44-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "44-0-forest-5b9af567a736.display.svg"
+      },
+      "family": "generic-effect",
+      "digits": 6,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-doqq27zq/analysis/forest-5b9af567a736.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/generic-effect-58-0-round4-annotations.png",
+    "sha256": "065d30be29de86a3574e4bbac7ab45600991fb7924c2f0ab7d83d9162c1d0fa2",
+    "family": "generic-effect",
+    "action": "round4-annotations",
+    "step": 58,
+    "label": "native-publication-generic-effect",
+    "observed": {
+      "step": 58,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:44:43.516990+00:00",
+      "captures": [
+        "58-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "58-0-forest-5b9af567a736.display.svg"
+      },
+      "family": "generic-effect",
+      "digits": 6,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-doqq27zq/analysis/forest-5b9af567a736.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/generic-effect-72-0-round4-annotations.png",
+    "sha256": "fa2629b5d25ab35af939fbfdbe46f1cf0e94aa8d5def1062cae5893e43747c68",
+    "family": "generic-effect",
+    "action": "round4-annotations",
+    "step": 72,
+    "label": "native-publication-generic-effect",
+    "observed": {
+      "step": 72,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:44:58.789729+00:00",
+      "captures": [
+        "72-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "72-0-forest-5b9af567a736.display.svg"
+      },
+      "family": "generic-effect",
+      "digits": 6,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-doqq27zq/analysis/forest-5b9af567a736.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/generic-effect-74-0-round4-contextual-calculator.png",
+    "sha256": "af1923e79604b335b5564e37cad08eb1a38847af20b0c36d5f1ad9f5d020fc5e",
+    "family": "generic-effect",
+    "action": "round4-contextual-calculator",
+    "step": 74,
+    "label": "native-publication-generic-effect",
+    "observed": {
+      "step": 74,
+      "action": "round4-contextual-calculator",
+      "utc": "2026-10-14T20:44:59.220126+00:00",
+      "captures": [
+        "74-0-round4-contextual-calculator.png"
+      ],
+      "artifacts": {},
+      "family": "generic-effect"
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/generic-effect-75-0-round4-contextual-csv.png",
+    "sha256": "8668598f7aa83820ed52fee4ff6e44b2b9883a166f840c0c25f632982125e14b",
+    "family": "generic-effect",
+    "action": "round4-contextual-csv",
+    "step": 75,
+    "label": "native-publication-generic-effect",
+    "observed": {
+      "step": 75,
+      "action": "round4-contextual-csv",
+      "utc": "2026-10-14T20:44:59.566045+00:00",
+      "captures": [
+        "75-0-round4-contextual-csv.png"
+      ],
+      "artifacts": {},
+      "headers": [
+        "Study Name",
+        "Year",
+        "Estimate",
+        "SE"
+      ],
+      "input_headers": [
+        "Study Name",
+        "Year",
+        "TX Mean",
+        "SE"
+      ],
+      "exports": {
+        "csv": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-doqq27zq/entered-estimate-alias.csv"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/diagnostic-24-0-round4-annotations.png",
+    "sha256": "c579cfcc49e173d2ef8a9023925e949e9326cd87c3bf2b9a5235878cdae2711e",
+    "family": "diagnostic",
+    "action": "round4-annotations",
+    "step": 24,
+    "label": "native-publication-diagnostic",
+    "observed": {
+      "step": 24,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:45:27.182334+00:00",
+      "captures": [
+        "24-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "diagnostic.Sens.forest": "24-0-forest_sens-2fd6db0c4b28.display.svg"
+      },
+      "family": "diagnostic",
+      "digits": 3,
+      "style": "revman",
+      "title": "diagnostic.Sens.forest",
+      "plots": {
+        "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-y1hwoh9w/analysis/forest_sens-2fd6db0c4b28.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/diagnostic-26-0-round4-annotations.png",
+    "sha256": "225f9c3a51241e7a6e1b4a1c152c43f8c734627a98ead0d2ce8759bb5324e1e9",
+    "family": "diagnostic",
+    "action": "round4-annotations",
+    "step": 26,
+    "label": "native-publication-diagnostic",
+    "observed": {
+      "step": 26,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:45:27.611151+00:00",
+      "captures": [
+        "26-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "diagnostic.Spec.forest": "26-0-forest_spec-0d59de9b7dc9.display.svg"
+      },
+      "family": "diagnostic",
+      "digits": 3,
+      "style": "revman",
+      "title": "diagnostic.Spec.forest",
+      "plots": {
+        "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-y1hwoh9w/analysis/forest_spec-0d59de9b7dc9.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/diagnostic-54-0-round4-annotations.png",
+    "sha256": "530a131f68145a6c17711a12f752c51f67e7eef0425e06bf3e205620402198e4",
+    "family": "diagnostic",
+    "action": "round4-annotations",
+    "step": 54,
+    "label": "native-publication-diagnostic",
+    "observed": {
+      "step": 54,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:45:57.721119+00:00",
+      "captures": [
+        "54-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "diagnostic.Sens.forest": "54-0-forest_sens-2fd6db0c4b28.display.svg"
+      },
+      "family": "diagnostic",
+      "digits": 6,
+      "style": "default",
+      "title": "diagnostic.Sens.forest",
+      "plots": {
+        "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-y1hwoh9w/analysis/forest_sens-2fd6db0c4b28.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/diagnostic-60-0-round4-annotations.png",
+    "sha256": "dc7125d1434ae8fd25ecc8723410ffaccfafb7fe2af4c6998f5fd79b9f18ca12",
+    "family": "diagnostic",
+    "action": "round4-annotations",
+    "step": 60,
+    "label": "native-publication-diagnostic",
+    "observed": {
+      "step": 60,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:46:07.224428+00:00",
+      "captures": [
+        "60-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "diagnostic.Spec.forest": "60-0-forest_spec-0d59de9b7dc9.display.svg"
+      },
+      "family": "diagnostic",
+      "digits": 6,
+      "style": "default",
+      "title": "diagnostic.Spec.forest",
+      "plots": {
+        "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-y1hwoh9w/analysis/forest_spec-0d59de9b7dc9.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/diagnostic-75-0-round4-annotations.png",
+    "sha256": "2bb5067202e3a9a106f5f50238430fdc9ef3c914129bd3cbecdff1900c4a89d6",
+    "family": "diagnostic",
+    "action": "round4-annotations",
+    "step": 75,
+    "label": "native-publication-diagnostic",
+    "observed": {
+      "step": 75,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:46:24.602719+00:00",
+      "captures": [
+        "75-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "diagnostic.Sens.forest": "75-0-forest_sens-2fd6db0c4b28.display.svg"
+      },
+      "family": "diagnostic",
+      "digits": 6,
+      "style": "revman",
+      "title": "diagnostic.Sens.forest",
+      "plots": {
+        "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-y1hwoh9w/analysis/forest_sens-2fd6db0c4b28.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/diagnostic-81-0-round4-annotations.png",
+    "sha256": "4066c205c5a8db0dfaf289f9139907720067e29ea2fb18e20d363dd5135840bc",
+    "family": "diagnostic",
+    "action": "round4-annotations",
+    "step": 81,
+    "label": "native-publication-diagnostic",
+    "observed": {
+      "step": 81,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:46:32.922699+00:00",
+      "captures": [
+        "81-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "diagnostic.Spec.forest": "81-0-forest_spec-0d59de9b7dc9.display.svg"
+      },
+      "family": "diagnostic",
+      "digits": 6,
+      "style": "revman",
+      "title": "diagnostic.Spec.forest",
+      "plots": {
+        "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-y1hwoh9w/analysis/forest_spec-0d59de9b7dc9.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/diagnostic-96-0-round4-annotations.png",
+    "sha256": "1b3943ea268752cbab0a5f7f03e9b77bcae9d40560210391583b83f66fcd45d3",
+    "family": "diagnostic",
+    "action": "round4-annotations",
+    "step": 96,
+    "label": "native-publication-diagnostic",
+    "observed": {
+      "step": 96,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:46:48.943536+00:00",
+      "captures": [
+        "96-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "diagnostic.Sens.forest": "96-0-forest_sens-2fd6db0c4b28.display.svg"
+      },
+      "family": "diagnostic",
+      "digits": 6,
+      "style": "bmj",
+      "title": "diagnostic.Sens.forest",
+      "plots": {
+        "diagnostic.Sens.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-y1hwoh9w/analysis/forest_sens-2fd6db0c4b28.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/diagnostic-102-0-round4-annotations.png",
+    "sha256": "d6a71fa67d992a3eb69058e39ec9c7c230590ac7300922de4cb70316b530d72d",
+    "family": "diagnostic",
+    "action": "round4-annotations",
+    "step": 102,
+    "label": "native-publication-diagnostic",
+    "observed": {
+      "step": 102,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:46:57.735290+00:00",
+      "captures": [
+        "102-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "diagnostic.Spec.forest": "102-0-forest_spec-0d59de9b7dc9.display.svg"
+      },
+      "family": "diagnostic",
+      "digits": 6,
+      "style": "bmj",
+      "title": "diagnostic.Spec.forest",
+      "plots": {
+        "diagnostic.Spec.forest": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-y1hwoh9w/analysis/forest_spec-0d59de9b7dc9.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/onearm-proportion-20-0-round4-annotations.png",
+    "sha256": "9698534024d069f64d2b4db601ca1057503b3f67c510346b08819c4df88a878c",
+    "family": "onearm-proportion",
+    "action": "round4-annotations",
+    "step": 20,
+    "label": "native-publication-onearm-proportion",
+    "observed": {
+      "step": 20,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:47:24.985133+00:00",
+      "captures": [
+        "20-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "20-0-forest-1241e05a09a6.display.svg"
+      },
+      "family": "onearm-proportion",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ywdzpb8i/analysis/forest-1241e05a09a6.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/onearm-proportion-44-0-round4-annotations.png",
+    "sha256": "d44973cef3014b7a2ced1850aa90c1c33db08ff5971dbb7a0c2c03f92592e866",
+    "family": "onearm-proportion",
+    "action": "round4-annotations",
+    "step": 44,
+    "label": "native-publication-onearm-proportion",
+    "observed": {
+      "step": 44,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:47:51.676690+00:00",
+      "captures": [
+        "44-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "44-0-forest-1241e05a09a6.display.svg"
+      },
+      "family": "onearm-proportion",
+      "digits": 6,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ywdzpb8i/analysis/forest-1241e05a09a6.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/onearm-proportion-58-0-round4-annotations.png",
+    "sha256": "2e5ce8dd11dbba277274ac7318bec6b2da5a089642a1f6d4d860c9f04d2a87cd",
+    "family": "onearm-proportion",
+    "action": "round4-annotations",
+    "step": 58,
+    "label": "native-publication-onearm-proportion",
+    "observed": {
+      "step": 58,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:48:05.508990+00:00",
+      "captures": [
+        "58-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "58-0-forest-1241e05a09a6.display.svg"
+      },
+      "family": "onearm-proportion",
+      "digits": 6,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ywdzpb8i/analysis/forest-1241e05a09a6.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/onearm-proportion-72-0-round4-annotations.png",
+    "sha256": "18ca745f72767f3d19a76291a760c1cb45fd6cb64f94bb166716cd4d78802c66",
+    "family": "onearm-proportion",
+    "action": "round4-annotations",
+    "step": 72,
+    "label": "native-publication-onearm-proportion",
+    "observed": {
+      "step": 72,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:48:21.770193+00:00",
+      "captures": [
+        "72-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "72-0-forest-1241e05a09a6.display.svg"
+      },
+      "family": "onearm-proportion",
+      "digits": 6,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-ywdzpb8i/analysis/forest-1241e05a09a6.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/twoarm-proportion-20-0-round4-annotations.png",
+    "sha256": "61dc1828c527969a47267b949f6bdfafe4870295d8fa656bf39d3d81741cc150",
+    "family": "twoarm-proportion",
+    "action": "round4-annotations",
+    "step": 20,
+    "label": "native-publication-twoarm-proportion",
+    "observed": {
+      "step": 20,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:48:43.775980+00:00",
+      "captures": [
+        "20-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "20-0-forest-227fddd087d6.display.svg"
+      },
+      "family": "twoarm-proportion",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-tr5py4bh/analysis/forest-227fddd087d6.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/twoarm-proportion-44-0-round4-annotations.png",
+    "sha256": "4b8a5c0e490b8867d79bdd3dde22cf357cbd5685d1bc5fcc1c5c85f46187c2bf",
+    "family": "twoarm-proportion",
+    "action": "round4-annotations",
+    "step": 44,
+    "label": "native-publication-twoarm-proportion",
+    "observed": {
+      "step": 44,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:49:11.191595+00:00",
+      "captures": [
+        "44-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "44-0-forest-227fddd087d6.display.svg"
+      },
+      "family": "twoarm-proportion",
+      "digits": 6,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-tr5py4bh/analysis/forest-227fddd087d6.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/twoarm-proportion-58-0-round4-annotations.png",
+    "sha256": "77e05a025d7570416bce0a8bd7d861e08710a70fcfed5fe8635bde466f3886d3",
+    "family": "twoarm-proportion",
+    "action": "round4-annotations",
+    "step": 58,
+    "label": "native-publication-twoarm-proportion",
+    "observed": {
+      "step": 58,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:49:23.534800+00:00",
+      "captures": [
+        "58-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "58-0-forest-227fddd087d6.display.svg"
+      },
+      "family": "twoarm-proportion",
+      "digits": 6,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-tr5py4bh/analysis/forest-227fddd087d6.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/twoarm-proportion-72-0-round4-annotations.png",
+    "sha256": "ffb17c00f109ac497355a47274f8f3d3fbaff6820d67d200d626c9600cf650f6",
+    "family": "twoarm-proportion",
+    "action": "round4-annotations",
+    "step": 72,
+    "label": "native-publication-twoarm-proportion",
+    "observed": {
+      "step": 72,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:49:39.117416+00:00",
+      "captures": [
+        "72-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "72-0-forest-227fddd087d6.display.svg"
+      },
+      "family": "twoarm-proportion",
+      "digits": 6,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-tr5py4bh/analysis/forest-227fddd087d6.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/twoarm-mean-20-0-round4-annotations.png",
+    "sha256": "49fb39a829ff7fcfe68d7448aafa0805dd3bc3664ad1aff2abe338c23e8b84ef",
+    "family": "twoarm-mean",
+    "action": "round4-annotations",
+    "step": 20,
+    "label": "native-publication-twoarm-mean",
+    "observed": {
+      "step": 20,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:50:13.418871+00:00",
+      "captures": [
+        "20-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "20-0-forest-710bf8529607.display.svg"
+      },
+      "family": "twoarm-mean",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-kc7yrjc4/analysis/forest-710bf8529607.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/twoarm-mean-44-0-round4-annotations.png",
+    "sha256": "4378b0db914997c9982dd95ce283ad97482458284bbb2d7ec3379a19c8628c23",
+    "family": "twoarm-mean",
+    "action": "round4-annotations",
+    "step": 44,
+    "label": "native-publication-twoarm-mean",
+    "observed": {
+      "step": 44,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:50:38.533606+00:00",
+      "captures": [
+        "44-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "44-0-forest-710bf8529607.display.svg"
+      },
+      "family": "twoarm-mean",
+      "digits": 6,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-kc7yrjc4/analysis/forest-710bf8529607.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/twoarm-mean-58-0-round4-annotations.png",
+    "sha256": "dd272f0de152eb5c412b1498ebffb9b5a2eec9f9beff442b793859de2fbe29d6",
+    "family": "twoarm-mean",
+    "action": "round4-annotations",
+    "step": 58,
+    "label": "native-publication-twoarm-mean",
+    "observed": {
+      "step": 58,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:50:51.168458+00:00",
+      "captures": [
+        "58-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "58-0-forest-710bf8529607.display.svg"
+      },
+      "family": "twoarm-mean",
+      "digits": 6,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-kc7yrjc4/analysis/forest-710bf8529607.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/twoarm-mean-72-0-round4-annotations.png",
+    "sha256": "29d4316554174c5c2083db16eec4244da49a1b80c1a48b44a1e5acf9608d4b0b",
+    "family": "twoarm-mean",
+    "action": "round4-annotations",
+    "step": 72,
+    "label": "native-publication-twoarm-mean",
+    "observed": {
+      "step": 72,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:51:07.274716+00:00",
+      "captures": [
+        "72-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "72-0-forest-710bf8529607.display.svg"
+      },
+      "family": "twoarm-mean",
+      "digits": 6,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-kc7yrjc4/analysis/forest-710bf8529607.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/twoarm-smd-20-0-round4-annotations.png",
+    "sha256": "acde9979b3bd235e76bd30f6de5d1fe9ab7a0b5a1918b5aa6211210a4e4618b5",
+    "family": "twoarm-smd",
+    "action": "round4-annotations",
+    "step": 20,
+    "label": "native-publication-twoarm-smd",
+    "observed": {
+      "step": 20,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:51:45.413636+00:00",
+      "captures": [
+        "20-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "20-0-forest-6e999b6ce89b.display.svg"
+      },
+      "family": "twoarm-smd",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-kjcre3qf/analysis/forest-6e999b6ce89b.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/twoarm-smd-44-0-round4-annotations.png",
+    "sha256": "33a9163df22587d8863a1fe0108c921864031fe1e301c28d9cae84b97f964da5",
+    "family": "twoarm-smd",
+    "action": "round4-annotations",
+    "step": 44,
+    "label": "native-publication-twoarm-smd",
+    "observed": {
+      "step": 44,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:52:10.219962+00:00",
+      "captures": [
+        "44-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "44-0-forest-6e999b6ce89b.display.svg"
+      },
+      "family": "twoarm-smd",
+      "digits": 6,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-kjcre3qf/analysis/forest-6e999b6ce89b.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/twoarm-smd-58-0-round4-annotations.png",
+    "sha256": "8b57d72b0f1f85371277d38660740332b0d18de8f1d50b5058929a31620a042c",
+    "family": "twoarm-smd",
+    "action": "round4-annotations",
+    "step": 58,
+    "label": "native-publication-twoarm-smd",
+    "observed": {
+      "step": 58,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:52:22.850556+00:00",
+      "captures": [
+        "58-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "58-0-forest-6e999b6ce89b.display.svg"
+      },
+      "family": "twoarm-smd",
+      "digits": 6,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-kjcre3qf/analysis/forest-6e999b6ce89b.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/twoarm-smd-72-0-round4-annotations.png",
+    "sha256": "45c46cfa3d3440118c6a03827d5b13f4974acc9db9c4c6bd5a0718fa33a56431",
+    "family": "twoarm-smd",
+    "action": "round4-annotations",
+    "step": 72,
+    "label": "native-publication-twoarm-smd",
+    "observed": {
+      "step": 72,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:52:39.826028+00:00",
+      "captures": [
+        "72-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "72-0-forest-6e999b6ce89b.display.svg"
+      },
+      "family": "twoarm-smd",
+      "digits": 6,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-kjcre3qf/analysis/forest-6e999b6ce89b.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/reg-coef-20-0-round4-annotations.png",
+    "sha256": "fbf9e8ecfc951d3f04e9d5e0ec7727d32eedf7d6364663157e069c42cdc499c7",
+    "family": "reg-coef",
+    "action": "round4-annotations",
+    "step": 20,
+    "label": "native-audit-round3-presentation-reg-coef-ready",
+    "observed": {
+      "step": 20,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:34:44.048475+00:00",
+      "captures": [
+        "20-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "20-0-forest-80d09b787132.display.svg"
+      },
+      "family": "reg-coef",
+      "digits": 3,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-qcw6g3tb/analysis/forest-80d09b787132.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/reg-coef-44-0-round4-annotations.png",
+    "sha256": "ebf82a3a607ab5249eb5ad6e36befec62ed157e31ac48282638ea814f563d06c",
+    "family": "reg-coef",
+    "action": "round4-annotations",
+    "step": 44,
+    "label": "native-audit-round3-presentation-reg-coef-ready",
+    "observed": {
+      "step": 44,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:35:07.600152+00:00",
+      "captures": [
+        "44-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "44-0-forest-80d09b787132.display.svg"
+      },
+      "family": "reg-coef",
+      "digits": 6,
+      "style": "default",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-qcw6g3tb/analysis/forest-80d09b787132.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/reg-coef-58-0-round4-annotations.png",
+    "sha256": "c66b9971e84b05fc11bba890314682139b409fd057c22a8a9c70958cb2b3b7c0",
+    "family": "reg-coef",
+    "action": "round4-annotations",
+    "step": 58,
+    "label": "native-audit-round3-presentation-reg-coef-ready",
+    "observed": {
+      "step": 58,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:35:20.239254+00:00",
+      "captures": [
+        "58-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "58-0-forest-80d09b787132.display.svg"
+      },
+      "family": "reg-coef",
+      "digits": 6,
+      "style": "revman",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-qcw6g3tb/analysis/forest-80d09b787132.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/reg-coef-72-0-round4-annotations.png",
+    "sha256": "459bd7eaa4c3c96e50dab457844983f4a74def735de9096c2c188dd5d2ce4a86",
+    "family": "reg-coef",
+    "action": "round4-annotations",
+    "step": 72,
+    "label": "native-audit-round3-presentation-reg-coef-ready",
+    "observed": {
+      "step": 72,
+      "action": "round4-annotations",
+      "utc": "2026-10-14T20:35:36.047958+00:00",
+      "captures": [
+        "72-0-round4-annotations.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "72-0-forest-80d09b787132.display.svg"
+      },
+      "family": "reg-coef",
+      "digits": 6,
+      "style": "bmj",
+      "title": "analysis.standard.forest_plot.1",
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-qcw6g3tb/analysis/forest-80d09b787132.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/reg-coef-74-0-round4-contextual-calculator.png",
+    "sha256": "66e542b2a010ba2b3b6408fdafd9c0a336925d9683424f207146c5f9eefe464f",
+    "family": "reg-coef",
+    "action": "round4-contextual-calculator",
+    "step": 74,
+    "label": "native-audit-round3-presentation-reg-coef-ready",
+    "observed": {
+      "step": 74,
+      "action": "round4-contextual-calculator",
+      "utc": "2026-10-14T20:35:36.457084+00:00",
+      "captures": [
+        "74-0-round4-contextual-calculator.png"
+      ],
+      "artifacts": {},
+      "family": "reg-coef"
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/sequential-10-0-round3-sequential-rows.png",
+    "sha256": "f0ac96ceef233f8994ce8ad17a03937343fafddd953b6a899ca3664e86af131a",
+    "family": "sequential",
+    "action": "round3-sequential-rows",
+    "step": 10,
+    "label": "native-sequential-final",
+    "observed": {
+      "step": 10,
+      "action": "round3-sequential-rows",
+      "utc": "2026-10-14T20:08:18.024869+00:00",
+      "captures": [
+        "10-0-round3-sequential-rows.png"
+      ],
+      "artifacts": {
+        "analysis.cumulative.cumulative forest_plot.1": "10-0-forest-513e1d28bdfc.display.svg"
+      },
+      "title": "analysis.cumulative.cumulative forest_plot.1",
+      "workflow": "cumulative",
+      "rows": [
+        [
+          "Fixture 1 (k = 1)",
+          "1.000000",
+          "-0.363677",
+          "2.363677",
+          "0.695766",
+          ""
+        ],
+        [
+          "Fixture 2 (k = 2)",
+          "1.000000",
+          "-0.112088",
+          "2.112088",
+          "0.567402",
+          "0.077999"
+        ],
+        [
+          "Fixture 3 (k = 3)",
+          "1.000000",
+          "-0.013115",
+          "2.013115",
+          "0.516905",
+          "0.053040"
+        ],
+        [
+          "Fixture 4 (k = 4)",
+          "1.000000",
+          "0.041121",
+          "1.958879",
+          "0.489233",
+          "0.040952"
+        ],
+        [
+          "Fixture 5 (k = 5)",
+          "1.000000",
+          "0.075859",
+          "1.924141",
+          "0.471509",
+          "0.033934"
+        ],
+        [
+          "Fixture 6 (k = 6)",
+          "1.000000",
+          "0.100264",
+          "1.899736",
+          "0.459058",
+          "0.029378"
+        ]
+      ],
+      "figure": {
+        "slab": [
+          "Fixture 1 (k = 1)",
+          "Fixture 2 (k = 2)",
+          "Fixture 3 (k = 3)",
+          "Fixture 4 (k = 4)",
+          "Fixture 5 (k = 5)",
+          "Fixture 6 (k = 6)"
+        ],
+        "labels": [
+          "1.000000 [-0.363677, 2.363677]",
+          "1.000000 [-0.112088, 2.112088]",
+          "1.000000 [-0.013115, 2.013115]",
+          "1.000000 [0.041121, 1.958879]",
+          "1.000000 [0.075859, 1.924141]",
+          "1.000000 [0.100264, 1.899736]"
+        ],
+        "has_overall": false,
+        "estimates": [
+          1,
+          1.0000000000000007,
+          0.9999999999999999,
+          1.0000000000000007,
+          1.0000000000000004,
+          0.9999999999999997
+        ],
+        "measure": "MD",
+        "range": [
+          -0.4182242067575602,
+          2.4182242067575603
+        ]
+      },
+      "plots": {
+        "analysis.cumulative.cumulative forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-2b3ithep/analysis/forest-513e1d28bdfc.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/sequential-17-0-round3-null-excluded-rendered.png",
+    "sha256": "23de644623629e99ef1bb2a07403ef7345203d7544f0d19498c2370ab4da3817",
+    "family": "sequential",
+    "action": "round3-null-excluded-rendered",
+    "step": 17,
+    "label": "native-sequential-final",
+    "observed": {
+      "step": 17,
+      "action": "round3-null-excluded-rendered",
+      "utc": "2026-10-14T20:08:25.575605+00:00",
+      "captures": [
+        "17-0-round3-null-excluded-rendered.png"
+      ],
+      "artifacts": {
+        "analysis.cumulative.cumulative forest_plot.1": "17-0-forest-513e1d28bdfc.display.svg"
+      },
+      "observed": {
+        "range": [
+          0.5,
+          2
+        ],
+        "null": null
+      },
+      "plots": {
+        "analysis.cumulative.cumulative forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-2b3ithep/analysis/forest-513e1d28bdfc.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/sequential-26-0-round3-sequential-rows.png",
+    "sha256": "cb90b660de6089d01fe230c4459e94802bd7941a61abf2130fc5052987253946",
+    "family": "sequential",
+    "action": "round3-sequential-rows",
+    "step": 26,
+    "label": "native-sequential-final",
+    "observed": {
+      "step": 26,
+      "action": "round3-sequential-rows",
+      "utc": "2026-10-14T20:08:31.235844+00:00",
+      "captures": [
+        "26-0-round3-sequential-rows.png"
+      ],
+      "artifacts": {
+        "analysis.cumulative.cumulative forest_plot.1": "26-0-forest-513e1d28bdfc.display.svg"
+      },
+      "title": "analysis.cumulative.cumulative forest_plot.1",
+      "workflow": "cumulative",
+      "rows": [
+        [
+          "Fixture 1 (k = 1)",
+          "1.000000",
+          "-0.363677",
+          "2.363677",
+          "0.695766",
+          ""
+        ],
+        [
+          "Fixture 2 (k = 2)",
+          "1.000000",
+          "-0.112088",
+          "2.112088",
+          "0.567402",
+          "0.077999"
+        ],
+        [
+          "Fixture 3 (k = 3)",
+          "1.000000",
+          "-0.013115",
+          "2.013115",
+          "0.516905",
+          "0.053040"
+        ],
+        [
+          "Fixture 4 (k = 4)",
+          "1.000000",
+          "0.041121",
+          "1.958879",
+          "0.489233",
+          "0.040952"
+        ],
+        [
+          "Fixture 5 (k = 5)",
+          "1.000000",
+          "0.075859",
+          "1.924141",
+          "0.471509",
+          "0.033934"
+        ],
+        [
+          "Fixture 6 (k = 6)",
+          "1.000000",
+          "0.100264",
+          "1.899736",
+          "0.459058",
+          "0.029378"
+        ]
+      ],
+      "figure": {
+        "slab": [
+          "Fixture 1 (k = 1)",
+          "Fixture 2 (k = 2)",
+          "Fixture 3 (k = 3)",
+          "Fixture 4 (k = 4)",
+          "Fixture 5 (k = 5)",
+          "Fixture 6 (k = 6)"
+        ],
+        "labels": [
+          "1.000000 [-0.363677, 2.363677]",
+          "1.000000 [-0.112088, 2.112088]",
+          "1.000000 [-0.013115, 2.013115]",
+          "1.000000 [0.041121, 1.958879]",
+          "1.000000 [0.075859, 1.924141]",
+          "1.000000 [0.100264, 1.899736]"
+        ],
+        "has_overall": false,
+        "estimates": [
+          1,
+          1.0000000000000007,
+          0.9999999999999999,
+          1.0000000000000007,
+          1.0000000000000004,
+          0.9999999999999997
+        ],
+        "measure": "MD",
+        "range": [
+          -0.4182242067575602,
+          2.4182242067575603
+        ]
+      },
+      "plots": {
+        "analysis.cumulative.cumulative forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-2b3ithep/analysis/forest-513e1d28bdfc.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/sequential-33-0-round3-null-excluded-rendered.png",
+    "sha256": "b651d23ca56d37276339d498d198550a8bd4b681cf3be751d1ea1530e28b74b8",
+    "family": "sequential",
+    "action": "round3-null-excluded-rendered",
+    "step": 33,
+    "label": "native-sequential-final",
+    "observed": {
+      "step": 33,
+      "action": "round3-null-excluded-rendered",
+      "utc": "2026-10-14T20:08:38.666925+00:00",
+      "captures": [
+        "33-0-round3-null-excluded-rendered.png"
+      ],
+      "artifacts": {
+        "analysis.cumulative.cumulative forest_plot.1": "33-0-forest-513e1d28bdfc.display.svg"
+      },
+      "observed": {
+        "range": [
+          0.5,
+          2
+        ],
+        "null": null
+      },
+      "plots": {
+        "analysis.cumulative.cumulative forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-2b3ithep/analysis/forest-513e1d28bdfc.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/sequential-42-0-round3-sequential-rows.png",
+    "sha256": "768dad9091d8b5b6fc8578298ea67593c3437b702b8aec69ee4b9991a4c44b49",
+    "family": "sequential",
+    "action": "round3-sequential-rows",
+    "step": 42,
+    "label": "native-sequential-final",
+    "observed": {
+      "step": 42,
+      "action": "round3-sequential-rows",
+      "utc": "2026-10-14T20:08:44.476318+00:00",
+      "captures": [
+        "42-0-round3-sequential-rows.png"
+      ],
+      "artifacts": {
+        "analysis.cumulative.cumulative forest_plot.1": "42-0-forest-513e1d28bdfc.display.svg"
+      },
+      "title": "analysis.cumulative.cumulative forest_plot.1",
+      "workflow": "cumulative",
+      "rows": [
+        [
+          "Fixture 1 (k = 1)",
+          "1.000000",
+          "-0.363677",
+          "2.363677",
+          "0.695766",
+          ""
+        ],
+        [
+          "Fixture 2 (k = 2)",
+          "1.000000",
+          "-0.112088",
+          "2.112088",
+          "0.567402",
+          "0.077999"
+        ],
+        [
+          "Fixture 3 (k = 3)",
+          "1.000000",
+          "-0.013115",
+          "2.013115",
+          "0.516905",
+          "0.053040"
+        ],
+        [
+          "Fixture 4 (k = 4)",
+          "1.000000",
+          "0.041121",
+          "1.958879",
+          "0.489233",
+          "0.040952"
+        ],
+        [
+          "Fixture 5 (k = 5)",
+          "1.000000",
+          "0.075859",
+          "1.924141",
+          "0.471509",
+          "0.033934"
+        ],
+        [
+          "Fixture 6 (k = 6)",
+          "1.000000",
+          "0.100264",
+          "1.899736",
+          "0.459058",
+          "0.029378"
+        ]
+      ],
+      "figure": {
+        "slab": [
+          "Fixture 1 (k = 1)",
+          "Fixture 2 (k = 2)",
+          "Fixture 3 (k = 3)",
+          "Fixture 4 (k = 4)",
+          "Fixture 5 (k = 5)",
+          "Fixture 6 (k = 6)"
+        ],
+        "labels": [
+          "1.000000 [-0.363677, 2.363677]",
+          "1.000000 [-0.112088, 2.112088]",
+          "1.000000 [-0.013115, 2.013115]",
+          "1.000000 [0.041121, 1.958879]",
+          "1.000000 [0.075859, 1.924141]",
+          "1.000000 [0.100264, 1.899736]"
+        ],
+        "has_overall": false,
+        "estimates": [
+          1,
+          1.0000000000000007,
+          0.9999999999999999,
+          1.0000000000000007,
+          1.0000000000000004,
+          0.9999999999999997
+        ],
+        "measure": "MD",
+        "range": [
+          -0.4182242067575602,
+          2.4182242067575603
+        ]
+      },
+      "plots": {
+        "analysis.cumulative.cumulative forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-2b3ithep/analysis/forest-513e1d28bdfc.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/sequential-49-0-round3-null-excluded-rendered.png",
+    "sha256": "ce0b878c75ad5373ad7f0937d9242642eca869495e51470bc00730e6410688fd",
+    "family": "sequential",
+    "action": "round3-null-excluded-rendered",
+    "step": 49,
+    "label": "native-sequential-final",
+    "observed": {
+      "step": 49,
+      "action": "round3-null-excluded-rendered",
+      "utc": "2026-10-14T20:08:52.230799+00:00",
+      "captures": [
+        "49-0-round3-null-excluded-rendered.png"
+      ],
+      "artifacts": {
+        "analysis.cumulative.cumulative forest_plot.1": "49-0-forest-513e1d28bdfc.display.svg"
+      },
+      "observed": {
+        "range": [
+          0.5,
+          2
+        ],
+        "null": null
+      },
+      "plots": {
+        "analysis.cumulative.cumulative forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-2b3ithep/analysis/forest-513e1d28bdfc.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/sequential-58-0-round3-sequential-rows.png",
+    "sha256": "ea0b171ad5011f4731819ed1614791ef96d62c58ae3df1936fd51e4bb3e5eabd",
+    "family": "sequential",
+    "action": "round3-sequential-rows",
+    "step": 58,
+    "label": "native-sequential-final",
+    "observed": {
+      "step": 58,
+      "action": "round3-sequential-rows",
+      "utc": "2026-10-14T20:08:58.172691+00:00",
+      "captures": [
+        "58-0-round3-sequential-rows.png"
+      ],
+      "artifacts": {
+        "analysis.leave-one-out.loo_forest_plot.1": "58-0-forest-513e1d28bdfc.display.svg"
+      },
+      "title": "analysis.leave-one-out.loo_forest_plot.1",
+      "workflow": "leave-one-out",
+      "rows": [
+        [
+          "All studies",
+          "1.000000",
+          "0.100264",
+          "1.899736",
+          "0.459058",
+          "0.029378"
+        ],
+        [
+          "Study omitted: Fixture 1",
+          "1.000000",
+          "-0.197329",
+          "2.197329",
+          "0.610893",
+          "0.101642"
+        ],
+        [
+          "Study omitted: Fixture 2",
+          "1.000000",
+          "-0.018258",
+          "2.018258",
+          "0.519529",
+          "0.054252"
+        ],
+        [
+          "Study omitted: Fixture 3",
+          "1.000000",
+          "0.033079",
+          "1.966921",
+          "0.493336",
+          "0.042661"
+        ],
+        [
+          "Study omitted: Fixture 4",
+          "1.000000",
+          "0.055915",
+          "1.944085",
+          "0.481685",
+          "0.037890"
+        ],
+        [
+          "Study omitted: Fixture 5",
+          "1.000000",
+          "0.068301",
+          "1.931699",
+          "0.475365",
+          "0.035409"
+        ],
+        [
+          "Study omitted: Fixture 6",
+          "1.000000",
+          "0.075859",
+          "1.924141",
+          "0.471509",
+          "0.033934"
+        ]
+      ],
+      "figure": {
+        "slab": [
+          "All studies",
+          "Study omitted: Fixture 1",
+          "Study omitted: Fixture 2",
+          "Study omitted: Fixture 3",
+          "Study omitted: Fixture 4",
+          "Study omitted: Fixture 5",
+          "Study omitted: Fixture 6"
+        ],
+        "labels": [
+          "1.000000 [0.100264, 1.899736]",
+          "1.000000 [-0.197329, 2.197329]",
+          "1.000000 [-0.018258, 2.018258]",
+          "1.000000 [0.033079, 1.966921]",
+          "1.000000 [0.055915, 1.944085]",
+          "1.000000 [0.068301, 1.931699]",
+          "1.000000 [0.075859, 1.924141]"
+        ],
+        "has_overall": true,
+        "estimates": [
+          0.9999999999999997,
+          0.9999999999999996,
+          1,
+          0.9999999999999999,
+          1,
+          1,
+          1.0000000000000004
+        ],
+        "measure": "MD",
+        "range": [
+          -0.2452221562846995,
+          2.2452221562846986
+        ]
+      },
+      "plots": {
+        "analysis.leave-one-out.loo_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-2b3ithep/analysis/forest-513e1d28bdfc.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/sequential-72-0-round3-sequential-rows.png",
+    "sha256": "f95761d5dc64ca5c986261f63fb63e07d9aa0289a4250911ce3d5ba7335fee6a",
+    "family": "sequential",
+    "action": "round3-sequential-rows",
+    "step": 72,
+    "label": "native-sequential-final",
+    "observed": {
+      "step": 72,
+      "action": "round3-sequential-rows",
+      "utc": "2026-10-14T20:09:10.513431+00:00",
+      "captures": [
+        "72-0-round3-sequential-rows.png"
+      ],
+      "artifacts": {
+        "analysis.leave-one-out.loo_forest_plot.1": "72-0-forest-513e1d28bdfc.display.svg"
+      },
+      "title": "analysis.leave-one-out.loo_forest_plot.1",
+      "workflow": "leave-one-out",
+      "rows": [
+        [
+          "All studies",
+          "1.000000",
+          "0.100264",
+          "1.899736",
+          "0.459058",
+          "0.029378"
+        ],
+        [
+          "Study omitted: Fixture 1",
+          "1.000000",
+          "-0.197329",
+          "2.197329",
+          "0.610893",
+          "0.101642"
+        ],
+        [
+          "Study omitted: Fixture 2",
+          "1.000000",
+          "-0.018258",
+          "2.018258",
+          "0.519529",
+          "0.054252"
+        ],
+        [
+          "Study omitted: Fixture 3",
+          "1.000000",
+          "0.033079",
+          "1.966921",
+          "0.493336",
+          "0.042661"
+        ],
+        [
+          "Study omitted: Fixture 4",
+          "1.000000",
+          "0.055915",
+          "1.944085",
+          "0.481685",
+          "0.037890"
+        ],
+        [
+          "Study omitted: Fixture 5",
+          "1.000000",
+          "0.068301",
+          "1.931699",
+          "0.475365",
+          "0.035409"
+        ],
+        [
+          "Study omitted: Fixture 6",
+          "1.000000",
+          "0.075859",
+          "1.924141",
+          "0.471509",
+          "0.033934"
+        ]
+      ],
+      "figure": {
+        "slab": [
+          "All studies",
+          "Study omitted: Fixture 1",
+          "Study omitted: Fixture 2",
+          "Study omitted: Fixture 3",
+          "Study omitted: Fixture 4",
+          "Study omitted: Fixture 5",
+          "Study omitted: Fixture 6"
+        ],
+        "labels": [
+          "1.000000 [0.100264, 1.899736]",
+          "1.000000 [-0.197329, 2.197329]",
+          "1.000000 [-0.018258, 2.018258]",
+          "1.000000 [0.033079, 1.966921]",
+          "1.000000 [0.055915, 1.944085]",
+          "1.000000 [0.068301, 1.931699]",
+          "1.000000 [0.075859, 1.924141]"
+        ],
+        "has_overall": true,
+        "estimates": [
+          0.9999999999999997,
+          0.9999999999999996,
+          1,
+          0.9999999999999999,
+          1,
+          1,
+          1.0000000000000004
+        ],
+        "measure": "MD",
+        "range": [
+          -0.2452221562846995,
+          2.2452221562846986
+        ]
+      },
+      "plots": {
+        "analysis.leave-one-out.loo_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-2b3ithep/analysis/forest-513e1d28bdfc.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/sequential-86-0-round3-sequential-rows.png",
+    "sha256": "221e5859d7fb80491a9c3521904fb2dff4a8a82f7c236001454c7bda4c8151c7",
+    "family": "sequential",
+    "action": "round3-sequential-rows",
+    "step": 86,
+    "label": "native-sequential-final",
+    "observed": {
+      "step": 86,
+      "action": "round3-sequential-rows",
+      "utc": "2026-10-14T20:09:23.059553+00:00",
+      "captures": [
+        "86-0-round3-sequential-rows.png"
+      ],
+      "artifacts": {
+        "analysis.leave-one-out.loo_forest_plot.1": "86-0-forest-513e1d28bdfc.display.svg"
+      },
+      "title": "analysis.leave-one-out.loo_forest_plot.1",
+      "workflow": "leave-one-out",
+      "rows": [
+        [
+          "All studies",
+          "1.000000",
+          "0.100264",
+          "1.899736",
+          "0.459058",
+          "0.029378"
+        ],
+        [
+          "Study omitted: Fixture 1",
+          "1.000000",
+          "-0.197329",
+          "2.197329",
+          "0.610893",
+          "0.101642"
+        ],
+        [
+          "Study omitted: Fixture 2",
+          "1.000000",
+          "-0.018258",
+          "2.018258",
+          "0.519529",
+          "0.054252"
+        ],
+        [
+          "Study omitted: Fixture 3",
+          "1.000000",
+          "0.033079",
+          "1.966921",
+          "0.493336",
+          "0.042661"
+        ],
+        [
+          "Study omitted: Fixture 4",
+          "1.000000",
+          "0.055915",
+          "1.944085",
+          "0.481685",
+          "0.037890"
+        ],
+        [
+          "Study omitted: Fixture 5",
+          "1.000000",
+          "0.068301",
+          "1.931699",
+          "0.475365",
+          "0.035409"
+        ],
+        [
+          "Study omitted: Fixture 6",
+          "1.000000",
+          "0.075859",
+          "1.924141",
+          "0.471509",
+          "0.033934"
+        ]
+      ],
+      "figure": {
+        "slab": [
+          "All studies",
+          "Study omitted: Fixture 1",
+          "Study omitted: Fixture 2",
+          "Study omitted: Fixture 3",
+          "Study omitted: Fixture 4",
+          "Study omitted: Fixture 5",
+          "Study omitted: Fixture 6"
+        ],
+        "labels": [
+          "1.000000 [0.100264, 1.899736]",
+          "1.000000 [-0.197329, 2.197329]",
+          "1.000000 [-0.018258, 2.018258]",
+          "1.000000 [0.033079, 1.966921]",
+          "1.000000 [0.055915, 1.944085]",
+          "1.000000 [0.068301, 1.931699]",
+          "1.000000 [0.075859, 1.924141]"
+        ],
+        "has_overall": true,
+        "estimates": [
+          0.9999999999999997,
+          0.9999999999999996,
+          1,
+          0.9999999999999999,
+          1,
+          1,
+          1.0000000000000004
+        ],
+        "measure": "MD",
+        "range": [
+          -0.2452221562846995,
+          2.2452221562846986
+        ]
+      },
+      "plots": {
+        "analysis.leave-one-out.loo_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-2b3ithep/analysis/forest-513e1d28bdfc.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/precision-20-0-round3-small-effects-preserved.png",
+    "sha256": "f44a14da7aed8bb58f7a10f6f71af93153a3d242f3aab714837daf2f89bcb8c8",
+    "family": "precision",
+    "action": "round3-small-effects-preserved",
+    "step": 20,
+    "label": "native-precision-final",
+    "observed": {
+      "step": 20,
+      "action": "round3-small-effects-preserved",
+      "utc": "2026-10-14T19:53:49.087896+00:00",
+      "captures": [
+        "20-0-round3-small-effects-preserved.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "20-0-forest-9a607ec5be5b.display.svg"
+      },
+      "expected": {
+        "estimate": 1.0000000000000004e-10,
+        "lower": 9.199848053940786e-11,
+        "upper": 1.0800151946059223e-10,
+        "se": 4.082482904638632e-12
+      },
+      "actual": [
+        "1.000000e-10",
+        "9.199848e-11",
+        "1.080015e-10",
+        "4.082483e-12",
+        "< 1e-06"
+      ],
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-n2rkurlt/analysis/forest-9a607ec5be5b.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/precision-30-0-round3-degenerate-axis-bottom.png",
+    "sha256": "74b28d97c31bc502fb42b894027d2769ad838b699654a3c6768f0d0c2c039732",
+    "family": "precision",
+    "action": "round3-degenerate-axis-bottom",
+    "step": 30,
+    "label": "native-precision-final",
+    "observed": {
+      "step": 30,
+      "action": "round3-degenerate-axis-bottom",
+      "utc": "2026-10-14T19:53:55.203973+00:00",
+      "captures": [
+        "30-0-round3-degenerate-axis-bottom.png"
+      ],
+      "artifacts": {},
+      "style": "default",
+      "bounds": [
+        0.9499999999999998,
+        1.0499999999999998
+      ]
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/precision-54-0-round3-bubble-tick-coverage.png",
+    "sha256": "5d144f5929ce4246b400310f3903aea6771b8faf14ccee239411918b4bd25e11",
+    "family": "precision",
+    "action": "round3-bubble-tick-coverage",
+    "step": 54,
+    "label": "native-precision-final",
+    "observed": {
+      "step": 54,
+      "action": "round3-bubble-tick-coverage",
+      "utc": "2026-10-14T19:54:11.559218+00:00",
+      "captures": [
+        "54-0-round3-bubble-tick-coverage.png"
+      ],
+      "artifacts": {
+        "analysis.meta-regression.reg.plot.1": "54-0-reg-c7341c7f44d9.display.svg"
+      },
+      "ticks": [
+        [
+          0.1,
+          269.08
+        ],
+        [
+          0.2,
+          228.28
+        ],
+        [
+          0.5,
+          174.35
+        ],
+        [
+          1.0,
+          133.55
+        ],
+        [
+          2.0,
+          92.75
+        ],
+        [
+          5.0,
+          38.81
+        ]
+      ],
+      "plot_frame": {
+        "x": "74.88",
+        "y": "15.84",
+        "width": "542.07",
+        "height": "277.92",
+        "fill": "none",
+        "stroke": "#000000",
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        "stroke-miterlimit": "10.00"
+      },
+      "coverage": 0.82854778353483,
+      "metric": "OR",
+      "plots": {
+        "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-n2rkurlt/analysis/reg-c7341c7f44d9.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/precision-64-0-round3-bubble-tick-coverage.png",
+    "sha256": "624571574e38f095aa46a2c854f202bea8e397b2c589bb564335cebe27787657",
+    "family": "precision",
+    "action": "round3-bubble-tick-coverage",
+    "step": 64,
+    "label": "native-precision-final",
+    "observed": {
+      "step": 64,
+      "action": "round3-bubble-tick-coverage",
+      "utc": "2026-10-14T19:54:16.584837+00:00",
+      "captures": [
+        "64-0-round3-bubble-tick-coverage.png"
+      ],
+      "artifacts": {
+        "analysis.meta-regression.reg.plot.1": "64-0-reg-c7341c7f44d9.display.svg"
+      },
+      "ticks": [
+        [
+          0.05,
+          264.41
+        ],
+        [
+          0.25,
+          183.22
+        ],
+        [
+          0.5,
+          134.9
+        ],
+        [
+          0.75,
+          86.57
+        ],
+        [
+          0.9,
+          38.25
+        ]
+      ],
+      "plot_frame": {
+        "x": "78.50",
+        "y": "15.84",
+        "width": "594.82",
+        "height": "277.92",
+        "fill": "none",
+        "stroke": "#000000",
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        "stroke-miterlimit": "10.00"
+      },
+      "coverage": 0.8137593552101324,
+      "metric": "PLO",
+      "plots": {
+        "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-n2rkurlt/analysis/reg-c7341c7f44d9.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/precision-74-0-round3-bubble-tick-coverage.png",
+    "sha256": "db94af646031b11680e8949554f414b86921fb25a7dc8faaaf0c54407deba187",
+    "family": "precision",
+    "action": "round3-bubble-tick-coverage",
+    "step": 74,
+    "label": "native-precision-final",
+    "observed": {
+      "step": 74,
+      "action": "round3-bubble-tick-coverage",
+      "utc": "2026-10-14T19:54:20.804302+00:00",
+      "captures": [
+        "74-0-round3-bubble-tick-coverage.png"
+      ],
+      "artifacts": {
+        "analysis.meta-regression.reg.plot.1": "74-0-reg-c7341c7f44d9.display.svg"
+      },
+      "ticks": [
+        [
+          0.2,
+          241.64
+        ],
+        [
+          0.4,
+          181.09
+        ],
+        [
+          0.6,
+          120.55
+        ],
+        [
+          0.8,
+          60.0
+        ]
+      ],
+      "plot_frame": {
+        "x": "74.88",
+        "y": "15.84",
+        "width": "516.22",
+        "height": "277.92",
+        "fill": "none",
+        "stroke": "#000000",
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        "stroke-miterlimit": "10.00"
+      },
+      "coverage": 0.6535693724812895,
+      "metric": "linear",
+      "plots": {
+        "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-n2rkurlt/analysis/reg-c7341c7f44d9.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/hr-13-0-round4-subgroup-weights.png",
+    "sha256": "003db37f1c9b7162a6d02abcb9a2829cbc0145c6065a268139f36d5fc3e81ad9",
+    "family": "hr",
+    "action": "round4-subgroup-weights",
+    "step": 13,
+    "label": "native-audit-round3-hr-final",
+    "observed": {
+      "step": 13,
+      "action": "round4-subgroup-weights",
+      "utc": "2026-10-14T20:10:06.183766+00:00",
+      "captures": [
+        "13-0-round4-subgroup-weights.png"
+      ],
+      "artifacts": {
+        "analysis.subgroup.subgroup_forest_plot.1": "13-0-forest-3feca1544c44.display.svg"
+      },
+      "title": "analysis.subgroup.subgroup_forest_plot.1",
+      "weights": {
+        "expected": [
+          1.279161590552802,
+          2.8779120914340495,
+          0.6887144732462461,
+          0.55931002276198,
+          0.8086450573934744,
+          1.8960089924935732,
+          2.67454510990932,
+          1.3990512065160656,
+          1.8187603937240817,
+          1.5624697234588893,
+          0.9046669195979238,
+          2.0683018352049887,
+          2.9807306785261134,
+          1.5814450161275289,
+          1.7799112200240392,
+          2.396145723620643,
+          1.8187603937240817,
+          2.398181995852989,
+          0.9046669195979238,
+          1.3880962515835367,
+          0.857397556544658,
+          2.251387503686592,
+          0.6066830476065425,
+          0.9729348300717795,
+          2.377578280208948,
+          0.5204383364739821,
+          1.7599544086665964,
+          2.8660362538560187,
+          1.3990512065160656,
+          1.0663348179606755,
+          1.9678900406398403,
+          1.658854687212856,
+          1.140928292104478,
+          0.8653769280558171,
+          0.8812133677048886,
+          1.9744762249248964,
+          3.1928885191015457,
+          1.218044035421717,
+          1.9579286360271158,
+          2.164486976241988,
+          1.4783361550800038,
+          1.6719962542172548,
+          1.1142517858384948,
+          1.211778947506951,
+          1.5528683288090133,
+          2.414283836994663,
+          1.360295206314486,
+          0.5784187133614416,
+          0.9201054268090982,
+          0.7151749285566235,
+          0.6436430127360763,
+          0.8250649697499172,
+          1.2550438548129583,
+          0.7151749285566235,
+          0.741211400041778,
+          1.0095614921965614,
+          3.1689581656544714,
+          2.7159377790924024,
+          2.280089059869162,
+          1.1142517858384948,
+          2.0225213605282266,
+          1.1343060811427723,
+          1.9100968345538483,
+          1.961260127361425
+        ],
+        "actual": [
+          1.279161590552802,
+          2.8779120914340495,
+          0.6887144732462461,
+          0.55931002276198,
+          0.8086450573934744,
+          1.8960089924935732,
+          2.67454510990932,
+          1.3990512065160656,
+          1.8187603937240817,
+          1.5624697234588893,
+          0.9046669195979238,
+          2.0683018352049887,
+          2.9807306785261134,
+          1.5814450161275289,
+          1.7799112200240392,
+          2.396145723620643,
+          1.8187603937240817,
+          2.398181995852989,
+          0.9046669195979238,
+          1.3880962515835367,
+          0.857397556544658,
+          2.251387503686592,
+          0.6066830476065425,
+          0.9729348300717795,
+          2.377578280208948,
+          0.5204383364739821,
+          1.7599544086665964,
+          2.8660362538560187,
+          1.3990512065160656,
+          1.0663348179606755,
+          1.9678900406398403,
+          1.658854687212856,
+          1.140928292104478,
+          0.8653769280558171,
+          0.8812133677048886,
+          1.9744762249248964,
+          3.1928885191015457,
+          1.218044035421717,
+          1.9579286360271158,
+          2.164486976241988,
+          1.4783361550800038,
+          1.6719962542172548,
+          1.1142517858384948,
+          1.211778947506951,
+          1.5528683288090133,
+          2.414283836994663,
+          1.360295206314486,
+          0.5784187133614416,
+          0.9201054268090982,
+          0.7151749285566235,
+          0.6436430127360763,
+          0.8250649697499172,
+          1.2550438548129583,
+          0.7151749285566235,
+          0.741211400041778,
+          1.0095614921965614,
+          3.1689581656544714,
+          2.7159377790924024,
+          2.280089059869162,
+          1.1142517858384948,
+          2.0225213605282266,
+          1.1343060811427723,
+          1.9100968345538483,
+          1.961260127361425
+        ],
+        "order": [
+          1,
+          2,
+          4,
+          6,
+          8,
+          10,
+          12,
+          14,
+          16,
+          18,
+          20,
+          22,
+          24,
+          26,
+          28,
+          30,
+          32,
+          34,
+          36,
+          38,
+          40,
+          42,
+          44,
+          46,
+          48,
+          50,
+          52,
+          54,
+          56,
+          58,
+          60,
+          62,
+          64,
+          3,
+          5,
+          7,
+          9,
+          11,
+          13,
+          15,
+          17,
+          19,
+          21,
+          23,
+          25,
+          27,
+          29,
+          31,
+          33,
+          35,
+          37,
+          39,
+          41,
+          43,
+          45,
+          47,
+          49,
+          51,
+          53,
+          55,
+          57,
+          59,
+          61,
+          63
+        ],
+        "names": [
+          "Pitie-74",
+          "Int 0034",
+          "TMH R-4",
+          "HNU-87a",
+          "IGR-65",
+          "EORTC 24771",
+          "HNCP",
+          "MCW-1",
+          "Pitie-81",
+          "Creteil-82",
+          "MCW-2",
+          "SECOG II (a)",
+          "SHNG 85",
+          "Creteil-86",
+          "GETTECneo1",
+          "AHNTG",
+          "Rennes-87",
+          "CFHNS",
+          "Songkla",
+          "BNH 003",
+          "WIA-OC5a",
+          "EORTC 73-OC",
+          "RT-BLM-73",
+          "Turku",
+          "NRH-78",
+          "UW-79",
+          "Yale 80",
+          "ECOG 2382",
+          "Toulouse",
+          "CH-7401",
+          "INRC HN-8",
+          "Kragujevac",
+          "LOHNG 91",
+          "JHCFUS",
+          "KKD-86",
+          "HNU-87b",
+          "RTOG 6801",
+          "DENVER-77",
+          "EORTC 78-OCP",
+          "SWOG 8006",
+          "Buenos Aires",
+          "HNCGICO2",
+          "AC CAMARGO (a)",
+          "EORTC 24844",
+          "HNCGICO3",
+          "GSTTC-86",
+          "GETTECneo2",
+          "Las Palmas",
+          "Parma",
+          "Cologne",
+          "HNAP-02",
+          "MDA-70",
+          "WIA-OC5b",
+          "Bergen",
+          "WIA-OC5c",
+          "UW-77",
+          "Barcelona",
+          "Manchester",
+          "PMHCGS",
+          "AC CAMARGO (b)",
+          "SECOG II (b)",
+          "Yale 86",
+          "Ontario",
+          "Bavaria 89"
+        ],
+        "total": 100,
+        "inputs": {
+          "names": [
+            "Pitie-74",
+            "Int 0034",
+            "JHCFUS",
+            "TMH R-4",
+            "KKD-86",
+            "HNU-87a",
+            "HNU-87b",
+            "IGR-65",
+            "RTOG 6801",
+            "EORTC 24771",
+            "DENVER-77",
+            "HNCP",
+            "EORTC 78-OCP",
+            "MCW-1",
+            "SWOG 8006",
+            "Pitie-81",
+            "Buenos Aires",
+            "Creteil-82",
+            "HNCGICO2",
+            "MCW-2",
+            "AC CAMARGO (a)",
+            "SECOG II (a)",
+            "EORTC 24844",
+            "SHNG 85",
+            "HNCGICO3",
+            "Creteil-86",
+            "GSTTC-86",
+            "GETTECneo1",
+            "GETTECneo2",
+            "AHNTG",
+            "Las Palmas",
+            "Rennes-87",
+            "Parma",
+            "CFHNS",
+            "Cologne",
+            "Songkla",
+            "HNAP-02",
+            "BNH 003",
+            "MDA-70",
+            "WIA-OC5a",
+            "WIA-OC5b",
+            "EORTC 73-OC",
+            "Bergen",
+            "RT-BLM-73",
+            "WIA-OC5c",
+            "Turku",
+            "UW-77",
+            "NRH-78",
+            "Barcelona",
+            "UW-79",
+            "Manchester",
+            "Yale 80",
+            "PMHCGS",
+            "ECOG 2382",
+            "AC CAMARGO (b)",
+            "Toulouse",
+            "SECOG II (b)",
+            "CH-7401",
+            "Yale 86",
+            "INRC HN-8",
+            "Ontario",
+            "Kragujevac",
+            "Bavaria 89",
+            "LOHNG 91"
+          ],
+          "yi": [
+            -0.12413793103448276,
+            -0.09181141439205956,
+            -0.6588235294117647,
+            0.0625,
+            0.20689655172413796,
+            -0.04,
+            -0.1291390728476821,
+            0,
+            -0.006354249404289118,
+            0.07885304659498209,
+            -0.24444444444444444,
+            -0.009508716323296354,
+            -0.30976430976430974,
+            0.37951807228915657,
+            0.07103825136612021,
+            -0.07751937984496124,
+            -0.11602209944751381,
+            0.36363636363636365,
+            0.12162162162162163,
+            0.13333333333333333,
+            0.03361344537815126,
+            -0.10843373493975902,
+            -0.022388059701492536,
+            -0.0455531453362256,
+            0.08163265306122448,
+            -0.2821782178217822,
+            -0.17932489451476794,
+            -0.3024193548387097,
+            -0.40880503144654085,
+            -0.12258064516129033,
+            -0.7692307692307692,
+            -0.11240310077519379,
+            0.5869565217391305,
+            -0.17381974248927037,
+            -0.16417910447761194,
+            0.06666666666666667,
+            0.7796610169491525,
+            -0.4329268292682927,
+            0.225,
+            -0.5119047619047619,
+            -1.2695035460992907,
+            0.03,
+            -0.4626865671641791,
+            0.38181818181818183,
+            -0.6285714285714287,
+            -0.20202020202020202,
+            -1.1538461538461537,
+            0.09868421052631579,
+            -0.20874587458745875,
+            -1.4782608695652175,
+            -0.036253776435045314,
+            0.0823045267489712,
+            -0.10436893203883495,
+            0.06801007556675064,
+            0.17647058823529413,
+            -0.8132530120481927,
+            -0.27444794952681384,
+            -0.19642857142857145,
+            -0.06557377049180328,
+            -0.4766666666666667,
+            -0.1802120141342756,
+            -0.6073059360730594,
+            -0.5637583892617449,
+            -0.4308943089430894
+          ],
+          "vi": [
+            0.0689655172413793,
+            0.01240694789081886,
+            0.11764705882352942,
+            0.15625000000000003,
+            0.11494252873563221,
+            0.19999999999999998,
+            0.033112582781456956,
+            0.12820512820512825,
+            0.007942811755361398,
+            0.03584229390681004,
+            0.07407407407407407,
+            0.01584786053882726,
+            0.03367003367003367,
+            0.06024096385542168,
+            0.027322404371584695,
+            0.03875968992248062,
+            0.055248618784530384,
+            0.0505050505050505,
+            0.04504504504504506,
+            0.1111111111111111,
+            0.08403361344537814,
+            0.030120481927710843,
+            0.07462686567164178,
+            0.010845986984815616,
+            0.0510204081632653,
+            0.0495049504950495,
+            0.02109704641350211,
+            0.04032258064516128,
+            0.06289308176100629,
+            0.021505376344086027,
+            0.1923076923076923,
+            0.03875968992248062,
+            0.10869565217391307,
+            0.02145922746781116,
+            0.14925373134328357,
+            0.1111111111111111,
+            0.1694915254237288,
+            0.060975609756097573,
+            0.12500000000000003,
+            0.11904761904761905,
+            0.07092198581560284,
+            0.025,
+            0.14925373134328357,
+            0.18181818181818182,
+            0.14285714285714282,
+            0.101010101010101,
+            0.09615384615384613,
+            0.02192982456140351,
+            0.00825082508250825,
+            0.2173913043478261,
+            0.01510574018126888,
+            0.041152263374485604,
+            0.024271844660194174,
+            0.012594458438287152,
+            0.08403361344537814,
+            0.06024096385542168,
+            0.031545741324921134,
+            0.08928571428571427,
+            0.08196721311475409,
+            0.033333333333333326,
+            0.0353356890459364,
+            0.045662100456621016,
+            0.03355704697986577,
+            0.08130081300813008
+          ]
+        }
+      },
+      "plots": {
+        "analysis.subgroup.subgroup_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-a21um_2e/analysis/forest-3feca1544c44.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/hr-35-0-round3-report-copy-export.png",
+    "sha256": "2e464851e1fed23870f5e45732082e651df203f474e001abbdbc48f7986d5298",
+    "family": "hr",
+    "action": "round3-report-copy-export",
+    "step": 35,
+    "label": "native-audit-round3-hr-final",
+    "observed": {
+      "step": 35,
+      "action": "round3-report-copy-export",
+      "utc": "2026-10-14T20:10:46.008440+00:00",
+      "captures": [
+        "35-0-round3-report-copy-export.png"
+      ],
+      "artifacts": {},
+      "identity": "Meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first",
+      "text": "Meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first\n\nModel configuration\nProject: Pignon2000-HR.rcms\nModel: Fixed-effect inverse variance\nInference: Normal approximation\nConfidence level: 95.0%\nHR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.\n\nSummary\n\nModel Results\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tp-value\n0.895119\t0.854435\t0.937741\t0.000003\n\nHeterogeneity\nQ\tdf\tp-value\tI²\n123.670769\t64\t0.000011\t48.2%\n\nTest for overall effect — log(Hazard Ratio) = 0; Hazard Ratio = 1\nZ\tp-value\n-4.668405\t0.000003\n\nCalculation scale (log)\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\n-0.110798\t-0.157315\t-0.064281\t0.023734\n\nPooled Hazard Ratio: 0.895119 (95% CI 0.854435 to 0.937741).\n\nOverall-effect null: log(Hazard Ratio) = 0; Hazard Ratio = 1.\n\nReferences\n\n1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n\nWeights\n\nStudy weights\nStudy\tWeight (%)\nPitie-74\t0.8%\nPitie-74\t3.2%\nInt 0034\t4.5%\nJHCFUS\t0.5%\nTMH R-4\t0.4%\nKKD-86\t0.5%\nHNU-87a\t0.3%\nHNU-87b\t1.7%\nIGR-65\t0.4%\nRTOG 6801\t7.1%\nEORTC 24771\t1.6%\nDENVER-77\t0.8%\nHNCP\t3.6%\nEORTC 78-OCP\t1.7%\nMCW-1\t0.9%\nSWOG 8006\t2.1%\nPitie-81\t1.5%\nBuenos Aires\t1.0%\nCreteil-82\t1.1%\nHNCGICO2\t1.3%\nMCW-2\t0.5%\nAC CAMARGO (a)\t0.7%\nSECOG II (a)\t1.9%\nEORTC 24844\t0.8%\nSHNG 85\t5.2%\nHNCGICO3\t1.1%\nCreteil-86\t1.1%\nGSTTC-86\t2.7%\nGETTECneo1\t1.4%\nGETTECneo2\t0.9%\nAHNTG\t2.6%\nLas Palmas\t0.3%\nRennes-87\t1.5%\nParma\t0.5%\nCFHNS\t2.6%\nCologne\t0.4%\nSongkla\t0.5%\nHNAP-02\t0.3%\nBNH 003\t0.9%\nMDA-70\t0.5%\nWIA-OC5a\t0.5%\nWIA-OC5b\t0.8%\nEORTC 73-OC\t2.3%\nBergen\t0.4%\nRT-BLM-73\t0.3%\nWIA-OC5c\t0.4%\nTurku\t0.6%\nUW-77\t0.6%\nNRH-78\t2.6%\nBarcelona\t6.8%\nUW-79\t0.3%\nManchester\t3.7%\nYale 80\t1.4%\nPMHCGS\t2.3%\nECOG 2382\t4.5%\nAC CAMARGO (b)\t0.7%\nToulouse\t0.9%\nSECOG II (b)\t1.8%\nCH-7401\t0.6%\nYale 86\t0.7%\nINRC HN-8\t1.7%\nOntario\t1.6%\nKragujevac\t1.2%\nBavaria 89\t1.7%\nLOHNG 91\t0.7%\n\nInference Method\n\nNormal approximation\n",
+      "tables": [
+        {
+          "title": "Model Results",
+          "headers": [
+            "Estimate",
+            "Lower bound (95% CI)",
+            "Upper bound (95% CI)",
+            "p-value"
+          ],
+          "rows": [
+            [
+              "0.895119",
+              "0.854435",
+              "0.937741",
+              "0.000003"
+            ]
+          ]
+        },
+        {
+          "title": "Heterogeneity",
+          "headers": [
+            "Q",
+            "df",
+            "p-value",
+            "I²"
+          ],
+          "rows": [
+            [
+              "123.670769",
+              "64",
+              "0.000011",
+              "48.2%"
+            ]
+          ]
+        },
+        {
+          "title": "Test for overall effect — log(Hazard Ratio) = 0; Hazard Ratio = 1",
+          "headers": [
+            "Z",
+            "p-value"
+          ],
+          "rows": [
+            [
+              "-4.668405",
+              "0.000003"
+            ]
+          ]
+        },
+        {
+          "title": "Calculation scale (log)",
+          "headers": [
+            "Estimate",
+            "Lower bound (95% CI)",
+            "Upper bound (95% CI)",
+            "Std. error"
+          ],
+          "rows": [
+            [
+              "-0.110798",
+              "-0.157315",
+              "-0.064281",
+              "0.023734"
+            ]
+          ]
+        },
+        {
+          "title": "Study weights",
+          "headers": [
+            "Study",
+            "Weight (%)"
+          ],
+          "rows": [
+            [
+              "Pitie-74",
+              "0.8%"
+            ],
+            [
+              "Pitie-74",
+              "3.2%"
+            ],
+            [
+              "Int 0034",
+              "4.5%"
+            ],
+            [
+              "JHCFUS",
+              "0.5%"
+            ],
+            [
+              "TMH R-4",
+              "0.4%"
+            ],
+            [
+              "KKD-86",
+              "0.5%"
+            ],
+            [
+              "HNU-87a",
+              "0.3%"
+            ],
+            [
+              "HNU-87b",
+              "1.7%"
+            ],
+            [
+              "IGR-65",
+              "0.4%"
+            ],
+            [
+              "RTOG 6801",
+              "7.1%"
+            ],
+            [
+              "EORTC 24771",
+              "1.6%"
+            ],
+            [
+              "DENVER-77",
+              "0.8%"
+            ],
+            [
+              "HNCP",
+              "3.6%"
+            ],
+            [
+              "EORTC 78-OCP",
+              "1.7%"
+            ],
+            [
+              "MCW-1",
+              "0.9%"
+            ],
+            [
+              "SWOG 8006",
+              "2.1%"
+            ],
+            [
+              "Pitie-81",
+              "1.5%"
+            ],
+            [
+              "Buenos Aires",
+              "1.0%"
+            ],
+            [
+              "Creteil-82",
+              "1.1%"
+            ],
+            [
+              "HNCGICO2",
+              "1.3%"
+            ],
+            [
+              "MCW-2",
+              "0.5%"
+            ],
+            [
+              "AC CAMARGO (a)",
+              "0.7%"
+            ],
+            [
+              "SECOG II (a)",
+              "1.9%"
+            ],
+            [
+              "EORTC 24844",
+              "0.8%"
+            ],
+            [
+              "SHNG 85",
+              "5.2%"
+            ],
+            [
+              "HNCGICO3",
+              "1.1%"
+            ],
+            [
+              "Creteil-86",
+              "1.1%"
+            ],
+            [
+              "GSTTC-86",
+              "2.7%"
+            ],
+            [
+              "GETTECneo1",
+              "1.4%"
+            ],
+            [
+              "GETTECneo2",
+              "0.9%"
+            ],
+            [
+              "AHNTG",
+              "2.6%"
+            ],
+            [
+              "Las Palmas",
+              "0.3%"
+            ],
+            [
+              "Rennes-87",
+              "1.5%"
+            ],
+            [
+              "Parma",
+              "0.5%"
+            ],
+            [
+              "CFHNS",
+              "2.6%"
+            ],
+            [
+              "Cologne",
+              "0.4%"
+            ],
+            [
+              "Songkla",
+              "0.5%"
+            ],
+            [
+              "HNAP-02",
+              "0.3%"
+            ],
+            [
+              "BNH 003",
+              "0.9%"
+            ],
+            [
+              "MDA-70",
+              "0.5%"
+            ],
+            [
+              "WIA-OC5a",
+              "0.5%"
+            ],
+            [
+              "WIA-OC5b",
+              "0.8%"
+            ],
+            [
+              "EORTC 73-OC",
+              "2.3%"
+            ],
+            [
+              "Bergen",
+              "0.4%"
+            ],
+            [
+              "RT-BLM-73",
+              "0.3%"
+            ],
+            [
+              "WIA-OC5c",
+              "0.4%"
+            ],
+            [
+              "Turku",
+              "0.6%"
+            ],
+            [
+              "UW-77",
+              "0.6%"
+            ],
+            [
+              "NRH-78",
+              "2.6%"
+            ],
+            [
+              "Barcelona",
+              "6.8%"
+            ],
+            [
+              "UW-79",
+              "0.3%"
+            ],
+            [
+              "Manchester",
+              "3.7%"
+            ],
+            [
+              "Yale 80",
+              "1.4%"
+            ],
+            [
+              "PMHCGS",
+              "2.3%"
+            ],
+            [
+              "ECOG 2382",
+              "4.5%"
+            ],
+            [
+              "AC CAMARGO (b)",
+              "0.7%"
+            ],
+            [
+              "Toulouse",
+              "0.9%"
+            ],
+            [
+              "SECOG II (b)",
+              "1.8%"
+            ],
+            [
+              "CH-7401",
+              "0.6%"
+            ],
+            [
+              "Yale 86",
+              "0.7%"
+            ],
+            [
+              "INRC HN-8",
+              "1.7%"
+            ],
+            [
+              "Ontario",
+              "1.6%"
+            ],
+            [
+              "Kragujevac",
+              "1.2%"
+            ],
+            [
+              "Bavaria 89",
+              "1.7%"
+            ],
+            [
+              "LOHNG 91",
+              "0.7%"
+            ]
+          ]
+        }
+      ]
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/irr-13-0-round4-subgroup-weights.png",
+    "sha256": "9c9e91fc837bbe277485f4ba883d87f0d868242231a01c9f240a2ffac96dd067",
+    "family": "irr",
+    "action": "round4-subgroup-weights",
+    "step": 13,
+    "label": "native-audit-round3-irr-final",
+    "observed": {
+      "step": 13,
+      "action": "round4-subgroup-weights",
+      "utc": "2026-10-14T20:11:19.082327+00:00",
+      "captures": [
+        "13-0-round4-subgroup-weights.png"
+      ],
+      "artifacts": {
+        "analysis.subgroup.subgroup_forest_plot.1": "13-0-forest-246a4fc9c5f5.display.svg"
+      },
+      "title": "analysis.subgroup.subgroup_forest_plot.1",
+      "weights": {
+        "expected": [
+          18.31304025092388,
+          12.466255069644435,
+          3.1334086338546037,
+          26.049132315168162,
+          6.924954477711243,
+          16.797260557679945,
+          5.316624170856254,
+          10.999324524161484
+        ],
+        "actual": [
+          18.31304025092388,
+          12.466255069644433,
+          3.1334086338546037,
+          26.049132315168162,
+          6.924954477711243,
+          16.797260557679948,
+          5.3166241708562545,
+          10.999324524161484
+        ],
+        "order": [
+          1,
+          2,
+          4,
+          6,
+          8,
+          3,
+          5,
+          7
+        ],
+        "names": [
+          "Bong et al. 2003",
+          "Hanna et al. 2004",
+          "Jaeger et al. 2001",
+          "Logghe et al. 1997",
+          "Pemberton et al. 1996",
+          "Harter et al. 2002",
+          "Jaeger et al. 2005",
+          "Ostendorf et al. 2005"
+        ],
+        "total": 100,
+        "inputs": {
+          "names": [
+            "Bong et al.",
+            "Hanna et al.",
+            "Harter et al.",
+            "Jaeger et al.",
+            "Jaeger et al.",
+            "Logghe et al.",
+            "Ostendorf et al.",
+            "Pemberton et al."
+          ],
+          "yi": [
+            -0.06050625760963246,
+            -1.6319164444443084,
+            -0.5325441477206336,
+            0.26651364801430244,
+            -1.8543793930935255,
+            0.13692798453359245,
+            -0.9340629016199529,
+            -0.08701137698962924
+          ],
+          "vi": [
+            0.23376623376623376,
+            0.40476190476190477,
+            0.26666666666666666,
+            2,
+            1.125,
+            0.12549019607843137,
+            0.47619047619047616,
+            0.8333333333333333
+          ]
+        }
+      },
+      "plots": {
+        "analysis.subgroup.subgroup_forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-fdu74cbv/analysis/forest-246a4fc9c5f5.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/irr-39-0-round3-report-copy-export.png",
+    "sha256": "d6cd68314d94a21d264cdd34d26e23f967c7d367e8533d412ec56f5a44503f94",
+    "family": "irr",
+    "action": "round3-report-copy-export",
+    "step": 39,
+    "label": "native-audit-round3-irr-final",
+    "observed": {
+      "step": 39,
+      "action": "round3-report-copy-export",
+      "utc": "2026-10-14T20:11:43.141190+00:00",
+      "captures": [
+        "39-0-round3-report-copy-export.png"
+      ],
+      "artifacts": {},
+      "identity": "Meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first",
+      "text": "Meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first\n\nModel configuration\nProject: NielWeise2008-IRR.rcms\nModel: Fixed-effect inverse variance\nInference: Normal approximation\nConfidence level: 95.0%\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.\n\nSummary\n\nModel Results\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tp-value\n0.714185\t0.490307\t1.040287\t0.079406\n\nHeterogeneity\nQ\tdf\tp-value\tI²\n9.697597\t8\t0.286895\t17.5%\n\nTest for overall effect — log(Incidence Rate Ratio) = 0; Incidence Rate Ratio = 1\nZ\tp-value\n-1.754141\t0.079406\n\nCalculation scale (log)\nEstimate\tLower bound (95% CI)\tUpper bound (95% CI)\tStd. error\n-0.336613\t-0.712724\t0.039497\t0.191897\n\nPooled Incidence Rate Ratio: 0.714185 (95% CI 0.490307 to 1.040287).\n\nOverall-effect null: log(Incidence Rate Ratio) = 0; Incidence Rate Ratio = 1.\n\nReferences\n\n1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n\n\nWeights\n\nStudy weights\nStudy\tWeight (%)\nBong et al.\t15.8%\nBong et al.\t14.7%\nHanna et al.\t9.1%\nHarter et al.\t13.8%\nJaeger et al.\t1.8%\nJaeger et al.\t3.3%\nLogghe et al.\t29.3%\nOstendorf et al.\t7.7%\nPemberton et al.\t4.4%\n\nInference Method\n\nNormal approximation\n",
+      "tables": [
+        {
+          "title": "Model Results",
+          "headers": [
+            "Estimate",
+            "Lower bound (95% CI)",
+            "Upper bound (95% CI)",
+            "p-value"
+          ],
+          "rows": [
+            [
+              "0.714185",
+              "0.490307",
+              "1.040287",
+              "0.079406"
+            ]
+          ]
+        },
+        {
+          "title": "Heterogeneity",
+          "headers": [
+            "Q",
+            "df",
+            "p-value",
+            "I²"
+          ],
+          "rows": [
+            [
+              "9.697597",
+              "8",
+              "0.286895",
+              "17.5%"
+            ]
+          ]
+        },
+        {
+          "title": "Test for overall effect — log(Incidence Rate Ratio) = 0; Incidence Rate Ratio = 1",
+          "headers": [
+            "Z",
+            "p-value"
+          ],
+          "rows": [
+            [
+              "-1.754141",
+              "0.079406"
+            ]
+          ]
+        },
+        {
+          "title": "Calculation scale (log)",
+          "headers": [
+            "Estimate",
+            "Lower bound (95% CI)",
+            "Upper bound (95% CI)",
+            "Std. error"
+          ],
+          "rows": [
+            [
+              "-0.336613",
+              "-0.712724",
+              "0.039497",
+              "0.191897"
+            ]
+          ]
+        },
+        {
+          "title": "Study weights",
+          "headers": [
+            "Study",
+            "Weight (%)"
+          ],
+          "rows": [
+            [
+              "Bong et al.",
+              "15.8%"
+            ],
+            [
+              "Bong et al.",
+              "14.7%"
+            ],
+            [
+              "Hanna et al.",
+              "9.1%"
+            ],
+            [
+              "Harter et al.",
+              "13.8%"
+            ],
+            [
+              "Jaeger et al.",
+              "1.8%"
+            ],
+            [
+              "Jaeger et al.",
+              "3.3%"
+            ],
+            [
+              "Logghe et al.",
+              "29.3%"
+            ],
+            [
+              "Ostendorf et al.",
+              "7.7%"
+            ],
+            [
+              "Pemberton et al.",
+              "4.4%"
+            ]
+          ]
+        }
+      ]
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/pre-post-02-0-calculator-mode-layout.png",
+    "sha256": "fd0fc7b71512b1bca840c6000769bcc8c383c62e53e74effa72e0cb99b0e501e",
+    "family": "pre-post",
+    "action": "calculator-mode-layout",
+    "step": 2,
+    "label": "native-calculator-mode-pre-post-ready",
+    "observed": {
+      "step": 2,
+      "action": "calculator-mode-layout",
+      "utc": "2026-10-14T20:32:52.466692+00:00",
+      "captures": [
+        "02-0-calculator-mode-layout.png"
+      ],
+      "artifacts": {},
+      "mode": "pre-post",
+      "scroll_maximum": 0,
+      "positions": [
+        420,
+        485,
+        485,
+        514
+      ],
+      "size": [
+        543,
+        549
+      ]
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/entered-binary-02-0-calculator-mode-layout.png",
+    "sha256": "e09b6735b888b74eee2c368f003b52272c48f0fc41cd3e9473366cb57a101af7",
+    "family": "entered-binary",
+    "action": "calculator-mode-layout",
+    "step": 2,
+    "label": "native-calculator-mode-entered-binary-ready",
+    "observed": {
+      "step": 2,
+      "action": "calculator-mode-layout",
+      "utc": "2026-10-14T20:33:05.511260+00:00",
+      "captures": [
+        "02-0-calculator-mode-layout.png"
+      ],
+      "artifacts": {},
+      "mode": "entered-binary",
+      "scroll_maximum": 0,
+      "positions": [
+        98,
+        166,
+        166,
+        195
+      ],
+      "size": [
+        669,
+        230
+      ]
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/entered-continuous-02-0-calculator-mode-layout.png",
+    "sha256": "538d0098d0e331f719410b5b4c02a08665ede993ec0b2d9c6b4fa5602e40142f",
+    "family": "entered-continuous",
+    "action": "calculator-mode-layout",
+    "step": 2,
+    "label": "native-calculator-mode-entered-continuous-ready",
+    "observed": {
+      "step": 2,
+      "action": "calculator-mode-layout",
+      "utc": "2026-10-14T20:33:20.897323+00:00",
+      "captures": [
+        "02-0-calculator-mode-layout.png"
+      ],
+      "artifacts": {},
+      "mode": "entered-continuous",
+      "scroll_maximum": 0,
+      "positions": [
+        78,
+        143,
+        143,
+        172
+      ],
+      "size": [
+        543,
+        207
+      ]
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/help-02-0-ux-empty-workspace.png",
+    "sha256": "9081c834104cebe42f472343162741bef3550c3f85d93dddbd0c36f43688afd1",
+    "family": "help",
+    "action": "ux-empty-workspace",
+    "step": 2,
+    "label": "native-ux-improvements-verified",
+    "observed": {
+      "step": 2,
+      "action": "ux-empty-workspace",
+      "utc": "2026-10-14T20:23:27.670935+00:00",
+      "captures": [
+        "02-0-ux-empty-workspace.png"
+      ],
+      "artifacts": {},
+      "guidance": "Create a dataset, import a CSV, or open an existing project to begin.",
+      "device_pixel_ratio": 1.0,
+      "logical_size": [
+        1600,
+        828
+      ]
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/help-03-0-ux-quick-start.png",
+    "sha256": "a373be8932e5219e36329edeea98a3f8da2d94150314c607673db2a95530eeaf",
+    "family": "help",
+    "action": "ux-quick-start",
+    "step": 3,
+    "label": "native-ux-improvements-verified",
+    "observed": {
+      "step": 3,
+      "action": "ux-quick-start",
+      "utc": "2026-10-14T20:23:27.846850+00:00",
+      "captures": [
+        "03-0-ux-quick-start.png"
+      ],
+      "artifacts": {},
+      "text": "1. Create a dataset, import a UTF-8 CSV, or open a sample project. CSV templates and column mapping are on the import page.\n\n2. Enter studies in the table. Click the row calculator to edit study data. Calculated effects use complete raw data where available.\n\n3. Choose an effect metric matching your data. Add a Numeric or Category covariate for meta-regression; subgroup analysis needs a Category.\n\n4. Run an analysis, then use the result navigation to select a section or plot. Text report exposes selectable output. Tables provides selectable cells: copy a selection or export the table as CSV. Copy report and Export report keep the analysis identity and table rows. Select a plot to edit or export it.\n\n5. Change settings… reopens the executed setup; Run creates another result for comparison. The original stays open.\n\nCumulative analysis follows the input table sequence: sort the table before running. Plot study order changes display only; it cannot change the cumulative sequence. Small-study effects do not establish publication bias.\n\nShortcuts: Ctrl+N New, Ctrl+O Open, Ctrl+S Save. Results: Ctrl+T text/figure view, Ctrl+Shift+C copy report, Ctrl+Shift+E export selected plot."
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/settings-08-0-review-study-order-options.png",
+    "sha256": "8228c88d902e6f93b5638e28ed818e9c9f76ee2ce2f9f6a77089f80239763edb",
+    "family": "settings",
+    "action": "review-study-order-options",
+    "step": 8,
+    "label": "native-review-workflows-verified",
+    "observed": {
+      "step": 8,
+      "action": "review-study-order-options",
+      "utc": "2026-10-14T20:24:04.132954+00:00",
+      "captures": [
+        "08-0-review-study-order-options.png",
+        "08-1-review-study-order-options.png"
+      ],
+      "artifacts": {}
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/report-after-04-0-analysis-results-report.png",
+    "sha256": "ec608a3fecd0ade4d942c9d9684c8f53c794f2e8f7ac86c5f1dd16d7b3d82c6a",
+    "family": "report-after",
+    "action": "analysis-results",
+    "step": 4,
+    "label": "native-amino-ready",
+    "observed": {
+      "step": 4,
+      "action": "analysis-results",
+      "utc": "2026-10-14T20:34:24.252839+00:00",
+      "captures": [
+        "04-0-analysis-results.png",
+        "04-0-analysis-results-report.png",
+        "04-0-analysis-results-table.png",
+        "04-0-analysis-results-figure.png",
+        "04-0-analysis-results-bottom.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "04-0-forest-888d71434d2b.display.svg"
+      },
+      "texts": {
+        "Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.770                    0.485                 1.222    0.267\n\nHeterogeneity\n Q       df  p-value     I²     τ²\n 33.360  18    0.015  46.0%  0.378\n\nTest for overall effect\n Z       p-value\n -1.111    0.267\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.212                                2.799\n\nCalculation scale: log - estimate: -0.262, lower: -0.724, upper: 0.200, std. error: 0.236\nOverall-effect null: log(Odds Ratio) = 0; Odds Ratio = 1.\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+        "Weights": "Study names     Weights\nGonzalez      :  7.3%\nPrins         :  6.2%\nGiamarellou   :  2.1%\nMaller        : 10.7%\nSturm         :  2.0%\nMarik         : 12.2%\nMuijsken      :  7.5%\nVigano        :  1.8%\nHansen        :  5.3%\nDe Vries      :  6.1%\nMauracher     :  2.2%\nNordstrom     :  5.3%\nRozdzinski    : 10.3%\nTer Braak     :  8.7%\nTulkens       :  1.2%\nVan der Auwera:  2.0%\nKlastersky    :  6.0%\nVanhaeverbeek :  1.2%\nHollender     :  1.8%\n",
+        "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n",
+        "Inference Method": "Normal approximation"
+      },
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-8efvavij/analysis/forest-888d71434d2b.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/report-after-04-0-analysis-results-table.png",
+    "sha256": "1f98cdf6e040618960cd364ab5a00c37cac9b904f9773798a5e5a8d48797dbcd",
+    "family": "report-after",
+    "action": "analysis-results",
+    "step": 4,
+    "label": "native-amino-ready",
+    "observed": {
+      "step": 4,
+      "action": "analysis-results",
+      "utc": "2026-10-14T20:34:24.252839+00:00",
+      "captures": [
+        "04-0-analysis-results.png",
+        "04-0-analysis-results-report.png",
+        "04-0-analysis-results-table.png",
+        "04-0-analysis-results-figure.png",
+        "04-0-analysis-results-bottom.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "04-0-forest-888d71434d2b.display.svg"
+      },
+      "texts": {
+        "Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.770                    0.485                 1.222    0.267\n\nHeterogeneity\n Q       df  p-value     I²     τ²\n 33.360  18    0.015  46.0%  0.378\n\nTest for overall effect\n Z       p-value\n -1.111    0.267\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.212                                2.799\n\nCalculation scale: log - estimate: -0.262, lower: -0.724, upper: 0.200, std. error: 0.236\nOverall-effect null: log(Odds Ratio) = 0; Odds Ratio = 1.\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+        "Weights": "Study names     Weights\nGonzalez      :  7.3%\nPrins         :  6.2%\nGiamarellou   :  2.1%\nMaller        : 10.7%\nSturm         :  2.0%\nMarik         : 12.2%\nMuijsken      :  7.5%\nVigano        :  1.8%\nHansen        :  5.3%\nDe Vries      :  6.1%\nMauracher     :  2.2%\nNordstrom     :  5.3%\nRozdzinski    : 10.3%\nTer Braak     :  8.7%\nTulkens       :  1.2%\nVan der Auwera:  2.0%\nKlastersky    :  6.0%\nVanhaeverbeek :  1.2%\nHollender     :  1.8%\n",
+        "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n",
+        "Inference Method": "Normal approximation"
+      },
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-8efvavij/analysis/forest-888d71434d2b.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/report-before-04-0-analysis-results-report.png",
+    "sha256": "0d4a93ade9406a6b0e705cb4071dac57c7221752a1e11778c6af010d07a4eadc",
+    "family": "report-before",
+    "action": "analysis-results",
+    "step": 4,
+    "label": "before-design-amino",
+    "observed": {
+      "step": 4,
+      "action": "analysis-results",
+      "utc": "2026-10-14T19:36:20.216078+00:00",
+      "captures": [
+        "04-0-analysis-results.png",
+        "04-0-analysis-results-report.png",
+        "04-0-analysis-results-table.png",
+        "04-0-analysis-results-figure.png",
+        "04-0-analysis-results-bottom.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "04-0-forest-561ad33b38bd.display.svg"
+      },
+      "texts": {
+        "Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.770                    0.485                 1.222    0.267\n\nHeterogeneity\n Q       df  p-value     I²     τ²\n 33.360  18    0.015  46.0%  0.378\n\nTest for overall effect\n Z       p-value\n -1.111    0.267\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.212                                2.799\n\nCalculation scale: log - estimate: -0.262, lower: -0.724, upper: 0.200, std. error: 0.236\nOverall-effect null: log(Odds Ratio) = 0; Odds Ratio = 1.\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+        "Weights": "Study names     Weights\nGonzalez      :  7.3%\nPrins         :  6.2%\nGiamarellou   :  2.1%\nMaller        : 10.7%\nSturm         :  2.0%\nMarik         : 12.2%\nMuijsken      :  7.5%\nVigano        :  1.8%\nHansen        :  5.3%\nDe Vries      :  6.1%\nMauracher     :  2.2%\nNordstrom     :  5.3%\nRozdzinski    : 10.3%\nTer Braak     :  8.7%\nTulkens       :  1.2%\nVan der Auwera:  2.0%\nKlastersky    :  6.0%\nVanhaeverbeek :  1.2%\nHollender     :  1.8%\n",
+        "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n",
+        "Inference Method": "Normal approximation"
+      },
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-4cd8gx3w/analysis/forest-561ad33b38bd.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/report-before-04-0-analysis-results-table.png",
+    "sha256": "6421df27ed9f85da9bba0095bc3c090205703b730b6a7414f102b913ad4dfd0b",
+    "family": "report-before",
+    "action": "analysis-results",
+    "step": 4,
+    "label": "before-design-amino",
+    "observed": {
+      "step": 4,
+      "action": "analysis-results",
+      "utc": "2026-10-14T19:36:20.216078+00:00",
+      "captures": [
+        "04-0-analysis-results.png",
+        "04-0-analysis-results-report.png",
+        "04-0-analysis-results-table.png",
+        "04-0-analysis-results-figure.png",
+        "04-0-analysis-results-bottom.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "04-0-forest-561ad33b38bd.display.svg"
+      },
+      "texts": {
+        "Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.770                    0.485                 1.222    0.267\n\nHeterogeneity\n Q       df  p-value     I²     τ²\n 33.360  18    0.015  46.0%  0.378\n\nTest for overall effect\n Z       p-value\n -1.111    0.267\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.212                                2.799\n\nCalculation scale: log - estimate: -0.262, lower: -0.724, upper: 0.200, std. error: 0.236\nOverall-effect null: log(Odds Ratio) = 0; Odds Ratio = 1.\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+        "Weights": "Study names     Weights\nGonzalez      :  7.3%\nPrins         :  6.2%\nGiamarellou   :  2.1%\nMaller        : 10.7%\nSturm         :  2.0%\nMarik         : 12.2%\nMuijsken      :  7.5%\nVigano        :  1.8%\nHansen        :  5.3%\nDe Vries      :  6.1%\nMauracher     :  2.2%\nNordstrom     :  5.3%\nRozdzinski    : 10.3%\nTer Braak     :  8.7%\nTulkens       :  1.2%\nVan der Auwera:  2.0%\nKlastersky    :  6.0%\nVanhaeverbeek :  1.2%\nHollender     :  1.8%\n",
+        "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n",
+        "Inference Method": "Normal approximation"
+      },
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-4cd8gx3w/analysis/forest-561ad33b38bd.display.svg"
+      }
+    },
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/before-matrix-diagnostic-standard-figure.png",
+    "sha256": "7fd4cd53e6c6f1a49bba93d05ea51d07f6eae75eef49cbdfec21a54dfd852fd5",
+    "family": "before",
+    "action": "historical native re-audit",
+    "capture": "QScreen.grabWindow",
+    "provenance": "../2026-10-14-round3-reaudit/REPORT.md"
+  },
+  {
+    "path": "screenshots/before-helper-calculator-continuous-03-0-calculator-effect-preview.png",
+    "sha256": "cf0dede431ea93f7db74e94a4e04211abe8eb86afd2f37830878fccefda618b0",
+    "family": "before",
+    "action": "historical native re-audit",
+    "capture": "QScreen.grabWindow",
+    "provenance": "../2026-10-14-round3-reaudit/REPORT.md"
+  },
+  {
+    "path": "screenshots/before-precision-06-round3-bubble-tick-coverage.png",
+    "sha256": "b7dd1f633673cb8a3c7dff8d6642b3d5cf4a05507e888f6898ffb8f9484ebd27",
+    "family": "before",
+    "action": "historical native re-audit",
+    "capture": "QScreen.grabWindow",
+    "provenance": "../2026-10-14-round3-reaudit/REPORT.md"
+  },
+  {
+    "path": "screenshots/before-weights-irr-subgroup-middle.png",
+    "sha256": "020065330c7343173dc905d0943352c37df5244df974091b25d18ab3f000f85c",
+    "family": "before",
+    "action": "historical native re-audit",
+    "capture": "QScreen.grabWindow",
+    "provenance": "../2026-10-14-round3-reaudit/REPORT.md"
+  },
+  {
+    "path": "screenshots/before-matrix-twoarm-mean-cumulative-figure.png",
+    "sha256": "667b3bb250f4bd6a646a0a2ae3a52222b040eb49d7e1f60a57ab290760760408",
+    "family": "before",
+    "action": "historical native re-audit",
+    "capture": "QScreen.grabWindow",
+    "provenance": "../2026-10-14-round3-reaudit/REPORT.md"
+  }
+]

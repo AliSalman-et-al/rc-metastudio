@@ -1,0 +1,698 @@
+{
+  "input": "TIFF-input.svg",
+  "input_sha256": "253623af59ec827fa9e05e8d7913c9c26680b7a5f47194c156f3363fa255586a",
+  "pixels": 68018400,
+  "dpi": 600,
+  "failures": 0,
+  "timed_work": "Actual production TIFF export; peak RSS covers the fresh R process including independent native TIFF decoding.",
+  "order": "before1, after1, before2, after2, before3, after3, before4, after4, before5, after5",
+  "noise": "Other heavy test jobs stopped. User desktop applications remained running. Pixel comparison overlapped part of the first pair; report the range, not a single best run.",
+  "profile": {
+    "by_self": [
+      {
+        "self.time": 35.72,
+        "self.pct": 39.75,
+        "total.time": 35.72,
+        "total.pct": 39.75,
+        "_row": "\"aperm.default\""
+      },
+      {
+        "self.time": 13.2,
+        "self.pct": 14.69,
+        "total.time": 13.2,
+        "total.pct": 14.69,
+        "_row": "\"pmin\""
+      },
+      {
+        "self.time": 7.9,
+        "self.pct": 8.79,
+        "total.time": 89.62,
+        "total.pct": 99.73,
+        "_row": "\"export\""
+      },
+      {
+        "self.time": 7.48,
+        "self.pct": 8.32,
+        "total.time": 7.48,
+        "total.pct": 8.32,
+        "_row": "\"rsvg_raw\""
+      },
+      {
+        "self.time": 6.64,
+        "self.pct": 7.39,
+        "total.time": 15.24,
+        "total.pct": 16.96,
+        "_row": "\"rgb\""
+      },
+      {
+        "self.time": 6,
+        "self.pct": 6.68,
+        "total.time": 6,
+        "total.pct": 6.68,
+        "_row": "\"t.default\""
+      },
+      {
+        "self.time": 2.96,
+        "self.pct": 3.29,
+        "total.time": 2.96,
+        "total.pct": 3.29,
+        "_row": "\"as.numeric\""
+      },
+      {
+        "self.time": 2.78,
+        "self.pct": 3.09,
+        "total.time": 2.78,
+        "total.pct": 3.09,
+        "_row": "\"grid.Call.graphics\""
+      },
+      {
+        "self.time": 2.6,
+        "self.pct": 2.89,
+        "total.time": 8.6,
+        "total.pct": 9.57,
+        "_row": "\"t\""
+      },
+      {
+        "self.time": 2.06,
+        "self.pct": 2.29,
+        "total.time": 5.02,
+        "total.pct": 5.59,
+        "_row": "\"structure\""
+      },
+      {
+        "self.time": 1.44,
+        "self.pct": 1.6,
+        "total.time": 1.44,
+        "total.pct": 1.6,
+        "_row": "\".External\""
+      },
+      {
+        "self.time": 0.7,
+        "self.pct": 0.78,
+        "total.time": 15.94,
+        "total.pct": 17.74,
+        "_row": "\"array\""
+      }
+    ],
+    "by_total": [
+      {
+        "total.time": 89.86,
+        "total.pct": 100,
+        "self.time": 0,
+        "self.pct": 0,
+        "_row": "\"system.time\""
+      },
+      {
+        "total.time": 89.62,
+        "total.pct": 99.73,
+        "self.time": 7.9,
+        "self.pct": 8.79,
+        "_row": "\"export\""
+      },
+      {
+        "total.time": 48.2,
+        "total.pct": 53.64,
+        "self.time": 0,
+        "self.pct": 0,
+        "_row": "\"rsvg::rsvg\""
+      },
+      {
+        "total.time": 35.72,
+        "total.pct": 39.75,
+        "self.time": 35.72,
+        "self.pct": 39.75,
+        "_row": "\"aperm.default\""
+      },
+      {
+        "total.time": 35.72,
+        "total.pct": 39.75,
+        "self.time": 0,
+        "self.pct": 0,
+        "_row": "\"aperm\""
+      },
+      {
+        "total.time": 20.3,
+        "total.pct": 22.59,
+        "self.time": 0,
+        "self.pct": 0,
+        "_row": "\"tryCatch\""
+      },
+      {
+        "total.time": 18.86,
+        "total.pct": 20.99,
+        "self.time": 0,
+        "self.pct": 0,
+        "_row": "\"grid::grid.raster\""
+      },
+      {
+        "total.time": 18.86,
+        "total.pct": 20.99,
+        "self.time": 0,
+        "self.pct": 0,
+        "_row": "\"tryCatchList\""
+      },
+      {
+        "total.time": 15.96,
+        "total.pct": 17.76,
+        "self.time": 0,
+        "self.pct": 0,
+        "_row": "\"rasterGrob\""
+      },
+      {
+        "total.time": 15.94,
+        "total.pct": 17.74,
+        "self.time": 0.7,
+        "self.pct": 0.78,
+        "_row": "\"array\""
+      },
+      {
+        "total.time": 15.94,
+        "total.pct": 17.74,
+        "self.time": 0,
+        "self.pct": 0,
+        "_row": "\"as.raster.array\""
+      },
+      {
+        "total.time": 15.94,
+        "total.pct": 17.74,
+        "self.time": 0,
+        "self.pct": 0,
+        "_row": "\"as.raster\""
+      }
+    ]
+  },
+  "summary": {
+    "before": {
+      "runs": 5,
+      "elapsed_seconds_median": 51.371,
+      "elapsed_seconds_range": [
+        50.028,
+        53.639
+      ],
+      "peak_rss_gib_median": 5.643226623535156,
+      "peak_rss_gib_range": [
+        5.600437164306641,
+        5.65948486328125
+      ]
+    },
+    "after": {
+      "runs": 5,
+      "elapsed_seconds_median": 9.007,
+      "elapsed_seconds_range": [
+        8.982000000000001,
+        9.096
+      ],
+      "peak_rss_gib_median": 1.199462890625,
+      "peak_rss_gib_range": [
+        1.1991958618164062,
+        1.1998252868652344
+      ]
+    }
+  },
+  "runs": [
+    {
+      "iteration": 1,
+      "peak_rss_kib": 5934400,
+      "mode": "before",
+      "elapsed": 51.933,
+      "dimensions": [
+        10800,
+        6298
+      ],
+      "bytes": 1128348,
+      "r": "4.6.1",
+      "rcmetar": "0.4.2",
+      "command": {
+        "label": "tiff-before-1",
+        "command": [
+          "/usr/bin/time",
+          "-v",
+          "-o",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-before-1-time.txt",
+          "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+          "docs/ux-audit/2026-10-14-round3/benchmark_tiff.R",
+          "docs/ux-audit/2026-10-14-round3/TIFF-input.svg",
+          "build/ux-round3/tiff-benchmark/before-1.tiff",
+          "before",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-before-1-result.json"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-14T08:01:29.313177+00:00",
+        "finished": "2026-10-14T08:02:26.825675+00:00",
+        "seconds": 57.519072904000495,
+        "exit_code": 0,
+        "revision": "f68562fcabc332e356d2485a159d9c0b126dff07",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu"
+        },
+        "log": "tiff-before-1.log",
+        "sha256": "7c97fc32776a427d554ec438ca4dac7b75e2f0d8ace5f75ae19678d78aab36de"
+      }
+    },
+    {
+      "iteration": 1,
+      "peak_rss_kib": 1257880,
+      "mode": "after",
+      "elapsed": 9.072000000000001,
+      "dimensions": [
+        10800,
+        6298
+      ],
+      "bytes": 1128348,
+      "r": "4.6.1",
+      "rcmetar": "0.4.2",
+      "command": {
+        "label": "tiff-after-1",
+        "command": [
+          "/usr/bin/time",
+          "-v",
+          "-o",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-after-1-time.txt",
+          "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+          "docs/ux-audit/2026-10-14-round3/benchmark_tiff.R",
+          "docs/ux-audit/2026-10-14-round3/TIFF-input.svg",
+          "build/ux-round3/tiff-benchmark/after-1.tiff",
+          "after",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-after-1-result.json"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-14T08:02:27.356374+00:00",
+        "finished": "2026-10-14T08:02:40.256366+00:00",
+        "seconds": 12.897378729001503,
+        "exit_code": 0,
+        "revision": "f68562fcabc332e356d2485a159d9c0b126dff07",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu"
+        },
+        "log": "tiff-after-1.log",
+        "sha256": "6e6d7e0b03d8ba9b7ebbce9bac890fc2f3562268c85efaf1784035da906118d7"
+      }
+    },
+    {
+      "iteration": 2,
+      "peak_rss_kib": 5892276,
+      "mode": "before",
+      "elapsed": 50.544000000000004,
+      "dimensions": [
+        10800,
+        6298
+      ],
+      "bytes": 1128348,
+      "r": "4.6.1",
+      "rcmetar": "0.4.2",
+      "command": {
+        "label": "tiff-before-2",
+        "command": [
+          "/usr/bin/time",
+          "-v",
+          "-o",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-before-2-time.txt",
+          "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+          "docs/ux-audit/2026-10-14-round3/benchmark_tiff.R",
+          "docs/ux-audit/2026-10-14-round3/TIFF-input.svg",
+          "build/ux-round3/tiff-benchmark/before-2.tiff",
+          "before",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-before-2-result.json"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-14T08:02:40.335767+00:00",
+        "finished": "2026-10-14T08:03:35.797665+00:00",
+        "seconds": 55.46205342999747,
+        "exit_code": 0,
+        "revision": "f68562fcabc332e356d2485a159d9c0b126dff07",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu"
+        },
+        "log": "tiff-before-2.log",
+        "sha256": "781d2faa972cf38be1933b655e2d69de2b28d90caa7a1162d9fb2b4a7eb7c333"
+      }
+    },
+    {
+      "iteration": 2,
+      "peak_rss_kib": 1258108,
+      "mode": "after",
+      "elapsed": 8.999,
+      "dimensions": [
+        10800,
+        6298
+      ],
+      "bytes": 1128348,
+      "r": "4.6.1",
+      "rcmetar": "0.4.2",
+      "command": {
+        "label": "tiff-after-2",
+        "command": [
+          "/usr/bin/time",
+          "-v",
+          "-o",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-after-2-time.txt",
+          "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+          "docs/ux-audit/2026-10-14-round3/benchmark_tiff.R",
+          "docs/ux-audit/2026-10-14-round3/TIFF-input.svg",
+          "build/ux-round3/tiff-benchmark/after-2.tiff",
+          "after",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-after-2-result.json"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-14T08:03:36.016605+00:00",
+        "finished": "2026-10-14T08:03:49.009134+00:00",
+        "seconds": 12.990223366999999,
+        "exit_code": 0,
+        "revision": "f68562fcabc332e356d2485a159d9c0b126dff07",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu"
+        },
+        "log": "tiff-after-2.log",
+        "sha256": "e2742b86d51e284ab0bc84c18ffe7fb57f0def36df4807c4fca7802a6cffa8d9"
+      }
+    },
+    {
+      "iteration": 3,
+      "peak_rss_kib": 5872484,
+      "mode": "before",
+      "elapsed": 50.028,
+      "dimensions": [
+        10800,
+        6298
+      ],
+      "bytes": 1128348,
+      "r": "4.6.1",
+      "rcmetar": "0.4.2",
+      "command": {
+        "label": "tiff-before-3",
+        "command": [
+          "/usr/bin/time",
+          "-v",
+          "-o",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-before-3-time.txt",
+          "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+          "docs/ux-audit/2026-10-14-round3/benchmark_tiff.R",
+          "docs/ux-audit/2026-10-14-round3/TIFF-input.svg",
+          "build/ux-round3/tiff-benchmark/before-3.tiff",
+          "before",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-before-3-result.json"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-14T08:03:49.081885+00:00",
+        "finished": "2026-10-14T08:04:44.009660+00:00",
+        "seconds": 54.92754588400203,
+        "exit_code": 0,
+        "revision": "f68562fcabc332e356d2485a159d9c0b126dff07",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu"
+        },
+        "log": "tiff-before-3.log",
+        "sha256": "c4ff1a4b77d96a0f51947d3e041b519a36beae192e36998a0e51d82252fed660"
+      }
+    },
+    {
+      "iteration": 3,
+      "peak_rss_kib": 1257728,
+      "mode": "after",
+      "elapsed": 9.096,
+      "dimensions": [
+        10800,
+        6298
+      ],
+      "bytes": 1128348,
+      "r": "4.6.1",
+      "rcmetar": "0.4.2",
+      "command": {
+        "label": "tiff-after-3",
+        "command": [
+          "/usr/bin/time",
+          "-v",
+          "-o",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-after-3-time.txt",
+          "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+          "docs/ux-audit/2026-10-14-round3/benchmark_tiff.R",
+          "docs/ux-audit/2026-10-14-round3/TIFF-input.svg",
+          "build/ux-round3/tiff-benchmark/after-3.tiff",
+          "after",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-after-3-result.json"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-14T08:04:44.239054+00:00",
+        "finished": "2026-10-14T08:04:56.952571+00:00",
+        "seconds": 12.711318449000828,
+        "exit_code": 0,
+        "revision": "f68562fcabc332e356d2485a159d9c0b126dff07",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu"
+        },
+        "log": "tiff-after-3.log",
+        "sha256": "6a09666087e97edb2fd55cddd4fda1715e6fac077deea27e4e4ee9a230948b86"
+      }
+    },
+    {
+      "iteration": 4,
+      "peak_rss_kib": 5917352,
+      "mode": "before",
+      "elapsed": 51.371,
+      "dimensions": [
+        10800,
+        6298
+      ],
+      "bytes": 1128348,
+      "r": "4.6.1",
+      "rcmetar": "0.4.2",
+      "command": {
+        "label": "tiff-before-4",
+        "command": [
+          "/usr/bin/time",
+          "-v",
+          "-o",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-before-4-time.txt",
+          "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+          "docs/ux-audit/2026-10-14-round3/benchmark_tiff.R",
+          "docs/ux-audit/2026-10-14-round3/TIFF-input.svg",
+          "build/ux-round3/tiff-benchmark/before-4.tiff",
+          "before",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-before-4-result.json"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-14T08:04:57.025226+00:00",
+        "finished": "2026-10-14T08:05:53.170673+00:00",
+        "seconds": 56.15210253400073,
+        "exit_code": 0,
+        "revision": "f68562fcabc332e356d2485a159d9c0b126dff07",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu"
+        },
+        "log": "tiff-before-4.log",
+        "sha256": "668c67f9047380118a6dd5cc406ffd0c15c8248b498087b997661d1f1bfba39a"
+      }
+    },
+    {
+      "iteration": 4,
+      "peak_rss_kib": 1257448,
+      "mode": "after",
+      "elapsed": 9.007,
+      "dimensions": [
+        10800,
+        6298
+      ],
+      "bytes": 1128348,
+      "r": "4.6.1",
+      "rcmetar": "0.4.2",
+      "command": {
+        "label": "tiff-after-4",
+        "command": [
+          "/usr/bin/time",
+          "-v",
+          "-o",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-after-4-time.txt",
+          "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+          "docs/ux-audit/2026-10-14-round3/benchmark_tiff.R",
+          "docs/ux-audit/2026-10-14-round3/TIFF-input.svg",
+          "build/ux-round3/tiff-benchmark/after-4.tiff",
+          "after",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-after-4-result.json"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-14T08:05:53.745914+00:00",
+        "finished": "2026-10-14T08:06:06.642335+00:00",
+        "seconds": 12.894255119001173,
+        "exit_code": 0,
+        "revision": "f68562fcabc332e356d2485a159d9c0b126dff07",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu"
+        },
+        "log": "tiff-after-4.log",
+        "sha256": "4e4cc72ac6f10c9ef4790f84edb28ebe75f7d184f900b1dadccd890988151943"
+      }
+    },
+    {
+      "iteration": 5,
+      "peak_rss_kib": 5919620,
+      "mode": "before",
+      "elapsed": 53.639,
+      "dimensions": [
+        10800,
+        6298
+      ],
+      "bytes": 1128348,
+      "r": "4.6.1",
+      "rcmetar": "0.4.2",
+      "command": {
+        "label": "tiff-before-5",
+        "command": [
+          "/usr/bin/time",
+          "-v",
+          "-o",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-before-5-time.txt",
+          "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+          "docs/ux-audit/2026-10-14-round3/benchmark_tiff.R",
+          "docs/ux-audit/2026-10-14-round3/TIFF-input.svg",
+          "build/ux-round3/tiff-benchmark/before-5.tiff",
+          "before",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-before-5-result.json"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-14T08:06:06.711859+00:00",
+        "finished": "2026-10-14T08:07:05.564989+00:00",
+        "seconds": 58.853279833998386,
+        "exit_code": 0,
+        "revision": "f68562fcabc332e356d2485a159d9c0b126dff07",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu"
+        },
+        "log": "tiff-before-5.log",
+        "sha256": "311c7571323b9dc09007d98fa0fc775f4a7c2ab98c5a996916ea5921ff40803a"
+      }
+    },
+    {
+      "iteration": 5,
+      "peak_rss_kib": 1257632,
+      "mode": "after",
+      "elapsed": 8.982000000000001,
+      "dimensions": [
+        10800,
+        6298
+      ],
+      "bytes": 1128348,
+      "r": "4.6.1",
+      "rcmetar": "0.4.2",
+      "command": {
+        "label": "tiff-after-5",
+        "command": [
+          "/usr/bin/time",
+          "-v",
+          "-o",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-after-5-time.txt",
+          "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+          "docs/ux-audit/2026-10-14-round3/benchmark_tiff.R",
+          "docs/ux-audit/2026-10-14-round3/TIFF-input.svg",
+          "build/ux-round3/tiff-benchmark/after-5.tiff",
+          "after",
+          "docs/ux-audit/2026-10-14-round3/raw/tiff-after-5-result.json"
+        ],
+        "cwd": "/home/ali/Documents/Code/rc-metastudio",
+        "started": "2026-10-14T08:07:05.826469+00:00",
+        "finished": "2026-10-14T08:07:18.585308+00:00",
+        "seconds": 12.756643567001447,
+        "exit_code": 0,
+        "revision": "f68562fcabc332e356d2485a159d9c0b126dff07",
+        "environment": {
+          "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+          "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+          "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+          "QT_QPA_PLATFORM": null,
+          "QT_SCALE_FACTOR": null,
+          "DISPLAY": ":0",
+          "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu"
+        },
+        "log": "tiff-after-5.log",
+        "sha256": "9ca1dbf0cdf967e2227e4954e29836d12ac9e2043f8e30ff8d57bd7559cddf52"
+      }
+    }
+  ],
+  "pixel_comparison": {
+    "dimensions": [
+      6298,
+      10800
+    ],
+    "dpi": [
+      600.0,
+      600.0
+    ],
+    "maximum_8bit_channel_difference": 1,
+    "pixels_compared": 68018400,
+    "compression_before": "tiff_lzw",
+    "compression_after": "tiff_lzw"
+  }
+}

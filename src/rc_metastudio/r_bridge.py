@@ -10,6 +10,7 @@ import os
 import re
 import sys
 from collections.abc import Mapping, Sequence
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Callable, Literal, cast, overload
 
@@ -929,6 +930,9 @@ def run_small_study_effects(
         raise ValueError("unsupported small-study effects data family: %r" % family)
     r_request = dict(request)
     r_request["preview"] = bool(preview)
+    if not preview:
+        from rc_metastudio.analysis_identity import dataset_identity
+        r_request["plot_caption"] = dataset_identity(table_model)
     result = execute_r_function(
         "rcmetar.run.small.study.effects",
         _r_object_from_symbol(data_name),
@@ -1184,6 +1188,19 @@ def load_vars_for_plot(params_path, return_params_dict=False):
     if return_params_dict:
         r_object = execute_r_string("params")
         params_dict = r_object_to_python(r_object)
+        plot_path = params_path + ".plotdata"
+        if os.path.exists(plot_path):
+            load_in_r(plot_path)
+            defaults = r_object_to_python(execute_r_string("""local({
+                if (RCMetaR:::rcmetar.is.reitsma.coefficient.bundle(plot.data)) return(NULL)
+                if (is.null(plot.data$fp_style)) return(NULL)
+                plan <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data)
+                list(xlabel=plan$x$xlab, lower=plan$x$alim[[1]], upper=plan$x$alim[[2]],
+                     ticks=RCMetaR:::rcmetar.revman.axis.labels(plot.data, plan$x$at),
+                     effect=RCMetaR:::rcmetar.metafor.effect.header(plot.data))
+            })"""))
+            if defaults:
+                params_dict["resolved.defaults"] = defaults
         return params_dict
     return True
 
@@ -1283,12 +1300,26 @@ def generate_forest_plot(file_path, params_name="plot.data"):
     )
 
 
+_RESULT_DISPLAY_DIGITS: ContextVar[int | None] = ContextVar("result_display_digits", default=None)
+
+
 @serialized_r_call
 def parse_out_results(result):
     if _r_inherits(result, "try-error"):
         raise RuntimeError(_r_error_message(result))
-
     result = dict(_result_items_for_display(result))
+    params = _r_mapping_or_empty(result.get("input_params"))
+    digits = params.get("digits")
+    if isinstance(digits, (tuple, list)):
+        digits = digits[0] if digits else None
+    token = _RESULT_DISPLAY_DIGITS.set(int(digits) if digits is not None else None)
+    try:
+        return _parse_display_results(result)
+    finally:
+        _RESULT_DISPLAY_DIGITS.reset(token)
+
+
+def _parse_display_results(result):
     study_names = _study_names_from_result(result)
     metadata = _result_metadata(result)
     text_d = {}
@@ -1299,7 +1330,14 @@ def parse_out_results(result):
         if text_n in _RESULT_METADATA_KEYS or _r_is_null(text):
             continue
         _add_result_text(text_d, text_n, text, result, study_names)
-        reports.update(_structured_result_reports(_display_section_name(text_n), text, study_names))
+        if text_n in {"weights", "Weights"}:
+            raw_weights = _weight_values(text)
+            names = _weight_study_names(result, text, len(raw_weights))
+            reports["Weights"] = {"paragraphs": [], "tables": [{"title": "Study weights",
+                "headers": ["Study", "Weight (%)"],
+                "rows": [[str(name), _format_weight(weight)] for name, weight in zip(names, raw_weights, strict=True)]}]}
+        else:
+            reports.update(_structured_result_reports(_display_section_name(text_n), text, study_names))
         for index, key in enumerate(key for key in text_d if key not in text_sources):
             text_sources[key] = (text_n, index)
 
@@ -1466,7 +1504,7 @@ def _add_result_text(texts, name, value, result, study_names):
     if "gui.ignore" in name:
         return
     if _is_summary_display(value):
-        texts[title] = _format_result_text(_capture_formatted_summary(value))
+        texts[title] = _format_result_text(_format_summary(value))
         return
     if _is_table_summary(value):
         texts.update(_format_table_summary(title, value, study_names=study_names))
@@ -1512,17 +1550,7 @@ def _text_section_metadata(sources, producer_sections, reports=None):
 def _structured_result_reports(title, value, study_names):
     """Carry producer arrays as cells; never reverse-parse printed statistics."""
     if _is_summary_display(value):
-        fields = dict(zip(list(value.names), list(value)))
-        model_title = fields["model.title"]
-        paragraphs = [] if _r_is_null(model_title) else [str(part) for part in model_title]
-        notes = fields.get("notes")
-        if notes is not None and not _r_is_null(notes):
-            paragraphs.extend(str(note) for note in notes)
-        tables = []
-        for caption, matrix in zip(list(fields["table.titles"]), list(fields["arrays"])):
-            if str(caption) != "NA":
-                tables.append(_structured_matrix(str(caption), matrix, study_names, first_row_headers=True))
-        return {title: {"paragraphs": paragraphs, "tables": tables}}
+        return {title: _structured_summary_display(value, study_names)}
     if len(_r_dims(value)) == 2 and not _is_large_display_shape(_r_dims(value)):
         return {title: {"paragraphs": [], "tables": [_structured_matrix(title, value, study_names)]}}
     if _has_r_names(value) and (_is_named_table_summary(value) or _is_named_text_summary(value)):
@@ -1571,6 +1599,8 @@ def _structured_matrix(title, matrix, study_names, first_row_headers=False):
     else:
         headers = _matrix_column_names(dimnames[1] if len(dimnames) > 1 else None, ncol)
         row_names = _matrix_row_names(dimnames[0] if dimnames else None, nrow, study_names)
+    if title in {"Sensitivity coefficients", "Specificity coefficients"}:
+        _label_diagnostic_coefficients(headers, dimnames)
     rows = [[_format_r_table_cell(values[row + col * nrow], field_name=headers[col])
              for col in range(ncol)] for row in range(1 if first_row_headers else 0, nrow)]
     if row_names is not None:
@@ -1761,11 +1791,8 @@ def _is_summary_display(r_object):
 
 
 @serialized_r_call
-def _capture_formatted_summary(r_object):
-    capture_summary = _r_eval(
-        "function(x) paste(capture.output(print(x)), collapse='\\n')"
-    )
-    return _first_dynamic(_call_dynamic(capture_summary, r_object))
+def _format_summary(r_object):
+    return _first_dynamic(execute_r_function("format", r_object))
 
 
 def _format_table_summary(section_name, r_object, title=None, study_names=None):
@@ -1988,6 +2015,17 @@ def _format_shape_summary(dims):
 
 def _format_summary_label(name):
     labels = {
+        "logLik": "Log likelihood",
+        "moderator": "Moderator",
+        "statistic": "Statistic",
+        "estimator": "Estimator",
+        "formula": "Model formula",
+        "studies.used": "Studies used",
+        "correction.policy": "Continuity correction policy",
+        "correction.factor": "Continuity correction",
+        "converged": "Converged",
+        "warnings": "Warnings",
+        "package.version": "Package version",
         "normalized.partial.AUC": "Normalized partial AUC",
         "partial.FPR.bounds": "Partial FPR bounds",
         "false.positive.rate": "False-positive rate",
@@ -2206,14 +2244,7 @@ def _format_r_table_cell(value, field_name=None):
     if isinstance(value, (float, int)) and not isinstance(value, bool):
         if isinstance(value, float) and not math.isfinite(value):
             return "NA" if math.isnan(value) else ("-Inf" if value < 0 else "Inf")
-        compact_name = re.sub(r"[^a-z0-9]", "", str(field_name or "").lower())
-        if compact_name in {"p", "pvalue", "pval", "prz", "qmp", "qep"}:
-            if value < 0.001:
-                return "< 0.001"
-            return "%.3f" % value
-        if float(value).is_integer():
-            return str(int(value))
-        return "%.4g" % value
+        return _format_numeric_table_cell(value, field_name)
     return _format_result_text(str(value))
 
 
@@ -2318,6 +2349,7 @@ def _console_payload(line, stripped):
 
 
 def _replace_result_labels(text):
+    text = text.replace("cbind(tsens, tfpr)", "Sensitivity and false-positive rate")
     for raw_label, display_label in (
         ("Zhou.Dendukuri", "Zhou-Dendukuri"),
         ("Holling.Unadjusted", "Holling (unadjusted)"),
@@ -2544,3 +2576,61 @@ def generic_convert_scale(
         # scalar
         return transformed_ls[0]
     return transformed_ls
+
+
+def _structured_summary_display(value, study_names):
+    fields = dict(zip(list(value.names), list(value)))
+    model_title = fields["model.title"]
+    sentence = fields.get("summary.sentence")
+    paragraphs = ([str(part) for part in sentence] if sentence is not None and not _r_is_null(sentence)
+                  else [] if _r_is_null(model_title) else [str(part) for part in model_title])
+    notes = fields.get("notes")
+    if notes is not None and not _r_is_null(notes):
+        paragraphs.extend(str(note) for note in notes if not str(note).startswith("Calculation scale:"))
+    tables = []
+    for caption, matrix in zip(list(fields["table.titles"]), list(fields["arrays"])):
+        if str(caption) != "NA":
+            tables.append(_structured_matrix(str(caption), matrix, study_names, first_row_headers=True))
+    calculation = fields.get("calculation.table")
+    if calculation is not None and not _r_is_null(calculation):
+        scale = str(list(fields["calculation.scale"])[0])
+        tables.append(_structured_matrix("Calculation scale (" + scale + ")", calculation,
+                                         study_names, first_row_headers=True))
+    return {"paragraphs": paragraphs, "tables": tables}
+
+
+def _label_diagnostic_coefficients(headers, dimnames):
+    raw_headers = list(dimnames[1])
+    level = next(match[1] for name in raw_headers if (match := re.match(r"([\d.]+)%ci", name)))
+    names = {"Estimate": "Estimate (logit)", "Odds Ratio": "Odds ratio",
+             "Odds Ratio lower": f"{level}% CI lower (OR)",
+             "Odds Ratio upper": f"{level}% CI upper (OR)"}
+    for index, name in enumerate(raw_headers):
+        if re.fullmatch(r"[\d.]+%ci\.lb", name):
+            headers[index] = f"{level}% CI lower (logit)"
+        elif re.fullmatch(r"[\d.]+%ci\.ub", name):
+            headers[index] = f"{level}% CI upper (logit)"
+        elif name in names:
+            headers[index] = names[name]
+
+
+def _format_numeric_table_cell(value, field_name):
+    compact_name = re.sub(r"[^a-z0-9]", "", str(field_name or "").lower())
+    digits = _RESULT_DISPLAY_DIGITS.get()
+    if digits is not None:
+        if compact_name in {"p", "pvalue", "pval", "prz", "qmp", "qep"}:
+            precision = max(3, digits)
+            return f"< {10**(-precision):g}" if value < 10**(-precision) else f"{value:.{precision}f}"
+        if compact_name in {"df", "studies", "studiesused", "k", "summaryseed", "summaryiterations"} and float(value).is_integer():
+            return str(int(value))
+        formatted = f"{value:.{digits}f}"
+        if value != 0 and float(formatted) == 0:
+            return f"{value:.{max(1, digits)}g}"
+        return formatted
+    if compact_name in {"p", "pvalue", "pval", "prz", "qmp", "qep"}:
+        if value < 0.001:
+            return "< 0.001"
+        return "%.3f" % value
+    if float(value).is_integer():
+        return str(int(value))
+    return "%.4g" % value

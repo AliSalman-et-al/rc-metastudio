@@ -1,0 +1,176 @@
+[
+  {
+    "path": "raw/shell-empty-background-rejected.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "94ac43b34fdcd1f547fb4dcd7703be6978dd1da7108232dd0c7fe724307e4a36",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-startup-normal.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "8ab03a02a0132fb0a3d8adf4f427840be019a60141631f2205c5b52e2ce837a0",
+    "observation": "{\"initial\": {\"maximized\": true, \"full_screen\": false}, \"settled\": {\"maximized\": true, \"full_screen\": false, \"size\": [1600, 828]}}"
+  },
+  {
+    "path": "screenshots/shell-startup-full-screen.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "8ab03a02a0132fb0a3d8adf4f427840be019a60141631f2205c5b52e2ce837a0",
+    "observation": "{\"initial\": {\"maximized\": false, \"full_screen\": true}, \"settled\": {\"maximized\": true, \"full_screen\": false, \"size\": [1600, 828]}}"
+  },
+  {
+    "path": "screenshots/shell-launcher.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "b086b733b2d194adefcf8859d03dd88f5206aa7ff923ae7ff45f79e1a9aa672f",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-types.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "91edb6493bbdad874b5afa4054b121b5ed2cc6cc5c2696d4f85e8ddaaaa8a9e0",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-generic-metric.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "8ca2dd1acf7d9b71315d7a044b067ac0287a6cc50e00d588f656316c51ce6956",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-empty-outcome.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "56e4ac9a052f25084017f66b0217b04bc567824abb74652ae212c274d740c2e7",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-grid.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "4196882e4b902837f814acbdd9d8037317ffb7800e5ea9bba50ee6f2dee0e2d1",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-dirty-open-prompt.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "cbc5dc7ff3cc0f63f38f5c5b961e00a859e9b14b0969099c0d40005958b5cca6",
+    "observation": "You've made unsaved changes to your data. Do you want to save your changes?"
+  },
+  {
+    "path": "screenshots/shell-save-recent-reopened.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "00624ca0bcd77c3f6333503a823497201ef203b74b8662428390337b748db2ce",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/menu-file.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "0e3705dc9d39d21bf738a408da787500306b2949ecec0488ecc61f607f8b7743",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/menu-edit.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "acee6b37b45a5e180ba5a6908d991ce05e85a469f8cd4bb41dfedf0cb2f81df6",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/menu-view.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "d9faf53fffa8aef5d058de2c6e60775de67653ad9405e93e267d5b73c4857082",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/menu-analysis.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "1577cd997e82fa20e40906f998d5da1ef54ac14db96caa0376157f6eb04c6694",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/menu-dataset.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "f8747faca92e4c11342de3f9682ff0f122f7da077e97290fc5cc2163ad93f753",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/menu-help.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "c364ed3ba39bb6102dba4d323b22568df326e9a6d5bc4bb0886c5041c4c87237",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-structure.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "80083fa5fa58ff990322d8b9500e22548f8227c929dffc23e79264adb3191db9",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-studies.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "bb6b6d7969c32420ae48ee7a18ce3f98491454199426c8766a36c263e096af59",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-covariates.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "f79148eb0c6afe2abe097e0c7cc3c0c44f38bb2a149c2e0ab2da437bdc787c01",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-add-covariate.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "6d1b76495e33afdb332b8304cbc41282da035624119a8a29850b4155361f59d2",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-duplicate-covariate.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "275a3d0ac89c36b47c9154343a2c63bdeb6a76bee93ca69043c244e15f2d1733",
+    "observation": "A covariate named Dose already exists. Please pick another name."
+  },
+  {
+    "path": "screenshots/shell-confidence.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "200d8640a92b6d6f0bb2ac541b8121d7fac71330c17a7e72a8e341e4123fddb6",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-about.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "32de717c8143e96be074da04d13fd15ef705e4b41580313c1d5c98509b0ab9c5",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-quick-start.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "296f01263b653896826846cf88785e6e5f55c80d740215191f2cbf29fcf3662e",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-import-types.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "e39a9c8eccfc13efb1ba7dc0d64c6ac9e1fef5a9abf1e8c70fefc56aa173ec70",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-csv-entry.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "1af6567ab7d44096ae3b462e97a3f9d8678d861acda31eb9357df0bf7a79fcb8",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-template-native-picker.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "15720af7a7a8212fd33d6b10fe4e66595744d7e5a1344518046d695ad760f1b1",
+    "observation": "Native Gtk chooser; Qt proxy has no visible button widgets"
+  },
+  {
+    "path": "screenshots/shell-template-saved.png",
+    "capture": "QScreen.grabWindow",
+    "sha256": "cb4817a02c362f2de838f804584f92a238e3e72b97bccd53886b2ee19b690d77",
+    "observation": ""
+  },
+  {
+    "path": "screenshots/shell-exported-report-editor.png",
+    "capture": "QScreen.grabWindow external xedit",
+    "source": "docs/ux-audit/2026-10-14-round3-reaudit/raw/matrix-onearm-proportion/round3-report.txt",
+    "sha256": "10a9c02dac5bce18301abc3a02f4ccd1ba37aa0175dd6940a9e8ca188d976c79"
+  }
+]

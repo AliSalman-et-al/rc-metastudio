@@ -1129,7 +1129,19 @@ def test_all_committed_samples_match_the_frozen_semantics_and_round_trip(
             == hashlib.sha256(sample_path.read_bytes()).hexdigest()
         )
         loaded = load_project(sample_path)
-        assert loaded.project["dataset"] == snapshot["dataset"]
+        replacements = manifest_projects[sample_path.name].get("arm_labels", {})
+        def current_labels(value):
+            if isinstance(value, str):
+                for old, new in replacements.items():
+                    value = value.replace(old, new)
+                return value
+            if isinstance(value, list):
+                return [current_labels(item) for item in value]
+            if isinstance(value, dict):
+                return {current_labels(key): current_labels(item) for key, item in value.items()}
+            return value
+        expected_dataset = current_labels(snapshot["dataset"])
+        assert loaded.project["dataset"] == expected_dataset
         assert loaded.state == {
             "schema_version": CURRENT_FORMAT_VERSION,
             "active_outcome": None,
@@ -1140,7 +1152,7 @@ def test_all_committed_samples_match_the_frozen_semantics_and_round_trip(
         }
 
         reconstructed = reconstruct_analysis_dataset(loaded)
-        assert reconstructed.to_json() == snapshot["dataset"]
+        assert reconstructed.to_json() == expected_dataset
 
         round_trip = tmp_path / sample_path.name
         save_project(round_trip, loaded.project, loaded.state)

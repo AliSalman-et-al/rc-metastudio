@@ -12,6 +12,8 @@ from typing import TypeVar, overload
 
 from PyQt6.QtGui import QColor
 
+from rc_metastudio import __version__
+
 APPLICATION_NAME = "RCMetaStudio"
 APPLICATION_DISPLAY_NAME = "RC MetaStudio"
 ORGANIZATION_NAME = "Research Consultancy"
@@ -27,7 +29,7 @@ PERCENTAGE_DISPLAY_DIGITS = 1
 #   levels of granularity).
 CALC_NUM_DIGITS = 4
 
-VERSION = "0.4.2"
+VERSION = __version__
 
 DEFAULT_DATASET_NAME = "untitled_dataset"
 
@@ -159,7 +161,15 @@ THRESHOLD = 1e-5
 ERROR_COLOR = QColor("red")
 OK_COLOR = QColor("black")
 
-DEFAULT_GROUP_NAMES = ["tx A", "tx B"]
+DEFAULT_GROUP_NAMES = ["Intervention", "Control"]
+
+
+def default_group_names(data_type, sub_type=None):
+    if data_type == DIAGNOSTIC:
+        return ["Index test"]
+    if sub_type in {"proportion", "mean", "reg_coef", "generic_effect"}:
+        return ["Group", "Other group"]
+    return list(DEFAULT_GROUP_NAMES)
 
 
 def equal_close_enough(x, y):

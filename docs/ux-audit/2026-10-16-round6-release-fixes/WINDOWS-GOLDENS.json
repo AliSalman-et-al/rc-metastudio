@@ -1,0 +1,305 @@
+{
+  "reference_head": "9caf474aadd98bcd10e205b47628dfd19be95f25",
+  "archive_history": [
+    {
+      "commit": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+      "artifact_changes": [],
+      "text_changes": [
+        [
+          "continuous-random",
+          "Summary"
+        ],
+        [
+          "continuous-cumulative",
+          "Cumulative Summary"
+        ],
+        [
+          "continuous-leave-one-out",
+          "Leave-one-out Summary"
+        ],
+        [
+          "continuous-subgroup",
+          "Subgroup Summary"
+        ]
+      ]
+    },
+    {
+      "commit": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
+      "artifact_changes": [],
+      "text_changes": [
+        [
+          "amino-binary-cumulative",
+          "Cumulative Summary"
+        ],
+        [
+          "amino-binary-leave-one-out",
+          "Leave-one-out Summary"
+        ],
+        [
+          "amino-binary-subgroup",
+          "Subgroup Summary"
+        ]
+      ]
+    },
+    {
+      "commit": "2e645c520803f9f7d42ad7f4d025468728017ace",
+      "artifact_changes": [],
+      "text_changes": [
+        [
+          "amino-binary-random",
+          "Summary"
+        ],
+        [
+          "continuous-random",
+          "Summary"
+        ],
+        [
+          "lymph-diagnostic-random-dor",
+          "Odds Ratio Summary"
+        ]
+      ]
+    },
+    {
+      "commit": "9989f3fe866e22cef3d95943e9040a3624104ae8",
+      "artifact_changes": [],
+      "text_changes": [
+        [
+          "amino-binary-random",
+          "Summary"
+        ],
+        [
+          "continuous-random",
+          "Summary"
+        ],
+        [
+          "lymph-diagnostic-random-dor",
+          "Odds Ratio Summary"
+        ]
+      ]
+    },
+    {
+      "commit": "b7d1437aeca8ddc9e599d41a390078c58b8173c3",
+      "artifact_changes": [],
+      "text_changes": [
+        [
+          "amino-binary-random",
+          "Summary"
+        ],
+        [
+          "continuous-random",
+          "Summary"
+        ],
+        [
+          "lymph-diagnostic-random-dor",
+          "Odds Ratio Summary"
+        ]
+      ]
+    },
+    {
+      "commit": "7afbbbe5972f3d088aa2f91a55c2f17e82261606",
+      "artifact_changes": [],
+      "text_changes": [
+        [
+          "amino-binary-cumulative",
+          "Cumulative Summary"
+        ],
+        [
+          "amino-binary-leave-one-out",
+          "Leave-one-out Summary"
+        ],
+        [
+          "continuous-cumulative",
+          "Cumulative Summary"
+        ],
+        [
+          "continuous-leave-one-out",
+          "Leave-one-out Summary"
+        ],
+        [
+          "amino-binary-subgroup",
+          "Subgroup Summary"
+        ],
+        [
+          "continuous-subgroup",
+          "Subgroup Summary"
+        ]
+      ]
+    },
+    {
+      "commit": "74ad86eef9d7fc0ac3df19fec2487961510d3e2b",
+      "artifact_changes": [
+        "amino-binary-random",
+        "continuous-random",
+        "lymph-diagnostic-random-dor",
+        "amino-binary-cumulative",
+        "amino-binary-leave-one-out",
+        "continuous-cumulative",
+        "continuous-leave-one-out"
+      ],
+      "text_changes": []
+    },
+    {
+      "commit": "0ada606a0415c1462d4afe093ba90dbff76a3d20",
+      "artifact_changes": [
+        "amino-binary-random",
+        "continuous-random",
+        "lymph-diagnostic-random-dor",
+        "amino-binary-cumulative",
+        "amino-binary-leave-one-out",
+        "continuous-cumulative",
+        "continuous-leave-one-out",
+        "amino-binary-subgroup",
+        "continuous-subgroup"
+      ],
+      "text_changes": [
+        [
+          "amino-binary-random",
+          "Summary"
+        ],
+        [
+          "continuous-random",
+          "Summary"
+        ],
+        [
+          "lymph-diagnostic-random-dor",
+          "Odds Ratio Summary"
+        ],
+        [
+          "amino-binary-subgroup",
+          "Subgroup Summary"
+        ],
+        [
+          "continuous-subgroup",
+          "Subgroup Summary"
+        ]
+      ]
+    },
+    {
+      "commit": "e1c7a8824d6ebd81af384cb23025390d2e843bef",
+      "artifact_changes": [
+        "amino-binary-random",
+        "continuous-random",
+        "lymph-diagnostic-random-dor",
+        "amino-binary-meta-regression",
+        "continuous-meta-regression"
+      ],
+      "text_changes": []
+    },
+    {
+      "commit": "330e4a191a462fddaa5eddf5ecaf49799b0c2d80",
+      "artifact_changes": [
+        "amino-binary-random",
+        "continuous-random",
+        "lymph-diagnostic-random-dor",
+        "amino-binary-subgroup",
+        "continuous-subgroup"
+      ],
+      "text_changes": [
+        [
+          "amino-binary-random",
+          "Summary"
+        ],
+        [
+          "continuous-random",
+          "Summary"
+        ],
+        [
+          "lymph-diagnostic-random-dor",
+          "Odds Ratio Summary"
+        ],
+        [
+          "amino-binary-cumulative",
+          "Cumulative Summary"
+        ],
+        [
+          "amino-binary-leave-one-out",
+          "Leave-one-out Summary"
+        ],
+        [
+          "continuous-cumulative",
+          "Cumulative Summary"
+        ],
+        [
+          "continuous-leave-one-out",
+          "Leave-one-out Summary"
+        ],
+        [
+          "amino-binary-meta-regression",
+          "References"
+        ],
+        [
+          "amino-binary-meta-regression",
+          "Summary"
+        ],
+        [
+          "continuous-meta-regression",
+          "References"
+        ],
+        [
+          "continuous-meta-regression",
+          "Summary"
+        ],
+        [
+          "amino-binary-subgroup",
+          "Subgroup Summary"
+        ],
+        [
+          "continuous-subgroup",
+          "Subgroup Summary"
+        ]
+      ]
+    }
+  ],
+  "windows_artifact": {
+    "id": 12023705674,
+    "node_id": "MDg6QXJ0aWZhY3QxMjAyMzcwNTY3NA==",
+    "name": "full-r-stack-windows-evidence",
+    "size_in_bytes": 676737347,
+    "url": "https://api.github.com/repos/AliSalman-et-al/rc-metastudio/actions/artifacts/12023705674",
+    "archive_download_url": "https://api.github.com/repos/AliSalman-et-al/rc-metastudio/actions/artifacts/12023705674/zip",
+    "expired": false,
+    "digest": "sha256:7ec2803a38e802b52c387271c03e03bf4bd190a0a241a23d86dac6db1b3f146a",
+    "created_at": "2026-10-16T03:38:57Z",
+    "updated_at": "2026-10-16T03:38:57Z",
+    "expires_at": "2026-10-30T03:38:19Z",
+    "workflow_run": {
+      "id": 38843274727,
+      "repository_id": 1248054097,
+      "head_repository_id": 1248054097,
+      "head_branch": "ux/audit-improvements",
+      "head_sha": "9caf474aadd98bcd10e205b47628dfd19be95f25"
+    }
+  },
+  "windows_file_count": 9697,
+  "windows_inventory_sha256": "16dae67e7c8e0eba854c529694a3c9e4e2740cb2b80d639ae899864d241c3d12",
+  "windows_strict_report_paths": [],
+  "windows_strict_capture_paths": [],
+  "windows_golden_png_paths": [],
+  "linux_capture": "build/qt6-verification/golden-compatibility-windows-review-linux",
+  "linux_passed": true,
+  "linux_counts": {
+    "pass": 461,
+    "accepted_exception": 13
+  },
+  "text_checks": [
+    {
+      "id": "lymph-diagnostic-random-dor",
+      "section": "Odds Ratio Summary",
+      "linux_equals_archive": true,
+      "linux_text_sha256": "1e7bf143b9def64e22d6d71fc7c7073ba080e468990d52585e1bd3242adf7796"
+    },
+    {
+      "id": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "linux_equals_archive": true,
+      "linux_text_sha256": "4a7e065230c21f7dc63b42c41ff82a8ee8e5b84ad5dde8d9009144b213e62d2e"
+    },
+    {
+      "id": "continuous-subgroup",
+      "section": "Subgroup Summary",
+      "linux_equals_archive": true,
+      "linux_text_sha256": "f0e240c7bb65684b55d912e02d65e9022177deaf8c38e70d571317c35d5a9539"
+    }
+  ],
+  "oracle_changed": false
+}

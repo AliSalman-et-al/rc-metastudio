@@ -1,0 +1,73 @@
+{
+  "passed": true,
+  "profile": "reviewer-full-final",
+  "source_revision": "06df415",
+  "source_sha256": "f3ad7517dd1925166ddf3b367e9938160abd770c3658ec869054a0f6e6a39e79",
+  "retained_utc": "2026-10-15T17:32:44.812240+00:00",
+  "assertions": 1825,
+  "failures": 0,
+  "warnings": 0,
+  "skips": 1,
+  "package_version": "0.5.0",
+  "skip_reason": "Opt-in visual gallery; unchanged scope documented in QUALIFICATION.",
+  "records": {
+    "tests/testthat.Rout": {
+      "source": "/tmp/RCMetaR-r-stack-vm3cu0wa/RCMetaR.Rcheck/tests/testthat.Rout",
+      "retained": "docs/ux-audit/2026-10-16-round6/raw/reviewer-full-final-testthat.Rout",
+      "sha256": "96ac6399ddb42238c734c47221e5e36059afc456865660c6e9dbe2cf5439f233",
+      "tail": [
+        "",
+        "Type 'demo()' for some demos, 'help()' for on-line help, or",
+        "'help.start()' for an HTML browser interface to help.",
+        "Type 'q()' to quit R.",
+        "",
+        "> library(testthat)",
+        "> library(RCMetaR)",
+        "> ",
+        "> rcmetar.set.global.conf.level(95)",
+        "[1] 95",
+        "> test_check(\"RCMetaR\")",
+        "[ FAIL 0 | WARN 0 | SKIP 1 | PASS 1825 ]",
+        "",
+        "\u2550\u2550 Skipped tests (1) \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
+        "\u2022 identical(Sys.getenv(\"RCMETAR_RUN_VISUAL_QA\"), \"true\") is not TRUE (1):",
+        "  'test-forest-visual-qa.R:2:3'",
+        "",
+        "[ FAIL 0 | WARN 0 | SKIP 1 | PASS 1825 ]",
+        "> ",
+        "> proc.time()",
+        "   user  system elapsed ",
+        "218.352   6.127 224.718 "
+      ]
+    },
+    "00check.log": {
+      "source": "/tmp/RCMetaR-r-stack-vm3cu0wa/RCMetaR.Rcheck/00check.log",
+      "retained": "docs/ux-audit/2026-10-16-round6/raw/reviewer-full-final-00check.log",
+      "sha256": "cdc40ca6d488f4a66e073328a08d54aac0bbb58112297253eb6a29a6c21a4dc1",
+      "tail": [
+        "* checking whether the namespace can be loaded with stated dependencies ... OK",
+        "* checking whether the namespace can be unloaded cleanly ... OK",
+        "* checking loading without being on the library search path ... OK",
+        "* checking dependencies in R code ... OK",
+        "* checking S3 generic/method consistency ... OK",
+        "* checking replacement functions ... OK",
+        "* checking foreign function calls ... OK",
+        "* checking R code for possible problems ... OK",
+        "* checking Rd files ... OK",
+        "* checking Rd metadata ... OK",
+        "* checking Rd cross-references ... OK",
+        "* checking for missing documentation entries ... OK",
+        "* checking for code/documentation mismatches ... OK",
+        "* checking Rd \\usage sections ... OK",
+        "* checking Rd contents ... OK",
+        "* checking for unstated dependencies in examples ... OK",
+        "* checking examples ... NONE",
+        "* checking for unstated dependencies in \u2018tests\u2019 ... OK",
+        "* checking tests ... OK",
+        "  Running \u2018testthat.R\u2019",
+        "* DONE",
+        "Status: OK"
+      ]
+    }
+  }
+}

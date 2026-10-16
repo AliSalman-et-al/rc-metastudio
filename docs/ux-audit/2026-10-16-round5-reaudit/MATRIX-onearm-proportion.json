@@ -1,0 +1,162 @@
+[
+  {
+    "path": "screenshots/matrix-onearm-proportion-standard-report.png",
+    "sha256": "fd689929d10fecf93aec428e52f909e269dcfd3aab3a7d90e77c8d9fbd948612",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-standard-report-bottom.png",
+    "sha256": "4ab0204052503ab15f0dc0251dcef36794d4eb4b29949d2a7a08574dd827d035",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-standard-figure.png",
+    "sha256": "01b58f9c828a4d1f0a6887639b536511b3731630aa95b8ca200e5158c308d9e4",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-standard-figure-bottom.png",
+    "sha256": "01b58f9c828a4d1f0a6887639b536511b3731630aa95b8ca200e5158c308d9e4",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-cumulative-report.png",
+    "sha256": "d921f9db5d4b00c099a571320c7fb088177833f9cba82c96fb9ebd714b72fe36",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-cumulative-report-bottom.png",
+    "sha256": "d921f9db5d4b00c099a571320c7fb088177833f9cba82c96fb9ebd714b72fe36",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-cumulative-figure.png",
+    "sha256": "7f2e0d5e2d5b63cf75bf843bd95503bee0ff8ab4852e9c197bb40eb4516aa185",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-cumulative-figure-bottom.png",
+    "sha256": "8171fbb640a400e97b6177c7db079685abc1125df648c2435bba0dce197fad0d",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-leave-one-out-report.png",
+    "sha256": "05f83e0d05191df7a37a392f635af71d1f8d47278e34fec219cc3d683c209a1b",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-leave-one-out-report-bottom.png",
+    "sha256": "05f83e0d05191df7a37a392f635af71d1f8d47278e34fec219cc3d683c209a1b",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-leave-one-out-figure.png",
+    "sha256": "594474bfde4045b9d786ed55c56e161b052c49f8001bab9029e8ad907e9da3a4",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-leave-one-out-figure-bottom.png",
+    "sha256": "c4071213020e78ad62b1a60a63d799dc3ab3d0819acfabe17241aca20b718c7c",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-subgroup-report.png",
+    "sha256": "6d9dd406afcf455b7f47d5a536588a24be715abf645e70d122885dd2a3a91361",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-subgroup-report-bottom.png",
+    "sha256": "95e3744f3d6b104c5cba4efb9266b43d369a8940216f42b2a7f089f138ecb9d4",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-subgroup-figure.png",
+    "sha256": "6e1b8af602556f56f2038cd41b6d7d701bb069af6724bd0d56c3b63420e18f53",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-subgroup-figure-bottom.png",
+    "sha256": "0586dadf03bedb17dc4aa0a2719f9e90fb19e61271d08b510c0f643462e28bf8",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-meta-regression-report.png",
+    "sha256": "672ef5e5f70ffe3d01559aeae0ba9640808777a3ec786d54f2870e80bb9ed180",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-meta-regression-report-bottom.png",
+    "sha256": "64c1c7c93b80a762b0b61623c40a1149beef5c450b2b2d8be1574660951ffe61",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-meta-regression-figure.png",
+    "sha256": "dd2a656f2fe6d4cf784bfda43b7f73a72c14dbae2c5d81c74cced29703ea358f",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-meta-regression-figure-bottom.png",
+    "sha256": "64ec9500e46e3f2439c25457e82a7430e19c1277d3c8a01717a47bf1606bc3b4",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nGroup: Group \u00b7 Follow-up: first"
+  }
+]

@@ -55,6 +55,14 @@ def normalize_identifier_label(value: object) -> str:
     """Make a non-executable R identifier readable for display."""
     text = str(value).replace("I\ufffd", "I²").replace("\ufffd", "-")
     replacements = {
+        "intrcpt": "Intercept",
+        "(Intercept)": "Intercept",
+        "Std. Error": "SE (logit scale)",
+        "Std Error": "SE (logit scale)",
+        "moderator": "Moderator",
+        "statistic": "Statistic",
+        "tsens": "Sensitivity (logit scale)",
+        "tfpr": "False-positive rate (logit scale)",
         "posLR": "Positive Likelihood Ratio",
         "negLR": "Negative Likelihood Ratio",
         "invnegLR": "Inverse Negative Likelihood Ratio",

@@ -1,0 +1,37 @@
+[
+  {
+    "sheet": "raw/pair-irr-0.png",
+    "members": [
+      "screenshots/matrix-irr-standard-figure.png",
+      "screenshots/matrix-irr-standard-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-irr-1.png",
+    "members": [
+      "screenshots/matrix-irr-cumulative-figure.png",
+      "screenshots/matrix-irr-cumulative-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-irr-2.png",
+    "members": [
+      "screenshots/matrix-irr-leave-one-out-figure.png",
+      "screenshots/matrix-irr-leave-one-out-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-irr-3.png",
+    "members": [
+      "screenshots/matrix-irr-subgroup-figure.png",
+      "screenshots/matrix-irr-subgroup-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-irr-4.png",
+    "members": [
+      "screenshots/matrix-irr-meta-regression-figure.png",
+      "screenshots/matrix-irr-meta-regression-report.png"
+    ]
+  }
+]

@@ -1,0 +1,363 @@
+{
+  "capture_run": 38848117604,
+  "head": "8f5e1f2",
+  "CI_merge_ref_tree_equals_branch": true,
+  "all_11_PNG_hashes_verified": true,
+  "original_415_fields_exact": true,
+  "counts": {
+    "intended_presentation_candidates": 10,
+    "plot_defects": 1,
+    "report_defects": 3
+  },
+  "plots": [
+    {
+      "id": "amino-binary-random",
+      "label": "Forest Plot",
+      "old_sha256": "164e8cc8c778deba71617edc34ba3d911a002e321b35339ce22abdbaf64c6672",
+      "new_sha256": "ab008010b129ab226f6e3fccdfd541573e051ba254290bdecdfdf8b75f58bdee",
+      "old_size": [
+        8400,
+        4680
+      ],
+      "new_size": [
+        9688,
+        5682
+      ],
+      "pair": "amino-binary-random-pair.png",
+      "diff": "amino-binary-random-diff.png",
+      "note": "Preview difference; full-resolution bytes and hashes retained. Each image fitted independently for reading; not a pixel-equivalence metric.",
+      "classification": "intended presentation candidate",
+      "observation": "Measured grouped headers, clearer numeric/plot separation and conventional displayed-scale label. Nineteen studies, intervals, weights, pooled diamond and footers retained.",
+      "presentation_source_commits": [
+        "2e645c5",
+        "932daed",
+        "443fdec",
+        "e4b9824"
+      ],
+      "matching_round3_to6_Linux_plot_refresh_commit": null,
+      "personally_inspected": true,
+      "refresh_authorised": false,
+      "current_linux_windows_pair": "current-linux-windows-amino-binary-random.png",
+      "current_linux_windows_personally_inspected": true,
+      "platform_observation": "Same plotted rows, values, metric labels and measured layout; ordinary native-font/device metric variance; no observed missing glyph, clipping or lost component."
+    },
+    {
+      "id": "continuous-random",
+      "label": "Forest Plot",
+      "old_sha256": "0cd53bb9930a07a3b088668ec107486f94a0798429a03de1205d8e6c34cb48bd",
+      "new_sha256": "b587ed85fb6d57b3b69e7995158dbbd35d0787640e2c1703f0b80e3de5f9fc75",
+      "old_size": [
+        7074,
+        2730
+      ],
+      "new_size": [
+        8591,
+        3342
+      ],
+      "pair": "continuous-random-pair.png",
+      "diff": "continuous-random-diff.png",
+      "note": "Preview difference; full-resolution bytes and hashes retained. Each image fitted independently for reading; not a pixel-equivalence metric.",
+      "classification": "intended presentation candidate",
+      "observation": "Measured heading/annotation spacing and conventional axis label; six study rows and pooled interval retained.",
+      "presentation_source_commits": [
+        "2e645c5",
+        "932daed",
+        "443fdec",
+        "e4b9824"
+      ],
+      "matching_round3_to6_Linux_plot_refresh_commit": null,
+      "personally_inspected": true,
+      "refresh_authorised": false,
+      "current_linux_windows_pair": "current-linux-windows-continuous-random.png",
+      "current_linux_windows_personally_inspected": true,
+      "platform_observation": "Same plotted rows, values, metric labels and measured layout; ordinary native-font/device metric variance; no observed missing glyph, clipping or lost component."
+    },
+    {
+      "id": "lymph-diagnostic-random-dor",
+      "label": "Odds Ratio Forest Plot",
+      "old_sha256": "718f65525d776c5e5c2711f24b5bc0d89658bd5b1a64f82628663b613280978a",
+      "new_sha256": "63ed69abf278b29226cfb7ae26a5b3ee3fc9c269f2a6809e31ffa3ce4c807980",
+      "old_size": [
+        8535,
+        4380
+      ],
+      "new_size": [
+        10107,
+        5322
+      ],
+      "pair": "lymph-diagnostic-random-dor-pair.png",
+      "diff": "lymph-diagnostic-random-dor-diff.png",
+      "note": "Preview difference; full-resolution bytes and hashes retained. Each image fitted independently for reading; not a pixel-equivalence metric.",
+      "classification": "defect",
+      "observation": "Intended header/axis/footer changes coexist with a U+2080 missing-glyph box in the tested-null footer. Enlarged actual PNG confirms it; cannot refresh.",
+      "presentation_source_commits": [
+        "7b537b8",
+        "2e645c5",
+        "932daed",
+        "443fdec"
+      ],
+      "matching_round3_to6_Linux_plot_refresh_commit": null,
+      "personally_inspected": true,
+      "refresh_authorised": false,
+      "current_linux_windows_pair": "current-linux-windows-lymph-diagnostic-random-dor.png",
+      "current_linux_windows_personally_inspected": true,
+      "platform_observation": "Same plotted rows, values, metric labels and measured layout; ordinary native-font/device metric variance. Diagnostic Windows U+2080 missing glyph is the sole observed rendering defect."
+    },
+    {
+      "id": "amino-binary-cumulative",
+      "label": "Cumulative Forest Plot",
+      "old_sha256": "64a9c8bb7ed0df95779788b6b40f8a16e074288eb65c83346b0e4f85bdae24fb",
+      "new_sha256": "19c97885056842cdd761124b32a2b53e9a8f55f5894a19d6a3adacac73819fbe",
+      "old_size": [
+        5700,
+        5677
+      ],
+      "new_size": [
+        6014,
+        5677
+      ],
+      "pair": "amino-binary-cumulative-pair.png",
+      "diff": "amino-binary-cumulative-diff.png",
+      "note": "Preview difference; full-resolution bytes and hashes retained. Each image fitted independently for reading; not a pixel-equivalence metric.",
+      "classification": "intended presentation candidate",
+      "observation": "Study added (k), tighter rows, bounded dashed null guide and natural-scale metric title; all nineteen row estimates/intervals retained.",
+      "presentation_source_commits": [
+        "b57fa5e",
+        "27c6023",
+        "e4b9824",
+        "4e8f0e5"
+      ],
+      "matching_round3_to6_Linux_plot_refresh_commit": null,
+      "personally_inspected": true,
+      "refresh_authorised": false,
+      "current_linux_windows_pair": "current-linux-windows-amino-binary-cumulative.png",
+      "current_linux_windows_personally_inspected": true,
+      "platform_observation": "Same plotted rows, values, metric labels and measured layout; ordinary native-font/device metric variance; no observed missing glyph, clipping or lost component."
+    },
+    {
+      "id": "amino-binary-leave-one-out",
+      "label": "Leave-one-out Forest plot",
+      "old_sha256": "3cb39c931be219391356667099688db596a55549e67b086f42bbfee9c99f25ed",
+      "new_sha256": "31f3682410c6b2525483e90b232ab6d849cf0dbc20dd56729efac9ac9e649429",
+      "old_size": [
+        5700,
+        5880
+      ],
+      "new_size": [
+        6418,
+        5880
+      ],
+      "pair": "amino-binary-leave-one-out-pair.png",
+      "diff": "amino-binary-leave-one-out-diff.png",
+      "note": "Preview difference; full-resolution bytes and hashes retained. Each image fitted independently for reading; not a pixel-equivalence metric.",
+      "classification": "intended presentation candidate",
+      "observation": "Explicit Study omitted labels, compact rows, bounded null guide and metric title; overall plus nineteen omission fits retained.",
+      "presentation_source_commits": [
+        "44e50ae",
+        "b57fa5e",
+        "27c6023",
+        "4e8f0e5"
+      ],
+      "matching_round3_to6_Linux_plot_refresh_commit": null,
+      "personally_inspected": true,
+      "refresh_authorised": false,
+      "current_linux_windows_pair": "current-linux-windows-amino-binary-leave-one-out.png",
+      "current_linux_windows_personally_inspected": true,
+      "platform_observation": "Same plotted rows, values, metric labels and measured layout; ordinary native-font/device metric variance; no observed missing glyph, clipping or lost component."
+    },
+    {
+      "id": "continuous-cumulative",
+      "label": "Cumulative Forest Plot",
+      "old_sha256": "718d957c84a594c0bb7994c81f9c7ce556997cc6a740f79435bc0ee1693680c8",
+      "new_sha256": "f4bed2af5596543f4f5142e414a1e56758006d290b05c6cd6fa023d1da5ffecd",
+      "old_size": [
+        6339,
+        3024
+      ],
+      "new_size": [
+        6502,
+        3024
+      ],
+      "pair": "continuous-cumulative-pair.png",
+      "diff": "continuous-cumulative-diff.png",
+      "note": "Preview difference; full-resolution bytes and hashes retained. Each image fitted independently for reading; not a pixel-equivalence metric.",
+      "classification": "intended presentation candidate",
+      "observation": "Study added (k), bounded null guide and round full-range axis -0.40 to 0.80; six cumulative values retained.",
+      "presentation_source_commits": [
+        "b57fa5e",
+        "27c6023",
+        "a74cbaf",
+        "4e8f0e5"
+      ],
+      "matching_round3_to6_Linux_plot_refresh_commit": null,
+      "personally_inspected": true,
+      "refresh_authorised": false,
+      "current_linux_windows_pair": "current-linux-windows-continuous-cumulative.png",
+      "current_linux_windows_personally_inspected": true,
+      "platform_observation": "Same plotted rows, values, metric labels and measured layout; ordinary native-font/device metric variance; no observed missing glyph, clipping or lost component."
+    },
+    {
+      "id": "continuous-leave-one-out",
+      "label": "Leave-one-out Forest plot",
+      "old_sha256": "57d15517e1b65ba587ffea8f8c772a9a754ea24f73df3f18e5ace3e19109bec4",
+      "new_sha256": "82f25dc4e23bc86b3d956174ed1fdfd22c5053ea5335db332ca275cf3f072374",
+      "old_size": [
+        6243,
+        3229
+      ],
+      "new_size": [
+        6964,
+        3229
+      ],
+      "pair": "continuous-leave-one-out-pair.png",
+      "diff": "continuous-leave-one-out-diff.png",
+      "note": "Preview difference; full-resolution bytes and hashes retained. Each image fitted independently for reading; not a pixel-equivalence metric.",
+      "classification": "intended presentation candidate",
+      "observation": "Study omitted labels, bounded null guide and round zero-through-0.70 axis; overall plus six omission values retained.",
+      "presentation_source_commits": [
+        "44e50ae",
+        "b57fa5e",
+        "27c6023",
+        "4e8f0e5"
+      ],
+      "matching_round3_to6_Linux_plot_refresh_commit": null,
+      "personally_inspected": true,
+      "refresh_authorised": false,
+      "current_linux_windows_pair": "current-linux-windows-continuous-leave-one-out.png",
+      "current_linux_windows_personally_inspected": true,
+      "platform_observation": "Same plotted rows, values, metric labels and measured layout; ordinary native-font/device metric variance; no observed missing glyph, clipping or lost component."
+    },
+    {
+      "id": "amino-binary-meta-regression",
+      "label": "Regression Plot",
+      "old_sha256": "965c6e07398ccb043757fac9ab0dadf74e9f8c978c552e392c69297e3b9db03b",
+      "new_sha256": "5c1c8ef9f6dd7d29c9ed9743b9c3754fd9a077dd5b4236a1a6acd131cf10d132",
+      "old_size": [
+        2237,
+        1500
+      ],
+      "new_size": [
+        2160,
+        1500
+      ],
+      "pair": "amino-binary-meta-regression-pair.png",
+      "diff": "amino-binary-meta-regression-diff.png",
+      "note": "Preview difference; full-resolution bytes and hashes retained. Each image fitted independently for reading; not a pixel-equivalence metric.",
+      "classification": "intended presentation candidate",
+      "observation": "Full displayed prediction range, round log-scale tick values, natural metric title and grid/null-guide treatment; study bubbles and fitted/prediction curves retained.",
+      "presentation_source_commits": [
+        "0a979bb",
+        "a74cbaf",
+        "d3d2366",
+        "76e0d13",
+        "2450544",
+        "4e8f0e5"
+      ],
+      "matching_round3_to6_Linux_plot_refresh_commit": null,
+      "personally_inspected": true,
+      "refresh_authorised": false,
+      "current_linux_windows_pair": "current-linux-windows-amino-binary-meta-regression.png",
+      "current_linux_windows_personally_inspected": true,
+      "platform_observation": "Same plotted rows, values, metric labels and measured layout; ordinary native-font/device metric variance; no observed missing glyph, clipping or lost component."
+    },
+    {
+      "id": "continuous-meta-regression",
+      "label": "Regression Plot",
+      "old_sha256": "acb7d8ca2746e7a7b1d1fdbaef0e930a55011e3187e43e6f4ffd5f34de554bf6",
+      "new_sha256": "27420e4d307b4ff86b0ea91945567823aa69fd8f3e0aa08ccd2eb4f43a1cb0aa",
+      "old_size": [
+        2340,
+        1500
+      ],
+      "new_size": [
+        2340,
+        1500
+      ],
+      "pair": "continuous-meta-regression-pair.png",
+      "diff": "continuous-meta-regression-diff.png",
+      "note": "Preview difference; full-resolution bytes and hashes retained. Each image fitted independently for reading; not a pixel-equivalence metric.",
+      "classification": "intended presentation candidate",
+      "observation": "Full prediction range including negative lower band, round ticks and bounded/null-guide treatment; six bubbles and model/prediction curves retained.",
+      "presentation_source_commits": [
+        "0a979bb",
+        "a74cbaf",
+        "d3d2366",
+        "76e0d13",
+        "2450544",
+        "4e8f0e5"
+      ],
+      "matching_round3_to6_Linux_plot_refresh_commit": null,
+      "personally_inspected": true,
+      "refresh_authorised": false,
+      "current_linux_windows_pair": "current-linux-windows-continuous-meta-regression.png",
+      "current_linux_windows_personally_inspected": true,
+      "platform_observation": "Same plotted rows, values, metric labels and measured layout; ordinary native-font/device metric variance; no observed missing glyph, clipping or lost component."
+    },
+    {
+      "id": "amino-binary-subgroup",
+      "label": "Subgroup Forest Plot",
+      "old_sha256": "7821a8824941c0a6b128232f898a98f493284597feb9c5d07dad2f3986b08bc5",
+      "new_sha256": "ff860ff0ea76669c3efc9cf3dc62c5659c30a37741608463003cb03d20edc315",
+      "old_size": [
+        8423,
+        10800
+      ],
+      "new_size": [
+        9688,
+        9260
+      ],
+      "pair": "amino-binary-subgroup-pair.png",
+      "diff": "amino-binary-subgroup-diff.png",
+      "note": "Preview difference; full-resolution bytes and hashes retained. Each image fitted independently for reading; not a pixel-equivalence metric.",
+      "classification": "intended presentation candidate",
+      "observation": "Compact subgroup density, complete arm/effect headers, bounded null guides and natural metric title; both groups, totals, within-group/overall diamonds and difference test retained.",
+      "presentation_source_commits": [
+        "76d9f62",
+        "27c6023",
+        "09a29de",
+        "e4b9824",
+        "4e8f0e5",
+        "443fdec"
+      ],
+      "matching_round3_to6_Linux_plot_refresh_commit": null,
+      "personally_inspected": true,
+      "refresh_authorised": false,
+      "current_linux_windows_pair": "current-linux-windows-amino-binary-subgroup.png",
+      "current_linux_windows_personally_inspected": true,
+      "platform_observation": "Same plotted rows, values, metric labels and measured layout; ordinary native-font/device metric variance; no observed missing glyph, clipping or lost component."
+    },
+    {
+      "id": "continuous-subgroup",
+      "label": "Subgroups Forest Plot",
+      "old_sha256": "f14ede72848707b45391b164e397664dfcc662eafafa2c631f3475411636d66f",
+      "new_sha256": "c9fd460b5e5f804f5936129bb6f7050b9f2fe9035df22997b5287ef6cd21402f",
+      "old_size": [
+        7453,
+        9096
+      ],
+      "new_size": [
+        8591,
+        6727
+      ],
+      "pair": "continuous-subgroup-pair.png",
+      "diff": "continuous-subgroup-diff.png",
+      "note": "Preview difference; full-resolution bytes and hashes retained. Each image fitted independently for reading; not a pixel-equivalence metric.",
+      "classification": "intended presentation candidate",
+      "observation": "Compact subgroup density, explicit effect header, bounded null guides and round axis; both groups, weights, diamonds and comparison footer retained.",
+      "presentation_source_commits": [
+        "76d9f62",
+        "27c6023",
+        "09a29de",
+        "e4b9824",
+        "4e8f0e5"
+      ],
+      "matching_round3_to6_Linux_plot_refresh_commit": null,
+      "personally_inspected": true,
+      "refresh_authorised": false,
+      "current_linux_windows_pair": "current-linux-windows-continuous-subgroup.png",
+      "current_linux_windows_personally_inspected": true,
+      "platform_observation": "Same plotted rows, values, metric labels and measured layout; ordinary native-font/device metric variance; no observed missing glyph, clipping or lost component."
+    }
+  ],
+  "reviewer_decision": "Pending: replace nonexistent historical Linux plot-refresh commits with reviewed same-source Linux/Windows captures; no refresh until an explicit answer."
+}

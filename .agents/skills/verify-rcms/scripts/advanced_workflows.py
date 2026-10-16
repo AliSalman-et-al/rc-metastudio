@@ -24,6 +24,17 @@ SCENARIOS = (
     "project-structure",
     "project-table-covariates",
     "project-shell",
+    "project-display-labels",
+    "project-round6-polish",
+    "project-release-coefficients",
+    "project-reviewer-predictions",
+    "project-reviewer-groups",
+    "project-reviewer-colours",
+    "project-axis-proportions",
+    "project-axis-others",
+    "project-axis-sequential",
+    "calculator-grid-precision",
+    "calculator-ratio-precision",
     *(
         "plot-workflow-" + family
         for family in (
@@ -77,6 +88,8 @@ def modal(app, kind, drive, launch):
         if not isinstance(dialog, kind):
             QtCore.QTimer.singleShot(10, ready)
             return
+        if isinstance(dialog, QtWidgets.QMessageBox):
+            dialog.setProperty("verificationExpectedMessage", True)
         try:
             drive(dialog)
         except Exception as error:  # noqa: BLE001 - propagate Qt callback failures after the modal loop.
@@ -398,6 +411,28 @@ def plots(app, window, family, record, *, view=None):
     texts = dict(view.texts)
     path = Path(artifact.display_path())
     before = path.read_bytes()
+    from tests.e2e.audit_round3 import check_caption
+    from rc_metastudio.analysis_identity import dataset_identity, metric_label
+    initial_svg = path
+    if path.suffix != ".svg":
+        initial_svg = Path(sys.argv[2]) / (family + "-initial.svg")
+        view.plot_service.export(regenerator=artifact.capability.regenerator, params_path=artifact.params_path, output_path=str(initial_svg))
+    check_caption(initial_svg, dataset_identity(window.model))
+    if family in {"funnel", "contour", "trimfill"}:
+        from xml.etree import ElementTree as ET
+        labels = {"".join(node.itertext()) for node in ET.parse(initial_svg).iter("{http://www.w3.org/2000/svg}text")}
+        assert "Standard error (log scale)" in labels, labels
+        assert metric_label(window.model).casefold() in {label.casefold() for label in labels}, labels
+
+    section = next(section for section in view.results.sections if section.source_key == artifact.title)
+    navigation = view.nav_tree.findItems(section.title, QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)
+    assert len(navigation) == 1, (family, section.title)
+    view.nav_tree.setCurrentItem(navigation[0])
+    view.report_action.setChecked(False)
+    view._show_report(False)
+    app.processEvents()
+    assert view._selected_plot()[0].title == artifact.title
+    record("review1-caption-initial", view, family=family, plots={artifact.title: str(path)}, exports={"svg": str(initial_svg)})
     from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
     from rc_metastudio.plot_editor_dialog import EditPlotDialog
 
@@ -423,6 +458,7 @@ def plots(app, window, family, record, *, view=None):
                 dialog.point_size_spin if funnel else dialog.point_size_multiplier
             ).value()
         }
+        values["caption"] = dialog.figure_caption.text()
         if family == "contour":
             values["contour_levels"] = dialog.contour_levels_edit.text()
         elif family == "deeks":
@@ -443,6 +479,11 @@ def plots(app, window, family, record, *, view=None):
     def edit(dialog):
         field = dialog.x_label_edit if funnel else dialog.x_lbl_le
         field.setText(label)
+        assert dialog.figure_caption.isVisible(), "figure caption cannot be edited"
+        assert dialog.figure_caption.text(), "standalone figure lacks context"
+        assert " · None" not in dialog.figure_caption.text(), dialog.figure_caption.text()
+        assert " · Comparison:" in dialog.figure_caption.text() or " · Group:" in dialog.figure_caption.text(), dialog.figure_caption.text()
+        dialog.figure_caption.setText("Edited outcome / comparison / follow-up")
         if funnel:
             dialog.point_size_spin.setValue(1.8)
             if family == "contour":
@@ -469,7 +510,10 @@ def plots(app, window, family, record, *, view=None):
         if family == "forest":
             dialog.content_scroll.ensureWidgetVisible(dialog.favours_right)
             app.processEvents()
-        record("family-editor-controls", dialog, family=family)
+        dialog.content_scroll.ensureWidgetVisible(dialog.figure_caption)
+        dialog.repaint()
+        QTest.qWait(250)
+        record("family-editor-controls", dialog, family=family, capture_surface="desktop-composite")
         click(app, box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
         assert path.read_bytes() != before
         if funnel:
@@ -489,6 +533,9 @@ def plots(app, window, family, record, *, view=None):
             if family == "regression"
             else "fp_point_size_multiplier": 1.8,
         }
+        expected_params["plot_caption"] = "Edited outcome / comparison / follow-up"
+        if not funnel:
+            assert "Edited outcome / comparison / follow-up" in path.read_text()
         if family == "contour":
             expected_params["funnel.contour.levels"] = "85,95,99"
         elif family == "deeks":
@@ -523,6 +570,29 @@ def plots(app, window, family, record, *, view=None):
             if funnel and isinstance(actual, (list, tuple)):
                 actual = actual[dialog._funnel_index - 1]
             assert actual == value, (name, params[name], value)
+        if family == "regression":
+            from xml.etree import ElementTree as ET
+            for style in ("Default (metafor)", "RevMan", "BMJ"):
+                dialog.style_cbo.setCurrentText(style)
+                dialog.show_legend.setChecked(True)
+                for line, confidence, prediction in ((True, False, False), (False, True, False), (True, True, True), (False, False, False)):
+                    dialog.show_regression_line.setChecked(line)
+                    dialog.show_confidence_band.setChecked(confidence)
+                    dialog.show_prediction_interval.setChecked(prediction)
+                    click(app, box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+                    labels = {"".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text")}
+                    assert ("Regression line" in labels) == line, labels
+                    assert ("95% CI" in labels) == confidence, labels
+                    assert ("95% PI" in labels) == prediction, labels
+                    dialog.hide()
+                    app.processEvents()
+                    record("bubble-visible-legend", view, style=style, line=line,
+                           confidence=confidence, prediction=prediction, labels=sorted(labels), plots={artifact.title: str(path)})
+                    dialog.show()
+            dialog.show_regression_line.setChecked(True)
+            dialog.show_confidence_band.setChecked(False)
+            dialog.show_prediction_interval.setChecked(False)
+            click(app, box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
         accepted["files"] = snapshot()
         accepted["controls"] = selected_controls(dialog)
         record(
@@ -583,7 +653,7 @@ def plots(app, window, family, record, *, view=None):
         app,
         FunnelPlotEditorDialog if funnel else EditPlotDialog,
         edit,
-        lambda: context("Edit Plot"),
+        lambda: context("Edit plot…"),
     )
     assert snapshot() == accepted["files"]
     applied = path.read_bytes()
@@ -594,6 +664,7 @@ def plots(app, window, family, record, *, view=None):
         assert selected_controls(dialog) == accepted["controls"]
         assert (dialog.x_label_edit if funnel else dialog.x_lbl_le).text() == label
         (dialog.x_label_edit if funnel else dialog.x_lbl_le).setText("Second draft")
+        dialog.figure_caption.clear()
         QTest.mouseClick(
             (dialog.button_box if funnel else dialog.buttonBox).button(
                 QtWidgets.QDialogButtonBox.StandardButton.Cancel
@@ -605,11 +676,56 @@ def plots(app, window, family, record, *, view=None):
         app,
         FunnelPlotEditorDialog if funnel else EditPlotDialog,
         cancel,
-        lambda: context("Edit Plot"),
+        lambda: context("Edit plot…"),
     )
     assert path.read_bytes() == applied
     assert snapshot() == accepted["files"]
+    view.fit_width_action.trigger()
+    view.graphics_view.verticalScrollBar().setValue(0)
+    app.processEvents()
     record("family-plot-reopened", view, family=family)
+    files = export_formats(app, view, Path(sys.argv[2]), family, record,
+                           lambda extension, action_label: context("Export " + action_label + "…"))
+    with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=("", "")):
+        context("Export SVG…")
+    assert path.read_bytes() == applied
+    assert snapshot() == accepted["files"]
+    assert view.texts == texts
+    record(
+        "family-exports-cancelled",
+        view,
+        family=family,
+        exports=files,
+        plots={artifact.title: str(path)},
+        text_unchanged=True,
+    )
+    assert "Edited outcome / comparison / follow-up" in Path(files["svg"]).read_text()
+    def remove_caption(dialog):
+        assert dialog.figure_caption.isVisible()
+        dialog.figure_caption.clear()
+        box = dialog.button_box if funnel else dialog.buttonBox
+        click(app, box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+        assert view.plot_service.load_params(artifact.params_path)["plot_caption"] == ""
+        without = Path(sys.argv[2]) / (family + "-without-caption.svg")
+        view.plot_service.export(regenerator=artifact.capability.regenerator, params_path=artifact.params_path, output_path=str(without))
+        assert "Edited outcome / comparison / follow-up" not in without.read_text()
+        record("round5-caption-removed", dialog, family=family, exports={"svg":str(without)}, capture_surface="desktop-composite")
+        dialog.reject()
+    modal(app, FunnelPlotEditorDialog if funnel else EditPlotDialog, remove_caption, lambda: context("Edit plot…"))
+    def reopen_without_caption(dialog):
+        assert dialog.figure_caption.text() == ""
+        dialog.reject()
+    modal(app, FunnelPlotEditorDialog if funnel else EditPlotDialog, reopen_without_caption, lambda: context("Edit plot…"))
+    view.close()
+
+
+def export_formats(app, view, directory, family, record, invoke=None):
+    directory.mkdir(parents=True, exist_ok=True)
+    if invoke is None:
+        def invoke(extension, _label):
+            view.export_format_control.setCurrentIndex(view.export_format_control.findData(extension))
+            view.export_plot_action.trigger()
+            app.processEvents()
     files = {}
     for extension, action_label in (
         ("pdf", "PDF"),
@@ -617,13 +733,13 @@ def plots(app, window, family, record, *, view=None):
         ("tiff", "TIFF"),
         ("svg", "SVG"),
     ):
-        destination = Path(sys.argv[2]) / (family + "." + extension)
+        destination = directory / (family + "." + extension)
         with patch.object(
             QtWidgets.QFileDialog,
             "getSaveFileName",
             return_value=(str(destination), ""),
         ):
-            context("Save " + action_label + " Image As")
+            invoke(extension, action_label)
         assert destination.is_file(), destination
         if extension == "svg":
             renderer = QSvgRenderer(str(destination))
@@ -647,7 +763,7 @@ def plots(app, window, family, record, *, view=None):
 
             with Image.open(destination) as image:
                 assert image.width > 100 and image.height > 100
-                assert image.convert("RGB").getpixel((0, 0)) == (255, 255, 255)
+                assert image.crop((0, 0, 1, 1)).convert("RGB").getpixel((0, 0)) == (255, 255, 255)
                 image.load()
                 assert (
                     min(
@@ -672,20 +788,7 @@ def plots(app, window, family, record, *, view=None):
             format=extension,
             exports={extension: str(destination)},
         )
-    with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=("", "")):
-        context("Save SVG Image As")
-    assert path.read_bytes() == applied
-    assert snapshot() == accepted["files"]
-    assert view.texts == texts
-    record(
-        "family-exports-cancelled",
-        view,
-        family=family,
-        exports=files,
-        plots={artifact.title: str(path)},
-        text_unchanged=True,
-    )
-    view.close()
+    return files
 
 
 def calculators(app, window, mode, record):
@@ -735,12 +838,25 @@ def calculators(app, window, mode, record):
 
     def cell(table, row, column, value):
         table.setCurrentCell(row, column)
-        table.item(row, column).setText(str(value))
+        table.setFocus()
+        table.editItem(table.item(row, column))
+        app.processEvents()
+        editor = next((field for field in table.findChildren(QtWidgets.QLineEdit) if field.isVisible()), None)
+        assert editor is not None, (mode, row, column)
+        QTest.keyClick(editor, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
+        QTest.keyClicks(editor, str(value))
+        QTest.keyClick(editor, QtCore.Qt.Key.Key_Tab)
         app.processEvents()
 
     def text(field, value):
+        field.window().activateWindow()
         field.setFocus()
-        field.setText(str(value))
+        deadline = QtCore.QDeadlineTimer(5000)
+        while not field.hasFocus() and not deadline.hasExpired():
+            QTest.qWait(10)
+        assert field.hasFocus(), ("keyboard editor did not gain focus", mode, field.objectName())
+        QTest.keyClick(field, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
+        QTest.keyClicks(field, str(value))
         QTest.keyClick(field, QtCore.Qt.Key.Key_Tab)
         app.processEvents()
 
@@ -822,7 +938,7 @@ def calculators(app, window, mode, record):
             ):
                 text(field, value)
             if family == "diagnostic":
-                dialog.effect_combo_box.setCurrentText("Spec")
+                dialog.effect_combo_box.setCurrentIndex(dialog.effect_combo_box.findData("Spec"))
                 for field, value in zip(
                     (
                         dialog.effect_text_box,
@@ -879,6 +995,9 @@ def calculators(app, window, mode, record):
                 state_before = dialog_state()
 
                 def cancel_choice(choice):
+                    app.processEvents()
+                    if choice.screen().availableGeometry().height() >= 700:
+                        assert choice.content_scroll.verticalScrollBar().maximum() == 0, ('reconstruction content hidden', mode, choice.size())
                     record("back-calculation-nested-cancel", choice, mode=mode)
                     click(
                         app,
@@ -928,6 +1047,8 @@ def calculators(app, window, mode, record):
                     ), actual
                     preview(dialog, "MD")
         elif entered:
+            if family in {"binary", "continuous"}:
+                dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("estimate"))
             click(app, dialog.clear_button)
             assert all(
                 v is None
@@ -936,11 +1057,11 @@ def calculators(app, window, mode, record):
                 )
             )
             values = (
-                (1.5, 1.2, 1.8)
+                (0.12345678901234566, 1.2345678901234567e-8, 1e12)
                 if family == "binary"
-                else (0.7, 0.6, 0.8)
+                else (0.12345678901234566, 1.2345678901234567e-8, 0.999999999999999)
                 if family == "diagnostic"
-                else (2, 1, 3)
+                else (0.12345678901234566, -1.2345678901234567e-8, 1e12)
             )
             for field, value in zip(
                 (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box),
@@ -971,6 +1092,7 @@ def calculators(app, window, mode, record):
                 for a, b in zip(actual_entered, (point, lower, upper))
             ), actual_entered
         elif mode == "pre-post":
+            dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
             click(app, dialog.clear_button)
             combo = dialog.effect_combo_box
             combo.setCurrentIndex(combo.findData("MD"))
@@ -1010,7 +1132,7 @@ def calculators(app, window, mode, record):
                 index = (
                     combo.findData(metric)
                     if family != "diagnostic"
-                    else combo.findText(metric)
+                    else combo.findData(metric)
                 )
                 assert index >= 0, metric
                 combo.setCurrentIndex(index)
@@ -1026,6 +1148,59 @@ def calculators(app, window, mode, record):
             column = 1 if family == "continuous" else 0
             cell(table, 0, column, float(table.item(0, column).text()) + 1)
             preview(dialog, metrics[-1])
+        if entered:
+            before_invalid = list(dialog.analysis_unit.get_entered_effect_and_ci(dialog.current_effect, dialog.group_comparison))
+            modal(app, QtWidgets.QMessageBox,
+                  lambda message: click(app, message.button(QtWidgets.QMessageBox.StandardButton.Ok)),
+                  lambda: text(dialog.upper_text_box, "-1"))
+            click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+            assert dialog.isVisible(), "invalid CI was accepted"
+            assert list(dialog.analysis_unit.get_entered_effect_and_ci(dialog.current_effect, dialog.group_comparison)) == before_invalid
+            record("calculator-invalid-ci-blocked", dialog, mode=mode, entered=before_invalid)
+            finished = []
+            dialog.upper_text_box.editingFinished.connect(lambda: finished.append(True))
+            text(dialog.upper_text_box, values[2])
+            focus = app.focusWidget()
+            record("calculator-ci-correction-state", dialog, mode=mode,
+                   draft=dialog.upper_text_box.text(), expected_upper=values[2],
+                   original_value=dialog.upper_text_box.property("calculatorValue"),
+                   editing_finished=len(finished), has_focus=dialog.upper_text_box.hasFocus(),
+                   focus=focus.objectName() if focus else None,
+                   invalid=dialog._validation_failed,
+                   stored=list(dialog.analysis_unit.get_entered_effect_and_ci(dialog.current_effect, dialog.group_comparison)))
+            assert finished, ("CI correction did not commit through editingFinished", mode)
+            assert not dialog._validation_failed
+        if family == "continuous" and not entered:
+            if mode == "pre-post":
+                dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("summary"))
+            # Each precision class is committed through the real delegate. The last
+            # values persist through Cancel, undo/redo, save/reopen and a public fit.
+            samples = ("0.00001", "1e12", "0,12345678901234566", "1.2345678901234567e-8")
+            for value in samples:
+                cell(dialog.simple_table, 0, 2, value)
+                actual = dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)[2]
+                expected = float(value.replace(",", "."))
+                record("calculator-precision-input", dialog, mode=mode, input=value,
+                       stored=actual, expected=expected)
+                assert actual == expected, ("raw precision lost", mode, value, actual)
+            cell(dialog.simple_table, 0, 1, "0,12345678901234566")
+            assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)[1] == 0.12345678901234566
+            cell(dialog.simple_table, 0, 0, "1e6")
+            assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)[0] == 1000000
+            if mode not in {"onearm-mean", "pre-post"}:
+                cell(dialog.simple_table, 1, 2, "1e12")
+                assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)[5] == 1e12
+            # Generated group intervals must describe the edited mean and SD.
+            from statistics import NormalDist
+            n, mean, sd = dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)[:3]
+            headers = dialog.get_column_header_strs()
+            z = NormalDist().inv_cdf(.975)
+            for name, expected in (("Lower", mean-z*sd/math.sqrt(n)), ("Upper", mean+z*sd/math.sqrt(n))):
+                column = headers.index(name)
+                actual = float(dialog.simple_table.item(0, column).text())
+                assert math.isclose(actual, expected, rel_tol=1e-12, abs_tol=1e-15), (mode, name, actual, expected)
+            if mode == "pre-post":
+                dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
         observed["accepted_raw"] = list(
             dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)
         )
@@ -1039,6 +1214,31 @@ def calculators(app, window, mode, record):
                     dialog.confidence_multiplier,
                 )
             )
+        if family in {"binary", "continuous"}:
+            if mode == "pre-post":
+                assert dialog.pre_post_group_box.isVisible() and not dialog.simple_group.isVisible()
+                dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("summary"))
+                assert dialog.simple_group.isVisible() and not dialog.pre_post_group_box.isVisible()
+                dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
+            app.processEvents()
+            primary = (dialog.effect_text_box, dialog.clear_button,
+                       dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+            if mode in {"onearm-proportion", "onearm-mean"}:
+                assert not dialog.back_calculate_button.isVisible()
+            else:
+                primary += (dialog.back_calculate_button,)
+            positions = [widget.mapTo(dialog, QtCore.QPoint()).y() for widget in primary]
+            scrollbar = dialog.content_scroll.verticalScrollBar()
+            for position in (0, scrollbar.maximum()):
+                scrollbar.setValue(position)
+                app.processEvents()
+                assert [widget.mapTo(dialog, QtCore.QPoint()).y() for widget in primary] == positions
+                assert all(widget.isVisible() and widget.visibleRegion().boundingRect().contains(widget.rect()) for widget in primary)
+            record("calculator-mode-layout", dialog, mode=mode,
+                   scroll_maximum=scrollbar.maximum(), positions=positions,
+                   size=[dialog.width(), dialog.height()])
+        from tests.e2e.review1_design import keyboard_traversal
+        keyboard_traversal(app, dialog, [dialog.effect_combo_box, dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box, dialog.buttonBox], record, "calculator-" + mode)
         record("calculator-mode-preview", dialog, mode=mode, observations=observed)
         click(
             app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
@@ -1349,7 +1549,7 @@ def table_covariates(app, window, record):
 
         def add(dialog, name=name, kind=kind):
             dialog.covariate_name_le.setText(name)
-            dialog.datatype_cbo_box.setCurrentText(kind)
+            dialog.datatype_cbo_box.setCurrentIndex(dialog.datatype_cbo_box.findData(kind))
             click(
                 app,
                 dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok),
@@ -1412,7 +1612,7 @@ def table_covariates(app, window, record):
             QtCore.QTimer.singleShot(10, choose_sort)
             return
         action = next(
-            a for a in menu.actions() if a.text() == "Sort Studies by Study Name"
+            a for a in menu.actions() if a.text() == "Sort studies by study name"
         )
         QTest.mouseClick(
             menu,
@@ -1552,25 +1752,58 @@ def shell(app, window, record):
     from rc_metastudio.launch import _show_main_window
     from rc_metastudio.settings import save_main_window_placement
 
+    def wait_for_state(predicate):
+        deadline = QtCore.QDeadlineTimer(5000)
+        stable = QtCore.QElapsedTimer()
+        while not deadline.hasExpired():
+            if predicate():
+                if not stable.isValid():
+                    stable.start()
+                if stable.elapsed() >= 200:
+                    return
+            else:
+                stable.invalidate()
+            QTest.qWait(10)
+        assert predicate(), "native window state did not settle within five seconds"
+
+    def luminance(color):
+        channels = [value/12.92 if value <= .04045 else ((value+.055)/1.055)**2.4
+                    for value in (color.redF(), color.greenF(), color.blueF())]
+        return sum(value*weight for value,weight in zip(channels, (.2126,.7152,.0722)))
+    palette = window.palette()
+    contrasts = []
+    for foreground, background in ((QtGui.QPalette.ColorRole.WindowText, QtGui.QPalette.ColorRole.Window),
+                                   (QtGui.QPalette.ColorRole.Text, QtGui.QPalette.ColorRole.Base),
+                                   (QtGui.QPalette.ColorRole.ButtonText, QtGui.QPalette.ColorRole.Button)):
+        a,b = palette.color(foreground), palette.color(background)
+        low,high = sorted((luminance(a), luminance(b)))
+        ratio = (high+.05)/(low+.05)
+        assert ratio >= 4.5, (foreground.name, a.name(), b.name(), ratio)
+        contrasts.append(dict(role=foreground.name, foreground=a.name(), background=b.name(), ratio=ratio))
+    record("native-normal-text-contrast", window, measured_pairs=contrasts,
+           scope="Qt active palette pairs on this host; excludes inactive controls and screen-reader qualification")
+
     # Startup must maximize even after a previous normal or full-screen session.
     window.showNormal()
     window.resize(700, 500)
-    app.processEvents()
+    wait_for_state(lambda: not window.isMaximized() and not window.isFullScreen() and window.size() == QtCore.QSize(700, 500))
     save_main_window_placement(window, window.tableView.column_width_state())
     remembered_size = window.size()
     _show_main_window(window)
-    app.processEvents()
+    wait_for_state(lambda: window.isMaximized() and not window.isFullScreen())
     assert window.isMaximized() and not window.isFullScreen()
     record("startup-maximized-after-normal", window)
     window.showNormal()
-    app.processEvents()
+    deadline = QtCore.QDeadlineTimer(5000)
+    while window.size() != remembered_size and not deadline.hasExpired():
+        QTest.qWait(10)
     assert window.size() == remembered_size, (window.size(), remembered_size)
     record("startup-restored-normal-geometry", window, width=window.width(), height=window.height())
     window.showFullScreen()
-    app.processEvents()
+    wait_for_state(window.isFullScreen)
     save_main_window_placement(window, window.tableView.column_width_state())
     _show_main_window(window)
-    app.processEvents()
+    wait_for_state(lambda: window.isMaximized() and not window.isFullScreen())
     assert window.isMaximized() and not window.isFullScreen()
     record("startup-maximized-after-full-screen", window)
 
@@ -1613,6 +1846,9 @@ def shell(app, window, record):
     def about(dialog):
         text = dialog.content_scroll_area.toPlainText()
         assert "RC MetaStudio" in text
+        app.processEvents()
+        if dialog.screen().availableGeometry().height() >= 700:
+            assert dialog.content_scroll_area.verticalScrollBar().maximum() == 0, ('About content hidden', dialog.size())
         record("about-legal", dialog, text=text)
         dialog.reject()
 
@@ -1627,6 +1863,39 @@ def shell(app, window, record):
 
 
 def run(app, window, scenario, record):
+    if scenario == "project-axis-sequential":
+        from tests.e2e.axis_conventions import run_sequential
+        run_sequential(app, window, Path(sys.argv[2]), record)
+        return
+    if scenario.startswith("project-axis-"):
+        from tests.e2e.axis_conventions import run as axes
+        axes(app, window, Path(sys.argv[2]), record, scenario.removeprefix("project-axis-"))
+        return
+    if scenario == "calculator-ratio-precision":
+        from tests.e2e.ratio_precision import run as ratio_precision
+        ratio_precision(app, window, Path(sys.argv[2]), record)
+        return
+    if scenario.startswith("project-reviewer-"):
+        from tests.e2e.reviewer_fixes import run_predictions, run_groups, run_colours
+        driver = {"predictions":run_predictions, "groups":run_groups, "colours":run_colours}[scenario.rsplit("-",1)[-1]]
+        driver(app, window, Path(sys.argv[2]), record)
+        return
+    if scenario == "project-release-coefficients":
+        from tests.e2e.release_fixes import run_coefficients
+        run_coefficients(app, window, Path(sys.argv[2]), record)
+        return
+    if scenario == "project-round6-polish":
+        from tests.e2e.round6_polish import run as polish
+        polish(app, window, Path(sys.argv[2]), record)
+        return
+    if scenario == "project-display-labels":
+        from tests.e2e.display_labels import run as labels
+        labels(app, window, record)
+        return
+    if scenario == "calculator-grid-precision":
+        from tests.e2e.precision_inputs import run as precision
+        precision(app, window, record)
+        return
     if scenario.startswith("analysis-sequential-"):
         from sequential_workflows import run as sequential
 

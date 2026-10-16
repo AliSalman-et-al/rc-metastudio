@@ -1,0 +1,98 @@
+[
+  {
+    "path": "screenshots/review1/precision-20-0-round3-small-effects-preserved.png",
+    "source": "artifacts/verification/rcms/20261014T163706Z-42598b19-audit-round3-precision/20-0-round3-small-effects-preserved.png",
+    "sha256": "b8013e36fcb3230eee09c6acf3982853b2f3c2baad33e2a2e92e36a65d98556f",
+    "family": "precision",
+    "action": "round3-small-effects-preserved",
+    "step": 20
+  },
+  {
+    "path": "screenshots/review1/precision-29-0-round3-degenerate-axis.png",
+    "source": "artifacts/verification/rcms/20261014T163706Z-42598b19-audit-round3-precision/29-0-round3-degenerate-axis.png",
+    "sha256": "0b65f0babef720058fb44b4f4b1332a1f88f4ce9932aa11ac5f900d7e0dbaba9",
+    "family": "precision",
+    "action": "round3-degenerate-axis",
+    "step": 29
+  },
+  {
+    "path": "screenshots/review1/precision-30-0-round3-degenerate-axis-bottom.png",
+    "source": "artifacts/verification/rcms/20261014T163706Z-42598b19-audit-round3-precision/30-0-round3-degenerate-axis-bottom.png",
+    "sha256": "984b30a62269c8c3f02ea05b72fe739dd9aa38d307933ca8b8aa62a1663c918e",
+    "family": "precision",
+    "action": "round3-degenerate-axis-bottom",
+    "step": 30
+  },
+  {
+    "path": "screenshots/review1/precision-39-0-round3-degenerate-axis.png",
+    "source": "artifacts/verification/rcms/20261014T163706Z-42598b19-audit-round3-precision/39-0-round3-degenerate-axis.png",
+    "sha256": "e38cde448d3f959a024b99953a386f709b304db9e7270e077bbd9430b5db6dd9",
+    "family": "precision",
+    "action": "round3-degenerate-axis",
+    "step": 39
+  },
+  {
+    "path": "screenshots/review1/precision-48-0-round3-degenerate-axis.png",
+    "source": "artifacts/verification/rcms/20261014T163706Z-42598b19-audit-round3-precision/48-0-round3-degenerate-axis.png",
+    "sha256": "2d50f931e6e7b13471944f41433561076daab9a524473012e53bd80675bd32c5",
+    "family": "precision",
+    "action": "round3-degenerate-axis",
+    "step": 48
+  },
+  {
+    "path": "screenshots/review1/precision-54-0-round3-bubble-tick-coverage.png",
+    "source": "artifacts/verification/rcms/20261014T163706Z-42598b19-audit-round3-precision/54-0-round3-bubble-tick-coverage.png",
+    "sha256": "b9e92f2cfa9da8825528ab5f0019f9bccfbb0278dfb96aead563ed6480932732",
+    "family": "precision",
+    "action": "round3-bubble-tick-coverage",
+    "step": 54
+  },
+  {
+    "path": "screenshots/review1/precision-64-0-round3-bubble-tick-coverage.png",
+    "source": "artifacts/verification/rcms/20261014T163706Z-42598b19-audit-round3-precision/64-0-round3-bubble-tick-coverage.png",
+    "sha256": "71e40f9a4d38be598d827d98943cc2c2f8c112e211721e598c8f6f66596db4ea",
+    "family": "precision",
+    "action": "round3-bubble-tick-coverage",
+    "step": 64
+  },
+  {
+    "path": "screenshots/review1/hr-08-0-round3-report-copy-export.png",
+    "source": "artifacts/verification/rcms/20261014T163913Z-a223115f-audit-round3-hr/08-0-round3-report-copy-export.png",
+    "sha256": "2d276f8ff512c390a6942bd5c34c1651ee58874b6a8ba934de1a95e22c47d268",
+    "family": "hr",
+    "action": "round3-report-copy-export",
+    "step": 8
+  },
+  {
+    "path": "screenshots/review1/hr-33-0-round3-report-copy-export.png",
+    "source": "artifacts/verification/rcms/20261014T163913Z-a223115f-audit-round3-hr/33-0-round3-report-copy-export.png",
+    "sha256": "d7324da3f1c7c32b2cfb3dbc01a21e1653c2a979dedcd94f96a58b81dbf6cb5f",
+    "family": "hr",
+    "action": "round3-report-copy-export",
+    "step": 33
+  },
+  {
+    "path": "screenshots/review1/irr-08-0-round3-report-copy-export.png",
+    "source": "artifacts/verification/rcms/20261014T164032Z-f8dae688-audit-round3-irr/08-0-round3-report-copy-export.png",
+    "sha256": "4c66ce8a4d65bf551645e01af28c25f76c2dd5b1c912edbf3bbb64281f136f0a",
+    "family": "irr",
+    "action": "round3-report-copy-export",
+    "step": 8
+  },
+  {
+    "path": "screenshots/review1/irr-37-0-round3-report-copy-export.png",
+    "source": "artifacts/verification/rcms/20261014T164032Z-f8dae688-audit-round3-irr/37-0-round3-report-copy-export.png",
+    "sha256": "077b02dca8eeb3a2f17aca05b4b4b46baf541b9a2d8b072b71b62dbdaeb62ba4",
+    "family": "irr",
+    "action": "round3-report-copy-export",
+    "step": 37
+  },
+  {
+    "path": "screenshots/review1/diagnostic-11-0-round3-report-copy-export.png",
+    "source": "artifacts/verification/rcms/20261014T164122Z-cb61b47f-audit-round3-diagnostic/11-0-round3-report-copy-export.png",
+    "sha256": "09bfa0559d960cef787d9770ca5d9f338c17d3e17b681a8025dad6a97f98fe34",
+    "family": "diagnostic",
+    "action": "round3-report-copy-export",
+    "step": 11
+  }
+]

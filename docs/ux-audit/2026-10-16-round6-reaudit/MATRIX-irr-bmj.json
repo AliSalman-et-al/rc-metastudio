@@ -1,0 +1,170 @@
+[
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-standard-report-bmj.png",
+    "sha256": "e3ddb7bc7de40b35a9ce219d2ea0163b8c182efd51370b68279c8b53b70d7c96",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-standard-report-bottom-bmj.png",
+    "sha256": "4cdc5dc8fa866d47dbcc290878a562b544d91fe32105c6ba18c565e8c76606cd",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-standard-figure-bmj.png",
+    "sha256": "81acd3210125b66f2a4b337e35e8230c9361710c862eb7199122231af4f93a31",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-standard-figure-bottom-bmj.png",
+    "sha256": "81acd3210125b66f2a4b337e35e8230c9361710c862eb7199122231af4f93a31",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-cumulative-report-bmj.png",
+    "sha256": "d280ba9da8c7bd3c62b4f7fe32a7f520147f0e2554fdb27ae912ddbae556a959",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-cumulative-report-bottom-bmj.png",
+    "sha256": "d280ba9da8c7bd3c62b4f7fe32a7f520147f0e2554fdb27ae912ddbae556a959",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-cumulative-figure-bmj.png",
+    "sha256": "f99a79b40b971ed620d9bfdcb8f4c45b782ae7e91f331066897c0f45bdf35c07",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-cumulative-figure-bottom-bmj.png",
+    "sha256": "7b3a6fbe76a0a91097b978c49dd0ddde8d4ab569cf12eca28bcfe2a217ad19b8",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-leave-one-out-report-bmj.png",
+    "sha256": "ce86b2228a13d007b60ad2655d7b0dba728f1eab3fed3b8abacb2fcea5221b41",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-leave-one-out-report-bottom-bmj.png",
+    "sha256": "ce86b2228a13d007b60ad2655d7b0dba728f1eab3fed3b8abacb2fcea5221b41",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-leave-one-out-figure-bmj.png",
+    "sha256": "94d0d7ffd0b9d741f93e99b01ebf8fce5ec640230e0cf5448cb22785bdcc7b70",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-leave-one-out-figure-bottom-bmj.png",
+    "sha256": "b11773e09b811cf9734d151d2f669d5cfa35bedbf18388df6ff9b389dac7a082",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-subgroup-report-bmj.png",
+    "sha256": "46dbac803e9191dcefa9794037ff06c771e004dd108ce6f3c95cff61317bbe1c",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-subgroup-report-bottom-bmj.png",
+    "sha256": "80f087a1e01fd11bd24f8138f1a0426a72e4a4939b0518eb5a6715fcf431ae30",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-subgroup-figure-bmj.png",
+    "sha256": "901c6ebd83a5d7bd3e28ccce5cee1e5963178c743768f79f2285d28aead3bf8b",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-subgroup-figure-bottom-bmj.png",
+    "sha256": "4b1c5a0d709873faf5e6e14707fac23aa9169290fde60a56f4606ac46292578f",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-meta-regression-report-bmj.png",
+    "sha256": "48892cc619486e60cb352f629e72c6ccac2596537fff71ce242829c1c551e783",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-meta-regression-report-bottom-bmj.png",
+    "sha256": "51b896c0cbcd7124be50472e41d6145e35e7e52237643defe72d481d7c5184b2",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-meta-regression-report-exponentiated-bmj.png",
+    "sha256": "67ea47bb2a51073400cc557c8ead3dbc0e5f5c56963b4341f70e54219abbd6a0",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-meta-regression-figure-bmj.png",
+    "sha256": "ee2a0597b79c3ffd31e0dca7c373ded3b9453991f9080ceac223451fb8f6005b",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-irr-bmj/captures/matrix-irr-meta-regression-figure-bottom-bmj.png",
+    "sha256": "975a07ca523fc130ef39f030af72b7110fa345cacdf9e6e0788ec0196caefd8b",
+    "capture": "QScreen.grabWindow",
+    "family": "irr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Catheter-related bloodstream infection \u00b7 Event rates \u00b7 Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter \u00b7 Follow-up: first"
+  }
+]

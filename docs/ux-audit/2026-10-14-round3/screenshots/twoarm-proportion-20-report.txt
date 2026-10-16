@@ -1,0 +1,39 @@
+Leave-one-out meta-analysis — Verification outcome · Two-arm binary · Odds Ratio
+Comparison: tx A / tx B · Follow-up: first
+
+Model configuration
+Project: typed.rcms
+Model: Binary Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Each row omits the named study; compare with the all-studies estimate.
+OR = 1 means equal odds in tx A and tx B; estimates are fitted on the log scale.
+
+Leave-one-out Summary
+
+Model Results
+Study omitted	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+All studies	0.761368	0.458516	1.264253	0.258740	0.292012
+Study omitted: Fixture 1	0.775764	0.451307	1.333480	0.276382	0.358262
+Study omitted: Fixture 2	0.769527	0.444944	1.330890	0.279509	0.348612
+Study omitted: Fixture 3	0.763563	0.438983	1.328135	0.282421	0.339493
+Study omitted: Fixture 4	0.757892	0.433399	1.325338	0.285149	0.330964
+Study omitted: Fixture 5	0.752507	0.428161	1.322556	0.287715	0.323012
+Study omitted: Fixture 6	0.747393	0.423238	1.319816	0.290136	0.315598
+
+Binary Random-Effects Model
+
+Metric: Odds Ratio
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+4. Leave-one-out Meta-Analysis: estimates are recomputed after omitting each study in turn to assess influence on the selected base meta-analysis method.
+
+
+Inference Method
+
+Normal approximation

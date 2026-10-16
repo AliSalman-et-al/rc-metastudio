@@ -8,11 +8,11 @@ from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QFileDialog
+from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QFileDialog, QLabel, QLineEdit
 
 from rc_metastudio import adaptive_window, app_error_handler, qt_text
 from rc_metastudio.plot_text import (
-    apply_plot_text_input_limits,
+    configure_plot_text_inputs,
     plot_text_value,
 )
 from rc_metastudio.publication_bias import (
@@ -56,8 +56,18 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         super().__init__(parent)
         self.setupUi(self)
         self._configure_accessibility()
-        apply_plot_text_input_limits(self)
+        configure_plot_text_inputs(self)
         self._params = dict(plot_params or {})
+        self.figure_caption = QLineEdit(self)
+        self.figure_caption.setAccessibleName("Figure caption")
+        self.figure_caption.setToolTip("Outcome, comparison and follow-up. Edit or clear to remove from standalone figures.")
+        self.figure_caption.setMaxLength(1000)
+        self.figure_caption.setText(str(self._params.get("plot_caption", "") or "").replace("\n", " · "))
+        caption_label = QLabel("Figure caption:", self)
+        caption_label.setBuddy(self.figure_caption)
+        caption_row = self.appearance_layout.rowCount()
+        self.appearance_layout.addWidget(caption_label, caption_row, 0)
+        self.appearance_layout.addWidget(self.figure_caption, caption_row, 1)
         self._dirty = False
         self._pending_ok = False
         self._allow_close = True
@@ -73,6 +83,8 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self.kind_label.setText(f"Funnel kind: {self.kind}")
         self._load_params(image_path)
         self._configure_kind()
+        self.setTabOrder(self.background_color_button, self.figure_caption)
+        self.setTabOrder(self.figure_caption, self.x_label_edit)
         self.style_combo.currentTextChanged.connect(self._apply_style)
         for edit, button, title in (
             (self.point_color_edit, self.point_color_button, "Choose point color"),
@@ -317,14 +329,17 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         if isinstance(levels, (list, tuple)):
             levels = ",".join(str(value) for value in levels)
         self.contour_levels_edit.setText(str(levels))
+        self._load_axis_params()
+        persisted_outpath = self._value("funnel.outpath", "")
+        self.path_edit.setText(str(persisted_outpath or image_path or ""))
+
+    def _load_axis_params(self):
         default_x_label = (
             "1/sqrt(ESS)"
             if self.kind == "deeks"
             else self._value("axis.label", "[default]")
         )
-        default_y_label = (
-            "Log diagnostic odds ratio" if self.kind == "deeks" else "Standard error"
-        )
+        default_y_label = self._default_y_label()
         self.x_label_edit.setText(str(self._value("funnel.xlab", default_x_label)))
         self.y_label_edit.setText(str(self._value("funnel.ylab", default_y_label)))
         self.x_lower_edit.setText(str(self._value("funnel.xlim.lower", "[default]")))
@@ -333,8 +348,20 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         if isinstance(ticks, (list, tuple)):
             ticks = ",".join(str(value) for value in ticks)
         self.x_ticks_edit.setText(str(ticks))
-        persisted_outpath = self._value("funnel.outpath", "")
-        self.path_edit.setText(str(persisted_outpath or image_path or ""))
+        for field in (self.x_label_edit, self.x_lower_edit, self.x_upper_edit, self.x_ticks_edit):
+            if field.text() == "[default]":
+                field.clear()
+                field.setPlaceholderText("Automatic")
+                field.setToolTip("Automatic: determined by the fitted plot range.")
+
+    def _default_y_label(self):
+        measure = self._value("measure", self._value("metric", ""))
+        scale = ("log" if measure in {"OR", "RR", "HR", "IRR", "PLR", "NLR", "DOR", "PLN"} else
+                 "logit" if measure in {"PLO", "Sens", "Spec", "PPV", "NPV", "Acc"} else
+                 "arcsine" if measure == "PAS" else "Freeman-Tukey" if measure == "PFT" else
+                 "standardized" if measure == "SMD" else "outcome")
+        return ("Log diagnostic odds ratio" if self.kind == "deeks" else
+                           f"Standard error ({scale} scale)")
 
     def _configure_kind(self):
         contour = self.kind == "contour"
@@ -463,6 +490,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         """Return the original run params plus presentation-only edits."""
         params = dict(self._params)
         edits = {
+            "plot_caption": self.figure_caption.text().strip(),
             "funnel.style": next(
                 code.value
                 for code, label in FUNNEL_STYLE_LABELS.items()

@@ -691,6 +691,30 @@ _SUMMARY_PRINT_DRIVER = textwrap.dedent(
         assert str(ro.r('RCMetaR:::forest.plot.p.value.label(0.0002, 3)')[0]) == "P< 0.001"
         assert str(ro.r('RCMetaR:::forest.plot.p.value.label(0.015, 3)')[0]) == "P=0.015"
 
+        # Application reports must not pass through native console encoding.
+        unicode_summary = ro.r('''
+          structure(list(
+            model.title=paste0("Model ", intToUtf8(0x03c4)),
+            table.titles="Heterogeneity",
+            arrays=list(rbind(
+              c("Subgroups", paste0(intToUtf8(0x03c4), intToUtf8(0x00b2))),
+              c(paste0("Group ", intToUtf8(0x03b1)), "0.378")
+            )),
+            notes=paste0("Interval ", intToUtf8(0x2264), " 1 ", intToUtf8(0x2013), " preserved")
+          ), class="summary.display")
+        ''')
+        unicode_before = r_bridge.parse_out_results(ro.r.list(Summary=unicode_summary)).texts["Summary"]
+        old_locale = str(ro.r('Sys.getlocale("LC_CTYPE")')[0])
+        try:
+            assert str(ro.r('Sys.setlocale("LC_CTYPE", "C")')[0]) == "C"
+            unicode_after = r_bridge.parse_out_results(ro.r.list(Summary=unicode_summary)).texts["Summary"]
+            assert str(ro.r('Sys.getlocale("LC_CTYPE")')[0]) == "C"
+            assert unicode_after == unicode_before, (unicode_before, unicode_after)
+            for label in ["τ²", "Group α", "≤", "–"]:
+                assert label in unicode_after, unicode_after
+        finally:
+            ro.r['Sys.setlocale']("LC_CTYPE", old_locale)
+
         meta_regression_expr = textwrap.dedent(
             '''
             dir.create("r_tmp", showWarnings=FALSE)

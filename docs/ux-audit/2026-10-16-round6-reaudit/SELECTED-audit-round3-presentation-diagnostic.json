@@ -1,0 +1,194 @@
+[
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-16-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/16-0-round4-annotations.png",
+    "sha256": "075802963daae32d2813c0b3442ab4dae5885aa1f7c08c7ef061f0bda4971f01",
+    "action": "round4-annotations",
+    "step": 16,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-17-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/17-0-round4-annotations-bottom.png",
+    "sha256": "57a3f4fa081ae38261000f1d3aac7aeb3c5554bb0de874a734184906cf7b3f72",
+    "action": "round4-annotations-bottom",
+    "step": 17,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-22-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/22-0-round4-annotations.png",
+    "sha256": "945a69ed3c833a4fd6b99b25ef1853fabf5528937b8ccbb616cb313e178381a2",
+    "action": "round4-annotations",
+    "step": 22,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-23-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/23-0-round4-annotations-bottom.png",
+    "sha256": "945a69ed3c833a4fd6b99b25ef1853fabf5528937b8ccbb616cb313e178381a2",
+    "action": "round4-annotations-bottom",
+    "step": 23,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-38-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/38-0-round4-annotations.png",
+    "sha256": "06e639ff442ad460cc36b6aff7d416ecc46f66d88246be659d26dc22fb95fe08",
+    "action": "round4-annotations",
+    "step": 38,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-39-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/39-0-round4-annotations-bottom.png",
+    "sha256": "1d3b08250598a1000261b5cbce68e8e7a8149a04547341bd39185082b3219cc9",
+    "action": "round4-annotations-bottom",
+    "step": 39,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-44-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/44-0-round4-annotations.png",
+    "sha256": "49536d892e8b2d5905682ec1b29beee094fb2b3737e4b99102e48ab893a1bd7b",
+    "action": "round4-annotations",
+    "step": 44,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-45-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/45-0-round4-annotations-bottom.png",
+    "sha256": "49536d892e8b2d5905682ec1b29beee094fb2b3737e4b99102e48ab893a1bd7b",
+    "action": "round4-annotations-bottom",
+    "step": 45,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-60-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/60-0-round4-annotations.png",
+    "sha256": "fe23c0a2c32f656da82dfecb40cfd28ac9bc2a7ebd827828ea31ae7e5b471b55",
+    "action": "round4-annotations",
+    "step": 60,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-61-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/61-0-round4-annotations-bottom.png",
+    "sha256": "970884160bc24ea636817950d4e72c1f28ea5983dc0247ff967543f6fcdb49fd",
+    "action": "round4-annotations-bottom",
+    "step": 61,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-66-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/66-0-round4-annotations.png",
+    "sha256": "dcff8b8d375bd9aebf9c90beea5842236a61cf1b2c93d08ff2103317d799db2f",
+    "action": "round4-annotations",
+    "step": 66,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-67-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/67-0-round4-annotations-bottom.png",
+    "sha256": "dcff8b8d375bd9aebf9c90beea5842236a61cf1b2c93d08ff2103317d799db2f",
+    "action": "round4-annotations-bottom",
+    "step": 67,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-82-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/82-0-round4-annotations.png",
+    "sha256": "6e1333abfd2136cb34a8c54e48ad21ce8bb9ebf6dff13661721cd0e07771adf1",
+    "action": "round4-annotations",
+    "step": 82,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-83-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/83-0-round4-annotations-bottom.png",
+    "sha256": "03ed7d98af30ade874c876f244df47324478bbc98aa8a1ee4e0709f1a1bc9075",
+    "action": "round4-annotations-bottom",
+    "step": 83,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-88-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/88-0-round4-annotations.png",
+    "sha256": "f24da3b8a6a6b1bf5771b34422e6264f372f0caa33212e9b768117f1576001c0",
+    "action": "round4-annotations",
+    "step": 88,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-89-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/89-0-round4-annotations-bottom.png",
+    "sha256": "f24da3b8a6a6b1bf5771b34422e6264f372f0caa33212e9b768117f1576001c0",
+    "action": "round4-annotations-bottom",
+    "step": 89,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-104-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/104-0-round4-annotations.png",
+    "sha256": "6b6c24b960c70adeebcb2a7ad6e5b33c58ca42f1149d80ede0f12078b0fc915a",
+    "action": "round4-annotations",
+    "step": 104,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-105-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/105-0-round4-annotations-bottom.png",
+    "sha256": "576177036220769bf0fa779b663ec3e205ed790aebbdb027c428ff0f13eeb8fe",
+    "action": "round4-annotations-bottom",
+    "step": 105,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-110-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/110-0-round4-annotations.png",
+    "sha256": "19a240a1e713871deb2c361bd8304e07187b1b41d53b5ce307effac209e81865",
+    "action": "round4-annotations",
+    "step": 110,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-111-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/111-0-round4-annotations-bottom.png",
+    "sha256": "19a240a1e713871deb2c361bd8304e07187b1b41d53b5ce307effac209e81865",
+    "action": "round4-annotations-bottom",
+    "step": 111,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-126-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/126-0-round4-annotations.png",
+    "sha256": "55b045f6e39f6c6688c375a89527afea61619d9bf28d33bc08fee821c7cf43ad",
+    "action": "round4-annotations",
+    "step": 126,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-127-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/127-0-round4-annotations-bottom.png",
+    "sha256": "2a6b927f757b92c8bdb84e06130e76f10b563a416d6867643c5451f870432160",
+    "action": "round4-annotations-bottom",
+    "step": 127,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-132-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/132-0-round4-annotations.png",
+    "sha256": "94ec57d00679a00b0b375736be5297fd739cee4fc9c744240cf67770bd436f09",
+    "action": "round4-annotations",
+    "step": 132,
+    "scenario": "audit-round3-presentation-diagnostic"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-diagnostic-133-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T192136Z-f8c28778-audit-round3-presentation-diagnostic/133-0-round4-annotations-bottom.png",
+    "sha256": "94ec57d00679a00b0b375736be5297fd739cee4fc9c744240cf67770bd436f09",
+    "action": "round4-annotations-bottom",
+    "step": 133,
+    "scenario": "audit-round3-presentation-diagnostic"
+  }
+]

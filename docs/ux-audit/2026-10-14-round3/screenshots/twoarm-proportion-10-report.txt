@@ -1,0 +1,38 @@
+Cumulative meta-analysis — Verification outcome · Two-arm binary · Odds Ratio
+Comparison: tx A / tx B · Follow-up: first
+
+Model configuration
+Project: typed.rcms
+Model: Binary Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Order: current study order; each row adds a study to the preceding studies.
+OR = 1 means equal odds in tx A and tx B; estimates are fitted on the log scale.
+
+Cumulative Summary
+
+Model Results
+Study added (k)	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+Fixture 1 (k = 1)	0.666667	0.157558	2.820825	0.735980	
+Fixture 2 (k = 2)	0.691808	0.259124	1.846987	0.501031	0.462110
+Fixture 3 (k = 3)	0.713137	0.328302	1.549077	0.395793	0.393001
+Fixture 4 (k = 4)	0.731466	0.380900	1.404678	0.332921	0.347589
+Fixture 5 (k = 5)	0.747393	0.423238	1.319816	0.290136	0.315598
+Fixture 6 (k = 6)	0.761368	0.458516	1.264253	0.258740	0.292012
+
+Binary Random-Effects Model
+
+Metric: Odds Ratio
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+4. Cumulative Meta-Analysis: Lau, Joseph, et al. "Cumulative meta-analysis of therapeutic trials for myocardial infarction." New England Journal of Medicine 327.4 (1992): 248-254.
+
+
+Inference Method
+
+Normal approximation

@@ -1,0 +1,189 @@
+[
+  {
+    "path": "screenshots/matrix-twoarm-mean-standard-report.png",
+    "sha256": "716ab3b55b060677dceef6b0b049814fc0c2b7295546cb2bbe89beb1539cc75f",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "curated": true
+  },
+  {
+    "path": "raw/uncurated-native/matrix-twoarm-mean-standard-report-bottom.png",
+    "sha256": "7334c186f3491079c2ddb36e7932f0994ece3c0965bd17b704658810cf5907a7",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "original_capture_path": "screenshots/matrix-twoarm-mean-standard-report-bottom.png",
+    "curated": false
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-standard-figure.png",
+    "sha256": "04bf4624bbffcf85d9f623a868690cea52e82842fb5e20846e9e13f6a9fab9a0",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "curated": true
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-standard-figure-bottom.png",
+    "sha256": "04bf4624bbffcf85d9f623a868690cea52e82842fb5e20846e9e13f6a9fab9a0",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "curated": true
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-cumulative-report.png",
+    "sha256": "df6df1664ecb6f35a3cfa809759fb8ab0c266e08cc2f26bf11aad2803ef0afce",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "curated": true
+  },
+  {
+    "path": "raw/uncurated-native/matrix-twoarm-mean-cumulative-report-bottom.png",
+    "sha256": "888e504376fa0706b980f0ebf6e3d27890ac5a31dc78a2ec2325c2d9637aeb73",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "original_capture_path": "screenshots/matrix-twoarm-mean-cumulative-report-bottom.png",
+    "curated": false
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-cumulative-figure.png",
+    "sha256": "667b3bb250f4bd6a646a0a2ae3a52222b040eb49d7e1f60a57ab290760760408",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "curated": true
+  },
+  {
+    "path": "raw/uncurated-native/matrix-twoarm-mean-cumulative-figure-bottom.png",
+    "sha256": "e1578e7e47fb73ad5da5df64b3057fdcf065da86d62c0e9d8c0dce0ce601a010",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "original_capture_path": "screenshots/matrix-twoarm-mean-cumulative-figure-bottom.png",
+    "curated": false
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-leave-one-out-report.png",
+    "sha256": "495eb37ee5de5a535cbfee61b332b551aca5be68d9a43a1bf0e7c7f3d0e3d06c",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "curated": true
+  },
+  {
+    "path": "raw/uncurated-native/matrix-twoarm-mean-leave-one-out-report-bottom.png",
+    "sha256": "68d566bfc503efe4e9d5b2767f08fef99bff2e20a30a6fe68f1c5b02850da853",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "original_capture_path": "screenshots/matrix-twoarm-mean-leave-one-out-report-bottom.png",
+    "curated": false
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-leave-one-out-figure.png",
+    "sha256": "43dc3c6355f5b6a9846971ec7172825232aa27e6394f96c282c87449dfd63112",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "curated": true
+  },
+  {
+    "path": "raw/uncurated-native/matrix-twoarm-mean-leave-one-out-figure-bottom.png",
+    "sha256": "896c0305d98217b1c2d39dc6b91489137f3dde8a5ba3b41fca11dff3d69ca3b7",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "original_capture_path": "screenshots/matrix-twoarm-mean-leave-one-out-figure-bottom.png",
+    "curated": false
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-subgroup-report.png",
+    "sha256": "980e4b8b51fa34c84d07347d6b2cdfe97fddcc54b1f9321a5c2c53cc5ae34334",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "curated": true
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-subgroup-report-bottom.png",
+    "sha256": "ed959ecf3e08291cdb157a47b781bc15725c54e00935576b55d3ff3de60c7252",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "curated": true
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-subgroup-figure.png",
+    "sha256": "94018ba40d04cc9b43770619bb160a8a5fc23170de471186d65c4a13a12a4b0f",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "curated": true
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-subgroup-figure-bottom.png",
+    "sha256": "41ffecc4cd3bf21fb2ec6bbe4dab6f446b2b98c709d5eb13a6159ef89144c3b6",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "curated": true
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-meta-regression-report.png",
+    "sha256": "f9585c43cbb9acbc2970bf1036868c3b442da8e0503bb8d5bfa320f6d6d256dc",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "curated": true
+  },
+  {
+    "path": "raw/uncurated-native/matrix-twoarm-mean-meta-regression-report-bottom.png",
+    "sha256": "52418a5d21341f3bc2b1735105fa526467f336498e3902bf9c6c934fbdb01b15",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "original_capture_path": "screenshots/matrix-twoarm-mean-meta-regression-report-bottom.png",
+    "curated": false
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-meta-regression-figure.png",
+    "sha256": "8953e4c234708b2f2d50d9b2323f81711ed08a9752df3db1183f7cb4a1224ffd",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "curated": true
+  },
+  {
+    "path": "raw/uncurated-native/matrix-twoarm-mean-meta-regression-figure-bottom.png",
+    "sha256": "07fdceb69fe55505088ed246635585664cf5f69a7ad98a2d2a302655f0082332",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: tx A / tx B \u00b7 Follow-up: first",
+    "original_capture_path": "screenshots/matrix-twoarm-mean-meta-regression-figure-bottom.png",
+    "curated": false
+  }
+]

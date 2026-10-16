@@ -55,7 +55,7 @@ These are source-backed targeted recipes, not claims that the ordinary editing s
 - **Table:** inclusion checkbox, header Include All/Exclude All, row deletion confirmation, sorting, rectangular copy/paste and clear. Trigger `action_copy`/`action_paste`; assert clipboard/live values, trailing-row expansion and one undo transaction. Invalid bulk data must roll back the whole operation. Sorting must retain values, covariates and inclusion attached to study IDs, not row positions. Auto-fit must not alter data.
 - **Confidence:** `action_change_confidence_level` → `ConfidenceLevelDialog.confidence_level_spinbox` → `button_box` OK. Check `cl_label`, actual analysis intervals, undo/redo, save/reopen and inherited parameters.
 - **Dirty actions:** Open/New/Import/Close/Quit on an unsaved project: Cancel preserves live project and destination; No proceeds; Yes proceeds only after successful save. Cancelled/failed Save As must preserve the unsaved project. Use test-owned files and record the actual prompt/action/recovered state.
-- **Entry and shell:** drive Open/Save actions with only picker paths substituted, their standard shortcuts, `action_open_recent_2.actions()` and QAction `.data()`, and startup welcome `create_new_btn`/`import_csv_btn`/`open_btn`/`open_recent_btn`. Open `action_about_legal`, read tabs/links, close it, and confirm application still responds. Restore isolated settings/geometry; never use the user's preferences as fixtures.
+- **Entry and shell:** drive Open/Save actions with only picker paths substituted, their standard shortcuts, `action_open_recent_2.actions()` and QAction `.data()`, and the main start page `start_page.create_button` / `import_button` / `open_button` / recent-project buttons. Open `action_about_legal`, read tabs/links, close it, and confirm application still responds. Restore isolated settings/geometry; never use the user's preferences as fixtures.
 
 
 ## CSV entry and grid guidance
@@ -71,3 +71,35 @@ confirmed study. Covariate prerequisites are visible in the structure dialog.
 ## HR and IRR
 
 See [ratios.md](ratios.md) for the compact input, original-source persistence, analysis, plot and small-study workflows. Run `ratios-hr` and `ratios-irr` after changes affecting these families; these exercise actual menu deletion before/after sorting and identity-safe undo/redo/reopen. `ratios-samples` checks the bundled 65-study Pignon HR and nine-study Niel-Weise IRR projects, original source values, independent fits, and identical save/reopen content; the broader shared-change lane remains required.
+
+## Main start page and navigation
+
+`review1-design --native` exercises startup without a welcome modal, present and
+missing recent paths (including wrapping full paths), Create/CSV wizard Cancel,
+Open picker Cancel, recent-project opening, and outcome/follow-up/group selector
+switching. The table is hidden until an outcome exists. Light and dark native
+palette captures are retained. `project-shell`, `project-structure`, `csv` and the
+data-type matrix supply successful creation/import/save/reopen/undo behavior.
+File pickers remain substituted; native OS picker operation is not claimed.
+
+## Outcome and arm naming
+
+`audit-round3-arm-names` creates default and custom comparative binary/continuous, single-arm mean and diagnostic datasets through the real wizard. It checks trimming, inline duplicate rejection, actual model group identity/order, grid/calculator labels, three comparative figure styles, report/copy/export, canonical CSV template/mapping/preview and silent legacy aliases, save/reopen, and preservation of an old project's stored tx A/tx B names. Native round-five evidence also runs this at Qt scale 2; OS scaling and screen readers remain unqualified.
+
+Round-five review follow-up: the shipped examples use readable arm names, while
+`audit-round3-arm-names` creates an explicitly legacy input from immutable test
+snapshots and proves it reopens without relabelling. The same drive checks integer
+count display in the real CSV preview and sentence-case binary calculator headers.
+`review1-design` exercises the single-row recent list with middle-elided paths,
+full accessible names/tooltips, missing state, Locate/Remove and reopening a sample.
+
+`project-display-labels` recursively inspects attached menus for all ten families,
+opens actual calculators and records contextual action popups. The shared desktop
+recorder also rejects internal built-in vocabulary in visible labels, tooltips,
+combo choices and report widgets for every captured dialog in the complete matrix.
+Investigator group names are preserved. `project-shell` waits for stable real
+window-manager state before placement assertions and measures active normal-text
+palette contrast. `review1-design` additionally measures derived/selected grid
+contrast and keyboard traversal; native 1.5×/2× drives cover this host's scaling.
+These checks do not qualify assistive-technology behavior or every inactive/error
+colour on other operating systems.

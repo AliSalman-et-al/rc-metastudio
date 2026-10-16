@@ -1,0 +1,68 @@
+[
+  {
+    "family": "forest",
+    "label": "review1-native-editor-forest",
+    "image": "screenshots/review1-editor-forest-initial-07-0-review1-caption-initial.png",
+    "source": "artifacts/verification/rcms/20261015T071954Z-2bb6b852-plot-workflow-forest/07-0-review1-caption-initial.png"
+  },
+  {
+    "family": "cumulative",
+    "label": "review1-native-editor-cumulative",
+    "image": "screenshots/review1-editor-cumulative-initial-07-0-review1-caption-initial.png",
+    "source": "artifacts/verification/rcms/20261015T072042Z-e61d15e2-plot-workflow-cumulative/07-0-review1-caption-initial.png"
+  },
+  {
+    "family": "leave-one-out",
+    "label": "review1-native-editor-leave-one-out",
+    "image": "screenshots/review1-editor-leave-one-out-initial-07-0-review1-caption-initial.png",
+    "source": "artifacts/verification/rcms/20261015T072126Z-eb91ea13-plot-workflow-leave-one-out/07-0-review1-caption-initial.png"
+  },
+  {
+    "family": "subgroup",
+    "label": "review1-native-editor-subgroup-qualified",
+    "image": "screenshots/review1-editor-subgroup-initial-07-0-review1-caption-initial.png",
+    "source": "artifacts/verification/rcms/20261015T073059Z-a55764f3-plot-workflow-subgroup/07-0-review1-caption-initial.png"
+  },
+  {
+    "family": "regression",
+    "label": "review1-native-editor-regression",
+    "image": "screenshots/review1-regression-after-07-0-review1-caption-initial.png",
+    "source": "artifacts/verification/rcms/20261015T072319Z-033dc061-plot-workflow-regression/07-0-review1-caption-initial.png"
+  },
+  {
+    "family": "sroc",
+    "label": "review1-native-editor-sroc",
+    "image": "screenshots/review1-sroc-after-09-0-review1-caption-initial.png",
+    "source": "artifacts/verification/rcms/20261015T072346Z-aad250fb-plot-workflow-sroc/09-0-review1-caption-initial.png"
+  },
+  {
+    "family": "coefficient",
+    "label": "review1-native-editor-coefficient",
+    "image": "screenshots/review1-editor-coefficient-initial-07-0-review1-caption-initial.png",
+    "source": "artifacts/verification/rcms/20261015T072418Z-44e64fd0-plot-workflow-coefficient/07-0-review1-caption-initial.png"
+  },
+  {
+    "family": "funnel",
+    "label": "review1-native-editor-funnel-final",
+    "image": "screenshots/review1-funnel-after-04-0-review1-caption-initial.png",
+    "source": "artifacts/verification/rcms/20261015T073444Z-6a5a5af3-plot-workflow-funnel/04-0-review1-caption-initial.png"
+  },
+  {
+    "family": "contour",
+    "label": "review1-native-editor-contour-qualified",
+    "image": "screenshots/review1-editor-contour-initial-04-0-review1-caption-initial.png",
+    "source": "artifacts/verification/rcms/20261015T073232Z-49f6300b-plot-workflow-contour/04-0-review1-caption-initial.png"
+  },
+  {
+    "family": "trimfill",
+    "label": "review1-native-editor-trimfill-qualified",
+    "image": "screenshots/review1-editor-trimfill-initial-04-0-review1-caption-initial.png",
+    "source": "artifacts/verification/rcms/20261015T073255Z-7f458024-plot-workflow-trimfill/04-0-review1-caption-initial.png"
+  },
+  {
+    "family": "deeks",
+    "label": "review1-native-editor-deeks-final",
+    "image": "screenshots/review1-editor-deeks-initial-04-0-review1-caption-initial.png",
+    "source": "artifacts/verification/rcms/20261015T073419Z-cfbbb2d8-plot-workflow-deeks/04-0-review1-caption-initial.png"
+  }
+]

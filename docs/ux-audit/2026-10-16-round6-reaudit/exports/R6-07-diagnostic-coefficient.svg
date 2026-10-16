@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="576.00pt" height="370.08pt" viewBox="0 0 576.00 370.08">
+  <g class="svglite">
+    <defs>
+      <style type="text/css"><![CDATA[
+    .svglite line, .svglite polyline, .svglite polygon, .svglite path, .svglite rect, .svglite circle {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10.00;
+    }
+    .svglite text {
+      white-space: pre;
+    }
+    .svglite g.glyphgroup path {
+      fill: inherit;
+      stroke: none;
+    }
+  ]]></style>
+    </defs>
+    <rect width="100%" height="100%" style="stroke: none; fill: #FFFFFF;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    <defs>
+      <clipPath id="cpMC4wMHw1NzYuMDB8MC4wMHwzNzAuMDg=">
+        <rect x="0.00" y="0.00" width="576.00" height="370.08" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      </clipPath>
+    </defs>
+    <g clip-path="url(#cpMC4wMHw1NzYuMDB8MC4wMHwzNzAuMDg=)">
+</g>
+    <defs>
+      <clipPath id="cpMTI2LjAwfDU1NC40MHw5Ni40OHwzMDUuMjg=">
+        <rect x="126.00" y="96.48" width="428.40" height="208.80" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      </clipPath>
+    </defs>
+    <g clip-path="url(#cpMTI2LjAwfDU1NC40MHw5Ni40OHwzMDUuMjg=)">
+      <circle cx="311.38" cy="200.88" r="2.70" style="stroke-width: 0.75; fill: #000000;" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    </g>
+    <g clip-path="url(#cpMC4wMHw1NzYuMDB8MC4wMHwzNzAuMDg=)">
+      <polygon points="126.00,305.28 554.40,305.28 554.40,96.48 126.00,96.48 " style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    </g>
+    <defs>
+      <clipPath id="cpMC4wMHw1NzYuMDB8NDYuMDh8MzcwLjA4">
+        <rect x="0.00" y="46.08" width="576.00" height="324.00" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      </clipPath>
+    </defs>
+    <g clip-path="url(#cpMC4wMHw1NzYuMDB8NDYuMDh8MzcwLjA4)">
+      <text x="340.20" y="360.00" text-anchor="middle" style="font-size: 12.00px; font-family: &quot;Liberation Sans&quot;;" textLength="55.34px" lengthAdjust="spacingAndGlyphs">Odds ratio</text>
+    </g>
+    <g clip-path="url(#cpMC4wMHw1NzYuMDB8MC4wMHwzNzAuMDg=)">
+      <line x1="126.00" y1="200.88" x2="126.00" y2="200.88" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="126.00" y1="200.88" x2="118.80" y2="200.88" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="111.60" y="205.01" text-anchor="end" style="font-size: 12.00px; font-family: &quot;Liberation Sans&quot;;" textLength="28.02px" lengthAdjust="spacingAndGlyphs">Dose</text>
+      <line x1="126.00" y1="305.28" x2="554.40" y2="305.28" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="176.40" y1="305.28" x2="176.40" y2="312.48" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="265.24" y1="305.28" x2="265.24" y2="312.48" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="354.09" y1="305.28" x2="354.09" y2="312.48" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="442.93" y1="305.28" x2="442.93" y2="312.48" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="531.78" y1="305.28" x2="531.78" y2="312.48" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="176.40" y="331.20" text-anchor="middle" style="font-size: 12.00px; font-family: &quot;Liberation Sans&quot;;" textLength="16.67px" lengthAdjust="spacingAndGlyphs">0.6</text>
+      <text x="265.24" y="331.20" text-anchor="middle" style="font-size: 12.00px; font-family: &quot;Liberation Sans&quot;;" textLength="16.67px" lengthAdjust="spacingAndGlyphs">0.7</text>
+      <text x="354.09" y="331.20" text-anchor="middle" style="font-size: 12.00px; font-family: &quot;Liberation Sans&quot;;" textLength="16.67px" lengthAdjust="spacingAndGlyphs">0.8</text>
+      <text x="442.93" y="331.20" text-anchor="middle" style="font-size: 12.00px; font-family: &quot;Liberation Sans&quot;;" textLength="16.67px" lengthAdjust="spacingAndGlyphs">0.9</text>
+      <text x="531.78" y="331.20" text-anchor="middle" style="font-size: 12.00px; font-family: &quot;Liberation Sans&quot;;" textLength="6.67px" lengthAdjust="spacingAndGlyphs">1</text>
+    </g>
+    <g clip-path="url(#cpMTI2LjAwfDU1NC40MHw5Ni40OHwzMDUuMjg=)">
+      <line x1="141.87" y1="200.88" x2="538.53" y2="200.88" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="531.78" y1="305.28" x2="531.78" y2="96.48" style="stroke-width: 0.75; stroke: #7F7F7F; stroke-dasharray: 4.00,4.00;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    </g>
+    <g clip-path="url(#cpMC4wMHw1NzYuMDB8NDYuMDh8MzcwLjA4)">
+      <text x="340.20" y="76.23" text-anchor="middle" style="font-size: 14.40px; font-weight: bold; font-family: &quot;Liberation Sans&quot;;" textLength="231.14px" lengthAdjust="spacingAndGlyphs">Specificity moderator coefficients</text>
+    </g>
+    <g clip-path="url(#cpMC4wMHw1NzYuMDB8MC4wMHwzNzAuMDg=)">
+      <text x="11.52" y="28.80" style="font-size: 12.96px; font-family: &quot;Liberation Sans&quot;;" textLength="395.14px" lengthAdjust="spacingAndGlyphs">Verification outcome · Diagnostic · Group: Index test · Follow-up: first</text>
+    </g>
+  </g>
+</svg>
+

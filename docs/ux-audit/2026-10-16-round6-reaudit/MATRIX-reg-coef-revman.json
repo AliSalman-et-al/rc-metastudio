@@ -1,0 +1,162 @@
+[
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-standard-report-revman.png",
+    "sha256": "a4e3ad72ddb58c27c637d8f30a85356badbb33e49a10fc3f5fa2f9bee6e43151",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-standard-report-bottom-revman.png",
+    "sha256": "41d857d8bd055999e768152bd1cb0b5d11a3c8d5550a8e5df3f2aae231004a47",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-standard-figure-revman.png",
+    "sha256": "23b5a9a34bd487895345f78995bec19366b72fde8d0c796078b1edc0dcfec178",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-standard-figure-bottom-revman.png",
+    "sha256": "23b5a9a34bd487895345f78995bec19366b72fde8d0c796078b1edc0dcfec178",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-cumulative-report-revman.png",
+    "sha256": "9860814eccacaf0a1a16d62444e65d382e156ff3176b5386dedb1ef16c7c5980",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-cumulative-report-bottom-revman.png",
+    "sha256": "9860814eccacaf0a1a16d62444e65d382e156ff3176b5386dedb1ef16c7c5980",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-cumulative-figure-revman.png",
+    "sha256": "7373c7778b2a065e0c7ea143060e2a39d04d3bb5a6ea56de52544b272b7dc1fa",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-cumulative-figure-bottom-revman.png",
+    "sha256": "9366d100e19e033c5bc4486c5d2ddb413608cd480c680f0a2c1757fe581209c8",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-leave-one-out-report-revman.png",
+    "sha256": "d72249b64867e2cca6314d64354e73d56bdbc4ffdb6442b0ff70d1c9fe1c5e7d",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-leave-one-out-report-bottom-revman.png",
+    "sha256": "d72249b64867e2cca6314d64354e73d56bdbc4ffdb6442b0ff70d1c9fe1c5e7d",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-leave-one-out-figure-revman.png",
+    "sha256": "8d6fd223f162c6680e3aa1ddc76002d5463345e2627b79b50b870a7283fdbdb6",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-leave-one-out-figure-bottom-revman.png",
+    "sha256": "06ba470cebd1e99963705f65032f0896aa41c7263f3a14cd481fd11e27de6b81",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-subgroup-report-revman.png",
+    "sha256": "08bc031da4b3fd71fa1054c7a8e484cbfd03d5f88cc2f3e45dcc6e5dfdfdfb4d",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-subgroup-report-bottom-revman.png",
+    "sha256": "d4a8aed1321edd5752408c8be8f1837588ee268a52266b2a55e744e8c05a1770",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-subgroup-figure-revman.png",
+    "sha256": "77645191d9a16995957322c850b0e8b4dd91e7bc760ae099d9765d8bce3ca3b3",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-subgroup-figure-bottom-revman.png",
+    "sha256": "9fa702a0357b187b28d9e3e136c692d49a4c06a4014455e461f44df8302b822b",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-meta-regression-report-revman.png",
+    "sha256": "61f4532104c364f1ead1de891456eed007d3188c214fe5cadef9575043ec7013",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-meta-regression-report-bottom-revman.png",
+    "sha256": "283fd1285fa2662e391bd83c52b2c3019b9b9cb12cb24f0afe0256ca83f78494",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-meta-regression-figure-revman.png",
+    "sha256": "8296aaef8e59388f4874ed1023b5b57e2c7ac109a438a1becf141fea26ea2088",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-reg-coef-revman/captures/matrix-reg-coef-meta-regression-figure-bottom-revman.png",
+    "sha256": "c15b1e874c2e5ba7142f62b88fa90e6a0b60c1855fe01e5102fd7d4198779e79",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first"
+  }
+]

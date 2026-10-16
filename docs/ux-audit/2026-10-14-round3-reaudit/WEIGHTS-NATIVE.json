@@ -1,0 +1,14 @@
+[
+  {
+    "path": "screenshots/weights-irr-subgroup-middle.png",
+    "sha256": "020065330c7343173dc905d0943352c37df5244df974091b25d18ab3f000f85c",
+    "capture": "QScreen.grabWindow",
+    "scroll": 1524
+  },
+  {
+    "path": "screenshots/weights-irr-subgroup-bottom.png",
+    "sha256": "111f61914131d506433ac469aae73dc951414db6d8319bff3f2cbad938272dc3",
+    "capture": "QScreen.grabWindow",
+    "scroll": 2150
+  }
+]

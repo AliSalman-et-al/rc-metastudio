@@ -1,0 +1,20 @@
+{
+  "stopped": true,
+  "reason": "Required push failed; hard stop rule",
+  "command": [
+    "git",
+    "push",
+    "origin",
+    "ux/audit-improvements"
+  ],
+  "commit": "ca6815cc6e206b91885afb6444b126e007d4b5e2",
+  "exit_code": 143,
+  "stdout": "",
+  "stderr": "",
+  "remote_tracking_head": "0f212123a6eacdde0bfc2fe0a0c252ef571d9273",
+  "branch_ahead": 1,
+  "verification_session_exit": 143,
+  "verification_attempt": "native-bmj-clearance-binary",
+  "manifest_present": false,
+  "owned_processes_remaining": false
+}

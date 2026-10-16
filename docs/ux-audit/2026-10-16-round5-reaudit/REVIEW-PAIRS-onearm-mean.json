@@ -1,0 +1,37 @@
+[
+  {
+    "sheet": "raw/pair-onearm-mean-0.png",
+    "members": [
+      "screenshots/matrix-onearm-mean-standard-figure.png",
+      "screenshots/matrix-onearm-mean-standard-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-onearm-mean-1.png",
+    "members": [
+      "screenshots/matrix-onearm-mean-cumulative-figure.png",
+      "screenshots/matrix-onearm-mean-cumulative-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-onearm-mean-2.png",
+    "members": [
+      "screenshots/matrix-onearm-mean-leave-one-out-figure.png",
+      "screenshots/matrix-onearm-mean-leave-one-out-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-onearm-mean-3.png",
+    "members": [
+      "screenshots/matrix-onearm-mean-subgroup-figure.png",
+      "screenshots/matrix-onearm-mean-subgroup-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-onearm-mean-4.png",
+    "members": [
+      "screenshots/matrix-onearm-mean-meta-regression-figure.png",
+      "screenshots/matrix-onearm-mean-meta-regression-report.png"
+    ]
+  }
+]

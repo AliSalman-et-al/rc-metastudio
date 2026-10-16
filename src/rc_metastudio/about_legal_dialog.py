@@ -48,6 +48,10 @@ class AboutLegalDialog(QDialog, _ui_about_legal.Ui_AboutLegalDialog):
         close_button.setAccessibleName("Close About and Legal")
         close_button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.setTabOrder(self.content_scroll_area, close_button)
+        adaptive_window.set_content_preferred_width(
+            self, 280, self.fontMetrics().averageCharWidth() * 90,
+            preferred_height=self.fontMetrics().lineSpacing() * 28,
+        )
         self._layout_controller = adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )

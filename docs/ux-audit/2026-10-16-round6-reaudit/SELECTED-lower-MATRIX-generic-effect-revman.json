@@ -1,0 +1,42 @@
+[
+  {
+    "path": "screenshots/matrix-generic-effect-cumulative-figure-bottom-revman.png",
+    "sha256": "6099a6fcddf5ef09278cd04319c6944ce4ba1dc9466238bbe6ab6c3503237fb1",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-generic-effect-revman/captures/matrix-generic-effect-cumulative-figure-bottom-revman.png",
+    "scenario": "lower-MATRIX-generic-effect-revman"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-leave-one-out-figure-bottom-revman.png",
+    "sha256": "ab949a5bbc32da717ed0628aaed375e17d47e5c16700be2fa8d070d2f4d4b1a3",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-generic-effect-revman/captures/matrix-generic-effect-leave-one-out-figure-bottom-revman.png",
+    "scenario": "lower-MATRIX-generic-effect-revman"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-subgroup-figure-bottom-revman.png",
+    "sha256": "035efa9718c00750c5f6ef4420bb3534b373e2b1279753ce3b3f2a42e88022ed",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-generic-effect-revman/captures/matrix-generic-effect-subgroup-figure-bottom-revman.png",
+    "scenario": "lower-MATRIX-generic-effect-revman"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-meta-regression-figure-bottom-revman.png",
+    "sha256": "c8e0008ce43beab4696a202d825640f726afa642cb6dbca9b0011d919e32fd93",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-generic-effect-revman/captures/matrix-generic-effect-meta-regression-figure-bottom-revman.png",
+    "scenario": "lower-MATRIX-generic-effect-revman"
+  }
+]

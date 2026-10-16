@@ -280,7 +280,8 @@ Effect Size</string>
         </size>
        </property>
        <property name="text">
-        <string>SMD</string>
+        <string>Standardized
+mean difference</string>
        </property>
        <property name="icon">
         <iconset resource="../images/icons.qrc">

@@ -56,23 +56,47 @@ def record_step(action, *widgets, **observations):
         return
     STEP += 1
     captures = []
+    from tests.e2e.display_labels import visible_label_inventory, plot_label_inventory
+    groups = window.model.current_groups if window.model is not None else []
+    user_names = [name for name in groups if name not in {"Group", "Intervention", "Control"}]
+    if window.model is not None:
+        user_names += window.model.dataset.get_outcome_names()
+        user_names += window.model.dataset.get_covariate_names()
+        user_names += [study.name for study in window.model.dataset.studies]
+    observations["visible_labels"] = [entry for widget in widgets for entry in visible_label_inventory(widget, user_names)]
+    plot_paths = [value for value in observations.get("plots", {}).values() if isinstance(value, str)]
+    for widget in widgets:
+        result = getattr(widget, "results", None)
+        if hasattr(result, "display_images"):
+            plot_paths.extend(result.display_images.values())
+    observations["visible_plot_labels"] = plot_label_inventory(plot_paths, user_names)
     for index, widget in enumerate(widgets):
         path = EVIDENCE / f"{STEP:02d}-{index}-{action}.png"
-        if app.platformName() == "windows":
+        if app.platformName() in {"windows", "xcb", "cocoa"}:
             widget.raise_()
             widget.activateWindow()
             app.processEvents()
-            cast(Callable[[int], None], QTest.qWait)(100)
-            capture = widget.screen().grabWindow(int(widget.winId()))
+            cast(Callable[[int], None], QTest.qWait)(400)
+            if observations.get("capture_surface") == "desktop-composite":
+                capture = widget.screen().grabWindow(0)
+                ratio = capture.devicePixelRatio()
+                geometry = widget.frameGeometry()
+                origin = widget.screen().geometry().topLeft()
+                capture = capture.copy(round((geometry.x() - origin.x()) * ratio),
+                                       round((geometry.y() - origin.y()) * ratio),
+                                       round(geometry.width() * ratio), round(geometry.height() * ratio))
+            else:
+                capture = widget.screen().grabWindow(int(widget.winId()))
         else:
             capture = widget.grab()
         assert capture.save(str(path), "PNG"), path
         captures.append(path.name)
-        if app.platformName() == "windows" and action in {"analysis-results", "matrix-results", "small-study-results", "family-plot-cancelled"}:
+        if app.platformName() in {"windows", "xcb", "cocoa"} and action in {"analysis-results", "matrix-results", "small-study-results", "family-plot-cancelled"}:
             report_checked = widget.report_action.isChecked()
+            original_nav_item = widget.nav_tree.currentItem()
             widget.report_action.setChecked(True)
             app.processEvents()
-            cast(Callable[[int], None], QTest.qWait)(100)
+            cast(Callable[[int], None], QTest.qWait)(400)
             report_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-report.png"
             assert widget.screen().grabWindow(int(widget.winId())).save(str(report_path), "PNG")
             captures.append(report_path.name)
@@ -80,7 +104,7 @@ def record_step(action, *widgets, **observations):
             if widget.tables_action.isEnabled():
                 widget.tables_action.trigger()
                 app.processEvents()
-                cast(Callable[[int], None], QTest.qWait)(100)
+                cast(Callable[[int], None], QTest.qWait)(400)
                 table_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-table.png"
                 assert widget.screen().grabWindow(int(widget.winId())).save(str(table_path), "PNG")
                 captures.append(table_path.name)
@@ -88,7 +112,7 @@ def record_step(action, *widgets, **observations):
                     if table.title == "Test of subgroup differences":
                         widget.table_selector.setCurrentIndex(table_index)
                         app.processEvents()
-                        cast(Callable[[int], None], QTest.qWait)(100)
+                        cast(Callable[[int], None], QTest.qWait)(400)
                         subgroup_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-subgroup-test.png"
                         assert widget.screen().grabWindow(int(widget.winId())).save(str(subgroup_path), "PNG")
                         captures.append(subgroup_path.name)
@@ -96,23 +120,28 @@ def record_step(action, *widgets, **observations):
             widget.report_action.setChecked(report_checked)
             widget._show_report(report_checked)
             app.processEvents()
+            widget.nav_tree.setCurrentItem(getattr(widget, "_last_plot_item", original_nav_item))
             widget.report_action.setChecked(False)
             widget._show_report(False)
             scroll = widget.graphics_view.verticalScrollBar()
             position = scroll.value()
-            scroll.setValue(0)
+            widget._scroll_to_section(widget.nav_tree.currentItem())
             app.processEvents()
-            cast(Callable[[int], None], QTest.qWait)(100)
+            cast(Callable[[int], None], QTest.qWait)(400)
             figure_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-figure.png"
             assert widget.screen().grabWindow(int(widget.winId())).save(str(figure_path), "PNG")
             captures.append(figure_path.name)
-            scroll.setValue(scroll.maximum())
+            selected_plot = widget._selected_plot()
+            if selected_plot is not None:
+                bottom = selected_plot[1].sceneBoundingRect().bottom() * widget.graphics_view.transform().m22()
+                scroll.setValue(round(bottom - widget.graphics_view.viewport().height() + 30))
             app.processEvents()
-            cast(Callable[[int], None], QTest.qWait)(100)
+            cast(Callable[[int], None], QTest.qWait)(400)
             bottom_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-bottom.png"
             assert widget.screen().grabWindow(int(widget.winId())).save(str(bottom_path), "PNG")
             captures.append(bottom_path.name)
             scroll.setValue(position)
+            widget.nav_tree.setCurrentItem(original_nav_item)
             widget.report_action.setChecked(report_checked)
             widget._show_report(report_checked)
             app.processEvents()
@@ -166,6 +195,12 @@ def doctor(app, window):
     assert r_bridge.get_r_package_version("RCMetaR") == rcmetar_version
     assert window.isVisible()
     assert Path(settings.get_base_path()).resolve() == WORK.resolve()
+    font_families = QtGui.QFontDatabase.families()
+    font = QtGui.QRawFont.fromFont(app.font())
+    assert font_families and font.isValid(), ("Qt has no usable fonts", app.font().toString())
+    assert all(font.supportsCharacter(ord(char)) for char in "Aa012τ…"), (
+        "Qt's default font lacks required glyphs", font.familyName(), app.font().toString()
+    )
     identity = {
         "r": r_version,
         "r_libraries": r_bridge.get_r_library_paths(),
@@ -176,6 +211,13 @@ def doctor(app, window):
         "qt": QtCore.qVersion(),
         "pyqt": QtCore.PYQT_VERSION_STR,
         "platform_plugin": app.platformName(),
+        "font": {
+            "family": font.familyName(),
+            "style": font.styleName(),
+            "family_count": len(font_families),
+            "required_glyphs": "Aa012τ…",
+            "directory": os.environ.get("QT_QPA_FONTDIR"),
+        },
         "application": app.applicationName(),
         "qt_build_root": os.environ.get("RCMS_QT6_BUILD_ROOT"),
         "application_base_path": settings.get_base_path(),
@@ -281,15 +323,6 @@ def sample_analysis(app, window, sample):
     actual_sections = parsed_numeric_sections(view.results)
     expected = expected_sections[section]
     actual = actual_sections[section]
-    rendered_text = "\n".join(
-        item.toPlainText()
-        for item in view.scene.items()
-        if isinstance(item, QtWidgets.QGraphicsTextItem)
-    )
-    source_key = next(
-        item.source_key for item in view.results.sections if item.title == section
-    )
-    assert view.texts[source_key].strip() in rendered_text, "summary was not displayed"
     policy = contract["tolerance_policy"]
     for title, values in expected_sections.items():
         assert title in actual_sections, (title, actual_sections)
@@ -302,6 +335,14 @@ def sample_analysis(app, window, sample):
                 actual_sections[title][key],
                 value,
             )
+    summary_section = next(item for item in view.results.sections if item.title == section)
+    assert summary_section.tables, "summary has no structured table"
+    view.report_action.setChecked(True)
+    app.processEvents()
+    assert view.report_text.isVisible()
+    rendered_text = view.report_text.toPlainText()
+    for row in summary_section.tables[0].rows:
+        assert all(cell in rendered_text for cell in row), (row, rendered_text)
     record_step(
         "numerical-oracle",
         view,
@@ -714,6 +755,16 @@ try:
         doctor(app, window)
     if scenario == "doctor":
         pass
+    elif scenario.startswith("audit-round3-"):
+        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
+        from tests.e2e.audit_round3 import run
+
+        run(app, window, WORK, record_step, scenario)
+    elif scenario == "review1-design":
+        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
+        from tests.e2e.review1_design import run
+
+        run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario == "review-workflows":
         from tests.e2e.review_workflows import run
 
@@ -735,6 +786,8 @@ try:
             "options-",
             "plot-workflow-",
             "calculator-mode-",
+            "calculator-grid-precision",
+            "calculator-ratio-precision",
             "project-",
             "analysis-sequential-",
         )

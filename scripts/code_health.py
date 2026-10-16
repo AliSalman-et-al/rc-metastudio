@@ -111,6 +111,7 @@ def run_git(root: Path, *args: str) -> str:
             check=True,
             capture_output=True,
             text=True,
+            encoding="utf-8",
         )
     except (OSError, subprocess.CalledProcessError) as exc:
         raise CodeHealthError(f"git {' '.join(args)} failed") from exc
@@ -265,6 +266,10 @@ def _next_r_token(source: str, index: int, line: int) -> tuple[str | None, int, 
         start_line = line
         index, line = _scan_r_string(source, index, line)
         return "<string>", index, start_line
+    if char == "%":
+        end = source.find("%", index + 1)
+        if end >= 0 and "\n" not in source[index:end]:
+            return source[index:end + 1], end + 1, line
     if char.isalpha() or char in "._":
         return (*_scan_r_identifier(source, index), line)
     pair = source[index:index + 2]

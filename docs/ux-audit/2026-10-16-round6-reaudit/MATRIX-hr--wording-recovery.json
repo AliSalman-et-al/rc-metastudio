@@ -1,0 +1,42 @@
+[
+  {
+    "path": "raw/matrix-hr--wording-recovery/captures/matrix-hr-meta-regression-report--wording-recovery.png",
+    "sha256": "b1dc1207989fd7187d45d17dabc415326547cec46167b95c6d94ab448c53a28b",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-hr--wording-recovery/captures/matrix-hr-meta-regression-report-bottom--wording-recovery.png",
+    "sha256": "8edaef1fcc7da141c4e50ea5af8e0c80f7077d080a281e45d6a6c46910b1213d",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-hr--wording-recovery/captures/matrix-hr-meta-regression-report-exponentiated--wording-recovery.png",
+    "sha256": "ef0d94ecda47d033f09871bb0996db4a6c2cf53b875f3cbd5ebf067c970cbc6e",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-hr--wording-recovery/captures/matrix-hr-meta-regression-figure--wording-recovery.png",
+    "sha256": "a5423be600858ecf0f249be0654461c95e2158e4fda74bb1e992ef2e61942e83",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "raw/matrix-hr--wording-recovery/captures/matrix-hr-meta-regression-figure-bottom--wording-recovery.png",
+    "sha256": "6e7b4a3522ff60cf231c08f7ca7dd9494abf244a6c5349be714b9db3a75282e7",
+    "capture": "QScreen.grabWindow",
+    "family": "hr",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Mortality \u00b7 Time-to-event \u00b7 Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone \u00b7 Follow-up: first"
+  }
+]

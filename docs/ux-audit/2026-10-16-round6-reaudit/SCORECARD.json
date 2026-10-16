@@ -1,0 +1,911 @@
+{
+  "baseline": "../2026-10-16-round5-reaudit/REPORT.md",
+  "status": "Final comparative editorial review",
+  "counts": {
+    "unchanged": 64,
+    "improved": 23,
+    "fixed": 13
+  },
+  "rows": [
+    {
+      "id": "L01",
+      "verdict": "unchanged",
+      "observation": "Type tiles remain readable; no step indicator and field-page scrolling remain.",
+      "evidence": {
+        "path": "DESIGN.json",
+        "label": "Native wizard/import/help/validation inventory"
+      }
+    },
+    {
+      "id": "L02",
+      "verdict": "unchanged",
+      "observation": "Pristine Untitled dataset and no welcome modal retained.",
+      "evidence": {
+        "path": "DESIGN.json",
+        "label": "Native wizard/import/help/validation inventory"
+      }
+    },
+    {
+      "id": "L03",
+      "verdict": "unchanged",
+      "observation": "Canonical CSV/template headers use actual arm names and readable field names.",
+      "evidence": {
+        "path": "DESIGN.json",
+        "label": "Native wizard/import/help/validation inventory"
+      }
+    },
+    {
+      "id": "L04",
+      "verdict": "unchanged",
+      "observation": "Entered-effect identity now travels in editable standalone context; dedicated units remain absent.",
+      "evidence": {
+        "path": "DESIGN.json",
+        "label": "Native wizard/import/help/validation inventory"
+      }
+    },
+    {
+      "id": "L05",
+      "verdict": "unchanged",
+      "observation": "Required outcome and optional meaningful arm-name fields improve the final naming step.",
+      "evidence": {
+        "path": "DESIGN.json",
+        "label": "Native wizard/import/help/validation inventory"
+      }
+    },
+    {
+      "id": "L06",
+      "verdict": "unchanged",
+      "observation": "Integer count preview and named headers improve import; all dialect/filesystem faults unqualified.",
+      "evidence": {
+        "path": "DESIGN.json",
+        "label": "Native wizard/import/help/validation inventory"
+      }
+    },
+    {
+      "id": "G01",
+      "verdict": "unchanged",
+      "observation": "Linux grid is readable; old persisted Windows width trigger remains unqualified.",
+      "evidence": {
+        "path": "SELECTED-calculator-grid-precision.json",
+        "label": "Actual input edits and save/reopen"
+      }
+    },
+    {
+      "id": "G02",
+      "verdict": "improved",
+      "observation": "Built-in TX Mean/menu identity repaired in ten-family label sweep; investigator names preserved. General terminology polish remains.",
+      "evidence": {
+        "path": "SELECTED-project-display-labels.json",
+        "label": "Ten-family live labels and selectors"
+      }
+    },
+    {
+      "id": "G03",
+      "verdict": "unchanged",
+      "observation": "Calculator glyphs and italic derived values add non-colour cues; assistive-tech qualification remains open.",
+      "evidence": {
+        "path": "SELECTED-calculator-grid-precision.json",
+        "label": "Actual input edits and save/reopen"
+      }
+    },
+    {
+      "id": "G04",
+      "verdict": "unchanged",
+      "observation": "Named navigation retained and metadata spacing now reads Follow-up: first consistently.",
+      "evidence": {
+        "path": "SHELL.json",
+        "label": "Workspace navigation and structure dialogs"
+      }
+    },
+    {
+      "id": "G05",
+      "verdict": "unchanged",
+      "observation": "Intervention/Control defaults, optional wizard names and preserved investigator/legacy names retained.",
+      "evidence": {
+        "path": "SHELL.json",
+        "label": "Workspace navigation and structure dialogs"
+      }
+    },
+    {
+      "id": "G06",
+      "verdict": "unchanged",
+      "observation": "Readable diagnostic input/CI fields retained; exact leading zeros visible in fresh native edit preview.",
+      "evidence": {
+        "path": "SELECTED-calculator-grid-precision.json",
+        "label": "Actual input edits and save/reopen"
+      }
+    },
+    {
+      "id": "G07",
+      "verdict": "improved",
+      "observation": "Calculator exact entry/provenance and live derived summaries repaired; dense layouts remain.",
+      "evidence": {
+        "path": "SELECTED-calculator-grid-precision.json",
+        "label": "Actual input edits and save/reopen"
+      }
+    },
+    {
+      "id": "G08",
+      "verdict": "unchanged",
+      "observation": "Numeric/Category wording and separated destructive actions retained.",
+      "evidence": {
+        "path": "SHELL.json",
+        "label": "Workspace navigation and structure dialogs"
+      }
+    },
+    {
+      "id": "M01",
+      "verdict": "unchanged",
+      "observation": "A labelled Analyses group gives analysis actions one recognition rule; minor case remnants persist.",
+      "evidence": {
+        "path": "SHELL.json",
+        "label": "Opened native menus and recovery/eligibility"
+      }
+    },
+    {
+      "id": "M02",
+      "verdict": "unchanged",
+      "observation": "Missing recent files expose Locate/Remove and recover to real project entries.",
+      "evidence": {
+        "path": "SHELL.json",
+        "label": "Opened native menus and recovery/eligibility"
+      }
+    },
+    {
+      "id": "M03",
+      "verdict": "unchanged",
+      "observation": "Actual disabled subgroup prerequisite tooltip works within the labelled analysis menu.",
+      "evidence": {
+        "path": "SHELL.json",
+        "label": "Opened native menus and recovery/eligibility"
+      }
+    },
+    {
+      "id": "M04",
+      "verdict": "unchanged",
+      "observation": "Structure tabs remain a dense three-pane editor; actual arm names are readable.",
+      "evidence": {
+        "path": "SHELL.json",
+        "label": "Workspace navigation and structure dialogs"
+      }
+    },
+    {
+      "id": "S01",
+      "verdict": "unchanged",
+      "observation": "Separate report/figure zoom and scoped confidence controls retained.",
+      "evidence": {
+        "path": "DESIGN.json",
+        "label": "Result navigation/zoom and dialog sizing"
+      }
+    },
+    {
+      "id": "D01",
+      "verdict": "unchanged",
+      "observation": "Content-sized cards, named controls and Locate/Remove recovery retained; current 1\u00d7/1.5\u00d7/2\u00d7 application-scale proof is separate from historical 1.25\u00d7 evidence and actual OS-DPI qualification.",
+      "evidence": {
+        "path": "DESIGN.json",
+        "label": "Result navigation/zoom and dialog sizing"
+      }
+    },
+    {
+      "id": "D02",
+      "verdict": "improved",
+      "observation": "Contextual metric labels improved; some general method-family descriptions still need translation.",
+      "evidence": {
+        "path": "SELECTED-project-display-labels.json",
+        "label": "Ten-family live labels and selectors"
+      }
+    },
+    {
+      "id": "D03",
+      "verdict": "unchanged",
+      "observation": "Editable context and actual group headings improve setup/editing; hex colour fields and long forms remain.",
+      "evidence": {
+        "path": "SELECTED-project-reviewer-groups.json",
+        "label": "Actual unnamed/named arms and reopened context"
+      }
+    },
+    {
+      "id": "D04",
+      "verdict": "fixed",
+      "observation": "Invalid contour input is inline, stops busy state, stays editable and recovers to real output.",
+      "evidence": {
+        "path": "SELECTED-project-round6-polish.json",
+        "label": "Eligibility and invalid-contour recovery"
+      }
+    },
+    {
+      "id": "D05",
+      "verdict": "unchanged",
+      "observation": "Existing corrections and eligibility retained; universal affected-study accounting remains incomplete.",
+      "evidence": {
+        "path": "SELECTED-project-round6-polish.json",
+        "label": "Eligibility and invalid-contour recovery"
+      }
+    },
+    {
+      "id": "R01",
+      "verdict": "improved",
+      "observation": "Readable package-owned labels and reduced duplicate identity; remaining report hierarchy is coherent.",
+      "evidence": {
+        "path": "SELECTED-project-round6-polish.json",
+        "label": "Live report overview and structured tables"
+      }
+    },
+    {
+      "id": "R02",
+      "verdict": "unchanged",
+      "observation": "Existing outcome/comparison/follow-up identity is in editable standalone captions; IRR exposure is explicit.",
+      "evidence": {
+        "path": "SELECTED-project-reviewer-groups.json",
+        "label": "Actual unnamed/named arms and reopened context"
+      }
+    },
+    {
+      "id": "R03",
+      "verdict": "improved",
+      "observation": "Long-figure caps and wrapped arm headers repaired; long outputs still require deliberate zoom/scroll.",
+      "evidence": {
+        "path": "SELECTED-audit-round3-round5.json",
+        "label": "Dense 65-study upper/lower figures in all styles"
+      }
+    },
+    {
+      "id": "R04",
+      "verdict": "unchanged",
+      "observation": "Previously fixed sequential reference bounds retained on inspected paths.",
+      "evidence": {
+        "path": "SELECTED-project-axis-sequential.json",
+        "label": "Sequential reference/scale paths"
+      }
+    },
+    {
+      "id": "R05",
+      "verdict": "unchanged",
+      "observation": "Original coefficient Fixture 2 lower bound remains zero; tiny-effect protection retained.",
+      "evidence": {
+        "path": "SELECTED-project-axis-sequential.json",
+        "label": "Sequential reference/scale paths"
+      }
+    },
+    {
+      "id": "R06",
+      "verdict": "unchanged",
+      "observation": "Study added (k) and sequence/display-order guidance retained.",
+      "evidence": {
+        "path": "MATRIX-hr.json",
+        "label": "HR cumulative and omission identities"
+      }
+    },
+    {
+      "id": "R07",
+      "verdict": "unchanged",
+      "observation": "HR/IRR omitted-study identity and visible row intervals remain aligned.",
+      "evidence": {
+        "path": "MATRIX-hr.json",
+        "label": "HR cumulative and omission identities"
+      }
+    },
+    {
+      "id": "R08",
+      "verdict": "fixed",
+      "observation": "Structured subgroup results now identify fitted SE scales alongside natural-scale effects.",
+      "evidence": {
+        "path": "SELECTED-project-reviewer-predictions.json",
+        "label": "Sequential/subgroup clinical and fitted scales"
+      }
+    },
+    {
+      "id": "R09",
+      "verdict": "fixed",
+      "observation": "Bubble legend entries/samples follow visible regression/CI/PI components; panel-bounded guides retained.",
+      "evidence": {
+        "path": "SELECTED-audit-round3-bubble-metrics.json",
+        "label": "Metric-specific bubbles and guide bounds"
+      }
+    },
+    {
+      "id": "R10",
+      "verdict": "unchanged",
+      "observation": "Single-arm proportion's actual tested null remains explicit.",
+      "evidence": {
+        "path": "SELECTED-project-reviewer-predictions.json",
+        "label": "Single-arm natural-scale null/interval presentation"
+      }
+    },
+    {
+      "id": "R11",
+      "verdict": "unchanged",
+      "observation": "Mean caption carries investigator context and can state units; no dedicated unit field.",
+      "evidence": {
+        "path": "SELECTED-project-reviewer-groups.json",
+        "label": "Actual unnamed/named arms and reopened context"
+      }
+    },
+    {
+      "id": "R12",
+      "verdict": "improved",
+      "observation": "Duplicate default metric/type captions removed; investigator context retained.",
+      "evidence": {
+        "path": "SELECTED-project-round6-polish.json",
+        "label": "Live report overview and structured tables"
+      }
+    },
+    {
+      "id": "R13",
+      "verdict": "unchanged",
+      "observation": "Actual arm names clarify comparative interpretation without invented clinical conclusions.",
+      "evidence": {
+        "path": "SELECTED-project-reviewer-groups.json",
+        "label": "Actual unnamed/named arms and reopened context"
+      }
+    },
+    {
+      "id": "R14",
+      "verdict": "unchanged",
+      "observation": "MD/SMD subtraction explicitly names Intervention minus Control; existing scale guidance retained.",
+      "evidence": {
+        "path": "SELECTED-project-reviewer-groups.json",
+        "label": "Actual unnamed/named arms and reopened context"
+      }
+    },
+    {
+      "id": "R15",
+      "verdict": "improved",
+      "observation": "Diagnostic coefficient precision and readable logit/OR interval headings finish the shared table surfaces.",
+      "evidence": {
+        "path": "SELECTED-project-round6-polish.json",
+        "label": "Diagnostic coefficients at two/six digits; Tables/copy/CSV"
+      }
+    },
+    {
+      "id": "R16",
+      "verdict": "improved",
+      "observation": "Reference/moderator identities retained with selected precision and readable coefficient headings.",
+      "evidence": {
+        "path": "SELECTED-project-round6-polish.json",
+        "label": "Diagnostic coefficients at two/six digits; Tables/copy/CSV"
+      }
+    },
+    {
+      "id": "R17",
+      "verdict": "fixed",
+      "observation": "Dense Default/subgroup CI caps now follow row spacing; prior long-forest regression closed.",
+      "evidence": {
+        "path": "SELECTED-audit-round3-round5.json",
+        "label": "Dense 65-study upper/lower figures in all styles"
+      }
+    },
+    {
+      "id": "R18",
+      "verdict": "unchanged",
+      "observation": "IRR actual arms, catheter-day exposure, raw columns and independently checked totals are explicit.",
+      "evidence": {
+        "path": "MATRIX-irr.json",
+        "label": "IRR raw exposure, totals and subgroup identities"
+      }
+    },
+    {
+      "id": "R19",
+      "verdict": "unchanged",
+      "observation": "Existing small-study cautions/eligibility retained; corrected contour recovery is tracked under D04/R5-07.",
+      "evidence": {
+        "path": "SELECTED-project-round6-polish.json",
+        "label": "Eligibility and invalid-contour recovery"
+      }
+    },
+    {
+      "id": "E01",
+      "verdict": "improved",
+      "observation": "Exports preserve axes, colours and semantic legends; the long RevMan header/caption defect R6-03 limits layout acceptance.",
+      "evidence": {
+        "path": "EXPORT-EVIDENCE.json",
+        "label": "Retained actual vectors and long-heading defects"
+      }
+    },
+    {
+      "id": "E02",
+      "verdict": "improved",
+      "observation": "Raw calculator/grid input integrity repaired through undo and save/reopen; existing dirty guards retained.",
+      "evidence": {
+        "path": "SELECTED-calculator-grid-precision.json",
+        "label": "Actual input edits and save/reopen"
+      }
+    },
+    {
+      "id": "H01",
+      "verdict": "unchanged",
+      "observation": "Quick start explains naming, existing legacy names, row calculators and output tools.",
+      "evidence": {
+        "path": "DESIGN.json",
+        "label": "Native wizard/import/help/validation inventory"
+      }
+    },
+    {
+      "id": "X01",
+      "verdict": "unchanged",
+      "observation": "Blank/duplicate validation remains recoverable; arm duplicates now have explicit inline feedback.",
+      "evidence": {
+        "path": "DESIGN.json",
+        "label": "Native wizard/import/help/validation inventory"
+      }
+    },
+    {
+      "id": "X02",
+      "verdict": "unchanged",
+      "observation": "Local covariate empty-state guidance remains; broader contextual workflow help is modest.",
+      "evidence": {
+        "path": "OPTIONS.json",
+        "label": "Covariate and analysis setup empty-state controls"
+      }
+    },
+    {
+      "id": "A01",
+      "verdict": "unchanged",
+      "observation": "Named controls and selectable tables improve access; no screen-reader qualification.",
+      "evidence": {
+        "path": "DESIGN.json",
+        "label": "Named controls, contrast samples; bounded accessibility scope"
+      }
+    },
+    {
+      "id": "A02",
+      "verdict": "improved",
+      "observation": "Sampled normal/selection contrast and non-colour cues; universal high-contrast qualification remains open.",
+      "evidence": {
+        "path": "DESIGN.json",
+        "label": "Named controls, contrast samples; bounded accessibility scope"
+      }
+    },
+    {
+      "id": "A03",
+      "verdict": "improved",
+      "observation": "Readable growing figures retain bounded caps; actual OS scaling/platform limits remain.",
+      "evidence": {
+        "path": "DESIGN.json",
+        "label": "Result navigation/zoom and dialog sizing"
+      }
+    },
+    {
+      "id": "A04",
+      "verdict": "unchanged",
+      "observation": "Consistent labelled Analyses group replaces the mixed labelled/icon-only analysis toolbar.",
+      "evidence": {
+        "path": "SHELL.json",
+        "label": "Opened native menus and recovery/eligibility"
+      }
+    },
+    {
+      "id": "A05",
+      "verdict": "unchanged",
+      "observation": "Actual Tab/arrow/Escape paths run for workspace/setup/results; full no-mouse and assistive-tech scope remains open.",
+      "evidence": {
+        "path": "GUARD-KEYBOARD.json",
+        "label": "Loaded-project keyboard/report/dirty-guard task"
+      }
+    },
+    {
+      "id": "RG01",
+      "verdict": "improved",
+      "observation": "Diagnostic overview and coefficient tables have readable selected-precision clinical/fitted scale identity.",
+      "evidence": {
+        "path": "SELECTED-project-round6-polish.json",
+        "label": "Live report overview and structured tables"
+      }
+    },
+    {
+      "id": "RG02",
+      "verdict": "unchanged",
+      "observation": "Independent report/figure zoom retained; Fit width remains figure-scoped.",
+      "evidence": {
+        "path": "DESIGN.json",
+        "label": "Result navigation/zoom and dialog sizing"
+      }
+    },
+    {
+      "id": "RG03",
+      "verdict": "unchanged",
+      "observation": "Diagnostic shared notes precede components and executed-method identity remains intact.",
+      "evidence": {
+        "path": "SELECTED-project-round6-polish.json",
+        "label": "Live report overview and structured tables"
+      }
+    },
+    {
+      "id": "RG04",
+      "verdict": "unchanged",
+      "observation": "CSV guidance stays outside the scrolling field area.",
+      "evidence": {
+        "path": "DESIGN.json",
+        "label": "Native wizard/import/help/validation inventory"
+      }
+    },
+    {
+      "id": "N01",
+      "verdict": "unchanged",
+      "observation": "Prior contextual BMJ coefficient identity is retained at six digits; new long-name header defect is separate.",
+      "evidence": {
+        "path": "EXPORT-EVIDENCE.json",
+        "label": "Retained actual vectors and long-heading defects"
+      }
+    },
+    {
+      "id": "N02",
+      "verdict": "improved",
+      "observation": "Diagnostic moderator tables now honour precision and label logit/OR intervals; arbitrary long labels remain unqualified.",
+      "evidence": {
+        "path": "SELECTED-project-round6-polish.json",
+        "label": "Diagnostic coefficients at two/six digits; Tables/copy/CSV"
+      }
+    },
+    {
+      "id": "N03",
+      "verdict": "unchanged",
+      "observation": "Previously bounded sequential guides/round ticks now joined by clipped bubble guides on inspected paths.",
+      "evidence": {
+        "path": "SELECTED-project-axis-sequential.json",
+        "label": "Sequential reference/scale paths"
+      }
+    },
+    {
+      "id": "N04",
+      "verdict": "fixed",
+      "observation": "Subgroup structured report retains tests and explicitly identifies SE scale.",
+      "evidence": {
+        "path": "SELECTED-project-reviewer-predictions.json",
+        "label": "Sequential/subgroup clinical and fitted scales"
+      }
+    },
+    {
+      "id": "N05",
+      "verdict": "unchanged",
+      "observation": "Existing subgroup-difference tests are present in figures and reports.",
+      "evidence": {
+        "path": "SELECTED-project-reviewer-predictions.json",
+        "label": "Sequential/subgroup clinical and fitted scales"
+      }
+    },
+    {
+      "id": "N06",
+      "verdict": "unchanged",
+      "observation": "Report identity and tab-separated export rows remain intact.",
+      "evidence": {
+        "path": "OUTCOMES.json",
+        "label": "Maintained report/Tables copy/export assertions and manifest paths"
+      }
+    },
+    {
+      "id": "N07",
+      "verdict": "unchanged",
+      "observation": "HR/IRR cumulative/omission study labels and intervals remain correct on inspected rows.",
+      "evidence": {
+        "path": "MATRIX-hr.json",
+        "label": "HR cumulative and omission identities"
+      }
+    },
+    {
+      "id": "N08",
+      "verdict": "improved",
+      "observation": "Calculator exact input, derived preview and persistence improve; historical Windows-width trigger remains unqualified.",
+      "evidence": {
+        "path": "SELECTED-calculator-grid-precision.json",
+        "label": "Actual input edits and save/reopen"
+      }
+    },
+    {
+      "id": "N09",
+      "verdict": "unchanged",
+      "observation": "Existing named dimension navigation gains consistent metadata spacing.",
+      "evidence": {
+        "path": "SHELL.json",
+        "label": "Workspace navigation and structure dialogs"
+      }
+    },
+    {
+      "id": "N10",
+      "verdict": "improved",
+      "observation": "Built-in internal menu/report vocabulary repaired; minor case/method-family wording remains.",
+      "evidence": {
+        "path": "SELECTED-project-display-labels.json",
+        "label": "Ten-family live labels and selectors"
+      }
+    },
+    {
+      "id": "N11",
+      "verdict": "improved",
+      "observation": "Round-trip-safe editors preserve data precision; the ordinary diagnostic form still needs horizontal scrolling and long fields remain a visibility gap.",
+      "evidence": {
+        "path": "SELECTED-calculator-grid-precision.json",
+        "label": "Actual input edits and save/reopen"
+      }
+    },
+    {
+      "id": "R2-01",
+      "verdict": "unchanged",
+      "observation": "Previously repaired HR/IRR omission identities remain correct.",
+      "evidence": {
+        "path": "MATRIX-hr.json",
+        "label": "HR cumulative and omission identities"
+      }
+    },
+    {
+      "id": "R2-02",
+      "verdict": "unchanged",
+      "observation": "Copy/export retains executed identity and matches saved bytes.",
+      "evidence": {
+        "path": "OUTCOMES.json",
+        "label": "Maintained report/Tables copy/export assertions and manifest paths"
+      }
+    },
+    {
+      "id": "R2-03",
+      "verdict": "unchanged",
+      "observation": "Structured table exports remain tab-separated, not one-cell-per-line text.",
+      "evidence": {
+        "path": "OUTCOMES.json",
+        "label": "Maintained report/Tables copy/export assertions and manifest paths"
+      }
+    },
+    {
+      "id": "F01",
+      "verdict": "unchanged",
+      "observation": "Fixed-model inactive tau-squared omission retained; fresh fixed-IV figure/report agree on estimate, CI and heterogeneity.",
+      "evidence": {
+        "path": "OUTCOMES.json",
+        "label": "Fixed/clinical-null authority and rendered presentation scenarios"
+      }
+    },
+    {
+      "id": "F02",
+      "verdict": "unchanged",
+      "observation": "Applicable executed methods and fitted references retained.",
+      "evidence": {
+        "path": "OUTCOMES.json",
+        "label": "Fixed/clinical-null authority and rendered presentation scenarios"
+      }
+    },
+    {
+      "id": "F03",
+      "verdict": "unchanged",
+      "observation": "HR/IRR subgroup tables now remove legacy prose while retaining tests and prediction intervals.",
+      "evidence": {
+        "path": "SELECTED-project-reviewer-predictions.json",
+        "label": "Sequential/subgroup clinical and fitted scales"
+      }
+    },
+    {
+      "id": "F04",
+      "verdict": "improved",
+      "observation": "Diagnostic selected precision and tiny numeric entry repaired while retaining genuine small effects; no universal formatting claim.",
+      "evidence": {
+        "path": "SELECTED-project-round6-polish.json",
+        "label": "Diagnostic coefficients at two/six digits; Tables/copy/CSV"
+      }
+    },
+    {
+      "id": "F05",
+      "verdict": "unchanged",
+      "observation": "Prior comparative test and named actual-null presentation retained.",
+      "evidence": {
+        "path": "OUTCOMES.json",
+        "label": "Fixed/clinical-null authority and rendered presentation scenarios"
+      }
+    },
+    {
+      "id": "F06",
+      "verdict": "improved",
+      "observation": "Raw precision/provenance and live derived summaries repaired; calculator layout remains dense.",
+      "evidence": {
+        "path": "SELECTED-calculator-grid-precision.json",
+        "label": "Actual input edits and save/reopen"
+      }
+    },
+    {
+      "id": "F07",
+      "verdict": "improved",
+      "observation": "Readable internal labels and Default style name repaired; case consistency and action-labelled dirty prompts remain polish.",
+      "evidence": {
+        "path": "SELECTED-project-display-labels.json",
+        "label": "Ten-family live labels and selectors"
+      }
+    },
+    {
+      "id": "F08",
+      "verdict": "unchanged",
+      "observation": "Prior BMJ coefficient/entered-effect identity retained at six digits; three-style presentation/export sweeps passed.",
+      "evidence": {
+        "path": "EXPORT-EVIDENCE.json",
+        "label": "Retained actual vectors and long-heading defects"
+      }
+    },
+    {
+      "id": "F09",
+      "verdict": "unchanged",
+      "observation": "Short-label annotation clearance retained; former BMJ long-name layout improved. RevMan collision/truncation remain R6-03/R6-06.",
+      "evidence": {
+        "path": "EXPORT-EVIDENCE.json",
+        "label": "Retained actual vectors and long-heading defects"
+      }
+    },
+    {
+      "id": "F10",
+      "verdict": "unchanged",
+      "observation": "IRR duplicate-author subgroup rows retain distinct identities and overall weights.",
+      "evidence": {
+        "path": "MATRIX-irr.json",
+        "label": "IRR raw exposure, totals and subgroup identities"
+      }
+    },
+    {
+      "id": "R3-01",
+      "verdict": "unchanged",
+      "observation": "Sequential null guide stays within study rows clear of the footer.",
+      "evidence": {
+        "path": "SELECTED-project-axis-sequential.json",
+        "label": "Sequential reference/scale paths"
+      }
+    },
+    {
+      "id": "R3-02",
+      "verdict": "unchanged",
+      "observation": "Round linear bubble ticks and title clearance remain readable.",
+      "evidence": {
+        "path": "SELECTED-audit-round3-bubble-metrics.json",
+        "label": "Metric-specific bubbles and guide bounds"
+      }
+    },
+    {
+      "id": "F11",
+      "verdict": "unchanged",
+      "observation": "Exterior bubble guide removed; fresh 18-case metric/explicit-bound geometry sweep passed; decoded editor exports are separately recorded.",
+      "evidence": {
+        "path": "SELECTED-audit-round3-bubble-metrics.json",
+        "label": "Metric-specific bubbles and guide bounds"
+      }
+    },
+    {
+      "id": "F12",
+      "verdict": "unchanged",
+      "observation": "Legacy scene weights removed; report/Tables retain structured rows and existing component identities.",
+      "evidence": {
+        "path": "DESIGN.json",
+        "label": "Structured results navigation and component identities"
+      }
+    },
+    {
+      "id": "F13",
+      "verdict": "unchanged",
+      "observation": "Content-sized cards, named controls and Locate/Remove recovery retained; current 1\u00d7/1.5\u00d7/2\u00d7 application-scale proof is separate from historical 1.25\u00d7 evidence and actual OS-DPI qualification.",
+      "evidence": {
+        "path": "SHELL.json",
+        "label": "Opened native menus and recovery/eligibility"
+      }
+    },
+    {
+      "id": "F14",
+      "verdict": "unchanged",
+      "observation": "Labelled Analyses group and actual prerequisite tooltip.",
+      "evidence": {
+        "path": "SHELL.json",
+        "label": "Opened native menus and recovery/eligibility"
+      }
+    },
+    {
+      "id": "F15",
+      "verdict": "unchanged",
+      "observation": "Navigator/results label/value spacing is consistent.",
+      "evidence": {
+        "path": "SHELL.json",
+        "label": "Workspace navigation and structure dialogs"
+      }
+    },
+    {
+      "id": "R5-01",
+      "verdict": "fixed",
+      "observation": "Sequential/subgroup SE headings explicitly identify fitted scale; funnel SE axes do likewise.",
+      "evidence": {
+        "path": "SELECTED-project-reviewer-predictions.json",
+        "label": "Sequential/subgroup clinical and fitted scales"
+      }
+    },
+    {
+      "id": "R5-02",
+      "verdict": "improved",
+      "observation": "Identical type/metric captions and Group: Group context removed; generated Follow-up: first still exposes the container default, so copy finishing remains partial.",
+      "evidence": {
+        "path": "SELECTED-project-round6-polish.json",
+        "label": "Live report overview and structured tables"
+      }
+    },
+    {
+      "id": "R5-03",
+      "verdict": "fixed",
+      "observation": "Diagnostic coefficients/ML tests honour two/six digits; logit/OR bounds explicit across Text/Tables/copy/export.",
+      "evidence": {
+        "path": "SELECTED-project-round6-polish.json",
+        "label": "Diagnostic coefficients at two/six digits; Tables/copy/CSV"
+      }
+    },
+    {
+      "id": "R5-04",
+      "verdict": "fixed",
+      "observation": "Long standard/subgroup CI caps bounded by row spacing in all three styles.",
+      "evidence": {
+        "path": "SELECTED-audit-round3-round5.json",
+        "label": "Dense 65-study upper/lower figures in all styles"
+      }
+    },
+    {
+      "id": "R5-05",
+      "verdict": "improved",
+      "observation": "Primary Intercept/Moderator/Statistic labels improve, but exponentiated HR/IRR coefficient tables still expose intrcpt (R6-08); closure is partial.",
+      "evidence": {
+        "path": "SELECTED-project-round6-polish.json",
+        "label": "Diagnostic coefficients at two/six digits; Tables/copy/CSV"
+      }
+    },
+    {
+      "id": "R5-06",
+      "verdict": "improved",
+      "observation": "BMJ measured unequal wrapped headers improve; longest RevMan header overlaps caption/device top (R6-03), so not fully closed.",
+      "evidence": {
+        "path": "EXPORT-EVIDENCE.json",
+        "label": "Retained actual vectors and long-heading defects"
+      }
+    },
+    {
+      "id": "R5-07",
+      "verdict": "fixed",
+      "observation": "Eligibility explains usable study count and invalid contours recover inline without stuck progress.",
+      "evidence": {
+        "path": "SELECTED-project-round6-polish.json",
+        "label": "Eligibility and invalid-contour recovery"
+      }
+    },
+    {
+      "id": "R5-08",
+      "verdict": "fixed",
+      "observation": "Subgroup setup/editor explicitly explain shared layout with journal accents.",
+      "evidence": {
+        "path": "OPTIONS.json",
+        "label": "Subgroup setup/editor shared-layout wording"
+      }
+    },
+    {
+      "id": "R5-09",
+      "verdict": "fixed",
+      "observation": "Attached menus/calculators/reports use contextual readable metrics; no built-in TX Mean prefix.",
+      "evidence": {
+        "path": "SELECTED-project-display-labels.json",
+        "label": "Ten-family live labels and selectors"
+      }
+    },
+    {
+      "id": "R5-10",
+      "verdict": "fixed",
+      "observation": "Tiny/huge/decimal/exponent input survives real editing, Accept, undo/save/reopen and independent post-reopen fit.",
+      "evidence": {
+        "path": "SELECTED-calculator-ratio-precision.json",
+        "label": "Exact HR/IRR modes and post-reopen authority fit"
+      }
+    },
+    {
+      "id": "R5-11",
+      "verdict": "fixed",
+      "observation": "Legend entries and samples follow actual regression/CI/PI visibility in display/export.",
+      "evidence": {
+        "path": "SELECTED-audit-round3-bubble-metrics.json",
+        "label": "Metric-specific bubbles and guide bounds"
+      }
+    },
+    {
+      "id": "F16",
+      "verdict": "unchanged",
+      "observation": "Historical report-hierarchy finding omitted from the round-five scorecard, restored here. Calmer hierarchy retained; diagnostic overviews still need scrolling and retain multiple headings. No new round-six closure claimed.",
+      "evidence": {
+        "path": "SELECTED-project-round6-polish.json",
+        "label": "Live report overview and structured tables"
+      }
+    }
+  ]
+}

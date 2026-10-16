@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "qualified_source": "07c4f4a",
+  "source_sha256": "97787daecb1c438f9a11c6360d4bfa58eed75d141232f706e9e6f4193f433cb2",
+  "source_install_files": 56,
+  "installed_files": 24,
+  "profile_receipts": 124,
+  "profile_artifacts": 9469,
+  "curated_files": 89,
+  "inspected_image_frames": 65,
+  "original_fields_exact": 415,
+  "max_absolute_difference": 0,
+  "baseline_changes": [],
+  "owned_prior_roots_alive": [],
+  "full_profile_sha256": "d1c935ce6c02b2729fc8f12420b4ac4477b692f43f4d8738927946d5ed59cb5a",
+  "curated_manifest_sha256": "412b7ae3ee4f57a877aef4248d1e490edd12b8310cf49bed8f23f7deb26a4b99"
+}

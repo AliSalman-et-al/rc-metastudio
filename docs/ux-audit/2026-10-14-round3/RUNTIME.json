@@ -1,0 +1,61 @@
+{
+  "platform": "Linux Mint 22.3, Noble-based x86_64; native DISPLAY=:0",
+  "files": [
+    {
+      "path": "build/ux-round3/runtime-cache/libxcb-cursor0_0.1.4-1build1_amd64.deb",
+      "sha256": "137cf52479b5a9d8c5926d70d311af04be41941a32ee777340d704cc458c06d8",
+      "size": 10718
+    },
+    {
+      "path": "build/ux-round3/runtime-cache/r-4.6.1_1_amd64.deb",
+      "sha256": "5af816371126c8e5895600de035153cd3a64b12f4beb43f291ee34bf24f8fd2d",
+      "size": 68612568
+    },
+    {
+      "path": "build/ux-round3/r-home/bin/R",
+      "sha256": "b0de11b7ba4ca2c8be2cc517080e3be3494e549fac6029d5832ebb3fc9bed741",
+      "size": 8286
+    },
+    {
+      "path": "build/ux-round3/r-home/bin/Rscript",
+      "sha256": "451a7969edaf1c13fe42df7c8f124457e913bd7b38366cbc476ffadbbedf84b3",
+      "size": 554
+    },
+    {
+      "path": ".venv/lib/python3.11/site-packages/_rinterface_cffi_api.abi3.so",
+      "sha256": "ad9df27e79257a46139862f77b0112a25320e20c80e6d974ca68e717c21063e9",
+      "size": 426344
+    }
+  ],
+  "runtime": {
+    "r": "R version 4.6.1 (2026-06-24)",
+    "r_libraries": [
+      "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-library",
+      "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+    ],
+    "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+    "authorities": {
+      "mada": "0.5.12",
+      "metafor": "5.0-1",
+      "meta": "8.5-0",
+      "svglite": "2.2.2",
+      "rsvg": "2.7.0",
+      "tiff": "0.1-12"
+    },
+    "rcmetar": "0.4.2",
+    "rpy2": "3.6.7",
+    "qt": "6.11.1",
+    "pyqt": "6.11.0",
+    "platform_plugin": "xcb",
+    "application": "RCMetaStudio",
+    "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+    "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-jd6gglxu"
+  },
+  "dependency_repository": "https://packagemanager.posit.co/cran/__linux__/noble/2026-07-16",
+  "policy": "scripts/install-r-deps-linux.R; binary tag 4.6-noble; no source fallback",
+  "link_libraries": {
+    "libdeflate.so": "/usr/lib/x86_64-linux-gnu/libdeflate.so.0",
+    "libzstd.so": "/usr/lib/x86_64-linux-gnu/libzstd.so.1.5.5",
+    "libtirpc.so": "/usr/lib/x86_64-linux-gnu/libtirpc.so.3.0.0"
+  }
+}

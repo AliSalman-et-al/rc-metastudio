@@ -1,0 +1,71 @@
+"""Bind a passing full profile to every expected desktop scenario artifact."""
+from datetime import UTC, datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import sys
+
+ROOT = Path(__file__).resolve().parents[3]
+HERE = Path(os.environ.get("RCMS_AUDIT_DIR", Path(__file__).resolve().parent))
+sys.path.insert(0, str(ROOT))
+from scripts.verify_rcms import SCENARIOS
+
+label = sys.argv[1] if len(sys.argv) > 1 else "full-final"
+attempt = json.loads((HERE / "raw" / (label + ".json")).read_text())
+assert attempt["exit_code"] == 0, attempt
+log = (HERE / "raw" / attempt["log"]).read_text()
+directory = Path(re.search(r"Complete-run evidence: (.+)", log)[1])
+summary = json.loads((directory / "summary.json").read_text())
+assert summary["passed"] and len(summary["commands"]) == 3, summary
+stack_log = (directory / "00.log").read_text()
+signatures = set(re.findall(r"input signature: ([a-f0-9]{64})", stack_log))
+assert len(signatures) == 1, signatures
+signature = signatures.pop()
+doctor_evidence = summary["commands"][2]["evidence"]
+assert len(doctor_evidence) == 1, doctor_evidence
+doctor_directory = Path(doctor_evidence[0]).resolve()
+start = datetime.fromisoformat(attempt["started"])
+end = datetime.fromisoformat(attempt["finished"])
+runs = []
+excluded = []
+for manifest in sorted((ROOT / "artifacts/verification/rcms").glob("*/manifest.json")):
+    if not re.match(r"\d{8}T\d{6}Z-", manifest.parent.name):
+        continue
+    stamp = datetime.strptime(manifest.parent.name[:16], "%Y%m%dT%H%M%SZ").replace(tzinfo=UTC)
+    if not start <= stamp <= end:
+        continue
+    observed = json.loads(manifest.read_text())
+    if observed.get("native_requested"):
+        continue
+    context = observed.get("verification_context") or {}
+    owned = (manifest.parent.resolve() == doctor_directory if observed["scenario"] == "doctor"
+             else context.get("sha256") == signature)
+    if not owned:
+        excluded.append(dict(evidence=str(manifest.parent.relative_to(ROOT)),
+                             manifest_sha256=hashlib.sha256(manifest.read_bytes()).hexdigest(),
+                             passed=observed["passed"],
+                             reason="Not the profile's recorded desktop context or explicit doctor receipt"))
+        continue
+    assert observed["passed"], manifest
+    for retained in observed["files"]:
+        artifact = manifest.parent / retained["path"]
+        assert hashlib.sha256(artifact.read_bytes()).hexdigest() == retained["sha256"], artifact
+    steps = [json.loads(line) for line in manifest.with_name("steps.jsonl").read_text().splitlines()]
+    runs.append(dict(scenario=observed["scenario"], evidence=str(manifest.parent.relative_to(ROOT)),
+                     manifest_sha256=hashlib.sha256(manifest.read_bytes()).hexdigest(),
+                     actions=[step["action"] for step in steps],
+                     runtime=json.loads(manifest.with_name("runtime.json").read_text()),
+                     files=observed["files"]))
+assert len(runs) == len(SCENARIOS), len(runs)
+assert {run["scenario"] for run in runs} == set(SCENARIOS)
+desktop_count = len(SCENARIOS) - 1
+assert f"{desktop_count} passed" in stack_log and "Status: OK" in stack_log
+proof = dict(passed=True, command=attempt, summary=summary, desktop_scenarios=desktop_count,
+             doctor=1, verification_context_sha256=signature, runs=runs,
+             excluded_unowned_receipts=excluded,
+             stack_results_verbatim=[line for line in stack_log.splitlines()
+                 if "passed" in line or "Status:" in line or "Reitsma visual" in line])
+(HERE / "FULL-PROFILE.json").write_text(json.dumps(proof, indent=2) + "\n")
+print(f"Full profile passed: all {desktop_count} desktop scenarios once, doctor, and the current-source R-stack gates.")

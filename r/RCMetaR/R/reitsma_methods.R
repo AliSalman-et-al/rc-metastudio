@@ -413,6 +413,7 @@ rcmetar.reitsma.plot.data <- function(fit, diagnostic.data, level, extrapolate=F
         text.cex=as.numeric(params$fp_text_cex %||% 0.8),
         point.pch=as.integer(params$fp_point_pch %||% 21),
         show.labels=isTRUE(params$fp_show_labels %||% FALSE))
+    if (!is.null(params$plot_caption)) style$caption <- as.character(params$plot_caption)
     marginal.capture <- rcmetar.reitsma.capture.warnings(
         rcmetar.reitsma.marginal.prediction(fit, level))
     marginal.prediction <- marginal.capture$value
@@ -529,7 +530,7 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
         }
     }
     dir.create(dirname(outpath), recursive=TRUE, showWarnings=FALSE)
-    rcmetar.render.plot_file(outpath, size, draw, display.path=plot.data$display.path)
+    rcmetar.render.plot_file(outpath, size, draw, display.path=plot.data$display.path, caption=plot.data$style$caption)
     invisible(outpath)
 }
 
@@ -547,7 +548,8 @@ rcmetar.reitsma.apply.saved.style <- function(plot.data, params) {
         ylabel="fp_ylabel", plot.lb="fp_plot_lb", plot.ub="fp_plot_ub", xticks="fp_xticks",
         y.plot.lb="fp_sroc_plot_lb", y.plot.ub="fp_sroc_plot_ub", yticks="fp_sroc_yticks",
         curve.lty="fp_curve_lty", confidence.lty="fp_confidence_lty", prediction.lty="fp_prediction_lty",
-        text.cex="fp_text_cex", point.pch="fp_point_pch", show.labels="fp_show_labels")
+        text.cex="fp_text_cex", point.pch="fp_point_pch", show.labels="fp_show_labels",
+        caption="plot_caption")
     for (field in names(fields)) {
         value <- params[[fields[[field]]]]
         if (!is.null(value) && length(value)) style[[field]] <- value
@@ -584,9 +586,11 @@ rcmetar.draw.reitsma.coefficient <- function(plot.data, outpath) {
         parsed <- scalar.number(value)
         if (is.null(parsed)) fallback else parsed
     }
+    logarithmic <- !identical(as.character(style$fp_axis_scale %||% "transformed"), "natural")
+    coordinate <- if (logarithmic) log else identity
     tick.values <- function(value, limits) {
         if (is.null(value) || !length(value) || identical(as.character(value[[1L]]), "[default]")) {
-            return(pretty(limits, n=4))
+            return(if (logarithmic) exp(rcmetar.forest.journal.ratio.ticks(log(limits))) else pretty(limits, n=4))
         }
         parsed <- rcmetar.numeric.values(value)
         parsed <- as.numeric(parsed)
@@ -597,6 +601,7 @@ rcmetar.draw.reitsma.coefficient <- function(plot.data, outpath) {
         y <- rev(seq_along(labels))
         graphics::par(mai=size$margins, las=1)
         xlim <- range(c(plot.data$ci.lb, plot.data$ci.ub, 1), finite=TRUE)
+        if (logarithmic) xlim <- exp(rcmetar.forest.round.ratio.range(log(xlim)))
         xlim <- sort(c(bound(style$fp_plot_lb, xlim[[1L]]), bound(style$fp_plot_ub, xlim[[2L]])))
         if (diff(xlim) <= 0) xlim <- xlim + c(-.5, .5)
         xlab <- style$fp_xlabel
@@ -604,7 +609,7 @@ rcmetar.draw.reitsma.coefficient <- function(plot.data, outpath) {
             xlab <- "Odds ratio"
         }
         show.annotation <- rcmetar.param.is.true(style, "fp_show_annotation", TRUE)
-        plot(plot.data$estimate, y, xlim=xlim, yaxt="n", xaxt="n", ylab="",
+        plot(coordinate(plot.data$estimate), y, xlim=coordinate(xlim), yaxt="n", xaxt="n", ylab="",
              xlab=if (show.annotation) as.character(xlab[[1L]]) else "",
              pch=19, col=color, cex=multiplier)
         axis(2, at=y, labels=labels, las=2)
@@ -612,10 +617,13 @@ rcmetar.draw.reitsma.coefficient <- function(plot.data, outpath) {
         if (length(x_ticks)) {
             digits <- suppressWarnings(as.integer(style$digits %||% 3L))
             if (length(digits) != 1L || is.na(digits) || digits < 0L || digits > 15L) digits <- 3L
-            axis(1, at=x_ticks, labels=vapply(x_ticks, rcmetar.reitsma.display.number, character(1), digits=digits))
+            tick.labels <- rcmetar.format.effect.number(x_ticks, digits)
+            fixed <- grepl("\\.", tick.labels) & !grepl("e", tick.labels, fixed=TRUE)
+            tick.labels[fixed] <- sub("\\.$", "", sub("0+$", "", tick.labels[fixed]))
+            axis(1, at=coordinate(x_ticks), labels=tick.labels)
         }
-        segments(plot.data$ci.lb, y, plot.data$ci.ub, y, col=color)
-        abline(v=1, lty=2, col="grey50")
+        segments(coordinate(plot.data$ci.lb), y, coordinate(plot.data$ci.ub), y, col=color)
+        abline(v=coordinate(1), lty=2, col="grey50")
         title(main=sprintf("%s moderator coefficients", plot.data$scale))
     }
     dir.create(dirname(outpath), recursive=TRUE, showWarnings=FALSE)
@@ -625,7 +633,7 @@ rcmetar.draw.reitsma.coefficient <- function(plot.data, outpath) {
         list(width=max(8, label.width + 4.6), height=max(4.5, 1.8 + length(lines) * 0.42),
              dpi=300, bg="white", margins=c(0.9, label.width + 0.25, 0.7, 0.3))
     })
-    rcmetar.render.plot_file(outpath, size, draw)
+    rcmetar.render.plot_file(outpath, size, draw, caption=plot.data$params$plot_caption)
     invisible(outpath)
 }
 

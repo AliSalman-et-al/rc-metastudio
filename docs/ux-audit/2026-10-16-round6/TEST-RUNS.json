@@ -1,0 +1,3791 @@
+[
+  {
+    "label": "axes-native-after",
+    "command": [
+      "bash",
+      "-c",
+      "for scenario in project-axis-proportions project-axis-others; do uv run python scripts/verify_rcms.py \"$scenario\" --native || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:42:07.099133+00:00",
+    "finished": "2026-10-15T11:42:20.010202+00:00",
+    "seconds": 12.908799370998167,
+    "exit_code": 1,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axes-native-after.log",
+    "sha256": "0adfa4e3c75c8e9f2a3f58e4418b6dadc5a4cb0bcab56215128d67f107ff38c1",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axes-native-after.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T114207Z-1bfc02df-project-axis-proportions"
+    ]
+  },
+  {
+    "label": "axes-native-before-replay",
+    "command": [
+      "bash",
+      "-c",
+      "for scenario in project-axis-proportions project-axis-others; do uv run python scripts/verify_rcms.py \"$scenario\" --native || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:36:34.309735+00:00",
+    "finished": "2026-10-15T11:41:08.195120+00:00",
+    "seconds": 273.88323705099174,
+    "exit_code": 0,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axes-native-before-replay.log",
+    "sha256": "f7b94b36e26efd128d3c45444ea7dfeeb01c9686988a6734832e94775b0eb5f2",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axes-native-before-replay.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T113634Z-5b581de0-project-axis-proportions",
+      "artifacts/verification/rcms/20261015T113900Z-3da6217b-project-axis-others"
+    ]
+  },
+  {
+    "label": "axes-native-before",
+    "command": [
+      "bash",
+      "-c",
+      "for scenario in project-axis-proportions project-axis-others; do uv run python scripts/verify_rcms.py \"$scenario\" --native || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:34:24.266309+00:00",
+    "finished": "2026-10-15T11:34:43.014831+00:00",
+    "seconds": 18.745596927998122,
+    "exit_code": 1,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axes-native-before.log",
+    "sha256": "d946ee2a55071e1c916bab6ea3632c30aff2bffe2dc9394060ccfe6341ae50ba",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axes-native-before.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T113424Z-9957cdcb-project-axis-proportions"
+    ]
+  },
+  {
+    "label": "axes-native-consistent-ranges",
+    "command": [
+      "bash",
+      "-c",
+      "for scenario in project-axis-proportions project-axis-others; do uv run python scripts/verify_rcms.py \"$scenario\" --native || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:48:07.587983+00:00",
+    "finished": "2026-10-15T11:55:03.886344+00:00",
+    "seconds": 416.296008025005,
+    "exit_code": 0,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axes-native-consistent-ranges.log",
+    "sha256": "3fcbbfd50f65bb49eed476b4407f28ea569f6574a92ea64788ac753ca32d9f70",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axes-native-consistent-ranges.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T114807Z-e5dd98ca-project-axis-proportions",
+      "artifacts/verification/rcms/20261015T115210Z-9d37a025-project-axis-others"
+    ]
+  },
+  {
+    "label": "axis-before-after-exact-statistics",
+    "command": [
+      "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+      "docs/ux-audit/2026-10-16-round6/axis_numeric_equivalence.R",
+      "/home/ali/Documents/Code/rc-metastudio"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:18:07.190943+00:00",
+    "finished": "2026-10-15T12:18:14.120609+00:00",
+    "seconds": 6.926533418009058,
+    "exit_code": 0,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axis-before-after-exact-statistics.log",
+    "sha256": "9d740ed30057df8930c121cfba81f9cb0b3bde6f7f8152e27b88fc1fe7b36534",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-before-after-exact-statistics.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "axis-before-after-numeric-diagnosis",
+    "command": [
+      "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+      "docs/ux-audit/2026-10-16-round6/axis_numeric_equivalence.R",
+      "/home/ali/Documents/Code/rc-metastudio"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:17:21.973906+00:00",
+    "finished": "2026-10-15T12:17:25.734355+00:00",
+    "seconds": 3.757563237013528,
+    "exit_code": 1,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axis-before-after-numeric-diagnosis.log",
+    "sha256": "34c91f1c90fa59d25ecbb460df49158ef0dcddc15f473c0854179a5d1b7cd58c",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-before-after-numeric-diagnosis.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "axis-before-after-numerics",
+    "command": [
+      "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+      "docs/ux-audit/2026-10-16-round6/axis_numeric_equivalence.R",
+      "/home/ali/Documents/Code/rc-metastudio"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:16:29.088373+00:00",
+    "finished": "2026-10-15T12:16:33.287949+00:00",
+    "seconds": 4.196492779999971,
+    "exit_code": 1,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axis-before-after-numerics.log",
+    "sha256": "5bb670096b192045fd651d207cfeec78fe6247aeaf2da60ccb242b7947de1210",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-before-after-numerics.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "axis-exact-value-replay",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-axis-proportions"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:45:42.794930+00:00",
+    "finished": "2026-10-15T11:45:57.040870+00:00",
+    "seconds": 14.243735704003484,
+    "exit_code": 1,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axis-exact-value-replay.log",
+    "sha256": "15466198d587b458df0c90c7812a7e995f81b69543bbd22f7fa7c33defddf0e2",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-exact-value-replay.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T114542Z-442b6b33-project-axis-proportions"
+    ]
+  },
+  {
+    "label": "axis-first-replay",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-axis-proportions"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:43:34.823102+00:00",
+    "finished": "2026-10-15T11:43:51.841576+00:00",
+    "seconds": 17.016289239996695,
+    "exit_code": 1,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axis-first-replay.log",
+    "sha256": "86c9327d5b3d0618db6bc7cf05a2f2d3a6e884ace0c5732bb9a719b7cfbb133c",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-first-replay.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T114335Z-1c872de6-project-axis-proportions"
+    ]
+  },
+  {
+    "label": "axis-numeric-fields-replay",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-axis-proportions"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:44:32.038316+00:00",
+    "finished": "2026-10-15T11:44:51.253640+00:00",
+    "seconds": 19.21303407700907,
+    "exit_code": 1,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axis-numeric-fields-replay.log",
+    "sha256": "07d2853df469c60eeed134c54f3018acf411520b3f848cf48417f090c16e74dd",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-numeric-fields-replay.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T114432Z-9510a28e-project-axis-proportions"
+    ]
+  },
+  {
+    "label": "axis-pft-subset-baseline",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-axis-sequential"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:53:16.947491+00:00",
+    "finished": "2026-10-15T11:53:24.848439+00:00",
+    "seconds": 7.898767164006131,
+    "exit_code": 1,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axis-pft-subset-baseline.log",
+    "sha256": "f75dacb6b19ee7ec0241faf5e1f390af656c784292fa4ab7e1cf0ead2b70245a",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-pft-subset-baseline.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T115317Z-2a9292af-project-axis-sequential"
+    ]
+  },
+  {
+    "label": "axis-pft-subsets-replay",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-axis-sequential"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:55:35.264702+00:00",
+    "finished": "2026-10-15T11:55:56.453753+00:00",
+    "seconds": 21.186939124003402,
+    "exit_code": 0,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axis-pft-subsets-replay.log",
+    "sha256": "f0f8df3e09e7a4603559a87742b461202e032dd0e6ebcb5464b06258cc3d5e75",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-pft-subsets-replay.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T115535Z-47449034-project-axis-sequential"
+    ]
+  },
+  {
+    "label": "axis-python-types",
+    "command": [
+      "uv",
+      "run",
+      "ty",
+      "check",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio/forms",
+      "--extra-search-path",
+      ".",
+      "--extra-search-path",
+      "src/rc_metastudio",
+      "--extra-search-path",
+      "src",
+      "--extra-search-path",
+      "scripts",
+      "--extra-search-path",
+      "tests/python/gui",
+      "src/rc_metastudio",
+      "tests/e2e/axis_conventions.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:38:47.486788+00:00",
+    "finished": "2026-10-15T11:38:49.393253+00:00",
+    "seconds": 1.9040372329909587,
+    "exit_code": 0,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axis-python-types.log",
+    "sha256": "62fbdc19418cb0687c9b762ab18ad77f1afdd30ab3613c5714d1713012100b57",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-python-types.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "axis-renderer-replay",
+    "command": [
+      "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+      "-e",
+      "testthat::test_local(\"r/RCMetaR\", filter=\"forest-metafor-renderer|bubble-metafor-renderer|summary-display|forest-subgroup-range\", stop_on_failure=TRUE)"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:48:08.760406+00:00",
+    "finished": "2026-10-15T11:52:18.973791+00:00",
+    "seconds": 250.21115527799702,
+    "exit_code": 1,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axis-renderer-replay.log",
+    "sha256": "1d33b446c6ca08ab835a845fc3ab93ad03c4faca0d0d5f162be48efbd8b15485",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-renderer-replay.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "axis-renderer-tests",
+    "command": [
+      "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+      "-e",
+      "testthat::test_local(\"r/RCMetaR\", filter=\"forest-metafor-renderer|bubble-metafor-renderer|summary-display|forest-subgroup-range\", stop_on_failure=TRUE)"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:42:08.209143+00:00",
+    "finished": "2026-10-15T11:45:06.883032+00:00",
+    "seconds": 178.67170495800383,
+    "exit_code": 1,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axis-renderer-tests.log",
+    "sha256": "f3d1190b8e07e3c9689a6368ad6b0be111b7ded3aadce4a8641658dbc12c2f90",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-renderer-tests.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "axis-rerun-baseline",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-axis-proportions"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:57:25.134078+00:00",
+    "finished": "2026-10-15T11:57:40.336148+00:00",
+    "seconds": 15.199813202998484,
+    "exit_code": 1,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axis-rerun-baseline.log",
+    "sha256": "20922a68c4dc1fb95a9be79429c5ec50507f3ac56eb6387bf513ae6837db84e3",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-rerun-baseline.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T115725Z-2aeea289-project-axis-proportions"
+    ]
+  },
+  {
+    "label": "axis-rerun-hang-diagnosis",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-axis-others"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:11:39.413362+00:00",
+    "finished": "2026-10-15T12:14:13.914764+00:00",
+    "seconds": 154.49887108200346,
+    "exit_code": 0,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axis-rerun-hang-diagnosis.log",
+    "sha256": "9fdd2f7adc554eb6cef591d32193d27b408a54f42d6b1d21b0b2fff25c9cec7a",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-rerun-hang-diagnosis.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T121139Z-51393a54-project-axis-others"
+    ]
+  },
+  {
+    "label": "axis-rerun-others",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-axis-others"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:58:15.822015+00:00",
+    "finished": "2026-10-15T11:58:35.638212+00:00",
+    "seconds": 19.813848099991446,
+    "exit_code": 1,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axis-rerun-others.log",
+    "sha256": "85bda40d220ee345de1f5fb44e31f33dc765bb6a95f4e9aad87968b2fcbab24e",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-rerun-others.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T115816Z-c2e5630a-project-axis-others"
+    ]
+  },
+  {
+    "label": "axis-rerun-proportions",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-axis-proportions"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:58:14.716592+00:00",
+    "finished": "2026-10-15T11:58:32.623301+00:00",
+    "seconds": 17.904271114006406,
+    "exit_code": 1,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axis-rerun-proportions.log",
+    "sha256": "6b939915c57e53c2547e4d5118c9f44804307f8150c09e0b642628448cb7686f",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-rerun-proportions.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T115814Z-593586a1-project-axis-proportions"
+    ]
+  },
+  {
+    "label": "axis-rerun-report-others",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-axis-others"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:59:12.982763+00:00",
+    "finished": "2026-10-15T12:09:17.697433+00:00",
+    "seconds": 604.71543272899,
+    "exit_code": 1,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axis-rerun-report-others.log",
+    "sha256": "da34f7b62c09a75292bb799c1ee5a057ff16da2c4590476c80920f553e0e9489",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-rerun-report-others.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T115913Z-8bda0c8b-project-axis-others"
+    ]
+  },
+  {
+    "label": "axis-rerun-report-proportions",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-axis-proportions"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:59:11.842530+00:00",
+    "finished": "2026-10-15T12:09:17.591380+00:00",
+    "seconds": 605.7498387579981,
+    "exit_code": 1,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "axis-rerun-report-proportions.log",
+    "sha256": "6cb1add1806926a808e6dae114b0efc8b9cad70a4d85ea09ca89d38e69fa0a5a",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/axis-rerun-report-proportions.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T115912Z-0d4cfe45-project-axis-proportions"
+    ]
+  },
+  {
+    "label": "baseline-tiny-sd-focused",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "calculator-mode-continuous-metrics",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:00:13.305840+00:00",
+    "finished": "2026-10-15T11:00:21.390979+00:00",
+    "seconds": 8.082706633998896,
+    "exit_code": 1,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "baseline-tiny-sd-focused.log",
+    "sha256": "9fbb5a231fc3409009d5c311af878d73a915d7b55a7479847ba9b11c7e2bd329",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/baseline-tiny-sd-focused.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T110013Z-6a0c0649-calculator-mode-continuous-metrics"
+    ]
+  },
+  {
+    "label": "baseline-tiny-sd",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "calculator-mode-continuous-metrics",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T10:59:38.715138+00:00",
+    "finished": "2026-10-15T10:59:46.447423+00:00",
+    "seconds": 7.72956316001364,
+    "exit_code": 1,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "baseline-tiny-sd.log",
+    "sha256": "26464f5f87e79588e98ad57c2a98160486160196696112db05aa784fdaae99f1",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/baseline-tiny-sd.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T105938Z-0f4888f8-calculator-mode-continuous-metrics"
+    ]
+  },
+  {
+    "label": "calculator-boundary-final",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "-m",
+      "pytest",
+      "tests/python/fast/test_calculator_qt6.py",
+      "-q"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:08:53.172545+00:00",
+    "finished": "2026-10-15T11:08:55.340793+00:00",
+    "seconds": 2.1645582810015185,
+    "exit_code": 0,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": "offscreen",
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "calculator-boundary-final.log",
+    "sha256": "e79620990f6df9219c705db8de25754d0e86b3725c86d73d5512873677c3aea0",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/calculator-boundary-final.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "calculator-boundary-replay",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "-m",
+      "pytest",
+      "tests/python/fast/test_calculator_qt6.py",
+      "-q"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:06:41.909264+00:00",
+    "finished": "2026-10-15T11:06:45.488668+00:00",
+    "seconds": 3.57615634900867,
+    "exit_code": 1,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": "offscreen",
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "calculator-boundary-replay.log",
+    "sha256": "35fa52cccba81c9d5d33ae7aa4446a5f2478c93da90d80f26c59398c2bb2179b",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/calculator-boundary-replay.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "calculator-existing-boundary-tests",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "-m",
+      "pytest",
+      "tests/python/fast/test_calculator_qt6.py",
+      "-q"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:05:32.115247+00:00",
+    "finished": "2026-10-15T11:05:35.298887+00:00",
+    "seconds": 3.179774325006292,
+    "exit_code": 1,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": "offscreen",
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "calculator-existing-boundary-tests.log",
+    "sha256": "62c6f2fa130fe10a12c0f9c13ca3e367655186b92f0ee1ea1557385d78e76ebd",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/calculator-existing-boundary-tests.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "calculator-focus-matrix",
+    "command": [
+      "bash",
+      "-c",
+      "for mode in entered-binary entered-continuous entered-diagnostic; do uv run python scripts/verify_rcms.py calculator-mode-\"$mode\" --native || exit; done; for mode in binary-metrics continuous-metrics diagnostic-metrics onearm-proportion onearm-mean pre-post back-binary back-continuous back-diagnostic; do uv run python scripts/verify_rcms.py calculator-mode-\"$mode\" || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T14:30:43.762068+00:00",
+    "finished": "2026-10-15T14:34:37.084920+00:00",
+    "seconds": 233.31968701699225,
+    "exit_code": 0,
+    "revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "calculator-focus-matrix.log",
+    "sha256": "d7efcce39f8efd00838adde3106100091ebc0eec90f8083bb54d4cc41dce931f",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/calculator-focus-matrix.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T143043Z-d99dc511-calculator-mode-entered-binary",
+      "artifacts/verification/rcms/20261015T143105Z-65fa9cf9-calculator-mode-entered-continuous",
+      "artifacts/verification/rcms/20261015T143126Z-ee560299-calculator-mode-entered-diagnostic",
+      "artifacts/verification/rcms/20261015T143152Z-fcc3264a-calculator-mode-binary-metrics",
+      "artifacts/verification/rcms/20261015T143212Z-64eb8b6f-calculator-mode-continuous-metrics",
+      "artifacts/verification/rcms/20261015T143228Z-4e9546a4-calculator-mode-diagnostic-metrics",
+      "artifacts/verification/rcms/20261015T143249Z-c5f999ec-calculator-mode-onearm-proportion",
+      "artifacts/verification/rcms/20261015T143307Z-c896813d-calculator-mode-onearm-mean",
+      "artifacts/verification/rcms/20261015T143324Z-5d29bcd6-calculator-mode-pre-post",
+      "artifacts/verification/rcms/20261015T143342Z-0f1f4a29-calculator-mode-back-binary",
+      "artifacts/verification/rcms/20261015T143400Z-86d698ef-calculator-mode-back-continuous",
+      "artifacts/verification/rcms/20261015T143419Z-79804fc8-calculator-mode-back-diagnostic"
+    ]
+  },
+  {
+    "label": "calculator-invalid-and-grid-native",
+    "command": [
+      "bash",
+      "-c",
+      "for scenario in calculator-mode-entered-binary calculator-mode-entered-continuous calculator-mode-entered-diagnostic calculator-grid-precision; do uv run python scripts/verify_rcms.py \"$scenario\" --native || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:07:53.665506+00:00",
+    "finished": "2026-10-15T11:09:37.109455+00:00",
+    "seconds": 103.44161002500914,
+    "exit_code": 0,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "calculator-invalid-and-grid-native.log",
+    "sha256": "fb678c910582e12c211fc47b7b915d8cab7be23f21466c0e3a687dd8d494fbac",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/calculator-invalid-and-grid-native.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T110753Z-95b19da2-calculator-mode-entered-binary",
+      "artifacts/verification/rcms/20261015T110813Z-5438523b-calculator-mode-entered-continuous",
+      "artifacts/verification/rcms/20261015T110830Z-41ba5f16-calculator-mode-entered-diagnostic",
+      "artifacts/verification/rcms/20261015T110852Z-05808984-calculator-grid-precision"
+    ]
+  },
+  {
+    "label": "calculator-native-all",
+    "command": [
+      "bash",
+      "-c",
+      "for mode in continuous-metrics onearm-mean pre-post back-continuous entered-continuous binary-metrics diagnostic-metrics onearm-proportion entered-binary entered-diagnostic back-binary back-diagnostic; do uv run python scripts/verify_rcms.py \"calculator-mode-$mode\" --native || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:01:56.347328+00:00",
+    "finished": "2026-10-15T11:04:50.076221+00:00",
+    "seconds": 173.72678440000163,
+    "exit_code": 1,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "calculator-native-all.log",
+    "sha256": "3cef348defbbb0490d21015c4d0aad271d9bcd64a3087b0b8546cf461d05899b",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/calculator-native-all.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T110156Z-829d7b2a-calculator-mode-continuous-metrics",
+      "artifacts/verification/rcms/20261015T110214Z-fa64e8bc-calculator-mode-onearm-mean",
+      "artifacts/verification/rcms/20261015T110240Z-46be4972-calculator-mode-pre-post",
+      "artifacts/verification/rcms/20261015T110301Z-80aba4ef-calculator-mode-back-continuous",
+      "artifacts/verification/rcms/20261015T110320Z-66493949-calculator-mode-entered-continuous",
+      "artifacts/verification/rcms/20261015T110336Z-8b35f8ff-calculator-mode-binary-metrics",
+      "artifacts/verification/rcms/20261015T110358Z-46ece6a5-calculator-mode-diagnostic-metrics",
+      "artifacts/verification/rcms/20261015T110432Z-a993ed9b-calculator-mode-onearm-proportion"
+    ]
+  },
+  {
+    "label": "calculator-native-replay",
+    "command": [
+      "bash",
+      "-c",
+      "for mode in onearm-proportion entered-binary entered-diagnostic back-binary back-diagnostic continuous-metrics pre-post; do uv run python scripts/verify_rcms.py \"calculator-mode-$mode\" --native || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:05:20.065150+00:00",
+    "finished": "2026-10-15T11:07:58.259275+00:00",
+    "seconds": 158.19140070099093,
+    "exit_code": 0,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "calculator-native-replay.log",
+    "sha256": "e662f8b2672eb46868934a244a308f65824110cb51b2d4ba2bf773d28d7fe624",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/calculator-native-replay.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T110520Z-3a39f443-calculator-mode-onearm-proportion",
+      "artifacts/verification/rcms/20261015T110549Z-fa95369f-calculator-mode-entered-binary",
+      "artifacts/verification/rcms/20261015T110614Z-5bcde3e5-calculator-mode-entered-diagnostic",
+      "artifacts/verification/rcms/20261015T110636Z-3db3c853-calculator-mode-back-binary",
+      "artifacts/verification/rcms/20261015T110701Z-1a635d2f-calculator-mode-back-diagnostic",
+      "artifacts/verification/rcms/20261015T110721Z-15775ba1-calculator-mode-continuous-metrics",
+      "artifacts/verification/rcms/20261015T110740Z-67397a0d-calculator-mode-pre-post"
+    ]
+  },
+  {
+    "label": "changed-code-types",
+    "command": [
+      "uv",
+      "run",
+      "ty",
+      "check",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio/forms",
+      "--extra-search-path",
+      ".",
+      "--extra-search-path",
+      "src/rc_metastudio",
+      "--extra-search-path",
+      "src",
+      "--extra-search-path",
+      "scripts",
+      "--extra-search-path",
+      "tests/python/gui",
+      "src/rc_metastudio",
+      "tests/e2e/precision_inputs.py",
+      "tests/e2e/display_labels.py",
+      "tests/e2e/ratio_precision.py",
+      "tests/e2e/round6_polish.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:24:48.482948+00:00",
+    "finished": "2026-10-15T11:24:50.268059+00:00",
+    "seconds": 1.7822106509993318,
+    "exit_code": 1,
+    "revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "changed-code-types.log",
+    "sha256": "767123b7e20240a4924938cb4c66552c5a38a32c7074cb7708d1fd4eedfbd020",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/changed-code-types.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "changed-types-replay",
+    "command": [
+      "uv",
+      "run",
+      "ty",
+      "check",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio/forms",
+      "--extra-search-path",
+      ".",
+      "--extra-search-path",
+      "src/rc_metastudio",
+      "--extra-search-path",
+      "src",
+      "--extra-search-path",
+      "scripts",
+      "--extra-search-path",
+      "tests/python/gui",
+      "src/rc_metastudio",
+      "tests/e2e/precision_inputs.py",
+      "tests/e2e/display_labels.py",
+      "tests/e2e/ratio_precision.py",
+      "tests/e2e/round6_polish.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:32:59.734387+00:00",
+    "finished": "2026-10-15T11:33:01.654369+00:00",
+    "seconds": 1.9174208699987503,
+    "exit_code": 0,
+    "revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "changed-types-replay.log",
+    "sha256": "91c161c21d2a8709a60f9fc5c91840b99b23eafff07e571b103851c9e3e32850",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/changed-types-replay.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "closed-results-baseline",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-axis-proportions"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:14:34.972311+00:00",
+    "finished": "2026-10-15T12:14:55.163170+00:00",
+    "seconds": 20.188350227996125,
+    "exit_code": 1,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "closed-results-baseline.log",
+    "sha256": "926ee82f8dc1dd51fdbd84d0a6f19be087f03ea44d863f3a0d1784b8b73e8011",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/closed-results-baseline.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T121435Z-aff660c3-project-axis-proportions"
+    ]
+  },
+  {
+    "label": "collect-full-qualified",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/collect_full_profile.py",
+      "full-qualified-6"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T16:01:00.044594+00:00",
+    "finished": "2026-10-15T16:01:08.034840+00:00",
+    "seconds": 7.987822878989391,
+    "exit_code": 0,
+    "revision": "4f2b3c08a3901bb5809269381d8822df48a42cc6",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "collect-full-qualified.log",
+    "sha256": "4e04f7891ec5ae72880a9e9c638a87747bfa276bf1cdac7377ef861a7018962e",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/collect-full-qualified.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "diagnostic-and-legend-first",
+    "command": [
+      "bash",
+      "-c",
+      "for scenario in analysis-diagnostic-regression-continuous plot-workflow-regression project-shell; do uv run python scripts/verify_rcms.py \"$scenario\" || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:16:55.350484+00:00",
+    "finished": "2026-10-15T11:17:36.326272+00:00",
+    "seconds": 40.97114081699692,
+    "exit_code": 0,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "diagnostic-and-legend-first.log",
+    "sha256": "ec9941d9ac0dcf43538d83b44b8f4bda2e2c28ddb189a8c70c4e923cd7923bb9",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/diagnostic-and-legend-first.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T111655Z-96dc82c6-analysis-diagnostic-regression-continuous",
+      "artifacts/verification/rcms/20261015T111705Z-b0e703ef-plot-workflow-regression",
+      "artifacts/verification/rcms/20261015T111727Z-58bb30e9-project-shell"
+    ]
+  },
+  {
+    "label": "diagnostic-se-precision-baseline",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-round6-polish"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:36:09.737261+00:00",
+    "finished": "2026-10-15T12:36:52.252306+00:00",
+    "seconds": 42.50980379199609,
+    "exit_code": 1,
+    "revision": "291c22c7213f78083e2484e079e89261372a4515",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "diagnostic-se-precision-baseline.log",
+    "sha256": "2b18b642f22a1f5ac56b1c5f92315b73c369f319cd34d3f964a7d05e177e281d",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/diagnostic-se-precision-baseline.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T123609Z-fd4a1315-project-round6-polish"
+    ]
+  },
+  {
+    "label": "final-presentation-types",
+    "command": [
+      "uv",
+      "run",
+      "ty",
+      "check",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio/forms",
+      "--extra-search-path",
+      ".",
+      "--extra-search-path",
+      "src/rc_metastudio",
+      "--extra-search-path",
+      "src",
+      "--extra-search-path",
+      "scripts",
+      "--extra-search-path",
+      "tests/python/gui",
+      "src/rc_metastudio",
+      "tests/e2e/axis_conventions.py",
+      "tests/e2e/display_labels.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:30:23.771156+00:00",
+    "finished": "2026-10-15T12:30:26.014679+00:00",
+    "seconds": 2.241213073997642,
+    "exit_code": 0,
+    "revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "final-presentation-types.log",
+    "sha256": "a1ce04e102f5e57d0b12c0645fcebe694420ea755d826ef4b3b1aeb5eff708bc",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/final-presentation-types.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "final-source-types-replay",
+    "command": [
+      "uv",
+      "run",
+      "ty",
+      "check",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio/forms",
+      "--extra-search-path",
+      ".",
+      "--extra-search-path",
+      "src/rc_metastudio",
+      "--extra-search-path",
+      "src",
+      "--extra-search-path",
+      "scripts",
+      "--extra-search-path",
+      "tests/python/gui",
+      "src/rc_metastudio",
+      "tests/e2e/axis_conventions.py",
+      "tests/e2e/display_labels.py",
+      "tests/e2e/precision_inputs.py",
+      "tests/e2e/ratio_precision.py",
+      "tests/e2e/round6_polish.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:00:13.357217+00:00",
+    "finished": "2026-10-15T12:00:18.111581+00:00",
+    "seconds": 4.746794644001056,
+    "exit_code": 0,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "final-source-types-replay.log",
+    "sha256": "50d5c1b1dd12f6a0bda3d1e0f0d28dde463b88c3f17cc6fa21bb2b5d1d201cbf",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/final-source-types-replay.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "final-source-types",
+    "command": [
+      "uv",
+      "run",
+      "ty",
+      "check",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio/forms",
+      "--extra-search-path",
+      ".",
+      "--extra-search-path",
+      "src/rc_metastudio",
+      "--extra-search-path",
+      "src",
+      "--extra-search-path",
+      "scripts",
+      "--extra-search-path",
+      "tests/python/gui",
+      "src/rc_metastudio",
+      "tests/e2e/axis_conventions.py",
+      "tests/e2e/display_labels.py",
+      "tests/e2e/precision_inputs.py",
+      "tests/e2e/ratio_precision.py",
+      "tests/e2e/round6_polish.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:58:40.690686+00:00",
+    "finished": "2026-10-15T11:58:42.708768+00:00",
+    "seconds": 2.014628629985964,
+    "exit_code": 1,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "final-source-types.log",
+    "sha256": "c3683a25290904fea1d15d8c5f92cd5c146501671a0203e19e211e0659c30a04",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/final-source-types.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "footer-and-small-study-r-tests",
+    "command": [
+      "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+      "-e",
+      "testthat::test_local(\"r/RCMetaR\", filter=\"publication-bias|forest-metafor-renderer\", stop_on_failure=TRUE)"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:32:51.016361+00:00",
+    "finished": "2026-10-15T12:37:38.232485+00:00",
+    "seconds": 287.2124915540044,
+    "exit_code": 0,
+    "revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "footer-and-small-study-r-tests.log",
+    "sha256": "bebe103e36cf926373b7f19b1467a192957ab5b08f6bb5616fe8faca0c887828",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/footer-and-small-study-r-tests.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "forest-gallery-final",
+    "command": [
+      "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+      "r/RCMetaR/inst/qa/render_forest_visual_qa.R"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:17:46.446951+00:00",
+    "finished": "2026-10-15T12:21:00.445670+00:00",
+    "seconds": 193.9961691100034,
+    "exit_code": 0,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6/raw/forest-gallery-final"
+    },
+    "log": "forest-gallery-final.log",
+    "sha256": "c7965bd22ebf0196a24ef04be3a3ae08e984c6e5b1d678390540cfaf2f78261e",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/forest-gallery-final.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "forest-gallery",
+    "command": [
+      "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+      "r/RCMetaR/inst/qa/render_forest_visual_qa.R"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:25:03.102191+00:00",
+    "finished": "2026-10-15T11:27:33.667632+00:00",
+    "seconds": 150.56256717198994,
+    "exit_code": 0,
+    "revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6/raw/forest-gallery"
+    },
+    "log": "forest-gallery.log",
+    "sha256": "f51113837ab5afe81c76b7012fbc930badb707c5a0422d493f5527cb6c5b5700",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/forest-gallery.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "full-final",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      ".agents/skills/verify-rcms/scripts/verify_all.py",
+      "--full",
+      "--fresh"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:19:49.680474+00:00",
+    "finished": "2026-10-15T12:24:17.239703+00:00",
+    "seconds": 267.545191008001,
+    "exit_code": 1,
+    "revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "full-final.log",
+    "sha256": "f261fb33446f2a67dcc18a4a11a6fc821584fc4064501dae46013c76fbcbe377",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/full-final.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "full-qualified-3",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      ".agents/skills/verify-rcms/scripts/verify_all.py",
+      "--full",
+      "--fresh"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T13:13:29.972687+00:00",
+    "finished": "2026-10-15T13:43:22.498545+00:00",
+    "seconds": 1792.5234428750118,
+    "exit_code": 1,
+    "revision": "77bc0dba0e243a17d03d3875fd521331551dda30",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "full-qualified-3.log",
+    "sha256": "261fc39d6db14d758c183b79175f21818399549d5d27d951faa52939d9e3a7f6",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/full-qualified-3.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "full-qualified-4",
+    "command": [
+      "env",
+      "PYTEST_ADDOPTS=-x",
+      "uv",
+      "run",
+      "python",
+      ".agents/skills/verify-rcms/scripts/verify_all.py",
+      "--full",
+      "--fresh"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T13:46:47.841562+00:00",
+    "finished": "2026-10-15T14:26:07.374097+00:00",
+    "seconds": 2359.530118000999,
+    "exit_code": 1,
+    "revision": "2af53d75ca4137614972129e6445aa14f646da94",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "full-qualified-4.log",
+    "sha256": "46e5e8cc1487bb72d21577a190484a8f5bd52afe704a4bb43b6c072a241bdeba",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/full-qualified-4.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "full-qualified-5",
+    "command": [
+      "env",
+      "PYTEST_ADDOPTS=-x",
+      "uv",
+      "run",
+      "python",
+      ".agents/skills/verify-rcms/scripts/verify_all.py",
+      "--full",
+      "--fresh"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T14:30:43.771516+00:00",
+    "finished": "2026-10-15T15:13:22.601748+00:00",
+    "seconds": 2558.8259224960057,
+    "exit_code": 1,
+    "revision": "f4fe5bfb46606bc42d154ef1e53ca5c999d19eb2",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "full-qualified-5.log",
+    "sha256": "3c6539cbdab329d5b2b8a38aae1b770b1735d53e863216eb3ec4a760d06e7c03",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/full-qualified-5.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "full-qualified-6",
+    "command": [
+      "env",
+      "PYTEST_ADDOPTS=-x",
+      "uv",
+      "run",
+      "python",
+      ".agents/skills/verify-rcms/scripts/verify_all.py",
+      "--full",
+      "--fresh"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T15:16:00.229669+00:00",
+    "finished": "2026-10-15T15:59:58.014605+00:00",
+    "seconds": 2637.781943445996,
+    "exit_code": 0,
+    "revision": "4638cf881c5dc1bfa22a6c8541319fa20018436e",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "full-qualified-6.log",
+    "sha256": "c964ad1d518a134ab66ce9ecc809b950fc811c23fbce35fd0f5eca7ad5e0fd5a",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/full-qualified-6.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "full-qualified",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      ".agents/skills/verify-rcms/scripts/verify_all.py",
+      "--full",
+      "--fresh"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:43:14.458257+00:00",
+    "finished": "2026-10-15T12:58:37.960828+00:00",
+    "seconds": 923.5002900669933,
+    "exit_code": 1,
+    "revision": "8416f96f86c11fcd4622edc04ab33b7dfc209ba8",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "full-qualified.log",
+    "sha256": "8a5a31028fe3528314033e48d0d623198e2304ca07ff57713ce1d89f7248b337",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/full-qualified.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "funnel-defaults-and-se-replay",
+    "command": [
+      "bash",
+      "-c",
+      "for scenario in plot-workflow-funnel plot-workflow-contour plot-workflow-trimfill project-round6-polish; do uv run python scripts/verify_rcms.py \"$scenario\" || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:32:49.815385+00:00",
+    "finished": "2026-10-15T12:35:20.406545+00:00",
+    "seconds": 150.58891588199185,
+    "exit_code": 0,
+    "revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "funnel-defaults-and-se-replay.log",
+    "sha256": "3ae5a5fb6cb662c439f2d2242e45ae0550afd8878a8c06dbc3d328047358c10f",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/funnel-defaults-and-se-replay.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T123249Z-c73b4dd5-plot-workflow-funnel",
+      "artifacts/verification/rcms/20261015T123309Z-c9238db9-plot-workflow-contour",
+      "artifacts/verification/rcms/20261015T123328Z-c5fa878f-plot-workflow-trimfill",
+      "artifacts/verification/rcms/20261015T123344Z-d31862fa-project-round6-polish"
+    ]
+  },
+  {
+    "label": "funnel-se-and-label-replay",
+    "command": [
+      "bash",
+      "-c",
+      "for scenario in plot-workflow-funnel plot-workflow-contour plot-workflow-trimfill project-round6-polish; do uv run python scripts/verify_rcms.py \"$scenario\" || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:29:56.898344+00:00",
+    "finished": "2026-10-15T12:30:06.405646+00:00",
+    "seconds": 9.505021116012358,
+    "exit_code": 1,
+    "revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "funnel-se-and-label-replay.log",
+    "sha256": "14b4275d76cae1110d809373ad25776d43a21dce0382c82cfbf9dcafbd153401",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/funnel-se-and-label-replay.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T122957Z-0bae0679-plot-workflow-funnel"
+    ]
+  },
+  {
+    "label": "funnel-se-axis-baseline",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "plot-workflow-funnel"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:27:16.819406+00:00",
+    "finished": "2026-10-15T12:27:24.768789+00:00",
+    "seconds": 7.947122753001167,
+    "exit_code": 1,
+    "revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "funnel-se-axis-baseline.log",
+    "sha256": "69cdda18452d2967da720755ff1cdbf175acdf5b9ffcc345349e090a5414713f",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/funnel-se-axis-baseline.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T122716Z-9d41f42d-plot-workflow-funnel"
+    ]
+  },
+  {
+    "label": "generate-valid-contour-defaults",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/build_qt6.py",
+      "generate",
+      "--build-root",
+      "build/qt6-verification"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:28:31.606571+00:00",
+    "finished": "2026-10-15T12:28:34.535407+00:00",
+    "seconds": 2.9257103700074367,
+    "exit_code": 0,
+    "revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "generate-valid-contour-defaults.log",
+    "sha256": "80a0787e3765bc3631db0b2a11348aab8daa1e65e85f8b7745c082458401a9cd",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/generate-valid-contour-defaults.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "golden-axis-capture",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_golden_compatibility.py",
+      "--output-root",
+      "build/qt6-verification/golden-compatibility-round6-axis"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:44:33.172690+00:00",
+    "finished": "2026-10-15T11:45:23.979750+00:00",
+    "seconds": 50.803730137995444,
+    "exit_code": 1,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": "offscreen",
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "golden-axis-capture.log",
+    "sha256": "cce93ea5ee97001e09266adfa4849f3634e1cb88210748638ff3b18bd2267182",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/golden-axis-capture.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "golden-before-refresh",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_golden_compatibility.py",
+      "--output-root",
+      "build/qt6-verification/golden-round6"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:14:31.061549+00:00",
+    "finished": "2026-10-15T11:14:35.166587+00:00",
+    "seconds": 4.101380567008164,
+    "exit_code": 1,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": "offscreen",
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "golden-before-refresh.log",
+    "sha256": "0c31652d51f466c6d2a8901dfa32b101c40090cf7968e414d4dd76dd802bcc96",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/golden-before-refresh.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "golden-explicit-se-refresh",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/regenerate_golden_presentation.py",
+      "build/qt6-verification/golden-compatibility-round6-axis"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:46:24.586791+00:00",
+    "finished": "2026-10-15T11:46:26.000631+00:00",
+    "seconds": 1.4112364380125655,
+    "exit_code": 0,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "golden-explicit-se-refresh.log",
+    "sha256": "3ba7ed0f634796290c35d4d6caa74a23019e8580d30b9dd700259cff81496acf",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/golden-explicit-se-refresh.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "golden-final-selected-precision",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_golden_compatibility.py",
+      "--output-root",
+      "build/qt6-verification/golden-compatibility-round6-qualified"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:39:33.207399+00:00",
+    "finished": "2026-10-15T12:40:22.973669+00:00",
+    "seconds": 49.76377827000397,
+    "exit_code": 1,
+    "revision": "291c22c7213f78083e2484e079e89261372a4515",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": "offscreen",
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "golden-final-selected-precision.log",
+    "sha256": "6336baa1654f9fa7433e7dd4f0ac7584e04de7a970af51c566936fc4438948cd",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/golden-final-selected-precision.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "golden-final",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_golden_compatibility.py",
+      "--output-root",
+      "build/qt6-verification/golden-compatibility-round6-final"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:59:59.330501+00:00",
+    "finished": "2026-10-15T12:01:21.923225+00:00",
+    "seconds": 82.58867984099197,
+    "exit_code": 0,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": "offscreen",
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "golden-final.log",
+    "sha256": "f98f316f70931223cccd28ee4129abd45bc7a79c7451139da4ceb3578590e6a4",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/golden-final.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "golden-presentation-capture",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_golden_compatibility.py",
+      "--output-root",
+      "build/qt6-verification/golden-compatibility-round6"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:15:16.698663+00:00",
+    "finished": "2026-10-15T11:16:19.440104+00:00",
+    "seconds": 62.737835666994215,
+    "exit_code": 1,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": "offscreen",
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "golden-presentation-capture.log",
+    "sha256": "445fd3d298057087eac7cf4a41421a8a1f2c327568576fa56b6961d7de30cfe2",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/golden-presentation-capture.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "golden-presentation-refresh",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/regenerate_golden_presentation.py",
+      "build/qt6-verification/golden-compatibility-round6"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:17:35.675853+00:00",
+    "finished": "2026-10-15T11:17:37.283193+00:00",
+    "seconds": 1.604639152996242,
+    "exit_code": 0,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "golden-presentation-refresh.log",
+    "sha256": "5d68af92b771365b4cde145ceab2b8f3ffa55386a6ea20009aa716025cdfc355",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/golden-presentation-refresh.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "golden-qualified-source",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_golden_compatibility.py",
+      "--output-root",
+      "build/qt6-verification/golden-compatibility-round6-qualified-final"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:56:39.798191+00:00",
+    "finished": "2026-10-15T12:58:08.372682+00:00",
+    "seconds": 88.5717688260047,
+    "exit_code": 0,
+    "revision": "c8787a2945a5c0305ad97e6e3a0619a7024eec75",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": "offscreen",
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "golden-qualified-source.log",
+    "sha256": "a97c66088808aad966b35a681256fa4495e63de51b4feac716ecdce3eb4101e0",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/golden-qualified-source.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "grid-precision-bounds",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "calculator-grid-precision"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:06:29.393185+00:00",
+    "finished": "2026-10-15T11:06:57.195253+00:00",
+    "seconds": 27.799728459998732,
+    "exit_code": 0,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "grid-precision-bounds.log",
+    "sha256": "f3321cf2cffc5b4d438e026f447075afaab140e7953c4e73a25075afa5a0a22f",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/grid-precision-bounds.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T110629Z-9acec180-calculator-grid-precision"
+    ]
+  },
+  {
+    "label": "grid-precision-editors",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "calculator-grid-precision"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:05:21.179261+00:00",
+    "finished": "2026-10-15T11:05:47.096206+00:00",
+    "seconds": 25.914130201999797,
+    "exit_code": 1,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "grid-precision-editors.log",
+    "sha256": "a514ebd9c1548a65551d7e9dd9bbc1890ffc3fe8f02e650d3ddd6350df0886d9",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/grid-precision-editors.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T110521Z-5138de2a-calculator-grid-precision"
+    ]
+  },
+  {
+    "label": "grid-precision-first",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "calculator-grid-precision"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:03:04.923152+00:00",
+    "finished": "2026-10-15T11:03:11.981822+00:00",
+    "seconds": 7.055655367003055,
+    "exit_code": 1,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "grid-precision-first.log",
+    "sha256": "365a2766c7f762158eae5808951f26cad0b5a522ba44aec0e9a728e36d0e118c",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/grid-precision-first.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T110305Z-4408bc9e-calculator-grid-precision"
+    ]
+  },
+  {
+    "label": "grid-precision-routed",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "calculator-grid-precision"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:03:50.132593+00:00",
+    "finished": "2026-10-15T11:04:14.797296+00:00",
+    "seconds": 24.662599000002956,
+    "exit_code": 1,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "grid-precision-routed.log",
+    "sha256": "44b735d52b1c5a46b0f8a3848b9cfdd9aa3a4edf25a5309a54ee6740017c16c9",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/grid-precision-routed.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T110350Z-a3fe3620-calculator-grid-precision"
+    ]
+  },
+  {
+    "label": "grid-precision-second",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "calculator-grid-precision"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:03:26.548650+00:00",
+    "finished": "2026-10-15T11:03:32.767176+00:00",
+    "seconds": 6.215336979992571,
+    "exit_code": 1,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "grid-precision-second.log",
+    "sha256": "04968dee1ec174dd7e291d6acd8dc452f0af1c0a66c367db96a7a944b9f03fc1",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/grid-precision-second.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T110326Z-5737d139-calculator-grid-precision"
+    ]
+  },
+  {
+    "label": "grid-precision-third",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "calculator-grid-precision"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:03:43.988625+00:00",
+    "finished": "2026-10-15T11:03:54.742357+00:00",
+    "seconds": 10.75127374099975,
+    "exit_code": 1,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "grid-precision-third.log",
+    "sha256": "b9192afd40b6537c57cfdc650e9c1af1bcf34183f721aee1bf0766f6defee4d7",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/grid-precision-third.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T110344Z-8e9899b7-calculator-grid-precision"
+    ]
+  },
+  {
+    "label": "install-axis-defaults",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/install_source.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:47:34.308854+00:00",
+    "finished": "2026-10-15T11:47:56.128371+00:00",
+    "seconds": 21.817302291994565,
+    "exit_code": 0,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "install-axis-defaults.log",
+    "sha256": "1c217c24db215fd07a0e1dbf4aa1a9458648f741a4a102fe6cd6e4059766ec50",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/install-axis-defaults.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "install-axis-interval-source",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/install_source.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:42:57.161192+00:00",
+    "finished": "2026-10-15T11:43:21.476275+00:00",
+    "seconds": 24.31276565999724,
+    "exit_code": 0,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "install-axis-interval-source.log",
+    "sha256": "1c217c24db215fd07a0e1dbf4aa1a9458648f741a4a102fe6cd6e4059766ec50",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/install-axis-interval-source.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "install-axis-pft-subsets",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/install_source.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:55:03.839166+00:00",
+    "finished": "2026-10-15T11:55:25.297435+00:00",
+    "seconds": 21.45604342300794,
+    "exit_code": 0,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "install-axis-pft-subsets.log",
+    "sha256": "1c217c24db215fd07a0e1dbf4aa1a9458648f741a4a102fe6cd6e4059766ec50",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/install-axis-pft-subsets.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "install-axis-projection",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/install_source.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:41:24.694129+00:00",
+    "finished": "2026-10-15T11:41:47.464078+00:00",
+    "seconds": 22.767441243006033,
+    "exit_code": 0,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "install-axis-projection.log",
+    "sha256": "1c217c24db215fd07a0e1dbf4aa1a9458648f741a4a102fe6cd6e4059766ec50",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/install-axis-projection.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "install-device-leading",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/install_source.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T13:04:51.929425+00:00",
+    "finished": "2026-10-15T13:05:15.900956+00:00",
+    "seconds": 23.96927245799452,
+    "exit_code": 0,
+    "revision": "036a1a5b4c4a056b8cffb258e6f5706d2ba61260",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "install-device-leading.log",
+    "sha256": "1c217c24db215fd07a0e1dbf4aa1a9458648f741a4a102fe6cd6e4059766ec50",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/install-device-leading.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "install-existing-metric-label-helper",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/install_source.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:30:51.883315+00:00",
+    "finished": "2026-10-15T12:31:15.634549+00:00",
+    "seconds": 23.74787028299761,
+    "exit_code": 0,
+    "revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "install-existing-metric-label-helper.log",
+    "sha256": "1c217c24db215fd07a0e1dbf4aa1a9458648f741a4a102fe6cd6e4059766ec50",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/install-existing-metric-label-helper.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "install-explicit-se-headings",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/install_source.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:26:02.739049+00:00",
+    "finished": "2026-10-15T11:26:36.773104+00:00",
+    "seconds": 34.02934961600113,
+    "exit_code": 0,
+    "revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "install-explicit-se-headings.log",
+    "sha256": "1c217c24db215fd07a0e1dbf4aa1a9458648f741a4a102fe6cd6e4059766ec50",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/install-explicit-se-headings.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "install-final-selected-precision",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/install_source.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:38:07.217727+00:00",
+    "finished": "2026-10-15T12:38:31.844339+00:00",
+    "seconds": 24.624173231990426,
+    "exit_code": 0,
+    "revision": "291c22c7213f78083e2484e079e89261372a4515",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "install-final-selected-precision.log",
+    "sha256": "1c217c24db215fd07a0e1dbf4aa1a9458648f741a4a102fe6cd6e4059766ec50",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/install-final-selected-precision.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "install-footer-and-funnel-labels",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/install_source.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:28:34.612251+00:00",
+    "finished": "2026-10-15T12:28:55.554972+00:00",
+    "seconds": 20.940056689010817,
+    "exit_code": 0,
+    "revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "install-footer-and-funnel-labels.log",
+    "sha256": "1c217c24db215fd07a0e1dbf4aa1a9458648f741a4a102fe6cd6e4059766ec50",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/install-footer-and-funnel-labels.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "install-physical-clearance",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/install_source.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T13:01:08.817681+00:00",
+    "finished": "2026-10-15T13:01:31.848195+00:00",
+    "seconds": 23.02794626400282,
+    "exit_code": 0,
+    "revision": "3600c2ad5b8d6e409da7f194e2987894ef72c14b",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "install-physical-clearance.log",
+    "sha256": "1c217c24db215fd07a0e1dbf4aa1a9458648f741a4a102fe6cd6e4059766ec50",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/install-physical-clearance.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "install-polish",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/install_source.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:12:38.246051+00:00",
+    "finished": "2026-10-15T11:13:00.160248+00:00",
+    "seconds": 21.911908622991177,
+    "exit_code": 0,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "install-polish.log",
+    "sha256": "1c217c24db215fd07a0e1dbf4aa1a9458648f741a4a102fe6cd6e4059766ec50",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/install-polish.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "install-qualified-source",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/install_source.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:55:39.108133+00:00",
+    "finished": "2026-10-15T12:56:22.751218+00:00",
+    "seconds": 43.63977820299624,
+    "exit_code": 0,
+    "revision": "c8787a2945a5c0305ad97e6e3a0619a7024eec75",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "install-qualified-source.log",
+    "sha256": "1c217c24db215fd07a0e1dbf4aa1a9458648f741a4a102fe6cd6e4059766ec50",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/install-qualified-source.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "install-selected-se-precision",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/install_source.py"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:37:28.900418+00:00",
+    "finished": "2026-10-15T12:37:56.219940+00:00",
+    "seconds": 27.316999552000198,
+    "exit_code": 0,
+    "revision": "291c22c7213f78083e2484e079e89261372a4515",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "install-selected-se-precision.log",
+    "sha256": "1c217c24db215fd07a0e1dbf4aa1a9458648f741a4a102fe6cd6e4059766ec50",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/install-selected-se-precision.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "labels-expanded",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-display-labels"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:13:20.356402+00:00",
+    "finished": "2026-10-15T11:14:49.317271+00:00",
+    "seconds": 88.95849675500358,
+    "exit_code": 1,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "labels-expanded.log",
+    "sha256": "dfb6d3319b661e3ea2f422665e6f5c1524877183d4975c3f60ea96577c69b91b",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/labels-expanded.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T111320Z-952d9adf-project-display-labels"
+    ]
+  },
+  {
+    "label": "labels-final-routing",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-display-labels"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:15:17.812432+00:00",
+    "finished": "2026-10-15T11:16:37.824869+00:00",
+    "seconds": 80.00902407999092,
+    "exit_code": 0,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "labels-final-routing.log",
+    "sha256": "2fecb05cedc9dd53bd6acb63777443e0340c9884f69a1c399e5c3e62d0dbc3ce",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/labels-final-routing.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T111518Z-c5accab1-project-display-labels"
+    ]
+  },
+  {
+    "label": "labels-first",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-display-labels"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:12:55.668544+00:00",
+    "finished": "2026-10-15T11:13:02.559744+00:00",
+    "seconds": 6.8881804999982705,
+    "exit_code": 1,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "labels-first.log",
+    "sha256": "77c9817e0f419ee1b885c6fc119a3221503057b6de9a81a31454ee3aba4e22f8",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/labels-first.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T111255Z-7916be2f-project-display-labels"
+    ]
+  },
+  {
+    "label": "native-contextual-ratios",
+    "command": [
+      "bash",
+      "-c",
+      "for scenario in ratios-hr ratios-irr; do uv run python scripts/verify_rcms.py \"$scenario\" --native || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T15:16:00.239890+00:00",
+    "finished": "2026-10-15T15:23:29.376292+00:00",
+    "seconds": 449.1339249839948,
+    "exit_code": 0,
+    "revision": "4638cf881c5dc1bfa22a6c8541319fa20018436e",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-contextual-ratios.log",
+    "sha256": "46e06d822471fb806bf24add36bd464c8233df572d4176d3882365a23a40a084",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/native-contextual-ratios.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T151600Z-76f752b3-ratios-hr",
+      "artifacts/verification/rcms/20261015T151923Z-6b5f67fc-ratios-irr"
+    ]
+  },
+  {
+    "label": "native-device-leading",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-presentation-diagnostic",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T13:06:01.739897+00:00",
+    "finished": "2026-10-15T13:10:10.269360+00:00",
+    "seconds": 248.5272601450124,
+    "exit_code": 0,
+    "revision": "036a1a5b4c4a056b8cffb258e6f5706d2ba61260",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-device-leading.log",
+    "sha256": "9a86bea2ece4fb6828579ea32679334fea6b4ad509ae988a5af1b2c813859f97",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/native-device-leading.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic"
+    ]
+  },
+  {
+    "label": "native-final-footer-and-funnel",
+    "command": [
+      "bash",
+      "-c",
+      "for scenario in audit-round3-presentation-transforms plot-workflow-funnel plot-workflow-contour plot-workflow-trimfill audit-round3-round5; do uv run python scripts/verify_rcms.py \"$scenario\" --native || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:30:22.559680+00:00",
+    "finished": "2026-10-15T12:37:46.300044+00:00",
+    "seconds": 443.7377852290083,
+    "exit_code": 1,
+    "revision": "82b582a49591dfef411e7d45d67e042d36763227",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-final-footer-and-funnel.log",
+    "sha256": "2d2dc062605af1e8efbc68f17b777a693205b55d60b292f9aa7606c816377696",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/native-final-footer-and-funnel.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T123022Z-5b450b82-audit-round3-presentation-transforms",
+      "artifacts/verification/rcms/20261015T123618Z-a380fbaf-plot-workflow-funnel",
+      "artifacts/verification/rcms/20261015T123649Z-9b772ae8-plot-workflow-contour",
+      "artifacts/verification/rcms/20261015T123715Z-daa8d3b1-plot-workflow-trimfill",
+      "artifacts/verification/rcms/20261015T123742Z-cf135c22-audit-round3-round5"
+    ]
+  },
+  {
+    "label": "native-final-selected-precision-and-caps",
+    "command": [
+      "bash",
+      "-c",
+      "for scenario in project-round6-polish audit-round3-round5 project-axis-proportions project-axis-others; do uv run python scripts/verify_rcms.py \"$scenario\" --native || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:39:32.036791+00:00",
+    "finished": "2026-10-15T12:54:56.280394+00:00",
+    "seconds": 924.241337444997,
+    "exit_code": 0,
+    "revision": "291c22c7213f78083e2484e079e89261372a4515",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-final-selected-precision-and-caps.log",
+    "sha256": "29b302c82da7f771672f3c251e33b5feaa117ad92b43fc1f2a63b20813445433",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/native-final-selected-precision-and-caps.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T123932Z-72549eab-project-round6-polish",
+      "artifacts/verification/rcms/20261015T124303Z-167e501d-audit-round3-round5",
+      "artifacts/verification/rcms/20261015T124520Z-34e471be-project-axis-proportions",
+      "artifacts/verification/rcms/20261015T125003Z-136dcf0a-project-axis-others"
+    ]
+  },
+  {
+    "label": "native-headers-and-accessibility",
+    "command": [
+      "bash",
+      "-c",
+      "uv run python scripts/verify_rcms.py project-round6-polish --native && QT_SCALE_FACTOR=1.5 uv run python scripts/verify_rcms.py review1-design --native && QT_SCALE_FACTOR=2 uv run python scripts/verify_rcms.py review1-design --native && uv run python scripts/verify_rcms.py project-shell --native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:56:14.356249+00:00",
+    "finished": "2026-10-15T12:01:38.115646+00:00",
+    "seconds": 323.75671088199306,
+    "exit_code": 0,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-headers-and-accessibility.log",
+    "sha256": "3853ef2a4b43b22ba29f55d68738becfe71f840738910e598e13ddb0c4d6ff18",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/native-headers-and-accessibility.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T115614Z-48deabbb-project-round6-polish",
+      "artifacts/verification/rcms/20261015T115917Z-4030619d-review1-design",
+      "artifacts/verification/rcms/20261015T120012Z-87b47122-review1-design",
+      "artifacts/verification/rcms/20261015T120117Z-b22b7027-project-shell"
+    ]
+  },
+  {
+    "label": "native-label-and-legend-frames",
+    "command": [
+      "bash",
+      "-c",
+      "for scenario in project-display-labels plot-workflow-regression project-axis-sequential audit-round3-presentation-transforms audit-round3-round5; do uv run python scripts/verify_rcms.py \"$scenario\" --native || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:12:56.219470+00:00",
+    "finished": "2026-10-15T12:22:40.782645+00:00",
+    "seconds": 584.5635056129977,
+    "exit_code": 1,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-label-and-legend-frames.log",
+    "sha256": "df61bedd359901edf0f85e39e13a5e2fc995e4ab850093e4a23e123a1f3ab2f6",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/native-label-and-legend-frames.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T121256Z-5211bc48-project-display-labels",
+      "artifacts/verification/rcms/20261015T121509Z-be2576db-plot-workflow-regression",
+      "artifacts/verification/rcms/20261015T121551Z-f81290e9-project-axis-sequential",
+      "artifacts/verification/rcms/20261015T121638Z-438dee76-audit-round3-presentation-transforms"
+    ]
+  },
+  {
+    "label": "native-owned-transforms",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-presentation-transforms",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T13:17:10.402693+00:00",
+    "finished": "2026-10-15T13:22:46.179647+00:00",
+    "seconds": 335.7700425499934,
+    "exit_code": 0,
+    "revision": "77bc0dba0e243a17d03d3875fd521331551dda30",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-owned-transforms.log",
+    "sha256": "ac3291be9238f629b33afcd6c677cce9d462425ced226fc656733d6586ad1041",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/native-owned-transforms.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T131710Z-0aeba99a-audit-round3-presentation-transforms"
+    ]
+  },
+  {
+    "label": "native-physical-clearance",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-presentation-diagnostic",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T13:01:57.762406+00:00",
+    "finished": "2026-10-15T13:03:45.980375+00:00",
+    "seconds": 108.21571786700224,
+    "exit_code": 1,
+    "revision": "3600c2ad5b8d6e409da7f194e2987894ef72c14b",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-physical-clearance.log",
+    "sha256": "aa91d8933976b41e53afba4bc841ba9faf8a06a591742de8d79235150ed282e6",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/native-physical-clearance.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T130157Z-305c6bc9-audit-round3-presentation-diagnostic"
+    ]
+  },
+  {
+    "label": "native-qualified-diagnostic-precision",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-round6-polish",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:56:39.787810+00:00",
+    "finished": "2026-10-15T13:00:51.230927+00:00",
+    "seconds": 251.44045755300613,
+    "exit_code": 0,
+    "revision": "c8787a2945a5c0305ad97e6e3a0619a7024eec75",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-qualified-diagnostic-precision.log",
+    "sha256": "fc37a11301cb58be705f07a0acaf91b44e77e05bd84cc97f7e0a61f257fd62a7",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/native-qualified-diagnostic-precision.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T125640Z-9d5f8d92-project-round6-polish"
+    ]
+  },
+  {
+    "label": "native-qualified-polish",
+    "command": [
+      "bash",
+      "-c",
+      "for scenario in project-round6-polish project-display-labels calculator-ratio-precision plot-workflow-regression project-shell audit-round3-arm-names; do uv run python scripts/verify_rcms.py \"$scenario\" --native || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:25:01.934371+00:00",
+    "finished": "2026-10-15T11:35:38.075890+00:00",
+    "seconds": 636.1390574340039,
+    "exit_code": 0,
+    "revision": "e4b98242481c2505fd42f34fe804c7a4e91a23dc",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-qualified-polish.log",
+    "sha256": "5c39e3ff2100a407af0f19c9e462f066c84ab263da822d3da87a5a107c9ab255",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/native-qualified-polish.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T112502Z-e307d7e9-project-round6-polish",
+      "artifacts/verification/rcms/20261015T112818Z-73d5997e-project-display-labels",
+      "artifacts/verification/rcms/20261015T113026Z-8406a906-calculator-ratio-precision",
+      "artifacts/verification/rcms/20261015T113136Z-beef801b-plot-workflow-regression",
+      "artifacts/verification/rcms/20261015T113215Z-fd98510f-project-shell",
+      "artifacts/verification/rcms/20261015T113228Z-e913aeaf-audit-round3-arm-names"
+    ]
+  },
+  {
+    "label": "native-reviewed-axis-label",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "review-workflows",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T13:44:45.582786+00:00",
+    "finished": "2026-10-15T13:45:48.323538+00:00",
+    "seconds": 62.735581338987686,
+    "exit_code": 0,
+    "revision": "2af53d75ca4137614972129e6445aa14f646da94",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "native-reviewed-axis-label.log",
+    "sha256": "1341c104945417a3d6e8637928ccef72edb15735a80c824b254f4cc3cbc0b3bb",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/native-reviewed-axis-label.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T134445Z-649178fc-review-workflows"
+    ]
+  },
+  {
+    "label": "numeric-full-qualified",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/numerical_equivalence.py",
+      "--capture",
+      "build/qt6-verification/golden-compatibility-r-stack-v2"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T16:01:00.065385+00:00",
+    "finished": "2026-10-15T16:01:00.229564+00:00",
+    "seconds": 0.16098578399396501,
+    "exit_code": 0,
+    "revision": "4f2b3c08a3901bb5809269381d8822df48a42cc6",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "numeric-full-qualified.log",
+    "sha256": "76a8f82c1ff24661de6f514457622e7712b04eae91dbb2d738d331dd5d8cabd0",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/numeric-full-qualified.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "numeric-selected-precision-qualified",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/numerical_equivalence.py",
+      "--capture",
+      "build/qt6-verification/golden-compatibility-round6-qualified-final"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:58:58.221475+00:00",
+    "finished": "2026-10-15T12:58:58.368022+00:00",
+    "seconds": 0.14402596199943218,
+    "exit_code": 0,
+    "revision": "c8787a2945a5c0305ad97e6e3a0619a7024eec75",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "numeric-selected-precision-qualified.log",
+    "sha256": "de3107ed3229e792edfbde87e9458d525bbf54b06ab81616ba1b9b68970d6e19",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/numeric-selected-precision-qualified.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "numerical-axis-capture",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/numerical_equivalence.py",
+      "--capture",
+      "build/qt6-verification/golden-compatibility-round6-axis"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:46:00.482738+00:00",
+    "finished": "2026-10-15T11:46:00.627348+00:00",
+    "seconds": 0.14228252299653832,
+    "exit_code": 0,
+    "revision": "354b7254781cb0274769db171d34892baf5020a1",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "numerical-axis-capture.log",
+    "sha256": "34976e2272946cd01390210d9327029bf35bcf6a2ee0fe08759fbef0b44bad79",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/numerical-axis-capture.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "numerical-final",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/numerical_equivalence.py",
+      "--capture",
+      "build/qt6-verification/golden-compatibility-round6-final"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:16:33.385710+00:00",
+    "finished": "2026-10-15T12:16:33.534977+00:00",
+    "seconds": 0.14641872300126124,
+    "exit_code": 0,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "numerical-final.log",
+    "sha256": "f2abb54a5f5fb3c81cd684674667bb03c2ca2c2d1ff1c1cbdb0573317de627c7",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/numerical-final.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "numerical-first",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "docs/ux-audit/2026-10-14-round3/numerical_equivalence.py",
+      "--capture",
+      "build/qt6-verification/golden-compatibility-round6"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:17:35.353306+00:00",
+    "finished": "2026-10-15T11:17:35.519387+00:00",
+    "seconds": 0.1637865209922893,
+    "exit_code": 0,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "numerical-first.log",
+    "sha256": "d846613ab9dd4269426af24c2b9a5e5e8173b9421fedd1715e3bace8c322edaa",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/numerical-first.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "offscreen-ci-focus-baseline",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "calculator-mode-entered-binary"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T14:27:57.826934+00:00",
+    "finished": "2026-10-15T14:28:10.291137+00:00",
+    "seconds": 12.461482259997865,
+    "exit_code": 1,
+    "revision": "beb6cb33761fd0e5c9c5f68d7761b07a2aad5e98",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "offscreen-ci-focus-baseline.log",
+    "sha256": "a61d84a7c6cce95a5496659f291ba50e9cffab8eeadbfb20725bf50f1a2d65b6",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/offscreen-ci-focus-baseline.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T142758Z-4c0ee3cc-calculator-mode-entered-binary"
+    ]
+  },
+  {
+    "label": "offscreen-ci-focus-replay",
+    "command": [
+      "bash",
+      "-c",
+      "for mode in entered-binary entered-continuous entered-diagnostic; do uv run python scripts/verify_rcms.py calculator-mode-\"$mode\" || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T14:29:28.331521+00:00",
+    "finished": "2026-10-15T14:30:12.375047+00:00",
+    "seconds": 44.04100642699632,
+    "exit_code": 0,
+    "revision": "beb6cb33761fd0e5c9c5f68d7761b07a2aad5e98",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "offscreen-ci-focus-replay.log",
+    "sha256": "516eccc63a0a4c3691604eee241533ebfb213591f9fa6b65ad5a0c61dbadeb62",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/offscreen-ci-focus-replay.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T142928Z-6db88982-calculator-mode-entered-binary",
+      "artifacts/verification/rcms/20261015T142944Z-e40f2574-calculator-mode-entered-continuous",
+      "artifacts/verification/rcms/20261015T142955Z-f6b28741-calculator-mode-entered-diagnostic"
+    ]
+  },
+  {
+    "label": "polish-native-first",
+    "command": [
+      "bash",
+      "-c",
+      "for scenario in audit-round3-round5 audit-round3-arm-names analysis-diagnostic-regression-continuous project-shell; do uv run python scripts/verify_rcms.py \"$scenario\" --native || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:13:18.011783+00:00",
+    "finished": "2026-10-15T11:18:15.772256+00:00",
+    "seconds": 297.75738149999233,
+    "exit_code": 1,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "polish-native-first.log",
+    "sha256": "384001b77ca364bf222a00b17645198f2c32889e3e2b6056483966abdb2b8f44",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/polish-native-first.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T111318Z-b875900e-audit-round3-round5",
+      "artifacts/verification/rcms/20261015T111552Z-82a55d11-audit-round3-arm-names"
+    ]
+  },
+  {
+    "label": "precision-and-contour-targeted",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-round6-polish"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:19:06.377931+00:00",
+    "finished": "2026-10-15T11:19:32.949362+00:00",
+    "seconds": 26.56902679799532,
+    "exit_code": 1,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "precision-and-contour-targeted.log",
+    "sha256": "6030c7d67b9568f7ae7056715d4e30a166ef2113a45ff6b63e4b3c1f805f921f",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/precision-and-contour-targeted.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T111906Z-ecb44b94-project-round6-polish"
+    ]
+  },
+  {
+    "label": "precision-contour-headers",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "project-round6-polish"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:20:44.157309+00:00",
+    "finished": "2026-10-15T11:21:53.541985+00:00",
+    "seconds": 69.38248337400728,
+    "exit_code": 0,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "precision-contour-headers.log",
+    "sha256": "924bb4a583c2cb1ce480f0c9c09b12abea6f607295207d27b59ddb2d96aa9242",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/precision-contour-headers.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T112044Z-fd7c3143-project-round6-polish"
+    ]
+  },
+  {
+    "label": "precision-first",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "calculator-mode-continuous-metrics",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:01:08.949239+00:00",
+    "finished": "2026-10-15T11:01:26.282581+00:00",
+    "seconds": 17.331133565996424,
+    "exit_code": 0,
+    "revision": "ccb94f317238bd7813744ffee4c9f1a732bdf17a",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "precision-first.log",
+    "sha256": "5719bce9fff4113e76fa90f3b1cdbc3886398655353d994115606c68badc502f",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/precision-first.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T110109Z-6d94466f-calculator-mode-continuous-metrics"
+    ]
+  },
+  {
+    "label": "python-affected-replay",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "-m",
+      "pytest",
+      "tests/python/fast",
+      "tests/python/gui/test_diagnostic_transactional_layout.py",
+      "-q"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:17:58.791396+00:00",
+    "finished": "2026-10-15T11:19:06.534125+00:00",
+    "seconds": 67.74051123400568,
+    "exit_code": 0,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "python-affected-replay.log",
+    "sha256": "099a0f362b3c2e413796a36d7f93ef350a8de23f6238aa0e1b4cfd4d6fd54aa1",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/python-affected-replay.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "python-affected",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "-m",
+      "pytest",
+      "tests/python/fast",
+      "tests/python/gui/test_diagnostic_transactional_layout.py",
+      "-q"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:13:35.490480+00:00",
+    "finished": "2026-10-15T11:15:10.153195+00:00",
+    "seconds": 94.65993990800052,
+    "exit_code": 1,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": "offscreen",
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "python-affected.log",
+    "sha256": "8af22e4107d7b278ca3a80ac53b0bb1da6d81caced774ac173f360348934be29",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/python-affected.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "ratio-precision-first",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "calculator-ratio-precision"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:22:28.853830+00:00",
+    "finished": "2026-10-15T11:23:28.426710+00:00",
+    "seconds": 59.570363882012316,
+    "exit_code": 0,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "ratio-precision-first.log",
+    "sha256": "de04e08e10d12ebca0f010e895c70685ec603863b044f7bb35d32b7b7d67fcee",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/ratio-precision-first.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T112229Z-e2b20bc7-calculator-ratio-precision"
+    ]
+  },
+  {
+    "label": "results-editor-python",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "-m",
+      "pytest",
+      "tests/python/gui/test_main_window_automation_launch.py",
+      "tests/python/gui/test_analysis_failure_safety.py",
+      "tests/python/gui/test_funnel_plot_editor.py",
+      "-q"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T12:18:08.276259+00:00",
+    "finished": "2026-10-15T12:18:42.089558+00:00",
+    "seconds": 33.808331606996944,
+    "exit_code": 0,
+    "revision": "4e8f0e56b5631605b902637eb5bce29c035ac620",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": "offscreen",
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "results-editor-python.log",
+    "sha256": "97c1d60388f9c3ffd58ccce7dbda62722a770273b358e745081d7675bbe46af7",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/results-editor-python.json",
+    "helper_evidence": []
+  },
+  {
+    "label": "shared-label-sweep-replay",
+    "command": [
+      "bash",
+      "-c",
+      "for scenario in project-display-labels plot-workflow-regression plot-workflow-sroc project-round6-polish; do uv run python scripts/verify_rcms.py \"$scenario\" || exit; done"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:49:15.822707+00:00",
+    "finished": "2026-10-15T11:52:55.689720+00:00",
+    "seconds": 219.86461487499764,
+    "exit_code": 0,
+    "revision": "d747d49ca751e2b06ee9595be37fa94cb573f1ed",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "shared-label-sweep-replay.log",
+    "sha256": "fb8422ff65aa9cae1513db4c7cf81bd8288e05744dd031f1940cc6aea6e5eb2a",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/shared-label-sweep-replay.json",
+    "helper_evidence": [
+      "artifacts/verification/rcms/20261015T114915Z-ceddc0b0-project-display-labels",
+      "artifacts/verification/rcms/20261015T115040Z-28d507cf-plot-workflow-regression",
+      "artifacts/verification/rcms/20261015T115109Z-6ca97839-plot-workflow-sroc",
+      "artifacts/verification/rcms/20261015T115126Z-57c4e32f-project-round6-polish"
+    ]
+  },
+  {
+    "label": "strict-types",
+    "command": [
+      "uv",
+      "run",
+      "ty",
+      "check",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio",
+      "--extra-search-path",
+      "build/qt6-verification/generated/rc_metastudio/forms",
+      "--extra-search-path",
+      ".",
+      "--extra-search-path",
+      "src/rc_metastudio",
+      "--extra-search-path",
+      "src",
+      "--extra-search-path",
+      "scripts",
+      "--extra-search-path",
+      "tests/python/gui",
+      "src/rc_metastudio",
+      "scripts",
+      "tests",
+      "r/RCMetaR/inst/qa"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-15T11:14:32.334817+00:00",
+    "finished": "2026-10-15T11:14:39.892584+00:00",
+    "seconds": 7.5495889199955855,
+    "exit_code": 1,
+    "revision": "0ae1b2fe335d140204bbe02907898fd1f4d9241d",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "strict-types.log",
+    "sha256": "b2323593d894f133fe4770ba23c211e662a4c5f759841265c31efbf050ba9f63",
+    "receipt": "docs/ux-audit/2026-10-16-round6/raw/strict-types.json",
+    "helper_evidence": []
+  }
+]

@@ -13,7 +13,7 @@
     "normal_install_type": "binary",
     "source_fallback": false,
     "required_normal_packages": [
-      "mada", "metafor", "rsvg", "svglite", "tiff", "xml2", "roxygen2", "testthat",
+      "mada", "metafor", "rsvg", "svglite", "png", "tiff", "xml2", "roxygen2", "testthat",
       "quantreg", "ape", "Hmisc", "mice", "ggplot2", "RColorBrewer",
       "Rcpp", "magrittr", "irlba", "minqa", "nloptr", "RcppEigen", "SparseM", "MatrixModels", "Formula",
       "latticeExtra", "acepack", "gridExtra", "data.table", "htmlTable", "viridis", "htmltools", "viridisLite",
@@ -147,14 +147,25 @@
       "installed_version": "2.7.0"
     },
     {
-      "name": "tiff",
+      "name": "png",
       "source": "cran",
       "scope": ["runtime"],
       "declared_in": ["r/RCMetaR/DESCRIPTION"],
       "evidence": [
-        "r/RCMetaR/R/plot_devices.R: rcmetar.export.svg_render writes LZW-compressed TIFF files with tiff::writeTIFF(...)"
+        "r/RCMetaR/R/plot_devices.R: png::readPNG(..., native=TRUE) supplies packed raster data to the TIFF device"
       ],
-      "reason": "Journal-oriented TIFF forest plot exports are written from the canonical SVG rasterization bitmap with LZW compression.",
+      "reason": "Publication TIFF export avoids large floating-point raster and channel copies by decoding the canonical PNG raster into nativeRaster.",
+      "installed_version": "0.1-9"
+    },
+    {
+      "name": "tiff",
+      "source": "cran",
+      "scope": ["test"],
+      "declared_in": ["r/RCMetaR/DESCRIPTION"],
+      "evidence": [
+        "r/RCMetaR/tests/testthat/test-plot-devices.R: tiff::readTIFF independently verifies exported pixels, alpha compositing and publication resolution"
+      ],
+      "reason": "Independent TIFF decoding verifies publication export pixels; the TIFF device writes LZW-compressed output at the requested resolution.",
       "installed_version": "0.1-12"
     },
     {

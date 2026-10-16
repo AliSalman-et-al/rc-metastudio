@@ -466,7 +466,7 @@ rcmetar.diagnostic.study.effects <- function(tp, fn, fp, tn, metrics=c("Spec", "
         variant <- as.character(res$variant)
         if (identical(variant, "cumulative") || identical(variant, "leave-one-out")) {
             return(rcmetar.build.sequential.metafor.bundle(
-                om.data, params, res$results, variant, res$labels
+                om.data, params, res$results, variant, res$labels, has.overall=res$has_overall
             ))
         }
         if (identical(variant, "subgroup")) {

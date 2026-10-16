@@ -32,6 +32,7 @@ from rc_metastudio.meta_globals import (
     BINARY_ONE_ARM_METRICS,
     BINARY_TWO_ARM_METRICS,
     EMPTY_VALS,
+    DEFAULT_GROUP_NAMES,
     is_nan,
     is_empty,
 )
@@ -104,13 +105,20 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         ]
 
         self.ci_label.setText(
-            "{0:.1f}% Confidence Interval".format(self.confidence_level)
+            f"{self.confidence_level:g}% confidence interval"
         )
         self._configure_readable_ci_label()
         self.initialize_form()  # initialize all cell to empty items
         self.setup_back_calculation_feedback()
         self._field_history = calc_fncs.TransientEditHistory()
 
+        self.raw_data_table.setVerticalHeaderLabels([str(name) for name in self.current_groups] + ["Total"])
+        self.raw_data_table.setAccessibleDescription("Whole-number study counts for " + " and ".join(self.current_groups) + ".")
+        self.input_mode_combo.addItem("Study counts", "counts")
+        self.input_mode_combo.addItem("Entered estimate", "estimate")
+        self.input_mode_combo.setAccessibleName("Study input method")
+        self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: group data or an entered effect estimate.")
+        self.input_mode_combo.currentIndexChanged.connect(self._input_mode_changed)
         self._update_raw_data()  # analysis_unit --> table
         self._populate_effect_data()  # make combo boxes for effects
         self.set_current_effect()  # fill in current effect data in line edits
@@ -126,10 +134,16 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         ).setDefault(True)
         self._request_content_refit()
 
+    def _input_mode_changed(self):
+        counts = self.input_mode_combo.currentData() == "counts"
+        self.content_scroll.setVisible(counts)
+        self.counts_group.setVisible(counts)
+        self._request_content_refit()
+
     def _configure_raw_data_table(self):
         table = self.raw_data_table
-        table.setHorizontalHeaderLabels(["Event", "No Event", "Total"])
-        table.setVerticalHeaderLabels(["Group 1", "Group 2", "Total"])
+        table.setHorizontalHeaderLabels(["Event", "No event", "Total"])
+        table.setVerticalHeaderLabels(["", "", "Total"])
         horizontal_header = required(table.horizontalHeader(), "binary table header")
         vertical_header = required(table.verticalHeader(), "binary row header")
         horizontal_header.setVisible(True)
@@ -154,15 +168,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         table.setMinimumHeight(table_height)
         # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
         table.setMaximumHeight(table_height)
-        for label in (
-            self.event_lbl_3,
-            self.label_18,
-            self.label_19,
-            self.label_20,
-            self.label_21,
-            self.label_22,
-        ):
-            label.setVisible(False)
 
     def _configure_readable_ci_label(self):
         """Keep the confidence heading on one line at normal scaling."""
@@ -390,7 +395,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             return None
         try:
             if len(list(imputed.keys())) > 1:
-                dialog = BinaryBackCalculationDialog(imputed, parent=self)
+                dialog = BinaryBackCalculationDialog(imputed, self.current_groups, parent=self)
                 if dialog.exec():
                     choice = dialog.get_choice()
                 else:  # don't do anything if cancelled
@@ -461,22 +466,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         ).setEnabled(False)
         self._request_content_refit()
         self.inconsistencyLabel.updateGeometry()
-        content_layout = self.content_widget.layout()
-        if content_layout is not None:
-            content_layout.activate()
-        self._reveal_validation_message()
-        QTimer.singleShot(
-            0,
-            self._reveal_validation_message,
-        )
-
-    def _reveal_validation_message(self):
-        self.content_scroll.ensureWidgetVisible(self.inconsistencyLabel, 12, 12)
-        center = self.inconsistencyLabel.mapTo(
-            self.content_widget, self.inconsistencyLabel.rect().center()
-        )
-        self.content_scroll.ensureVisible(center.x(), center.y(), 12, 12)
-
     def _raw_count_cell_is_editable(self, row, col):
         if (row, col) in BINARY_RAW_COUNT_CELLS:
             return True
@@ -633,6 +622,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         # Change color of bottom rows of table according one or two-arm metric
         current_effect_is_one_arm = self.current_effect in BINARY_ONE_ARM_METRICS
         for row in (1, 2):
+            self.raw_data_table.setRowHidden(row, current_effect_is_one_arm)
             for col in range(3):
                 item = self.raw_data_table.item(row, col)
                 item = required(item, f"binary table cell ({row}, {col})")
@@ -700,7 +690,15 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             return str(self.upper_text_box.text())
         return None  # Unknown value key.
 
+    def accept(self):
+        if not getattr(self, "_validation_failed", False):
+            super().accept()
+
     def val_changed(self, val_str):
+        fields = {"est": self.effect_text_box, "lower": self.lower_text_box, "upper": self.upper_text_box}
+        field = fields.get(val_str)
+        if field is not None and field.text() == field.property("calculatorValue") and not getattr(self, "_validation_failed", False):
+            return
         # Backup form state
         old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
             table=self.raw_data_table,
@@ -713,11 +711,14 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         no_errors, display_scale_val = self._text_box_value_is_between_bounds(
             val_str, new_text
         )
-        if no_errors is False:  # There are errors
+        if no_errors is False:
+            self._validation_failed = True
             self.restore_analysis_unit_and_table(old_analysis_unit, old_table)
             with ExitStack() as signal_blockers:
                 for widget in self.entry_widgets:
                     signal_blockers.enter_context(QSignalBlocker(widget))
+                if field is not None:
+                    field.setText(new_text)
                 if val_str == "est":
                     self.effect_text_box.setFocus()
                 elif val_str == "lower":
@@ -735,6 +736,10 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         except ValueError:
             # Ignore incomplete numeric input while the user is still editing.
             return None
+
+        self._validation_failed = False
+        if field is not None:
+            field.setProperty("calculatorValue", field.text())
 
         calculation_scale_value = self.calculator.binary_convert_scale(
             display_scale_val, self.current_effect, convert_to="calc.scale"
@@ -1057,6 +1062,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             self.set_current_effect()
 
     def clear_form(self):
+        self._validation_failed = False
         # For undo/redo
         old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
             table=self.raw_data_table,
@@ -1126,11 +1132,17 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 class BinaryBackCalculationDialog(
     QDialog, _ui_binary_back_calculation_dialog.Ui_BinaryBackCalculationDialog
 ):
-    def __init__(self, imputed_data, parent=None):
+    def __init__(self, imputed_data, group_names=None, parent=None):
         super(BinaryBackCalculationDialog, self).__init__(parent)
         self.setupUi(self)
+        if group_names is None:
+            group_names = DEFAULT_GROUP_NAMES
         for widget in self.content_widget.findChildren(QWidget):
             widget.installEventFilter(self)
+        adaptive_window.set_content_preferred_width(
+            self, 280, self.fontMetrics().averageCharWidth() * 80,
+            preferred_height=self.fontMetrics().lineSpacing() * 30,
+        )
         self._layout_controller = adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
@@ -1139,7 +1151,7 @@ class BinaryBackCalculationDialog(
         a, b, c, d = op1["a"], op1["b"], op1["c"], op1["d"]
         a, b, c, d = int(round(a)), int(round(b)), int(round(c)), int(round(d))
         option1_txt = (
-            "Group 1:\n  #events: %d\n  Total: %d\n\nGroup 2:\n  #events: %d\n  Total: %d"
+            f"{group_names[0]}:\n  Events: %d\n  Total: %d\n\n{group_names[1]}:\n  Events: %d\n  Total: %d"
             % (a, b, c, d)
         )
 
@@ -1147,7 +1159,7 @@ class BinaryBackCalculationDialog(
         a, b, c, d = op2["a"], op2["b"], op2["c"], op2["d"]
         a, b, c, d = int(round(a)), int(round(b)), int(round(c)), int(round(d))
         option2_txt = (
-            "Group 1:\n  #events: %d\n  Total: %d\n\nGroup 2:\n  #events: %d\n  Total: %d"
+            f"{group_names[0]}:\n  Events: %d\n  Total: %d\n\n{group_names[1]}:\n  Events: %d\n  Total: %d"
             % (a, b, c, d)
         )
 

@@ -146,6 +146,14 @@ rcmetar.normalize.svglite.svg <- function(svg.path) {
     svg <- rcmetar.sanitize.svg.xml(svg)
 
     document <- xml2::read_xml(charToRaw(svg), options="NOBLANKS")
+    # Keep the primary face, but let Windows rasterizers find mathematical glyphs.
+    text <- xml2::xml_find_all(document,
+        "//*[local-name()='text' and contains(@style, 'font-family:') and not(contains(@style, 'Segoe UI Symbol'))]")
+    for (node in text) {
+        style <- xml2::xml_attr(node, "style")
+        xml2::xml_set_attr(node, "style",
+            sub("(font-family:[^;]+)", '\\1, "Segoe UI Symbol", sans-serif', style))
+    }
     shapes <- xml2::xml_find_all(
         document,
         "//*[local-name()='g' and contains(concat(' ', normalize-space(@class), ' '), ' svglite ')]//*[local-name()='line' or local-name()='polyline' or local-name()='polygon' or local-name()='path' or local-name()='rect' or local-name()='circle']"
@@ -210,21 +218,13 @@ rcmetar.export.svg_render <- function(svg.path, outpath, size) {
         return(invisible(ext))
     }
     if (identical(ext, "tif") || identical(ext, "tiff")) {
-        bitmap <- rsvg::rsvg(svg.path, width=pixels[["width"]], height=pixels[["height"]])
-        if (length(dim(bitmap)) == 3 && dim(bitmap)[[3]] == 4) {
-            # rsvg returns premultiplied RGB. Composite against white before
-            # dropping alpha so transparent margins do not become dark pixels.
-            alpha <- bitmap[, , 4]
-            for (channel in 1:3) {
-                bitmap[, , channel] <- pmin(1, bitmap[, , channel] + 1 - alpha)
-            }
-            bitmap <- bitmap[, , 1:3]
-        }
-        pixels <- dim(bitmap)
+        # Keep publication rasters packed: a floating-point RGBA array plus
+        # channel copies exhausts memory for large subgroup figures.
+        bitmap <- png::readPNG(rsvg::rsvg_png(svg.path, width=pixels[["width"]], height=pixels[["height"]]), native=TRUE)
         grDevices::tiff(
             filename=outpath,
-            width=pixels[[2]],
-            height=pixels[[1]],
+            width=pixels[["width"]],
+            height=pixels[["height"]],
             units="px",
             res=rcmetar.plot.export.dpi(size),
             compression="lzw",
@@ -240,7 +240,34 @@ rcmetar.export.svg_render <- function(svg.path, outpath, size) {
     invisible(ext)
 }
 
-rcmetar.render.plot_file <- function(outpath, size, draw, display.path=NULL) {
+rcmetar.render.plot_file <- function(outpath, size, draw, display.path=NULL, caption=NULL) {
+    if (length(caption) && !is.na(caption[[1]]) && nzchar(caption[[1]])) {
+        caption <- gsub("[\r\n]+", " \u00b7 ", as.character(caption[[1]]))
+        caption.cex <- 1.08
+        lines <- rcmetar.forest.with.measurement.device({
+            words <- strsplit(caption, "[[:space:]]+")[[1]]
+            wrapped <- character(0)
+            line <- ""
+            for (word in words) {
+                candidate <- trimws(paste(line, word))
+                if (nzchar(line) && graphics::strwidth(candidate, units="inches", cex=caption.cex) > size$width - 0.6) {
+                    wrapped <- c(wrapped, line)
+                    line <- word
+                } else line <- candidate
+            }
+            c(wrapped, line)
+        })
+        caption.height <- 0.24 * length(lines) + 0.4
+        size$height <- size$height + caption.height
+        draw.plot <- draw
+        draw <- function() {
+            graphics::par(omi=c(0, 0, caption.height, 0))
+            result <- draw.plot()
+            graphics::mtext(paste(lines, collapse="\n"), side=3, outer=TRUE,
+                            line=1.0, at=0.02, adj=0, cex=caption.cex, font=1, family="sans")
+            result
+        }
+    }
     ext <- rcmetar.plot.file.extension(outpath)
     display.path <- rcmetar.plot.scalar_path(display.path)
     if (identical(ext, "svg") || identical(ext, "svgz")) {

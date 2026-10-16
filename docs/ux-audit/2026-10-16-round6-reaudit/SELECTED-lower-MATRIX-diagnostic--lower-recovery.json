@@ -1,0 +1,152 @@
+[
+  {
+    "path": "screenshots/matrix-diagnostic-standard-report-bottom--lower-recovery.png",
+    "sha256": "0a3946950fa3b761fefba4de0b7b7e23edcdb134dee276e1c8da81ce027f9a89",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic--lower-recovery/captures/matrix-diagnostic-standard-report-bottom--lower-recovery.png",
+    "scenario": "lower-MATRIX-diagnostic--lower-recovery"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-standard-figure-bottom--lower-recovery.png",
+    "sha256": "957d9699c6fc1cc1dd8f48c12a528121fcc2394876ab8ed4ccff0796c5144270",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic--lower-recovery/captures/matrix-diagnostic-standard-figure-bottom--lower-recovery.png",
+    "scenario": "lower-MATRIX-diagnostic--lower-recovery"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-standard-figure-1-bottom--lower-recovery.png",
+    "sha256": "a4c0e1d2244dc8e1e95facae234ccfa3048b15a91dcbeca1d30f4375c720969d",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic--lower-recovery/captures/matrix-diagnostic-standard-figure-1-bottom--lower-recovery.png",
+    "scenario": "lower-MATRIX-diagnostic--lower-recovery"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-cumulative-report-bottom--lower-recovery.png",
+    "sha256": "95e9266c7771d117ab03f1d27bd78c6fafadffec8621abdb99f78155d8f3de5a",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic--lower-recovery/captures/matrix-diagnostic-cumulative-report-bottom--lower-recovery.png",
+    "scenario": "lower-MATRIX-diagnostic--lower-recovery"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-cumulative-figure-bottom--lower-recovery.png",
+    "sha256": "625090024f78da9e8d7e6952385a091b687d9437c46b3b4422538af87a7e2e1f",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic--lower-recovery/captures/matrix-diagnostic-cumulative-figure-bottom--lower-recovery.png",
+    "scenario": "lower-MATRIX-diagnostic--lower-recovery"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-cumulative-figure-1-bottom--lower-recovery.png",
+    "sha256": "5c662f89383c1769e1d44cdd62488c43bf6bfbfbd04aec28610c5ec0a7af05b4",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic--lower-recovery/captures/matrix-diagnostic-cumulative-figure-1-bottom--lower-recovery.png",
+    "scenario": "lower-MATRIX-diagnostic--lower-recovery"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-leave-one-out-report-bottom--lower-recovery.png",
+    "sha256": "614f340bf99e3b302bbb023f230375e3a9fba00ead06eecfe7ee6bb596460510",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic--lower-recovery/captures/matrix-diagnostic-leave-one-out-report-bottom--lower-recovery.png",
+    "scenario": "lower-MATRIX-diagnostic--lower-recovery"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-leave-one-out-figure-bottom--lower-recovery.png",
+    "sha256": "eff41ded97248a84e147e997eaf40965103e5cdbf3fcdcb53b11ca1ea10dbf3b",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic--lower-recovery/captures/matrix-diagnostic-leave-one-out-figure-bottom--lower-recovery.png",
+    "scenario": "lower-MATRIX-diagnostic--lower-recovery"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-leave-one-out-figure-1-bottom--lower-recovery.png",
+    "sha256": "b1cd9e6649ae2a99b79356b6c1deb9232650b71aedb24462d1f27e0d78e9c428",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic--lower-recovery/captures/matrix-diagnostic-leave-one-out-figure-1-bottom--lower-recovery.png",
+    "scenario": "lower-MATRIX-diagnostic--lower-recovery"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-subgroup-report-bottom--lower-recovery.png",
+    "sha256": "fde58e7590ae4ee271c48ed185361400db02021cd738d6d755189b53b8e76bb3",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic--lower-recovery/captures/matrix-diagnostic-subgroup-report-bottom--lower-recovery.png",
+    "scenario": "lower-MATRIX-diagnostic--lower-recovery"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-subgroup-figure-bottom--lower-recovery.png",
+    "sha256": "708d0a4473b3a47097e418be93a787b0ad2cf214c806994da48fc63a862fa091",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic--lower-recovery/captures/matrix-diagnostic-subgroup-figure-bottom--lower-recovery.png",
+    "scenario": "lower-MATRIX-diagnostic--lower-recovery"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-subgroup-figure-1-bottom--lower-recovery.png",
+    "sha256": "8eea209201be08357ead46951326ecbb9a723ba00a9a315e3a2cb1ad7e9d9287",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic--lower-recovery/captures/matrix-diagnostic-subgroup-figure-1-bottom--lower-recovery.png",
+    "scenario": "lower-MATRIX-diagnostic--lower-recovery"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-meta-regression-report-bottom--lower-recovery.png",
+    "sha256": "200176107572642c8f4005a601c46a3d28d36b4886112b0f6107a8ff1e518c44",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity and Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic--lower-recovery/captures/matrix-diagnostic-meta-regression-report-bottom--lower-recovery.png",
+    "scenario": "lower-MATRIX-diagnostic--lower-recovery"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-meta-regression-figure-bottom--lower-recovery.png",
+    "sha256": "81002ad5fe4a5ead0134b0e4f643d6dd5f0096cd9997e54b73c68a751d741e8f",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity and Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic--lower-recovery/captures/matrix-diagnostic-meta-regression-figure-bottom--lower-recovery.png",
+    "scenario": "lower-MATRIX-diagnostic--lower-recovery"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-meta-regression-figure-1-bottom--lower-recovery.png",
+    "sha256": "42a1a75c00d9165107cb2f3753f1aec1d8977b5ba694770ecc2170a8bec1430d",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity and Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic--lower-recovery/captures/matrix-diagnostic-meta-regression-figure-1-bottom--lower-recovery.png",
+    "scenario": "lower-MATRIX-diagnostic--lower-recovery"
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "path": "screenshots/matrix-onearm-mean-cumulative-figure-bottom-revman.png",
+    "sha256": "ebb5af4eb717b485894334cb0be1f517a1e076463e68f85e4d3b75dbb0b479fa",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-cumulative-figure-bottom-revman.png",
+    "scenario": "lower-MATRIX-onearm-mean-revman"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-leave-one-out-figure-bottom-revman.png",
+    "sha256": "9ef7efd43f9635890bfe32ae0d708efaaff045805c0282e3918a6eaa587c8b72",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-leave-one-out-figure-bottom-revman.png",
+    "scenario": "lower-MATRIX-onearm-mean-revman"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-subgroup-figure-bottom-revman.png",
+    "sha256": "d31e377c27dc2f81025930506ac0341d2a0eeba28d3ea4274782e1c038b8160c",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-subgroup-figure-bottom-revman.png",
+    "scenario": "lower-MATRIX-onearm-mean-revman"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-meta-regression-figure-bottom-revman.png",
+    "sha256": "2a7dc94cc706a8b6d260a80d98738cd69ea1b5e924a661515d8b08d90551c6bf",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-meta-regression-figure-bottom-revman.png",
+    "scenario": "lower-MATRIX-onearm-mean-revman"
+  }
+]

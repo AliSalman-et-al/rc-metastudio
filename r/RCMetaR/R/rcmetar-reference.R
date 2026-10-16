@@ -45,9 +45,7 @@ NULL
 #'
 #' @section Study-level calculations:
 #' \code{compute.for.one.bin.study()}, \code{compute.bin.point.estimates()},
-#' \code{get.res.for.one.binary.study()}, \code{create.binary.data.array()},
-#' and \code{write.bin.study.data.to.file()} prepare per-study estimates,
-#' variances, display tables, and exported data files.
+#' and \code{get.res.for.one.binary.study()} prepare per-study estimates and variances.
 #'
 #' @section Method metadata:
 #' Functions ending in \code{.parameters}, \code{.pretty.names},
@@ -67,7 +65,7 @@ NULL
 #' \code{rcmetar.method.references("rma.peto")} for the statistical method
 #' citations used in result payloads.
 #'
-#' @aliases binary.fixed.inv.var binary.fixed.inv.var.is.feasible.for.funnel binary.fixed.inv.var.overall binary.fixed.inv.var.parameters binary.fixed.inv.var.pretty.names binary.fixed.inv.var.value.info binary.fixed.meta.regression binary.fixed.mh binary.fixed.mh.is.feasible binary.fixed.mh.is.feasible.for.funnel binary.fixed.mh.overall binary.fixed.mh.parameters binary.fixed.mh.pretty.names binary.fixed.mh.value.info binary.fixed.peto binary.fixed.peto.is.feasible binary.fixed.peto.is.feasible.for.funnel binary.fixed.peto.overall binary.fixed.peto.parameters binary.fixed.peto.pretty.names binary.fixed.peto.value.info binary.random binary.random.is.feasible.for.funnel binary.random.meta.regression.parameters binary.random.overall binary.random.parameters binary.random.pretty.names binary.random.value.info binary.transform.f compute.bin.point.estimates compute.for.one.bin.study create.binary.data.array get.res.for.one.binary.study write.bin.study.data.to.file arcsine.sqrt invarcsine.sqrt freeman_tukey invfreeman_tukey logit invlogit
+#' @aliases binary.fixed.inv.var binary.fixed.inv.var.is.feasible.for.funnel binary.fixed.inv.var.overall binary.fixed.inv.var.parameters binary.fixed.inv.var.pretty.names binary.fixed.inv.var.value.info binary.fixed.meta.regression binary.fixed.mh binary.fixed.mh.is.feasible binary.fixed.mh.is.feasible.for.funnel binary.fixed.mh.overall binary.fixed.mh.parameters binary.fixed.mh.pretty.names binary.fixed.mh.value.info binary.fixed.peto binary.fixed.peto.is.feasible binary.fixed.peto.is.feasible.for.funnel binary.fixed.peto.overall binary.fixed.peto.parameters binary.fixed.peto.pretty.names binary.fixed.peto.value.info binary.random binary.random.is.feasible.for.funnel binary.random.meta.regression.parameters binary.random.overall binary.random.parameters binary.random.pretty.names binary.random.value.info binary.transform.f compute.bin.point.estimates compute.for.one.bin.study get.res.for.one.binary.study arcsine.sqrt invarcsine.sqrt freeman_tukey invfreeman_tukey logit invlogit
 #' @name RCMetaR-binary-methods
 NULL
 
@@ -84,9 +82,8 @@ NULL
 #' }
 #'
 #' @section Study-level calculations:
-#' \code{compute.for.one.cont.study()}, \code{get.res.for.one.cont.study()},
-#' \code{create.cont.data.array()}, and \code{write.cont.study.data.to.file()}
-#' prepare per-study estimates, display tables, and exported data files.
+#' \code{compute.for.one.cont.study()} and \code{get.res.for.one.cont.study()}
+#' prepare per-study estimates and variances.
 #'
 #' @section Method metadata:
 #' Functions ending in \code{.parameters}, \code{.pretty.names},
@@ -98,7 +95,7 @@ NULL
 #' \code{rcmetar.method.references("rma.uni.random")} for the statistical
 #' method citations used in result payloads.
 #'
-#' @aliases continuous.fixed continuous.fixed.is.feasible.for.funnel continuous.fixed.overall continuous.fixed.parameters continuous.fixed.pretty.names continuous.fixed.value.info continuous.random continuous.random.is.feasible.for.funnel continuous.random.overall continuous.random.parameters continuous.random.pretty.names continuous.random.value.info continuous.transform.f compute.for.one.cont.study create.cont.data.array get.res.for.one.cont.study write.cont.study.data.to.file
+#' @aliases continuous.fixed continuous.fixed.is.feasible.for.funnel continuous.fixed.overall continuous.fixed.parameters continuous.fixed.pretty.names continuous.fixed.value.info continuous.random continuous.random.is.feasible.for.funnel continuous.random.overall continuous.random.parameters continuous.random.pretty.names continuous.random.value.info continuous.transform.f compute.for.one.cont.study get.res.for.one.cont.study
 #' @name RCMetaR-continuous-methods
 NULL
 
@@ -283,8 +280,9 @@ NULL
 #' files, and preserve plot data alongside analysis parameters.
 #'
 #' @section Display helpers:
-#' \code{print.summary.display()} and \code{print.summary.data()} provide S3
-#' print methods for RCMetaR summary objects. \code{create.repeat.string()},
+#' \code{format.summary.display()} and \code{format.summary.data()} return text
+#' without native console encoding. Their S3 print methods write that text.
+#' \code{create.repeat.string()},
 #' \code{pad.with.spaces()}, \code{round.display()},
 #' \code{capture.output.and.collapse()}, \code{results.short.list()}, and the
 #' \code{*.value.info()} helpers format display rows and labels.
@@ -294,7 +292,7 @@ NULL
 #' \code{save.data()}, and \code{write.results.to.file()} write generated data,
 #' analysis parameters, and formatted summaries to disk.
 #'
-#' @aliases capture.output.and.collapse create.repeat.string cumul.rma.mh.value.info cumul.rma.uni.value.info loo.rma.mh.value.info loo.rma.uni.value.info pad.with.spaces print.summary.data print.summary.display results.short.list rma.uni.value.info round.display save.data save.plot.data save.plot.data.and.params write.results.to.file
+#' @aliases capture.output.and.collapse create.repeat.string cumul.rma.mh.value.info cumul.rma.uni.value.info format.summary.data format.summary.display loo.rma.mh.value.info loo.rma.uni.value.info pad.with.spaces print.summary.data print.summary.display results.short.list rma.uni.value.info round.display save.data save.plot.data save.plot.data.and.params write.results.to.file
 #' @name RCMetaR-output-helpers
 NULL
 

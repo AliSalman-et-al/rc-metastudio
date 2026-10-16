@@ -1,0 +1,18 @@
+[
+  {
+    "path": "screenshots/calculator-mode-onearm-proportion-11-0-calculator-mode-layout.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201928Z-95ceb251-calculator-mode-onearm-proportion/11-0-calculator-mode-layout.png",
+    "sha256": "6b0959987908d567e3c18049e93d0615191381987eab454e06e6575a1055e25e",
+    "action": "calculator-mode-layout",
+    "step": 11,
+    "scenario": "calculator-mode-onearm-proportion"
+  },
+  {
+    "path": "screenshots/calculator-mode-onearm-proportion-14-0-calculator-mode-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201928Z-95ceb251-calculator-mode-onearm-proportion/14-0-calculator-mode-reopened.png",
+    "sha256": "622fc0e9ecb1ac3d75a00a2d19cddfe36bf915f8a2ed8f5532340e43e6e25732",
+    "action": "calculator-mode-reopened",
+    "step": 14,
+    "scenario": "calculator-mode-onearm-proportion"
+  }
+]

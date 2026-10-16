@@ -16,8 +16,7 @@ def read_manifest(path: Path) -> list[dict[str, str]]:
 
 def content_bbox(image: Image.Image) -> tuple[int, int, int, int] | None:
     rgb = image.convert("RGB")
-    white = Image.new("RGB", rgb.size, "white")
-    return ImageChops.difference(rgb, white).getbbox()
+    return ImageChops.invert(rgb).getbbox()
 
 
 def image_metrics(row: dict[str, str]) -> dict[str, str]:
@@ -34,12 +33,8 @@ def image_metrics(row: dict[str, str]) -> dict[str, str]:
             margins = (left, top, width - right, height - bottom)
             content_width = right - left
             content_height = bottom - top
-        stat = ImageStat.Stat(
-            ImageChops.difference(
-                image.convert("RGB"), Image.new("RGB", image.size, "white")
-            )
-        )
-        mean_delta = sum(stat.mean) / len(stat.mean)
+        stat = ImageStat.Stat(image.convert("RGB"))
+        mean_delta = sum(255 - mean for mean in stat.mean) / len(stat.mean)
     return {
         **row,
         "width": str(width),
@@ -57,8 +52,8 @@ def image_metrics(row: dict[str, str]) -> dict[str, str]:
 
 def make_thumb(image_path: Path, box: tuple[int, int]) -> Image.Image:
     with Image.open(image_path) as image:
+        image.thumbnail(box, Image.Resampling.LANCZOS)
         thumb = image.convert("RGB")
-        thumb.thumbnail(box, Image.Resampling.LANCZOS)
         canvas = Image.new("RGB", box, "white")
         left = (box[0] - thumb.width) // 2
         top = (box[1] - thumb.height) // 2

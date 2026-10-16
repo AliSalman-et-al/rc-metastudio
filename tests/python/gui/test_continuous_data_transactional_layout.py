@@ -6,6 +6,8 @@ import pytest
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 from rc_metastudio import adaptive_window, calculator_service
+from rc_metastudio.analysis_dataset import Outcome
+from rc_metastudio.meta_globals import CONTINUOUS
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -21,6 +23,7 @@ prepare_generated_ui_imports()
 
 class FakeContinuousAnalysisUnit:
     def __init__(self, raw_data=None, effects=None):
+        self.outcome = Outcome("Measured outcome", CONTINUOUS, sub_type="means")
         self.raw_data = raw_data or {
             "Group 1": [10, 94, 2],
             "Group 2": [12, 90, 3],
@@ -88,10 +91,11 @@ def _open_continuous_dialog(
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     recorder = recorder if recorder is not None else {}
     recorder.setdefault("metric_choice_exec", [])
+    monkeypatch.setattr(adaptive_window, "available_geometry_for_window", lambda _window: QtCore.QRect(available))
     monkeypatch.setattr(
-        continuous_data_dialog.adaptive_window,
-        "available_geometry_for_window",
-        lambda _window: QtCore.QRect(available),
+        adaptive_window.AdaptiveWindowController,
+        "_available_geometry",
+        lambda _controller: QtCore.QRect(available),
     )
     if choose_metric:
 
@@ -435,8 +439,8 @@ def test_continuous_variants_are_transactional_and_screen_bounded(monkeypatch, s
         assert not dialog.content_scroll.isAncestorOf(dialog.buttonBox)
         assert not isinstance(dialog.simple_group, QtWidgets.QGroupBox)
         assert not isinstance(dialog.effect_group, QtWidgets.QGroupBox)
-        assert dialog.effect_metric_label.text() == "Effect"
-        assert dialog.label_14.text() == "Est."
+        assert dialog.effect_metric_label.text() == "Effect metric"
+        assert dialog.label_14.text() == "Estimate"
         assert [dialog.label_15.text(), dialog.label_2.text()] == ["Lower", "Upper"]
         assert dialog.label_15.buddy() is dialog.lower_text_box
         assert dialog.label_2.buddy() is dialog.upper_text_box
@@ -477,6 +481,9 @@ def test_continuous_metric_transition_does_not_resize_visible_root(monkeypatch):
 
         assert dialog.frameGeometry() == settled
         assert dialog.effect_combo_box.currentData() == "SMD"
+        assert not dialog.pre_post_group_box.isVisible()
+        dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
+        app.processEvents()
         assert dialog.pre_post_group_box.isVisible()
         assert dialog.simple_table.item(0, 1).text() == preserved_value
         assert dialog.buttonBox.isVisible()
@@ -504,6 +511,7 @@ def test_continuous_major_variant_behavior_matrix(monkeypatch, variant):
                 if dialog.effect_combo_box.itemData(index) == "SMD"
             )
             dialog.effect_combo_box.setCurrentIndex(smd_index)
+            dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
             dialog.correlation_pre_post.selectAll()
             key_clicks(dialog.correlation_pre_post, "0.5")
             dialog.g1_pre_post_table.setFocus()
@@ -578,14 +586,8 @@ def test_continuous_long_values_and_large_font_overflow_inside_content(monkeypat
         )
         dialog.upper_text_box.setFocus()
         app.processEvents()
-        mapped = dialog.upper_text_box.mapTo(
-            dialog.content_scroll.viewport(), QtCore.QPoint()
-        )
-        assert (
-            dialog.content_scroll.viewport()
-            .rect()
-            .intersects(QtCore.QRect(mapped, dialog.upper_text_box.size()))
-        )
+        mapped = dialog.upper_text_box.mapTo(dialog, QtCore.QPoint())
+        assert dialog.rect().contains(QtCore.QRect(mapped, dialog.upper_text_box.size()))
         assert dialog.buttonBox.isVisible()
     finally:
         app.setFont(old_font)
@@ -712,10 +714,11 @@ def test_continuous_back_calculation_choice_keeps_guidance_and_actions_reachable
     from rc_metastudio import continuous_data_dialog
 
     available = QtCore.QRect(20, 30, *size)
+    monkeypatch.setattr(adaptive_window, "available_geometry_for_window", lambda _window: QtCore.QRect(available))
     monkeypatch.setattr(
-        continuous_data_dialog.adaptive_window,
-        "available_geometry_for_window",
-        lambda _window: QtCore.QRect(available),
+        adaptive_window.AdaptiveWindowController,
+        "_available_geometry",
+        lambda _controller: QtCore.QRect(available),
     )
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     dialog = continuous_data_dialog.ContinuousBackCalculationDialog(

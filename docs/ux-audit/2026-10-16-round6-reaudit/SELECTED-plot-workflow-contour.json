@@ -1,0 +1,10 @@
+[
+  {
+    "path": "screenshots/plot-workflow-contour-05-0-family-editor-controls.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201724Z-f3b68045-plot-workflow-contour/05-0-family-editor-controls.png",
+    "sha256": "91c9a875a4aa41a44a35b4de1278c16fd9aba12c07631f2cd2be1fb0adbef19c",
+    "action": "family-editor-controls",
+    "step": 5,
+    "scenario": "plot-workflow-contour"
+  }
+]

@@ -1,0 +1,92 @@
+{
+  "failed_runs": [
+    {
+      "run": "helper-project-shell-replay",
+      "exit_code": 1,
+      "log": "raw/helper-project-shell-replay.log",
+      "log_sha256": "abc228f382c6f6fc18baf0ac007162eb3076aaa22f103a82924fcb48c77dd183",
+      "verbatim": "Traceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py\", line 769, in <module>\n    run(app, window, scenario, record_step)\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 1736, in run\n    shell(app, window, record)\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 1667, in shell\n    assert window.isMaximized() and not window.isFullScreen()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\nTraceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py\", line 769, in <module>\n    run(app, window, scenario, record_step)\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 1736, in run\n    shell(app, window, record)\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 1667, in shell\n    assert window.isMaximized() and not window.isFullScreen()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n\n"
+    },
+    {
+      "run": "helper-project-shell",
+      "exit_code": 1,
+      "log": "raw/helper-project-shell.log",
+      "log_sha256": "4fc7b80a9bd45ad25f5fa82655d1c96c6b26e9557ee697be903ee9e48b3d69af",
+      "verbatim": "Traceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py\", line 769, in <module>\n    run(app, window, scenario, record_step)\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 1736, in run\n    shell(app, window, record)\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 1654, in shell\n    assert window.isMaximized() and not window.isFullScreen()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\nTraceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py\", line 769, in <module>\n    run(app, window, scenario, record_step)\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 1736, in run\n    shell(app, window, record)\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 1654, in shell\n    assert window.isMaximized() and not window.isFullScreen()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n\n"
+    },
+    {
+      "run": "native-all-samples",
+      "exit_code": 1,
+      "log": "raw/native-all-samples.log",
+      "log_sha256": "916628472281529da5a9d83b96250f664251578609b3fd359b092d50cfc7a463",
+      "verbatim": "[\"uv\", \"run\", \"python\", \"scripts/run_with_timeout.py\", \"--timeout-seconds\", \"300\", \"--label\", \"all seven bundled samples\", \"--\", \"uv\", \"run\", \"python\", \"docs/ux-audit/2026-10-16-round5-reaudit/raw/native_samples.py\"]\nR callback write-console: Loading required package: Matrix\n  \nR callback write-console: Loading required package: metadat\n  \nR callback write-console: Loading required package: numDeriv\n  \nR callback write-console: \nLoading the 'metafor' package (version 5.0-1). For an\nintroduction to the package please type: help(metafor)\n\nAn updated version of the package (version 5.2-1) is available!\nTo update to this version type: install.packages(\"metafor\")\n\n  \namino.rcms SAMPLE PASSED\nBCG.rcms SAMPLE PASSED\ncontinuous.rcms SAMPLE PASSED\n"
+    },
+    {
+      "run": "native-design-serial",
+      "exit_code": 1,
+      "log": "raw/native-design-serial.log",
+      "log_sha256": "70a6c37a95e562dfd03f0e6a90f7b7019bc1c36687d6cd7cc4601f2cf1640595",
+      "verbatim": "Traceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/native_design.py\", line 31, in <module>\n    run(app,window,work,ROOT,record,ns['analyze'])\n  File \"/home/ali/Documents/Code/rc-metastudio/tests/e2e/review1_design.py\", line 25, in run\n    present.parent.mkdir(parents=True)\n  File \"/home/ali/.local/share/uv/python/cpython-3.11.9-linux-x86_64-gnu/lib/python3.11/pathlib.py\", line 1116, in mkdir\n    os.mkdir(self, mode)\nFileExistsError: [Errno 17] File exists: '/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native-design/projects/a long path for evidence a long path for evidence a long path for evidence '\n"
+    },
+    {
+      "run": "native-guard-keyboard-priority",
+      "exit_code": 1,
+      "log": "raw/native-guard-keyboard-priority.log",
+      "log_sha256": "aba4ac02009d38dcf46859f3fbed30594e1f0daf112d1f0af39817706d6d07e7",
+      "verbatim": "Traceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native_guard_keyboard.py\", line 62, in <module>\n    menu=app.activePopupWidget();assert isinstance(menu,QtWidgets.QMenu),(type(menu),window.menu_bar.activeAction())\n                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: (<class 'NoneType'>, None)\n"
+    },
+    {
+      "run": "native-guard-keyboard-replay",
+      "exit_code": 1,
+      "log": "raw/native-guard-keyboard-replay.log",
+      "log_sha256": "79a8216115dffa1f89a3b6d34fddf96a1b79a5ddbd14d8816e2470f2cfd87a78",
+      "verbatim": "Traceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native_guard_keyboard.py\", line 83, in <module>\n    assert not menu_errors,menu_errors\n           ^^^^^^^^^^^^^^^\nAssertionError: [\"AssertionError('Effect-size tools')\"]\n"
+    },
+    {
+      "run": "native-shell-serial",
+      "exit_code": 1,
+      "log": "raw/native-shell-serial.log",
+      "log_sha256": "137a31b60a5582d5b33978781a5b3018b6981065b966aa0a53e0165dff5629ca",
+      "verbatim": "Traceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/native_shell.py\", line 108, in <module>\n    report=(HERE/'raw/native-design/review1-report.txt').resolve();assert report.exists()\n                                                                          ^^^^^^^^^^^^^^^\nAssertionError\n"
+    },
+    {
+      "run": "native-tiny-raw-keyboard",
+      "exit_code": 1,
+      "log": "raw/native-tiny-raw-keyboard.log",
+      "log_sha256": "56ece1ffb1cc8d41e15c4eda1dee92a5d7f476dc30a7dc1174a0101a29613b7b",
+      "verbatim": "Traceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 83, in ready\n    drive(dialog)\n  File \"/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native_tiny_raw_keyboard.py\", line 27, in edit\n    editor=app.focusWidget();result['delegate_class']=type(editor).__name__;assert isinstance(editor,QtWidgets.QLineEdit),type(editor)\n                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: <class 'PyQt6.QtWidgets.QTableWidget'>\nTraceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native_tiny_raw_keyboard.py\", line 34, in <module>\n    modal(app,ContinuousDataDialog,edit,lambda:QTest.mouseClick(header.viewport(),QtCore.Qt.MouseButton.LeftButton,pos=point))\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 97, in modal\n    assert not errors, errors\n           ^^^^^^^^^^\nAssertionError: [AssertionError(<class 'PyQt6.QtWidgets.QTableWidget'>)]\n"
+    }
+  ],
+  "interrupted_attempts": {
+    "reason": "Matrix outer shell ended with exit 143 after four completed families; orphan generic matrix overlapped newly started design. Terminate only recorded owned trees; reject overlapping partial frames and replay serially.",
+    "pids": [
+      1241145,
+      1243875,
+      1243878,
+      1244058,
+      1244064,
+      1244067,
+      1244070,
+      1244071,
+      1244074
+    ]
+  },
+  "sample_wrapper_trace_verbatim": "[2026-10-15T08:46:09Z] Unhandled exception\nTraceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native_samples.py\", line 53, in <module>\n    view=namespace['analyze'](app,window,method)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py\", line 229, in analyze\n    label = next(\n            ^^^^^\nStopIteration\n",
+  "classification": {
+    "native-design-serial": "Audit wrapper reused directory from interrupted attempt; fresh replay passed.",
+    "native-shell-serial": "Audit wrapper final editor depended on missing design export; replay passed.",
+    "native-all-samples": "Audit wrapper chose continuous method for binary meantime project; corrected stored-family replay passed.",
+    "native-guard-keyboard-priority": "Audit wrapper assumed F10 opened a menu; no active popup appeared. Dirty guards before continuation passed. Final supported toolbar Tab/Space replay passed.",
+    "native-guard-keyboard-replay": "Toolbar Tab/Space entry passed; wrapper assumed Home/Down selected Meta-analysis but active action was Effect-size tools. Corrected bounded arrow traversal finalreplay passed.",
+    "native-tiny-raw-keyboard": "Editable SD flag check passed, but audit double-click did not open a QLineEdit delegate (focus was QTableWidget). Corrected F2 keyboard replay completed and independently confirmed actual SD data loss; this failed entry attempt is not the product finding.",
+    "helper-project-shell": "Unmodified native helper failed immediate normal-to-maximized Qt assertion after one processEvents. Separate state-settling drive reached correct native Qt/EWMH state; helper gate remains failed.",
+    "helper-project-shell-replay": "Unmodified retry passed initial maximize but failed immediate fullscreen-to-maximize assertion. Separate bounded native observation confirmed final states (200ms stability floor); no test or application source changes."
+  },
+  "ancillary_controller_verbatim": "Ancillary controller: Return acknowledged the owned warning; the application then accepted/saved/reopened and finished before a follow-up Escape activation. The stale owned calculator XID no longer existed. No Escape key was sent after activation failed.\nVerbatim emitted error:\nX Error of failed request:  BadWindow (invalid Window parameter)\n  Major opcode of failed request:  20 (X_GetProperty)\n  Resource id in failed request:  0x2c00014\n  Serial number of failed request:  8\n  Current serial number in output stream:  8\nTraceback (most recent call last):\n  File \"<stdin>\", line 6, in <module>\n  File \"/usr/lib/python3.12/subprocess.py\", line 571, in run\n    raise CalledProcessError(retcode, process.args,\nsubprocess.CalledProcessError: Command '['wmctrl', '-ia', '0x2c00014']' returned non-zero exit status 1.\n",
+  "bookkeeping_verbatim": "Scorecard document renderer first attempt: KeyError: 'csv' (missing link-map entry); no report write occurred. Entry added and renderer passed with all83IDs.\n\nAudit artifact-index construction tried the deleted temporary export location from steps rather than its retained manifest copy. Corrected to artifacts/.../workflow/regression.svg; no E2E failure or source change.\nVerbatim final error:\nFileNotFoundError: [Errno 2] No such file or directory: '/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-7ijq444g/regression.svg'\n\nFinal findings-index extraction: AssertionError from greedy DOTALL title matching, then AssertionError:10 because the Medium regression heading modifier was omitted. Corrected parser;11finding/88scorecard/count checks passed. No E2E run affected.\n",
+  "setup_verbatim": [
+    "/bin/bash: line 2: python: command not found",
+    "rg: forms: No such file or directory (os error 2)",
+    "rg: help: No such file or directory (os error 2)"
+  ]
+}

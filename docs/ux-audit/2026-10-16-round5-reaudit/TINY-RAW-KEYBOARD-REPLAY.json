@@ -1,0 +1,54 @@
+{
+  "requested_sd": 1e-05,
+  "captures": [
+    {
+      "path": "screenshots/calculator-tiny-keyboard-replay-preview.png",
+      "sha256": "4787f6b6e7cd5859be3b458cf03a8f4bf101b6d3fa1fbd32d85393dcfb020c23"
+    },
+    {
+      "path": "screenshots/calculator-tiny-keyboard-replay-warning.png",
+      "sha256": "2c500013f8d22ddf3dc8ef39b10618f13f7fb71d065f0b1014e9b792170b01de"
+    },
+    {
+      "path": "screenshots/calculator-tiny-keyboard-replay-accepted.png",
+      "sha256": "8c78907c417d04d5781df184d30f7f8a2f0c84db1f38c15aa793cae158947a89"
+    },
+    {
+      "path": "screenshots/calculator-tiny-keyboard-replay-reopened.png",
+      "sha256": "39c0d0874ae30aed6ac484861ec5373591cd8417896fa6e974f2234bc7c418ac"
+    }
+  ],
+  "before": [
+    20.0,
+    4.0,
+    2.0
+  ],
+  "sd_cell_editable": true,
+  "delegate_class": "QLineEdit",
+  "display_sd": "0.0",
+  "dialog_raw": [
+    20.0,
+    4.0,
+    0.0
+  ],
+  "effect_preview": [
+    "4.0",
+    "4.0",
+    "4.0"
+  ],
+  "warning": "The lower CI must be less than the point estimate!",
+  "accepted_raw": [
+    20.0,
+    4.0,
+    0.0
+  ],
+  "reopened_raw": [
+    20.0,
+    4.0,
+    0.0
+  ],
+  "stored_sd_preserved": false,
+  "saved_project_sha256": "0d6cd4835da5e1359ea5b91abad4b7243fcc51edca43080eafdd835076384fc4",
+  "reopened_display_sd": "0.0",
+  "source_unchanged": true
+}

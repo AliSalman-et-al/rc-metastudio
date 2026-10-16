@@ -1,0 +1,36 @@
+Cumulative meta-analysis — blood pressure · Continuous · Standardized Mean Difference
+Comparison: tx A / tx B · Follow-up: first
+
+Model configuration
+Project: continuous.rcms
+Model: Continuous Fixed-Effect Inverse Variance
+Inference: Normal approximation
+Confidence level: 95.0%
+Order: current study order; each row adds a study to the preceding studies.
+SMD: first group minus second group, in SD units; 0 indicates no difference.
+
+Cumulative Summary
+
+Model Results
+Study added (k)	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+Carroll, 1997 (k = 1)	0.094524	-0.263514	0.452563	0.182676	
+Grant, 1981 (k = 2)	0.189211	-0.059390	0.437812	0.126840	0.135769
+Peck, 1987 (k = 3)	0.231839	0.015168	0.448510	0.110548	0.035979
+Donat, 2003 (k = 4)	0.463964	0.316477	0.611452	0.075250	< 1e-06
+Stewart, 1990 (k = 5)	0.463715	0.325009	0.602420	0.070769	< 1e-06
+Young, 1995 (k = 6)	0.415002	0.289007	0.540997	0.064284	< 1e-06
+
+Continuous Fixed-Effect Model - Inverse Variance
+
+Metric: Standardized Mean Difference
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+3. Cumulative Meta-Analysis: Lau, Joseph, et al. "Cumulative meta-analysis of therapeutic trials for myocardial infarction." New England Journal of Medicine 327.4 (1992): 248-254.
+
+
+Inference Method
+
+Normal approximation

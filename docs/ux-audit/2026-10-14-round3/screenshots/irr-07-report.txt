@@ -1,0 +1,32 @@
+Leave-one-out meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio
+Comparison: Anti-infective catheter / Standard catheter · Follow-up: first
+
+Model configuration
+Project: NielWeise2008-IRR.rcms
+Model: Random-effects inverse variance
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Omission-only fits: each row omits the named study. No all-studies fit is included.
+IRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.
+
+Sequential Summary
+
+Model Results
+Study omitted	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+Study omitted: Bong et al., 2003	0.555970	0.303023	1.020063	0.309651	0.057985
+Study omitted: Hanna et al., 2004	0.794990	0.516663	1.223253	0.219871	0.296738
+Study omitted: Harter et al., 2002	0.611396	0.330255	1.131866	0.314229	0.117402
+Study omitted: Jaeger et al., 2001	0.599554	0.347684	1.033883	0.278011	0.065753
+Study omitted: Jaeger et al., 2005	0.689856	0.424846	1.120174	0.247329	0.133323
+Study omitted: Logghe et al., 1997	0.519627	0.310855	0.868610	0.262139	0.012514
+Study omitted: Ostendorf et al., 2005	0.654768	0.373396	1.148167	0.286557	0.139461
+Study omitted: Pemberton et al., 1996	0.593338	0.337126	1.044269	0.288427	0.070330
+
+leave-one-out
+
+Omission-only fits: each row omits the named study. No all-studies fit is included.
+
+Inference Method
+
+Normal approximation

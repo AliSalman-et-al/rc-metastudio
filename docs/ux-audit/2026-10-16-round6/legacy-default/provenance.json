@@ -1,0 +1,8 @@
+{
+  "source": "artifacts/verification/rcms/20261015T161608Z-77f50155-project-reviewer-groups",
+  "note": "Project and Default plot settings captured in the pre-fix 0.4.2 native drive. RCMS project files store data/workspace state, not rendered result parameters; the paired R settings preserve the original default style key.",
+  "sha256": {
+    "default-0.4.2.params": "3350786b5994e009b0179500c621f6191462606f99f4e60b584610bd9f802af2",
+    "project-0.4.2.rcms": "8c9ee0a3eb5f2cf5214f710c195f04e9362096ab75d4e6d3f7396049542b0f07"
+  }
+}

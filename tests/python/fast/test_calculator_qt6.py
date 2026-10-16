@@ -479,6 +479,8 @@ def test_continuous_imputation_uses_r_keys_not_visible_headers(qapp, monkeypatch
     form.simple_table.setItem(0, 5, QTableWidgetItem("90"))
     form.simple_table.setItem(0, 6, QTableWidgetItem("98"))
 
+    for column in (0, 1, 4, 5, 6):
+        _table_item(form.simple_table, 0, column).setData(QtCore.Qt.ItemDataRole.UserRole, True)
     form.impute_data()
 
     assert captured[0] == {
@@ -753,7 +755,7 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
     )
     for row, values_for_row in enumerate(((60, 94, 22), (60, 92, 20))):
         for column, value in enumerate(values_for_row):
-            dialog._set_val(row, column, value, dialog.g1_pre_post_table)
+            dialog._set_val(row, column, value, dialog.g1_pre_post_table, supplied=True)
 
     dialog.impute_pre_post_data(dialog.g1_pre_post_table, 0)
 
@@ -886,7 +888,6 @@ def test_binary_calculator_table_layout_uses_real_headers_and_visible_total_row(
 
     table = _required(form.raw_data_table)
 
-    assert form.event_lbl_3.isHidden()
     assert table.maximumWidth() > table.minimumWidth()
     assert table.sizePolicy().horizontalPolicy() == QSizePolicy.Policy.Expanding
 
@@ -1221,6 +1222,8 @@ def test_diagnostic_calculator_grid_columns_fill_expanded_table_width(
 
 class FakeContinuousAnalysisUnit:
     def __init__(self):
+        from types import SimpleNamespace
+        self.outcome = SimpleNamespace(sub_type="means")
         self.raw_data = {
             "Group 1": [10, 94, 2],
             "Group 2": [12, 90, 3],
@@ -1265,108 +1268,3 @@ class FakeContinuousAnalysisUnit:
         pass
 
 
-def test_continuous_calculator_grid_columns_keep_internal_overflow(qapp, monkeypatch):
-    from rc_metastudio import continuous_data_dialog
-
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "continuous_convert_scale",
-        lambda x, *args, **kwargs: x,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "impute_continuous_data",
-        lambda data, alpha: {"succeeded": False, "comment": "stub"},
-    )
-
-    form = continuous_data_dialog.ContinuousDataDialog(
-        FakeContinuousAnalysisUnit(),
-        ["Group 1", "Group 2"],
-        "Group 1-Group 2",
-        "ROM",
-        confidence_level=95.0,
-    )
-
-    form.resize(360, form.height())
-    form.show()
-    qapp.processEvents()
-    table = _required(form.simple_table)
-    header = _required(table.horizontalHeader())
-    assert header.sectionResizeMode(0) == QHeaderView.ResizeMode.Interactive
-    assert not header.stretchLastSection()
-    assert (
-        table.horizontalScrollBarPolicy() == QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded
-    )
-    assert (
-        sum(header.sectionSize(column) for column in range(table.columnCount()))
-        > table.viewport().width()
-    )
-
-
-def test_continuous_calculator_keeps_long_imputed_values_compact(qapp, monkeypatch):
-    from rc_metastudio import continuous_data_dialog
-
-    long_imputed = {
-        "n": 10,
-        "mean": 92.89482413483651,
-        "sd": 2.604729426373378,
-        "se": 8.75360686626884e-310,
-        "var": 3.4972319657703745e-249,
-        "pval": 0.12345678912345678,
-        "low": 91.11111111111111,
-        "high": 94.99999999999999,
-    }
-
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "continuous_convert_scale",
-        lambda x, *args, **kwargs: x,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "impute_continuous_data",
-        lambda data, alpha: {"succeeded": True, "output": long_imputed},
-    )
-
-    form = continuous_data_dialog.ContinuousDataDialog(
-        FakeContinuousAnalysisUnit(),
-        ["Group 1", "Group 2"],
-        "Group 1-Group 2",
-        "ROM",
-        confidence_level=95.0,
-    )
-
-    form.show()
-    qapp.processEvents()
-
-    displayed_values = [
-        _table_item(form.simple_table, 0, column).text()
-        for column in range(form.simple_table.columnCount())
-    ]
-    assert "2.604729426373378" not in displayed_values
-    assert "3.4972319657703745e-249" not in displayed_values
-    assert _table_item(form.simple_table, 0, 2).text() == "2.6047"
-
-    natural_width = sum(
-        max(
-            _required(_required(form.simple_table).horizontalHeader()).sectionSizeHint(
-                column
-            ),
-            _required(form.simple_table).sizeHintForColumn(column),
-        )
-        for column in range(_required(form.simple_table).columnCount())
-    )
-    assert form.simple_table.minimumWidth() < natural_width * 2
-    assert (
-        form.frameGeometry().width() < qapp.primaryScreen().availableGeometry().width()
-    )

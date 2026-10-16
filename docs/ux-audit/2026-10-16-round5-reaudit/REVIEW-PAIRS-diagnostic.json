@@ -1,0 +1,37 @@
+[
+  {
+    "sheet": "raw/pair-diagnostic-0.png",
+    "members": [
+      "screenshots/matrix-diagnostic-standard-figure.png",
+      "screenshots/matrix-diagnostic-standard-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-diagnostic-1.png",
+    "members": [
+      "screenshots/matrix-diagnostic-cumulative-figure.png",
+      "screenshots/matrix-diagnostic-cumulative-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-diagnostic-2.png",
+    "members": [
+      "screenshots/matrix-diagnostic-leave-one-out-figure.png",
+      "screenshots/matrix-diagnostic-leave-one-out-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-diagnostic-3.png",
+    "members": [
+      "screenshots/matrix-diagnostic-subgroup-figure.png",
+      "screenshots/matrix-diagnostic-subgroup-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-diagnostic-4.png",
+    "members": [
+      "screenshots/matrix-diagnostic-meta-regression-figure.png",
+      "screenshots/matrix-diagnostic-meta-regression-report.png"
+    ]
+  }
+]

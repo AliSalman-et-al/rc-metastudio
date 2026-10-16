@@ -1,0 +1,18 @@
+[
+  {
+    "path": "screenshots/plot-workflow-cumulative-08-0-family-editor-controls.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201254Z-f022a57c-plot-workflow-cumulative/08-0-family-editor-controls.png",
+    "sha256": "0e8ce5cc1398a7ee39b18ce8d758dc45dbd7dd3f1eb83e743bf02b9f3ee3f313",
+    "action": "family-editor-controls",
+    "step": 8,
+    "scenario": "plot-workflow-cumulative"
+  },
+  {
+    "path": "screenshots/plot-workflow-cumulative-11-0-family-plot-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201254Z-f022a57c-plot-workflow-cumulative/11-0-family-plot-reopened.png",
+    "sha256": "5114d5137bc08faa0ba9b26e090aa70b36d0b583c2c4db0db966018fe8763b66",
+    "action": "family-plot-reopened",
+    "step": 11,
+    "scenario": "plot-workflow-cumulative"
+  }
+]

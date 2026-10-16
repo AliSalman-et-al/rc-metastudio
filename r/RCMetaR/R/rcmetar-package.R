@@ -40,6 +40,8 @@
 #' @importFrom methods is new setClass slot
 #' @rawNamespace S3method(print,summary.data)
 #' @rawNamespace S3method(print,summary.display)
+#' @rawNamespace S3method(format,summary.data)
+#' @rawNamespace S3method(format,summary.display)
 #' @rawNamespace exportClasses(AnalysisSpecification, BinaryData, ContinuousData, CovariateValues, DiagnosticData, OMData)
 #' @noRd
 NULL

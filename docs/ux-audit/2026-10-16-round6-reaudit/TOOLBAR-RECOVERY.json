@@ -1,0 +1,30 @@
+[
+  {
+    "path": "raw/toolbar-recovery-final/captures/toolbar-00.png",
+    "sha256": "e95f9e9970c6b931c4be8d2d0e91ca2c0f62d2a006720851233288da0824fe4c",
+    "capture": "Native QScreen desktop-composite of owned maximized client",
+    "tooltip": "New Dataset",
+    "action": "Create dataset\u2026"
+  },
+  {
+    "path": "raw/toolbar-recovery-final/captures/toolbar-01.png",
+    "sha256": "3072f70b5af756e5adb72bd99ab4fdddd43aabad914cf25bd452660ed22d1a75",
+    "capture": "Native QScreen desktop-composite of owned maximized client",
+    "tooltip": "Open",
+    "action": "Open\u2026"
+  },
+  {
+    "path": "raw/toolbar-recovery-final/captures/toolbar-02.png",
+    "sha256": "9a9d5396feb501a93f19f8638be9c45a6df1d98316c5cd76d79d4097dc7d87f8",
+    "capture": "Native QScreen desktop-composite of owned maximized client",
+    "tooltip": "Import CSV",
+    "action": "Import CSV\u2026"
+  },
+  {
+    "path": "raw/toolbar-recovery-final/captures/toolbar-03.png",
+    "sha256": "a45fa62c2818b2ad5fce749b0048e1b56c65f9b9c417f03db0649364a173e283",
+    "capture": "Native QScreen desktop-composite of owned maximized client",
+    "tooltip": "Save",
+    "action": "Save"
+  }
+]

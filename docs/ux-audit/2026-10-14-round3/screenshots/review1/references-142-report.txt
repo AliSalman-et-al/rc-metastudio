@@ -1,0 +1,53 @@
+Subgroup meta-analysis — clinical failure · Binary · Odds Ratio
+Comparison: tx A / tx B · Follow-up: first
+
+Model configuration
+Project: amino.rcms
+Model: Binary Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Subgroups by golden_group. Use the test of subgroup differences to compare groups.
+OR = 1 means equal odds in tx A and tx B; estimates are fitted on the log scale.
+
+Subgroup Summary
+
+Model Results
+Subgroups	k	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value	z-value
+Subgroup early	10	0.623174	0.270874	1.433678	0.425096	0.265913	-1.112524
+Subgroup late	9	0.826928	0.475570	1.437876	0.282252	0.500763	-0.673290
+Overall	19	0.769583	0.484769	1.221732	0.235808	0.266709	-1.110674
+
+Heterogeneity
+Subgroups	Q	df	p-value	I²	τ²
+Subgroup early	19.929485	9	0.018353	54.8%	0.823399
+Subgroup late	13.236466	8	0.103968	39.6%	0.236051
+Overall	33.360496	18	0.015090	46.0%	0.378462
+
+Prediction interval
+Subgroups	Lower bound (95% PI)	Upper bound (95% PI)
+Subgroup early	0.087430	4.441775
+Subgroup late	0.274909	2.487410
+Overall	0.211569	2.799365
+
+Test of subgroup differences
+Test	Statistic	df	p-value
+Subgroup differences (Qm)	0.186575	1	0.665783
+
+Binary Random-Effects Model
+
+Metric: Odds Ratio
+
+Subgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+4. Subgroup Meta-Analysis: estimates are recomputed within covariate-defined study groups using the selected base meta-analysis method.
+
+
+Inference Method
+
+Normal approximation

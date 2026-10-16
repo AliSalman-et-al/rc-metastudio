@@ -295,7 +295,7 @@ qa_render_case <- function(kind, workflow, style, scenario.name, scenarios, outp
   scenario <- scenarios[[scenario.name]]
   data <- qa_fixture_for(kind, scenario$n, scenario$stress, isTRUE(scenario$direct))
   case.name <- paste(kind, workflow, style, scenario.name, sep = "__")
-  out <- file.path(output.root, paste0(case.name, ".", format))
+  out <- file.path(output.root, paste0(case.name, ".", if (format == "png") "svg" else format))
   params <- qa_base_params(qa_measure_for(kind), out, style, scenario)
   selected.cov <- NULL
   if (identical(workflow, "subgroup")) {
@@ -316,6 +316,14 @@ qa_render_case <- function(kind, workflow, style, scenario.name, scenarios, outp
   if (is.null(image.path) || !file.exists(image.path)) {
     stop("Missing image for ", case.name, call. = FALSE)
   }
+  svg.path <- if (format %in% c("png", "svg")) image.path else NA_character_
+  if (format == "png") {
+    svg <- xml2::read_xml(svg.path)
+    dimensions <- 2 * as.numeric(sub("pt$", "", xml2::xml_attrs(svg)[c("width", "height")]))
+    dimensions <- pmax(1L, as.integer(ceiling(dimensions * min(1, 2400 / max(dimensions)))))
+    image.path <- file.path(output.root, paste0(case.name, ".png"))
+    rsvg::rsvg_png(svg.path, image.path, width=dimensions[1], height=dimensions[2])
+  }
   info <- file.info(image.path)
   cat(case.name, "|", image.path, "|", info$size, "bytes\n")
   data.frame(
@@ -326,6 +334,7 @@ qa_render_case <- function(kind, workflow, style, scenario.name, scenarios, outp
     style = style,
     scenario = scenario.name,
     image = normalizePath(image.path, winslash = "\\", mustWork = TRUE),
+    svg = if (is.na(svg.path)) NA_character_ else normalizePath(svg.path, winslash = "\\", mustWork = TRUE),
     bytes = info$size,
     error = NA_character_,
     stringsAsFactors = FALSE
@@ -357,6 +366,7 @@ qa_render_matrix <- function(output.root = qa_root(qa_find_repo_root()), format 
           style = cases$style[i],
           scenario = cases$scenario[i],
           image = NA_character_,
+          svg = NA_character_,
           bytes = NA_real_,
           error = conditionMessage(error),
           stringsAsFactors = FALSE

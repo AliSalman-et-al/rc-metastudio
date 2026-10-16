@@ -1,0 +1,52 @@
+[
+  {
+    "path": "screenshots/matrix-twoarm-proportion-standard-figure-bmj.png",
+    "sha256": "76a345ae7829c12d46df3abd97c3c710e2cebfd86fab649897031808ca5663fe",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-proportion-bmj/captures/matrix-twoarm-proportion-standard-figure-bmj.png",
+    "scenario": "MATRIX-twoarm-proportion-bmj"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-cumulative-figure-bmj.png",
+    "sha256": "8cbae6616813e1c774157f58853c2869345490ed00b3eaeecf9ed5a83ee9396f",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-proportion-bmj/captures/matrix-twoarm-proportion-cumulative-figure-bmj.png",
+    "scenario": "MATRIX-twoarm-proportion-bmj"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-leave-one-out-figure-bmj.png",
+    "sha256": "b131d6238a9f8690c703bc8df6524f1316cc5b9a9ba25cc7e07d97b476a78154",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-proportion-bmj/captures/matrix-twoarm-proportion-leave-one-out-figure-bmj.png",
+    "scenario": "MATRIX-twoarm-proportion-bmj"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-subgroup-figure-bmj.png",
+    "sha256": "98c790f5afb6a9ad1a7e904543487855d342d616f92f997727700c3ec487c0f4",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-proportion-bmj/captures/matrix-twoarm-proportion-subgroup-figure-bmj.png",
+    "scenario": "MATRIX-twoarm-proportion-bmj"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-proportion-meta-regression-figure-bmj.png",
+    "sha256": "1b2e6c5151a3c1ac005356408d52537fa650c62f724c99dc63f634e15e208637",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-proportion-bmj/captures/matrix-twoarm-proportion-meta-regression-figure-bmj.png",
+    "scenario": "MATRIX-twoarm-proportion-bmj"
+  }
+]

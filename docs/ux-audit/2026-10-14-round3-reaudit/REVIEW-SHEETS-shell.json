@@ -1,0 +1,55 @@
+[
+  {
+    "sheet": "raw/review-shell-00.png",
+    "members": [
+      "screenshots/shell-about.png",
+      "screenshots/shell-add-covariate.png",
+      "screenshots/shell-confidence.png",
+      "screenshots/shell-covariates.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-shell-01.png",
+    "members": [
+      "screenshots/shell-csv-entry.png",
+      "screenshots/shell-dirty-open-prompt.png",
+      "screenshots/shell-duplicate-covariate.png",
+      "screenshots/shell-empty-outcome.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-shell-02.png",
+    "members": [
+      "raw/shell-empty-background-rejected.png",
+      "screenshots/shell-exported-report-editor.png",
+      "screenshots/shell-generic-metric.png",
+      "screenshots/shell-grid.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-shell-03.png",
+    "members": [
+      "screenshots/shell-import-types.png",
+      "screenshots/shell-launcher.png",
+      "screenshots/shell-quick-start.png",
+      "screenshots/shell-save-recent-reopened.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-shell-04.png",
+    "members": [
+      "screenshots/shell-startup-full-screen.png",
+      "screenshots/shell-startup-normal.png",
+      "screenshots/shell-structure.png",
+      "screenshots/shell-studies.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-shell-05.png",
+    "members": [
+      "screenshots/shell-template-native-picker.png",
+      "screenshots/shell-template-saved.png",
+      "screenshots/shell-types.png"
+    ]
+  }
+]

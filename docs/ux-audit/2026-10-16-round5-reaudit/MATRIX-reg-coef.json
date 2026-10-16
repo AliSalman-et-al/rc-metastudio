@@ -1,0 +1,162 @@
+[
+  {
+    "path": "screenshots/matrix-reg-coef-standard-report.png",
+    "sha256": "96c282a731d004c19b34bdcc90d8f6f8fb6ed672e1d65b4b489453ecad42e245",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-standard-report-bottom.png",
+    "sha256": "2b0ef142dfddc432e4256a88678c5c063705506224e7bead53028d25547233b0",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-standard-figure.png",
+    "sha256": "b755330f6c061b98c97540a89aaac688ab9bfbe06e87f0b40d1a0f3ae99ea6f0",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-standard-figure-bottom.png",
+    "sha256": "b755330f6c061b98c97540a89aaac688ab9bfbe06e87f0b40d1a0f3ae99ea6f0",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-cumulative-report.png",
+    "sha256": "06d67d3f0383cb4aa2d0b2b443ed2246169caeb3902a9d1ef62820db5ac984ba",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-cumulative-report-bottom.png",
+    "sha256": "06d67d3f0383cb4aa2d0b2b443ed2246169caeb3902a9d1ef62820db5ac984ba",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-cumulative-figure.png",
+    "sha256": "c1945770c8db8d0d25f5f1755336d0ec4dc65470180bf8122919ef957b53b141",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-cumulative-figure-bottom.png",
+    "sha256": "af459ddbc12acb739ffb561d3cf0cc3c6b657c42439caef687f4ce8cf96d80ee",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-leave-one-out-report.png",
+    "sha256": "179eaa0c30648ed6b90acd4dc5d3a57de999e8aefe3eeffa0244208c53b5ddaa",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-leave-one-out-report-bottom.png",
+    "sha256": "179eaa0c30648ed6b90acd4dc5d3a57de999e8aefe3eeffa0244208c53b5ddaa",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-leave-one-out-figure.png",
+    "sha256": "4d37be1aeb7e566b122d2bd58fd319c2bbaf51205eb0689d39e9efbcf2f62f3f",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-leave-one-out-figure-bottom.png",
+    "sha256": "6632aee3e8504d70a191a97145b0d1b473541416c5f426bcd4f27f6793377298",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-subgroup-report.png",
+    "sha256": "978f1caf07ca1726a1532ee76600f886b7ba32824d86c5fd40a94be802e58aca",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-subgroup-report-bottom.png",
+    "sha256": "b63f44d8ced9e57d1d878d19329d1db332b152e390291a7626d41b57dd2b9050",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-subgroup-figure.png",
+    "sha256": "834ed67f4a73b7a9d25eac29ba9eeb38c7282db34459710806b815f48d25e4a1",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-subgroup-figure-bottom.png",
+    "sha256": "5b1fe5cd8352c1eaa12bf1abfdfb9d7cf321524a58e452f15fc035ff5090d258",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-meta-regression-report.png",
+    "sha256": "4e386da1df7934bbbb0f45ff843a4cf4a79c9d8fad70f5f964dacbab30519c1f",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-meta-regression-report-bottom.png",
+    "sha256": "a6c8b30c6580d957f1f42a433fcffeb0e00bac76d457f34a8b04f48ae64f2375",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-meta-regression-figure.png",
+    "sha256": "e4ca14598a1c4e435a2214ed4491f0c309e5b76102c41899acb8cc14ce8123bd",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-meta-regression-figure-bottom.png",
+    "sha256": "c8d157421b7fc7629f55573b471134246e8380f945d3ed611597af5c41ad3a3c",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Regression coefficient \u00b7 Regression coefficient\nGroup: Group \u00b7 Follow-up: first"
+  }
+]

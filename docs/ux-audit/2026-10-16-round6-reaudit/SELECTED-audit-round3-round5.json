@@ -1,0 +1,98 @@
+[
+  {
+    "path": "screenshots/audit-round3-round5-05-0-round5-long-figure.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191310Z-769abf24-audit-round3-round5/05-0-round5-long-figure.png",
+    "sha256": "e06bc7c0eff1a9660444f6aa93d08baae40e5dc44a0db944a9c67aa9d5eede21",
+    "action": "round5-long-figure",
+    "step": 5,
+    "scenario": "audit-round3-round5"
+  },
+  {
+    "path": "screenshots/audit-round3-round5-06-0-round5-long-figure-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191310Z-769abf24-audit-round3-round5/06-0-round5-long-figure-bottom.png",
+    "sha256": "5a7ff747c09cc9615cefe647c083d78336b34b6a24fced705987c57a5188d932",
+    "action": "round5-long-figure-bottom",
+    "step": 6,
+    "scenario": "audit-round3-round5"
+  },
+  {
+    "path": "screenshots/audit-round3-round5-10-0-round5-long-figure.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191310Z-769abf24-audit-round3-round5/10-0-round5-long-figure.png",
+    "sha256": "b6da82cc6108e047a7e87a4d5478f4f157a2c17c4ca2791fca2fc97202a5017f",
+    "action": "round5-long-figure",
+    "step": 10,
+    "scenario": "audit-round3-round5"
+  },
+  {
+    "path": "screenshots/audit-round3-round5-11-0-round5-long-figure-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191310Z-769abf24-audit-round3-round5/11-0-round5-long-figure-bottom.png",
+    "sha256": "937416c38e8d789c05c935b98074d259403a3c6e384e0fe12b6705f685f6da52",
+    "action": "round5-long-figure-bottom",
+    "step": 11,
+    "scenario": "audit-round3-round5"
+  },
+  {
+    "path": "screenshots/audit-round3-round5-15-0-round5-long-figure.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191310Z-769abf24-audit-round3-round5/15-0-round5-long-figure.png",
+    "sha256": "40614b7ea28c65b136cec6c726100de080342cd4d32c34c815edb8514b979bc2",
+    "action": "round5-long-figure",
+    "step": 15,
+    "scenario": "audit-round3-round5"
+  },
+  {
+    "path": "screenshots/audit-round3-round5-16-0-round5-long-figure-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191310Z-769abf24-audit-round3-round5/16-0-round5-long-figure-bottom.png",
+    "sha256": "130a3c3d05dcb4b30c8b4a5cdde6fa4a8aff01081eb33cc174eb2a1789db9fd8",
+    "action": "round5-long-figure-bottom",
+    "step": 16,
+    "scenario": "audit-round3-round5"
+  },
+  {
+    "path": "screenshots/audit-round3-round5-20-0-round5-long-figure.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191310Z-769abf24-audit-round3-round5/20-0-round5-long-figure.png",
+    "sha256": "44459a1153afa8523fbf6efc9f849ca5bf2d632c3562f0b6e0845a6fd47b2586",
+    "action": "round5-long-figure",
+    "step": 20,
+    "scenario": "audit-round3-round5"
+  },
+  {
+    "path": "screenshots/audit-round3-round5-21-0-round5-long-figure-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191310Z-769abf24-audit-round3-round5/21-0-round5-long-figure-bottom.png",
+    "sha256": "73fe9054f3a85b539aaa9408f586e306bb6832c7eefd089f7b747d3d063c5cfd",
+    "action": "round5-long-figure-bottom",
+    "step": 21,
+    "scenario": "audit-round3-round5"
+  },
+  {
+    "path": "screenshots/audit-round3-round5-25-0-round5-long-figure.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191310Z-769abf24-audit-round3-round5/25-0-round5-long-figure.png",
+    "sha256": "77ac3a45632af5318df3b2d2acd723dacfc7fef36be64a234362cd64a7ed43bb",
+    "action": "round5-long-figure",
+    "step": 25,
+    "scenario": "audit-round3-round5"
+  },
+  {
+    "path": "screenshots/audit-round3-round5-26-0-round5-long-figure-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191310Z-769abf24-audit-round3-round5/26-0-round5-long-figure-bottom.png",
+    "sha256": "450a95b630176d6d6bcea3da6dc838d28c172cd4a59a0bd6d4b03551d2f3c6e4",
+    "action": "round5-long-figure-bottom",
+    "step": 26,
+    "scenario": "audit-round3-round5"
+  },
+  {
+    "path": "screenshots/audit-round3-round5-30-0-round5-long-figure.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191310Z-769abf24-audit-round3-round5/30-0-round5-long-figure.png",
+    "sha256": "5b8efc0e94f6f45ab9080e12fa5653ee743f0ff315c029c497cd0fff68bff8ea",
+    "action": "round5-long-figure",
+    "step": 30,
+    "scenario": "audit-round3-round5"
+  },
+  {
+    "path": "screenshots/audit-round3-round5-31-0-round5-long-figure-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191310Z-769abf24-audit-round3-round5/31-0-round5-long-figure-bottom.png",
+    "sha256": "de3604785e79d43ae6050c5c03afa45ff1bb5cfa68698eb8aaf36cee078c53c7",
+    "action": "round5-long-figure-bottom",
+    "step": 31,
+    "scenario": "audit-round3-round5"
+  }
+]

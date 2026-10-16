@@ -1,0 +1,34 @@
+[
+  {
+    "path": "screenshots/long-arm-revman-matrix-twoarm-proportion-standard-report.png",
+    "sha256": "24ea78ec1ca4ee6962f3484cf3bd993aa1e1b4bb63c2e85772888962e54738f1",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Cognitive behavioural therapy plus usual care / Usual care alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/long-arm-revman-matrix-twoarm-proportion-standard-report-bottom.png",
+    "sha256": "7fb5b21ae94dcb5a13bd18e0c4600178aa87aefd3d34fc70d1fc1a0fe4157bc6",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Cognitive behavioural therapy plus usual care / Usual care alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/long-arm-revman-matrix-twoarm-proportion-standard-figure.png",
+    "sha256": "e1e020ddb86ce7b1f4457900bc4122e0d3dab4d13ea5d2656c8eba0ab6a8af60",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Cognitive behavioural therapy plus usual care / Usual care alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/long-arm-revman-matrix-twoarm-proportion-standard-figure-bottom.png",
+    "sha256": "e1e020ddb86ce7b1f4457900bc4122e0d3dab4d13ea5d2656c8eba0ab6a8af60",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Cognitive behavioural therapy plus usual care / Usual care alone \u00b7 Follow-up: first"
+  }
+]

@@ -1,0 +1,12 @@
+{
+  "receipt": "docs/ux-audit/2026-10-14-round3/INSTALLED-SOURCE.json",
+  "receipt_revision": "f465401f78fca758e10f042e43357e94e59c672e",
+  "source_files": 55,
+  "installed_files": 24,
+  "mismatches": [],
+  "doctor_evidence": "artifacts/verification/rcms/20261014T172430Z-b40b57dd-doctor",
+  "initial_head": "71342ad",
+  "current_head": "dd9673249cb2e19c825864f724074aeff10a6e0e",
+  "executable_source_sha256": "68ef25593c95b4211fc1b8bff6bf056d069542f697819c96d5cae819ec6ff4c0",
+  "application_test_R_changes_since_initial": ""
+}

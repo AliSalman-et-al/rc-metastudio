@@ -74,6 +74,25 @@ $env:R_LIBS = $env:RCMS_R_LIBS
 
 The R script loads current `r/RCMetaR` source with pkgload, validates six pinned authorities, and writes actual/expected values plus fields compared at `1e-8 * max(1, abs(expected))`. Fixed MH supports OR/RR/RD; Peto is OR-only. Diagnostic MH supports DOR/PLR/NLR. Reitsma requires complete counts and joint Sens/Spec; it is unavailable for sequential/subgroup workflows. Do not force an unsupported method×metric Cartesian product.
 
+## Sequential and report audit drives
+
+`audit-round3-<family>` has eight original wizard suffixes, `hr`, `irr`,
+`references`, and `precision`. Each fresh process checks real report copy/export
+identity and tab-separated table rows. The eight wizard families and HR/IRR compare
+every cumulative/omission SVG name, estimate and CI with the executed report.
+Subgroups independently check fitted k, Q/df/P/I-squared, tau-squared and available
+package prediction bounds with public `metafor` refits. Diagnostic checks both
+Sens and Spec. HR/IRR add exclusions, omission-only roles, a non-estimable IRR MH
+omission, fixed footers and fixed/random re-runs after opening another workspace.
+
+`references` checks the frozen binary/continuous sample subgroup fits and five
+mixed diagnostic component settings. `precision` enters an exact zero CI bound
+and effects/SEs around `1e-10`/`1e-11`, then checks public pooled values and actual
+bubble tick coverage. MD cumulative also edits limits to exclude zero and checks
+both persisted limits and the absence of a rendered null line. Run the family
+with `--native` for display evidence; the full profile includes all families.
+Retained proof and limitations: `docs/ux-audit/2026-10-14-round3/`.
+
 ## Required targeted cases after analysis changes
 
 `analysis-sequential-fixed-{cumulative,leave-one-out,subgroup}` drives all three
@@ -105,8 +124,8 @@ Run `uv run python scripts/verify.py r-stack` after shared statistical changes: 
 
 Standard univariate results include the package-owned Z/t overall-effect statistic
 and, for random models with more than two studies, `predict.rma` prediction limits.
-PFT prediction limits explicitly retain calculation scale because a new study's
-sample size is unspecified. Subgroup reports include the package's QM/F, degrees of
+PFT prediction limits use the same harmonic-mean sample size as the pooled inverse,
+with an explicit calculation-scale fallback when that inverse is undefined. Subgroup reports include the package's QM/F, degrees of
 freedom and P beside within-group estimates. `output-authorities.R` in the
 round-two evidence checks 84 metric/inference combinations against independent
 public metafor fits. Keep that check separate from the unchanged frozen contract;
@@ -117,3 +136,31 @@ newly reported quantities must not replace or rewrite existing numerical oracles
 `options-zero-cells` verifies the shared Not estimable/dashes convention for complete, undefined effect previews. It contrasts SMD with no residual degrees of freedom against numeric MD, proves save/reopen and correction recovery, and keeps incomplete input blank. Finite previews keep their existing precision and zero-event policy.
 
 See [ratios.md](ratios.md) for the compact input, original-source persistence, analysis, plot and small-study workflows. Run `ratios-hr` and `ratios-irr` after changes affecting these families; the broader shared-change lane remains required.
+
+The round-three review drive also checks standard Q/df/P/I² (and random-only τ²)
+against independent public fits, fixed IV/MH/Peto reference sets, and fixed
+regression references. HR/IRR additionally exercise fixed sequential/subgroup
+reports and require one omission-only note. Diagnostic shared workflow details
+must precede both metric blocks in screen/copy/export. Precision selects PLO
+through the metric menu, records the included inputs, and verifies round,
+unpadded OR/PLO bubble ticks across the rendered range with readable spacing.
+Six identical entered effects (1, SE 1e-20) exercise nonzero forest ranges in all
+three styles alongside the retained 1e-10 small-effect proof.
+
+
+## v0.5.0 release finishing
+
+`project-round6-polish` now checks complete generated arm names (including two
+that differ after character 80), actual SVG device-top/caption/rule clearance,
+and four-format exports in Default/RevMan/BMJ. The caption is excluded from the
+arm identity assertion. `project-release-coefficients` drives dedicated Reitsma
+OR plots through logarithmic default → linear → reopen/Cancel and four decoded
+exports, comparing the coefficient arrays exactly; beta/logit plots remain
+linear. `calculator-ratio-precision` additionally analyzes its saved/reopened
+extreme inputs in both journal styles, checking annotation spacing/scientific
+notation alongside its existing exact-input/public-conversion proof. The full
+profile includes these strengthened paths. Native BMJ unnamed/custom single-arm
+standard/subgroup, About and HR/IRR secondary-table proofs are retained in
+`docs/ux-audit/2026-10-16-round6-release-fixes/` with a replay script. Linux source
+and the particular input cases are the scope; arbitrary names/values, OS DPI,
+assistive technology and packaged targets are separate qualifications.

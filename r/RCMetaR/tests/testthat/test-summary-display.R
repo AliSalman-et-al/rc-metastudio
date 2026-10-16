@@ -73,6 +73,7 @@ subgroup_display_fixture <- function(with.missing.values = FALSE, conf.level = 9
       pval = 0.267,
       zval = -1.110,
       k = 13,
+      p = 1,
       QE = 33.360,
       QEp = 0.015,
       I2 = 92.645
@@ -85,6 +86,7 @@ subgroup_display_fixture <- function(with.missing.values = FALSE, conf.level = 9
       pval = 0.277,
       zval = 1.087,
       k = 4,
+      p = 1,
       QE = 5.100,
       QEp = 0.165,
       I2 = 41.2
@@ -129,7 +131,8 @@ overall_display_fixture <- function(conf.level = 95) {
     c("First study", "Second study"),
     params,
     "Cumulative Summary",
-    "binary"
+    "binary",
+    workflow="cumulative"
   )
 }
 
@@ -231,7 +234,7 @@ test_that("summary display uses readable labels and aligned columns", {
   heterogeneity.values <- next_non_empty_line(rendered, heterogeneity.header)
 
   model.labels <- c("Estimate", "Lower bound (95% CI)", "Upper bound (95% CI)", "p-value")
-  heterogeneity.labels <- c("\u03c4\u00b2", "Q(df=12)", "Het. p-value", "I\u00b2")
+  heterogeneity.labels <- c("Q", "df", "p-value", "I\u00b2", "\u03c4\u00b2")
   expect_values_inside_header_columns(model.header, model.values, model.labels)
   expect_values_inside_header_columns(heterogeneity.header, heterogeneity.values, heterogeneity.labels)
 })
@@ -296,6 +299,7 @@ regression_display_fixture <- function(method = "REML", inference.method = "z", 
       method = method,
       test = inference.method,
       k = 13,
+      p = 1,
       p = 2,
       m = 1,
       tau2 = if (method == "FE") 0 else 0.0764,

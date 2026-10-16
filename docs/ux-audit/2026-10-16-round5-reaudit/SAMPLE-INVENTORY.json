@@ -1,0 +1,387 @@
+[
+  {
+    "file": "sample_projects/BCG.rcms",
+    "sha256": "ee66fecdcf79a36f665a27b8b02509a4e3478cb6a00362fe4d6e9c7e63f0f839",
+    "group_fields": [
+      [
+        "/dataset/studies/0/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'BCG vaccine', 'raw_data': ['', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '']}]"
+      ],
+      [
+        "/dataset/studies/0/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'BCG vaccine', 'raw_data': [4.0, 123.0]}, {'id': 1, 'name': 'Control', 'raw_data': [11.0, 139.0]}]"
+      ],
+      [
+        "/dataset/studies/1/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'BCG vaccine', 'raw_data': ['', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '']}]"
+      ],
+      [
+        "/dataset/studies/1/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'BCG vaccine', 'raw_data': [6.0, 306.0]}, {'id': 1, 'name': 'Control', 'raw_data': [29.0, 303.0]}]"
+      ],
+      [
+        "/dataset/studies/2/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'BCG vaccine', 'raw_data': ['', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '']}]"
+      ],
+      [
+        "/dataset/studies/2/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'BCG vaccine', 'raw_data': [3.0, 231.0]}, {'id': 1, 'name': 'Control', 'raw_data': [11.0, 220.0]}]"
+      ],
+      [
+        "/dataset/studies/3/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'BCG vaccine', 'raw_data': ['', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '']}]"
+      ],
+      [
+        "/dataset/studies/3/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'BCG vaccine', 'raw_data': [62.0, 13598.0]}, {'id': 1, 'name': 'Control', 'raw_data': [248.0, 12867.0]}]"
+      ],
+      [
+        "/dataset/studies/4/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'BCG vaccine', 'raw_data': ['', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '']}]"
+      ],
+      [
+        "/dataset/studies/4/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'BCG vaccine', 'raw_data': [33.0, 5069.0]}, {'id': 1, 'name': 'Control', 'raw_data': [47.0, 5808.0]}]"
+      ],
+      [
+        "/dataset/studies/5/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'BCG vaccine', 'raw_data': ['', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '']}]"
+      ],
+      [
+        "/dataset/studies/5/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'BCG vaccine', 'raw_data': [180.0, 1541.0]}, {'id': 1, 'name': 'Control', 'raw_data': [372.0, 1451.0]}]"
+      ]
+    ],
+    "opaque_strings": []
+  },
+  {
+    "file": "sample_projects/NielWeise2008-IRR.rcms",
+    "sha256": "4b0ba4c9c515da90a5768b4729886ccfb73a5ef4f239321ff1daca01b13ebb12",
+    "group_fields": [
+      [
+        "/dataset/studies/0/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Anti-infective catheter', 'raw_data': [7, 1344]}, {'id': 1, 'name': 'Standard catheter', 'raw_data': [11, 1988]}]"
+      ],
+      [
+        "/dataset/studies/0/analysis_units/0/ratio_inputs/0/groups",
+        "['Anti-infective catheter', 'Standard catheter']"
+      ],
+      [
+        "/dataset/studies/1/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Anti-infective catheter', 'raw_data': [8, 1600]}, {'id': 1, 'name': 'Standard catheter', 'raw_data': [8, 1461]}]"
+      ],
+      [
+        "/dataset/studies/1/analysis_units/0/ratio_inputs/0/groups",
+        "['Anti-infective catheter', 'Standard catheter']"
+      ],
+      [
+        "/dataset/studies/2/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Anti-infective catheter', 'raw_data': [3, 12012]}, {'id': 1, 'name': 'Standard catheter', 'raw_data': [14, 10962]}]"
+      ],
+      [
+        "/dataset/studies/2/analysis_units/0/ratio_inputs/0/groups",
+        "['Anti-infective catheter', 'Standard catheter']"
+      ],
+      [
+        "/dataset/studies/3/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Anti-infective catheter', 'raw_data': [6, 1536]}, {'id': 1, 'name': 'Standard catheter', 'raw_data': [10, 1503]}]"
+      ],
+      [
+        "/dataset/studies/3/analysis_units/0/ratio_inputs/0/groups",
+        "['Anti-infective catheter', 'Standard catheter']"
+      ],
+      [
+        "/dataset/studies/4/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Anti-infective catheter', 'raw_data': [1, 370]}, {'id': 1, 'name': 'Standard catheter', 'raw_data': [1, 483]}]"
+      ],
+      [
+        "/dataset/studies/4/analysis_units/0/ratio_inputs/0/groups",
+        "['Anti-infective catheter', 'Standard catheter']"
+      ],
+      [
+        "/dataset/studies/5/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Anti-infective catheter', 'raw_data': [1, 729]}, {'id': 1, 'name': 'Standard catheter', 'raw_data': [8, 913]}]"
+      ],
+      [
+        "/dataset/studies/5/analysis_units/0/ratio_inputs/0/groups",
+        "['Anti-infective catheter', 'Standard catheter']"
+      ]
+    ],
+    "opaque_strings": []
+  },
+  {
+    "file": "sample_projects/Pignon2000-HR.rcms",
+    "sha256": "17e94f1436a1be97a5e14f3cf3ff8db3818198f4a1132ba0b32fb0976ade86f9",
+    "group_fields": [
+      [
+        "/dataset/studies/0/analysis_units/0/groups",
+        "[{'id': 1, 'name': 'Locoregional treatment alone', 'raw_data': []}, {'id': 0, 'name': 'Locoregional treatment plus chemotherapy', 'raw_data': []}]"
+      ],
+      [
+        "/dataset/studies/0/analysis_units/0/ratio_inputs/0/groups",
+        "['Locoregional treatment plus chemotherapy', 'Locoregional treatment alone']"
+      ],
+      [
+        "/dataset/studies/1/analysis_units/0/groups",
+        "[{'id': 1, 'name': 'Locoregional treatment alone', 'raw_data': []}, {'id': 0, 'name': 'Locoregional treatment plus chemotherapy', 'raw_data': []}]"
+      ],
+      [
+        "/dataset/studies/1/analysis_units/0/ratio_inputs/0/groups",
+        "['Locoregional treatment plus chemotherapy', 'Locoregional treatment alone']"
+      ],
+      [
+        "/dataset/studies/2/analysis_units/0/groups",
+        "[{'id': 1, 'name': 'Locoregional treatment alone', 'raw_data': []}, {'id': 0, 'name': 'Locoregional treatment plus chemotherapy', 'raw_data': []}]"
+      ],
+      [
+        "/dataset/studies/2/analysis_units/0/ratio_inputs/0/groups",
+        "['Locoregional treatment plus chemotherapy', 'Locoregional treatment alone']"
+      ],
+      [
+        "/dataset/studies/3/analysis_units/0/groups",
+        "[{'id': 1, 'name': 'Locoregional treatment alone', 'raw_data': []}, {'id': 0, 'name': 'Locoregional treatment plus chemotherapy', 'raw_data': []}]"
+      ],
+      [
+        "/dataset/studies/3/analysis_units/0/ratio_inputs/0/groups",
+        "['Locoregional treatment plus chemotherapy', 'Locoregional treatment alone']"
+      ],
+      [
+        "/dataset/studies/4/analysis_units/0/groups",
+        "[{'id': 1, 'name': 'Locoregional treatment alone', 'raw_data': []}, {'id': 0, 'name': 'Locoregional treatment plus chemotherapy', 'raw_data': []}]"
+      ],
+      [
+        "/dataset/studies/4/analysis_units/0/ratio_inputs/0/groups",
+        "['Locoregional treatment plus chemotherapy', 'Locoregional treatment alone']"
+      ],
+      [
+        "/dataset/studies/5/analysis_units/0/groups",
+        "[{'id': 1, 'name': 'Locoregional treatment alone', 'raw_data': []}, {'id': 0, 'name': 'Locoregional treatment plus chemotherapy', 'raw_data': []}]"
+      ],
+      [
+        "/dataset/studies/5/analysis_units/0/ratio_inputs/0/groups",
+        "['Locoregional treatment plus chemotherapy', 'Locoregional treatment alone']"
+      ]
+    ],
+    "opaque_strings": []
+  },
+  {
+    "file": "sample_projects/amino.rcms",
+    "sha256": "374681cc5f740f06d39a117047e4133b745dd8ae30c4974f5ab7c9f94d90b763",
+    "group_fields": [
+      [
+        "/dataset/studies/0/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': ['', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '']}]"
+      ],
+      [
+        "/dataset/studies/0/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [6.0, 27.0]}, {'id': 1, 'name': 'Control', 'raw_data': [9.0, 27.0]}]"
+      ],
+      [
+        "/dataset/studies/0/analysis_units/2/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [5.0, 27.0]}, {'id': 1, 'name': 'Control', 'raw_data': [4.0, 27.0]}]"
+      ],
+      [
+        "/dataset/studies/1/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': ['', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '']}]"
+      ],
+      [
+        "/dataset/studies/1/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [3.0, 59.0]}, {'id': 1, 'name': 'Control', 'raw_data': [7.0, 64.0]}]"
+      ],
+      [
+        "/dataset/studies/1/analysis_units/2/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [2.0, 59.0]}, {'id': 1, 'name': 'Control', 'raw_data': [11.0, 64.0]}]"
+      ],
+      [
+        "/dataset/studies/2/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': ['', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '']}]"
+      ],
+      [
+        "/dataset/studies/2/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [0.0, 30.0]}, {'id': 1, 'name': 'Control', 'raw_data': [5.0, 30.0]}]"
+      ],
+      [
+        "/dataset/studies/2/analysis_units/2/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [3.0, 30.0]}, {'id': 1, 'name': 'Control', 'raw_data': [1.0, 30.0]}]"
+      ],
+      [
+        "/dataset/studies/3/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': ['', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '']}]"
+      ],
+      [
+        "/dataset/studies/3/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [19.0, 164.0]}, {'id': 1, 'name': 'Control', 'raw_data': [13.0, 152.0]}]"
+      ],
+      [
+        "/dataset/studies/3/analysis_units/2/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [9.0, 164.0]}, {'id': 1, 'name': 'Control', 'raw_data': [11.0, 152.0]}]"
+      ]
+    ],
+    "opaque_strings": []
+  },
+  {
+    "file": "sample_projects/continuous.rcms",
+    "sha256": "025ae202f23eed7da8d5bc02aa0fa6d6e4d89b4f78179a5d1a3831c0a6d59093",
+    "group_fields": [
+      [
+        "/dataset/studies/0/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': ['', '', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '', '']}]"
+      ],
+      [
+        "/dataset/studies/0/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [60.0, 94.0, 22.0]}, {'id': 1, 'name': 'Control', 'raw_data': [60.0, 92.0, 20.0]}]"
+      ],
+      [
+        "/dataset/studies/1/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': ['', '', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '', '']}]"
+      ],
+      [
+        "/dataset/studies/1/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [65.0, 98.0, 21.0]}, {'id': 1, 'name': 'Control', 'raw_data': [65.0, 92.0, 22.0]}]"
+      ],
+      [
+        "/dataset/studies/2/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': ['', '', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '', '']}]"
+      ],
+      [
+        "/dataset/studies/2/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [40.0, 98.0, 28.0]}, {'id': 1, 'name': 'Control', 'raw_data': [40.0, 88.0, 26.0]}]"
+      ],
+      [
+        "/dataset/studies/3/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': ['', '', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '', '']}]"
+      ],
+      [
+        "/dataset/studies/3/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [200.0, 94.0, 19.0]}, {'id': 1, 'name': 'Control', 'raw_data': [200.0, 82.0, 17.0]}]"
+      ],
+      [
+        "/dataset/studies/4/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': ['', '', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '', '']}]"
+      ],
+      [
+        "/dataset/studies/4/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [50.0, 98.0, 21.0]}, {'id': 1, 'name': 'Control', 'raw_data': [45.0, 88.0, 22.0]}]"
+      ],
+      [
+        "/dataset/studies/5/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': ['', '', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '', '']}]"
+      ],
+      [
+        "/dataset/studies/5/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [85.0, 96.0, 21.0]}, {'id': 1, 'name': 'Control', 'raw_data': [85.0, 92.0, 22.0]}]"
+      ]
+    ],
+    "opaque_strings": []
+  },
+  {
+    "file": "sample_projects/lymph.rcms",
+    "sha256": "2af63bc180d118a1729b79327563bfbdc67de909296c5f8d07dda14cd84d4fcb",
+    "group_fields": [
+      [
+        "/dataset/studies/0/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Index test', 'raw_data': ['', '', '', '']}]"
+      ],
+      [
+        "/dataset/studies/0/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Index test', 'raw_data': [19.0, 10.0, 1.0, 81.0]}]"
+      ],
+      [
+        "/dataset/studies/1/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Index test', 'raw_data': ['', '', '', '']}]"
+      ],
+      [
+        "/dataset/studies/1/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Index test', 'raw_data': [8.0, 2.0, 9.0, 13.0]}]"
+      ],
+      [
+        "/dataset/studies/2/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Index test', 'raw_data': ['', '', '', '']}]"
+      ],
+      [
+        "/dataset/studies/2/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Index test', 'raw_data': [41.0, 12.0, 1.0, 49.0]}]"
+      ],
+      [
+        "/dataset/studies/3/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Index test', 'raw_data': ['', '', '', '']}]"
+      ],
+      [
+        "/dataset/studies/3/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Index test', 'raw_data': [5.0, 2.0, 1.0, 18.0]}]"
+      ],
+      [
+        "/dataset/studies/4/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Index test', 'raw_data': ['', '', '', '']}]"
+      ],
+      [
+        "/dataset/studies/4/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Index test', 'raw_data': [45.0, 32.0, 58.0, 165.0]}]"
+      ],
+      [
+        "/dataset/studies/5/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Index test', 'raw_data': ['', '', '', '']}]"
+      ],
+      [
+        "/dataset/studies/5/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Index test', 'raw_data': [8.0, 2.0, 6.0, 32.0]}]"
+      ]
+    ],
+    "opaque_strings": []
+  },
+  {
+    "file": "sample_projects/meantime.rcms",
+    "sha256": "0d173e541e34ab6b4e7c40ed6d2e81e38e6f1f4e5a79a41367914f4b568db88c",
+    "group_fields": [
+      [
+        "/dataset/studies/0/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': ['', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '']}]"
+      ],
+      [
+        "/dataset/studies/0/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [7.0, 73.0]}, {'id': 1, 'name': 'Control', 'raw_data': [2.0, 71.0]}]"
+      ],
+      [
+        "/dataset/studies/0/covariates/treatment group",
+        "2"
+      ],
+      [
+        "/dataset/studies/1/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': ['', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '']}]"
+      ],
+      [
+        "/dataset/studies/1/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [4.0, 29.0]}, {'id': 1, 'name': 'Control', 'raw_data': [2.0, 35.0]}]"
+      ],
+      [
+        "/dataset/studies/1/covariates/treatment group",
+        "2"
+      ],
+      [
+        "/dataset/studies/2/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': ['', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '']}]"
+      ],
+      [
+        "/dataset/studies/2/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [13.0, 63.0]}, {'id': 1, 'name': 'Control', 'raw_data': [6.0, 61.0]}]"
+      ],
+      [
+        "/dataset/studies/2/covariates/treatment group",
+        "2"
+      ],
+      [
+        "/dataset/studies/3/analysis_units/0/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': ['', '']}, {'id': 1, 'name': 'Control', 'raw_data': ['', '']}]"
+      ],
+      [
+        "/dataset/studies/3/analysis_units/1/groups",
+        "[{'id': 0, 'name': 'Intervention', 'raw_data': [4.0, 53.0]}, {'id': 1, 'name': 'Control', 'raw_data': [2.0, 57.0]}]"
+      ],
+      [
+        "/dataset/studies/3/covariates/treatment group",
+        "4"
+      ]
+    ],
+    "opaque_strings": []
+  }
+]

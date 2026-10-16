@@ -1,0 +1,102 @@
+[
+  {
+    "path": "screenshots/matrix-diagnostic-standard-figure-bmj.png",
+    "sha256": "73bda002bf5eab5a002803f842a9857b2999258f5c1d712a82c2e408f5b394c2",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic-bmj/captures/matrix-diagnostic-standard-figure-bmj.png",
+    "scenario": "MATRIX-diagnostic-bmj"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-standard-figure-1-bmj.png",
+    "sha256": "4c45b3d265b2c3a606f2381e0eaf38d3bb1e147a16cdfe9112d12bbe9e4d0572",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic-bmj/captures/matrix-diagnostic-standard-figure-1-bmj.png",
+    "scenario": "MATRIX-diagnostic-bmj"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-cumulative-figure-bmj.png",
+    "sha256": "355e170cf5e07ced932cf6c52210e671ce84ba0de62e69877f90ac8bb7a2be89",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic-bmj/captures/matrix-diagnostic-cumulative-figure-bmj.png",
+    "scenario": "MATRIX-diagnostic-bmj"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-cumulative-figure-1-bmj.png",
+    "sha256": "90399ba08c856fa9ff40aa04dea14f7a4d2be6e93e74e253875bde189b357186",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic-bmj/captures/matrix-diagnostic-cumulative-figure-1-bmj.png",
+    "scenario": "MATRIX-diagnostic-bmj"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-leave-one-out-figure-bmj.png",
+    "sha256": "d1a56344e2d06323467d2542c8465a16052db2a7769edbffb7a4959a1d20c250",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic-bmj/captures/matrix-diagnostic-leave-one-out-figure-bmj.png",
+    "scenario": "MATRIX-diagnostic-bmj"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-leave-one-out-figure-1-bmj.png",
+    "sha256": "8cf729215b935dd9aea1812c17da117cd03ab06bd956269cd3a988367818a65a",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic-bmj/captures/matrix-diagnostic-leave-one-out-figure-1-bmj.png",
+    "scenario": "MATRIX-diagnostic-bmj"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-subgroup-figure-bmj.png",
+    "sha256": "1d65553e07348be3d9aab4a15702c0d12bb10f1c49d9a3b46126896097540d25",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic-bmj/captures/matrix-diagnostic-subgroup-figure-bmj.png",
+    "scenario": "MATRIX-diagnostic-bmj"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-subgroup-figure-1-bmj.png",
+    "sha256": "e3e889bb29c703b3e7762ee107b5956d956d82a9e03c97dc1e4302e511df3e3d",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity, Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic-bmj/captures/matrix-diagnostic-subgroup-figure-1-bmj.png",
+    "scenario": "MATRIX-diagnostic-bmj"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-meta-regression-figure-bmj.png",
+    "sha256": "c9f736e475b3b372d93bbf75171a48f2c5fb0b36aedb9f38ec3ec4d230e19d46",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity and Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic-bmj/captures/matrix-diagnostic-meta-regression-figure-bmj.png",
+    "scenario": "MATRIX-diagnostic-bmj"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-meta-regression-figure-1-bmj.png",
+    "sha256": "2fd481ccade0eee348bf87e3d1657a1397d35abcba7e057a1861d332302a3e7b",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Diagnostic \u00b7 Sensitivity and Specificity\nGroup: Index test \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-diagnostic-bmj/captures/matrix-diagnostic-meta-regression-figure-1-bmj.png",
+    "scenario": "MATRIX-diagnostic-bmj"
+  }
+]

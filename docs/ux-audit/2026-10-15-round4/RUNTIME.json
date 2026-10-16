@@ -1,0 +1,26 @@
+{
+  "r": "R version 4.6.1 (2026-06-24)",
+  "r_libraries": [
+    "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+    "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/library"
+  ],
+  "r_home": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+  "authorities": {
+    "mada": "0.5.12",
+    "metafor": "5.0-1",
+    "meta": "8.5-0",
+    "svglite": "2.2.2",
+    "rsvg": "2.7.0",
+    "tiff": "0.1-12"
+  },
+  "rcmetar": "0.4.2",
+  "rpy2": "3.6.7",
+  "qt": "6.11.1",
+  "pyqt": "6.11.0",
+  "platform_plugin": "xcb",
+  "application": "RCMetaStudio",
+  "qt_build_root": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+  "application_base_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-8efvavij",
+  "source_receipt": "INSTALLED-SOURCE.json",
+  "runtime_archive_sha256": "5af816371126c8e5895600de035153cd3a64b12f4beb43f291ee34bf24f8fd2d"
+}

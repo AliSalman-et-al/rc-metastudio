@@ -122,3 +122,24 @@ repeatable evidence. Do not write unit tests after implementation. If an isolate
 check is necessary, enumerate its failure modes and write the tests before the
 implementation. Existing smaller checks remain only where they prove distinct
 failures that the desktop workflow cannot expose.
+
+## Desktop feedback loop
+
+Run a mapped real Qt/R scenario for the change with
+`uv run python scripts/verify_rcms.py <scenario>`. For several affected scenarios,
+use `uv run python -m pytest tests/e2e -n auto -k '<selection>'`. Every case owns
+a fresh process, settings, scratch directory and retained evidence.
+
+The complete warm matrix is
+`uv run python .agents/skills/verify-rcms/scripts/verify_all.py`. It uses at most
+three offscreen workers within available CPU, RAM and Linux cgroup limits. Native
+drives remain serial. `-n 1` forces serial E2E pytest. Successful evidence is reused
+only for identical source/runtime/input signatures and verified artifact hashes;
+failed, missing or corrupt evidence runs again. Source or fixture edits invalidate
+conservatively. Reuse preserves the original manifest instead of claiming a new
+execution. Add `--fresh` to pytest or `verify_all.py` to require fresh execution.
+
+Use `verify_all.py --full --fresh` for an uncached qualification pass requiring
+current-source R package checks, bridge tests, independent statistical authorities
+and golden gates. The full lane continues to install RCMetaR into an isolated
+owned library on every invocation.

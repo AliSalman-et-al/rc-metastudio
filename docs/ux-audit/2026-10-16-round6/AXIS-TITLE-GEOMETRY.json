@@ -1,0 +1,249 @@
+{
+  "passed": true,
+  "native_manifest_sha256": "93fcb83a49cd73c83071201ff60a63398c3895a5b3959ddc269e9a8ee7cb7899",
+  "cases": 12,
+  "svg_artifacts": 24,
+  "minimum_gap_points": 6.490000000000009,
+  "rows": [
+    {
+      "style": "default",
+      "digits": 3,
+      "title": "diagnostic.Sens.forest",
+      "kind": "display",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/16-0-forest_sens-cecaa9e2c377.display.svg",
+      "sha256": "63e8a10ada88c4c34a1565cb68fef24a2677b3e35aa167ab23d2b00d90ee92ae",
+      "minimum_gap_points": 8.639999999999986,
+      "required_gap_points": 4
+    },
+    {
+      "style": "default",
+      "digits": 3,
+      "title": "diagnostic.Sens.forest",
+      "kind": "export",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/workflow/diagnostic-default-3-diagnostic.Sens.forest.svg",
+      "sha256": "63e8a10ada88c4c34a1565cb68fef24a2677b3e35aa167ab23d2b00d90ee92ae",
+      "minimum_gap_points": 8.639999999999986,
+      "required_gap_points": 4
+    },
+    {
+      "style": "default",
+      "digits": 3,
+      "title": "diagnostic.Spec.forest",
+      "kind": "display",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/22-0-forest_spec-474fb6e2b545.display.svg",
+      "sha256": "1d962285716db6a9ef85b73fb4ff3bd3806acec7f7681e81e6c76e6925ff280a",
+      "minimum_gap_points": 8.639999999999986,
+      "required_gap_points": 4
+    },
+    {
+      "style": "default",
+      "digits": 3,
+      "title": "diagnostic.Spec.forest",
+      "kind": "export",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/workflow/diagnostic-default-3-diagnostic.Spec.forest.svg",
+      "sha256": "1d962285716db6a9ef85b73fb4ff3bd3806acec7f7681e81e6c76e6925ff280a",
+      "minimum_gap_points": 8.639999999999986,
+      "required_gap_points": 4
+    },
+    {
+      "style": "revman",
+      "digits": 3,
+      "title": "diagnostic.Sens.forest",
+      "kind": "display",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/38-0-forest_sens-cecaa9e2c377.display.svg",
+      "sha256": "519fab12edf6ae1d3a666ca1701e080c59518d9914708c105806a2d023c2619e",
+      "minimum_gap_points": 13.57000000000005,
+      "required_gap_points": 4
+    },
+    {
+      "style": "revman",
+      "digits": 3,
+      "title": "diagnostic.Sens.forest",
+      "kind": "export",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/workflow/diagnostic-revman-3-diagnostic.Sens.forest.svg",
+      "sha256": "519fab12edf6ae1d3a666ca1701e080c59518d9914708c105806a2d023c2619e",
+      "minimum_gap_points": 13.57000000000005,
+      "required_gap_points": 4
+    },
+    {
+      "style": "revman",
+      "digits": 3,
+      "title": "diagnostic.Spec.forest",
+      "kind": "display",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/44-0-forest_spec-474fb6e2b545.display.svg",
+      "sha256": "1740d126562eb2405299b7ea101dd5e666fc67f2789ce2b0ac8e7f00e534bed3",
+      "minimum_gap_points": 13.57000000000005,
+      "required_gap_points": 4
+    },
+    {
+      "style": "revman",
+      "digits": 3,
+      "title": "diagnostic.Spec.forest",
+      "kind": "export",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/workflow/diagnostic-revman-3-diagnostic.Spec.forest.svg",
+      "sha256": "1740d126562eb2405299b7ea101dd5e666fc67f2789ce2b0ac8e7f00e534bed3",
+      "minimum_gap_points": 13.57000000000005,
+      "required_gap_points": 4
+    },
+    {
+      "style": "bmj",
+      "digits": 3,
+      "title": "diagnostic.Sens.forest",
+      "kind": "display",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/60-0-forest_sens-cecaa9e2c377.display.svg",
+      "sha256": "20702a16f9c8e282986b342ab96939b8b390d09ab992102969d42e3fbff865c1",
+      "minimum_gap_points": 6.490000000000009,
+      "required_gap_points": 4
+    },
+    {
+      "style": "bmj",
+      "digits": 3,
+      "title": "diagnostic.Sens.forest",
+      "kind": "export",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/workflow/diagnostic-bmj-3-diagnostic.Sens.forest.svg",
+      "sha256": "20702a16f9c8e282986b342ab96939b8b390d09ab992102969d42e3fbff865c1",
+      "minimum_gap_points": 6.490000000000009,
+      "required_gap_points": 4
+    },
+    {
+      "style": "bmj",
+      "digits": 3,
+      "title": "diagnostic.Spec.forest",
+      "kind": "display",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/66-0-forest_spec-474fb6e2b545.display.svg",
+      "sha256": "07bea59a99a116bb1955f154c4e274a37bb888cbbcd17bcdca70595258c49e6c",
+      "minimum_gap_points": 6.490000000000009,
+      "required_gap_points": 4
+    },
+    {
+      "style": "bmj",
+      "digits": 3,
+      "title": "diagnostic.Spec.forest",
+      "kind": "export",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/workflow/diagnostic-bmj-3-diagnostic.Spec.forest.svg",
+      "sha256": "07bea59a99a116bb1955f154c4e274a37bb888cbbcd17bcdca70595258c49e6c",
+      "minimum_gap_points": 6.490000000000009,
+      "required_gap_points": 4
+    },
+    {
+      "style": "default",
+      "digits": 6,
+      "title": "diagnostic.Sens.forest",
+      "kind": "display",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/82-0-forest_sens-cecaa9e2c377.display.svg",
+      "sha256": "f7a302287b42394f007fda5792dec35c63a9648eb1097c354517e791656342f7",
+      "minimum_gap_points": 8.639999999999986,
+      "required_gap_points": 4
+    },
+    {
+      "style": "default",
+      "digits": 6,
+      "title": "diagnostic.Sens.forest",
+      "kind": "export",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/workflow/diagnostic-default-6-diagnostic.Sens.forest.svg",
+      "sha256": "f7a302287b42394f007fda5792dec35c63a9648eb1097c354517e791656342f7",
+      "minimum_gap_points": 8.639999999999986,
+      "required_gap_points": 4
+    },
+    {
+      "style": "default",
+      "digits": 6,
+      "title": "diagnostic.Spec.forest",
+      "kind": "display",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/88-0-forest_spec-474fb6e2b545.display.svg",
+      "sha256": "3912306dcf853a4f6d522eb8cb2fad56859e02485f55a69ea7999cf60cab2a2f",
+      "minimum_gap_points": 8.639999999999986,
+      "required_gap_points": 4
+    },
+    {
+      "style": "default",
+      "digits": 6,
+      "title": "diagnostic.Spec.forest",
+      "kind": "export",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/workflow/diagnostic-default-6-diagnostic.Spec.forest.svg",
+      "sha256": "3912306dcf853a4f6d522eb8cb2fad56859e02485f55a69ea7999cf60cab2a2f",
+      "minimum_gap_points": 8.639999999999986,
+      "required_gap_points": 4
+    },
+    {
+      "style": "revman",
+      "digits": 6,
+      "title": "diagnostic.Sens.forest",
+      "kind": "display",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/104-0-forest_sens-cecaa9e2c377.display.svg",
+      "sha256": "7f984b6ed85f4ed51a48bd98c30e1a7eb525c158048b8c490baf84f861f49dea",
+      "minimum_gap_points": 13.57000000000005,
+      "required_gap_points": 4
+    },
+    {
+      "style": "revman",
+      "digits": 6,
+      "title": "diagnostic.Sens.forest",
+      "kind": "export",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/workflow/diagnostic-revman-6-diagnostic.Sens.forest.svg",
+      "sha256": "7f984b6ed85f4ed51a48bd98c30e1a7eb525c158048b8c490baf84f861f49dea",
+      "minimum_gap_points": 13.57000000000005,
+      "required_gap_points": 4
+    },
+    {
+      "style": "revman",
+      "digits": 6,
+      "title": "diagnostic.Spec.forest",
+      "kind": "display",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/110-0-forest_spec-474fb6e2b545.display.svg",
+      "sha256": "2a644159d4f6064dcc0cc3bb24f129dac50bddcde43f0361bab97177a7a56403",
+      "minimum_gap_points": 13.57000000000005,
+      "required_gap_points": 4
+    },
+    {
+      "style": "revman",
+      "digits": 6,
+      "title": "diagnostic.Spec.forest",
+      "kind": "export",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/workflow/diagnostic-revman-6-diagnostic.Spec.forest.svg",
+      "sha256": "2a644159d4f6064dcc0cc3bb24f129dac50bddcde43f0361bab97177a7a56403",
+      "minimum_gap_points": 13.57000000000005,
+      "required_gap_points": 4
+    },
+    {
+      "style": "bmj",
+      "digits": 6,
+      "title": "diagnostic.Sens.forest",
+      "kind": "display",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/126-0-forest_sens-cecaa9e2c377.display.svg",
+      "sha256": "334b9bb018050ce70dc6348b2840fb7f4c3f0c3dce5648a4492644c25a79e858",
+      "minimum_gap_points": 6.490000000000009,
+      "required_gap_points": 4
+    },
+    {
+      "style": "bmj",
+      "digits": 6,
+      "title": "diagnostic.Sens.forest",
+      "kind": "export",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/workflow/diagnostic-bmj-6-diagnostic.Sens.forest.svg",
+      "sha256": "334b9bb018050ce70dc6348b2840fb7f4c3f0c3dce5648a4492644c25a79e858",
+      "minimum_gap_points": 6.490000000000009,
+      "required_gap_points": 4
+    },
+    {
+      "style": "bmj",
+      "digits": 6,
+      "title": "diagnostic.Spec.forest",
+      "kind": "display",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/132-0-forest_spec-474fb6e2b545.display.svg",
+      "sha256": "c68656fed3dff84e81785e3eb44b331dafe601a42ff271df4f646d27417e9437",
+      "minimum_gap_points": 6.490000000000009,
+      "required_gap_points": 4
+    },
+    {
+      "style": "bmj",
+      "digits": 6,
+      "title": "diagnostic.Spec.forest",
+      "kind": "export",
+      "source": "artifacts/verification/rcms/20261015T130601Z-f13cf291-audit-round3-presentation-diagnostic/workflow/diagnostic-bmj-6-diagnostic.Spec.forest.svg",
+      "sha256": "c68656fed3dff84e81785e3eb44b331dafe601a42ff271df4f646d27417e9437",
+      "minimum_gap_points": 6.490000000000009,
+      "required_gap_points": 4
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import copy
+from functools import partial
 import os
 from pathlib import Path
 from typing import cast
@@ -28,8 +29,11 @@ def _open_binary_dialog(monkeypatch):
     app, window = automation.start_automation()
     monkeypatch.setattr(
         binary_data_dialog.adaptive_window,
-        "available_geometry_for_window",
-        lambda _window: QtCore.QRect(AVAILABLE),
+        "register_adaptive_window",
+        partial(
+            adaptive_window.register_adaptive_window,
+            available_geometry_provider=lambda _window: QtCore.QRect(AVAILABLE),
+        ),
     )
     monkeypatch.setattr(
         calculator_service.r_bridge,
@@ -430,10 +434,20 @@ def test_binary_back_calculation_chooser_accept_commits_selected_option(monkeypa
         calculator_service.r_bridge, "impute_binary_data", lambda _d: imputed
     )
 
+    selected_second = []
+
     def accept_second_choice(chooser):
         chooser.show()
         app.processEvents()
-        mouse_click(chooser.choice2_btn, QtCore.Qt.MouseButton.LeftButton)
+        chooser.content_scroll.ensureWidgetVisible(chooser.choice2_btn)
+        app.processEvents()
+        option = QtWidgets.QStyleOptionButton()
+        chooser.choice2_btn.initStyleOption(option)
+        indicator = chooser.choice2_btn.style().subElementRect(
+            QtWidgets.QStyle.SubElement.SE_RadioButtonIndicator, option, chooser.choice2_btn
+        )
+        mouse_click(chooser.choice2_btn, QtCore.Qt.MouseButton.LeftButton, pos=indicator.center())
+        selected_second.append(chooser.choice2_btn.isChecked())
         mouse_click(
             required(
                 chooser.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok),
@@ -452,6 +466,7 @@ def test_binary_back_calculation_chooser_accept_commits_selected_option(monkeypa
         mouse_click(dialog.back_calculate_button, QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
 
+        assert selected_second == [True]
         assert _binary_table_snapshot(dialog)[:6] == ["4", "10", "14", "5", "11", "16"]
         assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups) == [
             4,
@@ -463,7 +478,7 @@ def test_binary_back_calculation_chooser_accept_commits_selected_option(monkeypa
         _close(app, window, dialog)
 
 
-def test_binary_data_focus_reveals_offscreen_controls_without_moving_actions(
+def test_binary_data_focus_keeps_pinned_controls_and_actions_visible(
     monkeypatch,
 ):
     app, window, dialog = _open_binary_dialog(monkeypatch)
@@ -475,10 +490,8 @@ def test_binary_data_focus_reveals_offscreen_controls_without_moving_actions(
         dialog.upper_text_box.setFocus()
         app.processEvents()
 
-        viewport_rect = dialog.content_scroll.viewport().rect()
-        mapped = dialog.upper_text_box.mapTo(
-            dialog.content_scroll.viewport(), QtCore.QPoint()
-        )
+        viewport_rect = dialog.rect()
+        mapped = dialog.upper_text_box.mapTo(dialog, QtCore.QPoint())
         assert viewport_rect.intersects(
             QtCore.QRect(mapped, dialog.upper_text_box.size())
         )
@@ -552,14 +565,8 @@ def test_binary_validation_message_wraps_and_is_revealed(monkeypatch):
         assert dialog.inconsistencyLabel.isVisible()
         assert dialog.inconsistencyLabel.wordWrap()
         assert "whole number" in dialog.inconsistencyLabel.text()
-        mapped = dialog.inconsistencyLabel.mapTo(
-            dialog.content_scroll.viewport(), QtCore.QPoint()
-        )
-        assert (
-            dialog.content_scroll.viewport()
-            .rect()
-            .intersects(QtCore.QRect(mapped, dialog.inconsistencyLabel.size()))
-        )
+        mapped = dialog.inconsistencyLabel.mapTo(dialog, QtCore.QPoint())
+        assert dialog.rect().contains(QtCore.QRect(mapped, dialog.inconsistencyLabel.size()))
         assert not dialog.buttonBox.button(
             QtWidgets.QDialogButtonBox.StandardButton.Ok
         ).isEnabled()

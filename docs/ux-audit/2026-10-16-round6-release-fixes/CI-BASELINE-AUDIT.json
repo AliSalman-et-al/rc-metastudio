@@ -1,0 +1,990 @@
+{
+  "head": "8b7796bcc840c3505c5fb0a1328cdd7682880e48",
+  "before_sha256": "aea573bdd5307de71f4383f1b80ae6cb992617399b95d069106eb25b00ea2d28",
+  "after_sha256": "1dc1bfd8b542607843ed2ea6241e44a3533cf7e8f0afd2a0f3c6fcac32b83b0e",
+  "changed_functions": [
+    {
+      "path": "r/RCMetaR/R/binary_methods.R",
+      "function": "rcmetar.corrected.binary.counts",
+      "operators": [
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 8,
+        "cyclomatic": 9,
+        "end_line": 45,
+        "line": 22,
+        "lines": 24,
+        "name": "rcmetar.corrected.binary.counts",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/binary_methods.R"
+      },
+      "after": {
+        "cognitive": 7,
+        "cyclomatic": 8,
+        "end_line": 45,
+        "line": 22,
+        "lines": 24,
+        "name": "rcmetar.corrected.binary.counts",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/binary_methods.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/diagnostic_methods.R",
+      "function": "multiple.diagnostic",
+      "operators": [
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 6,
+        "cyclomatic": 7,
+        "end_line": 209,
+        "line": 139,
+        "lines": 71,
+        "name": "multiple.diagnostic",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/diagnostic_methods.R"
+      },
+      "after": {
+        "cognitive": 4,
+        "cyclomatic": 5,
+        "end_line": 209,
+        "line": 139,
+        "lines": 71,
+        "name": "multiple.diagnostic",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/diagnostic_methods.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/publication_bias.R",
+      "function": ".small.study.eligibility",
+      "operators": [
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 109,
+        "cyclomatic": 110,
+        "end_line": 125,
+        "line": 8,
+        "lines": 118,
+        "name": ".small.study.eligibility",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      },
+      "after": {
+        "cognitive": 107,
+        "cyclomatic": 108,
+        "end_line": 125,
+        "line": 8,
+        "lines": 118,
+        "name": ".small.study.eligibility",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/publication_bias.R",
+      "function": ".small.study.confidence.level",
+      "operators": [
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 6,
+        "cyclomatic": 7,
+        "end_line": 137,
+        "line": 129,
+        "lines": 9,
+        "name": ".small.study.confidence.level",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      },
+      "after": {
+        "cognitive": 5,
+        "cyclomatic": 6,
+        "end_line": 137,
+        "line": 129,
+        "lines": 9,
+        "name": ".small.study.confidence.level",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/publication_bias.R",
+      "function": ".small.study.no.test.summary",
+      "operators": [
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 9,
+        "cyclomatic": 10,
+        "end_line": 167,
+        "line": 148,
+        "lines": 20,
+        "name": ".small.study.no.test.summary",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      },
+      "after": {
+        "cognitive": 5,
+        "cyclomatic": 6,
+        "end_line": 167,
+        "line": 148,
+        "lines": 20,
+        "name": ".small.study.no.test.summary",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/publication_bias.R",
+      "function": "publication.bias.effects",
+      "operators": [
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 118,
+        "cyclomatic": 119,
+        "end_line": 458,
+        "line": 194,
+        "lines": 265,
+        "name": "publication.bias.effects",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      },
+      "after": {
+        "cognitive": 77,
+        "cyclomatic": 78,
+        "end_line": 458,
+        "line": 194,
+        "lines": 265,
+        "name": "publication.bias.effects",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/publication_bias.R",
+      "function": ".small.study.correction.method",
+      "operators": [
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 2,
+        "cyclomatic": 3,
+        "end_line": 516,
+        "line": 510,
+        "lines": 7,
+        "name": ".small.study.correction.method",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      },
+      "after": {
+        "cognitive": 1,
+        "cyclomatic": 2,
+        "end_line": 516,
+        "line": 510,
+        "lines": 7,
+        "name": ".small.study.correction.method",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/publication_bias.R",
+      "function": ".small.study.reconstruct",
+      "operators": [
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 32,
+        "cyclomatic": 33,
+        "end_line": 601,
+        "line": 550,
+        "lines": 52,
+        "name": ".small.study.reconstruct",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      },
+      "after": {
+        "cognitive": 30,
+        "cyclomatic": 31,
+        "end_line": 601,
+        "line": 550,
+        "lines": 52,
+        "name": ".small.study.reconstruct",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/publication_bias.R",
+      "function": ".small.study.tests.text",
+      "operators": [
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 16,
+        "cyclomatic": 17,
+        "end_line": 646,
+        "line": 603,
+        "lines": 44,
+        "name": ".small.study.tests.text",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      },
+      "after": {
+        "cognitive": 11,
+        "cyclomatic": 12,
+        "end_line": 646,
+        "line": 603,
+        "lines": 44,
+        "name": ".small.study.tests.text",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/publication_bias.R",
+      "function": ".small.study.method.details",
+      "operators": [
+        "%||%",
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 4,
+        "cyclomatic": 5,
+        "end_line": 664,
+        "line": 648,
+        "lines": 17,
+        "name": ".small.study.method.details",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      },
+      "after": {
+        "cognitive": 1,
+        "cyclomatic": 2,
+        "end_line": 664,
+        "line": 648,
+        "lines": 17,
+        "name": ".small.study.method.details",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/publication_bias.R",
+      "function": ".small.study.plots",
+      "operators": [
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 22,
+        "cyclomatic": 23,
+        "end_line": 854,
+        "line": 757,
+        "lines": 98,
+        "name": ".small.study.plots",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      },
+      "after": {
+        "cognitive": 20,
+        "cyclomatic": 21,
+        "end_line": 854,
+        "line": 757,
+        "lines": 98,
+        "name": ".small.study.plots",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/publication_bias.R",
+      "function": ".small.study.trimfill",
+      "operators": [
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 29,
+        "cyclomatic": 30,
+        "end_line": 929,
+        "line": 865,
+        "lines": 65,
+        "name": ".small.study.trimfill",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      },
+      "after": {
+        "cognitive": 23,
+        "cyclomatic": 24,
+        "end_line": 929,
+        "line": 865,
+        "lines": 65,
+        "name": ".small.study.trimfill",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/publication_bias.R",
+      "function": "run",
+      "operators": [
+        "%||%",
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 16,
+        "cyclomatic": 17,
+        "end_line": 924,
+        "line": 879,
+        "lines": 46,
+        "name": "run",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      },
+      "after": {
+        "cognitive": 13,
+        "cyclomatic": 14,
+        "end_line": 924,
+        "line": 879,
+        "lines": 46,
+        "name": "run",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/publication_bias.R",
+      "function": ".small.study.extrapolation",
+      "operators": [
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 18,
+        "cyclomatic": 19,
+        "end_line": 971,
+        "line": 931,
+        "lines": 41,
+        "name": ".small.study.extrapolation",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      },
+      "after": {
+        "cognitive": 12,
+        "cyclomatic": 13,
+        "end_line": 971,
+        "line": 931,
+        "lines": 41,
+        "name": ".small.study.extrapolation",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/publication_bias.R",
+      "function": "rcmetar.run.small.study.effects",
+      "operators": [
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 11,
+        "cyclomatic": 12,
+        "end_line": 984,
+        "line": 973,
+        "lines": 12,
+        "name": "rcmetar.run.small.study.effects",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      },
+      "after": {
+        "cognitive": 9,
+        "cyclomatic": 10,
+        "end_line": 984,
+        "line": 973,
+        "lines": 12,
+        "name": "rcmetar.run.small.study.effects",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/publication_bias.R",
+      "function": "rcmetar.regenerate.small.study.funnel",
+      "operators": [
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 61,
+        "cyclomatic": 62,
+        "end_line": 1108,
+        "line": 986,
+        "lines": 123,
+        "name": "rcmetar.regenerate.small.study.funnel",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      },
+      "after": {
+        "cognitive": 50,
+        "cyclomatic": 51,
+        "end_line": 1108,
+        "line": 986,
+        "lines": 123,
+        "name": "rcmetar.regenerate.small.study.funnel",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/publication_bias.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/rcmetar-core.R",
+      "function": "rcmetar.prepare.analysis.data",
+      "operators": [
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 20,
+        "cyclomatic": 21,
+        "end_line": 290,
+        "line": 238,
+        "lines": 53,
+        "name": "rcmetar.prepare.analysis.data",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/rcmetar-core.R"
+      },
+      "after": {
+        "cognitive": 18,
+        "cyclomatic": 19,
+        "end_line": 290,
+        "line": 238,
+        "lines": 53,
+        "name": "rcmetar.prepare.analysis.data",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/rcmetar-core.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/rcmetar-core.R",
+      "function": "rcmetar.regenerate.plot.data",
+      "operators": [
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 16,
+        "cyclomatic": 17,
+        "end_line": 434,
+        "line": 393,
+        "lines": 42,
+        "name": "rcmetar.regenerate.plot.data",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/rcmetar-core.R"
+      },
+      "after": {
+        "cognitive": 10,
+        "cyclomatic": 11,
+        "end_line": 434,
+        "line": 393,
+        "lines": 42,
+        "name": "rcmetar.regenerate.plot.data",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/rcmetar-core.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/reitsma_methods.R",
+      "function": "rcmetar.reitsma.require.value",
+      "operators": [
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 2,
+        "cyclomatic": 3,
+        "end_line": 42,
+        "line": 38,
+        "lines": 5,
+        "name": "rcmetar.reitsma.require.value",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      },
+      "after": {
+        "cognitive": 1,
+        "cyclomatic": 2,
+        "end_line": 42,
+        "line": 38,
+        "lines": 5,
+        "name": "rcmetar.reitsma.require.value",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/reitsma_methods.R",
+      "function": "rcmetar.reitsma.correction.control",
+      "operators": [
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 2,
+        "cyclomatic": 3,
+        "end_line": 56,
+        "line": 48,
+        "lines": 9,
+        "name": "rcmetar.reitsma.correction.control",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      },
+      "after": {
+        "cognitive": 1,
+        "cyclomatic": 2,
+        "end_line": 56,
+        "line": 48,
+        "lines": 9,
+        "name": "rcmetar.reitsma.correction.control",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/reitsma_methods.R",
+      "function": "rcmetar.reitsma.estimator",
+      "operators": [
+        "%||%",
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 6,
+        "cyclomatic": 7,
+        "end_line": 192,
+        "line": 182,
+        "lines": 11,
+        "name": "rcmetar.reitsma.estimator",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      },
+      "after": {
+        "cognitive": 3,
+        "cyclomatic": 4,
+        "end_line": 192,
+        "line": 182,
+        "lines": 11,
+        "name": "rcmetar.reitsma.estimator",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/reitsma_methods.R",
+      "function": "rcmetar.reitsma.restore.coefficient.labels",
+      "operators": [
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 6,
+        "cyclomatic": 7,
+        "end_line": 215,
+        "line": 201,
+        "lines": 15,
+        "name": "rcmetar.reitsma.restore.coefficient.labels",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      },
+      "after": {
+        "cognitive": 5,
+        "cyclomatic": 6,
+        "end_line": 215,
+        "line": 201,
+        "lines": 15,
+        "name": "rcmetar.reitsma.restore.coefficient.labels",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/reitsma_methods.R",
+      "function": "rcmetar.reitsma.plot.data",
+      "operators": [
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 35,
+        "cyclomatic": 36,
+        "end_line": 420,
+        "line": 333,
+        "lines": 88,
+        "name": "rcmetar.reitsma.plot.data",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      },
+      "after": {
+        "cognitive": 6,
+        "cyclomatic": 7,
+        "end_line": 420,
+        "line": 333,
+        "lines": 88,
+        "name": "rcmetar.reitsma.plot.data",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/reitsma_methods.R",
+      "function": "rcmetar.reitsma.legend.spec",
+      "operators": [
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 26,
+        "cyclomatic": 27,
+        "end_line": 453,
+        "line": 422,
+        "lines": 32,
+        "name": "rcmetar.reitsma.legend.spec",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      },
+      "after": {
+        "cognitive": 16,
+        "cyclomatic": 17,
+        "end_line": 453,
+        "line": 422,
+        "lines": 32,
+        "name": "rcmetar.reitsma.legend.spec",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/reitsma_methods.R",
+      "function": "rcmetar.reitsma.draw",
+      "operators": [
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 54,
+        "cyclomatic": 55,
+        "end_line": 522,
+        "line": 455,
+        "lines": 68,
+        "name": "rcmetar.reitsma.draw",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      },
+      "after": {
+        "cognitive": 33,
+        "cyclomatic": 34,
+        "end_line": 522,
+        "line": 455,
+        "lines": 68,
+        "name": "rcmetar.reitsma.draw",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/reitsma_methods.R",
+      "function": "draw",
+      "operators": [
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 28,
+        "cyclomatic": 29,
+        "end_line": 518,
+        "line": 488,
+        "lines": 31,
+        "name": "draw",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      },
+      "after": {
+        "cognitive": 16,
+        "cyclomatic": 17,
+        "end_line": 518,
+        "line": 488,
+        "lines": 31,
+        "name": "draw",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/reitsma_methods.R",
+      "function": "rcmetar.draw.reitsma.coefficient",
+      "operators": [
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 22,
+        "cyclomatic": 23,
+        "end_line": 589,
+        "line": 536,
+        "lines": 54,
+        "name": "rcmetar.draw.reitsma.coefficient",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      },
+      "after": {
+        "cognitive": 20,
+        "cyclomatic": 21,
+        "end_line": 589,
+        "line": 536,
+        "lines": 54,
+        "name": "rcmetar.draw.reitsma.coefficient",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/reitsma_methods.R",
+      "function": "draw",
+      "operators": [
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 12,
+        "cyclomatic": 13,
+        "end_line": 585,
+        "line": 561,
+        "lines": 25,
+        "name": "draw",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      },
+      "after": {
+        "cognitive": 11,
+        "cyclomatic": 12,
+        "end_line": 585,
+        "line": 561,
+        "lines": 25,
+        "name": "draw",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/reitsma_methods.R",
+      "function": "diagnostic.reitsma",
+      "operators": [
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 47,
+        "cyclomatic": 48,
+        "end_line": 771,
+        "line": 591,
+        "lines": 181,
+        "name": "diagnostic.reitsma",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      },
+      "after": {
+        "cognitive": 33,
+        "cyclomatic": 34,
+        "end_line": 771,
+        "line": 591,
+        "lines": 181,
+        "name": "diagnostic.reitsma",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/reitsma_methods.R",
+      "function": "diagnostic.reitsma.meta.regression",
+      "operators": [
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%",
+        "%||%"
+      ],
+      "before": {
+        "cognitive": 36,
+        "cyclomatic": 37,
+        "end_line": 977,
+        "line": 797,
+        "lines": 181,
+        "name": "diagnostic.reitsma.meta.regression",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      },
+      "after": {
+        "cognitive": 31,
+        "cyclomatic": 32,
+        "end_line": 977,
+        "line": 797,
+        "lines": 181,
+        "name": "diagnostic.reitsma.meta.regression",
+        "nesting": 0,
+        "path": "r/RCMetaR/R/reitsma_methods.R"
+      }
+    }
+  ],
+  "changed_function_count": 30,
+  "removed_false_branches": 200,
+  "other_changes": "Only derived file complexity/density/hotspot ranking and cognitive aggregate; all other values identical."
+}

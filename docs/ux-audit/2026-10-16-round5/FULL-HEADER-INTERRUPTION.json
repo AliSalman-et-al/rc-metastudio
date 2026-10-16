@@ -1,0 +1,73 @@
+{
+  "reason": "Native actual IRR names exposed wrapped group heading / exposure header collision; stop this superseded full profile before shared header placement correction.",
+  "processes": [
+    {
+      "pid": 1058468,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "scripts/verify.py",
+        "r-stack",
+        "--rscript",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript"
+      ]
+    },
+    {
+      "pid": 1058527,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "scripts/verify_rcmetar_r_stack.py",
+        "--rscript",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+        "--r-library-cache-root",
+        "/home/ali/Documents/Code/rc-metastudio/artifacts/r-library-cache"
+      ]
+    },
+    {
+      "pid": 1058717,
+      "command": [
+        "/bin/sh",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/check",
+        "--no-manual",
+        "--no-build-vignettes",
+        "--library=/tmp/RCMetaR-r-stack-ejk_n860/library",
+        "/tmp/RCMetaR-r-stack-ejk_n860/RCMetaR_0.4.2.tar.gz"
+      ]
+    },
+    {
+      "pid": 1058721,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/exec/R",
+        "--no-restore",
+        "--no-echo",
+        "--args",
+        "nextArg--no-manualnextArg--no-build-vignettesnextArg--library=/tmp/RCMetaR-r-stack-ejk_n860/librarynextArg/tmp/RCMetaR-r-stack-ejk_n860/RCMetaR_0.4.2.tar.gz"
+      ]
+    },
+    {
+      "pid": 1059653,
+      "command": [
+        "sh",
+        "-c",
+        "--",
+        "R_DEFAULT_PACKAGES=NULL '/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/R' --vanilla --no-echo 2>&1 < '/tmp/Rtmp8Eazz6/file1027a12ba58703'"
+      ]
+    },
+    {
+      "pid": 1059654,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/exec/R",
+        "--vanilla",
+        "--no-echo"
+      ]
+    },
+    {
+      "pid": 1058461,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        ".agents/skills/verify-rcms/scripts/verify_all.py",
+        "--full",
+        "--fresh"
+      ]
+    }
+  ]
+}

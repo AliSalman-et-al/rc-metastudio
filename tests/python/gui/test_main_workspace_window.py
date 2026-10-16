@@ -46,16 +46,12 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
         )
         for control in (
             window.nav_left_btn,
-            window.nav_up_btn,
-            window.nav_down_btn,
             window.nav_right_btn,
             window.nav_add_btn,
             window.navigation_label,
         ):
             assert window.navigationLayout.indexOf(control) >= 0
-        assert window.action_auto_fit_columns.text() == "Auto-Fit Columns"
-        assert window.nav_up_btn.accessibleName() == "Next navigation dimension"
-        assert window.nav_down_btn.accessibleName() == "Previous navigation dimension"
+        assert window.action_auto_fit_columns.text() == "Fit columns"
         assert window.nav_left_btn.accessibleName() == "Previous outcome"
         assert window.nav_right_btn.accessibleName() == "Next outcome"
         assert window.nav_add_btn.accessibleName() == "Add outcome"
@@ -88,9 +84,9 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
             assert submenu is not None
             assert all(action.toolTip() for action in submenu.actions())
 
-        window.next_dimension()
+        window.navigation_dimension.setCurrentIndex((window.navigation_dimension.currentIndex() + 1) % 3)
 
-        assert window.navigation_label.text() == "follow-up"
+        assert window.navigation_dimension.currentData() == "follow-up"
         assert window.nav_left_btn.accessibleName() == "Previous follow-up"
         assert window.nav_right_btn.accessibleName() == "Next follow-up"
         assert window.nav_add_btn.accessibleName() == "Add follow-up"
@@ -131,7 +127,7 @@ def test_navigation_arrows_reflect_available_items_and_active_dimension(qapp):
         assert window.nav_left_btn.isEnabled()
         assert window.nav_right_btn.isEnabled()
 
-        window.next_dimension()
+        window.navigation_dimension.setCurrentIndex((window.navigation_dimension.currentIndex() + 1) % 3)
         assert window.current_dimension == "follow-up"
         assert not window.nav_left_btn.isEnabled()
         assert not window.nav_right_btn.isEnabled()
@@ -145,7 +141,7 @@ def test_navigation_arrows_reflect_available_items_and_active_dimension(qapp):
         assert not window.nav_left_btn.isEnabled()
         assert not window.nav_right_btn.isEnabled()
 
-        window.next_dimension()
+        window.navigation_dimension.setCurrentIndex((window.navigation_dimension.currentIndex() + 1) % 3)
         assert window.current_dimension == "group"
 
         window._handle_wizard_results(
@@ -279,8 +275,6 @@ def test_main_inherits_fonts_and_navigation_icons_from_active_style(qapp):
 
         for button in (
             window.nav_left_btn,
-            window.nav_up_btn,
-            window.nav_down_btn,
             window.nav_right_btn,
             window.nav_add_btn,
         ):
@@ -416,6 +410,7 @@ for name, implementation in vars(create()).items():
 
 app, window = automation.start_automation()
 try:
+    assert window.open("sample_projects/amino.rcms", raise_on_error=True)
     window.showNormal()
     window.resize(1000, 700)
     app.processEvents()

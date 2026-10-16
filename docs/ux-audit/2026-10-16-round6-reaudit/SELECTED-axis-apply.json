@@ -1,0 +1,530 @@
+[
+  {
+    "path": "screenshots/axis-apply-13-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/13-0-axis-apply-before-cancel.png",
+    "sha256": "ce4262ebd4e8490060050ee803aa8b033955ede9a393e0a858e94336ee7c4860",
+    "action": "axis-apply-before-cancel",
+    "step": 13,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-14-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/14-0-axis-option-reopened.png",
+    "sha256": "90eb74e07522ad902cd25c118dec965a7b597d60aeb68f20c09cfca95690d60c",
+    "action": "axis-option-reopened",
+    "step": 14,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-15-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/15-0-axis-persisted-export.png",
+    "sha256": "90eb74e07522ad902cd25c118dec965a7b597d60aeb68f20c09cfca95690d60c",
+    "action": "axis-persisted-export",
+    "step": 15,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-29-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/29-0-axis-apply-before-cancel.png",
+    "sha256": "96b4dd8bdcea2832bd0559b91280ef7608cde5b537aa517fcbd8b0562897167b",
+    "action": "axis-apply-before-cancel",
+    "step": 29,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-30-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/30-0-axis-option-reopened.png",
+    "sha256": "b15e5c8ee62e52c4f143d34a279832b71cfec50d8bfc3d4b4b8d59429e0a599f",
+    "action": "axis-option-reopened",
+    "step": 30,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-31-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/31-0-axis-persisted-export.png",
+    "sha256": "b15e5c8ee62e52c4f143d34a279832b71cfec50d8bfc3d4b4b8d59429e0a599f",
+    "action": "axis-persisted-export",
+    "step": 31,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-45-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/45-0-axis-apply-before-cancel.png",
+    "sha256": "907c85ffec36b514466f8b575bef3b006679dd4a1ad7d1deec0f86d45056338a",
+    "action": "axis-apply-before-cancel",
+    "step": 45,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-46-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/46-0-axis-option-reopened.png",
+    "sha256": "ecf1568782d05b677c1814b3c4cd29a7ddac5fc35a8c80f6f087592d1a6b80fa",
+    "action": "axis-option-reopened",
+    "step": 46,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-47-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/47-0-axis-persisted-export.png",
+    "sha256": "ecf1568782d05b677c1814b3c4cd29a7ddac5fc35a8c80f6f087592d1a6b80fa",
+    "action": "axis-persisted-export",
+    "step": 47,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-61-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/61-0-axis-apply-before-cancel.png",
+    "sha256": "9aa3d11b5ab1585a6a99857fe0f32d3ebdf67490ea5b1ed04162ab6b9d455a20",
+    "action": "axis-apply-before-cancel",
+    "step": 61,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-62-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/62-0-axis-option-reopened.png",
+    "sha256": "58db78c833491698112cab772547bc9db56509dd15e5dbddb8004c178412a45d",
+    "action": "axis-option-reopened",
+    "step": 62,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-63-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/63-0-axis-persisted-export.png",
+    "sha256": "58db78c833491698112cab772547bc9db56509dd15e5dbddb8004c178412a45d",
+    "action": "axis-persisted-export",
+    "step": 63,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-77-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/77-0-axis-apply-before-cancel.png",
+    "sha256": "15ac630f635cf101288cdd64c9b938a10cb54d889038673fa2133200274ac5f9",
+    "action": "axis-apply-before-cancel",
+    "step": 77,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-78-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/78-0-axis-option-reopened.png",
+    "sha256": "58203f971b04ce50cfc3e5571e1230643715c193620b4fc05b4b86cd1b184f84",
+    "action": "axis-option-reopened",
+    "step": 78,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-79-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/79-0-axis-persisted-export.png",
+    "sha256": "58203f971b04ce50cfc3e5571e1230643715c193620b4fc05b4b86cd1b184f84",
+    "action": "axis-persisted-export",
+    "step": 79,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-93-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/93-0-axis-apply-before-cancel.png",
+    "sha256": "45107c30db7ee3555c125813a90328ee75572761dfdfb3eb5d376e82bf2ac69b",
+    "action": "axis-apply-before-cancel",
+    "step": 93,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-94-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/94-0-axis-option-reopened.png",
+    "sha256": "0a85d6a3afa5ed1eacb05618cc8f0f5d6caab4f4bd1306170c4a346fc5f554c0",
+    "action": "axis-option-reopened",
+    "step": 94,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-95-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/95-0-axis-persisted-export.png",
+    "sha256": "0a85d6a3afa5ed1eacb05618cc8f0f5d6caab4f4bd1306170c4a346fc5f554c0",
+    "action": "axis-persisted-export",
+    "step": 95,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-109-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/109-0-axis-apply-before-cancel.png",
+    "sha256": "df9aaf22e3b3fcd0b9429c532970b71c977498f0a26612e28d4d16185401a0d2",
+    "action": "axis-apply-before-cancel",
+    "step": 109,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-110-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/110-0-axis-option-reopened.png",
+    "sha256": "01e63fe540e866350438d0402525a7daf20eec55d8e519ab50744e29068b90f1",
+    "action": "axis-option-reopened",
+    "step": 110,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-111-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/111-0-axis-persisted-export.png",
+    "sha256": "01e63fe540e866350438d0402525a7daf20eec55d8e519ab50744e29068b90f1",
+    "action": "axis-persisted-export",
+    "step": 111,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-125-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/125-0-axis-apply-before-cancel.png",
+    "sha256": "251a45cc6a74e446378d5d67918ce00418215161c040022e4f53c89754725e89",
+    "action": "axis-apply-before-cancel",
+    "step": 125,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-126-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/126-0-axis-option-reopened.png",
+    "sha256": "51f6b3d0864161c73869000d3139b5f0fefcdb4f1a46f54d424b391ff06cefdf",
+    "action": "axis-option-reopened",
+    "step": 126,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-127-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/127-0-axis-persisted-export.png",
+    "sha256": "51f6b3d0864161c73869000d3139b5f0fefcdb4f1a46f54d424b391ff06cefdf",
+    "action": "axis-persisted-export",
+    "step": 127,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-141-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/141-0-axis-apply-before-cancel.png",
+    "sha256": "2cbfbbfc6efc8398218061a246dff947b639fda67578bd43655929cf9351d18e",
+    "action": "axis-apply-before-cancel",
+    "step": 141,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-142-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/142-0-axis-option-reopened.png",
+    "sha256": "8596221bce9befa3df122249f4d2ad6ba4f46f6cfd8fbc4a6b5d981fb00d0a6c",
+    "action": "axis-option-reopened",
+    "step": 142,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-143-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/143-0-axis-persisted-export.png",
+    "sha256": "8596221bce9befa3df122249f4d2ad6ba4f46f6cfd8fbc4a6b5d981fb00d0a6c",
+    "action": "axis-persisted-export",
+    "step": 143,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-157-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/157-0-axis-apply-before-cancel.png",
+    "sha256": "940658f85e86d6d459fd9ca59456d1bf932c5b068b784a7ea467a99fe50dd1be",
+    "action": "axis-apply-before-cancel",
+    "step": 157,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-158-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/158-0-axis-option-reopened.png",
+    "sha256": "21d3a6ca9246a25aba3e3207ea26cbb6844902ee350e4b95d6c3ac073ef1669a",
+    "action": "axis-option-reopened",
+    "step": 158,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-159-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/159-0-axis-persisted-export.png",
+    "sha256": "21d3a6ca9246a25aba3e3207ea26cbb6844902ee350e4b95d6c3ac073ef1669a",
+    "action": "axis-persisted-export",
+    "step": 159,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-173-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/173-0-axis-apply-before-cancel.png",
+    "sha256": "6ea05475074ec9fad2348ab3e161b914cce154441b60fbe466c8c2e3a236e70b",
+    "action": "axis-apply-before-cancel",
+    "step": 173,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-174-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/174-0-axis-option-reopened.png",
+    "sha256": "3d27233149d3080ecd1f2d5aa63a856a966030991807546ceff377d70857a764",
+    "action": "axis-option-reopened",
+    "step": 174,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-175-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/175-0-axis-persisted-export.png",
+    "sha256": "3d27233149d3080ecd1f2d5aa63a856a966030991807546ceff377d70857a764",
+    "action": "axis-persisted-export",
+    "step": 175,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-189-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/189-0-axis-apply-before-cancel.png",
+    "sha256": "6bdeb06e3b746a3d84b8a105dbf563faa96ccc2f5c20103bfae8718aeba41fdd",
+    "action": "axis-apply-before-cancel",
+    "step": 189,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-190-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/190-0-axis-option-reopened.png",
+    "sha256": "d55cf497c9eb1ac4818e462cef3513a364da635727858db39458cfeb2655a8f8",
+    "action": "axis-option-reopened",
+    "step": 190,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-191-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/191-0-axis-persisted-export.png",
+    "sha256": "d55cf497c9eb1ac4818e462cef3513a364da635727858db39458cfeb2655a8f8",
+    "action": "axis-persisted-export",
+    "step": 191,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-205-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/205-0-axis-apply-before-cancel.png",
+    "sha256": "39070de6c73c3ccaf7a8caaa436634cf4b6ff94f005fec1ab613114f84b28533",
+    "action": "axis-apply-before-cancel",
+    "step": 205,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-206-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/206-0-axis-option-reopened.png",
+    "sha256": "1cc3ba68fb10b3ed8645aa2b63d950666a2768e74b90856fb16013b7be390e25",
+    "action": "axis-option-reopened",
+    "step": 206,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-207-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/207-0-axis-persisted-export.png",
+    "sha256": "1cc3ba68fb10b3ed8645aa2b63d950666a2768e74b90856fb16013b7be390e25",
+    "action": "axis-persisted-export",
+    "step": 207,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-221-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/221-0-axis-apply-before-cancel.png",
+    "sha256": "8e19baccb5e6fedef730d60beff39b5310d0282e8ee59138f195d5008bf51aad",
+    "action": "axis-apply-before-cancel",
+    "step": 221,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-222-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/222-0-axis-option-reopened.png",
+    "sha256": "1632f08c1864e4048137523834327dd79356995fc36890e75c73d5a35bb50c82",
+    "action": "axis-option-reopened",
+    "step": 222,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-223-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/223-0-axis-persisted-export.png",
+    "sha256": "1632f08c1864e4048137523834327dd79356995fc36890e75c73d5a35bb50c82",
+    "action": "axis-persisted-export",
+    "step": 223,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-237-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/237-0-axis-apply-before-cancel.png",
+    "sha256": "23a2a357fc8475a0a39ee2391d157b4f74b9473a8bdf53626ffc2da9717de45c",
+    "action": "axis-apply-before-cancel",
+    "step": 237,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-238-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/238-0-axis-option-reopened.png",
+    "sha256": "d24b130fd47e3846b12dbdfea4aa56d48b07c3d5dd15cc6d77f4bbf3e52d0cbf",
+    "action": "axis-option-reopened",
+    "step": 238,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-239-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/239-0-axis-persisted-export.png",
+    "sha256": "d24b130fd47e3846b12dbdfea4aa56d48b07c3d5dd15cc6d77f4bbf3e52d0cbf",
+    "action": "axis-persisted-export",
+    "step": 239,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-254-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/254-0-axis-apply-before-cancel.png",
+    "sha256": "3b74f3c01f258831b1cf43177ff453c19eb0aa7ee8308f1cdd4b6cfa43b85020",
+    "action": "axis-apply-before-cancel",
+    "step": 254,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-255-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/255-0-axis-option-reopened.png",
+    "sha256": "442efe5c2d5474489d6800dd944e8c66ab9e67b08ef1d5ad3e6f6b4184ca5f6f",
+    "action": "axis-option-reopened",
+    "step": 255,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-256-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/256-0-axis-persisted-export.png",
+    "sha256": "442efe5c2d5474489d6800dd944e8c66ab9e67b08ef1d5ad3e6f6b4184ca5f6f",
+    "action": "axis-persisted-export",
+    "step": 256,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-261-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/261-0-axis-apply-before-cancel.png",
+    "sha256": "3b74f3c01f258831b1cf43177ff453c19eb0aa7ee8308f1cdd4b6cfa43b85020",
+    "action": "axis-apply-before-cancel",
+    "step": 261,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-262-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/262-0-axis-option-reopened.png",
+    "sha256": "89ed383fbfa6efb2a8f8ca81c708ad3018c8ca1a57923efc1c830f22e31b1214",
+    "action": "axis-option-reopened",
+    "step": 262,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-263-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/263-0-axis-persisted-export.png",
+    "sha256": "89ed383fbfa6efb2a8f8ca81c708ad3018c8ca1a57923efc1c830f22e31b1214",
+    "action": "axis-persisted-export",
+    "step": 263,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-278-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/278-0-axis-apply-before-cancel.png",
+    "sha256": "5f57cbd285dd9c532e320e1e7e5dee28fba6fb3ca548b23a23a132368937b228",
+    "action": "axis-apply-before-cancel",
+    "step": 278,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-279-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/279-0-axis-option-reopened.png",
+    "sha256": "bdc63bbd7971c4c1124797a3e00655c57a4dac0c9fe3bc6912b4ea72ed1a4e75",
+    "action": "axis-option-reopened",
+    "step": 279,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-280-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/280-0-axis-persisted-export.png",
+    "sha256": "bdc63bbd7971c4c1124797a3e00655c57a4dac0c9fe3bc6912b4ea72ed1a4e75",
+    "action": "axis-persisted-export",
+    "step": 280,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-285-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/285-0-axis-apply-before-cancel.png",
+    "sha256": "5f57cbd285dd9c532e320e1e7e5dee28fba6fb3ca548b23a23a132368937b228",
+    "action": "axis-apply-before-cancel",
+    "step": 285,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-286-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/286-0-axis-option-reopened.png",
+    "sha256": "d0213ca94d2252a0fd3a593b3f2e0b1a46696152bedc01fb3f82065ac9715a2a",
+    "action": "axis-option-reopened",
+    "step": 286,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-287-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/287-0-axis-persisted-export.png",
+    "sha256": "d0213ca94d2252a0fd3a593b3f2e0b1a46696152bedc01fb3f82065ac9715a2a",
+    "action": "axis-persisted-export",
+    "step": 287,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-302-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/302-0-axis-apply-before-cancel.png",
+    "sha256": "1fb32d84ea28786502c1a6ab0e077e302954bdd66fab1c7ed5ff29f025cb155c",
+    "action": "axis-apply-before-cancel",
+    "step": 302,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-303-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/303-0-axis-option-reopened.png",
+    "sha256": "a11c7a7f01a8b2a74faa634cef09941d41f5dd2fd175e6fe567cbf0d6321694c",
+    "action": "axis-option-reopened",
+    "step": 303,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-304-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/304-0-axis-persisted-export.png",
+    "sha256": "a11c7a7f01a8b2a74faa634cef09941d41f5dd2fd175e6fe567cbf0d6321694c",
+    "action": "axis-persisted-export",
+    "step": 304,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-309-0-axis-apply-before-cancel.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/309-0-axis-apply-before-cancel.png",
+    "sha256": "1fb32d84ea28786502c1a6ab0e077e302954bdd66fab1c7ed5ff29f025cb155c",
+    "action": "axis-apply-before-cancel",
+    "step": 309,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-310-0-axis-option-reopened.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/310-0-axis-option-reopened.png",
+    "sha256": "3b599d0149725df9d2f9b47831b0575f586fa3e15f7bb54d6785a9510e46a3db",
+    "action": "axis-option-reopened",
+    "step": 310,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-311-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/311-0-axis-persisted-export.png",
+    "sha256": "3b599d0149725df9d2f9b47831b0575f586fa3e15f7bb54d6785a9510e46a3db",
+    "action": "axis-persisted-export",
+    "step": 311,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-324-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/324-0-axis-persisted-export.png",
+    "sha256": "92e06ab91d2f787fb706d269e6c2c705062d7a3d16d96ca92aa2e2cb3cf8ad1a",
+    "action": "axis-persisted-export",
+    "step": 324,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-335-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/335-0-axis-persisted-export.png",
+    "sha256": "de19ecb476cd20a82432b34e333ae56c494e90cc86e2495704a9180f273825d2",
+    "action": "axis-persisted-export",
+    "step": 335,
+    "scenario": "axis-apply"
+  },
+  {
+    "path": "screenshots/axis-apply-346-0-axis-persisted-export.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/axis-apply/346-0-axis-persisted-export.png",
+    "sha256": "79275668601c11aab450501270fe09eb0a9a29a72931f2628a3b23c12098c400",
+    "action": "axis-persisted-export",
+    "step": 346,
+    "scenario": "axis-apply"
+  }
+]

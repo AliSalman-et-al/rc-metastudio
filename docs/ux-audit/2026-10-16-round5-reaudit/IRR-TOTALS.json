@@ -1,0 +1,15 @@
+{
+  "source": "sample_projects/NielWeise2008-IRR.rcms",
+  "sha256": "4b0ba4c9c515da90a5768b4729886ccfb73a5ef4f239321ff1daca01b13ebb12",
+  "operation": "Sum original included study group raw_data event and exposure fields independently from displayed output.",
+  "totals": {
+    "Anti-infective catheter": [
+      48,
+      25778
+    ],
+    "Standard catheter": [
+      77,
+      25605
+    ]
+  }
+}

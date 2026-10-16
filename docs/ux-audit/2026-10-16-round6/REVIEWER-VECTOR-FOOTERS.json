@@ -1,0 +1,506 @@
+[
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/14-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "1652444101e9a72cfe93d9efed1c52dacb7ae5b84a94853f3fe33aa32c1ad6fe",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-00.png",
+    "sha256": "e56708797de7d37fb674441c90ffd0f6f901c00f854241d501550d42ec507298",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 14,
+    "measure": "PFT",
+    "workflow": "standard",
+    "style": "default",
+    "scenario": null,
+    "size": [
+      1000,
+      506
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/27-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "586ae9bbfb2a978b13490865fa3e577fa6beb06f2363dac76e202f6d0d6231d8",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-01.png",
+    "sha256": "3f903a983b0ee1698507ae36b40505004218fb35e1c140a5d4c7d9ba1cd7fec3",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 27,
+    "measure": "PFT",
+    "workflow": "standard",
+    "style": "revman",
+    "scenario": null,
+    "size": [
+      1029,
+      413
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/40-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "7b37ef7430e5c4c3b43a4853be4d3f129d2141c33f281523b8cc7aa56dd3ba22",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-02.png",
+    "sha256": "8806d7910b7eb81ce066b984672cbc434cc828089f72734ff264058422c821ce",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 40,
+    "measure": "PFT",
+    "workflow": "standard",
+    "style": "bmj",
+    "scenario": null,
+    "size": [
+      1245,
+      416
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/53-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "732648f60dc954b14c80309e13370f74b7837be6f5969077e17a10c1cc634924",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-03.png",
+    "sha256": "537090b6554d2727287f8e7e22e51035bb4befcf0a4429629b1b02ea74d83b38",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 53,
+    "measure": "PLO",
+    "workflow": "standard",
+    "style": "default",
+    "scenario": null,
+    "size": [
+      1000,
+      506
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/66-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "2eda01c3acb8dfd4f9d9b7d8e1f3094abc01b358d73b686c611744a8688dbc61",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-04.png",
+    "sha256": "850a21c6cfac1478c4b7118c30394a8af4a2ca6959b7d0289f8db023d51a90a7",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 66,
+    "measure": "PLO",
+    "workflow": "standard",
+    "style": "revman",
+    "scenario": null,
+    "size": [
+      1029,
+      413
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/79-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "f18febae828887d5d1cdbc9f7516b24aa086d0c98c6af1acc2cb3f31fe8ba847",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-05.png",
+    "sha256": "7a898dae0212d5a3fd537ae37ff8e0ea1e5fb79c6127eca0905b9828a8cacae6",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 79,
+    "measure": "PLO",
+    "workflow": "standard",
+    "style": "bmj",
+    "scenario": null,
+    "size": [
+      1086,
+      416
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/92-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "46a84d7bd435554a0ef64824f3157f3a2db33154234a6ec21e09f387aeb2b8c5",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-06.png",
+    "sha256": "1915581c0717b7b09eb2b39511cf81f9af9aa24089e37839a7547c3e6ad6b9e1",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 92,
+    "measure": "PAS",
+    "workflow": "standard",
+    "style": "default",
+    "scenario": null,
+    "size": [
+      1000,
+      506
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/105-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "5ea6d0281aaabdb7a6bfb826fc25234d1e674675a336be0b916b088fdec16bad",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-07.png",
+    "sha256": "a45f2e59be0171aafa8e7b247a778cfa1f3b46dfb11a3b51323a69ab3a4567f9",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 105,
+    "measure": "PAS",
+    "workflow": "standard",
+    "style": "revman",
+    "scenario": null,
+    "size": [
+      1029,
+      413
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/118-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "2b0970a2812c40f49eca6a444692f15e382c62fd3cc4d06ce46a10d5df285f64",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-08.png",
+    "sha256": "dd5c1d41f93915f1309a706cac3b3bf7897de4253488948aea353421420f0a06",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 118,
+    "measure": "PAS",
+    "workflow": "standard",
+    "style": "bmj",
+    "scenario": null,
+    "size": [
+      1082,
+      416
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/130-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "d36119ec3e4f9af4c441044d2ed7400323c1b123bec3127b399387d4e9b29f5e",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-09.png",
+    "sha256": "83226fc7b4dd16cb2432cb23d7d3f56271ffb81b02af03c5f5892bffdcf249df",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 130,
+    "measure": "PFT",
+    "workflow": "cumulative",
+    "style": "default",
+    "scenario": null,
+    "size": [
+      684,
+      408
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/142-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "f95b7665eebba628e2705b3e573bba8659c3d782388512fc942a4b0a1d5630d9",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-10.png",
+    "sha256": "08bf22de634e7ddbbe73b3b3032c0699552fa5ac62b7f0b8a83cfa8163d26aa7",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 142,
+    "measure": "PFT",
+    "workflow": "cumulative",
+    "style": "revman",
+    "scenario": null,
+    "size": [
+      684,
+      408
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/154-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "e22d403da8f35b75bd16dcb55804e09e7cdb9ef117b0a9121fe75562f68ff52e",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-11.png",
+    "sha256": "2ce6f4fec3883bedf51108976313746e27f10ced55b42258db2b0c15808c6e9e",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 154,
+    "measure": "PFT",
+    "workflow": "cumulative",
+    "style": "bmj",
+    "scenario": null,
+    "size": [
+      684,
+      408
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/166-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "0d0a16d5c0af9fa9e75ad0f657343326264428383720a40e0e710bc51a54af63",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-12.png",
+    "sha256": "96109035ea004ebe8a3a7cf380892e0c3a45ae35bad999d3492d488301bf513d",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 166,
+    "measure": "PFT",
+    "workflow": "leave-one-out",
+    "style": "default",
+    "scenario": null,
+    "size": [
+      685,
+      433
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/178-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "0c6d1d00fdb476c12c16702ff42f6019bd7829880dc1a23ba727aa508a211472",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-13.png",
+    "sha256": "a2631d421bbdbe219e2769bafbbef27c0228b58796c38014bf1a7352c5a732d9",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 178,
+    "measure": "PFT",
+    "workflow": "leave-one-out",
+    "style": "revman",
+    "scenario": null,
+    "size": [
+      685,
+      433
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/190-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "8e687d5fc08a66989a931d3965b10b9ff3c573655849de0a7d3e42dd1dc13207",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-14.png",
+    "sha256": "98df6563ed2559e01699c85e7593127d87b5048c6bb9b71c49e3e241bc3bea4c",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 190,
+    "measure": "PFT",
+    "workflow": "leave-one-out",
+    "style": "bmj",
+    "scenario": null,
+    "size": [
+      685,
+      433
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/203-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "cfbd8eaf20d9bc7227d4222dcebde9823d09e8e962d5a492cae36bf1bb1bd1c5",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-15.png",
+    "sha256": "d20c162f49d7c25b06a5b5600cb86dda09c5db3ad6ccc3dc1eb3f03828729dcd",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 203,
+    "measure": "PFT",
+    "workflow": "subgroup",
+    "style": "default",
+    "scenario": null,
+    "size": [
+      1000,
+      852
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/217-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "0c1167b920b5b0dd660ffd6c119648a2875399c97cb4d5b823a1e4b42e09638e",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-16.png",
+    "sha256": "567dfb8256cae3491f4d42187936c4ebed5c305687f9a0ce3f49e4ec6434fabc",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 217,
+    "measure": "PFT",
+    "workflow": "subgroup",
+    "style": "revman",
+    "scenario": null,
+    "size": [
+      1029,
+      852
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/231-0-forest-32f09feb960d.display.svg",
+    "source_sha256": "d611d6b7d99966e0801555a694c41bb0ec9649a85dfef9dba0c31c46ece3aefd",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-17.png",
+    "sha256": "f0600850e56eda2c6e8fecdc3fa97325a8ef63b818ae369edaa6634a3bed871d",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-predictions-visible-page",
+    "step": 231,
+    "measure": "PFT",
+    "workflow": "subgroup",
+    "style": "bmj",
+    "scenario": null,
+    "size": [
+      987,
+      852
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/13-0-forest-6e54f504b4c9.display.svg",
+    "source_sha256": "6e21f0a166643f913988a9faf06ca1ad94e85653301dced46391ac14837bdff3",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-18.png",
+    "sha256": "a5bb88927ce677911342ed6fa28e27c122c1cebb7d4f18bf39a031dd08c061f4",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-colours-current",
+    "step": 13,
+    "measure": null,
+    "workflow": null,
+    "style": null,
+    "scenario": "analysis-amino-binary-cumulative",
+    "size": [
+      718,
+      727
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/25-0-forest-6e54f504b4c9.display.svg",
+    "source_sha256": "df80ae7b4e7678642942de993143a91e62b0789e75f2fbe47c6fbdb4e9637494",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-19.png",
+    "sha256": "f7a27ff0d569703b37b4e2be33230be7bde6dbba36bcdb3452a58d17a60bcfbb",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-colours-current",
+    "step": 25,
+    "measure": null,
+    "workflow": null,
+    "style": null,
+    "scenario": "analysis-amino-binary-leave-one-out",
+    "size": [
+      765,
+      751
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/37-0-forest-6e54f504b4c9.display.svg",
+    "source_sha256": "683b344a73c81acb5a58902b1783b2d0bd3aacbecc5739ee3b69f1bca6f6129c",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-20.png",
+    "sha256": "588e7ef0b1ac521113c12809b736b12eb63639c7d9f335639333bf2a45a74a2a",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-colours-current",
+    "step": 37,
+    "measure": null,
+    "workflow": null,
+    "style": null,
+    "scenario": "analysis-amino-binary-subgroup",
+    "size": [
+      1163,
+      1133
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/54-0-forest-6e54f504b4c9.display.svg",
+    "source_sha256": "cac84936a9e14db6fc2ac70c80a8ee213075c5f4a8ac7d38251f9ff696c90f19",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-21.png",
+    "sha256": "6a087b4d553bb9705703d479299f42ffd8dcea7c5d1d5ab583fdd9e157616c00",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-colours-current",
+    "step": 54,
+    "measure": null,
+    "workflow": null,
+    "style": null,
+    "scenario": "analysis-data-twoarm-proportion",
+    "size": [
+      1163,
+      506
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/70-0-forest-6e54f504b4c9.display.svg",
+    "source_sha256": "1652444101e9a72cfe93d9efed1c52dacb7ae5b84a94853f3fe33aa32c1ad6fe",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-22.png",
+    "sha256": "e56708797de7d37fb674441c90ffd0f6f901c00f854241d501550d42ec507298",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-colours-current",
+    "step": 70,
+    "measure": null,
+    "workflow": null,
+    "style": null,
+    "scenario": "analysis-data-onearm-proportion",
+    "size": [
+      1000,
+      506
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/86-0-forest-6e54f504b4c9.display.svg",
+    "source_sha256": "29f2ad85bff920983ecb6264dc0d8c02ac8ef5a4ea834c605c19de47eb1141c3",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-23.png",
+    "sha256": "45cb904fe6628e5d1fc84987f13c818d8317a0ec52ac09e6581b5ec1af4eb4c5",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-colours-current",
+    "step": 86,
+    "measure": null,
+    "workflow": null,
+    "style": null,
+    "scenario": "analysis-data-onearm-mean",
+    "size": [
+      807,
+      506
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/103-0-forest_sens-6004201a6cc9.display.svg",
+    "source_sha256": "4b9f8717614a522e5b68e04d997c7d93aa4832a38e9b0bfc8c45eafcea3c1fa8",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-24.png",
+    "sha256": "fb9767cde401b9706a0226a19ef204ebf60b96971e62cf4107cd79678101a307",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-colours-current",
+    "step": 103,
+    "measure": null,
+    "workflow": null,
+    "style": null,
+    "scenario": "analysis-data-diagnostic",
+    "size": [
+      1064,
+      506
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/110-0-forest_spec-33f2ebaccb07.display.svg",
+    "source_sha256": "9edb5ad456df87b705e7dcef582e8366ec1d54fa5c5be7584410cc906529ccbe",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-25.png",
+    "sha256": "b9a09aad2588e802b04dc173e6e22d664831587e385329307027db349fa7bb78",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-colours-current",
+    "step": 110,
+    "measure": null,
+    "workflow": null,
+    "style": null,
+    "scenario": "analysis-data-diagnostic",
+    "size": [
+      1063,
+      506
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/119-0-forest-6e54f504b4c9.display.svg",
+    "source_sha256": "5526c5d786eb4c16146893ea7faeead01fc7b3a1719ed2126aa9e46b7af4ac57",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-26.png",
+    "sha256": "0e1ebb4b9a2b0930bedc9b6b46c3f23c8a8118d051911409683a0ac92e158c8e",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-colours-current",
+    "step": 119,
+    "measure": null,
+    "workflow": null,
+    "style": null,
+    "scenario": "HR",
+    "size": [
+      919,
+      1781
+    ]
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/128-0-forest-6e54f504b4c9.display.svg",
+    "source_sha256": "28bd96bda4addd3de8d84227f7782d942a506f559ba8ab8f380bee1cd43f3edd",
+    "image": "docs/ux-audit/2026-10-16-round6/raw/reviewer-vector-footer-27.png",
+    "sha256": "9c0cd0df15508ec4bdcf7f82150d46c8a474524f7eed8a3dbfaf8e6d1ce0f303",
+    "qt_compiled": "6.11.0",
+    "qt_runtime": "6.11.1",
+    "label": "reviewer-colours-current",
+    "step": 128,
+    "measure": null,
+    "workflow": null,
+    "style": null,
+    "scenario": "IRR",
+    "size": [
+      1296,
+      571
+    ]
+  }
+]

@@ -1,0 +1,282 @@
+[
+  {
+    "path": "screenshots/helper-calculator-binary-03-0-calculator-effect-preview.png",
+    "source": "artifacts/verification/rcms/20261014T174022Z-0ae89901-calculator-binary/03-0-calculator-effect-preview.png",
+    "sha256": "4962d060c718e18e8e42734bf5c8d2acefdfab662e622fc265e2cf4fd8e174a0",
+    "scenario": "calculator-binary",
+    "action": "calculator-effect-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-calculator-continuous-03-0-calculator-effect-preview.png",
+    "source": "artifacts/verification/rcms/20261014T174040Z-cae6bed9-calculator-continuous/03-0-calculator-effect-preview.png",
+    "sha256": "cf0dede431ea93f7db74e94a4e04211abe8eb86afd2f37830878fccefda618b0",
+    "scenario": "calculator-continuous",
+    "action": "calculator-effect-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-calculator-diagnostic-03-0-calculator-effect-preview.png",
+    "source": "artifacts/verification/rcms/20261014T174051Z-30fe7d92-calculator-diagnostic/03-0-calculator-effect-preview.png",
+    "sha256": "99176866feb10f138c3a5743ce364ebb2f8b99f0247809a2e1006790a2a8b2dc",
+    "scenario": "calculator-diagnostic",
+    "action": "calculator-effect-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-ux-improvements-04-0-ux-inline-analysis-error.png",
+    "source": "artifacts/verification/rcms/20261014T173831Z-b5f1b270-ux-improvements/04-0-ux-inline-analysis-error.png",
+    "sha256": "00b096e6d00724d5385b59f78a5d82a59692180b8c9db27a2922770204aa1163",
+    "scenario": "ux-improvements",
+    "action": "ux-inline-analysis-error",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-ux-improvements-13-0-ux-native-result-table.png",
+    "source": "artifacts/verification/rcms/20261014T173831Z-b5f1b270-ux-improvements/13-0-ux-native-result-table.png",
+    "sha256": "d88eaa22e8c007dd809adbb9990490ab6a2a48ba7c757bfbbe750e953e5283e4",
+    "scenario": "ux-improvements",
+    "action": "ux-native-result-table",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-ux-improvements-14-0-ux-independent-view-zoom.png",
+    "source": "artifacts/verification/rcms/20261014T173831Z-b5f1b270-ux-improvements/14-0-ux-independent-view-zoom.png",
+    "sha256": "6091494338e768508e7899164eba9a424add50a23dcec7e786fe6b910b8a2c09",
+    "scenario": "ux-improvements",
+    "action": "ux-independent-view-zoom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-ux-improvements-17-0-ux-csv-invalid.png",
+    "source": "artifacts/verification/rcms/20261014T173831Z-b5f1b270-ux-improvements/17-0-ux-csv-invalid.png",
+    "sha256": "aa534f45d834fbe7358c73b12f9968d0ed34b6499076623afb328d75394ae3d6",
+    "scenario": "ux-improvements",
+    "action": "ux-csv-invalid",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-ux-improvements-19-0-ux-csv-mapped.png",
+    "source": "artifacts/verification/rcms/20261014T173831Z-b5f1b270-ux-improvements/19-0-ux-csv-mapped.png",
+    "sha256": "2ae7d58595eabb6d8156c8d8d1ee03b9144672c59daf595578e96ded1210e435",
+    "scenario": "ux-improvements",
+    "action": "ux-csv-mapped",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-ux-improvements-26-0-ux-covariate-error.png",
+    "source": "artifacts/verification/rcms/20261014T173831Z-b5f1b270-ux-improvements/26-0-ux-covariate-error.png",
+    "sha256": "332af17db8c82ecd5d4c991e6eb629a4812e8b46a0a2f6961a368effc3432732",
+    "scenario": "ux-improvements",
+    "action": "ux-covariate-error",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-review-workflows-05-0-review-properties-prefilled.png",
+    "source": "artifacts/verification/rcms/20261014T173757Z-18592c4f-review-workflows/05-0-review-properties-prefilled.png",
+    "sha256": "50486b7282608bda7d7ffae26676c60fca0d5f47307def00445641e061b1331d",
+    "scenario": "review-workflows",
+    "action": "review-properties-prefilled",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-review-workflows-08-0-review-study-order-options.png",
+    "source": "artifacts/verification/rcms/20261014T173757Z-18592c4f-review-workflows/08-0-review-study-order-options.png",
+    "sha256": "54942325e4d8f2a6095c32e6bc30c6492f90092cf816d5c44f35fcd533a291e8",
+    "scenario": "review-workflows",
+    "action": "review-study-order-options",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-review-workflows-08-1-review-study-order-options.png",
+    "source": "artifacts/verification/rcms/20261014T173757Z-18592c4f-review-workflows/08-1-review-study-order-options.png",
+    "sha256": "3eab3f15ed54b8eebf2af5175070b148f2ef0f2ee3774c1c63406c32ffc7011b",
+    "scenario": "review-workflows",
+    "action": "review-study-order-options",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-analysis-diagnostic-joint-06-0-clinical-report.png",
+    "source": "artifacts/verification/rcms/20261014T174406Z-e7a4244b-analysis-diagnostic-joint/06-0-clinical-report.png",
+    "sha256": "0f4a74f1756a4eaa2531d6e6f6bb3c5e641fb7ff6f1992f7b436425b823f70ad",
+    "scenario": "analysis-diagnostic-joint",
+    "action": "clinical-report",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-analysis-diagnostic-regression-multiple-04-0-matrix-results.png",
+    "source": "artifacts/verification/rcms/20261014T174606Z-fd5c8246-analysis-diagnostic-regression-multiple/04-0-matrix-results.png",
+    "sha256": "d6307a3167b04e3bdca6a0f02f2e21e8b48a7536146477361c3c335d72ed641b",
+    "scenario": "analysis-diagnostic-regression-multiple",
+    "action": "matrix-results",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-analysis-diagnostic-regression-multiple-05-0-properties-prefilled.png",
+    "source": "artifacts/verification/rcms/20261014T174606Z-fd5c8246-analysis-diagnostic-regression-multiple/05-0-properties-prefilled.png",
+    "sha256": "863378be4c432a2aa659e0c45719c4b1dbf963a2d631ac08bc44717cf6b888d6",
+    "scenario": "analysis-diagnostic-regression-multiple",
+    "action": "properties-prefilled",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-small-study-effects-02-0-small-study-configured.png",
+    "source": "artifacts/verification/rcms/20261014T174013Z-d638a84c-small-study-effects/02-0-small-study-configured.png",
+    "sha256": "3047a8f1ab07561c963a50a9fb7d0c7db532815b075d1e59d5a8b51cc5283c0c",
+    "scenario": "small-study-effects",
+    "action": "small-study-configured",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-small-study-effects-03-0-small-study-results.png",
+    "source": "artifacts/verification/rcms/20261014T174013Z-d638a84c-small-study-effects/03-0-small-study-results.png",
+    "sha256": "12c242bf0e06bde2378cae29a48df9a576fbe58ebcd3010802f46d67290cd78d",
+    "scenario": "small-study-effects",
+    "action": "small-study-results",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-small-study-diagnostic-02-0-small-study-matrix-configured.png",
+    "source": "artifacts/verification/rcms/20261014T174759Z-16cd798d-small-study-diagnostic/02-0-small-study-matrix-configured.png",
+    "sha256": "f5e47633327e6258c0ea1f20354e577dd9bfb591fbb3294a376d4035011b30cb",
+    "scenario": "small-study-diagnostic",
+    "action": "small-study-matrix-configured",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-small-study-diagnostic-03-0-matrix-results.png",
+    "source": "artifacts/verification/rcms/20261014T174759Z-16cd798d-small-study-diagnostic/03-0-matrix-results.png",
+    "sha256": "d8891321870104682668ca1b5b862dc4b92d31e5a3ed60b6ae060b6d01a4185a",
+    "scenario": "small-study-diagnostic",
+    "action": "matrix-results",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-ratios-hr-06-0-ratio-calculator.png",
+    "source": "artifacts/verification/rcms/20261014T175952Z-f646e091-ratios-hr/06-0-ratio-calculator.png",
+    "sha256": "a04ad14f8da3ab696a63f3010c9a81b9974d877791775491b2ebefe22cbe5688",
+    "scenario": "ratios-hr",
+    "action": "ratio-calculator",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-plot-workflow-sroc-09-0-family-editor-controls.png",
+    "source": "artifacts/verification/rcms/20261014T175550Z-8eb9eea6-plot-workflow-sroc/09-0-family-editor-controls.png",
+    "sha256": "8d2d5e5529d85317dc7aad9b6333fb3c271d850ac431e329fe84f0c4b61c4e02",
+    "scenario": "plot-workflow-sroc",
+    "action": "family-editor-controls",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-plot-workflow-contour-04-0-family-editor-controls.png",
+    "source": "artifacts/verification/rcms/20261014T175624Z-1428f923-plot-workflow-contour/04-0-family-editor-controls.png",
+    "sha256": "6eacaf3da3ea6eeae4f55b0d32237a51a76060cdb5a3d14f6a17d2888c9f0625",
+    "scenario": "plot-workflow-contour",
+    "action": "family-editor-controls",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-precision-10-0-round3-zero-bound-presentation.png",
+    "source": "artifacts/verification/rcms/20261014T173722Z-58abeb61-audit-round3-precision/10-0-round3-zero-bound-presentation.png",
+    "sha256": "6d856e024f11344242f4c1195a9a0e6b18f0f5b4d2b5eeccea135983efa1d979",
+    "scenario": "audit-round3-precision",
+    "action": "round3-zero-bound-presentation",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-precision-20-0-round3-small-effects-preserved.png",
+    "source": "artifacts/verification/rcms/20261014T173722Z-58abeb61-audit-round3-precision/20-0-round3-small-effects-preserved.png",
+    "sha256": "a293f5f06d7d9e2e3a694af3c2b66d5c1de3e8bf2af2839433cf648caa46a635",
+    "scenario": "audit-round3-precision",
+    "action": "round3-small-effects-preserved",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-precision-29-0-round3-degenerate-axis.png",
+    "source": "artifacts/verification/rcms/20261014T173722Z-58abeb61-audit-round3-precision/29-0-round3-degenerate-axis.png",
+    "sha256": "0b65f0babef720058fb44b4f4b1332a1f88f4ce9932aa11ac5f900d7e0dbaba9",
+    "scenario": "audit-round3-precision",
+    "action": "round3-degenerate-axis",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-precision-30-0-round3-degenerate-axis-bottom.png",
+    "source": "artifacts/verification/rcms/20261014T173722Z-58abeb61-audit-round3-precision/30-0-round3-degenerate-axis-bottom.png",
+    "sha256": "984b30a62269c8c3f02ea05b72fe739dd9aa38d307933ca8b8aa62a1663c918e",
+    "scenario": "audit-round3-precision",
+    "action": "round3-degenerate-axis-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-precision-39-0-round3-degenerate-axis.png",
+    "source": "artifacts/verification/rcms/20261014T173722Z-58abeb61-audit-round3-precision/39-0-round3-degenerate-axis.png",
+    "sha256": "e38cde448d3f959a024b99953a386f709b304db9e7270e077bbd9430b5db6dd9",
+    "scenario": "audit-round3-precision",
+    "action": "round3-degenerate-axis",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-precision-48-0-round3-degenerate-axis.png",
+    "source": "artifacts/verification/rcms/20261014T173722Z-58abeb61-audit-round3-precision/48-0-round3-degenerate-axis.png",
+    "sha256": "2d50f931e6e7b13471944f41433561076daab9a524473012e53bd80675bd32c5",
+    "scenario": "audit-round3-precision",
+    "action": "round3-degenerate-axis",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-precision-54-0-round3-bubble-tick-coverage.png",
+    "source": "artifacts/verification/rcms/20261014T173722Z-58abeb61-audit-round3-precision/54-0-round3-bubble-tick-coverage.png",
+    "sha256": "b9e92f2cfa9da8825528ab5f0019f9bccfbb0278dfb96aead563ed6480932732",
+    "scenario": "audit-round3-precision",
+    "action": "round3-bubble-tick-coverage",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-precision-64-0-round3-bubble-tick-coverage.png",
+    "source": "artifacts/verification/rcms/20261014T173722Z-58abeb61-audit-round3-precision/64-0-round3-bubble-tick-coverage.png",
+    "sha256": "71e40f9a4d38be598d827d98943cc2c2f8c112e211721e598c8f6f66596db4ea",
+    "scenario": "audit-round3-precision",
+    "action": "round3-bubble-tick-coverage",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-hr-29-0-round3-fixed-references.png",
+    "source": "artifacts/verification/rcms/20261014T172920Z-5530f5fd-audit-round3-hr/29-0-round3-fixed-references.png",
+    "sha256": "5dcfa1ac2a00e723a5aa578aa7d5e3e17545f2f81e108ddd29e9ebed2e90a770",
+    "scenario": "audit-round3-hr",
+    "action": "round3-fixed-references",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-hr-32-0-round3-fixed-footer-bottom.png",
+    "source": "artifacts/verification/rcms/20261014T172920Z-5530f5fd-audit-round3-hr/32-0-round3-fixed-footer-bottom.png",
+    "sha256": "fdcc0eae6868d134f33570c0eb3338f0a97bd726078d56253f5bd890725c7ee7",
+    "scenario": "audit-round3-hr",
+    "action": "round3-fixed-footer-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-irr-33-0-round3-fixed-references.png",
+    "source": "artifacts/verification/rcms/20261014T173040Z-40206268-audit-round3-irr/33-0-round3-fixed-references.png",
+    "sha256": "0974dc9b0c4e1c287d5c89f3bf4de0b99174dc77b86f5d12235bf552a9b105b2",
+    "scenario": "audit-round3-irr",
+    "action": "round3-fixed-references",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-irr-36-0-round3-fixed-footer-bottom.png",
+    "source": "artifacts/verification/rcms/20261014T173040Z-40206268-audit-round3-irr/36-0-round3-fixed-footer-bottom.png",
+    "sha256": "43998def64bef321026bd2a7339d18b1458b29543e3b13eb937d610b686b0076",
+    "scenario": "audit-round3-irr",
+    "action": "round3-fixed-footer-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-twoarm-mean-14-0-round3-null-excluded-rendered.png",
+    "source": "artifacts/verification/rcms/20261014T172743Z-f8c0a917-audit-round3-twoarm-mean/14-0-round3-null-excluded-rendered.png",
+    "sha256": "5647d46f3a32e915e6ebf1351d2c33db4a7a10b441577203a9ad3c08a0259216",
+    "scenario": "audit-round3-twoarm-mean",
+    "action": "round3-null-excluded-rendered",
+    "capture": "QWidget.grab in visible xcb helper"
+  }
+]

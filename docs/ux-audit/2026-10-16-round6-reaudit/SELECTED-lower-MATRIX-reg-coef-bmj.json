@@ -1,0 +1,42 @@
+[
+  {
+    "path": "screenshots/matrix-reg-coef-cumulative-figure-bottom-bmj.png",
+    "sha256": "657cc0a48bc56f2adaa3e582eda9f339fa3725484cd0b541039b631cea22a43b",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-cumulative-figure-bottom-bmj.png",
+    "scenario": "lower-MATRIX-reg-coef-bmj"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-leave-one-out-figure-bottom-bmj.png",
+    "sha256": "307ef60b1945d0e1ba0c3141050b625ee5bb2fe13bf6936f616a5b945d205492",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-leave-one-out-figure-bottom-bmj.png",
+    "scenario": "lower-MATRIX-reg-coef-bmj"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-subgroup-figure-bottom-bmj.png",
+    "sha256": "59b2eb175c8982ee884732b8567bcc51691c0708d4216c195a0a987ff39e38aa",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-subgroup-figure-bottom-bmj.png",
+    "scenario": "lower-MATRIX-reg-coef-bmj"
+  },
+  {
+    "path": "screenshots/matrix-reg-coef-meta-regression-figure-bottom-bmj.png",
+    "sha256": "1443c0f872ba28191ba3ef64dfd5839384b27943e95b356ea4843ddc97eb6aab",
+    "capture": "QScreen.grabWindow",
+    "family": "reg-coef",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Regression coefficient\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-reg-coef-bmj/captures/matrix-reg-coef-meta-regression-figure-bottom-bmj.png",
+    "scenario": "lower-MATRIX-reg-coef-bmj"
+  }
+]

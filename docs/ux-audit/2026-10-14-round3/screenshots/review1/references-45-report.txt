@@ -1,0 +1,49 @@
+Cumulative meta-analysis — clinical failure · Binary · Odds Ratio
+Comparison: tx A / tx B · Follow-up: first
+
+Model configuration
+Project: amino.rcms
+Model: Binary Fixed-Effect Inverse Variance
+Inference: Normal approximation
+Confidence level: 95.0%
+Order: current study order; each row adds a study to the preceding studies.
+OR = 1 means equal odds in tx A and tx B; estimates are fitted on the log scale.
+
+Cumulative Summary
+
+Model Results
+Study added (k)	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+Gonzalez, 1993 (k = 1)	0.571429	0.170447	1.915733	0.617213	
+Prins, 1993 (k = 2)	0.509233	0.203781	1.272539	0.467285	0.148686
+Giamarellou, 1991 (k = 3)	0.430481	0.179544	1.032134	0.446172	0.058882
+Maller, 1993 (k = 4)	0.854371	0.485034	1.504948	0.288856	0.585842
+Sturm, 1989 (k = 5)	0.813066	0.465933	1.418822	0.284072	0.466314
+Marik, 1991 (k = 6)	0.561894	0.380776	0.829164	0.198526	0.003689
+Muijsken, 1988 (k = 7)	0.622200	0.429863	0.900596	0.188675	0.011907
+Vigano, 1992 (k = 8)	0.634749	0.439595	0.916541	0.187441	0.015312
+Hansen, 1988 (k = 9)	0.589251	0.411835	0.843098	0.182774	0.003807
+De Vries, 1990 (k = 10)	0.633248	0.447407	0.896282	0.177245	0.009944
+Mauracher, 1989 (k = 11)	0.614046	0.434918	0.866951	0.175979	0.005584
+Nordstrom, 1990 (k = 12)	0.616164	0.439817	0.863218	0.172021	0.004877
+Rozdzinski, 1993 (k = 13)	0.666125	0.488624	0.908106	0.158107	0.010180
+Ter Braak, 1990 (k = 14)	0.709355	0.527683	0.953572	0.150951	0.022912
+Tulkens, 1988 (k = 15)	0.710702	0.529118	0.954601	0.150534	0.023292
+Van der Auwera, 1991 (k = 16)	0.702116	0.523430	0.941802	0.149848	0.018270
+Klastersky, 1977 (k = 17)	0.763539	0.572595	1.018157	0.146832	0.066149
+Vanhaeverbeek, 1993 (k = 18)	0.764817	0.573986	1.019094	0.146448	0.067128
+Hollender, 1989 (k = 19)	0.759516	0.570654	1.010885	0.145870	0.059329
+
+Binary Fixed-Effect Model - Inverse Variance
+
+Metric: Odds Ratio
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+3. Cumulative Meta-Analysis: Lau, Joseph, et al. "Cumulative meta-analysis of therapeutic trials for myocardial infarction." New England Journal of Medicine 327.4 (1992): 248-254.
+
+
+Inference Method
+
+Normal approximation

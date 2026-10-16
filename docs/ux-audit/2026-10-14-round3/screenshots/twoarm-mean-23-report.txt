@@ -1,0 +1,39 @@
+Leave-one-out meta-analysis — Verification outcome · Two-arm continuous · Mean Difference
+Comparison: tx A / tx B · Follow-up: first
+
+Model configuration
+Project: typed.rcms
+Model: Continuous Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Each row omits the named study; compare with the all-studies estimate.
+MD: first group minus second group, in outcome units; 0 indicates no difference.
+
+Leave-one-out Summary
+
+Model Results
+Study omitted	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+All studies	1.000000	0.100264	1.899736	0.459058	0.029378
+Study omitted: Fixture 1	1.000000	-0.197329	2.197329	0.610893	0.101642
+Study omitted: Fixture 2	1.000000	-0.018258	2.018258	0.519529	0.054252
+Study omitted: Fixture 3	1.000000	0.033079	1.966921	0.493336	0.042661
+Study omitted: Fixture 4	1.000000	0.055915	1.944085	0.481685	0.037890
+Study omitted: Fixture 5	1.000000	0.068301	1.931699	0.475365	0.035409
+Study omitted: Fixture 6	1.000000	0.075859	1.924141	0.471509	0.033934
+
+Continuous Random-Effects Model
+
+Metric: Mean Difference
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+4. Leave-one-out Meta-Analysis: estimates are recomputed after omitting each study in turn to assess influence on the selected base meta-analysis method.
+
+
+Inference Method
+
+Normal approximation

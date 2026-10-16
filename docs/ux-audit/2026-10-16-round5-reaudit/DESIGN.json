@@ -1,0 +1,354 @@
+[
+  {
+    "path": "screenshots/design-00-review1-start-before-check.png",
+    "sha256": "9358dc2d7b8b557c0ad96067562644586a9c71530360a7990ce1410e4b604244",
+    "capture": "QScreen.grabWindow",
+    "action": "review1-start-before-check",
+    "observations": {}
+  },
+  {
+    "path": "screenshots/design-01-round5-recent-missing.png",
+    "sha256": "f8749a172381ee85918d1addf2c3cbf44f57bb999de39c9179758a1602eedab0",
+    "capture": "QScreen.grabWindow",
+    "action": "round5-recent-missing",
+    "observations": {
+      "missing": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native-design/missing project.rcms"
+    }
+  },
+  {
+    "path": "screenshots/design-02-round5-recent-recovered.png",
+    "sha256": "4bfb00e135217bc8e93a590e71e74b2fb2c64ce241d0dae1e346dae15a70b3df",
+    "capture": "QScreen.grabWindow",
+    "action": "round5-recent-recovered",
+    "observations": {
+      "recent": [
+        "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native-design/projects/a long path for evidence a long path for evidence a long path for evidence /amino.rcms",
+        "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native-design/relocated.rcms",
+        "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native-design/restored-in-place.rcms"
+      ]
+    }
+  },
+  {
+    "path": "screenshots/design-03-review1-start-recents.png",
+    "sha256": "9c62154bf0e0fe889be103dc57e0b46a37bbf8c579b74c16a7fb55f113ba6572",
+    "capture": "QScreen.grabWindow",
+    "action": "review1-start-recents",
+    "observations": {
+      "present": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native-design/projects/a long path for evidence a long path for evidence a long path for evidence /amino.rcms",
+      "missing": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native-design/missing project.rcms"
+    }
+  },
+  {
+    "path": "screenshots/design-04-review1-start-light.png",
+    "sha256": "4ccf271978bd398d06dc881875dcb77c5e85964beffa0d4c290cc0340f98e68a",
+    "capture": "QScreen.grabWindow",
+    "action": "review1-start-light",
+    "observations": {}
+  },
+  {
+    "path": "screenshots/design-05-review1-start-dark.png",
+    "sha256": "c63785fb7842245e5a23bc5234dfd2ea31d1ddaf6a1f104cc9437b48bfb69bac",
+    "capture": "QScreen.grabWindow",
+    "action": "review1-start-dark",
+    "observations": {}
+  },
+  {
+    "path": "screenshots/design-06-review1-start-wizard-new_dataset.png",
+    "sha256": "0eb031b70fe7bc466466b80efb86824442a6980a0073a9d26a39943426232d96",
+    "capture": "QScreen.grabWindow",
+    "action": "review1-start-wizard-new_dataset",
+    "observations": {}
+  },
+  {
+    "path": "screenshots/design-07-review1-start-wizard-csv_import.png",
+    "sha256": "0eb031b70fe7bc466466b80efb86824442a6980a0073a9d26a39943426232d96",
+    "capture": "QScreen.grabWindow",
+    "action": "review1-start-wizard-csv_import",
+    "observations": {}
+  },
+  {
+    "path": "screenshots/design-08-round5-grid-cues.png",
+    "sha256": "f5d05eda2d33a130f5e641639e6b119d01fe26b246818c1608b67f4af35e3728",
+    "capture": "QScreen.grabWindow",
+    "action": "round5-grid-cues",
+    "observations": {
+      "italic_effect_cells": true,
+      "colors": [
+        {
+          "foreground": "#000000",
+          "background": "#d6a93a",
+          "contrast": 9.59551325632996
+        },
+        {
+          "foreground": "#ffffff",
+          "background": "#245a81",
+          "contrast": 7.3568687183599355
+        }
+      ]
+    }
+  },
+  {
+    "path": "screenshots/design-09-review1-workspace-navigation.png",
+    "sha256": "f5d05eda2d33a130f5e641639e6b119d01fe26b246818c1608b67f4af35e3728",
+    "capture": "QScreen.grabWindow",
+    "action": "review1-workspace-navigation",
+    "observations": {}
+  },
+  {
+    "path": "screenshots/design-10-round5-keyboard-workspace.png",
+    "sha256": "6b639a5f31020f35765de61c88597532dcb10dff62b0568a5db1e29f356a5015",
+    "capture": "QScreen.grabWindow",
+    "action": "round5-keyboard-workspace",
+    "observations": {
+      "focus_sequence": [
+        "Analyses",
+        "Navigate outcomes, follow-ups or groups",
+        "Previous outcome",
+        "Next outcome",
+        "Add outcome",
+        "Study data"
+      ]
+    }
+  },
+  {
+    "path": "screenshots/design-11-round5-grid-keyboard-exit.png",
+    "sha256": "c4cfacb2d29c42c5675a5e121229b0518b5461b7e564207810e58788124d3d3c",
+    "capture": "QScreen.grabWindow",
+    "action": "round5-grid-keyboard-exit",
+    "observations": {}
+  },
+  {
+    "path": "screenshots/design-12-round5-analysis-prerequisite-tooltip.png",
+    "sha256": "94a1bd07b3c7377eb54df6525902f7b52c6698c949aa707c0a9831b6e44919c1",
+    "capture": "QScreen.grabWindow",
+    "action": "round5-analysis-prerequisite-tooltip",
+    "observations": {
+      "tooltip": "Add a categorical covariate to run subgroup analysis.",
+      "capture_surface": "desktop-composite"
+    }
+  },
+  {
+    "path": "screenshots/design-13-round5-analysis-menu.png",
+    "sha256": "a87694c9d32aa5fdecf371b9bb9ecdf16fc0deebc934bfc548bf7aea8a66327c",
+    "capture": "QScreen.grabWindow",
+    "action": "round5-analysis-menu",
+    "observations": {
+      "actions": [
+        {
+          "text": "Effect-size tools",
+          "enabled": true,
+          "tooltip": "Effect-size tools"
+        },
+        {
+          "text": "",
+          "enabled": true,
+          "tooltip": ""
+        },
+        {
+          "text": "Meta-analysis\u2026",
+          "enabled": true,
+          "tooltip": "Meta-analysis"
+        },
+        {
+          "text": "",
+          "enabled": true,
+          "tooltip": ""
+        },
+        {
+          "text": "Cumulative meta-analysis\u2026",
+          "enabled": true,
+          "tooltip": "Cumulative meta-analysis"
+        },
+        {
+          "text": "Leave-one-out meta-analysis\u2026",
+          "enabled": true,
+          "tooltip": "Leave-one-out meta-analysis"
+        },
+        {
+          "text": "Subgroup meta-analysis\u2026",
+          "enabled": false,
+          "tooltip": "Add a categorical covariate to run subgroup analysis."
+        },
+        {
+          "text": "",
+          "enabled": true,
+          "tooltip": ""
+        },
+        {
+          "text": "Meta-regression\u2026",
+          "enabled": false,
+          "tooltip": "Add a covariate to run meta-regression."
+        },
+        {
+          "text": "Small-study effects\u2026",
+          "enabled": true,
+          "tooltip": "Small-study effects"
+        },
+        {
+          "text": "Change confidence level\u2026",
+          "enabled": true,
+          "tooltip": "Change confidence level"
+        }
+      ]
+    }
+  },
+  {
+    "path": "screenshots/design-14-round5-keyboard-setup-page-0.png",
+    "sha256": "f33199150d7be9a1711da55ae19534946eba5a147c4ebda43b5c59b4b56ab1f7",
+    "capture": "QScreen.grabWindow",
+    "action": "round5-keyboard-setup-page-0",
+    "observations": {
+      "focus_sequence": [
+        "method_cbo_box",
+        "Random-Effects method",
+        "Inference method",
+        "Confidence level",
+        "Decimal places",
+        "Continuity correction",
+        "Apply correction to"
+      ]
+    }
+  },
+  {
+    "path": "screenshots/design-15-round5-keyboard-setup-page-1.png",
+    "sha256": "5b149b7dd20ccfa455ed59bb97e4e16842df2d35b522166d686b7f2acf97a5ff",
+    "capture": "QScreen.grabWindow",
+    "action": "round5-keyboard-setup-page-1",
+    "observations": {
+      "focus_sequence": [
+        "style_cbo",
+        "accent_color",
+        "Choose plot accent color",
+        "point_size_multiplier",
+        "col1_str_edit",
+        "Show study column",
+        "col2_str_edit",
+        "Show estimate column",
+        "col3_str_edit",
+        "Show first group column",
+        "col4_str_edit",
+        "Show second group column",
+        "show_raw_counts",
+        "show_headers",
+        "show_annotation",
+        "x_lbl_le",
+        "x_ticks_le",
+        "plot_lb_le",
+        "plot_ub_le",
+        "show_summary_line",
+        "Forest study order"
+      ]
+    }
+  },
+  {
+    "path": "screenshots/design-16-review1-report-top.png",
+    "sha256": "64a1a301277912515ccf0bdd0c92555a4aa54c941b3ef69373e5ea022f1d9f84",
+    "capture": "QScreen.grabWindow",
+    "action": "review1-report-top",
+    "observations": {
+      "text": "Model results\nPooled Odds Ratio: 0.770 (95% CI 0.485 to 1.222).\nEstimate [95% CI]\nP\n0.770 [0.485, 1.222]\n0.267\n\nHeterogeneity\nQ\ndf\nP\nI\u00b2\n\u03c4\u00b2\n33.360\n18\n0.015\n46.0%\n0.378\n\nTest for overall effect\nZ\nP\n-1.111\n0.267\n\nPrediction interval\n95% PI\n[0.212, 2.799]\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.\nModel configuration\nProject: amino.rcms\nModel: Binary Random-Effects\nEstimator: DerSimonian-Laird\nInference: Normal approximation\nConfidence level: 95%\nOR = 1 means equal odds in Intervention and Control; estimates are fitted on the log scale.\nCalculation details\nCalculation scale (log)\nEstimate [95% CI]\nStd. error\n-0.262 [-0.724, 0.200]\n0.236\n\nStudy weights\nStudy\nWeight (%)\nGonzalez\n7.3%\nPrins\n6.2%\nGiamarellou\n2.1%\nMaller\n10.7%\nSturm\n2.0%\nMarik\n12.2%\nMuijsken\n7.5%\nVigano\n1.8%\nHansen\n5.3%\nDe Vries\n6.1%\nMauracher\n2.2%\nNordstrom\n5.3%\nRozdzinski\n10.3%\nTer Braak\n8.7%\nTulkens\n1.2%\nVan der Auwera\n2.0%\nKlastersky\n6.0%\nVanhaeverbeek\n1.2%\nHollender\n1.8%\n\nReferences\nRandom-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\nRandom-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\nImplementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03."
+    }
+  },
+  {
+    "path": "screenshots/design-17-review1-report-configuration.png",
+    "sha256": "5232f40352981c7039534dd5d8dc100546b62d604f3add5cc668b4c3d07dd9c5",
+    "capture": "QScreen.grabWindow",
+    "action": "review1-report-configuration",
+    "observations": {}
+  },
+  {
+    "path": "screenshots/design-18-review1-report-tables.png",
+    "sha256": "fed5c4ed8b122067e9f45a838b59ae8ac771bb8b411618bc85b05ecc355dca5b",
+    "capture": "QScreen.grabWindow",
+    "action": "review1-report-tables",
+    "observations": {}
+  },
+  {
+    "path": "screenshots/design-19-round5-keyboard-results.png",
+    "sha256": "374d78140171f310d9a4617f94e7e2ba7a0b8a07725b7232649cb20f26d4aeb6",
+    "capture": "QScreen.grabWindow",
+    "action": "round5-keyboard-results",
+    "observations": {
+      "focus_sequence": [
+        "Result table",
+        "Model results",
+        "Result sections"
+      ]
+    }
+  },
+  {
+    "path": "screenshots/design-20-review1-export-format-remembered.png",
+    "sha256": "52d413b7af309ec9a37dcc8a04fe00f5326d40bb99087a1ba990426e570c7e07",
+    "capture": "QScreen.grabWindow",
+    "action": "review1-export-format-remembered",
+    "observations": {
+      "selected": "svg"
+    }
+  },
+  {
+    "path": "screenshots/design-21-toolbar-tooltip.png",
+    "sha256": "53ff3538bb4701bc9b7839d3ac05877aed124a198a29f2368cf0ab8a6be9b26e",
+    "capture": "QScreen.grabWindow",
+    "action": "toolbar-tooltip",
+    "observations": {
+      "text": "Create dataset\u2026",
+      "tooltip": "New Dataset",
+      "style": "ToolButtonStyle.ToolButtonTextBesideIcon"
+    }
+  },
+  {
+    "path": "screenshots/design-22-toolbar-tooltip.png",
+    "sha256": "b1b6c157ad4a6c43b57bed61b9efc4ee5c3fe004c568f4d60f60328098cb3fd8",
+    "capture": "QScreen.grabWindow",
+    "action": "toolbar-tooltip",
+    "observations": {
+      "text": "Open\u2026",
+      "tooltip": "Open",
+      "style": "ToolButtonStyle.ToolButtonTextBesideIcon"
+    }
+  },
+  {
+    "path": "screenshots/design-23-toolbar-tooltip.png",
+    "sha256": "3f1887ed7db98531ee8d0eaa9f76ac5a7a499685e24d8947765e9a4c25684ef5",
+    "capture": "QScreen.grabWindow",
+    "action": "toolbar-tooltip",
+    "observations": {
+      "text": "Import CSV\u2026",
+      "tooltip": "Import CSV",
+      "style": "ToolButtonStyle.ToolButtonTextBesideIcon"
+    }
+  },
+  {
+    "path": "screenshots/design-24-toolbar-tooltip.png",
+    "sha256": "f4a85a4e561af3b4d21c98122db6e7ef0be3aa01d9d568ee43cda9cf74c329d7",
+    "capture": "QScreen.grabWindow",
+    "action": "toolbar-tooltip",
+    "observations": {
+      "text": "Save",
+      "tooltip": "Save",
+      "style": "ToolButtonStyle.ToolButtonTextBesideIcon"
+    }
+  },
+  {
+    "path": "screenshots/design-25-toolbar-tooltip.png",
+    "sha256": "f5d05eda2d33a130f5e641639e6b119d01fe26b246818c1608b67f4af35e3728",
+    "capture": "QScreen.grabWindow",
+    "action": "toolbar-tooltip",
+    "observations": {
+      "text": "",
+      "tooltip": "",
+      "style": "None"
+    }
+  },
+  {
+    "path": "screenshots/design-26-toolbar-tooltip.png",
+    "sha256": "c34092fd2d541c4e583457a56cb485b757b87abb2e60039067519a87672370d6",
+    "capture": "QScreen.grabWindow",
+    "action": "toolbar-tooltip",
+    "observations": {
+      "text": "",
+      "tooltip": "",
+      "style": "ToolButtonStyle.ToolButtonTextBesideIcon"
+    }
+  }
+]

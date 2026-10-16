@@ -1,0 +1,7 @@
+{
+  "utc": "2026-10-14T22:42:46.307594+00:00",
+  "pid": 821462,
+  "command": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/exec/R --no-restore --no-echo --args nextArg--no-manualnextArg--no-build-vignettesnextArg--library=/tmp/RCMetaR-r-stack-6jlsiekq/librarynextArg/tmp/RCMetaR-r-stack-6jlsiekq/RCMetaR_0.4.2.tar.gz ",
+  "signal": "SIGTERM",
+  "reason": "Previous completed R check disclosed non-ASCII source warning; this same-source repeat cannot qualify Status: OK. Stop owned check before its retained tests; escape the literal en dash without changing output, then restart fresh."
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "path": "screenshots/plot-workflow-sroc-10-0-family-editor-controls.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201611Z-3dd5569b-plot-workflow-sroc/10-0-family-editor-controls.png",
+    "sha256": "c1428f7c9f369c9b3bfc0bf844165cebeec55cb429fbdcdfde417c8206d07b8e",
+    "action": "family-editor-controls",
+    "step": 10,
+    "scenario": "plot-workflow-sroc"
+  },
+  {
+    "path": "screenshots/plot-workflow-sroc-13-0-family-plot-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201611Z-3dd5569b-plot-workflow-sroc/13-0-family-plot-reopened.png",
+    "sha256": "f85659851005a1682b59d7b09dcb56e2c0756c8212e29aec6445dbc05de1f7b1",
+    "action": "family-plot-reopened",
+    "step": 13,
+    "scenario": "plot-workflow-sroc"
+  }
+]

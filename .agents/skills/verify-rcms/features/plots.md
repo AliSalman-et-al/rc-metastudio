@@ -35,7 +35,7 @@ when no figure exists. Ctrl+T opens the selectable Text report. Ctrl+C copies
 `review-workflows` drives Properties prefill/Cancel, a main-project switch,
 changed-estimator rerun and all four forest orders with exact unchanged numerical
 sections. It also requires the full two-line identity in the header bar and a
-configuration-first report without repeated identity lines. The forest editor drive additionally verifies persisted order/direction
+result-first report without repeated identity lines. The forest editor drive additionally verifies persisted order/direction
 fields, reopening, Cancel and decoded four-format exports.
 
 ## Driving it with Qt E2E
@@ -104,7 +104,7 @@ Require every selected family-specific parameter and point size to persist and r
 
 Each offered PDF/PNG/TIFF/SVG context action exports a test-owned file. Decode PDF page/render, both raster dimensions and white corner, and SVG rendering; require visible nonwhite plot content in each format. Cancel another save and preserve the plot/text and persisted files. Ordinary/contour/trimfill/Deeks use raster display artifacts, so decode their PNG rather than passing it to QSvgRenderer. TIFF-specific R coverage independently checks white and half-transparent colored pixels plus DPI tags; a white-corner assertion alone misses incorrect colored compositing.
 
-These workflows have a 240-second process limit for publication-resolution raster exports; full HR/IRR scenarios retain 600 seconds for six editors and 24 exports, and ordinary scenarios retain 120 seconds. `family-export-decoded` records each completed format to locate slow/failing exports. Remaining controls, parameterless PNG, failed regeneration/promotion and native layout still require the targeted recipes above.
+These workflows have a 240-second process limit for publication-resolution raster exports; full HR/IRR scenarios retain 600 seconds for six editors and 24 exports, and ordinary scenarios retain 120 seconds. TIFF conversion uses a packed native raster to bound memory while preserving every decoded export and its 600 dpi dimensions. `family-export-decoded` records each completed format to locate slow/failing exports. Remaining controls, parameterless PNG, failed regeneration/promotion and native layout still require the targeted recipes above.
 
 Send one context-menu event through the viewport and choose the active popup with a bounded callback. Combining a right-click with an unconditional second context event can leave an extra menu open on some Qt platforms. Let Cancel unwind the modal loop before processing further events. Preserve phase captures and print exceptions before teardown so cleanup cannot hide the original failure.
 
@@ -124,7 +124,108 @@ Choose a fresh evidence directory each time. This script loads workspace source 
 
 Inspect `manifest.csv`: require 300 rows, no errors or missing/empty images, and decoded valid figures. It crosses binary/continuous one/two-arm and diagnostic data, standard/cumulative/leave-one-out/subgroup workflows, default/RevMan/BMJ styles and five layout/data scenarios. The renderer catches individual errors and writes them into the manifest, so exit zero alone is insufficient. This proves rendering across the matrix; frozen/public numerical comparisons and editor interaction remain separate obligations. The optional test in `test-forest-visual-qa.R` is normally skipped unless `RCMETAR_RUN_VISUAL_QA=true`; state that skip explicitly or supply this matrix evidence.
 
+The default PNG gallery retains each canonical SVG in the manifest's `svg` column
+and renders review previews at 144 dpi with a 2,400-pixel longest-edge bound.
+Inspect the SVG for detail beyond the preview. Publication dimensions and 600 dpi
+exports remain obligations of the real four-format editor drives above; the
+gallery avoids repeating that expensive raster conversion 300 times.
+
 
 ## HR and IRR
 
 See [ratios.md](ratios.md) for the compact input, original-source persistence, analysis, plot and small-study workflows. Run `ratios-hr` and `ratios-irr` after changes affecting these families; the broader shared-change lane remains required.
+
+The `audit-round3-*` drives add SVG row/report correspondence, in-range comparative
+nulls, explicit limits excluding the null, row-relative arithmetic-residue
+formatting and full plotting-frame bubble tick coverage. Their native captures
+include report copy/export and public subgroup references. See the [analysis
+map](analysis.md#sequential-and-report-audit-drives) for suffixes and proof limits.
+
+## Review-one reading and publication finishing
+
+`review1-design` checks key-result → heterogeneity → overall-test → PI → model
+configuration order, report/Tables/configuration sidebar gestures, full report
+copy/export, and a chosen SVG export format across navigation and a fresh result.
+The producer's inference information is folded into model configuration.
+`audit-round3-presentation-*` exports all four formats at both three and six
+decimals, checks annotation/header/paper/rule geometry and concise null wording.
+`audit-round3-presentation-transforms` drives PLN/PLO/PAS/PFT at three decimals in all
+three styles. Every displayed study and pooled interval matches independently
+constructed public metafor fits and transforms; ticks are round display values.
+PFT journal display conversion receives actual sample sizes, using the harmonic
+mean only for the pooled/axis conversion, and its PI remains explicitly on the
+calculation scale. Subgroup drives check heterogeneity → overall-test → subgroup
+differences → PI footer order. Native screenshots require visual inspection.
+
+Joint diagnostic startup selects Text report; native `analysis-diagnostic-joint`,
+combined and multiple-moderator drives check result-first reading, copied values
+and setup persistence. Equal section/table captions appear once in the report,
+copy/export and selector. The native capture helper restores the selected sidebar
+item after collecting report/table/figure views. `audit-round3-references` retains
+independent heterogeneity comparisons for diagnostic results; its separate Study
+weights table assertion applies to binary/continuous producers that publish the
+existing vector. It does not assert an unimplemented diagnostic weight table.
+
+## Round-five figure and accessibility proof
+
+`audit-round3-round5` drives 65-study HR forests and subgroup forests in all three
+styles: fixed readable text, growing height, scroll access and SVG export.
+`audit-round3-bubble-metrics` drives all sixteen supported bubble metrics across
+eighteen family/metric cases with explicit bounds and panel-clipped null guides
+in both the displayed SVG and a production SVG export. `audit-round3-irr-context`
+checks all three IRR styles for original events, person-time, declared units,
+unpadded axis labels, header clearance and SVG export.
+
+All eleven `plot-workflow-*` families exercise the visible identity-caption field:
+Apply/reopen, Cancel rollback, clear/reopen and decoded PDF/PNG/TIFF/SVG exports.
+The figure page contains figures; structured weights and references remain in
+Text report, Tables and copied/exported reports with their existing row identities.
+Diagnostic components are kept separate; a missing weight vector is not invented.
+
+`review1-design` invokes the compact Analyses toolbar menu, traverses main/setup/
+results controls with Tab, exits the grid with Ctrl+Tab, measures grid contrast,
+and drives missing-recent Locate cancellation, relocation, same-path restoration
+and removal. Calculator-mode drives traverse the effective form controls.
+Native runs at QT_SCALE_FACTOR=1.25/1.5/2 establish Linux Qt scaling only; inspect
+retained frames for clipping. Screen readers, actual Windows/macOS OS scaling,
+all file-picker/failure states and all parameter combinations remain unqualified.
+See [round-five evidence](../../../../docs/ux-audit/2026-10-16-round5/README.md).
+
+Round-five review follow-up: `audit-round3-irr-context` checks all three styles,
+caption separation/readable size, exposure-header descender/rule clearance, normal
+inference typography, independently summed original events/person-time and pooled
+weight in the actual SVG and exported SVG. All eleven `plot-workflow-*` families
+check initial rendered identity as well as caption edit/reopen/Cancel/removal and
+four decoded exports. HR totals remain weight only when raw events/exposure are
+unavailable; the native long-forest drive retains top/footer views for every style.
+
+## Round-six axis and presentation contracts
+
+`project-axis-proportions` drives PLO/PAS/PFT/PLN through all three forest styles.
+`project-axis-others` drives OR, sensitivity, specificity and MD. They measure actual
+SVG tick spacing and study/summary endpoints against public transformations, assert
+bit-exact numeric fitted fields and weights, edit the existing saved axis parameter,
+reopen/Cancel, export SVG and rerun from the text-report view. Natural proportion
+forests default to linear 0–1 with no null guide; ratio defaults retain logarithmic
+spacing with natural labels. Transformed proportion axes and linear ratio axes are
+explicit editor choices. `project-axis-sequential` independently fits each PFT
+cumulative/omission/subgroup subset and verifies its displayed inverse using the
+subset's sample sizes. These are presentation checks; original numerical gates
+remain separate.
+
+`project-round6-polish` checks selected two/six-digit diagnostic coefficient output
+for numeric, factor and multiple moderators; copy/export; recoverable contour input;
+and SVG header-rule clearance for three styles × three arm-name pairs. The long
+HR style matrix and short report checks measure cap height against row spacing.
+`plot-workflow-regression` checks twelve band/line visibility and legend combinations.
+Native captures require inspection; raw per-step inventories and independent values
+are retained. See [round six](../../../../docs/ux-audit/2026-10-16-round6/README.md).
+
+Round-six reviewer follow-up: `project-reviewer-predictions` checks PFT/PLO/PAS
+prediction intervals in three styles, PFT sequential/subgroup footers and report/
+Table/copy/export rows against public-package subset inverses.
+`project-reviewer-groups` checks unnamed/custom single-arm proportion and mean
+spanners in three styles, installed 0.5.0, About and saved/reopened project identity.
+`project-reviewer-colours` checks Default markers/intervals/caps/diamonds and four
+export formats across standard/sequential/subgroup, single-arm, diagnostic and
+HR/IRR families, including the unchanged persisted `default` key in Edit plot.

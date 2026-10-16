@@ -1,0 +1,69 @@
+Subgroup meta-analysis — Mortality · Time-to-event · Hazard Ratio
+Comparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first
+
+Model configuration
+Project: Pignon2000-HR.rcms
+Model: Random-effects inverse variance
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Subgroups by Group. Use the test of subgroup differences to compare groups.
+HR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.
+
+Subgroup Summary
+
+Model Results
+Subgroups	k	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value	z-value
+B	33	0.891694	0.815580	0.974910	0.045523	0.011798	-2.518142
+A	31	0.840732	0.751271	0.940846	0.057402	0.002509	-3.022221
+Overall	64	0.866586	0.807409	0.930100	0.036088	0.000072	-3.967935
+
+Heterogeneity
+Subgroups	Q	df	p-value	I²	τ²
+B	51.407914	32	0.016236	37.8%	0.022710
+A	64.981849	30	0.000221	53.8%	0.046097
+Overall	117.725199	63	0.000036	46.5%	0.032846
+
+Prediction interval
+Subgroups	Lower bound (95% PI)	Upper bound (95% PI)
+B	0.654962	1.213989
+A	0.543856	1.299664
+Overall	0.603277	1.244820
+
+Subgroup meta-analysis
+
+Test of subgroup differences
+
+Mixed-Effects Model (k = 64; tau^2 estimator: DL)
+
+tau^2 (estimated amount of residual heterogeneity):     0.0337 (SE = 0.0141)
+tau (square root of estimated tau^2 value):             0.1836
+I^2 (residual heterogeneity / unaccounted variability): 46.73%
+H^2 (unaccounted variability / sampling variability):   1.88
+R^2 (amount of heterogeneity accounted for):            0.00%
+
+Test for Residual Heterogeneity:
+QE(df = 62) = 116.3898, p-val < .0001
+
+Test of Moderators (coefficient 2):
+QM(df = 1) = 0.5185, p-val = 0.4715
+
+Model Results:
+
+                       estimate      se     zval    pval    Lower bound    Upper bound     
+intrcpt                 -0.1713  0.0531  -3.2270  0.0013  -0.2754  -0.0673  ** 
+factor(cov@cov.vals)B    0.0524  0.0728   0.7201  0.4715  -0.0902   0.1950     
+
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+
+
+Inference Method
+
+Normal approximation

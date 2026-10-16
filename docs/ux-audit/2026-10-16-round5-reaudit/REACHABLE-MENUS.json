@@ -1,0 +1,3735 @@
+[
+  {
+    "family": "onearm-proportion",
+    "input_sha256": "5a79aae5a0683814e36a47c2241b86a620899d92c8a41c70595feb790123f5d1",
+    "menus": [
+      {
+        "title": "File",
+        "actions": [
+          {
+            "text": "Save",
+            "tooltip": "Save",
+            "shortcut": "Ctrl+S",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Save as\u2026",
+            "tooltip": "Save as",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open\u2026",
+            "tooltip": "Open",
+            "shortcut": "Ctrl+O",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open Recent",
+            "tooltip": "Open Recent",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Open Recent",
+              "actions": [
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-proportion/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                }
+              ]
+            }
+          },
+          {
+            "text": "Import CSV\u2026",
+            "tooltip": "Import CSV",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Quit",
+            "tooltip": "Quit",
+            "shortcut": "Ctrl+Q",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Edit",
+        "actions": [
+          {
+            "text": "Undo",
+            "tooltip": "Undo",
+            "shortcut": "Ctrl+Z",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Redo",
+            "tooltip": "Redo",
+            "shortcut": "Ctrl+Y",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Copy",
+            "tooltip": "Copy",
+            "shortcut": "Ctrl+C",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Paste",
+            "tooltip": "Paste",
+            "shortcut": "Ctrl+V",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "View",
+        "actions": [
+          {
+            "text": "Fit columns",
+            "tooltip": "Fit columns",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Analysis",
+        "actions": [
+          {
+            "text": "Effect-size tools",
+            "tooltip": "Effect-size tools",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Effect-size tools",
+              "actions": [
+                {
+                  "text": "Two-arm metrics",
+                  "tooltip": "Two-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "Two-arm metrics",
+                    "actions": [
+                      {
+                        "text": "OR: Odds Ratio",
+                        "tooltip": "Odds Ratio",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "RD: Risk Difference",
+                        "tooltip": "Risk Difference",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "RR: Risk Ratio",
+                        "tooltip": "Risk Ratio",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "AS: Arcsine Difference",
+                        "tooltip": "Arcsine Difference",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "YUQ: Yule's Q",
+                        "tooltip": "Yule's Q",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "YUY: Yule's Y",
+                        "tooltip": "Yule's Y",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      }
+                    ]
+                  }
+                },
+                {
+                  "text": "One-arm metrics",
+                  "tooltip": "One-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "One-arm metrics",
+                    "actions": [
+                      {
+                        "text": "PR: Untransformed Proportion",
+                        "tooltip": "Untransformed Proportion",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": true,
+                        "submenu": null
+                      },
+                      {
+                        "text": "PLN: Natural Logarithm transformed Proportion",
+                        "tooltip": "Natural Logarithm transformed Proportion",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "PLO: Logit transformed Proportion",
+                        "tooltip": "Logit transformed Proportion",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "PAS: Arcsine transformed Proportion",
+                        "tooltip": "Arcsine transformed Proportion",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "PFT: Freeman-Tukey transformed Proportion",
+                        "tooltip": "Freeman-Tukey transformed Proportion",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-analysis\u2026",
+            "tooltip": "Meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Cumulative meta-analysis\u2026",
+            "tooltip": "Cumulative meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Leave-one-out meta-analysis\u2026",
+            "tooltip": "Leave-one-out meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Subgroup meta-analysis\u2026",
+            "tooltip": "Add a categorical covariate to run subgroup analysis.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-regression\u2026",
+            "tooltip": "Add a covariate to run meta-regression.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Small-study effects\u2026",
+            "tooltip": "Small-study effects",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Change confidence level\u2026",
+            "tooltip": "Change confidence level",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Dataset",
+        "actions": [
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Edit dataset\u2026",
+            "tooltip": "Edit dataset",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Add covariate\u2026",
+            "tooltip": "Add covariate",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Help",
+        "actions": [
+          {
+            "text": "Quick start and shortcuts\u2026",
+            "tooltip": "Quick start and shortcuts",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "About and licenses\u2026",
+            "tooltip": "About and licenses",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "family": "onearm-mean",
+    "input_sha256": "17453ab0637bedfa8a2c7d8a001b323ac6bee3fa3fe3db352118da8654c8baad",
+    "menus": [
+      {
+        "title": "File",
+        "actions": [
+          {
+            "text": "Save",
+            "tooltip": "Save",
+            "shortcut": "Ctrl+S",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Save as\u2026",
+            "tooltip": "Save as",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open\u2026",
+            "tooltip": "Open",
+            "shortcut": "Ctrl+O",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open Recent",
+            "tooltip": "Open Recent",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Open Recent",
+              "actions": [
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-mean/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-proportion/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                }
+              ]
+            }
+          },
+          {
+            "text": "Import CSV\u2026",
+            "tooltip": "Import CSV",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Quit",
+            "tooltip": "Quit",
+            "shortcut": "Ctrl+Q",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Edit",
+        "actions": [
+          {
+            "text": "Undo",
+            "tooltip": "Undo",
+            "shortcut": "Ctrl+Z",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Redo",
+            "tooltip": "Redo",
+            "shortcut": "Ctrl+Y",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Copy",
+            "tooltip": "Copy",
+            "shortcut": "Ctrl+C",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Paste",
+            "tooltip": "Paste",
+            "shortcut": "Ctrl+V",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "View",
+        "actions": [
+          {
+            "text": "Fit columns",
+            "tooltip": "Fit columns",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Analysis",
+        "actions": [
+          {
+            "text": "Effect-size tools",
+            "tooltip": "Effect-size tools",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Effect-size tools",
+              "actions": [
+                {
+                  "text": "Two-arm metrics",
+                  "tooltip": "Two-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "Two-arm metrics",
+                    "actions": [
+                      {
+                        "text": "MD: Mean Difference",
+                        "tooltip": "Mean Difference",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "SMD: Standardized Mean Difference",
+                        "tooltip": "Standardized Mean Difference",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      }
+                    ]
+                  }
+                },
+                {
+                  "text": "One-arm metrics",
+                  "tooltip": "One-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "One-arm metrics",
+                    "actions": [
+                      {
+                        "text": "TX Mean: Mean",
+                        "tooltip": "Mean",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": true,
+                        "submenu": null
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-analysis\u2026",
+            "tooltip": "Meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Cumulative meta-analysis\u2026",
+            "tooltip": "Cumulative meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Leave-one-out meta-analysis\u2026",
+            "tooltip": "Leave-one-out meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Subgroup meta-analysis\u2026",
+            "tooltip": "Add a categorical covariate to run subgroup analysis.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-regression\u2026",
+            "tooltip": "Add a covariate to run meta-regression.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Small-study effects\u2026",
+            "tooltip": "Small-study effects",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Change confidence level\u2026",
+            "tooltip": "Change confidence level",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Dataset",
+        "actions": [
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Edit dataset\u2026",
+            "tooltip": "Edit dataset",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Add covariate\u2026",
+            "tooltip": "Add covariate",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Help",
+        "actions": [
+          {
+            "text": "Quick start and shortcuts\u2026",
+            "tooltip": "Quick start and shortcuts",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "About and licenses\u2026",
+            "tooltip": "About and licenses",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      }
+    ],
+    "visible_menu_proof": {
+      "path": "screenshots/metric-menu-visible-tx-mean.png",
+      "sha256": "9256cb3d8c8c7ac11d292f9a204d2ce8627245139fb631600f34d0b05145624e",
+      "texts": [
+        "TX Mean: Mean"
+      ],
+      "capture": "native desktop composite; three attached menus visible"
+    }
+  },
+  {
+    "family": "reg-coef",
+    "input_sha256": "14d28f6a90246d31418d553556a925cf05b708fa913c03f5540fcdae0eb0a595",
+    "menus": [
+      {
+        "title": "File",
+        "actions": [
+          {
+            "text": "Save",
+            "tooltip": "Save",
+            "shortcut": "Ctrl+S",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Save as\u2026",
+            "tooltip": "Save as",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open\u2026",
+            "tooltip": "Open",
+            "shortcut": "Ctrl+O",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open Recent",
+            "tooltip": "Open Recent",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Open Recent",
+              "actions": [
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-reg-coef/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-mean/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-proportion/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                }
+              ]
+            }
+          },
+          {
+            "text": "Import CSV\u2026",
+            "tooltip": "Import CSV",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Quit",
+            "tooltip": "Quit",
+            "shortcut": "Ctrl+Q",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Edit",
+        "actions": [
+          {
+            "text": "Undo",
+            "tooltip": "Undo",
+            "shortcut": "Ctrl+Z",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Redo",
+            "tooltip": "Redo",
+            "shortcut": "Ctrl+Y",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Copy",
+            "tooltip": "Copy",
+            "shortcut": "Ctrl+C",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Paste",
+            "tooltip": "Paste",
+            "shortcut": "Ctrl+V",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "View",
+        "actions": [
+          {
+            "text": "Fit columns",
+            "tooltip": "Fit columns",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Analysis",
+        "actions": [
+          {
+            "text": "Effect-size tools",
+            "tooltip": "Effect-size tools",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Effect-size tools",
+              "actions": [
+                {
+                  "text": "Two-arm metrics",
+                  "tooltip": "Two-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "Two-arm metrics",
+                    "actions": [
+                      {
+                        "text": "MD: Mean Difference",
+                        "tooltip": "Mean Difference",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "SMD: Standardized Mean Difference",
+                        "tooltip": "Standardized Mean Difference",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      }
+                    ]
+                  }
+                },
+                {
+                  "text": "One-arm metrics",
+                  "tooltip": "One-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "One-arm metrics",
+                    "actions": [
+                      {
+                        "text": "TX Mean: Mean",
+                        "tooltip": "Mean",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": true,
+                        "submenu": null
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-analysis\u2026",
+            "tooltip": "Meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Cumulative meta-analysis\u2026",
+            "tooltip": "Cumulative meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Leave-one-out meta-analysis\u2026",
+            "tooltip": "Leave-one-out meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Subgroup meta-analysis\u2026",
+            "tooltip": "Add a categorical covariate to run subgroup analysis.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-regression\u2026",
+            "tooltip": "Add a covariate to run meta-regression.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Small-study effects\u2026",
+            "tooltip": "Small-study effects",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Change confidence level\u2026",
+            "tooltip": "Change confidence level",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Dataset",
+        "actions": [
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Edit dataset\u2026",
+            "tooltip": "Edit dataset",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Add covariate\u2026",
+            "tooltip": "Add covariate",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Help",
+        "actions": [
+          {
+            "text": "Quick start and shortcuts\u2026",
+            "tooltip": "Quick start and shortcuts",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "About and licenses\u2026",
+            "tooltip": "About and licenses",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "family": "generic-effect",
+    "input_sha256": "e1cd0b02ec68e0614a024cb2d1cb0860711e8edbb82296ce090fd6bcb7897343",
+    "menus": [
+      {
+        "title": "File",
+        "actions": [
+          {
+            "text": "Save",
+            "tooltip": "Save",
+            "shortcut": "Ctrl+S",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Save as\u2026",
+            "tooltip": "Save as",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open\u2026",
+            "tooltip": "Open",
+            "shortcut": "Ctrl+O",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open Recent",
+            "tooltip": "Open Recent",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Open Recent",
+              "actions": [
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-generic-effect/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-reg-coef/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-mean/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-proportion/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                }
+              ]
+            }
+          },
+          {
+            "text": "Import CSV\u2026",
+            "tooltip": "Import CSV",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Quit",
+            "tooltip": "Quit",
+            "shortcut": "Ctrl+Q",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Edit",
+        "actions": [
+          {
+            "text": "Undo",
+            "tooltip": "Undo",
+            "shortcut": "Ctrl+Z",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Redo",
+            "tooltip": "Redo",
+            "shortcut": "Ctrl+Y",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Copy",
+            "tooltip": "Copy",
+            "shortcut": "Ctrl+C",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Paste",
+            "tooltip": "Paste",
+            "shortcut": "Ctrl+V",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "View",
+        "actions": [
+          {
+            "text": "Fit columns",
+            "tooltip": "Fit columns",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Analysis",
+        "actions": [
+          {
+            "text": "Effect-size tools",
+            "tooltip": "Effect-size tools",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Effect-size tools",
+              "actions": [
+                {
+                  "text": "Two-arm metrics",
+                  "tooltip": "Two-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "Two-arm metrics",
+                    "actions": [
+                      {
+                        "text": "MD: Mean Difference",
+                        "tooltip": "Mean Difference",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "SMD: Standardized Mean Difference",
+                        "tooltip": "Standardized Mean Difference",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      }
+                    ]
+                  }
+                },
+                {
+                  "text": "One-arm metrics",
+                  "tooltip": "One-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "One-arm metrics",
+                    "actions": [
+                      {
+                        "text": "TX Mean: Mean",
+                        "tooltip": "Mean",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": true,
+                        "submenu": null
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-analysis\u2026",
+            "tooltip": "Meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Cumulative meta-analysis\u2026",
+            "tooltip": "Cumulative meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Leave-one-out meta-analysis\u2026",
+            "tooltip": "Leave-one-out meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Subgroup meta-analysis\u2026",
+            "tooltip": "Add a categorical covariate to run subgroup analysis.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-regression\u2026",
+            "tooltip": "Add a covariate to run meta-regression.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Small-study effects\u2026",
+            "tooltip": "Small-study effects",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Change confidence level\u2026",
+            "tooltip": "Change confidence level",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Dataset",
+        "actions": [
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Edit dataset\u2026",
+            "tooltip": "Edit dataset",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Add covariate\u2026",
+            "tooltip": "Add covariate",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Help",
+        "actions": [
+          {
+            "text": "Quick start and shortcuts\u2026",
+            "tooltip": "Quick start and shortcuts",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "About and licenses\u2026",
+            "tooltip": "About and licenses",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "family": "twoarm-proportion",
+    "input_sha256": "92f8c476fe312719283aa83f12c50c831cc9666fe13178d3149f74d98d3bf2b4",
+    "menus": [
+      {
+        "title": "File",
+        "actions": [
+          {
+            "text": "Save",
+            "tooltip": "Save",
+            "shortcut": "Ctrl+S",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Save as\u2026",
+            "tooltip": "Save as",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open\u2026",
+            "tooltip": "Open",
+            "shortcut": "Ctrl+O",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open Recent",
+            "tooltip": "Open Recent",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Open Recent",
+              "actions": [
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-twoarm-proportion/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-generic-effect/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-reg-coef/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-mean/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-proportion/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                }
+              ]
+            }
+          },
+          {
+            "text": "Import CSV\u2026",
+            "tooltip": "Import CSV",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Quit",
+            "tooltip": "Quit",
+            "shortcut": "Ctrl+Q",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Edit",
+        "actions": [
+          {
+            "text": "Undo",
+            "tooltip": "Undo",
+            "shortcut": "Ctrl+Z",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Redo",
+            "tooltip": "Redo",
+            "shortcut": "Ctrl+Y",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Copy",
+            "tooltip": "Copy",
+            "shortcut": "Ctrl+C",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Paste",
+            "tooltip": "Paste",
+            "shortcut": "Ctrl+V",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "View",
+        "actions": [
+          {
+            "text": "Fit columns",
+            "tooltip": "Fit columns",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Analysis",
+        "actions": [
+          {
+            "text": "Effect-size tools",
+            "tooltip": "Effect-size tools",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Effect-size tools",
+              "actions": [
+                {
+                  "text": "Two-arm metrics",
+                  "tooltip": "Two-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "Two-arm metrics",
+                    "actions": [
+                      {
+                        "text": "OR: Odds Ratio",
+                        "tooltip": "Odds Ratio",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": true,
+                        "submenu": null
+                      },
+                      {
+                        "text": "RD: Risk Difference",
+                        "tooltip": "Risk Difference",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "RR: Risk Ratio",
+                        "tooltip": "Risk Ratio",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "AS: Arcsine Difference",
+                        "tooltip": "Arcsine Difference",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "YUQ: Yule's Q",
+                        "tooltip": "Yule's Q",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "YUY: Yule's Y",
+                        "tooltip": "Yule's Y",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      }
+                    ]
+                  }
+                },
+                {
+                  "text": "One-arm metrics",
+                  "tooltip": "One-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "One-arm metrics",
+                    "actions": [
+                      {
+                        "text": "PR: Untransformed Proportion",
+                        "tooltip": "Untransformed Proportion",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "PLN: Natural Logarithm transformed Proportion",
+                        "tooltip": "Natural Logarithm transformed Proportion",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "PLO: Logit transformed Proportion",
+                        "tooltip": "Logit transformed Proportion",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "PAS: Arcsine transformed Proportion",
+                        "tooltip": "Arcsine transformed Proportion",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      },
+                      {
+                        "text": "PFT: Freeman-Tukey transformed Proportion",
+                        "tooltip": "Freeman-Tukey transformed Proportion",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-analysis\u2026",
+            "tooltip": "Meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Cumulative meta-analysis\u2026",
+            "tooltip": "Cumulative meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Leave-one-out meta-analysis\u2026",
+            "tooltip": "Leave-one-out meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Subgroup meta-analysis\u2026",
+            "tooltip": "Add a categorical covariate to run subgroup analysis.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-regression\u2026",
+            "tooltip": "Add a covariate to run meta-regression.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Small-study effects\u2026",
+            "tooltip": "Small-study effects",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Change confidence level\u2026",
+            "tooltip": "Change confidence level",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Dataset",
+        "actions": [
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Edit dataset\u2026",
+            "tooltip": "Edit dataset",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Add covariate\u2026",
+            "tooltip": "Add covariate",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Help",
+        "actions": [
+          {
+            "text": "Quick start and shortcuts\u2026",
+            "tooltip": "Quick start and shortcuts",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "About and licenses\u2026",
+            "tooltip": "About and licenses",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "family": "twoarm-mean",
+    "input_sha256": "89abdead02b63c186696825d9ce077c0919b5617fd8b6eb7aaf539f215c4f0eb",
+    "menus": [
+      {
+        "title": "File",
+        "actions": [
+          {
+            "text": "Save",
+            "tooltip": "Save",
+            "shortcut": "Ctrl+S",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Save as\u2026",
+            "tooltip": "Save as",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open\u2026",
+            "tooltip": "Open",
+            "shortcut": "Ctrl+O",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open Recent",
+            "tooltip": "Open Recent",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Open Recent",
+              "actions": [
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-twoarm-mean/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-twoarm-proportion/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-generic-effect/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-reg-coef/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-mean/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-proportion/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                }
+              ]
+            }
+          },
+          {
+            "text": "Import CSV\u2026",
+            "tooltip": "Import CSV",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Quit",
+            "tooltip": "Quit",
+            "shortcut": "Ctrl+Q",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Edit",
+        "actions": [
+          {
+            "text": "Undo",
+            "tooltip": "Undo",
+            "shortcut": "Ctrl+Z",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Redo",
+            "tooltip": "Redo",
+            "shortcut": "Ctrl+Y",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Copy",
+            "tooltip": "Copy",
+            "shortcut": "Ctrl+C",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Paste",
+            "tooltip": "Paste",
+            "shortcut": "Ctrl+V",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "View",
+        "actions": [
+          {
+            "text": "Fit columns",
+            "tooltip": "Fit columns",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Analysis",
+        "actions": [
+          {
+            "text": "Effect-size tools",
+            "tooltip": "Effect-size tools",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Effect-size tools",
+              "actions": [
+                {
+                  "text": "Two-arm metrics",
+                  "tooltip": "Two-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "Two-arm metrics",
+                    "actions": [
+                      {
+                        "text": "MD: Mean Difference",
+                        "tooltip": "Mean Difference",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": true,
+                        "submenu": null
+                      },
+                      {
+                        "text": "SMD: Standardized Mean Difference",
+                        "tooltip": "Standardized Mean Difference",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      }
+                    ]
+                  }
+                },
+                {
+                  "text": "One-arm metrics",
+                  "tooltip": "One-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "One-arm metrics",
+                    "actions": [
+                      {
+                        "text": "TX Mean: Mean",
+                        "tooltip": "Mean",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-analysis\u2026",
+            "tooltip": "Meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Cumulative meta-analysis\u2026",
+            "tooltip": "Cumulative meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Leave-one-out meta-analysis\u2026",
+            "tooltip": "Leave-one-out meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Subgroup meta-analysis\u2026",
+            "tooltip": "Add a categorical covariate to run subgroup analysis.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-regression\u2026",
+            "tooltip": "Add a covariate to run meta-regression.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Small-study effects\u2026",
+            "tooltip": "Small-study effects",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Change confidence level\u2026",
+            "tooltip": "Change confidence level",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Dataset",
+        "actions": [
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Edit dataset\u2026",
+            "tooltip": "Edit dataset",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Add covariate\u2026",
+            "tooltip": "Add covariate",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Help",
+        "actions": [
+          {
+            "text": "Quick start and shortcuts\u2026",
+            "tooltip": "Quick start and shortcuts",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "About and licenses\u2026",
+            "tooltip": "About and licenses",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "family": "twoarm-smd",
+    "input_sha256": "45496c4326de83a1e7c7bcbcc9716435cb079fb82df1c4b41fa08063ece8b227",
+    "menus": [
+      {
+        "title": "File",
+        "actions": [
+          {
+            "text": "Save",
+            "tooltip": "Save",
+            "shortcut": "Ctrl+S",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Save as\u2026",
+            "tooltip": "Save as",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open\u2026",
+            "tooltip": "Open",
+            "shortcut": "Ctrl+O",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open Recent",
+            "tooltip": "Open Recent",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Open Recent",
+              "actions": [
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-twoarm-smd/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-twoarm-mean/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-twoarm-proportion/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-generic-effect/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-reg-coef/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-mean/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-proportion/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                }
+              ]
+            }
+          },
+          {
+            "text": "Import CSV\u2026",
+            "tooltip": "Import CSV",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Quit",
+            "tooltip": "Quit",
+            "shortcut": "Ctrl+Q",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Edit",
+        "actions": [
+          {
+            "text": "Undo",
+            "tooltip": "Undo",
+            "shortcut": "Ctrl+Z",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Redo",
+            "tooltip": "Redo",
+            "shortcut": "Ctrl+Y",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Copy",
+            "tooltip": "Copy",
+            "shortcut": "Ctrl+C",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Paste",
+            "tooltip": "Paste",
+            "shortcut": "Ctrl+V",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "View",
+        "actions": [
+          {
+            "text": "Fit columns",
+            "tooltip": "Fit columns",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Analysis",
+        "actions": [
+          {
+            "text": "Effect-size tools",
+            "tooltip": "Effect-size tools",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Effect-size tools",
+              "actions": [
+                {
+                  "text": "Two-arm metrics",
+                  "tooltip": "Two-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "Two-arm metrics",
+                    "actions": [
+                      {
+                        "text": "MD: Mean Difference",
+                        "tooltip": "Mean Difference",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": true,
+                        "submenu": null
+                      },
+                      {
+                        "text": "SMD: Standardized Mean Difference",
+                        "tooltip": "Standardized Mean Difference",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      }
+                    ]
+                  }
+                },
+                {
+                  "text": "One-arm metrics",
+                  "tooltip": "One-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "One-arm metrics",
+                    "actions": [
+                      {
+                        "text": "TX Mean: Mean",
+                        "tooltip": "Mean",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": false,
+                        "submenu": null
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-analysis\u2026",
+            "tooltip": "Meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Cumulative meta-analysis\u2026",
+            "tooltip": "Cumulative meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Leave-one-out meta-analysis\u2026",
+            "tooltip": "Leave-one-out meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Subgroup meta-analysis\u2026",
+            "tooltip": "Add a categorical covariate to run subgroup analysis.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-regression\u2026",
+            "tooltip": "Add a covariate to run meta-regression.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Small-study effects\u2026",
+            "tooltip": "Small-study effects",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Change confidence level\u2026",
+            "tooltip": "Change confidence level",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Dataset",
+        "actions": [
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Edit dataset\u2026",
+            "tooltip": "Edit dataset",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Add covariate\u2026",
+            "tooltip": "Add covariate",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Help",
+        "actions": [
+          {
+            "text": "Quick start and shortcuts\u2026",
+            "tooltip": "Quick start and shortcuts",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "About and licenses\u2026",
+            "tooltip": "About and licenses",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "family": "diagnostic",
+    "input_sha256": "99c1ff9db6720202739814314bea0433163096dbf5f1d1d7767a9eeb0e57edb5",
+    "menus": [
+      {
+        "title": "File",
+        "actions": [
+          {
+            "text": "Save",
+            "tooltip": "Save",
+            "shortcut": "Ctrl+S",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Save as\u2026",
+            "tooltip": "Save as",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open\u2026",
+            "tooltip": "Open",
+            "shortcut": "Ctrl+O",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open Recent",
+            "tooltip": "Open Recent",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Open Recent",
+              "actions": [
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-diagnostic/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-twoarm-smd/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-twoarm-mean/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-twoarm-proportion/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-generic-effect/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-reg-coef/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-mean/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-proportion/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                }
+              ]
+            }
+          },
+          {
+            "text": "Import CSV\u2026",
+            "tooltip": "Import CSV",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Quit",
+            "tooltip": "Quit",
+            "shortcut": "Ctrl+Q",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Edit",
+        "actions": [
+          {
+            "text": "Undo",
+            "tooltip": "Undo",
+            "shortcut": "Ctrl+Z",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Redo",
+            "tooltip": "Redo",
+            "shortcut": "Ctrl+Y",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Copy",
+            "tooltip": "Copy",
+            "shortcut": "Ctrl+C",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Paste",
+            "tooltip": "Paste",
+            "shortcut": "Ctrl+V",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "View",
+        "actions": [
+          {
+            "text": "Fit columns",
+            "tooltip": "Fit columns",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Analysis",
+        "actions": [
+          {
+            "text": "Effect-size tools",
+            "tooltip": "Effect-size tools",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": {
+              "title": "Effect-size tools",
+              "actions": []
+            }
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-analysis\u2026",
+            "tooltip": "Meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Cumulative meta-analysis\u2026",
+            "tooltip": "Cumulative meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Leave-one-out meta-analysis\u2026",
+            "tooltip": "Leave-one-out meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Subgroup meta-analysis\u2026",
+            "tooltip": "Add a categorical covariate to run subgroup analysis.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-regression\u2026",
+            "tooltip": "Add a covariate to run meta-regression.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Small-study effects\u2026",
+            "tooltip": "Small-study effects",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Change confidence level\u2026",
+            "tooltip": "Change confidence level",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Dataset",
+        "actions": [
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Edit dataset\u2026",
+            "tooltip": "Edit dataset",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Add covariate\u2026",
+            "tooltip": "Add covariate",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Help",
+        "actions": [
+          {
+            "text": "Quick start and shortcuts\u2026",
+            "tooltip": "Quick start and shortcuts",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "About and licenses\u2026",
+            "tooltip": "About and licenses",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "family": "hr",
+    "input_sha256": "17e94f1436a1be97a5e14f3cf3ff8db3818198f4a1132ba0b32fb0976ade86f9",
+    "menus": [
+      {
+        "title": "File",
+        "actions": [
+          {
+            "text": "Save",
+            "tooltip": "Save",
+            "shortcut": "Ctrl+S",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Save as\u2026",
+            "tooltip": "Save as",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open\u2026",
+            "tooltip": "Open",
+            "shortcut": "Ctrl+O",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open Recent",
+            "tooltip": "Open Recent",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Open Recent",
+              "actions": [
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-hr/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-diagnostic/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-twoarm-smd/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-twoarm-mean/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-twoarm-proportion/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-generic-effect/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-reg-coef/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-mean/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-proportion/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                }
+              ]
+            }
+          },
+          {
+            "text": "Import CSV\u2026",
+            "tooltip": "Import CSV",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Quit",
+            "tooltip": "Quit",
+            "shortcut": "Ctrl+Q",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Edit",
+        "actions": [
+          {
+            "text": "Undo",
+            "tooltip": "Undo",
+            "shortcut": "Ctrl+Z",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Redo",
+            "tooltip": "Redo",
+            "shortcut": "Ctrl+Y",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Copy",
+            "tooltip": "Copy",
+            "shortcut": "Ctrl+C",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Paste",
+            "tooltip": "Paste",
+            "shortcut": "Ctrl+V",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "View",
+        "actions": [
+          {
+            "text": "Fit columns",
+            "tooltip": "Fit columns",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Analysis",
+        "actions": [
+          {
+            "text": "Effect-size tools",
+            "tooltip": "Effect-size tools",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Effect-size tools",
+              "actions": [
+                {
+                  "text": "Two-arm metrics",
+                  "tooltip": "Two-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "Two-arm metrics",
+                    "actions": [
+                      {
+                        "text": "HR: Hazard Ratio",
+                        "tooltip": "Hazard Ratio",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": true,
+                        "submenu": null
+                      }
+                    ]
+                  }
+                },
+                {
+                  "text": "One-arm metrics",
+                  "tooltip": "One-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "One-arm metrics",
+                    "actions": []
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-analysis\u2026",
+            "tooltip": "Meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Cumulative meta-analysis\u2026",
+            "tooltip": "Cumulative meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Leave-one-out meta-analysis\u2026",
+            "tooltip": "Leave-one-out meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Subgroup meta-analysis\u2026",
+            "tooltip": "Subgroup meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-regression\u2026",
+            "tooltip": "Meta-regression",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Small-study effects\u2026",
+            "tooltip": "Small-study effects",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Change confidence level\u2026",
+            "tooltip": "Change confidence level",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Dataset",
+        "actions": [
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Edit dataset\u2026",
+            "tooltip": "Edit dataset",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Add covariate\u2026",
+            "tooltip": "Add covariate",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Help",
+        "actions": [
+          {
+            "text": "Quick start and shortcuts\u2026",
+            "tooltip": "Quick start and shortcuts",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "About and licenses\u2026",
+            "tooltip": "About and licenses",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "family": "irr",
+    "input_sha256": "4b0ba4c9c515da90a5768b4729886ccfb73a5ef4f239321ff1daca01b13ebb12",
+    "menus": [
+      {
+        "title": "File",
+        "actions": [
+          {
+            "text": "Save",
+            "tooltip": "Save",
+            "shortcut": "Ctrl+S",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Save as\u2026",
+            "tooltip": "Save as",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open\u2026",
+            "tooltip": "Open",
+            "shortcut": "Ctrl+O",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Open Recent",
+            "tooltip": "Open Recent",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Open Recent",
+              "actions": [
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-irr/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-hr/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-diagnostic/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-twoarm-smd/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-twoarm-mean/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-twoarm-proportion/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-generic-effect/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-reg-coef/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-mean/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                },
+                {
+                  "text": "standard-input.rcms",
+                  "tooltip": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-onearm-proportion/standard-input.rcms",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": null
+                }
+              ]
+            }
+          },
+          {
+            "text": "Import CSV\u2026",
+            "tooltip": "Import CSV",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Quit",
+            "tooltip": "Quit",
+            "shortcut": "Ctrl+Q",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Edit",
+        "actions": [
+          {
+            "text": "Undo",
+            "tooltip": "Undo",
+            "shortcut": "Ctrl+Z",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Redo",
+            "tooltip": "Redo",
+            "shortcut": "Ctrl+Y",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Copy",
+            "tooltip": "Copy",
+            "shortcut": "Ctrl+C",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Paste",
+            "tooltip": "Paste",
+            "shortcut": "Ctrl+V",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "View",
+        "actions": [
+          {
+            "text": "Fit columns",
+            "tooltip": "Fit columns",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Analysis",
+        "actions": [
+          {
+            "text": "Effect-size tools",
+            "tooltip": "Effect-size tools",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": {
+              "title": "Effect-size tools",
+              "actions": [
+                {
+                  "text": "Two-arm metrics",
+                  "tooltip": "Two-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "Two-arm metrics",
+                    "actions": [
+                      {
+                        "text": "IRR: Incidence Rate Ratio",
+                        "tooltip": "Incidence Rate Ratio",
+                        "shortcut": "",
+                        "enabled": true,
+                        "checked": true,
+                        "submenu": null
+                      }
+                    ]
+                  }
+                },
+                {
+                  "text": "One-arm metrics",
+                  "tooltip": "One-arm metrics",
+                  "shortcut": "",
+                  "enabled": true,
+                  "checked": false,
+                  "submenu": {
+                    "title": "One-arm metrics",
+                    "actions": []
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-analysis\u2026",
+            "tooltip": "Meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Cumulative meta-analysis\u2026",
+            "tooltip": "Cumulative meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Leave-one-out meta-analysis\u2026",
+            "tooltip": "Leave-one-out meta-analysis",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Subgroup meta-analysis\u2026",
+            "tooltip": "Add a categorical covariate to run subgroup analysis.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Meta-regression\u2026",
+            "tooltip": "Add a covariate to run meta-regression.",
+            "shortcut": "",
+            "enabled": false,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Small-study effects\u2026",
+            "tooltip": "Small-study effects",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Change confidence level\u2026",
+            "tooltip": "Change confidence level",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Dataset",
+        "actions": [
+          {
+            "text": "Create dataset\u2026",
+            "tooltip": "New Dataset",
+            "shortcut": "Ctrl+N",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "",
+            "tooltip": "",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Edit dataset\u2026",
+            "tooltip": "Edit dataset",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "Add covariate\u2026",
+            "tooltip": "Add covariate",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      },
+      {
+        "title": "Help",
+        "actions": [
+          {
+            "text": "Quick start and shortcuts\u2026",
+            "tooltip": "Quick start and shortcuts",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          },
+          {
+            "text": "About and licenses\u2026",
+            "tooltip": "About and licenses",
+            "shortcut": "",
+            "enabled": true,
+            "checked": false,
+            "submenu": null
+          }
+        ]
+      }
+    ]
+  }
+]

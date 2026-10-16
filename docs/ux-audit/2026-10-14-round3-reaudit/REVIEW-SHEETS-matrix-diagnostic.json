@@ -1,0 +1,47 @@
+[
+  {
+    "sheet": "raw/review-matrix-diagnostic-00.png",
+    "members": [
+      "screenshots/matrix-diagnostic-cumulative-figure-1-bottom.png",
+      "screenshots/matrix-diagnostic-cumulative-figure-1.png",
+      "screenshots/matrix-diagnostic-cumulative-figure.png",
+      "screenshots/matrix-diagnostic-cumulative-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-diagnostic-01.png",
+    "members": [
+      "screenshots/matrix-diagnostic-leave-one-out-figure-1.png",
+      "screenshots/matrix-diagnostic-leave-one-out-figure.png",
+      "screenshots/matrix-diagnostic-leave-one-out-report.png",
+      "screenshots/matrix-diagnostic-meta-regression-figure-1.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-diagnostic-02.png",
+    "members": [
+      "screenshots/matrix-diagnostic-meta-regression-figure.png",
+      "screenshots/matrix-diagnostic-meta-regression-report.png",
+      "screenshots/matrix-diagnostic-standard-figure-1-bottom.png",
+      "screenshots/matrix-diagnostic-standard-figure-1.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-diagnostic-03.png",
+    "members": [
+      "screenshots/matrix-diagnostic-standard-figure-bottom.png",
+      "screenshots/matrix-diagnostic-standard-figure.png",
+      "screenshots/matrix-diagnostic-standard-report.png",
+      "screenshots/matrix-diagnostic-subgroup-figure-1.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-diagnostic-04.png",
+    "members": [
+      "screenshots/matrix-diagnostic-subgroup-figure-bottom.png",
+      "screenshots/matrix-diagnostic-subgroup-figure.png",
+      "screenshots/matrix-diagnostic-subgroup-report-bottom.png",
+      "screenshots/matrix-diagnostic-subgroup-report.png"
+    ]
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "failed_runs": [
+    {
+      "run": "native-options",
+      "exit_code": 1,
+      "log": "raw/native-options.log",
+      "log_sha256": "bb4f133b622ded99f4a12a3ab253be57a01e9ca314ab91b1a6e23399ca634541",
+      "verbatim": "Traceback (most recent call last):\n  File \"/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-15-round4-reaudit/native_options.py\", line 66, in <module>\n    modal(app,analysis_setup_dialog.AnalysisSetupDialog,setup,window.action_go.trigger)\n  File \"/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py\", line 96, in modal\n    assert completed, (\"modal did not open\", kind)\n           ^^^^^^^^^\nAssertionError: ('modal did not open', <class 'rc_metastudio.analysis_setup_dialog.AnalysisSetupDialog'>)\n",
+      "classification": "audit wrapper; wrong expected diagnostic dialog class"
+    }
+  ],
+  "other_rejected_or_interrupted_evidence": [
+    "Two early matrix processes overlapped; affected frames rejected, binary/proportion serially recaptured.",
+    "Two premature contact-sheet builds raised AssertionError before capture files existed; bookkeeping only.",
+    "Initial shell editor selected an intermediate *-report.txt; replaced by explicit actual exported report path.",
+    "Broad queue stopped between cases after capacity resumption; no completed case repeated."
+  ],
+  "bookkeeping_verbatim": "Curated-calculator contact-sheet selection was attempted before the back-continuous receipt had been collected by the curator. The first selection failed; rerunning curation and selection succeeded. Terminal output verbatim:\ncurated 130\nTraceback (most recent call last):\n  File \"<stdin>\", line 4, in <module>\n  File \"<stdin>\", line 4, in <listcomp>\nStopIteration\n",
+  "intentional_product_error": "Invalid contour levels: Details: contour levels must be between 0 and 100; valid retry succeeded (EXTRA.json)."
+}

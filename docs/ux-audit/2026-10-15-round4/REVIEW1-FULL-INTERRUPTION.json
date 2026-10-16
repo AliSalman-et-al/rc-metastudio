@@ -1,0 +1,18 @@
+{
+  "reason": "Visual inspection found an incorrect single-arm logit null variable name; invalidate in-flight source qualification before fixing it.",
+  "owned_root_pid": 806028,
+  "signalled_r_test_pid": 807807,
+  "signal": "SIGINT",
+  "command": [
+    "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/exec/R",
+    "-f",
+    "testthat.R",
+    "--restore",
+    "--save",
+    "--no-readline",
+    "--vanilla"
+  ],
+  "evidence": "artifacts/verification/rcms/20261014T221926Z-4187a690-complete",
+  "qualification": "Deliberately interrupted; not current-source qualification.",
+  "bounded_cleanup": "R test did not exit on SIGINT; sent SIGTERM to the same verified test PID."
+}

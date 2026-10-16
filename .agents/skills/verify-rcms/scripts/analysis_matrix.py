@@ -94,6 +94,18 @@ def set_parameter(app, dialog, key, value):
 
     from rc_metastudio.analysis_method_labels import parameter_display_label
 
+    if key == "fp_style":
+        from rc_metastudio.analysis_setup_dialog import PLOT_STYLE_LABELS
+        dialog.style_cbo.setCurrentText(PLOT_STYLE_LABELS[value])
+        app.processEvents()
+        return
+
+    plot_controls = {"bp_plot_lb": dialog.plot_lb_le, "bp_plot_ub": dialog.plot_ub_le,
+                     "fp_plot_lb": dialog.plot_lb_le, "fp_plot_ub": dialog.plot_ub_le}
+    if key in plot_controls:
+        plot_controls[key].setText(str(value))
+        app.processEvents()
+        return
     label = parameter_display_label(key, dialog.param_d.get(key))
     controls = [
         w.buddy()
@@ -125,7 +137,10 @@ def run(
     parameters=None,
     workflow_override=None,
     metrics_override=None,
+    metric_override=None,
     prepare=None,
+    fixed_effects=False,
+    group_names=None,
 ):
     import json
     import re
@@ -167,14 +182,31 @@ def run(
             report = view.report_text.toPlainText()
             first_section = min(view.results.sections, key=lambda section: section.order)
             assert first_section.source_key == "Clinical interpretation", first_section
-            assert report.startswith("Model configuration\n"), report
-            assert report.index("Model configuration") < report.index(first_section.value.splitlines()[0]), report
+            assert report.startswith(first_section.title + "\n"), report
+            assert report.index(first_section.value.splitlines()[0]) < report.index("Model configuration"), report
         assert view.content_stack.currentWidget() is (view.report_text if clinical else view.figure_page)
+        if clinical:
+            assert view.nav_tree.currentItem().text(0) == "Text report"
+            view.nav_tree.setCurrentItem(view._last_plot_item)
+            app.processEvents()
         selected = view._selected_plot()
         assert selected is not None
         viewport = view.graphics_view.viewport()
+        # Native resize delivery can finish a loop turn before its queued refit.
+        # Observe the settled result, with a bound that still fails a missing fit.
+        for _ in range(40):
+            app.processEvents()
+            bounds = view.graphics_view.mapFromScene(selected[1].sceneBoundingRect()).boundingRect()
+            if not view._viewport_refit_pending and bounds.right() >= viewport.width() - 100:
+                break
+            QTest.qWait(25)
         plot_bounds = view.graphics_view.mapFromScene(selected[1].sceneBoundingRect()).boundingRect()
         assert 0 <= plot_bounds.left() and plot_bounds.right() < viewport.width(), plot_bounds
+        if plot_bounds.right() < viewport.width() - 100:
+            record("matrix-incomplete-initial-fit", view, plot_bounds=str(plot_bounds), viewport=str(viewport.size()),
+                   fit_active=view._fit_width_active, transform=view.graphics_view.transform().m11(),
+                   item_scale=selected[1].scale(), item_bounds=str(selected[1].boundingRect()),
+                   visible=view.isVisible(), plots=dict(view.results.display_images))
         assert plot_bounds.right() >= viewport.width() - 100, (plot_bounds, viewport.size())
         assert view.scene.items()
         rendered = "\n".join(
@@ -182,25 +214,33 @@ def run(
             for w in view.scene.items()
             if isinstance(w, QtWidgets.QGraphicsTextItem)
         )
-        assert all(
-            section.value.strip() in rendered for section in view.results.sections
-            if section.kind == "text" and section.semantic_id != "text:references" and section.value.strip()
-        )
-        import re
+        # Figure pages contain figures; full structured text remains in the
+        # report, table view and exports, without duplicated scene printouts.
         for section in view.results.sections:
-            if section.semantic_id == "text:references":
-                entries = re.split(r"(?:^|\n)\s*\d+\.\s+", section.value)
-                assert all(" ".join(entry.split()) in " ".join(rendered.split()) for entry in entries if entry.strip())
+            if section.kind == "text" and section.source_key == "Weights":
+                assert section.value.strip() not in rendered
+        report = view._plain_text_report()
+        for section in view.results.sections:
+            for table in section.tables:
+                assert "\t".join(table.headers) in report
+                assert all("\t".join(row) in report for row in table.rows)
         if scenario.startswith("analysis-diagnostic-regression"):
             assert "Image Order" not in view.texts
             assert "diagnostic.reitsma.sensitivity.coefficients" not in view.report_text.toPlainText()
             assert "diagnostic.reitsma.specificity.coefficients" not in view.report_text.toPlainText()
+            if scenario == "analysis-diagnostic-regression-multiple":
+                assert view.report_text.toPlainText().count("Overall ML likelihood-ratio test") == 1
+                assert view._plain_text_report().count("Overall ML likelihood-ratio test") == 1
         assert view.results.images, dict(view.texts)
-        if scenario == "analysis-data-twoarm-mean":
+        if scenario == "analysis-data-twoarm-mean" and workflow == "standard":
             from rc_metastudio import r_bridge
             r_bridge.load_in_r(str(next(iter(view.params_paths.values()))) + ".plotdata")
             headers = r_bridge.r_object_to_python(r_bridge.ro.r("plot.data$ilab$headers"))
-            assert headers == ["Mean", "SD", "Total", "Mean", "SD", "Total", "Weight"], headers
+            style = (parameters or {}).get("fp_style", "revman")
+            expected_headers = (["Mean", "SD", "N", "Mean", "SD", "N"] if style == "default" else
+                                ["Total", "Mean", "SD", "Total", "Mean", "SD", "Weight (%)"] if style == "bmj" else
+                                ["Mean", "SD", "Total", "Mean", "SD", "Total", "Weight"])
+            assert headers == expected_headers, headers
         if any(section.plot_kind == "subgroup_forest" for section in view.results.sections):
             assert any(table.title == "Test of subgroup differences"
                        for section in view.results.sections for table in section.tables), dict(view.texts)
@@ -211,6 +251,8 @@ def run(
                 if Path(path).suffix == ".svg"
                 else not QtGui.QImage(str(path)).isNull()
             ), path
+        if clinical:
+            view.report_action.trigger()
         record(
             "matrix-results",
             view,
@@ -219,9 +261,10 @@ def run(
         )
         if clinical:
             assert view.report_action.isChecked()
+            assert view.nav_tree.currentItem().text(0) == "Text report"
             assert view.report_text.horizontalScrollBar().maximum() == 0
             record("clinical-report", view, report=view.report_text.toPlainText())
-            view.report_action.setChecked(False)
+            view.report_action.trigger()
             app.processEvents()
         return view
 
@@ -266,6 +309,7 @@ def run(
 
         name = scenario.removeprefix("analysis-data-")
         button, family, subtype, metric, raw = DATA_TYPES[name]
+        metric = metric_override or metric
         callback_errors = []
 
         def create():
@@ -291,6 +335,20 @@ def run(
                 wizard.currentPage().outcome_name_LineEdit.setText(
                     "Verification outcome"
                 )
+                page = wizard.currentPage()
+                record("data-outcome-naming", wizard, data_type=name)
+                if group_names is not None:
+                    assert page.first_group_name.isVisible()
+                    if len(group_names) == 2:
+                        page.first_group_name.setText(" Same ")
+                        page.second_group_name.setText("Same")
+                        assert not page.isComplete() and page.validation_label.text()
+                        record("round5-arm-duplicate", wizard)
+                    page.first_group_name.setText(group_names[0])
+                    if len(group_names) == 2:
+                        page.second_group_name.setText(group_names[1])
+                    assert page.isComplete(), page.validation_label.text()
+                    record("round5-arm-wizard", wizard, names=group_names)
                 click(wizard.button(QtWidgets.QWizard.WizardButton.FinishButton))
             except Exception as error:  # noqa: BLE001 - propagate modal callback failures after exec.
                 callback_errors.append(error)
@@ -526,6 +584,9 @@ def run(
         record("diagnostic-metrics", dialog, metrics=metrics)
         click(dialog.btn_ok)
     dialog = visible(analysis_setup_dialog.AnalysisSetupDialog)
+    if workflow == "meta-regression" and fixed_effects:
+        dialog.fixed_effects_radio.setChecked(True)
+        expected = None
     if workflow != "meta-regression":
         label = next(
             label for label, key in dialog.available_method_d.items() if key == method
@@ -566,18 +627,16 @@ def run(
         set_parameter(app, dialog, "rm.method", "DL")
     for key, value in (parameters or {}).items():
         set_parameter(app, dialog, key, value)
+    lr_dor_method = dialog.lr_dor_panel.method if dialog._combined_diagnostic else None
+    lr_dor_parameters = dict(dialog.lr_dor_panel.params) if dialog._combined_diagnostic else None
     record(
         "matrix-configured",
         dialog,
         workflow=workflow,
         method=method,
         parameters=dict(dialog.current_param_vals),
-        lr_dor_method=dialog.lr_dor_panel.method
-        if scenario == "analysis-diagnostic-combined"
-        else None,
-        lr_dor_parameters=dict(dialog.lr_dor_panel.params)
-        if scenario == "analysis-diagnostic-combined"
-        else None,
+        lr_dor_method=lr_dor_method,
+        lr_dor_parameters=lr_dor_parameters,
     )
     click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     view = observe()
@@ -593,8 +652,8 @@ def run(
         if key in dialog.current_param_vals:
             assert properties.current_param_vals[key] == dialog.current_param_vals[key], key
     if properties._combined_diagnostic:
-        assert properties.lr_dor_panel.method == dialog.lr_dor_panel.method
-        assert properties.lr_dor_panel.params == dialog.lr_dor_panel.params
+        assert properties.lr_dor_panel.method == lr_dor_method
+        assert properties.lr_dor_panel.params == lr_dor_parameters
     if properties.is_meta_regression:
         assert [cov.name for cov in properties._selected_covariates()] == [cov.name for cov in window.model.dataset.covariates]
     record("properties-prefilled", properties, workflow=properties.analysis_type,
@@ -607,8 +666,10 @@ def run(
         assert view.results.details.count("Estimator: DerSimonian-Laird") == 2, view.results.details
         assert view.results.details.count("Estimator: Restricted Maximum Likelihood") == 3, view.results.details
         report = view.report_text.toPlainText()
-        assert report.startswith("Model configuration\n"), report
-        assert report.index("Model configuration") < report.index("Sensitivity Summary"), report
+        assert report.startswith("Sensitivity results\n"), report
+        assert "Sensitivity — Heterogeneity\n" in report, report
+        assert view.table_selector.findText("Sensitivity — Heterogeneity") >= 0
+        assert report.index("Sensitivity results") < report.index("Model configuration"), report
     if scenario == "analysis-diagnostic-joint":
         point = view.texts["Summary operating point"]
         assert all(

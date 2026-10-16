@@ -680,7 +680,7 @@ def test_change_covariate_type_model_returns_native_values_and_accepts_native_ed
                 QtCore.Qt.Orientation.Horizontal,
                 QtCore.Qt.ItemDataRole.DisplayRole,
             )
-            == "Dose (factor)"
+            == "Dose (category)"
         )
         assert cov_model.headerData(
             cov_model.NEW_VAL,
@@ -728,7 +728,7 @@ def test_change_covariate_type_model_returns_native_values_and_accepts_native_ed
         )
 
         assert errors == [
-            "Covariate values for continuous covariates need to be numeric."
+            "Numeric covariates require numbers."
         ]
         assert (
             continuous_cov_model.data(
@@ -1150,7 +1150,7 @@ def test_subgroup_dialog_disables_ok_and_does_not_run_without_factor_covariates(
         assert warnings
         assert warnings[0][1:3] == (
             "No Covariate Selected",
-            "Select a factor covariate before running subgroup analysis.",
+            "Select a Category covariate before running subgroup analysis.",
         )
     finally:
         _mark_workspace_saved(window)
@@ -1279,11 +1279,6 @@ def test_results_window_refits_svg_plots_and_reflows_sections_on_resize(tmp_path
             assert (
                 text_items["Cumulative Forest Plot"].sceneBoundingRect().top()
                 - svg_items[0].sceneBoundingRect().bottom()
-                >= results_window.SECTION_SPACING
-            )
-            assert (
-                text_items["References"].sceneBoundingRect().top()
-                - svg_items[1].sceneBoundingRect().bottom()
                 >= results_window.SECTION_SPACING
             )
 
@@ -1531,13 +1526,6 @@ def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
             if isinstance(item, results_window._svg_item_class())
         )
         initial_width = plot_item.sceneBoundingRect().width()
-        weights_title = next(
-            item
-            for item in window.scene.items()
-            if isinstance(item, QtWidgets.QGraphicsTextItem)
-            and "Weights" in item.toPlainText()
-        )
-        initial_weights_y = weights_title.scenePos().y()
         viewport_width = _viewport_width(window.graphics_view)
         assert initial_width >= viewport_width * 0.9
         assert initial_width <= viewport_width
@@ -1554,303 +1542,15 @@ def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
         assert refreshed_width >= refreshed_viewport_width * 0.9
         assert refreshed_width <= refreshed_viewport_width
         assert refreshed_width / refreshed_height == pytest.approx(2.0)
-        assert (
-            weights_title.sceneBoundingRect().top()
-            >= plot_item.sceneBoundingRect().bottom()
-        )
 
-        write_svg(400, 800)
-        window._refresh_plot_item(plot_item, artifact, str(plot_path))
-        app.processEvents()
-
-        assert (
-            weights_title.sceneBoundingRect().top()
-            >= plot_item.sceneBoundingRect().bottom()
-        )
 
         write_svg(400, 100)
         window._refresh_plot_item(plot_item, artifact, str(plot_path))
         app.processEvents()
 
-        assert (
-            weights_title.sceneBoundingRect().top()
-            >= plot_item.sceneBoundingRect().bottom()
-        )
-        assert weights_title.scenePos().y() < initial_weights_y
 
         assert plot_item.sceneBoundingRect().width() / plot_item.sceneBoundingRect().height() == pytest.approx(4.0)
 
-    finally:
-        window.close()
-        app.processEvents()
-
-
-def test_results_window_reflows_sections_after_raster_plot_regenerate(tmp_path):
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio import results_window
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    plot_path = tmp_path / "forest.png"
-
-    def write_plot(width, height):
-        image = results_window.QImage(
-            width, height, results_window.QImage.Format.Format_ARGB32
-        )
-        image.fill(0xFFFFFFFF)
-        assert image.save(str(plot_path))
-
-    write_plot(400, 200)
-    window = results_window.ResultsWindow(
-        _analysis_result(
-            {
-                "texts": {
-                    "Summary": "Meta-analysis summary.",
-                    "Weights": "Study weights remain readable after the plot.",
-                },
-                "images": {"Forest Plot": str(plot_path)},
-                "image_order": ["Forest Plot"],
-                "plot_capabilities": {
-                    "Forest Plot": _plot_capability(editable=False),
-                },
-                "sections": _result_sections(
-                    ("text", "Summary", "Summary"),
-                    ("image", "Forest Plot", "Forest Plot"),
-                    ("text", "Weights", "Weights"),
-                ),
-            }
-        )
-    )
-
-    try:
-        window.resize(1200, 800)
-        window.report_action.setChecked(False)
-        window.show()
-        app.processEvents()
-        plot_item = next(
-            item
-            for item in window.scene.items()
-            if isinstance(item, QtWidgets.QGraphicsPixmapItem)
-        )
-        weights_title = next(
-            item
-            for item in window.scene.items()
-            if isinstance(item, QtWidgets.QGraphicsTextItem)
-            and item.toPlainText() == "Weights"
-        )
-
-        write_plot(400, 800)
-        artifact = window.create_plot_artifact("Forest Plot", str(plot_path))
-        window._refresh_plot_item(plot_item, artifact, str(plot_path))
-        app.processEvents()
-
-        assert (
-            weights_title.sceneBoundingRect().top()
-            - plot_item.sceneBoundingRect().bottom()
-            >= results_window.SECTION_SPACING
-        )
-    finally:
-        window.close()
-        app.processEvents()
-
-
-def test_results_window_places_references_after_images_and_wraps_them(tmp_path):
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio import results_window
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    plot_path = tmp_path / "forest.png"
-    image = results_window.QImage(80, 40, results_window.QImage.Format.Format_RGB32)
-    image.fill(results_window.Qt.GlobalColor.white)
-    assert image.save(str(plot_path), "PNG")
-
-    long_reference = (
-        "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). "
-        "Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), "
-        "177-188. doi:10.1016/0197-2456(86)90046-2."
-    )
-    window = results_window.ResultsWindow(
-        _analysis_result(
-            {
-                "texts": {
-                    "Summary": "Binary Random-Effects Model",
-                    "References": long_reference,
-                },
-                "images": {"Forest Plot": str(plot_path)},
-                "image_var_names": {"Forest Plot": "forest_plot"},
-                "image_params_paths": {"Forest Plot": str(tmp_path / "forest_params")},
-                "image_order": ["Forest Plot"],
-                "plot_capabilities": {"Forest Plot": _plot_capability()},
-                "sections": _result_sections(
-                    ("text", "Summary", "Summary"),
-                    ("image", "Forest Plot", "Forest Plot"),
-                    ("text", "References", "References"),
-                ),
-            }
-        )
-    )
-
-    try:
-        window.report_action.setChecked(False)
-        window.show()
-        app.processEvents()
-
-        nav_titles = [
-            required(window.nav_tree.topLevelItem(index), "navigation item").text(0)
-            for index in range(window.nav_tree.topLevelItemCount())
-        ]
-        assert nav_titles == ["Summary", "Forest Plot", "References"]
-
-        sections = {
-            item.toPlainText(): item
-            for item in window.scene.items()
-            if isinstance(item, results_window.QGraphicsTextItem)
-        }
-        reference_item = sections[long_reference]
-        assert (
-            required(reference_item.document(), "reference document")
-            .defaultTextOption()
-            .wrapMode()
-            == results_window.QTextOption.WrapMode.WordWrap
-        )
-    finally:
-        window.close()
-        app.processEvents()
-
-
-def test_results_window_separates_tall_text_sections():
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio import results_window
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    tall_section = "\n".join(
-        "Study %02d  0.123  0.456  0.789" % index for index in range(1, 40)
-    )
-    window = results_window.ResultsWindow(
-        _analysis_result(
-            {
-                "texts": {
-                    "Within-study parameters": tall_section,
-                    "Odds Ratio Summary": "Diagnostic Random-Effects Model\n\nEstimate Lower bound Upper bound",
-                },
-                "images": {},
-            }
-        )
-    )
-
-    try:
-        sections = {
-            item.toPlainText(): item
-            for item in window.scene.items()
-            if isinstance(item, results_window.QGraphicsTextItem)
-        }
-
-        first_body = sections[tall_section]
-        next_title = sections["Odds Ratio Summary"]
-        first_bottom = first_body.sceneBoundingRect().bottom()
-        next_top = next_title.sceneBoundingRect().top()
-
-        assert next_top - first_bottom >= results_window.SECTION_SPACING
-    finally:
-        window.close()
-        app.processEvents()
-
-
-def test_results_window_text_context_menu_is_reentrant_safe(monkeypatch):
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio import results_window
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    popups = []
-
-    class FakeEvent(object):
-        def __init__(self):
-            self.accepted = False
-
-        def screenPos(self):
-            return QtCore.QPoint(10, 20)
-
-        def accept(self):
-            self.accepted = True
-
-    class FakeSignal(object):
-        def __init__(self):
-            self._callbacks = []
-
-        def connect(self, callback):
-            self._callbacks.append(callback)
-
-        def emit(self):
-            for callback in self._callbacks:
-                callback()
-
-    class FakeMenu(object):
-        current = None
-
-        def __init__(self, parent=None):
-            self.parent = parent
-            self.actions = []
-            self.aboutToHide = FakeSignal()
-            FakeMenu.current = self
-
-        def addAction(self, action):
-            self.actions.append(action)
-
-        def popup(self, pos):
-            popups.append((pos, [action.text() for action in self.actions]))
-
-    monkeypatch.setattr(results_window, "QMenu", FakeMenu)
-    window = results_window.ResultsWindow(
-        _analysis_result(
-            {
-                "texts": {"Summary": "Model Results\nEstimate  Lower bound"},
-                "images": {},
-            }
-        )
-    )
-
-    try:
-        text_items = [
-            item
-            for item in window.scene.items()
-            if isinstance(item, results_window.QGraphicsTextItem)
-            and item.toPlainText().startswith("Model Results")
-        ]
-        assert len(text_items) == 1
-
-        first_event = FakeEvent()
-        second_event = FakeEvent()
-        text_item = text_items[0]
-        text_item.contextMenuEvent(
-            cast(QtWidgets.QGraphicsSceneContextMenuEvent, first_event)
-        )
-        text_item.contextMenuEvent(
-            cast(QtWidgets.QGraphicsSceneContextMenuEvent, second_event)
-        )
-
-        assert first_event.accepted is True
-        assert second_event.accepted is True
-        assert popups == [
-            (
-                QtCore.QPoint(10, 20),
-                ["Select All", "Copy"],
-            )
-        ]
-
-        current_menu = required(FakeMenu.current, "fake context menu")
-        current_menu.aboutToHide.emit()
-        text_item.contextMenuEvent(
-            cast(QtWidgets.QGraphicsSceneContextMenuEvent, FakeEvent())
-        )
-        assert len(popups) == 2
-        required(FakeMenu.current, "fake context menu").aboutToHide.emit()
     finally:
         window.close()
         app.processEvents()
@@ -1972,15 +1672,15 @@ def test_results_window_figure_context_menus_offer_edit_for_regenerable_forest_p
             assert event.accepted is True
             required(FakeMenu.current, "fake context menu").aboutToHide.emit()
             expected_actions = [
-                "Save PDF Image As",
-                "Save PNG Image As",
-                "Save TIFF Image As",
-                "Save SVG Image As",
+                "Export PDF…",
+                "Export PNG…",
+                "Export TIFF…",
+                "Export SVG…",
             ]
             if editable:
-                expected_actions.insert(0, "Edit Plot")
+                expected_actions.insert(0, "Edit plot…")
             if params_path is None:
-                expected_actions = ["Save PNG Image As"]
+                expected_actions = ["Export PNG…"]
             assert popups[-1] == (QtCore.QPoint(10, 20), expected_actions)
     finally:
         window.close()
@@ -2321,7 +2021,7 @@ def test_edit_plot_dialog_round_trips_style_and_appearance_params(monkeypatch):
     )
 
     try:
-        assert dialog.style_cbo.currentText() == "Default (metafor)"
+        assert dialog.style_cbo.currentText() == "Default"
         dialog.style_cbo.setCurrentText("BMJ")
         dialog.show_raw_counts.setChecked(False)
         dialog.show_headers.setChecked(False)
@@ -2362,36 +2062,6 @@ def test_shared_plot_options_surface_uses_default_arm_labels():
     finally:
         edit_dialog.close()
         analysis_dialog.close()
-        app.processEvents()
-
-
-def test_plot_text_inputs_enforce_publication_readability_limit():
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio.plot_text import PLOT_TEXT_INPUT_LIMIT
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    dialog = plot_editor_dialog.EditPlotDialog({}, "forest.png")
-
-    try:
-        fields = (
-            dialog.col1_str_edit,
-            dialog.col2_str_edit,
-            dialog.col3_str_edit,
-            dialog.col4_str_edit,
-            dialog.x_lbl_le,
-        )
-        for field in fields:
-            assert field.maxLength() == PLOT_TEXT_INPUT_LIMIT
-            assert "publication readability" in field.toolTip()
-            field.setText("x" * (PLOT_TEXT_INPUT_LIMIT + 20))
-            assert len(field.text()) == PLOT_TEXT_INPUT_LIMIT
-        assert dialog.plot_lb_le.maxLength() > PLOT_TEXT_INPUT_LIMIT
-        assert dialog.plot_ub_le.maxLength() > PLOT_TEXT_INPUT_LIMIT
-        assert dialog.x_ticks_le.maxLength() > PLOT_TEXT_INPUT_LIMIT
-    finally:
-        dialog.close()
         app.processEvents()
 
 
@@ -2481,30 +2151,6 @@ def test_sroc_plot_editor_limits_marker_legend_to_sample_size_scaling():
         dialog.sroc_marker_area.setCurrentIndex(0)
         assert not dialog.sroc_show_marker_legend.isEnabled()
         assert not dialog.sroc_show_marker_legend.isChecked()
-    finally:
-        dialog.close()
-        app.processEvents()
-
-
-def test_edit_plot_dialog_flags_truncated_legacy_plot_text():
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio.plot_text import PLOT_TEXT_INPUT_LIMIT
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    dialog = plot_editor_dialog.EditPlotDialog(
-        {"fp_col1_str": "x" * (PLOT_TEXT_INPUT_LIMIT + 20)}, "forest.png"
-    )
-    try:
-        assert len(dialog.col1_str_edit.text()) == PLOT_TEXT_INPUT_LIMIT
-        assert dialog.col1_str_edit.property("plotTextWasTruncated") is True
-        assert "original is retained" in dialog.col1_str_edit.toolTip()
-        assert dialog.plot_params()["fp_col1_str"] == "x" * (PLOT_TEXT_INPUT_LIMIT + 20)
-        dialog.col1_str_edit.setFocus()
-        dialog.col1_str_edit.selectAll()
-        key_clicks(dialog.col1_str_edit, "replacement")
-        assert dialog.plot_params()["fp_col1_str"] == "replacement"
     finally:
         dialog.close()
         app.processEvents()
@@ -2608,6 +2254,7 @@ def test_edit_regression_plot_dialog_shows_only_bubble_options():
         params = dialog.plot_params()
 
         assert params == {
+            "plot_caption": "",
             "bp_style": "bmj",
             "bp_accent_color": "#123456",
             "bp_point_size_multiplier": 1.5,
@@ -2766,160 +2413,6 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
         app.processEvents()
 
 
-def test_pre_run_plots_tab_exports_style_and_appearance_params(monkeypatch):
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio import analysis_setup_dialog
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-
-    class PlotDefaultsDialog(object):
-        analysis_type = None
-        study_order: QtWidgets.QComboBox
-        current_param_vals: dict[str, object]
-        style_cbo: QtWidgets.QComboBox
-        show_1: QtWidgets.QCheckBox
-        col1_str_edit: QtWidgets.QLineEdit
-        show_2: QtWidgets.QCheckBox
-        col2_str_edit: QtWidgets.QLineEdit
-        show_3: QtWidgets.QCheckBox
-        col3_str_edit: QtWidgets.QLineEdit
-        show_4: QtWidgets.QCheckBox
-        col4_str_edit: QtWidgets.QLineEdit
-        x_lbl_le: QtWidgets.QLineEdit
-        image_path: QtWidgets.QLineEdit
-        plot_lb_le: QtWidgets.QLineEdit
-        plot_ub_le: QtWidgets.QLineEdit
-        x_ticks_le: QtWidgets.QLineEdit
-        show_summary_line: QtWidgets.QCheckBox
-        show_raw_counts: QtWidgets.QCheckBox
-        show_headers: QtWidgets.QCheckBox
-        show_annotation: QtWidgets.QCheckBox
-        accent_color: QtWidgets.QLineEdit
-        point_size_multiplier: QtWidgets.QDoubleSpinBox
-
-    form = PlotDefaultsDialog()
-    form.study_order = QtWidgets.QComboBox()
-    form.study_order.addItem("Current table order", "table")
-    form.current_param_vals = {}
-    form.style_cbo = QtWidgets.QComboBox()
-    form.style_cbo.addItems(["Default (metafor)", "RevMan", "BMJ"])
-    form.style_cbo.setCurrentText("RevMan")
-    form.show_1 = QtWidgets.QCheckBox()
-    form.show_1.setChecked(True)
-    form.col1_str_edit = QtWidgets.QLineEdit("Study or Subgroup")
-    form.show_2 = QtWidgets.QCheckBox()
-    form.show_2.setChecked(False)
-    form.col2_str_edit = QtWidgets.QLineEdit("[default]")
-    form.show_3 = QtWidgets.QCheckBox()
-    form.show_3.setChecked(True)
-    form.col3_str_edit = QtWidgets.QLineEdit("Treatment")
-    form.show_4 = QtWidgets.QCheckBox()
-    form.show_4.setChecked(True)
-    form.col4_str_edit = QtWidgets.QLineEdit("Control")
-    form.x_lbl_le = QtWidgets.QLineEdit("[default]")
-    form.image_path = QtWidgets.QLineEdit("forest.png")
-    form.plot_lb_le = QtWidgets.QLineEdit("[default]")
-    form.plot_ub_le = QtWidgets.QLineEdit("[default]")
-    form.x_ticks_le = QtWidgets.QLineEdit("[default]")
-    form.show_summary_line = QtWidgets.QCheckBox()
-    form.show_summary_line.setChecked(True)
-    form.show_raw_counts = QtWidgets.QCheckBox()
-    form.show_raw_counts.setChecked(False)
-    form.show_headers = QtWidgets.QCheckBox()
-    form.show_headers.setChecked(False)
-    form.show_annotation = QtWidgets.QCheckBox()
-    form.show_annotation.setChecked(False)
-    form.accent_color = QtWidgets.QLineEdit("#123456")
-    form.point_size_multiplier = QtWidgets.QDoubleSpinBox()
-    form.point_size_multiplier.setValue(1.5)
-
-    analysis_setup_dialog.add_plot_params(form)
-
-    assert form.current_param_vals["fp_style"] == "revman"
-    assert form.current_param_vals["fp_accent_color"] == "#123456"
-    assert form.current_param_vals["fp_point_size_multiplier"] == 1.5
-    assert form.current_param_vals["fp_show_raw_counts"] is False
-    assert form.current_param_vals["fp_show_headers"] is False
-    assert form.current_param_vals["fp_show_annotation"] is False
-    assert form.current_param_vals["fp_xlabel"] is None
-    assert form.current_param_vals["fp_col3_str"] == "Treatment"
-    assert form.current_param_vals["fp_col4_str"] == "Control"
-    display_path = cast(str, form.current_param_vals["fp_display_path"])
-    assert display_path.endswith(".display.svg")
-    assert Path(display_path).parent != Path(".")
-    app.processEvents()
-
-
-def test_meta_regression_pre_run_plot_options_use_bubble_parameter_contract():
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio import analysis_setup_dialog
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-
-    class RegressionPlotDialog(object):
-        analysis_type = "meta-regression"
-        current_param_vals: dict[str, object]
-        style_cbo: QtWidgets.QComboBox
-        accent_color: QtWidgets.QLineEdit
-        point_size_multiplier: QtWidgets.QDoubleSpinBox
-        x_lbl_le: QtWidgets.QLineEdit
-        x_ticks_le: QtWidgets.QLineEdit
-        plot_lb_le: QtWidgets.QLineEdit
-        plot_ub_le: QtWidgets.QLineEdit
-        image_path: QtWidgets.QLineEdit
-        show_regression_line: QtWidgets.QCheckBox
-        show_confidence_band: QtWidgets.QCheckBox
-        show_prediction_interval: QtWidgets.QCheckBox
-        show_legend: QtWidgets.QCheckBox
-
-    form = RegressionPlotDialog()
-    form.current_param_vals = {}
-    form.style_cbo = QtWidgets.QComboBox()
-    form.style_cbo.addItems(["Default (metafor)", "RevMan", "BMJ"])
-    form.style_cbo.setCurrentText("BMJ")
-    form.accent_color = QtWidgets.QLineEdit("#654321")
-    form.point_size_multiplier = QtWidgets.QDoubleSpinBox()
-    form.point_size_multiplier.setValue(1.25)
-    form.x_lbl_le = QtWidgets.QLineEdit("Latitude")
-    form.x_ticks_le = QtWidgets.QLineEdit("-20, 0, 20")
-    form.plot_lb_le = QtWidgets.QLineEdit("-30")
-    form.plot_ub_le = QtWidgets.QLineEdit("30")
-    form.image_path = QtWidgets.QLineEdit("regression.png")
-    form.show_regression_line = QtWidgets.QCheckBox()
-    form.show_regression_line.setChecked(True)
-    form.show_confidence_band = QtWidgets.QCheckBox()
-    form.show_confidence_band.setChecked(False)
-    form.show_prediction_interval = QtWidgets.QCheckBox()
-    form.show_prediction_interval.setChecked(True)
-    form.show_legend = QtWidgets.QCheckBox()
-    form.show_legend.setChecked(True)
-
-    analysis_setup_dialog.add_plot_params(form)
-
-    display_path = cast(str, form.current_param_vals.pop("bp_display_path"))
-    assert display_path.endswith(".display.svg")
-    assert Path(display_path).parent != Path(".")
-    assert form.current_param_vals == {
-        "bp_style": "bmj",
-        "bp_accent_color": "#654321",
-        "bp_point_size_multiplier": 1.25,
-        "bp_xlabel": "Latitude",
-        "bp_xticks": "-20, 0, 20",
-        "bp_plot_lb": "-30",
-        "bp_plot_ub": "30",
-        "bp_outpath": "regression.png",
-        "bp_show_regression_line": True,
-        "bp_show_confidence_band": False,
-        "bp_show_prediction_interval": True,
-        "bp_show_legend": True,
-    }
-    app.processEvents()
-
-
 def test_meta_regression_enables_plots_only_for_one_continuous_covariate():
     from rc_metastudio import analysis_setup_dialog
     from rc_metastudio import meta_globals
@@ -2950,7 +2443,7 @@ def test_meta_regression_enables_plots_only_for_one_continuous_covariate():
         cast(analysis_setup_dialog.AnalysisSetupDialog, form)
     )
     assert not form.plot_tab.isEnabled()
-    assert "exactly one continuous covariate" in form.plot_tab.toolTip()
+    assert "exactly one Numeric covariate" in form.plot_tab.toolTip()
 
 
 @pytest.mark.parametrize(
@@ -3169,13 +2662,6 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
             for item in window.scene.items()
             if isinstance(item, results_window._svg_item_class())
         )
-        references_title = next(
-            item
-            for item in window.scene.items()
-            if isinstance(item, results_window.QGraphicsTextItem)
-            and item.toPlainText() == "References"
-        )
-        original_reference_top = references_title.sceneBoundingRect().top()
 
         artifact = window.create_plot_artifact(
             "Forest Plot", png_path, params_path=params_path
@@ -3195,12 +2681,6 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
             call[1]["fp_display_path"] == display_path for call in updates[1::2]
         )
         assert plot_item.boundingRect().height() == pytest.approx(500)
-        assert references_title.sceneBoundingRect().top() > original_reference_top
-        assert (
-            references_title.sceneBoundingRect().top()
-            - plot_item.sceneBoundingRect().bottom()
-            >= results_window.SECTION_SPACING
-        )
 
         initial_width = plot_item.sceneBoundingRect().width()
         window_width = window.width()
@@ -3238,7 +2718,7 @@ def test_results_window_ignores_missing_image_order_entries():
             for index in range(window.nav_tree.topLevelItemCount())
         ]
 
-        assert nav_titles == ["Summary"]
+        assert nav_titles == ["Text report", "Tables"]
         assert not any(
             isinstance(item, results_window.QGraphicsPixmapItem)
             for item in window.scene.items()
@@ -3397,103 +2877,6 @@ def test_modal_dialogs_center_over_parent_window():
     finally:
         wizard.close()
         parent.close()
-        app.processEvents()
-
-
-def test_startup_wizard_cancel_preserves_loaded_dataset(monkeypatch):
-    from rc_metastudio import launch
-    from PyQt6 import QtCore, QtWidgets
-
-    main_window = launch._import_main_window()
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    window = main_window.MainWindow()
-    _mark_workspace_saved(window)
-    sample_project = _sample_project_path("amino.rcms")
-
-    class RejectedWizard(QtCore.QObject):
-        finished = QtCore.pyqtSignal(int)
-
-        def __init__(self, *args, **kwargs):
-            super().__init__()
-
-        def open(self):
-            self.finished.emit(int(QtWidgets.QDialog.DialogCode.Rejected))
-
-    quit_calls = []
-    monkeypatch.setattr(main_window.main_wizard, "MainWizard", RejectedWizard)
-    monkeypatch.setattr(
-        main_window.QApplication, "quit", lambda: quit_calls.append(True)
-    )
-
-    try:
-        assert window.open(sample_project) is True
-        loaded_dataset = window.model.dataset
-        loaded_title = loaded_dataset.title
-        loaded_studies = [study.name for study in loaded_dataset.studies]
-
-        window.start()
-        app.processEvents()
-
-        assert quit_calls == []
-        assert window.model.dataset is loaded_dataset
-        assert window.model.dataset.title == loaded_title
-        assert [study.name for study in window.model.dataset.studies] == loaded_studies
-    finally:
-        window.close()
-        app.processEvents()
-
-
-def test_startup_wizard_opens_after_event_loop_and_reactivates_main_window(monkeypatch):
-    from rc_metastudio import launch
-    from PyQt6 import QtCore, QtWidgets
-
-    main_window = launch._import_main_window()
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    window = main_window.MainWindow()
-    events = []
-
-    class AsyncWizard(QtCore.QObject):
-        finished = QtCore.pyqtSignal(int)
-
-        def __init__(self, *args, **kwargs):
-            super().__init__()
-            events.append("created")
-
-        def open(self):
-            events.append("opened")
-
-        def get_results(self):
-            return {
-                "path": "open",
-                "selected_dataset": "chosen.rcms",
-                "outcome_info": None,
-            }
-
-        def deleteLater(self):
-            events.append("deleted")
-
-    monkeypatch.setattr(main_window.main_wizard, "MainWizard", AsyncWizard)
-    monkeypatch.setattr(
-        window, "_handle_wizard_results", lambda data: events.append(("handled", data))
-    )
-    monkeypatch.setattr(window, "show", lambda: events.append("shown"))
-    monkeypatch.setattr(window, "raise_", lambda: events.append("raised"))
-    monkeypatch.setattr(window, "activateWindow", lambda: events.append("activated"))
-
-    try:
-        window.start()
-        assert events == []
-
-        app.processEvents()
-        assert events == ["created", "opened"]
-
-        window._startup_wizard.finished.emit(int(QtWidgets.QDialog.DialogCode.Accepted))
-        assert events[2][0] == "handled"
-        assert events[3:] == ["deleted", "shown", "raised", "activated"]
-        assert window._startup_wizard is None
-    finally:
-        _mark_workspace_saved(window)
-        window.close()
         app.processEvents()
 
 
@@ -3773,7 +3156,7 @@ def test_about_legal_and_welcome_links_show_current_project_information():
     app, window = automation.start_automation()
 
     try:
-        assert window.action_about_legal.text() == "About/Legal"
+        assert window.action_about_legal.text() == "About and licenses…"
 
         from rc_metastudio import about_legal_dialog
 

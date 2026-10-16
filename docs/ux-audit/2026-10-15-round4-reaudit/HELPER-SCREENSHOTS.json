@@ -1,0 +1,1338 @@
+[
+  {
+    "path": "screenshots/helper-calculator-binary-03-0-calculator-effect-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013601Z-be90eac1-calculator-binary/03-0-calculator-effect-preview.png",
+    "sha256": "2ba3f890f87fffe392d1d55e77a6cfa741c7facb01b8f58d74c18f500d5b4b49",
+    "scenario": "calculator-binary",
+    "action": "calculator-effect-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-calculator-continuous-03-0-calculator-effect-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013618Z-a26b296f-calculator-continuous/03-0-calculator-effect-preview.png",
+    "sha256": "d90b9d3ff67c5dc5ff92fa057c6818f1b209babf44d4a363cf87f15fa7ba15e3",
+    "scenario": "calculator-continuous",
+    "action": "calculator-effect-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-calculator-diagnostic-03-0-calculator-effect-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013632Z-b4b26dac-calculator-diagnostic/03-0-calculator-effect-preview.png",
+    "sha256": "2683f059cc09a338c18c5e2f010d87856ff434205750fe0a9f3f7f1a9854b288",
+    "scenario": "calculator-diagnostic",
+    "action": "calculator-effect-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-ux-improvements-04-0-ux-inline-analysis-error.png",
+    "source": "artifacts/verification/rcms/20261015T013426Z-938a8ef8-ux-improvements/04-0-ux-inline-analysis-error.png",
+    "sha256": "fb492e3fac5963d800e542c8e576a8c5f612e3f43c7d7be188c8182956ad08a0",
+    "scenario": "ux-improvements",
+    "action": "ux-inline-analysis-error",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-ux-improvements-13-0-ux-native-result-table.png",
+    "source": "artifacts/verification/rcms/20261015T013426Z-938a8ef8-ux-improvements/13-0-ux-native-result-table.png",
+    "sha256": "b97a3d6384b20b980a56ec4bff82e5b26953cb3797172dd4291eb1fe0695ad57",
+    "scenario": "ux-improvements",
+    "action": "ux-native-result-table",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-ux-improvements-14-0-ux-independent-view-zoom.png",
+    "source": "artifacts/verification/rcms/20261015T013426Z-938a8ef8-ux-improvements/14-0-ux-independent-view-zoom.png",
+    "sha256": "b792021eab048a84036885fe3b78a16a0e3ed350c00a773d9e7a3607097f5348",
+    "scenario": "ux-improvements",
+    "action": "ux-independent-view-zoom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-ux-improvements-17-0-ux-csv-invalid.png",
+    "source": "artifacts/verification/rcms/20261015T013426Z-938a8ef8-ux-improvements/17-0-ux-csv-invalid.png",
+    "sha256": "d9fd2945dfdd4412beb97b6b5b5a5d894b8dca780aff3ab40a2672005c2141a8",
+    "scenario": "ux-improvements",
+    "action": "ux-csv-invalid",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-ux-improvements-19-0-ux-csv-mapped.png",
+    "source": "artifacts/verification/rcms/20261015T013426Z-938a8ef8-ux-improvements/19-0-ux-csv-mapped.png",
+    "sha256": "07748937a0cd67ae92132a5c51053d17556fc88b614fa68e519b8b6517539f4b",
+    "scenario": "ux-improvements",
+    "action": "ux-csv-mapped",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-ux-improvements-26-0-ux-covariate-error.png",
+    "source": "artifacts/verification/rcms/20261015T013426Z-938a8ef8-ux-improvements/26-0-ux-covariate-error.png",
+    "sha256": "b40309a0152342af48abfbef559a01ec36a0b246b2094727f366fa5b025a745b",
+    "scenario": "ux-improvements",
+    "action": "ux-covariate-error",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-review-workflows-05-0-review-properties-prefilled.png",
+    "source": "artifacts/verification/rcms/20261015T013345Z-b1887a78-review-workflows/05-0-review-properties-prefilled.png",
+    "sha256": "6861e6d88b4824ea68a681cd85a12360f302fcfb7d14ea5c665d2d392be13a06",
+    "scenario": "review-workflows",
+    "action": "review-properties-prefilled",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-review-workflows-08-0-review-study-order-options.png",
+    "source": "artifacts/verification/rcms/20261015T013345Z-b1887a78-review-workflows/08-0-review-study-order-options.png",
+    "sha256": "b6cb7f58366c94f0ecd0c93188c2eda98ab5da148fe4b658532b14c4b012bd85",
+    "scenario": "review-workflows",
+    "action": "review-study-order-options",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-review-workflows-08-1-review-study-order-options.png",
+    "source": "artifacts/verification/rcms/20261015T013345Z-b1887a78-review-workflows/08-1-review-study-order-options.png",
+    "sha256": "3eab3f15ed54b8eebf2af5175070b148f2ef0f2ee3774c1c63406c32ffc7011b",
+    "scenario": "review-workflows",
+    "action": "review-study-order-options",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-plot-workflow-sroc-09-0-family-editor-controls.png",
+    "source": "artifacts/verification/rcms/20261015T014245Z-1e8ad18a-plot-workflow-sroc/09-0-family-editor-controls.png",
+    "sha256": "d59b3210506029748f6421e9905fef5b12ebfd30fc0f2db3b02d5821e86bbaa9",
+    "scenario": "plot-workflow-sroc",
+    "action": "family-editor-controls",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-plot-workflow-contour-04-0-family-editor-controls.png",
+    "source": "artifacts/verification/rcms/20261015T014330Z-2ea284d2-plot-workflow-contour/04-0-family-editor-controls.png",
+    "sha256": "2b6e93e1c4da875c4c284ec2d625f83ee9fbbd87eaac7651456ee6a581c43a28",
+    "scenario": "plot-workflow-contour",
+    "action": "family-editor-controls",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-precision-10-0-round3-zero-bound-presentation.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/10-0-round3-zero-bound-presentation.png",
+    "sha256": "f23d331988ccb89acf316de1bf160767211b1c4c9588291b3eb5f635b4aa57d8",
+    "scenario": "audit-round3-precision",
+    "action": "round3-zero-bound-presentation",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-precision-20-0-round3-small-effects-preserved.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/20-0-round3-small-effects-preserved.png",
+    "sha256": "7191f2f5a157a6782ce7a12417cc114f637ab202aeb59282f6c6fead3a89cec9",
+    "scenario": "audit-round3-precision",
+    "action": "round3-small-effects-preserved",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-precision-29-0-round3-degenerate-axis.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/29-0-round3-degenerate-axis.png",
+    "sha256": "d9974c056567309315b04f89decb696efc8e4237742e2b1dc8976c197efdaa2c",
+    "scenario": "audit-round3-precision",
+    "action": "round3-degenerate-axis",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-precision-30-0-round3-degenerate-axis-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/30-0-round3-degenerate-axis-bottom.png",
+    "sha256": "4fce56de354685760e018860564f285aae1cbe820bcab948b37bc8e31e98ce69",
+    "scenario": "audit-round3-precision",
+    "action": "round3-degenerate-axis-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-precision-39-0-round3-degenerate-axis.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/39-0-round3-degenerate-axis.png",
+    "sha256": "bbb639acf6ba405a05b7c3afc03b84a5bf4790258c1de6d0a247085a36390529",
+    "scenario": "audit-round3-precision",
+    "action": "round3-degenerate-axis",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-precision-48-0-round3-degenerate-axis.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/48-0-round3-degenerate-axis.png",
+    "sha256": "98e6a10fe7be2a6d8ae4c26a1c4e255f872900a4f52cc9997b61109b97803f92",
+    "scenario": "audit-round3-precision",
+    "action": "round3-degenerate-axis",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-precision-54-0-round3-bubble-tick-coverage.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/54-0-round3-bubble-tick-coverage.png",
+    "sha256": "8103401c4a552bdd7159152e214e5cba502e193ddd90a310661b1c6cec9189ed",
+    "scenario": "audit-round3-precision",
+    "action": "round3-bubble-tick-coverage",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-precision-64-0-round3-bubble-tick-coverage.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/64-0-round3-bubble-tick-coverage.png",
+    "sha256": "dc508a117016982962e3fbc1c10524b6effb387cab09eed1daab310bb4af3d1c",
+    "scenario": "audit-round3-precision",
+    "action": "round3-bubble-tick-coverage",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-precision-74-0-round3-bubble-tick-coverage.png",
+    "source": "artifacts/verification/rcms/20261015T011528Z-c1f963c1-audit-round3-precision/74-0-round3-bubble-tick-coverage.png",
+    "sha256": "623f93fa5e5d22df7d35007cc4906364649cb1a7c725d77cf6341a777b5148d6",
+    "scenario": "audit-round3-precision",
+    "action": "round3-bubble-tick-coverage",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-hr-35-0-round3-fixed-footer-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T010927Z-52cc826f-audit-round3-hr/35-0-round3-fixed-footer-bottom.png",
+    "sha256": "58c9cda93bd83b6a6d65912a58c806d4539bdc722fda516e2a8aa05a28b56c13",
+    "scenario": "audit-round3-hr",
+    "action": "round3-fixed-footer-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-irr-39-0-round3-fixed-footer-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011103Z-daef0dd8-audit-round3-irr/39-0-round3-fixed-footer-bottom.png",
+    "sha256": "b12e61177b4b32a46bbf650c6ea1e49f41c65d574cb5a57d46195a37207f20c7",
+    "scenario": "audit-round3-irr",
+    "action": "round3-fixed-footer-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-twoarm-mean-14-0-round3-null-excluded-rendered.png",
+    "source": "artifacts/verification/rcms/20261015T010726Z-bbed999b-audit-round3-twoarm-mean/14-0-round3-null-excluded-rendered.png",
+    "sha256": "66fc96c9331adb96403894fbb6bc82a62eb6465b1cf97b87025971bc0075e7da",
+    "scenario": "audit-round3-twoarm-mean",
+    "action": "round3-null-excluded-rendered",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-calculator-mode-binary-metrics-03-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013658Z-e5e4b835-calculator-mode-binary-metrics/03-0-calculator-mode-preview.png",
+    "sha256": "68c91ea436871956192a241b703af5fd948d86746d21460282701d368ca61b08",
+    "scenario": "calculator-mode-binary-metrics",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-calculator-mode-continuous-metrics-03-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013716Z-5ea51732-calculator-mode-continuous-metrics/03-0-calculator-mode-preview.png",
+    "sha256": "128499960111379f37de26e05293bdf17285e44516cd8cde5ebccf5817f976ad",
+    "scenario": "calculator-mode-continuous-metrics",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-calculator-mode-diagnostic-metrics-02-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013728Z-71bb4a10-calculator-mode-diagnostic-metrics/02-0-calculator-mode-preview.png",
+    "sha256": "bef3371ba33af83852d1da747565a64fb6677b53b20ff5a639e7c2ce4c367bd7",
+    "scenario": "calculator-mode-diagnostic-metrics",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-calculator-mode-onearm-proportion-11-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013744Z-ca067674-calculator-mode-onearm-proportion/11-0-calculator-mode-preview.png",
+    "sha256": "5a03da3c378e4b014809098562fc2d634e99ec422296fafa2ffa75668dcb1e98",
+    "scenario": "calculator-mode-onearm-proportion",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-calculator-mode-onearm-mean-11-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013802Z-06a9e150-calculator-mode-onearm-mean/11-0-calculator-mode-preview.png",
+    "sha256": "22fe49192f68e55a4eb022f9dc4f03efbccbd3bb5c07de40a1c225c978cbe49f",
+    "scenario": "calculator-mode-onearm-mean",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-calculator-mode-entered-binary-03-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013820Z-9aa88ad4-calculator-mode-entered-binary/03-0-calculator-mode-preview.png",
+    "sha256": "3fb7ea2112edf3b4ce430a65814583da0f4290ca0db93fb4c97064e35508559b",
+    "scenario": "calculator-mode-entered-binary",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-calculator-mode-entered-continuous-03-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013837Z-369c285d-calculator-mode-entered-continuous/03-0-calculator-mode-preview.png",
+    "sha256": "589a64e63d2afae72e189e15e9641fa2ad5281e1569958dfb53d87a30bd61e73",
+    "scenario": "calculator-mode-entered-continuous",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-calculator-mode-entered-diagnostic-02-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013849Z-ac55d9c2-calculator-mode-entered-diagnostic/02-0-calculator-mode-preview.png",
+    "sha256": "9412a84ada908727048f26c6c77e21e286c9e9d803f240888fb2b0e79a8803dc",
+    "scenario": "calculator-mode-entered-diagnostic",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-calculator-mode-pre-post-03-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013907Z-b58f197f-calculator-mode-pre-post/03-0-calculator-mode-preview.png",
+    "sha256": "84ef4899bc396496b04f205660b6f83046f32e31a2bad492fabe3c8c713d5159",
+    "scenario": "calculator-mode-pre-post",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-calculator-mode-back-binary-04-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013920Z-683e0925-calculator-mode-back-binary/04-0-calculator-mode-preview.png",
+    "sha256": "dd721eb6788a8f0ea41355cbe950006e4cd47e0033ec3af6fe1a8f7750769258",
+    "scenario": "calculator-mode-back-binary",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-calculator-mode-back-continuous-04-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013937Z-9d28d7a0-calculator-mode-back-continuous/04-0-calculator-mode-preview.png",
+    "sha256": "c282f29d0271d1b5b42d9e3861b068d5310fd4fe166c00e1484c835330b064b0",
+    "scenario": "calculator-mode-back-continuous",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-calculator-mode-back-diagnostic-02-0-calculator-mode-preview.png",
+    "source": "artifacts/verification/rcms/20261015T013950Z-7c179a8e-calculator-mode-back-diagnostic/02-0-calculator-mode-preview.png",
+    "sha256": "e2ceae7ce8b48fb7278f87ce1b7d11ab69c87d806ec27e8a720cea98231da667",
+    "scenario": "calculator-mode-back-diagnostic",
+    "action": "calculator-mode-preview",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-plot-workflow-forest-07-0-family-editor-controls.png",
+    "source": "artifacts/verification/rcms/20261015T014007Z-fd18bbd2-plot-workflow-forest/07-0-family-editor-controls.png",
+    "sha256": "4929c39c485c8dfe2297d313dde32d8a46b230a5604079bd128049ea66465b28",
+    "scenario": "plot-workflow-forest",
+    "action": "family-editor-controls",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-plot-workflow-cumulative-07-0-family-editor-controls.png",
+    "source": "artifacts/verification/rcms/20261015T014038Z-4ef61f3b-plot-workflow-cumulative/07-0-family-editor-controls.png",
+    "sha256": "916edac1b093b11236db50b57537677efd49cf8176bdd7ceabce03a363b9fe7e",
+    "scenario": "plot-workflow-cumulative",
+    "action": "family-editor-controls",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-plot-workflow-leave-one-out-07-0-family-editor-controls.png",
+    "source": "artifacts/verification/rcms/20261015T014108Z-81148868-plot-workflow-leave-one-out/07-0-family-editor-controls.png",
+    "sha256": "c8029c9da21e12f018a2fcb0ac83bf5dcc5a080d04249acba689e0aea4db98d2",
+    "scenario": "plot-workflow-leave-one-out",
+    "action": "family-editor-controls",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-plot-workflow-subgroup-07-0-family-editor-controls.png",
+    "source": "artifacts/verification/rcms/20261015T014135Z-32d86534-plot-workflow-subgroup/07-0-family-editor-controls.png",
+    "sha256": "10ca5a703f4b5d4a222f5af687e764fa93c4949d0bfa307bec0608706b5d9b4e",
+    "scenario": "plot-workflow-subgroup",
+    "action": "family-editor-controls",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-plot-workflow-regression-07-0-family-editor-controls.png",
+    "source": "artifacts/verification/rcms/20261015T014229Z-92653eea-plot-workflow-regression/07-0-family-editor-controls.png",
+    "sha256": "8962a5921326213e0794a0b7711817a63c4de290a1a5c800cf163fb901f55714",
+    "scenario": "plot-workflow-regression",
+    "action": "family-editor-controls",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-plot-workflow-coefficient-07-0-family-editor-controls.png",
+    "source": "artifacts/verification/rcms/20261015T014301Z-d3c0ee4c-plot-workflow-coefficient/07-0-family-editor-controls.png",
+    "sha256": "c42e8518b66b69a6f86157860378924a4725054ccac31bdcc7221c8a7bae4041",
+    "scenario": "plot-workflow-coefficient",
+    "action": "family-editor-controls",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-plot-workflow-funnel-04-0-family-editor-controls.png",
+    "source": "artifacts/verification/rcms/20261015T014315Z-ca1e15bd-plot-workflow-funnel/04-0-family-editor-controls.png",
+    "sha256": "127d574cd2ac24778c30e1aeb17f2c7e4aff5712efb76d3fdbe2fe2f0e044142",
+    "scenario": "plot-workflow-funnel",
+    "action": "family-editor-controls",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-plot-workflow-trimfill-04-0-family-editor-controls.png",
+    "source": "artifacts/verification/rcms/20261015T014344Z-2a88b521-plot-workflow-trimfill/04-0-family-editor-controls.png",
+    "sha256": "b642b21f2b9c6368265292c60e6cf293f5415dbc05f5012a86e6f1c8f08b8753",
+    "scenario": "plot-workflow-trimfill",
+    "action": "family-editor-controls",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-plot-workflow-deeks-04-0-family-editor-controls.png",
+    "source": "artifacts/verification/rcms/20261015T014359Z-91298487-plot-workflow-deeks/04-0-family-editor-controls.png",
+    "sha256": "4bcf2bfca1d15bc787c5188cc8b4932a2edf050108c590b73df77a92d763e7f4",
+    "scenario": "plot-workflow-deeks",
+    "action": "family-editor-controls",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-15-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/15-0-round4-annotations.png",
+    "sha256": "89f9ef5d0bd2bb071dc055f768f744018bfd0e47da156e7ef3c8d58dad9953d6",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-16-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/16-0-round4-annotations-bottom.png",
+    "sha256": "b30fef0985cb30eb6d8bdeb927ec02f004bb785aae638564e44d1475aad48276",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-21-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/21-0-round4-annotations.png",
+    "sha256": "3d14291e3c56b54d7484cd584146b433eef8553f972bfe4558fee12ca875a081",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-22-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/22-0-round4-annotations-bottom.png",
+    "sha256": "736768668ba2c938f4b9c5feca7cc6f966c4439bfe88bff30ee849e70b15b45a",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-36-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/36-0-round4-annotations.png",
+    "sha256": "d619b28e7cc411b7e728a044cb875898981c09eb68705de7133e834e06ba03f7",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-37-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/37-0-round4-annotations-bottom.png",
+    "sha256": "5a606fec954d93e4c99fe9d8db51c44462e5bab3035e9298356a16b8687e9638",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-42-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/42-0-round4-annotations.png",
+    "sha256": "9031d49e9e2c26576466dd9577d10ff6a1895a2b908e0529d906773a11404c59",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-43-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/43-0-round4-annotations-bottom.png",
+    "sha256": "1e3e0e999380e8063d75f3bef54c382b5e0ae9cd0a52b83515d7e7259e7e77a9",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-57-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/57-0-round4-annotations.png",
+    "sha256": "b434d32171e035e09a8e993acb908eaafab3c2129cd91b14ebe71b98e882d598",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-58-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/58-0-round4-annotations-bottom.png",
+    "sha256": "547f2bafa556d9321b59f0f7e6abb02ac239af53bab8352ad2ea2e4eae5fc737",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-63-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/63-0-round4-annotations.png",
+    "sha256": "3ba275dc59ee4e86719c04ff2d4b9b2e2b41c71bdd309542b9e2afca9381e727",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-64-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/64-0-round4-annotations-bottom.png",
+    "sha256": "734df405ca21e26023aea52eb29b11271d2a20a523ce51e0a9ccf9fafc68e5b2",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-78-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/78-0-round4-annotations.png",
+    "sha256": "2695c329afafa0d71ed71c321e3d84d21de8af066075c17fca62d8cd44ac50ac",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-79-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/79-0-round4-annotations-bottom.png",
+    "sha256": "2fe06f29cfa0d9377ad007ec10d420b17ccb216ff2b19854e2442426f483966b",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-84-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/84-0-round4-annotations.png",
+    "sha256": "1c4788c721b7b381c1634f9814f64b61d4a15608e40e6dd58b9b99b3d7c5f8f4",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-85-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/85-0-round4-annotations-bottom.png",
+    "sha256": "73fe691a13744057a3e0c02f56f4d70f4d4716b251031860a5c30a5dada08153",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-99-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/99-0-round4-annotations.png",
+    "sha256": "e2a324971b76cda993b002d549253d238ce75d83b5b7845fc7d33a44b44866d7",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-100-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/100-0-round4-annotations-bottom.png",
+    "sha256": "f28fd52a7fffb0819f1cf8047c7052404b0601bddb71895696ee697d898a7a62",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-105-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/105-0-round4-annotations.png",
+    "sha256": "2382371628ce4800ca63a11235ce94fab38f690607ca8efd187ba3bff40fc964",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-106-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/106-0-round4-annotations-bottom.png",
+    "sha256": "fe242df34c55dd6f29a101336ef4fad582d94fc2b488956d4ad1c813a446e9f8",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-120-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/120-0-round4-annotations.png",
+    "sha256": "822c31eb900009a15a5e0a11942f70c70a449aa8e4b7de7f7b8e0aa4e0c92c58",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-121-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/121-0-round4-annotations-bottom.png",
+    "sha256": "c4d1ddb4f22404319d07e74a550db8b4c33a7ecf6197dcb3618f1b148eca8e92",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-126-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/126-0-round4-annotations.png",
+    "sha256": "61c4fefc01b2430a963c840da041e7aedd23fe2e5fe56465177119d29fe4563e",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-diagnostic-127-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011622Z-7193306a-audit-round3-presentation-diagnostic/127-0-round4-annotations-bottom.png",
+    "sha256": "0033cdd5af3de9a2cd9e7828267bc14a5f04e5b8b316d85100fe8f2dfe018c41",
+    "scenario": "audit-round3-presentation-diagnostic",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-14-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/14-0-round4-annotations.png",
+    "sha256": "daab7aac79703e19f8b79e4ba0eecd0d6878eb3c75998db8c2dfbd64d924cc91",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-15-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/15-0-round4-annotations-bottom.png",
+    "sha256": "5bf370769cdd24468a07787cef8b88c2789f066407b6a7c3532a4d931869bf6a",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-28-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/28-0-round4-annotations.png",
+    "sha256": "ead3a770da30ebd4b9f4edecb0d9f14fbccb51e3e5737b4edb685d5aa27b5c58",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-29-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/29-0-round4-annotations-bottom.png",
+    "sha256": "7d77fc360dc846f2b88cc4361129eea8c5ab771f21b9854aca38e375cd839cb4",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-42-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/42-0-round4-annotations.png",
+    "sha256": "921070fb19518df11c1d9083178d7390e82cca4d1da2e811a83ec665434dc252",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-43-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/43-0-round4-annotations-bottom.png",
+    "sha256": "a4960626cfb70aff16337327644ffe678ec1d2b4a6cbaaf77c461ebf722af160",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-56-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/56-0-round4-annotations.png",
+    "sha256": "1a99aa16822ab47a70c1bf48b66fe1d6987b9d180a145e4da27027aaf82ae6cc",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-57-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/57-0-round4-annotations-bottom.png",
+    "sha256": "d781c9eaeee321e61e1c313ca9c16ef8e7db3549964e9e21e6b3130a80225afe",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-70-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/70-0-round4-annotations.png",
+    "sha256": "b358607181cc871bcab45a3abf302c683a191008239789aea95a14ff8f4148d2",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-71-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/71-0-round4-annotations-bottom.png",
+    "sha256": "77cd1986e8d671cb2d744228868ad33bc0c37265256a135fa5f33aa4f2942bbc",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-84-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/84-0-round4-annotations.png",
+    "sha256": "7db320803c4aa098c6179408337c66567049cb2529d3bbe82f087438828aebd4",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-85-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T011917Z-48596468-audit-round3-presentation-onearm-proportion/85-0-round4-annotations-bottom.png",
+    "sha256": "c4b5d33dc3319e54887b8d332d8f8a2bedefea6ec46c755d67c6211470ed65bc",
+    "scenario": "audit-round3-presentation-onearm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-proportion-14-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/14-0-round4-annotations.png",
+    "sha256": "711df1585f7fe0d4baa4d63ca967820417d26c86e882f8ae190f69d414977a55",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-proportion-15-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/15-0-round4-annotations-bottom.png",
+    "sha256": "82fcb9184284d336d37e9240c4bf5a49b2d7f04f507980f927ba65c09ceb392a",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-proportion-28-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/28-0-round4-annotations.png",
+    "sha256": "2f88e0d0c1a8f80a9731c102441666d9d856d5836915ac53685acf80443397c6",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-proportion-29-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/29-0-round4-annotations-bottom.png",
+    "sha256": "b8af4d756ab78fafc9575b0fa9d3d3076319f7458d0d367680135f6fb6ae2f7a",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-proportion-42-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/42-0-round4-annotations.png",
+    "sha256": "1175b361feb585b07d82d3bdc7d44c4216fc9b08477e35cbe00f17189e75f00a",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-proportion-43-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/43-0-round4-annotations-bottom.png",
+    "sha256": "f3a9bd2addf0be4e725c5e35ea64ceb6a67c8ae8ca4f5210f21f76e05c517387",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-proportion-56-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/56-0-round4-annotations.png",
+    "sha256": "cd3807c8c310bc3bfa00fe488139c3090e3831ebcd87bef23a7693b35ee231b8",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-proportion-57-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/57-0-round4-annotations-bottom.png",
+    "sha256": "9a8298760479127e67cc88bcf9bdd90f1cea4fe4b48132d5ca03fb17a4d57604",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-proportion-70-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/70-0-round4-annotations.png",
+    "sha256": "00150534309796ffc892ab659264e62303840ecfbd9d64796b5ad33da11ba35a",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-proportion-71-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/71-0-round4-annotations-bottom.png",
+    "sha256": "2ef8b31d79fcfc978fe385a4dd81f958f390dc88761163a92f523110992ef393",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-twoarm-proportion-84-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/84-0-round4-annotations.png",
+    "sha256": "2c905f59d0a5303eb5604f6b544e69d40871d544f6e47d8b99c4af2f44119a35",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-proportion-85-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/85-0-round4-annotations-bottom.png",
+    "sha256": "16b7c4afc8c47ad04e52891ece8a13f1016d0b3ae3dc33fd237faddb677496af",
+    "scenario": "audit-round3-presentation-twoarm-proportion",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-mean-14-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean/14-0-round4-annotations.png",
+    "sha256": "9c8fce3b4bae36ac844186e71ddd44817c7d02c8e05cc1f697111f6c3047ea7d",
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-mean-15-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean/15-0-round4-annotations-bottom.png",
+    "sha256": "7be4ae095a5c87718120dbd9f5a089a060bdad1e2a3868f278f13dcf9e3df990",
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-mean-28-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean/28-0-round4-annotations.png",
+    "sha256": "7fdfcff38200128c8f291344aa945218ea90adb1f9b63e14719aee0da38efa30",
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-mean-29-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean/29-0-round4-annotations-bottom.png",
+    "sha256": "6f3c001ed04fc3eac0bc4fca9c0d84c19c80cb04bf4a6156d302c7f93d577da4",
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-mean-42-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean/42-0-round4-annotations.png",
+    "sha256": "895b923ee10a0b08051573533c4bb59e5a81a7832a89a190dd3670bc8a64a4bc",
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-mean-43-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean/43-0-round4-annotations-bottom.png",
+    "sha256": "85b6b35139113d8fd53009983944d401952757e593bb970ac0d0c9dfc53fffe8",
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-mean-56-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean/56-0-round4-annotations.png",
+    "sha256": "037a05b685e40feabdfb71e6415c224294067ddc129fb42518fc495b395b7cea",
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-mean-57-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean/57-0-round4-annotations-bottom.png",
+    "sha256": "0fc20ac07d9aa5a0eaef61b23497d694cddd45845dd2d320fd0b8d1df335d7b2",
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-mean-70-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean/70-0-round4-annotations.png",
+    "sha256": "e3af59ba72c3370caec287bbdca037518ffae6ba88b8a07e355978cd7aeba23d",
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-mean-71-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean/71-0-round4-annotations-bottom.png",
+    "sha256": "2a265e688e6083ee10150f42b17ec07226f7eb57adecf158af5616a570963b98",
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-twoarm-mean-84-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean/84-0-round4-annotations.png",
+    "sha256": "4dfff38381706d735e2a8b66bcb13f831586d53fbb4368285c323f2d3f2e9fe2",
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-mean-85-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean/85-0-round4-annotations-bottom.png",
+    "sha256": "b98d810ce2881555ba75dc951ca99dea0e0ee365dabd59e7f405d2eb7b4a4c70",
+    "scenario": "audit-round3-presentation-twoarm-mean",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-smd-14-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd/14-0-round4-annotations.png",
+    "sha256": "4279baf2ca4757e76530beba268146b9a83f8a1c33fe750b4fddb53d53c660ff",
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-smd-15-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd/15-0-round4-annotations-bottom.png",
+    "sha256": "9b931a44f8ef2338e40840c451168f8560b4cfbe69892339bd067f98638ab5b9",
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-smd-28-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd/28-0-round4-annotations.png",
+    "sha256": "35b3d369bfb93bc2dfc28e860066eeeb60cca9376c32d38d581e5e12f8296a13",
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-smd-29-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd/29-0-round4-annotations-bottom.png",
+    "sha256": "9b33dc2f03f66858a2dd14d061e73b0400ad276168b7bf229d3b36e5460ce2f9",
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-smd-42-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd/42-0-round4-annotations.png",
+    "sha256": "48d4bac9254d85f5042964307e3e664fd7953dca7e76548f82657ebeda4207cd",
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-smd-43-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd/43-0-round4-annotations-bottom.png",
+    "sha256": "7ecbc9e00100975c7929b75024a85eb4490e2c8ec48cad287ee0fdb950896e04",
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-smd-56-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd/56-0-round4-annotations.png",
+    "sha256": "751fb4aebd9ccaff864bd2c5f3762670b678bdaaf14bf60d9d2f5cd9348f0405",
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-smd-57-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd/57-0-round4-annotations-bottom.png",
+    "sha256": "ffd62b7a5e2a15eb04177a82e340e820128ab607d26617318a1c098ac0260752",
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-smd-70-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd/70-0-round4-annotations.png",
+    "sha256": "829911caaad6028a369622d8d6d4495b8f112f31b50f805413d25b69873cd783",
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-smd-71-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd/71-0-round4-annotations-bottom.png",
+    "sha256": "f7f37c23dbecf49566ab9f91cb1164237464f9a5b8c13a501442c5e0706adcea",
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-twoarm-smd-84-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd/84-0-round4-annotations.png",
+    "sha256": "6f9eb447a850bca9bac3cd2638cd5e101bc6f2262cce6960044ffc3f3bc61674",
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-twoarm-smd-85-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd/85-0-round4-annotations-bottom.png",
+    "sha256": "13ec2998e9b6d8f09baca37ed455d3a5cb3f3b45fe9685e32b4379dd1b8386e4",
+    "scenario": "audit-round3-presentation-twoarm-smd",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-reg-coef-14-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef/14-0-round4-annotations.png",
+    "sha256": "cb814571acc125cba4ffbe36cf3af3784bd60ec7e5ae497933c599497532f930",
+    "scenario": "audit-round3-presentation-reg-coef",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-reg-coef-15-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef/15-0-round4-annotations-bottom.png",
+    "sha256": "9f83481f57809d71b4c80141ae172dfe3b2bd149d4a355a8aa428a20bb0697dc",
+    "scenario": "audit-round3-presentation-reg-coef",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-reg-coef-28-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef/28-0-round4-annotations.png",
+    "sha256": "1e5788508600c20be559e048e9ce369d7a1cb6e36b2791c25b04921edb096fd5",
+    "scenario": "audit-round3-presentation-reg-coef",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-reg-coef-29-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef/29-0-round4-annotations-bottom.png",
+    "sha256": "fba49052a12d1bc9ce8277ee18ece3e6ed752cefbb9607578cbdb5f8a7e3d184",
+    "scenario": "audit-round3-presentation-reg-coef",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-reg-coef-42-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef/42-0-round4-annotations.png",
+    "sha256": "ff8ffb842249d74b469be84325d5db7044812b2003bb562395621bd05f1a8afe",
+    "scenario": "audit-round3-presentation-reg-coef",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-reg-coef-43-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef/43-0-round4-annotations-bottom.png",
+    "sha256": "e58425eeaa56bd544b67be1b55a266585e735c3187613f4c611be5fb6de832d5",
+    "scenario": "audit-round3-presentation-reg-coef",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-reg-coef-56-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef/56-0-round4-annotations.png",
+    "sha256": "d3d8872017f1af2d035427091f86d774186e7166708fffe5d0f84102c778d05b",
+    "scenario": "audit-round3-presentation-reg-coef",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-reg-coef-57-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef/57-0-round4-annotations-bottom.png",
+    "sha256": "01912915060180dd522e72dd2d03cfe6b3889c19438d6ba93f84b4238168e929",
+    "scenario": "audit-round3-presentation-reg-coef",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-reg-coef-70-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef/70-0-round4-annotations.png",
+    "sha256": "6ec9daf42ce38f252314955a728f83fddb5f29ba5888675b6a5b34aa55bfc780",
+    "scenario": "audit-round3-presentation-reg-coef",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-reg-coef-71-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef/71-0-round4-annotations-bottom.png",
+    "sha256": "471c4da07af5b69d3d11ff312345f404abcdc3f0ac14c6318d4902b9684d236e",
+    "scenario": "audit-round3-presentation-reg-coef",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-reg-coef-84-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef/84-0-round4-annotations.png",
+    "sha256": "fae2237f0c13ed89b65b1259cb7ea83fcc5af629fb6d4e029fbd21862ff8294a",
+    "scenario": "audit-round3-presentation-reg-coef",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-reg-coef-85-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef/85-0-round4-annotations-bottom.png",
+    "sha256": "5dcb0f0c52cd181aa8782a6e55e7715f3e32f900f42424c68e1a699253b6b3e5",
+    "scenario": "audit-round3-presentation-reg-coef",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-generic-effect-14-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect/14-0-round4-annotations.png",
+    "sha256": "775b002f9dd509b03818b58881acc04ced800939b484669dae384f2e513e012a",
+    "scenario": "audit-round3-presentation-generic-effect",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-generic-effect-15-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect/15-0-round4-annotations-bottom.png",
+    "sha256": "6ffa374a84f786b51f47d1b053c71a058c43e4d6596e12bdd17d8d7c258f6783",
+    "scenario": "audit-round3-presentation-generic-effect",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-generic-effect-28-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect/28-0-round4-annotations.png",
+    "sha256": "e0fd29e71757be7cd9d4072a3c0f6aa8870d3e55bca4d583ed848f65de67cbe6",
+    "scenario": "audit-round3-presentation-generic-effect",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-generic-effect-29-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect/29-0-round4-annotations-bottom.png",
+    "sha256": "450e8d062026a41f61b301874e183478a44be3c650bf20078a9da1183f8ce8e6",
+    "scenario": "audit-round3-presentation-generic-effect",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-generic-effect-42-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect/42-0-round4-annotations.png",
+    "sha256": "2ddc03fc64926cd6b897c63f336301371410e5df57e024f75a88b0ec3fb5893c",
+    "scenario": "audit-round3-presentation-generic-effect",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-generic-effect-43-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect/43-0-round4-annotations-bottom.png",
+    "sha256": "61a816395b85e0224717bf94dc74e166a4182879ddc9747742e8963b2643d99f",
+    "scenario": "audit-round3-presentation-generic-effect",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-generic-effect-56-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect/56-0-round4-annotations.png",
+    "sha256": "65185910b92e66047c21960c9320c7ba09dbd00caed771d24c0b9654658c739a",
+    "scenario": "audit-round3-presentation-generic-effect",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-generic-effect-57-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect/57-0-round4-annotations-bottom.png",
+    "sha256": "fd7636d322962bc83a7572ff22f915174983f623932819f6b7ac6c10dc8c8370",
+    "scenario": "audit-round3-presentation-generic-effect",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-generic-effect-70-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect/70-0-round4-annotations.png",
+    "sha256": "5f97d503004a5291dc727a90b3c3a6147919efb58314c5e0c2272d6ff1e0771a",
+    "scenario": "audit-round3-presentation-generic-effect",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-generic-effect-71-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect/71-0-round4-annotations-bottom.png",
+    "sha256": "6e8017274083019c9e68a226e7560895e9e5e114ccfeffba1f24808b6e1e6f32",
+    "scenario": "audit-round3-presentation-generic-effect",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "screenshots/helper-audit-round3-presentation-generic-effect-84-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect/84-0-round4-annotations.png",
+    "sha256": "95fb4c71b63efaff81fc10cc3ae8948416ba1352e2a502987302881ca91a5862",
+    "scenario": "audit-round3-presentation-generic-effect",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-generic-effect-85-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect/85-0-round4-annotations-bottom.png",
+    "sha256": "4349b7315205ef994d7415d894647fcb1cf08423432cf5f920af19329e50ffc8",
+    "scenario": "audit-round3-presentation-generic-effect",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-16-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/16-0-round4-annotations.png",
+    "sha256": "78902208b14732829b3d737f42af186c4f27a21e1157d81db2b2050dd9df042c",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-17-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/17-0-round4-annotations-bottom.png",
+    "sha256": "fbe90fd40dd406c40f8690a60170423df4b43456d549247a0438541c4af10770",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-32-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/32-0-round4-annotations.png",
+    "sha256": "ed5f0eace66fcefab523982bbc298ad2627450230f8a3b067dce9d7596725a4b",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-33-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/33-0-round4-annotations-bottom.png",
+    "sha256": "1a2b23efe1e3f68d5e7f263a3565e638909896f8d55537b4672946ea57babd3d",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-48-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/48-0-round4-annotations.png",
+    "sha256": "2631ce33cbd526735ca2e1fc52c197733875f88110a35cfd752603610aa209ed",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-49-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/49-0-round4-annotations-bottom.png",
+    "sha256": "f2e79c834d033fc813aebfdf0d475fd92696790c0747cde361e936007ab12e37",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-64-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/64-0-round4-annotations.png",
+    "sha256": "4f7d1ffb14d267b62834f72d9c20e06ee2ba37d6be692464e408c662afa66461",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-65-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/65-0-round4-annotations-bottom.png",
+    "sha256": "5b71608c64640875b12d58c318913aeb9289cf53c69ae9aa64abf431503fe05a",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-80-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/80-0-round4-annotations.png",
+    "sha256": "029ff76700d21d4a4f2d6e42be6fa44ed64f8d0abb6fd4e173097cbd0230a46d",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-81-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/81-0-round4-annotations-bottom.png",
+    "sha256": "dd15758292682b4215a2a680b86f96f1633344f0563cfa9aff136e459625aa09",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-96-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/96-0-round4-annotations.png",
+    "sha256": "125316798036a1f651169fbb1c718d4b6e7380d4c12d13a80948c3c236f8a5f1",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-97-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/97-0-round4-annotations-bottom.png",
+    "sha256": "5235b69a08c9d876e9b08e1ad667fe69e1064d63c6764f54087b1062a599611e",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-112-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/112-0-round4-annotations.png",
+    "sha256": "46ebdcda2184a78e016f54d9040b14a5801ed041763b65865570211a87f36489",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-113-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/113-0-round4-annotations-bottom.png",
+    "sha256": "166d8b3cd5ec82427a531e582f5ece7f08dca19629fc62c5df5f6891c0b2dd64",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-128-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/128-0-round4-annotations.png",
+    "sha256": "84e25d7235cb2ac6e712f3f10e434c59d63d175cd646e8d1dc694a68f9eaccde",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-129-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/129-0-round4-annotations-bottom.png",
+    "sha256": "596f21b6731d08e565752578f26f779771e22c18766d69c281645b0aae774b79",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-144-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/144-0-round4-annotations.png",
+    "sha256": "ace2280e38ea3afbcd1d1cee60b904e8863315eeeb3aaf3662376f0157ac531d",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-145-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/145-0-round4-annotations-bottom.png",
+    "sha256": "2d802d2511a9ebd8bdf97cd30c4b16de79ddd1dd4c39c4bfe8cab399d024ef6f",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-160-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/160-0-round4-annotations.png",
+    "sha256": "54913ac42aea713465a7744580b084ceb268ec778ffdbfaa16a6ee72c6246ebe",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-161-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/161-0-round4-annotations-bottom.png",
+    "sha256": "31bae921b3a46290bcde67b2d87c0c3df01e51d56bc55617d24b53d53311c6d8",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-176-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/176-0-round4-annotations.png",
+    "sha256": "0ae84cb821a4cdfda2647457af832b0c5020fe90755b7cc93b90e1cb82c1a2ad",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-177-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/177-0-round4-annotations-bottom.png",
+    "sha256": "ea96d0e073975ecc047a56c82de24940c3d10fe07bcb15ba34b07f04418d57b3",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-192-0-round4-annotations.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/192-0-round4-annotations.png",
+    "sha256": "818508fa9b1f6fe58df07e268ba8327f36a3df84bd032b13e6a9039697246615",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations",
+    "capture": "QWidget.grab in visible xcb helper"
+  },
+  {
+    "path": "raw/uncurated/helper-audit-round3-presentation-transforms-193-0-round4-annotations-bottom.png",
+    "source": "artifacts/verification/rcms/20261015T014537Z-ad214692-audit-round3-presentation-transforms/193-0-round4-annotations-bottom.png",
+    "sha256": "b171ce34d90ea583ad4fe401c512336ce8645d3e5294e4d9afcc66bfef9a43c9",
+    "scenario": "audit-round3-presentation-transforms",
+    "action": "round4-annotations-bottom",
+    "capture": "QWidget.grab in visible xcb helper"
+  }
+]

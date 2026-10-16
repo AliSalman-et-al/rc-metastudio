@@ -1,0 +1,77 @@
+[
+  {
+    "label": "review1-native-shell-final",
+    "evidence": "artifacts/verification/rcms/20261015T071518Z-d276b828-review1-design",
+    "manifest_sha256": "8fb570bcc7c82b1cb43c005f1876b8e01428f12c29affffa842480529dd44cc7"
+  },
+  {
+    "label": "review1-native-arms",
+    "evidence": "artifacts/verification/rcms/20261015T071626Z-aaa10b44-audit-round3-arm-names",
+    "manifest_sha256": "bbe759d93ebcff079f32890eee562446520469a75272d757211ed8ec70f11e96"
+  },
+  {
+    "label": "review1-header-final",
+    "evidence": "artifacts/verification/rcms/20261015T072833Z-ccdbbfdf-audit-round3-round5",
+    "manifest_sha256": "4f8343cc3e2c06afa5308e30da8faaa4648db8448393d79478050f52fa2b324e"
+  },
+  {
+    "label": "review1-irr-qualified",
+    "evidence": "artifacts/verification/rcms/20261015T073029Z-f1c1672a-audit-round3-irr-context",
+    "manifest_sha256": "82491a3df7ef6b9486e6061dcf8a60d3275479e23da79070378984f97c7b725e"
+  },
+  {
+    "label": "review1-native-editor-forest",
+    "evidence": "artifacts/verification/rcms/20261015T071954Z-2bb6b852-plot-workflow-forest",
+    "manifest_sha256": "e7b2fa72a65c7aa3e646d26bec4c14761daed61032858b4da84484071189c953"
+  },
+  {
+    "label": "review1-native-editor-cumulative",
+    "evidence": "artifacts/verification/rcms/20261015T072042Z-e61d15e2-plot-workflow-cumulative",
+    "manifest_sha256": "70baa2d9d9c91038e1809b2ddeb7dd0384f5dfc7c18052d881c9e3a659413b09"
+  },
+  {
+    "label": "review1-native-editor-leave-one-out",
+    "evidence": "artifacts/verification/rcms/20261015T072126Z-eb91ea13-plot-workflow-leave-one-out",
+    "manifest_sha256": "cabf6f692f80313523314e432f11ead528bd7bfce08330f5d5e7cffddc7ebd88"
+  },
+  {
+    "label": "review1-native-editor-subgroup-qualified",
+    "evidence": "artifacts/verification/rcms/20261015T073059Z-a55764f3-plot-workflow-subgroup",
+    "manifest_sha256": "a208d8b6642591835d6b08fe7511ee8a041e1461f7c8645377f650a457f40f04"
+  },
+  {
+    "label": "review1-native-editor-regression",
+    "evidence": "artifacts/verification/rcms/20261015T072319Z-033dc061-plot-workflow-regression",
+    "manifest_sha256": "acecb4f5a034fcfe41a25a8dead6d150faf521f18f558c5ac5705897d240d757"
+  },
+  {
+    "label": "review1-native-editor-sroc",
+    "evidence": "artifacts/verification/rcms/20261015T072346Z-aad250fb-plot-workflow-sroc",
+    "manifest_sha256": "f4b23f4e533a645ef87cd8e4a9d51032c821d8210c7857025713d5982e2abd95"
+  },
+  {
+    "label": "review1-native-editor-coefficient",
+    "evidence": "artifacts/verification/rcms/20261015T072418Z-44e64fd0-plot-workflow-coefficient",
+    "manifest_sha256": "30db9b56e960045f7470ce633c061b1e9153f0f23be9df72d4d8ab01f143e9c1"
+  },
+  {
+    "label": "review1-native-editor-funnel-final",
+    "evidence": "artifacts/verification/rcms/20261015T073444Z-6a5a5af3-plot-workflow-funnel",
+    "manifest_sha256": "348d2fae3f808f05490116e18f2c0b1f8cb9fe44287b6a7d3cd0c24769e22fff"
+  },
+  {
+    "label": "review1-native-editor-contour-qualified",
+    "evidence": "artifacts/verification/rcms/20261015T073232Z-49f6300b-plot-workflow-contour",
+    "manifest_sha256": "3c4bb0e92fa9a843150498e237374127def270b66962b3e81d74035e13badaca"
+  },
+  {
+    "label": "review1-native-editor-trimfill-qualified",
+    "evidence": "artifacts/verification/rcms/20261015T073255Z-7f458024-plot-workflow-trimfill",
+    "manifest_sha256": "439cabb9cccb96d4aa39c796c4fdff2df6c2df3a98dc2d4948b8ead49700a800"
+  },
+  {
+    "label": "review1-native-editor-deeks-final",
+    "evidence": "artifacts/verification/rcms/20261015T073419Z-cfbbb2d8-plot-workflow-deeks",
+    "manifest_sha256": "3ef414888796b3f1fa7d5b6c7eeb55ed0dafb910cd70e2ddf56c50f6bb7b9c27"
+  }
+]

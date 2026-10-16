@@ -7,7 +7,7 @@ from functools import cmp_to_key
 import math
 
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSignal
-from PyQt6.QtGui import QColor, QIcon
+from PyQt6.QtGui import QColor, QIcon, QFont
 
 from rc_metastudio import analysis_identity, name_validation, qt_text, workspace_editing
 from rc_metastudio.meta_globals import TIME_TO_EVENT, EVENT_RATES, RATIO_DATA_TYPES
@@ -29,7 +29,7 @@ from rc_metastudio.meta_globals import (
     CONTINUOUS,
     CONTINUOUS_METRIC_NAMES,
     DEFAULT_CONFIDENCE_LEVEL,
-    DEFAULT_GROUP_NAMES,
+    default_group_names,
     DIAGNOSTIC,
     DIAGNOSTIC_METRIC_LABELS,
     NUM_DIGITS,
@@ -80,14 +80,9 @@ def _display_label(value):
     return " ".join(_display_label_token(token) for token in str(value).split(" "))
 
 
-def _display_group_label(value):
-    if str(value).lower().startswith("tx "):
-        return _display_label(value)
-    return value
-
-
 def _raw_data_display_label(group_name, suffix):
-    return "{} {}".format(_display_group_label(group_name), _display_label(suffix))
+    field = {"n": "N", "sd": "SD", "se": "SE"}.get(suffix.lower(), suffix.lower())
+    return f"{group_name} {field}"
 
 
 def _item_data(value=None):
@@ -363,10 +358,9 @@ class DatasetTableModel(QAbstractTableModel):
                 group_names[self.group_index_b],
             ]
         else:
-            if not self.is_diagnostic():
-                self.current_groups = list(DEFAULT_GROUP_NAMES)
-            else:
-                self.current_groups = ["test 1"]
+            self.current_groups = group_names or default_group_names(
+                DIAGNOSTIC if self.is_diagnostic() else self.get_current_outcome_type(get_str=False),
+                self.get_current_outcome_subtype())
         self.previous_groups = self.current_groups
         self.reset_model()
 
@@ -461,6 +455,8 @@ class DatasetTableModel(QAbstractTableModel):
         value = raw_data[adjusted_index]
         if value in ("", None):
             return _item_data("")
+        if role == Qt.ItemDataRole.EditRole:
+            return _item_data(str(value))
         if self.get_current_outcome_type(get_str=False) == CONTINUOUS:
             return self._continuous_raw_cell_data(index, role, value)
         try:
@@ -474,9 +470,8 @@ class DatasetTableModel(QAbstractTableModel):
                 return _item_data(round(value, self.NUM_DIGITS))
             except (TypeError, ValueError):
                 return _item_data(_to_native_text(value))
-        digits = 12 if role == Qt.ItemDataRole.EditRole else None
         try:
-            return _item_data(str(self.format_float(value, num_digits=digits)))
+            return _item_data(str(self.format_float(value)))
         except (TypeError, ValueError):
             return _item_data(_to_native_text(value))
 
@@ -528,7 +523,7 @@ class DatasetTableModel(QAbstractTableModel):
         value = values[position]
         if value is None:
             return _item_data("")
-        return _item_data(self.format_float(value, num_digits=12 if role == Qt.ItemDataRole.EditRole else display_digits))
+        return _item_data(str(value) if role == Qt.ItemDataRole.EditRole else self.format_float(value, num_digits=display_digits))
 
     def _ratio_display_values(self, unit):
         record = unit.ratio_input(self.current_groups)
@@ -572,8 +567,7 @@ class DatasetTableModel(QAbstractTableModel):
         if value is None:
             value = ""
         if value != "" and covariate.data_type == CONTINUOUS:
-            digits = 12 if role == Qt.ItemDataRole.EditRole else None
-            return _item_data(self.format_float(value, num_digits=digits))
+            return _item_data(str(value) if role == Qt.ItemDataRole.EditRole else self.format_float(value))
         return _item_data(_to_native_text(value))
 
     def _effect_tooltip(self, index, study):
@@ -609,6 +603,16 @@ class DatasetTableModel(QAbstractTableModel):
         return f"Reported {self.current_effect}; input scale: {record.scale}; original CI: {record.confidence:g}%. Click the study row number to edit input details."
 
     def _role_data(self, index, role, study):
+        if role == Qt.ItemDataRole.AccessibleTextRole:
+            value = self._display_data(index, Qt.ItemDataRole.DisplayRole, study)
+            header = self._horizontal_header_display(index.column())
+            return f"{study.name}, {header}: {value or ''}"
+        if role == Qt.ItemDataRole.AccessibleDescriptionRole:
+            return self._effect_tooltip(index, study) or "Editable study data. Press Enter to edit; use the row calculator for study inputs."
+        if role == Qt.ItemDataRole.FontRole and index.column() in self.OUTCOMES and self._study_has_entered_data(index.row()):
+            font = QFont()
+            font.setItalic(True)
+            return font
         if role == Qt.ItemDataRole.ToolTipRole:
             tooltip = self._effect_tooltip(index, study)
             if tooltip is not None:
@@ -651,9 +655,9 @@ class DatasetTableModel(QAbstractTableModel):
         # correct outcome in the meta-analytic unit. the protocol is
         # as follows. if we are dealing with a two group outcome,
         # then the string is:
-        #    tx A-tx B
+        #    first group - second group
         # A one-group outcome uses:
-        #    tx A
+        #    first group
         if self.current_effect in ONE_ARM_METRICS:
             group_comparison = self.current_groups[0]
         else:
@@ -897,9 +901,9 @@ class DatasetTableModel(QAbstractTableModel):
             return ("# True Positives", "# False Negatives", "# False Positives", "# True Negatives")[position] + suffix
         group = self.current_groups[position // (2 if outcome_type == BINARY else 3)]
         if outcome_type == BINARY:
-            label = ("# of Events in group {0} (numerator)", "# of Subjects in group {0} (numerator)")[position % 2]
+            label = ("Events in {0} (numerator)", "Total participants in {0} (denominator)")[position % 2]
         else:
-            label = ("# Subjects in group {0}", "Mean of group {0}", "Standard Deviation of group {0}")[position % 3]
+            label = ("Participants in {0}", "Mean for {0}", "Standard deviation for {0}")[position % 3]
             if position % 3 == 2:
                 return label.format(group)
         rename = "\nRename group by right-clicking the column header and selecting 'rename group <name>'"
@@ -963,7 +967,7 @@ class DatasetTableModel(QAbstractTableModel):
 
     def _vertical_header_data(self, section, role):
         if role == Qt.ItemDataRole.ToolTipRole and self._study_has_entered_data(section):
-            return "Use calculator to fill-in missing information"
+            return "Open the study calculator to enter or complete inputs"
         if role == Qt.ItemDataRole.DecorationRole:
             return (
                 QIcon(":/icons/table/calculator.svg")
@@ -1132,7 +1136,7 @@ class DatasetTableModel(QAbstractTableModel):
             if not self._is_blank_study(study)
         ]
 
-    def add_new_outcome(self, name, data_type, sub_type=None):
+    def add_new_outcome(self, name, data_type, sub_type=None, group_names=None):
         name = validate_new_outcome_name(self.dataset, name)
         if data_type is None:
             raise ValueError("Cannot add an outcome without a data type")
@@ -1140,7 +1144,7 @@ class DatasetTableModel(QAbstractTableModel):
         if data_type_key not in STR_TO_TYPE_DICT:
             raise ValueError("Unsupported outcome data type: %r" % data_type)
         data_type = STR_TO_TYPE_DICT[data_type_key]
-        self.dataset.add_outcome(Outcome(name, data_type, sub_type=sub_type))
+        self.dataset.add_outcome(Outcome(name, data_type, sub_type=sub_type), group_names=group_names)
 
     def remove_outcome(self, outcome_name):
         self.dataset.remove_outcome(outcome_name)
@@ -1301,7 +1305,7 @@ class DatasetTableModel(QAbstractTableModel):
             self.group_index_b = 0
 
     def _next_group_index(self, group_names):
-        # increments tx A; ignores B
+        # Advance the selected diagnostic test.
         if self.group_index_a < len(group_names) - 1:
             self.group_index_a += 1
         else:
@@ -1327,7 +1331,8 @@ class DatasetTableModel(QAbstractTableModel):
         self.previous_groups = self.current_groups
         self.current_groups = group_names
         self.group_index_a = self.dataset.get_group_names().index(group_names[0])
-        self.group_index_b = self.dataset.get_group_names().index(group_names[1])
+        self.group_index_b = (self.dataset.get_group_names().index(group_names[1])
+                              if len(group_names) > 1 else self.group_index_a)
 
     def get_group_names(self):
         return self.dataset.get_group_names()

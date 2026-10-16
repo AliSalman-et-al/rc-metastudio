@@ -115,3 +115,23 @@ g.round.display.zval <- function(x, digits) {
   x.disp[positive] <- sprintf(digits.str, x[positive])
   x.disp
 }
+
+# Use the pooled PFT inverse for both prediction endpoints, never the two study-N
+# inverse selected by binary.transform.f for a vector of length two.
+rcmetar.prediction.display <- function(bounds, params, transform, sample.sizes=NULL) {
+  note <- NULL
+  if (identical(as.character(params$measure), "PFT")) {
+    if (length(sample.sizes) && all(is.finite(sample.sizes) & sample.sizes > 0)) {
+      inverse <- metafor::transf.ipft.hm(bounds, targs=list(ni=sample.sizes))
+      if (all(is.finite(inverse))) {
+        return(list(bounds=inverse, note="Freeman-Tukey prediction bounds use the same harmonic-mean sample size as the pooled proportion. The overall-effect test uses a transformed zero, not proportion zero.", transformed=FALSE))
+      }
+    }
+    note <- "Freeman-Tukey scale: proportion back-transformation is undefined without valid sample sizes or finite inverse bounds."
+  } else if (identical(as.character(params$measure), "PAS")) {
+    bounds <- metafor::transf.iarcsin(bounds)
+  } else {
+    bounds <- transform$display.scale(bounds, ni=sample.sizes)
+  }
+  list(bounds=bounds, note=note, transformed=identical(as.character(params$measure), "PFT"))
+}

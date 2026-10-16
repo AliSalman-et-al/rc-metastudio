@@ -1,0 +1,55 @@
+Meta-analysis — Verification outcome · Generic entered effect · Entered effect
+Group: tx A · Follow-up: first
+
+Model configuration
+Project: typed.rcms
+Model: Continuous Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+
+Summary
+
+Model Results
+Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+1.000000e-10	9.199848e-11	1.080015e-10	4.082483e-12	< 1e-06
+
+Heterogeneity
+τ²	Q(df=5)	Het. p-value	I²
+0.000000	0.000000	1.000000	0.0%
+
+Test for overall effect
+Z	p-value
+24.494897	< 1e-06
+
+Prediction interval
+Lower bound (95% PI)	Upper bound (95% PI)
+9.199848e-11	1.080015e-10
+
+Continuous Random-Effects Model
+
+Metric: Entered effect
+
+95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.
+
+Weights
+
+Weights
+Statistic	Value
+Fixture 1	16.67
+Fixture 2	16.67
+Fixture 3	16.67
+Fixture 4	16.67
+Fixture 5	16.67
+Fixture 6	16.67
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+
+
+Inference Method
+
+Normal approximation

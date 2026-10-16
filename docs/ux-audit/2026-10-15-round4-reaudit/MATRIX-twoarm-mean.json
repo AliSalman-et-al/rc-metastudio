@@ -1,0 +1,162 @@
+[
+  {
+    "path": "screenshots/matrix-twoarm-mean-standard-report.png",
+    "sha256": "8b155671710b64f01ec96c2f9e91abbd68ab2a82aabb62b3edd4f00842ec3f74",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-twoarm-mean-standard-report-bottom.png",
+    "sha256": "14f8ff62e211335320bd189270ed955c8319094c21fd4d7d3de4fffe990eed71",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-standard-figure.png",
+    "sha256": "fcf27623b52f6031df5e25f943f59b4ff794d992f3850461a61035b047846c93",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-twoarm-mean-standard-figure-bottom.png",
+    "sha256": "fcf27623b52f6031df5e25f943f59b4ff794d992f3850461a61035b047846c93",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-cumulative-report.png",
+    "sha256": "bc4b95eff7002b13cfe239df3ba8b8027eb3ae361baaac62e97218626cc85a42",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-twoarm-mean-cumulative-report-bottom.png",
+    "sha256": "0668e4a0aef6115ed285900da5ede3fc07135a9a3113418eb5c85a3dadc39c57",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-cumulative-figure.png",
+    "sha256": "2bd37bac1a24c2ed88ae75cac1405613538bafcffb7969d922cd6123dc269085",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-twoarm-mean-cumulative-figure-bottom.png",
+    "sha256": "57c8464360c1b21ba39ef9720a4e7c297462d091dc55ea31eace11e51b8b9ea5",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-leave-one-out-report.png",
+    "sha256": "02ce7042324b35556931641e8861e7b25362a160874886b1e450a812086dd1e1",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-twoarm-mean-leave-one-out-report-bottom.png",
+    "sha256": "806fc5c533a104c13c4adf36a86013d34f374e0228c58ea2e1a1a45f8e8ee54f",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-leave-one-out-figure.png",
+    "sha256": "6dba32bb56231b1bf36c674263efc8749dec9cab64d64600ac07b816eaef3e72",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-twoarm-mean-leave-one-out-figure-bottom.png",
+    "sha256": "b2250425ee8adf0d71d6a61cebe8e7de0d8fd33af120a8832819c7eebd0ea929",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-subgroup-report.png",
+    "sha256": "f5e3f1c5be561853c8beba5447fe821b2f516c8acfd58c834938c49fe361bd71",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-twoarm-mean-subgroup-report-bottom.png",
+    "sha256": "77d4c8024c69e049770638f634358203062c2cc01636129cedbb8d79ca30e741",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-subgroup-figure.png",
+    "sha256": "b429da626ca141b3b6517f4fc1ca4ae57e61ca731de4a2324cf0a12493c73ccb",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-twoarm-mean-subgroup-figure-bottom.png",
+    "sha256": "8bdb86586621780e0ab8c123c3f7bbd8e4c178343c3d393573829888c33af576",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-meta-regression-report.png",
+    "sha256": "616da52605bdd14a8083bb75ebf01d92b789481b6dc5e70743302297c1ab447f",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-twoarm-mean-meta-regression-report-bottom.png",
+    "sha256": "231a32db2f21e465fa4ac7712901b6ae54b29f11fe228e0e588efd000a3e232c",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-meta-regression-figure.png",
+    "sha256": "51c874f28723e3039626effdf6d2d06d9a49af905e99970f5bd399731076b98b",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-twoarm-mean-meta-regression-figure-bottom.png",
+    "sha256": "35ebcfc3f467e1d331efb238cbdb85fa9c2ab2802f1f88ab7a061601bf3b0e60",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression — Verification outcome · Two-arm continuous · Mean Difference\nComparison: tx A / tx B · Follow-up: first"
+  }
+]

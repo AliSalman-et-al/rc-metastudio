@@ -1,0 +1,146 @@
+[
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-11-0-round3-sequential-rows.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/11-0-round3-sequential-rows.png",
+    "sha256": "55d969596591ac8f33a791ac96d7859f6a161779218357d2fa1a10301c183e99",
+    "action": "round3-sequential-rows",
+    "step": 11,
+    "scenario": "audit-round3-presentation-sequential"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-12-0-round3-sequential-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/12-0-round3-sequential-bottom.png",
+    "sha256": "f7980090f991b832137c72e3d1e204ccf02af78abd6d06657949b1474ea77a0b",
+    "action": "round3-sequential-bottom",
+    "step": 12,
+    "scenario": "audit-round3-presentation-sequential"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-17-0-round3-null-excluded-controls.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/17-0-round3-null-excluded-controls.png",
+    "sha256": "bf5f3e37a4bebd9855504dc31a451ddedbc07cf3e08a292d07559daba0adb3c4",
+    "action": "round3-null-excluded-controls",
+    "step": 17,
+    "scenario": "audit-round3-presentation-sequential"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-18-0-round3-null-excluded-rendered.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/18-0-round3-null-excluded-rendered.png",
+    "sha256": "16b1707528913d20f67a678146b326d898325eeb15c837ddbf4afced3566c22a",
+    "action": "round3-null-excluded-rendered",
+    "step": 18,
+    "scenario": "audit-round3-presentation-sequential"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-28-0-round3-sequential-rows.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/28-0-round3-sequential-rows.png",
+    "sha256": "c3c1857fa7dc3a74218ce6a5f7d9282049397c1163416345d900143ae5e1aba2",
+    "action": "round3-sequential-rows",
+    "step": 28,
+    "scenario": "audit-round3-presentation-sequential"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-29-0-round3-sequential-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/29-0-round3-sequential-bottom.png",
+    "sha256": "598c5d13cfb9b6eff8ac874785ad69bda5fff46a969388b01fe7a6508c480f54",
+    "action": "round3-sequential-bottom",
+    "step": 29,
+    "scenario": "audit-round3-presentation-sequential"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-34-0-round3-null-excluded-controls.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/34-0-round3-null-excluded-controls.png",
+    "sha256": "000d987ffc750e7a6ab810f4633ac9f3db2d3e10522de52004948f13a23a6a33",
+    "action": "round3-null-excluded-controls",
+    "step": 34,
+    "scenario": "audit-round3-presentation-sequential"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-35-0-round3-null-excluded-rendered.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/35-0-round3-null-excluded-rendered.png",
+    "sha256": "3125e701ec3c35f3e30b3d21dd2c30e53c63852479a9b02c1b378b816ef711e8",
+    "action": "round3-null-excluded-rendered",
+    "step": 35,
+    "scenario": "audit-round3-presentation-sequential"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-45-0-round3-sequential-rows.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/45-0-round3-sequential-rows.png",
+    "sha256": "16aca4068a9fda8db56680a6a8b4671431e9d02cee08507dde4cd87b33934781",
+    "action": "round3-sequential-rows",
+    "step": 45,
+    "scenario": "audit-round3-presentation-sequential"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-46-0-round3-sequential-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/46-0-round3-sequential-bottom.png",
+    "sha256": "e670bb6c29ced5d07ed1a0b8bfa0b976d499a9097af30726bda9e74296baa5e5",
+    "action": "round3-sequential-bottom",
+    "step": 46,
+    "scenario": "audit-round3-presentation-sequential"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-51-0-round3-null-excluded-controls.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/51-0-round3-null-excluded-controls.png",
+    "sha256": "208fae761e30df6500a7cff59c6297516e2b9504c40d1293e77983f20242d541",
+    "action": "round3-null-excluded-controls",
+    "step": 51,
+    "scenario": "audit-round3-presentation-sequential"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-52-0-round3-null-excluded-rendered.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/52-0-round3-null-excluded-rendered.png",
+    "sha256": "7a5c8d6bcf7a06ebcdd2c819bdfd2cf98691d351236f5e2869c5e44a5161e610",
+    "action": "round3-null-excluded-rendered",
+    "step": 52,
+    "scenario": "audit-round3-presentation-sequential"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-62-0-round3-sequential-rows.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/62-0-round3-sequential-rows.png",
+    "sha256": "af24e5e65860d19ea077e577b159e3ce8aea795b05d7efa8d1b0485640c7da2d",
+    "action": "round3-sequential-rows",
+    "step": 62,
+    "scenario": "audit-round3-presentation-sequential"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-63-0-round3-sequential-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/63-0-round3-sequential-bottom.png",
+    "sha256": "9dfe8962a60fe813e475ba514011638cd1e7d20f23f105c0317d5f4485bb729e",
+    "action": "round3-sequential-bottom",
+    "step": 63,
+    "scenario": "audit-round3-presentation-sequential"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-77-0-round3-sequential-rows.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/77-0-round3-sequential-rows.png",
+    "sha256": "24631018c9514c43ffdeaca40fa879726e9e7a4eb45426922066b574c5d00530",
+    "action": "round3-sequential-rows",
+    "step": 77,
+    "scenario": "audit-round3-presentation-sequential"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-78-0-round3-sequential-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/78-0-round3-sequential-bottom.png",
+    "sha256": "0c31d3f45cb7bc75ca66ec28ba6d984e396d3278205ae2f95fd5325ef0458251",
+    "action": "round3-sequential-bottom",
+    "step": 78,
+    "scenario": "audit-round3-presentation-sequential"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-92-0-round3-sequential-rows.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/92-0-round3-sequential-rows.png",
+    "sha256": "a95464f8a7de3852b5547118d2cba30cf9040bccecff51028ed15e33ffa0cf6c",
+    "action": "round3-sequential-rows",
+    "step": 92,
+    "scenario": "audit-round3-presentation-sequential"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-sequential-93-0-round3-sequential-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194039Z-e3eb8b1e-audit-round3-presentation-sequential/93-0-round3-sequential-bottom.png",
+    "sha256": "a0e0950b60e01a3faeba76fa1c26c67d2d7dbf0f1077a492f0dc365524352022",
+    "action": "round3-sequential-bottom",
+    "step": 93,
+    "scenario": "audit-round3-presentation-sequential"
+  }
+]

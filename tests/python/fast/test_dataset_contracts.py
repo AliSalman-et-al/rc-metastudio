@@ -73,10 +73,10 @@ def test_rename_group_preserves_effects_when_the_name_contains_a_hyphen():
     pair_key = "-".join(("Usual-care", original_groups[1]))
     unit.entered_effects["OR"][pair_key]["est"] = 0.75
 
-    dataset.change_group_name("Usual-care", "Control")
+    dataset.change_group_name("Usual-care", "Standard care")
 
-    renamed_key = "-".join(("Control", original_groups[1]))
-    assert unit.get_group_names() == ["Control", original_groups[1]]
-    assert unit.groups["Control"].name == "Control"
+    renamed_key = "-".join(("Standard care", original_groups[1]))
+    assert unit.get_group_names() == ["Standard care", original_groups[1]]
+    assert unit.groups["Standard care"].name == "Standard care"
     assert unit.entered_effects["OR"][renamed_key]["est"] == 0.75
     assert pair_key not in unit.entered_effects["OR"]

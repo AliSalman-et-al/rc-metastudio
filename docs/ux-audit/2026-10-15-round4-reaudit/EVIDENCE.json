@@ -1,0 +1,1104 @@
+{
+  "application_start_revision": "f1aa24d",
+  "runtime_receipt": "../2026-10-15-round4/RUNTIME.json",
+  "installed_source_receipt": "../2026-10-15-round4/INSTALLED-SOURCE.json",
+  "provenance": "PROVENANCE.json",
+  "raw_logs": "raw/ (ignored); helper artifacts under artifacts/verification/rcms/ (ignored)",
+  "screenshots": [
+    {
+      "path": "screenshots/design-00-review1-start-before-check.png",
+      "sha256": "c6d17c0b0fcacfbb03f5c7b55ca9f516d3412254c4096c4fd8eeea3cae225dd3",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-01-review1-start-recents.png",
+      "sha256": "5b2bbeb03f50b9d3a2127f0a19ce46cb1fc84ac4bfcdd20696d71201d2ac567a",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-02-review1-start-light.png",
+      "sha256": "fc17fda58a3a140e59548f4be5c84ddf18d710f1f66ba006bc502826d0fcca2f",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-03-review1-start-dark.png",
+      "sha256": "5d22d2d98893e901fc5c40989166971aacad07f55d3265c482a23048e7669d14",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-04-review1-start-wizard-new_dataset.png",
+      "sha256": "0eb031b70fe7bc466466b80efb86824442a6980a0073a9d26a39943426232d96",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-05-review1-start-wizard-csv_import.png",
+      "sha256": "0eb031b70fe7bc466466b80efb86824442a6980a0073a9d26a39943426232d96",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-06-review1-workspace-navigation.png",
+      "sha256": "0372a1501ac55b1d2159cab320a35bbfff9280dddb04ed5ebcc11be92cd81c72",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-07-review1-report-top.png",
+      "sha256": "120c0717a0178972b8a3e8730459a7897fde4c516d18d0c82b6a0fafae8c67c3",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-08-review1-report-configuration.png",
+      "sha256": "037424cb6a9ddeff2c7f36bb44289dea1d339fad185f91d62b14a97dfb57cf1e",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-09-review1-report-tables.png",
+      "sha256": "082f8be6643c39ca5c8399a2738aa29a24a0af27a0c6c1f7c57f929d3aa3898c",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-10-review1-export-format-remembered.png",
+      "sha256": "a517556a12be82377fb4476ac4d5876f201a9893f34451dda1de53e36b554fcf",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-11-toolbar-tooltip.png",
+      "sha256": "16946faeaa2ce1140624d9203754de319e4ef649f3fbf1deb55f90bfeb5ee87e",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-12-toolbar-tooltip.png",
+      "sha256": "7c4790a569479ce2149cb04d72ad6493eeeda959fa81f75c2c89a71d791d43d8",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-13-toolbar-tooltip.png",
+      "sha256": "a0cbdbe1c686fe35a933c1ea6d81a1ac88e498b3ce25b029d3b3380b1b835cf0",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-14-toolbar-tooltip.png",
+      "sha256": "ad3d2b2bb1cad62025847e0dc873146252480d1c92808f0805bcc28878b0936a",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-15-toolbar-tooltip.png",
+      "sha256": "0372a1501ac55b1d2159cab320a35bbfff9280dddb04ed5ebcc11be92cd81c72",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-16-toolbar-tooltip.png",
+      "sha256": "4b3f61e79560053fb4ce6a2b51fa003e7f6d3bd9407b8040a03a7895a2b7b552",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-17-toolbar-tooltip.png",
+      "sha256": "2c06718ba4049e318f632f285ea02ea052b11210720a5ea8048ea2c17730bbc7",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-18-toolbar-tooltip.png",
+      "sha256": "45904e6254ded4c4d15de2ee7335c8c34d0224bb5fbe292ed8708d26a3bac2bc",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-19-toolbar-tooltip.png",
+      "sha256": "65a3879cfdf5bb21f4457688139728ffddcd49a9bdf3f2cd29cb900d06f85b45",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-20-toolbar-tooltip.png",
+      "sha256": "3691bb827193109f07bcd6f04eeb6c64e30b18c120e06c94e34ee7b014e4f6ec",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-21-toolbar-tooltip.png",
+      "sha256": "439cacdb6ad4bdc047d8a5841af47359910489027599315c80c6ec94bd24e30e",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/design-22-toolbar-tooltip.png",
+      "sha256": "c97929531965386821bd07aa5b0c3ff520f14e0add51af286298b9062ae74b50",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/extra-analysis-diagnostic-combined-figure-0.png",
+      "sha256": "e1d6d3372bcfea6b82ee23bf2a3dd953e79f076ac19b6ed14282b4b983a366f8",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/extra-analysis-diagnostic-combined-report.png",
+      "sha256": "7d86ea30a0feb863775149c0cb31eb1904798a84e894a0fbadd974979ec2edf8",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/extra-analysis-diagnostic-joint-figure-0.png",
+      "sha256": "11a0ea56381bbab144ee3ba60e69be353847e5ba4ba09f937af07d116efde30d",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/extra-analysis-diagnostic-joint-report.png",
+      "sha256": "a3a82df3e4128e56a7622030e38e0844003d810d7fe2e984a796575e4614a666",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/extra-analysis-diagnostic-regression-multiple-figure-0.png",
+      "sha256": "e4a9527d8ce19a025c2b5abd17d98a4c79a581683859c728cb243d6a7ba265bc",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/extra-analysis-diagnostic-regression-multiple-report.png",
+      "sha256": "485a4f9f5d8729ca979f3914ead016224d89722db595f9ac9fa91877388822e8",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/extra-irr-contour-recovered-report.png",
+      "sha256": "84ee0ea84887f14a4aa74f8aa4953dfea7ad2ee2ad57ca5bcadf37972c8f2237",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/extra-irr-invalid-contour-error.png",
+      "sha256": "b06336016a10c69d9b8e20d7c41c265a02a5a3a2076553e631eb9b6ee0ab4ad7",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-100-0-round4-annotations-bottom.png",
+      "sha256": "f28fd52a7fffb0819f1cf8047c7052404b0601bddb71895696ee697d898a7a62",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-105-0-round4-annotations.png",
+      "sha256": "2382371628ce4800ca63a11235ce94fab38f690607ca8efd187ba3bff40fc964",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-106-0-round4-annotations-bottom.png",
+      "sha256": "fe242df34c55dd6f29a101336ef4fad582d94fc2b488956d4ad1c813a446e9f8",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-120-0-round4-annotations.png",
+      "sha256": "822c31eb900009a15a5e0a11942f70c70a449aa8e4b7de7f7b8e0aa4e0c92c58",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-121-0-round4-annotations-bottom.png",
+      "sha256": "c4d1ddb4f22404319d07e74a550db8b4c33a7ecf6197dcb3618f1b148eca8e92",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-126-0-round4-annotations.png",
+      "sha256": "61c4fefc01b2430a963c840da041e7aedd23fe2e5fe56465177119d29fe4563e",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-127-0-round4-annotations-bottom.png",
+      "sha256": "0033cdd5af3de9a2cd9e7828267bc14a5f04e5b8b316d85100fe8f2dfe018c41",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-15-0-round4-annotations.png",
+      "sha256": "89f9ef5d0bd2bb071dc055f768f744018bfd0e47da156e7ef3c8d58dad9953d6",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-16-0-round4-annotations-bottom.png",
+      "sha256": "b30fef0985cb30eb6d8bdeb927ec02f004bb785aae638564e44d1475aad48276",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-21-0-round4-annotations.png",
+      "sha256": "3d14291e3c56b54d7484cd584146b433eef8553f972bfe4558fee12ca875a081",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-22-0-round4-annotations-bottom.png",
+      "sha256": "736768668ba2c938f4b9c5feca7cc6f966c4439bfe88bff30ee849e70b15b45a",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-36-0-round4-annotations.png",
+      "sha256": "d619b28e7cc411b7e728a044cb875898981c09eb68705de7133e834e06ba03f7",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-37-0-round4-annotations-bottom.png",
+      "sha256": "5a606fec954d93e4c99fe9d8db51c44462e5bab3035e9298356a16b8687e9638",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-42-0-round4-annotations.png",
+      "sha256": "9031d49e9e2c26576466dd9577d10ff6a1895a2b908e0529d906773a11404c59",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-43-0-round4-annotations-bottom.png",
+      "sha256": "1e3e0e999380e8063d75f3bef54c382b5e0ae9cd0a52b83515d7e7259e7e77a9",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-57-0-round4-annotations.png",
+      "sha256": "b434d32171e035e09a8e993acb908eaafab3c2129cd91b14ebe71b98e882d598",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-58-0-round4-annotations-bottom.png",
+      "sha256": "547f2bafa556d9321b59f0f7e6abb02ac239af53bab8352ad2ea2e4eae5fc737",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-63-0-round4-annotations.png",
+      "sha256": "3ba275dc59ee4e86719c04ff2d4b9b2e2b41c71bdd309542b9e2afca9381e727",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-64-0-round4-annotations-bottom.png",
+      "sha256": "734df405ca21e26023aea52eb29b11271d2a20a523ce51e0a9ccf9fafc68e5b2",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-78-0-round4-annotations.png",
+      "sha256": "2695c329afafa0d71ed71c321e3d84d21de8af066075c17fca62d8cd44ac50ac",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-79-0-round4-annotations-bottom.png",
+      "sha256": "2fe06f29cfa0d9377ad007ec10d420b17ccb216ff2b19854e2442426f483966b",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-84-0-round4-annotations.png",
+      "sha256": "1c4788c721b7b381c1634f9814f64b61d4a15608e40e6dd58b9b99b3d7c5f8f4",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-85-0-round4-annotations-bottom.png",
+      "sha256": "73fe691a13744057a3e0c02f56f4d70f4d4716b251031860a5c30a5dada08153",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-diagnostic-99-0-round4-annotations.png",
+      "sha256": "e2a324971b76cda993b002d549253d238ce75d83b5b7845fc7d33a44b44866d7",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-generic-effect-84-0-round4-annotations.png",
+      "sha256": "95fb4c71b63efaff81fc10cc3ae8948416ba1352e2a502987302881ca91a5862",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-14-0-round4-annotations.png",
+      "sha256": "daab7aac79703e19f8b79e4ba0eecd0d6878eb3c75998db8c2dfbd64d924cc91",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-15-0-round4-annotations-bottom.png",
+      "sha256": "5bf370769cdd24468a07787cef8b88c2789f066407b6a7c3532a4d931869bf6a",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-28-0-round4-annotations.png",
+      "sha256": "ead3a770da30ebd4b9f4edecb0d9f14fbccb51e3e5737b4edb685d5aa27b5c58",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-29-0-round4-annotations-bottom.png",
+      "sha256": "7d77fc360dc846f2b88cc4361129eea8c5ab771f21b9854aca38e375cd839cb4",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-42-0-round4-annotations.png",
+      "sha256": "921070fb19518df11c1d9083178d7390e82cca4d1da2e811a83ec665434dc252",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-43-0-round4-annotations-bottom.png",
+      "sha256": "a4960626cfb70aff16337327644ffe678ec1d2b4a6cbaaf77c461ebf722af160",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-56-0-round4-annotations.png",
+      "sha256": "1a99aa16822ab47a70c1bf48b66fe1d6987b9d180a145e4da27027aaf82ae6cc",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-57-0-round4-annotations-bottom.png",
+      "sha256": "d781c9eaeee321e61e1c313ca9c16ef8e7db3549964e9e21e6b3130a80225afe",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-70-0-round4-annotations.png",
+      "sha256": "b358607181cc871bcab45a3abf302c683a191008239789aea95a14ff8f4148d2",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-71-0-round4-annotations-bottom.png",
+      "sha256": "77cd1986e8d671cb2d744228868ad33bc0c37265256a135fa5f33aa4f2942bbc",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-84-0-round4-annotations.png",
+      "sha256": "7db320803c4aa098c6179408337c66567049cb2529d3bbe82f087438828aebd4",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-onearm-proportion-85-0-round4-annotations-bottom.png",
+      "sha256": "c4b5d33dc3319e54887b8d332d8f8a2bedefea6ec46c755d67c6211470ed65bc",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-reg-coef-84-0-round4-annotations.png",
+      "sha256": "fae2237f0c13ed89b65b1259cb7ea83fcc5af629fb6d4e029fbd21862ff8294a",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-twoarm-mean-84-0-round4-annotations.png",
+      "sha256": "4dfff38381706d735e2a8b66bcb13f831586d53fbb4368285c323f2d3f2e9fe2",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-twoarm-proportion-84-0-round4-annotations.png",
+      "sha256": "2c905f59d0a5303eb5604f6b544e69d40871d544f6e47d8b99c4af2f44119a35",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-twoarm-smd-84-0-round4-annotations.png",
+      "sha256": "6f9eb447a850bca9bac3cd2638cd5e101bc6f2262cce6960044ffc3f3bc61674",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-calculator-binary-03-0-calculator-effect-preview.png",
+      "sha256": "2ba3f890f87fffe392d1d55e77a6cfa741c7facb01b8f58d74c18f500d5b4b49",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-calculator-continuous-03-0-calculator-effect-preview.png",
+      "sha256": "d90b9d3ff67c5dc5ff92fa057c6818f1b209babf44d4a363cf87f15fa7ba15e3",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-calculator-diagnostic-03-0-calculator-effect-preview.png",
+      "sha256": "2683f059cc09a338c18c5e2f010d87856ff434205750fe0a9f3f7f1a9854b288",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-calculator-mode-back-continuous-04-0-calculator-mode-preview.png",
+      "sha256": "c282f29d0271d1b5b42d9e3861b068d5310fd4fe166c00e1484c835330b064b0",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-calculator-mode-entered-binary-03-0-calculator-mode-preview.png",
+      "sha256": "3fb7ea2112edf3b4ce430a65814583da0f4290ca0db93fb4c97064e35508559b",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/helper-calculator-mode-pre-post-03-0-calculator-mode-preview.png",
+      "sha256": "84ef4899bc396496b04f205660b6f83046f32e31a2bad492fabe3c8c713d5159",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-diagnostic-cumulative-figure.png",
+      "sha256": "7fbaf04d0c40f130802b75e94a5dd478944678e2e06a5734e82c2801911533c2",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-diagnostic-cumulative-report.png",
+      "sha256": "e27375de5eeae6fc94967fbf3e3edee51c8d8723715aef7c819336ba3e6f8943",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-diagnostic-leave-one-out-figure.png",
+      "sha256": "b072d1859f2b7e668e0f230e4daebacb71da98c1e70a5e437650480060a60ded",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-diagnostic-leave-one-out-report.png",
+      "sha256": "5cb8116c3249cb15a044ec4f0038c653bf25efb2b76befc1b25a99686d8fa949",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-diagnostic-meta-regression-figure-1.png",
+      "sha256": "b0aced885ef26a00d1d9ca662904e6294e8db33dd2cd07a734f829dc77eb2450",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-diagnostic-meta-regression-figure.png",
+      "sha256": "214a6f435ecb3d324e9299a1c61a4488d22323a5124b625c6fbde84bb9714cf2",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-diagnostic-meta-regression-report.png",
+      "sha256": "8a385926e96b21445b1ef196534a258651fe050dd8817bd955ef886e899c2ec2",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-diagnostic-standard-figure-1.png",
+      "sha256": "207cbb0488b035a364c803b27a495ae87eebdf22f6c55bc3b146a51f5d0cf16b",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-diagnostic-standard-figure.png",
+      "sha256": "9fcf6aed9fb7148918220c74bb964ada146f556adb3fd1102603817647709b11",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-diagnostic-standard-report.png",
+      "sha256": "4967cd0d8d3f3101a78301306dd875fc0149977b75d29366b02b08e657667809",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-diagnostic-subgroup-figure.png",
+      "sha256": "406e6ca560b18547ffb1569bcb99e8201c547f7a493427af7f8536ac29fcd4ad",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-diagnostic-subgroup-report.png",
+      "sha256": "7290a7d119f79e7d45d533b4d3bc1590a870a5cfa7a2692b2ddf11fd63d57830",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-generic-effect-cumulative-figure.png",
+      "sha256": "b6deafde752140793336cb6f31237db54ce1546d689f979389cff765cff1847b",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-generic-effect-cumulative-report.png",
+      "sha256": "e95d03764fa96ff3467cbcca1afcb6a508e50df29c3e38fe14ae9916455dcf83",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-generic-effect-leave-one-out-figure.png",
+      "sha256": "750a5bffec656603ba4d245077cb135567d7ff6e1f678e8f0a2593423ca2b909",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-generic-effect-leave-one-out-report.png",
+      "sha256": "7ee559bc6e07d60b384d1dc8aa018abbc60682fe2ea90554794cb1d753877001",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-generic-effect-meta-regression-figure.png",
+      "sha256": "5a9ead405a9f4b3385eda470837d8b3a9ce0f506400f280e3f9a472b85903f1e",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-generic-effect-meta-regression-report.png",
+      "sha256": "8fed37519637ec2a7137d83565b8543ac9291b316cb04706cc68e6919c898816",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-generic-effect-standard-figure.png",
+      "sha256": "7a3231e21b75bc9d08d77c63917434ed1ccd4765aa57a545d9a675dd6740daf5",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-generic-effect-standard-report.png",
+      "sha256": "10e11d89e71d9796938c63dc0e014a4aa8d7e4339af4ba069b4750e41896c925",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-generic-effect-subgroup-figure.png",
+      "sha256": "54c26c7efe50910278c1400b7f680516aad0e4a6de57ae5a32041c41b7c44ed3",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-generic-effect-subgroup-report.png",
+      "sha256": "f40953adbef714e205790611d647f8cb39656d1c8a51d1ea4e8c58def271d033",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-hr-cumulative-figure.png",
+      "sha256": "72dabd23000ba2c9d8afbfd3360021ff7d5f67a6eef2a1c0755f29bd7e259876",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-hr-cumulative-report.png",
+      "sha256": "7011ef0324eeed92cfc4ab3ffa14be5537139bdb93adfc170f132820c21b8d06",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-hr-leave-one-out-figure.png",
+      "sha256": "d18ebf429ead868022598c98aafad4f0139dcafcc708e5da66901c56d8206c00",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-hr-leave-one-out-report.png",
+      "sha256": "762932035728928919e3ab55a271ea6a75ee2250e44585e3e5ce66b59bfae017",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-hr-meta-regression-figure.png",
+      "sha256": "69f688d575b80be124d7cbc1549073a534b9d140277584e8871d823d5616691a",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-hr-meta-regression-report.png",
+      "sha256": "1d2cbd11d4cb87147e03424ca405d48b814394c98268ad285d9a95b2903523da",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-hr-standard-figure-bottom.png",
+      "sha256": "791a547a49d04ff32465a9d47fa6d6790c26a7502ee10aae155c032fa87f79c9",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-hr-standard-figure.png",
+      "sha256": "5405d18f9e7c40f3d344c5c08455ea591e47418982465c74784c9ec774dfe783",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-hr-standard-report.png",
+      "sha256": "372ce8c0da0ecbe7950592015aac52a60d4010d29c3e756e5c167c21c862a1bd",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-hr-subgroup-figure.png",
+      "sha256": "a0f9185d2578bfac1e0dd4997c83fda56ab172ee3e18582f7cead039789e8e3d",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-hr-subgroup-report.png",
+      "sha256": "32fa1641f471f4dd821c072e3509645d131b019f4fbb96c753becb784c35726b",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-irr-cumulative-figure.png",
+      "sha256": "33dd961d56e34113324791e8b9ba5a6941c6badd1ac651f981fb171a3b64f592",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-irr-cumulative-report.png",
+      "sha256": "3b4ffef3de00cf91be5060f9422a880527fa1483a1c093127eda84439c3045d0",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-irr-leave-one-out-figure.png",
+      "sha256": "af23df17aff6a38e66b47921188172871769450e607bd0a8b28a8e8033455808",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-irr-leave-one-out-report.png",
+      "sha256": "bd1a393a8fb794f27eb4e236b92fd36148fbc3c65056d17f3aa8e53598b11b5a",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-irr-meta-regression-figure.png",
+      "sha256": "9eb4d2317fb2b072256e8bbc93abdbed2fb92883a2bf0a60f86eb80fa337543c",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-irr-meta-regression-report.png",
+      "sha256": "8cbdc0f5b3d39a8d8a53e5e89243162e99583ebb2a9d5f1b9648ab3040b75ca0",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-irr-standard-figure.png",
+      "sha256": "16d99846ba697297f653c6903c87b32c60066c26ca8118f39a2e1e8a5411dfca",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-irr-standard-report.png",
+      "sha256": "9c6ce9ac806d479d13ef8b528c9796278f370f185a790809a9ebdc53e577b7de",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-irr-subgroup-figure-bottom.png",
+      "sha256": "1eee363b3afd45e7c9a99c5bb9abbdaa26814bb9d75597a08d3020af3da91678",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-irr-subgroup-figure.png",
+      "sha256": "64cab785ead4b35db063749d9f03cbdb48ea8d62253b27480e012e1ed10063bd",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-irr-subgroup-report.png",
+      "sha256": "f96c3d30bdd2d09ad4de3f121330a9c43b45a239ea3711467c541ec1227df0d1",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-mean-cumulative-figure.png",
+      "sha256": "bb71c9633cfc05dd0c7ee5c687c08fca728e36ed7570f0b661d06c9d72b7240a",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-mean-cumulative-report.png",
+      "sha256": "bb538ae40880bfc1eb3ea54f91026e3b5f4ffda9a033c92629ad8648d48dbd1e",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-mean-leave-one-out-figure.png",
+      "sha256": "8ac99ccb0ca36720d46f12b5f405cc8e8dbc5f688fef6a74f09b101368efe1ad",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-mean-leave-one-out-report.png",
+      "sha256": "26a0618f2f0cbe6a53ce7a3c1f3178be817188e4399c6cd6e09ee926b297fa55",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-mean-meta-regression-figure.png",
+      "sha256": "2a6b7126e809f9e0fc4bcf58a183bc8e4bb33749aba148387b191f3941570a27",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-mean-meta-regression-report.png",
+      "sha256": "67218df29bef01ca01739b45ac378e2e8af2501692abd5b0dfe9e4768a06da50",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-mean-standard-figure.png",
+      "sha256": "2756b032f4250707ba56634fbd91ef15e8e6def0810e0609c4d8bb6b9a53a7ae",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-mean-standard-report.png",
+      "sha256": "731cef36b19c323b9defce1ec8e1cc48d9aaca097c40eb37cadfcad95d0eff96",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-mean-subgroup-figure.png",
+      "sha256": "3e9800e8e78477791f540055d83e96fbea1323cc7f509696402e82200b4e0d58",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-mean-subgroup-report.png",
+      "sha256": "d3c62845f01bd391f57afb5c00cb8b74123a2b2033867d722decfa8d608a7604",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-proportion-cumulative-figure.png",
+      "sha256": "b75663b95ce4c9b5b245f8b0ecf8fb4b34073dabe2a436689a02bb756eebf3df",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-proportion-cumulative-report.png",
+      "sha256": "ca06d6b596ec908875a6d2c61b9d9db2c8ecd0b38b30f7567657339af8ad576c",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-proportion-leave-one-out-figure.png",
+      "sha256": "c3a1df4604ed57061a299853903defa1db66aeb1ee92ce9103623350d1554dd2",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-proportion-leave-one-out-report.png",
+      "sha256": "764cab1e1d025dcf58a0d3da975d4192b12df8c4c53d6267902fd842aa4afbe6",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-proportion-meta-regression-figure.png",
+      "sha256": "986914bfb386e5c42dfcb19508d24215329af850a935edce9ce7143c298e3047",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-proportion-meta-regression-report.png",
+      "sha256": "0f9799a572c6498b3b7c412ac90febda2c102d81c86d640b43af4f7172f088c6",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-proportion-standard-figure.png",
+      "sha256": "a1b73915e3103ab82fa60d1a94fb75201ac3eec4ff95fdf94bed32c9f8990688",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-proportion-standard-report.png",
+      "sha256": "3d1b624eac371e1bd530a2d2b413ecccf13c8584e856d34a6043dfd8353c8e50",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-proportion-subgroup-figure.png",
+      "sha256": "cb985d07fc251e4afecf41a0885b92a3c7154601c4aeeb24bf6f8b0aabc05122",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-onearm-proportion-subgroup-report.png",
+      "sha256": "40ade59b61cc2495977fb1ae4b23f4d383d8a58a13860b03a77ba7351d6de51f",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-reg-coef-cumulative-figure.png",
+      "sha256": "b6b289669f8f3e5032686dbdc7cfbdf7ef1cfa82baad98c2373de7a13e842c8e",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-reg-coef-cumulative-report.png",
+      "sha256": "622bab006328f82f958192b8133b2f13481c19169fcd11caca7f6aab3bf856ee",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-reg-coef-leave-one-out-figure.png",
+      "sha256": "0ee62309ddbf115c6e0e8f9e0112bd66464579bffbfd8e966ae475e7e71f21ca",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-reg-coef-leave-one-out-report.png",
+      "sha256": "72187bc45a790bad9e2eeb81af50ffe29babb441d722d60404806a6c35a1311c",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-reg-coef-meta-regression-figure.png",
+      "sha256": "991e3b5c1d2b4aa9d65d69fb7875c12ead72618111dcc8d756d890357e1e3ea8",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-reg-coef-meta-regression-report.png",
+      "sha256": "22e458917e50d447f60d42acb8ddf7a39a5522761d51bef7e9f72d6cefd7cef5",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-reg-coef-standard-figure.png",
+      "sha256": "f718d3f18a4cc9c438a052997ab62b13907cdb17c630e3611a953549c20704de",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-reg-coef-standard-report.png",
+      "sha256": "3523e2bfa19ddf84818a0bce3e5f3a70e6687b6bf936da6dfa975d78f4ab070d",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-reg-coef-subgroup-figure.png",
+      "sha256": "b8e24e60f56f9b7306d97df87c202c7f0392433ff8f959003c8e1816331b0df2",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-reg-coef-subgroup-report.png",
+      "sha256": "7b22d4c8cad7a4a13d859abfd128bff2797aa03b2bf46bde28c68aed4d411b6c",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-mean-cumulative-figure.png",
+      "sha256": "2bd37bac1a24c2ed88ae75cac1405613538bafcffb7969d922cd6123dc269085",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-mean-cumulative-report.png",
+      "sha256": "bc4b95eff7002b13cfe239df3ba8b8027eb3ae361baaac62e97218626cc85a42",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-mean-leave-one-out-figure.png",
+      "sha256": "6dba32bb56231b1bf36c674263efc8749dec9cab64d64600ac07b816eaef3e72",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-mean-leave-one-out-report.png",
+      "sha256": "02ce7042324b35556931641e8861e7b25362a160874886b1e450a812086dd1e1",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-mean-meta-regression-figure.png",
+      "sha256": "51c874f28723e3039626effdf6d2d06d9a49af905e99970f5bd399731076b98b",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-mean-meta-regression-report.png",
+      "sha256": "616da52605bdd14a8083bb75ebf01d92b789481b6dc5e70743302297c1ab447f",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-mean-standard-figure.png",
+      "sha256": "fcf27623b52f6031df5e25f943f59b4ff794d992f3850461a61035b047846c93",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-mean-standard-report.png",
+      "sha256": "8b155671710b64f01ec96c2f9e91abbd68ab2a82aabb62b3edd4f00842ec3f74",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-mean-subgroup-figure.png",
+      "sha256": "b429da626ca141b3b6517f4fc1ca4ae57e61ca731de4a2324cf0a12493c73ccb",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-mean-subgroup-report.png",
+      "sha256": "f5e3f1c5be561853c8beba5447fe821b2f516c8acfd58c834938c49fe361bd71",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-proportion-cumulative-figure.png",
+      "sha256": "ec59f1241c591fa24b216da3c31e16442dd0e68e10ed07be2c72f711fe2b7303",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-proportion-cumulative-report.png",
+      "sha256": "2b46f555581ff435340935ece62e0e636852c5cdbe79f678d6a9c0c42a5ed7c7",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-proportion-leave-one-out-figure.png",
+      "sha256": "a087b63b5665152b96ca69c674bb0610f9d8af96835aede215a49a65b5cf7e45",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-proportion-leave-one-out-report.png",
+      "sha256": "98f0b2a9e73dac09d9f68962cbbd8b4fc7726cad908c9efcd307e658b93c83be",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-proportion-meta-regression-figure.png",
+      "sha256": "a3a5c614449056926c9f88866abeaddd9bdd1814a54303bf481d5d10f43deaee",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-proportion-meta-regression-report.png",
+      "sha256": "d983ca0fa96edeb32fe129d40c72d32836512238d9db3d09baf20223c23ba9be",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-proportion-standard-figure.png",
+      "sha256": "a3571d44c5c5ecf1362d5ab168e308ca00a5a35bd6702461301da3cc742bc078",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-proportion-standard-report-bottom.png",
+      "sha256": "4922c4df4f19e6b6614f9370dc31d9dbfc59c0128d61cfca52048a9af180d600",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-proportion-standard-report.png",
+      "sha256": "0da5b468d05c3f26621af2cc5a1a007402b28753005f0fda14e0f1c1037ef9c8",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-proportion-subgroup-figure.png",
+      "sha256": "8777fea98655c0757fd70b9284dfa81d96cbb32b5e60d4a80f54edc7a6eae21c",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-proportion-subgroup-report.png",
+      "sha256": "3a578696068ca604eb020c981a86ae08bb0a9714fa49ec014d397d3657fb7d24",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-smd-cumulative-figure.png",
+      "sha256": "bfba8d811b61de34a287e18db7096155afc13de0e13e165f1f09d038f1ecb697",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-smd-cumulative-report.png",
+      "sha256": "2e6c93be610bb7d2d241a438600e5732aa4cafbe4abcb5ea0f7469e3c3c43db7",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-smd-leave-one-out-figure.png",
+      "sha256": "2ccb0a745ecc15b42d16ff26e9b0ce4dbe30d0170f85202b8ca9a21fbb4713a6",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-smd-leave-one-out-report.png",
+      "sha256": "99823ef3f8a7b1be268fe860fd556e92a3a4ffbca6d6c8cf0262d9d819799caa",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-smd-meta-regression-figure.png",
+      "sha256": "f8205840cc4d2ef582cfd166351159c4bbc7000f87261074a0ec21247bf5e4e0",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-smd-meta-regression-report.png",
+      "sha256": "e8ea4697ff14231fa9451f003b42c6ca6921d08220ff99ebbc8e10bbfd525775",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-smd-standard-figure.png",
+      "sha256": "19be649bcc65fef9a0f99822dc89ba3c06158e1ccc9decfb4dc2a9c81ff12e41",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-smd-standard-report.png",
+      "sha256": "1dd5dc5f4cb7b860c11f1b39d503898cbf7e19bad583233a34ad61538bf13213",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-smd-subgroup-figure.png",
+      "sha256": "3b111657c6f1a7f7460ab8747433b3b3bdf641416f004cf9b32434b9c86f5ec5",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-smd-subgroup-report.png",
+      "sha256": "7970fcd43975bb5d95b9bf33972dc2de23f87a643141e2a968b6e5c48497c4ad",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/menu-0.png",
+      "sha256": "a389c41853f3be7fabb29afe819eb106d8b4b4ac373633a5be94c36469be6932",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/menu-1.png",
+      "sha256": "58cf14c682c5c1ee21bd2e9e315abb666f1e36d634cb298f4caab7b99b52e712",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/menu-2.png",
+      "sha256": "acee6b37b45a5e180ba5a6908d991ce05e85a469f8cd4bb41dfedf0cb2f81df6",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/menu-3.png",
+      "sha256": "e8aaf7423a32ec4b0f39ca5ad070f85b708003b2a97f06a6c38632ff70166951",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/menu-4.png",
+      "sha256": "a87694c9d32aa5fdecf371b9bb9ecdf16fc0deebc934bfc548bf7aea8a66327c",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/menu-5.png",
+      "sha256": "8e26657ab65fba72f94d74a12098ef3f42a95e4e240faaeccc660c63568286c0",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/menu-6.png",
+      "sha256": "7430fcb90599c8b5bfb9bdfdd832f162bd6ceaf38fba8fc6641288aceeaeeb6e",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/menu-7.png",
+      "sha256": "5a7fd9afcd49d1e632e2d746d6700a5a49e06b7d105de90ba273317b06ffc28c",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/menu-8.png",
+      "sha256": "38fe2688f7f1c163aa5a8459f2ef23dc520752e11203a6c9cba55ff05b89f9c6",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/menu-9.png",
+      "sha256": "f728a4749093d38ebc85c64f3952ae75f0d3b5f0ac54c96ab0740d7fb037235e",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/options-142-diagnostic-metric-selection.png",
+      "sha256": "744b71ad084855988332e7960059dbc6ed97fcdafc2de7de018dff6d3f3ec768",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/options-143-diagnostic-method-0.png",
+      "sha256": "0e8c13c0d70ccca4006fd58eae1e6806e66c55149a48e23063b450750d5dc9f5",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/options-162-hr-method-0.png",
+      "sha256": "78947f7e2ea2ee1e32ebd51b47c94a67cfc9474296f8c78cd8d4cd16c4ba3ba3",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/options-182-irr-method-0.png",
+      "sha256": "7169b3c243c9df7b0b538bd0dfb9312653e107f5ebd8272b7868a89713353c28",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/options-185-small-study.png",
+      "sha256": "77d9949cdf6a1ec835240bb60c9d94e818d3f8a9a922cb371aa9ec706531da08",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/shell-about.png",
+      "sha256": "7f63cb9dd73f38d5bb797d38c5fd7317edc05e48f4c9d0560115d26801bb5df8",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/shell-covariates.png",
+      "sha256": "c159b490262f81e628519fc9788158687d6e7e64b3e2735c641132aaea7e324d",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/shell-csv-entry.png",
+      "sha256": "3fb2b91fe50f870ddfd791ec2f8abd1940d3d64f4f6fe8062147db5a1b8df8f5",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/shell-duplicate-covariate.png",
+      "sha256": "b40309a0152342af48abfbef559a01ec36a0b246b2094727f366fa5b025a745b",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/shell-exported-report-editor.png",
+      "sha256": "d36c87c43602f663f2d500dde43b0692d58b8e69a7a59a2d6454be0de6aab4a5",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/shell-grid.png",
+      "sha256": "8d971a38b7251d88d7f85863ab0c4c96e7f5ab377d944021bc1f1aa3429d8b8c",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/shell-quick-start.png",
+      "sha256": "b9486d37d862a52b62a0b25a83f910af0e64b4baf377c1c6ebd1d8bf3c944bf8",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/shell-structure.png",
+      "sha256": "190669d5ab29cc18ff6727a6ccc3cae7d1f9f23916021af6cd7ea737dd22acd5",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/shell-studies.png",
+      "sha256": "68928df18626cab1a4d0d5064bf7c671c15efe8a77ad2040ad150752c3db3912",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/shell-template-native-picker.png",
+      "sha256": "c2b19cc523be3f7f8caf1fb24827f1d977b725ec0dcb0e16200a52e8e74750c3",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    },
+    {
+      "path": "screenshots/shell-types.png",
+      "sha256": "0eb031b70fe7bc466466b80efb86824442a6980a0073a9d26a39943426232d96",
+      "inspection": "See INSPECTIONS.json and review-sheet membership; no blanket inspection claim"
+    }
+  ],
+  "capture_methods": {
+    "matrix/design/shell/options/extra": "QScreen.grabWindow on visible xcb native windows",
+    "helper": "QWidget.grab in visible xcb native windows",
+    "editor": "QScreen.grabWindow of external native xedit"
+  },
+  "inventories": {
+    "AUTHORITIES.json": "37dd91161eb8aff8575b38cc88fd12b0eecb351087edba0f0e359a3908eeb5bd",
+    "CURATION.json": "8cdf0fa2d86499e74d33930498bde221a88bd31e525a0b85286d59944a098540",
+    "DESIGN-INSPECTIONS.json": "ccd61f91a5001d1359833dbfecd433286c9ca644be23b7f763455db5f2452197",
+    "DESIGN-RUN.json": "2f9e1d10a67e4006fae3a9c996fb733b6a42f756df5e95bdd7780e5182399c10",
+    "DESIGN.json": "5f16766326fdfbec73037d5a7f43655681285511dc6e3854068f307a01c215f5",
+    "EDITOR.json": "079a08616c192627efa4992e5fef13f7bc78325db8bff5d1052147e7d71151e6",
+    "EXTRA.json": "98f32fba478eaf0b8b1bbf0b8cc367dd96569179d4350167540c3bdd69cb2e2e",
+    "FAILURES.json": "89097eea70661a793c7559d802351e8f6fd549f4974881837ddf6298fbc2e988",
+    "HELPER-SCREENSHOTS.json": "0ed11f9ff250469037494d96fc63a4de73aaa8fba591cdc308c6a29b714fc12d",
+    "INSPECTIONS.json": "42beeb82e1b4dc26bd910c90ac07f52c4909b163074c61028ac23421f5574608",
+    "MATRIX-RUNS.json": "c9c51b36c4400f860a0ba33a4619017ffdf02393b365ab3a98ba5a745bc675f0",
+    "MATRIX-diagnostic.json": "e31f32f85c54704c62222836b75d4e5f408d226dd2bcfdf9c55153d94e301cc8",
+    "MATRIX-generic-effect.json": "c131b65670f49278a63c32465a88e3f26d85a54f20e769df74fe59f634e0bc9c",
+    "MATRIX-hr.json": "2370cf7b3b02d539f400a66b7280ee99281563348ceacf2d3f210e99b097fde3",
+    "MATRIX-irr.json": "2578651399ad97b9e7325569b52bba5904adc44fff05072a0c280cd3d8049107",
+    "MATRIX-onearm-mean.json": "522d0bf54343dafac730e034a0e176143433964b9d468e44bd2cba6670a3a423",
+    "MATRIX-onearm-proportion.json": "99f18f1914f3587b77b66e47d473bf2f754654928bc12e8dd87f67a507c6d88d",
+    "MATRIX-reg-coef.json": "2a005b593bc85ece6da61cc716387c4fc710e8667e4f4971c7d8c1dfbb24cc03",
+    "MATRIX-twoarm-mean.json": "6b1159136772dfa0880c766c8662372953fa3178ddae92178402b46f31590f75",
+    "MATRIX-twoarm-proportion.json": "fddbed111d0c63f3ae564e4920c7466c634f8713076e0e70c811b8f234f03450",
+    "MATRIX-twoarm-smd.json": "752a46b7f05a02df5a4068a0b72bb12e83939ac29d0eee71119be4f2f95334cb",
+    "MENU-INVENTORY.json": "2f74d44e60ac9017fa19cf6423a470eb99acbfde47997478c2119b8a427ca187",
+    "OBSERVATIONS.json": "b75eeadcbdcedea6cf1baaf3e633fde2fccddf3298ae159dec9b54960d5987bd",
+    "OPTIONS-REMAINDER.json": "c901b1440c96231e34113520dfefef3c500a0da545b16df4b516f2c28042580b",
+    "OPTIONS.json": "c2067cfde8ae8a79b32db7192b4ff83096877800e7180cbcb1d4e8328cbaee73",
+    "OUTCOMES.json": "6c889a37c436ff37dbfdd9b2980dd4643e6dfb164018f028e25c7b37e290a9b0",
+    "PROVENANCE.json": "97c48b22c8d61f3268109282f7299f9b97655af4d78d955b0ceacd92acf5c1e9",
+    "REVIEW-PAIRS-diagnostic.json": "20a88431ebd1be491ff663e08538a6ad679d3e47061c36108741cbdbeb4a8f4b",
+    "REVIEW-PAIRS-generic-effect.json": "b05f658435ffe93991ebe940aae631595e1270f9626743b6a5700b8bd3ded074",
+    "REVIEW-PAIRS-hr.json": "f664e3d6bafcf7a7efa0fffc55fbda0201f1e91603ce2f270d934a9f44333031",
+    "REVIEW-PAIRS-irr.json": "684c23a85ef6fdc19fef46345458af74e3c88e1bbe49dbacc78841868f5e6444",
+    "REVIEW-PAIRS-onearm-mean.json": "6d9d2e7d29660538c91de6f3bc6375176ef478a2825c041bba70cd91fd12f046",
+    "REVIEW-PAIRS-onearm-proportion.json": "a5af0e44af59e4b31c3b1694fd7ebe89883d4533659f095f438b5aa1531f2010",
+    "REVIEW-PAIRS-reg-coef.json": "ad86f3cac52c961bca52e2b1e7792e793d412042490e48edd7e8d98bc74069de",
+    "REVIEW-PAIRS-twoarm-mean.json": "2608a976ff4632a09059d6b3ebe118ebffc66eef6f4f2d299b38d5159edbee61",
+    "REVIEW-PAIRS-twoarm-proportion.json": "00a12fca07a3e7de6c8732793eb5df3a3f4fd0036db7a9dda726bd0e0960dfa4",
+    "REVIEW-PAIRS-twoarm-smd.json": "7d10f2cd62c12f86969c8bb2ce6cd95bef7b6293b203808580d28e496c0f7f6a",
+    "REVIEW-SHEETS-design.json": "48eece02ce95c741b876ed1c120d561d8411e2baa662cc70489c65918d1b05f7",
+    "REVIEW-SHEETS-helper-audit-round3-presentation-diagnostic.json": "87d5a072c012725ed39836fd0673732cee5b2d0ad80cb624012dba34cec8dc6d",
+    "REVIEW-SHEETS-helper-audit-round3-presentation-onearm-proportion.json": "260b129006f6e2c5434e144daabba4cbe2eef6bff1e5b8dc9450451a47c56dca",
+    "SHELL.json": "14d03f2d60f97367d2b6c2527b84fa9c60a08ce687fc410fffc392e941c51959",
+    "TOOLBAR.json": "0ce82fd45192e6d9315299ece5a5390f0ebb0791bf7fa2c3a4fb1d8446a6fd76"
+  },
+  "replay": "RUN-MATRIX.sh and RUN-FINISH.sh; native_*.py through run.py after sourcing round-three ENV.sh"
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "label": "presentation-1",
+    "exit_code": 0
+  },
+  {
+    "label": "coefficient-1",
+    "exit_code": 0
+  },
+  {
+    "label": "back-continuous-1",
+    "exit_code": 0
+  },
+  {
+    "label": "back-binary-1",
+    "exit_code": 0
+  },
+  {
+    "label": "pln-axes-1",
+    "exit_code": 0
+  },
+  {
+    "label": "stress-1",
+    "exit_code": 1
+  }
+]

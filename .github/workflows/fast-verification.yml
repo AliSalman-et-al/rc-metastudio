@@ -368,6 +368,24 @@ jobs:
       - name: Run Full R Stack Evidence
         run: uv run --locked python scripts\verify.py r-stack
 
+      - name: Upload Full R Stack evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: full-r-stack-windows-evidence
+          path: artifacts/verification/rcms
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload strict golden capture
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: full-r-stack-windows-golden-capture
+          path: build/qt6-verification/golden-compatibility-r-stack-v2
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Prune uv cache
         if: ${{ always() }}
         run: uv cache prune --ci

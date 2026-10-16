@@ -1,0 +1,37 @@
+Leave-one-out meta-analysis — blood pressure · Continuous · Standardized Mean Difference
+Comparison: tx A / tx B · Follow-up: first
+
+Model configuration
+Project: continuous.rcms
+Model: Continuous Fixed-Effect Inverse Variance
+Inference: Normal approximation
+Confidence level: 95.0%
+Each row omits the named study; compare with the all-studies estimate.
+SMD: first group minus second group, in SD units; 0 indicates no difference.
+
+Leave-one-out Summary
+
+Model Results
+Study omitted	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+All studies	0.415002	0.289007	0.540997	0.064284	< 1e-06
+Study omitted: Carroll, 1997	0.460298	0.325693	0.594902	0.068677	< 1e-06
+Study omitted: Grant, 1981	0.436122	0.300806	0.571438	0.069040	< 1e-06
+Study omitted: Peck, 1987	0.419289	0.287839	0.550740	0.067068	< 1e-06
+Study omitted: Donat, 2003	0.254461	0.092925	0.415997	0.082418	0.002019
+Study omitted: Stewart, 1990	0.410070	0.277602	0.542537	0.067587	< 1e-06
+Study omitted: Young, 1995	0.463715	0.325009	0.602420	0.070769	< 1e-06
+
+Continuous Fixed-Effect Model - Inverse Variance
+
+Metric: Standardized Mean Difference
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+3. Leave-one-out Meta-Analysis: estimates are recomputed after omitting each study in turn to assess influence on the selected base meta-analysis method.
+
+
+Inference Method
+
+Normal approximation

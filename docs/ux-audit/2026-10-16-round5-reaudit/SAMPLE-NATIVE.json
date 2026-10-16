@@ -1,0 +1,71 @@
+[
+  {
+    "file": "sample_projects/amino.rcms",
+    "sha256": "374681cc5f740f06d39a117047e4133b745dd8ae30c4974f5ab7c9f94d90b763",
+    "groups": [
+      "Intervention",
+      "Control"
+    ],
+    "method": "binary.random",
+    "reopened": "raw/matrix-samples/amino.rcms"
+  },
+  {
+    "file": "sample_projects/BCG.rcms",
+    "sha256": "ee66fecdcf79a36f665a27b8b02509a4e3478cb6a00362fe4d6e9c7e63f0f839",
+    "groups": [
+      "BCG vaccine",
+      "Control"
+    ],
+    "method": "binary.random",
+    "reopened": "raw/matrix-samples/BCG.rcms"
+  },
+  {
+    "file": "sample_projects/continuous.rcms",
+    "sha256": "025ae202f23eed7da8d5bc02aa0fa6d6e4d89b4f78179a5d1a3831c0a6d59093",
+    "groups": [
+      "Intervention",
+      "Control"
+    ],
+    "method": "continuous.random",
+    "reopened": "raw/matrix-samples/continuous.rcms"
+  },
+  {
+    "file": "sample_projects/meantime.rcms",
+    "sha256": "0d173e541e34ab6b4e7c40ed6d2e81e38e6f1f4e5a79a41367914f4b568db88c",
+    "groups": [
+      "Intervention",
+      "Control"
+    ],
+    "method": "binary.random",
+    "reopened": "raw/matrix-samples/meantime.rcms"
+  },
+  {
+    "file": "sample_projects/lymph.rcms",
+    "sha256": "2af63bc180d118a1729b79327563bfbdc67de909296c5f8d07dda14cd84d4fcb",
+    "groups": [
+      "Index test"
+    ],
+    "method": "diagnostic.random",
+    "reopened": "raw/matrix-samples/lymph.rcms"
+  },
+  {
+    "file": "sample_projects/Pignon2000-HR.rcms",
+    "sha256": "17e94f1436a1be97a5e14f3cf3ff8db3818198f4a1132ba0b32fb0976ade86f9",
+    "groups": [
+      "Locoregional treatment plus chemotherapy",
+      "Locoregional treatment alone"
+    ],
+    "method": "time_to_event.random",
+    "reopened": "raw/matrix-samples/Pignon2000-HR.rcms"
+  },
+  {
+    "file": "sample_projects/NielWeise2008-IRR.rcms",
+    "sha256": "4b0ba4c9c515da90a5768b4729886ccfb73a5ef4f239321ff1daca01b13ebb12",
+    "groups": [
+      "Anti-infective catheter",
+      "Standard catheter"
+    ],
+    "method": "event_rates.random",
+    "reopened": "raw/matrix-samples/NielWeise2008-IRR.rcms"
+  }
+]

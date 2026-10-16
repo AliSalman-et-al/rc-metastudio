@@ -1,0 +1,18 @@
+[
+  {
+    "path": "screenshots/plot-workflow-funnel-05-0-family-editor-controls.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201701Z-a06c9e34-plot-workflow-funnel/05-0-family-editor-controls.png",
+    "sha256": "bba86026e3af4f806351baaa04573fc46191cc5936e1a3d4afdeabdf6f685ca7",
+    "action": "family-editor-controls",
+    "step": 5,
+    "scenario": "plot-workflow-funnel"
+  },
+  {
+    "path": "screenshots/plot-workflow-funnel-08-0-family-plot-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201701Z-a06c9e34-plot-workflow-funnel/08-0-family-plot-reopened.png",
+    "sha256": "65f93e975f05949added7c744ec175dfdd73838a823155ca7a7362678a0d3e3c",
+    "action": "family-plot-reopened",
+    "step": 8,
+    "scenario": "plot-workflow-funnel"
+  }
+]

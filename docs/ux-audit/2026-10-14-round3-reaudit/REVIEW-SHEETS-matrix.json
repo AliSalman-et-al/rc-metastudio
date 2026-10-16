@@ -1,0 +1,317 @@
+[
+  {
+    "sheet": "raw/review-matrix-00.png",
+    "members": [
+      "screenshots/matrix-diagnostic-cumulative-figure-1-bottom.png",
+      "screenshots/matrix-diagnostic-cumulative-figure-1.png",
+      "screenshots/matrix-diagnostic-cumulative-figure.png",
+      "screenshots/matrix-diagnostic-cumulative-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-01.png",
+    "members": [
+      "screenshots/matrix-diagnostic-leave-one-out-figure-1.png",
+      "screenshots/matrix-diagnostic-leave-one-out-figure.png",
+      "screenshots/matrix-diagnostic-leave-one-out-report.png",
+      "screenshots/matrix-diagnostic-meta-regression-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-02.png",
+    "members": [
+      "screenshots/matrix-diagnostic-standard-figure-1-bottom.png",
+      "screenshots/matrix-diagnostic-standard-figure-1.png",
+      "screenshots/matrix-diagnostic-standard-figure-bottom.png",
+      "screenshots/matrix-diagnostic-standard-figure.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-03.png",
+    "members": [
+      "screenshots/matrix-diagnostic-standard-report.png",
+      "screenshots/matrix-diagnostic-subgroup-figure-1.png",
+      "screenshots/matrix-diagnostic-subgroup-figure-bottom.png",
+      "screenshots/matrix-diagnostic-subgroup-figure.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-04.png",
+    "members": [
+      "screenshots/matrix-diagnostic-subgroup-report-bottom.png",
+      "screenshots/matrix-diagnostic-subgroup-report.png",
+      "screenshots/matrix-generic-effect-cumulative-figure.png",
+      "screenshots/matrix-generic-effect-cumulative-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-05.png",
+    "members": [
+      "screenshots/matrix-generic-effect-leave-one-out-figure.png",
+      "screenshots/matrix-generic-effect-leave-one-out-report.png",
+      "screenshots/matrix-generic-effect-meta-regression-figure.png",
+      "screenshots/matrix-generic-effect-meta-regression-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-06.png",
+    "members": [
+      "screenshots/matrix-generic-effect-standard-figure-bottom.png",
+      "screenshots/matrix-generic-effect-standard-figure.png",
+      "screenshots/matrix-generic-effect-standard-report.png",
+      "screenshots/matrix-generic-effect-subgroup-figure-bottom.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-07.png",
+    "members": [
+      "screenshots/matrix-generic-effect-subgroup-figure.png",
+      "screenshots/matrix-generic-effect-subgroup-report-bottom.png",
+      "screenshots/matrix-generic-effect-subgroup-report.png",
+      "screenshots/matrix-hr-cumulative-figure-bottom.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-08.png",
+    "members": [
+      "screenshots/matrix-hr-cumulative-figure.png",
+      "screenshots/matrix-hr-cumulative-report-bottom.png",
+      "screenshots/matrix-hr-cumulative-report.png",
+      "screenshots/matrix-hr-leave-one-out-figure-bottom.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-09.png",
+    "members": [
+      "screenshots/matrix-hr-leave-one-out-figure.png",
+      "screenshots/matrix-hr-leave-one-out-report-bottom.png",
+      "screenshots/matrix-hr-leave-one-out-report.png",
+      "screenshots/matrix-hr-meta-regression-figure-bottom.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-10.png",
+    "members": [
+      "screenshots/matrix-hr-meta-regression-figure.png",
+      "screenshots/matrix-hr-meta-regression-report.png",
+      "screenshots/matrix-hr-standard-figure-bottom.png",
+      "screenshots/matrix-hr-standard-figure.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-11.png",
+    "members": [
+      "screenshots/matrix-hr-standard-report.png",
+      "screenshots/matrix-hr-subgroup-figure-bottom.png",
+      "screenshots/matrix-hr-subgroup-figure.png",
+      "screenshots/matrix-hr-subgroup-report-bottom.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-12.png",
+    "members": [
+      "screenshots/matrix-hr-subgroup-report.png",
+      "screenshots/matrix-irr-cumulative-figure.png",
+      "screenshots/matrix-irr-cumulative-report.png",
+      "screenshots/matrix-irr-leave-one-out-figure.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-13.png",
+    "members": [
+      "screenshots/matrix-irr-leave-one-out-report.png",
+      "screenshots/matrix-irr-meta-regression-figure.png",
+      "screenshots/matrix-irr-meta-regression-report.png",
+      "screenshots/matrix-irr-standard-figure-bottom.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-14.png",
+    "members": [
+      "screenshots/matrix-irr-standard-figure.png",
+      "screenshots/matrix-irr-standard-report.png",
+      "screenshots/matrix-irr-subgroup-figure-bottom.png",
+      "screenshots/matrix-irr-subgroup-figure.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-15.png",
+    "members": [
+      "screenshots/matrix-irr-subgroup-report-bottom.png",
+      "screenshots/matrix-irr-subgroup-report.png",
+      "screenshots/matrix-onearm-mean-cumulative-figure.png",
+      "screenshots/matrix-onearm-mean-cumulative-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-16.png",
+    "members": [
+      "screenshots/matrix-onearm-mean-leave-one-out-figure.png",
+      "screenshots/matrix-onearm-mean-leave-one-out-report.png",
+      "screenshots/matrix-onearm-mean-meta-regression-figure.png",
+      "screenshots/matrix-onearm-mean-meta-regression-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-17.png",
+    "members": [
+      "screenshots/matrix-onearm-mean-standard-figure-bottom.png",
+      "screenshots/matrix-onearm-mean-standard-figure.png",
+      "screenshots/matrix-onearm-mean-standard-report.png",
+      "screenshots/matrix-onearm-mean-subgroup-figure-bottom.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-18.png",
+    "members": [
+      "screenshots/matrix-onearm-mean-subgroup-figure.png",
+      "screenshots/matrix-onearm-mean-subgroup-report-bottom.png",
+      "screenshots/matrix-onearm-mean-subgroup-report.png",
+      "screenshots/matrix-onearm-proportion-cumulative-figure.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-19.png",
+    "members": [
+      "screenshots/matrix-onearm-proportion-cumulative-report.png",
+      "screenshots/matrix-onearm-proportion-leave-one-out-figure.png",
+      "screenshots/matrix-onearm-proportion-leave-one-out-report.png",
+      "screenshots/matrix-onearm-proportion-meta-regression-figure.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-20.png",
+    "members": [
+      "screenshots/matrix-onearm-proportion-meta-regression-report.png",
+      "screenshots/matrix-onearm-proportion-standard-figure-bottom.png",
+      "screenshots/matrix-onearm-proportion-standard-figure.png",
+      "screenshots/matrix-onearm-proportion-standard-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-21.png",
+    "members": [
+      "screenshots/matrix-onearm-proportion-subgroup-figure-bottom.png",
+      "screenshots/matrix-onearm-proportion-subgroup-figure.png",
+      "screenshots/matrix-onearm-proportion-subgroup-report-bottom.png",
+      "screenshots/matrix-onearm-proportion-subgroup-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-22.png",
+    "members": [
+      "screenshots/matrix-reg-coef-cumulative-figure.png",
+      "screenshots/matrix-reg-coef-cumulative-report.png",
+      "screenshots/matrix-reg-coef-leave-one-out-figure.png",
+      "screenshots/matrix-reg-coef-leave-one-out-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-23.png",
+    "members": [
+      "screenshots/matrix-reg-coef-meta-regression-figure.png",
+      "screenshots/matrix-reg-coef-meta-regression-report.png",
+      "screenshots/matrix-reg-coef-standard-figure-bottom.png",
+      "screenshots/matrix-reg-coef-standard-figure.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-24.png",
+    "members": [
+      "screenshots/matrix-reg-coef-standard-report.png",
+      "screenshots/matrix-reg-coef-subgroup-figure-bottom.png",
+      "screenshots/matrix-reg-coef-subgroup-figure.png",
+      "screenshots/matrix-reg-coef-subgroup-report-bottom.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-25.png",
+    "members": [
+      "screenshots/matrix-reg-coef-subgroup-report.png",
+      "screenshots/matrix-twoarm-mean-cumulative-figure.png",
+      "screenshots/matrix-twoarm-mean-cumulative-report.png",
+      "screenshots/matrix-twoarm-mean-leave-one-out-figure.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-26.png",
+    "members": [
+      "screenshots/matrix-twoarm-mean-leave-one-out-report.png",
+      "screenshots/matrix-twoarm-mean-meta-regression-figure.png",
+      "screenshots/matrix-twoarm-mean-meta-regression-report.png",
+      "screenshots/matrix-twoarm-mean-standard-figure-bottom.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-27.png",
+    "members": [
+      "screenshots/matrix-twoarm-mean-standard-figure.png",
+      "screenshots/matrix-twoarm-mean-standard-report.png",
+      "screenshots/matrix-twoarm-mean-subgroup-figure-bottom.png",
+      "screenshots/matrix-twoarm-mean-subgroup-figure.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-28.png",
+    "members": [
+      "screenshots/matrix-twoarm-mean-subgroup-report-bottom.png",
+      "screenshots/matrix-twoarm-mean-subgroup-report.png",
+      "screenshots/matrix-twoarm-proportion-cumulative-figure.png",
+      "screenshots/matrix-twoarm-proportion-cumulative-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-29.png",
+    "members": [
+      "screenshots/matrix-twoarm-proportion-leave-one-out-figure.png",
+      "screenshots/matrix-twoarm-proportion-leave-one-out-report.png",
+      "screenshots/matrix-twoarm-proportion-meta-regression-figure.png",
+      "screenshots/matrix-twoarm-proportion-meta-regression-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-30.png",
+    "members": [
+      "screenshots/matrix-twoarm-proportion-standard-figure-bottom.png",
+      "screenshots/matrix-twoarm-proportion-standard-figure.png",
+      "screenshots/matrix-twoarm-proportion-standard-report.png",
+      "screenshots/matrix-twoarm-proportion-subgroup-figure-bottom.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-31.png",
+    "members": [
+      "screenshots/matrix-twoarm-proportion-subgroup-figure.png",
+      "screenshots/matrix-twoarm-proportion-subgroup-report-bottom.png",
+      "screenshots/matrix-twoarm-proportion-subgroup-report.png",
+      "screenshots/matrix-twoarm-smd-cumulative-figure.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-32.png",
+    "members": [
+      "screenshots/matrix-twoarm-smd-cumulative-report.png",
+      "screenshots/matrix-twoarm-smd-leave-one-out-figure.png",
+      "screenshots/matrix-twoarm-smd-leave-one-out-report.png",
+      "screenshots/matrix-twoarm-smd-meta-regression-figure.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-33.png",
+    "members": [
+      "screenshots/matrix-twoarm-smd-meta-regression-report.png",
+      "screenshots/matrix-twoarm-smd-standard-figure-bottom.png",
+      "screenshots/matrix-twoarm-smd-standard-figure.png",
+      "screenshots/matrix-twoarm-smd-standard-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-34.png",
+    "members": [
+      "screenshots/matrix-twoarm-smd-subgroup-figure-bottom.png",
+      "screenshots/matrix-twoarm-smd-subgroup-figure.png",
+      "screenshots/matrix-twoarm-smd-subgroup-report-bottom.png",
+      "screenshots/matrix-twoarm-smd-subgroup-report.png"
+    ]
+  }
+]

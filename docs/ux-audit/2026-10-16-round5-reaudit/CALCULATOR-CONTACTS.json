@@ -1,0 +1,50 @@
+[
+  {
+    "path": "screenshots/calculator-contact-00.png",
+    "members": [
+      "back-binary",
+      "back-continuous"
+    ],
+    "sha256": "4e374bc4042ed71e6e047eaeae1c4edda8ebc2fee2128edb18ed09c8bf66882e"
+  },
+  {
+    "path": "screenshots/calculator-contact-01.png",
+    "members": [
+      "back-diagnostic",
+      "binary-metrics"
+    ],
+    "sha256": "36c7c2dd69c3e4feee76453519fc9af43f4f027e9abb225ebbf7f514f44e5b1e"
+  },
+  {
+    "path": "screenshots/calculator-contact-02.png",
+    "members": [
+      "continuous-metrics",
+      "diagnostic-metrics"
+    ],
+    "sha256": "264404e0dcafeb2f7590dc8b03682a3d8db07f6994a02d4f8d3e558189c645ed"
+  },
+  {
+    "path": "screenshots/calculator-contact-03.png",
+    "members": [
+      "entered-binary",
+      "entered-continuous"
+    ],
+    "sha256": "2751a9477c266417dfbfa49352cd8b4a3f03be0829562a358925e90344e0a444"
+  },
+  {
+    "path": "screenshots/calculator-contact-04.png",
+    "members": [
+      "entered-diagnostic",
+      "onearm-mean"
+    ],
+    "sha256": "7b3a6d3b15e471792716ca621b7f9d3be5bfaa12829e5e8320f10b248e4db5ef"
+  },
+  {
+    "path": "screenshots/calculator-contact-05.png",
+    "members": [
+      "onearm-proportion",
+      "pre-post"
+    ],
+    "sha256": "58810a83af029905c01c64bdeb44e46a59a190245d998a796bc0cc97c128de90"
+  }
+]

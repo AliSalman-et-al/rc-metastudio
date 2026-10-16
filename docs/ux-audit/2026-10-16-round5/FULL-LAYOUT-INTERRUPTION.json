@@ -1,0 +1,64 @@
+{
+  "reason": "Native final BMJ specificity figure exposed overall-test/first-axis-tick collision at cex 1.08; stop superseded full source before correcting shared measured footer width.",
+  "processes": [
+    {
+      "pid": 1018603,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "scripts/verify_rcmetar_r_stack.py",
+        "--rscript",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript",
+        "--r-library-cache-root",
+        "/home/ali/Documents/Code/rc-metastudio/artifacts/r-library-cache"
+      ]
+    },
+    {
+      "pid": 1018877,
+      "command": [
+        "/bin/sh",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/check",
+        "--no-manual",
+        "--no-build-vignettes",
+        "--library=/tmp/RCMetaR-r-stack-swyzmb25/library",
+        "/tmp/RCMetaR-r-stack-swyzmb25/RCMetaR_0.4.2.tar.gz"
+      ]
+    },
+    {
+      "pid": 1018881,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/exec/R",
+        "--no-restore",
+        "--no-echo",
+        "--args",
+        "nextArg--no-manualnextArg--no-build-vignettesnextArg--library=/tmp/RCMetaR-r-stack-swyzmb25/librarynextArg/tmp/RCMetaR-r-stack-swyzmb25/RCMetaR_0.4.2.tar.gz"
+      ]
+    },
+    {
+      "pid": 1019997,
+      "command": [
+        "sh",
+        "-c",
+        "--",
+        "R_DEFAULT_PACKAGES= '/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/R' --vanilla --no-echo 2>&1 < '/tmp/RtmpFe6IE0/filef8c012ef90874'"
+      ]
+    },
+    {
+      "pid": 1019998,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/exec/R",
+        "--vanilla",
+        "--no-echo"
+      ]
+    },
+    {
+      "pid": 1018509,
+      "command": [
+        "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python",
+        "scripts/verify.py",
+        "r-stack",
+        "--rscript",
+        "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "title": "Review 1 \u00b7 Regression caption",
+    "description": "Same source input; readable caption separates the identity lines. Bundled arm names are also corrected. Real edit/reopen/Cancel/removal and four decoded exports pass.",
+    "before": "screenshots/review1-regression-before-04-0-matrix-results-figure.png",
+    "after": "screenshots/review1-regression-after-07-0-review1-caption-initial.png"
+  },
+  {
+    "title": "Review 1 \u00b7 Sroc caption",
+    "description": "Same source input; readable caption separates the identity lines. Bundled arm names are also corrected. Real edit/reopen/Cancel/removal and four decoded exports pass.",
+    "before": "screenshots/review1-sroc-before-05-0-matrix-results-figure.png",
+    "after": "screenshots/review1-sroc-after-09-0-review1-caption-initial.png"
+  },
+  {
+    "title": "Review 1 \u00b7 Funnel caption",
+    "description": "Same source input; readable caption separates the identity lines. Bundled arm names are also corrected. Real edit/reopen/Cancel/removal and four decoded exports pass.",
+    "before": "screenshots/review1-funnel-before-03-0-matrix-results-figure.png",
+    "after": "screenshots/review1-funnel-after-04-0-review1-caption-initial.png"
+  }
+]

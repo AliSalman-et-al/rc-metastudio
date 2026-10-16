@@ -43,8 +43,8 @@ EXPECTED_VERSIONS = {
     "pyinstaller": "6.21.0",
 }
 EXPECTED_SUMMARY_SHA256_BY_SAMPLE = {
-    "amino.rcms": "d37d0aa920c9ae2397b1c44d3fbe9f91d5d89b61fad43ced991148f2e51245d0",
-    "BCG.rcms": "2cb1cb0b867b7280a8843f633a9a040f7810d4c9e0ab91ff6333d8110fc41933",
+    "amino.rcms": "61ea84ba73eab657282ceabdf3ee1f29ab0ed55a1be574023017bc490d279ab5",
+    "BCG.rcms": "b47d4f5347252350c0c6a5507221a41c3a65bbbedacfe34e0dd164c5f75c93cb",
 }
 EXPECTED_SUMMARY_SHA256 = EXPECTED_SUMMARY_SHA256_BY_SAMPLE["amino.rcms"]
 FORBIDDEN_GENERATED_SOURCE_SUFFIXES = {".py", ".pyc", ".pyo", ".ui", ".qrc"}

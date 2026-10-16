@@ -1,0 +1,555 @@
+[
+  {
+    "label": "after-normal",
+    "immediate": {
+      "maximized": true,
+      "fullscreen": false,
+      "flags": 2,
+      "width": 700,
+      "height": 500
+    },
+    "states": [
+      {
+        "ms": 4.16,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 14.89,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 56.49,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 70.74,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 80.99,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 91.24,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 101.5,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 111.69,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 121.91,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 132.13,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 142.32,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 152.49,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 162.71,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 172.93,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 183.13,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 193.39,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 203.66,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 213.93,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      }
+    ],
+    "settled": true,
+    "elapsed_ms": 213.99,
+    "native_state": "_NET_WM_STATE(ATOM) = _NET_WM_STATE_MAXIMIZED_HORZ, _NET_WM_STATE_MAXIMIZED_VERT, _NET_WM_STATE_FOCUSED\n",
+    "capture": {
+      "path": "screenshots/startup-settled-after-normal.png",
+      "sha256": "9358dc2d7b8b557c0ad96067562644586a9c71530360a7990ce1410e4b604244"
+    }
+  },
+  {
+    "label": "restore-normal",
+    "immediate": {
+      "maximized": false,
+      "fullscreen": false,
+      "flags": 0,
+      "width": 1600,
+      "height": 828
+    },
+    "states": [
+      {
+        "ms": 1.74,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 11.95,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 36.52,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 58.25,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 69.28,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 79.54,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 89.79,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 100.1,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 110.38,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 120.72,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 130.94,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 141.19,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 151.49,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 161.81,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 172.1,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 182.5,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 192.91,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 203.36,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 213.63,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 223.98,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 234.45,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      },
+      {
+        "ms": 244.87,
+        "maximized": false,
+        "fullscreen": false,
+        "flags": 0,
+        "width": 700,
+        "height": 500
+      }
+    ],
+    "settled": true,
+    "elapsed_ms": 245.16,
+    "native_state": "_NET_WM_STATE(ATOM) = _NET_WM_STATE_FOCUSED\n",
+    "capture": {
+      "path": "screenshots/startup-settled-restore-normal.png",
+      "sha256": "7707e0398cc05e90e9ecc441026dc15b6923567dd09eb2e9962a29b3083296a3"
+    }
+  },
+  {
+    "label": "after-fullscreen",
+    "immediate": {
+      "maximized": true,
+      "fullscreen": false,
+      "flags": 2,
+      "width": 700,
+      "height": 500
+    },
+    "states": [
+      {
+        "ms": 25.8,
+        "maximized": false,
+        "fullscreen": true,
+        "flags": 4,
+        "width": 1600,
+        "height": 900
+      },
+      {
+        "ms": 88.97,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 99.77,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 110.13,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 120.49,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 130.88,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 141.22,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 151.48,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 161.75,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 172.08,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 182.39,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 192.69,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 203.07,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 213.41,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 223.77,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 234.01,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 244.28,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 254.53,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 264.86,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 275.18,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 285.54,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      },
+      {
+        "ms": 295.87,
+        "maximized": true,
+        "fullscreen": false,
+        "flags": 2,
+        "width": 1600,
+        "height": 828
+      }
+    ],
+    "settled": true,
+    "elapsed_ms": 295.95,
+    "native_state": "_NET_WM_STATE(ATOM) = _NET_WM_STATE_MAXIMIZED_HORZ, _NET_WM_STATE_MAXIMIZED_VERT, _NET_WM_STATE_FOCUSED\n",
+    "capture": {
+      "path": "screenshots/startup-settled-after-fullscreen.png",
+      "sha256": "9358dc2d7b8b557c0ad96067562644586a9c71530360a7990ce1410e4b604244"
+    }
+  }
+]

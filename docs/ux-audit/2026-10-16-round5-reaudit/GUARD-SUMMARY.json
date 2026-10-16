@@ -1,0 +1,32 @@
+{
+  "run": "raw/native-guard-keyboard-finalreplay.json",
+  "exit_code": 0,
+  "source": "raw/native_guard_keyboard.py",
+  "source_sha256": "dcfde1a1e7ff198e7d8e7e92ce71a13c894b128a2540d9d67f331254493a1cca",
+  "assertions": [
+    "Open No switches without saving owned source",
+    "Open Yes saves then switches; reopen retains edit",
+    "Cancelled Save As cancels Open and retains current dirty data",
+    "Actual Tab/Control-Tab traversal reaches Analyses toolbar without initial widget focus assignment",
+    "Space/arrows choose Meta-analysis; Enter runs",
+    "Ctrl+T report, Ctrl+Shift+C copies, Ctrl+Shift+S exports identical UTF-8 bytes",
+    "Original bundled archive unchanged"
+  ],
+  "artifacts": [
+    {
+      "path": "raw/guard-keyboard/guard-target.rcms",
+      "sha256": "025ae202f23eed7da8d5bc02aa0fa6d6e4d89b4f78179a5d1a3831c0a6d59093",
+      "bytes": 1802
+    },
+    {
+      "path": "raw/guard-keyboard/keyboard-exported-report.txt",
+      "sha256": "bf61cba54bbd06dba4494438e103b5904a909d2b50a1f64cb191d951607879f9",
+      "bytes": 1810
+    },
+    {
+      "path": "raw/guard-keyboard/guard-source.rcms",
+      "sha256": "694e97b8985825b4f717c0b637bc020caaa074e4497706512278c00e997df2b1",
+      "bytes": 9548
+    }
+  ]
+}

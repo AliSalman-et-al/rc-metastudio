@@ -1,0 +1,210 @@
+[
+  {
+    "path": "screenshots/project-display-labels-11-0-display-label-calculator.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/11-0-display-label-calculator.png",
+    "sha256": "30d0e456fc50efc9958a034232d05e24904d374630df0fd13db9cd4e2b20a17f",
+    "action": "display-label-calculator",
+    "step": 11,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-12-0-display-label-attached-menus.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/12-0-display-label-attached-menus.png",
+    "sha256": "b8c2e60219fd5b63e1ff1ce1feb81f384b18d459a9455c6e14ca98877fab1e32",
+    "action": "display-label-attached-menus",
+    "step": 12,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-22-0-display-metric-popup.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/22-0-display-metric-popup.png",
+    "sha256": "f2261d6c5db4eb4b984150402e0a7e95fe3fca360aedf6c1963955c6dc1e080e",
+    "action": "display-metric-popup",
+    "step": 22,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-23-0-display-label-calculator.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/23-0-display-label-calculator.png",
+    "sha256": "1bb13b3cc7b3fc570fe02d6488793e8319a58aab3300a87ae2194806532cffbb",
+    "action": "display-label-calculator",
+    "step": 23,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-24-0-display-label-attached-menus.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/24-0-display-label-attached-menus.png",
+    "sha256": "202bfe68521d9cd268037e96a56207a23aa05cecf2b60b257b0437b4e4f04a7a",
+    "action": "display-label-attached-menus",
+    "step": 24,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-34-0-display-metric-popup.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/34-0-display-metric-popup.png",
+    "sha256": "bd743f614561bd3fd3f537c9db8ed1ed968395e1a960d0fe39758d900a5115b4",
+    "action": "display-metric-popup",
+    "step": 34,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-35-0-display-label-calculator.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/35-0-display-label-calculator.png",
+    "sha256": "26244d4db5af63f54a626d8929b77b4573a875155bd6e84f84f36e36cf9a2007",
+    "action": "display-label-calculator",
+    "step": 35,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-36-0-display-label-attached-menus.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/36-0-display-label-attached-menus.png",
+    "sha256": "81de9fda7c5ee411c14b23ebc0eef6138c1e2cfac2df0cffa6463382cebaf113",
+    "action": "display-label-attached-menus",
+    "step": 36,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-46-0-display-metric-popup.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/46-0-display-metric-popup.png",
+    "sha256": "35d42c7b6b4958232ebb3887b954938241e9b68950021598d62a3ee1418e0502",
+    "action": "display-metric-popup",
+    "step": 46,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-47-0-display-label-calculator.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/47-0-display-label-calculator.png",
+    "sha256": "2a31b03b639d93916ca290fd8fe7461291c3d29901e73fd6d86bd3524817e8de",
+    "action": "display-label-calculator",
+    "step": 47,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-48-0-display-label-attached-menus.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/48-0-display-label-attached-menus.png",
+    "sha256": "4871dbcc4ccc9c1b048b827a614d9f498fe2297f5733fed89abb36d466c6d48e",
+    "action": "display-label-attached-menus",
+    "step": 48,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-58-0-display-label-calculator.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/58-0-display-label-calculator.png",
+    "sha256": "4e435f3959b93923e2b6c392d35ae2e4284844df9188642002245f4e759c8349",
+    "action": "display-label-calculator",
+    "step": 58,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-59-0-display-label-attached-menus.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/59-0-display-label-attached-menus.png",
+    "sha256": "db0067d697cfe9f9127587ef179a91bc016cd2e44ffcc631b8323adf054b1343",
+    "action": "display-label-attached-menus",
+    "step": 59,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-69-0-display-metric-popup.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/69-0-display-metric-popup.png",
+    "sha256": "fb81b70fe6a7f2b46bab421f0ec75b4bce0693b167c4a4c27f5bdbc7893e2c89",
+    "action": "display-metric-popup",
+    "step": 69,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-70-0-display-label-calculator.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/70-0-display-label-calculator.png",
+    "sha256": "55330547890fea3b9a7aaae32a2c9c503a450423f7dba12c785f7c00eeea72cc",
+    "action": "display-label-calculator",
+    "step": 70,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-71-0-display-label-attached-menus.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/71-0-display-label-attached-menus.png",
+    "sha256": "676b7245e9fd1dee1b8d621a0841a050069096148add3c682bea1faafe95cf43",
+    "action": "display-label-attached-menus",
+    "step": 71,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-81-0-display-metric-popup.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/81-0-display-metric-popup.png",
+    "sha256": "fb81b70fe6a7f2b46bab421f0ec75b4bce0693b167c4a4c27f5bdbc7893e2c89",
+    "action": "display-metric-popup",
+    "step": 81,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-82-0-display-label-calculator.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/82-0-display-label-calculator.png",
+    "sha256": "664bd829157c38e7dfffccf52a066e4d8e611cdb5b0f88d4b9587ab10d08dc34",
+    "action": "display-label-calculator",
+    "step": 82,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-83-0-display-label-attached-menus.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/83-0-display-label-attached-menus.png",
+    "sha256": "d1e672258a0f9b0ae6e028f07756ab38eea8fd2fa7c06f6fedc70aaae6217f6d",
+    "action": "display-label-attached-menus",
+    "step": 83,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-89-0-diagnostic-metrics.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/89-0-diagnostic-metrics.png",
+    "sha256": "744b71ad084855988332e7960059dbc6ed97fcdafc2de7de018dff6d3f3ec768",
+    "action": "diagnostic-metrics",
+    "step": 89,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-94-0-display-label-calculator.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/94-0-display-label-calculator.png",
+    "sha256": "003654a6d596eeb6c4d1c4672ae3aa6195ed3bfc9d2ed7132353e595a3d67777",
+    "action": "display-label-calculator",
+    "step": 94,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-95-0-display-label-attached-menus.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/95-0-display-label-attached-menus.png",
+    "sha256": "d1a517005d3b4191763149f7ab698a48cbea81391acc77223762b8e76fe86dae",
+    "action": "display-label-attached-menus",
+    "step": 95,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-98-0-display-label-calculator.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/98-0-display-label-calculator.png",
+    "sha256": "3899b3d1286a1cbee941564913488cf9d15c3bbd7fcf3d8e6aad863dcc20282a",
+    "action": "display-label-calculator",
+    "step": 98,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-99-0-display-label-attached-menus.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/99-0-display-label-attached-menus.png",
+    "sha256": "690ee6637c27fb605884226c5204286322221985fcce34f809156e3fc2a3c891",
+    "action": "display-label-attached-menus",
+    "step": 99,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-102-0-display-label-calculator.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/102-0-display-label-calculator.png",
+    "sha256": "0916487251c5c7bc6c34fbd7c2b103df258508e12193609b10dce2defa81fada",
+    "action": "display-label-calculator",
+    "step": 102,
+    "scenario": "project-display-labels"
+  },
+  {
+    "path": "screenshots/project-display-labels-103-0-display-label-attached-menus.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T185350Z-cda0adb1-project-display-labels/103-0-display-label-attached-menus.png",
+    "sha256": "bf9ce9db5edc5ee23fb26cfaaba51e90c189cc3bbd3f099de6a172ff14b39b4d",
+    "action": "display-label-attached-menus",
+    "step": 103,
+    "scenario": "project-display-labels"
+  }
+]

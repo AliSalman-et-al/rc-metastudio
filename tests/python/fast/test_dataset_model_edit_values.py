@@ -329,7 +329,7 @@ def test_invalid_continuous_covariate_edit_emits_error_and_preserves_value():
 
     assert model.setData(covariate_index, "not numeric") is False
 
-    assert errors == ["Covariate values for continuous covariates need to be numeric."]
+    assert errors == ["Numeric covariates require numbers."]
     assert model.dataset.studies[0].covariate_values["Dose"] == 5.5
 
 

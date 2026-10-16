@@ -1,0 +1,37 @@
+[
+  {
+    "sheet": "raw/pair-reg-coef-0.png",
+    "members": [
+      "screenshots/matrix-reg-coef-standard-figure.png",
+      "screenshots/matrix-reg-coef-standard-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-reg-coef-1.png",
+    "members": [
+      "screenshots/matrix-reg-coef-cumulative-figure.png",
+      "screenshots/matrix-reg-coef-cumulative-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-reg-coef-2.png",
+    "members": [
+      "screenshots/matrix-reg-coef-leave-one-out-figure.png",
+      "screenshots/matrix-reg-coef-leave-one-out-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-reg-coef-3.png",
+    "members": [
+      "screenshots/matrix-reg-coef-subgroup-figure.png",
+      "screenshots/matrix-reg-coef-subgroup-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-reg-coef-4.png",
+    "members": [
+      "screenshots/matrix-reg-coef-meta-regression-figure.png",
+      "screenshots/matrix-reg-coef-meta-regression-report.png"
+    ]
+  }
+]

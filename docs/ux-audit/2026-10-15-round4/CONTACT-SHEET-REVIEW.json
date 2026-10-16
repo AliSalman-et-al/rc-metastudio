@@ -1,0 +1,19 @@
+{
+  "path": "contact-sheet.html",
+  "sha256": "46a3ec69ca72fcb8cd518f0d8aebb3fa058b22ced033e0444040233be5330422",
+  "native_frames": 19,
+  "preview_tool": "t3-code.html_preview",
+  "preview_width": 1200,
+  "content_height": 5534,
+  "captured_height": 4000,
+  "console": [
+    {
+      "level": "log",
+      "text": "Native comparison frames: 19"
+    }
+  ],
+  "console_errors": [],
+  "inspected": "Fluid paired columns, captions and paths are clear; full-resolution dialog available. Native frames separately inspected in REVIEW1-VISUAL.md. The last navigation section was inspected as its full native PNG.",
+  "render_tool": "t3-code.html_render",
+  "render_height": 2000
+}

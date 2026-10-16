@@ -1,0 +1,18 @@
+[
+  {
+    "path": "screenshots/plot-workflow-leave-one-out-08-0-family-editor-controls.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201337Z-fcef29fb-plot-workflow-leave-one-out/08-0-family-editor-controls.png",
+    "sha256": "872e4c02ceb6080924253546867032bddeb0a53be0ce1763975807056b5cc153",
+    "action": "family-editor-controls",
+    "step": 8,
+    "scenario": "plot-workflow-leave-one-out"
+  },
+  {
+    "path": "screenshots/plot-workflow-leave-one-out-11-0-family-plot-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201337Z-fcef29fb-plot-workflow-leave-one-out/11-0-family-plot-reopened.png",
+    "sha256": "0190ca2bdc9714b92c58f5f28a86d7e709550d9abd628c406c82681afb58f7f3",
+    "action": "family-plot-reopened",
+    "step": 11,
+    "scenario": "plot-workflow-leave-one-out"
+  }
+]

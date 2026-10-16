@@ -1,0 +1,102 @@
+[
+  {
+    "path": "screenshots/matrix-onearm-mean-standard-report.png",
+    "sha256": "65a359b087a2fe1d82f46058605d68021e06e7429302f1d638ac8507f37d5fec",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-mean/captures/matrix-onearm-mean-standard-report.png",
+    "scenario": "MATRIX-onearm-mean"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-standard-figure.png",
+    "sha256": "6fde0114f21a163edf59229f85a00fc459cbba8f2af275548305c1b24fbac94b",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-mean/captures/matrix-onearm-mean-standard-figure.png",
+    "scenario": "MATRIX-onearm-mean"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-cumulative-report.png",
+    "sha256": "a3fb36f90cc2290ad73ede8d48ab145c6a96794585385638255be2565f419502",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-mean/captures/matrix-onearm-mean-cumulative-report.png",
+    "scenario": "MATRIX-onearm-mean"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-cumulative-figure.png",
+    "sha256": "bdb605a403eaff053fbbe9f040b0a08faa4283072f6327177a260786dae4047b",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-mean/captures/matrix-onearm-mean-cumulative-figure.png",
+    "scenario": "MATRIX-onearm-mean"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-leave-one-out-report.png",
+    "sha256": "c715d0c7f06d23cffd9e212f9b19c6fba6a7daf9965b9d24d0b489afa67e987e",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-mean/captures/matrix-onearm-mean-leave-one-out-report.png",
+    "scenario": "MATRIX-onearm-mean"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-leave-one-out-figure.png",
+    "sha256": "f3f069ca514a064baa703b57cc972182a944e95c383c74f5a48ab698979d0875",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-mean/captures/matrix-onearm-mean-leave-one-out-figure.png",
+    "scenario": "MATRIX-onearm-mean"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-subgroup-report.png",
+    "sha256": "b34db6dc3ba0c8dfe2e9c65563209cc0b5f66078fc755d710677fde041834a39",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-mean/captures/matrix-onearm-mean-subgroup-report.png",
+    "scenario": "MATRIX-onearm-mean"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-subgroup-figure.png",
+    "sha256": "a43c40a82cae5c1073be61555fcf6c58643bfb79b666095714ae87a17d665b9e",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-mean/captures/matrix-onearm-mean-subgroup-figure.png",
+    "scenario": "MATRIX-onearm-mean"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-meta-regression-report.png",
+    "sha256": "3488e873cb95a6fec91fed64bc96ef98bd362221abce519dc5a7d0a81076966b",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-mean/captures/matrix-onearm-mean-meta-regression-report.png",
+    "scenario": "MATRIX-onearm-mean"
+  },
+  {
+    "path": "screenshots/matrix-onearm-mean-meta-regression-figure.png",
+    "sha256": "d7c5b0d616028242b6ad8ef0bb8ec9a4718dc0b4405122ff58a875f2534fca98",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-mean/captures/matrix-onearm-mean-meta-regression-figure.png",
+    "scenario": "MATRIX-onearm-mean"
+  }
+]

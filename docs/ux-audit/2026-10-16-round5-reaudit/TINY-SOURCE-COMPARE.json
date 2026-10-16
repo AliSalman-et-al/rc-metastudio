@@ -1,0 +1,33 @@
+{
+  "source": "src/rc_metastudio/continuous_data_dialog.py",
+  "baseline": "f1aa24d",
+  "functions": {
+    "float_to_str": {
+      "ast_equal": true,
+      "current_ast_sha256": "86d217a468416184fa562341befa68545207e12b278dc0154ce1b1852ad92193",
+      "round4_ast_sha256": "86d217a468416184fa562341befa68545207e12b278dc0154ce1b1852ad92193"
+    },
+    "_set_val": {
+      "ast_equal": true,
+      "current_ast_sha256": "d274fedf37350b131875713a8a1cfc4ec3fb5bb8f2d5dfc6edaaa5f6ce0e062e",
+      "round4_ast_sha256": "d274fedf37350b131875713a8a1cfc4ec3fb5bb8f2d5dfc6edaaa5f6ce0e062e"
+    },
+    "_copy_raw_data_from_table_to_analysis_unit": {
+      "ast_equal": true,
+      "current_ast_sha256": "48f40850e66304f0aad3d643c7b8a30c56490595e6b1e6a9a6f6fbb42da1b539",
+      "round4_ast_sha256": "48f40850e66304f0aad3d643c7b8a30c56490595e6b1e6a9a6f6fbb42da1b539"
+    },
+    "_cell_changed": {
+      "ast_equal": true,
+      "current_ast_sha256": "b6f4b376dbbe94185abf993e571c3cc32846e6896f41a28eecbb91bbe6d96d0f",
+      "round4_ast_sha256": "b6f4b376dbbe94185abf993e571c3cc32846e6896f41a28eecbb91bbe6d96d0f"
+    }
+  },
+  "qualification": "Same formatter, cell handler, display writer and table-to-raw copying AST at round four; no old-runtime tiny-SD replay.",
+  "r_imputation_source": {
+    "path": "r/RCMetaR/R/data_transform.R",
+    "current_sha256": "e934cdee051a2fa820cf39dcdee9b215f08f4cca91f298b88629101bd77e7cf2",
+    "round4_sha256": "e934cdee051a2fa820cf39dcdee9b215f08f4cca91f298b88629101bd77e7cf2",
+    "byte_identical": true
+  }
+}

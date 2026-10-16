@@ -1,0 +1,242 @@
+[
+  {
+    "path": "screenshots/matrix-diagnostic-standard-report.png",
+    "sha256": "4967cd0d8d3f3101a78301306dd875fc0149977b75d29366b02b08e657667809",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "standard",
+    "identity": "Meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-standard-report-bottom.png",
+    "sha256": "5f6e555c3fda10c91af05e8ba1520d04116f3a83efc0ad2ec73ea6beefc2f586",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "standard",
+    "identity": "Meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-standard-figure.png",
+    "sha256": "9fcf6aed9fb7148918220c74bb964ada146f556adb3fd1102603817647709b11",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "standard",
+    "identity": "Meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-standard-figure-bottom.png",
+    "sha256": "f6da4e1d88c4d188bc1571d5dfe1bce74d0e6df86d656b385952e8301787bb19",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "standard",
+    "identity": "Meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-standard-figure-1.png",
+    "sha256": "207cbb0488b035a364c803b27a495ae87eebdf22f6c55bc3b146a51f5d0cf16b",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "standard",
+    "identity": "Meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-standard-figure-1-bottom.png",
+    "sha256": "207cbb0488b035a364c803b27a495ae87eebdf22f6c55bc3b146a51f5d0cf16b",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "standard",
+    "identity": "Meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-cumulative-report.png",
+    "sha256": "e27375de5eeae6fc94967fbf3e3edee51c8d8723715aef7c819336ba3e6f8943",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-cumulative-report-bottom.png",
+    "sha256": "2d46548b5289d4f8fc802b9d8f2bf1e6fe85b94b24e7a59752de731835fea3b7",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-cumulative-figure.png",
+    "sha256": "7fbaf04d0c40f130802b75e94a5dd478944678e2e06a5734e82c2801911533c2",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-cumulative-figure-bottom.png",
+    "sha256": "ff309465cfe2944685ef23aea8bcb6c3c81138ad243d86cec2332911d6bee511",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-cumulative-figure-1.png",
+    "sha256": "5524069dd333f4396b199b94c7d0f469fa86e6fbc4cf7b98f374ad2ac2014be3",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-cumulative-figure-1-bottom.png",
+    "sha256": "8e3cee4d650400e38a0ce1d2a813bb06d8a8b1d1f6d694abe7b25bd8ab5d46c4",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-leave-one-out-report.png",
+    "sha256": "5cb8116c3249cb15a044ec4f0038c653bf25efb2b76befc1b25a99686d8fa949",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-leave-one-out-report-bottom.png",
+    "sha256": "e3ab3b3f5c973bfc9f7af2a312831de758826205162bce72019d0ad9c1c070e8",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-leave-one-out-figure.png",
+    "sha256": "b072d1859f2b7e668e0f230e4daebacb71da98c1e70a5e437650480060a60ded",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-leave-one-out-figure-bottom.png",
+    "sha256": "9011e46097a52d9d51b264e4d1bc030ca8a38ebed69e0e29aed32bcf78e3ace5",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-leave-one-out-figure-1.png",
+    "sha256": "5eca8f72aadf74afd8c48077b4e838370aaefd360d86fb7e35fc955c7aee2b90",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-leave-one-out-figure-1-bottom.png",
+    "sha256": "f5b3a354e52770e7f7865dcf544e0c22049b314b43a2a3851142944ce9bbba96",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-subgroup-report.png",
+    "sha256": "7290a7d119f79e7d45d533b4d3bc1590a870a5cfa7a2692b2ddf11fd63d57830",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-subgroup-report-bottom.png",
+    "sha256": "a675e36bad8b1b7932a07c6f5b0106e9e86a9ca1217c1b7b81bc0bae4eaa0618",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-subgroup-figure.png",
+    "sha256": "406e6ca560b18547ffb1569bcb99e8201c547f7a493427af7f8536ac29fcd4ad",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-subgroup-figure-bottom.png",
+    "sha256": "59e33215219d1a516eec76b90738b589bfac3dd99c08f941230e1a133f4aa476",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-subgroup-figure-1.png",
+    "sha256": "7cd6dffab365e617a7989242bc39c881905824fd6108ad7e9e0de55cea4cbf04",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-subgroup-figure-1-bottom.png",
+    "sha256": "0e0bca3f00efa3f36c25424bd824ba6738c82a40476c2bf994659e5e40f0d5fb",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis — Verification outcome · Diagnostic · Sensitivity, Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-meta-regression-report.png",
+    "sha256": "8a385926e96b21445b1ef196534a258651fe050dd8817bd955ef886e899c2ec2",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression — Verification outcome · Diagnostic · Sensitivity and Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-meta-regression-report-bottom.png",
+    "sha256": "77ce2013eef86d08c092f83acc3f91a1715e73aebb541b9080e1a74569b4bd5c",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression — Verification outcome · Diagnostic · Sensitivity and Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-meta-regression-figure.png",
+    "sha256": "214a6f435ecb3d324e9299a1c61a4488d22323a5124b625c6fbde84bb9714cf2",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression — Verification outcome · Diagnostic · Sensitivity and Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-meta-regression-figure-bottom.png",
+    "sha256": "c17acda11e14f57f26643ae8b9fb7b1cadaef8f2c954b837535c919ce487d861",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression — Verification outcome · Diagnostic · Sensitivity and Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "screenshots/matrix-diagnostic-meta-regression-figure-1.png",
+    "sha256": "b0aced885ef26a00d1d9ca662904e6294e8db33dd2cd07a734f829dc77eb2450",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression — Verification outcome · Diagnostic · Sensitivity and Specificity\nGroup: test 1 · Follow-up: first"
+  },
+  {
+    "path": "raw/uncurated/matrix-diagnostic-meta-regression-figure-1-bottom.png",
+    "sha256": "fc25a0d7adeccc8a5adcc32fb8bc4f9e49d2f4c2efb77632a159378f4ea41b6b",
+    "capture": "QScreen.grabWindow",
+    "family": "diagnostic",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression — Verification outcome · Diagnostic · Sensitivity and Specificity\nGroup: test 1 · Follow-up: first"
+  }
+]

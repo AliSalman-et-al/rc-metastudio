@@ -555,6 +555,19 @@ def restore_workspace_placement(
         )
 
 
+def load_plot_export_format():
+    value = QSettings().value(RESULTS_WORKSPACE_GROUP + "/plot_export_format", "pdf")
+    return value if value in {"pdf", "png", "tiff", "svg"} else "pdf"
+
+
+def save_plot_export_format(extension):
+    if extension not in {"pdf", "png", "tiff", "svg"}:
+        raise ValueError("unsupported plot export format")
+    settings = QSettings()
+    settings.setValue(RESULTS_WORKSPACE_GROUP + "/plot_export_format", extension)
+    settings.sync()
+
+
 def save_results_window_state(window):
     """Persist Results geometry and meaningful splitter proportions."""
     settings = save_workspace_placement(RESULTS_WORKSPACE_GROUP, window)
@@ -733,9 +746,9 @@ def normalize_recent_files(recent_files, *, remove_missing=False):
 
 
 def get_recent_files():
-    """Return unique existing recent project paths and persist cleanup."""
+    """Return unique recent paths, retaining unavailable projects for display."""
     stored = get_setting("recent_files")
-    recent_files = normalize_recent_files(stored, remove_missing=True)
+    recent_files = normalize_recent_files(stored)
     if recent_files != stored:
         update_setting("recent_files", recent_files)
         save_settings()

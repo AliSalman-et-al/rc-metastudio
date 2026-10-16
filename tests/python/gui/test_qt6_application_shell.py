@@ -415,7 +415,7 @@ def test_structured_project_restores_nondefault_active_selection_without_normali
         "schema_version": project_format.CURRENT_FORMAT_VERSION,
         "active_outcome": "nephrotoxic",
         "active_follow_up": "second",
-        "active_groups": ["tx B", "tx A"],
+        "active_groups": ["Control", "Intervention"],
         "active_effect": "RR",
         "confidence_level": 90.0,
     }
@@ -430,14 +430,14 @@ def test_structured_project_restores_nondefault_active_selection_without_normali
         assert window.open(str(selected)) is True
         assert window.model.current_outcome_name == "nephrotoxic"
         assert window.model.get_current_follow_up_name() == "second"
-        assert window.model.current_groups == ["tx B", "tx A"]
+        assert window.model.current_groups == ["Control", "Intervention"]
         assert window.model.current_effect == "RR"
         assert window.model.get_confidence_level() == 90.0
         assert window.save() is True
         assert window.open(str(selected)) is True
         assert window.model.current_outcome_name == "nephrotoxic"
         assert window.model.get_current_follow_up_name() == "second"
-        assert window.model.current_groups == ["tx B", "tx A"]
+        assert window.model.current_groups == ["Control", "Intervention"]
         assert window.model.current_effect == "RR"
     finally:
         _close_shell(app, window)

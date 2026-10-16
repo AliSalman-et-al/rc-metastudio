@@ -1,0 +1,38 @@
+Leave-one-out meta-analysis — Verification outcome · Single-arm proportion · Untransformed Proportion
+Group: tx A · Follow-up: first
+
+Model configuration
+Project: typed.rcms
+Model: Binary Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Each row omits the named study; compare with the all-studies estimate.
+
+Leave-one-out Summary
+
+Model Results
+Study omitted	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+All studies	0.282110	0.206772	0.357447	0.038438	< 1e-06
+Study omitted: Fixture 1	0.300709	0.217274	0.384145	0.042570	< 1e-06
+Study omitted: Fixture 2	0.291191	0.208446	0.373937	0.042218	< 1e-06
+Study omitted: Fixture 3	0.283949	0.201558	0.366339	0.042037	< 1e-06
+Study omitted: Fixture 4	0.277858	0.195633	0.360083	0.041952	< 1e-06
+Study omitted: Fixture 5	0.272384	0.190205	0.354563	0.041929	< 1e-06
+Study omitted: Fixture 6	0.267238	0.185023	0.349454	0.041948	< 1e-06
+
+Binary Random-Effects Model
+
+Metric: Untransformed Proportion
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+4. Leave-one-out Meta-Analysis: estimates are recomputed after omitting each study in turn to assess influence on the selected base meta-analysis method.
+
+
+Inference Method
+
+Normal approximation

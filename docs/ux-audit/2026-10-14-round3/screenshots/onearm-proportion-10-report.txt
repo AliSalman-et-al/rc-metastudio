@@ -1,0 +1,37 @@
+Cumulative meta-analysis — Verification outcome · Single-arm proportion · Untransformed Proportion
+Group: tx A · Follow-up: first
+
+Model configuration
+Project: typed.rcms
+Model: Binary Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Order: current study order; each row adds a study to the preceding studies.
+
+Cumulative Summary
+
+Model Results
+Study added (k)	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+Fixture 1 (k = 1)	0.200000	0.024695	0.375305	0.089443	
+Fixture 2 (k = 2)	0.218317	0.092002	0.344631	0.064447	0.000705
+Fixture 3 (k = 3)	0.235477	0.130963	0.339991	0.053324	0.000010
+Fixture 4 (k = 4)	0.251731	0.160378	0.343084	0.046609	< 1e-06
+Fixture 5 (k = 5)	0.267238	0.185023	0.349454	0.041948	< 1e-06
+Fixture 6 (k = 6)	0.282110	0.206772	0.357447	0.038438	< 1e-06
+
+Binary Random-Effects Model
+
+Metric: Proportion
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+4. Cumulative Meta-Analysis: Lau, Joseph, et al. "Cumulative meta-analysis of therapeutic trials for myocardial infarction." New England Journal of Medicine 327.4 (1992): 248-254.
+
+
+Inference Method
+
+Normal approximation

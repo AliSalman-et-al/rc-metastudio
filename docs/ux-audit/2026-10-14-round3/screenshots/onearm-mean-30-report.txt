@@ -1,0 +1,52 @@
+Subgroup meta-analysis — Verification outcome · Single-arm mean · Mean
+Group: tx A · Follow-up: first
+
+Model configuration
+Project: typed.rcms
+Model: Continuous Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Subgroups by Group. Use the test of subgroup differences to compare groups.
+
+Subgroup Summary
+
+Model Results
+Subgroups	k	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value	z-value
+Subgroup B	3	5.784455	3.548689	8.020220	1.140718	< 1e-06	5.070891
+Subgroup A	3	6.749129	4.500019	8.998239	1.147526	< 1e-06	5.881460
+Overall	6	6.203291	4.744525	7.662058	0.744282	< 1e-06	8.334595
+
+Heterogeneity
+Subgroups	Q	df	p-value	I²	τ²
+Subgroup B	12.000000	2	0.002479	83.3%	3.164794
+Subgroup A	7.841515	2	0.019826	74.5%	2.887769
+Overall	23.747316	5	0.000243	78.9%	2.444526
+
+Prediction interval
+Subgroups	Lower bound (95% PI)	Upper bound (95% PI)
+Subgroup B	1.642466	9.926444
+Subgroup A	2.730206	10.768052
+Overall	2.809393	9.597189
+
+Test of subgroup differences
+Test	Statistic	df	p-value
+Subgroup differences (Qm)	0.364525	1	0.546004
+
+Continuous Random-Effects Model
+
+Metric: Mean
+
+Subgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+4. Subgroup Meta-Analysis: estimates are recomputed within covariate-defined study groups using the selected base meta-analysis method.
+
+
+Inference Method
+
+Normal approximation

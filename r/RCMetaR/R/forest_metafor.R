@@ -108,6 +108,20 @@ rcmetar.raw.values.complete <- function(values) {
     length(values) > 0 && all(is.finite(values))
 }
 
+# Compact only presentation strings; raw matrices still own full-precision totals.
+rcmetar.compact.numeric.labels <- function(labels) {
+    labels <- as.character(labels)
+    values <- suppressWarnings(as.numeric(labels))
+    compact <- is.finite(values) & nchar(labels) > 12
+    labels[compact] <- formatC(values[compact], digits=4, format="e")
+    labels
+}
+
+rcmetar.forest.display.ilab <- function(values) {
+    values[] <- rcmetar.compact.numeric.labels(values)
+    values
+}
+
 rcmetar.format.metafor.raw <- function(values) {
     values <- as.numeric(values)
     labels <- as.character(values)
@@ -120,8 +134,11 @@ rcmetar.format.metafor.numeric <- function(values, digits) {
     ifelse(is.na(values), "", round.display(values, digits))
 }
 
-rcmetar.format.effect.number <- function(values, digits, max.decimals=6L) {
+rcmetar.format.effect.number <- function(values, digits, max.decimals=6L, scale=abs(values)) {
     values <- as.numeric(values)
+    # Eight machine epsilons of the row's effect/interval scale hide arithmetic
+    # residue. Scaling by the row, rather than one, preserves genuinely tiny rows.
+    values[is.finite(values) & abs(values) <= 8 * .Machine$double.eps * scale] <- 0
     digits <- max(0L, as.integer(digits))
     labels <- rep("", length(values))
     finite <- is.finite(values)
@@ -150,7 +167,7 @@ rcmetar.format.effect.number <- function(values, digits, max.decimals=6L) {
         }
     }
     labels[is.na(values)] <- ""
-    labels
+    rcmetar.compact.numeric.labels(labels)
 }
 
 rcmetar.empty.forest.ilab <- function(n) {
@@ -209,32 +226,16 @@ rcmetar.result.vector <- function(results, field) {
 }
 
 rcmetar.forest.regeneration.state <- function(variant, results=NULL, labels=NULL, subgroup.data=NULL,
-                                                param.overrides=list()) {
+                                                param.overrides=list(), has.overall=FALSE) {
     variant <- as.character(variant)
     if (!(variant %in% c("cumulative", "leave-one-out", "subgroup"))) {
         stop(sprintf("Unknown forest regeneration variant '%s'.", variant), call.=FALSE)
     }
-    if (is.null(param.overrides)) {
-        param.overrides <- list()
-    }
-    if (!is.list(param.overrides) ||
-        (length(param.overrides) > 0 &&
-            (is.null(names(param.overrides)) || any(!nzchar(names(param.overrides)))))) {
-        stop("Forest regeneration parameter overrides must be a named list.", call.=FALSE)
-    }
-    allowed.overrides <- if (identical(variant, "cumulative")) {
-        c("fp_col1_str", "fp_col2_str")
-    } else {
-        character()
-    }
-    unsupported.overrides <- setdiff(names(param.overrides), allowed.overrides)
-    if (length(unsupported.overrides) > 0) {
-        stop(sprintf(
-            "Forest regeneration variant '%s' does not support parameter overrides: %s.",
-            variant, paste(unsupported.overrides, collapse=", ")
-        ), call.=FALSE)
-    }
+    param.overrides <- rcmetar.forest.regeneration.overrides(variant, param.overrides)
     if (variant %in% c("cumulative", "leave-one-out")) {
+        if (!is.logical(has.overall) || length(has.overall) != 1L || is.na(has.overall)) {
+            stop("Sequential forest has.overall must be a single TRUE or FALSE.", call.=FALSE)
+        }
         if (!is.list(results) || length(results) == 0 || length(labels) != length(results)) {
             stop(sprintf("Forest regeneration variant '%s' requires matching results and labels.", variant), call.=FALSE)
         }
@@ -242,7 +243,8 @@ rcmetar.forest.regeneration.state <- function(variant, results=NULL, labels=NULL
             variant=variant,
             results=results,
             labels=as.character(labels),
-            param_overrides=param.overrides
+            param_overrides=param.overrides,
+            has_overall=has.overall
         )
     } else {
         required <- c("subgroup.list", "grouped.data", "results")
@@ -260,7 +262,7 @@ rcmetar.validate.forest.regeneration.state <- function(state) {
     }
     rcmetar.forest.regeneration.state(
         state$variant, state$results, state$labels, state$subgroup_data,
-        state$param_overrides
+        state$param_overrides, state$has_overall
     )
 }
 
@@ -306,25 +308,13 @@ rcmetar.metafor.plot.fields <- function(om.data, params, y, lb, ub, sample.sizes
     y.disp <- display(y)
     lb.disp <- display(lb)
     ub.disp <- display(ub)
-    effects <- if (metric.is.log.scale(params$measure)) {
-        list(ES=y, LL=lb, UL=ub)
-    } else {
-        list(ES=y.disp, LL=lb.disp, UL=ub.disp)
-    }
-    finite <- is.finite(effects$ES) & is.finite(effects$LL) & is.finite(effects$UL)
+    effects <- list(ES=y, LL=lb, UL=ub)
+    finite <- is.finite(y) & is.finite(lb) & is.finite(ub)
     plot.range <- calc.plot.range(lapply(effects, function(values) values[finite]), plot.options)
-    display.range <- if (metric.is.log.scale(params$measure)) {
-        transform$display.scale(plot.range, ni=sample.sizes)
-    } else {
-        plot.range
-    }
+    # Resolved defaults describe the current drawing, not explicit user edits.
+    # Persisting them makes the next regeneration freeze or double-transform it.
     changed.params <- plot.options$changed.params
-    if (plot.options$plot.lb != display.range[[1]]) {
-        changed.params$fp_plot_lb <- display.range[[1]]
-    }
-    if (plot.options$plot.ub != display.range[[2]]) {
-        changed.params$fp_plot_ub <- display.range[[2]]
-    }
+    changed.params$fp_xlabel <- NULL
     list(
         plot_range=plot.range,
         changed.params=changed.params,
@@ -345,12 +335,10 @@ rcmetar.metafor.standard.plot.fields <- function(om.data, params, res) {
     )
 }
 
-rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, variant, labels) {
+rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, variant, labels, has.overall) {
     params <- rcmetar.normalize.plot.text.params(params)
-    labels <- if (identical(variant, "cumulative")) {
-        sprintf("%s (k = %d)", rcmetar.study.labels(om.data)[seq_along(results)], seq_along(results))
-    } else {
-        c("All studies", rcmetar.study.labels(om.data)[seq_len(max(length(results) - 1L, 0L))])
+    if (params$fp_col1_str %in% c("Study or Subgroup", "Study added")) {
+        params$fp_col1_str <- if (variant == "cumulative") "Study added (k)" else "Study omitted"
     }
     labels <- rcmetar.truncate.plot.display.text(labels)
 
@@ -368,13 +356,16 @@ rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, va
     if ("BinaryData" %in% class(om.data) && as.character(params$measure) %in% binary.one.arm.metrics) {
         sample.sizes <- rcmetar.binary.one.arm.raw.total(om.data)
     }
+    subset.sizes <- rcmetar.forest.subset.sample.sizes(sample.sizes, variant, has.overall)
+    display.sample.sizes <- if (is.null(subset.sizes)) NULL else
+        vapply(subset.sizes, rcmetar.forest.harmonic.mean, numeric(1))
     fields <- rcmetar.metafor.plot.fields(
         om.data,
         params,
         yi,
         ci.lb,
         ci.ub,
-        sample.sizes=sample.sizes
+        sample.sizes=display.sample.sizes
     )
 
     bundle <- list(
@@ -393,10 +384,12 @@ rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, va
         single_study = TRUE,
         ilab = rcmetar.empty.forest.ilab(length(labels)),
         slab = as.character(labels),
-        weights = if (identical(variant, "leave-one-out")) c(NA_real_, rcmetar.metafor.weights(results[[1]])) else NULL,
-        years = if (identical(variant, "leave-one-out")) c(NA_real_, as.numeric(om.data@years)) else as.numeric(om.data@years),
-        summary_res = if (identical(variant, "leave-one-out")) results[[1]] else results[[length(results)]],
+        has_overall = has.overall,
+        weights = if (has.overall) c(NA_real_, rcmetar.metafor.weights(results[[1]])) else NULL,
+        years = c(if (has.overall) NA_real_, as.numeric(om.data@years)),
+        summary_res = if (has.overall) results[[1]] else if (identical(variant, "cumulative")) results[[length(results)]] else NULL,
         sample_sizes = sample.sizes,
+        display_sample_sizes = display.sample.sizes,
         params = params,
         plot_range = fields$plot_range,
         changed.params = fields$changed.params,
@@ -408,7 +401,7 @@ rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, va
         list()
     }
     bundle$regeneration_state <- rcmetar.forest.regeneration.state(
-        variant, results=results, labels=labels, param.overrides=param.overrides
+        variant, results=results, labels=labels, param.overrides=param.overrides, has.overall=has.overall
     )
     rcmetar.forest.display.order(bundle)
 }
@@ -446,10 +439,10 @@ rcmetar.build.subgroup.metafor.bundle <- function(om.data, params, subgroup.data
     }
     ilab.template <- rcmetar.ilab.for.data(om.data, params, subgroup.results[[length(subgroup.list) + 1]])
     colnames(ilab.matrix) <- ilab.template$headers
-    flat.names <- unlist(lapply(study.data, function(data) data@study.names), use.names=FALSE)
-    flat.weights <- rcmetar.metafor.weights(subgroup.results[[length(subgroup.list) + 1]])[match(flat.names, om.data@study.names)]
+    row.indices <- unlist(subgroup.data$row.indices, use.names=FALSE)
+    flat.weights <- rcmetar.metafor.weights(subgroup.results[[length(subgroup.list) + 1]])[row.indices]
     weight.column <- which(vapply(ilab.template$columns, function(column) column$key, character(1)) == "weight")
-    if (length(weight.column) == 1) ilab.matrix[, weight.column] <- rcmetar.revman.format.weight(flat.weights, length(flat.names))
+    if (length(weight.column) == 1) ilab.matrix[, weight.column] <- rcmetar.revman.format.weight(flat.weights, length(flat.slab))
 
     study.rows <- list()
     header.rows <- numeric(length(subgroup.list))
@@ -470,14 +463,14 @@ rcmetar.build.subgroup.metafor.bundle <- function(om.data, params, subgroup.data
         if (!is.null(field.sample.sizes)) {
             group.sizes <- rcmetar.binary.one.arm.raw.total(study.data[[i]])
             all.study.sample.sizes <- c(all.study.sample.sizes, group.sizes)
-            field.sample.sizes <- c(field.sample.sizes, group.sizes, sum(group.sizes))
+            field.sample.sizes <- c(field.sample.sizes, group.sizes, rcmetar.forest.harmonic.mean(group.sizes))
         }
     }
     field.y <- c(field.y, subgroup.results[[length(subgroup.list) + 1]]$b[[1]])
     field.lb <- c(field.lb, subgroup.results[[length(subgroup.list) + 1]]$ci.lb[[1]])
     field.ub <- c(field.ub, subgroup.results[[length(subgroup.list) + 1]]$ci.ub[[1]])
     if (!is.null(field.sample.sizes)) {
-        field.sample.sizes <- c(field.sample.sizes, sum(all.study.sample.sizes))
+        field.sample.sizes <- c(field.sample.sizes, rcmetar.forest.harmonic.mean(all.study.sample.sizes))
     }
     fields <- rcmetar.metafor.plot.fields(
         om.data, params, field.y, field.lb, field.ub, field.sample.sizes
@@ -654,6 +647,7 @@ rcmetar.build.diagnostic.metafor.bundle <- function(diagnostic.data, params, res
 }
 
 rcmetar.metafor.atransf <- function(bundle) {
+    if (rcmetar.forest.natural.axis(bundle) || rcmetar.forest.proportion(bundle)) return(NULL)
     measure <- as.character(bundle$params$measure)
     if (metric.is.log.scale(measure)) {
         return(exp)
@@ -674,13 +668,8 @@ rcmetar.metafor.atransf <- function(bundle) {
 }
 
 rcmetar.metafor.refline <- function(bundle, alim=NULL) {
-    if (identical(bundle$forest_variant, "cumulative") || identical(bundle$forest_variant, "leave-one-out")) {
-        return(NA)
-    }
-    refline <- 0
-    if (metric.is.log.scale(as.character(bundle$params$measure))) {
-        refline <- 0
-    }
+    if (rcmetar.forest.proportion(bundle)) return(NA_real_)
+    refline <- rcmetar.forest.axis.values(bundle, 0)
     if (!is.null(alim) && is.finite(refline) && (refline < alim[[1]] || refline > alim[[2]])) {
         return(NA)
     }
@@ -696,25 +685,35 @@ rcmetar.metafor.forest.line.types <- function(plan) {
 
 rcmetar.metafor.axis.ticks <- function(bundle, alim) {
     params <- bundle$params
-    if (!is.null(params$fp_xticks) && !identical(params$fp_xticks[1], "[default]") && !all(is.na(params$fp_xticks))) {
-        ticks <- as.numeric(params$fp_xticks)
-        if (metric.is.log.scale(as.character(params$measure))) {
-            ticks <- log(ticks)
-        }
-        return(ticks)
+    measure <- as.character(params$measure)
+    if (rcmetar.forest.natural.axis(bundle) || rcmetar.forest.proportion(bundle)) {
+        if (!rcmetar.is.plot.default.text(params$fp_xticks)) return(as.numeric(params$fp_xticks))
+        ticks <- pretty(alim, n=5)
+        return(ticks[ticks >= alim[[1]] & ticks <= alim[[2]]])
     }
-    if (metric.is.log.scale(as.character(params$measure))) {
+    to.calculation <- function(values) {
+        if (metric.is.freeman_tukey.scale(measure)) {
+            n <- 1 / mean(1 / bundle$sample_sizes)
+            return(metafor::transf.pft(values, ni=n))
+        }
+        rcmetar.bundle.transform(bundle)$calc.scale(values)
+    }
+    if (!rcmetar.is.plot.default.text(params$fp_xticks)) {
+        return(to.calculation(as.numeric(params$fp_xticks)))
+    }
+    if (metric.is.log.scale(measure)) {
         ticks <- rcmetar.forest.journal.ratio.ticks(alim)
-        if (length(ticks) >= 2) {
-            return(ticks)
-        }
+        if (length(ticks) >= 2) return(ticks)
     }
-    if (metric.is.logit.scale(as.character(params$measure))) {
-        candidates <- logit(c(0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99))
-        ticks <- candidates[candidates >= alim[1] & candidates <= alim[2]]
-        if (length(ticks) >= 2) {
-            return(ticks)
-        }
+    if (metric.is.logit.scale(measure) || metric.is.arcsine.scale(measure) ||
+            metric.is.freeman_tukey.scale(measure)) {
+        limits <- if (metric.is.logit.scale(measure)) stats::plogis(alim) else
+            vapply(pmin(pmax(alim, 0), pi/2), function(value)
+                rcmetar.bundle.transform(bundle)$display.scale(value, ni=bundle$sample_sizes), numeric(1))
+        values <- pretty(limits, n=4)
+        values <- values[values > 0 & values < 1]
+        ticks <- to.calculation(values)
+        return(ticks[is.finite(ticks) & ticks >= alim[[1]] & ticks <= alim[[2]]])
     }
     pretty(alim, n=4)
 }
@@ -781,17 +780,8 @@ rcmetar.metafor.psize <- function(bundle) {
 
 rcmetar.metafor.alim <- function(bundle) {
     if (!is.null(bundle$plot_range) && length(bundle$plot_range) == 2 && all(is.finite(bundle$plot_range))) {
-        if (metric.is.logit.scale(as.character(bundle$params$measure))) {
-            return(logit(pmin(pmax(as.numeric(bundle$plot_range), .Machine$double.eps), 1 - .Machine$double.eps)))
-        }
-        if (metric.is.arcsine.scale(as.character(bundle$params$measure))) {
-            return(arcsine.sqrt(as.numeric(bundle$plot_range)))
-        }
-        if (metric.is.freeman_tukey.scale(as.character(bundle$params$measure))) {
-            sample.size <- rcmetar.forest.harmonic.mean(bundle$sample_sizes)
-            return(binary.transform.f(as.character(bundle$params$measure))$calc.scale(as.numeric(bundle$plot_range), ni=sample.size))
-        }
-        return(as.numeric(bundle$plot_range))
+        alim <- as.numeric(bundle$plot_range)
+        return(rcmetar.forest.nonzero.axis.range(alim))
     }
     values <- c(bundle$effect$yi, bundle$effect$ci.lb, bundle$effect$ci.ub)
     if (inherits(bundle$res, "rma")) {
@@ -818,16 +808,15 @@ rcmetar.metafor.alim <- function(bundle) {
     if (length(values) == 0) {
         return(c(-1, 1))
     }
-    range(values)
+    rcmetar.forest.nonzero.axis.range(range(values))
 }
 
 rcmetar.metafor.effect.labels <- function(bundle) {
     digits <- as.integer(bundle$params$digits)
     if (!is.null(bundle$forest_variant) && !identical(bundle$forest_variant, "standard")) {
-        transform <- rcmetar.bundle.transform(bundle)
-        y <- transform$display.scale(bundle$effect$yi)
-        lb <- transform$display.scale(bundle$effect$ci.lb)
-        ub <- transform$display.scale(bundle$effect$ci.ub)
+        y <- rcmetar.forest.display.values(bundle, bundle$effect$yi)
+        lb <- rcmetar.forest.display.values(bundle, bundle$effect$ci.lb)
+        ub <- rcmetar.forest.display.values(bundle, bundle$effect$ci.ub)
     } else if (!is.null(bundle$effect_display)) {
         y <- bundle$effect_display$y.disp
         lb <- bundle$effect_display$lb.disp
@@ -843,14 +832,17 @@ rcmetar.metafor.effect.labels <- function(bundle) {
         lb <- transform$display.scale(c(bundle$res$ci.lb, bundle$res$ci.lb))
         ub <- transform$display.scale(c(bundle$res$ci.ub, bundle$res$ci.ub))
     }
-    paste0(
-        rcmetar.format.effect.number(y, digits),
+    scale <- if (metric.is.log.scale(bundle$params$measure)) 0 else pmax(abs(y), abs(lb), abs(ub))
+    labels <- paste0(
+        rcmetar.format.effect.number(y, digits, scale=scale),
         " [",
-        rcmetar.format.effect.number(lb, digits),
+        rcmetar.format.effect.number(lb, digits, scale=scale),
         ", ",
-        rcmetar.format.effect.number(ub, digits),
+        rcmetar.format.effect.number(ub, digits, scale=scale),
         "]"
     )
+    labels[!is.finite(y) | !is.finite(lb) | !is.finite(ub)] <- "Not estimable"
+    labels
 }
 
 rcmetar.metafor.heterogeneity.measure.label <- function(bundle) {
@@ -929,7 +921,7 @@ rcmetar.draw.metafor.single.study.accent <- function(bundle, rows, alim, color, 
         return(invisible(NULL))
     }
     rcmetar.draw.metafor.effect.accent(
-        effect=bundle$effect,
+        effect=rcmetar.forest.axis.effect(bundle, bundle$effect),
         rows=rows,
         alim=alim,
         color=color,
@@ -972,7 +964,7 @@ rcmetar.draw.metafor.single.study.interval.ends <- function(ci.lb, ci.ub, rows, 
         span <- 1
     }
     arrow.length <- span * 0.026
-    cap.height <- 0.055
+    cap.height <- 0.12 * min(c(1, diff(sort(unique(rows)))))
 
     left.clipped <- ci.lb < alim[[1]]
     if (any(left.clipped)) {
@@ -1023,4 +1015,37 @@ rcmetar.draw.metafor.single.study.interval.ends <- function(ci.lb, ci.ub, rows, 
     }
 
     invisible(NULL)
+}
+
+rcmetar.draw.forest.refline <- function(plan, rows=plan$rows$study_rows) {
+    if (is.finite(plan$x$refline)) {
+        graphics::segments(plan$x$refline, min(rows) - 0.4,
+                           plan$x$refline, max(rows) + 0.4,
+                           lty=2, col="#888888")
+    }
+    invisible(NULL)
+}
+
+rcmetar.forest.regeneration.overrides <- function(variant, param.overrides) {
+    if (is.null(param.overrides)) {
+        param.overrides <- list()
+    }
+    if (!is.list(param.overrides) ||
+        (length(param.overrides) > 0 &&
+            (is.null(names(param.overrides)) || any(!nzchar(names(param.overrides)))))) {
+        stop("Forest regeneration parameter overrides must be a named list.", call.=FALSE)
+    }
+    allowed.overrides <- if (identical(variant, "cumulative")) {
+        c("fp_col1_str", "fp_col2_str")
+    } else {
+        character()
+    }
+    unsupported.overrides <- setdiff(names(param.overrides), allowed.overrides)
+    if (length(unsupported.overrides) > 0) {
+        stop(sprintf(
+            "Forest regeneration variant '%s' does not support parameter overrides: %s.",
+            variant, paste(unsupported.overrides, collapse=", ")
+        ), call.=FALSE)
+    }
+    param.overrides
 }

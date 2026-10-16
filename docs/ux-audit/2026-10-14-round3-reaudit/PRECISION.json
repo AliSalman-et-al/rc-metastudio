@@ -1,0 +1,231 @@
+[
+  {
+    "path": "screenshots/precision-00-round3-zero-bound-presentation.png",
+    "sha256": "2985db0349128defefde66926d6a4bdb6c5d5bf518eb3f8c737028fa3c718f8b",
+    "capture": "QScreen.grabWindow",
+    "action": "round3-zero-bound-presentation",
+    "observations": {
+      "entered_bounds": [
+        0,
+        0.4
+      ],
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-14-round3-reaudit/raw/native-precision/analysis-scratch/forest-1c03296e4429.display.svg"
+      }
+    }
+  },
+  {
+    "path": "screenshots/precision-01-round3-small-effects-preserved.png",
+    "sha256": "f47f2f505cd699eabdcd7110a8f3a34c7a7fa2a0a7997dccd1bc98667f70b50b",
+    "capture": "QScreen.grabWindow",
+    "action": "round3-small-effects-preserved",
+    "observations": {
+      "expected": {
+        "estimate": 1.0000000000000004e-10,
+        "lower": 9.199848053940786e-11,
+        "upper": 1.0800151946059223e-10,
+        "se": 4.082482904638632e-12
+      },
+      "actual": [
+        "1.000000e-10",
+        "9.199848e-11",
+        "1.080015e-10",
+        "4.082483e-12",
+        "< 1e-06"
+      ],
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-14-round3-reaudit/raw/native-precision/analysis-scratch/forest-1c03296e4429.display.svg"
+      }
+    }
+  },
+  {
+    "path": "screenshots/precision-02-round3-degenerate-axis.png",
+    "sha256": "580b8b571e535141cbcfee726a71337ded16f0822e590852e85b70de66de8c5f",
+    "capture": "QScreen.grabWindow",
+    "action": "round3-degenerate-axis",
+    "observations": {
+      "style": "default",
+      "entered": [
+        1,
+        1e-20
+      ],
+      "bounds": [
+        0.9499999999999998,
+        1.0499999999999998
+      ],
+      "ticks": [
+        "0.94",
+        "0.96",
+        "0.98",
+        "1.00",
+        "1.02",
+        "1.04",
+        "1.06"
+      ],
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-14-round3-reaudit/raw/native-precision/analysis-scratch/forest-1c03296e4429.display.svg"
+      }
+    }
+  },
+  {
+    "path": "screenshots/precision-03-round3-degenerate-axis-bottom.png",
+    "sha256": "829f9a2d1f9305dae4167aa733a20573f568533b4d721b452fc387920c985407",
+    "capture": "QScreen.grabWindow",
+    "action": "round3-degenerate-axis-bottom",
+    "observations": {
+      "style": "default",
+      "bounds": [
+        0.9499999999999998,
+        1.0499999999999998
+      ]
+    }
+  },
+  {
+    "path": "screenshots/precision-04-round3-degenerate-axis.png",
+    "sha256": "14f87efcc60f6ac5a1658627aa4fb7252f7572dec7d055e4adf156963b0cfa92",
+    "capture": "QScreen.grabWindow",
+    "action": "round3-degenerate-axis",
+    "observations": {
+      "style": "revman",
+      "entered": [
+        1,
+        1e-20
+      ],
+      "bounds": [
+        0.9499999999999998,
+        1.0499999999999998
+      ],
+      "ticks": [
+        "0.96",
+        "0.98",
+        "1.00",
+        "1.02",
+        "1.04"
+      ],
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-14-round3-reaudit/raw/native-precision/analysis-scratch/forest-1c03296e4429.display.svg"
+      }
+    }
+  },
+  {
+    "path": "screenshots/precision-05-round3-degenerate-axis.png",
+    "sha256": "413a472f0b20c1016e8f3b9ff7dd0a524506a595fdc6631924122feb44d771d6",
+    "capture": "QScreen.grabWindow",
+    "action": "round3-degenerate-axis",
+    "observations": {
+      "style": "bmj",
+      "entered": [
+        1,
+        1e-20
+      ],
+      "bounds": [
+        -0.12599999999999997,
+        1.1759999999999997
+      ],
+      "ticks": [
+        "0.00",
+        "0.50",
+        "1.00"
+      ],
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-14-round3-reaudit/raw/native-precision/analysis-scratch/forest-1c03296e4429.display.svg"
+      }
+    }
+  },
+  {
+    "path": "screenshots/precision-06-round3-bubble-tick-coverage.png",
+    "sha256": "b7dd1f633673cb8a3c7dff8d6642b3d5cf4a05507e888f6898ffb8f9484ebd27",
+    "capture": "QScreen.grabWindow",
+    "action": "round3-bubble-tick-coverage",
+    "observations": {
+      "ticks": [
+        [
+          0.1,
+          266.2
+        ],
+        [
+          0.2,
+          226.0
+        ],
+        [
+          0.5,
+          172.86
+        ],
+        [
+          1.0,
+          132.67
+        ],
+        [
+          2.0,
+          92.47
+        ],
+        [
+          5.0,
+          39.33
+        ]
+      ],
+      "plot_frame": {
+        "x": "78.62",
+        "y": "16.63",
+        "width": "533.14",
+        "height": "273.82",
+        "fill": "none",
+        "stroke": "#000000",
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        "stroke-miterlimit": "10.00"
+      },
+      "coverage": 0.8285369951062742,
+      "metric": "OR",
+      "plots": {
+        "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-14-round3-reaudit/raw/native-precision/analysis-scratch/reg-43ca29a7d7f2.display.svg"
+      }
+    }
+  },
+  {
+    "path": "screenshots/precision-07-round3-bubble-tick-coverage.png",
+    "sha256": "3d09cee6c161e78ca5a38d3ef461f5126eb703e12d421904158422a90546abe7",
+    "capture": "QScreen.grabWindow",
+    "action": "round3-bubble-tick-coverage",
+    "observations": {
+      "ticks": [
+        [
+          0.05,
+          261.6
+        ],
+        [
+          0.25,
+          181.61
+        ],
+        [
+          0.5,
+          134.0
+        ],
+        [
+          0.75,
+          86.39
+        ],
+        [
+          0.9,
+          38.78
+        ]
+      ],
+      "plot_frame": {
+        "x": "78.62",
+        "y": "16.63",
+        "width": "589.51",
+        "height": "273.82",
+        "fill": "none",
+        "stroke": "#000000",
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        "stroke-miterlimit": "10.00"
+      },
+      "coverage": 0.8137462566649625,
+      "metric": "PLO",
+      "plots": {
+        "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-14-round3-reaudit/raw/native-precision/analysis-scratch/reg-43ca29a7d7f2.display.svg"
+      }
+    }
+  }
+]

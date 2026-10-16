@@ -34,7 +34,6 @@ from rc_metastudio.calculator_service import (
     CalculatorService,
     ContinuousValues,
 )
-from rc_metastudio import tabular_data
 from rc_metastudio.meta_globals import (
     CONTINUOUS_METRIC_NAMES,
     CONTINUOUS_ONE_ARM_METRICS,
@@ -149,7 +148,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.correlation_pre_post,
         ]
         self.ci_label.setText(
-            "{0:.1f}% Confidence Interval".format(self.confidence_level)
+            f"{self.confidence_level:g}% confidence interval"
         )
         self._configure_readable_ci_label()
         self.current_item_data = {}
@@ -164,6 +163,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         ]
         self.group_one_label.setText(str(self.current_groups[0]))
         self.group_two_label.setText(str(self.current_groups[1]))
+        for table, group in zip((self.g1_pre_post_table, self.g2_pre_post_table), self.current_groups):
+            table.setAccessibleName(f"{group} pre/post summaries")
+            table.setAccessibleDescription(f"Pre-treatment and post-treatment summary values for {group}.")
 
         self.setup_clear_button_palettes()  # Color for clear_button_pallette
         self.initialize_form()  # initialize cells to empty items
@@ -176,9 +178,13 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.update_effect_from_raw_data()
         self.update_back_calculation_button()
 
-        # Hide pre-post for SMD until it is implemented
-        if self.current_effect not in ["MD", "SMD"]:
-            self.pre_post_group_box.setVisible(False)
+        if self.analysis_unit.outcome.sub_type not in {"reg_coef", "generic_effect"}:
+            self.input_mode_combo.addItem("Group summaries", "summary")
+        self.input_mode_combo.addItem("Entered estimate", "estimate")
+        self.input_mode_combo.setAccessibleName("Study input method")
+        self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: group data or an entered effect estimate.")
+        self.input_mode_combo.currentIndexChanged.connect(self._input_mode_changed)
+        self._update_input_modes()
 
         self.current_correlation = self._get_correlation_str()
         self.simple_table.setCurrentCell(0, 0)
@@ -189,6 +195,22 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         ).setDefault(True)
         self._request_initial_content_refit()
 
+    def _update_input_modes(self):
+        index = self.input_mode_combo.findData("pre-post")
+        if self.current_effect in {"MD", "SMD"}:
+            if index < 0:
+                self.input_mode_combo.insertItem(1, "Pre/post summaries", "pre-post")
+        elif index >= 0:
+            self.input_mode_combo.removeItem(index)
+        self._input_mode_changed()
+
+    def _input_mode_changed(self):
+        mode = self.input_mode_combo.currentData()
+        self.content_scroll.setVisible(mode != "estimate")
+        self.simple_group.setVisible(mode == "summary")
+        self.pre_post_group_box.setVisible(mode == "pre-post")
+        self._content_layout_changed()
+
     def _configure_tables(self):
         """Give each data grid its own overflow and user-adjustable columns."""
         for table in (
@@ -197,6 +219,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.g2_pre_post_table,
         ):
             # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
+            table.setItemDelegate(calc_fncs.NumericSummaryDelegate(table))
             table.setMinimumWidth(0)
             table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -495,11 +518,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     def effect_changed(self):
         self.current_effect = self._selected_effect()
 
-        # hide pre-post for SMD
-        if self.current_effect not in ["MD", "SMD"]:
-            self.pre_post_group_box.setVisible(False)
-        else:
-            self.pre_post_group_box.setVisible(True)
+        self._update_input_modes()
         self._update_effect_choice_accessibility()
         self._content_layout_changed()
 
@@ -565,7 +584,15 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             return str(self.correlation_pre_post.text())
         return None  # Unknown value key.
 
+    def accept(self):
+        if not getattr(self, "_validation_failed", False):
+            super().accept()
+
     def val_changed(self, val_str):
+        fields = {"est": self.effect_text_box, "lower": self.lower_text_box, "upper": self.upper_text_box}
+        field = fields.get(val_str)
+        if field is not None and field.text() == field.property("calculatorValue") and not getattr(self, "_validation_failed", False):
+            return
         # Backup form state
         old_analysis_unit, old_tables_data = self._save_analysis_unit_and_table_states(
             tables=[self.simple_table, self.g1_pre_post_table, self.g2_pre_post_table],
@@ -580,12 +607,15 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             val_str, new_text
         )
         if no_errors is False:
+            self._validation_failed = True
             self.restore_analysis_unit_and_tables(
                 old_analysis_unit, old_tables_data, old_correlation
             )
             with ExitStack() as signal_blockers:
                 for widget in self.entry_widgets:
                     signal_blockers.enter_context(QSignalBlocker(widget))
+                if field is not None:
+                    field.setText(new_text)
                 if val_str == "est":
                     self.effect_text_box.setFocus()
                 elif val_str == "lower":
@@ -604,6 +634,10 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         except ValueError:
             # Ignore incomplete numeric input while the user is still editing.
             return None
+
+        self._validation_failed = False
+        if field is not None:
+            field.setProperty("calculatorValue", field.text())
 
         calculation_scale_value = self.calculator.continuous_convert_scale(
             display_scale_val, self.current_effect, convert_to="calc.scale"
@@ -709,7 +743,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 group_raw_data = self.analysis_unit.get_raw_data_for_group(group_name)
                 for col in range(len(group_raw_data)):
                     self._set_val(
-                        row_index, col, group_raw_data[col], self.simple_table
+                        row_index, col, group_raw_data[col], self.simple_table, supplied=True
                     )
         self.impute_data()
 
@@ -729,10 +763,11 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         if field_name == "sd" and value <= 0:
             return "SD must be greater than zero."
         if field_name in ["se", "var", "pval"] and value < 0:
-            return "%s cannot be negative." % (field_name,)
+            label = {"se": "Standard error", "var": "Variance", "pval": "p-value"}[field_name]
+            return f"{label} cannot be negative."
 
         if field_name == "pval" and not (0 <= value <= 1):
-            return "pval must be between 0 and 1"
+            return "p-value must be between 0 and 1."
         return None
 
     def _get_correlation_str(self):
@@ -770,6 +805,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                     self.simple_table,
                 )
                 return
+            with QSignalBlocker(self.simple_table):
+                required(self.simple_table.item(row, col), "edited summary cell").setData(Qt.ItemDataRole.UserRole, True)
             self.impute_data()
         except Exception as e:
             msg = e.args[0]
@@ -808,7 +845,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             new_state=(new_analysis_unit, new_tables_data, new_correlation),
         )
 
-    def _set_val(self, row_index, var_index, val, table=None):
+    def _set_val(self, row_index, var_index, val, table=None, *, supplied=None):
         if table is None:
             table = self.simple_table
 
@@ -824,6 +861,10 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 required(
                     table.item(row, col), f"continuous table cell ({row}, {col})"
                 ).setText(str_val)
+            item = required(table.item(row, col), "summary cell")
+            item.setToolTip(str_val)
+            if supplied is not None or not str_val:
+                item.setData(Qt.ItemDataRole.UserRole, bool(supplied and str_val))
 
     def _disable_row_if_filled(self, table, row, col):
         with QSignalBlocker(table):
@@ -873,7 +914,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         simple_table, g1_pre_post_table, g2_pre_post_table
         """
         for i, old_table_data in enumerate(old_tables_data):
-            old_table_data = tabular_data.normalize_rows(old_table_data)
             if not old_table_data:
                 continue
             table = self.tables[i]
@@ -882,7 +922,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
             for row in range(nrows):
                 for col in range(ncols):
-                    self._set_val(row, col, old_table_data[row][col], table=table)
+                    value, supplied = old_table_data[row][col]
+                    self._set_val(row, col, value, table=table, supplied=supplied)
         self._fit_tables_to_contents()
 
     def restore_analysis_unit_and_tables(
@@ -895,7 +936,11 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     def save_tables_data(self):
         old_tables_data = []
         for table in self.tables:
-            old_tables_data.append(calc_fncs.save_table_data(table))
+            old_tables_data.append([
+                [(required(table.item(row, col), "summary snapshot cell").text(), bool(required(table.item(row, col), "summary snapshot cell").data(Qt.ItemDataRole.UserRole)))
+                 for col in range(table.columnCount())]
+                for row in range(table.rowCount())
+            ])
         return old_tables_data
 
     def _save_analysis_unit_and_table_states(
@@ -911,7 +956,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         old_tables_data = self.save_tables_data()
         if use_old_value:
             # From before most recently changed cell changed
-            old_tables_data[self._get_index_of_table(table)][row][col] = old_value
+            old_cell = old_tables_data[self._get_index_of_table(table)][row][col]
+            old_tables_data[self._get_index_of_table(table)][row][col] = (old_value, old_cell[1])
 
         old_analysis_unit = copy.deepcopy(analysis_unit)
         return old_analysis_unit, old_tables_data
@@ -930,7 +976,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             current_values = {}
             for var_index, var_name in enumerate(var_names):
                 var_value = self._get_float(row_index, var_index)
-                if var_value is not None:
+                if var_value is not None and required(self.simple_table.item(row_index, var_index), "summary input cell").data(Qt.ItemDataRole.UserRole):
                     current_values[self._imputation_field_name(var_name)] = var_value
 
             alpha = self.confidence_level_to_alpha()
@@ -987,13 +1033,15 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 )
                 return False
 
-        group_name = self.current_groups[group_index]
+        if row is not None and col is not None:
+            with QSignalBlocker(table):
+                table.item(row, col).setData(Qt.ItemDataRole.UserRole, True)
         var_names = self.get_column_header_strs_pre_post()
         params_dict = {}
         for a_b_index, a_b_name in enumerate(["A", "B"]):
             for var_index, var_name in enumerate(var_names):
                 var_value = self._get_float(a_b_index, var_index, table)
-                if var_value is not None:
+                if var_value is not None and table.item(a_b_index, var_index).data(Qt.ItemDataRole.UserRole):
                     params_dict[
                         "%s.%s" % (self._imputation_field_name(var_name), a_b_name)
                     ] = var_value
@@ -1027,7 +1075,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             for var_index, var_name in enumerate(self.get_column_header_strs()):
                 field_name = self._imputation_field_name(var_name)
                 val = computed_vals[field_name]
-                self._set_val(group_index, var_index, val)
+                self._set_val(group_index, var_index, val, supplied=field_name in {"n", "mean", "sd"})
 
         # also update the pre/post tables
         pre_vals = cast(ContinuousValues, results_from_r["pre"])
@@ -1085,9 +1133,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     def float_to_str(self, float_val):
         float_str = ""
         if not is_nan(float_val):
-            # Keep this compact in the imputation dialog; analysis output uses
-            # the configured result precision elsewhere.
-            float_str = str(round(float_val, 4))
+            float_str = str(float_val)
         return float_str
 
     def get_column_header_strs(self, table=None):
@@ -1213,12 +1259,13 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             blocked = table.blockSignals(True)
             try:
                 for row_index, row in enumerate(rows):
-                    for column_index, text in enumerate(row):
+                    for column_index, (text, supplied) in enumerate(row):
                         item = table.item(row_index, column_index)
                         if item is None:
                             item = QTableWidgetItem()
                             table.setItem(row_index, column_index, item)
                         item.setText(text)
+                        item.setData(Qt.ItemDataRole.UserRole, supplied)
             finally:
                 table.blockSignals(blocked)
 
@@ -1417,12 +1464,12 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
         # Choose one of the values if multiple ones were returned in the output
         keys_to_names = {
-            "n1": "group 1 sample size",
-            "n2": "group 2 sample size",
-            "sd1": "group 1 standard deviation",
-            "sd2": "group 2 standard deviation",
-            "mean1": "group 1 mean",
-            "mean2": "group 2 mean",
+            "n1": f"{self.current_groups[0]} sample size",
+            "n2": f"{self.current_groups[1]} sample size",
+            "sd1": f"{self.current_groups[0]} standard deviation",
+            "sd2": f"{self.current_groups[1]} standard deviation",
+            "mean1": f"{self.current_groups[0]} mean",
+            "mean2": f"{self.current_groups[1]} mean",
         }
         for key, value in imputed.items():
             # The R imputation code can theoretically yield up to four values
@@ -1465,7 +1512,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 val = group1_data[field_name] if row == 0 else group2_data[field_name]
                 if field_name == "n" and val not in EMPTY_VALS:
                     val = int(round(val))  # convert float to integer
-                self._set_val(row, var_index, val, self.simple_table)
+                self._set_val(row, var_index, val, self.simple_table, supplied=True)
 
         self.impute_data()
         self._copy_raw_data_from_table_to_analysis_unit()
@@ -1486,6 +1533,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self._field_history.push(command)
 
     def clear_form(self):
+        self._validation_failed = False
         # For undo/redo
         old_analysis_unit, old_tables_data = self._save_analysis_unit_and_table_states(
             tables=[self.simple_table, self.g1_pre_post_table, self.g2_pre_post_table],
@@ -1547,6 +1595,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         return effects
 
     def _effect_display_label(self, effect):
+        if effect == "TX Mean":
+            return {"reg_coef": "Coefficient", "generic_effect": "Entered effect"}.get(self.analysis_unit.outcome.sub_type, "Mean")
         return "%s (%s)" % (CONTINUOUS_METRIC_NAMES.get(effect, effect), effect)
 
     def _selected_effect(self):
@@ -1582,6 +1632,10 @@ class ContinuousBackCalculationDialog(
 
         for widget in self.content_widget.findChildren(QWidget):
             widget.installEventFilter(self)
+        adaptive_window.set_content_preferred_width(
+            self, 280, self.fontMetrics().averageCharWidth() * 80,
+            preferred_height=self.fontMetrics().lineSpacing() * 30,
+        )
         self._layout_controller = adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )

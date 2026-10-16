@@ -1,0 +1,222 @@
+{
+  "generator": [
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/axis_text_probe.R",
+      "sha256": "f1954bbe18f2582ac527eaf87e8baadf903bb234984230558a6c5624431c076a"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/axis_text_probe.py",
+      "sha256": "d24889955832f4f6e8ec3d0d5670261d7a5e97e3f2e698eb77bb5e6e0c5734a4"
+    }
+  ],
+  "svg_inputs": [
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Arial-2.01.svg",
+      "sha256": "08e5ee5f9c13624b5c90bc70f66563c2a9376aef1ad97624d837423e49f80ae2"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Arial-2.02.svg",
+      "sha256": "c120b0955b01b4d9320b89ef57ef1898e4ae91221c2319e00b3730bb73523c52"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Arial-2.03.svg",
+      "sha256": "d852928594325eb9fd8a99171a30ae529f94819fedfd475a3959b5f6d948789b"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Arial-2.04.svg",
+      "sha256": "1739ca697aef272f579181b3c74f33821c2a1d69a293604a715a67a7e1a24c99"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Arial-2.05.svg",
+      "sha256": "685f64ae1e90932247870cc600fbaf875f0fa9e33b91babb7bdc5a77931d9c67"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Arial-2.06.svg",
+      "sha256": "6bb60148a974e7a1de73583eddf79198eeedb6e03bd3953ea3175c3b1004c0af"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Arial-2.07.svg",
+      "sha256": "56481662140df07e71a942d210b3c0e8bfe275cdf35f479231f83aa2bb9af933"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Arial-2.08.svg",
+      "sha256": "1aab646430bbe3e32062120920aff18af30b1fa410604ada0cc859db4d990376"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Arial-2.09.svg",
+      "sha256": "1510e961e1b2090466fb692626c0b85a25796c40c4a1ab3f169514c0a30668bc"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Arial-2.1.svg",
+      "sha256": "38d5258666bc0e2f42ff2e1b05ff0a2107d8f35aaf3a5d1bc5e28d3d9c39e7b1"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Arial-2.svg",
+      "sha256": "398cf0f4c37450702b33e58b2e5fef7ff96b7b6f46178e6a0c29a77552bab76a"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Liberation-Sans-2.01.svg",
+      "sha256": "08e5ee5f9c13624b5c90bc70f66563c2a9376aef1ad97624d837423e49f80ae2"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Liberation-Sans-2.02.svg",
+      "sha256": "c120b0955b01b4d9320b89ef57ef1898e4ae91221c2319e00b3730bb73523c52"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Liberation-Sans-2.03.svg",
+      "sha256": "d852928594325eb9fd8a99171a30ae529f94819fedfd475a3959b5f6d948789b"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Liberation-Sans-2.04.svg",
+      "sha256": "1739ca697aef272f579181b3c74f33821c2a1d69a293604a715a67a7e1a24c99"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Liberation-Sans-2.05.svg",
+      "sha256": "685f64ae1e90932247870cc600fbaf875f0fa9e33b91babb7bdc5a77931d9c67"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Liberation-Sans-2.06.svg",
+      "sha256": "6bb60148a974e7a1de73583eddf79198eeedb6e03bd3953ea3175c3b1004c0af"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Liberation-Sans-2.07.svg",
+      "sha256": "56481662140df07e71a942d210b3c0e8bfe275cdf35f479231f83aa2bb9af933"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Liberation-Sans-2.08.svg",
+      "sha256": "1aab646430bbe3e32062120920aff18af30b1fa410604ada0cc859db4d990376"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Liberation-Sans-2.09.svg",
+      "sha256": "1510e961e1b2090466fb692626c0b85a25796c40c4a1ab3f169514c0a30668bc"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Liberation-Sans-2.1.svg",
+      "sha256": "38d5258666bc0e2f42ff2e1b05ff0a2107d8f35aaf3a5d1bc5e28d3d9c39e7b1"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/Liberation-Sans-2.svg",
+      "sha256": "398cf0f4c37450702b33e58b2e5fef7ff96b7b6f46178e6a0c29a77552bab76a"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/sans-2.01.svg",
+      "sha256": "08e5ee5f9c13624b5c90bc70f66563c2a9376aef1ad97624d837423e49f80ae2"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/sans-2.02.svg",
+      "sha256": "c120b0955b01b4d9320b89ef57ef1898e4ae91221c2319e00b3730bb73523c52"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/sans-2.03.svg",
+      "sha256": "d852928594325eb9fd8a99171a30ae529f94819fedfd475a3959b5f6d948789b"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/sans-2.04.svg",
+      "sha256": "1739ca697aef272f579181b3c74f33821c2a1d69a293604a715a67a7e1a24c99"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/sans-2.05.svg",
+      "sha256": "685f64ae1e90932247870cc600fbaf875f0fa9e33b91babb7bdc5a77931d9c67"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/sans-2.06.svg",
+      "sha256": "6bb60148a974e7a1de73583eddf79198eeedb6e03bd3953ea3175c3b1004c0af"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/sans-2.07.svg",
+      "sha256": "56481662140df07e71a942d210b3c0e8bfe275cdf35f479231f83aa2bb9af933"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/sans-2.08.svg",
+      "sha256": "1aab646430bbe3e32062120920aff18af30b1fa410604ada0cc859db4d990376"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/sans-2.09.svg",
+      "sha256": "1510e961e1b2090466fb692626c0b85a25796c40c4a1ab3f169514c0a30668bc"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/sans-2.1.svg",
+      "sha256": "38d5258666bc0e2f42ff2e1b05ff0a2107d8f35aaf3a5d1bc5e28d3d9c39e7b1"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/sans-2.svg",
+      "sha256": "398cf0f4c37450702b33e58b2e5fef7ff96b7b6f46178e6a0c29a77552bab76a"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/serif-2.01.svg",
+      "sha256": "50815af06c033c3e4473e91e3c7dc23351e4d28291ed638f9233f85a43f85296"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/serif-2.02.svg",
+      "sha256": "a92ce73778a5ad29fa925af6aef80356fb2e19cba42fed576cb638ad42d69d0d"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/serif-2.03.svg",
+      "sha256": "aae9150485a8e902bac5687fc9299847dc4d9b839e23ca4427abd71a19ea0ed3"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/serif-2.04.svg",
+      "sha256": "a8c5ab2c8d89cd04512166c03b85b78427d31480c51a294c1b64a6ffdc7c6552"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/serif-2.05.svg",
+      "sha256": "bc49c16053e4c384ebc2bbd7b6e949a1a0bcae184b60a345093256b8bc493a26"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/serif-2.06.svg",
+      "sha256": "8205de6a2f6b4b5333a0bda23b17d003aa80a11085e714248861b76968bfa3b9"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/serif-2.07.svg",
+      "sha256": "59e8a54623ec20782c71ea480e58df5d3c855dc3461c32925ca5df3c7ec982ec"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/serif-2.08.svg",
+      "sha256": "3f97f9c1bf4f2ee5b607d714285961dab0c24ce61867ebc025193986379ad51e"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/serif-2.09.svg",
+      "sha256": "81de830ba61678fd465dae54db502c38f303f61f498ff14fc9a8937220556832"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/serif-2.1.svg",
+      "sha256": "69f2b0046c524181c7bcf20001a472710a00b441261e71d5bb77a41479f40d64"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/axis-text/serif-2.svg",
+      "sha256": "5e977162a3673914d9d32c7ba6423d546a0e0f2db64dffd6ea7d29aaa215a2e1"
+    }
+  ],
+  "before": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/raw/axis-parser-before-configured.json",
+    "sha256": "0b7d6c6b2d883fa16076400a6d0e933842f8b543d69a3633818aebc5adefda3f"
+  },
+  "after": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/raw/axis-parser-after.json",
+    "sha256": "730f7472d5f1154452ff0df28ff7aa6797bf45e8c484acd2f35a99a4c7064025"
+  },
+  "before_failures": 11,
+  "after_failures": 0,
+  "unchanged_tick_labels": [
+    0,
+    0.2,
+    0.4,
+    0.6,
+    0.8,
+    1
+  ],
+  "surface_records": [
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/surface-final-1.25.json",
+      "sha256": "1fd12dc7cd013551775cab049d681d271db688dc187875273c46e06f02244c94"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/surface-final-1.50.json",
+      "sha256": "58c770fa0ca119dfa5f59f29d5be8a8da0f250b29e524bb1801ee0026e932e23"
+    },
+    {
+      "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/surface-final-1.75.json",
+      "sha256": "eba94e0be55f48d8eb074a0ebbcedbf5dd38b346354e21dd579660d425a4c9f6"
+    }
+  ]
+}

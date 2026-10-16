@@ -98,9 +98,9 @@ class CovariateTypeModel(QAbstractTableModel):
     def add_covariate_with_new_type(self):
         new_name = self.covariate.name
         if self.new_data_type == CONTINUOUS:
-            new_name += " (continuous)"
+            new_name += " (numeric)"
         else:
-            new_name += " (factor)"
+            new_name += " (category)"
 
         guessed_vals = self.guess_at_values()  # try and infer sensible values
         self.new_covariate = Covariate(new_name, COV_INTS_TO_STRS[self.new_data_type])
@@ -222,7 +222,7 @@ class CovariateTypeModel(QAbstractTableModel):
                 )
                 if not converted_ok:
                     return self.reject_edit(
-                        "Covariate values for continuous covariates need to be numeric."
+                        "Numeric covariates require numbers."
                     )
                 study.set_covariate_value(self.new_covariate, new_value)
                 self.refresh_covariate_values()

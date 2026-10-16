@@ -1,0 +1,151 @@
+[
+  {
+    "path": "screenshots/before-matrix-onearm-proportion-meta-regression-figure.png",
+    "sha256": "986914bfb386e5c42dfcb19508d24215329af850a935edce9ce7143c298e3047",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/matrix-onearm-proportion-meta-regression-figure.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-matrix-twoarm-proportion-standard-figure.png",
+    "sha256": "a3571d44c5c5ecf1362d5ab168e308ca00a5a35bd6702461301da3cc742bc078",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/matrix-twoarm-proportion-standard-figure.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-matrix-hr-standard-figure.png",
+    "sha256": "5405d18f9e7c40f3d344c5c08455ea591e47418982465c74784c9ec774dfe783",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/matrix-hr-standard-figure.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-matrix-hr-subgroup-figure.png",
+    "sha256": "a0f9185d2578bfac1e0dd4997c83fda56ab172ee3e18582f7cead039789e8e3d",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/matrix-hr-subgroup-figure.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-matrix-irr-standard-figure.png",
+    "sha256": "16d99846ba697297f653c6903c87b32c60066c26ca8118f39a2e1e8a5411dfca",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/matrix-irr-standard-figure.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-matrix-irr-subgroup-report.png",
+    "sha256": "f96c3d30bdd2d09ad4de3f121330a9c43b45a239ea3711467c541ec1227df0d1",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/matrix-irr-subgroup-report.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-matrix-twoarm-mean-meta-regression-report.png",
+    "sha256": "616da52605bdd14a8083bb75ebf01d92b789481b6dc5e70743302297c1ab447f",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/matrix-twoarm-mean-meta-regression-report.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-design-00-review1-start-before-check.png",
+    "sha256": "c6d17c0b0fcacfbb03f5c7b55ca9f516d3412254c4096c4fd8eeea3cae225dd3",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/design-00-review1-start-before-check.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-design-01-review1-start-recents.png",
+    "sha256": "5b2bbeb03f50b9d3a2127f0a19ce46cb1fc84ac4bfcdd20696d71201d2ac567a",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/design-01-review1-start-recents.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-design-06-review1-workspace-navigation.png",
+    "sha256": "0372a1501ac55b1d2159cab320a35bbfff9280dddb04ed5ebcc11be92cd81c72",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/design-06-review1-workspace-navigation.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-design-07-review1-report-top.png",
+    "sha256": "120c0717a0178972b8a3e8730459a7897fde4c516d18d0c82b6a0fafae8c67c3",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/design-07-review1-report-top.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/native-bubble-exports-52-0-matrix-results-report.png",
+    "sha256": "e21fb0146e3f878f1db3ddd2394fef299f5ce63d50723d14a9548aab14d4256c",
+    "original": "artifacts/verification/rcms/20261015T024244Z-5aa184e3-audit-round3-bubble-metrics/52-0-matrix-results-report.png",
+    "provenance": "NATIVE.json native-bubble-exports, observed step 52; manifest binds original file",
+    "capture": "QScreen.grabWindow native xcb"
+  },
+  {
+    "path": "screenshots/before-funnel-editor.png",
+    "sha256": "127d574cd2ac24778c30e1aeb17f2c7e4aff5712efb76d3fdbe2fe2f0e044142",
+    "original": "artifacts/verification/rcms/20261015T014315Z-ca1e15bd-plot-workflow-funnel/04-0-family-editor-controls.png",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md and OUTCOMES.json",
+    "capture": "historical native; original capture method retained"
+  },
+  {
+    "path": "screenshots/before-matrix-diagnostic-meta-regression-figure-1.png",
+    "sha256": "b0aced885ef26a00d1d9ca662904e6294e8db33dd2cd07a734f829dc77eb2450",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/matrix-diagnostic-meta-regression-figure-1.png",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md and OUTCOMES.json",
+    "capture": "historical native; original capture method retained"
+  },
+  {
+    "path": "screenshots/before-helper-audit-round3-presentation-diagnostic-126-0-round4-annotations.png",
+    "sha256": "61c4fefc01b2430a963c840da041e7aedd23fe2e5fe56465177119d29fe4563e",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/helper-audit-round3-presentation-diagnostic-126-0-round4-annotations.png",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md and OUTCOMES.json",
+    "capture": "historical native; original capture method retained"
+  },
+  {
+    "path": "screenshots/before-helper-calculator-diagnostic-03-0-calculator-effect-preview.png",
+    "sha256": "2683f059cc09a338c18c5e2f010d87856ff434205750fe0a9f3f7f1a9854b288",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/helper-calculator-diagnostic-03-0-calculator-effect-preview.png",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md and OUTCOMES.json",
+    "capture": "historical native; original capture method retained"
+  },
+  {
+    "path": "screenshots/before-helper-calculator-binary.png",
+    "sha256": "2ba3f890f87fffe392d1d55e77a6cfa741c7facb01b8f58d74c18f500d5b4b49",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/helper-calculator-binary-03-0-calculator-effect-preview.png",
+    "capture": "historical native; see independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-combined-component-headings.png",
+    "sha256": "d5b8cdd58f7772ca39f45f4a4c607f9b77fbe15ede4da412b4a2ce86087cfdd0",
+    "original": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T045347Z-f77b45e5-analysis-diagnostic-combined/05-0-matrix-results-report.png",
+    "provenance": "native-combined-heading-before; expected obsolete Sensitivity Summary assertion failed after valid native report capture",
+    "capture": "QScreen.grabWindow",
+    "source_manifest_sha256": "0419b081f875d0afae17ce30977dc3fa708269f80acd28bfd1c72baf03e4bd37"
+  },
+  {
+    "path": "screenshots/before-sroc-caption.png",
+    "sha256": "35be9a3fa77443620e42011c6ebe25339323df84d224765bf3cd2b24828c1eb1",
+    "original": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T053225Z-23179283-plot-workflow-sroc/05-0-matrix-results-figure.png",
+    "source_manifest_sha256": "a733621a1ad4c91f2f92d4db07fe636038addf51f2d06e847e6d77a0c74d60d8",
+    "provenance": "native-sroc-caption-before; valid native initial figure captured before expected edited-caption assertion failed",
+    "capture": "QScreen.grabWindow"
+  },
+  {
+    "path": "screenshots/before-quick-start.png",
+    "sha256": "b9486d37d862a52b62a0b25a83f910af0e64b4baf377c1c6ebd1d8bf3c944bf8",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/shell-quick-start.png",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md",
+    "capture": "historical native; independent audit receipt"
+  },
+  {
+    "path": "screenshots/before-csv-required-fields.png",
+    "sha256": "3fb2b91fe50f870ddfd791ec2f8abd1940d3d64f4f6fe8062147db5a1b8df8f5",
+    "original": "docs/ux-audit/2026-10-15-round4-reaudit/screenshots/shell-csv-entry.png",
+    "provenance": "../2026-10-15-round4-reaudit/REPORT.md and shell native capture inventory",
+    "capture": "historical native; independent audit receipt"
+  }
+]

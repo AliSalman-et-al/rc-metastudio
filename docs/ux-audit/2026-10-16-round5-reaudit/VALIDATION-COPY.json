@@ -1,0 +1,22 @@
+{
+  "source": "src/rc_metastudio/continuous_data_dialog.py",
+  "source_sha256": "d47760aa46b6b6193b7996d661a88f8da3d29c82c74cd4bc809380186518c655",
+  "messages": [
+    {
+      "path": "src/rc_metastudio/continuous_data_dialog.py",
+      "line": 754,
+      "text": "return \"pval must be between 0 and 1\"",
+      "disposition": "finding R5-05; source-confirmed validation copy",
+      "classification": "Returned to QMessageBox.warning on simple/pre-post calculator validation (lines776\u2013785/996\u20131004); uses internal pval instead of P value. Not separately native-triggered in this audit."
+    },
+    {
+      "path": "src/rc_metastudio/continuous_data_dialog.py",
+      "line": 751,
+      "text": "return \"%s cannot be negative.\" % (field_name,)",
+      "disposition": "finding R5-05; source-confirmed validation copy",
+      "classification": "For se/var/pval, interpolates lowercase internal keys into the same warning sink. Use existing readable table headings; numerical validation remains unchanged. Not separately native-triggered."
+    }
+  ],
+  "sink": "QMessageBox.warning(self, \"Warning\", warning_msg)",
+  "qualification": "Source-confirmed return/sink trace; these exact invalid-field gestures were not separately captured natively."
+}

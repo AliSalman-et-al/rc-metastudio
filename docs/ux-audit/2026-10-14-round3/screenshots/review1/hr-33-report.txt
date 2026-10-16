@@ -1,0 +1,107 @@
+Meta-analysis — Mortality · Time-to-event · Hazard Ratio
+Comparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first
+
+Model configuration
+Project: Pignon2000-HR.rcms
+Model: Fixed-effect inverse variance
+Inference: Normal approximation
+Confidence level: 95.0%
+HR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.
+
+Summary
+
+Model Results
+Estimate	Lower bound (95% CI)	Upper bound (95% CI)	p-value
+0.895119	0.854435	0.937741	0.000003
+
+Heterogeneity
+Q	df	p-value	I²
+123.670769	64	0.000011	48.2%
+
+Test for overall effect
+Z	p-value
+-4.668405	0.000003
+
+Hazard Ratio Fixed-effect inverse variance
+
+Calculation scale: log - estimate: -0.110798, lower: -0.157315, upper: -0.064281, std. error: 0.023734
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+
+
+Weights
+
+Weights
+Statistic	Value
+Pitie-74	0.8168
+GETTE Cadj	3.216
+Int 0034	4.54
+JHCFUS	0.4788
+TMH R-4	0.3605
+KKD -86	0.4901
+HNU -87a	0.2816
+HNU -87b	1.701
+IGR -65	0.4394
+RTOG 6801	7.092
+EORTC 24771	1.572
+DENVER -77	0.7604
+HNCP	3.554
+EORTC 78-OCP	1.673
+MCW -1	0.9351
+SWOG 8006	2.062
+Pitie-81	1.453
+Buenos Aires	1.02
+Creteil-82	1.115
+HNCGICO2	1.25
+MCW -2	0.507
+AC CAMARGO (a)	0.6703
+SECOG II (a)	1.87
+EORTC 24844	0.7548
+SHNG 85	5.193
+HNCGICO3	1.104
+Creteil-86	1.138
+GSTTC -86	2.67
+GETTE Cneo1	1.397
+GETTE Cneo2	0.8956
+AHNTG	2.619
+Las Palmas	0.2929
+Rennes-87	1.453
+Parma	0.5182
+CFHNS	2.625
+Cologne	0.3774
+Songkla	0.507
+HNAP -02	0.3323
+BNH 003	0.9238
+MDA -70	0.4506
+WIA -OC5a	0.4732
+WIA -OC5b	0.7942
+EORTC 73-OC	2.253
+Bergen	0.3774
+RT -BLM -73	0.3098
+WIA -OC5c	0.3943
+Turku	0.5577
+UW -77	0.5858
+NRH -78	2.569
+Barcelona	6.827
+UW -79	0.2591
+Manchester	3.729
+Yale 80	1.369
+PMHCGS	2.321
+ECOG 2382	4.472
+AC CAMARGO (b)	0.6703
+Toulouse	0.9351
+SECOG II (b)	1.786
+CH -7401	0.6309
+Yale 86	0.6872
+INRC HN -8	1.69
+Ontario	1.594
+Kragujevac	1.234
+Bavaria 89	1.679
+LOHNG 91	0.6928
+
+Inference Method
+
+Normal approximation

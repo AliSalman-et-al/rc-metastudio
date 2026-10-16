@@ -8,7 +8,8 @@ from PyQt6.QtWidgets import (
     QMessageBox, QVBoxLayout,
 )
 
-from rc_metastudio import adaptive_window
+from rc_metastudio import adaptive_window, qt_text
+from rc_metastudio.meta_globals import ALL_METRIC_NAMES
 
 
 class RatioDataDialog(QDialog):
@@ -17,7 +18,7 @@ class RatioDataDialog(QDialog):
         self.analysis_unit = analysis_unit
         self.groups = groups
         self.effect_metric = metric
-        self.setWindowTitle(f"{metric} study data")
+        self.setWindowTitle(f"{ALL_METRIC_NAMES[metric]} study data")
         layout = QVBoxLayout(self)
         self.help_text = QLabel()
         self.help_text.setWordWrap(True)
@@ -89,7 +90,7 @@ class RatioDataDialog(QDialog):
         text = field.text().strip()
         if text and scale != self._input_scale:
             try:
-                value = float(text)
+                value = self._number(text)
                 field.setText(str(math.log(value) if scale == "log" else math.exp(value)))
             except (ValueError, OverflowError):
                 field.clear()
@@ -111,7 +112,8 @@ class RatioDataDialog(QDialog):
             self.form.setRowVisible(field, visibility.get(name, reported))
         label = self.form.labelForField(self.fields["estimate"])
         if isinstance(label, QLabel):
-            label.setText(f"Log {self.effect_metric}" if log else self.effect_metric)
+            name = ALL_METRIC_NAMES[self.effect_metric]
+            label.setText(f"Log {name.lower()}" if log else name)
         self.help_text.setText(self._input_help(raw, reported, log))
         self.adjustSize()
 
@@ -142,15 +144,22 @@ class RatioDataDialog(QDialog):
             self.analysis_unit.set_raw_data_for_groups(self.groups, [raw[:2], raw[2:]])
         super().accept()
 
+    @staticmethod
+    def _number(text):
+        value, valid = qt_text.parse_decimal(text)
+        if not valid:
+            raise ValueError("Enter a finite number using a decimal point or decimal comma.")
+        return value
+
     def _read_reported_inputs(self):
         values = {}
         for name, field in self.fields.items():
             text = field.currentData() if isinstance(field, QComboBox) else field.text().strip()
-            values[name] = (float(text) if text else None) if name in ("estimate", "lower", "upper", "se", "confidence") else text
+            values[name] = (self._number(text) if text else None) if name in ("estimate", "lower", "upper", "se", "confidence") else text
         return values
 
     def _read_raw_inputs(self):
-        raw = [float(field.text()) if field.text().strip() else "" for field in self.raw_fields]
+        raw = [self._number(field.text()) if field.text().strip() else "" for field in self.raw_fields]
         for i, value in enumerate(raw):
             if isinstance(value, str):
                 continue

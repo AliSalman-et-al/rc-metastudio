@@ -1,0 +1,803 @@
+[
+  {
+    "scenario": "calculator-binary",
+    "evidence": "artifacts/verification/rcms/20261014T174022Z-0ae89901-calculator-binary",
+    "step": {
+      "step": 3,
+      "action": "calculator-effect-preview",
+      "utc": "2026-10-14T17:40:33.257315+00:00",
+      "captures": [
+        "03-0-calculator-effect-preview.png"
+      ],
+      "artifacts": {},
+      "family": "binary",
+      "previews": [
+        "0.6667",
+        "0.2066",
+        "2.1508"
+      ]
+    }
+  },
+  {
+    "scenario": "calculator-continuous",
+    "evidence": "artifacts/verification/rcms/20261014T174040Z-cae6bed9-calculator-continuous",
+    "step": {
+      "step": 3,
+      "action": "calculator-effect-preview",
+      "utc": "2026-10-14T17:40:46.444953+00:00",
+      "captures": [
+        "03-0-calculator-effect-preview.png"
+      ],
+      "artifacts": {},
+      "family": "continuous",
+      "previews": [
+        "0.1654",
+        "-0.193",
+        "0.5239"
+      ]
+    }
+  },
+  {
+    "scenario": "calculator-diagnostic",
+    "evidence": "artifacts/verification/rcms/20261014T174051Z-30fe7d92-calculator-diagnostic",
+    "step": {
+      "step": 3,
+      "action": "calculator-effect-preview",
+      "utc": "2026-10-14T17:41:02.274251+00:00",
+      "captures": [
+        "03-0-calculator-effect-preview.png"
+      ],
+      "artifacts": {},
+      "family": "diagnostic",
+      "previews": [
+        "0.6667",
+        "0.4835",
+        "0.8103"
+      ]
+    }
+  },
+  {
+    "scenario": "ux-improvements",
+    "evidence": "artifacts/verification/rcms/20261014T173831Z-b5f1b270-ux-improvements",
+    "step": {
+      "step": 4,
+      "action": "ux-inline-analysis-error",
+      "utc": "2026-10-14T17:38:38.115379+00:00",
+      "captures": [
+        "04-0-ux-inline-analysis-error.png"
+      ],
+      "artifacts": {},
+      "message": "Sorry, this analysis could not be completed:\n\nError in rma.uni(yi = binary.data@y, sei = binary.data@SE, slab = binary.data@study.names,  : \n  Unknown 'method' specified.\n"
+    }
+  },
+  {
+    "scenario": "ux-improvements",
+    "evidence": "artifacts/verification/rcms/20261014T173831Z-b5f1b270-ux-improvements",
+    "step": {
+      "step": 13,
+      "action": "ux-native-result-table",
+      "utc": "2026-10-14T17:38:45.466043+00:00",
+      "captures": [
+        "13-0-ux-native-result-table.png"
+      ],
+      "artifacts": {},
+      "title": "Model Results",
+      "headers": [
+        "Estimate",
+        "Lower bound (95% CI)",
+        "Upper bound (95% CI)",
+        "p-value"
+      ],
+      "rows": [
+        [
+          "0.770",
+          "0.485",
+          "1.222",
+          "0.267"
+        ]
+      ],
+      "csv": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-i_5mepty/model-results.csv"
+    }
+  },
+  {
+    "scenario": "ux-improvements",
+    "evidence": "artifacts/verification/rcms/20261014T173831Z-b5f1b270-ux-improvements",
+    "step": {
+      "step": 14,
+      "action": "ux-independent-view-zoom",
+      "utc": "2026-10-14T17:38:45.586211+00:00",
+      "captures": [
+        "14-0-ux-independent-view-zoom.png"
+      ],
+      "artifacts": {},
+      "report_zoom": 200,
+      "report_font": 22.0,
+      "figure_zoom": 125
+    }
+  },
+  {
+    "scenario": "ux-improvements",
+    "evidence": "artifacts/verification/rcms/20261014T173831Z-b5f1b270-ux-improvements",
+    "step": {
+      "step": 17,
+      "action": "ux-csv-invalid",
+      "utc": "2026-10-14T17:38:46.137122+00:00",
+      "captures": [
+        "17-0-ux-csv-invalid.png"
+      ],
+      "artifacts": {},
+      "message": "Select a CSV column for required field \"Study Name\"."
+    }
+  },
+  {
+    "scenario": "ux-improvements",
+    "evidence": "artifacts/verification/rcms/20261014T173831Z-b5f1b270-ux-improvements",
+    "step": {
+      "step": 19,
+      "action": "ux-csv-mapped",
+      "utc": "2026-10-14T17:38:46.247542+00:00",
+      "captures": [
+        "19-0-ux-csv-mapped.png"
+      ],
+      "artifacts": {},
+      "headers": [
+        "Study Name",
+        "Year",
+        "Tx A #evts",
+        "Tx A #total",
+        "Tx B #evts",
+        "Tx B #total",
+        "OR",
+        "Lower",
+        "Upper",
+        "Dose"
+      ],
+      "template": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-i_5mepty/template.csv"
+    }
+  },
+  {
+    "scenario": "ux-improvements",
+    "evidence": "artifacts/verification/rcms/20261014T173831Z-b5f1b270-ux-improvements",
+    "step": {
+      "step": 26,
+      "action": "ux-covariate-error",
+      "utc": "2026-10-14T17:38:49.627442+00:00",
+      "captures": [
+        "26-0-ux-covariate-error.png"
+      ],
+      "artifacts": {},
+      "error": "A covariate named Dose already exists. Please pick another name."
+    }
+  },
+  {
+    "scenario": "review-workflows",
+    "evidence": "artifacts/verification/rcms/20261014T173757Z-18592c4f-review-workflows",
+    "step": {
+      "step": 5,
+      "action": "review-properties-prefilled",
+      "utc": "2026-10-14T17:38:07.449086+00:00",
+      "captures": [
+        "05-0-review-properties-prefilled.png"
+      ],
+      "artifacts": {},
+      "parameters": {
+        "rm.method": "DL",
+        "inference.method": "z",
+        "conf.level": 95.0,
+        "digits": 3,
+        "adjust": 0.5,
+        "to": "only0",
+        "fp_study_order": "table",
+        "fp_style": "revman",
+        "fp_show_col1": true,
+        "fp_col1_str": "Study",
+        "fp_show_col2": true,
+        "fp_col2_str": "[default]",
+        "fp_show_col3": true,
+        "fp_col3_str": "tx A",
+        "fp_show_col4": true,
+        "fp_col4_str": "tx B",
+        "fp_xlabel": null,
+        "fp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-41k91ums/analysis/forest.png",
+        "fp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-41k91ums/analysis/forest-d7dc780e114c.display.svg",
+        "fp_plot_lb": "[default]",
+        "fp_plot_ub": "[default]",
+        "fp_xticks": "[default]",
+        "fp_show_summary_line": true,
+        "fp_show_raw_counts": true,
+        "fp_show_headers": true,
+        "fp_show_annotation": true,
+        "fp_accent_color": "#000000",
+        "fp_point_size_multiplier": 1.0,
+        "measure": "OR",
+        "metric.label": "Odds Ratio"
+      }
+    }
+  },
+  {
+    "scenario": "review-workflows",
+    "evidence": "artifacts/verification/rcms/20261014T173757Z-18592c4f-review-workflows",
+    "step": {
+      "step": 8,
+      "action": "review-study-order-options",
+      "utc": "2026-10-14T17:38:08.291480+00:00",
+      "captures": [
+        "08-0-review-study-order-options.png",
+        "08-1-review-study-order-options.png"
+      ],
+      "artifacts": {}
+    }
+  },
+  {
+    "scenario": "analysis-diagnostic-joint",
+    "evidence": "artifacts/verification/rcms/20261014T174406Z-e7a4244b-analysis-diagnostic-joint",
+    "step": {
+      "step": 6,
+      "action": "clinical-report",
+      "utc": "2026-10-14T17:44:14.748408+00:00",
+      "captures": [
+        "06-0-clinical-report.png"
+      ],
+      "artifacts": {},
+      "report": "Model configuration\nProject: lymph.rcms\nConfidence level: 95.0%\n\nSensitivity\nModel: Reitsma bivariate model\nEstimator: REML\n\nSpecificity\nModel: Reitsma bivariate model\nEstimator: REML\nClinical interpretation\nAcross 17 studies, summary sensitivity was 65.762% (95% confidence interval 59.020% to 71.923%) and summary specificity was 80.975% (95% confidence interval 73.885% to 86.492%).\nThese are average operating characteristics across the included study thresholds. The Reitsma bivariate and HSROC formulations are equivalent parameterizations of this model; that equivalence does not assume a common threshold. Use the prediction intervals to assess how performance may vary in a new setting.\nSummary operating point\nSensitivity\nStatistic\nValue\nEstimate\n65.762%\nLower bound (95% CI )\n59.020%\nUpper bound (95% CI )\n71.923%\n\nSpecificity\nStatistic\nValue\nEstimate\n80.975%\nLower bound (95% CI )\n73.885%\nUpper bound (95% CI )\n86.492%\n\nFalse-positive rate\nStatistic\nValue\nEstimate\n19.025%\nLower bound (95% CI )\n13.508%\nUpper bound (95% CI )\n26.115%\n\nSampling-based summary ratios\nSampling-based summary ratios\nTerm\nMean\nMedian\n95% interval\nPositive likelihood ratio\n3.517\n3.450\n[2.451, 4.963]\nNegative likelihood ratio\n0.426\n0.424\n[0.341, 0.521]\nInverse negative likelihood ratio\n2.377\n2.360\n[1.918, 2.934]\nDiagnostic odds ratio\n8.471\n8.176\n[4.850, 13.783]\n\nSROC AUC\nSROC AUC\nStatistic\nValue\nAUC\n0.7545\nNormalized partial AUC\n0.6687\nfull FPR bounds\n0.01, 0.99\nPartial FPR bounds\n0.0122, 0.5333\nAUC confidence interval\nNot provided by mada::AUC(); no invented AUC CI.\n\nnote: The Reitsma bivariate and HSROC models are equivalent parameterizations of the same threshold-aware diagnostic model; this does not imply a common threshold.\nMarginal prediction\nMarginal prediction\nStatistic\nValue\ndescription\nUnderlying new-study operating characteristics\n\nSensitivity\nStatistic\nValue\nEstimate\n65.762%\nLower bound (95% PI )\n49.071%\nUpper bound (95% PI )\n79.292%\n\nSpecificity\nStatistic\nValue\nEstimate\n80.975%\nLower bound (95% PI )\n49.292%\nUpper bound (95% PI )\n94.907%\n\nFalse-positive rate\nStatistic\nValue\nEstimate\n19.025%\nLower bound (95% PI )\n5.093%\nUpper bound (95% PI )\n50.708%\n\nBetween-study heterogeneity\nBetween-study heterogeneity\nStatistic\nValue\nSensitivity logit SD\n0.3199\nFalse-positive rate logit SD\n0.7241\nSensitivity-specificity covariance\n0.0506\nSensitivity-specificity correlation\n0.2185\nInterpretation\nSDs and covariance are on the model logit scale; correlation is unitless.\n\nDiagnostic I-squared\nI² summary:\nZhou-Dendukuri: 10.151%\nHolling unadjusted range: 41.936% to 63.651%\nHolling adjusted range: 4.952% to 5.494%\nI² estimates:\nMeasure I² (%)\n- ------------------------------ -------\n1 Zhou-Dendukuri 10.151%\n2 Holling (unadjusted), method 1 62.185%\n3 Holling (unadjusted), method 2 63.651%\n4 Holling (unadjusted), method 3 41.936%\n5 Holling (adjusted), method 1 5.463%\n6 Holling (adjusted), method 2 5.494%\n7 Holling (adjusted), method 3 4.952%\nInterpretation: I-squared is shown as percent unexplained heterogeneity; Zhou-Dendukuri and Holling are distinct estimators.\nModel information\nModel information\nStatistic\nValue\nestimator\nREML\nstudies used\n17\ncorrection factor\n0.5\ncorrection policy\nAll studies if any zero exists\nconverged\nTrue\nlogLik\n22.45\nSummary seed\n380381\nSummary iterations\n1000000\nsummary warnings\n\nwarnings\n\nAIC\n-34.91\nBIC\n-27.27\nformula\ncbind(tsens, tfpr) ~ 1\npackage version\n0.5.12\n\nReferences\nBivariate diagnostic meta-analysis: Reitsma, J. B., Glas, A. S., Rutjes, A. W., Scholten, R. J., Bossuyt, P. M., & Zwinderman, A. H. (2005). Bivariate analysis of sensitivity and specificity produces informative summary measures in diagnostic reviews. Journal of Clinical Epidemiology, 58(10), 982-990.\nDiagnostic accuracy model unification: Harbord, R. M., Deeks, J. J., Egger, M., Whiting, P., & Sterne, J. A. (2006). A unification of models for meta-analysis of diagnostic accuracy studies. Biostatistics, 8(2), 239-251.\nStatistical implementation: Doebler, P. (2025). mada: Meta-Analysis of Diagnostic Accuracy, version 0.5.12.\nEquivalent SROC parameterization: Rutter, C. M., & Gatsonis, C. A. (2001). A hierarchical regression approach to meta-analysis of diagnostic accuracy evaluations. Statistics in Medicine, 20(19), 2865-2884.\nSROC\nPlot accompanying this analysis. Select this plot in the navigation to view or export it. Read the report for numerical results and exclusions."
+    }
+  },
+  {
+    "scenario": "analysis-diagnostic-regression-multiple",
+    "evidence": "artifacts/verification/rcms/20261014T174606Z-fd5c8246-analysis-diagnostic-regression-multiple",
+    "step": {
+      "step": 4,
+      "action": "matrix-results",
+      "utc": "2026-10-14T17:46:14.092063+00:00",
+      "captures": [
+        "04-0-matrix-results.png"
+      ],
+      "artifacts": {
+        "diagnostic.reitsma.sensitivity.coefficients": "04-0-reitsma_coefficients_sensitivity.svg",
+        "diagnostic.reitsma.specificity.coefficients": "04-1-reitsma_coefficients_specificity.svg"
+      },
+      "texts": {
+        "Clinical interpretation": "This Reitsma bivariate meta-regression jointly models sensitivity and false-positive rate across 17 studies using 2 moderators.\nModerator coefficients are reported separately for sensitivity and specificity as odds ratios with confidence intervals. Reference rows equal 1; continuous-moderator estimates describe a one-unit increase.",
+        "Overall ML likelihood-ratio test": "p-value: 0.994\nmoderator: All moderators\nstatistic: 0.2296\ndf: 4",
+        "Moderator block tests": "Group:\n  p-value: 0.979\n  moderator: Group\n  statistic: 0.04346\n  df: 2\nDose:\n  p-value: 0.914\n  moderator: Dose\n  statistic: 0.1798\n  df: 2",
+        "Sensitivity coefficients": "                        Estimate  Std Error        z  p-value  Lower bound  Upper bound  Odds Ratio  Odds Ratio lower  Odds Ratio upper\n---------------------  ---------  ---------  -------  -------  -----------  -----------  ----------  ----------------  ----------------\nGroup = A vs B           0.08388     0.3369    0.249    0.803      -0.5764       0.7442       1.088            0.5619             2.105\nDose                   -0.007423    0.03454  -0.2149    0.830     -0.07513      0.06028      0.9926            0.9276             1.062\nGroup = B (reference)          0          0        0    1.000            0            0           1                 1                 1",
+        "Specificity coefficients": "                       Estimate  Std Error        z  p-value  Lower bound  Upper bound  Odds Ratio  Odds Ratio lower  Odds Ratio upper\n---------------------  --------  ---------  -------  -------  -----------  -----------  ----------  ----------------  ----------------\nGroup = A vs B          0.04201     0.4651  0.09032    0.928      -0.8696       0.9536       1.043            0.4191             2.595\nDose                    -0.0241    0.04965  -0.4854    0.627      -0.1214      0.07321      0.9762            0.8857             1.076\nGroup = B (reference)         0          0        0    1.000            0            0           1                 1                 1",
+        "Residual diagnostic I-squared": "I² estimates:\n                            Measure   I² (%)\n  -  ------------------------------  -------\n  1                  Zhou-Dendukuri  34.194%\n  2  Holling (unadjusted), method 1  62.185%\n  3  Holling (unadjusted), method 2  63.651%\n  4  Holling (unadjusted), method 3  41.936%\n  5    Holling (adjusted), method 1   5.463%\n  6    Holling (adjusted), method 2   5.494%\n  7    Holling (adjusted), method 3   4.952%\nInterpretation: I-squared is shown as percent unexplained heterogeneity; residual values describe heterogeneity after moderator adjustment.",
+        "Moderator coding": "Group:\n  type: factor\n  levels: B, A\n  reference: B\nDose:\n  type: continuous\n  range: 1, 17",
+        "Model information": "estimator: REML\nformula: cbind(tsens, tfpr) ~ `Group` + `Dose`\nstudies used: 17\ncorrection policy: All studies if any zero exists\ncorrection factor: 0.5\nconverged: True\nlogLik: 17.84\nAIC: -17.69\nBIC: -3.949\npackage version: 0.5.12",
+        "References": "1. Bivariate diagnostic meta-analysis: Reitsma, J. B., Glas, A. S., Rutjes, A. W., Scholten, R. J., Bossuyt, P. M., & Zwinderman, A. H. (2005). Bivariate analysis of sensitivity and specificity produces informative summary measures in diagnostic reviews. Journal of Clinical Epidemiology, 58(10), 982-990.\n2. Diagnostic accuracy model unification: Harbord, R. M., Deeks, J. J., Egger, M., Whiting, P., & Sterne, J. A. (2006). A unification of models for meta-analysis of diagnostic accuracy studies. Biostatistics, 8(2), 239-251.\n3. Statistical implementation: Doebler, P. (2025). mada: Meta-Analysis of Diagnostic Accuracy, version 0.5.12.\n"
+      },
+      "plots": {
+        "diagnostic.reitsma.sensitivity.coefficients": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-4z82vyl1/analysis/reitsma_coefficients_sensitivity.svg",
+        "diagnostic.reitsma.specificity.coefficients": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-4z82vyl1/analysis/reitsma_coefficients_specificity.svg"
+      }
+    }
+  },
+  {
+    "scenario": "analysis-diagnostic-regression-multiple",
+    "evidence": "artifacts/verification/rcms/20261014T174606Z-fd5c8246-analysis-diagnostic-regression-multiple",
+    "step": {
+      "step": 5,
+      "action": "properties-prefilled",
+      "utc": "2026-10-14T17:46:14.245543+00:00",
+      "captures": [
+        "05-0-properties-prefilled.png"
+      ],
+      "artifacts": {},
+      "workflow": "meta-regression",
+      "method": "diagnostic.reitsma",
+      "parameters": {
+        "estimator": "REML",
+        "conf.level": 95.0,
+        "adjust": 0.5,
+        "correction.policy": "All studies if any zero exists",
+        "digits": 3,
+        "bp_style": "default",
+        "bp_accent_color": "#2f5597",
+        "bp_point_size_multiplier": 1.0,
+        "bp_xlabel": null,
+        "bp_xticks": "[default]",
+        "bp_plot_lb": "[default]",
+        "bp_plot_ub": "[default]",
+        "bp_outpath": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-4z82vyl1/analysis/reg.png",
+        "bp_display_path": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-4z82vyl1/analysis/reg-ed4f43b1e165.display.svg",
+        "bp_show_regression_line": true,
+        "bp_show_confidence_band": true,
+        "bp_show_prediction_interval": false,
+        "bp_show_legend": true
+      }
+    }
+  },
+  {
+    "scenario": "small-study-effects",
+    "evidence": "artifacts/verification/rcms/20261014T174013Z-d638a84c-small-study-effects",
+    "step": {
+      "step": 2,
+      "action": "small-study-configured",
+      "utc": "2026-10-14T17:40:19.800252+00:00",
+      "captures": [
+        "02-0-small-study-configured.png"
+      ],
+      "artifacts": {},
+      "ordinary_funnel": true
+    }
+  },
+  {
+    "scenario": "small-study-effects",
+    "evidence": "artifacts/verification/rcms/20261014T174013Z-d638a84c-small-study-effects",
+    "step": {
+      "step": 3,
+      "action": "small-study-results",
+      "utc": "2026-10-14T17:40:21.217515+00:00",
+      "captures": [
+        "03-0-small-study-results.png"
+      ],
+      "artifacts": {
+        "small-study.funnel.1": "03-0-small-study-ordinary-98b3143342dd8.png"
+      },
+      "texts": {
+        "small-study.warning": "Primary asymmetry test: Rücker AS+RE test\nResult: no clear evidence of small-study effects (p = 0.609)\nUsable studies: 17\nEstimate: -0.8605 (95% CI -4.367 to 2.646)\n\nFunnel plot asymmetry can reflect publication bias, heterogeneity, study design, or chance.\n\nInterpret the plots and tests together. No single result proves or rules out publication bias.\n\nAnalysis warnings:\n- Observed standard-error range should be considered when interpreting asymmetry results; the exact range is reported in the analysis summary.",
+        "small-study.data-eligibility": "Effect measure: Odds ratio (OR)\nStudies analyzed: 17\nConfidence level: 95% confidence interval\nPrimary test: Rücker AS+RE test\nObserved standard-error range: [0.27755775, 1.6437088]\nHeterogeneity (REML tau-squared): 0.4273\nContinuity correction: Studies with any zero cell",
+        "small-study.tests": "Rücker AS+RE test (primary)\n  Studies: 17\n  Result: No clear evidence of small-study effects (p = 0.609).\n  Test statistic: -0.5231\n  Coefficient: -0.8605 (SE 1.645; 95% CI -4.367 to 2.646)\n  Model: Rücker AS+RE (ASD + Thompson)\n\nPeters test (additional)\n  Studies: 17\n  Result: No clear evidence of small-study effects (p = 0.808).\n  Test statistic: 0.2469\n  Coefficient: 10.51 (SE 42.59; 95% CI -80.26 to 101.3)\n  Model: Peters native metabin model",
+        "small-study.pooled-comparison": "Common effect\n  Estimate: 0.7571\n  95% confidence interval: 0.5680 to 1.009\n\nRandom effects (REML)\n  Estimate: 0.7588\n  95% confidence interval: 0.4679 to 1.230\n\nThese are model comparisons, not estimates corrected for publication bias.",
+        "small-study.references": "1. Arcsine asymmetry test: Rucker, G., Schwarzer, G., & Carpenter, J. R. (2008). Arcsine test for publication bias in meta-analyses with binary outcomes. Statistics in Medicine, 27(5), 746-763. doi:10.1002/sim.2971.\n2. Additive random-effects regression: Thompson, S. G., & Sharp, S. J. (1999). Explaining heterogeneity in meta-analysis: A comparison of methods. Statistics in Medicine, 18(20), 2693-2708.\n3. Peters test: Peters, J. L., Sutton, A. J., Jones, D. R., Abrams, K. R., & Rushton, L. (2006). Comparison of two methods to detect publication bias in meta-analysis. JAMA, 295(6), 676-680. doi:10.1001/jama.295.6.676.\n4. Funnel plot axis choice: Sterne, J. A. C., & Egger, M. (2001). Funnel plots for detecting bias in meta-analysis: Guidelines on choice of axis. Journal of Clinical Epidemiology, 54(10), 1046-1055. doi:10.1016/S0895-4356(01)00377-8.\n5. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n",
+        "small-study.method-details": "Rücker AS+RE test\n  Package: meta 8.5-0\n  Predictor: ASD effect on native ASD standard error\n  Weighting: native AS+RE additive REML weights\n  Inference: t-based meta::metabias test\n  Degrees of freedom: 15.00\n  Exact p-value: 0.60854439\n  Call: meta::metabin(event.e, n.e, event.c, n.c, sm='ASD', common=TRUE, random=TRUE, method.tau='REML', level=0.95); meta::metabias(x=prepared.ASD.model, method.bias='Thompson', k.min=10, level=0.95)\n\nPeters test\n  Package: meta 8.5-0\n  Predictor: 1/(n.e+n.c), with native Peters seTE=sqrt(1/(event.e+event.c)+1/(non-events.e+non-events.c))\n  Weighting: 1/Peters seTE^2\n  Inference: t-based meta::metabias test\n  Degrees of freedom: 15.00\n  Exact p-value: 0.80833677\n  Call: meta::metabin(event.e, n.e, event.c, n.c, sm='OR', incr=0.5, method.incr='only0', common=TRUE, random=TRUE, method.tau='REML', level=0.95); prepared.OR.model$TE <- prepared.effects; prepared.OR.model$seTE <- prepared.standard.errors; meta::metabias(x=prepared.OR.model, method.bias='Peters', k.min=10, level=0.95)",
+        "small-study.methods-not-applicable": "Harbord test: Unavailable: REML log-OR tau^2 is above 0.1; use Rücker AS+RE."
+      },
+      "plots": {
+        "small-study.funnel.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-o8_nh3ql/tmp/RtmpSGzqQp/small-study-ordinary-98b3143342dd8.png"
+      }
+    }
+  },
+  {
+    "scenario": "small-study-diagnostic",
+    "evidence": "artifacts/verification/rcms/20261014T174759Z-16cd798d-small-study-diagnostic",
+    "step": {
+      "step": 2,
+      "action": "small-study-matrix-configured",
+      "utc": "2026-10-14T17:48:05.843851+00:00",
+      "captures": [
+        "02-0-small-study-matrix-configured.png"
+      ],
+      "artifacts": {},
+      "context": "Diagnostic  ·  Diagnostic Odds Ratio (DOR)  ·  17 included  ·  17 eligible",
+      "selected": "small-study-diagnostic"
+    }
+  },
+  {
+    "scenario": "small-study-diagnostic",
+    "evidence": "artifacts/verification/rcms/20261014T174759Z-16cd798d-small-study-diagnostic",
+    "step": {
+      "step": 3,
+      "action": "matrix-results",
+      "utc": "2026-10-14T17:48:06.845576+00:00",
+      "captures": [
+        "03-0-matrix-results.png"
+      ],
+      "artifacts": {
+        "small-study.deeks_funnel.1": "03-0-small-study-deeks-9adc913bcaf8b.png"
+      },
+      "texts": {
+        "small-study.warning": "Primary asymmetry test: Deeks test\nResult: no clear evidence of small-study effects (p = 0.840)\nUsable studies: 17\nEstimate: 1.360 (95% CI -12.79 to 15.51)\n\nFunnel plot asymmetry can reflect publication bias, heterogeneity, study design, or chance.\n\nInterpret the plots and tests together. No single result proves or rules out publication bias.\n\nAnalysis warnings:\n- Observed Deeks ESS predictor range: [0.066089557, 0.27785947].",
+        "small-study.data-eligibility": "Effect measure: Diagnostic odds ratio (DOR)\nStudies analyzed: 17\nConfidence level: 95% confidence interval\nPrimary test: Deeks test\nObserved standard-error range: [0.27546972, 1.6052732]\nContinuity correction: All studies if any zero exists\nPlot method: Deeks funnel plot using effective sample size",
+        "small-study.tests": "Deeks test (meta implementation) (primary)\n  Studies: 17\n  Result: No clear evidence of small-study effects (p = 0.840).\n  Test statistic: 0.2049\n  Coefficient: 1.360 (SE 6.637; 95% CI -12.79 to 15.51)\n  Model: Deeks effective-sample-size weighted regression",
+        "small-study.references": "1. Deeks test: Deeks, J. J., Macaskill, P., & Irwig, L. (2005). The performance of tests of publication bias and other sample size effects in systematic reviews of diagnostic test accuracy was assessed. Journal of Clinical Epidemiology, 58(9), 882-893. doi:10.1016/j.jclinepi.2004.06.012.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n",
+        "small-study.method-details": "Deeks test (meta implementation)\n  Package: meta 8.5-0\n  Predictor: 1/sqrt(ESS), ESS=4*n.e*n.c/(n.e+n.c)\n  Weighting: native ESS weights\n  Inference: t-based Deeks regression test\n  Degrees of freedom: 15.00\n  Exact p-value: 0.84038411\n  Call: meta::metabin(event.e=TP, n.e=TP+FN, event.c=FP, n.c=FP+TN, sm='OR', incr=0.5, method.incr='if0all', common=TRUE, random=TRUE, method.tau='REML', level=0.95); meta::metabias(x=prepared.DOR.model, method.bias='Deeks', k.min=10, level=0.95)",
+        "small-study.methods-not-applicable": "No additional methods were marked not applicable."
+      },
+      "plots": {
+        "small-study.deeks_funnel.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-e5h25kvj/tmp/Rtmpmvfvrh/small-study-deeks-9adc913bcaf8b.png"
+      }
+    }
+  },
+  {
+    "scenario": "ratios-hr",
+    "evidence": "artifacts/verification/rcms/20261014T175952Z-f646e091-ratios-hr",
+    "step": {
+      "step": 6,
+      "action": "ratio-calculator",
+      "utc": "2026-10-14T17:59:58.795682+00:00",
+      "captures": [
+        "06-0-ratio-calculator.png"
+      ],
+      "artifacts": {},
+      "source_confidence": "90.0"
+    }
+  },
+  {
+    "scenario": "plot-workflow-sroc",
+    "evidence": "artifacts/verification/rcms/20261014T175550Z-8eb9eea6-plot-workflow-sroc",
+    "step": {
+      "step": 9,
+      "action": "family-editor-controls",
+      "utc": "2026-10-14T17:55:59.496515+00:00",
+      "captures": [
+        "09-0-family-editor-controls.png"
+      ],
+      "artifacts": {},
+      "family": "sroc"
+    }
+  },
+  {
+    "scenario": "plot-workflow-contour",
+    "evidence": "artifacts/verification/rcms/20261014T175624Z-1428f923-plot-workflow-contour",
+    "step": {
+      "step": 4,
+      "action": "family-editor-controls",
+      "utc": "2026-10-14T17:56:32.911297+00:00",
+      "captures": [
+        "04-0-family-editor-controls.png"
+      ],
+      "artifacts": {},
+      "family": "contour"
+    }
+  },
+  {
+    "scenario": "audit-round3-precision",
+    "evidence": "artifacts/verification/rcms/20261014T173722Z-58abeb61-audit-round3-precision",
+    "step": {
+      "step": 10,
+      "action": "round3-zero-bound-presentation",
+      "utc": "2026-10-14T17:37:32.697931+00:00",
+      "captures": [
+        "10-0-round3-zero-bound-presentation.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "10-0-forest-f5e843760434.display.svg"
+      },
+      "entered_bounds": [
+        0,
+        0.4
+      ],
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_sokx54m/analysis/forest-f5e843760434.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-precision",
+    "evidence": "artifacts/verification/rcms/20261014T173722Z-58abeb61-audit-round3-precision",
+    "step": {
+      "step": 20,
+      "action": "round3-small-effects-preserved",
+      "utc": "2026-10-14T17:37:37.048609+00:00",
+      "captures": [
+        "20-0-round3-small-effects-preserved.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "20-0-forest-f5e843760434.display.svg"
+      },
+      "expected": {
+        "estimate": 1.0000000000000004e-10,
+        "lower": 9.199848053940786e-11,
+        "upper": 1.0800151946059223e-10,
+        "se": 4.082482904638632e-12
+      },
+      "actual": [
+        "1.000000e-10",
+        "9.199848e-11",
+        "1.080015e-10",
+        "4.082483e-12",
+        "< 1e-06"
+      ],
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_sokx54m/analysis/forest-f5e843760434.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-precision",
+    "evidence": "artifacts/verification/rcms/20261014T173722Z-58abeb61-audit-round3-precision",
+    "step": {
+      "step": 29,
+      "action": "round3-degenerate-axis",
+      "utc": "2026-10-14T17:37:42.037360+00:00",
+      "captures": [
+        "29-0-round3-degenerate-axis.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "29-0-forest-f5e843760434.display.svg"
+      },
+      "style": "default",
+      "entered": [
+        1,
+        1e-20
+      ],
+      "bounds": [
+        0.9499999999999998,
+        1.0499999999999998
+      ],
+      "ticks": [
+        "0.94",
+        "0.96",
+        "0.98",
+        "1.00",
+        "1.02",
+        "1.04",
+        "1.06"
+      ],
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_sokx54m/analysis/forest-f5e843760434.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-precision",
+    "evidence": "artifacts/verification/rcms/20261014T173722Z-58abeb61-audit-round3-precision",
+    "step": {
+      "step": 30,
+      "action": "round3-degenerate-axis-bottom",
+      "utc": "2026-10-14T17:37:42.118484+00:00",
+      "captures": [
+        "30-0-round3-degenerate-axis-bottom.png"
+      ],
+      "artifacts": {},
+      "style": "default",
+      "bounds": [
+        0.9499999999999998,
+        1.0499999999999998
+      ]
+    }
+  },
+  {
+    "scenario": "audit-round3-precision",
+    "evidence": "artifacts/verification/rcms/20261014T173722Z-58abeb61-audit-round3-precision",
+    "step": {
+      "step": 39,
+      "action": "round3-degenerate-axis",
+      "utc": "2026-10-14T17:37:46.130378+00:00",
+      "captures": [
+        "39-0-round3-degenerate-axis.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "39-0-forest-f5e843760434.display.svg"
+      },
+      "style": "revman",
+      "entered": [
+        1,
+        1e-20
+      ],
+      "bounds": [
+        0.9499999999999998,
+        1.0499999999999998
+      ],
+      "ticks": [
+        "0.96",
+        "0.98",
+        "1.00",
+        "1.02",
+        "1.04"
+      ],
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_sokx54m/analysis/forest-f5e843760434.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-precision",
+    "evidence": "artifacts/verification/rcms/20261014T173722Z-58abeb61-audit-round3-precision",
+    "step": {
+      "step": 48,
+      "action": "round3-degenerate-axis",
+      "utc": "2026-10-14T17:37:50.798175+00:00",
+      "captures": [
+        "48-0-round3-degenerate-axis.png"
+      ],
+      "artifacts": {
+        "analysis.standard.forest_plot.1": "48-0-forest-f5e843760434.display.svg"
+      },
+      "style": "bmj",
+      "entered": [
+        1,
+        1e-20
+      ],
+      "bounds": [
+        -0.12599999999999997,
+        1.1759999999999997
+      ],
+      "ticks": [
+        "0.00",
+        "0.50",
+        "1.00"
+      ],
+      "plots": {
+        "analysis.standard.forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_sokx54m/analysis/forest-f5e843760434.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-precision",
+    "evidence": "artifacts/verification/rcms/20261014T173722Z-58abeb61-audit-round3-precision",
+    "step": {
+      "step": 54,
+      "action": "round3-bubble-tick-coverage",
+      "utc": "2026-10-14T17:37:53.298749+00:00",
+      "captures": [
+        "54-0-round3-bubble-tick-coverage.png"
+      ],
+      "artifacts": {
+        "analysis.meta-regression.reg.plot.1": "54-0-reg-5127ee20db1d.display.svg"
+      },
+      "ticks": [
+        [
+          0.1,
+          266.2
+        ],
+        [
+          0.2,
+          226.0
+        ],
+        [
+          0.5,
+          172.86
+        ],
+        [
+          1.0,
+          132.67
+        ],
+        [
+          2.0,
+          92.47
+        ],
+        [
+          5.0,
+          39.33
+        ]
+      ],
+      "plot_frame": {
+        "x": "78.62",
+        "y": "16.63",
+        "width": "533.14",
+        "height": "273.82",
+        "fill": "none",
+        "stroke": "#000000",
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        "stroke-miterlimit": "10.00"
+      },
+      "coverage": 0.8285369951062742,
+      "metric": "OR",
+      "plots": {
+        "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_sokx54m/analysis/reg-5127ee20db1d.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-precision",
+    "evidence": "artifacts/verification/rcms/20261014T173722Z-58abeb61-audit-round3-precision",
+    "step": {
+      "step": 64,
+      "action": "round3-bubble-tick-coverage",
+      "utc": "2026-10-14T17:37:56.591409+00:00",
+      "captures": [
+        "64-0-round3-bubble-tick-coverage.png"
+      ],
+      "artifacts": {
+        "analysis.meta-regression.reg.plot.1": "64-0-reg-5127ee20db1d.display.svg"
+      },
+      "ticks": [
+        [
+          0.05,
+          261.6
+        ],
+        [
+          0.25,
+          181.61
+        ],
+        [
+          0.5,
+          134.0
+        ],
+        [
+          0.75,
+          86.39
+        ],
+        [
+          0.9,
+          38.78
+        ]
+      ],
+      "plot_frame": {
+        "x": "78.62",
+        "y": "16.63",
+        "width": "589.51",
+        "height": "273.82",
+        "fill": "none",
+        "stroke": "#000000",
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        "stroke-miterlimit": "10.00"
+      },
+      "coverage": 0.8137462566649625,
+      "metric": "PLO",
+      "plots": {
+        "analysis.meta-regression.reg.plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-_sokx54m/analysis/reg-5127ee20db1d.display.svg"
+      }
+    }
+  },
+  {
+    "scenario": "audit-round3-hr",
+    "evidence": "artifacts/verification/rcms/20261014T172920Z-5530f5fd-audit-round3-hr",
+    "step": {
+      "step": 29,
+      "action": "round3-fixed-references",
+      "utc": "2026-10-14T17:30:27.197770+00:00",
+      "captures": [
+        "29-0-round3-fixed-references.png"
+      ],
+      "artifacts": {},
+      "method": "IV",
+      "identity": "Meta-analysis — Mortality · Time-to-event · Hazard Ratio\nComparison: Locoregional treatment plus chemotherapy / Locoregional treatment alone · Follow-up: first",
+      "text": "Model configuration\nProject: Pignon2000-HR.rcms\nModel: Fixed-effect inverse variance\nInference: Normal approximation\nConfidence level: 95.0%\nHR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale.\nSummary\nModel Results\nEstimate [95% CI]\nP\n0.895119 [0.854435, 0.937741]\n0.000003\n\nHeterogeneity\nQ\ndf\nP\nI²\n123.670769\n64\n0.000011\n48.2%\n\nTest for overall effect\nZ\nP\n-4.668405\n0.000003\n\nHazard Ratio Fixed-effect inverse variance\nCalculation scale: log - estimate: -0.110798, lower: -0.157315, upper: -0.064281, std. error: 0.023734\nReferences\nFixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.\nImplementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\nWeights\nWeights\nStatistic\nValue\nPitie-74\n0.8168\nGETTE Cadj\n3.216\nInt 0034\n4.54\nJHCFUS\n0.4788\nTMH R-4\n0.3605\nKKD -86\n0.4901\nHNU -87a\n0.2816\nHNU -87b\n1.701\nIGR -65\n0.4394\nRTOG 6801\n7.092\nEORTC 24771\n1.572\nDENVER -77\n0.7604\nHNCP\n3.554\nEORTC 78-OCP\n1.673\nMCW -1\n0.9351\nSWOG 8006\n2.062\nPitie-81\n1.453\nBuenos Aires\n1.02\nCreteil-82\n1.115\nHNCGICO2\n1.25\nMCW -2\n0.507\nAC CAMARGO (a)\n0.6703\nSECOG II (a)\n1.87\nEORTC 24844\n0.7548\nSHNG 85\n5.193\nHNCGICO3\n1.104\nCreteil-86\n1.138\nGSTTC -86\n2.67\nGETTE Cneo1\n1.397\nGETTE Cneo2\n0.8956\nAHNTG\n2.619\nLas Palmas\n0.2929\nRennes-87\n1.453\nParma\n0.5182\nCFHNS\n2.625\nCologne\n0.3774\nSongkla\n0.507\nHNAP -02\n0.3323\nBNH 003\n0.9238\nMDA -70\n0.4506\nWIA -OC5a\n0.4732\nWIA -OC5b\n0.7942\nEORTC 73-OC\n2.253\nBergen\n0.3774\nRT -BLM -73\n0.3098\nWIA -OC5c\n0.3943\nTurku\n0.5577\nUW -77\n0.5858\nNRH -78\n2.569\nBarcelona\n6.827\nUW -79\n0.2591\nManchester\n3.729\nYale 80\n1.369\nPMHCGS\n2.321\nECOG 2382\n4.472\nAC CAMARGO (b)\n0.6703\nToulouse\n0.9351\nSECOG II (b)\n1.786\nCH -7401\n0.6309\nYale 86\n0.6872\nINRC HN -8\n1.69\nOntario\n1.594\nKragujevac\n1.234\nBavaria 89\n1.679\nLOHNG 91\n0.6928\n\nInference Method\nNormal approximation\nForest Plot\nForest plot of estimates and confidence intervals, with model summaries where applicable. Select this plot in the navigation to view or export it. Read the report for numerical results and exclusions."
+    }
+  },
+  {
+    "scenario": "audit-round3-hr",
+    "evidence": "artifacts/verification/rcms/20261014T172920Z-5530f5fd-audit-round3-hr",
+    "step": {
+      "step": 32,
+      "action": "round3-fixed-footer-bottom",
+      "utc": "2026-10-14T17:30:27.478402+00:00",
+      "captures": [
+        "32-0-round3-fixed-footer-bottom.png"
+      ],
+      "artifacts": {},
+      "details": "Project: Pignon2000-HR.rcms\nModel: Fixed-effect inverse variance\nInference: Normal approximation\nConfidence level: 95.0%\nHR = 1 means equal hazards in Locoregional treatment plus chemotherapy and Locoregional treatment alone; estimates are fitted on the log scale."
+    }
+  },
+  {
+    "scenario": "audit-round3-irr",
+    "evidence": "artifacts/verification/rcms/20261014T173040Z-40206268-audit-round3-irr",
+    "step": {
+      "step": 33,
+      "action": "round3-fixed-references",
+      "utc": "2026-10-14T17:31:20.703799+00:00",
+      "captures": [
+        "33-0-round3-fixed-references.png"
+      ],
+      "artifacts": {},
+      "method": "IV",
+      "identity": "Meta-analysis — Catheter-related bloodstream infection · Event rates · Incidence Rate Ratio\nComparison: Anti-infective catheter / Standard catheter · Follow-up: first",
+      "text": "Model configuration\nProject: NielWeise2008-IRR.rcms\nModel: Fixed-effect inverse variance\nInference: Normal approximation\nConfidence level: 95.0%\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale.\nSummary\nModel Results\nEstimate [95% CI]\nP\n0.714185 [0.490307, 1.040287]\n0.079406\n\nHeterogeneity\nQ\ndf\nP\nI²\n9.697597\n8\n0.286895\n17.5%\n\nTest for overall effect\nZ\nP\n-1.754141\n0.079406\n\nIncidence Rate Ratio Fixed-effect inverse variance\nCalculation scale: log - estimate: -0.336613, lower: -0.712724, upper: 0.039497, std. error: 0.191897\nReferences\nFixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.\nImplementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\nWeights\nWeights\nStatistic\nValue\nBong et al\n15.75\nCiresi et al\n14.73\nHanna et al\n9.098\nHarter et al\n13.81\nJaeger et al 1\n1.841\nJaeger et al 2\n3.273\nLogghe et al\n29.34\nOstendorf et al\n7.733\nPemberton et al\n4.419\n\nInference Method\nNormal approximation\nForest Plot\nForest plot of estimates and confidence intervals, with model summaries where applicable. Select this plot in the navigation to view or export it. Read the report for numerical results and exclusions."
+    }
+  },
+  {
+    "scenario": "audit-round3-irr",
+    "evidence": "artifacts/verification/rcms/20261014T173040Z-40206268-audit-round3-irr",
+    "step": {
+      "step": 36,
+      "action": "round3-fixed-footer-bottom",
+      "utc": "2026-10-14T17:31:20.970117+00:00",
+      "captures": [
+        "36-0-round3-fixed-footer-bottom.png"
+      ],
+      "artifacts": {},
+      "details": "Project: NielWeise2008-IRR.rcms\nModel: Fixed-effect inverse variance\nInference: Normal approximation\nConfidence level: 95.0%\nIRR = 1 means equal event rates in Anti-infective catheter and Standard catheter; estimates are fitted on the log scale."
+    }
+  },
+  {
+    "scenario": "audit-round3-twoarm-mean",
+    "evidence": "artifacts/verification/rcms/20261014T172743Z-f8c0a917-audit-round3-twoarm-mean",
+    "step": {
+      "step": 14,
+      "action": "round3-null-excluded-rendered",
+      "utc": "2026-10-14T17:27:59.726965+00:00",
+      "captures": [
+        "14-0-round3-null-excluded-rendered.png"
+      ],
+      "artifacts": {
+        "analysis.cumulative.cumulative forest_plot.1": "14-0-forest-57579041b6e7.display.svg"
+      },
+      "observed": {
+        "range": [
+          0.5,
+          2
+        ],
+        "null": null
+      },
+      "plots": {
+        "analysis.cumulative.cumulative forest_plot.1": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-5yi7o1vm/analysis/forest-57579041b6e7.display.svg"
+      }
+    }
+  }
+]

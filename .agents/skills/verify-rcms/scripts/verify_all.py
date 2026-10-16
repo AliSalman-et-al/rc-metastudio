@@ -22,6 +22,7 @@ def main():
         action="store_true",
         help="Also run current-source R-stack and independent authority comparisons",
     )
+    parser.add_argument("--fresh", action="store_true", help="Do not reuse previously passed desktop evidence")
     args = parser.parse_args()
     run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8]
     evidence = ROOT / "artifacts/verification/rcms" / (run_id + "-complete")
@@ -47,14 +48,21 @@ def main():
                 ],
             ]
         )
+    # The full R-stack lane already exercises every desktop scenario via pytest.
+    # Keep doctor here; repeating the whole registry doubles the expensive work.
+    if not args.full:
+        commands.append([sys.executable, "-m", "pytest", "tests/e2e", "-n", "auto", "--durations=10"])
+    scenarios = ("doctor",)
     commands.extend(
-        [sys.executable, "scripts/verify_rcms.py", scenario] for scenario in SCENARIOS
+        [sys.executable, "scripts/verify_rcms.py", scenario] for scenario in scenarios
     )
     rows = []
     status_before = subprocess.check_output(
         ["git", "status", "--short"], cwd=ROOT, text=True
     ).strip()
     env = os.environ.copy()
+    if args.fresh:
+        env["RCMS_E2E_FRESH"] = "1"
     if env.get("RCMS_R_LIBS"):
         env["R_LIBS"] = env["RCMS_R_LIBS"]
     try:

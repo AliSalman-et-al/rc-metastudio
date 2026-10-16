@@ -1,0 +1,220 @@
+{
+  "pid": 795278,
+  "command": [
+    "nohup",
+    "setsid",
+    "bash",
+    "docs/ux-audit/2026-10-15-round4/raw/native-final.sh"
+  ],
+  "script_sha256": "b7b0e500e7170b30d73bf4313fc8c47723669f0354a2e39298a762edb5e9e40f",
+  "scope": "serial native verification only; every child has the maintained helper timeout",
+  "receipts": "raw/review1-final-*.json",
+  "script": "#!/usr/bin/env bash\nset -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nfor family in twoarm-mean twoarm-smd generic-effect reg-coef onearm-proportion twoarm-proportion transforms; do\n uv run python docs/ux-audit/2026-10-14-round3/run.py \"review1-final-$family\" uv run python scripts/verify_rcms.py \"audit-round3-presentation-$family\" --native\ndone\nfor scenario in calculator-binary calculator-continuous calculator-diagnostic calculator-mode-pre-post calculator-mode-entered-continuous ux-improvements review-workflows project-shell project-structure plot-workflow-forest; do\n uv run python docs/ux-audit/2026-10-14-round3/run.py \"review1-final-$scenario\" uv run python scripts/verify_rcms.py \"$scenario\" --native\ndone\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-final-subgroup uv run python scripts/verify_rcms.py audit-round3-twoarm-proportion --native\n",
+  "resumed_after": "review1-final-generic-effect failed the four-pixel pooled-label/weight contract",
+  "resume": {
+    "pid": 799814,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/native-resume.sh"
+    ],
+    "script_sha256": "132061767252314f5751762f80598cd13fc4eb9da19178d09ba90eea912ab44f",
+    "script": "#!/usr/bin/env bash\nset -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-install-sparse-clearance uv run python docs/ux-audit/2026-10-14-round3/install_source.py\nfor family in generic-effect reg-coef onearm-proportion twoarm-proportion transforms; do\n uv run python docs/ux-audit/2026-10-14-round3/run.py \"review1-verified-$family\" uv run python scripts/verify_rcms.py \"audit-round3-presentation-$family\" --native\ndone\nfor scenario in calculator-binary calculator-continuous calculator-diagnostic calculator-mode-pre-post calculator-mode-entered-continuous ux-improvements review-workflows project-shell project-structure plot-workflow-forest; do\n uv run python docs/ux-audit/2026-10-14-round3/run.py \"review1-verified-$scenario\" uv run python scripts/verify_rcms.py \"$scenario\" --native\ndone\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-verified-subgroup uv run python scripts/verify_rcms.py audit-round3-twoarm-proportion --native\n"
+  },
+  "bounded_reference_resume": {
+    "pid": 804308,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/native-bounded.sh"
+    ],
+    "script_sha256": "28c733f4ea559c9deb7822095e10b089b8287ccf6154458ad6a8c08a597894fc",
+    "script": "#!/usr/bin/env bash\nset -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nfor attempt in {1..120}; do\n [[ -f \"$RCMS_AUDIT_DIR/raw/review1-verified-twoarm-proportion.json\" ]] && break\n sleep 5\ndone\nuv run python -c 'import json; from pathlib import Path; assert json.loads(Path(\"docs/ux-audit/2026-10-15-round4/raw/review1-verified-twoarm-proportion.json\").read_text())[\"exit_code\"] == 0'\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-install-bounded-reference uv run python docs/ux-audit/2026-10-14-round3/install_source.py\nfor family in generic-effect transforms; do\n uv run python docs/ux-audit/2026-10-14-round3/run.py \"review1-bounded-$family\" uv run python scripts/verify_rcms.py \"audit-round3-presentation-$family\" --native\ndone\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-bounded-subgroup uv run python scripts/verify_rcms.py audit-round3-twoarm-proportion --native\nfor scenario in calculator-binary calculator-continuous calculator-diagnostic calculator-mode-pre-post calculator-mode-entered-continuous ux-improvements review-workflows project-shell project-structure plot-workflow-forest; do\n uv run python docs/ux-audit/2026-10-14-round3/run.py \"review1-bounded-$scenario\" uv run python scripts/verify_rcms.py \"$scenario\" --native\ndone\n",
+    "previous_batch": "Stopped only the batch shell after visual inspection; its in-flight binary child sealed normally before installation."
+  },
+  "clinical_labels": {
+    "pid": 812466,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/native-clinical-labels.sh"
+    ],
+    "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-install-clinical-labels uv run python docs/ux-audit/2026-10-14-round3/install_source.py\nfor scenario in audit-round3-presentation-transforms audit-round3-precision project-shell project-structure plot-workflow-forest; do\n uv run python docs/ux-audit/2026-10-14-round3/run.py \"review1-clinical-$scenario\" uv run python scripts/verify_rcms.py \"$scenario\" --native\ndone\n",
+    "script_sha256": "56264a92332cd7d76a79e681834967dafc8bfa0bcefeb0df0993257f3bab9854",
+    "scope": "Serial native drive after reinstall; prior bounded batch ended on project-shell geometry assertion."
+  },
+  "clinical_clearance": {
+    "pid": 813756,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/native-clinical-complete.sh"
+    ],
+    "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-install-clinical-clearance uv run python docs/ux-audit/2026-10-14-round3/install_source.py\nfor scenario in project-shell audit-round3-presentation-transforms audit-round3-presentation-onearm-proportion audit-round3-precision project-structure plot-workflow-forest; do\n uv run python docs/ux-audit/2026-10-14-round3/run.py \"review1-complete-$scenario\" uv run python scripts/verify_rcms.py \"$scenario\" --native\ndone\n",
+    "script_sha256": "dbaf5d890599229ee00ce5d5ea6a111cfe8d4326b7bc721a5a73fd2337b32fde"
+  },
+  "clinical_qualified": {
+    "pid": 814439,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/native-clinical-qualified.sh"
+    ],
+    "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nfor scenario in project-shell audit-round3-presentation-transforms audit-round3-presentation-onearm-proportion audit-round3-precision project-structure plot-workflow-forest; do\n uv run python docs/ux-audit/2026-10-14-round3/run.py \"review1-qualified-$scenario\" uv run python scripts/verify_rcms.py \"$scenario\" --native\ndone\n",
+    "script_sha256": "e7fdba13538ddcc8db8769b92406c5023f2a66c6b1444f846b6dad1ea21e2dc9"
+  },
+  "full_complete": {
+    "pid": 815880,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/full-complete.sh"
+    ],
+    "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-full-complete uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-numerical-final uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-r-stack-v2\nuv run python docs/ux-audit/2026-10-14-round3/collect_full_profile.py review1-full-complete\n",
+    "script_sha256": "469539a72ea43eb1e1bc8cca683acb7c33223ffe97fc07038895214f5fced2b3"
+  },
+  "publication_final": {
+    "pid": 816149,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/native-publication-final.sh"
+    ],
+    "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nfor attempt in {1..120}; do\n kill -0 814439 2>/dev/null || break\n sleep 5\ndone\nuv run python - <<'PY'\nimport json\nfrom pathlib import Path\nfor scenario in ['project-shell','audit-round3-presentation-transforms','audit-round3-presentation-onearm-proportion','audit-round3-precision','project-structure','plot-workflow-forest']:\n p=Path('docs/ux-audit/2026-10-15-round4/raw') / ('review1-qualified-'+scenario+'.json')\n assert json.loads(p.read_text())['exit_code']==0,p\nPY\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-install-frozen-source uv run python docs/ux-audit/2026-10-14-round3/install_source.py\nfor scenario in ux-improvements review1-design audit-round3-presentation-diagnostic audit-round3-presentation-reg-coef audit-round3-presentation-twoarm-proportion; do\n uv run python docs/ux-audit/2026-10-14-round3/run.py \"review1-publication-$scenario\" uv run python scripts/verify_rcms.py \"$scenario\" --native\ndone\n",
+    "script_sha256": "cdbf20f863c1c3a8829aad6e6cf56f971649322e7a91553ed40e6bd9ddd1c2ec",
+    "initial_script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nfor attempt in {1..120}; do\n kill -0 814439 2>/dev/null || break\n sleep 5\ndone\nuv run python - <<'PY'\nimport json\nfrom pathlib import Path\nfor scenario in ['project-shell','audit-round3-presentation-transforms','audit-round3-presentation-onearm-proportion','audit-round3-precision','project-structure','plot-workflow-forest']:\n p=Path('docs/ux-audit/2026-10-15-round4/raw') / ('review1-qualified-'+scenario+'.json')\n assert json.loads(p.read_text())['exit_code']==0,p\nPY\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-install-frozen-source uv run python docs/ux-audit/2026-10-14-round3/install_source.py\nfor scenario in review1-design audit-round3-presentation-diagnostic audit-round3-presentation-reg-coef audit-round3-presentation-twoarm-proportion; do\n uv run python docs/ux-audit/2026-10-14-round3/run.py \"review1-publication-$scenario\" uv run python scripts/verify_rcms.py \"$scenario\" --native\ndone\n",
+    "amendment": "Added the UX recovery scenario first while the shell was still waiting for the prior serial batch; each actual invocation has its own sealed exact-command receipt."
+  },
+  "full_qualified": {
+    "pid": 821080,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/full-qualified.sh"
+    ],
+    "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nfor attempt in {1..120}; do\n [[ -f \"$RCMS_AUDIT_DIR/raw/review1-full-complete.json\" ]] && break\n sleep 5\ndone\nuv run python - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('docs/ux-audit/2026-10-15-round4/raw/review1-full-complete.json')\nassert json.loads(p.read_text())['exit_code']==1\nPY\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-full-qualified uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-numerical-qualified uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-r-stack-v2\nuv run python docs/ux-audit/2026-10-14-round3/collect_full_profile.py review1-full-qualified\n",
+    "script_sha256": "be4cb2269965d2cafc29ae83e45dceb10364a53aa3d300c91547d612cae82feb"
+  },
+  "full_current": {
+    "pid": 824335,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/full-current.sh"
+    ],
+    "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-full-current uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-numerical-current uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-r-stack-v2\nuv run python docs/ux-audit/2026-10-14-round3/collect_full_profile.py review1-full-current\n",
+    "script_sha256": "0c5db4b26844e39f083a0a750bc037dc052fef3b782ae68e3fb14f05b5c42d91"
+  },
+  "resume_publication": {
+    "pid": 823785,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/resume-publication.sh"
+    ],
+    "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nfor attempt in {1..120}; do\n [[ -f \"$RCMS_AUDIT_DIR/raw/review1-publication-audit-round3-presentation-diagnostic.json\" ]] && break\n sleep 5\ndone\nuv run python - <<'PY'\nimport json\nfrom pathlib import Path\nassert json.loads(Path('docs/ux-audit/2026-10-15-round4/raw/review1-publication-audit-round3-presentation-diagnostic.json').read_text())['exit_code']==0\nPY\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-install-portable-source uv run python docs/ux-audit/2026-10-14-round3/install_source.py\nkill -CONT 816149\n",
+    "script_sha256": "0a126173a2e11792298ec2bdad4e31d30f9093c50ae1f9383296b2758ed53c26"
+  },
+  "native_reading_final": {
+    "pid": 824815,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/native-reading-final.sh"
+    ],
+    "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nfor attempt in {1..120}; do\n [[ -f \"$RCMS_AUDIT_DIR/raw/review1-publication-audit-round3-presentation-twoarm-proportion.json\" ]] && break\n sleep 5\ndone\nuv run python - <<'PY'\nimport json\nfrom pathlib import Path\nfor family in ['reg-coef','twoarm-proportion']:\n assert json.loads((Path('docs/ux-audit/2026-10-15-round4/raw')/('review1-publication-audit-round3-presentation-'+family+'.json')).read_text())['exit_code']==0\nPY\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-install-qualified-head uv run python docs/ux-audit/2026-10-14-round3/install_source.py\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-reading-qualified uv run python scripts/verify_rcms.py review1-design --native\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-coefficient-qualified uv run python scripts/verify_rcms.py audit-round3-presentation-reg-coef --native\n",
+    "script_sha256": "d0a309f060e54fc0ca5188654d142231be4e1308d11b48f8512978bfb59a86a7"
+  },
+  "final_source_revision": "ff03295",
+  "completion": "All targeted native batches completed successfully. Final fresh full profile review1-full-finished and numerical comparison review1-numerical-finished both exited zero; FULL-PROFILE verifies 108 desktop scenarios plus doctor and every retained artifact hash.",
+  "application_revision": "ff03295",
+  "rcmetar_revision": "8c8e8a3",
+  "references_preflight": {
+    "pid": 839021,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/references-complete.sh"
+    ],
+    "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-references-complete uv run python scripts/verify_rcms.py audit-round3-references\n",
+    "script_sha256": "26dd06d387d79f368d75e2c6e06071356e895743dfdeda01d3ad837ca66dc643"
+  },
+  "clinical_complete": {
+    "pid": 840238,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/clinical-complete.sh"
+    ],
+    "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nfor scenario in analysis-diagnostic-joint analysis-diagnostic-combined analysis-diagnostic-regression-multiple review1-design; do\n uv run python docs/ux-audit/2026-10-14-round3/run.py \"review1-clinical-complete-$scenario\" uv run python scripts/verify_rcms.py \"$scenario\" --native\ndone\n",
+    "script_sha256": "c770050bac9f314956740a03aecdac7a35b3e156885309f4a72ec7fc13329873"
+  },
+  "reading_finished": {
+    "pid": 842945,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/reading-finished.sh"
+    ],
+    "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nfor scenario in analysis-diagnostic-joint analysis-diagnostic-regression-multiple review1-design; do\n uv run python docs/ux-audit/2026-10-14-round3/run.py \"review1-reading-finished-$scenario\" uv run python scripts/verify_rcms.py \"$scenario\" --native\ndone\n",
+    "script_sha256": "22a2a59f6cd7451148d6d9b7db2a07d179a0bb7fd0db134ae211473ebb1672ae"
+  },
+  "full_fresh": {
+    "pid": 844344,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/full-fresh.sh"
+    ],
+    "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-full-fresh uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-numerical-fresh uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-r-stack-v2\nuv run python docs/ux-audit/2026-10-14-round3/collect_full_profile.py review1-full-fresh\n",
+    "script_sha256": "53417b3451415d2cecadbba72a151a46f3fd41ce8db23d8091560c81093aad4e"
+  },
+  "full_gates": {
+    "pid": 859955,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/full-gates.sh"
+    ],
+    "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-full-gates uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-numerical-gates uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-r-stack-v2\nuv run python docs/ux-audit/2026-10-14-round3/collect_full_profile.py review1-full-gates\n",
+    "script_sha256": "7992aedaeddb331f060afc23705673708294273c1cbf35c9b44c3091489ffe66"
+  },
+  "final_preflight": {
+    "pid": 887333,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/final-preflight.sh"
+    ],
+    "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nfor mode in onearm-proportion onearm-mean; do\n uv run python docs/ux-audit/2026-10-14-round3/run.py \"review1-singlearm-$mode\" uv run python scripts/verify_rcms.py \"calculator-mode-$mode\" --native\ndone\nfor scenario in plot-workflow-coefficient calculator-mode-onearm-proportion calculator-mode-onearm-mean; do\n uv run python docs/ux-audit/2026-10-14-round3/run.py \"review1-preflight-$scenario\" uv run python scripts/verify_rcms.py \"$scenario\"\ndone\n",
+    "script_sha256": "b82a6e0e93b40624e981cd90945318cc0708a6e97a0a7d03ba0f8f6141c726b6"
+  },
+  "full_finished": {
+    "pid": 888873,
+    "command": [
+      "nohup",
+      "setsid",
+      "bash",
+      "docs/ux-audit/2026-10-15-round4/raw/full-finished.sh"
+    ],
+    "script": "set -euo pipefail\ncd /home/ali/Documents/Code/rc-metastudio\nsource docs/ux-audit/2026-10-14-round3/ENV.sh\nexport RCMS_AUDIT_DIR=\"$PWD/docs/ux-audit/2026-10-15-round4\"\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-full-finished uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh\nuv run python docs/ux-audit/2026-10-14-round3/run.py review1-numerical-finished uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-r-stack-v2\nuv run python docs/ux-audit/2026-10-14-round3/collect_full_profile.py review1-full-finished\n",
+    "script_sha256": "814703e83048abbfc326ea670120090a6fa94bc439ec8107950f6d137cb7dde6"
+  }
+}

@@ -1,0 +1,44 @@
+[
+  {
+    "family": "hr",
+    "original_receipt": "raw/matrix-hr.json",
+    "original_exit": 1,
+    "retained_completed_workflows": [
+      "cumulative",
+      "leave-one-out",
+      "standard",
+      "subgroup"
+    ],
+    "continuation_receipt": "raw/matrix-hr--wording-recovery.json",
+    "continuation_workflows": [
+      "meta-regression"
+    ],
+    "known_wording_exception": "R6-08 intrcpt; original failure remains and no UX fix is claimed.",
+    "unique_cells": 5,
+    "selected_index": "SELECTED-MATRIX-hr-recovered.json",
+    "selected_frames": 21,
+    "original_index_sha256": "e0e2872d5f3f6f9df76e1614632c0d5eb1911112a5a8d2db33ade371022c4b66",
+    "continuation_index_sha256": "35081d710aeb236ee2f09f52b682d88de78259177a5bee658efb333477d980d5"
+  },
+  {
+    "family": "irr",
+    "original_receipt": "raw/matrix-irr.json",
+    "original_exit": 1,
+    "retained_completed_workflows": [
+      "cumulative",
+      "leave-one-out",
+      "standard",
+      "subgroup"
+    ],
+    "continuation_receipt": "raw/matrix-irr--wording-recovery.json",
+    "continuation_workflows": [
+      "meta-regression"
+    ],
+    "known_wording_exception": "R6-08 intrcpt; original failure remains and no UX fix is claimed.",
+    "unique_cells": 5,
+    "selected_index": "SELECTED-MATRIX-irr-recovered.json",
+    "selected_frames": 18,
+    "original_index_sha256": "6125f5e9de46119ecae2d41365f250111cc00722987262223d2831fdbedc0fcc",
+    "continuation_index_sha256": "19593b03ced9634d670537cee804f5e74c90e3b25f236c8bc7210e6e9c1a3504"
+  }
+]

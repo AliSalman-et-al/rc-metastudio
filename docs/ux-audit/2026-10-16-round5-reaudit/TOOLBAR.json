@@ -1,0 +1,32 @@
+[
+  {
+    "text": "Create dataset\u2026",
+    "tooltip": "New Dataset",
+    "enabled": true
+  },
+  {
+    "text": "Open\u2026",
+    "tooltip": "Open",
+    "enabled": true
+  },
+  {
+    "text": "Import CSV\u2026",
+    "tooltip": "Import CSV",
+    "enabled": true
+  },
+  {
+    "text": "Save",
+    "tooltip": "Save",
+    "enabled": true
+  },
+  {
+    "text": "",
+    "tooltip": "",
+    "enabled": true
+  },
+  {
+    "text": "",
+    "tooltip": "",
+    "enabled": true
+  }
+]

@@ -55,3 +55,11 @@ def wait(milliseconds: int) -> None:
     """Wait through Qt's generated test API."""
 
     cast(Callable[..., None], QtTest.QTest.qWait)(milliseconds)
+
+
+def mouse_release(
+    widget: QWidget, button: QtCore.Qt.MouseButton, pos: QtCore.QPoint
+) -> None:
+    """Invoke Qt's overloaded mouseRelease API through its runtime signature."""
+
+    cast(Callable[..., None], QtTest.QTest.mouseRelease)(widget, button, pos=pos)

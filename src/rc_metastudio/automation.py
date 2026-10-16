@@ -152,7 +152,7 @@ def _run_analysis(window, main_window, analysis_method: str):
         dialog.current_param_vals = {}
         dialog.setup_params()
         dialog.current_param_vals.update(dialog.current_defaults)
-        window.analysis = lambda result: captured.setdefault("result", result)
+        window.analysis = lambda result, *, change_settings=None: captured.setdefault("result", result)
         dialog.run_ma()
     finally:
         window.analysis = original
@@ -303,10 +303,13 @@ def _surface_accessibility(app, window):
 
 
 def _surface_display_facts(QtGui, QtNetwork, QtWidgets, window):
+    style = window.style()
+    if isinstance(style, QtWidgets.QProxyStyle):
+        style = style.baseStyle()
     return {
         "binary_resources": not QtGui.QPixmap(":/misc/meta.png").isNull(),
         "tls_backends": list(QtNetwork.QSslSocket.availableBackends()),
-        "active_style": window.style().objectName(),
+        "active_style": style.objectName(),
         "available_styles": list(QtWidgets.QStyleFactory.keys()),
         "image_formats": sorted(
             value.data().decode("ascii").lower()

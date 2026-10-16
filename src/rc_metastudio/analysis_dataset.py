@@ -258,8 +258,8 @@ class Dataset:
     def get_covariate_names(self):
         return [cov.name for cov in self.covariates]
 
-    def add_outcome(self, outcome):
-        current_group_names = self.get_group_names()
+    def add_outcome(self, outcome, group_names=None):
+        current_group_names = self.get_group_names() if group_names is None else group_names
         if not current_group_names:
             current_group_names = None
 

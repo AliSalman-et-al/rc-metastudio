@@ -1,0 +1,232 @@
+[
+  {
+    "title": "F11 · Panel-clipped bubble guides",
+    "description": "PLO regression: historical automatic range versus explicit-bound proof. Fixtures differ. All 16 supported metrics have panel checks for display and production SVG.",
+    "before": "screenshots/before-matrix-onearm-proportion-meta-regression-figure.png",
+    "after": "screenshots/native-bubble-settled-91-0-round5-bubble-bounds.png"
+  },
+  {
+    "title": "F12 · One structured representation of weights",
+    "description": "Six-study binary input; the legacy graphics-scene paragraph is retired. Report, Tables, copy/export retain structured weight rows.",
+    "before": "screenshots/before-matrix-twoarm-proportion-standard-figure.png",
+    "after": "screenshots/native-arm-settled-10-0-matrix-results-figure.png"
+  },
+  {
+    "title": "Long forests · Readable study rows",
+    "description": "Same 65-study Pignon HR input. Height grows and scrolls; typography keeps the short-figure scale. Styles differ in this overview; all six standard/subgroup style cells have separate native captures and geometry proof.",
+    "before": "screenshots/before-matrix-hr-standard-figure.png",
+    "after": "screenshots/native-long-settled-05-0-round5-long-figure.png"
+  },
+  {
+    "title": "Subgroup figures · Consistent typography",
+    "description": "Same HR studies; after uses test-owned A/B grouping. All three styles are checked. Styles differ in this overview.",
+    "before": "screenshots/before-matrix-hr-subgroup-figure.png",
+    "after": "screenshots/native-long-settled-30-0-round5-long-figure.png"
+  },
+  {
+    "title": "IRR · Standalone context and original exposure",
+    "description": "Same Niel-Weise sample with actual stored arm names and catheter-days. Caption is editable/removable; model values unchanged.",
+    "before": "screenshots/before-matrix-irr-standard-figure.png",
+    "after": "screenshots/native-irr-settled-04-0-round5-irr-context.png"
+  },
+  {
+    "title": "Editor · Editable figure caption",
+    "description": "Funnel controls before/after. Historical direct-window before has paint-through; after uses desktop-root capture. No opacity fix is claimed.",
+    "before": "screenshots/before-funnel-editor.png",
+    "after": "screenshots/native-root-funnel-04-0-family-editor-controls.png"
+  },
+  {
+    "title": "Precision · Suppress arithmetic residue",
+    "description": "Same MD regression fixture. Row-relative presentation preserves fitted coefficient and interval.",
+    "before": "screenshots/before-matrix-twoarm-mean-meta-regression-report.png",
+    "after": "screenshots/native-bubble-exports-52-0-matrix-results-report.png"
+  },
+  {
+    "title": "Coefficient ticks · Concise numeric labels",
+    "description": "Diagnostic regression workflows; fixture/control state differs. Shared tick formatter trims padding; effects/intervals keep selected precision. The after viewport is scrolled to the axis ticks; its full title is separately captured in native-coefficient-top.",
+    "before": "screenshots/before-matrix-diagnostic-meta-regression-figure-1.png",
+    "after": "screenshots/native-qualified-final-plot-workflow-coefficient-10-0-family-plot-reopened.png"
+  },
+  {
+    "title": "Reports · Calmer hierarchy",
+    "description": "Existing amino project before/after. Result sentence uses body weight and headings are proportionate.",
+    "before": "screenshots/before-design-07-review1-report-top.png",
+    "after": "screenshots/native-final-shell-recovered-19-0-review1-report-top.png"
+  },
+  {
+    "title": "IRR subgroup · Structured model values",
+    "description": "Same workflow; test-owned grouping differs. Existing QM, degrees of freedom and p-value use table rows rather than a package printout.",
+    "before": "screenshots/before-matrix-irr-subgroup-report.png",
+    "after": "screenshots/native-qualified-final-audit-round3-irr-15-0-round3-report-copy-export.png"
+  },
+  {
+    "title": "Workspace · Labelled analyses and non-colour cues",
+    "description": "Stored amino arm names remain verbatim. Compact Analyses group, Follow-up spacing, italic derived cells and selected-cell contrast.",
+    "before": "screenshots/before-design-06-review1-workspace-navigation.png",
+    "after": "screenshots/native-final-shell-recovered-10-0-round5-grid-cues.png"
+  },
+  {
+    "title": "Start · Cards fit their content",
+    "description": "Ordinary desktop width; spare height falls below the cards.",
+    "before": "screenshots/before-design-00-review1-start-before-check.png",
+    "after": "screenshots/native-final-shell-recovered-02-0-review1-start-before-check.png"
+  },
+  {
+    "title": "Recent projects · Recover or remove missing paths",
+    "description": "Paths/settings are test-owned. Locate validates before modifying storage; Cancel preserves it.",
+    "before": "screenshots/before-design-01-review1-start-recents.png",
+    "after": "screenshots/native-final-shell-recovered-03-0-round5-recent-missing.png"
+  },
+  {
+    "title": "Qt scale 2 · Read wrapped descriptions",
+    "description": "Rejected development frame versus corrected 200% Qt page. Proves Linux Qt scaling, not Windows/macOS OS scaling.",
+    "before": "screenshots/native-scale-2-02-0-review1-start-before-check.png",
+    "after": "screenshots/native-qualified-final-scale-2-02-0-review1-start-before-check.png"
+  },
+  {
+    "title": "Arm names · Wizard",
+    "description": "Same binary wizard before/after. Optional custom names trim whitespace; duplicates are rejected inline.",
+    "before": "screenshots/native-arms-baseline-03-0-data-outcome-naming.png",
+    "after": "screenshots/native-arm-settled-32-0-round5-arm-wizard.png"
+  },
+  {
+    "title": "Arm names · Actual grid headers",
+    "description": "Same six studies. Drug A / Usual care flow through the stored model groups.",
+    "before": "screenshots/native-arms-baseline-04-0-data-populated.png",
+    "after": "screenshots/native-arm-settled-40-0-round5-arm-grid.png"
+  },
+  {
+    "title": "Arm names · Default forest",
+    "description": "Same six studies and RevMan fit. New defaults Intervention / Control; old projects retain exact stored names.",
+    "before": "screenshots/native-arms-baseline-08-0-matrix-results-figure.png",
+    "after": "screenshots/native-arm-settled-10-0-matrix-results-figure.png"
+  },
+  {
+    "title": "Calculator · Actual arm labels",
+    "description": "Historical binary calculator versus custom-name study counts; inputs differ. Actual rows and clear effect/interval labels.",
+    "before": "screenshots/before-helper-calculator-binary.png",
+    "after": "screenshots/native-arm-settled-51-0-round5-arm-calculator.png"
+  },
+  {
+    "title": "CSV · Canonical headers after either input",
+    "description": "Both are after captures: left imports canonical custom-arm headers; right imports old Tx aliases. Both previews show the same actual names. Template bytes are retained in native artifacts.",
+    "before": "screenshots/native-arm-settled-52-0-round5-arm-csv-preview.png",
+    "after": "screenshots/native-arm-settled-54-0-round5-arm-csv-preview.png",
+    "before_label": "Canonical input",
+    "after_label": "Legacy input"
+  },
+  {
+    "title": "F14 · Prerequisites survive the compact menu",
+    "description": "Before: existing menu at 125% Qt scale. After: native hover at ordinary scale shows the disabled subgroup prerequisite. Same stored amino project; shortcuts/actions are reused.",
+    "before": "screenshots/native-qualified-final-scale-1.25-14-0-round5-analysis-menu.png",
+    "after": "screenshots/native-menu-tooltip-qualified-14-0-round5-analysis-prerequisite-tooltip.png"
+  },
+  {
+    "title": "Diagnostic reports · Consistent component headings",
+    "description": "Same lymph project, metrics and precision. Only display separators change; internal table identities and every value remain unchanged. Before test stopped on an obsolete heading expectation after capturing this report.",
+    "before": "screenshots/before-combined-component-headings.png",
+    "after": "screenshots/native-combined-heading-after-05-0-matrix-results-report.png"
+  },
+  {
+    "title": "SROC · Context uses the existing style overlay",
+    "description": "Same joint model, geometry and stored project names. The default caption is now visible and remains editable/removable; the editor/export drive proves captured geometry is preserved. Before is bound to the caption-failure run.",
+    "before": "screenshots/before-sroc-caption.png",
+    "after": "screenshots/native-sroc-caption-after-05-0-matrix-results-figure.png"
+  },
+  {
+    "title": "Quick start · Clear defaults and workflows",
+    "description": "Help names Intervention / Control, Group and Index test, explains custom naming and keeps CSV template/mapping and result controls discoverable.",
+    "before": "screenshots/before-quick-start.png",
+    "after": "screenshots/native-ux-contracts-after-03-0-ux-quick-start.png"
+  },
+  {
+    "title": "Continuous interpretation · Actual arm names",
+    "description": "The comparison and MD subtraction sentence use Training / Usual care, with identical estimates and uncertainty.",
+    "before": "screenshots/native-arm-settled-96-0-round5-arm-report.png",
+    "after": "screenshots/native-arm-continuous-sentence-after-96-0-round5-arm-report.png"
+  },
+  {
+    "title": "CSV · Clear arm and field headers",
+    "description": "Before: original required-field template with Tx A #evts / #total. After: loaded canonical template preview using the selected Drug A / Usual care names and events / total. Different tabs and input state are explicit; template bytes and silent legacy mapping are independently checked by the same native drive.",
+    "before": "screenshots/before-csv-required-fields.png",
+    "after": "screenshots/native-arm-settled-52-0-round5-arm-csv-preview.png"
+  },
+  {
+    "title": "Review 1 · Default IRR context and totals",
+    "description": "Same Niel-Weise input: readable separated context, clear exposure headers, original events/person-time totals, bold pooled row and normal inference. No fitted value changed.",
+    "before": "screenshots/review1-irr-before-04-0-round5-irr-context.png",
+    "after": "screenshots/review1-irr-after-04-0-round5-irr-context.png"
+  },
+  {
+    "title": "Review 1 · RevMan IRR context and totals",
+    "description": "Same Niel-Weise input: readable separated context, clear exposure headers, original events/person-time totals, bold pooled row and normal inference. No fitted value changed.",
+    "before": "screenshots/review1-irr-before-07-0-round5-irr-context.png",
+    "after": "screenshots/review1-irr-after-07-0-round5-irr-context.png"
+  },
+  {
+    "title": "Review 1 · BMJ IRR context and totals",
+    "description": "Same Niel-Weise input: readable separated context, clear exposure headers, original events/person-time totals, bold pooled row and normal inference. No fitted value changed.",
+    "before": "screenshots/review1-irr-before-10-0-round5-irr-context.png",
+    "after": "screenshots/review1-irr-after-10-0-round5-irr-context.png"
+  },
+  {
+    "title": "Review 1 · Bundled amino sample",
+    "description": "Same sample and fitted results; Intervention / Control replace the bundled placeholders without changing user projects.",
+    "before": "screenshots/review1-shell-before-21-0-review1-report-top.png",
+    "after": "screenshots/review1-shell-after-21-0-review1-report-top.png"
+  },
+  {
+    "title": "Review 1 · Recent projects",
+    "description": "Present and missing examples now occupy single aligned rows; full paths remain in tooltips and accessible names. Locate/Remove/reopen are exercised.",
+    "before": "screenshots/review1-shell-before-03-0-round5-recent-missing.png",
+    "after": "screenshots/review1-shell-after-03-0-round5-recent-missing.png"
+  },
+  {
+    "title": "Review 1 · CSV count preview",
+    "description": "Same four count inputs display as 4 / 20 / 6 / 22. Import strings and effect precision are preserved.",
+    "before": "screenshots/review1-arms-before-25-0-round5-arm-csv-preview.png",
+    "after": "screenshots/review1-arms-after-25-0-round5-arm-csv-preview.png"
+  },
+  {
+    "title": "Review 1 · Calculator sentence case",
+    "description": "Same real wizard fixture and calculator values; No event matches the surrounding sentence case.",
+    "before": "screenshots/review1-arms-before-24-0-round5-arm-calculator.png",
+    "after": "screenshots/review1-arms-after-24-0-round5-arm-calculator.png"
+  },
+  {
+    "title": "Review 1 · Default HR footer",
+    "description": "Same 65-study Pignon sample. A consistent pooled row includes the existing 100% weight. Raw HR events/exposure are unavailable and are not invented.",
+    "before": "screenshots/native-long-settled-06-0-round5-long-figure-bottom.png",
+    "after": "screenshots/review1-hr-after-06-0-round5-long-figure-bottom.png"
+  },
+  {
+    "title": "Review 1 · RevMan HR footer",
+    "description": "Same 65-study Pignon sample. A consistent pooled row includes the existing 100% weight. Raw HR events/exposure are unavailable and are not invented.",
+    "before": "screenshots/native-long-settled-16-0-round5-long-figure-bottom.png",
+    "after": "screenshots/review1-hr-after-16-0-round5-long-figure-bottom.png"
+  },
+  {
+    "title": "Review 1 · Subgroup heading clearance",
+    "description": "Same long HR subgroup input. The final taste-pass fix moves the manual rule above the first subgroup heading and reserves the complete header block.",
+    "before": "screenshots/review1-subgroup-rule-before.png",
+    "after": "screenshots/review1-subgroup-rule-after.png"
+  },
+  {
+    "title": "Review 1 · Regression caption",
+    "description": "Same source input; readable caption separates the identity lines. Bundled arm names are also corrected. Real edit/reopen/Cancel/removal and four decoded exports pass.",
+    "before": "screenshots/review1-regression-before-04-0-matrix-results-figure.png",
+    "after": "screenshots/review1-regression-after-07-0-review1-caption-initial.png"
+  },
+  {
+    "title": "Review 1 · Sroc caption",
+    "description": "Same source input; readable caption separates the identity lines. Bundled arm names are also corrected. Real edit/reopen/Cancel/removal and four decoded exports pass.",
+    "before": "screenshots/review1-sroc-before-05-0-matrix-results-figure.png",
+    "after": "screenshots/review1-sroc-after-09-0-review1-caption-initial.png"
+  },
+  {
+    "title": "Review 1 · Funnel caption",
+    "description": "Same source input; readable caption separates the identity lines. Bundled arm names are also corrected. Real edit/reopen/Cancel/removal and four decoded exports pass.",
+    "before": "screenshots/review1-funnel-before-03-0-matrix-results-figure.png",
+    "after": "screenshots/review1-funnel-after-04-0-review1-caption-initial.png"
+  }
+]

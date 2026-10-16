@@ -1,0 +1,194 @@
+[
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-17-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/17-0-round4-annotations.png",
+    "sha256": "ef74300517813930de719767d499750267979ee2385a85a3ae86a76b84c8cbb5",
+    "action": "round4-annotations",
+    "step": 17,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-18-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/18-0-round4-annotations-bottom.png",
+    "sha256": "ef74300517813930de719767d499750267979ee2385a85a3ae86a76b84c8cbb5",
+    "action": "round4-annotations-bottom",
+    "step": 18,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-34-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/34-0-round4-annotations.png",
+    "sha256": "a97f7800676a47c94407e659a5f6af8474efeef2b38c00ea4fa20665d7d2016b",
+    "action": "round4-annotations",
+    "step": 34,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-35-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/35-0-round4-annotations-bottom.png",
+    "sha256": "a97f7800676a47c94407e659a5f6af8474efeef2b38c00ea4fa20665d7d2016b",
+    "action": "round4-annotations-bottom",
+    "step": 35,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-51-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/51-0-round4-annotations.png",
+    "sha256": "c5f74811d482631eda3d457ecc14da276d96b86d500155dd62c88813d0eda6fe",
+    "action": "round4-annotations",
+    "step": 51,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-52-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/52-0-round4-annotations-bottom.png",
+    "sha256": "c5f74811d482631eda3d457ecc14da276d96b86d500155dd62c88813d0eda6fe",
+    "action": "round4-annotations-bottom",
+    "step": 52,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-68-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/68-0-round4-annotations.png",
+    "sha256": "50354b9adb97a9981db9aa4a9769cf6b95edd5e49207c417cae05b293e6419e4",
+    "action": "round4-annotations",
+    "step": 68,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-69-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/69-0-round4-annotations-bottom.png",
+    "sha256": "50354b9adb97a9981db9aa4a9769cf6b95edd5e49207c417cae05b293e6419e4",
+    "action": "round4-annotations-bottom",
+    "step": 69,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-85-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/85-0-round4-annotations.png",
+    "sha256": "b5e8a1f4be2fa09fa3c54b9c4262f85ae5f1c74caa8d6f26abbb030603036c0a",
+    "action": "round4-annotations",
+    "step": 85,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-86-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/86-0-round4-annotations-bottom.png",
+    "sha256": "b5e8a1f4be2fa09fa3c54b9c4262f85ae5f1c74caa8d6f26abbb030603036c0a",
+    "action": "round4-annotations-bottom",
+    "step": 86,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-102-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/102-0-round4-annotations.png",
+    "sha256": "1b44403bbbfec80d005cff8eb30f19ee6f30adb2deb42520b067d4c49fa5458e",
+    "action": "round4-annotations",
+    "step": 102,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-103-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/103-0-round4-annotations-bottom.png",
+    "sha256": "1b44403bbbfec80d005cff8eb30f19ee6f30adb2deb42520b067d4c49fa5458e",
+    "action": "round4-annotations-bottom",
+    "step": 103,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-119-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/119-0-round4-annotations.png",
+    "sha256": "fff100e2372ac650056f92a60e9c6049013bebc6f10baaef3c83d9adcdd21ad5",
+    "action": "round4-annotations",
+    "step": 119,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-120-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/120-0-round4-annotations-bottom.png",
+    "sha256": "fff100e2372ac650056f92a60e9c6049013bebc6f10baaef3c83d9adcdd21ad5",
+    "action": "round4-annotations-bottom",
+    "step": 120,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-136-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/136-0-round4-annotations.png",
+    "sha256": "7b44e83386c30ec819927a4d25164a615851c2c7aa9532b4f2e3afe72dffbab4",
+    "action": "round4-annotations",
+    "step": 136,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-137-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/137-0-round4-annotations-bottom.png",
+    "sha256": "7b44e83386c30ec819927a4d25164a615851c2c7aa9532b4f2e3afe72dffbab4",
+    "action": "round4-annotations-bottom",
+    "step": 137,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-153-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/153-0-round4-annotations.png",
+    "sha256": "565458a6a4a18986a1abdf4adf5151025e21caabfda3dc1cf44e5a189bcec0f6",
+    "action": "round4-annotations",
+    "step": 153,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-154-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/154-0-round4-annotations-bottom.png",
+    "sha256": "565458a6a4a18986a1abdf4adf5151025e21caabfda3dc1cf44e5a189bcec0f6",
+    "action": "round4-annotations-bottom",
+    "step": 154,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-170-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/170-0-round4-annotations.png",
+    "sha256": "72b6cccb7d913845fa6efc9ca35bd3e0e70a6ba8975adba19d9b74c642c3c5dd",
+    "action": "round4-annotations",
+    "step": 170,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-171-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/171-0-round4-annotations-bottom.png",
+    "sha256": "72b6cccb7d913845fa6efc9ca35bd3e0e70a6ba8975adba19d9b74c642c3c5dd",
+    "action": "round4-annotations-bottom",
+    "step": 171,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-187-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/187-0-round4-annotations.png",
+    "sha256": "d21b3c4a98fbb297a56fe6e0e642023d059f45d87a11df070555750116ae98b6",
+    "action": "round4-annotations",
+    "step": 187,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-188-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/188-0-round4-annotations-bottom.png",
+    "sha256": "d21b3c4a98fbb297a56fe6e0e642023d059f45d87a11df070555750116ae98b6",
+    "action": "round4-annotations-bottom",
+    "step": 188,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-204-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/204-0-round4-annotations.png",
+    "sha256": "9b557e88b3846676b914cb317012b108b5e1832247a45c2568080a1268b766c9",
+    "action": "round4-annotations",
+    "step": 204,
+    "scenario": "audit-round3-presentation-transforms"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-transforms-205-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T194249Z-87c1fead-audit-round3-presentation-transforms/205-0-round4-annotations-bottom.png",
+    "sha256": "9b557e88b3846676b914cb317012b108b5e1832247a45c2568080a1268b766c9",
+    "action": "round4-annotations-bottom",
+    "step": 205,
+    "scenario": "audit-round3-presentation-transforms"
+  }
+]

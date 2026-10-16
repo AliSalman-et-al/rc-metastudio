@@ -1,0 +1,113 @@
+{
+  "utc": "2026-10-14T22:57:45.124742+00:00",
+  "pytest_pid": 830339,
+  "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python -m pytest tests/e2e -n auto --durations=10 ",
+  "signal": "SIGINT",
+  "reason": "Fresh audit-round3-references failed with StopIteration: new unconditional Study weights assertion was incorrectly applied to diagnostic fixed IV, whose producer does not publish the top-level vector. Preserve failed manifest, stop this now-failed matrix, scope the existing table proof to binary/continuous, and rerun reference sweep before final fresh full profile.",
+  "evidence": "artifacts/verification/rcms/20261014T225332Z-6aec127b-audit-round3-references",
+  "cleanup": {
+    "reason": "SIGINT did not stop the detached pytest controller; terminate only its verified descendant tree so the outer full-profile recorder can seal the failed run.",
+    "signal": "SIGTERM",
+    "processes": [
+      {
+        "pid": 830339,
+        "parent": 824417,
+        "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python -m pytest tests/e2e -n auto --durations=10 "
+      },
+      {
+        "pid": 830427,
+        "parent": 830339,
+        "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python -u -c import sys;exec(eval(sys.stdin.readline())) "
+      },
+      {
+        "pid": 830430,
+        "parent": 830339,
+        "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python -u -c import sys;exec(eval(sys.stdin.readline())) "
+      },
+      {
+        "pid": 830433,
+        "parent": 830339,
+        "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python -u -c import sys;exec(eval(sys.stdin.readline())) "
+      },
+      {
+        "pid": 833085,
+        "parent": 830433,
+        "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python /home/ali/Documents/Code/rc-metastudio/scripts/verify_rcms.py audit-round3-presentation-transforms "
+      },
+      {
+        "pid": 833096,
+        "parent": 833085,
+        "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python /home/ali/Documents/Code/rc-metastudio/scripts/run_with_timeout.py --timeout-seconds 600 --label RCMS audit-round3-presentation-transforms -- /home/ali/Documents/Code/rc-metastudio/.venv/bin/python -X faulthandler /home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py audit-round3-presentation-transforms /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-gsf4ka5j "
+      },
+      {
+        "pid": 833101,
+        "parent": 833096,
+        "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python -X faulthandler /home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py audit-round3-presentation-transforms /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-gsf4ka5j "
+      },
+      {
+        "pid": 833509,
+        "parent": 830427,
+        "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python /home/ali/Documents/Code/rc-metastudio/scripts/verify_rcms.py audit-round3-presentation-diagnostic "
+      },
+      {
+        "pid": 833523,
+        "parent": 833509,
+        "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python /home/ali/Documents/Code/rc-metastudio/scripts/run_with_timeout.py --timeout-seconds 600 --label RCMS audit-round3-presentation-diagnostic -- /home/ali/Documents/Code/rc-metastudio/.venv/bin/python -X faulthandler /home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py audit-round3-presentation-diagnostic /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-j03oqao8 "
+      },
+      {
+        "pid": 833525,
+        "parent": 833523,
+        "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python -X faulthandler /home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py audit-round3-presentation-diagnostic /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-j03oqao8 "
+      },
+      {
+        "pid": 834400,
+        "parent": 830430,
+        "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python /home/ali/Documents/Code/rc-metastudio/scripts/verify_rcms.py audit-round3-hr "
+      },
+      {
+        "pid": 834414,
+        "parent": 834400,
+        "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python /home/ali/Documents/Code/rc-metastudio/scripts/run_with_timeout.py --timeout-seconds 600 --label RCMS audit-round3-hr -- /home/ali/Documents/Code/rc-metastudio/.venv/bin/python -X faulthandler /home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py audit-round3-hr /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-x1e4s1qf "
+      },
+      {
+        "pid": 834416,
+        "parent": 834414,
+        "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python -X faulthandler /home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py audit-round3-hr /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-x1e4s1qf "
+      }
+    ]
+  },
+  "child_manifest_sha256": "f206be682904c3de797ba537278fee020f7a1d1c581614c2f0fd31b9132d3c6b",
+  "failure_transcript_sha256": "96e9da692a9ca6f578e00717e67c88f6004a4f223224872118a48fca74541c08",
+  "corrected_by": "8151a7b",
+  "reference_preflight": {
+    "label": "review1-references-complete",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "audit-round3-references"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-14T23:05:54.905818+00:00",
+    "finished": "2026-10-14T23:08:54.826837+00:00",
+    "seconds": 179.91530690299987,
+    "exit_code": 0,
+    "revision": "d88e4c28bd18ab19aaaa4da7e0595283a259ce4a",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "review1-references-complete.log",
+    "sha256": "d7f1ff2000a53f0aa2c7d3232f9dd81bab881eb4c4456b43b7c5753fb16f4db2"
+  },
+  "current_full_profile": "raw/review1-full-fresh.json (pending until sealed)"
+}

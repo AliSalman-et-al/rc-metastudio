@@ -1,0 +1,38 @@
+Cumulative meta-analysis — Verification outcome · Two-arm continuous · Mean Difference
+Comparison: tx A / tx B · Follow-up: first
+
+Model configuration
+Project: typed.rcms
+Model: Continuous Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Order: current study order; each row adds a study to the preceding studies.
+MD: first group minus second group, in outcome units; 0 indicates no difference.
+
+Cumulative Summary
+
+Model Results
+Study added (k)	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+Fixture 1 (k = 1)	1.000000	-0.363677	2.363677	0.695766	
+Fixture 2 (k = 2)	1.000000	-0.112088	2.112088	0.567402	0.077999
+Fixture 3 (k = 3)	1.000000	-0.013115	2.013115	0.516905	0.053040
+Fixture 4 (k = 4)	1.000000	0.041121	1.958879	0.489233	0.040952
+Fixture 5 (k = 5)	1.000000	0.075859	1.924141	0.471509	0.033934
+Fixture 6 (k = 6)	1.000000	0.100264	1.899736	0.459058	0.029378
+
+Continuous Random-Effects Model
+
+Metric: Mean Difference
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+4. Cumulative Meta-Analysis: Lau, Joseph, et al. "Cumulative meta-analysis of therapeutic trials for myocardial infarction." New England Journal of Medicine 327.4 (1992): 248-254.
+
+
+Inference Method
+
+Normal approximation

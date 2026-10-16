@@ -1,0 +1,51 @@
+{
+  "utc": "2026-10-14T07:46:51.299032+00:00",
+  "reason": "User requested optimization of blocking verification processes; stop obsolete resource-heavy runs before measured TIFF and validator optimization.",
+  "processes": [
+    {
+      "root": 203381,
+      "command": "uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full ",
+      "owned_descendants": [
+        203384,
+        203386,
+        203515,
+        227638,
+        227639,
+        227646,
+        247629,
+        247633,
+        247634,
+        248148,
+        248152,
+        248160
+      ]
+    },
+    {
+      "root": 234439,
+      "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python scripts/verify_rcms.py ratios-irr ",
+      "owned_descendants": [
+        234447,
+        234452
+      ]
+    },
+    {
+      "root": 226905,
+      "command": "uv run python docs/ux-audit/2026-10-14-round3/validate_forest.py artifacts/verification/rcms/round3-forest-visual-final ",
+      "owned_descendants": [
+        226908
+      ]
+    }
+  ],
+  "performance_request_stop": {
+    "reason": "User requested substantial further verification DX optimization; stop repeated full run to profile root costs",
+    "root_pid": 333736,
+    "terminated_pids": [
+      333736,
+      338718,
+      338720,
+      344463,
+      344467,
+      344468
+    ]
+  }
+}

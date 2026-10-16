@@ -1,0 +1,37 @@
+[
+  {
+    "sheet": "raw/pair-generic-effect-0.png",
+    "members": [
+      "screenshots/matrix-generic-effect-standard-figure.png",
+      "screenshots/matrix-generic-effect-standard-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-generic-effect-1.png",
+    "members": [
+      "screenshots/matrix-generic-effect-cumulative-figure.png",
+      "screenshots/matrix-generic-effect-cumulative-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-generic-effect-2.png",
+    "members": [
+      "screenshots/matrix-generic-effect-leave-one-out-figure.png",
+      "screenshots/matrix-generic-effect-leave-one-out-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-generic-effect-3.png",
+    "members": [
+      "screenshots/matrix-generic-effect-subgroup-figure.png",
+      "screenshots/matrix-generic-effect-subgroup-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-generic-effect-4.png",
+    "members": [
+      "screenshots/matrix-generic-effect-meta-regression-figure.png",
+      "screenshots/matrix-generic-effect-meta-regression-report.png"
+    ]
+  }
+]

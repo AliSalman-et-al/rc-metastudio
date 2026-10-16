@@ -1,0 +1,32 @@
+[
+  {
+    "path": "screenshots/matrix-twoarm-mean-cumulative-figure-bottom-bmj.png",
+    "sha256": "337ce9f796ab46b99512bec113422c7241bf3ee48a83fe6f174929c401aa72c6",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-mean-bmj/captures/matrix-twoarm-mean-cumulative-figure-bottom-bmj.png",
+    "scenario": "lower-MATRIX-twoarm-mean-bmj"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-subgroup-figure-bottom-bmj.png",
+    "sha256": "dc20f9a463cecec4d79eb2d31e6584e188bb51e43467c1887c5fb542cfcb6523",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-mean-bmj/captures/matrix-twoarm-mean-subgroup-figure-bottom-bmj.png",
+    "scenario": "lower-MATRIX-twoarm-mean-bmj"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-mean-meta-regression-figure-bottom-bmj.png",
+    "sha256": "41eacf77279ad273ecac5239de2876cfdd001a8b32cca89aa25a92d4c36f36cb",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-mean-bmj/captures/matrix-twoarm-mean-meta-regression-figure-bottom-bmj.png",
+    "scenario": "lower-MATRIX-twoarm-mean-bmj"
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "label": "full-round5-complete",
+  "command": [
+    "uv",
+    "run",
+    "python",
+    ".agents/skills/verify-rcms/scripts/verify_all.py",
+    "--full",
+    "--fresh"
+  ],
+  "exit_code": 143,
+  "log": "full-round5-complete.log",
+  "sha256": "3c92c37d55e6b6ded0306c5bd89391400e7f36ff37e58b9bbe6bf5631a9d013e",
+  "record_kind": "recovered_partial_recorder_receipt",
+  "child_profile_exit_code": 1,
+  "child_profile_summary": "artifacts/verification/rcms/20261015T045944Z-c57f6d65-complete/summary.json",
+  "child_profile_summary_sha256": "e0a3bb3f2a7ac8828facb5488619e8f5b87814c7b82fbfc93dc6ba0e01613c7b",
+  "observed_result": "6 failed, 106 passed in 1679.19s",
+  "note": "Tool session returned 143 and recorder did not write a final receipt; cause not reported. Child profile completed every desktop case and wrote this bound failing summary. No exact wrapper start/finish/elapsed/environment is reconstructed."
+}

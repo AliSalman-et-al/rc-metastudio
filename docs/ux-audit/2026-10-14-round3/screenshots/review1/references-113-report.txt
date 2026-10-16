@@ -1,0 +1,45 @@
+Leave-one-out meta-analysis — LAG positive · Diagnostic · Diagnostic Odds Ratio
+Group: test 1 · Follow-up: first
+
+Model configuration
+Project: lymph.rcms
+Confidence level: 95.0%
+Each row omits the named study; compare with the all-studies estimate.
+
+Diagnostic Odds Ratio
+Model: Diagnostic Fixed-Effect Inverse Variance
+Inference: Normal approximation
+
+Diagnostic Odds Ratio Summary
+
+Model Results
+Study omitted	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+All studies	6.825050	5.073620	9.181078	0.151301	< 1e-06
+Study omitted: Kinderman, 1970	6.411852	4.752382	8.650788	0.152810	< 1e-06
+Study omitted: Lecart Lenfant, 1971	6.858068	5.076468	9.264927	0.153477	< 1e-06
+Study omitted: Piver, 1971	6.387370	4.733772	8.618602	0.152860	< 1e-06
+Study omitted: Piver Barlow, 1973	6.657079	4.939101	8.972626	0.152297	< 1e-06
+Study omitted: Kolbenstvedt, 1975	8.563804	6.010853	12.201051	0.180604	< 1e-06
+Study omitted: Lehman, 1975	6.606069	4.890189	8.924021	0.153451	< 1e-06
+Study omitted: Brown, 1979	6.873303	5.097549	9.267647	0.152495	< 1e-06
+Study omitted: Lagasse, 1979	7.196442	5.267175	9.832364	0.159234	< 1e-06
+Study omitted: Kjorstad, 1980	7.064305	5.192941	9.610049	0.157021	< 1e-06
+Study omitted: Ashraf, 1982	6.840482	5.065904	9.236693	0.153230	< 1e-06
+Study omitted: De Muylder, 1984	7.026119	5.165352	9.557208	0.156973	< 1e-06
+Study omitted: Smales, 1986	6.413645	4.740936	8.676523	0.154183	< 1e-06
+Study omitted: Feigen, 1987	7.093115	5.252890	9.578020	0.153241	< 1e-06
+Study omitted: Swart, 1989	7.157055	5.275671	9.709369	0.155611	< 1e-06
+Study omitted: Heller, 1990	6.319243	4.562182	8.753012	0.166227	< 1e-06
+Study omitted: La Fianza, 1990	6.545567	4.854622	8.825498	0.152481	< 1e-06
+Study omitted: Stellato, 1992	6.721962	4.990365	9.054402	0.151978	< 1e-06
+
+References
+
+1. Fixed-effect inverse-variance meta-analysis: Cochran, W. G. (1954). The combination of estimates from different experiments. Biometrics, 10(1), 101-129. doi:10.2307/3001666.
+2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+3. Leave-one-out Meta-Analysis: estimates are recomputed after omitting each study in turn to assess influence on the selected base meta-analysis method.
+
+
+Inference Method
+
+Normal approximation

@@ -1,0 +1,224 @@
+[
+  {
+    "source": "artifacts/verification/rcms/20261015T073029Z-f1c1672a-audit-round3-irr-context/04-0-round5-irr-context.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-irr-after-04-0-round5-irr-context.png",
+    "purpose": "Final installed-source native run; replaces the earlier same-path qualification frame",
+    "sha256": "c094c68a09dae6daf3f98135a0110619029a8241cc7dabd5dd31c750b552bf64"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T073029Z-f1c1672a-audit-round3-irr-context/07-0-round5-irr-context.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-irr-after-07-0-round5-irr-context.png",
+    "purpose": "Final installed-source native run; replaces the earlier same-path qualification frame",
+    "sha256": "5e84d3c1ac9e7827f734f1c9dda814fe7f7c99903e51dc56e8e5bd6caf506730"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T073029Z-f1c1672a-audit-round3-irr-context/10-0-round5-irr-context.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-irr-after-10-0-round5-irr-context.png",
+    "purpose": "Final installed-source native run; replaces the earlier same-path qualification frame",
+    "sha256": "90f98d5f53c1b33317cf2f048ae8b9f58d0aa3c164b1b548e3893b4d0912120e"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T070148Z-a626bb2d-audit-round3-irr-context/04-0-round5-irr-context.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-irr-before-04-0-round5-irr-context.png",
+    "purpose": "native IRR before; inspected at full resolution",
+    "sha256": "08c8a3b7e707c4096e0156b4b99591dd274a977ff2f24813cab7d12a73caa4b8"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T070148Z-a626bb2d-audit-round3-irr-context/07-0-round5-irr-context.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-irr-before-07-0-round5-irr-context.png",
+    "purpose": "native IRR before; inspected at full resolution",
+    "sha256": "3baf03aee16a0d5becce26f436a382eb19cec5eb81bb3f8ecba63d819b7e16af"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T070148Z-a626bb2d-audit-round3-irr-context/10-0-round5-irr-context.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-irr-before-10-0-round5-irr-context.png",
+    "purpose": "native IRR before; inspected at full resolution",
+    "sha256": "21adca33237f52ab3c1468434f76c03656206ca33101031dd4208b4af4df8d2d"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T070209Z-aec7f422-review1-design/03-0-round5-recent-missing.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-shell-before-03-0-round5-recent-missing.png",
+    "sha256": "33d2511ba1013fb18b1f16b57f140d3cfbb1341dadc08088477735d07321be9f",
+    "purpose": "Native review follow-up; selected for before/after or type/palette inspection"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T070209Z-aec7f422-review1-design/21-0-review1-report-top.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-shell-before-21-0-review1-report-top.png",
+    "sha256": "0609f94871bcc7571e8246b75af582dd3392219e156fc17948d36f994facc844",
+    "purpose": "Native review follow-up; selected for before/after or type/palette inspection"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T071518Z-d276b828-review1-design/03-0-round5-recent-missing.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-shell-after-03-0-round5-recent-missing.png",
+    "sha256": "dc04fa416025d2a367992fbb6ac06292c8a5f4712a30cb52df53d11369a27afa",
+    "purpose": "Native review follow-up; selected for before/after or type/palette inspection"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T071518Z-d276b828-review1-design/05-0-review1-start-recents.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-shell-after-05-0-review1-start-recents.png",
+    "sha256": "95fac6ff9d4cb3eec50d1b4fa2c55e7b33c086378da96ae2ee3c1cf5a534da15",
+    "purpose": "Native review follow-up; selected for before/after or type/palette inspection"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T071518Z-d276b828-review1-design/06-0-review1-start-light.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-shell-after-06-0-review1-start-light.png",
+    "sha256": "a1113c7264f5c08a73cf4d3522c720f25c159766b43e5c567a49feb85699bbf5",
+    "purpose": "Native review follow-up; selected for before/after or type/palette inspection"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T071518Z-d276b828-review1-design/07-0-review1-start-dark.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-shell-after-07-0-review1-start-dark.png",
+    "sha256": "a42e70d734f5341cf34e40ab7b3dc036b09c332da1ddf8c3b78f8f929e3650f2",
+    "purpose": "Native review follow-up; selected for before/after or type/palette inspection"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T071518Z-d276b828-review1-design/21-0-review1-report-top.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-shell-after-21-0-review1-report-top.png",
+    "sha256": "64a1a301277912515ccf0bdd0c92555a4aa54c941b3ef69373e5ea022f1d9f84",
+    "purpose": "Native review follow-up; selected for before/after or type/palette inspection"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T070259Z-d2cb3428-audit-round3-arm-names/24-0-round5-arm-calculator.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-arms-before-24-0-round5-arm-calculator.png",
+    "sha256": "6ef82d05114115d8b15611c0f8800fbfc55690c2f7aa4c98ec99d0b37d716281",
+    "purpose": "Native review follow-up; selected for before/after or type/palette inspection"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T070259Z-d2cb3428-audit-round3-arm-names/25-0-round5-arm-csv-preview.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-arms-before-25-0-round5-arm-csv-preview.png",
+    "sha256": "a26a5f21eb586158ebbc39d7ae2dceccccd9147783958aae23404f5fe2be9b31",
+    "purpose": "Native review follow-up; selected for before/after or type/palette inspection"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T071626Z-aaa10b44-audit-round3-arm-names/24-0-round5-arm-calculator.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-arms-after-24-0-round5-arm-calculator.png",
+    "sha256": "597fe63e9b1df55aa241750179ddcaa88a2a28cb0a47731e099d0b334b02e8b0",
+    "purpose": "Native review follow-up; selected for before/after or type/palette inspection"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T071626Z-aaa10b44-audit-round3-arm-names/25-0-round5-arm-csv-preview.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-arms-after-25-0-round5-arm-csv-preview.png",
+    "sha256": "97bfa6762c1f7d6b5744e026b0d023e6466a043ded0ff2cf76eb3d49de4afb99",
+    "purpose": "Native review follow-up; selected for before/after or type/palette inspection"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T072833Z-ccdbbfdf-audit-round3-round5/05-0-round5-long-figure.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-hr-after-05-0-round5-long-figure.png",
+    "sha256": "8a7e9687c13636d6753fb2f1f5c546689e7668e1265e9e1a38a8ffbe18478719",
+    "purpose": "Final installed-source native run; replaces the earlier same-path qualification frame"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T072833Z-ccdbbfdf-audit-round3-round5/06-0-round5-long-figure-bottom.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-hr-after-06-0-round5-long-figure-bottom.png",
+    "sha256": "ff5532182d1eeb62032a9ad89dc2538b3242f2635ffd9bd43ba3190321514d23",
+    "purpose": "Final installed-source native run; replaces the earlier same-path qualification frame"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T072833Z-ccdbbfdf-audit-round3-round5/15-0-round5-long-figure.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-hr-after-15-0-round5-long-figure.png",
+    "sha256": "f30e8bf34f0ce2c25657ebaec157784cf23705cd865d53ef94b589cb9dc49cd1",
+    "purpose": "Final installed-source native run; replaces the earlier same-path qualification frame"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T072833Z-ccdbbfdf-audit-round3-round5/16-0-round5-long-figure-bottom.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-hr-after-16-0-round5-long-figure-bottom.png",
+    "sha256": "1131e1632a5ab31acd02c2604edfa66d9f413e818f249ee5f0097e4bd26038a1",
+    "purpose": "Final installed-source native run; replaces the earlier same-path qualification frame"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T022923Z-2c48770e-plot-workflow-regression/04-0-matrix-results-figure.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-regression-before-04-0-matrix-results-figure.png",
+    "sha256": "7dd43337c7408f50c0c4705255b2539ed797fb50c80585e81351b3542bab631d",
+    "purpose": "Unmodified native caption/editor follow-up capture"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T072319Z-033dc061-plot-workflow-regression/07-0-review1-caption-initial.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-regression-after-07-0-review1-caption-initial.png",
+    "sha256": "0a459e97712aabc33c07c0f5f723bd9d256b861fd492b5e7dacbbf8ead9459cb",
+    "purpose": "Unmodified native caption/editor follow-up capture"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T053941Z-bf4f6d27-plot-workflow-sroc/05-0-matrix-results-figure.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-sroc-before-05-0-matrix-results-figure.png",
+    "sha256": "f171aa7bbb9bf04984b3cbf0fadf6ed171b78386cba0a514825017d6485d520e",
+    "purpose": "Unmodified native caption/editor follow-up capture"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T072346Z-aad250fb-plot-workflow-sroc/09-0-review1-caption-initial.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-sroc-after-09-0-review1-caption-initial.png",
+    "sha256": "8d726172893024c5fe1c47406ca4759b665f9ce0a6a11ea7081591a77b287884",
+    "purpose": "Unmodified native caption/editor follow-up capture"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T071229Z-78229c82-audit-round3-round5/10-0-round5-long-figure.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-subgroup-rule-before.png",
+    "sha256": "26a6033fb029c9ddd22d24975647f44ca001262a9024846fa9cf81d6e499fda5",
+    "purpose": "Native subgroup rule taste-pass failure and correction; inspected"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T072833Z-ccdbbfdf-audit-round3-round5/10-0-round5-long-figure.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-subgroup-rule-after.png",
+    "sha256": "6c8428acbb0ac955f74204783a7f41c2883029eaf0f743ea85dda24f12bb18e1",
+    "purpose": "Native subgroup rule taste-pass failure and correction; inspected"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T071954Z-2bb6b852-plot-workflow-forest/07-0-review1-caption-initial.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-editor-forest-initial-07-0-review1-caption-initial.png",
+    "sha256": "725d0526639f90ad87de6a0a2461b5886e014d3217e3e4e030f0342937499be1",
+    "purpose": "Unmodified native caption/editor follow-up capture"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T072042Z-e61d15e2-plot-workflow-cumulative/07-0-review1-caption-initial.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-editor-cumulative-initial-07-0-review1-caption-initial.png",
+    "sha256": "d859691d02f25de100ea50fda6db9e264d5f54f82a72eb4dc733ee93e5e73737",
+    "purpose": "Unmodified native caption/editor follow-up capture"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T072126Z-eb91ea13-plot-workflow-leave-one-out/07-0-review1-caption-initial.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-editor-leave-one-out-initial-07-0-review1-caption-initial.png",
+    "sha256": "e8b2d6fa26512bb7cf14913a6f0afa9b608048d7051badc93160e37e12091362",
+    "purpose": "Unmodified native caption/editor follow-up capture"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T073059Z-a55764f3-plot-workflow-subgroup/07-0-review1-caption-initial.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-editor-subgroup-initial-07-0-review1-caption-initial.png",
+    "sha256": "9811c845e246408f64ca473f7c6a0a355b93c2558e543e51d8fcb3b75b6de7d3",
+    "purpose": "Unmodified native caption/editor follow-up capture"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T072418Z-44e64fd0-plot-workflow-coefficient/07-0-review1-caption-initial.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-editor-coefficient-initial-07-0-review1-caption-initial.png",
+    "sha256": "d0556933b8600f941cfeaf251c4f5c49aeb6bf8e81180897c92536e2c74f9e8b",
+    "purpose": "Unmodified native caption/editor follow-up capture"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T073232Z-49f6300b-plot-workflow-contour/04-0-review1-caption-initial.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-editor-contour-initial-04-0-review1-caption-initial.png",
+    "sha256": "8559a7318eb12e11c3d87aacfc1fd8ee85984720fb791c349efe927a87d18b65",
+    "purpose": "Unmodified native caption/editor follow-up capture"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T073255Z-7f458024-plot-workflow-trimfill/04-0-review1-caption-initial.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-editor-trimfill-initial-04-0-review1-caption-initial.png",
+    "sha256": "b54e382ec6d3f1732248c4ca7bddb13178af9532917c7a7ec64cdd97d8e6d75b",
+    "purpose": "Unmodified native caption/editor follow-up capture"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T073419Z-cfbbb2d8-plot-workflow-deeks/04-0-review1-caption-initial.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-editor-deeks-initial-04-0-review1-caption-initial.png",
+    "sha256": "f95140b0cce20bab9e21e038940d28a9c952cbd80eecf28fd532caf44cd06d9b",
+    "purpose": "Unmodified native caption/editor follow-up capture"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T025440Z-23499574-plot-workflow-funnel/03-0-matrix-results-figure.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-funnel-before-03-0-matrix-results-figure.png",
+    "sha256": "24f9dc23651d94ddbc1d4d84cde5b27273eb2263629d2f575a377fd0ca803e89",
+    "purpose": "Unmodified native caption/editor follow-up capture"
+  },
+  {
+    "source": "artifacts/verification/rcms/20261015T073444Z-6a5a5af3-plot-workflow-funnel/04-0-review1-caption-initial.png",
+    "destination": "docs/ux-audit/2026-10-16-round5/screenshots/review1-funnel-after-04-0-review1-caption-initial.png",
+    "sha256": "f18094fb50d87c064e1d187186f9116932f611686bd6c0de0fcaed8e389b642f",
+    "purpose": "Unmodified native caption/editor follow-up capture"
+  }
+]

@@ -1,0 +1,24 @@
+{
+  "path": "src/rc_metastudio/main_window.py",
+  "current_sha256": "6ce4894eaf9acf94c7852367b3e7edbece16d6b195017f6c26651a5e55145de5",
+  "current_display_expression": "QAction(str(metric + \": \" + metric_names[metric]), self)",
+  "round4_revision": "f1aa24d",
+  "round4_sha256": "3a62a3639973e8f8fb5ef59a8d93160634bacbca0f8823b61d35540b286b0645",
+  "round4_same_expression": true,
+  "round4_inventory": "docs/ux-audit/2026-10-15-round4-reaudit/raw/options/onearm-mean-menus.json",
+  "round4_inventory_sha256": "61440bcb82d89f1115d560d7f5837d840243d21d08aad24d09d1a110b0aed731",
+  "round4_matching_rows": [
+    {
+      "title": "One-arm metrics",
+      "actions": [
+        {
+          "text": "TX Mean: Mean",
+          "enabled": true,
+          "tooltip": "Mean"
+        }
+      ]
+    }
+  ],
+  "fresh_reachable": "REACHABLE-MENUS.json",
+  "native_run": "raw/native-reachable-menu.json"
+}

@@ -6,8 +6,8 @@
   "projects": [
     {
       "file": "amino.rcms",
-      "sha256": "6d9cee38492586a61fed96b39bd5e2e037d1aa25a00b80517fc517654bb9892e",
-      "semantic_sha256": "c739a52d1b299855dc0eb773f58d1d92ee8ac27849f1a4c24346f6455e5c9a61",
+      "sha256": "374681cc5f740f06d39a117047e4133b745dd8ae30c4974f5ab7c9f94d90b763",
+      "semantic_sha256": "67447e77bad98a908e7521899070ed22b6a26bfd47cb7cf2b1b2902d1c616ad6",
       "analysis_evidence": "amino-binary-random",
       "scientific_name": "Aminoglycosides",
       "analysis_family": "binary",
@@ -24,12 +24,16 @@
         "tests/python/gui/test_metaform_automation_launch.py",
         "tests/analysis_regression/golden/test_analysis_regression_compare.py",
         "tests/packaging/contract/test_windows_distributable_contract.py"
-      ]
+      ],
+      "arm_labels": {
+        "tx A": "Intervention",
+        "tx B": "Control"
+      }
     },
     {
       "file": "BCG.rcms",
-      "sha256": "c799d6756022b5782514bfe2772997c536dd5bcdf2693026a80803a53bfe6b81",
-      "semantic_sha256": "d63b300c07fe5c652a52df6b01a6d4e345ca08215981f2e5d6b4a566f3ee1b12",
+      "sha256": "ee66fecdcf79a36f665a27b8b02509a4e3478cb6a00362fe4d6e9c7e63f0f839",
+      "semantic_sha256": "61f5025c7a38d74ef1373db0555e610fb0e9d71c49504fc6d11d88615e59020b",
       "analysis_evidence": "bcg-binary-random",
       "scientific_name": "BCG vaccine",
       "analysis_family": "binary",
@@ -43,12 +47,16 @@
         "tests/python/fast/test_project_format.py",
         "tests/python/gui/test_gui_binary_slice.py",
         "tests/packaging/contract/test_windows_distributable_contract.py"
-      ]
+      ],
+      "arm_labels": {
+        "tx A": "BCG vaccine",
+        "tx B": "Control"
+      }
     },
     {
       "file": "continuous.rcms",
-      "sha256": "0f05881aff44ac45fca12b811a94c8498856161edb6dcf33725f75e9a82767a4",
-      "semantic_sha256": "6cd5b52ff79929c7aa6f7bd4d8d3d73ca16fae558107cbf818e37d119437eefd",
+      "sha256": "025ae202f23eed7da8d5bc02aa0fa6d6e4d89b4f78179a5d1a3831c0a6d59093",
+      "semantic_sha256": "78d83c92281c669cbc630f0ded481e7979d3ecace63699df1558407d517fd524",
       "analysis_evidence": "continuous-random",
       "scientific_name": "Continuous outcome example",
       "analysis_family": "continuous",
@@ -63,12 +71,16 @@
         "tests/python/gui/test_gui_binary_slice.py",
         "tests/python/gui/test_metaform_automation_launch.py",
         "tests/analysis_regression/golden/test_analysis_regression_compare.py"
-      ]
+      ],
+      "arm_labels": {
+        "tx A": "Intervention",
+        "tx B": "Control"
+      }
     },
     {
       "file": "lymph.rcms",
-      "sha256": "1c6bdebec12e68601aeed8544a1d234f2cc9f6a71e99f65896aed5491ca965d3",
-      "semantic_sha256": "c4ed7206376a415cae2ebdca7937509df929644fc0b93f85a59e4aeecf4f227b",
+      "sha256": "2af63bc180d118a1729b79327563bfbdc67de909296c5f8d07dda14cd84d4fcb",
+      "semantic_sha256": "883d8cb8115b78734350517e626ce8254580da97acdf316b2a39b3298a017f7e",
       "analysis_evidence": "lymph-diagnostic-random-dor",
       "scientific_name": "Lymph diagnostic accuracy",
       "analysis_family": "diagnostic",
@@ -83,12 +95,16 @@
         "tests/python/gui/test_gui_binary_slice.py",
         "tests/python/gui/test_metaform_automation_launch.py",
         "tests/analysis_regression/golden/test_analysis_regression_compare.py"
-      ]
+      ],
+      "arm_labels": {
+        "test 1": "Index test",
+        "tx A": "Index test"
+      }
     },
     {
       "file": "meantime.rcms",
-      "sha256": "4361bf3be3ae692889140e56056ff78b00e321f97df4bc0359c2b26221b1b89d",
-      "semantic_sha256": "0afd9a70681ce04c734d386ab8cdbab3d873021de38db68586a506b717366676",
+      "sha256": "0d173e541e34ab6b4e7c40ed6d2e81e38e6f1f4e5a79a41367914f4b568db88c",
+      "semantic_sha256": "8df45440395522eae182543b20f15320ad57501109958e252f1ea5d969cbe5d1",
       "analysis_evidence": "meantime-binary-random",
       "scientific_name": "Meantime subgroup example",
       "analysis_family": "binary",
@@ -102,7 +118,11 @@
         "tests/python/fast/test_project_format.py",
         "tests/python/gui/test_gui_binary_slice.py",
         "tests/python/gui/test_metaform_automation_launch.py"
-      ]
+      ],
+      "arm_labels": {
+        "tx A": "Intervention",
+        "tx B": "Control"
+      }
     },
     {
       "file": "Pignon2000-HR.rcms",

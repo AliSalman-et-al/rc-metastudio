@@ -1,0 +1,15 @@
+# Opus review 1 — inspected native evidence
+
+All eleven initial editor-family captures in REVIEW1-EDITOR-INITIALS.json were actually inspected, as were the three IRR style frames, HR default/RevMan tops and footers, the subgroup before/after rule pair, calculator/CSV pairs, sample report and recent-project light/dark captures. REVIEW1-CURATION.json binds unchanged originals to the committed PNGs. The contact sheet adds thirteen review comparisons; click a frame for full resolution.
+
+- Captions: readable at body scale, with an explicit middle-dot separator; no concatenated metric/comparison labels. IRR, SROC, bubble and funnel contexts retain their available clinical identity. SROC and funnel keep their existing plot geometry and ordinary scrolling.
+- Headers: exposure labels and their descenders clear the rule; the caption clears grouped arm names. The additional taste-pass failure was real: the newly manual rule crossed the first subgroup heading. The final pair shows the rule above the heading, with the complete column-header block reserved.
+- Footer: pooled labels, values and totals are bold; inference and ticks are normal. RevMan's doubled cex was removed. Native IRR rows show 48 / 25778 and 77 / 25605 with 100%; HR shows its available 100% without invented events or exposure.
+- Details: CSV counts are integers; effect precision is unchanged. Calculator “No event” is sentence case. Recent entries align in single rows at normal width; path elision preserves the useful ends and full tooltip/accessibility name. An initial placeholder-palette version was too faint; the final light/dark captures retain muted readable paths.
+- The sample report uses Intervention / Control, with the identical pooled estimate and interval. Legacy-name preservation is explicitly test-owned rather than a bundled-example policy.
+
+Before captures are descriptive comparisons, not final qualification. The initial before IRR/shell invocations overlapped briefly, and the before-arm process later overlapped a package reinstall. The selected first binary calculator/CSV before frames preceded that reinstall. These early runs do not qualify the final installed source. Final native queues were serial; their inputs, actual package/runtime and outputs are bound independently. Earlier successful numerical runs with the subsequently rejected subgroup rule are retained without being called final visual proof.
+
+The native editor capture now selects the relevant family explicitly. Raster-first funnels are checked via a real SVG export plus the actual native PNG view. Resetting Fit width after the helper's context-menu pan keeps the comparison frame aligned. This is evidence framing, not a new application behavior.
+
+The final contact preview was checked in two sections at 1440 px, with no console errors. The funnel comparison uses the initial ordinary-funnel view on both sides, so both captions are actually visible; the earlier scrolled edited-caption pair was retired from curated copies, with original artifacts retained. The review sheet contains 13 pairs / 26 frames, and the combined round-five sheet contains 38 pairs / 76 frames.

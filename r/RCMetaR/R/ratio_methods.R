@@ -124,7 +124,7 @@ ratio.analysis <- function(data, params, method) {
         .rcmetar.method.pretty.names(method)$pretty.name))
     result <- list(Summary=summary, res=res,
         res.info=rma.uni.value.info(), input_data=data, input_params=params,
-        References=rcmetar.method.references(if (endsWith(method, ".mh")) "rma.mh" else "rma.uni.random"))
+        References=rcmetar.fit.references(res, params))
     if (length(data@notes)) result[["Input warnings and exclusions"]] <- paste(data@notes, collapse="\n")
     if (!is.null(res$reason)) result[["Non-estimable result"]] <- res$reason
     if (inherits(res, "rma")) result$Weights <- weights(res)
@@ -151,6 +151,7 @@ ratio.workflow <- function(data, request) {
     state <- if (request$workflow == "subgroup") ratio.subgroup(data, request, suppressed) else ratio.sequential(data, request, suppressed)
     result <- state$result
     fits <- state$fits
+    result$References <- rcmetar.fit.references(fits[[length(fits)]], params)
     labels <- state$labels
     title <- state$title
     plot.name <- state$plot.name
@@ -182,13 +183,17 @@ ratio.subgroup <- function(data, request, suppressed) {
     labels <- c(groups, "Overall")
     disp <- create.subgroup.display(fits, labels, params, "Subgroup meta-analysis", .rcmetar.data.type(data))
     if (!isTRUE(params$supress.output)) plot <- rcmetar.build.subgroup.metafor.bundle(data, params,
-        list(subgroup.list=groups, grouped.data=subsets, results=fits))
+        list(subgroup.list=groups, grouped.data=c(subsets, list(data)), results=fits,
+             row.indices=lapply(groups, function(group) which(as.character(cov@cov.vals) == group))))
     result <- list("Subgroup Summary"=disp, res=construct.subgroup.res.output(fits))
     if (!endsWith(method, ".mh") && length(groups) > 1) {
         moderation <- metafor::rma.uni(data@y, sei=data@SE, mods=~factor(cov@cov.vals),
             method=if (endsWith(method, ".random")) params$rm.method else "FE",
             test=rcmetar.inference.method(params), level=params$conf.level)
-        result[["Test of subgroup differences"]] <- capture.output.and.collapse(moderation)
+        test <- list(QM=moderation$QM, QMp=moderation$QMp,
+                     df=moderation$QMdf[[1]], df2=moderation$QMdf[[2]], test=moderation$test)
+        disp <- rcmetar.add.subgroup.test(disp, list(subgroups=list(difference_test=test)), params)
+        result[["Subgroup Summary"]] <- disp
     } else if (endsWith(method, ".mh")) result[["Subgroup differences"]] <- "Mantel-Haenszel supplies within-subgroup summaries; no moderator test."
     title <- "Subgroup Forest Plot"
     plot.name <- "subgroup_forest_plot"
@@ -204,9 +209,11 @@ ratio.sequential <- function(data, request, suppressed) {
     if (loo && n < 2) stop("Leave-one-out needs at least two studies.")
     subsets <- lapply(seq_len(n), function(i) get.subset(data, if (loo) setdiff(seq_len(n), i) else seq_len(i)))
     fits <- lapply(subsets, ratio.fit, params=suppressed, method=method)
-    labels <- if (loo) paste("-", data@study.names) else paste("+", data@study.names)
-    disp <- create.overall.display(fits, labels, params, request$workflow, .rcmetar.data.type(data))
-    if (!isTRUE(params$supress.output)) plot <- rcmetar.build.sequential.metafor.bundle(data, params, fits, request$workflow, labels)
+    labels <- rcmetar.sequential.labels(rcmetar.study.labels(data), request$workflow, FALSE)
+    model.title <- paste(pretty.metric.name(data@metric),
+        if (loo) "Leave-one-out Meta-analysis" else "Cumulative Meta-analysis")
+    disp <- create.overall.display(fits, labels, params, model.title, .rcmetar.data.type(data), workflow=request$workflow)
+    if (!isTRUE(params$supress.output)) plot <- rcmetar.build.sequential.metafor.bundle(data, params, fits, request$workflow, labels, has.overall=FALSE)
     result <- list("Sequential Summary"=disp,
         res=construct.sequential.res.output(fits, cumul.rma.uni.value.info(), replacements=list(estimate="b")))
     title <- if (loo) "Leave-one-out Forest Plot" else "Cumulative Forest Plot"

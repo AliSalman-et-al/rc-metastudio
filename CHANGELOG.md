@@ -2,11 +2,33 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
-## Unreleased
+## 0.5.0 - 2026-10-15
 
 ### Added
 
 - Added a portable Ubuntu 24.04 x86_64 download with a private R runtime and Linux release qualification.
+- Added editable Intervention and Control arm names in dataset setup, with consistent names in calculators, tables and figures.
+
+### Changed
+
+- Refined the start page, recent-file recovery, dataset navigation, analysis controls, keyboard focus and contrast.
+- Improved Text report, Tables, copied and exported reports with clinical context, readable headings, consistent precision and clearer inference scales.
+- Refined Default, RevMan and BMJ forest and regression plots, including long figures, measured wrapped arm headers, interval caps and legends.
+- Use natural linear axes for proportions and diagnostic sensitivity/specificity, and natural labels on log-spaced ratio axes, including diagnostic odds-ratio coefficient plots; saved plot choices remain editable.
+- Made Default study markers and intervals match their summary colour, and shortened the style label to Default.
+- Reduced memory use and export time for high-resolution TIFF figures.
+
+### Fixed
+
+- Preserve complete generated arm headings and their caption/device clearance in Default, RevMan and BMJ figures and exports.
+- Label BMJ single-arm counts as Events / Total, use readable Intercept labels in exponentiated coefficient tables, and round optional fitted log-proportion ticks.
+- Give About and reconstruction decisions a screen-bounded preferred size; use compact scientific notation for extreme forest values without changing stored inputs.
+
+- Preserved full-precision calculator and grid inputs through editing, undo, copy/import and project save/reopen; blocked invalid confidence bounds.
+- Corrected HR/IRR leave-one-out row alignment and subgroup weight identity.
+- Back-transformed Freeman–Tukey prediction intervals with the same harmonic-mean sample size as the pooled proportion.
+- Removed unnamed single-arm group spanners and clarified diagnostic regression interval scales.
+- Fixed out-of-range reference lines, contour-input recovery, stale plot settings and retained closed result windows.
 
 ## 0.4.2 - 2026-10-11
 
@@ -110,7 +132,7 @@ RC MetaStudio starts a fresh maintained-product changelog. Historical release hi
 
 - Added a guided Publication Bias and small-study-effects workflow with package-native eligibility checks, readable results, dynamic statistical-paper references, and per-run regeneration.
 - Added ordinary, contour-enhanced, Deeks, and trim-and-fill funnel artifacts, with partial plot failures preserved beside successful outputs.
-- Added Default (metafor), RevMan, and BMJ-inspired visual styles, plus expanded Edit Plot controls for funnel artifacts.
+- Added Default, RevMan, and BMJ-inspired visual styles, plus expanded Edit Plot controls for funnel artifacts.
 - Added method-specific Egger, Begg, Harbord, Peters, Pustejovsky–Rodgers, Rücker, and Deeks behavior.
 
 ### Changed

@@ -9,7 +9,7 @@ from typing import Protocol, TypeAlias
 from weakref import WeakKeyDictionary
 from PyQt6.QtCore import Qt
 
-from PyQt6.QtWidgets import QMessageBox, QSizePolicy, QStyle, QWIDGETSIZE_MAX
+from PyQt6.QtWidgets import QMessageBox, QSizePolicy, QStyle, QStyledItemDelegate, QWIDGETSIZE_MAX
 
 from rc_metastudio.meta_globals import (
     BINARY_ONE_ARM_METRICS,
@@ -29,6 +29,14 @@ _ONE_ARM_REQUIRED_DATA = {
     **dict.fromkeys(BINARY_ONE_ARM_METRICS, 2),
     **dict.fromkeys(CONTINUOUS_ONE_ARM_METRICS, 3),
 }
+
+
+class NumericSummaryDelegate(QStyledItemDelegate):
+    """Compact table painting; the editor and item retain round-trip-safe text."""
+
+    def displayText(self, value, locale):
+        number, valid = qt_text.parse_decimal(value)
+        return format(number, ".6g") if valid else str(value)
 
 
 def cell_text_is_blank(value):
@@ -319,8 +327,8 @@ def fit_effect_ci_line_edits_to_contents(
 
 
 def format_calculator_display_value(value, digits=CALC_NUM_DIGITS):
-    """Format a calculator value exactly as it is rendered in its line edit."""
-    return str(round(value, digits))
+    """Editable numeric text must round-trip without changing the stored float."""
+    return str(value)
 
 
 def binary_effect_display_samples(metric, digits=CALC_NUM_DIGITS):
@@ -439,6 +447,7 @@ def set_current_effect_from_value(
             txt_box.setText(format_calculator_display_value(val))
         else:
             txt_box.setText("")
+        txt_box.setProperty("calculatorValue", txt_box.text())
         txt_box.blockSignals(False)
     semantic_samples = {
         "binary": binary_effect_display_samples,

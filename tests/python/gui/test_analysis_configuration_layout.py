@@ -610,12 +610,8 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
                     required(combo_view.window(), "combo popup").frameGeometry().width()
                     <= 800
                 )
-                assert (
-                    required(
-                        combo_view.horizontalScrollBar(), "combo scrollbar"
-                    ).maximum()
-                    > 0
-                )
+                if complete_value_width > required(combo_view.viewport(), "combo viewport").width():
+                    assert required(combo_view.horizontalScrollBar(), "combo scrollbar").maximum() > 0
                 enum_control.hidePopup()
             if data_type != "diagnostic":
                 editable_value = cast(

@@ -1,0 +1,37 @@
+[
+  {
+    "sheet": "raw/pair-twoarm-smd-0.png",
+    "members": [
+      "screenshots/matrix-twoarm-smd-standard-figure.png",
+      "screenshots/matrix-twoarm-smd-standard-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-twoarm-smd-1.png",
+    "members": [
+      "screenshots/matrix-twoarm-smd-cumulative-figure.png",
+      "screenshots/matrix-twoarm-smd-cumulative-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-twoarm-smd-2.png",
+    "members": [
+      "screenshots/matrix-twoarm-smd-leave-one-out-figure.png",
+      "screenshots/matrix-twoarm-smd-leave-one-out-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-twoarm-smd-3.png",
+    "members": [
+      "screenshots/matrix-twoarm-smd-subgroup-figure.png",
+      "screenshots/matrix-twoarm-smd-subgroup-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/pair-twoarm-smd-4.png",
+    "members": [
+      "screenshots/matrix-twoarm-smd-meta-regression-figure.png",
+      "screenshots/matrix-twoarm-smd-meta-regression-report.png"
+    ]
+  }
+]

@@ -1,0 +1,42 @@
+{
+  "steps": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183138Z-f9352554-project-reviewer-groups/steps.jsonl",
+  "steps_sha256": "cd961505ffe175549db83fa923e722629cc8042e752f82fd835a1f274213628e",
+  "observations": [
+    {
+      "step": 148,
+      "action": "reviewer-about-version",
+      "utc": "2026-10-15T18:34:17.266619+00:00",
+      "captures": [
+        "148-0-reviewer-about-version.png"
+      ],
+      "version": "0.5.0"
+    },
+    {
+      "step": 149,
+      "action": "reviewer-version-reopened",
+      "utc": "2026-10-15T18:34:18.181765+00:00",
+      "captures": [
+        "149-0-reviewer-version-reopened.png"
+      ],
+      "manifest": {
+        "application": {
+          "name": "RC MetaStudio",
+          "version": "0.5.0"
+        },
+        "format": "rc-metastudio-project",
+        "format_version": 2,
+        "members": {
+          "project.json": {
+            "sha256": "b244fb020a69cbbd7fac9da4b7fb0a4791449787ee456aecc5d2f18d11fe4c4f",
+            "size": 2450
+          },
+          "state.json": {
+            "sha256": "3ade4e7d7c376a9a3fe88d7dc646e50e00f37111f0f81b07a2e9d611e1d41d3d",
+            "size": 185
+          }
+        }
+      },
+      "project": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-2jk__snl/release-0.5.0.rcms"
+    }
+  ]
+}

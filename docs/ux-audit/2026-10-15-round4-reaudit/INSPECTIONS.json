@@ -1,0 +1,506 @@
+{
+  "inspected_sheets": [
+    "raw/review-matrix-twoarm-proportion-00.png",
+    "raw/review-matrix-twoarm-proportion-01.png",
+    "raw/review-matrix-twoarm-proportion-02.png",
+    "raw/review-matrix-twoarm-proportion-03.png",
+    "raw/review-matrix-twoarm-proportion-04.png",
+    "raw/review-design-00.png",
+    "raw/review-design-01.png",
+    "raw/review-design-02.png",
+    "raw/review-design-03.png",
+    "raw/review-design-04.png",
+    "raw/review-design-05.png"
+  ],
+  "observations": [
+    "Standard report/figure pooled OR 0.761368 [0.458516, 1.264253], Z -1.053719 P 0.292012 agree; weights 12.4/14.3/16.1/17.7/19.1/20.5 agree.",
+    "Cumulative and omission displayed rows agree with report; null guides stop at rows.",
+    "Subgroup B 0.746519 [0.357820,1.557459], A 0.775087 [0.384800,1.561227] agree.",
+    "Regression slope 0.038764, intercept -0.419287; positive plotted log-scale slope consistent.",
+    "Report navigation selection is stale because inherited audit wrapper calls private show methods; not a product finding.",
+    "One-arm mean pooled 6.203291 [4.744525,7.662058], coefficient 0.450000 [0.300305,0.599695], generic 0.429353 [0.280191,0.578515] agree between figure/report. All five workflows per family visually checked; corresponding sequential rows match.",
+    "Coefficient Fixture 2 lower bound now 0.000000; F04 original path closed in inspected standard style.",
+    "Single-arm proportion bubble null guide below box also exists in round-three screenshot: pre-existing, not round-four regression. Generic bubble guide also lies just outside lower box.",
+    "One-arm proportion early standard figure-bottom and report-bottom are covered by binary window; rejected pending serial recapture.",
+    "MD pooled 1.000000 [0.100264,1.899736], SMD 0.232538 [-0.002029,0.467106] agree. Sequential and visible subgroup row values agree; R3-01 MD reference now ends above footer.",
+    "MD six-digit standard annotations no longer overlap, but narrow space after Weight (%) merits polish; distinguish defect closure from ideal reading clearance.",
+    "MD regression Dose coefficient and Z display -0.000000; MD subgroup Qm displays 1.428745e-31. Broad F04 precision policy remains improved rather than wholly closed.",
+    "Diagnostic pooled Sens 0.632248 [0.563938,0.695632], Spec 0.955188 [0.932201,0.970627] agree; diagnostic regression shows 0.9667 OR for Sens Dose, plotted near .967.",
+    "IRR pooled .678701 [.440365,1.046031] and Z -1.756059 P .079078 agree. Omission rows including Jaeger 2001 .655289 [.412306,1.041468] and 2005 .738588 [.492415,1.107831] retain identities.",
+    "HR pooled .873766 [.814094,.937813], Z -3.738943 P .000185 agree on report and bottom figure. Dose -.005347 and exponentiated .994667 agree with plotted descending curve.",
+    "IRR subgroup overall now shows 100.0%; independent per-row weights in native matrix check passed. Standard Jaeger weights 2.3 and4.1 visible.",
+    "IRR subgroup group B .715843 [.332868,1.539441] agrees. HR/IRR subgroup difference section retains dense package printout.",
+    "Design drive actual toolbar gestures synchronize Text/Tables/plot selection; SVG preference survives a new result. Tables copy/export and Text export assertions pass.",
+    "Start page light/dark, full/missing recent paths, Create/Import Cancel and recent opening pass. Maximized no-recents cards have conspicuous empty area beneath text; normal-size cards are substantially tighter.",
+    "Toolbar hover: cumulative/omission icons remain unlabelled; disabled subgroup/meta-regression tooltips explain prerequisite. Small-study tooltip still says Publication Bias and Small-Study Effects. Follow-up:first lacks a space.",
+    "Text report headings are readable and only moderately larger than body, but repeated Summary/Model Results and Weights/Study weights plus margins make hierarchy feel heavy.",
+    "Serial binary/proportion recapture pairs all inspected after resume; obscured early frames superseded.",
+    "BMJ six-digit binary/MD/SMD/entered/coefficient frames inspected: contextual headers, no weight/estimate collision, round ticks, whole confidence, concise null wording; legacy scene weights persist. MD spacing is close but separate.",
+    "Recursive actual menu/submenu screenshots inspected: File/Recent/Edit/View/Analysis/effect-metric submenus/Dataset/Help; disabled prerequisites retained.",
+    "Binary report bottom inspected: table Study/Weight (%) 12.4,14.3,16.1,17.7,19.1,20.5; scene weights agree.",
+    "Joint diagnostic SROC summary point approximately (false-positive rate .19025, sensitivity .65762) agrees with displayed report; partial AUC .669 identified. Combined diagnostic and multiple moderator figure/report views inspected.",
+    "Binary/continuous/diagnostic, pre-post, entered binary and back-continuous previews inspected. Active modes and pinned actions improve recognition. Continuous still reserves large empty area around dense summary table; F06 remains improved, not closed. Diagnostic retains Clear Form/back-calculate vocabulary.",
+    "Actual exported review1-report.txt opened in native xedit: identity, estimate/CI .770 [.485,1.222], heterogeneity and tab-separated rows retained; xedit glyph handling misrenders Unicode, while UTF-8 bytes and clipboard equality are independently checked.",
+    "Diagnostic metric selector and joint method, HR/IRR method forms and IRR small-study eligibility page inspected. Explicit no formal asymmetry test for this measure; existing funnel methods remain available. Setup spin boxes retain 95.0% editing precision; whole 95% claim applies to rendered output."
+  ],
+  "rejected": [
+    "screenshots/matrix-twoarm-proportion-subgroup-figure-bottom.png: covered by another audit window; recapture required",
+    {
+      "paths": [
+        "raw/uncurated/helper-plot-workflow-forest-07-0-family-editor-controls.png",
+        "raw/uncurated/helper-plot-workflow-sroc-09-0-family-editor-controls.png",
+        "raw/uncurated/helper-plot-workflow-coefficient-07-0-family-editor-controls.png",
+        "raw/uncurated/helper-plot-workflow-contour-04-0-family-editor-controls.png"
+      ],
+      "reason": "Inspected helper QWidget editor grabs contain underlying plot paint/lines through controls. Not used as evidence of an opacity regression; no equivalent native QScreen verification was made. Interaction/decoded-export assertions remain separate proof."
+    }
+  ],
+  "inspected_pairs": {
+    "onearm-mean": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "reg-coef": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "generic-effect": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "twoarm-mean": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "twoarm-smd": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "diagnostic": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "hr": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "irr": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "onearm-proportion": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "twoarm-proportion": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  "additional_inspected": [
+    "screenshots/matrix-hr-standard-figure-bottom.png",
+    "screenshots/matrix-irr-subgroup-figure-bottom.png",
+    "screenshots/matrix-diagnostic-standard-figure-1.png",
+    "screenshots/matrix-diagnostic-meta-regression-figure-1.png"
+  ],
+  "final_matrix_sha256": {
+    "screenshots/matrix-onearm-proportion-standard-figure.png": "a1b73915e3103ab82fa60d1a94fb75201ac3eec4ff95fdf94bed32c9f8990688",
+    "screenshots/matrix-onearm-proportion-standard-report.png": "3d1b624eac371e1bd530a2d2b413ecccf13c8584e856d34a6043dfd8353c8e50",
+    "screenshots/matrix-onearm-proportion-cumulative-figure.png": "b75663b95ce4c9b5b245f8b0ecf8fb4b34073dabe2a436689a02bb756eebf3df",
+    "screenshots/matrix-onearm-proportion-cumulative-report.png": "ca06d6b596ec908875a6d2c61b9d9db2c8ecd0b38b30f7567657339af8ad576c",
+    "screenshots/matrix-onearm-proportion-leave-one-out-figure.png": "c3a1df4604ed57061a299853903defa1db66aeb1ee92ce9103623350d1554dd2",
+    "screenshots/matrix-onearm-proportion-leave-one-out-report.png": "764cab1e1d025dcf58a0d3da975d4192b12df8c4c53d6267902fd842aa4afbe6",
+    "screenshots/matrix-onearm-proportion-subgroup-figure.png": "cb985d07fc251e4afecf41a0885b92a3c7154601c4aeeb24bf6f8b0aabc05122",
+    "screenshots/matrix-onearm-proportion-subgroup-report.png": "40ade59b61cc2495977fb1ae4b23f4d383d8a58a13860b03a77ba7351d6de51f",
+    "screenshots/matrix-onearm-proportion-meta-regression-figure.png": "986914bfb386e5c42dfcb19508d24215329af850a935edce9ce7143c298e3047",
+    "screenshots/matrix-onearm-proportion-meta-regression-report.png": "0f9799a572c6498b3b7c412ac90febda2c102d81c86d640b43af4f7172f088c6",
+    "screenshots/matrix-onearm-mean-standard-figure.png": "2756b032f4250707ba56634fbd91ef15e8e6def0810e0609c4d8bb6b9a53a7ae",
+    "screenshots/matrix-onearm-mean-standard-report.png": "731cef36b19c323b9defce1ec8e1cc48d9aaca097c40eb37cadfcad95d0eff96",
+    "screenshots/matrix-onearm-mean-cumulative-figure.png": "bb71c9633cfc05dd0c7ee5c687c08fca728e36ed7570f0b661d06c9d72b7240a",
+    "screenshots/matrix-onearm-mean-cumulative-report.png": "bb538ae40880bfc1eb3ea54f91026e3b5f4ffda9a033c92629ad8648d48dbd1e",
+    "screenshots/matrix-onearm-mean-leave-one-out-figure.png": "8ac99ccb0ca36720d46f12b5f405cc8e8dbc5f688fef6a74f09b101368efe1ad",
+    "screenshots/matrix-onearm-mean-leave-one-out-report.png": "26a0618f2f0cbe6a53ce7a3c1f3178be817188e4399c6cd6e09ee926b297fa55",
+    "screenshots/matrix-onearm-mean-subgroup-figure.png": "3e9800e8e78477791f540055d83e96fbea1323cc7f509696402e82200b4e0d58",
+    "screenshots/matrix-onearm-mean-subgroup-report.png": "d3c62845f01bd391f57afb5c00cb8b74123a2b2033867d722decfa8d608a7604",
+    "screenshots/matrix-onearm-mean-meta-regression-figure.png": "2a6b7126e809f9e0fc4bcf58a183bc8e4bb33749aba148387b191f3941570a27",
+    "screenshots/matrix-onearm-mean-meta-regression-report.png": "67218df29bef01ca01739b45ac378e2e8af2501692abd5b0dfe9e4768a06da50",
+    "screenshots/matrix-reg-coef-standard-figure.png": "f718d3f18a4cc9c438a052997ab62b13907cdb17c630e3611a953549c20704de",
+    "screenshots/matrix-reg-coef-standard-report.png": "3523e2bfa19ddf84818a0bce3e5f3a70e6687b6bf936da6dfa975d78f4ab070d",
+    "screenshots/matrix-reg-coef-cumulative-figure.png": "b6b289669f8f3e5032686dbdc7cfbdf7ef1cfa82baad98c2373de7a13e842c8e",
+    "screenshots/matrix-reg-coef-cumulative-report.png": "622bab006328f82f958192b8133b2f13481c19169fcd11caca7f6aab3bf856ee",
+    "screenshots/matrix-reg-coef-leave-one-out-figure.png": "0ee62309ddbf115c6e0e8f9e0112bd66464579bffbfd8e966ae475e7e71f21ca",
+    "screenshots/matrix-reg-coef-leave-one-out-report.png": "72187bc45a790bad9e2eeb81af50ffe29babb441d722d60404806a6c35a1311c",
+    "screenshots/matrix-reg-coef-subgroup-figure.png": "b8e24e60f56f9b7306d97df87c202c7f0392433ff8f959003c8e1816331b0df2",
+    "screenshots/matrix-reg-coef-subgroup-report.png": "7b22d4c8cad7a4a13d859abfd128bff2797aa03b2bf46bde28c68aed4d411b6c",
+    "screenshots/matrix-reg-coef-meta-regression-figure.png": "991e3b5c1d2b4aa9d65d69fb7875c12ead72618111dcc8d756d890357e1e3ea8",
+    "screenshots/matrix-reg-coef-meta-regression-report.png": "22e458917e50d447f60d42acb8ddf7a39a5522761d51bef7e9f72d6cefd7cef5",
+    "screenshots/matrix-generic-effect-standard-figure.png": "7a3231e21b75bc9d08d77c63917434ed1ccd4765aa57a545d9a675dd6740daf5",
+    "screenshots/matrix-generic-effect-standard-report.png": "10e11d89e71d9796938c63dc0e014a4aa8d7e4339af4ba069b4750e41896c925",
+    "screenshots/matrix-generic-effect-cumulative-figure.png": "b6deafde752140793336cb6f31237db54ce1546d689f979389cff765cff1847b",
+    "screenshots/matrix-generic-effect-cumulative-report.png": "e95d03764fa96ff3467cbcca1afcb6a508e50df29c3e38fe14ae9916455dcf83",
+    "screenshots/matrix-generic-effect-leave-one-out-figure.png": "750a5bffec656603ba4d245077cb135567d7ff6e1f678e8f0a2593423ca2b909",
+    "screenshots/matrix-generic-effect-leave-one-out-report.png": "7ee559bc6e07d60b384d1dc8aa018abbc60682fe2ea90554794cb1d753877001",
+    "screenshots/matrix-generic-effect-subgroup-figure.png": "54c26c7efe50910278c1400b7f680516aad0e4a6de57ae5a32041c41b7c44ed3",
+    "screenshots/matrix-generic-effect-subgroup-report.png": "f40953adbef714e205790611d647f8cb39656d1c8a51d1ea4e8c58def271d033",
+    "screenshots/matrix-generic-effect-meta-regression-figure.png": "5a9ead405a9f4b3385eda470837d8b3a9ce0f506400f280e3f9a472b85903f1e",
+    "screenshots/matrix-generic-effect-meta-regression-report.png": "8fed37519637ec2a7137d83565b8543ac9291b316cb04706cc68e6919c898816",
+    "screenshots/matrix-twoarm-proportion-standard-figure.png": "a3571d44c5c5ecf1362d5ab168e308ca00a5a35bd6702461301da3cc742bc078",
+    "screenshots/matrix-twoarm-proportion-standard-report.png": "0da5b468d05c3f26621af2cc5a1a007402b28753005f0fda14e0f1c1037ef9c8",
+    "screenshots/matrix-twoarm-proportion-cumulative-figure.png": "ec59f1241c591fa24b216da3c31e16442dd0e68e10ed07be2c72f711fe2b7303",
+    "screenshots/matrix-twoarm-proportion-cumulative-report.png": "2b46f555581ff435340935ece62e0e636852c5cdbe79f678d6a9c0c42a5ed7c7",
+    "screenshots/matrix-twoarm-proportion-leave-one-out-figure.png": "a087b63b5665152b96ca69c674bb0610f9d8af96835aede215a49a65b5cf7e45",
+    "screenshots/matrix-twoarm-proportion-leave-one-out-report.png": "98f0b2a9e73dac09d9f68962cbbd8b4fc7726cad908c9efcd307e658b93c83be",
+    "screenshots/matrix-twoarm-proportion-subgroup-figure.png": "8777fea98655c0757fd70b9284dfa81d96cbb32b5e60d4a80f54edc7a6eae21c",
+    "screenshots/matrix-twoarm-proportion-subgroup-report.png": "3a578696068ca604eb020c981a86ae08bb0a9714fa49ec014d397d3657fb7d24",
+    "screenshots/matrix-twoarm-proportion-meta-regression-figure.png": "a3a5c614449056926c9f88866abeaddd9bdd1814a54303bf481d5d10f43deaee",
+    "screenshots/matrix-twoarm-proportion-meta-regression-report.png": "d983ca0fa96edeb32fe129d40c72d32836512238d9db3d09baf20223c23ba9be",
+    "screenshots/matrix-twoarm-mean-standard-figure.png": "fcf27623b52f6031df5e25f943f59b4ff794d992f3850461a61035b047846c93",
+    "screenshots/matrix-twoarm-mean-standard-report.png": "8b155671710b64f01ec96c2f9e91abbd68ab2a82aabb62b3edd4f00842ec3f74",
+    "screenshots/matrix-twoarm-mean-cumulative-figure.png": "2bd37bac1a24c2ed88ae75cac1405613538bafcffb7969d922cd6123dc269085",
+    "screenshots/matrix-twoarm-mean-cumulative-report.png": "bc4b95eff7002b13cfe239df3ba8b8027eb3ae361baaac62e97218626cc85a42",
+    "screenshots/matrix-twoarm-mean-leave-one-out-figure.png": "6dba32bb56231b1bf36c674263efc8749dec9cab64d64600ac07b816eaef3e72",
+    "screenshots/matrix-twoarm-mean-leave-one-out-report.png": "02ce7042324b35556931641e8861e7b25362a160874886b1e450a812086dd1e1",
+    "screenshots/matrix-twoarm-mean-subgroup-figure.png": "b429da626ca141b3b6517f4fc1ca4ae57e61ca731de4a2324cf0a12493c73ccb",
+    "screenshots/matrix-twoarm-mean-subgroup-report.png": "f5e3f1c5be561853c8beba5447fe821b2f516c8acfd58c834938c49fe361bd71",
+    "screenshots/matrix-twoarm-mean-meta-regression-figure.png": "51c874f28723e3039626effdf6d2d06d9a49af905e99970f5bd399731076b98b",
+    "screenshots/matrix-twoarm-mean-meta-regression-report.png": "616da52605bdd14a8083bb75ebf01d92b789481b6dc5e70743302297c1ab447f",
+    "screenshots/matrix-twoarm-smd-standard-figure.png": "19be649bcc65fef9a0f99822dc89ba3c06158e1ccc9decfb4dc2a9c81ff12e41",
+    "screenshots/matrix-twoarm-smd-standard-report.png": "1dd5dc5f4cb7b860c11f1b39d503898cbf7e19bad583233a34ad61538bf13213",
+    "screenshots/matrix-twoarm-smd-cumulative-figure.png": "bfba8d811b61de34a287e18db7096155afc13de0e13e165f1f09d038f1ecb697",
+    "screenshots/matrix-twoarm-smd-cumulative-report.png": "2e6c93be610bb7d2d241a438600e5732aa4cafbe4abcb5ea0f7469e3c3c43db7",
+    "screenshots/matrix-twoarm-smd-leave-one-out-figure.png": "2ccb0a745ecc15b42d16ff26e9b0ce4dbe30d0170f85202b8ca9a21fbb4713a6",
+    "screenshots/matrix-twoarm-smd-leave-one-out-report.png": "99823ef3f8a7b1be268fe860fd556e92a3a4ffbca6d6c8cf0262d9d819799caa",
+    "screenshots/matrix-twoarm-smd-subgroup-figure.png": "3b111657c6f1a7f7460ab8747433b3b3bdf641416f004cf9b32434b9c86f5ec5",
+    "screenshots/matrix-twoarm-smd-subgroup-report.png": "7970fcd43975bb5d95b9bf33972dc2de23f87a643141e2a968b6e5c48497c4ad",
+    "screenshots/matrix-twoarm-smd-meta-regression-figure.png": "f8205840cc4d2ef582cfd166351159c4bbc7000f87261074a0ec21247bf5e4e0",
+    "screenshots/matrix-twoarm-smd-meta-regression-report.png": "e8ea4697ff14231fa9451f003b42c6ca6921d08220ff99ebbc8e10bbfd525775",
+    "screenshots/matrix-diagnostic-standard-figure.png": "9fcf6aed9fb7148918220c74bb964ada146f556adb3fd1102603817647709b11",
+    "screenshots/matrix-diagnostic-standard-report.png": "4967cd0d8d3f3101a78301306dd875fc0149977b75d29366b02b08e657667809",
+    "screenshots/matrix-diagnostic-cumulative-figure.png": "7fbaf04d0c40f130802b75e94a5dd478944678e2e06a5734e82c2801911533c2",
+    "screenshots/matrix-diagnostic-cumulative-report.png": "e27375de5eeae6fc94967fbf3e3edee51c8d8723715aef7c819336ba3e6f8943",
+    "screenshots/matrix-diagnostic-leave-one-out-figure.png": "b072d1859f2b7e668e0f230e4daebacb71da98c1e70a5e437650480060a60ded",
+    "screenshots/matrix-diagnostic-leave-one-out-report.png": "5cb8116c3249cb15a044ec4f0038c653bf25efb2b76befc1b25a99686d8fa949",
+    "screenshots/matrix-diagnostic-subgroup-figure.png": "406e6ca560b18547ffb1569bcb99e8201c547f7a493427af7f8536ac29fcd4ad",
+    "screenshots/matrix-diagnostic-subgroup-report.png": "7290a7d119f79e7d45d533b4d3bc1590a870a5cfa7a2692b2ddf11fd63d57830",
+    "screenshots/matrix-diagnostic-meta-regression-figure.png": "214a6f435ecb3d324e9299a1c61a4488d22323a5124b625c6fbde84bb9714cf2",
+    "screenshots/matrix-diagnostic-meta-regression-report.png": "8a385926e96b21445b1ef196534a258651fe050dd8817bd955ef886e899c2ec2",
+    "screenshots/matrix-hr-standard-figure.png": "5405d18f9e7c40f3d344c5c08455ea591e47418982465c74784c9ec774dfe783",
+    "screenshots/matrix-hr-standard-report.png": "372ce8c0da0ecbe7950592015aac52a60d4010d29c3e756e5c167c21c862a1bd",
+    "screenshots/matrix-hr-cumulative-figure.png": "72dabd23000ba2c9d8afbfd3360021ff7d5f67a6eef2a1c0755f29bd7e259876",
+    "screenshots/matrix-hr-cumulative-report.png": "7011ef0324eeed92cfc4ab3ffa14be5537139bdb93adfc170f132820c21b8d06",
+    "screenshots/matrix-hr-leave-one-out-figure.png": "d18ebf429ead868022598c98aafad4f0139dcafcc708e5da66901c56d8206c00",
+    "screenshots/matrix-hr-leave-one-out-report.png": "762932035728928919e3ab55a271ea6a75ee2250e44585e3e5ce66b59bfae017",
+    "screenshots/matrix-hr-subgroup-figure.png": "a0f9185d2578bfac1e0dd4997c83fda56ab172ee3e18582f7cead039789e8e3d",
+    "screenshots/matrix-hr-subgroup-report.png": "32fa1641f471f4dd821c072e3509645d131b019f4fbb96c753becb784c35726b",
+    "screenshots/matrix-hr-meta-regression-figure.png": "69f688d575b80be124d7cbc1549073a534b9d140277584e8871d823d5616691a",
+    "screenshots/matrix-hr-meta-regression-report.png": "1d2cbd11d4cb87147e03424ca405d48b814394c98268ad285d9a95b2903523da",
+    "screenshots/matrix-irr-standard-figure.png": "16d99846ba697297f653c6903c87b32c60066c26ca8118f39a2e1e8a5411dfca",
+    "screenshots/matrix-irr-standard-report.png": "9c6ce9ac806d479d13ef8b528c9796278f370f185a790809a9ebdc53e577b7de",
+    "screenshots/matrix-irr-cumulative-figure.png": "33dd961d56e34113324791e8b9ba5a6941c6badd1ac651f981fb171a3b64f592",
+    "screenshots/matrix-irr-cumulative-report.png": "3b4ffef3de00cf91be5060f9422a880527fa1483a1c093127eda84439c3045d0",
+    "screenshots/matrix-irr-leave-one-out-figure.png": "af23df17aff6a38e66b47921188172871769450e607bd0a8b28a8e8033455808",
+    "screenshots/matrix-irr-leave-one-out-report.png": "bd1a393a8fb794f27eb4e236b92fd36148fbc3c65056d17f3aa8e53598b11b5a",
+    "screenshots/matrix-irr-subgroup-figure.png": "64cab785ead4b35db063749d9f03cbdb48ea8d62253b27480e012e1ed10063bd",
+    "screenshots/matrix-irr-subgroup-report.png": "f96c3d30bdd2d09ad4de3f121330a9c43b45a239ea3711467c541ec1227df0d1",
+    "screenshots/matrix-irr-meta-regression-figure.png": "9eb4d2317fb2b072256e8bbc93abdbed2fb92883a2bf0a60f86eb80fa337543c",
+    "screenshots/matrix-irr-meta-regression-report.png": "8cbdc0f5b3d39a8d8a53e5e89243162e99583ebb2a9d5f1b9648ab3040b75ca0"
+  },
+  "helper_groups": [
+    {
+      "prefix": "helper-audit-round3-presentation-diagnostic",
+      "sheets": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "notes": "All three styles, 3/6 digits and Sens/Spec inspected; raw columns/weights/CI separated, BMJ header leading clear, footer tests/PI clear. Displayed pooled Sens .632248 and Spec .955188 match matrix reports to selected precision."
+    },
+    {
+      "prefix": "helper-audit-round3-presentation-onearm-proportion",
+      "sheets": [
+        0,
+        1,
+        2
+      ],
+      "notes": "Three styles at 3/6 digits reviewed; pooled .282110 [.206772,.357447] agrees. Legacy weights persist in scene across styles."
+    }
+  ],
+  "finish_inspections": [
+    {
+      "path": "screenshots/shell-types.png",
+      "sha256": "0eb031b70fe7bc466466b80efb86824442a6980a0073a9d26a39943426232d96"
+    },
+    {
+      "path": "screenshots/shell-structure.png",
+      "sha256": "190669d5ab29cc18ff6727a6ccc3cae7d1f9f23916021af6cd7ea737dd22acd5"
+    },
+    {
+      "path": "screenshots/shell-studies.png",
+      "sha256": "68928df18626cab1a4d0d5064bf7c671c15efe8a77ad2040ad150752c3db3912"
+    },
+    {
+      "path": "screenshots/shell-covariates.png",
+      "sha256": "c159b490262f81e628519fc9788158687d6e7e64b3e2735c641132aaea7e324d"
+    },
+    {
+      "path": "screenshots/shell-duplicate-covariate.png",
+      "sha256": "b40309a0152342af48abfbef559a01ec36a0b246b2094727f366fa5b025a745b"
+    },
+    {
+      "path": "screenshots/shell-about.png",
+      "sha256": "7f63cb9dd73f38d5bb797d38c5fd7317edc05e48f4c9d0560115d26801bb5df8"
+    },
+    {
+      "path": "screenshots/shell-csv-entry.png",
+      "sha256": "3fb2b91fe50f870ddfd791ec2f8abd1940d3d64f4f6fe8062147db5a1b8df8f5"
+    },
+    {
+      "path": "screenshots/shell-quick-start.png",
+      "sha256": "b9486d37d862a52b62a0b25a83f910af0e64b4baf377c1c6ebd1d8bf3c944bf8"
+    },
+    {
+      "path": "screenshots/shell-template-native-picker.png",
+      "sha256": "c2b19cc523be3f7f8caf1fb24827f1d977b725ec0dcb0e16200a52e8e74750c3"
+    },
+    {
+      "path": "screenshots/shell-grid.png",
+      "sha256": "8d971a38b7251d88d7f85863ab0c4c96e7f5ab377d944021bc1f1aa3429d8b8c"
+    },
+    {
+      "path": "screenshots/extra-irr-invalid-contour-error.png",
+      "sha256": "b06336016a10c69d9b8e20d7c41c265a02a5a3a2076553e631eb9b6ee0ab4ad7"
+    },
+    {
+      "path": "screenshots/extra-irr-contour-recovered-report.png",
+      "sha256": "84ee0ea84887f14a4aa74f8aa4953dfea7ad2ee2ad57ca5bcadf37972c8f2237"
+    }
+  ],
+  "finish_notes": [
+    "Actual GTK Save CSV template picker and earlier wizard pages inspected.",
+    "Quick start accurately describes Tables, report export, Change settings and sequence/display distinction.",
+    "Structure tabs, duplicate covariate validation, About and readable grid inspected. Follow-up:first spacing persists.",
+    "Intentional invalid contour 101 produces actionable details but generic unexpected-error framing; recovery to valid funnel result succeeds.",
+    "Initial editor frame rejected: wrapper selected intermediate report text rather than actual export; replacement required."
+  ],
+  "supplement_final": [
+    {
+      "path": "screenshots/helper-audit-round3-presentation-twoarm-mean-84-0-round4-annotations.png",
+      "source": "artifacts/verification/rcms/20261015T012257Z-645c26c4-audit-round3-presentation-twoarm-mean/84-0-round4-annotations.png",
+      "sha256": "4dfff38381706d735e2a8b66bcb13f831586d53fbb4368285c323f2d3f2e9fe2",
+      "scenario": "audit-round3-presentation-twoarm-mean",
+      "action": "round4-annotations",
+      "capture": "QWidget.grab in visible xcb helper"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-generic-effect-84-0-round4-annotations.png",
+      "source": "artifacts/verification/rcms/20261015T012822Z-badaf166-audit-round3-presentation-generic-effect/84-0-round4-annotations.png",
+      "sha256": "95fb4c71b63efaff81fc10cc3ae8948416ba1352e2a502987302881ca91a5862",
+      "scenario": "audit-round3-presentation-generic-effect",
+      "action": "round4-annotations",
+      "capture": "QWidget.grab in visible xcb helper"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-reg-coef-84-0-round4-annotations.png",
+      "source": "artifacts/verification/rcms/20261015T012645Z-7bcc1387-audit-round3-presentation-reg-coef/84-0-round4-annotations.png",
+      "sha256": "fae2237f0c13ed89b65b1259cb7ea83fcc5af629fb6d4e029fbd21862ff8294a",
+      "scenario": "audit-round3-presentation-reg-coef",
+      "action": "round4-annotations",
+      "capture": "QWidget.grab in visible xcb helper"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-twoarm-proportion-84-0-round4-annotations.png",
+      "source": "artifacts/verification/rcms/20261015T012059Z-8ac6cf01-audit-round3-presentation-twoarm-proportion/84-0-round4-annotations.png",
+      "sha256": "2c905f59d0a5303eb5604f6b544e69d40871d544f6e47d8b99c4af2f44119a35",
+      "scenario": "audit-round3-presentation-twoarm-proportion",
+      "action": "round4-annotations",
+      "capture": "QWidget.grab in visible xcb helper"
+    },
+    {
+      "path": "screenshots/helper-audit-round3-presentation-twoarm-smd-84-0-round4-annotations.png",
+      "source": "artifacts/verification/rcms/20261015T012504Z-8b401589-audit-round3-presentation-twoarm-smd/84-0-round4-annotations.png",
+      "sha256": "6f9eb447a850bca9bac3cd2638cd5e101bc6f2262cce6960044ffc3f3bc61674",
+      "scenario": "audit-round3-presentation-twoarm-smd",
+      "action": "round4-annotations",
+      "capture": "QWidget.grab in visible xcb helper"
+    },
+    {
+      "path": "screenshots/menu-1.png",
+      "sha256": "58cf14c682c5c1ee21bd2e9e315abb666f1e36d634cb298f4caab7b99b52e712"
+    },
+    {
+      "path": "screenshots/menu-0.png",
+      "sha256": "a389c41853f3be7fabb29afe819eb106d8b4b4ac373633a5be94c36469be6932"
+    },
+    {
+      "path": "screenshots/menu-6.png",
+      "sha256": "7430fcb90599c8b5bfb9bdfdd832f162bd6ceaf38fba8fc6641288aceeaeeb6e"
+    },
+    {
+      "path": "screenshots/menu-7.png",
+      "sha256": "5a7fd9afcd49d1e632e2d746d6700a5a49e06b7d105de90ba273317b06ffc28c"
+    },
+    {
+      "path": "screenshots/menu-8.png",
+      "sha256": "38fe2688f7f1c163aa5a8459f2ef23dc520752e11203a6c9cba55ff05b89f9c6"
+    },
+    {
+      "path": "screenshots/menu-5.png",
+      "sha256": "8e26657ab65fba72f94d74a12098ef3f42a95e4e240faaeccc660c63568286c0"
+    },
+    {
+      "path": "screenshots/menu-2.png",
+      "sha256": "acee6b37b45a5e180ba5a6908d991ce05e85a469f8cd4bb41dfedf0cb2f81df6"
+    },
+    {
+      "path": "screenshots/menu-9.png",
+      "sha256": "f728a4749093d38ebc85c64f3952ae75f0d3b5f0ac54c96ab0740d7fb037235e"
+    },
+    {
+      "path": "screenshots/menu-3.png",
+      "sha256": "e8aaf7423a32ec4b0f39ca5ad070f85b708003b2a97f06a6c38632ff70166951"
+    },
+    {
+      "path": "screenshots/menu-4.png",
+      "sha256": "a87694c9d32aa5fdecf371b9bb9ecdf16fc0deebc934bfc548bf7aea8a66327c"
+    },
+    {
+      "path": "screenshots/matrix-twoarm-proportion-standard-report-bottom.png",
+      "sha256": "4922c4df4f19e6b6614f9370dc31d9dbfc59c0128d61cfca52048a9af180d600"
+    }
+  ],
+  "diagnostic_supplement": [
+    {
+      "path": "screenshots/extra-analysis-diagnostic-joint-figure-0.png",
+      "sha256": "11a0ea56381bbab144ee3ba60e69be353847e5ba4ba09f937af07d116efde30d"
+    },
+    {
+      "path": "screenshots/extra-analysis-diagnostic-joint-report.png",
+      "sha256": "a3a82df3e4128e56a7622030e38e0844003d810d7fe2e984a796575e4614a666"
+    },
+    {
+      "path": "screenshots/extra-analysis-diagnostic-combined-figure-0.png",
+      "sha256": "e1d6d3372bcfea6b82ee23bf2a3dd953e79f076ac19b6ed14282b4b983a366f8"
+    },
+    {
+      "path": "screenshots/extra-analysis-diagnostic-combined-report.png",
+      "sha256": "7d86ea30a0feb863775149c0cb31eb1904798a84e894a0fbadd974979ec2edf8"
+    },
+    {
+      "path": "screenshots/extra-analysis-diagnostic-regression-multiple-figure-0.png",
+      "sha256": "e4a9527d8ce19a025c2b5abd17d98a4c79a581683859c728cb243d6a7ba265bc"
+    },
+    {
+      "path": "screenshots/extra-analysis-diagnostic-regression-multiple-report.png",
+      "sha256": "485a4f9f5d8729ca979f3914ead016224d89722db595f9ac9fa91877388822e8"
+    }
+  ],
+  "calculator_inspected": [
+    {
+      "path": "screenshots/helper-calculator-binary-03-0-calculator-effect-preview.png",
+      "source": "artifacts/verification/rcms/20261015T013601Z-be90eac1-calculator-binary/03-0-calculator-effect-preview.png",
+      "sha256": "2ba3f890f87fffe392d1d55e77a6cfa741c7facb01b8f58d74c18f500d5b4b49",
+      "scenario": "calculator-binary",
+      "action": "calculator-effect-preview",
+      "capture": "QWidget.grab in visible xcb helper"
+    },
+    {
+      "path": "screenshots/helper-calculator-continuous-03-0-calculator-effect-preview.png",
+      "source": "artifacts/verification/rcms/20261015T013618Z-a26b296f-calculator-continuous/03-0-calculator-effect-preview.png",
+      "sha256": "d90b9d3ff67c5dc5ff92fa057c6818f1b209babf44d4a363cf87f15fa7ba15e3",
+      "scenario": "calculator-continuous",
+      "action": "calculator-effect-preview",
+      "capture": "QWidget.grab in visible xcb helper"
+    },
+    {
+      "path": "screenshots/helper-calculator-diagnostic-03-0-calculator-effect-preview.png",
+      "source": "artifacts/verification/rcms/20261015T013632Z-b4b26dac-calculator-diagnostic/03-0-calculator-effect-preview.png",
+      "sha256": "2683f059cc09a338c18c5e2f010d87856ff434205750fe0a9f3f7f1a9854b288",
+      "scenario": "calculator-diagnostic",
+      "action": "calculator-effect-preview",
+      "capture": "QWidget.grab in visible xcb helper"
+    },
+    {
+      "path": "screenshots/helper-calculator-mode-pre-post-03-0-calculator-mode-preview.png",
+      "source": "artifacts/verification/rcms/20261015T013907Z-b58f197f-calculator-mode-pre-post/03-0-calculator-mode-preview.png",
+      "sha256": "84ef4899bc396496b04f205660b6f83046f32e31a2bad492fabe3c8c713d5159",
+      "scenario": "calculator-mode-pre-post",
+      "action": "calculator-mode-preview",
+      "capture": "QWidget.grab in visible xcb helper"
+    },
+    {
+      "path": "screenshots/helper-calculator-mode-entered-binary-03-0-calculator-mode-preview.png",
+      "source": "artifacts/verification/rcms/20261015T013820Z-9aa88ad4-calculator-mode-entered-binary/03-0-calculator-mode-preview.png",
+      "sha256": "3fb7ea2112edf3b4ce430a65814583da0f4290ca0db93fb4c97064e35508559b",
+      "scenario": "calculator-mode-entered-binary",
+      "action": "calculator-mode-preview",
+      "capture": "QWidget.grab in visible xcb helper"
+    },
+    {
+      "path": "screenshots/helper-calculator-mode-back-continuous-04-0-calculator-mode-preview.png",
+      "source": "artifacts/verification/rcms/20261015T013937Z-9d28d7a0-calculator-mode-back-continuous/04-0-calculator-mode-preview.png",
+      "sha256": "c282f29d0271d1b5b42d9e3861b068d5310fd4fe166c00e1484c835330b064b0",
+      "scenario": "calculator-mode-back-continuous",
+      "action": "calculator-mode-preview",
+      "capture": "QWidget.grab in visible xcb helper"
+    }
+  ],
+  "final_native_inspections": [
+    {
+      "path": "screenshots/shell-exported-report-editor.png",
+      "sha256": "d36c87c43602f663f2d500dde43b0692d58b8e69a7a59a2d6454be0de6aab4a5"
+    },
+    {
+      "path": "screenshots/options-142-diagnostic-metric-selection.png",
+      "sha256": "744b71ad084855988332e7960059dbc6ed97fcdafc2de7de018dff6d3f3ec768"
+    },
+    {
+      "path": "screenshots/options-143-diagnostic-method-0.png",
+      "sha256": "0e8c13c0d70ccca4006fd58eae1e6806e66c55149a48e23063b450750d5dc9f5"
+    },
+    {
+      "path": "screenshots/options-162-hr-method-0.png",
+      "sha256": "78947f7e2ea2ee1e32ebd51b47c94a67cfc9474296f8c78cd8d4cd16c4ba3ba3"
+    },
+    {
+      "path": "screenshots/options-182-irr-method-0.png",
+      "sha256": "7169b3c243c9df7b0b538bd0dfb9312653e107f5ebd8272b7868a89713353c28"
+    },
+    {
+      "path": "screenshots/options-185-small-study.png",
+      "sha256": "77d9949cdf6a1ec835240bb60c9d94e818d3f8a9a922cb371aa9ec706531da08"
+    }
+  ]
+}

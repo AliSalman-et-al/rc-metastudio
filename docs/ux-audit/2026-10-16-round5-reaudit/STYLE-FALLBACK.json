@@ -1,0 +1,37 @@
+{
+  "observed": [
+    "screenshots/long-revman-subgroup-footer.png",
+    "screenshots/long-bmj-subgroup-footer.png"
+  ],
+  "classification": "pre-existing silent subgroup layout fallback, not a new regression",
+  "sources": [
+    {
+      "path": "r/RCMetaR/R/forest_style_revman.R",
+      "current_sha256": "b59951ed3b1df208a4171a1ef21919fc9e912df661538521bbd6dcb0338dced0",
+      "current": {
+        "line": 169,
+        "text": "    if ((isTRUE(bundle$single_study) && !identical(bundle$forest_variant, \"subgroup\")) ||\n            is.null(res$zval)) {\n        return(\"\")"
+      },
+      "round4_revision": "f1aa24d",
+      "round4_sha256": "100d224f43024631ae643e23d2b49f83f0a0bd81cb64b12b11de85d030cc6739",
+      "round4": {
+        "line": 152,
+        "text": "    if ((isTRUE(bundle$single_study) && !identical(bundle$forest_variant, \"subgroup\")) ||\n            is.null(res$zval)) {\n        return(\"\")"
+      }
+    },
+    {
+      "path": "r/RCMetaR/R/forest_style_bmj.R",
+      "current_sha256": "7b7b319716fafbcf51a46ae47d2fb2a59831b570c0cbb0f52d58da8dc13eec20",
+      "current": {
+        "line": 295,
+        "text": "    if (inherits(bundle$res, \"rma\") && !identical(bundle$forest_variant, \"subgroup\")) {\n        effect <- list(\n            yi=as.numeric(bundle$res$yi),"
+      },
+      "round4_revision": "f1aa24d",
+      "round4_sha256": "90ee6806306dcb57b8102d2e46fa88d6c4ac9f3cd5ef10c4476282fc05eb0c5b",
+      "round4": {
+        "line": 295,
+        "text": "    if (inherits(bundle$res, \"rma\") && !identical(bundle$forest_variant, \"subgroup\")) {\n        effect <- list(\n            yi=as.numeric(bundle$res$yi),"
+      }
+    }
+  ]
+}

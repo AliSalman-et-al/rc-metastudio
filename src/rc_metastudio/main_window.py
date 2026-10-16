@@ -16,7 +16,6 @@ from PyQt6.QtGui import (
     QKeySequence,
     QResizeEvent,
     QTextDocument,
-    QAction,
 )
 from PyQt6.QtWidgets import (
     QApplication,
@@ -25,8 +24,6 @@ from PyQt6.QtWidgets import (
     QLabel,
     QMessageBox,
     QTableView,
-    QHBoxLayout,
-    QPushButton,
 )
 import copy
 
@@ -62,6 +59,7 @@ from rc_metastudio.settings import (
     recent_file_display_name,
     save_main_window_placement,
     save_settings,
+    update_setting,
 )
 from rc_metastudio.runtime_types import required
 
@@ -75,6 +73,7 @@ from rc_metastudio import edit_dialog
 from rc_metastudio import edit_name_dialogs
 from rc_metastudio import covariate_type_dialog
 from rc_metastudio import confidence_level_dialog
+from rc_metastudio import start_page
 from rc_metastudio import main_wizard
 from rc_metastudio import about_legal_dialog
 
@@ -145,8 +144,8 @@ def _connect_action(action, callback):
 
 def _format_confidence_level_status(confidence_level):
     if confidence_level is None:
-        return "Confidence Level: not set"
-    return "Confidence Level: {:.1%}".format(float(confidence_level) / 100.0)
+        return "Confidence level: not set"
+    return f"Confidence level: {float(confidence_level):g}%"
 
 
 class ElidingStatusLabel(QLabel):
@@ -224,6 +223,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.setupUi(self)
         qt_layout.configure_analysis_menu(self.menuAnalysis)
+        self.menuAnalysis.setToolTipsVisible(True)
         for action, icon_name in (
             (self.action_go, "meta-analysis"),
             (self.action_cum_ma, "cumulative-analysis"),
@@ -233,6 +233,20 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             (self.action_publication_bias, "publication-bias"),
         ):
             qt_layout.configure_analysis_action_icon(action, icon_name)
+        self.analysis_button = QtWidgets.QToolButton(self.toolBar)
+        self.analysis_button.setText("Analyses")
+        self.analysis_button.setIcon(self.action_go.icon())
+        self.analysis_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.analysis_button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.analysis_button.setMenu(self.menuAnalysis)
+        self.analysis_button.setAccessibleName("Analyses")
+        self.analysis_button.setAccessibleDescription("Choose an analysis. Unavailable analyses explain their prerequisites in the menu.")
+        self.analysis_button.setToolTip("Choose an analysis")
+        self.analysis_button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.toolBar.insertWidget(self.action_go, self.analysis_button)
+        for action in (self.action_go, self.action_cum_ma, self.action_loo_ma, self.action_subgroup_ma,
+                       self.action_meta_regression, self.action_publication_bias, self.action_change_confidence_level):
+            self.toolBar.removeAction(action)
         qt_layout.configure_main_toolbar(self.toolBar)
         dataset_file_label = ElidingStatusLabel(
             self.dataset_file_lbl.text(), self.centralwidget
@@ -240,6 +254,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.verticalLayout_3.replaceWidget(self.dataset_file_lbl, dataset_file_label)
         self.dataset_file_lbl.deleteLater()
         self.dataset_file_lbl = dataset_file_label
+        self.gridLayout.setHorizontalSpacing(8)
         self.current_outcome_label.setTextFormat(Qt.TextFormat.PlainText)
         self.current_follow_up_label.setTextFormat(Qt.TextFormat.PlainText)
         self.workspace_hint = QLabel(self)
@@ -247,14 +262,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.workspace_hint.setTextFormat(Qt.TextFormat.PlainText)
         self.workspace_hint.setAccessibleName("Workspace guidance")
         self.verticalLayout.insertWidget(0, self.workspace_hint)
-        self.workspace_actions = QHBoxLayout()
-        for text, handler in (("Create dataset…", self.create_new_dataset), ("Import CSV…", self._import_csv), ("Open dataset…", self.open)):
-            button = QPushButton(text, self)
-            button.clicked.connect(app_error_handler.safe_slot(lambda _checked=False, handler=handler: handler(), parent=self))
-            self.workspace_actions.addWidget(button)
-        self.verticalLayout.insertLayout(1, self.workspace_actions)
+        self.action_new_dataset.setText("Create dataset…")
+        self.start_page = start_page.StartPage(self.action_new_dataset, self.action_import_csv, self.action_open, self)
+        self.verticalLayout_3.insertWidget(0, self.start_page)
         self.menu_file.insertAction(self.action_open, self.action_new_dataset)
-        self.action_new_dataset.setText("New dataset…")
         self.action_publication_bias.setText("Small-study effects…")
         help_action = QAction("Quick start and shortcuts…", self)
         help_action.triggered.connect(app_error_handler.safe_slot(self.show_quick_start, parent=self))
@@ -262,8 +273,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         qt_layout.configure_navigation_tool_buttons(
             (
                 self.nav_left_btn,
-                self.nav_up_btn,
-                self.nav_down_btn,
                 self.nav_right_btn,
                 self.nav_add_btn,
             )
@@ -287,9 +296,17 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.setModel(self.model)
         self.tableView.setItemDelegate(dataset_table_view.StudyDelegate(self.tableView))
 
-        self.dimensions = ["outcome", "follow-up", "group"]
-        self.current_dimension_index = 0
+        for label, dimension in (("Outcomes", "outcome"), ("Follow-ups", "follow-up"), ("Groups", "group")):
+            self.navigation_dimension.addItem(label, dimension)
+        self.navigation_dimension.setMinimumContentsLength(10)
+        self.navigation_dimension.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.navigation_dimension.currentIndexChanged.connect(lambda _index: self.update_dimension())
         self.update_dimension()
+        for before, after in zip(
+            (self.analysis_button, self.navigation_dimension, self.nav_left_btn, self.nav_right_btn, self.nav_add_btn),
+            (self.navigation_dimension, self.nav_left_btn, self.nav_right_btn, self.nav_add_btn, self.tableView),
+        ):
+            self.setTabOrder(before, after)
         self._model_signal_connections = []
         self._setup_connections()
         self._configure_standard_shortcuts()
@@ -307,44 +324,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         load_settings()
         self.populate_open_recent_menu()
+        self.workspace.mark_saved()
+        self._update_project_identity()
 
     def createPopupMenu(self):
         return None
 
     def start(self):
-        # Enter the ordinary application event loop before opening the startup
-        # workflow. QDialog.exec() creates a nested loop, which is not supported
-        # uniformly by every windowing system (notably Cocoa during startup).
-        self._startup_wizard = None
-        QtCore.QTimer.singleShot(0, self._open_startup_wizard)
-
-    def _open_startup_wizard(self):
-        start_up_wizard = main_wizard.MainWizard(
-            parent=self, recent_datasets=get_recent_files()
-        )
-        self._startup_wizard = start_up_wizard
-        start_up_wizard.finished.connect(self._finish_startup_wizard)
-        start_up_wizard.open()
-
-    def _finish_startup_wizard(self, result):
-        start_up_wizard = self._startup_wizard
-        if start_up_wizard is None:
-            return
-
-        try:
-            if result == int(QDialog.DialogCode.Accepted):
-                wizard_data = start_up_wizard.get_results()
-                self._handle_wizard_results(wizard_data)
-        finally:
-            start_up_wizard.deleteLater()
-            self._startup_wizard = None
-            self._reactivate_after_startup_wizard()
-
-    def _reactivate_after_startup_wizard(self):
-        if self.isMinimized():
-            self.setWindowState(
-                self.windowState() & ~QtCore.Qt.WindowState.WindowMinimized
-            )
+        self._update_workspace_guidance()
         self.show()
         self.raise_()
         self.activateWindow()
@@ -482,7 +469,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         name = os.path.basename(path) if path else "Untitled dataset"
         dirty = self.workspace.is_dirty
         self.setWindowTitle(f"{name}{' *' if dirty else ''} — RC MetaStudio")
-        self.dataset_file_lbl.setText(f"{state or ('Unsaved changes' if dirty else 'Ready')} · {name}")
+        empty = not self.model.dataset.get_outcome_names()
+        status = state or ("Ready to create or open a dataset" if empty and not dirty and not path else "Unsaved changes" if dirty else "Ready")
+        self.dataset_file_lbl.setText(f"{status} · {name}")
         self.dataset_file_lbl.setToolTip(path or "Save the dataset to choose a project file.")
 
     def toggle_menu_options_that_require_dataset(self, enable):
@@ -507,8 +496,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 if not self.model.dataset.covariates:
                     hint += "\nAdd a covariate (Dataset → Add covariate) for meta-regression; use a Category covariate for subgroup analysis."
                 self.workspace_hint.setText(hint)
-            for index in range(self.workspace_actions.count()):
-                required(required(self.workspace_actions.itemAt(index), "workspace action").widget(), "workspace action button").setVisible(not enable)
+            self.start_page.setVisible(not enable)
+            self.nav_frame.setVisible(enable)
 
     def _enable_action_meta_regression(self, dataset_analysis_enabled=None):
         """Enables action_meta_regression if analysis can run and covariates exist."""
@@ -575,11 +564,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def populate_open_recent_menu(self):
         recent_datasets = get_recent_files()
+        self.start_page.set_recent_projects(recent_datasets, self.dataset_selected, self._locate_recent_project, self._remove_recent_project)
         self.action_open_recent_2.clear()
         for dataset in reversed(recent_datasets):
             action_item = QAction(
                 recent_file_display_name(dataset), self.action_open_recent_2
             )
+            if not os.path.isfile(dataset):
+                action_item.setText(action_item.text() + " — Missing file")
+                action_item.setEnabled(False)
             action_item.setData(str(dataset))
             action_item.setToolTip(str(dataset))
             action_item.setStatusTip(str(dataset))
@@ -587,6 +580,22 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             _connect_action(
                 action_item, lambda dataset=dataset: self.dataset_selected(dataset)
             )
+
+    def _remove_recent_project(self, path):
+        update_setting("recent_files", [entry for entry in get_recent_files() if entry != path])
+        save_settings()
+        self.populate_open_recent_menu()
+
+    def _locate_recent_project(self, path):
+        replacement, _filter = QFileDialog.getOpenFileName(self, "Locate project", os.path.dirname(path), "RC MetaStudio projects (*.rcms)")
+        if replacement:
+            # Validate the replacement before removing the unavailable path.
+            project_format.load_project(replacement)
+            add_file_to_recent_files(replacement)
+            if os.path.normcase(os.path.realpath(replacement)) != os.path.normcase(os.path.realpath(path)):
+                self._remove_recent_project(path)
+            else:
+                self.populate_open_recent_menu()
 
     def dataset_selected(self, dataset_path):
         self.open(file_path=dataset_path)
@@ -669,12 +678,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             )
             self.nav_left_btn.pressed.connect(
                 app_error_handler.safe_slot(self.previous, parent=self)
-            )
-            self.nav_up_btn.pressed.connect(
-                app_error_handler.safe_slot(self.next_dimension, parent=self)
-            )
-            self.nav_down_btn.pressed.connect(
-                app_error_handler.safe_slot(self.previous_dimension, parent=self)
             )
 
             _connect_action(self.action_save, self.save)
@@ -816,11 +819,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def show_quick_start(self):
         QMessageBox.information(self, "RC MetaStudio quick start",
-            "1. Create a dataset, import a UTF-8 CSV, or open a sample project. CSV templates and column mapping are on the import page.\n\n"
+            "1. Create a dataset and name its outcome and arms. Intervention / Control are the comparative defaults; use the actual treatment names when available. Single-arm data use Group, and diagnostic data use Index test. Existing projects retain their names; rename groups from a column header. Import a UTF-8 CSV using the template and mapping on the import page, or open a sample project.\n\n"
             "2. Enter studies in the table. Click the row calculator to edit study data. Calculated effects use complete raw data where available.\n\n"
             "3. Choose an effect metric matching your data. Add a Numeric or Category covariate for meta-regression; subgroup analysis needs a Category.\n\n"
-            "4. Run an analysis, then use the result navigation to select a section or plot. Text report exposes selectable output; Copy report and Export report retain it. Select a plot to edit/export it.\n\n"
-            "Cumulative analysis uses the current study order: sort the table before running. Small-study effects do not establish publication bias.\n\n"
+            "4. Run an analysis, then use the result navigation to select a section or plot. Text report exposes selectable output. Tables provides selectable cells: copy a selection or export the table as CSV. Copy report and Export report keep the analysis identity and table rows. Select a plot to edit or export it.\n\n"
+            "5. Change settings… reopens the executed setup; Run creates another result for comparison. The original stays open.\n\n"
+            "Cumulative analysis follows the input table sequence: sort the table before running. Plot study order changes display only; it cannot change the cumulative sequence. Small-study effects do not establish publication bias.\n\n"
             "Shortcuts: Ctrl+N New, Ctrl+O Open, Ctrl+S Save. Results: Ctrl+T text/figure view, Ctrl+Shift+C copy report, Ctrl+Shift+E export selected plot.")
 
     def meta_subgroup(self, selected_covariate):
@@ -956,7 +960,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             if len(group_names) >= 2:
                 new_state_dict["current_groups"] = group_names[:2]
             else:
-                new_state_dict["current_groups"] = meta_globals.DEFAULT_GROUP_NAMES
+                new_state_dict["current_groups"] = group_names or meta_globals.default_group_names(
+                    self.model.get_current_outcome_type(get_str=False), self.model.get_current_outcome_subtype())
             modified_dataset = edit_window.dataset
 
             self._commit_model_operation(
@@ -1045,11 +1050,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         return sub_menu
 
     def add_metric_action(self, metric, menu):
-        metric_names = meta_globals.ALL_METRIC_NAMES
-
-        metric_action = QAction(str(metric + ": " + metric_names[metric]), self)
-        metric_action.setToolTip(metric_names[metric])
-        metric_action.setStatusTip(metric_names[metric])
+        label = analysis_identity.metric_label(self.model, metric)
+        text = label if metric == "TX Mean" else f"{label} ({metric})"
+        metric_action = QAction(text, self)
+        metric_action.setToolTip(label)
+        metric_action.setStatusTip(label)
         metric_action.setData(metric)
         metric_action.setCheckable(True)
         metric_action.toggled.connect(
@@ -1145,7 +1150,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 return
 
             # Covariate names must remain unique.
-            new_covariate_type = str(form.datatype_cbo_box.currentText()).lower()
+            new_covariate_type = str(form.datatype_cbo_box.currentData())
             self._commit_model_operation(
                 self._make_add_covariate_command(
                     new_covariate_name, new_covariate_type
@@ -1221,7 +1226,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
             def redo_f():
                 return self._add_new_outcome(
-                    new_outcome_name, new_outcome_type, new_outcome_subtype
+                    new_outcome_name, new_outcome_type, new_outcome_subtype, startup_outcome.get("groups")
                 )
 
             previous_outcome = str(self.model.current_outcome_name)
@@ -1292,9 +1297,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model.remove_outcome(added_outcome)
         self.display_outcome(previously_displayed_outcome)
 
-    def _add_new_outcome(self, outcome_name, outcome_type, sub_type=None):
-        self.model.add_new_outcome(outcome_name, outcome_type, sub_type=sub_type)
-        self.display_outcome(outcome_name)
+    def _add_new_outcome(self, outcome_name, outcome_type, sub_type=None, group_names=None):
+        if group_names is not None:
+            self.model.current_groups = list(group_names)
+        self.model.add_new_outcome(outcome_name, outcome_type, sub_type=sub_type, group_names=group_names)
+        self.display_outcome(outcome_name, group_names=group_names)
 
     def _add_new_follow_up_for_cur_outcome(self, follow_up_lbl):
         self.model.add_follow_up_to_current_outcome(follow_up_lbl)
@@ -1388,29 +1395,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             prev_command = meta_globals.CallbackCommand(redo_f, undo_f)
             self._commit_model_operation(prev_command.redo)
 
-    def next_dimension(self):
-        """In keeping with the dimensions metaphor, wherein the various
-        components that can comprise a dataset are 'dimensions' (e.g.,
-        outcomes), this function iterates over the dimensions. So if you call
-        this method, then 'next()', the next method will step forward in the
-        dimension made active here.
-        """
-        if self.current_dimension_index == len(self.dimensions) - 1:
-            self.current_dimension_index = 0
-        else:
-            self.current_dimension_index += 1
-        self.update_dimension()
-
-    def previous_dimension(self):
-        if self.current_dimension_index == 0:
-            self.current_dimension_index = len(self.dimensions) - 1
-        else:
-            self.current_dimension_index -= 1
-        self.update_dimension()
-
     def update_dimension(self):
-        self.current_dimension = self.dimensions[self.current_dimension_index]
-        self.navigation_label.setText(self.current_dimension)
+        self.current_dimension = self.navigation_dimension.currentData()
         dimension = self.current_dimension
         actions = (
             (self.nav_left_btn, f"Previous {dimension}", f"Show the previous {dimension}."),
@@ -1418,7 +1404,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             (self.nav_add_btn, f"Add {dimension}", f"Add a new {dimension} to the dataset."),
         )
         for button, name, description in actions:
-            button.setText(name)
+            button.setText(name.split()[0])
             button.setToolTip(name)
             button.setStatusTip(description)
             button.setAccessibleName(name)
@@ -1923,10 +1909,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._update_recent_project_nonfatal(destination, "saved")
         return True
 
-    def _make_new_dataset_and_setup_spreadsheet(self, dataset_info):
+    def _make_new_dataset_and_setup_spreadsheet(self, dataset_info: main_wizard.DatasetInfo) -> None:
+        dataset_info = dataset_info.copy()
+        dataset_info["groups"] = dataset_info.get("groups") or meta_globals.default_group_names(
+            meta_globals.STR_TO_TYPE_DICT[required(dataset_info["data_type"], "Dataset data type")],
+            dataset_info.get("sub_type"))
         is_diagnostic = dataset_info["data_type"] == "diagnostic"
         self.new_dataset(is_diagnostic=is_diagnostic)
         self.model.dataset.summary = copy.deepcopy(dataset_info)
+        self.model.dataset.summary.pop("groups", None)
 
         tmp = self.current_dimension
         self.current_dimension = "outcome"

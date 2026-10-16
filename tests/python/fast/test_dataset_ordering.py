@@ -47,8 +47,8 @@ def test_dataset_group_and_follow_up_order_is_stable_across_hash_seeds():
         """
     )
     expected = {
-        "all_groups": ["tx A", "tx B", "tx C", "tx D"],
-        "fu_groups": ["tx A", "tx B", "tx C", "tx D"],
+        "all_groups": ["Intervention", "Control", "tx C", "tx D"],
+        "fu_groups": ["Intervention", "Control", "tx C", "tx D"],
         "follow_ups": ["baseline", "week 4", "week 8"],
     }
 

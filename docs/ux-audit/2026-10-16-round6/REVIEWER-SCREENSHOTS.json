@@ -1,0 +1,670 @@
+[
+  {
+    "key": "reviewer-pft-default",
+    "label": "PFT prediction interval \u00b7 default",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-pft-default-after.png",
+      "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/14-0-reviewer-prediction-after.png",
+      "sha256": "47c4312229d8f39c2008b8861e055acff35aeebec08bef3ae5834d7051eb5236"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions",
+      "step": 14,
+      "action": "reviewer-prediction-after",
+      "measure": "PFT",
+      "workflow": "standard",
+      "style": "default"
+    },
+    "observation": "Same six-study counts: the PI now uses the pooled harmonic-mean inverse. Public-package reference values and every Text/Tables/copy/export row are retained. Default marks share blue ink; journal colours are unchanged.",
+    "before": {
+      "path": "reviewer-screenshots/reviewer-pft-default-before.png",
+      "source": "docs/ux-audit/2026-10-16-round6/screenshots/axis-pft-default-after.png",
+      "sha256": "2c94bfd74968c46d154be1834c169950db2839959409d656e48c0da433f101c6"
+    }
+  },
+  {
+    "key": "reviewer-pft-revman",
+    "label": "PFT prediction interval \u00b7 revman",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-pft-revman-after.png",
+      "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/27-0-reviewer-prediction-after.png",
+      "sha256": "0a7945c07bee9c7e99a55109e252eb62f04bcc8525ed588646010a5da6eb56bf"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions",
+      "step": 27,
+      "action": "reviewer-prediction-after",
+      "measure": "PFT",
+      "workflow": "standard",
+      "style": "revman"
+    },
+    "observation": "Same six-study counts: the PI now uses the pooled harmonic-mean inverse. Public-package reference values and every Text/Tables/copy/export row are retained. Default marks share blue ink; journal colours are unchanged.",
+    "before": {
+      "path": "reviewer-screenshots/reviewer-pft-revman-before.png",
+      "source": "docs/ux-audit/2026-10-16-round6/screenshots/axis-pft-revman-after.png",
+      "sha256": "af5c0fc153d69a498fc3944b41b9d45d3118ae2f9a446869827e3861453a962f"
+    }
+  },
+  {
+    "key": "reviewer-pft-bmj",
+    "label": "PFT prediction interval \u00b7 bmj",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-pft-bmj-after.png",
+      "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/40-0-reviewer-prediction-after.png",
+      "sha256": "f300d748dd3d379fe540848c2b3117d36e121de07e986444cd0cc00f9c439be6"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions",
+      "step": 40,
+      "action": "reviewer-prediction-after",
+      "measure": "PFT",
+      "workflow": "standard",
+      "style": "bmj"
+    },
+    "observation": "Same six-study counts: the PI now uses the pooled harmonic-mean inverse. Public-package reference values and every Text/Tables/copy/export row are retained. Default marks share blue ink; journal colours are unchanged.",
+    "before": {
+      "path": "reviewer-screenshots/reviewer-pft-bmj-before.png",
+      "source": "docs/ux-audit/2026-10-16-round6/screenshots/axis-pft-bmj-after.png",
+      "sha256": "020978c56fae5fad6809b37245af66bd4ce257e5e853cadd83dddf276cdca4ef"
+    }
+  },
+  {
+    "key": "reviewer-pft-cumulative",
+    "label": "PFT cumulative inference",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-pft-cumulative-after.png",
+      "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/130-0-reviewer-prediction-after.png",
+      "sha256": "9d36384a14fde2de8f97a920fad75c31d13cfde440c20567cce12a2e15e353ae"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions",
+      "step": 130,
+      "action": "reviewer-prediction-after",
+      "measure": "PFT",
+      "workflow": "cumulative",
+      "style": "default"
+    },
+    "observation": "The actual fit supplies the sample sizes. Each subgroup footer and table row is compared by entered group order; cumulative/omission footers use their overall fit. All three styles have native proof. Controlled subgroup covariate captions differ (Group / Region).",
+    "before": {
+      "path": "reviewer-screenshots/reviewer-pft-cumulative-before.png",
+      "source": "artifacts/verification/rcms/20261015T121551Z-f81290e9-project-axis-sequential/11-0-axis-pft-subset-inverses.png",
+      "sha256": "8b8671cf3bc3b7e091cf06eea3b84431ad1de7b9d013998029b8ce1e7f045d10"
+    }
+  },
+  {
+    "key": "reviewer-pft-leave-one-out",
+    "label": "PFT leave-one-out inference",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-pft-leave-one-out-after.png",
+      "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/166-0-reviewer-prediction-after.png",
+      "sha256": "c599f1412e21347c227a2fd4ba79b2c5a5faf28efc2190099df67399df4e9853"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions",
+      "step": 166,
+      "action": "reviewer-prediction-after",
+      "measure": "PFT",
+      "workflow": "leave-one-out",
+      "style": "default"
+    },
+    "observation": "The actual fit supplies the sample sizes. Each subgroup footer and table row is compared by entered group order; cumulative/omission footers use their overall fit. All three styles have native proof. Controlled subgroup covariate captions differ (Group / Region).",
+    "before": {
+      "path": "reviewer-screenshots/reviewer-pft-leave-one-out-before.png",
+      "source": "artifacts/verification/rcms/20261015T121551Z-f81290e9-project-axis-sequential/21-0-axis-pft-subset-inverses.png",
+      "sha256": "a751d94a28fa60982723c5bcbb7bb6417319c043170b3d994523e15c375410c5"
+    }
+  },
+  {
+    "key": "reviewer-pft-subgroup",
+    "label": "PFT subgroup inference",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-pft-subgroup-after.png",
+      "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/203-0-reviewer-prediction-after.png",
+      "sha256": "9c3af8dabcdff94330ae516add0bbdfa3f2e1292232e950284f3967252e0b45d"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions",
+      "step": 203,
+      "action": "reviewer-prediction-after",
+      "measure": "PFT",
+      "workflow": "subgroup",
+      "style": "default"
+    },
+    "observation": "The actual fit supplies the sample sizes. Each subgroup footer and table row is compared by entered group order; cumulative/omission footers use their overall fit. All three styles have native proof. Controlled subgroup covariate captions differ (Group / Region).",
+    "before": {
+      "path": "reviewer-screenshots/reviewer-pft-subgroup-before.png",
+      "source": "artifacts/verification/rcms/20261015T121551Z-f81290e9-project-axis-sequential/31-0-axis-pft-subset-inverses.png",
+      "sha256": "9c3a84b49b374471bd39f3e4f4fda879a0fae73036c3337020d7e51556597d1f"
+    }
+  },
+  {
+    "key": "reviewer-subgroup-footer-default",
+    "label": "PFT subgroup lower footer \u00b7 default",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-subgroup-footer-default-after.png",
+      "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/204-0-reviewer-prediction-footer.png",
+      "sha256": "25d5c29ef93848e5e59dc62036c2a82ff7dfb5008875a08012d1a22bd62bed89"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions",
+      "step": 204,
+      "action": "reviewer-prediction-footer",
+      "measure": "PFT",
+      "workflow": "subgroup",
+      "style": "default"
+    },
+    "observation": "Native lower viewport shows the second subgroup and overall PI, totals, null test and axis. The native top view and actual SVG retain the first subgroup too."
+  },
+  {
+    "key": "reviewer-subgroup-footer-revman",
+    "label": "PFT subgroup lower footer \u00b7 revman",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-subgroup-footer-revman-after.png",
+      "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/218-0-reviewer-prediction-footer.png",
+      "sha256": "de7c394bc8cb9f399d8202dc40f1f8f8c57e6f8cf12ff91bdd14e5fa0a4b8f0b"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions",
+      "step": 218,
+      "action": "reviewer-prediction-footer",
+      "measure": "PFT",
+      "workflow": "subgroup",
+      "style": "revman"
+    },
+    "observation": "Native lower viewport shows the second subgroup and overall PI, totals, null test and axis. The native top view and actual SVG retain the first subgroup too."
+  },
+  {
+    "key": "reviewer-subgroup-footer-bmj",
+    "label": "PFT subgroup lower footer \u00b7 bmj",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-subgroup-footer-bmj-after.png",
+      "source": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions/232-0-reviewer-prediction-footer.png",
+      "sha256": "f191f2e29db7c2aec19e73cf07b5dbd936d1e4266eeb6fd8fc1532fbf2661eea"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170508Z-45235f80-project-reviewer-predictions",
+      "step": 232,
+      "action": "reviewer-prediction-footer",
+      "measure": "PFT",
+      "workflow": "subgroup",
+      "style": "bmj"
+    },
+    "observation": "Native lower viewport shows the second subgroup and overall PI, totals, null test and axis. The native top view and actual SVG retain the first subgroup too."
+  },
+  {
+    "key": "reviewer-onearm-proportion-default",
+    "label": "onearm-proportion \u00b7 unnamed group \u00b7 default",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-onearm-proportion-default-after.png",
+      "source": "artifacts/verification/rcms/20261015T164852Z-3e471d67-project-reviewer-groups/12-0-reviewer-group-after.png",
+      "sha256": "bff32d6765e9bfb490996b105c098e71eeb2e784a2b4b7581df0ea798ef4eae0"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T164852Z-3e471d67-project-reviewer-groups",
+      "step": 12,
+      "action": "reviewer-group-after",
+      "family": "onearm-proportion",
+      "group": "Group",
+      "style": "default"
+    },
+    "observation": "No bare Group spanner. Raw mean columns are absent on this entered-effect output path; its identity remains single-arm mean. Meaningful custom names remain in the corresponding native cases.",
+    "before": {
+      "path": "reviewer-screenshots/reviewer-onearm-proportion-default-before.png",
+      "source": "artifacts/verification/rcms/20261015T161608Z-77f50155-project-reviewer-groups/12-0-reviewer-group-before.png",
+      "sha256": "220a7dc659e1a09fbe8e1853a8a0ccb8501a93fd390387f1dfbda96f3fc4f744"
+    }
+  },
+  {
+    "key": "reviewer-onearm-proportion-revman",
+    "label": "onearm-proportion \u00b7 unnamed group \u00b7 revman",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-onearm-proportion-revman-after.png",
+      "source": "artifacts/verification/rcms/20261015T164852Z-3e471d67-project-reviewer-groups/24-0-reviewer-group-after.png",
+      "sha256": "2d0e6c702b9eb9a95e06afb11f471258ae769a5a884a00554a15c21c55fc1945"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T164852Z-3e471d67-project-reviewer-groups",
+      "step": 24,
+      "action": "reviewer-group-after",
+      "family": "onearm-proportion",
+      "group": "Group",
+      "style": "revman"
+    },
+    "observation": "No bare Group spanner. Raw mean columns are absent on this entered-effect output path; its identity remains single-arm mean. Meaningful custom names remain in the corresponding native cases.",
+    "before": {
+      "path": "reviewer-screenshots/reviewer-onearm-proportion-revman-before.png",
+      "source": "artifacts/verification/rcms/20261015T161608Z-77f50155-project-reviewer-groups/23-0-reviewer-group-before.png",
+      "sha256": "2edb962a99086ce3928f33c7f8372554074f53a48a3c6e53ff16b6730dafe33d"
+    }
+  },
+  {
+    "key": "reviewer-onearm-proportion-bmj",
+    "label": "onearm-proportion \u00b7 unnamed group \u00b7 bmj",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-onearm-proportion-bmj-after.png",
+      "source": "artifacts/verification/rcms/20261015T164852Z-3e471d67-project-reviewer-groups/36-0-reviewer-group-after.png",
+      "sha256": "5061b004695d30f88375ca880eb0a8998a8057b211b2e12102dcef1ce3c5de35"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T164852Z-3e471d67-project-reviewer-groups",
+      "step": 36,
+      "action": "reviewer-group-after",
+      "family": "onearm-proportion",
+      "group": "Group",
+      "style": "bmj"
+    },
+    "observation": "No bare Group spanner. Raw mean columns are absent on this entered-effect output path; its identity remains single-arm mean. Meaningful custom names remain in the corresponding native cases.",
+    "before": {
+      "path": "reviewer-screenshots/reviewer-onearm-proportion-bmj-before.png",
+      "source": "artifacts/verification/rcms/20261015T161608Z-77f50155-project-reviewer-groups/34-0-reviewer-group-before.png",
+      "sha256": "61ee97f375f7c8d4e31ffe9bb5d35a0f81f017839133783b7f14aed3df374e82"
+    }
+  },
+  {
+    "key": "reviewer-onearm-proportion-custom",
+    "label": "onearm-proportion \u00b7 meaningful group",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-onearm-proportion-custom-after.png",
+      "source": "artifacts/verification/rcms/20261015T164852Z-3e471d67-project-reviewer-groups/48-0-reviewer-group-after.png",
+      "sha256": "8303552a4aca969e7675414c7b15231f2ced736656c9c1a99d8187273ab1215e"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T164852Z-3e471d67-project-reviewer-groups",
+      "step": 48,
+      "action": "reviewer-group-after",
+      "family": "onearm-proportion",
+      "group": "Participants",
+      "style": "default"
+    },
+    "observation": "Participants remains a visible identity. The proportion raw-data spanner is retained; the mean name remains in its standalone caption. RevMan/BMJ custom-name cases are asserted too.",
+    "before": {
+      "path": "reviewer-screenshots/reviewer-onearm-proportion-custom-before.png",
+      "source": "artifacts/verification/rcms/20261015T161608Z-77f50155-project-reviewer-groups/45-0-reviewer-group-before.png",
+      "sha256": "9a6e48de87267189fc8cb63bdb1d4d99abcb6eeb091b76d992aaa29b17cb094c"
+    }
+  },
+  {
+    "key": "reviewer-onearm-mean-default",
+    "label": "onearm-mean \u00b7 unnamed group \u00b7 default",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-onearm-mean-default-after.png",
+      "source": "artifacts/verification/rcms/20261015T164852Z-3e471d67-project-reviewer-groups/84-0-reviewer-group-after.png",
+      "sha256": "6c205b96908b389d4a19d15d6878bdda7cd9515db795cbbefbda66fb09c88ef4"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T164852Z-3e471d67-project-reviewer-groups",
+      "step": 84,
+      "action": "reviewer-group-after",
+      "family": "onearm-mean",
+      "group": "Group",
+      "style": "default"
+    },
+    "observation": "No bare Group spanner. Raw mean columns are absent on this entered-effect output path; its identity remains single-arm mean. Meaningful custom names remain in the corresponding native cases.",
+    "before": {
+      "path": "reviewer-screenshots/reviewer-onearm-mean-default-before.png",
+      "source": "artifacts/verification/rcms/20261015T161608Z-77f50155-project-reviewer-groups/78-0-reviewer-group-before.png",
+      "sha256": "6c205b96908b389d4a19d15d6878bdda7cd9515db795cbbefbda66fb09c88ef4"
+    }
+  },
+  {
+    "key": "reviewer-onearm-mean-revman",
+    "label": "onearm-mean \u00b7 unnamed group \u00b7 revman",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-onearm-mean-revman-after.png",
+      "source": "artifacts/verification/rcms/20261015T164852Z-3e471d67-project-reviewer-groups/96-0-reviewer-group-after.png",
+      "sha256": "2abae5b7bc895871037c48b9406f59cd1e35d8e9c3215de9c91bd06eca6819db"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T164852Z-3e471d67-project-reviewer-groups",
+      "step": 96,
+      "action": "reviewer-group-after",
+      "family": "onearm-mean",
+      "group": "Group",
+      "style": "revman"
+    },
+    "observation": "No bare Group spanner. Raw mean columns are absent on this entered-effect output path; its identity remains single-arm mean. Meaningful custom names remain in the corresponding native cases.",
+    "before": {
+      "path": "reviewer-screenshots/reviewer-onearm-mean-revman-before.png",
+      "source": "artifacts/verification/rcms/20261015T161608Z-77f50155-project-reviewer-groups/89-0-reviewer-group-before.png",
+      "sha256": "2abae5b7bc895871037c48b9406f59cd1e35d8e9c3215de9c91bd06eca6819db"
+    }
+  },
+  {
+    "key": "reviewer-onearm-mean-bmj",
+    "label": "onearm-mean \u00b7 unnamed group \u00b7 bmj",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-onearm-mean-bmj-after.png",
+      "source": "artifacts/verification/rcms/20261015T164852Z-3e471d67-project-reviewer-groups/108-0-reviewer-group-after.png",
+      "sha256": "c4589a319eab6e6c07ac7cbdaad782badbb5ef9e4a19ec59c2e8c69b7883e18c"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T164852Z-3e471d67-project-reviewer-groups",
+      "step": 108,
+      "action": "reviewer-group-after",
+      "family": "onearm-mean",
+      "group": "Group",
+      "style": "bmj"
+    },
+    "observation": "No bare Group spanner. Raw mean columns are absent on this entered-effect output path; its identity remains single-arm mean. Meaningful custom names remain in the corresponding native cases.",
+    "before": {
+      "path": "reviewer-screenshots/reviewer-onearm-mean-bmj-before.png",
+      "source": "artifacts/verification/rcms/20261015T161608Z-77f50155-project-reviewer-groups/100-0-reviewer-group-before.png",
+      "sha256": "c4589a319eab6e6c07ac7cbdaad782badbb5ef9e4a19ec59c2e8c69b7883e18c"
+    }
+  },
+  {
+    "key": "reviewer-onearm-mean-custom",
+    "label": "onearm-mean \u00b7 meaningful group",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-onearm-mean-custom-after.png",
+      "source": "artifacts/verification/rcms/20261015T164852Z-3e471d67-project-reviewer-groups/120-0-reviewer-group-after.png",
+      "sha256": "10132928fd47d56354e00433aa613f870240a8974437c984e44e356011ce7331"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T164852Z-3e471d67-project-reviewer-groups",
+      "step": 120,
+      "action": "reviewer-group-after",
+      "family": "onearm-mean",
+      "group": "Participants",
+      "style": "default"
+    },
+    "observation": "Participants remains a visible identity. The proportion raw-data spanner is retained; the mean name remains in its standalone caption. RevMan/BMJ custom-name cases are asserted too.",
+    "before": {
+      "path": "reviewer-screenshots/reviewer-onearm-mean-custom-before.png",
+      "source": "artifacts/verification/rcms/20261015T161608Z-77f50155-project-reviewer-groups/111-0-reviewer-group-before.png",
+      "sha256": "10132928fd47d56354e00433aa613f870240a8974437c984e44e356011ce7331"
+    }
+  },
+  {
+    "key": "reviewer-diagnostic-continuous",
+    "label": "Diagnostic coefficients \u00b7 continuous",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-diagnostic-continuous-after.png",
+      "source": "artifacts/verification/rcms/20261015T171420Z-f126682b-project-round6-polish/17-0-diagnostic-selected-precision.png",
+      "sha256": "01d2820c93bd85c9154faa255a200275ea23b95b2033eb9d349bef0790695bce"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T171420Z-f126682b-project-round6-polish",
+      "step": 17,
+      "action": "diagnostic-selected-precision",
+      "shape": "continuous",
+      "digits": 6
+    },
+    "observation": "Logit estimate/bound scale and odds-ratio intervals are explicit. Raw coefficients and selected precision are unchanged; report and table copy/export bytes are checked.",
+    "before": {
+      "path": "reviewer-screenshots/reviewer-diagnostic-continuous-before.png",
+      "source": "artifacts/verification/rcms/20261015T125640Z-9d5f8d92-project-round6-polish/15-0-diagnostic-selected-precision.png",
+      "sha256": "5ae7f20a779cfb52b981424117237587b71cab06e264534a52e4a471aa2705d0"
+    }
+  },
+  {
+    "key": "reviewer-diagnostic-factor",
+    "label": "Diagnostic coefficients \u00b7 factor",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-diagnostic-factor-after.png",
+      "source": "artifacts/verification/rcms/20261015T171420Z-f126682b-project-round6-polish/26-0-diagnostic-selected-precision.png",
+      "sha256": "27c35cf00ea007fa614e409a4a9cc18d8ff40494e1d67fa6a24eaeda54f8fc2d"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T171420Z-f126682b-project-round6-polish",
+      "step": 26,
+      "action": "diagnostic-selected-precision",
+      "shape": "factor",
+      "digits": 2
+    },
+    "observation": "Logit estimate/bound scale and odds-ratio intervals are explicit. Raw coefficients and selected precision are unchanged; report and table copy/export bytes are checked.",
+    "before": {
+      "path": "reviewer-screenshots/reviewer-diagnostic-factor-before.png",
+      "source": "artifacts/verification/rcms/20261015T125640Z-9d5f8d92-project-round6-polish/22-0-diagnostic-selected-precision.png",
+      "sha256": "22e15190f3c71adf757b53bfc94094a046f9082d3a90ce90cb218411c7cab0f9"
+    }
+  },
+  {
+    "key": "reviewer-table-sensitivity",
+    "label": "Sensitivity coefficient table and CSV",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-table-sensitivity-after.png",
+      "source": "artifacts/verification/rcms/20261015T171420Z-f126682b-project-round6-polish/18-0-reviewer-table-surface.png",
+      "sha256": "0a1ca26ad5c5fac50d80937e836c56a92b188c02c2a4f5c92b4b09006ae43f07"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T171420Z-f126682b-project-round6-polish",
+      "step": 18,
+      "action": "reviewer-table-surface",
+      "title": "Sensitivity coefficients",
+      "label": "diagnostic-continuous-6-Sensitivity"
+    },
+    "observation": "Actual Tables selector, header/cell widgets, Copy table and exported UTF-8 CSV match the structured report. The retained native drive covers both sides at two/six digits and all three moderator shapes."
+  },
+  {
+    "key": "reviewer-table-specificity",
+    "label": "Specificity coefficient table and CSV",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-table-specificity-after.png",
+      "source": "artifacts/verification/rcms/20261015T171420Z-f126682b-project-round6-polish/19-0-reviewer-table-surface.png",
+      "sha256": "a89f56f1ca0b0f26004c4cfb11a641f931cb5b8ae669797e81846790ada61a48"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T171420Z-f126682b-project-round6-polish",
+      "step": 19,
+      "action": "reviewer-table-surface",
+      "title": "Specificity coefficients",
+      "label": "diagnostic-continuous-6-Specificity"
+    },
+    "observation": "Actual Tables selector, header/cell widgets, Copy table and exported UTF-8 CSV match the structured report. The retained native drive covers both sides at two/six digits and all three moderator shapes."
+  },
+  {
+    "key": "reviewer-multiple-table-sensitivity",
+    "label": "Multiple moderators \u00b7 Sensitivity table",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-multiple-table-sensitivity-after.png",
+      "source": "artifacts/verification/rcms/20261015T171420Z-f126682b-project-round6-polish/54-0-reviewer-table-surface.png",
+      "sha256": "c7d0fd09a443faf3b084558584ecdba25e790e98e081327d24d1fbac97f8aa7f"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T171420Z-f126682b-project-round6-polish",
+      "step": 54,
+      "action": "reviewer-table-surface",
+      "title": "Sensitivity coefficients",
+      "label": "diagnostic-multiple-6-Sensitivity"
+    },
+    "observation": "The multiple-moderator report overview needs scrolling; this actual Tables frame shows every changed header and all fitted rows. Copy and exported CSV retain the same scale labels and values."
+  },
+  {
+    "key": "reviewer-multiple-table-specificity",
+    "label": "Multiple moderators \u00b7 Specificity table",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-multiple-table-specificity-after.png",
+      "source": "artifacts/verification/rcms/20261015T171420Z-f126682b-project-round6-polish/55-0-reviewer-table-surface.png",
+      "sha256": "e62307ac0ba409e0e7edd4d2b9cdd26d14586891801830d66b5ddee8eba1d2dc"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T171420Z-f126682b-project-round6-polish",
+      "step": 55,
+      "action": "reviewer-table-surface",
+      "title": "Specificity coefficients",
+      "label": "diagnostic-multiple-6-Specificity"
+    },
+    "observation": "The multiple-moderator report overview needs scrolling; this actual Tables frame shows every changed header and all fitted rows. Copy and exported CSV retain the same scale labels and values."
+  },
+  {
+    "key": "reviewer-colour-6",
+    "label": "Default ink \u00b7 analysis-amino-binary-cumulative \u00b7 analysis.cumulative.cumulative_forest_plot.1",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-colour-6-after.png",
+      "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/07-0-reviewer-colour-after.png",
+      "sha256": "4d27dfb91b2f7cec0a8c8b3827e978e0dabda0556607aef0de2214e7bbf835f5"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours",
+      "step": 7,
+      "action": "reviewer-colour-after"
+    },
+    "observation": "Rendered blue boxes/intervals/caps/diamonds, black study text, zebra contrast and four decoded export formats are checked. PNG/TIFF/PDF also contain matching blue samples. Fit fields stay exact."
+  },
+  {
+    "key": "reviewer-colour-18",
+    "label": "Default ink \u00b7 analysis-amino-binary-leave-one-out \u00b7 analysis.leave-one-out.loo_forest_plot.1",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-colour-18-after.png",
+      "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/19-0-reviewer-colour-after.png",
+      "sha256": "21642ba9ebf0a6bb293ceb32f5c4af76c01620d9d8d05436db9d0d80c0cc17c7"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours",
+      "step": 19,
+      "action": "reviewer-colour-after"
+    },
+    "observation": "Rendered blue boxes/intervals/caps/diamonds, black study text, zebra contrast and four decoded export formats are checked. PNG/TIFF/PDF also contain matching blue samples. Fit fields stay exact."
+  },
+  {
+    "key": "reviewer-colour-30",
+    "label": "Default ink \u00b7 analysis-amino-binary-subgroup \u00b7 analysis.subgroup.subgroups_forest_plot.1",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-colour-30-after.png",
+      "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/31-0-reviewer-colour-after.png",
+      "sha256": "c435aa727f965503b9b597f68213149831c44aa96d78b9d6d337a54f82d8014d"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours",
+      "step": 31,
+      "action": "reviewer-colour-after"
+    },
+    "observation": "Rendered blue boxes/intervals/caps/diamonds, black study text, zebra contrast and four decoded export formats are checked. PNG/TIFF/PDF also contain matching blue samples. Fit fields stay exact."
+  },
+  {
+    "key": "reviewer-colour-79",
+    "label": "Default ink \u00b7 analysis-data-onearm-mean \u00b7 analysis.standard.forest_plot.1",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-colour-79-after.png",
+      "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/80-0-reviewer-colour-after.png",
+      "sha256": "5f4f9367073e326bccace9b66a812dbaa95afb1e58da977b39ff84018f26732b"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours",
+      "step": 80,
+      "action": "reviewer-colour-after"
+    },
+    "observation": "Rendered blue boxes/intervals/caps/diamonds, black study text, zebra contrast and four decoded export formats are checked. PNG/TIFF/PDF also contain matching blue samples. Fit fields stay exact."
+  },
+  {
+    "key": "reviewer-colour-96",
+    "label": "Default ink \u00b7 analysis-data-diagnostic \u00b7 diagnostic.Sens.forest",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-colour-96-after.png",
+      "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/97-0-reviewer-colour-after.png",
+      "sha256": "e223f8d9283bf03fb759aeec4f95cbd3fdfac5204aadd69020d42e380b31330d"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours",
+      "step": 97,
+      "action": "reviewer-colour-after"
+    },
+    "observation": "Rendered blue boxes/intervals/caps/diamonds, black study text, zebra contrast and four decoded export formats are checked. PNG/TIFF/PDF also contain matching blue samples. Fit fields stay exact."
+  },
+  {
+    "key": "reviewer-colour-103",
+    "label": "Default ink \u00b7 analysis-data-diagnostic \u00b7 diagnostic.Spec.forest",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-colour-103-after.png",
+      "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/104-0-reviewer-colour-after.png",
+      "sha256": "38bd15564a030e9311d242e4b99e4f7893f3282ad4647db7b24ff580aba80237"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours",
+      "step": 104,
+      "action": "reviewer-colour-after"
+    },
+    "observation": "Rendered blue boxes/intervals/caps/diamonds, black study text, zebra contrast and four decoded export formats are checked. PNG/TIFF/PDF also contain matching blue samples. Fit fields stay exact."
+  },
+  {
+    "key": "reviewer-colour-112",
+    "label": "Default ink \u00b7 HR \u00b7 analysis.standard.forest_plot.1",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-colour-112-after.png",
+      "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/113-0-reviewer-colour-after.png",
+      "sha256": "6a4aa53995870dcc36f3bcf8933bf3459538b152f729471d7eb2e0e3d8ecd3a8"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours",
+      "step": 113,
+      "action": "reviewer-colour-after"
+    },
+    "observation": "Rendered blue boxes/intervals/caps/diamonds, black study text, zebra contrast and four decoded export formats are checked. PNG/TIFF/PDF also contain matching blue samples. Fit fields stay exact."
+  },
+  {
+    "key": "reviewer-colour-121",
+    "label": "Default ink \u00b7 IRR \u00b7 analysis.standard.forest_plot.1",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-colour-121-after.png",
+      "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/122-0-reviewer-colour-after.png",
+      "sha256": "b26a4eb2dffd878d9c4fcb6b3b65a81d020f42af231e58fb73427da5d94eead9"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours",
+      "step": 122,
+      "action": "reviewer-colour-after"
+    },
+    "observation": "Rendered blue boxes/intervals/caps/diamonds, black study text, zebra contrast and four decoded export formats are checked. PNG/TIFF/PDF also contain matching blue samples. Fit fields stay exact."
+  },
+  {
+    "key": "reviewer-arrows",
+    "label": "Default clipped CI arrows",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-arrows-after.png",
+      "source": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours/49-0-reviewer-default-clipped-arrows.png",
+      "sha256": "fa696e605b5079f72c56386c3fa6b3c52b056427d697a634b1eec8f6311c20d8"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170921Z-10577a5d-project-reviewer-colours",
+      "step": 49,
+      "action": "reviewer-default-clipped-arrows"
+    },
+    "observation": "Actual Edit plot limits produce blue arrow polygons. Unclipped caps are checked before editing; all four exported formats retain the accent and the fitted numerical fields are unchanged."
+  },
+  {
+    "key": "reviewer-about-version",
+    "label": "About 0.5.0",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-about-version-after.png",
+      "source": "artifacts/verification/rcms/20261015T170059Z-08042b0e-project-reviewer-groups/148-0-reviewer-about-version.png",
+      "sha256": "9cb9611cde2db2b94dcf6a4f767fc741eb7b851f0a430de51d0f596e67c9f168"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170059Z-08042b0e-project-reviewer-groups",
+      "step": 148,
+      "action": "reviewer-about-version"
+    },
+    "observation": "Original 0.4.2 project and paired R settings are retained under legacy-default with hashes. Internal default reopens as Default; the newly saved/reopened project manifest records application.version 0.5.0. Installed RCMetaR also reports 0.5.0."
+  },
+  {
+    "key": "reviewer-legacy-default-setup",
+    "label": "Old default key in setup",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-legacy-default-setup-after.png",
+      "source": "artifacts/verification/rcms/20261015T170059Z-08042b0e-project-reviewer-groups/146-0-reviewer-legacy-default-setup.png",
+      "sha256": "6d6161f81cf32e0f0a68c1120c7589d3e64b64d2f2b082e61ca39f56b26c42e6"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170059Z-08042b0e-project-reviewer-groups",
+      "step": 146,
+      "action": "reviewer-legacy-default-setup"
+    },
+    "observation": "Original 0.4.2 project and paired R settings are retained under legacy-default with hashes. Internal default reopens as Default; the newly saved/reopened project manifest records application.version 0.5.0. Installed RCMetaR also reports 0.5.0."
+  },
+  {
+    "key": "reviewer-version-reopened",
+    "label": "Saved 0.5.0 project reopened",
+    "after": {
+      "path": "reviewer-screenshots/reviewer-version-reopened-after.png",
+      "source": "artifacts/verification/rcms/20261015T170059Z-08042b0e-project-reviewer-groups/149-0-reviewer-version-reopened.png",
+      "sha256": "c3462eed137e36fec0955cc1c5e92243296373b926fb854f5ca2ec524d36564c"
+    },
+    "evidence": {
+      "evidence": "artifacts/verification/rcms/20261015T170059Z-08042b0e-project-reviewer-groups",
+      "step": 149,
+      "action": "reviewer-version-reopened"
+    },
+    "observation": "Original 0.4.2 project and paired R settings are retained under legacy-default with hashes. Internal default reopens as Default; the newly saved/reopened project manifest records application.version 0.5.0. Installed RCMetaR also reports 0.5.0."
+  }
+]

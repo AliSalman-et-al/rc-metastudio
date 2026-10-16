@@ -35,17 +35,10 @@ rcmetar.truncate.plot.display.text <- function(value, limit=72L) {
     value
 }
 
-rcmetar.normalize.plot.text.params <- function(params, limit=rcmetar.plot.text.input.limit) {
+rcmetar.normalize.plot.text.params <- function(params) {
     for (name in c("fp_xlabel", "bp_xlabel")) {
         if (name %in% names(params) && rcmetar.is.plot.default.text(params[[name]])) {
             params[[name]] <- NULL
-        }
-    }
-    for (name in c("fp_col1_str", "fp_col2_str", "fp_col3_str", "fp_col4_str", "fp_xlabel")) {
-        value <- params[[name]]
-        if (!is.null(value) && length(value) > 0 && !is.na(value[[1]]) &&
-                !identical(value[[1]], "[default]")) {
-            params[[name]] <- rcmetar.limit.plot.input.text(value, limit)
         }
     }
     params

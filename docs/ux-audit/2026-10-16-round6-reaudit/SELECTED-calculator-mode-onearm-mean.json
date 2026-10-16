@@ -1,0 +1,18 @@
+[
+  {
+    "path": "screenshots/calculator-mode-onearm-mean-15-0-calculator-mode-layout.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201955Z-319d97ab-calculator-mode-onearm-mean/15-0-calculator-mode-layout.png",
+    "sha256": "e964893e977bd6881afd39c677741ad85e7e9c17f7b053e59c1aacac68cdd269",
+    "action": "calculator-mode-layout",
+    "step": 15,
+    "scenario": "calculator-mode-onearm-mean"
+  },
+  {
+    "path": "screenshots/calculator-mode-onearm-mean-18-0-calculator-mode-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T201955Z-319d97ab-calculator-mode-onearm-mean/18-0-calculator-mode-reopened.png",
+    "sha256": "c1a88978392d703afb1411fd14590b491cc95f551e5b962704bf391cf5098094",
+    "action": "calculator-mode-reopened",
+    "step": 18,
+    "scenario": "calculator-mode-onearm-mean"
+  }
+]

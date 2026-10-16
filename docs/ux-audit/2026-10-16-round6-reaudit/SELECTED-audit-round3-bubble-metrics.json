@@ -1,0 +1,194 @@
+[
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-11-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/11-0-round5-bubble-bounds.png",
+    "sha256": "77c540d1fa5ab9e5263a09a32d44b2ee2bfcd94f8e5513dc6d76967b512c4fb5",
+    "action": "round5-bubble-bounds",
+    "step": 11,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-21-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/21-0-round5-bubble-bounds.png",
+    "sha256": "626f9aa89464ae7fa794547280724590d217eb85a7b7fcc8843696764dce41da",
+    "action": "round5-bubble-bounds",
+    "step": 21,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-31-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/31-0-round5-bubble-bounds.png",
+    "sha256": "9debb2d594a66ffec0ab9079ee90cbe145d26aee7636b0caa3f83ceb6a1ca36f",
+    "action": "round5-bubble-bounds",
+    "step": 31,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-41-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/41-0-round5-bubble-bounds.png",
+    "sha256": "8354e858530093addb1b81dd3f9b5699ee8412ddca700b6684adff864858bf92",
+    "action": "round5-bubble-bounds",
+    "step": 41,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-51-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/51-0-round5-bubble-bounds.png",
+    "sha256": "3c5dd755ea6dcfe5550013082405bc3c6e60d6cfab1c9b371e00bbf067b6728a",
+    "action": "round5-bubble-bounds",
+    "step": 51,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-61-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/61-0-round5-bubble-bounds.png",
+    "sha256": "2a50e017cfc19ff1af5e330856d4930cb422dbcee83d5edc871212c8e20f59d8",
+    "action": "round5-bubble-bounds",
+    "step": 61,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-71-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/71-0-round5-bubble-bounds.png",
+    "sha256": "d82c4f43063c83dac179f814a78183200cb89fc6b81c38b7eaddb1e2b631d732",
+    "action": "round5-bubble-bounds",
+    "step": 71,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-81-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/81-0-round5-bubble-bounds.png",
+    "sha256": "f18973a35dc2136bdb7eda40920b68899fd9c5e617e479c7e9333af129c2f8cc",
+    "action": "round5-bubble-bounds",
+    "step": 81,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-91-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/91-0-round5-bubble-bounds.png",
+    "sha256": "f4ba061c851f29b02d119fd12ba9d9c1dcc08cff3d193703e88468b176dd6135",
+    "action": "round5-bubble-bounds",
+    "step": 91,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-101-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/101-0-round5-bubble-bounds.png",
+    "sha256": "34ae8832acb096ffbb43634a58a383189dadf87dbd79a225cdedc9b3cc6315b0",
+    "action": "round5-bubble-bounds",
+    "step": 101,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-111-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/111-0-round5-bubble-bounds.png",
+    "sha256": "cf42a5dd6543a7b0550641621b98f2c439497dbd9f5045d8cacabc5757c98617",
+    "action": "round5-bubble-bounds",
+    "step": 111,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-121-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/121-0-round5-bubble-bounds.png",
+    "sha256": "3728872705178452f8fe5f11f3194799b7d0b68774b6d6a91f9c7fc9875abdd5",
+    "action": "round5-bubble-bounds",
+    "step": 121,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-131-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/131-0-round5-bubble-bounds.png",
+    "sha256": "8f0faa9a42028f3946b865047729e52acc093923fbf0ea3bfd51085f713bd4e3",
+    "action": "round5-bubble-bounds",
+    "step": 131,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-141-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/141-0-round5-bubble-bounds.png",
+    "sha256": "e1a1c9a95ca8df3e451a6afaa55cfdddc28891589c702ac577d61d8b9ff7710e",
+    "action": "round5-bubble-bounds",
+    "step": 141,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-151-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/151-0-round5-bubble-bounds.png",
+    "sha256": "5fa564647fa294482c9f21084976158174dbf789fd329658dbc3ac264f28c0e9",
+    "action": "round5-bubble-bounds",
+    "step": 151,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-161-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/161-0-round5-bubble-bounds.png",
+    "sha256": "531ab5c7fb9ac2fa86a050ca261c35ce3e419e83d8c21d4ff4c1ec7d0fbdf576",
+    "action": "round5-bubble-bounds",
+    "step": 161,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-164-0-round5-keyboard-setup-page-0.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/164-0-round5-keyboard-setup-page-0.png",
+    "sha256": "ad0812438b07ddc6171b3247542e762324cd752174e11c5ebbc31f020bd4606d",
+    "action": "round5-keyboard-setup-page-0",
+    "step": 164,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-165-0-round5-keyboard-setup-page-1.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/165-0-round5-keyboard-setup-page-1.png",
+    "sha256": "fb62a83f13c83de11093fe4e197bdbcb9f81b12bb2e3822b4470eafa870f3264",
+    "action": "round5-keyboard-setup-page-1",
+    "step": 165,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-166-0-round5-keyboard-setup-page-2.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/166-0-round5-keyboard-setup-page-2.png",
+    "sha256": "66951e5cdeb4454bf5d665f0d07e4c0930822236d15b32ec20899dc5c93a2140",
+    "action": "round5-keyboard-setup-page-2",
+    "step": 166,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-168-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/168-0-round5-bubble-bounds.png",
+    "sha256": "b53c0dcf48ac0e87d1bb103aca5f9604365e37e6d098db5b6a0b00ab071e9d36",
+    "action": "round5-bubble-bounds",
+    "step": 168,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-171-0-round5-keyboard-setup-page-0.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/171-0-round5-keyboard-setup-page-0.png",
+    "sha256": "5a0a206fe314c2fed34554257275b5cddd1c65c6a045058c3d9240dddb4f3991",
+    "action": "round5-keyboard-setup-page-0",
+    "step": 171,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-172-0-round5-keyboard-setup-page-1.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/172-0-round5-keyboard-setup-page-1.png",
+    "sha256": "3b3741018359c6e355448082f43130ccd7af4c1e5e9c4d6ab60e3661cf900aa8",
+    "action": "round5-keyboard-setup-page-1",
+    "step": 172,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-173-0-round5-keyboard-setup-page-2.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/173-0-round5-keyboard-setup-page-2.png",
+    "sha256": "3e20e0ca6558ee8384b50fa0bfdae7c2e7ad86b53bb644bd3877f3dfd2ee3440",
+    "action": "round5-keyboard-setup-page-2",
+    "step": 173,
+    "scenario": "audit-round3-bubble-metrics"
+  },
+  {
+    "path": "screenshots/audit-round3-bubble-metrics-175-0-round5-bubble-bounds.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T191506Z-faa645a3-audit-round3-bubble-metrics/175-0-round5-bubble-bounds.png",
+    "sha256": "61bb62e9c92b2c639e56d3ae417b6a4d79fbb2d6d9d00c97a9c9ba4d7aaaec86",
+    "action": "round5-bubble-bounds",
+    "step": 175,
+    "scenario": "audit-round3-bubble-metrics"
+  }
+]

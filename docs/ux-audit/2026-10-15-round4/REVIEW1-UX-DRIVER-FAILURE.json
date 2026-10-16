@@ -1,0 +1,126 @@
+{
+  "utc": "2026-10-14T23:32:39.664900+00:00",
+  "signal": "SIGTERM",
+  "reason": "Fresh UX driver still changes check-state directly after visiting Tables and dereferences _selected_plot before clicking the plot. Correct the driver to use actual report toolbar gestures and plot selection; preserve all copied/exported numerical comparisons.",
+  "evidence": "artifacts/verification/rcms/20261014T232942Z-b1a46629-ux-improvements",
+  "processes": [
+    {
+      "pid": 849558,
+      "parent": 844417,
+      "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python -m pytest tests/e2e -n auto --durations=10 "
+    },
+    {
+      "pid": 849643,
+      "parent": 849558,
+      "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python -u -c import sys;exec(eval(sys.stdin.readline())) "
+    },
+    {
+      "pid": 849650,
+      "parent": 849558,
+      "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python -u -c import sys;exec(eval(sys.stdin.readline())) "
+    },
+    {
+      "pid": 849653,
+      "parent": 849558,
+      "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python -u -c import sys;exec(eval(sys.stdin.readline())) "
+    },
+    {
+      "pid": 856809,
+      "parent": 849653,
+      "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python /home/ali/Documents/Code/rc-metastudio/scripts/verify_rcms.py audit-round3-presentation-onearm-proportion "
+    },
+    {
+      "pid": 856820,
+      "parent": 856809,
+      "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python /home/ali/Documents/Code/rc-metastudio/scripts/run_with_timeout.py --timeout-seconds 600 --label RCMS audit-round3-presentation-onearm-proportion -- /home/ali/Documents/Code/rc-metastudio/.venv/bin/python -X faulthandler /home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py audit-round3-presentation-onearm-proportion /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-e8moyvbh "
+    },
+    {
+      "pid": 856825,
+      "parent": 856820,
+      "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python -X faulthandler /home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py audit-round3-presentation-onearm-proportion /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-e8moyvbh "
+    },
+    {
+      "pid": 858094,
+      "parent": 849643,
+      "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python /home/ali/Documents/Code/rc-metastudio/scripts/verify_rcms.py analysis-amino-binary-meta-regression "
+    },
+    {
+      "pid": 858198,
+      "parent": 849650,
+      "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python /home/ali/Documents/Code/rc-metastudio/scripts/verify_rcms.py analysis-binary.fixed.mh "
+    },
+    {
+      "pid": 858210,
+      "parent": 858198,
+      "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python /home/ali/Documents/Code/rc-metastudio/scripts/run_with_timeout.py --timeout-seconds 120 --label RCMS analysis-binary.fixed.mh -- /home/ali/Documents/Code/rc-metastudio/.venv/bin/python -X faulthandler /home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py analysis-binary.fixed.mh /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-msqtkyrm "
+    },
+    {
+      "pid": 858211,
+      "parent": 858210,
+      "command": "/home/ali/Documents/Code/rc-metastudio/.venv/bin/python -X faulthandler /home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py analysis-binary.fixed.mh /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-msqtkyrm "
+    }
+  ],
+  "corrected_by": "370a3ac",
+  "native_preflight": {
+    "label": "review1-ux-gestures",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "ux-improvements",
+      "--native"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-14T23:33:05.561341+00:00",
+    "finished": "2026-10-14T23:33:35.028188+00:00",
+    "seconds": 29.46459451399278,
+    "exit_code": 0,
+    "revision": "50dd332418d39dbd50260ef55f0ce87f9730fa13",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "review1-ux-gestures.log",
+    "sha256": "d77b7d0dd594a05cd1e4bb77323b43969147edfcfb2070ea659ecf92b7eb63c6"
+  },
+  "offscreen_preflight": {
+    "label": "review1-ux-gestures-offscreen",
+    "command": [
+      "uv",
+      "run",
+      "python",
+      "scripts/verify_rcms.py",
+      "ux-improvements"
+    ],
+    "cwd": "/home/ali/Documents/Code/rc-metastudio",
+    "started": "2026-10-14T23:33:41.212860+00:00",
+    "finished": "2026-10-14T23:34:03.080569+00:00",
+    "seconds": 21.8652903780021,
+    "exit_code": 0,
+    "revision": "50dd332418d39dbd50260ef55f0ce87f9730fa13",
+    "environment": {
+      "RCMS_R_HOME": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home",
+      "RCMS_R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "RCMS_QT6_BUILD_ROOT": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification",
+      "R_LIBS": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "R_LIBS_USER": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-stack-retained-273bd6a",
+      "QT_QPA_PLATFORM": null,
+      "QT_SCALE_FACTOR": null,
+      "DISPLAY": ":0",
+      "LD_LIBRARY_PATH": "/home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/lib:/home/ali/Documents/Code/rc-metastudio/build/ux-round3/xcb/usr/lib/x86_64-linux-gnu",
+      "RCMETASTUDIO_QA_ROOT": null
+    },
+    "log": "review1-ux-gestures-offscreen.log",
+    "sha256": "3371b7b7e505de4c79e9725cb14a5688ebeae308b2f61eb2e5d54adc8a668864"
+  },
+  "child_manifest_sha256": "03cee41ef4622c8a617121313344b64d77ecc894340681f697aa959376b4b1ac"
+}

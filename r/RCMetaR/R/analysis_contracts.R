@@ -52,41 +52,30 @@ rcmetar.summary.column.justification <- function(table.data, col.index) {
   "left"
 }
 
-print.summary.display <- function(x, ...) {
+format.summary.display <- function(x, ...) {
   summary.disp <- x
-  cat(summary.disp$model.title)
+  blocks <- summary.disp$model.title
   arrays <- summary.disp$arrays
   count = 1
-  printed.block <- FALSE
   for (name in arrays) {
     if (!is.na(summary.disp$table.titles[count])) {
-      if (printed.block) {
-        cat("\n")
-      } else {
-        cat("\n\n")
-      }
-      cat(rcmetar.summary.label(summary.disp$table.titles[count]))
-      cat("\n")
-      print.summary.data(name)
-      printed.block <- TRUE
+      blocks <- c(blocks, paste0(rcmetar.summary.label(summary.disp$table.titles[count]),
+                                 "\n", format.summary.data(name)))
     }
     count = count + 1
-   }
-  if (!is.null(summary.disp$notes)) {
-    for (note in summary.disp$notes) {
-      if (printed.block) {
-        cat("\n")
-      } else {
-        cat("\n\n")
-      }
-      cat(note)
-      printed.block <- TRUE
-    }
   }
-  cat("\n")
+  if (length(summary.disp$notes) > 0) {
+    blocks <- c(blocks, paste(summary.disp$notes, collapse="\n"))
+  }
+  paste(blocks, collapse="\n\n")
 }
 
-print.summary.data <- function(x, ...) {
+print.summary.display <- function(x, ...) {
+  cat(format.summary.display(x), "\n", sep="")
+  invisible(x)
+}
+
+format.summary.data <- function(x, ...) {
   table.data <- x
   num.rows <- length(table.data[,1])
   num.cols <- length(table.data[1,])
@@ -97,17 +86,34 @@ print.summary.data <- function(x, ...) {
     col.widths <- c(col.widths, max(nchar(as.character(table.data[, col.index]), type="width")))
   }
 
+  rows <- character(num.rows)
   for (row.index in 1:num.rows) {
     cells <- c()
     for (col.index in 1:num.cols) {
       entry <- as.character(table.data[row.index, col.index])
       justify <- rcmetar.summary.column.justification(table.data, col.index)
-      cells <- c(cells, format(entry, width=col.widths[col.index], justify=justify))
+      # format.character() translates through the native locale before padding.
+      padding <- strrep(" ", col.widths[col.index] - nchar(entry, type="width"))
+      cell <- if (justify == "right") paste0(padding, entry) else paste0(entry, padding)
+      cells <- c(cells, cell)
     }
     table.row <- paste(" ", paste(cells, collapse=col.spacing), sep="")
-    cat(table.row)
-    cat("\n")
+    rows[row.index] <- table.row
   }
+  paste(rows, collapse="\n")
+}
+
+print.summary.data <- function(x, ...) {
+  cat(format.summary.data(x), "\n", sep="")
+  invisible(x)
+}
+
+rcmetar.fit.references <- function(fit, params, regression=FALSE) {
+  method <- if (fit$method == "MH") "rma.mh" else if (fit$method == "PETO") "rma.peto" else
+    if (fit$method %in% c("FE", "EE", "CE")) "rma.uni.fixed" else
+    if (regression) "meta.regression" else "rma.uni.random"
+  rcmetar.unique.references(c(rcmetar.method.references(method),
+    if (inherits(fit, "rma.uni")) rcmetar.inference.method.references(params)))
 }
 
 rcmetar.method.references <- function(method) {

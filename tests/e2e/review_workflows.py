@@ -28,7 +28,7 @@ def run(app, window, root, record, analyze):
     assert view.identity_label.text() == view.results.identity
     assert len(view.identity_label.text().splitlines()) == 2
     report = view.report_text.toPlainText()
-    assert report.startswith("Model configuration\n")
+    assert report.index("Pooled ") < report.index("Model configuration\n")
     assert view.results.identity not in report
     assert view.change_settings_action.isEnabled()
     view.change_settings_action.trigger()
@@ -50,7 +50,7 @@ def run(app, window, root, record, analyze):
     report = view.report_text.toPlainText()
     assert "Q(df=" not in report and "Het. p-value" not in report
     assert "95% CI" in report and "[0.485, 1.222]" in report
-    assert report.index("Model Results") < report.index("Heterogeneity") < report.index("Test for overall effect") < report.index("Prediction interval")
+    assert report.index("Model results") < report.index("Heterogeneity") < report.index("Test for overall effect") < report.index("Prediction interval")
     record("review-report-top", view, text=report)
 
     # A result belongs to its original input even after the main window opens another project.
@@ -84,8 +84,13 @@ def run(app, window, root, record, analyze):
         record("review-ordered-result-" + order, changed, labels=labels, numbers=baseline,
                plots=dict(changed.results.display_images))
         svg = ET.parse(next(iter(changed.results.display_images.values())))
-        captions = ["".join(node.itertext()) for node in svg.iter("{http://www.w3.org/2000/svg}text")]
-        assert "Odds ratio (log scale)" in captions, captions
+        nodes = list(svg.iter("{http://www.w3.org/2000/svg}text"))
+        captions = ["".join(node.itertext()) for node in nodes]
+        tick_baseline = max(float(node.attrib["y"]) for node in nodes
+                            if "".join(node.itertext()) in {"0.01", "0.1", "1", "10", "100"})
+        axis_titles = ["".join(node.itertext()) for node in nodes
+                       if float(node.attrib["y"]) > tick_baseline and "".join(node.itertext()) == "Odds ratio"]
+        assert len(axis_titles) == 1 and "Odds ratio (log scale)" not in captions, captions
         changed.close()
         app.processEvents()
     view.change_settings_action.trigger()

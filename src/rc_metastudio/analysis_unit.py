@@ -54,10 +54,8 @@ class AnalysisUnit:
         self.follow_up_label = None
         self.stable_id = stable_id or _new_identity()
 
-        if group_names is None and not self.is_diagnostic:
-            group_names = meta_globals.DEFAULT_GROUP_NAMES
-        elif group_names is None:
-            group_names = ["test 1"]
+        if group_names is None:
+            group_names = meta_globals.default_group_names(outcome.data_type, outcome.sub_type)
 
         # Group IDs keep effect entries stable when users rename groups.
         self._groups_by_id = {}

@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING
 from rc_metastudio import adaptive_window, app_error_handler, plot_capabilities, qt_text
 from rc_metastudio.plot_defaults import FOREST_ARM_LABELS
 from rc_metastudio.plot_text import (
-    apply_plot_text_input_limits,
+    configure_plot_text_inputs,
     plot_parameter_text_value,
     plot_text_value,
     set_plot_text_value,
@@ -36,7 +36,7 @@ else:
 
 PLOT_EDITOR_SAVE_FILTER = "Plot images (*.pdf *.png *.tif *.tiff *.svg);;All files (*)"
 FOREST_STYLE_LABELS = {
-    "default": "Default (metafor)",
+    "default": "Default",
     "revman": "RevMan",
     "bmj": "BMJ",
 }
@@ -59,10 +59,14 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._commit_outcome = None
         self._configure_accessibility()
         self._hide_internal_plot_path_controls()
-        apply_plot_text_input_limits(self)
+        configure_plot_text_inputs(self)
         self._loading_style = False
         self._params = dict(plot_params or {})
         self.plot_type = plot_type
+        if plot_type == "subgroup_forest":
+            note = QLabel("Subgroup figures use the default layout. RevMan and BMJ apply their accent colours; their standard-forest layouts are unavailable for subgroups.", self)
+            note.setWordWrap(True)
+            self.style_layout.addWidget(note, self.style_layout.rowCount(), 0, 1, 2)
         self._is_reitsma_coefficient = bool(
             self._params.get("reitsma.coefficient.scale")
         )
@@ -82,6 +86,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.study_order_label.setBuddy(self.study_order)
         self.style_layout.addWidget(self.study_order_label, self.style_layout.rowCount(), 0)
         self.style_layout.addWidget(self.study_order, self.style_layout.rowCount() - 1, 1)
+        self._setup_axis_scale()
         self.default_panel.setTitle("Forest options")
         self.favours_left = QLineEdit(str(self._params.get("fp_favours_left") or ""), self)
         self.favours_right = QLineEdit(str(self._params.get("fp_favours_right") or ""), self)
@@ -94,10 +99,20 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             caption.setBuddy(field)
             self.default_layout.addWidget(caption, row, 0)
             self.default_layout.addWidget(field, row, 1)
+        self.figure_caption = QLineEdit(self)
+        self.figure_caption.setText(str(self._scalar(self._params.get("plot_caption", "")) or "").replace("\n", " · "))
+        self.figure_caption.setAccessibleName("Figure caption")
+        self.figure_caption.setToolTip("Outcome, comparison and follow-up for standalone figures. Edit or clear to remove.")
+        self.figure_caption.setMaxLength(1000)
+        caption_label = QLabel("Figure caption:", self)
+        caption_label.setBuddy(self.figure_caption)
+        caption_row = self.style_layout.rowCount()
+        self.style_layout.addWidget(caption_label, caption_row, 0)
+        self.style_layout.addWidget(self.figure_caption, caption_row, 1, 1, 2)
         self._sroc_group = None
         if self.plot_type == "sroc":
             self._build_sroc_controls()
-            apply_plot_text_input_limits(self)
+            configure_plot_text_inputs(self)
 
         self.color_btn.clicked.connect(
             app_error_handler.safe_slot(self._choose_color, parent=self)
@@ -117,10 +132,31 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.buttonBox.clicked.connect(self._button_clicked)
 
         self._load_params(image_path)
+        self.setTabOrder(self.style_cbo, self.figure_caption)
+        self.setTabOrder(self.figure_caption, self.show_1)
         self._configure_option_groups()
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
+
+    def _setup_axis_scale(self):
+        self.axis_scale = QComboBox(self)
+        self.axis_scale.setAccessibleName("Effect axis scale")
+        self.axis_scale.setToolTip("Change axis spacing only. Fitted effects, confidence intervals and weights stay the same.")
+        measure = str(self._scalar(self._params.get("measure", "")))
+        proportion = not self._is_reitsma_coefficient and measure in {"PR", "PLN", "PLO", "PAS", "PFT", "Sens", "Spec"}
+        ratio = self._is_reitsma_coefficient or measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"}
+        self.axis_scale.addItem("Linear, natural units", "natural")
+        self.axis_scale.addItem("Logarithmic, natural labels" if ratio else "Fitted transformation", "transformed")
+        default_scale = "natural" if proportion else "transformed"
+        self.axis_scale.setCurrentIndex(max(0, self.axis_scale.findData(self._scalar(self._params.get("fp_axis_scale", default_scale)))))
+        axis_label = QLabel("Effect axis scale", self)
+        axis_label.setBuddy(self.axis_scale)
+        row = self.style_layout.rowCount()
+        self.style_layout.addWidget(axis_label, row, 0)
+        self.style_layout.addWidget(self.axis_scale, row, 1)
+        axis_label.setVisible((ratio or proportion) and self.plot_type != "regression" and self.plot_type != "sroc")
+        self.axis_scale.setVisible(not axis_label.isHidden())
 
     def _configure_accessibility(self):
         """Name static controls and expose an inline commit error region."""
@@ -460,7 +496,24 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.color_btn.setStyleSheet("background-color: %s;" % text)
 
     def _set_text(self, widget, value):
-        set_plot_text_value(widget, self._scalar(value))
+        value = self._scalar(value)
+        automatic = widget in (self.col2_str_edit, self.x_lbl_le, self.plot_lb_le,
+                               self.plot_ub_le, self.x_ticks_le)
+        if automatic and value in (None, "", "[default]"):
+            set_plot_text_value(widget, "")
+            widget.setPlaceholderText("Automatic")
+            keys = {self.col2_str_edit: "effect", self.x_lbl_le: "xlabel",
+                    self.plot_lb_le: "lower", self.plot_ub_le: "upper", self.x_ticks_le: "ticks"}
+            resolved = self._params.get("resolved.defaults", {}).get(keys[widget])
+            if isinstance(resolved, (list, tuple)):
+                resolved = ", ".join(str(item) for item in resolved)
+            widget.setToolTip("Automatic: " + str(resolved if resolved is not None else "determined by the plotted data"))
+        else:
+            set_plot_text_value(widget, value)
+
+    @staticmethod
+    def _automatic_value(widget):
+        return qt_text.to_native_text(widget.text()) or "[default]"
 
     def _axis_label_input(self):
         value = self._scalar(self._params.get(self._param_name("xlabel")))
@@ -504,13 +557,14 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         style = FOREST_STYLE_VALUES.get(str(self.style_cbo.currentText()), "default")
         params = {
             "fp_style": style,
+            "fp_axis_scale": self.axis_scale.currentData(),
             "fp_study_order": self.study_order.currentData() if self.plot_type != "cumulative_forest" else "table",
             "fp_favours_left": self.favours_left.text().strip(),
             "fp_favours_right": self.favours_right.text().strip(),
             "fp_show_col1": self.show_1.isChecked(),
             "fp_col1_str": qt_text.to_native_text(plot_text_value(self.col1_str_edit)),
             "fp_show_col2": self.show_2.isChecked(),
-            "fp_col2_str": qt_text.to_native_text(plot_text_value(self.col2_str_edit)),
+            "fp_col2_str": qt_text.to_native_text(plot_text_value(self.col2_str_edit)) or "[default]",
             "fp_show_col3": self.show_3.isChecked(),
             "fp_col3_str": qt_text.to_native_text(plot_text_value(self.col3_str_edit)),
             "fp_show_col4": self.show_4.isChecked(),
@@ -521,9 +575,9 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "fp_accent_color": qt_text.to_native_text(self.accent_color.text()),
             "fp_point_size_multiplier": self.point_size_multiplier.value(),
             "fp_xlabel": self._axis_label_value(),
-            "fp_plot_lb": qt_text.to_native_text(self.plot_lb_le.text()),
-            "fp_plot_ub": qt_text.to_native_text(self.plot_ub_le.text()),
-            "fp_xticks": qt_text.to_native_text(self.x_ticks_le.text()),
+            "fp_plot_lb": self._automatic_value(self.plot_lb_le),
+            "fp_plot_ub": self._automatic_value(self.plot_ub_le),
+            "fp_xticks": self._automatic_value(self.x_ticks_le),
             "fp_show_summary_line": self.show_summary_line.isChecked(),
             "fp_outpath": qt_text.to_native_text(self.image_path.text()),
         }
@@ -536,9 +590,9 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                 "bp_accent_color": qt_text.to_native_text(self.accent_color.text()),
                 "bp_point_size_multiplier": self.point_size_multiplier.value(),
                 "bp_xlabel": self._axis_label_value(),
-                "bp_plot_lb": qt_text.to_native_text(self.plot_lb_le.text()),
-                "bp_plot_ub": qt_text.to_native_text(self.plot_ub_le.text()),
-                "bp_xticks": qt_text.to_native_text(self.x_ticks_le.text()),
+                "bp_plot_lb": self._automatic_value(self.plot_lb_le),
+                "bp_plot_ub": self._automatic_value(self.plot_ub_le),
+                "bp_xticks": self._automatic_value(self.x_ticks_le),
                 "bp_show_regression_line": self.show_regression_line.isChecked(),
                 "bp_show_confidence_band": self.show_confidence_band.isChecked(),
                 "bp_show_prediction_interval": self.show_prediction_interval.isChecked(),
@@ -555,9 +609,9 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             params.update(
                 {
                     "fp_ylabel": qt_text.to_native_text(plot_text_value(self.sroc_ylabel)),
-                    "fp_sroc_plot_lb": qt_text.to_native_text(self.sroc_y_lower.text()),
-                    "fp_sroc_plot_ub": qt_text.to_native_text(self.sroc_y_upper.text()),
-                    "fp_sroc_yticks": qt_text.to_native_text(self.sroc_y_ticks.text()),
+                    "fp_sroc_plot_lb": self._automatic_value(self.sroc_y_lower),
+                    "fp_sroc_plot_ub": self._automatic_value(self.sroc_y_upper),
+                    "fp_sroc_yticks": self._automatic_value(self.sroc_y_ticks),
                     "fp_marker_area": self.sroc_marker_area.currentData(),
                     "fp_show_labels": self.sroc_show_labels.isChecked(),
                     "fp_extrapolate": self.sroc_extrapolate.isChecked(),
@@ -583,4 +637,5 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             params["reitsma.moderator.coding"] = self._params.get(
                 "reitsma.moderator.coding", {}
             )
+        params["plot_caption"] = self.figure_caption.text().strip()
         return params

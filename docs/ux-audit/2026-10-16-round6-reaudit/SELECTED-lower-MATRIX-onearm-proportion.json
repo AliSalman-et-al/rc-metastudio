@@ -1,0 +1,72 @@
+[
+  {
+    "path": "screenshots/matrix-onearm-proportion-standard-report-bottom.png",
+    "sha256": "24c87b03f4c4140da91300ea0f21b61a4d4b501e7af2a46c2d73a69b7087c403",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-proportion/captures/matrix-onearm-proportion-standard-report-bottom.png",
+    "scenario": "lower-MATRIX-onearm-proportion"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-cumulative-figure-bottom.png",
+    "sha256": "09d496b5bbd445e7cb8a0c11a073980bd34feb8d4284e0cfca70de674a3df42c",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-proportion/captures/matrix-onearm-proportion-cumulative-figure-bottom.png",
+    "scenario": "lower-MATRIX-onearm-proportion"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-leave-one-out-figure-bottom.png",
+    "sha256": "4f8b7f29ab26745a21ab92f71070da956e78422a69f38d219c2b416873993049",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-proportion/captures/matrix-onearm-proportion-leave-one-out-figure-bottom.png",
+    "scenario": "lower-MATRIX-onearm-proportion"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-subgroup-report-bottom.png",
+    "sha256": "03cf4f3401004d2ab2c6753d6eecb4fd627b4e1a5c9293571d7afff02a357898",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-proportion/captures/matrix-onearm-proportion-subgroup-report-bottom.png",
+    "scenario": "lower-MATRIX-onearm-proportion"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-subgroup-figure-bottom.png",
+    "sha256": "ce670a4c95bc7951e4f8d907c068fea783c1aa22756adfce05f201b6c13710ae",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-proportion/captures/matrix-onearm-proportion-subgroup-figure-bottom.png",
+    "scenario": "lower-MATRIX-onearm-proportion"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-meta-regression-report-bottom.png",
+    "sha256": "45ad5e7c5479523462363ad7cea8ef9218949090f5c0ee02b34f67c19e3280ed",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-proportion/captures/matrix-onearm-proportion-meta-regression-report-bottom.png",
+    "scenario": "lower-MATRIX-onearm-proportion"
+  },
+  {
+    "path": "screenshots/matrix-onearm-proportion-meta-regression-figure-bottom.png",
+    "sha256": "e959436f18769bdaaf1f3e9b1d0c142685a78f84855e7575353f0b53764897a6",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-proportion",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm proportion \u00b7 Untransformed Proportion\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-onearm-proportion/captures/matrix-onearm-proportion-meta-regression-figure-bottom.png",
+    "scenario": "lower-MATRIX-onearm-proportion"
+  }
+]

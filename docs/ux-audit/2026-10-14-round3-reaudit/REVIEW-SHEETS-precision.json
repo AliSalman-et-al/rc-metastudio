@@ -1,0 +1,20 @@
+[
+  {
+    "sheet": "raw/review-precision-00.png",
+    "members": [
+      "screenshots/precision-00-round3-zero-bound-presentation.png",
+      "screenshots/precision-01-round3-small-effects-preserved.png",
+      "screenshots/precision-02-round3-degenerate-axis.png",
+      "screenshots/precision-03-round3-degenerate-axis-bottom.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-precision-01.png",
+    "members": [
+      "screenshots/precision-04-round3-degenerate-axis.png",
+      "screenshots/precision-05-round3-degenerate-axis.png",
+      "screenshots/precision-06-round3-bubble-tick-coverage.png",
+      "screenshots/precision-07-round3-bubble-tick-coverage.png"
+    ]
+  }
+]

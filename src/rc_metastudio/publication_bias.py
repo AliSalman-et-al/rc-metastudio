@@ -53,7 +53,7 @@ class FunnelStyle(str, Enum):
 
 
 FUNNEL_STYLE_LABELS = {
-    FunnelStyle.DEFAULT: "Default (metafor)",
+    FunnelStyle.DEFAULT: "Default",
     FunnelStyle.REVMAN: "RevMan",
     FunnelStyle.BMJ: "BMJ",
 }

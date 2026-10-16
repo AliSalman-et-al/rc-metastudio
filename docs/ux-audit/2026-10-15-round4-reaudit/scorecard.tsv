@@ -1,0 +1,68 @@
+L01	unchanged	Type choices fit; field scrolling and lack of a step indicator remain.	wizard
+L02	fixed	Pristine start page says Untitled dataset and is not dirty; no redundant welcome modal.	start
+L03	unchanged	Template/import route retained; export and mapping checks remain in the native registry.	csv
+L04	unchanged	Entered-effect guidance retained; user effect labels/units remain limited.	generic
+L05	unchanged	Task/type/metric guidance retained; final review remains sparse.	wizard
+L06	unchanged	CSV preview retained; automatic dialect recovery and all filesystem failures are unqualified.	csv
+G01	unchanged	Linux grid readable; old Windows persisted-width trigger remains unqualified.	grid
+G02	improved	Single-arm grid remains compact; calculator active-mode disclosure improves.	calculator
+G03	unchanged	Inclusion/derived-cell explanation retained; selection/colour qualification remains open.	grid
+G04	improved	Named dimension selector and Previous/Next/Add replace the compass; Follow-up:first spacing remains.	grid
+G05	improved	Existing arm identity and pinned calculator result/actions reduce decoding and scrolling.	calculator
+G06	unchanged	Diagnostic estimate/CI digits remain readable; prevalence remains labelled.	calculator-diagnostic
+G07	improved	Active calculator modes are more compact; complete grid-width/scaling qualification remains open.	calculator
+G08	improved	Numeric/Category wording improves; destructive context actions stay separated.	covariates
+M01	improved	Sentence-case actions/ellipses improve; toolbar text/icon consistency still incomplete.	menus
+M02	improved	Start page disambiguates full recent paths and disables missing files; locate/remove recovery absent.	start
+M03	unchanged	Disabled subgroup/regression toolbar tooltips give a covariate prerequisite; source comparison shows this is retained, not a round-four addition.	toolbar
+M04	unchanged	Structure tabs and named add/remove controls retained; three-pane density remains.	structure
+S01	unchanged	Independent report/figure zoom and scoped confidence controls retained.	zoom
+D01	improved	Shared button sizing and pinned calculator actions improve reachability; OS scaling unqualified.	calculator
+D02	unchanged	Task/outcome and Run analysis retained; repetitive setup description remains.	setup
+D03	improved	Automatic and contextual defaults improve; hex colours and long editor forms remain.	editor
+D04	unchanged	Recoverable analysis errors retained; full progress/phase feedback not qualified.	error
+D05	unchanged	Correction/eligibility controls retained; universal affected-study accounting remains incomplete.	setup
+R01	improved	Result-first report, named calculation table and study-weight table improve reading; legacy scene/package text remains.	report
+R02	unchanged	Copy/export identity retained; standalone figure clinical/exposure identity remains incomplete.	irr
+R03	improved	Text/Tables/plot navigation works and export preference persists; legacy scene weights and long figures remain.	results
+R04	fixed	Sequential null references stop at plotted rows and clear the footer on inspected paths.	sequential
+R05	fixed	Original coefficient Fixture 2 lower bound renders zero; genuine tiny effects remain in precision checks.	coefficient
+R06	improved	Study added (k) retained; current help distinguishes fitting sequence and display order.	help
+R07	unchanged	Previously repaired HR/IRR omission identities remain correct.	omission
+R08	unchanged	Subgroup k/heterogeneity/PI tables retained; HR/IRR difference-test package prose remains.	subgroup
+R09	improved	Round compact bubble ticks clear metric titles; missing study identity/units and outside-box null remain.	bubble
+R10	improved	Single-arm proportion now names its actual tested null; clinical estimate remains primary.	proportion
+R11	improved	Mean null is explicit; user outcome units remain unavailable in standalone figure context.	mean
+R12	unchanged	Coefficient/entered-effect identity remains correct on inspected standard routes.	coefficient
+R13	unchanged	Comparative arm identity/scale guidance retained; no automatic clinical interpretation added.	report
+R14	unchanged	MD/SMD signs and SD-unit guidance retained; user units remain limited.	continuous
+R15	improved	Diagnostic report leads with clinical summaries and tables; repeated headings and dense technical blocks remain.	diagnostic
+R16	unchanged	Diagnostic moderator/contrast/reference naming retained; coefficient chart uses its separate renderer.	diagnostic-regression
+R17	improved	HR report gains clearer result-first structure/weights; long forest still needs scrolling/small type.	hr
+R18	unchanged	IRR identity/exclusions retained; events/exposure units remain absent from forest columns.	irr
+R19	unchanged	Small-study cautions and procedures retained; ordinary funnel key remains limited.	small-study
+E01	improved	Remembered plot format joins intact report identity/table rows and real four-format exports.	results
+E02	unchanged	Saved/reopened data and dirty state retained; pristine start corrected under L02.	grid
+H01	improved	Quick start covers result tools and order distinction; complete contextual help/accessibility remains open.	help
+X01	unchanged	Blank/duplicate-name validation remains recoverable.	covariates
+X02	unchanged	Local covariate empty-state guidance retained; broader workflow guidance remains modest.	covariates
+A01	unchanged	Real selectable table cells retained; screen-reader qualification remains open.	results
+A02	unchanged	Grid meaning retained; measured contrast/high-contrast qualification remains open.	grid
+A03	improved	Calculator actions and plot spacing improve; long figures/OS DPI remain open.	calculator
+A04	improved	Shared button policy and named navigation improve targets; unlabelled analysis icons remain.	toolbar
+A05	unchanged	Existing shortcut/copy gestures run; full keyboard-only/focus qualification remains open.	menus
+RG01	improved	Clinical-first diagnostic report gains result-first reading order; legacy details remain.	diagnostic
+RG02	unchanged	Independent view zoom retained; Fit width remains scoped to figures.	zoom
+RG03	unchanged	Shared diagnostic notes precede component blocks; executed estimators retained.	diagnostic
+RG04	unchanged	CSV instructions remain outside the scrolling fields.	csv
+N01	fixed	BMJ contextual axis labels now retain entered-effect/coefficient identity.	bmj
+N02	unchanged	Diagnostic moderator labels/contrasts retained; all long-label permutations unqualified.	diagnostic-regression
+N03	improved	Compact ticks, bounded sequential guides and contextual BMJ labels improve; bubble null guard still incomplete.	bubble
+N04	improved	Result-first structured report/weights improve; HR/IRR subgroup package prose remains.	report
+N05	unchanged	Existing subgroup difference tests remain in reports and figures.	subgroup
+N06	unchanged	Previously repaired report identity and tab-separated table rows retained.	export
+N07	unchanged	HR/IRR cumulative and omission labels/estimate-CIs remain aligned.	omission
+N08	improved	Active calculator modes/pinned actions reduce density; persisted Windows width case remains open.	calculator
+N09	improved	Named dimension navigation replaces compass without adding another navigation subsystem.	grid
+N10	improved	Numeric/Category/Automatic and contextual estimate labels improve; some tooltip/title-case remnants persist.	covariates
+N11	unchanged	Diagnostic calculator leading digits remain visible in native checks.	calculator-diagnostic

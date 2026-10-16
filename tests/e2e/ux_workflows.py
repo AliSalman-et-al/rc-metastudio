@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 from PyQt6 import QtCore, QtWidgets, QtTest
 
-from tests.python.gui.test_types import mouse_click, key_click, required
+from tests.python.gui.test_types import mouse_click, key_click, required, wait
 
 
 def run(app, window, work, root, record, analyze):
@@ -16,6 +16,9 @@ def run(app, window, work, root, record, analyze):
     window.showMaximized()
     app.processEvents()
     app.processEvents()
+    assert not window.workspace.is_dirty
+    assert "Unsaved changes" not in window.dataset_file_lbl.text()
+    assert "*" not in window.windowTitle()
     record("ux-empty-workspace", window, guidance=window.workspace_hint.text(), device_pixel_ratio=window.devicePixelRatioF(), logical_size=[window.width(), window.height()])
     guide_errors = []
     def read_guide():
@@ -23,7 +26,9 @@ def run(app, window, work, root, record, analyze):
         try:
             assert isinstance(dialog, QtWidgets.QMessageBox)
             dialog.setProperty("verificationExpectedMessage", True)
-            assert "CSV templates and column mapping" in dialog.text()
+            guide = dialog.text()
+            assert all(name in guide for name in ("Intervention / Control", "Index test", "UTF-8 CSV")), guide
+            assert "template" in guide.casefold() and "mapping" in guide.casefold(), guide
             record("ux-quick-start", dialog, text=dialog.text())
         except Exception as error:
             guide_errors.append(str(error))
@@ -69,8 +74,25 @@ def run(app, window, work, root, record, analyze):
     assert not view.report_action.isChecked()
     assert view.content_stack.currentWidget() is view.figure_page
     assert len(view.identity_label.text().splitlines()) <= 3
-    assert view.identity_label.height() <= 3 * view.identity_label.fontMetrics().lineSpacing()
-    record("ux-header-geometry", view, identity_height=view.identity_label.height(), measured_height=view.identity_label.heightForWidth(view.identity_label.width()), identity_width=view.identity_label.width(), font_height=view.identity_label.fontMetrics().height())
+    initial_identity_height = view.identity_label.height()
+    refit_waits = 0
+    while (
+        view.identity_label.height() > 3 * view.identity_label.fontMetrics().lineSpacing()
+        and refit_waits < 100
+    ):
+        wait(20)
+        refit_waits += 1
+    geometry = dict(
+        initial_identity_height=initial_identity_height,
+        identity_height=view.identity_label.height(),
+        measured_height=view.identity_label.heightForWidth(view.identity_label.width()),
+        identity_width=view.identity_label.width(),
+        font_height=view.identity_label.fontMetrics().height(),
+        line_spacing=view.identity_label.fontMetrics().lineSpacing(),
+        refit_waits=refit_waits,
+    )
+    assert view.identity_label.height() <= 3 * view.identity_label.fontMetrics().lineSpacing(), geometry
+    record("ux-header-geometry", view, **geometry)
     assert "Included input studies" not in view.identity_label.text()
     assert "Studies used in the model" not in view.identity_label.text()
     view.report_action.trigger()
@@ -88,9 +110,14 @@ def run(app, window, work, root, record, analyze):
     record("ux-copy-selection-after", view, selection=view.report_text.textCursor().selectedText(), clipboard=app.clipboard().text(), owns=app.clipboard().ownsClipboard())
     assert app.clipboard().text() == "Model:", repr(app.clipboard().text())
     key_click(view.report_text, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.ShiftModifier)
-    assert app.clipboard().text() == view.report_text.toPlainText()
+    copied_report = app.clipboard().text()
+    assert copied_report.startswith(view.results.identity + "\n")
+    for section in view.results.sections:
+        for table in section.tables:
+            assert "\t".join(table.headers) in copied_report
+            assert all("\t".join(row) in copied_report for row in table.rows)
     view.copy_report_action.trigger()
-    assert app.clipboard().text() == view.report_text.toPlainText()
+    assert app.clipboard().text() == copied_report
     report_path = work / "analysis.txt"
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(report_path), "")):
         view.export_report_action.trigger()
@@ -116,17 +143,17 @@ def run(app, window, work, root, record, analyze):
         assert list(csv.reader(exported)) == [list(table.headers), *map(list, table.rows)]
     record("ux-native-result-table", view, title=table.title, headers=table.headers,
            rows=table.rows, csv=str(csv_path))
-    view.report_action.setChecked(True)
+    view.report_action.trigger()
     view.zoom_control.setValue(200)
     app.processEvents()
     assert view.report_text.font().pointSizeF() >= 22
     assert not view.fit_width_action.isEnabled()
     text_zoom = view.zoom_control.value()
-    view.report_action.setChecked(False)
+    view.report_action.trigger()
     app.processEvents()
     assert view.fit_width_action.isEnabled()
     view.zoom_control.setValue(125)
-    view.report_action.setChecked(True)
+    view.report_action.trigger()
     app.processEvents()
     assert view.zoom_control.value() == text_zoom
     assert view.report_text.font().pointSizeF() >= 22
@@ -135,14 +162,14 @@ def run(app, window, work, root, record, analyze):
            report_font=view.report_text.font().pointSizeF(), figure_zoom=125)
     view.zoom_control.setValue(100)
     plot_item = next(item for item in view._svg_plot_items)
-    artifact = view._selected_plot()[0]
-    saved_params = view.plot_service.load_params(artifact.params_path)
-    assert saved_params["fp_col1_str"] == "Study", saved_params
     nav = next(item for item in view.nav_tree.findItems("Forest Plot", QtCore.Qt.MatchFlag.MatchExactly))
     mouse_click(view.nav_tree.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=view.nav_tree.visualItemRect(nav).center())
     app.processEvents()
     assert view.export_plot_action.isEnabled()
     assert not view.report_text.isVisible()
+    artifact = view._selected_plot()[0]
+    saved_params = view.plot_service.load_params(artifact.params_path)
+    assert saved_params["fp_col1_str"] == "Study", saved_params
     assert plot_item.sceneBoundingRect().width() <= view.graphics_view.viewport().width()
     plot_path = work / "toolbar-forest.pdf"
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(plot_path), "PDF")):
@@ -184,7 +211,7 @@ def run(app, window, work, root, record, analyze):
     scrollbar.setValue(0)
     record("ux-csv-page-entry", wizard, scroll=scrollbar.value())
     source = work / "mapped.csv"
-    source.write_text('Study,Year,A events,A total,B events,B total,OR,Lower,Upper,Dose\n"Alpha, München",2020,1,10,2,12,,,,5\nBeta,2021,3,11,4,13,,,,7\n', encoding="utf-8")
+    source.write_text('Citation,Year,A events,A total,B events,B total,OR,Lower,Upper,Dose\n"Alpha, München",2020,1,10,2,12,,,,5\nBeta,2021,3,11,4,13,,,,7\n', encoding="utf-8")
     with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(source), "")):
         mouse_click(page.select_file_btn, QtCore.Qt.MouseButton.LeftButton)
     assert not page.isComplete()
@@ -259,6 +286,10 @@ def run(app, window, work, root, record, analyze):
     mouse_click(button, QtCore.Qt.MouseButton.LeftButton)
     assert form.isVisible()
     assert form.error_label.text()
+    if app.platformName() in {"windows", "xcb", "cocoa"}:
+        wait(250)
+    assert form.rect().contains(button.mapTo(form, button.rect().bottomRight()))
+    assert form.rect().contains(form.error_label.mapTo(form, form.error_label.rect().bottomRight()))
     record("ux-covariate-error", form, error=form.error_label.text())
     form.covariate_name_le.setText("Region")
     mouse_click(button, QtCore.Qt.MouseButton.LeftButton)

@@ -730,7 +730,7 @@ class WorkspaceEditingService:
         else:
             converted, valid = self._number(value)
             if not valid:
-                return AppliedWorkspaceEdit(error="Covariate values for continuous covariates need to be numeric.")
+                return AppliedWorkspaceEdit(error="Numeric covariates require numbers.")
         if context.covariate is None:
             return AppliedWorkspaceEdit(error="Cannot edit that cell.")
         study.set_covariate_value(context.covariate, converted)

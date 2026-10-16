@@ -642,6 +642,11 @@ calc.plot.range <- function(effects, plot.options) {
     plot.range
 }
 
+rcmetar.display.metric.name <- function(params) {
+    if (as.character(params$measure) %in% binary.one.arm.metrics) return("Proportion")
+    pretty.metric.name(as.character(params$measure), params$metric.label)
+}
+
 pretty.metric.name <- function(metric, label=NULL) {
   if (!is.null(label) && length(label) == 1L && nzchar(label)) return(as.character(label))
   metric.names <- list(

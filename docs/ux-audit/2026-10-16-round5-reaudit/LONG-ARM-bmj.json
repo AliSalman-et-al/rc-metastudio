@@ -1,0 +1,34 @@
+[
+  {
+    "path": "screenshots/long-arm-bmj-matrix-twoarm-proportion-standard-report.png",
+    "sha256": "f6115037889deef00861d5357ad27ea885f322249501427dbe100e79073350d6",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Cognitive behavioural therapy plus usual care / Usual care alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/long-arm-bmj-matrix-twoarm-proportion-standard-report-bottom.png",
+    "sha256": "66701c471c8697b6b3bf3d3f126b373b3786a9e300a14010d229c4190b4c17b6",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Cognitive behavioural therapy plus usual care / Usual care alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/long-arm-bmj-matrix-twoarm-proportion-standard-figure.png",
+    "sha256": "584adc65bc7697812ff46b3bac9f8e5f2d4ac81c31fe9d31912261742ae24731",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Cognitive behavioural therapy plus usual care / Usual care alone \u00b7 Follow-up: first"
+  },
+  {
+    "path": "screenshots/long-arm-bmj-matrix-twoarm-proportion-standard-figure-bottom.png",
+    "sha256": "584adc65bc7697812ff46b3bac9f8e5f2d4ac81c31fe9d31912261742ae24731",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-proportion",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Two-arm binary \u00b7 Odds Ratio\nComparison: Cognitive behavioural therapy plus usual care / Usual care alone \u00b7 Follow-up: first"
+  }
+]

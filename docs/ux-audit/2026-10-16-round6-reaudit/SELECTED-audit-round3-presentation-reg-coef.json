@@ -1,0 +1,98 @@
+[
+  {
+    "path": "screenshots/audit-round3-presentation-reg-coef-15-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193601Z-420e5137-audit-round3-presentation-reg-coef/15-0-round4-annotations.png",
+    "sha256": "fea6c02537108b1812ffffba4b9a71bec91ed425e5275070ca090c35881b06e6",
+    "action": "round4-annotations",
+    "step": 15,
+    "scenario": "audit-round3-presentation-reg-coef"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-reg-coef-16-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193601Z-420e5137-audit-round3-presentation-reg-coef/16-0-round4-annotations-bottom.png",
+    "sha256": "ae150f9fb4aa9922f26cd22ef595473dc059f8080b393fc4d6de46093b972397",
+    "action": "round4-annotations-bottom",
+    "step": 16,
+    "scenario": "audit-round3-presentation-reg-coef"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-reg-coef-30-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193601Z-420e5137-audit-round3-presentation-reg-coef/30-0-round4-annotations.png",
+    "sha256": "89f5a7c692d5ee10d46b7fc16ee1d499f70479c0c8c9a99e0c8886d236773bd9",
+    "action": "round4-annotations",
+    "step": 30,
+    "scenario": "audit-round3-presentation-reg-coef"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-reg-coef-31-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193601Z-420e5137-audit-round3-presentation-reg-coef/31-0-round4-annotations-bottom.png",
+    "sha256": "89f5a7c692d5ee10d46b7fc16ee1d499f70479c0c8c9a99e0c8886d236773bd9",
+    "action": "round4-annotations-bottom",
+    "step": 31,
+    "scenario": "audit-round3-presentation-reg-coef"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-reg-coef-45-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193601Z-420e5137-audit-round3-presentation-reg-coef/45-0-round4-annotations.png",
+    "sha256": "f0ecfbe674ccbadb7d933c01aa2346c9e490bdf6599ff9397b6aa3caea05c611",
+    "action": "round4-annotations",
+    "step": 45,
+    "scenario": "audit-round3-presentation-reg-coef"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-reg-coef-46-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193601Z-420e5137-audit-round3-presentation-reg-coef/46-0-round4-annotations-bottom.png",
+    "sha256": "f0ecfbe674ccbadb7d933c01aa2346c9e490bdf6599ff9397b6aa3caea05c611",
+    "action": "round4-annotations-bottom",
+    "step": 46,
+    "scenario": "audit-round3-presentation-reg-coef"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-reg-coef-60-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193601Z-420e5137-audit-round3-presentation-reg-coef/60-0-round4-annotations.png",
+    "sha256": "4fca5c68a92c7fb1a0ec6e6c7b17b15bfea1188ff35df917a51afd0dd588b5e5",
+    "action": "round4-annotations",
+    "step": 60,
+    "scenario": "audit-round3-presentation-reg-coef"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-reg-coef-61-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193601Z-420e5137-audit-round3-presentation-reg-coef/61-0-round4-annotations-bottom.png",
+    "sha256": "29ee3783cdb98ad74488c0f552e5070a6bd31273a9fcd411ce02901abcca2a43",
+    "action": "round4-annotations-bottom",
+    "step": 61,
+    "scenario": "audit-round3-presentation-reg-coef"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-reg-coef-75-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193601Z-420e5137-audit-round3-presentation-reg-coef/75-0-round4-annotations.png",
+    "sha256": "82fdb08466dee62153c8b49768a265ff6e1725ea82a5748b357869548fb513bf",
+    "action": "round4-annotations",
+    "step": 75,
+    "scenario": "audit-round3-presentation-reg-coef"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-reg-coef-76-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193601Z-420e5137-audit-round3-presentation-reg-coef/76-0-round4-annotations-bottom.png",
+    "sha256": "82fdb08466dee62153c8b49768a265ff6e1725ea82a5748b357869548fb513bf",
+    "action": "round4-annotations-bottom",
+    "step": 76,
+    "scenario": "audit-round3-presentation-reg-coef"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-reg-coef-90-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193601Z-420e5137-audit-round3-presentation-reg-coef/90-0-round4-annotations.png",
+    "sha256": "1c5bbb4e16d14e6982fbc29fa325fcb2e40830423c57d9e20c401fbc7da42c04",
+    "action": "round4-annotations",
+    "step": 90,
+    "scenario": "audit-round3-presentation-reg-coef"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-reg-coef-91-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193601Z-420e5137-audit-round3-presentation-reg-coef/91-0-round4-annotations-bottom.png",
+    "sha256": "1c5bbb4e16d14e6982fbc29fa325fcb2e40830423c57d9e20c401fbc7da42c04",
+    "action": "round4-annotations-bottom",
+    "step": 91,
+    "scenario": "audit-round3-presentation-reg-coef"
+  }
+]

@@ -177,17 +177,15 @@ test_that("meta-regression ratio axes label the exponentiated display scale", {
 
   expect_equal(
     rcmetar.bubble.default.ylabel(params),
-    "Odds Ratio (log scale)"
+    "Odds Ratio"
   )
   for (metric in c("OR", "RR", "PLR", "NLR", "DOR")) {
     expect_equal(
       rcmetar.bubble.default.ylabel(list(measure = metric)),
-      paste0(pretty.metric.name(metric), " (log scale)")
+      pretty.metric.name(metric)
     )
   }
 
-  ticks <- rcmetar.bubble.axis.ticks(bundle, log(c(0.25, 2)))
-  expect_equal(exp(ticks), c(0.25, 0.5, 1, 2))
   expect_equal(exp(rcmetar.bubble.refline(bundle, log(c(0.25, 2)))), 1)
   expect_identical(rcmetar.bubble.atransf(bundle), exp)
 })

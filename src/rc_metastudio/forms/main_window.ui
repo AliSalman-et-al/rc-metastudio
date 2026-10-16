@@ -107,120 +107,127 @@
                 <property name="frameShadow">
                  <enum>QFrame::Raised</enum>
                 </property>
-                <layout class="QGridLayout" name="navigationLayout">
-                 <property name="spacing">
-                  <number>0</number>
-                 </property>
-                 <property name="margin">
-                  <number>0</number>
-                 </property>
-                 <item row="1" column="0">
-                <widget class="QToolButton" name="nav_left_btn">
-                 <property name="text">
-                   <string>Previous item</string>
-                  </property>
-                  <property name="toolTip"><string>Previous item in the selected navigation dimension</string></property>
-                  <property name="statusTip"><string>Show the previous item in the selected navigation dimension</string></property>
-                  <property name="accessibleName"><string>Previous item</string></property>
-                  <property name="accessibleDescription"><string>Move to the previous item in the selected navigation dimension.</string></property>
-                 <property name="icon">
-                  <iconset resource="../images/icons.qrc">
-                   <normaloff>:/icons/actions/navigation-left.svg</normaloff>:/icons/actions/navigation-left.svg</iconset>
-                 </property>
-                 <property name="autoRaise">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-                 </item>
-                 <item row="0" column="1">
-                <widget class="QToolButton" name="nav_up_btn">
-                 <property name="text">
-                   <string>Next navigation dimension</string>
-                  </property>
-                  <property name="toolTip"><string>Select the next navigation dimension</string></property>
-                  <property name="statusTip"><string>Cycle to the next navigation dimension</string></property>
-                  <property name="accessibleName"><string>Next navigation dimension</string></property>
-                  <property name="accessibleDescription"><string>Select the next navigation dimension.</string></property>
-                 <property name="icon">
-                  <iconset resource="../images/icons.qrc">
-                   <normaloff>:/icons/actions/navigation-up.svg</normaloff>:/icons/actions/navigation-up.svg</iconset>
-                 </property>
-                 <property name="autoRaise">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-                 </item>
-                 <item row="2" column="1">
-                <widget class="QToolButton" name="nav_down_btn">
-                 <property name="text">
-                   <string>Previous navigation dimension</string>
-                  </property>
-                  <property name="toolTip"><string>Select the previous navigation dimension</string></property>
-                  <property name="statusTip"><string>Cycle to the previous navigation dimension</string></property>
-                  <property name="accessibleName"><string>Previous navigation dimension</string></property>
-                  <property name="accessibleDescription"><string>Select the previous navigation dimension.</string></property>
-                 <property name="icon">
-                  <iconset resource="../images/icons.qrc">
-                   <normaloff>:/icons/actions/navigation-down.svg</normaloff>:/icons/actions/navigation-down.svg</iconset>
-                 </property>
-                 <property name="toolButtonStyle">
-                  <enum>Qt::ToolButtonIconOnly</enum>
-                 </property>
-                 <property name="autoRaise">
-                  <bool>true</bool>
-                 </property>
-                 <property name="arrowType">
-                  <enum>Qt::NoArrow</enum>
-                 </property>
-                </widget>
-                 </item>
-                 <item row="1" column="1">
-                 <widget class="QLabel" name="navigation_label">
-                  <property name="text">
-                   <string/>
-                  </property>
-                 <property name="alignment">
-                  <set>Qt::AlignCenter</set>
-                 </property>
-                </widget>
-                 </item>
-                 <item row="1" column="2">
-                <widget class="QToolButton" name="nav_right_btn">
-                 <property name="text">
-                   <string>Next item</string>
-                  </property>
-                  <property name="toolTip"><string>Next item in the selected navigation dimension</string></property>
-                  <property name="statusTip"><string>Show the next item in the selected navigation dimension</string></property>
-                  <property name="accessibleName"><string>Next item</string></property>
-                  <property name="accessibleDescription"><string>Move to the next item in the selected navigation dimension.</string></property>
-                 <property name="icon">
-                  <iconset resource="../images/icons.qrc">
-                   <normaloff>:/icons/actions/navigation-right.svg</normaloff>:/icons/actions/navigation-right.svg</iconset>
-                 </property>
-                 <property name="autoRaise">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-                 </item>
-                 <item row="1" column="3">
-                <widget class="QToolButton" name="nav_add_btn">
-                 <property name="text">
-                   <string>Add item</string>
-                  </property>
-                  <property name="toolTip"><string>Add an item to the selected navigation dimension</string></property>
-                  <property name="statusTip"><string>Add an item to the selected navigation dimension</string></property>
-                  <property name="accessibleName"><string>Add item</string></property>
-                  <property name="accessibleDescription"><string>Add an item to the selected navigation dimension.</string></property>
-                 <property name="icon">
-                  <iconset resource="../images/icons.qrc">
-                   <normaloff>:/icons/actions/add.svg</normaloff>:/icons/actions/add.svg</iconset>
-                 </property>
-                 <property name="autoRaise">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-                 </item>
-                </layout>
+<layout class="QHBoxLayout" name="navigationLayout">
+ <property name="spacing">
+  <number>8</number>
+ </property>
+ <property name="leftMargin">
+  <number>8</number>
+ </property>
+ <property name="topMargin">
+  <number>8</number>
+ </property>
+ <property name="rightMargin">
+  <number>8</number>
+ </property>
+ <property name="bottomMargin">
+  <number>8</number>
+ </property>
+ <item>
+  <widget class="QLabel" name="navigation_label">
+   <property name="text">
+    <string>Navigate:</string>
+   </property>
+  </widget>
+ </item>
+ <item>
+  <widget class="QComboBox" name="navigation_dimension">
+   <property name="accessibleName">
+    <string>Navigate outcomes, follow-ups or groups</string>
+   </property>
+   <property name="toolTip">
+    <string>Choose what the previous, next and add buttons control.</string>
+   </property>
+  </widget>
+ </item>
+ <item>
+  <widget class="QToolButton" name="nav_left_btn">
+   <property name="text">
+    <string>Previous item</string>
+   </property>
+   <property name="toolTip">
+    <string>Previous item in the selected navigation dimension</string>
+   </property>
+   <property name="statusTip">
+    <string>Show the previous item in the selected navigation dimension</string>
+   </property>
+   <property name="accessibleName">
+    <string>Previous item</string>
+   </property>
+   <property name="accessibleDescription">
+    <string>Move to the previous item in the selected navigation dimension.</string>
+   </property>
+   <property name="icon">
+    <iconset resource="../images/icons.qrc">
+     <normaloff>:/icons/actions/navigation-left.svg</normaloff>:/icons/actions/navigation-left.svg</iconset>
+   </property>
+   <property name="autoRaise">
+    <bool>true</bool>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
+   </property>
+  </widget>
+ </item>
+ <item>
+  <widget class="QToolButton" name="nav_right_btn">
+   <property name="text">
+    <string>Next item</string>
+   </property>
+   <property name="toolTip">
+    <string>Next item in the selected navigation dimension</string>
+   </property>
+   <property name="statusTip">
+    <string>Show the next item in the selected navigation dimension</string>
+   </property>
+   <property name="accessibleName">
+    <string>Next item</string>
+   </property>
+   <property name="accessibleDescription">
+    <string>Move to the next item in the selected navigation dimension.</string>
+   </property>
+   <property name="icon">
+    <iconset resource="../images/icons.qrc">
+     <normaloff>:/icons/actions/navigation-right.svg</normaloff>:/icons/actions/navigation-right.svg</iconset>
+   </property>
+   <property name="autoRaise">
+    <bool>true</bool>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
+   </property>
+  </widget>
+ </item>
+ <item>
+  <widget class="QToolButton" name="nav_add_btn">
+   <property name="text">
+    <string>Add item</string>
+   </property>
+   <property name="toolTip">
+    <string>Add an item to the selected navigation dimension</string>
+   </property>
+   <property name="statusTip">
+    <string>Add an item to the selected navigation dimension</string>
+   </property>
+   <property name="accessibleName">
+    <string>Add item</string>
+   </property>
+   <property name="accessibleDescription">
+    <string>Add an item to the selected navigation dimension.</string>
+   </property>
+   <property name="icon">
+    <iconset resource="../images/icons.qrc">
+     <normaloff>:/icons/actions/add.svg</normaloff>:/icons/actions/add.svg</iconset>
+   </property>
+   <property name="autoRaise">
+    <bool>true</bool>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
+   </property>
+  </widget>
+ </item>
+</layout>
                </widget>
               </item>
               <item>
@@ -432,7 +439,7 @@
      <normaloff>:/icons/actions/open.svg</normaloff>:/icons/actions/open.svg</iconset>
    </property>
    <property name="text">
-    <string>Open</string>
+    <string>Open…</string>
    </property>
   </action>
   <action name="action_quit">
@@ -450,7 +457,7 @@
      <normaloff>:/icons/analyses/meta-analysis.svg</normaloff>:/icons/analyses/meta-analysis.svg</iconset>
    </property>
    <property name="text">
-    <string>Meta-Analysis</string>
+    <string>Meta-analysis…</string>
    </property>
   </action>
   <action name="action_edit">
@@ -459,7 +466,7 @@
      <normaloff>:/icons/actions/edit-dataset.svg</normaloff>:/icons/actions/edit-dataset.svg</iconset>
    </property>
    <property name="text">
-    <string>Edit</string>
+    <string>Edit dataset…</string>
    </property>
   </action>
   <action name="action_add_covariate">
@@ -468,7 +475,7 @@
      <normaloff>:/icons/actions/add-covariate.svg</normaloff>:/icons/actions/add-covariate.svg</iconset>
    </property>
    <property name="text">
-    <string>Add Covariate</string>
+    <string>Add covariate…</string>
    </property>
   </action>
   <action name="action_cum_ma">
@@ -477,7 +484,7 @@
      <normaloff>:/icons/analyses/cumulative-analysis.svg</normaloff>:/icons/analyses/cumulative-analysis.svg</iconset>
    </property>
    <property name="text">
-    <string>Cumulative Meta-Analysis</string>
+    <string>Cumulative meta-analysis…</string>
    </property>
   </action>
   <action name="action_loo_ma">
@@ -486,7 +493,7 @@
      <normaloff>:/icons/analyses/leave-one-out-analysis.svg</normaloff>:/icons/analyses/leave-one-out-analysis.svg</iconset>
    </property>
    <property name="text">
-    <string>Leave-One-Out Meta-Analysis</string>
+    <string>Leave-one-out meta-analysis…</string>
    </property>
   </action>
   <action name="action_new_dataset">
@@ -504,7 +511,7 @@
      <normaloff>:/icons/analyses/meta-regression.svg</normaloff>:/icons/analyses/meta-regression.svg</iconset>
    </property>
    <property name="text">
-    <string>Meta-Regression</string>
+    <string>Meta-regression…</string>
    </property>
   </action>
   <action name="action_publication_bias">
@@ -512,10 +519,10 @@
     <string>Publication Bias</string>
    </property>
    <property name="toolTip">
-    <string>Publication Bias and Small-Study Effects</string>
+    <string>Small-study effects</string>
    </property>
    <property name="statusTip">
-    <string>Publication Bias and Small-Study Effects</string>
+    <string>Small-study effects</string>
    </property>
   </action>
   <action name="action_undo">
@@ -572,7 +579,7 @@
      <normaloff>:/icons/analyses/subgroup-analysis.svg</normaloff>:/icons/analyses/subgroup-analysis.svg</iconset>
    </property>
    <property name="text">
-    <string>Subgroup Meta-Analysis</string>
+    <string>Subgroup meta-analysis…</string>
    </property>
   </action>
   <action name="action_save_as">
@@ -581,7 +588,7 @@
      <normaloff>:/icons/actions/save-as.svg</normaloff>:/icons/actions/save-as.svg</iconset>
    </property>
    <property name="text">
-    <string>Save As</string>
+    <string>Save as…</string>
    </property>
   </action>
   <action name="action_about_legal">
@@ -590,7 +597,7 @@
      <normaloff>:/icons/actions/about-legal.svg</normaloff>:/icons/actions/about-legal.svg</iconset>
    </property>
    <property name="text">
-    <string>About/Legal</string>
+    <string>About and licenses…</string>
    </property>
   </action>
   <action name="action_change_confidence_level">
@@ -599,7 +606,7 @@
      <normaloff>:/icons/actions/confidence-level.svg</normaloff>:/icons/actions/confidence-level.svg</iconset>
    </property>
    <property name="text">
-    <string>Change Confidence Level</string>
+    <string>Change confidence level…</string>
    </property>
   </action>
   <action name="action_import_csv">
@@ -608,7 +615,7 @@
      <normaloff>:/icons/actions/import-csv.svg</normaloff>:/icons/actions/import-csv.svg</iconset>
    </property>
    <property name="text">
-    <string>Import CSV</string>
+    <string>Import CSV…</string>
    </property>
   </action>
   <action name="action_auto_fit_columns">
@@ -617,7 +624,7 @@
      <normaloff>:/icons/actions/auto-fit-columns.svg</normaloff>:/icons/actions/auto-fit-columns.svg</iconset>
    </property>
    <property name="text">
-    <string>Auto-Fit Columns</string>
+    <string>Fit columns</string>
    </property>
   </action>
  </widget>

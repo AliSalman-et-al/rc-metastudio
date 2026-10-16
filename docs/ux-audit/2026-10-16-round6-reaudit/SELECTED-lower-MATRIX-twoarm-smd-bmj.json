@@ -1,0 +1,32 @@
+[
+  {
+    "path": "screenshots/matrix-twoarm-smd-cumulative-figure-bottom-bmj.png",
+    "sha256": "5bfe8ad3decb36ca85dbb4fd0ce5fc831228dfab1fc44fd1b5b91451e15cc791",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-cumulative-figure-bottom-bmj.png",
+    "scenario": "lower-MATRIX-twoarm-smd-bmj"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-subgroup-figure-bottom-bmj.png",
+    "sha256": "34f9500f4f1d6b0bfe93e49471a7f292f27208e8411409296e4204a10d90e9df",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-subgroup-figure-bottom-bmj.png",
+    "scenario": "lower-MATRIX-twoarm-smd-bmj"
+  },
+  {
+    "path": "screenshots/matrix-twoarm-smd-meta-regression-figure-bottom-bmj.png",
+    "sha256": "bb58174b696b863f90070919d9e183e085326ebf521bdc975a526a1da9331ab8",
+    "capture": "QScreen.grabWindow",
+    "family": "twoarm-smd",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Two-arm continuous \u00b7 Standardized Mean Difference\nComparison: Intervention / Control \u00b7 Follow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-twoarm-smd-bmj/captures/matrix-twoarm-smd-meta-regression-figure-bottom-bmj.png",
+    "scenario": "lower-MATRIX-twoarm-smd-bmj"
+  }
+]

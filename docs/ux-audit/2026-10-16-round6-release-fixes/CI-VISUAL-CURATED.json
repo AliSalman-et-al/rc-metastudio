@@ -1,0 +1,174 @@
+[
+  {
+    "path": "ci-visual/project-axis-sequential-before-28-0-matrix-results.png",
+    "original": "build/ux-round3/lexer-c62df31/artifacts/verification/rcms/20261015T234148Z-a0bdb4cb-project-axis-sequential/28-0-matrix-results.png",
+    "sha256": "c9d8112b84d89d667cf9dd3a1d371599aeeccd27bb168364fb8628e33a9e4949",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/project-axis-sequential-after-28-0-matrix-results.png",
+    "original": "artifacts/verification/rcms/20261015T234259Z-9461c8f9-project-axis-sequential/28-0-matrix-results.png",
+    "sha256": "2de0b59b5342a61bc22ae7e4985a889565fecdd6c58f9a287936060928f428b5",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/project-reviewer-predictions-before-11-0-reviewer-prediction-observed.png",
+    "original": "build/ux-round3/lexer-c62df31/artifacts/verification/rcms/20261015T234347Z-3a758473-project-reviewer-predictions/11-0-reviewer-prediction-observed.png",
+    "sha256": "cbb2a99bef216671fc0e33496538e6eed88cec72c8e165d76ac5881fbb872108",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/project-reviewer-predictions-before-08-0-matrix-results-report.png",
+    "original": "build/ux-round3/lexer-c62df31/artifacts/verification/rcms/20261015T234347Z-3a758473-project-reviewer-predictions/08-0-matrix-results-report.png",
+    "sha256": "f3c85c71f7855b1cff25161f3e4afccebcdedaa189697a325d2414f921522f3a",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/project-reviewer-predictions-before-72-0-matrix-configured.png",
+    "original": "build/ux-round3/lexer-c62df31/artifacts/verification/rcms/20261015T234347Z-3a758473-project-reviewer-predictions/72-0-matrix-configured.png",
+    "sha256": "131169a53bc7cbad6e87569a5f3eb7b2574831a94ec4aa5eeb02e663116393ed",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/project-reviewer-predictions-before-66-0-reviewer-prediction-after.png",
+    "original": "build/ux-round3/lexer-c62df31/artifacts/verification/rcms/20261015T234347Z-3a758473-project-reviewer-predictions/66-0-reviewer-prediction-after.png",
+    "sha256": "18cfaf4b0eb778021cc43abcb8e22ac608ab4f3825b2c9ea086e8d6acbb4acb2",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/project-reviewer-predictions-after-11-0-reviewer-prediction-observed.png",
+    "original": "artifacts/verification/rcms/20261015T234805Z-d0db3b32-project-reviewer-predictions/11-0-reviewer-prediction-observed.png",
+    "sha256": "cbb2a99bef216671fc0e33496538e6eed88cec72c8e165d76ac5881fbb872108",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/project-reviewer-predictions-after-08-0-matrix-results-report.png",
+    "original": "artifacts/verification/rcms/20261015T234805Z-d0db3b32-project-reviewer-predictions/08-0-matrix-results-report.png",
+    "sha256": "f3c85c71f7855b1cff25161f3e4afccebcdedaa189697a325d2414f921522f3a",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/project-reviewer-predictions-after-72-0-matrix-configured.png",
+    "original": "artifacts/verification/rcms/20261015T234805Z-d0db3b32-project-reviewer-predictions/72-0-matrix-configured.png",
+    "sha256": "4f121509ce216e55b6921cf8f7174c95e676da7a32791007f312ee3105b46f66",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/project-reviewer-predictions-after-66-0-reviewer-prediction-after.png",
+    "original": "artifacts/verification/rcms/20261015T234805Z-d0db3b32-project-reviewer-predictions/66-0-reviewer-prediction-after.png",
+    "sha256": "84eecdbb2507e0a82abfbec3be344cea7463eab758f9ec5b1abcb201019ae3f9",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/analysis-diagnostic-joint-before-05-0-matrix-results.png",
+    "original": "build/ux-round3/lexer-c62df31/artifacts/verification/rcms/20261015T235301Z-c87b0acb-analysis-diagnostic-joint/05-0-matrix-results.png",
+    "sha256": "c73145151bf21f2a7bfc999c27cf4a315c2c924d5ffd10c83cc8e07c9920450e",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/analysis-diagnostic-joint-before-05-0-matrix-results-figure.png",
+    "original": "build/ux-round3/lexer-c62df31/artifacts/verification/rcms/20261015T235301Z-c87b0acb-analysis-diagnostic-joint/05-0-matrix-results-figure.png",
+    "sha256": "8d726172893024c5fe1c47406ca4759b665f9ce0a6a11ea7081591a77b287884",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/analysis-diagnostic-joint-after-05-0-matrix-results.png",
+    "original": "artifacts/verification/rcms/20261015T235324Z-dc35d453-analysis-diagnostic-joint/05-0-matrix-results.png",
+    "sha256": "e13101ee738131e477c9cdf47b7f3793e37a3da823b540879e065725931ff81c",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/analysis-diagnostic-joint-after-05-0-matrix-results-figure.png",
+    "original": "artifacts/verification/rcms/20261015T235324Z-dc35d453-analysis-diagnostic-joint/05-0-matrix-results-figure.png",
+    "sha256": "8d726172893024c5fe1c47406ca4759b665f9ce0a6a11ea7081591a77b287884",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/project-release-coefficients-before-14-0-coefficient-linear-choice.png",
+    "original": "build/ux-round3/lexer-c62df31/artifacts/verification/rcms/20261015T235346Z-22a95cdd-project-release-coefficients/14-0-coefficient-linear-choice.png",
+    "sha256": "a0f53ad5300357b9c23501d620e6aa7a1a7e924218ea9f758526b05c74d8daf7",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/project-release-coefficients-after-14-0-coefficient-linear-choice.png",
+    "original": "artifacts/verification/rcms/20261015T235427Z-a722990e-project-release-coefficients/14-0-coefficient-linear-choice.png",
+    "sha256": "a0f53ad5300357b9c23501d620e6aa7a1a7e924218ea9f758526b05c74d8daf7",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/plot-workflow-funnel-before-05-0-family-editor-controls.png",
+    "original": "build/ux-round3/lexer-c62df31/artifacts/verification/rcms/20261015T235728Z-87069001-plot-workflow-funnel/05-0-family-editor-controls.png",
+    "sha256": "bba86026e3af4f806351baaa04573fc46191cc5936e1a3d4afdeabdf6f685ca7",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/plot-workflow-funnel-before-07-0-family-plot-cancelled-figure.png",
+    "original": "build/ux-round3/lexer-c62df31/artifacts/verification/rcms/20261015T235728Z-87069001-plot-workflow-funnel/07-0-family-plot-cancelled-figure.png",
+    "sha256": "a1c039096c6f5e7c618662dc0ac41f64820067e78f4cb421dcdc410f9a9cd9b5",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/plot-workflow-funnel-after-05-0-family-editor-controls.png",
+    "original": "artifacts/verification/rcms/20261015T235757Z-66374362-plot-workflow-funnel/05-0-family-editor-controls.png",
+    "sha256": "bba86026e3af4f806351baaa04573fc46191cc5936e1a3d4afdeabdf6f685ca7",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/plot-workflow-funnel-after-07-0-family-plot-cancelled-figure.png",
+    "original": "artifacts/verification/rcms/20261015T235757Z-66374362-plot-workflow-funnel/07-0-family-plot-cancelled-figure.png",
+    "sha256": "a1c039096c6f5e7c618662dc0ac41f64820067e78f4cb421dcdc410f9a9cd9b5",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/plot-workflow-regression-before-08-0-family-editor-controls.png",
+    "original": "build/ux-round3/lexer-c62df31/artifacts/verification/rcms/20261015T235827Z-a28b2451-plot-workflow-regression/08-0-family-editor-controls.png",
+    "sha256": "5b19de37483bad3cb16b4f1c14734a661c8ca00a4e55a0e7d43b712ed61e80b4",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/plot-workflow-regression-before-22-0-family-plot-cancelled-figure.png",
+    "original": "build/ux-round3/lexer-c62df31/artifacts/verification/rcms/20261015T235827Z-a28b2451-plot-workflow-regression/22-0-family-plot-cancelled-figure.png",
+    "sha256": "c8676919297c88c3334e48eff445b948aece48d1e862ffc594b254201994980c",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/plot-workflow-regression-after-08-0-family-editor-controls.png",
+    "original": "artifacts/verification/rcms/20261015T235917Z-d550a78c-plot-workflow-regression/08-0-family-editor-controls.png",
+    "sha256": "5b19de37483bad3cb16b4f1c14734a661c8ca00a4e55a0e7d43b712ed61e80b4",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/plot-workflow-regression-after-22-0-family-plot-cancelled-figure.png",
+    "original": "artifacts/verification/rcms/20261015T235917Z-d550a78c-plot-workflow-regression/22-0-family-plot-cancelled-figure.png",
+    "sha256": "c8676919297c88c3334e48eff445b948aece48d1e862ffc594b254201994980c",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/arm-names-continuous-default-before.png",
+    "original": "build/ux-round3/lexer-c62df31/artifacts/verification/rcms/20261016T001023Z-63cf6009-audit-round3-arm-names/100-0-round5-arm-report.png",
+    "sha256": "ac49b2f4bb70160e31d138693d675440a70469348aaea6a761d6c7b7de6dfacb",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/arm-names-continuous-default-after.png",
+    "original": "artifacts/verification/rcms/20261016T000501Z-be9e133c-audit-round3-arm-names/100-0-round5-arm-report.png",
+    "sha256": "e92f55d45e75a1d0f0f136d4684a0c35f60c7e6d74b051effca00499b81a16dc",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/arm-names-continuous-default-before-figure.png",
+    "original": "build/ux-round3/lexer-c62df31/artifacts/verification/rcms/20261016T001023Z-63cf6009-audit-round3-arm-names/100-0-forest-7da9cee8e3b1.display.svg",
+    "original_sha256": "17a983a92ee2000e1da788caf7112a1ee30bb63e359d9a2241fdb10f2b7709bb",
+    "sha256": "e2b17dd4e809df1393d4b8fed29bad75e1ae9199ac7dc2686515c964bb614b94",
+    "renderer": "QSvgRenderer at natural dimensions on white",
+    "personally_inspected": true
+  },
+  {
+    "path": "ci-visual/arm-names-continuous-default-after-figure.png",
+    "original": "artifacts/verification/rcms/20261016T000501Z-be9e133c-audit-round3-arm-names/100-0-forest-521f4b25dfe4.display.svg",
+    "original_sha256": "17a983a92ee2000e1da788caf7112a1ee30bb63e359d9a2241fdb10f2b7709bb",
+    "sha256": "e2b17dd4e809df1393d4b8fed29bad75e1ae9199ac7dc2686515c964bb614b94",
+    "renderer": "QSvgRenderer at natural dimensions on white",
+    "personally_inspected": true
+  }
+]

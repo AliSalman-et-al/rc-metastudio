@@ -1,0 +1,7 @@
+{
+  "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5-reaudit/raw/native-design/review1-report.txt",
+  "source_sha256": "7fcbd8d4369ca9ee543079de917745fb2bac6bf0e50582d50fec0b50ab79f863",
+  "path": "screenshots/shell-exported-report-editor.png",
+  "sha256": "c013fe4515f28a537a4fc13ba6fab9918586f003aecb11a743052575ca614641",
+  "capture": "QScreen.grabWindow external xedit"
+}

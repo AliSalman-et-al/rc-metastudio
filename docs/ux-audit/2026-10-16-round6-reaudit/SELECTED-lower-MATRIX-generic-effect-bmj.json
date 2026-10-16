@@ -1,0 +1,42 @@
+[
+  {
+    "path": "screenshots/matrix-generic-effect-cumulative-figure-bottom-bmj.png",
+    "sha256": "54f664cbf33bcfc3c924a3aab57ddf0bfb4927b106701fdf6d4332a96c6afb33",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-generic-effect-bmj/captures/matrix-generic-effect-cumulative-figure-bottom-bmj.png",
+    "scenario": "lower-MATRIX-generic-effect-bmj"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-leave-one-out-figure-bottom-bmj.png",
+    "sha256": "6d50b39faa2fcc0d651705494c0503d50f850f5c0e6a64ca827f89d8a4b36be3",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-generic-effect-bmj/captures/matrix-generic-effect-leave-one-out-figure-bottom-bmj.png",
+    "scenario": "lower-MATRIX-generic-effect-bmj"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-subgroup-figure-bottom-bmj.png",
+    "sha256": "a4fd05e4a306d7ff58791df51bf335ef8cb29b8f768262b0fbc6154433a2b48e",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-generic-effect-bmj/captures/matrix-generic-effect-subgroup-figure-bottom-bmj.png",
+    "scenario": "lower-MATRIX-generic-effect-bmj"
+  },
+  {
+    "path": "screenshots/matrix-generic-effect-meta-regression-figure-bottom-bmj.png",
+    "sha256": "1ad3fb3c85633d3536e0f6a06e16f43abb562555ce35b78f02ad629d96e7ed3e",
+    "capture": "QScreen.grabWindow",
+    "family": "generic-effect",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Generic entered effect\nFollow-up: first",
+    "source": "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round6-reaudit/raw/matrix-generic-effect-bmj/captures/matrix-generic-effect-meta-regression-figure-bottom-bmj.png",
+    "scenario": "lower-MATRIX-generic-effect-bmj"
+  }
+]

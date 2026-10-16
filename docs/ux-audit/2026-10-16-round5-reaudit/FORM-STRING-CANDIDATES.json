@@ -1,0 +1,32 @@
+[
+  {
+    "file": "src/rc_metastudio/forms/funnel_plot_editor_dialog.ui",
+    "text": "None",
+    "disposition": "justified display text",
+    "reason": "None is an actual supported no-label/overlay selection, not a raw null value."
+  },
+  {
+    "file": "src/rc_metastudio/forms/publication_bias_dialog.ui",
+    "text": "None",
+    "disposition": "justified display text",
+    "reason": "None is an actual supported no-label/overlay selection, not a raw null value."
+  },
+  {
+    "file": "src/rc_metastudio/forms/welcome_page.ui",
+    "text": "<a href=\"https://github.com/AliSalman-et-al/rc-metastudio\">Project site</a>",
+    "disposition": "justified display text",
+    "reason": "Intentional labelled hyperlink; the URL is its target, not opaque visible copy."
+  },
+  {
+    "file": "src/rc_metastudio/forms/welcome_page.ui",
+    "text": "<a href=\"https://www.jstatsoft.org/article/view/v049i05\">How to cite</a>",
+    "disposition": "justified display text",
+    "reason": "Intentional labelled hyperlink; the URL is its target, not opaque visible copy."
+  },
+  {
+    "file": "src/rc_metastudio/forms/welcome_page.ui",
+    "text": "<a href=\"https://github.com/AliSalman-et-al/rc-metastudio/issues\">Issues</a>",
+    "disposition": "justified display text",
+    "reason": "Intentional labelled hyperlink; the URL is its target, not opaque visible copy."
+  }
+]

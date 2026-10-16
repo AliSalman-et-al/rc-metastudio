@@ -61,9 +61,10 @@ rcmetar.create.metafor.bubble.bundle <- function(
 }
 
 rcmetar.bubble.default.ylabel <- function(params) {
-    metric <- pretty.metric.name(as.character(params$measure), params$metric.label)
+    metric <- rcmetar.display.metric.name(params)
     scale.str <- get.scale(params)
-    if (scale.str %in% c("log", "logit")) {
+    if (params$measure %in% c("PLN", "PLO", "PAS", "PFT", "Sens", "Spec")) {
+        if (params$measure == "PFT") scale.str <- "Freeman\u2013Tukey"
         return(paste0(metric, " (", scale.str, " scale)"))
     }
     metric
@@ -94,14 +95,7 @@ rcmetar.bubble.axis.ticks <- function(bundle, ylim=NULL) {
     if (!is.null(bundle$params$bp_yticks) &&
             !identical(bundle$params$bp_yticks[1], "[default]") &&
             !all(is.na(bundle$params$bp_yticks))) {
-        ticks <- as.numeric(bundle$params$bp_yticks)
-        if (metric.is.log.scale(measure)) {
-            return(log(ticks))
-        }
-        if (metric.is.logit.scale(measure)) {
-            return(logit(pmin(pmax(ticks, .Machine$double.eps), 1 - .Machine$double.eps)))
-        }
-        return(ticks)
+        return(rcmetar.bubble.manual.yticks(bundle, measure))
     }
     if (is.null(ylim) || length(ylim) != 2 || any(!is.finite(ylim))) {
         y <- as.numeric(bundle$effects$ES)
@@ -112,25 +106,29 @@ rcmetar.bubble.axis.ticks <- function(bundle, ylim=NULL) {
         }
     }
     if (metric.is.log.scale(measure)) {
-        candidates <- log(c(0.01, 0.05, 0.1, 0.25, 0.5, 1, 2, 4, 10, 20, 100))
-        return(rcmetar.bubble.ticks.in.range(candidates, ylim))
+        powers <- seq(max(-300, floor(ylim[[1]] / log(10))),
+                      min(300, ceiling(ylim[[2]] / log(10))))
+        ticks <- log(sort(as.vector(outer(c(1, 2, 5), 10^powers))))
+    } else if (metric.is.logit.scale(measure)) {
+        ticks <- logit(c(.001, .005, .01, .05, .1, .25, .5, .75, .9, .95, .99, .995, .999))
+    } else {
+        ticks <- pretty(ylim, n=5)
+        return(ticks[ticks >= ylim[[1]] & ticks <= ylim[[2]]])
     }
-    if (metric.is.logit.scale(measure)) {
-        candidates <- logit(c(0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99))
-        return(rcmetar.bubble.ticks.in.range(candidates, ylim))
+    ticks <- ticks[is.finite(ticks) & ticks >= ylim[[1]] & ticks <= ylim[[2]]]
+    if (length(ticks) < 2) {
+        transform <- rcmetar.bubble.atransf(bundle)
+        displayed <- pretty(transform(ylim), n=5)
+        ticks <- if (metric.is.log.scale(measure)) log(displayed[displayed > 0]) else
+            logit(displayed[displayed > 0 & displayed < 1])
+        ticks <- ticks[ticks >= ylim[[1]] & ticks <= ylim[[2]]]
     }
-    NULL
-}
-
-rcmetar.bubble.ticks.in.range <- function(candidates, range) {
-    if (is.null(range) || length(range) != 2 || any(!is.finite(range))) {
-        return(candidates)
+    # Avoid crowded tail labels on wide transformed axes, keeping the full range.
+    spaced <- numeric(0)
+    for (tick in ticks) {
+        if (!length(spaced) || tick - tail(spaced, 1) >= diff(ylim) / 8) spaced <- c(spaced, tick)
     }
-    ticks <- candidates[candidates >= range[[1]] & candidates <= range[[2]]]
-    if (length(ticks) >= 2) {
-        return(ticks)
-    }
-    pretty(range)
+    spaced
 }
 
 rcmetar.bubble.atransf <- function(bundle) {
@@ -280,7 +278,9 @@ rcmetar.bubble.legend.labels <- function(bundle) {
     }
     if (!length(level) || !is.finite(level) || level <= 0 || level >= 100) level <- 95
     level <- trimws(formatC(level, format="fg", digits=4))
-    labels <- c("Studies\n(weighted size)", "Regression line", paste0(level, "% CI"))
+    labels <- "Studies\n(weighted size)"
+    if (rcmetar.bubble.param.is.true(bundle, "bp_show_regression_line", TRUE)) labels <- c(labels, "Regression line")
+    if (rcmetar.bubble.param.is.true(bundle, "bp_show_confidence_band", TRUE)) labels <- c(labels, paste0(level, "% CI"))
     if (rcmetar.bubble.param.is.true(bundle, "bp_show_prediction_interval", FALSE)) {
         labels <- c(labels, paste0(level, "% PI"))
     }
@@ -308,6 +308,15 @@ rcmetar.bubble.draw.legend <- function(bundle, style.args) {
         col <- c(col, style.args$lcol)
         pt.bg <- c(pt.bg, NA)
     }
+    visible <- c(TRUE,
+        rcmetar.bubble.param.is.true(bundle, "bp_show_regression_line", TRUE),
+        rcmetar.bubble.param.is.true(bundle, "bp_show_confidence_band", TRUE),
+        if (length(lty) == 4) TRUE)
+    lty <- lty[visible]
+    lwd <- lwd[visible]
+    pch <- pch[visible]
+    col <- col[visible]
+    pt.bg <- pt.bg[visible]
     graphics::legend(
         x=x,
         y=y,
@@ -327,6 +336,19 @@ rcmetar.bubble.draw.legend <- function(bundle, style.args) {
     invisible(NULL)
 }
 
+rcmetar.bubble.tick.labels <- function(bundle, ticks) {
+    transform <- rcmetar.bubble.atransf(bundle)
+    values <- if (is.null(transform)) ticks else transform(ticks)
+    if (metric.is.log.scale(as.character(bundle$params$measure)) ||
+            metric.is.logit.scale(as.character(bundle$params$measure))) {
+        return(vapply(values, function(value) format(signif(value, 12), trim=TRUE, scientific=FALSE), character(1)))
+    }
+    labels <- rcmetar.format.effect.number(values, display.digits(bundle$params))
+    fixed <- grepl("\\.", labels) & !grepl("e", labels, fixed=TRUE)
+    labels[fixed] <- sub("\\.$", "", sub("0+$", "", labels[fixed]))
+    labels
+}
+
 rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
     size <- rcmetar.bubble.measure.device(bundle)
     display.path <- rcmetar.plot.display_path_for_bundle(bundle, outpath, "bp")
@@ -337,11 +359,13 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
             mar=c(4.6, 5.2, 1.1, if (rcmetar.bubble.param.is.true(bundle, "bp_show_legend", FALSE)) 7.2 else 1.1),
             mgp=c(2.9, 0.75, 0),
             cex=size$cex,
-            family="sans"
+            family="sans",
+            xpd=FALSE
         )
         args <- rcmetar.bubble.style.args(bundle)
         ylim <- rcmetar.bubble.ylim(bundle)
-        at <- rcmetar.bubble.axis.ticks(bundle, ylim)
+        automatic.ticks <- is.null(bundle$params$bp_yticks) || identical(bundle$params$bp_yticks[1], "[default]")
+        at <- if (automatic.ticks) NULL else rcmetar.bubble.axis.ticks(bundle, ylim)
         x.ticks <- rcmetar.bubble.x.ticks(bundle)
         args <- c(
             list(
@@ -351,14 +375,15 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
                 ci=rcmetar.bubble.param.is.true(bundle, "bp_show_confidence_band", TRUE),
                 pi=rcmetar.bubble.param.is.true(bundle, "bp_show_prediction_interval", FALSE),
                 xlab=bundle$xlabel,
-                ylab=bundle$ylabel,
+                ylab="",
                 xlim=rcmetar.bubble.xlim(bundle),
                 ylim=ylim,
-                predlim=range(as.numeric(bundle$moderator$values), na.rm=TRUE),
-                refline=rcmetar.bubble.refline(bundle, ylim),
+                predlim=if (is.null(rcmetar.bubble.xlim(bundle))) range(as.numeric(bundle$moderator$values), na.rm=TRUE) else rcmetar.bubble.xlim(bundle),
+                refline=NA,
                 atransf=rcmetar.bubble.atransf(bundle),
                 at=at,
-                digits=as.integer(min(3, max(2, bundle$params$digits))),
+                digits=display.digits(bundle$params),
+                yaxt="n",
                 slab=bundle$slab,
                 label=FALSE,
                 labsize=max(0.68, size$cex * 0.84),
@@ -370,6 +395,16 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
             args$xaxt <- "n"
         }
         args <- rcmetar.bubble.compact.args(args)
+        tick.width <- rcmetar.forest.with.measurement.device({
+            graphics::par(cex=size$cex, family="sans")
+            do.call(metafor::regplot, args)
+            labels <- rcmetar.bubble.tick.labels(bundle,
+                rcmetar.bubble.axis.ticks(bundle, graphics::par("usr")[3:4]))
+            max(graphics::strwidth(labels, units="inches"))
+        })
+        margins <- graphics::par("mai")
+        margins[[2]] <- max(margins[[2]], tick.width + 0.75)
+        graphics::par(mai=margins)
         result <- tryCatch(
             do.call(metafor::regplot, args),
             error=function(e) {
@@ -377,10 +412,34 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
                 do.call(metafor::regplot, args)
             }
         )
+        # regplot owns the range, including fitted CI/PI. Choose ticks after it
+        # draws so they cover that actual range rather than only study estimates.
+        panel <- graphics::par("usr")
+        null <- rcmetar.bubble.refline(bundle, panel[3:4])
+        if (is.finite(null)) {
+            graphics::segments(panel[[1]], null, panel[[2]], null,
+                               col="gray50", lty="dotted", xpd=FALSE)
+        }
+        ticks <- rcmetar.bubble.axis.ticks(bundle, graphics::par("usr")[3:4])
+        labels <- rcmetar.bubble.tick.labels(bundle, ticks)
+        graphics::axis(2, at=ticks, labels=labels, las=1)
+        graphics::mtext(bundle$ylabel, side=2,
+                        line=(max(graphics::strwidth(labels, units="inches")) + 0.40) / graphics::par("csi"))
         if (length(x.ticks) > 0) {
             graphics::axis(1, at=x.ticks)
         }
         rcmetar.bubble.draw.legend(bundle, args)
         invisible(result)
-    }, display.path=display.path)
+    }, display.path=display.path, caption=bundle$params$plot_caption)
+}
+
+rcmetar.bubble.manual.yticks <- function(bundle, measure) {
+    ticks <- as.numeric(bundle$params$bp_yticks)
+    if (metric.is.log.scale(measure)) {
+        return(log(ticks))
+    }
+    if (metric.is.logit.scale(measure)) {
+        return(logit(pmin(pmax(ticks, .Machine$double.eps), 1 - .Machine$double.eps)))
+    }
+    return(ticks)
 }

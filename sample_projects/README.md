@@ -1,6 +1,10 @@
 # Sample projects
 
-Open these `.rcms` files through RCMS **File > Open**. The original binary, continuous and diagnostic examples remain unchanged.
+Open these `.rcms` files through RCMS **File > Open**. The original binary, continuous and diagnostic examples retain every numerical input and effect. Their bundled arm labels use readable names; user projects keep their stored labels.
+
+BCG uses **BCG vaccine / Control**. All 13 original event/total rows and their arm direction match the pinned `metadat::dat.bcg` source: `tpos/tneg` are vaccinated counts and `cpos/cneg` are non-vaccinated control counts. The source is Colditz et al. (1994), JAMA 271(9), 698–702, [doi:10.1001/jama.1994.03510330076038](https://doi.org/10.1001/jama.1994.03510330076038). The exact source/arm check is retained in `docs/ux-audit/2026-10-16-round5/REVIEW1-BCG-SOURCE.json`.
+
+The retained Aminoglycosides, blood pressure and Death examples do not identify the source arms, so they use **Intervention / Control** without guessing a treatment or direction. The lymph diagnostic example uses **Index test**. `manifest.json` documents the exact label replacements and current archive/semantic checksums. Immutable original snapshots remain test-only legacy inputs; see `docs/ux-audit/2026-10-16-round5/REVIEW1-SAMPLE-IDENTITY.json` for complete-field preservation proof.
 
 ## Metafor HR and IRR examples
 

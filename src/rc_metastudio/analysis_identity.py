@@ -24,17 +24,14 @@ def configuration_details(model_label, parameters):
 def result_identity(model, workflow, metric, model_label, parameters, confidence, moderators, fits=()):
     """Build the compact result header and the report's selected configuration."""
     header = workflow_label(workflow) + " — " + dataset_identity(model, metric)
-    details = [f"Confidence level: {parameters.get('conf.level', confidence)}%"]
-    if fits:
-        for fitted_metric, fitted_method, fitted_parameters in fits:
-            details.append("\n" + fitted_metric)
-            details.extend(configuration_details(fitted_method, fitted_parameters))
-    else:
-        details = configuration_details(model_label, parameters) + details
+    details = [f"Confidence level: {float(parameters.get('conf.level', confidence)):g}%"]
     if workflow == "cumulative":
         details.append("Order: current study order; each row adds a study to the preceding studies.")
     elif workflow == "leave-one-out":
-        details.append("Each row omits the named study; compare with the all-studies estimate.")
+        if model.get_current_outcome_type() in {"time_to_event", "event_rates"}:
+            details.append("Omission-only fits: each row omits the named study. No all-studies fit is included.")
+        else:
+            details.append("Each row omits the named study; compare with the all-studies estimate.")
     elif workflow == "subgroup":
         details.append(f"Subgroups by {parameters.get('cov_name', 'selected covariate')}. Use the test of subgroup differences to compare groups.")
     elif workflow == "meta-regression":
@@ -48,15 +45,23 @@ def result_identity(model, workflow, metric, model_label, parameters, confidence
         details.append(f"{effect} = 1 means equal {quantity} in {groups}; estimates are fitted on the log scale.")
     elif effect in {"MD", "SMD"}:
         units = "SD units" if effect == "SMD" else "outcome units"
-        details.append(f"{effect}: first group minus second group, in {units}; 0 indicates no difference.")
+        groups = " minus ".join(model.current_groups)
+        details.append(f"{effect}: {groups}, in {units}; 0 indicates no difference.")
+    if fits:
+        for fitted_metric, fitted_method, fitted_parameters in fits:
+            details.append("\n" + fitted_metric)
+            details.extend(configuration_details(fitted_method, fitted_parameters))
+    else:
+        details = configuration_details(model_label, parameters) + details
     return header, "\n".join(details)
 
 
-def metric_label(model):
+def metric_label(model, metric=None):
     subtype = model.get_current_outcome_subtype()
-    if model.current_effect == "TX Mean":
+    metric = metric or model.current_effect
+    if metric == "TX Mean":
         return {"mean": "Mean", "reg_coef": "Regression coefficient", "generic_effect": "Entered effect"}.get(subtype, "Mean")
-    return meta_globals.ALL_METRIC_NAMES.get(model.current_effect, model.current_effect)
+    return meta_globals.ALL_METRIC_NAMES.get(metric, metric)
 
 
 def dataset_label(model):
@@ -74,4 +79,12 @@ def dataset_identity(model, metric=None):
     groups = " / ".join(model.current_groups if comparison else model.current_groups[:1])
     group_label = "Comparison" if comparison else "Group"
     follow_up = model.get_current_follow_up_name()
-    return f"{model.current_outcome_name} · {dataset_label(model)} · {metric or metric_label(model)}\n{group_label}: {groups} · Follow-up: {follow_up}"
+    labels = [model.current_outcome_name, dataset_label(model)]
+    quantity = metric or metric_label(model)
+    if quantity and model.current_effect != "TX Mean" and quantity.casefold() != labels[-1].casefold():
+        labels.append(quantity)
+    context = []
+    if comparison or groups != "Group":
+        context.append(f"{group_label}: {groups}")
+    context.append(f"Follow-up: {follow_up}")
+    return " · ".join(labels) + "\n" + " · ".join(context)

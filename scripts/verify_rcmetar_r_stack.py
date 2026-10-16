@@ -213,8 +213,10 @@ def ensure_dependency_library(
             cache_env = isolated_r_env(env, cache_library)
             cache_env["RCMS_CRAN_REPO"] = cran_repo
             cache_env["RCMS_POLICY_PYTHON"] = python
-            run([rscript, R_DEP_INSTALLER], cwd=root, env=cache_env)
             verify_manifest_versions(root, python, rscript, cache_env)
+            packages = binary_dependency_policy(root)["normal_packages"]
+            expression = "missing <- commandArgs(trailingOnly=TRUE)[!vapply(commandArgs(trailingOnly=TRUE), requireNamespace, logical(1), quietly=TRUE)]; if (length(missing)) stop(paste(missing, collapse=', '))"
+            run([rscript, "-e", expression, *packages], cwd=root, env=cache_env)
             step(f"Using cached R dependency library at {cache_library}")
         except VerificationError:
             shutil.rmtree(cache_library)
@@ -478,10 +480,10 @@ def verify(args: argparse.Namespace) -> None:
         env["RCMS_R_STACK_REQUIRED"] = "1"
         pytest_command = bridge_test_command(python, args.pytest_runner)
         run(pytest_command, cwd=root, env=env)
-        # Desktop cases own their child processes, settings and scratch directories.
-        # Keep the bridge drivers serial: some exercise repository-relative R paths.
+        # Fresh offscreen children can overlap within the measured memory budget.
+        # The E2E hook reserves host capacity; native drives remain separate/serial.
         run(
-            [python, "-m", "pytest", "tests/e2e", "-n", "2", "--durations=10"],
+            [python, "-m", "pytest", "tests/e2e", "-n", "auto", "--durations=10"],
             cwd=root,
             env=env,
         )

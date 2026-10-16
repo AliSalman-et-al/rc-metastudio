@@ -1,0 +1,22 @@
+[
+  {
+    "round": "round4",
+    "path": "docs/ux-audit/2026-10-15-round4-reaudit/raw/matrix-hr/17-0-forest-a4f6ad826ddc.display.svg",
+    "sha256": "672692c6d062a500ccbdeb5c73d23694470962809343ebce648a413b7201d4a3",
+    "median_cap_points": 14.600000000000023,
+    "median_row_spacing_points": 14.419999999999959,
+    "cap_to_spacing": 1.0124826629681043,
+    "cap_segments": 133,
+    "spacing_samples": 63
+  },
+  {
+    "round": "round5",
+    "path": "docs/ux-audit/2026-10-16-round5-reaudit/raw/matrix-hr/21-0-forest-f9a75ccca757.display.svg",
+    "sha256": "1aedcce24ecaee86dedfa92da7585685e21759cb12396f33034159dc94ca134a",
+    "median_cap_points": 33.22000000000003,
+    "median_row_spacing_points": 23.54000000000002,
+    "cap_to_spacing": 1.4112149532710279,
+    "cap_segments": 133,
+    "spacing_samples": 63
+  }
+]

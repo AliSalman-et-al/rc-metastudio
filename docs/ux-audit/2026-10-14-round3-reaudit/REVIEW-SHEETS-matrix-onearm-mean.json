@@ -1,0 +1,47 @@
+[
+  {
+    "sheet": "raw/review-matrix-onearm-mean-00.png",
+    "members": [
+      "screenshots/matrix-onearm-mean-cumulative-figure-bottom.png",
+      "screenshots/matrix-onearm-mean-cumulative-figure.png",
+      "screenshots/matrix-onearm-mean-cumulative-report-bottom.png",
+      "screenshots/matrix-onearm-mean-cumulative-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-onearm-mean-01.png",
+    "members": [
+      "screenshots/matrix-onearm-mean-leave-one-out-figure-bottom.png",
+      "screenshots/matrix-onearm-mean-leave-one-out-figure.png",
+      "screenshots/matrix-onearm-mean-leave-one-out-report-bottom.png",
+      "screenshots/matrix-onearm-mean-leave-one-out-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-onearm-mean-02.png",
+    "members": [
+      "screenshots/matrix-onearm-mean-meta-regression-figure-bottom.png",
+      "screenshots/matrix-onearm-mean-meta-regression-figure.png",
+      "screenshots/matrix-onearm-mean-meta-regression-report-bottom.png",
+      "screenshots/matrix-onearm-mean-meta-regression-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-onearm-mean-03.png",
+    "members": [
+      "screenshots/matrix-onearm-mean-standard-figure-bottom.png",
+      "screenshots/matrix-onearm-mean-standard-figure.png",
+      "screenshots/matrix-onearm-mean-standard-report-bottom.png",
+      "screenshots/matrix-onearm-mean-standard-report.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-matrix-onearm-mean-04.png",
+    "members": [
+      "screenshots/matrix-onearm-mean-subgroup-figure-bottom.png",
+      "screenshots/matrix-onearm-mean-subgroup-figure.png",
+      "screenshots/matrix-onearm-mean-subgroup-report-bottom.png",
+      "screenshots/matrix-onearm-mean-subgroup-report.png"
+    ]
+  }
+]

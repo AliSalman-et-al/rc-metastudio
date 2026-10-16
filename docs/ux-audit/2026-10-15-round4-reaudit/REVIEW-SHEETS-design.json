@@ -1,0 +1,55 @@
+[
+  {
+    "sheet": "raw/review-design-00.png",
+    "members": [
+      "screenshots/design-00-review1-start-before-check.png",
+      "screenshots/design-01-review1-start-recents.png",
+      "screenshots/design-02-review1-start-light.png",
+      "screenshots/design-03-review1-start-dark.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-design-01.png",
+    "members": [
+      "screenshots/design-04-review1-start-wizard-new_dataset.png",
+      "screenshots/design-05-review1-start-wizard-csv_import.png",
+      "screenshots/design-06-review1-workspace-navigation.png",
+      "screenshots/design-07-review1-report-top.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-design-02.png",
+    "members": [
+      "screenshots/design-08-review1-report-configuration.png",
+      "screenshots/design-09-review1-report-tables.png",
+      "screenshots/design-10-review1-export-format-remembered.png",
+      "screenshots/design-11-toolbar-tooltip.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-design-03.png",
+    "members": [
+      "screenshots/design-12-toolbar-tooltip.png",
+      "screenshots/design-13-toolbar-tooltip.png",
+      "screenshots/design-14-toolbar-tooltip.png",
+      "screenshots/design-15-toolbar-tooltip.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-design-04.png",
+    "members": [
+      "screenshots/design-16-toolbar-tooltip.png",
+      "screenshots/design-17-toolbar-tooltip.png",
+      "screenshots/design-18-toolbar-tooltip.png",
+      "screenshots/design-19-toolbar-tooltip.png"
+    ]
+  },
+  {
+    "sheet": "raw/review-design-05.png",
+    "members": [
+      "screenshots/design-20-toolbar-tooltip.png",
+      "screenshots/design-21-toolbar-tooltip.png",
+      "screenshots/design-22-toolbar-tooltip.png"
+    ]
+  }
+]

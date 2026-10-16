@@ -1,0 +1,74 @@
+[
+  {
+    "path": "screenshots/20261015T212712Z-cce44bd2-review1-design-06-0-review1-start-light.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T212712Z-cce44bd2-review1-design/06-0-review1-start-light.png",
+    "sha256": "e44bf9ef3a3ffe11cdce8b49796c23f2fb3a11a28af326937b88f9a0f7864f77",
+    "action": "review1-start-light",
+    "step": 6,
+    "scenario": "20261015T212712Z-cce44bd2-review1-design"
+  },
+  {
+    "path": "screenshots/20261015T212712Z-cce44bd2-review1-design-07-0-review1-start-dark.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T212712Z-cce44bd2-review1-design/07-0-review1-start-dark.png",
+    "sha256": "a3b9e5839e5d64acfd2dcbfa49cad0dc569d0d0dfb79e92d0b21f54a00aa930e",
+    "action": "review1-start-dark",
+    "step": 7,
+    "scenario": "20261015T212712Z-cce44bd2-review1-design"
+  },
+  {
+    "path": "screenshots/20261015T212712Z-cce44bd2-review1-design-08-0-review1-start-wizard-new_dataset.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T212712Z-cce44bd2-review1-design/08-0-review1-start-wizard-new_dataset.png",
+    "sha256": "0332c0e57cffa6b5cd883f95651fa5d37c2735a814daa43623c7e12a1c53b7b7",
+    "action": "review1-start-wizard-new_dataset",
+    "step": 8,
+    "scenario": "20261015T212712Z-cce44bd2-review1-design"
+  },
+  {
+    "path": "screenshots/20261015T212712Z-cce44bd2-review1-design-09-0-review1-start-wizard-csv_import.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T212712Z-cce44bd2-review1-design/09-0-review1-start-wizard-csv_import.png",
+    "sha256": "0332c0e57cffa6b5cd883f95651fa5d37c2735a814daa43623c7e12a1c53b7b7",
+    "action": "review1-start-wizard-csv_import",
+    "step": 9,
+    "scenario": "20261015T212712Z-cce44bd2-review1-design"
+  },
+  {
+    "path": "screenshots/20261015T212712Z-cce44bd2-review1-design-10-0-round5-grid-cues.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T212712Z-cce44bd2-review1-design/10-0-round5-grid-cues.png",
+    "sha256": "792652f79650ae71ca683e124d9678bf0432ba6f3aec90f2dd4365cf7dc673be",
+    "action": "round5-grid-cues",
+    "step": 10,
+    "scenario": "20261015T212712Z-cce44bd2-review1-design"
+  },
+  {
+    "path": "screenshots/20261015T212712Z-cce44bd2-review1-design-16-0-round5-keyboard-setup-page-0.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T212712Z-cce44bd2-review1-design/16-0-round5-keyboard-setup-page-0.png",
+    "sha256": "e629125c880d2fd9ae57be1d4a38d7696911228486fea9aaf64b89fe92485045",
+    "action": "round5-keyboard-setup-page-0",
+    "step": 16,
+    "scenario": "20261015T212712Z-cce44bd2-review1-design"
+  },
+  {
+    "path": "screenshots/20261015T212712Z-cce44bd2-review1-design-17-0-round5-keyboard-setup-page-1.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T212712Z-cce44bd2-review1-design/17-0-round5-keyboard-setup-page-1.png",
+    "sha256": "b2c858ff432749ebcebbd2eb63240e9e8e484ff98fa87ca72e3ae80d651d375a",
+    "action": "round5-keyboard-setup-page-1",
+    "step": 17,
+    "scenario": "20261015T212712Z-cce44bd2-review1-design"
+  },
+  {
+    "path": "screenshots/20261015T212712Z-cce44bd2-review1-design-21-0-review1-report-top.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T212712Z-cce44bd2-review1-design/21-0-review1-report-top.png",
+    "sha256": "c208432ca17f393b7f446449ff7b3373d6f978301e3881917de631fcc90e85b5",
+    "action": "review1-report-top",
+    "step": 21,
+    "scenario": "20261015T212712Z-cce44bd2-review1-design"
+  },
+  {
+    "path": "screenshots/20261015T212712Z-cce44bd2-review1-design-23-0-review1-report-tables.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T212712Z-cce44bd2-review1-design/23-0-review1-report-tables.png",
+    "sha256": "64db0571320a3eeb5dde221ecec240c608d40a7b1cb99b64aed289b503008658",
+    "action": "review1-report-tables",
+    "step": 23,
+    "scenario": "20261015T212712Z-cce44bd2-review1-design"
+  }
+]

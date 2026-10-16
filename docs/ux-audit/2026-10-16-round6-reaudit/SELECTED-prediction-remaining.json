@@ -1,0 +1,26 @@
+[
+  {
+    "path": "screenshots/prediction-remaining-13-0-reviewer-table-surface.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/prediction-remaining/13-0-reviewer-table-surface.png",
+    "sha256": "1948c203fe0d1ae91ace309cfaa61e6871097f36ba4de27dd6a0270a736a44a8",
+    "action": "reviewer-table-surface",
+    "step": 13,
+    "scenario": "prediction-remaining"
+  },
+  {
+    "path": "screenshots/prediction-remaining-14-0-reviewer-prediction-after.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/prediction-remaining/14-0-reviewer-prediction-after.png",
+    "sha256": "a089abe9d79b9fe2db993bf44e65ce3a8ef30d5ff363d9286f334b9d95461aee",
+    "action": "reviewer-prediction-after",
+    "step": 14,
+    "scenario": "prediction-remaining"
+  },
+  {
+    "path": "screenshots/prediction-remaining-15-0-reviewer-prediction-footer.png",
+    "source": "docs/ux-audit/2026-10-16-round6-reaudit/raw/prediction-remaining/15-0-reviewer-prediction-footer.png",
+    "sha256": "594339b6545a659cb9bf39f16760964a0f26daf56a5474c9298deb842689fb85",
+    "action": "reviewer-prediction-footer",
+    "step": 15,
+    "scenario": "prediction-remaining"
+  }
+]

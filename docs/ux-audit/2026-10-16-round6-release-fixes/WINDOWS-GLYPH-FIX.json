@@ -1,0 +1,148 @@
+{
+  "status": "Source repair and targeted Linux/native proof passed; actual Windows glyph verification and detached final profile pending",
+  "root_cause": "Canonical SVG text declares only the primary Arial family. Actual Windows raster output lacks U+2080 despite correct Unicode SVG text.",
+  "fix": "Append Segoe UI Symbol and generic sans-serif after the existing primary family, once, during canonical SVG normalization. No caption substitution, font installation, package dependency, statistical or oracle change.",
+  "source_sha256": {
+    "r/RCMetaR/R/plot_devices.R": "bc845b804448715e9f6a04161c6d6d5ab0b885b36847e0c7aa62af3eacabece9",
+    "r/RCMetaR/tests/testthat/test-plot-devices.R": "a081e4a0d62de738d3c2fd19ae9335382f0a49a67e2b9e263261e9a236216514"
+  },
+  "failure_first": {
+    "plan": "PLAN.md: Diagnostic PNG missing-glyph defect",
+    "actual_windows_crop": "windows-goldens/lymph-missing-subscript.png",
+    "device_contract_before": "raw/windows-goldens/glyph-device-before.log",
+    "failure": "Expected explicit fallback, actual primary family only: Liberation Sans",
+    "device_contract_after": "raw/windows-goldens/glyph-device-final.log"
+  },
+  "unchanged_linux": [
+    {
+      "id": "amino-binary-cumulative",
+      "text_identical": true,
+      "png_byte_identical": true,
+      "sha256": "c4cf66278ab03cb43666a390e60c83745f3094bead480c56f0735679332d315a"
+    },
+    {
+      "id": "amino-binary-leave-one-out",
+      "text_identical": true,
+      "png_byte_identical": true,
+      "sha256": "d71d32fe12f8503c0c930195e258aad161dd55247b749380b409a63c24bea2cf"
+    },
+    {
+      "id": "amino-binary-meta-regression",
+      "text_identical": true,
+      "png_byte_identical": true,
+      "sha256": "48afe850563456418bb51c387960ed5126f98d6d42a7c91fa19a0f55e7b0c9d5"
+    },
+    {
+      "id": "amino-binary-random",
+      "text_identical": true,
+      "png_byte_identical": true,
+      "sha256": "f6198c18428efd5405d30e4cd24e0f28fea0c962bf969ebea24c12bea37a10db"
+    },
+    {
+      "id": "amino-binary-subgroup",
+      "text_identical": true,
+      "png_byte_identical": true,
+      "sha256": "fe5e2b9799ffc28f8b7c023974b7b05f342a1ee2fc5c6dfa46a1fa7422669c78"
+    },
+    {
+      "id": "continuous-cumulative",
+      "text_identical": true,
+      "png_byte_identical": true,
+      "sha256": "a4dbd9969d8f42d6c6d914b93b5f95c725fa384a7741d066c595aaac9b824169"
+    },
+    {
+      "id": "continuous-leave-one-out",
+      "text_identical": true,
+      "png_byte_identical": true,
+      "sha256": "59844c0cc49c767259e764e4f862a9d890a1bed38eeef0ec2f8823449eb2feaf"
+    },
+    {
+      "id": "continuous-meta-regression",
+      "text_identical": true,
+      "png_byte_identical": true,
+      "sha256": "537b7dd1150b1db79acfb5f34f06e94ddaccfbb08a60ad2670ad1e3bdbd4cf8b"
+    },
+    {
+      "id": "continuous-random",
+      "text_identical": true,
+      "png_byte_identical": true,
+      "sha256": "032a15a34f2caa943c4de2a2bd07f3d823219eb80d9788b9fe591abc93ca3416"
+    },
+    {
+      "id": "continuous-subgroup",
+      "text_identical": true,
+      "png_byte_identical": true,
+      "sha256": "da9e3defb7d1c4293c3d7b29df7250ccd75ed4db3fbc2e1cda59c99b33a0635c"
+    },
+    {
+      "id": "lymph-diagnostic-random-dor",
+      "text_identical": true,
+      "png_byte_identical": true,
+      "sha256": "85dc1e3c4ef041cc52dd82299c2bd0fea5f580337760c3c3e99acdc1305d6000"
+    }
+  ],
+  "strict_gates": [
+    "golden-compatibility-glyph-fixed",
+    "golden-compatibility-glyph-C-fixed"
+  ],
+  "original_numeric_fields": 415,
+  "max_difference": 0,
+  "native": [
+    {
+      "scenario": "analysis-diagnostic-combined",
+      "evidence": "artifacts/verification/rcms/20261016T050747Z-a992e2b8-analysis-diagnostic-combined",
+      "passed": true,
+      "verified_files": 58,
+      "inspection": "Visible sensitivity plot has proper H₀, readable rows and footer; five diagnostic SVG artifacts retained. This is Linux, not Windows proof."
+    },
+    {
+      "scenario": "plot-workflow-forest",
+      "evidence": "artifacts/verification/rcms/20261016T050913Z-737ed9f3-plot-workflow-forest",
+      "passed": true,
+      "verified_files": 48,
+      "export_actions": [
+        [
+          "family-export-decoded",
+          {
+            "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-1tfmimqs/forest.pdf"
+          }
+        ],
+        [
+          "family-export-decoded",
+          {
+            "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-1tfmimqs/forest.png"
+          }
+        ],
+        [
+          "family-export-decoded",
+          {
+            "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-1tfmimqs/forest.tiff"
+          }
+        ],
+        [
+          "family-export-decoded",
+          {
+            "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-1tfmimqs/forest.svg"
+          }
+        ],
+        [
+          "family-exports-cancelled",
+          {
+            "pdf": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-1tfmimqs/forest.pdf",
+            "png": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-1tfmimqs/forest.png",
+            "tiff": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-1tfmimqs/forest.tiff",
+            "svg": "/home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-1tfmimqs/forest.svg"
+          }
+        ]
+      ]
+    }
+  ],
+  "sources": [
+    "https://github.com/r-lib/svglite/blob/v2.2.2/src/devSVG.cpp",
+    "https://www.w3.org/TR/css-fonts-4/#font-family-prop",
+    "https://learn.microsoft.com/en-us/windows/apps/design/signature-experiences/typography"
+  ],
+  "windows_verification": "Pending actual latest-head CI PNG; never refresh the original missing-glyph PNG.",
+  "oracle_changed": false,
+  "numerical_policy_changed": false
+}

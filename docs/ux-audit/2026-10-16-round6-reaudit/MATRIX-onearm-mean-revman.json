@@ -1,0 +1,162 @@
+[
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-standard-report-revman.png",
+    "sha256": "e764207b4f884278e7498eac25421ad6aa4aecdf0674e74561be8d8ea53bb9b5",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-standard-report-bottom-revman.png",
+    "sha256": "fc3d43d3c695089df83548f3b8495a87f90688edf03233d39d809206a784e62a",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-standard-figure-revman.png",
+    "sha256": "137fd3fb09e6f76ad53a06cd27f285e23349d39937c90b9a68312311070e9410",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-standard-figure-bottom-revman.png",
+    "sha256": "137fd3fb09e6f76ad53a06cd27f285e23349d39937c90b9a68312311070e9410",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "standard",
+    "identity": "Meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-cumulative-report-revman.png",
+    "sha256": "e87898194e270f422f806cd648c9c6e7781d2fc4752223102aaa8b198dc825cd",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-cumulative-report-bottom-revman.png",
+    "sha256": "e87898194e270f422f806cd648c9c6e7781d2fc4752223102aaa8b198dc825cd",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-cumulative-figure-revman.png",
+    "sha256": "62641c92f8b28cfa3e93343b0a90082be782e11d15dac513c3e1601e333d2ce6",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-cumulative-figure-bottom-revman.png",
+    "sha256": "ebb5af4eb717b485894334cb0be1f517a1e076463e68f85e4d3b75dbb0b479fa",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "cumulative",
+    "identity": "Cumulative meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-leave-one-out-report-revman.png",
+    "sha256": "f5051c35039cb40b50858aaf597155c114cef74765a9f5d27a4c0adb57e7190a",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-leave-one-out-report-bottom-revman.png",
+    "sha256": "f5051c35039cb40b50858aaf597155c114cef74765a9f5d27a4c0adb57e7190a",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-leave-one-out-figure-revman.png",
+    "sha256": "1600963fde852079ae0b7d6bc0a3f576f994429191104e45fe6c0307316520ef",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-leave-one-out-figure-bottom-revman.png",
+    "sha256": "9ef7efd43f9635890bfe32ae0d708efaaff045805c0282e3918a6eaa587c8b72",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "leave-one-out",
+    "identity": "Leave-one-out meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-subgroup-report-revman.png",
+    "sha256": "dfafd8802a0e63d47a41cf9a32750b06103bbc7840b8d7a832373297274fd41a",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-subgroup-report-bottom-revman.png",
+    "sha256": "681ae38cc180c3921890a32d8f4113a796584291f3fd8d5b92aa686e4950f869",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-subgroup-figure-revman.png",
+    "sha256": "45fb77f1cf614bd7554da80c4b3a01f27a65a330ed3cb9a16b56cf4c6db615ac",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-subgroup-figure-bottom-revman.png",
+    "sha256": "d31e377c27dc2f81025930506ac0341d2a0eeba28d3ea4274782e1c038b8160c",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "subgroup",
+    "identity": "Subgroup meta-analysis \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-meta-regression-report-revman.png",
+    "sha256": "9e2e70fd4a2b2f552f3e65d30423eb099ab558f184b5aa48e0d7eb19fb735aa7",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-meta-regression-report-bottom-revman.png",
+    "sha256": "6fa6f3e7a573029dcc38101daeff6be5906ef24b9bf6a982bacc95bf96226e84",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-meta-regression-figure-revman.png",
+    "sha256": "eb46fcd3c34a3b84caf62b87c65add450700017b0f106a37bf802e5e165d9fc9",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  },
+  {
+    "path": "raw/matrix-onearm-mean-revman/captures/matrix-onearm-mean-meta-regression-figure-bottom-revman.png",
+    "sha256": "2a7dc94cc706a8b6d260a80d98738cd69ea1b5e924a661515d8b08d90551c6bf",
+    "capture": "QScreen.grabWindow",
+    "family": "onearm-mean",
+    "workflow": "meta-regression",
+    "identity": "Meta-regression \u2014 Verification outcome \u00b7 Single-arm mean\nFollow-up: first"
+  }
+]

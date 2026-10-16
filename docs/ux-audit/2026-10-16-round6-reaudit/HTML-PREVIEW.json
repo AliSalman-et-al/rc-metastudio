@@ -1,0 +1,9 @@
+{
+  "scope": "contact sheet with evidence group export-inspections selected",
+  "width": 728,
+  "content_height": 888,
+  "console_messages": [],
+  "html_sha256": "f824874b8132f0c288cc2ae9799c7d61492dad7515cae5d80397022bc09a016c",
+  "first_attempt": "Full PNG inlining exceeded tool limit: With its images inlined the page is 26.1 MiB; the limit is 25.0 MiB. Use smaller images.",
+  "correction": "Faithful reduced JPEG contact thumbnails link unchanged original PNGs; corrected preview passed."
+}

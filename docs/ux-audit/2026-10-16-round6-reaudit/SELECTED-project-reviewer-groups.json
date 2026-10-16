@@ -1,0 +1,122 @@
+[
+  {
+    "path": "screenshots/project-reviewer-groups-12-0-reviewer-group-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183138Z-f9352554-project-reviewer-groups/12-0-reviewer-group-after.png",
+    "sha256": "bff32d6765e9bfb490996b105c098e71eeb2e784a2b4b7581df0ea798ef4eae0",
+    "action": "reviewer-group-after",
+    "step": 12,
+    "scenario": "project-reviewer-groups"
+  },
+  {
+    "path": "screenshots/project-reviewer-groups-24-0-reviewer-group-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183138Z-f9352554-project-reviewer-groups/24-0-reviewer-group-after.png",
+    "sha256": "2d0e6c702b9eb9a95e06afb11f471258ae769a5a884a00554a15c21c55fc1945",
+    "action": "reviewer-group-after",
+    "step": 24,
+    "scenario": "project-reviewer-groups"
+  },
+  {
+    "path": "screenshots/project-reviewer-groups-36-0-reviewer-group-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183138Z-f9352554-project-reviewer-groups/36-0-reviewer-group-after.png",
+    "sha256": "5061b004695d30f88375ca880eb0a8998a8057b211b2e12102dcef1ce3c5de35",
+    "action": "reviewer-group-after",
+    "step": 36,
+    "scenario": "project-reviewer-groups"
+  },
+  {
+    "path": "screenshots/project-reviewer-groups-48-0-reviewer-group-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183138Z-f9352554-project-reviewer-groups/48-0-reviewer-group-after.png",
+    "sha256": "8303552a4aca969e7675414c7b15231f2ced736656c9c1a99d8187273ab1215e",
+    "action": "reviewer-group-after",
+    "step": 48,
+    "scenario": "project-reviewer-groups"
+  },
+  {
+    "path": "screenshots/project-reviewer-groups-60-0-reviewer-group-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183138Z-f9352554-project-reviewer-groups/60-0-reviewer-group-after.png",
+    "sha256": "933c9cc987dccfe9b7cee8dbb3880b70dbea3ed80daca33994a211dfe584ec40",
+    "action": "reviewer-group-after",
+    "step": 60,
+    "scenario": "project-reviewer-groups"
+  },
+  {
+    "path": "screenshots/project-reviewer-groups-72-0-reviewer-group-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183138Z-f9352554-project-reviewer-groups/72-0-reviewer-group-after.png",
+    "sha256": "3da5e26663d4fbe40d3e3797fcdeb9b8ec034c720ad259426e79db1b12f7d4ad",
+    "action": "reviewer-group-after",
+    "step": 72,
+    "scenario": "project-reviewer-groups"
+  },
+  {
+    "path": "screenshots/project-reviewer-groups-84-0-reviewer-group-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183138Z-f9352554-project-reviewer-groups/84-0-reviewer-group-after.png",
+    "sha256": "6c205b96908b389d4a19d15d6878bdda7cd9515db795cbbefbda66fb09c88ef4",
+    "action": "reviewer-group-after",
+    "step": 84,
+    "scenario": "project-reviewer-groups"
+  },
+  {
+    "path": "screenshots/project-reviewer-groups-96-0-reviewer-group-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183138Z-f9352554-project-reviewer-groups/96-0-reviewer-group-after.png",
+    "sha256": "2abae5b7bc895871037c48b9406f59cd1e35d8e9c3215de9c91bd06eca6819db",
+    "action": "reviewer-group-after",
+    "step": 96,
+    "scenario": "project-reviewer-groups"
+  },
+  {
+    "path": "screenshots/project-reviewer-groups-108-0-reviewer-group-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183138Z-f9352554-project-reviewer-groups/108-0-reviewer-group-after.png",
+    "sha256": "c4589a319eab6e6c07ac7cbdaad782badbb5ef9e4a19ec59c2e8c69b7883e18c",
+    "action": "reviewer-group-after",
+    "step": 108,
+    "scenario": "project-reviewer-groups"
+  },
+  {
+    "path": "screenshots/project-reviewer-groups-120-0-reviewer-group-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183138Z-f9352554-project-reviewer-groups/120-0-reviewer-group-after.png",
+    "sha256": "10132928fd47d56354e00433aa613f870240a8974437c984e44e356011ce7331",
+    "action": "reviewer-group-after",
+    "step": 120,
+    "scenario": "project-reviewer-groups"
+  },
+  {
+    "path": "screenshots/project-reviewer-groups-132-0-reviewer-group-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183138Z-f9352554-project-reviewer-groups/132-0-reviewer-group-after.png",
+    "sha256": "12ac0fec1bf6dd349169d6fdc936df65d56d3754b0c1bc233350940a31ead17d",
+    "action": "reviewer-group-after",
+    "step": 132,
+    "scenario": "project-reviewer-groups"
+  },
+  {
+    "path": "screenshots/project-reviewer-groups-144-0-reviewer-group-after.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183138Z-f9352554-project-reviewer-groups/144-0-reviewer-group-after.png",
+    "sha256": "f5300d0b21ca55214de75a5129b88781b4b82dd42f6799800cf98913bf59b0b3",
+    "action": "reviewer-group-after",
+    "step": 144,
+    "scenario": "project-reviewer-groups"
+  },
+  {
+    "path": "screenshots/project-reviewer-groups-146-0-reviewer-legacy-default-setup.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183138Z-f9352554-project-reviewer-groups/146-0-reviewer-legacy-default-setup.png",
+    "sha256": "6d6161f81cf32e0f0a68c1120c7589d3e64b64d2f2b082e61ca39f56b26c42e6",
+    "action": "reviewer-legacy-default-setup",
+    "step": 146,
+    "scenario": "project-reviewer-groups"
+  },
+  {
+    "path": "screenshots/project-reviewer-groups-148-0-reviewer-about-version.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183138Z-f9352554-project-reviewer-groups/148-0-reviewer-about-version.png",
+    "sha256": "9cb9611cde2db2b94dcf6a4f767fc741eb7b851f0a430de51d0f596e67c9f168",
+    "action": "reviewer-about-version",
+    "step": 148,
+    "scenario": "project-reviewer-groups"
+  },
+  {
+    "path": "screenshots/project-reviewer-groups-149-0-reviewer-version-reopened.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T183138Z-f9352554-project-reviewer-groups/149-0-reviewer-version-reopened.png",
+    "sha256": "c3462eed137e36fec0955cc1c5e92243296373b926fb854f5ca2ec524d36564c",
+    "action": "reviewer-version-reopened",
+    "step": 149,
+    "scenario": "project-reviewer-groups"
+  }
+]

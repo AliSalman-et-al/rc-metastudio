@@ -1,0 +1,38 @@
+Leave-one-out meta-analysis — Verification outcome · Regression coefficient · Regression coefficient
+Group: tx A · Follow-up: first
+
+Model configuration
+Project: typed.rcms
+Model: Continuous Random-Effects
+Estimator: DerSimonian-Laird
+Inference: Normal approximation
+Confidence level: 95.0%
+Each row omits the named study; compare with the all-studies estimate.
+
+Leave-one-out Summary
+
+Model Results
+Study omitted	Estimate	Lower bound (95% CI)	Upper bound (95% CI)	Std. error	p-value
+All studies	0.450000	0.300305	0.599695	0.076376	< 1e-06
+Study omitted: Fixture 1	0.500000	0.361410	0.638590	0.070711	< 1e-06
+Study omitted: Fixture 2	0.480000	0.311398	0.648602	0.086023	< 1e-06
+Study omitted: Fixture 3	0.460000	0.278240	0.641760	0.092736	< 1e-06
+Study omitted: Fixture 4	0.440000	0.258240	0.621760	0.092736	0.000002
+Study omitted: Fixture 5	0.420000	0.251398	0.588602	0.086023	0.000001
+Study omitted: Fixture 6	0.400000	0.261410	0.538590	0.070711	< 1e-06
+
+Continuous Random-Effects Model
+
+Metric: Regression coefficient
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+4. Leave-one-out Meta-Analysis: estimates are recomputed after omitting each study in turn to assess influence on the selected base meta-analysis method.
+
+
+Inference Method
+
+Normal approximation

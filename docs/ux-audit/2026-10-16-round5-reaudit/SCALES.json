@@ -1,0 +1,80 @@
+[
+  {
+    "scale": 1.25,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T092829Z-0d6ec151-review1-design",
+    "grid_cues": {
+      "step": 10,
+      "action": "round5-grid-cues",
+      "utc": "2026-10-15T09:28:41.876767+00:00",
+      "captures": [
+        "10-0-round5-grid-cues.png"
+      ],
+      "artifacts": {},
+      "italic_effect_cells": true,
+      "colors": [
+        {
+          "foreground": "#000000",
+          "background": "#d6a93a",
+          "contrast": 9.59551325632996
+        },
+        {
+          "foreground": "#ffffff",
+          "background": "#245a81",
+          "contrast": 7.3568687183599355
+        }
+      ]
+    }
+  },
+  {
+    "scale": 1.5,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T092910Z-afe7394a-review1-design",
+    "grid_cues": {
+      "step": 10,
+      "action": "round5-grid-cues",
+      "utc": "2026-10-15T09:29:22.928523+00:00",
+      "captures": [
+        "10-0-round5-grid-cues.png"
+      ],
+      "artifacts": {},
+      "italic_effect_cells": true,
+      "colors": [
+        {
+          "foreground": "#000000",
+          "background": "#d6a93a",
+          "contrast": 9.59551325632996
+        },
+        {
+          "foreground": "#ffffff",
+          "background": "#245a81",
+          "contrast": 7.3568687183599355
+        }
+      ]
+    }
+  },
+  {
+    "scale": 2.0,
+    "evidence": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T092951Z-29b59152-review1-design",
+    "grid_cues": {
+      "step": 10,
+      "action": "round5-grid-cues",
+      "utc": "2026-10-15T09:30:04.593976+00:00",
+      "captures": [
+        "10-0-round5-grid-cues.png"
+      ],
+      "artifacts": {},
+      "italic_effect_cells": true,
+      "colors": [
+        {
+          "foreground": "#000000",
+          "background": "#d6a93a",
+          "contrast": 9.59551325632996
+        },
+        {
+          "foreground": "#ffffff",
+          "background": "#245a81",
+          "contrast": 7.3568687183599355
+        }
+      ]
+    }
+  }
+]

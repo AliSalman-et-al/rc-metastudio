@@ -1,0 +1,49 @@
+[
+  {
+    "path": "screenshots/editor-contact-00.png",
+    "members": [
+      "coefficient",
+      "contour"
+    ],
+    "sha256": "d581712b5b2d33abd88120baea1be1f9f358ffd290e3daa0560f89232343f3bd"
+  },
+  {
+    "path": "screenshots/editor-contact-01.png",
+    "members": [
+      "cumulative",
+      "deeks"
+    ],
+    "sha256": "fba73e512936022f4c0e2b7030e0761c78ed68ee34549e46989a56687ba08650"
+  },
+  {
+    "path": "screenshots/editor-contact-02.png",
+    "members": [
+      "forest",
+      "funnel"
+    ],
+    "sha256": "62b281d7600e1228f489280202f2fed4157e08b22cc59f581aadcc6a479948b4"
+  },
+  {
+    "path": "screenshots/editor-contact-03.png",
+    "members": [
+      "leave-one-out",
+      "regression"
+    ],
+    "sha256": "e949a7a739d4e01ea08a48d54bacdc360bd53ef7590b5d612659cacd05c96fc9"
+  },
+  {
+    "path": "screenshots/editor-contact-04.png",
+    "members": [
+      "sroc",
+      "subgroup"
+    ],
+    "sha256": "4a3872adf50c8aaa72b1dd62408fe53c70a08fd72dbdb1738cc1c3a6a6c5eaa1"
+  },
+  {
+    "path": "screenshots/editor-contact-05.png",
+    "members": [
+      "trimfill"
+    ],
+    "sha256": "dcdaa33ee6718748c335ebb8a7affa95425c370332f9fdb4d1244c3367a80c9b"
+  }
+]

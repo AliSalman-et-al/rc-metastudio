@@ -1,0 +1,98 @@
+[
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-mean-15-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193043Z-e838ff00-audit-round3-presentation-twoarm-mean/15-0-round4-annotations.png",
+    "sha256": "0cd657a145a4cbc85ef648969aa51c5f75c0de1bb0c5cdfc26e3988ffae9bb8c",
+    "action": "round4-annotations",
+    "step": 15,
+    "scenario": "audit-round3-presentation-twoarm-mean"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-mean-16-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193043Z-e838ff00-audit-round3-presentation-twoarm-mean/16-0-round4-annotations-bottom.png",
+    "sha256": "0cd657a145a4cbc85ef648969aa51c5f75c0de1bb0c5cdfc26e3988ffae9bb8c",
+    "action": "round4-annotations-bottom",
+    "step": 16,
+    "scenario": "audit-round3-presentation-twoarm-mean"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-mean-30-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193043Z-e838ff00-audit-round3-presentation-twoarm-mean/30-0-round4-annotations.png",
+    "sha256": "3b5e9b299be2d2b963df2933ed14b9471a5a8ace1eee75d95983aed0bff59618",
+    "action": "round4-annotations",
+    "step": 30,
+    "scenario": "audit-round3-presentation-twoarm-mean"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-mean-31-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193043Z-e838ff00-audit-round3-presentation-twoarm-mean/31-0-round4-annotations-bottom.png",
+    "sha256": "3b5e9b299be2d2b963df2933ed14b9471a5a8ace1eee75d95983aed0bff59618",
+    "action": "round4-annotations-bottom",
+    "step": 31,
+    "scenario": "audit-round3-presentation-twoarm-mean"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-mean-45-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193043Z-e838ff00-audit-round3-presentation-twoarm-mean/45-0-round4-annotations.png",
+    "sha256": "1538540fe3dddc5695dad6176fa402bfca2e388dc4b1ee8f708ac5006f387d2d",
+    "action": "round4-annotations",
+    "step": 45,
+    "scenario": "audit-round3-presentation-twoarm-mean"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-mean-46-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193043Z-e838ff00-audit-round3-presentation-twoarm-mean/46-0-round4-annotations-bottom.png",
+    "sha256": "1538540fe3dddc5695dad6176fa402bfca2e388dc4b1ee8f708ac5006f387d2d",
+    "action": "round4-annotations-bottom",
+    "step": 46,
+    "scenario": "audit-round3-presentation-twoarm-mean"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-mean-60-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193043Z-e838ff00-audit-round3-presentation-twoarm-mean/60-0-round4-annotations.png",
+    "sha256": "7b09b659fac2f4dd98b12d6e25698806e5fb89a0abf5f0ff289d3a52dce97857",
+    "action": "round4-annotations",
+    "step": 60,
+    "scenario": "audit-round3-presentation-twoarm-mean"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-mean-61-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193043Z-e838ff00-audit-round3-presentation-twoarm-mean/61-0-round4-annotations-bottom.png",
+    "sha256": "7b09b659fac2f4dd98b12d6e25698806e5fb89a0abf5f0ff289d3a52dce97857",
+    "action": "round4-annotations-bottom",
+    "step": 61,
+    "scenario": "audit-round3-presentation-twoarm-mean"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-mean-75-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193043Z-e838ff00-audit-round3-presentation-twoarm-mean/75-0-round4-annotations.png",
+    "sha256": "8503aa0a9f747f50a9d6abb9e073caed56dc9b169c80464fc4980f5333f2f51e",
+    "action": "round4-annotations",
+    "step": 75,
+    "scenario": "audit-round3-presentation-twoarm-mean"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-mean-76-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193043Z-e838ff00-audit-round3-presentation-twoarm-mean/76-0-round4-annotations-bottom.png",
+    "sha256": "8503aa0a9f747f50a9d6abb9e073caed56dc9b169c80464fc4980f5333f2f51e",
+    "action": "round4-annotations-bottom",
+    "step": 76,
+    "scenario": "audit-round3-presentation-twoarm-mean"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-mean-90-0-round4-annotations.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193043Z-e838ff00-audit-round3-presentation-twoarm-mean/90-0-round4-annotations.png",
+    "sha256": "2c9d799ddfb5d5c7ecc4dc88cdcf9fd27af2810c9e4e4e80307607458503829c",
+    "action": "round4-annotations",
+    "step": 90,
+    "scenario": "audit-round3-presentation-twoarm-mean"
+  },
+  {
+    "path": "screenshots/audit-round3-presentation-twoarm-mean-91-0-round4-annotations-bottom.png",
+    "source": "/home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T193043Z-e838ff00-audit-round3-presentation-twoarm-mean/91-0-round4-annotations-bottom.png",
+    "sha256": "2c9d799ddfb5d5c7ecc4dc88cdcf9fd27af2810c9e4e4e80307607458503829c",
+    "action": "round4-annotations-bottom",
+    "step": 91,
+    "scenario": "audit-round3-presentation-twoarm-mean"
+  }
+]

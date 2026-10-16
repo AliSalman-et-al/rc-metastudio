@@ -695,10 +695,24 @@ def capture_bundle(
     }
     try:
         result = runner(bundle["case"])
+        outputs = parsed_numeric_sections(result)
+        # These newly exposed subgroup fields have public-fit checks in the live
+        # audit. Keep them separate from the unchanged release numerical oracle.
+        additional_outputs = {}
+        if bundle["id"] == "continuous-subgroup":
+            added = {f"heterogeneity.{group}.{field}"
+                     for group in ("subgroup_early", "subgroup_late", "overall")
+                     for field in ("q", "df", "p_value", "i_squared")}
+            added.update(f"model.{group}.{field}"
+                         for group in ("subgroup_early", "subgroup_late", "overall")
+                         for field in ("studies", "z_value"))
+            section = outputs.get("Subgroup Summary", {})
+            additional_outputs["Subgroup Summary"] = {key: section.pop(key) for key in added if key in section}
         base.update(
             {
                 "status": "success",
-                "outputs": parsed_numeric_sections(result),
+                "outputs": outputs,
+                "additional_outputs": additional_outputs,
                 "texts": _public_texts(result),
                 "artifacts": _capture_artifacts(bundle, result),
                 "plot_descriptors": _capture_plot_descriptors(bundle, result),
@@ -1034,10 +1048,8 @@ def _parse_summary(text):
         re.S,
     )
     heterogeneity = re.search(
-        r"Heterogeneity.*?\n\s*(?:tau\^2|τ²|t²|Q).*?\n\s*((?:%s%%?\s+){3}%s%%?)"
-        % (number, number),
+        r"Heterogeneity[^\n]*\n([^\n]+)\n([^\n]+)",
         text,
-        re.S,
     )
     if model:
         values.update(
@@ -1048,23 +1060,24 @@ def _parse_summary(text):
                 "p_value": _to_float(model.group(4)),
             }
         )
-        if "Std. error" in model.group(0).splitlines()[0]:
+        if "Std. error" in model.group(0).splitlines()[0] or re.search(r"\bSE \([^)]* scale\)", model.group(0).splitlines()[0]):
             model_numbers = re.findall(number, model.group(0).splitlines()[-1])
             if len(model_numbers) >= 5:
                 values["standard_error"] = _to_float(model_numbers[-2])
-    if heterogeneity:
-        row = re.findall(number, heterogeneity.group(1))
-        values.update(
-            {
-                "tau_squared": _to_float(row[0]),
-                "q": _to_float(row[1]),
-                "heterogeneity_p_value": _to_float(row[2]),
-                "i_squared": _to_float(row[3]),
-            }
-        )
-        degrees = re.search(r"Q\(df=(\d+)\)", text)
-        if degrees:
-            values["heterogeneity_df"] = _to_float(degrees.group(1))
+    if heterogeneity and re.match(r"\s*(?:tau\^2|τ²|t²|Q)(?:\s|\()", heterogeneity.group(1)):
+        headers = re.findall(r"tau\^2|τ²|t²|Q\(df=\d+\)|Q|df|Het\. p-[Vv]alue|p-[Vv]alue|I\^2|I²",
+                             heterogeneity.group(1))
+        row = re.findall(number, heterogeneity.group(2))
+        fields = {"tau^2": "tau_squared", "τ²": "tau_squared", "t²": "tau_squared",
+                  "Q": "q", "df": "heterogeneity_df", "I^2": "i_squared", "I²": "i_squared",
+                  "Het. p-value": "heterogeneity_p_value", "p-value": "heterogeneity_p_value"}
+        if len(headers) == len(row):
+            for header, value in zip(headers, row, strict=True):
+                degrees = re.fullmatch(r"Q\(df=(\d+)\)", header)
+                if degrees:
+                    values["heterogeneity_df"] = _to_float(degrees.group(1))
+                    header = "Q"
+                values[fields[header.replace("p-Value", "p-value")]] = _to_float(value)
     calculation_scale = re.search(
         r"Calculation scale:\s*([^\n]+?)\s*-\s*estimate:\s*(%s),\s*"
         r"lower:\s*(%s),\s*upper:\s*(%s),\s*std\. error:\s*(%s)"
@@ -1083,7 +1096,7 @@ def _parse_summary(text):
             }
         )
     study_count = re.search(r"\(k\s*=\s*(\d+)\)", text)
-    if study_count:
+    if study_count and "Study added (k)" not in text:
         values["study_count"] = _to_float(study_count.group(1))
     return values
 
@@ -1100,7 +1113,7 @@ def _parse_result_table(text):
         "",
     )
     is_regression = bool(regression_header)
-    is_subgroup = any("Subgroups" in line and "Studies" in line for line in lines)
+    is_subgroup = any("Subgroups" in line and ("Studies" in line or re.search(r"\bk\b", line)) for line in lines)
     in_heterogeneity = False
     for line in lines:
         stripped = line.strip()
@@ -1111,8 +1124,8 @@ def _parse_result_table(text):
             continue
         if in_heterogeneity:
             match = re.match(
-                r"^\s*(.+?)\s{2,}(-?\d+(?:\.\d+)?)\s+\((\d+)\)\s+"
-                r"(?:<\s*)?(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)%\s*$",
+                r"^\s*(.+?)\s{2,}(-?\d+(?:\.\d+)?)\s+\(?(\d+)\)?\s+"
+                r"(?:<\s*)?(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)%(?:\s+[-\d.]+)?\s*$",
                 line,
             )
             if match:
@@ -1203,6 +1216,14 @@ def _parse_weights(text):
 
 def _result_row_key(label):
     stripped = str(label).strip()
+    stripped = re.sub(r", \d{4}(?= \(k = \d+\)$|$)", "", stripped)
+    if stripped == "All studies":
+        return "overall"
+    if stripped.startswith("Study omitted: "):
+        return "without_%s" % _slug(stripped.removeprefix("Study omitted: "))
+    cumulative = re.fullmatch(r"(.+) \(k = (\d+)\)", stripped)
+    if cumulative:
+        return ("" if cumulative[2] == "1" else "through_") + _slug(cumulative[1])
     if stripped.startswith("+"):
         return "through_%s" % _slug(stripped[1:])
     if stripped.startswith("-"):

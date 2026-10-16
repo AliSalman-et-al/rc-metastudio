@@ -1,0 +1,259 @@
+review1-after-irr
+["uv", "run", "python", "scripts/verify_rcms.py", "audit-round3-irr-context", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T070620Z-e2eea082-audit-round3-irr-context
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 735, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 477, in run
+    return run_irr_context(app, window, record)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 1035, in run_irr_context
+    assert not (left <= x <= right and y-height < float(line.attrib["y1"]) < y), ("rule crosses exposure header", node.attrib, line.attrib)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('rule crosses exposure header', {'x': '466.76', 'y': '108.78', 'text-anchor': 'middle', 'style': 'font-size: 12.96px; font-weight: bold; font-family: "Liberation Sans";', 'textLength': '74.84px', 'lengthAdjust': 'spacingAndGlyphs'}, {'x1': '0.00', 'y1': '101.10', 'x2': '1296.00', 'y2': '101.10', 'style': 'stroke-width: 1.01;', 'fill': 'none', 'stroke': '#000000', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-miterlimit': '10.00'})
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 735, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 477, in run
+    return run_irr_context(app, window, record)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 1035, in run_irr_context
+    assert not (left <= x <= right and y-height < float(line.attrib["y1"]) < y), ("rule crosses exposure header", node.attrib, line.attrib)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('rule crosses exposure header', {'x': '466.76', 'y': '108.78', 'text-anchor': 'middle', 'style': 'font-size: 12.96px; font-weight: bold; font-family: "Liberation Sans";', 'textLength': '74.84px', 'lengthAdjust': 'spacingAndGlyphs'}, {'x1': '0.00', 'y1': '101.10', 'x2': '1296.00', 'y2': '101.10', 'style': 'stroke-width: 1.01;', 'fill': 'none', 'stroke': '#000000', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-miterlimit': '10.00'})
+
+
+
+review1-integrity-before-fix
+["uv", "run", "python", "docs/ux-audit/2026-10-16-round5/review1_integrity.py"]
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/docs/ux-audit/2026-10-16-round5/review1_integrity.py", line 38, in <module>
+    assert actual_frames == frames.keys(), (actual_frames - frames.keys(), frames.keys() - actual_frames)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ({'screenshots/native-bubble-exports-37-0-round5-bubble-bounds.png', 'screenshots/native-arm-settled-40-0-round5-arm-grid.png', 'screenshots/native-arm-settled-54-0-round5-arm-csv-preview.png', 'screenshots/native-qualified-final-audit-round3-precision-39-0-round3-degenerate-axis.png', 'screenshots/native-bubble-exports-127-0-round5-bubble-bounds.png', 'screenshots/native-qualified-final-scale-1.5-16-0-round5-keyboard-setup-page-1.png', 'screenshots/native-diamond-after-06-0-round5-long-figure-bottom.png', 'screenshots/native-bubble-exports-149-0-round5-keyboard-setup.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-100-0-round4-annotations-bottom.png', 'screenshots/native-qualified-final-audit-round3-precision-30-0-round3-degenerate-axis-bottom.png', 'screenshots/native-bubble-exports-148-0-round5-bubble-bounds.png', 'screenshots/native-arm-settled-107-0-round5-arm-csv-mapping.png', 'screenshots/native-bubble-settled-151-0-round5-bubble-bounds.png', 'screenshots/native-qualified-final-scale-2-08-0-review1-start-wizard-new_dataset.png', 'screenshots/native-arm-settled-106-0-round5-arm-csv-preview.png', 'screenshots/native-arm-settled-42-0-round5-arm-report.png', 'screenshots/native-caption-coefficient-10-0-family-plot-reopened.png', 'screenshots/native-qualified-final-audit-round3-precision-54-0-round3-bubble-tick-coverage.png', 'screenshots/native-qualified-final-scale-1.5-21-0-review1-report-configuration.png', 'screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-84-0-round4-annotations.png', 'screenshots/native-ux-contracts-after-03-0-ux-quick-start.png', 'screenshots/native-qualified-final-scale-1.5-02-0-review1-start-before-check.png', 'screenshots/native-arm-settled-94-0-round5-arm-grid.png', 'screenshots/native-root-funnel-13-0-round5-caption-removed.png', 'screenshots/native-qualified-final-scale-1.25-03-0-round5-recent-missing.png', 'screenshots/native-long-settled-30-0-round5-long-figure.png', 'screenshots/native-root-funnel-04-0-family-editor-controls.png', 'screenshots/native-bubble-settled-11-0-round5-bubble-bounds.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-15-0-round4-annotations.png', 'screenshots/native-long-settled-11-0-round5-long-figure-bottom.png', 'screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-70-0-round4-annotations.png', 'screenshots/native-long-settled-25-0-round5-long-figure.png', 'screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-29-0-round4-annotations-bottom.png', 'screenshots/native-arm-continuous-sentence-after-96-0-round5-arm-report.png', 'screenshots/native-combined-heading-after-05-0-matrix-results-bottom.png', 'screenshots/native-bubble-exports-10-0-round5-bubble-bounds.png', 'screenshots/native-bubble-settled-41-0-round5-bubble-bounds.png', 'screenshots/native-long-settled-10-0-round5-long-figure.png', 'screenshots/native-irr-settled-04-0-round5-irr-context.png', 'screenshots/native-qualified-final-scale-2-12-0-round5-keyboard-workspace.png', 'screenshots/native-arm-settled-51-0-round5-arm-calculator.png', 'screenshots/native-qualified-final-scale-1.25-22-0-review1-report-tables.png', 'screenshots/native-qualified-final-scale-1.25-11-0-review1-workspace-navigation.png', 'screenshots/native-qualified-final-scale-2-03-0-round5-recent-missing.png', 'screenshots/native-qualified-final-audit-round3-precision-64-0-round3-bubble-tick-coverage.png', 'screenshots/native-qualified-final-scale-2-16-0-round5-keyboard-setup-page-1.png', 'screenshots/native-qualified-final-scale-1.25-21-0-review1-report-configuration.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-78-0-round4-annotations.png', 'screenshots/native-arm-settled-05-0-round5-arm-wizard.png', 'screenshots/native-arm-settled-96-0-round5-arm-report.png', 'screenshots/native-qualified-final-audit-round3-irr-40-0-round4-subgroup-weights.png', 'screenshots/native-arm-settled-120-0-round5-arm-grid.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-85-0-round4-annotations-bottom.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-120-0-round4-annotations.png', 'screenshots/native-calculator-continuous-02-0-calculator-mode-layout.png', 'screenshots/native-qualified-final-scale-1.5-12-0-round5-keyboard-workspace.png', 'screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-28-0-round4-annotations.png', 'screenshots/native-qualified-final-scale-1.25-20-0-review1-report-top.png', 'screenshots/native-caption-deeks-13-0-round5-caption-removed.png', 'screenshots/native-arm-settled-50-0-round5-arm-report.png', 'screenshots/native-qualified-final-audit-round3-irr-05-0-round3-report-copy-export.png', 'screenshots/native-arm-settled-46-0-round5-arm-report.png', 'screenshots/native-qualified-final-scale-1.5-27-0-review1-export-format-remembered.png', 'screenshots/native-sroc-caption-after-05-0-matrix-results-bottom.png', 'screenshots/native-arm-settled-105-0-round5-arm-calculator.png', 'screenshots/native-final-shell-recovered-14-0-round5-keyboard-setup-page-0.png', 'screenshots/native-qualified-final-audit-round3-precision-20-0-round3-small-effects-preserved.png', 'screenshots/native-qualified-final-scale-2-11-0-review1-workspace-navigation.png', 'screenshots/native-bubble-exports-46-0-round5-bubble-bounds.png', 'screenshots/native-qualified-final-scale-2-10-0-round5-grid-cues.png', 'screenshots/native-qualified-final-scale-1.5-10-0-round5-grid-cues.png', 'screenshots/native-caption-regression-07-0-family-editor-controls.png', 'screenshots/native-qualified-final-audit-round3-precision-29-0-round3-degenerate-axis.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-121-0-round4-annotations-bottom.png', 'screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-56-0-round4-annotations.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-57-0-round4-annotations.png', 'screenshots/native-caption-regression-10-0-family-plot-reopened.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-84-0-round4-annotations.png', 'screenshots/native-final-shell-recovered-04-0-round5-recent-recovered.png', 'screenshots/native-arm-settled-59-0-round5-arm-wizard.png', 'screenshots/native-bubble-settled-31-0-round5-bubble-bounds.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-63-0-round4-annotations.png', 'screenshots/native-final-shell-recovered-15-0-round5-keyboard-setup-page-1.png', 'screenshots/native-irr-header-after-07-0-round5-irr-context.png', 'screenshots/native-coefficient-top-10-0-family-plot-reopened.png', 'screenshots/native-bubble-exports-28-0-round5-bubble-bounds.png', 'screenshots/native-final-shell-recovered-10-0-round5-grid-cues.png', 'screenshots/native-combined-heading-after-05-0-matrix-results-table.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-22-0-round4-annotations-bottom.png', 'screenshots/native-arms-baseline-08-0-matrix-results.png', 'screenshots/native-arm-settled-55-0-round5-arm-csv-mapping.png', 'screenshots/native-arm-settled-58-0-round5-arm-duplicate.png', 'screenshots/native-qualified-final-scale-2-07-0-review1-start-dark.png', 'screenshots/native-qualified-final-audit-round3-irr-17-0-round4-subgroup-weights.png', 'screenshots/native-qualified-final-scale-1.25-07-0-review1-start-dark.png', 'screenshots/native-bubble-exports-91-0-round5-bubble-bounds.png', 'screenshots/native-menu-tooltip-qualified-15-0-round5-analysis-menu.png', 'screenshots/native-qualified-final-scale-2-04-0-round5-recent-recovered.png', 'screenshots/native-arm-settled-104-0-round5-arm-report.png', 'screenshots/native-qualified-final-audit-round3-irr-38-0-round3-report-copy-export.png', 'screenshots/native-bubble-settled-175-0-round5-bubble-bounds.png', 'screenshots/native-qualified-final-scale-1.5-05-0-review1-start-recents.png', 'screenshots/native-qualified-final-scale-1.5-14-0-round5-analysis-menu.png', 'screenshots/native-caption-coefficient-16-0-round5-caption-removed.png', 'screenshots/native-long-settled-31-0-round5-long-figure-bottom.png', 'screenshots/native-arm-settled-109-0-round5-arm-csv-mapping.png', 'screenshots/native-irr-header-after-04-0-round5-irr-context.png', 'screenshots/native-bubble-exports-19-0-round5-bubble-bounds.png', 'screenshots/native-qualified-final-scale-1.25-16-0-round5-keyboard-setup-page-1.png', 'screenshots/native-qualified-final-scale-2-21-0-review1-report-configuration.png', 'screenshots/native-qualified-final-scale-2-20-0-review1-report-top.png', 'screenshots/native-combined-heading-after-05-0-matrix-results-report.png', 'screenshots/native-qualified-final-scale-1.5-07-0-review1-start-dark.png', 'screenshots/native-bubble-settled-111-0-round5-bubble-bounds.png', 'screenshots/native-qualified-final-audit-round3-precision-19-0-round3-report-copy-export.png', 'screenshots/native-arm-settled-130-0-round5-arm-wizard.png', 'screenshots/native-arm-settled-52-0-round5-arm-csv-preview.png', 'screenshots/native-qualified-final-audit-round3-precision-74-0-round3-bubble-tick-coverage.png', 'screenshots/native-arm-settled-139-0-round5-arm-grid.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-42-0-round4-annotations.png', 'screenshots/native-arm-settled-112-0-round5-arm-wizard.png', 'screenshots/native-arm-settled-53-0-round5-arm-csv-mapping.png', 'screenshots/native-qualified-final-scale-1.25-12-0-round5-keyboard-workspace.png', 'screenshots/native-bubble-settled-161-0-round5-bubble-bounds.png', 'screenshots/native-qualified-final-scale-1.25-13-0-round5-grid-keyboard-exit.png', 'screenshots/native-bubble-settled-131-0-round5-bubble-bounds.png', 'screenshots/native-arm-settled-152-0-round5-arm-grid.png', 'screenshots/native-arm-settled-108-0-round5-arm-csv-preview.png', 'screenshots/native-calculator-binary-03-0-round5-keyboard-calculator-entered-binary.png', 'screenshots/native-arm-settled-67-0-round5-arm-grid.png', 'screenshots/native-bubble-exports-118-0-round5-bubble-bounds.png', 'screenshots/native-final-shell-recovered-11-0-review1-workspace-navigation.png', 'screenshots/native-qualified-final-scale-1.5-04-0-round5-recent-recovered.png', 'screenshots/native-qualified-final-scale-1.5-11-0-review1-workspace-navigation.png', 'screenshots/native-long-settled-20-0-round5-long-figure.png', 'screenshots/native-menu-tooltip-qualified-14-0-round5-analysis-prerequisite-tooltip.png', 'screenshots/native-bubble-settled-168-0-round5-bubble-bounds.png', 'screenshots/native-arm-settled-144-0-round5-arm-wizard.png', 'screenshots/native-empty-header-qualified-45-0-round5-bmj-binary-subgroup.png', 'screenshots/native-calculator-diagnostic-03-0-calculator-mode-preview.png', 'screenshots/native-qualified-final-scale-2-02-0-review1-start-before-check.png', 'screenshots/native-qualified-final-scale-1.25-06-0-review1-start-light.png', 'screenshots/native-qualified-final-audit-round3-irr-10-0-round3-report-copy-export.png', 'screenshots/native-arms-baseline-03-0-data-outcome-naming.png', 'screenshots/native-caption-funnel-07-0-family-plot-reopened.png', 'screenshots/native-arm-settled-04-0-round5-arm-duplicate.png', 'screenshots/native-qualified-final-scale-1.5-06-0-review1-start-light.png', 'screenshots/native-qualified-final-audit-round3-irr-48-0-round3-report-copy-export.png', 'screenshots/native-bubble-exports-146-0-round5-keyboard-setup.png', 'screenshots/native-bubble-exports-55-0-round5-bubble-bounds.png', 'screenshots/native-bubble-settled-21-0-round5-bubble-bounds.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-21-0-round4-annotations.png', 'screenshots/native-bubble-settled-91-0-round5-bubble-bounds.png', 'screenshots/native-arm-settled-13-0-round5-arm-grid.png', 'screenshots/native-final-shell-recovered-21-0-review1-report-tables.png', 'screenshots/native-final-shell-recovered-22-0-round5-keyboard-results.png', 'screenshots/native-arm-settled-86-0-round5-arm-wizard.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-16-0-round4-annotations-bottom.png', 'screenshots/native-long-settled-05-0-round5-long-figure.png', 'screenshots/native-arm-settled-85-0-round5-arm-duplicate.png', 'screenshots/native-qualified-final-scale-1.5-22-0-review1-report-tables.png', 'screenshots/native-calculator-continuous-04-0-calculator-mode-preview.png', 'screenshots/native-qualified-final-scale-1.25-23-0-round5-keyboard-results.png', 'screenshots/native-bubble-exports-82-0-round5-bubble-bounds.png', 'screenshots/native-scale-2-02-0-review1-start-before-check.png', 'screenshots/native-sroc-caption-after-18-0-round5-caption-removed.png', 'screenshots/native-qualified-final-scale-1.5-09-0-review1-start-wizard-csv_import.png', 'screenshots/native-combined-heading-after-05-0-matrix-results.png', 'screenshots/native-arms-baseline-04-0-data-populated.png', 'screenshots/native-arm-settled-10-0-matrix-results-figure.png', 'screenshots/native-sroc-caption-after-12-0-family-plot-reopened.png', 'screenshots/native-calculator-binary-02-0-calculator-mode-layout.png', 'screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-15-0-round4-annotations-bottom.png', 'screenshots/native-ux-contracts-after-19-0-ux-csv-mapped.png', 'screenshots/native-final-shell-recovered-19-0-review1-report-top.png', 'screenshots/native-bubble-exports-100-0-round5-bubble-bounds.png', 'screenshots/native-qualified-final-scale-2-13-0-round5-grid-keyboard-exit.png', 'screenshots/native-arms-baseline-08-0-matrix-results-bottom.png', 'screenshots/native-sroc-caption-after-05-0-matrix-results-table.png', 'screenshots/native-qualified-final-scale-2-23-0-round5-keyboard-results.png', 'screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-14-0-round4-annotations.png', 'screenshots/native-caption-coefficient-07-0-family-editor-controls.png', 'screenshots/native-arm-settled-100-0-round5-arm-report.png', 'screenshots/native-arm-settled-31-0-round5-arm-duplicate.png', 'screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-71-0-round4-annotations-bottom.png', 'screenshots/native-qualified-final-plot-workflow-coefficient-16-0-round5-caption-removed.png', 'screenshots/native-qualified-final-audit-round3-precision-48-0-round3-degenerate-axis.png', 'screenshots/native-sroc-caption-after-05-0-matrix-results-figure.png', 'screenshots/native-bubble-settled-71-0-round5-bubble-bounds.png', 'screenshots/native-arm-settled-171-0-round5-arm-grid.png', 'screenshots/native-arms-baseline-08-0-matrix-results-table.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-43-0-round4-annotations-bottom.png', 'screenshots/native-caption-funnel-04-0-family-editor-controls.png', 'screenshots/native-final-arm-names-all-32-0-round5-arm-wizard.png', 'screenshots/native-bubble-exports-64-0-round5-bubble-bounds.png', 'screenshots/native-arm-settled-174-0-round5-arm-legacy-reopened.png', 'screenshots/native-sroc-caption-after-05-0-matrix-results-report.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-58-0-round4-annotations-bottom.png', 'screenshots/native-qualified-final-scale-1.25-04-0-round5-recent-recovered.png', 'screenshots/native-caption-deeks-04-0-family-editor-controls.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-37-0-round4-annotations-bottom.png', 'screenshots/native-qualified-final-scale-1.25-15-0-round5-keyboard-setup-page-0.png', 'screenshots/native-qualified-final-scale-2-09-0-review1-start-wizard-csv_import.png', 'screenshots/native-bubble-settled-61-0-round5-bubble-bounds.png', 'screenshots/native-long-settled-06-0-round5-long-figure-bottom.png', 'screenshots/native-final-shell-recovered-02-0-review1-start-before-check.png', 'screenshots/native-qualified-final-scale-1.5-20-0-review1-report-top.png', 'screenshots/native-qualified-final-plot-workflow-coefficient-10-0-family-plot-reopened.png', 'screenshots/native-calculator-binary-04-0-calculator-mode-preview.png', 'screenshots/native-qualified-final-audit-round3-precision-10-0-round3-zero-bound-presentation.png', 'screenshots/native-qualified-final-scale-1.25-10-0-round5-grid-cues.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-79-0-round4-annotations-bottom.png', 'screenshots/native-arms-baseline-08-0-matrix-results-report.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-106-0-round4-annotations-bottom.png', 'screenshots/native-long-settled-15-0-round5-long-figure.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-105-0-round4-annotations.png', 'screenshots/native-qualified-final-scale-2-15-0-round5-keyboard-setup-page-0.png', 'screenshots/native-calculator-continuous-03-0-round5-keyboard-calculator-pre-post.png', 'screenshots/native-qualified-final-scale-1.25-02-0-review1-start-before-check.png', 'screenshots/native-qualified-final-audit-round3-irr-26-0-round3-report-copy-export.png', 'screenshots/native-qualified-final-scale-1.5-03-0-round5-recent-missing.png', 'screenshots/native-qualified-final-scale-2-27-0-review1-export-format-remembered.png', 'screenshots/native-qualified-final-scale-2-06-0-review1-start-light.png', 'screenshots/native-caption-funnel-13-0-round5-caption-removed.png', 'screenshots/native-qualified-final-audit-round3-irr-21-0-round3-report-copy-export.png', 'screenshots/native-final-shell-recovered-05-0-review1-start-recents.png', 'screenshots/native-bubble-settled-101-0-round5-bubble-bounds.png', 'screenshots/native-qualified-final-plot-workflow-coefficient-07-0-family-editor-controls.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-99-0-round4-annotations.png', 'screenshots/native-long-settled-21-0-round5-long-figure-bottom.png', 'screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-42-0-round4-annotations.png', 'screenshots/native-bubble-exports-73-0-round5-bubble-bounds.png', 'screenshots/native-caption-deeks-07-0-family-plot-reopened.png', 'screenshots/native-bubble-settled-121-0-round5-bubble-bounds.png', 'screenshots/native-calculator-diagnostic-02-0-round5-keyboard-calculator-back-diagnostic.png', 'screenshots/native-qualified-final-scale-1.25-08-0-review1-start-wizard-new_dataset.png', 'screenshots/native-bubble-exports-145-0-round5-bubble-bounds.png', 'screenshots/native-bubble-settled-141-0-round5-bubble-bounds.png', 'screenshots/native-combined-heading-after-05-0-matrix-results-figure.png', 'screenshots/native-qualified-final-scale-1.5-08-0-review1-start-wizard-new_dataset.png', 'screenshots/native-long-settled-26-0-round5-long-figure-bottom.png', 'screenshots/native-arm-settled-32-0-round5-arm-wizard.png', 'screenshots/native-final-shell-recovered-03-0-round5-recent-missing.png', 'screenshots/native-bubble-exports-109-0-round5-bubble-bounds.png', 'screenshots/native-bubble-settled-81-0-round5-bubble-bounds.png', 'screenshots/native-bubble-settled-51-0-round5-bubble-bounds.png', 'screenshots/native-sroc-caption-after-05-0-matrix-results.png', 'screenshots/native-qualified-final-scale-1.25-27-0-review1-export-format-remembered.png', 'screenshots/native-qualified-final-scale-1.25-05-0-review1-start-recents.png', 'screenshots/native-diamond-after-31-0-round5-long-figure-bottom.png', 'screenshots/native-qualified-final-scale-2-14-0-round5-analysis-menu.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-64-0-round4-annotations-bottom.png', 'screenshots/native-arm-settled-162-0-round5-arm-wizard.png', 'screenshots/native-irr-settled-07-0-round5-irr-context.png', 'screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-85-0-round4-annotations-bottom.png', 'screenshots/native-qualified-final-scale-2-22-0-review1-report-tables.png', 'screenshots/native-arms-baseline-08-0-matrix-results-figure.png', 'screenshots/native-final-shell-recovered-12-0-round5-keyboard-workspace.png', 'screenshots/native-irr-settled-10-0-round5-irr-context.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-36-0-round4-annotations.png', 'screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-43-0-round4-annotations-bottom.png', 'screenshots/native-qualified-final-audit-round3-presentation-twoarm-mean-57-0-round4-annotations-bottom.png', 'screenshots/native-root-funnel-07-0-family-plot-reopened.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-127-0-round4-annotations-bottom.png', 'screenshots/native-qualified-final-audit-round3-presentation-diagnostic-126-0-round4-annotations.png', 'screenshots/native-qualified-final-scale-1.5-23-0-round5-keyboard-results.png', 'screenshots/native-qualified-final-scale-1.25-09-0-review1-start-wizard-csv_import.png', 'screenshots/native-qualified-final-scale-1.5-13-0-round5-grid-keyboard-exit.png', 'screenshots/native-qualified-final-audit-round3-irr-15-0-round3-report-copy-export.png', 'screenshots/native-qualified-final-scale-1.5-15-0-round5-keyboard-setup-page-0.png', 'screenshots/native-bubble-exports-151-0-round5-bubble-bounds.png', 'screenshots/native-bubble-exports-136-0-round5-bubble-bounds.png', 'screenshots/native-long-settled-16-0-round5-long-figure-bottom.png', 'screenshots/native-ux-contracts-after-12-0-ux-readable-report.png', 'screenshots/native-qualified-final-audit-round3-irr-32-0-round3-report-copy-export.png', 'screenshots/native-qualified-final-scale-2-05-0-review1-start-recents.png', 'screenshots/native-qualified-final-scale-1.25-14-0-round5-analysis-menu.png'}, set())
+
+
+review1-native-editor-deeks-qualified
+["uv", "run", "python", "scripts/verify_rcms.py", "plot-workflow-deeks", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T073318Z-ff80694b-plot-workflow-deeks
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 769, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1739, in run
+    plots(app, window, scenario.removeprefix("plot-workflow-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 409, in plots
+    check_caption(initial_svg, dataset_identity(window.model, "Diagnostic odds ratio" if family == "deeks" else None))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 16, in check_caption
+    assert expected in " ".join(text.split()), (expected, text)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('LAG positive · Diagnostic · Diagnostic odds ratio · Group: Index test · Follow-up: first', '0.10 0.15 0.20 0.25 1 2 3 4 1/sqrt(ESS) Log diagnostic odds ratio LAG positive · Diagnostic · Group: Index test · Follow-up: first')
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 769, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1739, in run
+    plots(app, window, scenario.removeprefix("plot-workflow-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 409, in plots
+    check_caption(initial_svg, dataset_identity(window.model, "Diagnostic odds ratio" if family == "deeks" else None))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 16, in check_caption
+    assert expected in " ".join(text.split()), (expected, text)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('LAG positive · Diagnostic · Diagnostic odds ratio · Group: Index test · Follow-up: first', '0.10 0.15 0.20 0.25 1 2 3 4 1/sqrt(ESS) Log diagnostic odds ratio LAG positive · Diagnostic · Group: Index test · Follow-up: first')
+
+
+
+review1-native-editor-funnel
+["uv", "run", "python", "scripts/verify_rcms.py", "plot-workflow-funnel", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T072447Z-bb62ba4b-plot-workflow-funnel
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 769, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1735, in run
+    plots(app, window, scenario.removeprefix("plot-workflow-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 405, in plots
+    check_caption(path, dataset_identity(window.model, "Diagnostic odds ratio" if family == "deeks" else None))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 13, in check_caption
+    nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
+                 ^^^^^^^^^^^^^^
+  File "/home/ali/.local/share/uv/python/cpython-3.11.9-linux-x86_64-gnu/lib/python3.11/xml/etree/ElementTree.py", line 1219, in parse
+    tree.parse(source, parser)
+  File "/home/ali/.local/share/uv/python/cpython-3.11.9-linux-x86_64-gnu/lib/python3.11/xml/etree/ElementTree.py", line 581, in parse
+    self._root = parser._parse_whole(source)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+xml.etree.ElementTree.ParseError: not well-formed (invalid token): line 1, column 0
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 769, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1735, in run
+    plots(app, window, scenario.removeprefix("plot-workflow-"), record)
+  File "/home/ali/Documents/Code/rc-metastudio/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 405, in plots
+    check_caption(path, dataset_identity(window.model, "Diagnostic odds ratio" if family == "deeks" else None))
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 13, in check_caption
+    nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
+                 ^^^^^^^^^^^^^^
+  File "/home/ali/.local/share/uv/python/cpython-3.11.9-linux-x86_64-gnu/lib/python3.11/xml/etree/ElementTree.py", line 1219, in parse
+    tree.parse(source, parser)
+  File "/home/ali/.local/share/uv/python/cpython-3.11.9-linux-x86_64-gnu/lib/python3.11/xml/etree/ElementTree.py", line 581, in parse
+    self._root = parser._parse_whole(source)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+xml.etree.ElementTree.ParseError: not well-formed (invalid token): line 1, column 0
+
+
+
+review1-native-shell
+["uv", "run", "python", "scripts/verify_rcms.py", "review1-design", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T071005Z-ac9e94cd-review1-design
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 740, in <module>
+    run(app, window, WORK, ROOT, record_step, analyze)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/review1_design.py", line 35, in run
+    assert "…" in paths[0].text(), paths[0].text()
+           ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u8tb6c1g/projects/a long path for evidence a long path for evidence a long path for evidence /amino.rcms
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 740, in <module>
+    run(app, window, WORK, ROOT, record_step, analyze)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/review1_design.py", line 35, in run
+    assert "…" in paths[0].text(), paths[0].text()
+           ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: /home/ali/Documents/Code/rc-metastudio/build/verification/rcms/desktop-u8tb6c1g/projects/a long path for evidence a long path for evidence a long path for evidence /amino.rcms
+
+
+
+review1-subgroup-rule-before
+["uv", "run", "python", "scripts/verify_rcms.py", "audit-round3-round5", "--native"]
+Evidence: /home/ali/Documents/Code/rc-metastudio/artifacts/verification/rcms/20261015T072632Z-440736a1-audit-round3-round5
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 735, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 490, in run
+    return run_round5(app, window, work, record, prepare, only_bubbles=family_name == "bubble-metrics")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 906, in run_round5
+    assert not y-height < float(rule.attrib["y1"]) < y+height*.25, ("rule crosses subgroup heading", style, node.attrib, rule.attrib)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('rule crosses subgroup heading', 'default', {'x': '52.19', 'y': '114.02', 'style': 'font-size: 12.96px; font-weight: bold; font-style: italic; font-family: "Liberation Sans";', 'textLength': '9.36px', 'lengthAdjust': 'spacingAndGlyphs'}, {'x1': '0.00', 'y1': '111.05', 'x2': '962.32', 'y2': '111.05', 'style': 'stroke-width: 0.60;', 'fill': 'none', 'stroke': '#000000', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-miterlimit': '10.00'})
+Traceback (most recent call last):
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/desktop_driver.py", line 735, in <module>
+    run(app, window, WORK, record_step, scenario)
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 490, in run
+    return run_round5(app, window, work, record, prepare, only_bubbles=family_name == "bubble-metrics")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/Documents/Code/rc-metastudio/tests/e2e/audit_round3.py", line 906, in run_round5
+    assert not y-height < float(rule.attrib["y1"]) < y+height*.25, ("rule crosses subgroup heading", style, node.attrib, rule.attrib)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('rule crosses subgroup heading', 'default', {'x': '52.19', 'y': '114.02', 'style': 'font-size: 12.96px; font-weight: bold; font-style: italic; font-family: "Liberation Sans";', 'textLength': '9.36px', 'lengthAdjust': 'spacingAndGlyphs'}, {'x1': '0.00', 'y1': '111.05', 'x2': '962.32', 'y2': '111.05', 'style': 'stroke-width: 0.60;', 'fill': 'none', 'stroke': '#000000', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-miterlimit': '10.00'})
+
+
+
+review1-types
+["uv", "run", "ty", "check", "src/rc_metastudio/start_page.py", "src/rc_metastudio/main_wizard.py", "src/rc_metastudio/binary_data_dialog.py", "src/rc_metastudio/plot_editor_dialog.py", "src/rc_metastudio/funnel_plot_editor_dialog.py", "--extra-search-path", "build/qt6-verification/generated/rc_metastudio/forms", "--extra-search-path", "build/qt6-verification/generated"]
+error[invalid-method-override]: Invalid override of method `resizeEvent`
+   --> src/rc_metastudio/start_page.py:20:9
+    |
+ 18 |         self.setSizePolicy(QtWidgets.QSizePolicy.Policy.Ignored, QtWidgets.QSizePolicy.Policy.Preferred)
+ 19 |
+ 20 |     def resizeEvent(self, event):
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^ Definition is incompatible with `QWidget.resizeEvent`
+ 21 |         super().resizeEvent(event)
+ 22 |         self.setText(self.fontMetrics().elidedText(self.toolTip(), QtCore.Qt.TextElideMode.ElideMiddle, self.contentsRect().width()))
+    |
+   ::: .venv/lib/python3.11/site-packages/PyQt6/QtWidgets.pyi:147:9
+    |
+145 |     def contextMenuEvent(self, a0: QtGui.QContextMenuEvent|None) -> None: ...
+146 |     def closeEvent(self, a0: QtGui.QCloseEvent|None) -> None: ...
+147 |     def resizeEvent(self, a0: QtGui.QResizeEvent|None) -> None: ...
+    |         ------------------------------------------------------ `QWidget.resizeEvent` defined here
+148 |     def moveEvent(self, a0: QtGui.QMoveEvent|None) -> None: ...
+149 |     def paintEvent(self, a0: QtGui.QPaintEvent|None) -> None: ...
+    |
+info: This violates the Liskov Substitution Principle
+info: rule `invalid-method-override` was selected in the configuration file
+
+Found 1 diagnostic

@@ -1,0 +1,1165 @@
+[
+  {
+    "path": "r/RCMetaR/R/bubble_metafor.R",
+    "line": 95,
+    "text": "!identical(bundle$params$bp_yticks[1], \"[default]\") &&",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/bubble_metafor.R",
+    "line": 225,
+    "text": "!identical(lower[1], \"[default]\") && !identical(upper[1], \"[default]\")) {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/bubble_metafor.R",
+    "line": 252,
+    "text": "if (is.null(ticks) || length(ticks) == 0 || identical(ticks[1], \"[default]\")) {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/bubble_metafor.R",
+    "line": 362,
+    "text": "automatic.ticks <- is.null(bundle$params$bp_yticks) || identical(bundle$params$bp_yticks[1], \"[default]\")",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/data_transform.R",
+    "line": 308,
+    "text": "gimpute.cont.data <- function(group1, group2, effect_data, conf.level=95.0) {",
+    "classification": "R internal function argument/local structure; no corresponding user-visible Group1/Group2 label on inspected paths.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/data_transform.R",
+    "line": 309,
+    "text": "n1    <- group1[[\"n\"]]",
+    "classification": "R internal function argument/local structure; no corresponding user-visible Group1/Group2 label on inspected paths.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/data_transform.R",
+    "line": 310,
+    "text": "n2    <- group2[[\"n\"]]",
+    "classification": "R internal function argument/local structure; no corresponding user-visible Group1/Group2 label on inspected paths.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/data_transform.R",
+    "line": 311,
+    "text": "mean1 <- group1[[\"mean\"]]",
+    "classification": "R internal function argument/local structure; no corresponding user-visible Group1/Group2 label on inspected paths.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/data_transform.R",
+    "line": 312,
+    "text": "mean2 <- group2[[\"mean\"]]",
+    "classification": "R internal function argument/local structure; no corresponding user-visible Group1/Group2 label on inspected paths.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/data_transform.R",
+    "line": 313,
+    "text": "sd1   <- group1[[\"sd\"]]",
+    "classification": "R internal function argument/local structure; no corresponding user-visible Group1/Group2 label on inspected paths.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/data_transform.R",
+    "line": 314,
+    "text": "sd2   <- group2[[\"sd\"]]",
+    "classification": "R internal function argument/local structure; no corresponding user-visible Group1/Group2 label on inspected paths.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/forest_layout_preflight.R",
+    "line": 386,
+    "text": "!is.na(value[[1]]) && !identical(value[[1]], \"[default]\")",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/forest_metafor.R",
+    "line": 6,
+    "text": "as.character(header) %in% c(\"[default]\", \"Studies\", \"Author(s) and Year\")) {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/forest_metafor.R",
+    "line": 286,
+    "text": "if (params$fp_plot_lb == \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/forest_metafor.R",
+    "line": 292,
+    "text": "if (params$fp_plot_ub == \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/forest_style_default.R",
+    "line": 16,
+    "text": "if (!is.null(params$fp_col3_str) && params$fp_col3_str != \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/forest_style_default.R",
+    "line": 53,
+    "text": "if (!is.null(params$fp_col3_str) && params$fp_col3_str != \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/forest_style_default.R",
+    "line": 56,
+    "text": "if (!is.null(params$fp_col4_str) && params$fp_col4_str != \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/forest_style_default.R",
+    "line": 88,
+    "text": "if (!is.null(params$fp_col3_str) && params$fp_col3_str != \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/forest_style_default.R",
+    "line": 93,
+    "text": "if (!is.null(params$fp_col4_str) && params$fp_col4_str != \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/forest_style_registry.R",
+    "line": 6,
+    "text": "if (is.null(style) || length(style) == 0 || is.na(style) || style == \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/forest_style_revman.R",
+    "line": 123,
+    "text": "if (!is.null(params$fp_col3_str) && params$fp_col3_str != \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/forest_style_revman.R",
+    "line": 126,
+    "text": "if (!is.null(params$fp_col4_str) && params$fp_col4_str != \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/forest_style_revman.R",
+    "line": 535,
+    "text": "!identical(params$fp_xticks[1], \"[default]\") &&",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/plot_text.R",
+    "line": 11,
+    "text": "c(\"\", \"[default]\", \"<default>\", \"(default)\", \"default\")",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/plot_text.R",
+    "line": 16,
+    "text": "identical(value[[1]], \"[default]\")) {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/plot_text.R",
+    "line": 47,
+    "text": "!identical(value[[1]], \"[default]\")) {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/plotting.R",
+    "line": 43,
+    "text": "if (params$fp_plot_lb == \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/plotting.R",
+    "line": 50,
+    "text": "if (params$fp_plot_ub == \"[default]\")  {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/plotting.R",
+    "line": 223,
+    "text": "if (params$fp_plot_lb == \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/plotting.R",
+    "line": 229,
+    "text": "if (params$fp_plot_ub == \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/plotting.R",
+    "line": 408,
+    "text": "if (params$fp_plot_lb == \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/plotting.R",
+    "line": 414,
+    "text": "if (params$fp_plot_ub == \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/plotting.R",
+    "line": 546,
+    "text": "if (params$fp_xticks[1] == '[default]') {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/plotting.R",
+    "line": 565,
+    "text": "if (params$fp_col2_str == \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/plotting.R",
+    "line": 625,
+    "text": "if (user.lb == \"[default]\" || user.ub == \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/plotting.R",
+    "line": 636,
+    "text": "if (user.lb != \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/plotting.R",
+    "line": 639,
+    "text": "if (user.ub != \"[default]\") {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/rcmetar-core.R",
+    "line": 313,
+    "text": "rcmetar.back.calculate.continuous <- function(group1.data, group2.data, effect.data, conf.level) {",
+    "classification": "R internal function argument/local structure; no corresponding user-visible Group1/Group2 label on inspected paths.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/rcmetar-core.R",
+    "line": 314,
+    "text": "gimpute.cont.data(group1.data, group2.data, effect.data, validate.conf.level(conf.level))",
+    "classification": "R internal function argument/local structure; no corresponding user-visible Group1/Group2 label on inspected paths.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/reitsma_methods.R",
+    "line": 404,
+    "text": "plot.lb=as.character(params$fp_plot_lb %||% \"[default]\"),",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/reitsma_methods.R",
+    "line": 405,
+    "text": "plot.ub=as.character(params$fp_plot_ub %||% \"[default]\"),",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/reitsma_methods.R",
+    "line": 406,
+    "text": "xticks=params$fp_xticks %||% \"[default]\",",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/reitsma_methods.R",
+    "line": 407,
+    "text": "y.plot.lb=as.character(params$fp_sroc_plot_lb %||% \"[default]\"),",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/reitsma_methods.R",
+    "line": 408,
+    "text": "y.plot.ub=as.character(params$fp_sroc_plot_ub %||% \"[default]\"),",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/reitsma_methods.R",
+    "line": 409,
+    "text": "yticks=params$fp_sroc_yticks %||% \"[default]\",",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/reitsma_methods.R",
+    "line": 486,
+    "text": "lower.value <- if (length(lower)) lower[[1L]] else \"[default]\"",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/reitsma_methods.R",
+    "line": 487,
+    "text": "upper.value <- if (length(upper)) upper[[1L]] else \"[default]\"",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/reitsma_methods.R",
+    "line": 488,
+    "text": "lo <- if (identical(as.character(lower.value), \"[default]\")) fallback[[1L]] else scalar.number(lower, fallback[[1L]])",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/reitsma_methods.R",
+    "line": 489,
+    "text": "hi <- if (identical(as.character(upper.value), \"[default]\")) fallback[[2L]] else scalar.number(upper, fallback[[2L]])",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/reitsma_methods.R",
+    "line": 494,
+    "text": "if (is.null(value) || !length(value) || identical(as.character(value[[1L]]), \"[default]\")) return(pretty(limits))",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/reitsma_methods.R",
+    "line": 499,
+    "text": "xlim <- axis.limits(style$plot.lb %||% \"[default]\", style$plot.ub %||% \"[default]\", c(0, 1))",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/reitsma_methods.R",
+    "line": 500,
+    "text": "ylim <- axis.limits(style$y.plot.lb %||% \"[default]\", style$y.plot.ub %||% \"[default]\", c(0, 1))",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/reitsma_methods.R",
+    "line": 508,
+    "text": "axis(1, at=axis.ticks(style$xticks %||% \"[default]\", xlim))",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/reitsma_methods.R",
+    "line": 509,
+    "text": "axis(2, at=axis.ticks(style$yticks %||% \"[default]\", ylim))",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/reitsma_methods.R",
+    "line": 590,
+    "text": "if (is.null(value) || !length(value) || identical(as.character(value[[1L]]), \"[default]\")) {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "r/RCMetaR/R/reitsma_methods.R",
+    "line": 605,
+    "text": "if (is.null(xlab) || !length(xlab) || is.na(xlab[[1L]]) || identical(as.character(xlab[[1L]]), \"[default]\")) {",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "sample_projects/manifest.json",
+    "line": 29,
+    "text": "\"tx A\": \"Intervention\",",
+    "classification": "Manifest rename provenance. All seven actual sample archives were separately opened/analyzed/reopened with readable current names; these old mapping keys are not displayed.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "sample_projects/manifest.json",
+    "line": 30,
+    "text": "\"tx B\": \"Control\"",
+    "classification": "Manifest rename provenance. All seven actual sample archives were separately opened/analyzed/reopened with readable current names; these old mapping keys are not displayed.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "sample_projects/manifest.json",
+    "line": 52,
+    "text": "\"tx A\": \"BCG vaccine\",",
+    "classification": "Manifest rename provenance. All seven actual sample archives were separately opened/analyzed/reopened with readable current names; these old mapping keys are not displayed.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "sample_projects/manifest.json",
+    "line": 53,
+    "text": "\"tx B\": \"Control\"",
+    "classification": "Manifest rename provenance. All seven actual sample archives were separately opened/analyzed/reopened with readable current names; these old mapping keys are not displayed.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "sample_projects/manifest.json",
+    "line": 76,
+    "text": "\"tx A\": \"Intervention\",",
+    "classification": "Manifest rename provenance. All seven actual sample archives were separately opened/analyzed/reopened with readable current names; these old mapping keys are not displayed.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "sample_projects/manifest.json",
+    "line": 77,
+    "text": "\"tx B\": \"Control\"",
+    "classification": "Manifest rename provenance. All seven actual sample archives were separately opened/analyzed/reopened with readable current names; these old mapping keys are not displayed.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "sample_projects/manifest.json",
+    "line": 101,
+    "text": "\"tx A\": \"Index test\"",
+    "classification": "Manifest rename provenance. All seven actual sample archives were separately opened/analyzed/reopened with readable current names; these old mapping keys are not displayed.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "sample_projects/manifest.json",
+    "line": 123,
+    "text": "\"tx A\": \"Intervention\",",
+    "classification": "Manifest rename provenance. All seven actual sample archives were separately opened/analyzed/reopened with readable current names; these old mapping keys are not displayed.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "sample_projects/manifest.json",
+    "line": 124,
+    "text": "\"tx B\": \"Control\"",
+    "classification": "Manifest rename provenance. All seven actual sample archives were separately opened/analyzed/reopened with readable current names; these old mapping keys are not displayed.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/analysis_adapter.py",
+    "line": 38,
+    "text": "\"continuous\": frozenset({\"MD\", \"SMD\", \"TX Mean\"}),",
+    "classification": "Internal TX Mean compatibility/metric key. Native single-arm mean, coefficient, entered-effect and arm-name drives show contextual Mean/Coefficient/Estimate labels; do not rename stored keys. The dynamic main-window menu consumer still leaks this key (R5-09); keeping the internal key is justified, keeping its visible prefix is not.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/analysis_identity.py",
+    "line": 61,
+    "text": "if model.current_effect == \"TX Mean\":",
+    "classification": "Internal TX Mean compatibility/metric key. Native single-arm mean, coefficient, entered-effect and arm-name drives show contextual Mean/Coefficient/Estimate labels; do not rename stored keys. The dynamic main-window menu consumer still leaks this key (R5-09); keeping the internal key is justified, keeping its visible prefix is not.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/analysis_setup_dialog.py",
+    "line": 299,
+    "text": "and self.model.current_effect == \"TX Mean\"",
+    "classification": "Internal TX Mean compatibility/metric key. Native single-arm mean, coefficient, entered-effect and arm-name drives show contextual Mean/Coefficient/Estimate labels; do not rename stored keys. The dynamic main-window menu consumer still leaks this key (R5-09); keeping the internal key is justified, keeping its visible prefix is not.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/analysis_setup_dialog.py",
+    "line": 300,
+    "text": "and self.x_lbl_le.text() in {\"\", \"[default]\", \"TX Mean\"}",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/analysis_setup_dialog.py",
+    "line": 322,
+    "text": "if field.text() == \"[default]\":",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/analysis_setup_dialog.py",
+    "line": 323,
+    "text": "set_plot_text_value(field, \"[default]\")",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/analysis_setup_dialog.py",
+    "line": 986,
+    "text": "set_plot_text_value(self.col3_str_edit, \"[default]\")",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/analysis_setup_dialog.py",
+    "line": 1635,
+    "text": "specs_form.current_param_vals[\"fp_plot_lb\"] = \"[default]\"",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/analysis_setup_dialog.py",
+    "line": 1636,
+    "text": "if plot_lb != \"[default]\" and check_plot_bound(plot_lb):",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/analysis_setup_dialog.py",
+    "line": 1640,
+    "text": "specs_form.current_param_vals[\"fp_plot_ub\"] = \"[default]\"",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/analysis_setup_dialog.py",
+    "line": 1641,
+    "text": "if plot_ub != \"[default]\" and check_plot_bound(plot_ub):",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/analysis_setup_dialog.py",
+    "line": 1645,
+    "text": "specs_form.current_param_vals[\"fp_xticks\"] = \"[default]\"",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/analysis_setup_dialog.py",
+    "line": 1646,
+    "text": "if xticks != \"[default]\" and seems_sane(xticks):",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/analysis_setup_dialog.py",
+    "line": 1671,
+    "text": "return value if value != \"[default]\" and check_plot_bound(value) else \"[default]\"",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/analysis_setup_dialog.py",
+    "line": 1676,
+    "text": "return value if value != \"[default]\" and seems_sane(value) else \"[default]\"",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/calculator_service.py",
+    "line": 310,
+    "text": "def back_calculate_continuous_data(self, group1_data: MutableData, group2_data: MutableData, effect_data: MutableData, confidence_level: float) -> BackCalculationResult:",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/calculator_service.py",
+    "line": 311,
+    "text": "result = r_bridge.back_calculate_continuous_data(group1_data, group2_data, effect_data, confidence_level)",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/continuous_data_dialog.py",
+    "line": 751,
+    "text": "return \"%s cannot be negative.\" % (field_name,)",
+    "disposition": "finding R5-05; source-confirmed validation copy",
+    "classification": "For se/var/pval, interpolates lowercase internal keys into the same warning sink. Use existing readable table headings; numerical validation remains unchanged. Not separately native-triggered."
+  },
+  {
+    "path": "src/rc_metastudio/continuous_data_dialog.py",
+    "line": 754,
+    "text": "return \"pval must be between 0 and 1\"",
+    "disposition": "finding R5-05; source-confirmed validation copy",
+    "classification": "Returned to QMessageBox.warning on simple/pre-post calculator validation (lines776\u2013785/996\u20131004); uses internal pval instead of P value. Not separately native-triggered in this audit."
+  },
+  {
+    "path": "src/rc_metastudio/continuous_data_dialog.py",
+    "line": 1330,
+    "text": "group1_data = dict(tmp[0])",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/continuous_data_dialog.py",
+    "line": 1331,
+    "text": "group2_data = dict(tmp[1])",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/continuous_data_dialog.py",
+    "line": 1347,
+    "text": "return (group1_data, group2_data, effect_data)",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/continuous_data_dialog.py",
+    "line": 1394,
+    "text": "(group1_data, group2_data, effect_data) = build_data_dicts()",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/continuous_data_dialog.py",
+    "line": 1404,
+    "text": "group1_data,",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/continuous_data_dialog.py",
+    "line": 1405,
+    "text": "group2_data,",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/continuous_data_dialog.py",
+    "line": 1410,
+    "text": "group1_data, group2_data, candidate_imputed",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/continuous_data_dialog.py",
+    "line": 1420,
+    "text": "group1_data, group2_data, effect_data, self.confidence_level",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/continuous_data_dialog.py",
+    "line": 1428,
+    "text": "if new_data(group1_data, group2_data, imputed):",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/continuous_data_dialog.py",
+    "line": 1469,
+    "text": "group1_data = {",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/continuous_data_dialog.py",
+    "line": 1474,
+    "text": "group2_data = {",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/continuous_data_dialog.py",
+    "line": 1484,
+    "text": "val = group1_data[field_name] if row == 0 else group2_data[field_name]",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/continuous_data_dialog.py",
+    "line": 1569,
+    "text": "if effect == \"TX Mean\":",
+    "classification": "Internal TX Mean compatibility/metric key. Native single-arm mean, coefficient, entered-effect and arm-name drives show contextual Mean/Coefficient/Estimate labels; do not rename stored keys. The dynamic main-window menu consumer still leaks this key (R5-09); keeping the internal key is justified, keeping its visible prefix is not.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/dataset_table_model.py",
+    "line": 862,
+    "text": "if data_type == CONTINUOUS and current_effect == \"TX Mean\" and not csv_schema:",
+    "classification": "Internal TX Mean compatibility/metric key. Native single-arm mean, coefficient, entered-effect and arm-name drives show contextual Mean/Coefficient/Estimate labels; do not rename stored keys. The dynamic main-window menu consumer still leaks this key (R5-09); keeping the internal key is justified, keeping its visible prefix is not.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/forms/analysis_setup_dialog.ui",
+    "line": 286,
+    "text": "<string>[default]</string>",
+    "classification": "Qt form seed normalized at runtime by plot_text/set_plot_text_value to empty input with Automatic placeholder; literal source seed is not the live label. Editor coverage is bounded by OUTCOMES.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/forms/analysis_setup_dialog.ui",
+    "line": 313,
+    "text": "<string>[default]</string>",
+    "classification": "Qt form seed normalized at runtime by plot_text/set_plot_text_value to empty input with Automatic placeholder; literal source seed is not the live label. Editor coverage is bounded by OUTCOMES.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/forms/analysis_setup_dialog.ui",
+    "line": 340,
+    "text": "<string>[default]</string>",
+    "classification": "Qt form seed normalized at runtime by plot_text/set_plot_text_value to empty input with Automatic placeholder; literal source seed is not the live label. Editor coverage is bounded by OUTCOMES.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/forms/analysis_setup_dialog.ui",
+    "line": 431,
+    "text": "<string>[default]</string>",
+    "classification": "Qt form seed normalized at runtime by plot_text/set_plot_text_value to empty input with Automatic placeholder; literal source seed is not the live label. Editor coverage is bounded by OUTCOMES.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/forms/analysis_setup_dialog.ui",
+    "line": 445,
+    "text": "<string>[default]</string>",
+    "classification": "Qt form seed normalized at runtime by plot_text/set_plot_text_value to empty input with Automatic placeholder; literal source seed is not the live label. Editor coverage is bounded by OUTCOMES.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/forms/analysis_setup_dialog.ui",
+    "line": 459,
+    "text": "<string>[default]</string>",
+    "classification": "Qt form seed normalized at runtime by plot_text/set_plot_text_value to empty input with Automatic placeholder; literal source seed is not the live label. Editor coverage is bounded by OUTCOMES.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/forms/analysis_setup_dialog.ui",
+    "line": 473,
+    "text": "<string>[default]</string>",
+    "classification": "Qt form seed normalized at runtime by plot_text/set_plot_text_value to empty input with Automatic placeholder; literal source seed is not the live label. Editor coverage is bounded by OUTCOMES.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/forms/edit_plot_dialog.ui",
+    "line": 197,
+    "text": "<string>[default]</string>",
+    "classification": "Qt form seed normalized at runtime by plot_text/set_plot_text_value to empty input with Automatic placeholder; literal source seed is not the live label. Editor coverage is bounded by OUTCOMES.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/forms/edit_plot_dialog.ui",
+    "line": 221,
+    "text": "<string>[default]</string>",
+    "classification": "Qt form seed normalized at runtime by plot_text/set_plot_text_value to empty input with Automatic placeholder; literal source seed is not the live label. Editor coverage is bounded by OUTCOMES.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/forms/edit_plot_dialog.ui",
+    "line": 362,
+    "text": "<string>[default]</string>",
+    "classification": "Qt form seed normalized at runtime by plot_text/set_plot_text_value to empty input with Automatic placeholder; literal source seed is not the live label. Editor coverage is bounded by OUTCOMES.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/forms/edit_plot_dialog.ui",
+    "line": 376,
+    "text": "<string>[default]</string>",
+    "classification": "Qt form seed normalized at runtime by plot_text/set_plot_text_value to empty input with Automatic placeholder; literal source seed is not the live label. Editor coverage is bounded by OUTCOMES.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/forms/edit_plot_dialog.ui",
+    "line": 390,
+    "text": "<string>[default]</string>",
+    "classification": "Qt form seed normalized at runtime by plot_text/set_plot_text_value to empty input with Automatic placeholder; literal source seed is not the live label. Editor coverage is bounded by OUTCOMES.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/forms/edit_plot_dialog.ui",
+    "line": 414,
+    "text": "<string>[default]</string>",
+    "classification": "Qt form seed normalized at runtime by plot_text/set_plot_text_value to empty input with Automatic placeholder; literal source seed is not the live label. Editor coverage is bounded by OUTCOMES.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/forms/funnel_plot_editor_dialog.ui",
+    "line": 59,
+    "text": "<item row=\"0\" column=\"1\"><widget class=\"QLineEdit\" name=\"x_label_edit\"><property name=\"text\"><string>[default]</string></property></widget></item>",
+    "classification": "Qt form seed normalized at runtime by plot_text/set_plot_text_value to empty input with Automatic placeholder; literal source seed is not the live label. Editor coverage is bounded by OUTCOMES.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/forms/funnel_plot_editor_dialog.ui",
+    "line": 63,
+    "text": "<item row=\"2\" column=\"1\"><widget class=\"QLineEdit\" name=\"x_lower_edit\"><property name=\"text\"><string>[default]</string></property></widget></item>",
+    "classification": "Qt form seed normalized at runtime by plot_text/set_plot_text_value to empty input with Automatic placeholder; literal source seed is not the live label. Editor coverage is bounded by OUTCOMES.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/forms/funnel_plot_editor_dialog.ui",
+    "line": 65,
+    "text": "<item row=\"3\" column=\"1\"><widget class=\"QLineEdit\" name=\"x_upper_edit\"><property name=\"text\"><string>[default]</string></property></widget></item>",
+    "classification": "Qt form seed normalized at runtime by plot_text/set_plot_text_value to empty input with Automatic placeholder; literal source seed is not the live label. Editor coverage is bounded by OUTCOMES.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/forms/funnel_plot_editor_dialog.ui",
+    "line": 67,
+    "text": "<item row=\"4\" column=\"1\"><widget class=\"QLineEdit\" name=\"x_ticks_edit\"><property name=\"text\"><string>[default]</string></property></widget></item>",
+    "classification": "Qt form seed normalized at runtime by plot_text/set_plot_text_value to empty input with Automatic placeholder; literal source seed is not the live label. Editor coverage is bounded by OUTCOMES.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/funnel_plot_editor_dialog.py",
+    "line": 335,
+    "text": "else self._value(\"axis.label\", \"[default]\")",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/funnel_plot_editor_dialog.py",
+    "line": 342,
+    "text": "self.x_lower_edit.setText(str(self._value(\"funnel.xlim.lower\", \"[default]\")))",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/funnel_plot_editor_dialog.py",
+    "line": 343,
+    "text": "self.x_upper_edit.setText(str(self._value(\"funnel.xlim.upper\", \"[default]\")))",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/funnel_plot_editor_dialog.py",
+    "line": 344,
+    "text": "ticks = self._value(\"funnel.xticks\", \"[default]\")",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/funnel_plot_editor_dialog.py",
+    "line": 349,
+    "text": "if field.text() == \"[default]\":",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/main_window.py",
+    "line": 1055,
+    "text": "metric_action = QAction(str(metric + \": \" + metric_names[metric]), self)",
+    "classification": "Dynamic display construction concatenates the internal TX Mean key with Mean. Fresh reachable native submenu confirms TX Mean: Mean on five continuous-family routes; R5-09.",
+    "disposition": "finding R5-09; visible display leak",
+    "discovery": "Attached-menu inventory and native hover/capture, not a literal Tx grep hit."
+  },
+  {
+    "path": "src/rc_metastudio/main_wizard.py",
+    "line": 405,
+    "text": "if metric == \"TX Mean\":",
+    "classification": "Internal TX Mean compatibility/metric key. Native single-arm mean, coefficient, entered-effect and arm-name drives show contextual Mean/Coefficient/Estimate labels; do not rename stored keys. The dynamic main-window menu consumer still leaks this key (R5-09); keeping the internal key is justified, keeping its visible prefix is not.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/main_wizard.py",
+    "line": 408,
+    "text": "metric_pretty_name if metric == \"TX Mean\" else metric + \": \" + metric_pretty_name, userData=str(metric)",
+    "classification": "Internal TX Mean compatibility/metric key. Native single-arm mean, coefficient, entered-effect and arm-name drives show contextual Mean/Coefficient/Estimate labels; do not rename stored keys. The dynamic main-window menu consumer still leaks this key (R5-09); keeping the internal key is justified, keeping its visible prefix is not.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/main_wizard.py",
+    "line": 731,
+    "text": "aliases[value.replace(\"tx a\", \"txa\").replace(\"tx b\", \"txb\")] = current",
+    "classification": "Legacy CSV input alias only. Fresh current/legacy CSV mapping has the same readable required fields; preserve historical import compatibility.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/main_wizard.py",
+    "line": 732,
+    "text": "if value.startswith(\"tx a \"):",
+    "classification": "Legacy CSV input alias only. Fresh current/legacy CSV mapping has the same readable required fields; preserve historical import compatibility.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/main_wizard.py",
+    "line": 733,
+    "text": "aliases.setdefault(\"tx \" + value[5:], current)",
+    "classification": "Legacy CSV input alias only. Fresh current/legacy CSV mapping has the same readable required fields; preserve historical import compatibility.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/main_wizard.py",
+    "line": 762,
+    "text": "groups=([\"Tx A\", \"Tx B\"] if legacy else dataset_info.get(\"groups\") or",
+    "classification": "Legacy CSV input alias only. Fresh current/legacy CSV mapping has the same readable required fields; preserve historical import compatibility.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/main_wizard.py",
+    "line": 815,
+    "text": "metric = \"Mean\" if info[\"effect\"] == \"TX Mean\" else meta_globals.ALL_METRIC_NAMES.get(info[\"effect\"], info[\"effect\"])",
+    "classification": "Internal TX Mean compatibility/metric key. Native single-arm mean, coefficient, entered-effect and arm-name drives show contextual Mean/Coefficient/Estimate labels; do not rename stored keys. The dynamic main-window menu consumer still leaks this key (R5-09); keeping the internal key is justified, keeping its visible prefix is not.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/meta_globals.py",
+    "line": 56,
+    "text": "CONTINUOUS_ONE_ARM_METRICS = [\"TX Mean\"]",
+    "classification": "Internal TX Mean compatibility/metric key. Native single-arm mean, coefficient, entered-effect and arm-name drives show contextual Mean/Coefficient/Estimate labels; do not rename stored keys. The dynamic main-window menu consumer still leaks this key (R5-09); keeping the internal key is justified, keeping its visible prefix is not.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/meta_globals.py",
+    "line": 60,
+    "text": "\"TX Mean\": \"Mean\",",
+    "classification": "Internal TX Mean compatibility/metric key. Native single-arm mean, coefficient, entered-effect and arm-name drives show contextual Mean/Coefficient/Estimate labels; do not rename stored keys. The dynamic main-window menu consumer still leaks this key (R5-09); keeping the internal key is justified, keeping its visible prefix is not.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/meta_globals.py",
+    "line": 67,
+    "text": "DEFAULT_CONTINUOUS_ONE_ARM = \"TX Mean\"",
+    "classification": "Internal TX Mean compatibility/metric key. Native single-arm mean, coefficient, entered-effect and arm-name drives show contextual Mean/Coefficient/Estimate labels; do not rename stored keys. The dynamic main-window menu consumer still leaks this key (R5-09); keeping the internal key is justified, keeping its visible prefix is not.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/plot_editor_dialog.py",
+    "line": 328,
+    "text": "self.col2_str_edit, self._params.get(\"fp_col2_str\", \"[default]\")",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/plot_editor_dialog.py",
+    "line": 354,
+    "text": "self._params.get(self._param_name(\"plot_lb\"), \"[default]\"),",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/plot_editor_dialog.py",
+    "line": 358,
+    "text": "self._params.get(self._param_name(\"plot_ub\"), \"[default]\"),",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/plot_editor_dialog.py",
+    "line": 361,
+    "text": "self._set_text(self.x_ticks_le, self._params.get(ticks_name, \"[default]\"))",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/plot_editor_dialog.py",
+    "line": 393,
+    "text": "self._params.get(\"fp_sroc_plot_lb\", \"[default]\"),",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/plot_editor_dialog.py",
+    "line": 397,
+    "text": "self._params.get(\"fp_sroc_plot_ub\", \"[default]\"),",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/plot_editor_dialog.py",
+    "line": 401,
+    "text": "self._params.get(\"fp_sroc_yticks\", \"[default]\"),",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/plot_editor_dialog.py",
+    "line": 478,
+    "text": "if automatic and value in (None, \"\", \"[default]\"):",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/plot_editor_dialog.py",
+    "line": 492,
+    "text": "return qt_text.to_native_text(widget.text()) or \"[default]\"",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/plot_editor_dialog.py",
+    "line": 496,
+    "text": "return \"\" if value in (None, \"[default]\") else value",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/plot_editor_dialog.py",
+    "line": 542,
+    "text": "\"fp_col2_str\": qt_text.to_native_text(plot_text_value(self.col2_str_edit)) or \"[default]\",",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/plot_text.py",
+    "line": 12,
+    "text": "(\"\", \"[default]\", \"<default>\", \"(default)\", \"default\")",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/plot_text.py",
+    "line": 36,
+    "text": "if widget.text() == \"[default]\":",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/plot_text.py",
+    "line": 37,
+    "text": "set_plot_text_value(widget, \"[default]\")",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/plot_text.py",
+    "line": 52,
+    "text": "if text == \"[default]\":",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/plot_text.py",
+    "line": 77,
+    "text": "return widget.text() or (\"[default]\" if widget.placeholderText() == \"Automatic\" else \"\")",
+    "classification": "Internal Automatic/unset sentinel or normalization branch. Native setup/editor controls normalize the display to Automatic; explicit values remain editable.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/project_domain.py",
+    "line": 128,
+    "text": "\"continuous\": frozenset({\"MD\", \"SMD\", \"TX Mean\"}),",
+    "classification": "Internal TX Mean compatibility/metric key. Native single-arm mean, coefficient, entered-effect and arm-name drives show contextual Mean/Coefficient/Estimate labels; do not rename stored keys. The dynamic main-window menu consumer still leaks this key (R5-09); keeping the internal key is justified, keeping its visible prefix is not.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/project_domain.py",
+    "line": 131,
+    "text": "_ONE_ARM_METRICS = frozenset({\"PR\", \"PLN\", \"PLO\", \"PAS\", \"PFT\", \"TX Mean\"})",
+    "classification": "Internal TX Mean compatibility/metric key. Native single-arm mean, coefficient, entered-effect and arm-name drives show contextual Mean/Coefficient/Estimate labels; do not rename stored keys. The dynamic main-window menu consumer still leaks this key (R5-09); keeping the internal key is justified, keeping its visible prefix is not.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/project_schemas/v1/project.schema.json",
+    "line": 127,
+    "text": "\"metric\": {\"enum\": [\"OR\", \"RD\", \"RR\", \"AS\", \"YUQ\", \"YUY\", \"PR\", \"PLN\", \"PLO\", \"PAS\", \"PFT\", \"MD\", \"SMD\", \"TX Mean\", \"Sens\", \"Spec\", \"PLR\", \"NLR\", \"DOR\"]},",
+    "classification": "Persisted metric enum, not display text. Historical projects must retain stored identifiers.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/project_schemas/v1/state.schema.json",
+    "line": 18,
+    "text": "\"enum\": [\"OR\", \"RD\", \"RR\", \"AS\", \"YUQ\", \"YUY\", \"PR\", \"PLN\", \"PLO\", \"PAS\", \"PFT\", \"MD\", \"SMD\", \"TX Mean\", \"Sens\", \"Spec\", \"PLR\", \"NLR\", \"DOR\", null]",
+    "classification": "Persisted metric enum, not display text. Historical projects must retain stored identifiers.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/project_schemas/v2/project.schema.json",
+    "line": 407,
+    "text": "\"TX Mean\",",
+    "classification": "Persisted metric enum, not display text. Historical projects must retain stored identifiers.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/project_schemas/v2/state.schema.json",
+    "line": 54,
+    "text": "\"TX Mean\",",
+    "classification": "Persisted metric enum, not display text. Historical projects must retain stored identifiers.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/r_bridge.py",
+    "line": 283,
+    "text": "group1_data, group2_data, effect_data, confidence_level",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/r_bridge.py",
+    "line": 286,
+    "text": "remove_entries_with_value(None, group1_data)",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/r_bridge.py",
+    "line": 287,
+    "text": "remove_entries_with_value(None, group2_data)",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/r_bridge.py",
+    "line": 290,
+    "text": "dataf_grp1 = _r_function(\"data.frame\")(**group1_data)",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/r_bridge.py",
+    "line": 291,
+    "text": "dataf_grp2 = _r_function(\"data.frame\")(**group2_data)",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/r_bridge.py",
+    "line": 631,
+    "text": "group1_nonevents = [",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/r_bridge.py",
+    "line": 637,
+    "text": "group2_events, group2_nonevents = [0], [0]",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/r_bridge.py",
+    "line": 642,
+    "text": "group2_nonevents = [",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/r_bridge.py",
+    "line": 645,
+    "text": "group2_events = g2_events",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/r_bridge.py",
+    "line": 650,
+    "text": "\"g1O2\": _r_numeric_vector(group1_nonevents),",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/r_bridge.py",
+    "line": 651,
+    "text": "\"g2O1\": _r_numeric_vector(group2_events),",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  },
+  {
+    "path": "src/rc_metastudio/r_bridge.py",
+    "line": 652,
+    "text": "\"g2O2\": _r_numeric_vector(group2_nonevents),",
+    "classification": "Internal group1_data/group2_data/group event/non-event numerical storage, typed service argument or R-bridge payload. Not a UI label; actual current arm-name display and menu traversal were driven separately.",
+    "disposition": "justified internal-only"
+  }
+]

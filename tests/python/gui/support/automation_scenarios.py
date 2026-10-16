@@ -101,8 +101,8 @@ from rc_metastudio.r_call_serialization import serialized_r_call
 from rc_metastudio.result_text_identity import normalize_packaged_summary_identity
 
 PACKAGED_SUMMARY_SHA256_BY_SAMPLE = {
-    "amino.rcms": "d37d0aa920c9ae2397b1c44d3fbe9f91d5d89b61fad43ced991148f2e51245d0",
-    "BCG.rcms": "2cb1cb0b867b7280a8843f633a9a040f7810d4c9e0ab91ff6333d8110fc41933",
+    "amino.rcms": "61ea84ba73eab657282ceabdf3ee1f29ab0ed55a1be574023017bc490d279ab5",
+    "BCG.rcms": "b47d4f5347252350c0c6a5507221a41c3a65bbbedacfe34e0dd164c5f75c93cb",
 }
 AUTOMATION_SMOKE_LOG_ENV = "RCMS_AUTOMATION_SMOKE_LOG"
 ADAPTIVE_LAYOUT_EVIDENCE_LOG_ENV = "RCMS_ADAPTIVE_LAYOUT_EVIDENCE_LOG"
@@ -1747,6 +1747,10 @@ def _assert_visible_children_are_laid_out(page, scenario_name):
         object_name = child.objectName()
         if not object_name or object_name.startswith("qt_"):
             continue
+        if isinstance(child, QtWidgets.QLabel) and not child.text():
+            pixmap = child.pixmap()
+            if pixmap is None or pixmap.isNull():
+                continue
         if child.width() <= 0 or child.height() <= 0:
             raise SystemExit(
                 "Wizard child was not laid out in %s: %s"
