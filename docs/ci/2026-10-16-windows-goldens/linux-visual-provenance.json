@@ -1,0 +1,61 @@
+{
+  "before": "build/qt6-verification/golden-compatibility-windows-review-linux",
+  "current": "build/qt6-verification/golden-compatibility-ci-windows-followup",
+  "rows": [
+    {
+      "id": "amino-binary-cumulative",
+      "texts_identical": true,
+      "plots_identical": true
+    },
+    {
+      "id": "amino-binary-leave-one-out",
+      "texts_identical": true,
+      "plots_identical": true
+    },
+    {
+      "id": "amino-binary-meta-regression",
+      "texts_identical": true,
+      "plots_identical": true
+    },
+    {
+      "id": "amino-binary-random",
+      "texts_identical": true,
+      "plots_identical": true
+    },
+    {
+      "id": "amino-binary-subgroup",
+      "texts_identical": true,
+      "plots_identical": true
+    },
+    {
+      "id": "continuous-cumulative",
+      "texts_identical": true,
+      "plots_identical": true
+    },
+    {
+      "id": "continuous-leave-one-out",
+      "texts_identical": true,
+      "plots_identical": true
+    },
+    {
+      "id": "continuous-meta-regression",
+      "texts_identical": true,
+      "plots_identical": true
+    },
+    {
+      "id": "continuous-random",
+      "texts_identical": true,
+      "plots_identical": true
+    },
+    {
+      "id": "continuous-subgroup",
+      "texts_identical": true,
+      "plots_identical": true
+    },
+    {
+      "id": "lymph-diagnostic-random-dor",
+      "texts_identical": true,
+      "plots_identical": true
+    }
+  ]
+}

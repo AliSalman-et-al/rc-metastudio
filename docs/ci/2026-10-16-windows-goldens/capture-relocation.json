@@ -1,0 +1,68 @@
+[
+  {
+    "id": "continuous-subgroup",
+    "original_bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/continuous-subgroup/golden_continuous_subgroup_forest.png",
+    "local_bundle_path": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification/windows-golden-review/reviewed-0644ca2/artifacts/continuous-subgroup/golden_continuous_subgroup_forest.png",
+    "sha256": "c9fd460b5e5f804f5936129bb6f7050b9f2fe9035df22997b5287ef6cd21402f"
+  },
+  {
+    "id": "continuous-meta-regression",
+    "original_bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/continuous-meta-regression/reg.png",
+    "local_bundle_path": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification/windows-golden-review/reviewed-0644ca2/artifacts/continuous-meta-regression/reg.png",
+    "sha256": "27420e4d307b4ff86b0ea91945567823aa69fd8f3e0aa08ccd2eb4f43a1cb0aa"
+  },
+  {
+    "id": "amino-binary-meta-regression",
+    "original_bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/amino-binary-meta-regression/reg.png",
+    "local_bundle_path": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification/windows-golden-review/reviewed-0644ca2/artifacts/amino-binary-meta-regression/reg.png",
+    "sha256": "5c1c8ef9f6dd7d29c9ed9743b9c3754fd9a077dd5b4236a1a6acd131cf10d132"
+  },
+  {
+    "id": "amino-binary-random",
+    "original_bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/amino-binary-random/golden_amino_forest.png",
+    "local_bundle_path": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification/windows-golden-review/reviewed-0644ca2/artifacts/amino-binary-random/golden_amino_forest.png",
+    "sha256": "ab008010b129ab226f6e3fccdfd541573e051ba254290bdecdfdf8b75f58bdee"
+  },
+  {
+    "id": "lymph-diagnostic-random-dor",
+    "original_bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/lymph-diagnostic-random-dor/golden_lymph_forest_dor.png",
+    "local_bundle_path": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification/windows-golden-review/reviewed-0644ca2/artifacts/lymph-diagnostic-random-dor/golden_lymph_forest_dor.png",
+    "sha256": "7635f19a4e22ff997506fd74c3b140b6abeef77b67fb744369cff4bb26e8d081"
+  },
+  {
+    "id": "amino-binary-subgroup",
+    "original_bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/amino-binary-subgroup/golden_amino_subgroup_forest.png",
+    "local_bundle_path": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification/windows-golden-review/reviewed-0644ca2/artifacts/amino-binary-subgroup/golden_amino_subgroup_forest.png",
+    "sha256": "ff860ff0ea76669c3efc9cf3dc62c5659c30a37741608463003cb03d20edc315"
+  },
+  {
+    "id": "continuous-random",
+    "original_bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/continuous-random/golden_continuous_forest.png",
+    "local_bundle_path": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification/windows-golden-review/reviewed-0644ca2/artifacts/continuous-random/golden_continuous_forest.png",
+    "sha256": "b587ed85fb6d57b3b69e7995158dbbd35d0787640e2c1703f0b80e3de5f9fc75"
+  },
+  {
+    "id": "amino-binary-cumulative",
+    "original_bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/amino-binary-cumulative/golden_amino_cumulative_forest.png",
+    "local_bundle_path": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification/windows-golden-review/reviewed-0644ca2/artifacts/amino-binary-cumulative/golden_amino_cumulative_forest.png",
+    "sha256": "19c97885056842cdd761124b32a2b53e9a8f55f5894a19d6a3adacac73819fbe"
+  },
+  {
+    "id": "continuous-cumulative",
+    "original_bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/continuous-cumulative/golden_continuous_cumulative_forest.png",
+    "local_bundle_path": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification/windows-golden-review/reviewed-0644ca2/artifacts/continuous-cumulative/golden_continuous_cumulative_forest.png",
+    "sha256": "f4bed2af5596543f4f5142e414a1e56758006d290b05c6cd6fa023d1da5ffecd"
+  },
+  {
+    "id": "continuous-leave-one-out",
+    "original_bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/continuous-leave-one-out/golden_continuous_loo_forest.png",
+    "local_bundle_path": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification/windows-golden-review/reviewed-0644ca2/artifacts/continuous-leave-one-out/golden_continuous_loo_forest.png",
+    "sha256": "82f25dc4e23bc86b3d956174ed1fdfd22c5053ea5335db332ca275cf3f072374"
+  },
+  {
+    "id": "amino-binary-leave-one-out",
+    "original_bundle_path": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/amino-binary-leave-one-out/golden_amino_loo_forest.png",
+    "local_bundle_path": "/home/ali/Documents/Code/rc-metastudio/build/qt6-verification/windows-golden-review/reviewed-0644ca2/artifacts/amino-binary-leave-one-out/golden_amino_loo_forest.png",
+    "sha256": "31f3682410c6b2525483e90b232ab6d849cf0dbc20dd56729efac9ac9e649429"
+  }
+]
