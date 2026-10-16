@@ -664,3 +664,14 @@ original review1 workflow pass; the real-R fontless negative doctor fails at the
 intended readiness assertion. Production UI, R source, fits, report/figure
 production, numerical oracles, thresholds and bounds are unchanged. Every actual
 final-head GitHub check is still required before squash merge.
+
+
+### Console fixture newline portability
+
+a030dc3's Windows source check passed 429 cases and failed the two new console
+fixtures: TextIOWrapper translated LF to CRLF while their exact assertion expected
+LF. The character-escaping behavior passed. Pin the test-owned stream to LF;
+retain the original exact encoding and unchanged-log-byte assertions. The focused
+replay passes both cases. No production code, gate scope or numerical/visual
+assertion changes. CI-CONSOLE-NEWLINE.json binds the actual failed job and replay.
+The final head must still pass all required checks.

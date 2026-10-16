@@ -1,0 +1,18 @@
+{
+  "head": "a030dc315baa949775b54d13ae54a07e2ada77c3",
+  "job": 116774155137,
+  "job_log": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/source-a030dc3.log",
+    "sha256": "3f82e4d958b586976016c16643f704cbbef41f262f233e5bfc874c8e6f5bf0e6"
+  },
+  "checks": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/checks-a030-source-failure.json",
+    "sha256": "54e27fe8cebef4070f4ab45bd0cc06689e98bf97f1b93a2f7015748e9543de9c"
+  },
+  "failure": "Two console-fixture assertions compare LF with Windows TextIOWrapper CRLF translation. Encoding behavior succeeded.",
+  "fix": "Pin the fixture TextIOWrapper newline to LF; retain exact content and original-log byte assertions. No production change.",
+  "replay": {
+    "path": "docs/ux-audit/2026-10-16-round6-release-fixes/raw/lexer/raw/console-newline-final.json",
+    "sha256": "40c1f4c659cee7da41d789a9557a5124c4d1c5e1654314306efe25f30b456870"
+  }
+}

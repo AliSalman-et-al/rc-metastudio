@@ -11,7 +11,7 @@ def test_failed_desktop_transcripts_survive_console_encoding(monkeypatch, tmp_pa
     for name in ("stdout.log", "stderr.log"):
         (tmp_path / name).write_bytes(raw)
     output = io.BytesIO()
-    console = io.TextIOWrapper(output, encoding=encoding)
+    console = io.TextIOWrapper(output, encoding=encoding, newline="\n")
     monkeypatch.setattr("sys.stdout", console)
 
     _print_failure_transcripts(tmp_path)

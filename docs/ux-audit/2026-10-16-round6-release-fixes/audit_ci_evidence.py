@@ -84,6 +84,7 @@ record = {
     'package_report_identities': binding(HERE / 'CI-PACKAGE-IDENTITIES.json'),
     'windows_probes': binding(HERE / 'CI-WINDOWS-PROBES.json'),
     'windows_font_followup': binding(HERE / 'CI-FONTS.json'),
+    'console_newline_followup': binding(HERE / 'CI-CONSOLE-NEWLINE.json'),
     'installed_source': binding(RAW / 'INSTALLED-SOURCE.json'),
     'golden_oracle_files_unchanged_from_c62df31': True,
     'r_source_unchanged_from_full_profile': True,

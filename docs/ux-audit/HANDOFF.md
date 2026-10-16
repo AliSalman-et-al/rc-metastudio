@@ -441,3 +441,10 @@ font-aware doctor and original review1 workflow. A real-R fontless negative driv
 fails at the intended readiness assertion; startup-misconfigured probes remain
 unqualified. The next committed head must pass every actual GitHub check and
 produce readable Windows font evidence before the authorised squash merge.
+
+
+The a030dc3 Windows source check exposed LF/CRLF translation in the new console
+fixture (429 pass / two fail). Pinning that test-owned stream to LF preserves
+its exact character/log-byte assertions; both local cases pass. No production
+change. CI-CONSOLE-NEWLINE.json retains the failure and replay. The completing
+thread must monitor every check on the following committed head before merge.

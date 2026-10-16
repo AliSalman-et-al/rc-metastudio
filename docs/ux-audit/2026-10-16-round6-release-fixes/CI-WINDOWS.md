@@ -98,3 +98,14 @@ Strict Windows typing passes; source/GUI/comparator/package contracts pass
 **893 cases / 16 existing skips**; strict goldens and **415 exact fields** pass
 again. The final actual Windows full-R run, readable-font evidence and every
 required final-head check remain necessary before merge.
+
+
+### Console fixture newline portability
+
+a030dc3's Windows source check passed 429 cases and failed the two new console
+fixtures: TextIOWrapper translated LF to CRLF while their exact assertion expected
+LF. The character-escaping behavior passed. Pin the test-owned stream to LF;
+retain the original exact encoding and unchanged-log-byte assertions. The focused
+replay passes both cases. No production code, gate scope or numerical/visual
+assertion changes. CI-CONSOLE-NEWLINE.json binds the actual failed job and replay.
+The final head must still pass all required checks.

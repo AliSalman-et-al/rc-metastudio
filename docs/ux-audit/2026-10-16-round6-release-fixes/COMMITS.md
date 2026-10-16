@@ -56,3 +56,9 @@ Each listed implementation/evidence commit was immediately followed by an ordina
 - This follow-up — `fix: load real fonts for Windows desktop verification`; binds
   the rejected original frame, fail-closed glyph readiness and console-output
   regression proof. Immediate ordinary fast-forward push required.
+
+- a030dc3 — load real fonts for Windows desktop verification; immediate
+  fast-forward push succeeded. Its Windows source check exposed the test-owned
+  console's platform newline translation; the two exact fixture assertions remain.
+- This commit — `test: pin console fixture newline translation`; no production
+  change, immediate ordinary fast-forward push required.
