@@ -1,0 +1,11 @@
+--- shared archive / refreshed Linux text
++++ actual Windows strict capture 8f5e1f2
+@@ -9,7 +9,7 @@
+  Overall         19     0.770                 0.485                 1.222           0.236    0.267   -1.111
+ 
+ Heterogeneity
+- Subgroups            Q  df  p-value     I²     τ²
++ Subgroups            Q  df  p-value     I²     t²
+  Subgroup early  19.929   9    0.018  54.8%  0.823
+  Subgroup late   13.236   8    0.104  39.6%  0.236
+  Overall         33.360  18    0.015  46.0%  0.378

@@ -2,7 +2,7 @@
 
 Branch: `ux/audit-improvements` → `master`; PR [#537](https://github.com/AliSalman-et-al/rc-metastudio/pull/537). Earlier sections are historical checkpoints; the final section owns the current release status.
 
-**Current release handoff:** the fresh 035ebd3 full profile passed and all retained artifacts were audited. Final qualification-only Windows evidence repairs and post-fix gates pass locally; every final-head GitHub check must pass before the authorised squash merge. The completing thread retains the exact CI/merge/post-merge receipts. See the final section below.
+**Current release handoff:** the Windows strict capture is now retained and all fourteen drifts are classified: ten intended-presentation candidates and four real defects. Product Unicode report and SVG fallback repairs are pushed; actual latest-head Windows confirmation and a detached final profile remain due. No golden has been refreshed. The required historical Linux plot-refresh commits do not exist, so a reviewer decision on equivalent same-source capture evidence is pending. See the final section below.
 
 
 ## Process the user asked for
@@ -493,3 +493,50 @@ Windows differences remain presumptive product defects pending exact text.
 No intended/defect classification or visual inspection is claimed from missing
 outputs. The completing agent must inspect the new CI evidence and require every
 latest-head check before any authorised squash merge and post-merge verification.
+
+
+## Windows golden review — classification complete, root fixes pushed
+
+Source commits `d52162d` (Unicode report formatting) and `d3c5030` (explicit
+Unicode SVG fallback) were immediately fast-forward pushed. The earlier `8f5e1f2`
+upload repair recovered the actual strict capture from Windows run 38848117604;
+its merge-ref tree equals the branch tree and all eleven PNG hashes validate.
+All 415 original Windows numerical fields are exact.
+
+[WINDOWS-GOLDENS](2026-10-16-round6-release-fixes/WINDOWS-GOLDENS.md) and
+[WINDOWS-VISUAL-REVIEW](2026-10-16-round6-release-fixes/WINDOWS-VISUAL-REVIEW.json)
+retain all eleven personally inspected old/new Windows pairs, current Linux/Windows
+comparisons, implementation commits and three exact report diffs. Ten plots show
+intended header/axis/density/null-guide changes. Three report sections lose tau
+and subscript-zero characters through native R formatting/console capture; the
+diagnostic PNG separately renders U+2080 as a missing-glyph box despite correct
+SVG Unicode. None of those defective outputs may be refreshed.
+
+Report construction now returns Unicode strings directly and pads by display
+width. Print methods retain the same formatting. Canonical SVG normalization
+retains the primary family and appends a Unicode symbol fallback once. The
+stronger report and real SVG contracts failed before their respective repairs
+and pass afterward. Normal and C-locale strict goldens pass; all 415 original
+fields remain exact, maximum difference zero. All eleven Linux PNGs and report
+texts are byte-identical across both repairs. Native combined diagnostics and
+four-format forest exports pass with hash-verified retained evidence. Actual
+latest-head Windows report text and the glyph-correct PNG still require review.
+See [WINDOWS-REPORT-FIX](2026-10-16-round6-release-fixes/WINDOWS-REPORT-FIX.json) and
+[WINDOWS-GLYPH-FIX](2026-10-16-round6-release-fixes/WINDOWS-GLYPH-FIX.json).
+
+The first fresh local report-fix attempt completed all three child stages with
+exit zero (123 desktop, nine bridge, R check Status OK, strict goldens, 91
+authorities and doctor), and its summary passed. Its outer terminal wrapper
+returned 143, so the aggregate attempt remains **unqualified**. The stage audit
+verified 124 manifests / 9469 retained files, without promoting
+that wrapper result. A detached, hard-bounded final fresh profile is next; retain
+its exact receipt and audit every expected child/artifact before claiming success.
+
+The historical-refresh prerequisite remains unresolved: rounds 3–6 archive
+commits refreshed text only, never these plot hashes. A reviewer must explicitly
+permit reviewed same-production captures in place of nonexistent matching Linux
+plot-refresh commits. The pending question does not authorise any refresh. No
+numerical contract, tolerance, skip, exception or statistical dependency changed.
+Do not merge until every required final-head check passes and all actual Windows
+outputs are reviewed. If the policy remains unresolved, stop with the precise
+blocker. No merge, tag, release or repository-setting change has occurred.

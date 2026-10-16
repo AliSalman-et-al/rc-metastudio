@@ -1,0 +1,15 @@
+--- shared archive / refreshed Linux text
++++ actual Windows strict capture 8f5e1f2
+@@ -5,10 +5,10 @@
+  9.648                    5.529                16.835  < 0.001
+ 
+ Odds Ratio -Heterogeneity
+- Q       df  p-value     I²     τ²
++ Q       df  p-value     I²     t²
+  42.259  16  < 0.001  62.1%  0.704
+ 
+-Odds Ratio -Test for overall effect (H₀: diagnostic Odds Ratio = 1)
++Odds Ratio -Test for overall effect (H0: diagnostic Odds Ratio = 1)
+  Z      p-value
+  7.980  < 0.001
+ 
