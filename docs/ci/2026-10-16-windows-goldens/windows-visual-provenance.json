@@ -1,0 +1,73 @@
+{
+  "run": 38854829785,
+  "checkout": "6a5c7d1c0fe78c0c84e7b18f1be8eec7107ae884",
+  "checkout_tree_equals_master": "29084f0",
+  "rows": [
+    {
+      "id": "amino-binary-cumulative",
+      "old_png_sha256": "19c97885056842cdd761124b32a2b53e9a8f55f5894a19d6a3adacac73819fbe",
+      "new_png_sha256": "19c97885056842cdd761124b32a2b53e9a8f55f5894a19d6a3adacac73819fbe",
+      "unchanged": true
+    },
+    {
+      "id": "amino-binary-leave-one-out",
+      "old_png_sha256": "31f3682410c6b2525483e90b232ab6d849cf0dbc20dd56729efac9ac9e649429",
+      "new_png_sha256": "31f3682410c6b2525483e90b232ab6d849cf0dbc20dd56729efac9ac9e649429",
+      "unchanged": true
+    },
+    {
+      "id": "amino-binary-meta-regression",
+      "old_png_sha256": "5c1c8ef9f6dd7d29c9ed9743b9c3754fd9a077dd5b4236a1a6acd131cf10d132",
+      "new_png_sha256": "5c1c8ef9f6dd7d29c9ed9743b9c3754fd9a077dd5b4236a1a6acd131cf10d132",
+      "unchanged": true
+    },
+    {
+      "id": "amino-binary-random",
+      "old_png_sha256": "ab008010b129ab226f6e3fccdfd541573e051ba254290bdecdfdf8b75f58bdee",
+      "new_png_sha256": "ab008010b129ab226f6e3fccdfd541573e051ba254290bdecdfdf8b75f58bdee",
+      "unchanged": true
+    },
+    {
+      "id": "amino-binary-subgroup",
+      "old_png_sha256": "ff860ff0ea76669c3efc9cf3dc62c5659c30a37741608463003cb03d20edc315",
+      "new_png_sha256": "ff860ff0ea76669c3efc9cf3dc62c5659c30a37741608463003cb03d20edc315",
+      "unchanged": true
+    },
+    {
+      "id": "continuous-cumulative",
+      "old_png_sha256": "f4bed2af5596543f4f5142e414a1e56758006d290b05c6cd6fa023d1da5ffecd",
+      "new_png_sha256": "f4bed2af5596543f4f5142e414a1e56758006d290b05c6cd6fa023d1da5ffecd",
+      "unchanged": true
+    },
+    {
+      "id": "continuous-leave-one-out",
+      "old_png_sha256": "82f25dc4e23bc86b3d956174ed1fdfd22c5053ea5335db332ca275cf3f072374",
+      "new_png_sha256": "82f25dc4e23bc86b3d956174ed1fdfd22c5053ea5335db332ca275cf3f072374",
+      "unchanged": true
+    },
+    {
+      "id": "continuous-meta-regression",
+      "old_png_sha256": "27420e4d307b4ff86b0ea91945567823aa69fd8f3e0aa08ccd2eb4f43a1cb0aa",
+      "new_png_sha256": "27420e4d307b4ff86b0ea91945567823aa69fd8f3e0aa08ccd2eb4f43a1cb0aa",
+      "unchanged": true
+    },
+    {
+      "id": "continuous-random",
+      "old_png_sha256": "b587ed85fb6d57b3b69e7995158dbbd35d0787640e2c1703f0b80e3de5f9fc75",
+      "new_png_sha256": "b587ed85fb6d57b3b69e7995158dbbd35d0787640e2c1703f0b80e3de5f9fc75",
+      "unchanged": true
+    },
+    {
+      "id": "continuous-subgroup",
+      "old_png_sha256": "c9fd460b5e5f804f5936129bb6f7050b9f2fe9035df22997b5287ef6cd21402f",
+      "new_png_sha256": "c9fd460b5e5f804f5936129bb6f7050b9f2fe9035df22997b5287ef6cd21402f",
+      "unchanged": true
+    },
+    {
+      "id": "lymph-diagnostic-random-dor",
+      "old_png_sha256": "63ed69abf278b29226cfb7ae26a5b3ee3fc9c269f2a6809e31ffa3ce4c807980",
+      "new_png_sha256": "7635f19a4e22ff997506fd74c3b140b6abeef77b67fb744369cff4bb26e8d081",
+      "unchanged": false
+    }
+  ]
+}

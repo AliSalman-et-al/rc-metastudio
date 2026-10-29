@@ -1,0 +1,11 @@
+{
+  "command": "source docs/ux-audit/2026-10-14-round3/ENV.sh; uv run python scripts/verify_golden_compatibility.py --root . --output-root build/qt6-verification/golden-compatibility-ci-windows-followup",
+  "revision": "29084f086dc6d9b3b5ef21f180d435d15bad0fef",
+  "counts": {
+    "pass": 461,
+    "accepted_exception": 13
+  },
+  "passed": true,
+  "comparison_report_sha256": "122b2fcd9dc6ef862c218b9ea20052f2798384eb8626ff521abf5b49fb2b81ac",
+  "numerical_command": "RCMS_AUDIT_DIR=docs/ci/2026-10-16-windows-goldens uv run python docs/ux-audit/2026-10-14-round3/numerical_equivalence.py --capture build/qt6-verification/golden-compatibility-ci-windows-followup"
+}

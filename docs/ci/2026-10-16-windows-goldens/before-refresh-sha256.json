@@ -1,0 +1,8 @@
+{
+  "capture-manifest.json": "c9e8e26e7a847ed02041c1dd281af2f0f86b071c0b0c1ed7e7d0aea2ecaa9fc8",
+  "exceptions.json": "9db851142fe3c73c8a37507a89eb63083c96d26cada8bfeac7dc7be05494ea05",
+  "manifest.json": "03902fd215e29fb6ded87036c18705f2839a905c9243feac01244102845d7b55",
+  "numeric-contract.json": "556c580508bbaef4bf3c15484aa86a05c7d2d796617adbdc19c4260a486120fb",
+  "observed-golden-baseline.zip": "475c1326ee9989b5d165e53c920d854874860d2e3fac7ea8da604d5372efce76",
+  "plot-descriptors.json": "fb10edd31c1f912e94daff6d6d7d94b7f94e295696d3ea2a0d1d2261fa96b38d"
+}

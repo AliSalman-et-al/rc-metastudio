@@ -1,10 +1,10 @@
 {
   "contract": "golden-plot-descriptors",
-  "oracle_sha256": "475c1326ee9989b5d165e53c920d854874860d2e3fac7ea8da604d5372efce76",
+  "oracle_sha256": "69d344f72ada89c092e3c4fca02430df40c567dc8417a24f02e0501dd13b4b9d",
   "rows": [
     {
       "artifact_label": "Forest Plot",
-      "artifact_oracle_sha256": "164e8cc8c778deba71617edc34ba3d911a002e321b35339ce22abdbaf64c6672",
+      "artifact_oracle_sha256": "ab008010b129ab226f6e3fccdfd541573e051ba254290bdecdfdf8b75f58bdee",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -22,7 +22,7 @@
     },
     {
       "artifact_label": "Forest Plot",
-      "artifact_oracle_sha256": "0cd53bb9930a07a3b088668ec107486f94a0798429a03de1205d8e6c34cb48bd",
+      "artifact_oracle_sha256": "b587ed85fb6d57b3b69e7995158dbbd35d0787640e2c1703f0b80e3de5f9fc75",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -40,7 +40,7 @@
     },
     {
       "artifact_label": "Odds Ratio Forest Plot",
-      "artifact_oracle_sha256": "718f65525d776c5e5c2711f24b5bc0d89658bd5b1a64f82628663b613280978a",
+      "artifact_oracle_sha256": "7635f19a4e22ff997506fd74c3b140b6abeef77b67fb744369cff4bb26e8d081",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -58,7 +58,7 @@
     },
     {
       "artifact_label": "Cumulative Forest Plot",
-      "artifact_oracle_sha256": "64a9c8bb7ed0df95779788b6b40f8a16e074288eb65c83346b0e4f85bdae24fb",
+      "artifact_oracle_sha256": "19c97885056842cdd761124b32a2b53e9a8f55f5894a19d6a3adacac73819fbe",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -76,7 +76,7 @@
     },
     {
       "artifact_label": "Leave-one-out Forest plot",
-      "artifact_oracle_sha256": "3cb39c931be219391356667099688db596a55549e67b086f42bbfee9c99f25ed",
+      "artifact_oracle_sha256": "31f3682410c6b2525483e90b232ab6d849cf0dbc20dd56729efac9ac9e649429",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -94,7 +94,7 @@
     },
     {
       "artifact_label": "Cumulative Forest Plot",
-      "artifact_oracle_sha256": "718d957c84a594c0bb7994c81f9c7ce556997cc6a740f79435bc0ee1693680c8",
+      "artifact_oracle_sha256": "f4bed2af5596543f4f5142e414a1e56758006d290b05c6cd6fa023d1da5ffecd",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -112,7 +112,7 @@
     },
     {
       "artifact_label": "Leave-one-out Forest plot",
-      "artifact_oracle_sha256": "57d15517e1b65ba587ffea8f8c772a9a754ea24f73df3f18e5ace3e19109bec4",
+      "artifact_oracle_sha256": "82f25dc4e23bc86b3d956174ed1fdfd22c5053ea5335db332ca275cf3f072374",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -130,7 +130,7 @@
     },
     {
       "artifact_label": "Regression Plot",
-      "artifact_oracle_sha256": "965c6e07398ccb043757fac9ab0dadf74e9f8c978c552e392c69297e3b9db03b",
+      "artifact_oracle_sha256": "5c1c8ef9f6dd7d29c9ed9743b9c3754fd9a077dd5b4236a1a6acd131cf10d132",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -148,7 +148,7 @@
     },
     {
       "artifact_label": "Regression Plot",
-      "artifact_oracle_sha256": "acb7d8ca2746e7a7b1d1fdbaef0e930a55011e3187e43e6f4ffd5f34de554bf6",
+      "artifact_oracle_sha256": "27420e4d307b4ff86b0ea91945567823aa69fd8f3e0aa08ccd2eb4f43a1cb0aa",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -166,7 +166,7 @@
     },
     {
       "artifact_label": "Subgroup Forest Plot",
-      "artifact_oracle_sha256": "7821a8824941c0a6b128232f898a98f493284597feb9c5d07dad2f3986b08bc5",
+      "artifact_oracle_sha256": "ff860ff0ea76669c3efc9cf3dc62c5659c30a37741608463003cb03d20edc315",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -184,7 +184,7 @@
     },
     {
       "artifact_label": "Subgroups Forest Plot",
-      "artifact_oracle_sha256": "f14ede72848707b45391b164e397664dfcc662eafafa2c631f3475411636d66f",
+      "artifact_oracle_sha256": "c9fd460b5e5f804f5936129bb6f7050b9f2fe9035df22997b5287ef6cd21402f",
       "capability": {
         "composition": "single",
         "editable": true,

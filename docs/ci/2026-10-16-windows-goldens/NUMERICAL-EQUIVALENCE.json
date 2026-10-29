@@ -1,0 +1,3336 @@
+{
+  "passed": true,
+  "original_field_count": 415,
+  "max_absolute_difference": 0,
+  "exact_before_after": true,
+  "rows": [
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "calculation_scale.estimate",
+      "expected": -0.262,
+      "before": -0.262,
+      "after": -0.262
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "calculation_scale.lower_bound",
+      "expected": -0.724,
+      "before": -0.724,
+      "after": -0.724
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "calculation_scale.standard_error",
+      "expected": 0.236,
+      "before": 0.236,
+      "after": 0.236
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "calculation_scale.upper_bound",
+      "expected": 0.2,
+      "before": 0.2,
+      "after": 0.2
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "estimate",
+      "expected": 0.77,
+      "before": 0.77,
+      "after": 0.77
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "heterogeneity_df",
+      "expected": 18.0,
+      "before": 18.0,
+      "after": 18.0
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "heterogeneity_p_value",
+      "expected": 0.015,
+      "before": 0.015,
+      "after": 0.015
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "i_squared",
+      "expected": 46.0,
+      "before": 46.0,
+      "after": 46.0
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "lower_bound",
+      "expected": 0.485,
+      "before": 0.485,
+      "after": 0.485
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "p_value",
+      "expected": 0.267,
+      "before": 0.267,
+      "after": 0.267
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "q",
+      "expected": 33.36,
+      "before": 33.36,
+      "after": 33.36
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "tau_squared",
+      "expected": 0.378,
+      "before": 0.378,
+      "after": 0.378
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "upper_bound",
+      "expected": 1.222,
+      "before": 1.222,
+      "after": 1.222
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.de_vries",
+      "expected": 6.1,
+      "before": 6.1,
+      "after": 6.1
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.giamarellou",
+      "expected": 2.1,
+      "before": 2.1,
+      "after": 2.1
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.gonzalez",
+      "expected": 7.3,
+      "before": 7.3,
+      "after": 7.3
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.hansen",
+      "expected": 5.3,
+      "before": 5.3,
+      "after": 5.3
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.hollender",
+      "expected": 1.8,
+      "before": 1.8,
+      "after": 1.8
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.klastersky",
+      "expected": 6.0,
+      "before": 6.0,
+      "after": 6.0
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.maller",
+      "expected": 10.7,
+      "before": 10.7,
+      "after": 10.7
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.marik",
+      "expected": 12.2,
+      "before": 12.2,
+      "after": 12.2
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.mauracher",
+      "expected": 2.2,
+      "before": 2.2,
+      "after": 2.2
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.muijsken",
+      "expected": 7.5,
+      "before": 7.5,
+      "after": 7.5
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.nordstrom",
+      "expected": 5.3,
+      "before": 5.3,
+      "after": 5.3
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.prins",
+      "expected": 6.2,
+      "before": 6.2,
+      "after": 6.2
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.rozdzinski",
+      "expected": 10.3,
+      "before": 10.3,
+      "after": 10.3
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.sturm",
+      "expected": 2.0,
+      "before": 2.0,
+      "after": 2.0
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.ter_braak",
+      "expected": 8.7,
+      "before": 8.7,
+      "after": 8.7
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.tulkens",
+      "expected": 1.2,
+      "before": 1.2,
+      "after": 1.2
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.van_der_auwera",
+      "expected": 2.0,
+      "before": 2.0,
+      "after": 2.0
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.vanhaeverbeek",
+      "expected": 1.2,
+      "before": 1.2,
+      "after": 1.2
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.vigano",
+      "expected": 1.8,
+      "before": 1.8,
+      "after": 1.8
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "estimate",
+      "expected": 0.358,
+      "before": 0.358,
+      "after": 0.358
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "heterogeneity_df",
+      "expected": 5.0,
+      "before": 5.0,
+      "after": 5.0
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "heterogeneity_p_value",
+      "expected": 0.036,
+      "before": 0.036,
+      "after": 0.036
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "i_squared",
+      "expected": 58.0,
+      "before": 58.0,
+      "after": 58.0
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "lower_bound",
+      "expected": 0.152,
+      "before": 0.152,
+      "after": 0.152
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "p_value",
+      "expected": 0.001,
+      "before": 0.001,
+      "after": 0.001
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "q",
+      "expected": 11.914,
+      "before": 11.914,
+      "after": 11.914
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "standard_error",
+      "expected": 0.105,
+      "before": 0.105,
+      "after": 0.105
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "tau_squared",
+      "expected": 0.037,
+      "before": 0.037,
+      "after": 0.037
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "upper_bound",
+      "expected": 0.565,
+      "before": 0.565,
+      "after": 0.565
+    },
+    {
+      "case": "continuous-random",
+      "section": "Weights",
+      "field": "weight.carroll",
+      "expected": 15.8,
+      "before": 15.8,
+      "after": 15.8
+    },
+    {
+      "case": "continuous-random",
+      "section": "Weights",
+      "field": "weight.donat",
+      "expected": 23.3,
+      "before": 23.3,
+      "after": 23.3
+    },
+    {
+      "case": "continuous-random",
+      "section": "Weights",
+      "field": "weight.grant",
+      "expected": 16.3,
+      "before": 16.3,
+      "after": 16.3
+    },
+    {
+      "case": "continuous-random",
+      "section": "Weights",
+      "field": "weight.peck",
+      "expected": 12.6,
+      "before": 12.6,
+      "after": 12.6
+    },
+    {
+      "case": "continuous-random",
+      "section": "Weights",
+      "field": "weight.stewart",
+      "expected": 13.8,
+      "before": 13.8,
+      "after": 13.8
+    },
+    {
+      "case": "continuous-random",
+      "section": "Weights",
+      "field": "weight.young",
+      "expected": 18.3,
+      "before": 18.3,
+      "after": 18.3
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Odds Ratio Summary",
+      "field": "calculation_scale.estimate",
+      "expected": 2.267,
+      "before": 2.267,
+      "after": 2.267
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Odds Ratio Summary",
+      "field": "calculation_scale.lower_bound",
+      "expected": 1.71,
+      "before": 1.71,
+      "after": 1.71
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Odds Ratio Summary",
+      "field": "calculation_scale.standard_error",
+      "expected": 0.284,
+      "before": 0.284,
+      "after": 0.284
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Odds Ratio Summary",
+      "field": "calculation_scale.upper_bound",
+      "expected": 2.823,
+      "before": 2.823,
+      "after": 2.823
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Odds Ratio Summary",
+      "field": "estimate",
+      "expected": 9.648,
+      "before": 9.648,
+      "after": 9.648
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Odds Ratio Summary",
+      "field": "heterogeneity_df",
+      "expected": 16.0,
+      "before": 16.0,
+      "after": 16.0
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Odds Ratio Summary",
+      "field": "heterogeneity_p_value",
+      "expected": 0.001,
+      "before": 0.001,
+      "after": 0.001
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Odds Ratio Summary",
+      "field": "i_squared",
+      "expected": 62.1,
+      "before": 62.1,
+      "after": 62.1
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Odds Ratio Summary",
+      "field": "lower_bound",
+      "expected": 5.529,
+      "before": 5.529,
+      "after": 5.529
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Odds Ratio Summary",
+      "field": "p_value",
+      "expected": 0.001,
+      "before": 0.001,
+      "after": 0.001
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Odds Ratio Summary",
+      "field": "q",
+      "expected": 42.259,
+      "before": 42.259,
+      "after": 42.259
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Odds Ratio Summary",
+      "field": "study_count",
+      "expected": 17.0,
+      "before": 17.0,
+      "after": 17.0
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Odds Ratio Summary",
+      "field": "tau_squared",
+      "expected": 0.704,
+      "before": 0.704,
+      "after": 0.704
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Odds Ratio Summary",
+      "field": "upper_bound",
+      "expected": 16.835,
+      "before": 16.835,
+      "after": 16.835
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.gonzalez.estimate",
+      "expected": 0.571,
+      "before": 0.571,
+      "after": 0.571
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.gonzalez.lower_bound",
+      "expected": 0.17,
+      "before": 0.17,
+      "after": 0.17
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.gonzalez.standard_error",
+      "expected": 0.617,
+      "before": 0.617,
+      "after": 0.617
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.gonzalez.upper_bound",
+      "expected": 1.916,
+      "before": 1.916,
+      "after": 1.916
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_de_vries.estimate",
+      "expected": 0.646,
+      "before": 0.646,
+      "after": 0.646
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_de_vries.lower_bound",
+      "expected": 0.352,
+      "before": 0.352,
+      "after": 0.352
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_de_vries.p_value",
+      "expected": 0.16,
+      "before": 0.16,
+      "after": 0.16
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_de_vries.standard_error",
+      "expected": 0.31,
+      "before": 0.31,
+      "after": 0.31
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_de_vries.upper_bound",
+      "expected": 1.188,
+      "before": 1.188,
+      "after": 1.188
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_giamarellou.estimate",
+      "expected": 0.43,
+      "before": 0.43,
+      "after": 0.43
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_giamarellou.lower_bound",
+      "expected": 0.18,
+      "before": 0.18,
+      "after": 0.18
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_giamarellou.p_value",
+      "expected": 0.059,
+      "before": 0.059,
+      "after": 0.059
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_giamarellou.standard_error",
+      "expected": 0.446,
+      "before": 0.446,
+      "after": 0.446
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_giamarellou.upper_bound",
+      "expected": 1.032,
+      "before": 1.032,
+      "after": 1.032
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_hansen.estimate",
+      "expected": 0.572,
+      "before": 0.572,
+      "after": 0.572
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_hansen.lower_bound",
+      "expected": 0.305,
+      "before": 0.305,
+      "after": 0.305
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_hansen.p_value",
+      "expected": 0.082,
+      "before": 0.082,
+      "after": 0.082
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_hansen.standard_error",
+      "expected": 0.321,
+      "before": 0.321,
+      "after": 0.321
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_hansen.upper_bound",
+      "expected": 1.073,
+      "before": 1.073,
+      "after": 1.073
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_hollender.estimate",
+      "expected": 0.77,
+      "before": 0.77,
+      "after": 0.77
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_hollender.lower_bound",
+      "expected": 0.485,
+      "before": 0.485,
+      "after": 0.485
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_hollender.p_value",
+      "expected": 0.267,
+      "before": 0.267,
+      "after": 0.267
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_hollender.standard_error",
+      "expected": 0.236,
+      "before": 0.236,
+      "after": 0.236
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_hollender.upper_bound",
+      "expected": 1.222,
+      "before": 1.222,
+      "after": 1.222
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_klastersky.estimate",
+      "expected": 0.775,
+      "before": 0.775,
+      "after": 0.775
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_klastersky.lower_bound",
+      "expected": 0.477,
+      "before": 0.477,
+      "after": 0.477
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_klastersky.p_value",
+      "expected": 0.302,
+      "before": 0.302,
+      "after": 0.302
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_klastersky.standard_error",
+      "expected": 0.247,
+      "before": 0.247,
+      "after": 0.247
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_klastersky.upper_bound",
+      "expected": 1.258,
+      "before": 1.258,
+      "after": 1.258
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_maller.estimate",
+      "expected": 0.657,
+      "before": 0.657,
+      "after": 0.657
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_maller.lower_bound",
+      "expected": 0.268,
+      "before": 0.268,
+      "after": 0.268
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_maller.p_value",
+      "expected": 0.358,
+      "before": 0.358,
+      "after": 0.358
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_maller.standard_error",
+      "expected": 0.457,
+      "before": 0.457,
+      "after": 0.457
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_maller.upper_bound",
+      "expected": 1.609,
+      "before": 1.609,
+      "after": 1.609
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_marik.estimate",
+      "expected": 0.54,
+      "before": 0.54,
+      "after": 0.54
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_marik.lower_bound",
+      "expected": 0.275,
+      "before": 0.275,
+      "after": 0.275
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_marik.p_value",
+      "expected": 0.073,
+      "before": 0.073,
+      "after": 0.073
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_marik.standard_error",
+      "expected": 0.344,
+      "before": 0.344,
+      "after": 0.344
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_marik.upper_bound",
+      "expected": 1.06,
+      "before": 1.06,
+      "after": 1.06
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_mauracher.estimate",
+      "expected": 0.594,
+      "before": 0.594,
+      "after": 0.594
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_mauracher.lower_bound",
+      "expected": 0.323,
+      "before": 0.323,
+      "after": 0.323
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_mauracher.p_value",
+      "expected": 0.095,
+      "before": 0.095,
+      "after": 0.095
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_mauracher.standard_error",
+      "expected": 0.312,
+      "before": 0.312,
+      "after": 0.312
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_mauracher.upper_bound",
+      "expected": 1.095,
+      "before": 1.095,
+      "after": 1.095
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_muijsken.estimate",
+      "expected": 0.634,
+      "before": 0.634,
+      "after": 0.634
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_muijsken.lower_bound",
+      "expected": 0.334,
+      "before": 0.334,
+      "after": 0.334
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_muijsken.p_value",
+      "expected": 0.164,
+      "before": 0.164,
+      "after": 0.164
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_muijsken.standard_error",
+      "expected": 0.328,
+      "before": 0.328,
+      "after": 0.328
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_muijsken.upper_bound",
+      "expected": 1.205,
+      "before": 1.205,
+      "after": 1.205
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_nordstrom.estimate",
+      "expected": 0.606,
+      "before": 0.606,
+      "after": 0.606
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_nordstrom.lower_bound",
+      "expected": 0.345,
+      "before": 0.345,
+      "after": 0.345
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_nordstrom.p_value",
+      "expected": 0.08,
+      "before": 0.08,
+      "after": 0.08
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_nordstrom.standard_error",
+      "expected": 0.287,
+      "before": 0.287,
+      "after": 0.287
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_nordstrom.upper_bound",
+      "expected": 1.062,
+      "before": 1.062,
+      "after": 1.062
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_prins.estimate",
+      "expected": 0.509,
+      "before": 0.509,
+      "after": 0.509
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_prins.lower_bound",
+      "expected": 0.204,
+      "before": 0.204,
+      "after": 0.204
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_prins.p_value",
+      "expected": 0.149,
+      "before": 0.149,
+      "after": 0.149
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_prins.standard_error",
+      "expected": 0.467,
+      "before": 0.467,
+      "after": 0.467
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_prins.upper_bound",
+      "expected": 1.273,
+      "before": 1.273,
+      "after": 1.273
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_rozdzinski.estimate",
+      "expected": 0.655,
+      "before": 0.655,
+      "after": 0.655
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_rozdzinski.lower_bound",
+      "expected": 0.398,
+      "before": 0.398,
+      "after": 0.398
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_rozdzinski.p_value",
+      "expected": 0.096,
+      "before": 0.096,
+      "after": 0.096
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_rozdzinski.standard_error",
+      "expected": 0.255,
+      "before": 0.255,
+      "after": 0.255
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_rozdzinski.upper_bound",
+      "expected": 1.078,
+      "before": 1.078,
+      "after": 1.078
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_sturm.estimate",
+      "expected": 0.614,
+      "before": 0.614,
+      "after": 0.614
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_sturm.lower_bound",
+      "expected": 0.265,
+      "before": 0.265,
+      "after": 0.265
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_sturm.p_value",
+      "expected": 0.255,
+      "before": 0.255,
+      "after": 0.255
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_sturm.standard_error",
+      "expected": 0.428,
+      "before": 0.428,
+      "after": 0.428
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_sturm.upper_bound",
+      "expected": 1.422,
+      "before": 1.422,
+      "after": 1.422
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_ter_braak.estimate",
+      "expected": 0.706,
+      "before": 0.706,
+      "after": 0.706
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_ter_braak.lower_bound",
+      "expected": 0.442,
+      "before": 0.442,
+      "after": 0.442
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_ter_braak.p_value",
+      "expected": 0.145,
+      "before": 0.145,
+      "after": 0.145
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_ter_braak.standard_error",
+      "expected": 0.239,
+      "before": 0.239,
+      "after": 0.239
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_ter_braak.upper_bound",
+      "expected": 1.127,
+      "before": 1.127,
+      "after": 1.127
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_tulkens.estimate",
+      "expected": 0.712,
+      "before": 0.712,
+      "after": 0.712
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_tulkens.lower_bound",
+      "expected": 0.453,
+      "before": 0.453,
+      "after": 0.453
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_tulkens.p_value",
+      "expected": 0.143,
+      "before": 0.143,
+      "after": 0.143
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_tulkens.standard_error",
+      "expected": 0.231,
+      "before": 0.231,
+      "after": 0.231
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_tulkens.upper_bound",
+      "expected": 1.121,
+      "before": 1.121,
+      "after": 1.121
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_van_der_auwera.estimate",
+      "expected": 0.696,
+      "before": 0.696,
+      "after": 0.696
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_van_der_auwera.lower_bound",
+      "expected": 0.446,
+      "before": 0.446,
+      "after": 0.446
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_van_der_auwera.p_value",
+      "expected": 0.11,
+      "before": 0.11,
+      "after": 0.11
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_van_der_auwera.standard_error",
+      "expected": 0.227,
+      "before": 0.227,
+      "after": 0.227
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_van_der_auwera.upper_bound",
+      "expected": 1.086,
+      "before": 1.086,
+      "after": 1.086
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_vanhaeverbeek.estimate",
+      "expected": 0.78,
+      "before": 0.78,
+      "after": 0.78
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_vanhaeverbeek.lower_bound",
+      "expected": 0.486,
+      "before": 0.486,
+      "after": 0.486
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_vanhaeverbeek.p_value",
+      "expected": 0.304,
+      "before": 0.304,
+      "after": 0.304
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_vanhaeverbeek.standard_error",
+      "expected": 0.241,
+      "before": 0.241,
+      "after": 0.241
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_vanhaeverbeek.upper_bound",
+      "expected": 1.253,
+      "before": 1.253,
+      "after": 1.253
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_vigano.estimate",
+      "expected": 0.668,
+      "before": 0.668,
+      "after": 0.668
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_vigano.lower_bound",
+      "expected": 0.358,
+      "before": 0.358,
+      "after": 0.358
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_vigano.p_value",
+      "expected": 0.205,
+      "before": 0.205,
+      "after": 0.205
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_vigano.standard_error",
+      "expected": 0.318,
+      "before": 0.318,
+      "after": 0.318
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_vigano.upper_bound",
+      "expected": 1.246,
+      "before": 1.246,
+      "after": 1.246
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.overall.estimate",
+      "expected": 0.77,
+      "before": 0.77,
+      "after": 0.77
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.overall.lower_bound",
+      "expected": 0.485,
+      "before": 0.485,
+      "after": 0.485
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.overall.p_value",
+      "expected": 0.267,
+      "before": 0.267,
+      "after": 0.267
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.overall.standard_error",
+      "expected": 0.236,
+      "before": 0.236,
+      "after": 0.236
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.overall.upper_bound",
+      "expected": 1.222,
+      "before": 1.222,
+      "after": 1.222
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_de_vries.estimate",
+      "expected": 0.724,
+      "before": 0.724,
+      "after": 0.724
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_de_vries.lower_bound",
+      "expected": 0.449,
+      "before": 0.449,
+      "after": 0.449
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_de_vries.p_value",
+      "expected": 0.184,
+      "before": 0.184,
+      "after": 0.184
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_de_vries.standard_error",
+      "expected": 0.243,
+      "before": 0.243,
+      "after": 0.243
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_de_vries.upper_bound",
+      "expected": 1.166,
+      "before": 1.166,
+      "after": 1.166
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_giamarellou.estimate",
+      "expected": 0.811,
+      "before": 0.811,
+      "after": 0.811
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_giamarellou.lower_bound",
+      "expected": 0.513,
+      "before": 0.513,
+      "after": 0.513
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_giamarellou.p_value",
+      "expected": 0.369,
+      "before": 0.369,
+      "after": 0.369
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_giamarellou.standard_error",
+      "expected": 0.233,
+      "before": 0.233,
+      "after": 0.233
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_giamarellou.upper_bound",
+      "expected": 1.281,
+      "before": 1.281,
+      "after": 1.281
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_gonzalez.estimate",
+      "expected": 0.783,
+      "before": 0.783,
+      "after": 0.783
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_gonzalez.lower_bound",
+      "expected": 0.477,
+      "before": 0.477,
+      "after": 0.477
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_gonzalez.p_value",
+      "expected": 0.332,
+      "before": 0.332,
+      "after": 0.332
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_gonzalez.standard_error",
+      "expected": 0.253,
+      "before": 0.253,
+      "after": 0.253
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_gonzalez.upper_bound",
+      "expected": 1.285,
+      "before": 1.285,
+      "after": 1.285
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_hansen.estimate",
+      "expected": 0.851,
+      "before": 0.851,
+      "after": 0.851
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_hansen.lower_bound",
+      "expected": 0.542,
+      "before": 0.542,
+      "after": 0.542
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_hansen.p_value",
+      "expected": 0.484,
+      "before": 0.484,
+      "after": 0.484
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_hansen.standard_error",
+      "expected": 0.23,
+      "before": 0.23,
+      "after": 0.23
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_hansen.upper_bound",
+      "expected": 1.336,
+      "before": 1.336,
+      "after": 1.336
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_hollender.estimate",
+      "expected": 0.78,
+      "before": 0.78,
+      "after": 0.78
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_hollender.lower_bound",
+      "expected": 0.486,
+      "before": 0.486,
+      "after": 0.486
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_hollender.p_value",
+      "expected": 0.304,
+      "before": 0.304,
+      "after": 0.304
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_hollender.standard_error",
+      "expected": 0.241,
+      "before": 0.241,
+      "after": 0.241
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_hollender.upper_bound",
+      "expected": 1.253,
+      "before": 1.253,
+      "after": 1.253
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_klastersky.estimate",
+      "expected": 0.696,
+      "before": 0.696,
+      "after": 0.696
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_klastersky.lower_bound",
+      "expected": 0.458,
+      "before": 0.458,
+      "after": 0.458
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_klastersky.p_value",
+      "expected": 0.091,
+      "before": 0.091,
+      "after": 0.091
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_klastersky.standard_error",
+      "expected": 0.214,
+      "before": 0.214,
+      "after": 0.214
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_klastersky.upper_bound",
+      "expected": 1.059,
+      "before": 1.059,
+      "after": 1.059
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_maller.estimate",
+      "expected": 0.715,
+      "before": 0.715,
+      "after": 0.715
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_maller.lower_bound",
+      "expected": 0.437,
+      "before": 0.437,
+      "after": 0.437
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_maller.p_value",
+      "expected": 0.184,
+      "before": 0.184,
+      "after": 0.184
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_maller.standard_error",
+      "expected": 0.252,
+      "before": 0.252,
+      "after": 0.252
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_maller.upper_bound",
+      "expected": 1.172,
+      "before": 1.172,
+      "after": 1.172
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_marik.estimate",
+      "expected": 0.864,
+      "before": 0.864,
+      "after": 0.864
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_marik.lower_bound",
+      "expected": 0.543,
+      "before": 0.543,
+      "after": 0.543
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_marik.p_value",
+      "expected": 0.538,
+      "before": 0.538,
+      "after": 0.538
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_marik.standard_error",
+      "expected": 0.237,
+      "before": 0.237,
+      "after": 0.237
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_marik.upper_bound",
+      "expected": 1.375,
+      "before": 1.375,
+      "after": 1.375
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_mauracher.estimate",
+      "expected": 0.813,
+      "before": 0.813,
+      "after": 0.813
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_mauracher.lower_bound",
+      "expected": 0.515,
+      "before": 0.515,
+      "after": 0.515
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_mauracher.p_value",
+      "expected": 0.375,
+      "before": 0.375,
+      "after": 0.375
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_mauracher.standard_error",
+      "expected": 0.233,
+      "before": 0.233,
+      "after": 0.233
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_mauracher.upper_bound",
+      "expected": 1.283,
+      "before": 1.283,
+      "after": 1.283
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_muijsken.estimate",
+      "expected": 0.724,
+      "before": 0.724,
+      "after": 0.724
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_muijsken.lower_bound",
+      "expected": 0.446,
+      "before": 0.446,
+      "after": 0.446
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_muijsken.p_value",
+      "expected": 0.191,
+      "before": 0.191,
+      "after": 0.191
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_muijsken.standard_error",
+      "expected": 0.247,
+      "before": 0.247,
+      "after": 0.247
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_muijsken.upper_bound",
+      "expected": 1.175,
+      "before": 1.175,
+      "after": 1.175
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_nordstrom.estimate",
+      "expected": 0.772,
+      "before": 0.772,
+      "after": 0.772
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_nordstrom.lower_bound",
+      "expected": 0.474,
+      "before": 0.474,
+      "after": 0.474
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_nordstrom.p_value",
+      "expected": 0.298,
+      "before": 0.298,
+      "after": 0.298
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_nordstrom.standard_error",
+      "expected": 0.249,
+      "before": 0.249,
+      "after": 0.249
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_nordstrom.upper_bound",
+      "expected": 1.257,
+      "before": 1.257,
+      "after": 1.257
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_prins.estimate",
+      "expected": 0.796,
+      "before": 0.796,
+      "after": 0.796
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_prins.lower_bound",
+      "expected": 0.489,
+      "before": 0.489,
+      "after": 0.489
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_prins.p_value",
+      "expected": 0.359,
+      "before": 0.359,
+      "after": 0.359
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_prins.standard_error",
+      "expected": 0.249,
+      "before": 0.249,
+      "after": 0.249
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_prins.upper_bound",
+      "expected": 1.296,
+      "before": 1.296,
+      "after": 1.296
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_rozdzinski.estimate",
+      "expected": 0.738,
+      "before": 0.738,
+      "after": 0.738
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_rozdzinski.lower_bound",
+      "expected": 0.442,
+      "before": 0.442,
+      "after": 0.442
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_rozdzinski.p_value",
+      "expected": 0.244,
+      "before": 0.244,
+      "after": 0.244
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_rozdzinski.standard_error",
+      "expected": 0.261,
+      "before": 0.261,
+      "after": 0.261
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_rozdzinski.upper_bound",
+      "expected": 1.231,
+      "before": 1.231,
+      "after": 1.231
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_sturm.estimate",
+      "expected": 0.791,
+      "before": 0.791,
+      "after": 0.791
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_sturm.lower_bound",
+      "expected": 0.494,
+      "before": 0.494,
+      "after": 0.494
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_sturm.p_value",
+      "expected": 0.327,
+      "before": 0.327,
+      "after": 0.327
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_sturm.standard_error",
+      "expected": 0.24,
+      "before": 0.24,
+      "after": 0.24
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_sturm.upper_bound",
+      "expected": 1.265,
+      "before": 1.265,
+      "after": 1.265
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_ter_braak.estimate",
+      "expected": 0.726,
+      "before": 0.726,
+      "after": 0.726
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_ter_braak.lower_bound",
+      "expected": 0.443,
+      "before": 0.443,
+      "after": 0.443
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_ter_braak.p_value",
+      "expected": 0.204,
+      "before": 0.204,
+      "after": 0.204
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_ter_braak.standard_error",
+      "expected": 0.252,
+      "before": 0.252,
+      "after": 0.252
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_ter_braak.upper_bound",
+      "expected": 1.189,
+      "before": 1.189,
+      "after": 1.189
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_tulkens.estimate",
+      "expected": 0.764,
+      "before": 0.764,
+      "after": 0.764
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_tulkens.lower_bound",
+      "expected": 0.476,
+      "before": 0.476,
+      "after": 0.476
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_tulkens.p_value",
+      "expected": 0.266,
+      "before": 0.266,
+      "after": 0.266
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_tulkens.standard_error",
+      "expected": 0.242,
+      "before": 0.242,
+      "after": 0.242
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_tulkens.upper_bound",
+      "expected": 1.227,
+      "before": 1.227,
+      "after": 1.227
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_van_der_auwera.estimate",
+      "expected": 0.791,
+      "before": 0.791,
+      "after": 0.791
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_van_der_auwera.lower_bound",
+      "expected": 0.494,
+      "before": 0.494,
+      "after": 0.494
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_van_der_auwera.p_value",
+      "expected": 0.327,
+      "before": 0.327,
+      "after": 0.327
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_van_der_auwera.standard_error",
+      "expected": 0.24,
+      "before": 0.24,
+      "after": 0.24
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_van_der_auwera.upper_bound",
+      "expected": 1.265,
+      "before": 1.265,
+      "after": 1.265
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_vanhaeverbeek.estimate",
+      "expected": 0.764,
+      "before": 0.764,
+      "after": 0.764
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_vanhaeverbeek.lower_bound",
+      "expected": 0.476,
+      "before": 0.476,
+      "after": 0.476
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_vanhaeverbeek.p_value",
+      "expected": 0.265,
+      "before": 0.265,
+      "after": 0.265
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_vanhaeverbeek.standard_error",
+      "expected": 0.242,
+      "before": 0.242,
+      "after": 0.242
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_vanhaeverbeek.upper_bound",
+      "expected": 1.226,
+      "before": 1.226,
+      "after": 1.226
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_vigano.estimate",
+      "expected": 0.75,
+      "before": 0.75,
+      "after": 0.75
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_vigano.lower_bound",
+      "expected": 0.468,
+      "before": 0.468,
+      "after": 0.468
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_vigano.p_value",
+      "expected": 0.23,
+      "before": 0.23,
+      "after": 0.23
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_vigano.standard_error",
+      "expected": 0.24,
+      "before": 0.24,
+      "after": 0.24
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_vigano.upper_bound",
+      "expected": 1.2,
+      "before": 1.2,
+      "after": 1.2
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.carroll.estimate",
+      "expected": 0.095,
+      "before": 0.095,
+      "after": 0.095
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.carroll.lower_bound",
+      "expected": -0.264,
+      "before": -0.264,
+      "after": -0.264
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.carroll.standard_error",
+      "expected": 0.183,
+      "before": 0.183,
+      "after": 0.183
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.carroll.upper_bound",
+      "expected": 0.453,
+      "before": 0.453,
+      "after": 0.453
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_donat.estimate",
+      "expected": 0.376,
+      "before": 0.376,
+      "after": 0.376
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_donat.lower_bound",
+      "expected": 0.091,
+      "before": 0.091,
+      "after": 0.091
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_donat.p_value",
+      "expected": 0.01,
+      "before": 0.01,
+      "after": 0.01
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_donat.standard_error",
+      "expected": 0.145,
+      "before": 0.145,
+      "after": 0.145
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_donat.upper_bound",
+      "expected": 0.66,
+      "before": 0.66,
+      "after": 0.66
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_grant.estimate",
+      "expected": 0.189,
+      "before": 0.189,
+      "after": 0.189
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_grant.lower_bound",
+      "expected": -0.059,
+      "before": -0.059,
+      "after": -0.059
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_grant.p_value",
+      "expected": 0.136,
+      "before": 0.136,
+      "after": 0.136
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_grant.standard_error",
+      "expected": 0.127,
+      "before": 0.127,
+      "after": 0.127
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_grant.upper_bound",
+      "expected": 0.438,
+      "before": 0.438,
+      "after": 0.438
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_peck.estimate",
+      "expected": 0.232,
+      "before": 0.232,
+      "after": 0.232
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_peck.lower_bound",
+      "expected": 0.015,
+      "before": 0.015,
+      "after": 0.015
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_peck.p_value",
+      "expected": 0.036,
+      "before": 0.036,
+      "after": 0.036
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_peck.standard_error",
+      "expected": 0.111,
+      "before": 0.111,
+      "after": 0.111
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_peck.upper_bound",
+      "expected": 0.449,
+      "before": 0.449,
+      "after": 0.449
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_stewart.estimate",
+      "expected": 0.397,
+      "before": 0.397,
+      "after": 0.397
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_stewart.lower_bound",
+      "expected": 0.169,
+      "before": 0.169,
+      "after": 0.169
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_stewart.p_value",
+      "expected": 0.001,
+      "before": 0.001,
+      "after": 0.001
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_stewart.standard_error",
+      "expected": 0.116,
+      "before": 0.116,
+      "after": 0.116
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_stewart.upper_bound",
+      "expected": 0.626,
+      "before": 0.626,
+      "after": 0.626
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_young.estimate",
+      "expected": 0.358,
+      "before": 0.358,
+      "after": 0.358
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_young.lower_bound",
+      "expected": 0.152,
+      "before": 0.152,
+      "after": 0.152
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_young.p_value",
+      "expected": 0.001,
+      "before": 0.001,
+      "after": 0.001
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_young.standard_error",
+      "expected": 0.105,
+      "before": 0.105,
+      "after": 0.105
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative Summary",
+      "field": "model.through_young.upper_bound",
+      "expected": 0.565,
+      "before": 0.565,
+      "after": 0.565
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.overall.estimate",
+      "expected": 0.358,
+      "before": 0.358,
+      "after": 0.358
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.overall.lower_bound",
+      "expected": 0.152,
+      "before": 0.152,
+      "after": 0.152
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.overall.p_value",
+      "expected": 0.001,
+      "before": 0.001,
+      "after": 0.001
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.overall.standard_error",
+      "expected": 0.105,
+      "before": 0.105,
+      "after": 0.105
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.overall.upper_bound",
+      "expected": 0.565,
+      "before": 0.565,
+      "after": 0.565
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_carroll.estimate",
+      "expected": 0.411,
+      "before": 0.411,
+      "after": 0.411
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_carroll.lower_bound",
+      "expected": 0.202,
+      "before": 0.202,
+      "after": 0.202
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_carroll.p_value",
+      "expected": 0.001,
+      "before": 0.001,
+      "after": 0.001
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_carroll.standard_error",
+      "expected": 0.107,
+      "before": 0.107,
+      "after": 0.107
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_carroll.upper_bound",
+      "expected": 0.621,
+      "before": 0.621,
+      "after": 0.621
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_donat.estimate",
+      "expected": 0.254,
+      "before": 0.254,
+      "after": 0.254
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_donat.lower_bound",
+      "expected": 0.093,
+      "before": 0.093,
+      "after": 0.093
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_donat.p_value",
+      "expected": 0.002,
+      "before": 0.002,
+      "after": 0.002
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_donat.standard_error",
+      "expected": 0.082,
+      "before": 0.082,
+      "after": 0.082
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_donat.upper_bound",
+      "expected": 0.416,
+      "before": 0.416,
+      "after": 0.416
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_grant.estimate",
+      "expected": 0.37,
+      "before": 0.37,
+      "after": 0.37
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_grant.lower_bound",
+      "expected": 0.126,
+      "before": 0.126,
+      "after": 0.126
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_grant.p_value",
+      "expected": 0.003,
+      "before": 0.003,
+      "after": 0.003
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_grant.standard_error",
+      "expected": 0.125,
+      "before": 0.125,
+      "after": 0.125
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_grant.upper_bound",
+      "expected": 0.615,
+      "before": 0.615,
+      "after": 0.615
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_peck.estimate",
+      "expected": 0.353,
+      "before": 0.353,
+      "after": 0.353
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_peck.lower_bound",
+      "expected": 0.113,
+      "before": 0.113,
+      "after": 0.113
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_peck.p_value",
+      "expected": 0.004,
+      "before": 0.004,
+      "after": 0.004
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_peck.standard_error",
+      "expected": 0.122,
+      "before": 0.122,
+      "after": 0.122
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_peck.upper_bound",
+      "expected": 0.593,
+      "before": 0.593,
+      "after": 0.593
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_stewart.estimate",
+      "expected": 0.337,
+      "before": 0.337,
+      "after": 0.337
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_stewart.lower_bound",
+      "expected": 0.094,
+      "before": 0.094,
+      "after": 0.094
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_stewart.p_value",
+      "expected": 0.007,
+      "before": 0.007,
+      "after": 0.007
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_stewart.standard_error",
+      "expected": 0.124,
+      "before": 0.124,
+      "after": 0.124
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_stewart.upper_bound",
+      "expected": 0.58,
+      "before": 0.58,
+      "after": 0.58
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_young.estimate",
+      "expected": 0.397,
+      "before": 0.397,
+      "after": 0.397
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_young.lower_bound",
+      "expected": 0.169,
+      "before": 0.169,
+      "after": 0.169
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_young.p_value",
+      "expected": 0.001,
+      "before": 0.001,
+      "after": 0.001
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_young.standard_error",
+      "expected": 0.116,
+      "before": 0.116,
+      "after": 0.116
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out Summary",
+      "field": "model.without_young.upper_bound",
+      "expected": 0.626,
+      "before": 0.626,
+      "after": 0.626
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.coefficient",
+      "expected": 0.06,
+      "before": 0.06,
+      "after": 0.06
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.lower_bound",
+      "expected": -0.03,
+      "before": -0.03,
+      "after": -0.03
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.p_value",
+      "expected": 0.169,
+      "before": 0.169,
+      "after": 0.169
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.standard_error",
+      "expected": 0.046,
+      "before": 0.046,
+      "after": 0.046
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.upper_bound",
+      "expected": 0.15,
+      "before": 0.15,
+      "after": 0.15
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.coefficient",
+      "expected": -124.77,
+      "before": -124.77,
+      "after": -124.77
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.lower_bound",
+      "expected": -302.24,
+      "before": -302.24,
+      "after": -302.24
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.p_value",
+      "expected": 0.168,
+      "before": 0.168,
+      "after": 0.168
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.standard_error",
+      "expected": 90.552,
+      "before": 90.552,
+      "after": 90.552
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.upper_bound",
+      "expected": 52.71,
+      "before": 52.71,
+      "after": 52.71
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "omnibus.p_value",
+      "expected": 0.169,
+      "before": 0.169,
+      "after": 0.169
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.de_vries",
+      "expected": 6.1,
+      "before": 6.1,
+      "after": 6.1
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.giamarellou",
+      "expected": 2.0,
+      "before": 2.0,
+      "after": 2.0
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.gonzalez",
+      "expected": 7.3,
+      "before": 7.3,
+      "after": 7.3
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.hansen",
+      "expected": 5.2,
+      "before": 5.2,
+      "after": 5.2
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.hollender",
+      "expected": 1.7,
+      "before": 1.7,
+      "after": 1.7
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.klastersky",
+      "expected": 6.0,
+      "before": 6.0,
+      "after": 6.0
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.maller",
+      "expected": 10.9,
+      "before": 10.9,
+      "after": 10.9
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.marik",
+      "expected": 12.7,
+      "before": 12.7,
+      "after": 12.7
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.mauracher",
+      "expected": 2.1,
+      "before": 2.1,
+      "after": 2.1
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.muijsken",
+      "expected": 7.4,
+      "before": 7.4,
+      "after": 7.4
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.nordstrom",
+      "expected": 5.2,
+      "before": 5.2,
+      "after": 5.2
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.prins",
+      "expected": 6.2,
+      "before": 6.2,
+      "after": 6.2
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.rozdzinski",
+      "expected": 10.5,
+      "before": 10.5,
+      "after": 10.5
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.sturm",
+      "expected": 1.9,
+      "before": 1.9,
+      "after": 1.9
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.ter_braak",
+      "expected": 8.8,
+      "before": 8.8,
+      "after": 8.8
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.tulkens",
+      "expected": 1.2,
+      "before": 1.2,
+      "after": 1.2
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.van_der_auwera",
+      "expected": 1.9,
+      "before": 1.9,
+      "after": 1.9
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.vanhaeverbeek",
+      "expected": 1.2,
+      "before": 1.2,
+      "after": 1.2
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.vigano",
+      "expected": 1.7,
+      "before": 1.7,
+      "after": 1.7
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.coefficient",
+      "expected": 0.04,
+      "before": 0.04,
+      "after": 0.04
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.lower_bound",
+      "expected": -0.1,
+      "before": -0.1,
+      "after": -0.1
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.p_value",
+      "expected": 0.598,
+      "before": 0.598,
+      "after": 0.598
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.standard_error",
+      "expected": 0.067,
+      "before": 0.067,
+      "after": 0.067
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.upper_bound",
+      "expected": 0.17,
+      "before": 0.17,
+      "after": 0.17
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.coefficient",
+      "expected": -69.9,
+      "before": -69.9,
+      "after": -69.9
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.lower_bound",
+      "expected": -330.97,
+      "before": -330.97,
+      "after": -330.97
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.p_value",
+      "expected": 0.6,
+      "before": 0.6,
+      "after": 0.6
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.standard_error",
+      "expected": 133.199,
+      "before": 133.199,
+      "after": 133.199
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.upper_bound",
+      "expected": 191.16,
+      "before": 191.16,
+      "after": 191.16
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "omnibus.p_value",
+      "expected": 0.598,
+      "before": 0.598,
+      "after": 0.598
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Weights",
+      "field": "weight.carroll",
+      "expected": 16.0,
+      "before": 16.0,
+      "after": 16.0
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Weights",
+      "field": "weight.donat",
+      "expected": 22.2,
+      "before": 22.2,
+      "after": 22.2
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Weights",
+      "field": "weight.grant",
+      "expected": 16.4,
+      "before": 16.4,
+      "after": 16.4
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Weights",
+      "field": "weight.peck",
+      "expected": 13.1,
+      "before": 13.1,
+      "after": 13.1
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Weights",
+      "field": "weight.stewart",
+      "expected": 14.2,
+      "before": 14.2,
+      "after": 14.2
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Weights",
+      "field": "weight.young",
+      "expected": 18.1,
+      "before": 18.1,
+      "after": 18.1
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "heterogeneity.overall.df",
+      "expected": 18.0,
+      "before": 18.0,
+      "after": 18.0
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "heterogeneity.overall.i_squared",
+      "expected": 46.0,
+      "before": 46.0,
+      "after": 46.0
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "heterogeneity.overall.p_value",
+      "expected": 0.015,
+      "before": 0.015,
+      "after": 0.015
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "heterogeneity.overall.q",
+      "expected": 33.36,
+      "before": 33.36,
+      "after": 33.36
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "heterogeneity.subgroup_early.df",
+      "expected": 9.0,
+      "before": 9.0,
+      "after": 9.0
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "heterogeneity.subgroup_early.i_squared",
+      "expected": 54.8,
+      "before": 54.8,
+      "after": 54.8
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "heterogeneity.subgroup_early.p_value",
+      "expected": 0.018,
+      "before": 0.018,
+      "after": 0.018
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "heterogeneity.subgroup_early.q",
+      "expected": 19.929,
+      "before": 19.929,
+      "after": 19.929
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "heterogeneity.subgroup_late.df",
+      "expected": 8.0,
+      "before": 8.0,
+      "after": 8.0
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "heterogeneity.subgroup_late.i_squared",
+      "expected": 39.6,
+      "before": 39.6,
+      "after": 39.6
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "heterogeneity.subgroup_late.p_value",
+      "expected": 0.104,
+      "before": 0.104,
+      "after": 0.104
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "heterogeneity.subgroup_late.q",
+      "expected": 13.236,
+      "before": 13.236,
+      "after": 13.236
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.overall.estimate",
+      "expected": 0.77,
+      "before": 0.77,
+      "after": 0.77
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.overall.lower_bound",
+      "expected": 0.485,
+      "before": 0.485,
+      "after": 0.485
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.overall.p_value",
+      "expected": 0.267,
+      "before": 0.267,
+      "after": 0.267
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.overall.standard_error",
+      "expected": 0.236,
+      "before": 0.236,
+      "after": 0.236
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.overall.studies",
+      "expected": 19.0,
+      "before": 19.0,
+      "after": 19.0
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.overall.upper_bound",
+      "expected": 1.222,
+      "before": 1.222,
+      "after": 1.222
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.overall.z_value",
+      "expected": -1.111,
+      "before": -1.111,
+      "after": -1.111
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_early.estimate",
+      "expected": 0.623,
+      "before": 0.623,
+      "after": 0.623
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_early.lower_bound",
+      "expected": 0.271,
+      "before": 0.271,
+      "after": 0.271
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_early.p_value",
+      "expected": 0.266,
+      "before": 0.266,
+      "after": 0.266
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_early.standard_error",
+      "expected": 0.425,
+      "before": 0.425,
+      "after": 0.425
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_early.studies",
+      "expected": 10.0,
+      "before": 10.0,
+      "after": 10.0
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_early.upper_bound",
+      "expected": 1.434,
+      "before": 1.434,
+      "after": 1.434
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_early.z_value",
+      "expected": -1.113,
+      "before": -1.113,
+      "after": -1.113
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_late.estimate",
+      "expected": 0.827,
+      "before": 0.827,
+      "after": 0.827
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_late.lower_bound",
+      "expected": 0.476,
+      "before": 0.476,
+      "after": 0.476
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_late.p_value",
+      "expected": 0.501,
+      "before": 0.501,
+      "after": 0.501
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_late.standard_error",
+      "expected": 0.282,
+      "before": 0.282,
+      "after": 0.282
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_late.studies",
+      "expected": 9.0,
+      "before": 9.0,
+      "after": 9.0
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_late.upper_bound",
+      "expected": 1.438,
+      "before": 1.438,
+      "after": 1.438
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_late.z_value",
+      "expected": -0.673,
+      "before": -0.673,
+      "after": -0.673
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.overall.estimate",
+      "expected": 0.358,
+      "before": 0.358,
+      "after": 0.358
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.overall.lower_bound",
+      "expected": 0.152,
+      "before": 0.152,
+      "after": 0.152
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.overall.p_value",
+      "expected": 0.001,
+      "before": 0.001,
+      "after": 0.001
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.overall.standard_error",
+      "expected": 0.105,
+      "before": 0.105,
+      "after": 0.105
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.overall.upper_bound",
+      "expected": 0.565,
+      "before": 0.565,
+      "after": 0.565
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_early.estimate",
+      "expected": 0.285,
+      "before": 0.285,
+      "after": 0.285
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_early.lower_bound",
+      "expected": 0.055,
+      "before": 0.055,
+      "after": 0.055
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_early.p_value",
+      "expected": 0.015,
+      "before": 0.015,
+      "after": 0.015
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_early.standard_error",
+      "expected": 0.117,
+      "before": 0.117,
+      "after": 0.117
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_early.upper_bound",
+      "expected": 0.515,
+      "before": 0.515,
+      "after": 0.515
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_late.estimate",
+      "expected": 0.395,
+      "before": 0.395,
+      "after": 0.395
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_late.lower_bound",
+      "expected": 0.068,
+      "before": 0.068,
+      "after": 0.068
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_late.p_value",
+      "expected": 0.018,
+      "before": 0.018,
+      "after": 0.018
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_late.standard_error",
+      "expected": 0.167,
+      "before": 0.167,
+      "after": 0.167
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup Summary",
+      "field": "model.subgroup_late.upper_bound",
+      "expected": 0.721,
+      "before": 0.721,
+      "after": 0.721
+    }
+  ],
+  "policy_sha256": {
+    "numeric-contract.json": "d40e5c620160567250dbc63bed136ea977c23e05567963f0efbd6257fe41a5f3",
+    "exceptions.json": "9db851142fe3c73c8a37507a89eb63083c96d26cada8bfeac7dc7be05494ea05",
+    "capture-manifest.json": "c9e8e26e7a847ed02041c1dd281af2f0f86b071c0b0c1ed7e7d0aea2ecaa9fc8",
+    "plot-descriptors.json": "fdc19759ab387eabf8cf5ee095b004e6ba2e9c7fec30ccdeb7512440870feb64"
+  },
+  "capture": "build/qt6-verification/golden-compatibility-ci-windows-refreshed",
+  "additional_fields": "Checked by the real audit's public-package subgroup comparisons."
+}
