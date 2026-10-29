@@ -152,8 +152,15 @@ def _desktop_environment(work: Path, evidence: Path, native: bool) -> dict[str, 
         env.pop("QT_QPA_PLATFORM", None)
     else:
         env["QT_QPA_PLATFORM"] = "offscreen"
-        if sys.platform == "win32":
-            env.setdefault("QT_QPA_FONTDIR", str(Path(env["WINDIR"]) / "Fonts"))
+        if sys.platform == "win32" and not env.get("QT_QPA_FONTDIR"):
+            # Offscreen Qt picks an arbitrary family for "Sans Serif" when it
+            # scans every Windows font. Use the native UI family in owned state.
+            fonts = work / "fonts"
+            fonts.mkdir()
+            system_fonts = Path(env["WINDIR"]) / "Fonts"
+            for name in ("segoeui.ttf", "segoeuib.ttf", "segoeuii.ttf", "segoeuiz.ttf"):
+                shutil.copyfile(system_fonts / name, fonts / name)
+            env["QT_QPA_FONTDIR"] = str(fonts)
     return env
 
 

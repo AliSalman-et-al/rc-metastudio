@@ -1,0 +1,18 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\Ali-Salman\AppData\Local\Temp\rcms-formal-final-20261029\replay
+plugins: xdist-3.8.0
+collecting ... collected 54 items / 46 deselected / 8 selected
+
+replay\tests\python\fast\test_project_format.py::test_failed_atomic_replace_preserves_the_previous_project PASSED [ 12%]
+replay\tests\python\fast\test_project_format.py::test_pre_replace_failures_preserve_previous_project_and_clean_temporary_files PASSED [ 25%]
+replay\tests\python\fast\test_project_format.py::test_serialization_and_schema_recursion_errors_use_project_format_boundary PASSED [ 37%]
+replay\tests\python\fast\test_project_format.py::test_cleanup_failure_preserves_and_annotates_the_primary_error PASSED [ 50%]
+replay\tests\python\fast\test_project_format.py::test_supported_directory_fsync_runs_after_atomic_replacement PASSED [ 62%]
+replay\tests\python\fast\test_project_format.py::test_post_replace_directory_fsync_failure_reports_new_file_is_installed PASSED [ 75%]
+replay\tests\python\fast\test_project_format.py::test_post_replace_directory_close_failure_reports_durability_uncertainty PASSED [ 87%]
+replay\tests\python\fast\test_project_format.py::test_directory_close_failure_annotates_primary_post_replace_fsync_error PASSED [100%]
+
+- generated xml file: C:\Users\Ali-Salman\AppData\Local\Temp\rcms-formal-final-20261029\replay.xml -
+====================== 8 passed, 46 deselected in 1.71s =======================

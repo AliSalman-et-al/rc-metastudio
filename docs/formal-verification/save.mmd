@@ -1,0 +1,29 @@
+---
+title: "Project save - preserve the last usable project"
+---
+stateDiagram-v2
+  s0: Validate input
+  s1: Save failed#59; previous project intact
+  s2: Temporary file created
+  s3: Archive written
+  s4: File flushed
+  s5: File synchronized
+  s6: Temporary archive validated
+  s7: New project installed
+  s8: Save completed
+  s9: Installed#59; durability uncertain
+  [*] --> s0
+  s0 --> s1: an operation fails before replacement
+  s0 --> s2: prepare a sibling temporary file
+  s2 --> s1: an operation fails before replacement
+  s2 --> s3: write the project archive
+  s3 --> s1: an operation fails before replacement
+  s3 --> s4: flush buffered data
+  s4 --> s1: an operation fails before replacement
+  s4 --> s5: synchronize the file
+  s5 --> s1: an operation fails before replacement
+  s5 --> s6: reopen and validate the archive
+  s6 --> s1: an operation fails before replacement
+  s6 --> s7: atomically replace the destination
+  s7 --> s8: confirm directory durability or skip on unsupported OS
+  s7 --> s9: directory open, sync or close fails

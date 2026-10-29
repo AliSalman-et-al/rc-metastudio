@@ -1,0 +1,22 @@
+---
+title: "RC MetaStudio - analyses, results and exports"
+---
+stateDiagram-v2
+  s0: No active result
+  s1: Analysis settings
+  s2: R analysis
+  s3: Report, tables and figures
+  s4: Plot editor
+  s5: Report, table or figure export
+  [*] --> s0
+  s0 --> s1: you choose an analysis or change result settings
+  s1 --> s0: you cancel settings or analysis or display fails
+  s1 --> s2: you run the selected method
+  s2 --> s0: you cancel settings or analysis or display fails
+  s2 --> s3: results open
+  s3 --> s0: you close results
+  s3 --> s1: you choose an analysis or change result settings
+  s3 --> s4: you edit a supported figure
+  s3 --> s5: you export a report, table or figure
+  s4 --> s3: you finish, cancel or recover from failure
+  s5 --> s3: you finish, cancel or recover from failure

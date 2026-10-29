@@ -1,0 +1,114 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\Ali-Salman\AppData\Local\Temp\rcms-formal-truncate-20261029\replay
+plugins: xdist-3.8.0
+collecting ... collected 54 items / 46 deselected / 8 selected
+
+replay\tests\python\fast\test_project_format.py::test_failed_atomic_replace_preserves_the_previous_project FAILED [ 12%]
+replay\tests\python\fast\test_project_format.py::test_pre_replace_failures_preserve_previous_project_and_clean_temporary_files PASSED [ 25%]
+replay\tests\python\fast\test_project_format.py::test_serialization_and_schema_recursion_errors_use_project_format_boundary PASSED [ 37%]
+replay\tests\python\fast\test_project_format.py::test_cleanup_failure_preserves_and_annotates_the_primary_error PASSED [ 50%]
+replay\tests\python\fast\test_project_format.py::test_supported_directory_fsync_runs_after_atomic_replacement PASSED [ 62%]
+replay\tests\python\fast\test_project_format.py::test_post_replace_directory_fsync_failure_reports_new_file_is_installed PASSED [ 75%]
+replay\tests\python\fast\test_project_format.py::test_post_replace_directory_close_failure_reports_durability_uncertainty PASSED [ 87%]
+replay\tests\python\fast\test_project_format.py::test_directory_close_failure_annotates_primary_post_replace_fsync_error PASSED [100%]
+
+================================== FAILURES ===================================
+__________ test_failed_atomic_replace_preserves_the_previous_project __________
+
+path = WindowsPath('C:/Users/Ali-Salman/AppData/Local/Temp/rcms-formal-truncate-20261029/pytest-data/test_failed_atomic_replace_pre0/research.rcms')
+limits = ProjectArchiveLimits(max_archive_size=33554432, max_member_count=3, max_member_size=16777216, max_total_uncompressed_size=33554432, max_compression_ratio=100.0)
+
+    def _inspect_archive(
+        path: Path, limits: ProjectArchiveLimits
+    ) -> tuple[zipfile.ZipFile, dict[str, zipfile.ZipInfo]]:
+        try:
+            archive_size = path.stat().st_size
+        except OSError as exc:
+            raise ProjectFormatError(f"cannot read project: {path}") from exc
+        if archive_size > limits.max_archive_size:
+            raise ProjectFormatError("project archive exceeds the configured size limit")
+        try:
+>           archive = zipfile.ZipFile(path, "r")
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+replay\src\rc_metastudio\project_format.py:260:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\..\Roaming\uv\python\cpython-3.11.9-windows-x86_64-none\Lib\zipfile.py:1312: in __init__
+    self._RealGetContents()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <zipfile.ZipFile [closed]>
+
+    def _RealGetContents(self):
+        """Read in the table of contents for the ZIP file."""
+        fp = self.fp
+        try:
+            endrec = _EndRecData(fp)
+        except OSError:
+            raise BadZipFile("File is not a zip file")
+        if not endrec:
+>           raise BadZipFile("File is not a zip file")
+E           zipfile.BadZipFile: File is not a zip file
+
+..\..\..\Roaming\uv\python\cpython-3.11.9-windows-x86_64-none\Lib\zipfile.py:1379: BadZipFile
+
+The above exception was the direct cause of the following exception:
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000026C4D34B7D0>
+tmp_path = WindowsPath('C:/Users/Ali-Salman/AppData/Local/Temp/rcms-formal-truncate-20261029/pytest-data/test_failed_atomic_replace_pre0')
+
+    def test_failed_atomic_replace_preserves_the_previous_project(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        destination = tmp_path / "research.rcms"
+        original = _minimal_project()
+        save_project(destination, original, _minimal_state())
+        changed = _minimal_project()
+        _object(changed["dataset"])["title"] = "Changed"
+
+        def fail_replace(_source: object, _destination: object) -> None:
+            raise OSError("injected replace failure")
+
+        monkeypatch.setattr(project_format.os, "replace", fail_replace)
+        with pytest.raises(ProjectFormatError, match="injected replace failure"):
+            save_project(destination, changed, _minimal_state())
+
+>       assert load_project(destination).project == original
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+replay\tests\python\fast\test_project_format.py:833:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+replay\src\rc_metastudio\project_format.py:361: in load_project
+    members = _read_members(Path(path), selected_limits)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+replay\src\rc_metastudio\project_format.py:308: in _read_members
+    archive, infos = _inspect_archive(path, limits)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+path = WindowsPath('C:/Users/Ali-Salman/AppData/Local/Temp/rcms-formal-truncate-20261029/pytest-data/test_failed_atomic_replace_pre0/research.rcms')
+limits = ProjectArchiveLimits(max_archive_size=33554432, max_member_count=3, max_member_size=16777216, max_total_uncompressed_size=33554432, max_compression_ratio=100.0)
+
+    def _inspect_archive(
+        path: Path, limits: ProjectArchiveLimits
+    ) -> tuple[zipfile.ZipFile, dict[str, zipfile.ZipInfo]]:
+        try:
+            archive_size = path.stat().st_size
+        except OSError as exc:
+            raise ProjectFormatError(f"cannot read project: {path}") from exc
+        if archive_size > limits.max_archive_size:
+            raise ProjectFormatError("project archive exceeds the configured size limit")
+        try:
+            archive = zipfile.ZipFile(path, "r")
+            infos = archive.infolist()
+        except (OSError, zipfile.BadZipFile, zipfile.LargeZipFile) as exc:
+>           raise ProjectFormatError("project is not a valid ZIP container") from exc
+E           rc_metastudio.project_format.ProjectFormatError: project is not a valid ZIP container
+
+replay\src\rc_metastudio\project_format.py:263: ProjectFormatError
+- generated xml file: C:\Users\Ali-Salman\AppData\Local\Temp\rcms-formal-truncate-20261029\replay.xml -
+=========================== short test summary info ===========================
+FAILED replay\tests\python\fast\test_project_format.py::test_failed_atomic_replace_preserves_the_previous_project
+================= 1 failed, 7 passed, 46 deselected in 2.05s ==================

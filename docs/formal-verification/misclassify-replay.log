@@ -1,0 +1,315 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\Ali-Salman\AppData\Local\Temp\rcms-formal-misclassify-20261029\replay
+plugins: xdist-3.8.0
+collecting ... collected 54 items / 46 deselected / 8 selected
+
+replay\tests\python\fast\test_project_format.py::test_failed_atomic_replace_preserves_the_previous_project PASSED [ 12%]
+replay\tests\python\fast\test_project_format.py::test_pre_replace_failures_preserve_previous_project_and_clean_temporary_files PASSED [ 25%]
+replay\tests\python\fast\test_project_format.py::test_serialization_and_schema_recursion_errors_use_project_format_boundary PASSED [ 37%]
+replay\tests\python\fast\test_project_format.py::test_cleanup_failure_preserves_and_annotates_the_primary_error PASSED [ 50%]
+replay\tests\python\fast\test_project_format.py::test_supported_directory_fsync_runs_after_atomic_replacement PASSED [ 62%]
+replay\tests\python\fast\test_project_format.py::test_post_replace_directory_fsync_failure_reports_new_file_is_installed FAILED [ 75%]
+replay\tests\python\fast\test_project_format.py::test_post_replace_directory_close_failure_reports_durability_uncertainty FAILED [ 87%]
+replay\tests\python\fast\test_project_format.py::test_directory_close_failure_annotates_primary_post_replace_fsync_error FAILED [100%]
+
+================================== FAILURES ===================================
+___ test_post_replace_directory_fsync_failure_reports_new_file_is_installed ___
+
+fd = 988
+
+        lambda fd: (
+>           (_ for _ in ()).throw(OSError("directory fsync"))
+            if fd == 988
+            else real_fsync(fd)
+        ),
+    )
+
+replay\tests\python\fast\test_project_format.py:1008:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+.0 = <tuple_iterator object at 0x0000017399BA7B20>
+
+>           (_ for _ in ()).throw(OSError("directory fsync"))
+            if fd == 988
+            else real_fsync(fd)
+        ),
+    )
+E   OSError: directory fsync
+
+replay\tests\python\fast\test_project_format.py:1008: OSError
+
+The above exception was the direct cause of the following exception:
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000017399BDC790>
+tmp_path = WindowsPath('C:/Users/Ali-Salman/AppData/Local/Temp/rcms-formal-misclassify-20261029/pytest-data/test_post_replace_directory_fs0')
+
+    def test_post_replace_directory_fsync_failure_reports_new_file_is_installed(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        destination = tmp_path / "post-replace.rcms"
+        save_project(destination, _minimal_project(), _minimal_state())
+        changed = _minimal_project()
+        _object(changed["dataset"])["title"] = "Already replaced"
+        real_fsync = project_format.os.fsync
+
+        monkeypatch.setattr(project_format, "_supports_directory_fsync", lambda: True)
+        monkeypatch.setattr(project_format, "_open_directory", lambda *_args: 988)
+        monkeypatch.setattr(project_format, "_close_directory", lambda _fd: None)
+        monkeypatch.setattr(
+            project_format.os,
+            "fsync",
+            lambda fd: (
+                (_ for _ in ()).throw(OSError("directory fsync"))
+                if fd == 988
+                else real_fsync(fd)
+            ),
+        )
+
+        with pytest.raises(ProjectDurabilityError, match="new file is already installed"):
+>           save_project(destination, changed, _minimal_state())
+
+replay\tests\python\fast\test_project_format.py:1015:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+replay\src\rc_metastudio\project_format.py:532: in save_project
+    _fsync_parent_directory(destination)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+destination = WindowsPath('C:/Users/Ali-Salman/AppData/Local/Temp/rcms-formal-misclassify-20261029/pytest-data/test_post_replace_directory_fs0/post-replace.rcms')
+
+    def _fsync_parent_directory(destination: Path) -> None:
+        if not _supports_directory_fsync():
+            return
+        flags = os.O_RDONLY | cast(int, getattr(os, "O_DIRECTORY", 0))
+        descriptor: int | None = None
+        durability_error: ProjectDurabilityError | None = None
+        primary_cause: OSError | None = None
+        try:
+            descriptor = _open_directory(destination.parent, flags)
+            os.fsync(descriptor)
+        except OSError as exc:
+            durability_error = ProjectFormatError(
+                "project was atomically replaced, but directory durability could not be confirmed; the new file is already installed"
+            )
+            primary_cause = exc
+        finally:
+            if descriptor is not None:
+                try:
+                    _close_directory(descriptor)
+                except OSError as close_error:
+                    if durability_error is None:
+                        durability_error = ProjectFormatError(
+                            "project was atomically replaced, but closing the parent directory handle failed; directory durability is uncertain and the new file is already installed"
+                        )
+                        primary_cause = close_error
+                    else:
+                        durability_error.add_note(
+                            f"closing the parent directory handle also failed: {close_error}"
+                        )
+        if durability_error is not None:
+>           raise durability_error from primary_cause
+E           rc_metastudio.project_format.ProjectFormatError: project was atomically replaced, but directory durability could not be confirmed; the new file is already installed
+
+replay\src\rc_metastudio\project_format.py:459: ProjectFormatError
+__ test_post_replace_directory_close_failure_reports_durability_uncertainty ___
+
+_fd = 989
+
+>       lambda _fd: (_ for _ in ()).throw(OSError("directory close")),
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+
+replay\tests\python\fast\test_project_format.py:1033:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+.0 = <tuple_iterator object at 0x0000017399EA7A90>
+
+>       lambda _fd: (_ for _ in ()).throw(OSError("directory close")),
+    )
+E   OSError: directory close
+
+replay\tests\python\fast\test_project_format.py:1033: OSError
+
+The above exception was the direct cause of the following exception:
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000017399BEAE50>
+tmp_path = WindowsPath('C:/Users/Ali-Salman/AppData/Local/Temp/rcms-formal-misclassify-20261029/pytest-data/test_post_replace_directory_cl0')
+
+    def test_post_replace_directory_close_failure_reports_durability_uncertainty(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        destination = tmp_path / "close-failure.rcms"
+        changed = _minimal_project()
+        _object(changed["dataset"])["title"] = "Installed before close failure"
+        real_fsync = project_format.os.fsync
+
+        monkeypatch.setattr(project_format, "_supports_directory_fsync", lambda: True)
+        monkeypatch.setattr(project_format, "_open_directory", lambda *_args: 989)
+        monkeypatch.setattr(
+            project_format,
+            "_close_directory",
+            lambda _fd: (_ for _ in ()).throw(OSError("directory close")),
+        )
+        monkeypatch.setattr(
+            project_format.os,
+            "fsync",
+            lambda fd: None if fd == 989 else real_fsync(fd),
+        )
+
+        with pytest.raises(
+            ProjectDurabilityError, match="new file is already installed"
+        ) as error:
+>           save_project(destination, changed, _minimal_state())
+
+replay\tests\python\fast\test_project_format.py:1044:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+replay\src\rc_metastudio\project_format.py:532: in save_project
+    _fsync_parent_directory(destination)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+destination = WindowsPath('C:/Users/Ali-Salman/AppData/Local/Temp/rcms-formal-misclassify-20261029/pytest-data/test_post_replace_directory_cl0/close-failure.rcms')
+
+    def _fsync_parent_directory(destination: Path) -> None:
+        if not _supports_directory_fsync():
+            return
+        flags = os.O_RDONLY | cast(int, getattr(os, "O_DIRECTORY", 0))
+        descriptor: int | None = None
+        durability_error: ProjectDurabilityError | None = None
+        primary_cause: OSError | None = None
+        try:
+            descriptor = _open_directory(destination.parent, flags)
+            os.fsync(descriptor)
+        except OSError as exc:
+            durability_error = ProjectFormatError(
+                "project was atomically replaced, but directory durability could not be confirmed; the new file is already installed"
+            )
+            primary_cause = exc
+        finally:
+            if descriptor is not None:
+                try:
+                    _close_directory(descriptor)
+                except OSError as close_error:
+                    if durability_error is None:
+                        durability_error = ProjectFormatError(
+                            "project was atomically replaced, but closing the parent directory handle failed; directory durability is uncertain and the new file is already installed"
+                        )
+                        primary_cause = close_error
+                    else:
+                        durability_error.add_note(
+                            f"closing the parent directory handle also failed: {close_error}"
+                        )
+        if durability_error is not None:
+>           raise durability_error from primary_cause
+E           rc_metastudio.project_format.ProjectFormatError: project was atomically replaced, but closing the parent directory handle failed; directory durability is uncertain and the new file is already installed
+
+replay\src\rc_metastudio\project_format.py:459: ProjectFormatError
+___ test_directory_close_failure_annotates_primary_post_replace_fsync_error ___
+
+fd = 990
+
+        lambda fd: (
+>           (_ for _ in ()).throw(OSError("directory fsync"))
+            if fd == 990
+            else real_fsync(fd)
+        ),
+    )
+
+replay\tests\python\fast\test_project_format.py:1072:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+.0 = <tuple_iterator object at 0x0000017399BA5210>
+
+>           (_ for _ in ()).throw(OSError("directory fsync"))
+            if fd == 990
+            else real_fsync(fd)
+        ),
+    )
+E   OSError: directory fsync
+
+replay\tests\python\fast\test_project_format.py:1072: OSError
+
+The above exception was the direct cause of the following exception:
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000017399C26110>
+tmp_path = WindowsPath('C:/Users/Ali-Salman/AppData/Local/Temp/rcms-formal-misclassify-20261029/pytest-data/test_directory_close_failure_a0')
+
+    def test_directory_close_failure_annotates_primary_post_replace_fsync_error(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        destination = tmp_path / "fsync-and-close-failure.rcms"
+        changed = _minimal_project()
+        _object(changed["dataset"])["title"] = "Installed before both failures"
+        real_fsync = project_format.os.fsync
+
+        monkeypatch.setattr(project_format, "_supports_directory_fsync", lambda: True)
+        monkeypatch.setattr(project_format, "_open_directory", lambda *_args: 990)
+        monkeypatch.setattr(
+            project_format,
+            "_close_directory",
+            lambda _fd: (_ for _ in ()).throw(OSError("directory close")),
+        )
+        monkeypatch.setattr(
+            project_format.os,
+            "fsync",
+            lambda fd: (
+                (_ for _ in ()).throw(OSError("directory fsync"))
+                if fd == 990
+                else real_fsync(fd)
+            ),
+        )
+
+        with pytest.raises(
+            ProjectDurabilityError, match="new file is already installed"
+        ) as error:
+>           save_project(destination, changed, _minimal_state())
+
+replay\tests\python\fast\test_project_format.py:1081:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+replay\src\rc_metastudio\project_format.py:532: in save_project
+    _fsync_parent_directory(destination)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+destination = WindowsPath('C:/Users/Ali-Salman/AppData/Local/Temp/rcms-formal-misclassify-20261029/pytest-data/test_directory_close_failure_a0/fsync-and-close-failure.rcms')
+
+    def _fsync_parent_directory(destination: Path) -> None:
+        if not _supports_directory_fsync():
+            return
+        flags = os.O_RDONLY | cast(int, getattr(os, "O_DIRECTORY", 0))
+        descriptor: int | None = None
+        durability_error: ProjectDurabilityError | None = None
+        primary_cause: OSError | None = None
+        try:
+            descriptor = _open_directory(destination.parent, flags)
+            os.fsync(descriptor)
+        except OSError as exc:
+            durability_error = ProjectFormatError(
+                "project was atomically replaced, but directory durability could not be confirmed; the new file is already installed"
+            )
+            primary_cause = exc
+        finally:
+            if descriptor is not None:
+                try:
+                    _close_directory(descriptor)
+                except OSError as close_error:
+                    if durability_error is None:
+                        durability_error = ProjectFormatError(
+                            "project was atomically replaced, but closing the parent directory handle failed; directory durability is uncertain and the new file is already installed"
+                        )
+                        primary_cause = close_error
+                    else:
+                        durability_error.add_note(
+                            f"closing the parent directory handle also failed: {close_error}"
+                        )
+        if durability_error is not None:
+>           raise durability_error from primary_cause
+E           rc_metastudio.project_format.ProjectFormatError: project was atomically replaced, but directory durability could not be confirmed; the new file is already installed
+E           closing the parent directory handle also failed: directory close
+
+replay\src\rc_metastudio\project_format.py:459: ProjectFormatError
+- generated xml file: C:\Users\Ali-Salman\AppData\Local\Temp\rcms-formal-misclassify-20261029\replay.xml -
+=========================== short test summary info ===========================
+FAILED replay\tests\python\fast\test_project_format.py::test_post_replace_directory_fsync_failure_reports_new_file_is_installed
+FAILED replay\tests\python\fast\test_project_format.py::test_post_replace_directory_close_failure_reports_durability_uncertainty
+FAILED replay\tests\python\fast\test_project_format.py::test_directory_close_failure_annotates_primary_post_replace_fsync_error
+================= 3 failed, 5 passed, 46 deselected in 1.97s ==================

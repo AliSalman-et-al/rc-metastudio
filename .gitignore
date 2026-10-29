@@ -52,6 +52,7 @@ src/RCMetaStudio*.spec
 !.agents/skills/
 .agents/skills/*
 !.agents/skills/verify-rcms/
+!.agents/skills/app-lifecycle/
 .codex/
 .claude/
 .codex-tmp/

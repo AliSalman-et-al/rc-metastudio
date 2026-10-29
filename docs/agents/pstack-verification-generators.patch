@@ -1,0 +1,80 @@
+--- a/skills/create-verification-skill/SKILL.md
++++ b/skills/create-verification-skill/SKILL.md
+@@ -29,2 +29,7 @@
+
++If this repo already has a driver skill, improve that skill in place and retain its
++name and working harness. Merge overlapping instructions rather than creating a
++second driver. Provide a callable way to evaluate a candidate change; leave the
++choice and iteration of improvements to the agent's task.
++
+ Write `.claude/skills/verify/SKILL.md` with YAML frontmatter (`name: verify` and a `description` that names the app, the surface, and when to reach for it — without frontmatter the skill never registers, and with `disable-model-invocation` the model cannot call it) and these sections, each grounded in what the interview actually found (no placeholders left):
+@@ -37,2 +42,31 @@
+ - **Helpers:** any script the skill ships is executable and its invocation is shown in the skill body. A helper the reader has to reverse-engineer is not a helper.
++
++Make verification useful as feedback for autonomous improvement without generating
++an improvement loop or choosing product changes:
++
++- **Stable acceptance criteria:** state which functional results, data, persistence
++  and failure/recovery behavior each journey protects. Keep those checks independent
++  of incidental layout, wording and implementation so UI/UX can improve freely.
++  Intentional presentation changes need not match old screenshots pixel for pixel.
++- **UI/UX evidence:** capture the real changed entry point and rendered result,
++  with relevant keyboard/focus, validation, layout and accessibility observations.
++  Check the underlying action and saved/numerical result as applicable. Visual
++  quality and preserved functionality are separate assessments; neither proves the
++  other. Use existing oracles rather than blessing current output.
++- **Cheap, repeatable feedback:** name the existing commands for a targeted feature
++  check and the broader integration/numerical gates needed for shared changes or
++  handoff. Fresh isolated state and deterministic fixtures must allow repeated
++  candidate evaluations without consuming a previous run's state. Reuse evidence
++  only when its source, inputs and runtime still match.
++- **Actionable outcomes:** distinguish passed, failed and not checked; identify the
++  failed action, expected versus observed result, reproduction command and retained
++  evidence. Bind results to the candidate source/runtime. Compare with a baseline
++  when diagnosing regressions; an existing failure remains a finding, not a pass.
++- **Complementary coverage:** link an existing formal skill for changes to its
++  covered code. Neither a model pass nor one convenient journey proves the whole
++  app. Do not weaken tests, oracles, invariants or coverage to manufacture a pass;
++  changed expectations require an intended requirement change and a stated reason.
++
++Reuse the repo's harness and result format. Add no scheduler, agent framework or
++new reporting layer merely to make these checks callable.
+
+--- a/skills/create-formal-verification-skill/SKILL.md
++++ b/skills/create-formal-verification-skill/SKILL.md
+@@ -29,3 +29,3 @@
+ - **Able to fail.** A check that you have never seen fail proves nothing. Show each property failing on a broken variant of the code it guards, such as a removed check or a reordered step.
+-- **Findings stay findings.** When the current code breaks the property, report it with the counterexample in the code's terms. Do not weaken the property or the model until it passes, and do not change product code unless the user asks.
++- **Findings stay findings.** When the current code breaks the property, report it with the counterexample in the code's terms. Do not weaken the property or the model until it passes. In a verification-only task, leave product code unchanged. During an authorized improvement task, fix defects within that scope and rerun the checks without asking for permission again.
+ - **Honest about scope.** Say what is verified, under which bounds and assumptions, and what is left out. A pass covers the model or the bound, not the whole system.
+@@ -37,2 +37,6 @@
+
++Extend an existing project formal skill when its area already covers the target;
++merge overlap rather than creating competing coverage records or runners. Keep the
++existing app-driving skill responsible for real user workflows and UI/UX evidence.
++
+ Write a project-local skill with frontmatter that names the area and says when to use it. Name the skill for the area, never `verify` or a `verify-` prefix, which belong to the driver skill `/create-verification-skill` writes. On Claude Code it lives at `.claude/skills/<area>/SKILL.md`. Without frontmatter, the skill never registers. From the skill alone, the next agent must be able to tell whether a change touches the verified code, run the check, tell a real bug from a modeling error, and update the verification when a change is intended. Put the coverage record and the sync commit in the skill, and tell the next agent to move the sync commit forward only after it confirms that the verification describes the code at the new commit. Use this repo's real commands, paths, and nouns, and leave no placeholders.
+@@ -40,3 +44,23 @@
+ If the check is a TLA+ model, tell the next agent to read every result with the pstack [`/statechart`](../statechart/SKILL.md) skill. It shows each invariant violation the checker finds as its shortest path in plain words. When the check passes, `/statechart` draws a chart of how the system moves between states. Refer to `/statechart` by name. Its commands, options, and file paths change between releases and machines, so copy none of them into the generated skill or its scripts.
++
++Make the generated skill a reliable acceptance check that an autonomous
++improvement process can call; do not generate or prescribe that process:
++
++- Keep invariants about user-important behavior independent of incidental UI or
++  implementation choices. A candidate may change the design while preserving those
++  promises. Check code/model correspondence against the sync commit before trusting
++  a pass; an unchanged model cannot establish correctness of changed code by itself.
++- Provide a cheap reproducible command and results tied to the candidate source,
++  inputs, tool version and bounds. Distinguish an invariant violation from a tool
++  failure or unexamined property, and retain a concrete counterexample/reproduction.
++  Existing findings remain findings when comparing candidates.
++- Preserve the broken-code demonstration as evidence that each check can detect
++  the defect it guards. Recheck it when the property, verifier or code/model mapping
++  changes. Update the sync commit only after correspondence is confirmed and checks
++  pass. Never weaken a property merely to accept a candidate.
++- Link the existing app-driving skill for functional, UI/UX and numerical evidence
++  outside the formal scope. The verifier constrains modeled behavior; it does not
++  score visual quality or establish whole-app regression safety. Do not add models,
++  duplicate runners or new orchestration just to support repeated evaluations.
+
+ ## Prove it before you hand off

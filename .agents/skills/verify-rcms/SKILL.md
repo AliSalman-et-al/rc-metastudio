@@ -5,7 +5,32 @@ description: Verify RC MetaStudio desktop workflows with real Qt and R, capture 
 
 # Verify RC MetaStudio
 
+For the app lifecycle statecharts and formal project-save safety checks, use the
+project-local `app-lifecycle` skill in `../app-lifecycle/SKILL.md`. That skill owns
+formal models and persistence fault replay; this skill owns real Qt/R workflows.
+Use both checks when a candidate touches modeled behavior. A passing formal model
+does not establish that desktop or statistical workflows still work.
+
 Prove the changed user behavior with the real application. Read the [feature index](features/README.md), the [coverage checklist](references/coverage.md), then the affected feature. Use `CONTEXT.md` for domain terms, `docs/testing.md` for retained failure tests, and the relevant `docs/adr/` decisions. ADR-0008 owns the release oracle; ADR-0010 requires a real R runtime. A green basic analysis is insufficient after a shared analysis change.
+
+## Evaluate a candidate change
+
+Use the mapped scenario directly for targeted feedback; the Drive section names
+the complete-matrix/full-profile gates for shared changes and handoff. Each run
+owns fresh state, so repeated evaluations cannot depend on earlier edits. Reuse
+only evidence that satisfies the existing source/runtime/fixture checks.
+
+For UI/UX changes, inspect the actual changed entry point and rendered result, plus
+relevant keyboard/focus, validation, layout and accessibility behavior. Preserve
+study data, analysis results, save/reopen and failure recovery as applicable. An
+intentional presentation change need not match old pixels; screenshots alone do
+not prove that the underlying action still works. Use the feature's existing
+numerical and persistence assertions rather than blessing current output.
+
+Report passed, failed and unexercised paths with the failed action, expected and
+observed behavior, exact command and evidence directory. Distinguish baseline
+failures from new regressions without calling either a pass. This skill supplies
+verification feedback; the calling task determines which improvements to pursue.
 
 ## Launch
 
@@ -47,6 +72,13 @@ The full R-stack lane runs bridge drivers serially and desktop scenarios in fres
 Run `uv run python scripts/verify_rcms.py doctor` before driving a newly configured runtime or whenever readiness is uncertain. This reads runtime identity and opens an empty application in isolated settings; it does not edit projects. Each proof run repeats the same check before its feature.
 
 Inspect the printed evidence directory. `runtime.json` records the actual R home and libraries, authority versions, RCMetaR/rpy2/Qt versions, platform plugin, and Qt build root. Missing dependencies, version mismatches, startup errors, or a nonzero process exit fail the check. An absent `runtime.json` means startup failed before identity could be recorded.
+
+On Windows, offscreen runs copy the system's Segoe UI regular/bold/italic faces
+into the run's owned font directory so an unrelated installed font cannot become
+Qt's default. An explicit `QT_QPA_FONTDIR` override is honored. The copied fonts
+survive in `workflow/fonts` as hashed evidence; the scratch copies are cleaned up.
+Native runs use Windows font selection directly. Font/glyph failures remain
+failures; do not disable the doctor assertion.
 
 ## Drive
 

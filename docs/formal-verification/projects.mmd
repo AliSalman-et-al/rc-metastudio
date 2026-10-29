@@ -1,0 +1,27 @@
+---
+title: "RC MetaStudio - projects and workspace"
+---
+stateDiagram-v2
+  s0: Workspace
+  s1: Project action allowed
+  s2: Main window closed
+  s3: Open project
+  s4: New dataset or CSV wizard
+  s5: Save project
+  s6: Unsaved changes prompt
+  s7: Save before replacing or closing
+  [*] --> s0
+  s0 --> s1: you request New, Open, Import or Close
+  s1 --> s2: you close the main window
+  s1 --> s4: you import CSV or Excel data or you start a new dataset
+  s1 --> s3: you open a project
+  s3 --> s0: the validated project opens or you cancel or the operation fails
+  s4 --> s0: you finish creating or importing or you cancel or the operation fails
+  s0 --> s5: you save or Save As
+  s0 --> s6: you request New, Open, Import or Close
+  s5 --> s0: you cancel or the operation fails or the file is installed, possibly with a durability warning
+  s6 --> s1: you discard changes
+  s6 --> s7: you choose Save
+  s6 --> s0: you cancel or the operation fails
+  s7 --> s1: the file is installed, possibly with a durability warning
+  s7 --> s0: you cancel or the operation fails
