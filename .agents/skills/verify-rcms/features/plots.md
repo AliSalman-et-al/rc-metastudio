@@ -2,6 +2,13 @@
 
 Users inspect analysis summaries and plots, apply plot edits, discard subsequent drafts, and export rendered figures.
 
+`project-plot-state-ownership` creates two real GUI analyses with different included
+study sets, loads A then B, and applies A through the production plot interface.
+The saved plot must retain A's study labels, study estimates and pooled estimate;
+B's persisted files must remain unchanged. Missing data/parameter/result files
+must fail without changing A's saved files. This targeted R-state interleaving
+drive complements the actual editor-button and four-format export workflows.
+
 ## Sub-features
 
 - `results-render`: actual summary text and valid rendered analysis plots.

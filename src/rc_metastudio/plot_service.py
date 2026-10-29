@@ -13,6 +13,7 @@ from typing import Callable, Protocol, cast
 
 from rc_metastudio import r_bridge
 from rc_metastudio.analysis_results import PlotRegenerator
+from rc_metastudio.r_call_serialization import serialized_r_call
 
 
 class PlotServiceError(RuntimeError):
@@ -61,6 +62,7 @@ class PlotService:
     def __init__(self, bridge: PlotBackend | None = None) -> None:
         self.bridge = bridge if bridge is not None else cast(PlotBackend, r_bridge)
 
+    @serialized_r_call
     def load_params(self, params_path: str) -> dict[str, object] | None:
         """Load persisted plot parameters, returning ``None`` when unavailable."""
         params = self.bridge.load_vars_for_plot(params_path, return_params_dict=True)
@@ -75,6 +77,7 @@ class PlotService:
             result[key] = value
         return result
 
+    @serialized_r_call
     def apply_edits(
         self,
         *,
@@ -84,6 +87,11 @@ class PlotService:
         output_path: str,
     ) -> None:
         """Persist parameters, regenerate data, and render an edited plot."""
+        if regenerator == "none":
+            raise PlotServiceError("Plot is not editable: %s" % regenerator)
+        # R globals belong to the last bridge operation, not to this editor.
+        if self.bridge.load_vars_for_plot(params_path) is False:
+            raise PlotServiceError("Stored plot inputs are unavailable: %s" % params_path)
         if regenerator == "funnel":
             self._apply_funnel_edits(
                 params_path, updated_params, output_path, self.bridge
@@ -127,12 +135,14 @@ class PlotService:
             return
         raise PlotServiceError("Plot is not editable: %s" % regenerator)
 
+    @serialized_r_call
     def export(
         self, *, regenerator: PlotRegenerator, params_path: str, output_path: str
     ) -> None:
         """Render a stored plot to an already validated destination path."""
         if regenerator == "funnel":
-            self.bridge.load_vars_for_plot(params_path)
+            if self.bridge.load_vars_for_plot(params_path) is False:
+                raise PlotServiceError("Stored plot inputs are unavailable: %s" % params_path)
             self.bridge.generate_small_study_effects_funnel(output_path)
             return
         if regenerator == "forest":

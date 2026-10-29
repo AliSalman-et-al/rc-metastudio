@@ -26,6 +26,8 @@ SCENARIOS = (
     "project-shell",
     "project-unsaved-actions",
     "project-unsaved-discard",
+    "project-request-cardinality",
+    "project-plot-state-ownership",
     "project-display-labels",
     "project-round6-polish",
     "project-release-coefficients",
@@ -1925,6 +1927,10 @@ def run(app, window, scenario, record):
 
         unsaved_actions(app, window, Path(sys.argv[2]), ROOT, record,
                         discard=scenario == "project-unsaved-discard")
+    elif scenario in {"project-request-cardinality", "project-plot-state-ownership"}:
+        from tests.e2e.operation_contracts import run as operation_contracts
+
+        operation_contracts(app, window, scenario, record)
     elif scenario.startswith("options-"):
         options(app, window, scenario.removeprefix("options-"), record)
     elif scenario.startswith("plot-workflow-"):

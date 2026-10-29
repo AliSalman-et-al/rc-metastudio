@@ -8,6 +8,13 @@ from rc_metastudio import plot_service, r_bridge
 from rc_metastudio.plot_service import PlotService, PlotServiceError
 
 
+@pytest.fixture(autouse=True)
+def loaded_plot_inputs(monkeypatch):
+    """Filesystem fault cases start after successful R input loading."""
+    monkeypatch.setattr(r_bridge, "load_vars_for_plot",
+                        lambda _path, return_params_dict=False: True)
+
+
 def test_load_params_returns_none_when_artifact_is_missing(monkeypatch):
     monkeypatch.setattr(
         "rc_metastudio.plot_service.r_bridge.load_vars_for_plot",

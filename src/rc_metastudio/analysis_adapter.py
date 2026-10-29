@@ -373,41 +373,19 @@ def execute_analysis_requests(
     if len(data_types) != 1:
         raise ValueError("One execution cannot mix analysis data families.")
     data_type = requests[0].data_type
-    if data_type == "binary":
-        return _execute_binary_request(model, requests, selected_covariates)
-    if data_type == "continuous":
-        return _execute_continuous_request(model, requests, selected_covariates)
     if data_type == "diagnostic":
         return _execute_diagnostic_request(model, requests)
-    if data_type in ("time_to_event", "event_rates"):
-        r_bridge.dataset_to_simple_ratio_r_object(model, **_conversion_kwargs(selected_covariates))
-        return _typed_result(r_bridge.run_versioned_analysis_request(requests[0].to_mapping()))
-    raise ValueError("Unsupported analysis data family: %s" % data_type)
-
-
-def _execute_binary_request(
-    model: object,
-    requests: Sequence[AnalysisRequest],
-    selected_covariates: Sequence[analysis_dataset.Covariate],
-) -> AnalysisResult:
     if len(requests) != 1:
-        raise ValueError("Binary execution requires exactly one request.")
-    r_bridge.dataset_to_simple_binary_r_object(
-        model, **_conversion_kwargs(selected_covariates)
-    )
-    return _typed_result(r_bridge.run_versioned_analysis_request(requests[0].to_mapping()))
-
-
-def _execute_continuous_request(
-    model: object,
-    requests: Sequence[AnalysisRequest],
-    selected_covariates: Sequence[analysis_dataset.Covariate],
-) -> AnalysisResult:
-    if len(requests) != 1:
-        raise ValueError("Continuous execution requires exactly one request.")
-    r_bridge.dataset_to_simple_continuous_r_object(
-        model, **_conversion_kwargs(selected_covariates)
-    )
+        raise ValueError("Non-diagnostic execution requires exactly one request.")
+    conversion_kwargs = _conversion_kwargs(selected_covariates)
+    if data_type == "binary":
+        r_bridge.dataset_to_simple_binary_r_object(model, **conversion_kwargs)
+    elif data_type == "continuous":
+        r_bridge.dataset_to_simple_continuous_r_object(model, **conversion_kwargs)
+    elif data_type in ("time_to_event", "event_rates"):
+        r_bridge.dataset_to_simple_ratio_r_object(model, **conversion_kwargs)
+    else:
+        raise ValueError("Unsupported analysis data family: %s" % data_type)
     return _typed_result(
         r_bridge.run_versioned_analysis_request(requests[0].to_mapping())
     )
@@ -419,13 +397,6 @@ def _execute_diagnostic_request(
     if not isinstance(model, DiagnosticExecutionModel):
         raise TypeError("Diagnostic execution requires the diagnostic model queries.")
     return _run_diagnostic_analysis_isolating_metric_failures(model, requests)
-
-
-def execute_small_study_effects_request(model, request):
-    """Execute the dedicated immutable small-study effects request boundary."""
-    from rc_metastudio.publication_bias import execute_small_study_effects
-
-    return execute_small_study_effects(model, request)
 
 
 def _conversion_kwargs(

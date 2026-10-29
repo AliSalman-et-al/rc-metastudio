@@ -85,22 +85,22 @@ the guards; the default formal command alone does not exercise those GUI paths.
 
 ## Coverage and synchronization
 
-Last code correspondence review: `7f1057d626ce5b7e4a351ca4a1e80ad0062cd127`.
+Last code correspondence review: `f79aee5fe43fd7021f0e014955f533586136756e`.
 Read the diff from that commit before trusting the models. Move this sync commit
 forward **only after confirming that the model still describes the covered code**,
 updating the mapping and rerunning both baseline and relevant mutations.
 
 | Model/check | Covered code |
 | --- | --- |
-| App project flow | `main_window.py`: `start`, `_authorize_destructive_project_action`, `_confirm_close`, `create_new_dataset`, `_import_csv`, `open`, `save`, `_handle_wizard_results`; `main_wizard.py`: page routing and `get_results` |
+| App project flow | `main_window.py`: `start`, `_authorize_destructive_project_action`, `closeEvent`, `create_new_dataset`, `_import_csv`, `open`, `save`, `_handle_wizard_results`; `main_wizard.py`: page routing and `get_results` |
 | App editing/analysis/results overview | `main_window.py`: `data_dirtied`, `undo`, `redo`, `go`, `cum_ma`, `loo_ma`, `meta_subgroup`, `meta_reg`, `publication_bias`, `analysis`; `analysis_setup_dialog.py`: `run_ma`; `results_window.py`: `ResultsWindow`, plot edit/export routes; `plot_editor_dialog.py`: `_commit`, `mark_commit_succeeded`, `mark_commit_failed`; `plot_service.py`: `apply_edits`, `export` |
 | Save invariants | `project_format.py`: `save_project`, `_write_container`, `load_project`, `_fsync_parent_directory`, `_cleanup_temporary` |
-| Unsaved-work consent | `main_window.py`: `_authorize_destructive_project_action`, `_confirm_close`, `save`; `tests/e2e/unsaved_actions.py` drives New/Open shortcuts, Import/Quit menu entries and Close with real prompts and storage |
+| Unsaved-work consent | `main_window.py`: `_authorize_destructive_project_action`, `closeEvent`, `save`; `tests/e2e/unsaved_actions.py` drives New/Open shortcuts, Import/Quit menu entries and Close with real prompts and storage |
 | Real-code replay | Eight named existing tests listed in `check.py`, from `tests/python/fast/test_project_format.py`; fault injection uses real ZIP/filesystem save/load, with synthetic I/O errors and simulated directory handles |
 | Consumers reviewed, not formally checked | `workspace_session.py:WorkspaceSession.save`, `main_window.py:MainWindow.save` durability-error handling |
 
 For the consent property's broken-code demonstration, a scratch change from
-`self.save() is True` to `self.save() is not False` in the two guards admits a
+`self.save() is True` to `self.save() is not False` in the shared guard admits a
 cancelled Save As. Run `project-unsaved-actions` through `scripts/verify_rcms.py`
 in that scratch checkout: it must reject the unauthorized New wizard. In the
 matching model variant, set `Mutation = "allow-cancelled-save"` in a scratch

@@ -341,7 +341,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     ) -> None:
         if event is None:
             return
-        if not self._confirm_close():
+        if not self._authorize_destructive_project_action():
             event.ignore()
             return
         self._disconnect_model_signals()
@@ -349,16 +349,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         save_settings()
         event.accept()
 
-    def _confirm_close(self):
-        if not self.workspace.is_dirty:
-            return True
-        choice = self.prompt_to_save_unsaved_data()
-        if choice == QMessageBox.StandardButton.Yes:
-            return self.save() is True
-        return choice == QMessageBox.StandardButton.No
-
     def _authorize_destructive_project_action(self):
-        """Return whether New/Open/Import may replace the current project."""
+        """Require consent before replacing or closing the current project."""
         if not self.workspace.is_dirty:
             return True
         choice = self.prompt_to_save_unsaved_data()

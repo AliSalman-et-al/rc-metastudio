@@ -2,6 +2,12 @@
 
 Users select included studies, choose a statistical method and parameters, run the analysis, and read package-authoritative numerical results and plots.
 
+`project-request-cardinality` builds HR/IRR requests through the real setup dialog
+and requires execution to reject extra requests instead of silently ignoring them.
+It also executes each single request with real R and checks the workspace is
+unchanged. Diagnostic multi-request execution remains covered by the combined
+diagnostic scenario.
+
 ## Sub-features
 
 - `analysis-binary`: amino project, binary random-effects analysis.
