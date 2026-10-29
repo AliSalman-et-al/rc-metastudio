@@ -37,8 +37,14 @@ The command prints a new scratch evidence folder outside the repository. It chec
 against a retained scratch copy of production source. It downloads TLC release
 1.7.4 once, verifies its SHA-256, and records Java/Python versions, exact child
 commands, input/output hashes, source revision, JUnit, logs and disposable project
-files. Exit zero requires both models and the real-code replay to pass. Inspect
-all three logs, not just the exit status. A tool/parse error is not a finding.
+files. Exit zero requires both models and all eight named real-code checks to
+execute and pass; missing or skipped checks cannot produce a pass. The manifest
+records `outcome` and `replay_coverage`. Exit 1 means a modeled invariant or real
+assertion failed; exit 2 means a tool/collection/report problem or incomplete
+coverage. Inspect all three logs, not just the exit status. A tool/parse error is
+not a finding.
+An early setup failure may leave partial evidence; inspect stderr for the missing
+prerequisite rather than treating the absent reports as completed checks.
 Use `--out` with a new absolute directory to choose where evidence lives.
 
 Read **every TLA+ result with pstack `/statechart`**, using the copied inputs in that
@@ -92,7 +98,7 @@ uv run python .agents/skills/app-lifecycle/check.py --mutation skip-validation
 uv run python .agents/skills/app-lifecycle/check.py --mutation misclassify
 ```
 
-Each must return nonzero with a named invariant violation **and** the corresponding
+Each must return exit 1 with a named invariant violation **and** the corresponding
 real-code assertion failure, not a syntax/import/tool failure. Read those results
 with `/statechart` too. `truncate` fails preservation on a failed `os.replace`;
 `skip-validation` fails installation validation; `misclassify` fails the installed

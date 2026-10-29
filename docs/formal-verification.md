@@ -261,3 +261,36 @@ work and detect the demonstrated defects. It does not establish the complete
 desktop matrix, all native UI/UX behavior, the independent numerical authority
 matrix, or release-package qualification; those gates were not run for this
 skill/harness change.
+
+## Required-check coverage hardening
+
+The formal helper formerly selected persistence checks with `pytest -k`. Renaming
+`test_cleanup_failure_preserves_and_annotates_the_primary_error` made it run seven
+tests and still exit zero. Marking that test skipped also exited zero. Both false
+passes were reproduced before changing the helper, with copied test inputs and
+commands retained in `%TEMP%/rcms-formal-gap-before-qr_d8vir/run` and
+`%TEMP%/rcms-formal-gap-before-q9tmrdtc/run`.
+
+The helper now selects exact pytest node IDs and verifies the JUnit report contains
+every required check with none skipped. Its result contract is exit 0 / `passed`,
+exit 1 / `failed` for invariant or real assertion failures, and exit 2 /
+`not_checked` for incomplete coverage or infrastructure errors. The manifest records
+the outcome, exit code and required/observed/skipped checks. Setup errors print an
+incomplete-check result even when they occur before a full manifest can be written.
+
+Verification after the change: missing and skipped checks both returned exit 2;
+running the helper with an empty child `PATH` (missing Java) also returned exit 2.
+All temporary test edits were restored byte for byte. The normal command returned
+exit 0 with eight checks executed, and all three deliberate code/model defects
+returned exit 1 with complete replay coverage. Formal evidence is retained in
+`%TEMP%/rcms-formal-6pja3ajm`, `rcms-formal-bght2pf4`, `rcms-formal-q5dhoqk1`,
+`rcms-formal-33s3l27w`, `rcms-formal-missing-9nkpvywp/run`, and
+`rcms-formal-skipped-3c_p6nb0/run`.
+
+The documented real Qt/R `doctor` and `editing` commands passed again, using the
+same isolated runtime described above. Their evidence is in
+`artifacts/verification/rcms/20261029T181716Z-7e7800e9-doctor` and
+`artifacts/verification/rcms/20261029T181723Z-e2ee5738-editing`. Typing and skill
+validation passed. All retained desktop/formal artifact hashes were rechecked and
+desktop scratch was removed. Exact failure-case commands and the audit are under
+`artifacts/verification/skill-hardening`. No app behavior or model was changed.

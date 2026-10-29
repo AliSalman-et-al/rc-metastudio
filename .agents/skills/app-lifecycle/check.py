@@ -10,7 +10,9 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import traceback
 import urllib.request
+import xml.etree.ElementTree as ET
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
@@ -65,7 +67,7 @@ def main() -> int:
     java = shutil.which("java")
     if java is None:
         raise RuntimeError("Install Java 11 or later and put java on PATH")
-    run([java, "-version"], "java-version")
+    java_code = run([java, "-version"], "java-version")
     codes = []
     for model in ["App", "ProjectSave"]:
         codes.append(run([java, "-XX:+UseParallelGC", "-cp", str(cache), "tlc2.TLC", "-workers", "1", "-fp", "0", "-lncheck", "final", "-config", f"{model}.cfg", f"{model}.tla"], model))
@@ -89,16 +91,41 @@ def main() -> int:
     test.parent.mkdir(parents=True)
     shutil.copy2(ROOT / "tests/python/fast/test_project_format.py", test)
     env = {**os.environ, "PYTHONPATH": str(scratch / "src")}
-    codes.append(run([sys.executable, "-m", "pytest", str(test), "--rootdir", str(scratch), "--confcutdir", str(scratch), "--basetemp", str(out / "pytest-data"), "--junitxml", str(out / "replay.xml"), "-v", "-k", " or ".join(TESTS)], "replay", env))
+    replay_code = run([sys.executable, "-m", "pytest", *(f"{test}::{name}" for name in TESTS), "--rootdir", str(scratch), "--confcutdir", str(scratch), "--basetemp", str(out / "pytest-data"), "--junitxml", str(out / "replay.xml"), "-v"], "replay", env)
+    replay_coverage: dict[str, object] = {"required": TESTS}
+    try:
+        cases = ET.parse(out / "replay.xml").getroot().findall(".//testcase")
+        observed = {case.attrib["name"].split("[", 1)[0] for case in cases}
+        skipped = [case.attrib["name"] for case in cases if case.find("skipped") is not None]
+        complete = observed == set(TESTS) and not skipped
+        replay_coverage.update(observed=sorted(observed), skipped=skipped, complete=complete)
+    except (OSError, ET.ParseError, KeyError) as error:
+        complete = False
+        replay_coverage.update(complete=False, error=str(error))
+    # A missing check or tool failure is inconclusive, not a product defect.
+    inconclusive = (
+        java_code != 0 or any(code not in {0, 11, 12, 13} for code in codes)
+        or replay_code not in {0, 1} or not complete
+    )
+    exit_code = 2 if inconclusive else 1 if replay_code or any(codes) else 0
+    outcome = {0: "passed", 1: "failed", 2: "not_checked"}[exit_code]
     manifest = {
         "command": [sys.executable, *sys.argv], "revision": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
         "mutation": args.mutation, "python": sys.version, "tlc_sha256": JAR_SHA,
-        "commands": commands,
+        "commands": commands, "outcome": outcome, "exit_code": exit_code,
+        "replay_coverage": replay_coverage,
         "hashes": {str(p.relative_to(out)): hashlib.sha256(p.read_bytes()).hexdigest() for p in out.rglob("*") if p.is_file()},
     }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    return 0 if all(code == 0 for code in codes) else 1
+    print(f"Outcome: {outcome}; required replay coverage complete: {complete}", flush=True)
+    return exit_code
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        result = main()
+    except Exception:
+        traceback.print_exc()
+        print("Outcome: not_checked; verification could not complete", file=sys.stderr)
+        result = 2
+    raise SystemExit(result)
