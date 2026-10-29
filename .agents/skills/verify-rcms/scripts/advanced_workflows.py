@@ -24,6 +24,8 @@ SCENARIOS = (
     "project-structure",
     "project-table-covariates",
     "project-shell",
+    "project-unsaved-actions",
+    "project-unsaved-discard",
     "project-display-labels",
     "project-round6-polish",
     "project-release-coefficients",
@@ -99,13 +101,21 @@ def modal(app, kind, drive, launch):
         finally:
             completed.append(True)
 
-    QtCore.QTimer.singleShot(0, ready)
-    launch()
-    deadline = QtCore.QDeadlineTimer(5000)
-    while not completed and not deadline.hasExpired():
-        QTest.qWait(10)
-    assert completed, ("modal did not open", kind)
-    assert not errors, errors
+    previous = app.property("verificationMessageHandlerPending")
+    if kind is QtWidgets.QMessageBox:
+        # Register before launch: the unexpected-message watchdog may run before
+        # ready() gets its first turn inside the new dialog's event loop.
+        app.setProperty("verificationMessageHandlerPending", True)
+    try:
+        QtCore.QTimer.singleShot(0, ready)
+        launch()
+        deadline = QtCore.QDeadlineTimer(5000)
+        while not completed and not deadline.hasExpired():
+            QTest.qWait(10)
+        assert completed, ("modal did not open", kind)
+        assert not errors, errors
+    finally:
+        app.setProperty("verificationMessageHandlerPending", previous)
 
 
 def raw_rows(window):
@@ -1910,6 +1920,11 @@ def run(app, window, scenario, record):
         table_covariates(app, window, record)
     elif scenario == "project-shell":
         shell(app, window, record)
+    elif scenario in {"project-unsaved-actions", "project-unsaved-discard"}:
+        from tests.e2e.unsaved_actions import run as unsaved_actions
+
+        unsaved_actions(app, window, Path(sys.argv[2]), ROOT, record,
+                        discard=scenario == "project-unsaved-discard")
     elif scenario.startswith("options-"):
         options(app, window, scenario.removeprefix("options-"), record)
     elif scenario.startswith("plot-workflow-"):

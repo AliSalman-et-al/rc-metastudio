@@ -8,7 +8,8 @@ is costly and ordinary desktop runs rarely exercise failing I/O.
 Open [the interactive charts](formal-verification/app-statecharts.html), or the
 standalone SVGs: [projects](formal-verification/projects.svg),
 [analyses/results](formal-verification/analysis.svg), and
-[save safety](formal-verification/save.svg). The canonical rerun instructions and
+[save safety](formal-verification/save.svg), and
+[unsaved-work consent](formal-verification/unsaved.svg). The canonical rerun instructions and
 code coverage record live in the [app-lifecycle skill](../.agents/skills/app-lifecycle/SKILL.md).
 
 ## Projects and workspace
@@ -203,6 +204,28 @@ still need real-app evidence. Passing this model alone does not establish app-wi
 regression safety. Add formal coverage only when a concrete task needs it; plot
 rollback remains outside the current formal checks.
 
+## Unsaved-work consent and redesign-safe acceptance
+
+`UnsavedActions.tla` adds a bounded decision model for replacing or closing a
+clean/dirty project. Across 13 reachable states, `AuthorizeOnlyWithConsent`
+requires clean work, explicit discard, or a successfully installed save before
+continuation. Cancelled and failed saves abort the action. The default formal
+runner now checks this model alongside the app overview and save model.
+
+The [passing report](formal-verification/unsaved-report.md) and
+[counterexample](formal-verification/unsaved-broken-report.md) show the normal
+decision and a deliberate cancelled-save authorization defect. The matching real
+GUI mutation also failed; production source was restored and the baseline passed.
+The `project-unsaved-actions` and `project-unsaved-discard` drives exercise real
+menus, shortcuts, prompts, storage, cancellation and discard. Native OS pickers
+remain substituted with test-owned paths.
+
+These properties preserve user decisions and data safety across redesigns. They
+do not prescribe current menus, widgets, wording, layouts or pixels. The
+[app verification audit](ux-audit/2026-10-29-app-verification.md) records the
+broader Qt/R checks, evidence, repairs and limits. Scientific and supported-task
+contracts remain authoritative when presentation drivers change.
+
 ## Executed skill check and harness repair
 
 The generator changes are retained as
@@ -256,11 +279,11 @@ override is honored and the assertion was not weakened. These failed runs are no
 counted as passes. An earlier startup attempt before resources were ready is also
 retained at `artifacts/verification/rcms/20261029T175824Z-00721e92-doctor`.
 
-This establishes that the skills' targeted formal and desktop verification paths
-work and detect the demonstrated defects. It does not establish the complete
+That initial check established that the skills' targeted formal and desktop verification paths
+worked and detected the demonstrated defects. It did not establish the complete
 desktop matrix, all native UI/UX behavior, the independent numerical authority
 matrix, or release-package qualification; those gates were not run for this
-skill/harness change.
+initial skill/harness change. The later broader audit is linked above.
 
 ## Required-check coverage hardening
 

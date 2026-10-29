@@ -15,6 +15,22 @@ Prove the changed user behavior with the real application. Read the [feature ind
 
 ## Evaluate a candidate change
 
+Protect the purpose described in `CONTEXT.md` and the active ADRs: usable evidence
+synthesis with package-authoritative meta-analysis and interpretable results.
+Acceptance protects scientific meaning, study identity/data, supported analysis
+capabilities, persistence, undo/cancellation and error recovery. The interface may
+change how users accomplish those tasks.
+
+Treat widget names, screen structure, exact wording, colours and screenshots as
+driver details or review evidence, not permanent acceptance criteria. For an
+intentional redesign, update selectors and presentation expectations while keeping
+the underlying task and independent data/numerical assertions. Require controls
+and information to remain discoverable, readable and operable with relevant
+keyboard/focus and accessibility paths; do not require the old pixel arrangement.
+Keep clinically meaningful labels, units, uncertainty and method qualifications
+correct even when their wording or placement improves. A changed scientific or
+functional promise requires an explicit task/ADR decision, not a baseline refresh.
+
 Use the mapped scenario directly for targeted feedback; the Drive section names
 the complete-matrix/full-profile gates for shared changes and handoff. Each run
 owns fresh state, so repeated evaluations cannot depend on earlier edits. Reuse
@@ -105,7 +121,7 @@ This runs the current-source R-stack lane (covering every desktop scenario), ind
 
 The matrix includes all eight original New Dataset paths plus the HR/IRR metric variants, fixed estimator selection, binary/continuous cumulative/leave-one-out/subgroup/regression with frozen contracts, diagnostic sequential/subgroup/joint/combined metrics and three moderator shapes, extended binary/continuous small-study procedures, and diagnostic Deeks. The feature maps state each drive's proof strength and remaining checks.
 
-The 37 advanced workflows in `scripts/advanced_workflows.py` add nondefault inference/heterogeneity/CI choices with public numerical references, zero cells and inclusion changes, twelve calculator modes with persistence and independent post-reopen analysis, eleven plot editors with four decoded exports each, and structure/covariate/shell transactions. Run these through the same evidence helper, for example `options-binary`, `calculator-mode-back-continuous`, `plot-workflow-sroc`, and `project-table-covariates`. Never replace numerical comparisons with nonempty text or a render-only check.
+The advanced workflows in `scripts/advanced_workflows.py` add nondefault inference/heterogeneity/CI choices with public numerical references, zero cells and inclusion changes, twelve calculator modes with persistence and independent post-reopen analysis, eleven plot editors with four decoded exports each, and structure/covariate/shell transactions including unsaved-work consent. Run these through the same evidence helper, for example `options-binary`, `calculator-mode-back-continuous`, `plot-workflow-sroc`, and `project-table-covariates`. Never replace numerical comparisons with nonempty text or a render-only check.
 
 The same scenarios are part of the R-stack CI E2E selection. Pytest calls the evidence helper too, so every run retains its inputs, transcript and manifest:
 

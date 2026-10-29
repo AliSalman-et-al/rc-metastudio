@@ -12,7 +12,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import patch
 
-from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets, sip
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtTest import QTest
 
@@ -737,6 +737,8 @@ errors = []
 
 
 def dismiss_unexpected_messages():
+    if app.property("verificationMessageHandlerPending"):
+        return
     for widget in app.topLevelWidgets():
         if isinstance(widget, QtWidgets.QMessageBox) and widget.isVisible() and not widget.property("verificationExpectedMessage"):
             errors.append(widget.text())
@@ -813,7 +815,10 @@ try:
     else:
         raise ValueError(f"Unknown desktop scenario: {scenario}")
     assert not errors, errors
-    record_step("workflow-passed", window, scenario=scenario)
+    if sip.isdeleted(window) or not window.isVisible():
+        record_step("workflow-passed", scenario=scenario, main_window_closed=True)
+    else:
+        record_step("workflow-passed", window, scenario=scenario)
 except BaseException:
     traceback.print_exc()
     raise

@@ -15,6 +15,13 @@ These add to `editing`, `csv`, and the eight original New Dataset workflows plus
 - `project-edit`: Unicode study rename, Return advances, dirty state, undo/redo.
 - `project-persist`: Save As and reopen preserve edited values.
 - `project-reject`: corrupt open preserves the active project and save destination.
+- `project-unsaved-actions`: New/Open keyboard shortcuts, Import/Quit File-menu
+  entries and window Close reject Cancel, cancelled Save As and real filesystem
+  save failure without changing data, destination or dirty state. Successful
+  saving authorizes replacement/closing and persists the current values.
+- `project-unsaved-discard`: explicit discard permits New/Import (whose wizards
+  are then cancelled), Open and Quit; quitting discards only the draft and leaves
+  the existing project file unchanged.
 - `csv-import`: UTF-8 BOM headers, quoted Unicode names, numeric/factor covariates and raw counts reach analysis and persist. Windows must retain names even when Python UTF-8 mode is disabled.
 - `dataset-create`: all eight original New Dataset paths and the two HR/IRR variants reach default analysis and save/reopen; see the analysis dataset matrix.
 
@@ -55,6 +62,10 @@ These are source-backed targeted recipes, not claims that the ordinary editing s
 - **Table:** inclusion checkbox, header Include All/Exclude All, row deletion confirmation, sorting, rectangular copy/paste and clear. Trigger `action_copy`/`action_paste`; assert clipboard/live values, trailing-row expansion and one undo transaction. Invalid bulk data must roll back the whole operation. Sorting must retain values, covariates and inclusion attached to study IDs, not row positions. Auto-fit must not alter data.
 - **Confidence:** `action_change_confidence_level` → `ConfidenceLevelDialog.confidence_level_spinbox` → `button_box` OK. Check `cl_label`, actual analysis intervals, undo/redo, save/reopen and inherited parameters.
 - **Dirty actions:** Open/New/Import/Close/Quit on an unsaved project: Cancel preserves live project and destination; No proceeds; Yes proceeds only after successful save. Cancelled/failed Save As must preserve the unsaved project. Use test-owned files and record the actual prompt/action/recovered state.
+  The `project-unsaved-actions` and `project-unsaved-discard` drives exercise the
+  real prompt buttons, keyboard/menu entry points and production storage. Picker
+  paths are substituted; native OS picker operation remains outside these checks.
+  Their assertions protect data and consent, not the current widget tree or wording.
 - **Entry and shell:** drive Open/Save actions with only picker paths substituted, their standard shortcuts, `action_open_recent_2.actions()` and QAction `.data()`, and the main start page `start_page.create_button` / `import_button` / `open_button` / recent-project buttons. Open `action_about_legal`, read tabs/links, close it, and confirm application still responds. Restore isolated settings/geometry; never use the user's preferences as fixtures.
 
 

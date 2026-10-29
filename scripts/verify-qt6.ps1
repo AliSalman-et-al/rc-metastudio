@@ -65,7 +65,7 @@ try {
     }
 
     if ($Section -eq "RemainingSurfaces") {
-        uv run pytest -W error @remainingSurfaceTests
+        uv run python -m pytest -W error @remainingSurfaceTests
         if ($LASTEXITCODE -ne 0) { throw "Qt6 remaining-surface tests failed." }
 
         $previousQpa = $env:QT_QPA_PLATFORM
@@ -97,10 +97,10 @@ try {
 
     # Core owns every GUI module except the five deliberately isolated
     # RemainingSurfaces modules, in one process with one QApplication owner.
-    uv run pytest -W error @coreGuiTests
+    uv run python -m pytest -W error @coreGuiTests
     if ($LASTEXITCODE -ne 0) { throw "Qt6 core GUI tests failed." }
     if ($Section -eq "Full") {
-        uv run pytest -W error @remainingSurfaceTests
+        uv run python -m pytest -W error @remainingSurfaceTests
         if ($LASTEXITCODE -ne 0) { throw "Qt6 remaining-surface tests failed." }
     }
 

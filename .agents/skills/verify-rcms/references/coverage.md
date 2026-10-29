@@ -17,6 +17,7 @@ Use this before declaring an app change verified. These are behavior obligations
 | Calculators | Actual row gesture; twelve original modes plus conditional HR/IRR input; preview references, entered bounds, Clear/Cancel, nested cancellation, pre/post, undo/redo/reopen and independent pooled analysis | RR/RD and second candidates, unequal SD/Cohen, remaining transformed metrics, invalid partial data |
 | Results/plots | Eleven scene-context editors; Apply/reopen/Cancel and persisted parameters; PDF/PNG/TIFF/SVG decoded exports and save cancellation | Navigation/copy; remaining appearance controls; parameterless PNG; failed regeneration/IO rollback |
 | Shell/native | Runtime doctor; Open/Save As/recent/legal; dirty-open Cancel; native lanes; default maximization and normal-size Restore | Close/dirty alternatives, focus/keyboard, platform DPI/accessibility |
+| Unsaved-work consent | New/Open shortcuts, Import/Quit File menus and Close; Cancel, cancelled/failed saving, successful saving and explicit discard with actual prompts/storage | Native OS picker behavior, remaining platform-specific shortcuts and failure modes |
 | Release | Packaging lane in lanes.md | Actual supported target artifacts, provenance/relocation/trust; local source proof cannot qualify a release |
 
 ## Choosing scope

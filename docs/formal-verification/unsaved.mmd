@@ -1,0 +1,26 @@
+---
+title: "Unsaved work - consent before replacement or closing"
+---
+stateDiagram-v2
+  s0: Action requested with saved work
+  s1: Action requested with unsaved work
+  s2: Project action allowed
+  s3: Await save, discard or cancel decision
+  s4: Project action cancelled
+  s5: Try saving the current project
+  s6: Save picker cancelled
+  s7: Save failed
+  s8: Saved project installed
+  [*] --> s0
+  [*] --> s1
+  s0 --> s2: the project has no unsaved changes
+  s1 --> s3: ask what to do with unsaved work
+  s3 --> s4: you cancel the project action
+  s3 --> s2: you explicitly discard unsaved work
+  s3 --> s5: you choose to save
+  s5 --> s6: you cancel the save picker
+  s5 --> s7: saving fails
+  s5 --> s8: the saved project is installed
+  s6 --> s4: decide whether to continue
+  s7 --> s4: decide whether to continue
+  s8 --> s2: decide whether to continue

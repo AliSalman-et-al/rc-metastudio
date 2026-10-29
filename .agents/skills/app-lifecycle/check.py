@@ -60,7 +60,11 @@ def main() -> int:
         print(f"{name}: exit {completed.returncode}", flush=True)
         return completed.returncode
 
-    for name in ["App.tla", "App.cfg", "ProjectSave.tla", "ProjectSave.cfg", "app.view.ts", "analysis.view.ts", "save.view.ts"]:
+    models = ("App", "ProjectSave", "UnsavedActions")
+    for model in models:
+        for suffix in (".tla", ".cfg"):
+            shutil.copy2(HERE / f"{model}{suffix}", out / f"{model}{suffix}")
+    for name in ("app.view.ts", "analysis.view.ts", "save.view.ts", "unsaved.view.ts"):
         shutil.copy2(HERE / name, out / name)
     config = out / "ProjectSave.cfg"
     config.write_text(config.read_text().replace('Mutation = "none"', f'Mutation = "{args.mutation}"'))
@@ -69,7 +73,7 @@ def main() -> int:
         raise RuntimeError("Install Java 11 or later and put java on PATH")
     java_code = run([java, "-version"], "java-version")
     codes = []
-    for model in ["App", "ProjectSave"]:
+    for model in models:
         codes.append(run([java, "-XX:+UseParallelGC", "-cp", str(cache), "tlc2.TLC", "-workers", "1", "-fp", "0", "-lncheck", "final", "-config", f"{model}.cfg", f"{model}.tla"], model))
 
     # Use existing hostile-I/O checks, unchanged, against production source bytes.
