@@ -1,13 +1,13 @@
 {
   "manifest": "rc-metastudio-sample-projects",
   "version": 3,
-  "format_version": 1,
-  "storage_note": "Schema-validated Versioned Project Format ZIP/JSON containers. format_version is the default for the original frozen sample corpus; per-project format_version overrides it for newer examples.",
+  "format_version": 3,
+  "storage_note": "All bundled projects use sheet schema v3. semantic_sha256 hashes canonical project.json; archive sha256 hashes the complete container.",
   "projects": [
     {
       "file": "amino.rcms",
-      "sha256": "374681cc5f740f06d39a117047e4133b745dd8ae30c4974f5ab7c9f94d90b763",
-      "semantic_sha256": "67447e77bad98a908e7521899070ed22b6a26bfd47cb7cf2b1b2902d1c616ad6",
+      "sha256": "000cd6f3caddce04411637dc4f263969ebfcfe49d6eb1ba0e61d0eaef7c9b886",
+      "semantic_sha256": "50002ed7d48e36daa2daef542bfee0dd540119c0bc60a736af8acab06305ebe1",
       "analysis_evidence": "amino-binary-random",
       "scientific_name": "Aminoglycosides",
       "analysis_family": "binary",
@@ -28,12 +28,13 @@
       "arm_labels": {
         "tx A": "Intervention",
         "tx B": "Control"
-      }
+      },
+      "format_version": 3
     },
     {
       "file": "BCG.rcms",
-      "sha256": "ee66fecdcf79a36f665a27b8b02509a4e3478cb6a00362fe4d6e9c7e63f0f839",
-      "semantic_sha256": "61f5025c7a38d74ef1373db0555e610fb0e9d71c49504fc6d11d88615e59020b",
+      "sha256": "d4ec6fb01996ce05355876898f889adb372fc66614032b4c2bb309e81d50ed44",
+      "semantic_sha256": "68ce8cd0a3e25b94d5ecd308f7ba2454d57044e970e42fa6db19d4165eeb962a",
       "analysis_evidence": "bcg-binary-random",
       "scientific_name": "BCG vaccine",
       "analysis_family": "binary",
@@ -51,12 +52,13 @@
       "arm_labels": {
         "tx A": "BCG vaccine",
         "tx B": "Control"
-      }
+      },
+      "format_version": 3
     },
     {
       "file": "continuous.rcms",
-      "sha256": "025ae202f23eed7da8d5bc02aa0fa6d6e4d89b4f78179a5d1a3831c0a6d59093",
-      "semantic_sha256": "78d83c92281c669cbc630f0ded481e7979d3ecace63699df1558407d517fd524",
+      "sha256": "523102d89f7f67fc493bd08fdf92d77696ac16399aee4b9ab047df3ee408ad79",
+      "semantic_sha256": "9dd0d70eb49a23cdc8f382bdb1f8ed9f7f0e56537b4caa1c78f29d592f2ee555",
       "analysis_evidence": "continuous-random",
       "scientific_name": "Continuous outcome example",
       "analysis_family": "continuous",
@@ -75,12 +77,13 @@
       "arm_labels": {
         "tx A": "Intervention",
         "tx B": "Control"
-      }
+      },
+      "format_version": 3
     },
     {
       "file": "lymph.rcms",
-      "sha256": "2af63bc180d118a1729b79327563bfbdc67de909296c5f8d07dda14cd84d4fcb",
-      "semantic_sha256": "883d8cb8115b78734350517e626ce8254580da97acdf316b2a39b3298a017f7e",
+      "sha256": "343940675ac813a85b3792340d579a1e328c3d0899b7421839d3a628674791f4",
+      "semantic_sha256": "c5e34ebff3718842850c8e197cb95740146233ca3921409a4d0af26d28912062",
       "analysis_evidence": "lymph-diagnostic-random-dor",
       "scientific_name": "Lymph diagnostic accuracy",
       "analysis_family": "diagnostic",
@@ -99,12 +102,13 @@
       "arm_labels": {
         "test 1": "Index test",
         "tx A": "Index test"
-      }
+      },
+      "format_version": 3
     },
     {
       "file": "meantime.rcms",
-      "sha256": "0d173e541e34ab6b4e7c40ed6d2e81e38e6f1f4e5a79a41367914f4b568db88c",
-      "semantic_sha256": "8df45440395522eae182543b20f15320ad57501109958e252f1ea5d969cbe5d1",
+      "sha256": "50ad2e87088d9b5707e3862b0df21942551c6ff10c27a0451c0737d67c7c29d6",
+      "semantic_sha256": "060cff8885c4cefbcaa935368d36d1dc375e15fc4f5ad3b1e4395cf496b7a7dd",
       "analysis_evidence": "meantime-binary-random",
       "scientific_name": "Meantime subgroup example",
       "analysis_family": "binary",
@@ -122,13 +126,14 @@
       "arm_labels": {
         "tx A": "Intervention",
         "tx B": "Control"
-      }
+      },
+      "format_version": 3
     },
     {
       "file": "Pignon2000-HR.rcms",
-      "format_version": 2,
-      "sha256": "17e94f1436a1be97a5e14f3cf3ff8db3818198f4a1132ba0b32fb0976ade86f9",
-      "semantic_sha256": "0ed07724dd36be8981b517e3ffe1f0226600176c2afa8edcac5fe257f377f7b7",
+      "format_version": 3,
+      "sha256": "7e441d61601c7d82c06233d248ee855010bd056d6b90e6520ed481930abb3481",
+      "semantic_sha256": "499647470ed7041c7c6a8ca79ea87120a7d2901e94d2a14398f4f7844af5b407",
       "analysis_evidence": "ratios-samples",
       "scientific_name": "Pignon 2000 — Head and neck cancer",
       "analysis_family": "time_to_event",
@@ -148,9 +153,9 @@
     },
     {
       "file": "NielWeise2008-IRR.rcms",
-      "format_version": 2,
-      "sha256": "4b0ba4c9c515da90a5768b4729886ccfb73a5ef4f239321ff1daca01b13ebb12",
-      "semantic_sha256": "97bb6310c1c76943c0481a4c6877f1d8ee86056d55eee2712e704809dedab6fa",
+      "format_version": 3,
+      "sha256": "fbffa0ef00033e3425916b505190f762cb607ecc48049e045722ddd467375137",
+      "semantic_sha256": "92500d3d8359e1ee1927c0cd8a42b1ee43974b5985182ce0fe80715afde50a98",
       "analysis_evidence": "ratios-samples",
       "scientific_name": "Niel-Weise 2008 — Catheter infections",
       "analysis_family": "event_rates",
