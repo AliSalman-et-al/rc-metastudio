@@ -81,3 +81,67 @@ Baseline exited 0, including native Xvfb extracted-package qualification. Curren
 Packaging edit: runtime-probe.json now goes directly to work/qualification, outside archive-root. Remove only installed R package `tests` and `demo` directories at depth two in the **staged copy** of R/library. Neither installed build runtime nor source packages are pruned. Application Python/R code contains no calls loading these directories; real extracted-package qualification remains mandatory. Keep help/doc/data, sample projects/provenance, schemas, licenses and libraries. Repository docs/artifacts are not packaging inputs and are not deleted. Windows/macOS qualification payload has host-specific provenance/reinspection dependencies; those lanes are unchanged and unverified here.
 
 Full path inspection additionally identified package testdata/tinytest suites and RCMetaR/qa (visual qualification scripts including __pycache__). The first cleanup rebuild was deliberately stopped during dependency metadata validation (owned R process SIGTERM, exit 143), before producing an archive. Extended the same staged-copy exclusion to testdata/tinytest and specifically RCMetaR/qa, then restarted the identical build command. These paths have no application Python/R references. No source QA scripts or evidence were deleted.
+
+## Final measured result
+
+The final rebuild uses exactly the successful baseline command/environment above. Logical size **703,575,404 → 699,965,045 bytes** (−3,610,359; 0.513%). Compressed tar.gz **302,724,316 → 300,882,373 bytes** (−1,841,943; 0.608%). This is a payload cleanup, not a runtime-library optimization.
+
+| Final top-level path | Logical bytes |
+| --- | ---: |
+| LICENSE | 35,150 |
+| NOTICE.md | 1,584 |
+| LaunchRCMetaStudio.sh | 507 |
+| R | 305,263,589 |
+| sample_projects | 63,770 |
+| RCMetaStudio | 394,446,019 |
+| third-party-notices | 154,426 |
+
+Path-level removal summary (493 files, no added paths):
+
+| Removed path | Bytes |
+| --- | ---: |
+| R/library/Hmisc/tests/ | 145,293 |
+| R/library/RCMetaR/qa/ | 44,933 |
+| R/library/Rcpp/tinytest/ | 575,103 |
+| R/library/RcppEigen/tinytest/ | 42,955 |
+| R/library/SparseM/demo/ | 3,283 |
+| R/library/base/demo/ | 11,815 |
+| R/library/colorspace/demo/ | 2,257 |
+| R/library/data.table/tests/ | 628,962 |
+| R/library/digest/demo/ | 918 |
+| R/library/digest/tinytest/ | 49,641 |
+| R/library/foreach/demo/ | 943 |
+| R/library/grDevices/demo/ | 6,376 |
+| R/library/graphics/demo/ | 72,138 |
+| R/library/gridExtra/tests/ | 2,503 |
+| R/library/lattice/demo/ | 13,585 |
+| R/library/lme4/testdata/ | 1,356,154 |
+| R/library/nloptr/tinytest/ | 118,013 |
+| R/library/quantreg/demo/ | 25,536 |
+| R/library/reformulas/testdata/ | 450,980 |
+| R/library/reformulas/tinytest/ | 22,356 |
+| R/library/shape/demo/ | 10,939 |
+| R/library/stats/demo/ | 10,281 |
+| R/library/tcltk/demo/ | 12,908 |
+| qualification/runtime-probe.json/ | 2,487 |
+
+Six remaining paths changed SHA-256 at unchanged byte size during rebuild (complete hashes in diff.json):
+
+- `R/library/RCMetaR/DESCRIPTION`
+- `R/library/RCMetaR/Meta/package.rds`
+- `RCMetaStudio/_internal/_rinterface_cffi_api.abi3.so`
+- `RCMetaStudio/_internal/base_library.zip`
+- `RCMetaStudio/_internal/rpy2/rinterface_lib/_bufferprotocol.cpython-311-x86_64-linux-gnu.so`
+- `RCMetaStudio/_internal/rpy2_rinterface-3.6.6.dist-info/RECORD`
+
+The initial September output is not used to calculate this reduction. No application source, statistical method, installer type or source fixture was changed. The largest runtime files remain those listed above; the current baseline has the same dominant ICU/Qt/Python/OpenBLAS/R payload. No speculative shared-library deduplication was attempted.
+
+Doctor limitation: `scripts/verify_rcms.py` accepts scenario and --native only and launches `tests/e2e/desktop_driver.py` through the source Python interpreter. It has no frozen-executable/bundle target option. Therefore `uv run python scripts/verify_rcms.py doctor` **was not run against this bundle**; pointing its R environment at the bundle would still test source Qt/Python. Frozen runtime startup and native Xvfb extracted-package workflows are instead checked by the production build command.
+
+## Qualification receipt
+
+Final build exited **0** at 2026-10-30 21:47 UTC; source/packaging revision d72ec427. Frozen runtime probe succeeded. Extracted package `packaged-smoke.json` has `passed: true`: real R workflows, sample opens and native xcb Qt surfaces at scale factors 1.25 and 1.50. The build hides its build-time R tree during extracted qualification, proving use of the bundled runtime. This establishes this Linux lane, not Windows/macOS installer qualification or the future sheet model.
+
+Durable local evidence: `artifacts/verification/bundle-audit-20261030/manifest.json`, full before/after SHA-256 inventories, diff.json, inventory.py, failed/interrupted/successful logs and baseline/final qualification JSON plus workflow observations and native captures. Manifest hashes every retained evidence file and records exact build command and successful exits. Result archive: `artifacts/RCMetaStudio-linux-x64.tar.gz`; artifact SHA-256 and runtime versions are in final-evidence/artifact-evidence.json. None of the removed payload is present in the final inventory. A source doctor pass is deliberately not substituted for the unsupported frozen doctor target.
+
+Remaining limits: no Windows/macOS rebuild or cleanup; no broad runtime-library deduplication. The direct RevMan PDF URL redirects today; DESIGN.md's parity basis uses indexed official guide passages, not a fresh full-PDF download.
