@@ -228,11 +228,11 @@ for package in library.iterdir():
         print("Removing R package:", package.name)
         shutil.rmtree(package)
 PYTHON
-# Installed package tests and demonstrations are development payload. Keep
-# runtime data, help, metadata, licenses and shared libraries intact.
+# Remove documentation and build headers after the API bridge is compiled.
+# Keep share: R uses its encodings, fonts and other resources at runtime.
 find "$archive_root/R/library" -mindepth 2 -maxdepth 2 -type d \
-  \( -name tests -o -name demo -o -name testdata -o -name tinytest \) -exec rm -rf -- {} +
-rm -rf -- "$archive_root/R/library/RCMetaR/qa"
+  \( -name tests -o -name demo -o -name testdata -o -name tinytest -o -name help -o -name html -o -name doc -o -name vignettes -o -name include \) -exec rm -rf -- {} +
+rm -rf -- "$archive_root/R/library/RCMetaR/qa" "$archive_root/R/doc" "$archive_root/R/include"
 cp -a "$repo_root/sample_projects" "$archive_root/sample_projects"
 cp "$repo_root/LICENSE" "$repo_root/NOTICE.md" "$archive_root/"
 
