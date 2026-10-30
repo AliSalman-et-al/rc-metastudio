@@ -15,7 +15,7 @@ Read the relevant feature before driving it. Start each scenario in the fresh ap
 
 `hillclimb` drives the five fixed tasks from PLAN.md through the shared desktop
 driver and records gesture counts, wall time and numerical/text receipts in
-measures.json. See [SCOREBOARD.md](../../../../../docs/ux-hill-climb/SCOREBOARD.md)
+measures.json. See [SCOREBOARD.md](../../../../docs/ux-hill-climb/SCOREBOARD.md)
 for fixtures, starting states, repeat comparison and baseline. This is offscreen
 effort evidence with QAction activations; native menu traversal and human timing
 remain unmeasured. Manuscript PDF/DOCX remains unavailable; T5 verifies only text
