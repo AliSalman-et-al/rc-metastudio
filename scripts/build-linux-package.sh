@@ -233,6 +233,18 @@ PYTHON
 find "$archive_root/R/library" -mindepth 2 -maxdepth 2 -type d \
   \( -name tests -o -name demo -o -name testdata -o -name tinytest -o -name help -o -name html -o -name doc -o -name vignettes -o -name include \) -exec rm -rf -- {} +
 rm -rf -- "$archive_root/R/library/RCMetaR/qa" "$archive_root/R/doc" "$archive_root/R/include"
+# Debug sections are unnecessary for execution; preserve symbols used by dlsym.
+"$python_exe" - "$archive_root/R" <<'PYTHON'
+from pathlib import Path
+import subprocess
+import sys
+for path in Path(sys.argv[1]).rglob("*"):
+    if path.is_file() and not path.is_symlink():
+        with path.open("rb") as stream:
+            is_elf = stream.read(4) == b"\x7fELF"
+        if is_elf:
+            subprocess.run(["strip", "--strip-debug", str(path)], check=True)
+PYTHON
 cp -a "$repo_root/sample_projects" "$archive_root/sample_projects"
 cp "$repo_root/LICENSE" "$repo_root/NOTICE.md" "$archive_root/"
 
