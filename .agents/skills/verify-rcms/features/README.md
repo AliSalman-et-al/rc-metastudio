@@ -11,6 +11,16 @@ Read the relevant feature before driving it. Start each scenario in the fresh ap
 | [Results, plot editing, and export](plots.md) | `plot-edit`, eleven `plot-workflow-*` editor/decoded PDF/PNG/TIFF/SVG drives | Remaining appearance controls, failed regeneration/IO recovery, parameterless PNG, native fractional DPI and long/narrow layouts |
 | [Small-study effects analysis](small-study-effects.md) | `small-study-effects`, `small-study-binary-extended`, `small-study-continuous-extended`, `small-study-diagnostic` | Low-heterogeneity Harbord; MD asymmetry; descriptive-only metrics; eligibility/error recovery; direct numerical asymmetry oracles |
 
+## UX effort scoreboard
+
+`hillclimb` drives the five fixed tasks from PLAN.md through the shared desktop
+driver and records gesture counts, wall time and numerical/text receipts in
+measures.json. See [SCOREBOARD.md](../../../../../docs/ux-hill-climb/SCOREBOARD.md)
+for fixtures, starting states, repeat comparison and baseline. This is offscreen
+effort evidence with QAction activations; native menu traversal and human timing
+remain unmeasured. Manuscript PDF/DOCX remains unavailable; T5 verifies only text
+and plot-PDF partial exports.
+
 ## Proof conventions
 
 Pair a user action with its observed result and independent side effect. Menu and toolbar items sharing a QAction are separate entry points when a change touches their reachability. The automated scenarios use the handles documented in each feature; do not claim an unexercised shortcut or native picker is covered.
