@@ -254,11 +254,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.verticalLayout_3.replaceWidget(self.dataset_file_lbl, dataset_file_label)
         self.dataset_file_lbl.deleteLater()
         self.dataset_file_lbl = dataset_file_label
-        self.workspace_hint = QLabel(self)
-        qt_layout.configure_context_label(self.workspace_hint)
-        self.workspace_hint.setTextFormat(Qt.TextFormat.PlainText)
-        self.workspace_hint.setAccessibleName("Workspace guidance")
-        self.verticalLayout.insertWidget(0, self.workspace_hint)
         self.action_new_dataset.setText("Create dataset…")
         self.start_page = start_page.StartPage(self.action_new_dataset, self.action_import_csv, self.action_open, self)
         self.verticalLayout_3.insertWidget(0, self.start_page)
@@ -473,20 +468,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._update_workspace_guidance()
 
     def _update_workspace_guidance(self):
-        if hasattr(self, "workspace_hint"):
-            enable = hasattr(self, "model") and self.model.current_outcome_name is not None
-            if not enable:
-                self.workspace_hint.setText("Create a dataset, import a CSV, or open an existing project to begin.")
-            else:
-                hint = analysis_identity.dataset_identity(self.model)
-                hint += "\nChecked studies are included. Gold cells show effect estimates; click a study row to edit its inputs."
-                if not self.action_go.isEnabled():
-                    hint += "\nInclude studies with complete data or entered effects to enable analyses. Start with study names, then enter data or use the row calculator."
-                if not (self.model.current_sheet.covariates if self.model.current_sheet else []):
-                    hint += "\nAdd a covariate (Dataset → Add covariate) for meta-regression; use a Category covariate for subgroup analysis."
-                self.workspace_hint.setText(hint)
-            self.start_page.setVisible(not enable)
-            self.nav_frame.setVisible(enable)
+        enable = hasattr(self, "model") and self.model.current_outcome_name is not None
+        self.start_page.setVisible(not enable)
+        self.nav_frame.setVisible(enable)
 
     def _enable_action_meta_regression(self, dataset_analysis_enabled=None):
         """Enables action_meta_regression if analysis can run and covariates exist."""

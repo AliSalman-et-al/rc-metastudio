@@ -294,15 +294,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                     field.setToolTip("Automatic: diagnostic counts")
 
     def _setup_result_context(self):
-        workflow_label = analysis_identity.workflow_label(self.analysis_type)
-        self.setWindowTitle(f"{workflow_label} — {self.model.current_outcome_name}")
+        self.setWindowTitle(f"{self.model.current_outcome_name} · {self._result_metric_label()}")
         required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button").setText("Run analysis")
-        self.context_label = QLabel(analysis_identity.dataset_identity(self.model, self._result_metric_label()), self)
-        self.context_label.setTextFormat(Qt.TextFormat.PlainText)
-        self.context_label.setWordWrap(True)
-        if self.analysis_type == "cumulative":
-            self.context_label.setText(self.context_label.text() + "\nOrder: current study order. Sort the study table before running to change the sequence.")
-        self.verticalLayout.insertWidget(0, self.context_label)
         self.analysis_error_label = QLabel(self)
         self.analysis_error_label.setWordWrap(True)
         self.analysis_error_label.setTextFormat(Qt.TextFormat.PlainText)
