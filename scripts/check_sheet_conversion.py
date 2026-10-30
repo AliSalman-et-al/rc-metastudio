@@ -11,7 +11,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import zipfile
-from rc_metastudio.project_format import load_project, save_project, legacy_pairs_with_data
+from rc_metastudio.project_format import load_project, save_project
 from rc_metastudio.project_adapter import project_to_dataset, dataset_to_project
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,7 +29,22 @@ def check():
             document = load_project(legacy)
             sheets = iter(document.project['sheets']); count = 0
             for outcome in source['outcomes']:
-                pairs = legacy_pairs_with_data(source, outcome)
+                declared = list(outcome['follow_ups'])
+                units = [u for r in source['studies'] for u in r['analysis_units']
+                         if u['outcome'] == outcome['name']]
+                if not declared or any(u['follow_up'] is None for u in units):
+                    declared.insert(0, None)
+                populated = set()
+                for unit in units:
+                    measurements = [v for a in unit['groups'] for v in a['raw_data']]
+                    measurements += [v for es in unit['entered_effects'].values()
+                                     for e in es.values() for v in e.values()]
+                    measurements += [entry['input'].get(k)
+                                     for entry in unit.get('ratio_inputs', [])
+                                     for k in ('estimate', 'lower', 'upper', 'se')]
+                    if any(v not in (None, '') for v in measurements):
+                        populated.add(unit['follow_up'])
+                pairs = [f for f in declared if f in populated] or [declared[0]]
                 for follow in pairs:
                     sheet = next(sheets); count += 1
                     assert sheet['covariates'] == source['covariates']

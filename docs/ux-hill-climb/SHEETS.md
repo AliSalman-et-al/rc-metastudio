@@ -388,3 +388,20 @@ and archive round trips, and bundled converted files. Five bundled archives chan
 the HR/IRR archives were already correct and remain byte-identical. This supersedes
 the earlier 13-sheet conversion table. Core UI migration and desktop proof remain
 pending; this check establishes conversion preservation only.
+
+Slice 1b desktop attempts (offscreen, worktree `build/sheets-r-library`,
+`source build/sheets-baseline/ENV.sh`; `uv run --no-sync python
+scripts/verify_rcms.py <scenario>`):
+
+- amino: failed, `20261030T231312Z-eecc5e85-amino`.
+- continuous: failed, `20261030T231315Z-f6a83163-continuous`.
+- ratios-hr: failed, `20261030T231317Z-4d652628-ratios-hr`.
+
+All fail before window construction at `workspace_editing.py` importing the
+removed `analysis_dataset.Study`. Evidence is under `artifacts/verification/rcms`.
+No UI migration, tab navigation, swap or startup optimization has been implemented
+in this increment. Startup/first-result measurements are unavailable. The caller
+migration inventory above remains outstanding for subsequent implementation.
+Conversion transcript: `build/sheets-baseline/slice-1b-conversion.log`.
+The conversion checker enumerates populated pairs independently of the converter;
+ratio input defaults alone do not count as study measurements.

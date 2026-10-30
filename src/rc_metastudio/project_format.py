@@ -89,7 +89,9 @@ def legacy_pairs_with_data(source, outcome):
             any(value not in (None, "") for arm in unit["groups"] for value in arm["raw_data"])
             or any(value is not None for entries in unit["entered_effects"].values()
                    for effect in entries.values() for value in effect.values())
-            or bool(unit.get("ratio_inputs"))
+            or any(entry["input"].get(field) is not None
+                   for entry in unit.get("ratio_inputs", [])
+                   for field in ("estimate", "lower", "upper", "se"))
         )
 
     declared = list(outcome["follow_ups"])
