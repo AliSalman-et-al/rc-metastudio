@@ -218,7 +218,8 @@ cp -a "$r_home" "$archive_root/R"
 # Installed package tests and demonstrations are development payload. Keep
 # runtime data, help, metadata, licenses and shared libraries intact.
 find "$archive_root/R/library" -mindepth 2 -maxdepth 2 -type d \
-  \( -name tests -o -name demo \) -exec rm -rf -- {} +
+  \( -name tests -o -name demo -o -name testdata -o -name tinytest \) -exec rm -rf -- {} +
+rm -rf -- "$archive_root/R/library/RCMetaR/qa"
 cp -a "$repo_root/sample_projects" "$archive_root/sample_projects"
 cp "$repo_root/LICENSE" "$repo_root/NOTICE.md" "$archive_root/"
 
