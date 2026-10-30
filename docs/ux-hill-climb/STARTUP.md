@@ -89,3 +89,18 @@ Before: hillclimb evidence 20261030T225134Z-a0350670-hillclimb; T1 from ready
 empty window to first result 28.832 s. Startup is outside that task clock.
 No product change remains, so an optimized after median or claimed speedup would
 be misleading. Final restored-source verification results are recorded below.
+
+Restored-source doctor: **passed**, 20261030T225725Z-83f54d12-doctor,
+startup 17.730 s (one follow-up, not an after median).
+Restored-source hillclimb: **passed**, 20261030T225745Z-fe21567c-hillclimb;
+`--compare-measures` confirms every count, completion flag, numerical section and
+result text matches the committed baseline. T1 first result: **20.553 s** after
+ready window versus **28.832 s** before (single runs, unchanged product code,
+not evidence of a performance gain).
+
+Full matrix command was started on the restored source with its transcript at
+`/tmp/rcms-final-matrix.log` (pytest PID 409091). At documentation time its first
+four cases had passed; 124 scenarios total, resource selection one worker. This
+is **pending**, not a claimed matrix pass. An earlier matrix begun during the
+rejected experiment was interrupted and is not qualification evidence. Each final
+case retains its normal per-scenario manifest and captured workflow artifacts.
