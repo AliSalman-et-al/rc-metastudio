@@ -79,7 +79,12 @@ invariance is across repetitions, not a new independent estimator qualification.
 Final repetitions: `20261030T224552Z-ce96ebfd-hillclimb`, `20261030T224719Z-b858da51-hillclimb`.
 Both manifests passed; action counts and numerical/text output were identical.
 
-Startup measured here: three fresh offscreen doctor processes to visible main
+Startup follow-up: five profiled processes on a contended host measured **median
+14.65 s**, range **10.46–24.43 s** (spread **13.97 s**). No product startup
+optimization retained: early window construction requires RCMetaR in files reserved
+for `ux/sheets`. Breakdown, evidence and proposed fix: [STARTUP.md](STARTUP.md).
+
+Original startup measured here: three fresh offscreen doctor processes to visible main
 window, **median 11.51 s**, range **9.53–15.22 s**. Includes Python/driver startup
 and timeout-wrapper overhead; OS caches were not flushed. This is a development
 process-start measure, not a packaged native cold-start benchmark. Evidence IDs:
