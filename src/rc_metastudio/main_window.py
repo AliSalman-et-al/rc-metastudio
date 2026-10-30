@@ -212,6 +212,17 @@ class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
         return self.progress_bar.value()
 
 
+class SheetTabBar(QtWidgets.QTabBar):
+    def mouseReleaseEvent(self, event):
+        try:
+            super().mouseReleaseEvent(event)
+        finally:
+            window = self.window()
+            if window._sheet_dragging:
+                window._sheet_dragging = False
+                window.workspace.end_change()
+
+
 class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     model: dataset_table_model.DatasetTableModel
     tableView: dataset_table_view.DatasetTableView
@@ -276,7 +287,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.statusbar.addWidget(self.cl_label, 1)
 
         self.frame.hide()
-        self.sheet_tabs = QtWidgets.QTabBar(self)
+        self._sheet_dragging = False
+        self.sheet_tabs = SheetTabBar(self)
         self.sheet_tabs.setObjectName("sheet_tabs")
         self.sheet_tabs.setExpanding(False)
         self.sheet_tabs.setMovable(True)
@@ -1539,6 +1551,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         sheet_id = self.model.current_sheet_id
         self.model.set_current_sheet(sheet_id)
         self.workspace.select_sheet(sheet_id)
+        if QApplication.mouseButtons() & Qt.MouseButton.LeftButton and not self._sheet_dragging:
+            self.workspace.begin_change()
+            self._sheet_dragging = True
         def move():
             sheets = self.model.dataset.sheets
             sheets.insert(destination, sheets.pop(source))
