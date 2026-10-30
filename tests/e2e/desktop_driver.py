@@ -371,6 +371,135 @@ def sample_analysis(app, window, sample):
     view.close()
 
 
+def sheets(app, window):
+    import copy
+    from rc_metastudio.project_adapter import dataset_to_project
+    def project(dataset):
+        return dataset_to_project(dataset)
+    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    tabs = window.sheet_tabs
+    original = copy.deepcopy(window.model.dataset)
+    window.resize(1600, 828)
+    app.processEvents()
+    record_step("sheets-initial", window)
+    screens = ROOT / "docs/ux-hill-climb/screens"
+    window.grab().save(str(screens / "sheets-after-main.png"))
+    window.action_go.trigger()
+    app.processEvents()
+    dialog = next(w for w in app.topLevelWidgets() if isinstance(w, analysis_setup_dialog.AnalysisSetupDialog) and w.isVisible())
+    dialog.resize(631, 437)
+    app.processEvents()
+    dialog.grab().save(str(screens / "sheets-after-analysis.png"))
+    dialog.close()
+
+    def name_dialog(name, duplicate=False):
+        def fill():
+            dialog = app.activeModalWidget()
+            edit = dialog.findChild(QtWidgets.QLineEdit)
+            edit.setText(name)
+            ok = dialog.findChild(QtWidgets.QDialogButtonBox).button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
+            mouse_click(ok, QtCore.Qt.MouseButton.LeftButton)
+            if duplicate:
+                assert dialog.isVisible()
+                assert any(label.text() == "Choose a unique outcome name." for label in dialog.findChildren(QtWidgets.QLabel))
+                record_step("sheets-duplicate-rejected", dialog)
+                dialog.reject()
+        QtCore.QTimer.singleShot(0, fill)
+
+    for name in ("Outcome 2", "Outcome 3"):
+        name_dialog(name)
+        mouse_click(window.add_sheet_button, QtCore.Qt.MouseButton.LeftButton)
+        assert window.model.current_sheet.name == name
+        assert not window.model.current_sheet.rows
+        tabs.setCurrentIndex(0)
+        window.action_undo.trigger()
+        assert name not in [s.name for s in window.model.dataset.sheets]
+        window.action_redo.trigger()
+    name_dialog("Renamed outcome")
+    QTest.mouseDClick(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
+    assert window.model.current_sheet.name == "Renamed outcome"
+    tabs.setCurrentIndex(0)
+    window.action_undo.trigger()
+    assert window.model.current_sheet.name == "Outcome 3"
+    window.action_redo.trigger()
+    name_dialog(original.sheets[0].name, duplicate=True)
+    QTest.mouseDClick(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
+    tabs.setCurrentIndex(2)
+    table = window.tableView
+    table.setCurrentIndex(window.model.index(0, window.model.NAME))
+    table.edit(table.currentIndex())
+    app.processEvents()
+    editor = table.findChild(QtWidgets.QLineEdit)
+    editor.setText("Independent row")
+    key_click(editor, QtCore.Qt.Key.Key_Return)
+    assert len(window.model.current_sheet.rows) == 1
+    tabs.setCurrentIndex(0)
+    assert project(window.model.dataset)["sheets"][0] == project(original)["sheets"][0]
+    window.action_undo.trigger()
+    assert window.model.current_sheet.name == "Outcome 2"
+    assert not window.model.current_sheet.rows
+    window.action_redo.trigger()
+    tabs.setCurrentIndex(0)
+    window.activateWindow()
+    table.setFocus()
+    app.processEvents()
+    key_click(table, QtCore.Qt.Key.Key_PageDown, QtCore.Qt.KeyboardModifier.ControlModifier)
+    assert tabs.currentIndex() == 1
+    QTest.mousePress(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(2).center())
+    QTest.mouseMove(tabs, tabs.tabRect(3).center(), 100)
+    QTest.mouseRelease(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
+    assert tabs.tabText(3) == "Outcome 2"
+    tabs.setCurrentIndex(0)
+    window.action_undo.trigger()
+    assert window.model.current_sheet.name == "Outcome 2", (window.model.current_sheet.name, [s.name for s in window.model.dataset.sheets])
+    window.action_redo.trigger()
+    record_step("sheets-reordered", window)
+    index = tabs.currentIndex()
+    def delete_menu():
+        menu = app.activePopupWidget()
+        action = next(a for a in menu.actions() if a.text() == "Delete")
+        QtCore.QTimer.singleShot(0, lambda: app.activeModalWidget().done(QtWidgets.QMessageBox.StandardButton.Yes))
+        mouse_click(menu, QtCore.Qt.MouseButton.LeftButton, menu.actionGeometry(action).center())
+    QtCore.QTimer.singleShot(0, delete_menu)
+    window._sheet_menu(tabs.tabRect(index).center())
+    tabs.setCurrentIndex(0)
+    window.action_undo.trigger()
+    assert window.model.current_sheet.name == "Outcome 2", (window.model.current_sheet.name, [s.name for s in window.model.dataset.sheets])
+    assert len(window.model.current_sheet.rows) == 1
+    tabs.setCurrentIndex(0)
+    before = copy.deepcopy(window.model.current_sheet)
+    effect = window.model.get_current_group_comparison()
+    metric = window.model.current_effect
+    unit = window.model.current_sheet.rows[0].analysis_unit
+    value = unit.get_display_effect_for_source("derived_preview", metric, effect)
+    counts = copy.deepcopy(unit.get_raw_data_for_arms([a.name for a in before.arms]))
+    window.action_swap_arms.trigger()
+    assert window.model.current_sheet.arms == list(reversed(before.arms))
+    assert [r.label for r in window.model.current_sheet.rows] == [r.label for r in before.rows]
+    assert window.model.get_current_group_comparison() != effect
+    unit = window.model.current_sheet.rows[0].analysis_unit
+    reversed_value = unit.get_display_effect_for_source("derived_preview", metric, window.model.get_current_group_comparison())
+    assert abs(value * reversed_value - 1) < 1e-8, (value, reversed_value)
+    assert unit.get_raw_data_for_arms([a.name for a in before.arms]) == counts
+    record_step("sheets-swapped", window, original_effect=value, reversed_effect=reversed_value, counts=counts)
+    tabs.setCurrentIndex(1)
+    window.action_undo.trigger()
+    assert project(window.model.dataset)["sheets"][0] == project(original)["sheets"][0]
+    window.action_redo.trigger()
+    window.action_swap_arms.trigger()
+    actual_sheet = project(window.model.dataset)["sheets"][0]
+    expected_sheet = project(original)["sheets"][0]
+    assert actual_sheet == expected_sheet, {k: (expected_sheet[k], v) for k, v in actual_sheet.items() if v != expected_sheet[k]}
+    window.action_swap_arms.trigger()
+    expected = copy.deepcopy(window.model.dataset)
+    destination = WORK / "sheets.rcms"
+    with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(destination), "")):
+        window.action_save_as.trigger()
+    assert window.open(str(destination), raise_on_error=True)
+    assert project(window.model.dataset) == project(expected)
+    record_step("sheets-reopened", window, names=[s.name for s in expected.sheets])
+
+
 def editing(app, window):
     assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
     table = window.tableView
@@ -779,6 +908,8 @@ try:
         run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario in ("amino", "continuous", "lymph"):
         sample_analysis(app, window, scenario)
+    elif scenario == "sheets":
+        sheets(app, window)
     elif scenario == "editing":
         editing(app, window)
     elif scenario == "plot-edit":

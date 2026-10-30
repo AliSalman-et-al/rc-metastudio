@@ -32,6 +32,7 @@ SCENARIOS = (
     "doctor",
     "ux-improvements",
     "amino",
+    "sheets",
     "continuous",
     "lymph",
     "editing",
