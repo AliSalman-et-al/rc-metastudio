@@ -4,32 +4,61 @@ RC MetaStudio supports evidence synthesis and the interpretation of meta-analysi
 
 ## Language
 
-**Time-to-event outcome**:
-An outcome that records whether and when an event occurs, including follow-up that ends without an observed event through censoring.
-_Avoid_: Event-rate outcome, continuous survival time
+**Sheet**:
+One outcome's data tab in a project. Each sheet holds its own study rows. Studies are not shared across sheets; the same trial may appear on several sheets with its own numbers.
+_Avoid_: Follow-up as a project dimension
+
+**Outcome**:
+The endpoint a sheet holds, for example Mortality or Death at 6 months.
+_Avoid_: Outcome meaning data type
+
+**Data type**:
+The kind of data held by a sheet: binary, continuous, diagnostic, time-to-event, or event-rate data.
+_Avoid_: Outcome meaning data family
+
+**Binary data**:
+Data recording whether an event occurred in each participant.
+
+**Continuous data**:
+Data describing a measured quantity, such as a mean with its uncertainty.
+
+**Diagnostic data**:
+Data describing an index test's performance against a reference standard.
+
+**Arm**:
+An intervention or control column group in a study row, such as Intervention or Control.
+_Avoid_: Group for an arm
+
+**Group**:
+A category used in subgroup analysis only.
+_Avoid_: Group for an intervention or control arm
+
+**Time-to-event data**:
+Data recording whether and when an event occurs, including observation that ends without an observed event through censoring.
+_Avoid_: Event-rate data, continuous survival time
 
 **Hazard ratio (HR)**:
-The ratio of the instantaneous event hazards in the comparison groups for a time-to-event outcome.
+The ratio of the instantaneous event hazards in the comparison arms for a time-to-event data.
 _Avoid_: Risk ratio, incidence rate ratio
 
-**Event-rate outcome**:
-An outcome summarized by the number of events and the total person-time over which those events could occur in each group; events may recur in an individual.
-_Avoid_: Binary event outcome, time-to-event outcome
+**Event-rate data**:
+Data summarized by the number of events and the total person-time over which those events could occur in each arm; events may recur in an individual.
+_Avoid_: Binary data, time-to-event data
 
 **Incidence rate ratio (IRR)**:
-The ratio of event rates between comparison groups, where each rate is events divided by person-time.
+The ratio of event rates between comparison arms, where each rate is events divided by person-time.
 _Avoid_: RR, risk ratio, hazard ratio
 
 **Person-time**:
-The total observation time contributed by participants in a group, expressed in a stated time unit.
-_Avoid_: Number of participants, follow-up duration per participant
+The total observation time contributed by participants in an arm, expressed in a stated time unit.
+_Avoid_: Number of participants, observation duration per participant
 
 **Double-zero event-rate study**:
-A study comparison with no events in either group despite positive person-time in both groups. It contributes no relative-event information to uncorrected Mantel–Haenszel pooling.
+A study comparison with no events in either arm despite positive person-time in both arms. It contributes no relative-event information to uncorrected Mantel–Haenszel pooling.
 _Avoid_: Single-zero study, zero-person-time study
 
 **Stable domain identity**:
-The enduring identity of a study, outcome, follow-up, group, or covariate, independent of its editable name.
+The enduring identity of a sheet, study row, outcome, arm, subgroup, or covariate, independent of its editable name.
 _Avoid_: Name key, display identity
 
 **Entered effect estimate**:
@@ -160,8 +189,3 @@ _Avoid_: Adjusted I², meta-regression I²
 An editable forest plot of moderator coefficients for one modeled side of a Reitsma bivariate meta-regression. Sensitivity and specificity use separate plots.
 _Avoid_: Meta-regression bubble plot, two-panel coefficient plot
 
-Wizard entry: HR and IRR share the existing data-type-to-metric sequence through one Time-to-event and event rates tile. Selecting the metric determines the distinct persisted family and input schema. The shared entry does not make HR and IRR interchangeable.
-
-Workspace presentation: complete calculated input with an undefined effect shows Not estimable in the effect cell and dashes in interval cells. Missing required input remains blank. These are display labels, never stored numerical estimates; the original raw inputs remain editable.
-
-Main-window startup opens maximized, including after a saved normal or full-screen session. Remembered normal geometry remains available through Restore; other workspace placement policies are independent.
