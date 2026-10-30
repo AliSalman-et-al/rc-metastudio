@@ -306,6 +306,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             action.setShortcut(QKeySequence(sequence))
             action.triggered.connect(lambda checked=False, delta=delta: self.sheet_tabs.setCurrentIndex((self.sheet_tabs.currentIndex() + delta) % max(1, self.sheet_tabs.count())))
             self.addAction(action)
+        self.action_swap_arms = QAction("Swap intervention and control", self)
+        self.menuDataset.addAction(self.action_swap_arms)
+        self.menuDataset.aboutToShow.connect(lambda: self.action_swap_arms.setEnabled(bool(self.model.current_sheet and self.model.current_sheet.family != "diagnostic" and len(self.model.current_sheet.arms) == 2)))
+        self.action_swap_arms.triggered.connect(self._swap_sheet_arms)
         self.workspace = WorkspaceSession()
         self.new_dataset()
 
@@ -1444,6 +1448,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model.reset_model()
         self._update_confidence_level_label()
         self._refresh_sheet_tabs()
+
+    def _swap_sheet_arms(self):
+        sheet = self.model.current_sheet
+        if sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2:
+            self._sheet_change(sheet.id, sheet.arms.reverse)
 
     def _refresh_sheet_tabs(self):
         self.sheet_tabs.blockSignals(True)
