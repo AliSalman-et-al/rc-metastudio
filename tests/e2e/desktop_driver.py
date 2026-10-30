@@ -3,6 +3,8 @@
 """Drive application controls with the production R backend."""
 
 import json
+import time
+import cProfile
 import os
 import shutil
 import sys
@@ -11,6 +13,11 @@ from typing import Callable, cast
 from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import patch
+
+_startup_profile = cProfile.Profile() if os.environ.get("RCMS_PROFILE_STARTUP") else None
+_startup_phases = {"driver:entry": time.time()}
+if _startup_profile is not None:
+    _startup_profile.enable()
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtSvg import QSvgRenderer
@@ -30,7 +37,9 @@ QtCore.QStandardPaths.setTestModeEnabled(True)
 
 from rc_metastudio import r_backend
 
+_startup_phases["r-backend:start"] = time.time()
 r_backend.install_r_backend()
+_startup_phases["r-backend:ready"] = time.time()
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
@@ -954,12 +963,20 @@ base_path_patch = patch(
 )
 base_path_patch.start()
 try:
-    app, window = automation.start_automation()
+    _startup_phases["composition:start"] = time.time()
+    app, window = automation.start_automation(
+        phase_callback=lambda phase: _startup_phases.update({phase: time.time()})
+    )
     if EVIDENCE is not None and os.environ.get("RCMS_DRIVE_STARTED"):
         import time
         app.processEvents()
         assert window.isVisible()
         (EVIDENCE / "startup.json").write_text(json.dumps({"seconds": time.time() - float(os.environ["RCMS_DRIVE_STARTED"]), "visible": True, "platform": app.platformName()}))
+    if _startup_profile is not None and EVIDENCE is not None:
+        _startup_phases["window:visible"] = time.time()
+        _startup_profile.disable()
+        _startup_profile.dump_stats(str(EVIDENCE / "startup.pstats"))
+        (EVIDENCE / "startup-phases.json").write_text(json.dumps(_startup_phases, indent=2))
 except BaseException:
     base_path_patch.stop()
     sys.excepthook = sys.__excepthook__
