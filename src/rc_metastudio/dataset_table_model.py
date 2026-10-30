@@ -320,7 +320,7 @@ class DatasetTableModel(QAbstractTableModel):
             self.current_sheet.settings['metric'] = metric
 
     def update_current_outcome(self):
-        self.set_current_sheet(self.dataset.sheets[0].id if self.dataset.sheets else None)
+        self.set_current_sheet(self.current_sheet_id or (self.dataset.sheets[0].id if self.dataset.sheets else None))
 
     def update_current_time_points(self):
         pass
@@ -1282,7 +1282,7 @@ class DatasetTableModel(QAbstractTableModel):
         return self.get_current_outcome_type(False) == DIAGNOSTIC
 
     def set_state(self, state_dict):
-        self.set_current_sheet(self.dataset.sheets[0].id if self.dataset.sheets else None)
+        self.set_current_sheet(state_dict.get("current_sheet_id") or (self.dataset.sheets[0].id if self.dataset.sheets else None))
 
     def raw_data_is_complete_for_study(self, study_index, first_arm_only=False):
         return raw_data_is_complete(

@@ -303,7 +303,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.addAction(action)
         self.action_swap_arms = QAction("Swap intervention and control", self)
         self.menuDataset.addAction(self.action_swap_arms)
-        self.menuDataset.aboutToShow.connect(lambda: self.action_swap_arms.setEnabled(bool(self.model.current_sheet and self.model.current_sheet.family != "diagnostic" and len(self.model.current_sheet.arms) == 2)))
+        self.menuDataset.aboutToShow.connect(lambda: self.action_swap_arms.setEnabled(bool(self.model.current_sheet and self.model.current_sheet.family != "diagnostic" and len(self.model.current_sheet.arms) == 2 and self.model.current_effect not in meta_globals.ONE_ARM_METRICS)))
         self.action_swap_arms.triggered.connect(self._swap_sheet_arms)
         self.workspace = WorkspaceSession()
         self.new_dataset()
@@ -1426,6 +1426,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.model.set_current_sheet(self.model.current_sheet_id)
             if recalculate_outcomes:
                 self.model.hydrate_derived_previews()
+        self._disconnect_model_signals()
         self._setup_connections(menu_actions=False)
         self.tableView.synchronize_column_widths()
         self.populate_metrics_menu(metric_to_check=self.model.current_effect)
@@ -1435,7 +1436,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _swap_sheet_arms(self):
         sheet = self.model.current_sheet
-        if sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2:
+        if sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2 and self.model.current_effect not in meta_globals.ONE_ARM_METRICS:
             self._sheet_change(sheet.id, sheet.arms.reverse)
 
     def _refresh_sheet_tabs(self):
@@ -1454,12 +1455,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if index < 0:
             return
         self.model.set_current_sheet(self.sheet_tabs.tabData(index))
+        self.workspace.select_sheet(self.model.current_sheet_id)
         self.model_updated()
         self._update_workspace_guidance()
 
     def _sheet_change(self, sheet_id, operation):
         self.model.set_current_sheet(sheet_id)
-        self.data_dirtied()
+        self.workspace.select_sheet(sheet_id)
         def commit():
             operation()
             self.model_updated()
@@ -1534,11 +1536,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._sheet_change(sheet.id, delete)
 
     def _move_sheet_tab(self, source, destination):
-        sheet_id = self.sheet_tabs.tabData(destination)
+        sheet_id = self.model.current_sheet_id
+        self.model.set_current_sheet(sheet_id)
+        self.workspace.select_sheet(sheet_id)
         def move():
             sheets = self.model.dataset.sheets
             sheets.insert(destination, sheets.pop(source))
-        self._sheet_change(sheet_id, move)
+            self.data_dirtied()
+        self._commit_model_operation(move)
 
     def update_outcome_lbl(self):
         pass

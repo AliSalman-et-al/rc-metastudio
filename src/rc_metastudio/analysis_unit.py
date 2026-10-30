@@ -327,6 +327,8 @@ class AnalysisUnit:
         *,
         source: EffectSource,
     ):
+        if self.get_effect_for_source(source, effect, arm_comparison).estimate is None:
+            return
         if None in [confidence_level, confidence_multiplier]:
             raise ValueError("confidence level and multiplier must be specified")
 
@@ -370,16 +372,16 @@ class AnalysisUnit:
         ] = confidence_level
 
     def get_display_effect_for_source(self, source: EffectSource, effect, arm_comparison):
-        return self._entry(source, effect, arm_comparison).get("display_est")
+        return self._store(source).get(effect, {}).get(arm_comparison, {}).get("display_est")
 
     def get_display_lower_for_source(self, source: EffectSource, effect, arm_comparison):
-        return self._entry(source, effect, arm_comparison).get("display_lower")
+        return self._store(source).get(effect, {}).get(arm_comparison, {}).get("display_lower")
 
     def get_display_upper_for_source(self, source: EffectSource, effect, arm_comparison):
-        return self._entry(source, effect, arm_comparison).get("display_upper")
+        return self._store(source).get(effect, {}).get(arm_comparison, {}).get("display_upper")
 
     def get_display_se_for_source(self, source: EffectSource, effect, arm_comparison):
-        return self._entry(source, effect, arm_comparison).get("display_se")
+        return self._store(source).get(effect, {}).get(arm_comparison, {}).get("display_se")
 
     def get_display_effect_and_ci_for_source(
         self, source: EffectSource, effect, arm_comparison
@@ -417,7 +419,7 @@ class AnalysisUnit:
         )
 
     def get_estimate_for_source(self, source: EffectSource, effect, arm_comparison):
-        return self._entry(source, effect, arm_comparison).get("est")
+        return self._store(source).get(effect, {}).get(arm_comparison, {}).get("est")
 
     def get_lower_for_source(
         self, source: EffectSource, effect, arm_comparison, confidence_multiplier
