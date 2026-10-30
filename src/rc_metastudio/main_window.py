@@ -280,6 +280,32 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.cl_label.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.statusbar.addWidget(self.cl_label, 1)
 
+        self.frame.hide()
+        self.sheet_tabs = QtWidgets.QTabBar(self)
+        self.sheet_tabs.setObjectName("sheet_tabs")
+        self.sheet_tabs.setExpanding(False)
+        self.sheet_tabs.setMovable(True)
+        self.sheet_tabs.setUsesScrollButtons(True)
+        self.sheet_tabs.setElideMode(Qt.TextElideMode.ElideRight)
+        self.sheet_tabs.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        sheet_bar = QtWidgets.QHBoxLayout()
+        sheet_bar.addWidget(self.sheet_tabs)
+        self.add_sheet_button = QtWidgets.QToolButton(self)
+        self.add_sheet_button.setText("+")
+        self.add_sheet_button.setToolTip("Add sheet")
+        sheet_bar.addWidget(self.add_sheet_button)
+        sheet_bar.addStretch()
+        self.verticalLayout.addLayout(sheet_bar)
+        self.sheet_tabs.currentChanged.connect(self._select_sheet_tab)
+        self.sheet_tabs.tabMoved.connect(self._move_sheet_tab)
+        self.sheet_tabs.tabBarDoubleClicked.connect(self._rename_sheet)
+        self.sheet_tabs.customContextMenuRequested.connect(self._sheet_menu)
+        self.add_sheet_button.clicked.connect(self._add_sheet)
+        for sequence, delta in (("Ctrl+PgDown", 1), ("Ctrl+PgUp", -1)):
+            action = QAction(self)
+            action.setShortcut(QKeySequence(sequence))
+            action.triggered.connect(lambda checked=False, delta=delta: self.sheet_tabs.setCurrentIndex((self.sheet_tabs.currentIndex() + delta) % max(1, self.sheet_tabs.count())))
+            self.addAction(action)
         self.workspace = WorkspaceSession()
         self.new_dataset()
 
@@ -1409,7 +1435,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def model_updated(self, preserve_selection=False, recalculate_outcomes=True):
         if self.model.current_sheet:
-            self.model.set_current_sheet(self.model.dataset.sheets[0].id)
+            self.model.set_current_sheet(self.model.current_sheet_id)
             if recalculate_outcomes:
                 self.model.hydrate_derived_previews()
         self._setup_connections(menu_actions=False)
@@ -1417,6 +1443,109 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.populate_metrics_menu(metric_to_check=self.model.current_effect)
         self.model.reset_model()
         self._update_confidence_level_label()
+        self._refresh_sheet_tabs()
+
+    def _refresh_sheet_tabs(self):
+        self.sheet_tabs.blockSignals(True)
+        while self.sheet_tabs.count():
+            self.sheet_tabs.removeTab(0)
+        for sheet in self.model.dataset.sheets:
+            index = self.sheet_tabs.addTab(sheet.name)
+            self.sheet_tabs.setTabData(index, sheet.id)
+            self.sheet_tabs.setTabToolTip(index, sheet.name)
+            if sheet.id == self.model.current_sheet_id:
+                self.sheet_tabs.setCurrentIndex(index)
+        self.sheet_tabs.blockSignals(False)
+
+    def _select_sheet_tab(self, index):
+        if index < 0:
+            return
+        self.model.set_current_sheet(self.sheet_tabs.tabData(index))
+        self.model_updated()
+        self._update_workspace_guidance()
+
+    def _sheet_change(self, sheet_id, operation):
+        self.model.set_current_sheet(sheet_id)
+        self.data_dirtied()
+        def commit():
+            operation()
+            self.model_updated()
+            self.data_dirtied()
+        self._commit_model_operation(commit)
+
+    def _sheet_name(self, title, default):
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle(title)
+        layout = QtWidgets.QVBoxLayout(dialog)
+        edit = QtWidgets.QLineEdit(default, dialog)
+        edit.selectAll()
+        layout.addWidget(edit)
+        error = QLabel(dialog)
+        layout.addWidget(error)
+        buttons = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok | QtWidgets.QDialogButtonBox.StandardButton.Cancel, dialog)
+        layout.addWidget(buttons)
+        def accept():
+            name = edit.text().strip()
+            if not name or any(sheet.name == name for sheet in self.model.dataset.sheets):
+                error.setText("Choose a unique outcome name.")
+                return
+            dialog.accept()
+        buttons.accepted.connect(accept)
+        buttons.rejected.connect(dialog.reject)
+        return edit.text().strip() if dialog.exec() else None
+
+    def _add_sheet(self):
+        import uuid
+        if not self.model.current_sheet:
+            return
+        number = 2
+        while any(sheet.name == f"Outcome {number}" for sheet in self.model.dataset.sheets):
+            number += 1
+        name = self._sheet_name("Add sheet", f"Outcome {number}")
+        if name is None:
+            return
+        sheet = copy.deepcopy(self.model.current_sheet)
+        sheet.id, sheet.name, sheet.rows = uuid.uuid4().hex, name, []
+        def add():
+            self.model.dataset.sheets.append(sheet)
+            self.model.set_current_sheet(sheet.id)
+        self._sheet_change(self.model.current_sheet_id, add)
+
+    def _rename_sheet(self, index):
+        if index < 0:
+            return
+        sheet = self.model.dataset.sheet(self.sheet_tabs.tabData(index))
+        name = self._sheet_name("Rename sheet", sheet.name)
+        if name is not None:
+            self._sheet_change(sheet.id, lambda: setattr(sheet, "name", name))
+
+    def _sheet_menu(self, position):
+        index = self.sheet_tabs.tabAt(position)
+        if index < 0:
+            return
+        menu = QtWidgets.QMenu(self)
+        menu.addAction("Rename", lambda: self._rename_sheet(index))
+        delete = menu.addAction("Delete", lambda: self._delete_sheet(index))
+        delete.setEnabled(self.sheet_tabs.count() > 1)
+        menu.exec(self.sheet_tabs.mapToGlobal(position))
+
+    def _delete_sheet(self, index):
+        sheet = self.model.dataset.sheet(self.sheet_tabs.tabData(index))
+        if len(self.model.dataset.sheets) == 1:
+            return
+        if sheet.rows and QMessageBox.question(self, "Delete sheet", f'Delete “{sheet.name}” and its rows?') != QMessageBox.StandardButton.Yes:
+            return
+        def delete():
+            self.model.dataset.sheets.remove(sheet)
+            self.model.set_current_sheet(self.model.dataset.sheets[max(0, index - 1)].id)
+        self._sheet_change(sheet.id, delete)
+
+    def _move_sheet_tab(self, source, destination):
+        sheet_id = self.sheet_tabs.tabData(destination)
+        def move():
+            sheets = self.model.dataset.sheets
+            sheets.insert(destination, sheets.pop(source))
+        self._sheet_change(sheet_id, move)
 
     def update_outcome_lbl(self):
         pass
