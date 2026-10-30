@@ -574,7 +574,7 @@ def _validate_active_effect(active_effect: str | None, family: str) -> None:
         raise ProjectSemanticError("active effect conflicts with analysis family")
 
 
-def validate_project_semantics(
+def validate_legacy_project_semantics(
     project: Mapping[str, JsonValue], state: Mapping[str, JsonValue]
 ) -> None:
     dataset = _object(project["dataset"], "project.json/dataset")
@@ -725,3 +725,39 @@ def reconstruct_analysis_dataset(
         notes=cast(str, dataset["notes"]),
         summary=cast(JsonValue, copy.deepcopy(dataset["summary"])),
     )
+
+
+SheetId = NewType("SheetId", str)
+RowId = NewType("RowId", str)
+ArmId = NewType("ArmId", str)
+
+
+def validate_project_semantics(project, state):
+    """Validate the sole live sheet graph; legacy validation is read-seam only."""
+    if project.get("schema_version") != 3:
+        return validate_legacy_project_semantics(project, state)
+    def unique(items, location):
+        ids = [item["id"] for item in items]
+        if any(not isinstance(i, str) or not i for i in ids) or len(ids) != len(set(ids)):
+            raise ProjectSemanticError(f"{location}: invalid or duplicate identity")
+    sheets = project["sheets"]
+    unique(sheets, "sheets")
+    names = [s["name"] for s in sheets]
+    if any(not n.strip() for n in names) or len(names) != len(set(names)):
+        raise ProjectSemanticError("blank or duplicate sheet name")
+    for sheet in sheets:
+        unique(sheet["arms"], "arms")
+        unique(sheet["rows"], "rows")
+        arms = {a["id"] for a in sheet["arms"]}
+        if not set(sheet["settings"].get("arms", [])) <= arms:
+            raise ProjectSemanticError("settings reference undeclared arm")
+        for row in sheet["rows"]:
+            if not set(row["raw_data"]) <= arms:
+                raise ProjectSemanticError("raw data reference undeclared arm")
+            for values in row["raw_data"].values():
+                _validate_raw(sheet["family"], values, row["id"])
+            for record in row["entered_effects"] + row["ratio_inputs"]:
+                if not record["arms"] or not set(record["arms"]) <= arms:
+                    raise ProjectSemanticError("comparison references undeclared arm")
+    if state["current_sheet_id"] is not None and state["current_sheet_id"] not in {s["id"] for s in sheets}:
+        raise ProjectSemanticError("unknown current sheet")
