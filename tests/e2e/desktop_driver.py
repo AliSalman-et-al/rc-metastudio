@@ -722,12 +722,244 @@ def calculator(app, window, family):
     analyze(app, window, method).close()
 
 
+def hillclimb(app, window):
+    """Fixed effort route; setup/cleanup outside task boundaries is not counted."""
+    import time
+    from rc_metastudio import main_wizard, add_new_dialogs
+    from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
+    from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
+    from rc_metastudio.publication_bias_dialog import PublicationBiasDialog
+
+    measures = {}
+    counts = {}
+    task = None
+
+    def event(kind, amount=1, label=""):
+        counts[kind] += amount
+        record_step("effort", task=task, kind=kind, amount=amount, label=label)
+
+    def click(widget):
+        assert widget.isEnabled(), widget.objectName()
+        event("clicks", label=widget.objectName() or widget.text())
+        if isinstance(widget, QtWidgets.QCheckBox):
+            QTest.mouseClick(widget, QtCore.Qt.MouseButton.LeftButton, pos=QtCore.QPoint(8, widget.height() // 2))
+        else:
+            mouse_click(widget, QtCore.Qt.MouseButton.LeftButton)
+        app.processEvents()
+
+    def action(handle):
+        assert handle.isEnabled(), handle.text()
+        event("clicks", label=handle.text())
+        handle.trigger()
+        app.processEvents()
+
+    def key(widget, value, modifier=QtCore.Qt.KeyboardModifier.NoModifier):
+        event("shortcuts", label=str(value))
+        QTest.keyClick(widget, value, modifier)
+        app.processEvents()
+
+    def text(widget, value):
+        event("typed_characters", len(value), value)
+        QTest.keyClicks(widget, value)
+        app.processEvents()
+
+    def visible(cls):
+        found = [w for w in app.topLevelWidgets() if isinstance(w, cls) and w.isVisible()]
+        assert len(found) == 1, (cls, found)
+        return found[0]
+
+    def dialog(cls):
+        result = visible(cls)
+        event("dialogs", label=cls.__name__)
+        record_step("hillclimb-dialog", result, task=task)
+        return result
+
+    def modal(cls, operate, trigger):
+        failures = []
+        def callback():
+            try:
+                operate(dialog(cls))
+            except BaseException as error:
+                failures.append(error)
+                if app.activeModalWidget():
+                    app.activeModalWidget().reject()
+        QtCore.QTimer.singleShot(0, callback)
+        trigger()
+        if failures:
+            raise failures[0]
+
+    def ok(form):
+        click(form.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+
+    def begin(name):
+        nonlocal counts, task, started
+        task = name
+        counts = dict(clicks=0, shortcuts=0, typed_characters=0, dialogs=0)
+        started = time.perf_counter()
+
+    def end(view, completable=True):
+        measures[task] = counts | {"wall_seconds": time.perf_counter() - started,
+                                   "completable": completable}
+        if view is not None:
+            numbers = parsed_numeric_sections(view.results)
+            measures[task]["numbers"] = numbers
+            measures[task]["texts"] = dict(view.texts)
+            record_step("hillclimb-result", view, task=task, measures=measures[task],
+                        texts=dict(view.texts), plots=dict(view.results.display_images))
+        (EVIDENCE / "measures.json").write_text(json.dumps(measures, indent=2) + "\n")
+
+    def run_analysis(handle, subgroup=False, diagnostic=False, regression=False):
+        action(handle)
+        if subgroup:
+            ok(dialog(SubgroupAnalysisDialog))
+        if diagnostic:
+            click(dialog(DiagnosticMetricsDialog).btn_ok)
+        form = dialog(analysis_setup_dialog.AnalysisSetupDialog)
+        if regression:
+            for cov, checkbox in form.covs_and_check_boxes:
+                if checkbox.isChecked() != (cov.name == "Dose"):
+                    click(checkbox)
+            assert [cov.name for cov, checkbox in form.covs_and_check_boxes if checkbox.isChecked()] == ["Dose"]
+        ok(form)
+        view = visible(results_window.ResultsWindow)
+        assert view.results.sections
+        return view
+
+    started = 0
+    begin("T1")
+    def create(wizard):
+        click(wizard.currentPage().twoarm_proportions_Button)
+        click(wizard.button(QtWidgets.QWizard.WizardButton.NextButton))
+        if isinstance(wizard.currentPage(), main_wizard.ChooseMetricPage):
+            click(wizard.button(QtWidgets.QWizard.WizardButton.NextButton))
+        field = wizard.currentPage().outcome_name_LineEdit
+        click(field)
+        text(field, "Mortality")
+        click(wizard.button(QtWidgets.QWizard.WizardButton.FinishButton))
+    modal(main_wizard.MainWizard, create, lambda: action(window.action_new_dataset))
+    fixture = ROOT / "tests/e2e/fixtures/hillclimb/binary.tsv"
+    app.clipboard().setText(fixture.read_text().rstrip("\n"))
+    index = window.model.index(0, window.model.NAME)
+    window.tableView.scrollTo(index)
+    event("clicks", label="first study cell")
+    QTest.mouseClick(window.tableView.viewport(), QtCore.Qt.MouseButton.LeftButton,
+                     pos=window.tableView.visualRect(index).center())
+    key(window.tableView, QtCore.Qt.Key.Key_V, QtCore.Qt.KeyboardModifier.ControlModifier)
+    assert len(window.model.dataset.studies) == 12
+    for row, study in enumerate(window.model.dataset.studies):
+        if study.include:
+            continue
+        index = window.model.index(row, 0)
+        window.tableView.scrollTo(index)
+        event("clicks", label=f"include study {row + 1}")
+        QTest.mouseClick(window.tableView.viewport(), QtCore.Qt.MouseButton.LeftButton,
+                         pos=QtCore.QPoint(window.tableView.visualRect(index).left() + 10, window.tableView.visualRect(index).center().y()))
+        app.processEvents()
+    basic = run_analysis(window.action_go)
+    end(basic)
+    window.out_path = str(WORK / "hillclimb-t1.rcms")
+    assert window.save()
+    basic.close()
+
+    begin("T2")
+    values = json.loads((ROOT / "tests/e2e/fixtures/hillclimb/covariates.json").read_text())
+    for name, kind in (("Region", "factor"), ("Dose", "continuous")):
+        def add(form):
+            click(form.covariate_name_le)
+            text(form.covariate_name_le, name)
+            if form.datatype_cbo_box.currentData() != kind:
+                click(form.datatype_cbo_box)
+                key(form.datatype_cbo_box, QtCore.Qt.Key.Key_Down)
+                key(form.datatype_cbo_box, QtCore.Qt.Key.Key_Return)
+            ok(form)
+        modal(add_new_dialogs.AddCovariateDialog, add, lambda: action(window.action_add_covariate))
+        column = window.tableView.get_covariate_columns()[-1]
+        for row, value in enumerate(values[name]):
+            index = window.model.index(row, column)
+            window.tableView.scrollTo(index)
+            event("clicks", label=f"{name} row {row + 1}")
+            QTest.mouseClick(window.tableView.viewport(), QtCore.Qt.MouseButton.LeftButton,
+                             pos=window.tableView.visualRect(index).center())
+            key(window.tableView, QtCore.Qt.Key.Key_F2)
+            editor = next((w for w in window.tableView.findChildren(QtWidgets.QLineEdit) if w.isVisible()), None)
+            assert editor is not None
+            key(editor, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
+            text(editor, str(value))
+            key(editor, QtCore.Qt.Key.Key_Return)
+        assert [s.covariate_values[name] for s in window.model.dataset.studies] == values[name], [s.covariate_values[name] for s in window.model.dataset.studies]
+    record_step("covariates-entered", window, covariates=[(c.name, c.data_type) for c in window.model.dataset.covariates], included=[s.include for s in window.model.dataset.studies])
+    for row, study in enumerate(window.model.dataset.studies):
+        if study.include:
+            continue
+        index = window.model.index(row, 0)
+        window.tableView.scrollTo(index)
+        event("clicks", label=f"include study {row + 1}")
+        QTest.mouseClick(window.tableView.viewport(), QtCore.Qt.MouseButton.LeftButton,
+                         pos=QtCore.QPoint(window.tableView.visualRect(index).left() + 10, window.tableView.visualRect(index).center().y()))
+        app.processEvents()
+    subgroup = run_analysis(window.action_subgroup_ma, subgroup=True)
+    record_step("hillclimb-subgroup", subgroup, numbers=parsed_numeric_sections(subgroup.results), texts=dict(subgroup.texts))
+    subgroup_numbers = parsed_numeric_sections(subgroup.results)
+    subgroup.close()
+    regression = run_analysis(window.action_meta_regression, regression=True)
+    end(regression)
+    measures["T2"]["subgroup_numbers"] = subgroup_numbers
+    regression.close()
+
+    begin("T3")
+    modal(PublicationBiasDialog,
+          lambda form: click(form.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)),
+          lambda: action(window.action_publication_bias))
+    bias = visible(results_window.ResultsWindow)
+    end(bias)
+    bias.close()
+
+    # T4 starts from the committed populated diagnostic project, as PLAN specifies.
+    window.workspace.mark_saved()
+    assert window.open(str(ROOT / "sample_projects/lymph.rcms"), raise_on_error=True)
+    begin("T4")
+    diagnostic = run_analysis(window.action_go, diagnostic=True)
+    end(diagnostic)
+    diagnostic.close()
+
+    # Restore T1 input for the partial export task; setup is excluded.
+    window.workspace.mark_saved()
+    assert window.open(str(WORK / "hillclimb-t1.rcms"), raise_on_error=True)
+    basic = analyze(app, window, "binary.random")
+    begin("T5")
+    def save_picker(*args, **kwargs):
+        picker = QtWidgets.QFileDialog(basic)
+        picker.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog)
+        picker.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)
+        picker.setDirectory(str(WORK))
+        suffix = "txt" if "report" in str(args).lower() else "pdf"
+        def save(form):
+            field = form.findChild(QtWidgets.QLineEdit, "fileNameEdit")
+            click(field)
+            text(field, "hillclimb-export." + suffix)
+            click(form.findChild(QtWidgets.QDialogButtonBox).button(QtWidgets.QDialogButtonBox.StandardButton.Save))
+        modal(QtWidgets.QFileDialog, save, picker.exec)
+        return picker.selectedFiles()[0], ""
+    with patch.object(QtWidgets.QFileDialog, "getSaveFileName", side_effect=save_picker):
+        action(basic.export_report_action)
+        action(basic.export_plot_action)
+    assert (WORK / "hillclimb-export.txt").stat().st_size
+    assert (WORK / "hillclimb-export.pdf").read_bytes().startswith(b"%PDF")
+    end(basic, False)
+    basic.close()
+
+
 base_path_patch = patch(
     "rc_metastudio.settings.get_base_path", return_value=WORK.as_posix()
 )
 base_path_patch.start()
 try:
     app, window = automation.start_automation()
+    if EVIDENCE is not None and os.environ.get("RCMS_DRIVE_STARTED"):
+        import time
+        app.processEvents()
+        assert window.isVisible()
+        (EVIDENCE / "startup.json").write_text(json.dumps({"seconds": time.time() - float(os.environ["RCMS_DRIVE_STARTED"]), "visible": True, "platform": app.platformName()}))
 except BaseException:
     base_path_patch.stop()
     sys.excepthook = sys.__excepthook__
@@ -755,6 +987,8 @@ try:
         doctor(app, window)
     if scenario == "doctor":
         pass
+    elif scenario == "hillclimb":
+        hillclimb(app, window)
     elif scenario.startswith("audit-round3-"):
         sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
         from tests.e2e.audit_round3 import run
