@@ -755,6 +755,10 @@ try:
         doctor(app, window)
     if scenario == "doctor":
         pass
+    elif scenario == "sheets-baseline":
+        from tests.e2e.sheets_baseline import run
+
+        run(app, window, record_step, analyze)
     elif scenario.startswith("audit-round3-"):
         sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
         from tests.e2e.audit_round3 import run

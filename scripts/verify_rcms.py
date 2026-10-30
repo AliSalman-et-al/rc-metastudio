@@ -105,6 +105,8 @@ def write_manifest(evidence: Path, record: dict[str, object]) -> None:
 
 def _scenario_timeout(scenario: str) -> int:
     timeout_seconds = 120
+    if scenario == "sheets-baseline":
+        return 600
     if scenario in {"ratios-hr", "ratios-irr", "project-display-labels", "project-round6-polish", "project-release-coefficients", "project-reviewer-predictions", "project-reviewer-groups", "project-reviewer-colours", "calculator-ratio-precision", "project-axis-proportions", "project-axis-others", "project-axis-sequential"}:
         timeout_seconds = 600
     elif scenario.startswith("audit-round3-"):
@@ -159,7 +161,7 @@ def _desktop_environment(work: Path, evidence: Path, native: bool) -> dict[str, 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("scenario", choices=SCENARIOS)
+    parser.add_argument("scenario", choices=(*SCENARIOS, "sheets-baseline"))
     parser.add_argument(
         "--native",
         action="store_true",
