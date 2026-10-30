@@ -1,12 +1,13 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Analysis values and arm data for one study sheet and follow-up."""
+"""Analysis values and arm data for one study row."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 import copy
 from typing import Literal, NewType
+from rc_metastudio.project_domain import ArmId
 import uuid
 
 from rc_metastudio import meta_globals
@@ -33,7 +34,7 @@ class EffectEstimate:
 
 
 class AnalysisUnit:
-    """Store one sheet at one follow-up, potentially across several arms."""
+    """Store one study row’s measurements and effect estimates."""
 
     def __init__(
         self,
@@ -43,7 +44,7 @@ class AnalysisUnit:
         stable_id=None,
         arm_stable_ids=None,
     ):
-        """Create the analysis unit for one study sheet and follow-up.
+        """Create the analysis unit for one study row.
 
         ``raw_data`` contains one list per arm. Each list follows the raw-data
         layout for the sheet type.
@@ -236,30 +237,21 @@ class AnalysisUnit:
             entry.get("SE"),
         )
 
-    def _add_effect_entries_for_arm(self, new_arm):
-        arm_names = list(self.arms)
+    def _add_effect_entries_for_arm(self, identity):
         metric_sets = {
             meta_globals.TIME_TO_EVENT: (["HR"], []),
             meta_globals.EVENT_RATES: (["IRR"], []),
             BINARY: (meta_globals.BINARY_TWO_ARM_METRICS, meta_globals.BINARY_ONE_ARM_METRICS),
             CONTINUOUS: (meta_globals.CONTINUOUS_TWO_ARM_METRICS, meta_globals.CONTINUOUS_ONE_ARM_METRICS),
+            DIAGNOSTIC: ([], meta_globals.DIAGNOSTIC_METRICS),
         }
-        if self.sheet.data_type == DIAGNOSTIC:
-            for effect in meta_globals.DIAGNOSTIC_METRICS:
-                self.entered_effects[effect][new_arm] = self._new_effect_entry()
-            return
-        if self.sheet.data_type not in metric_sets:
-            return
-        two_arm_metrics, one_arm_metrics = metric_sets[self.sheet.data_type]
-        for effect in two_arm_metrics:
-            for arm in arm_names:
-                for arm_comparison in (
-                    "-".join((new_arm, arm)),
-                    "-".join((arm, new_arm)),
-                ):
-                    self.entered_effects[effect][arm_comparison] = self._new_effect_entry()
-        for effect in one_arm_metrics:
-            self.entered_effects[effect][new_arm] = self._new_effect_entry()
+        two_arm, one_arm = metric_sets[self.sheet.data_type]
+        for metric in two_arm:
+            for other in self.arms_by_id:
+                for pair in ((identity, other), (other, identity)):
+                    self.entered_effects[metric][pair] = self._new_effect_entry()
+        for metric in one_arm:
+            self.entered_effects[metric][(identity,)] = self._new_effect_entry()
 
     def calculate_se_if_possible(
         self,
@@ -563,8 +555,8 @@ class AnalysisUnit:
             arm_id = max(arm.id for arm in self._arms_by_id.values()) + 1
         if raw_data is None:
             raw_data = [""] * self.raw_data_length
-        self._add_effect_entries_for_arm(name)
         arm = Arm(arm_id, name, raw_data, stable_id=stable_id)
+        self._add_effect_entries_for_arm(arm.stable_id)
         self._arms_by_id[arm.stable_id] = arm
 
     def remove_arm(self, name):
@@ -574,37 +566,14 @@ class AnalysisUnit:
             key: value for key, value in self.ratio_inputs.items()
             if arm.stable_id not in key.split("|")
         }
-        remaining_arms = list(self.arms)
-        removed_keys = {name}
-        for other in remaining_arms:
-            removed_keys.update((f"{name}-{other}", f"{other}-{name}"))
-        for store in (
-            self.entered_effects,
-            self.derived_effect_previews,
-            self.analysis_effects,
-        ):
-            for effect_values in store.values():
-                for key in removed_keys:
-                    effect_values.pop(key, None)
+        for store in (self.entered_effects, self.derived_effect_previews, self.analysis_effects):
+            for entries in store.values():
+                for pair in tuple(entries):
+                    if arm.stable_id in pair:
+                        del entries[pair]
 
     def rename_arm(self, old_name, new_name):
-        if old_name == new_name:
-            return
-
-        original_arm_names = list(self.arms)
-        arm = self.arms[old_name]
-        arm.name = new_name
-
-        replacements = _arm_key_replacements(
-            original_arm_names, old_name, new_name
-        )
-        for store in (
-            self.entered_effects,
-            self.derived_effect_previews,
-            self.analysis_effects,
-        ):
-            for effect_values in store.values():
-                _rename_effect_keys(effect_values, replacements)
+        self.arms[old_name].name = new_name
 
     def get_raw_data_for_arm(self, arm_name):
         return self.arms[arm_name].raw_data
@@ -631,34 +600,9 @@ class AnalysisUnit:
         return [arm.name for arm in self._arms_by_id.values()]
 
 
-def _arm_key_replacements(arm_names, old_name, new_name):
-    """Build replacements without parsing names that may contain hyphens."""
-    replacements = {old_name: new_name}
-    for left_arm in arm_names:
-        for right_arm in arm_names:
-            if left_arm == right_arm:
-                continue
-            old_key = "-".join((left_arm, right_arm))
-            new_key = "-".join(
-                (
-                    new_name if left_arm == old_name else left_arm,
-                    new_name if right_arm == old_name else right_arm,
-                )
-            )
-            if old_key != new_key:
-                replacements[old_key] = new_key
-    return replacements
-
-
-def _rename_effect_keys(effect_values, replacements):
-    for old_key, new_key in replacements.items():
-        if old_key in effect_values:
-            effect_values[new_key] = effect_values.pop(old_key)
-
-
 class Arm:
     def __init__(self, id, name, raw_data, stable_id=None):
         self.id = id
         self.name = name
         self.raw_data = raw_data
-        self.stable_id = stable_id or _new_identity()
+        self.stable_id = ArmId(stable_id or str(_new_identity()))

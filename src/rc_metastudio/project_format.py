@@ -33,7 +33,7 @@ JsonScalar: TypeAlias = str | int | float | bool | None
 JsonValue: TypeAlias = JsonScalar | list["JsonValue"] | dict[str, "JsonValue"]
 JsonObject: TypeAlias = dict[str, JsonValue]
 
-CURRENT_FORMAT_VERSION = 2
+CURRENT_FORMAT_VERSION = 3
 MAX_JSON_NESTING = 32
 MAX_JSON_INTEGER_DIGITS = 1024
 _FORMAT_NAME = "rc-metastudio-project"
@@ -82,13 +82,70 @@ def reconstruct_analysis_dataset(document: ProjectDocument) -> AnalysisDataset:
 ProjectMigration: TypeAlias = Callable[
     [JsonObject, JsonObject], tuple[JsonObject, JsonObject]
 ]
-def _upgrade_v1(project: JsonObject, state: JsonObject) -> tuple[JsonObject, JsonObject]:
-    project, state = copy.deepcopy(project), copy.deepcopy(state)
-    project["schema_version"] = state["schema_version"] = 2
-    return project, state
+def _convert_pairs(project, state):
+    from rc_metastudio.project_domain import validate_legacy_project_semantics
+    validate_legacy_project_semantics(project, state)
+    source = project["dataset"]
+    sheets, names, selection = [], set(), None
+    families = {0: "binary", 1: "continuous", 2: "diagnostic", 5: "time_to_event", 6: "event_rates"}
+    for outcome in source["outcomes"]:
+        follow_ups = list(outcome["follow_ups"])
+        if not follow_ups or any(u["outcome"] == outcome["name"] and u["follow_up"] is None for r in source["studies"] for u in r["analysis_units"]):
+            follow_ups.insert(0, None)
+        for follow_up in follow_ups:
+            sid = f"sheet:{len(sheets)}"
+            base = outcome["name"].strip() or "Untitled"
+            if len(follow_ups) > 1:
+                base += " — " + (follow_up or "Unnamed")
+            name, suffix = base, 2
+            while name in names:
+                name = f"{base} ({suffix})"
+                suffix += 1
+            names.add(name)
+            units = [next((u for u in r["analysis_units"] if (u["outcome"], u["follow_up"]) == (outcome["name"], follow_up)), None) for r in source["studies"]]
+            labels = []
+            for unit in units:
+                for arm in unit["groups"] if unit else []:
+                    if arm["name"] not in labels:
+                        labels.append(arm["name"])
+            arms = [{"id": f"{sid}:arm:{i}", "name": label} for i, label in enumerate(labels)]
+            identities = {a["name"]: a["id"] for a in arms}
+            comparisons = {label: [identities[label]] for label in labels}
+            for left in labels:
+                for right in labels:
+                    if left != right:
+                        key = left + "-" + right
+                        pair = [identities[left], identities[right]]
+                        if key in comparisons and comparisons[key] != pair:
+                            raise ProjectFormatError("ambiguous legacy comparison: " + key)
+                        comparisons[key] = pair
+            settings = copy.deepcopy(source.get("summary") or {})
+            settings["summary"] = copy.deepcopy(source.get("summary"))
+            settings.update({k: copy.deepcopy(v) for k,v in state.items() if k not in {"schema_version", "active_outcome", "active_follow_up", "active_groups"}})
+            settings["metric"] = state.get("active_effect") or settings.get("effect")
+            active = state.get("active_groups", [])
+            settings["arms"] = [identities[n] for n in active] if active and all(n in identities for n in active) else [a["id"] for a in arms[:1 if outcome["data_type"] == 2 else 2]]
+            rows = []
+            for index, (row, unit) in enumerate(zip(source["studies"], units)):
+                record = {k: copy.deepcopy(v) for k,v in row.items() if k not in {"analysis_units", "id", "name"}}
+                record.update(id=f"{sid}:row:{index}", label=row["name"], raw_data={}, entered_effects=[], ratio_inputs=[])
+                if unit:
+                    record["raw_data"] = {identities[a["name"]]: copy.deepcopy(a["raw_data"]) for a in unit["groups"]}
+                    record["entered_effects"] = [{"metric": metric, "arms": comparisons[key], "values": copy.deepcopy(values)} for metric, entries in unit["entered_effects"].items() for key,values in entries.items()]
+                    record["ratio_inputs"] = [{"arms": [identities[n] for n in value["groups"]], "input": copy.deepcopy(value["input"])} for value in unit.get("ratio_inputs", [])]
+                rows.append(record)
+            sheets.append(dict(id=sid, name=name, family=families[outcome["data_type"]], data_type=outcome["data_type"], sub_type=outcome["sub_type"], arms=arms, covariates=copy.deepcopy(source["covariates"]), settings=settings, rows=rows))
+            if (state.get("active_outcome"), state.get("active_follow_up")) == (outcome["name"], follow_up):
+                selection = sid
+    return {"schema_version": 3, "title": source["title"], "notes": source["notes"], "sheets": sheets}, {"schema_version": 3, "current_sheet_id": selection or (sheets[0]["id"] if sheets else None)}
 
 
-_MIGRATIONS: Mapping[int, ProjectMigration] = {1: _upgrade_v1}
+def convert_v1_to_sheet_project(project, state):
+    return _convert_pairs(project, state)
+
+
+def convert_v2_to_sheet_project(project, state):
+    return _convert_pairs(project, state)
 
 
 def _reject_duplicate_keys(pairs: list[tuple[str, JsonValue]]) -> JsonObject:
@@ -340,14 +397,12 @@ def migrate_to_latest(
         migrated_state = cast(JsonObject, copy.deepcopy(dict(state)))
     except RecursionError as exc:
         raise ProjectFormatError("project migration input nesting is too deep") from exc
-    while version < CURRENT_FORMAT_VERSION:
-        migration = _MIGRATIONS.get(version)
-        if migration is None:
-            raise ProjectFormatError(
-                f"no Project Format Migration from version {version}"
-            )
-        migrated_project, migrated_state = migration(migrated_project, migrated_state)
-        version += 1
+    if version in (1, 2):
+        converter = convert_v1_to_sheet_project if version == 1 else convert_v2_to_sheet_project
+        migrated_project, migrated_state = converter(migrated_project, migrated_state)
+    _validate(3, "project.json", migrated_project)
+    _validate(3, "state.json", migrated_state)
+    validate_project_semantics(migrated_project, migrated_state)
     return migrated_project, migrated_state
 
 
