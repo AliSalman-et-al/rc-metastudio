@@ -339,7 +339,7 @@ step "Creating the portable tar.gz"
 mkdir -p "$work_root/archive-staging"
 mv "$archive_root" "$work_root/archive-staging/$artifact_name"
 tar --sort=name --mtime='UTC 2020-01-01' --owner=0 --group=0 --numeric-owner \
-  -czf "$artifact_path.tmp" -C "$work_root/archive-staging" "$artifact_name"
+  -I 'gzip -9' -cf "$artifact_path.tmp" -C "$work_root/archive-staging" "$artifact_name"
 mv "$artifact_path.tmp" "$artifact_path"
 
 step "Extracting the archive and running native package qualification"

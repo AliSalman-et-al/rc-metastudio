@@ -357,7 +357,7 @@ function Compress-AppDirectory {
     if (Test-Path $ArchiveStagingRoot) { Remove-Item -LiteralPath $ArchiveStagingRoot -Recurse -Force }
     New-Item -ItemType Directory -Force -Path $ArchiveStagingRoot | Out-Null
     Copy-DirectoryTree -Source $SourceDirectory -Destination $ArchiveRootDirectory
-    [System.IO.Compression.ZipFile]::CreateFromDirectory($ArchiveStagingRoot, $tmpZipPath, [System.IO.Compression.CompressionLevel]::Fastest, $false)
+    [System.IO.Compression.ZipFile]::CreateFromDirectory($ArchiveStagingRoot, $tmpZipPath, [System.IO.Compression.CompressionLevel]::Optimal, $false)
     Move-Item -LiteralPath $tmpZipPath -Destination $DestinationPath -Force
 }
 
