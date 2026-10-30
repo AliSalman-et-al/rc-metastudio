@@ -740,7 +740,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         """Updates table widget with data from analysis_unit"""
         with QSignalBlocker(self.simple_table):
             for row_index, group_name in enumerate(self.current_groups):
-                group_raw_data = self.analysis_unit.get_raw_data_for_group(group_name)
+                group_raw_data = self.analysis_unit.get_raw_data_for_arm(group_name)
                 for col in range(len(group_raw_data)):
                     self._set_val(
                         row_index, col, group_raw_data[col], self.simple_table, supplied=True
@@ -894,10 +894,10 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             current_values = [
                 self._get_float(row_index, col_index)
                 for col_index in range(
-                    len(self.analysis_unit.get_raw_data_for_group(group_name))
+                    len(self.analysis_unit.get_raw_data_for_arm(group_name))
                 )
             ]
-            self.analysis_unit.set_raw_data_for_group(group_name, current_values)
+            self.analysis_unit.set_raw_data_for_arm(group_name, current_values)
 
     def restore_analysis_unit(self, old_analysis_unit):
         """Restores the analysis_unit data and resets the form"""
@@ -1190,7 +1190,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         return x is None or x == ""
 
     def update_effect_from_raw_data(self):
-        n1, m1, sd1, n2, m2, sd2 = self.analysis_unit.get_raw_data_for_groups(
+        n1, m1, sd1, n2, m2, sd2 = self.analysis_unit.get_raw_data_for_arms(
             self.current_groups
         )
         se1, se2 = self._get_float(0, 3), self._get_float(1, 3)

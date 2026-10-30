@@ -109,11 +109,12 @@ class WorkspaceEditTarget:
     row: int
     column: int
     old_value: object
+    row_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
 class AppliedWorkspaceEdit:
-    added_study_id: int | None = None
+    added_study_id: str | None = None
     error: str | None = None
 
     @property
@@ -276,7 +277,7 @@ class WorkspaceEditingService:
         included, valid = WorkspaceEditingService._parse_inclusion(value)
         if not valid:
             return AppliedWorkspaceEdit(
-                error="StudyRow inclusion must be checked or unchecked."
+                error="Study inclusion must be checked or unchecked."
             )
         study.include = included
         study.manually_excluded = not included
@@ -302,7 +303,7 @@ class WorkspaceEditingService:
             return
         unit = self._analysis_unit(dataset, study, context)
         if context.data_type in RATIO_DATA_TYPES:
-            raw = unit.get_raw_data_for_groups(context.current_groups)
+            raw = unit.get_raw_data_for_arms(context.current_groups)
             study.include = not study.manually_excluded and unit.ratio_input(context.current_groups).ready(raw, metric=context.current_effect)
             return
         effect = unit.get_effect_for_source(
@@ -337,31 +338,25 @@ class WorkspaceEditingService:
         allow_empty_names: bool,
     ) -> StudyRow | None:
         self._last_error = None
-        if target.row >= len(dataset):
+        if target.row >= len(dataset.sheet(context.sheet_id).rows):
             return self._new_study_for_edit(
                 dataset, target, context, value, allow_empty_names
             )
-        study = dataset.sheet(context.sheet_id).rows[target.row]
+        study = (next(row for row in dataset.sheet(context.sheet_id).rows if row.id == target.row_id) if target.row_id else dataset.sheet(context.sheet_id).rows[target.row])
         if self._edit_requires_name(study, target, context, value, allow_empty_names):
             self._last_error = "Please enter a study name before entering study data."
             return None
         return study
 
-    def _new_study_for_edit(
-        self, dataset, target, context, value, allow_empty_names
-    ) -> StudyRow | None:
+    def _new_study_for_edit(self, dataset, target, context, value, allow_empty_names):
+        import uuid
+        sheet = dataset.sheet(context.sheet_id)
         if target.column != context.name_column:
-            self._last_error = "Please enter a study name before entering study data."
+            self._last_error = 'Please enter a study name before entering study data.'
             return None
-        if not allow_empty_names:
-            try:
-                name_validation.validate_required_name("study", value)
-            except ValueError as error:
-                self._last_error = str(error)
-                return None
-        while len(dataset) <= target.row:
-            dataset.add_study(StudyRow(dataset.max_study_id() + 1))
-        return dataset.sheet(context.sheet_id).rows[target.row]
+        while len(sheet.rows) <= target.row:
+            sheet.rows.append(StudyRow(uuid.uuid4().hex, '', AnalysisUnit(sheet, arm_names=[a.name for a in sheet.arms], arm_stable_ids=[a.id for a in sheet.arms])))
+        return sheet.rows[target.row]
 
     @staticmethod
     def _edit_requires_name(study, target, context, value, allow_empty_names):
@@ -408,11 +403,6 @@ class WorkspaceEditingService:
         if name in existing_names:
             return AppliedWorkspaceEdit(error="Duplicate study names not allowed")
         added_study_id = None
-        if append_blank_study and name != "":
-            new_study = StudyRow(dataset.max_study_id() + 1)
-            new_study.include = False
-            dataset.add_study(new_study)
-            added_study_id = int(new_study.id)
         study.label = name
         return AppliedWorkspaceEdit(added_study_id=added_study_id)
 
@@ -431,7 +421,7 @@ class WorkspaceEditingService:
         return study.analysis_unit
 
     def _raw_data(self, dataset: Dataset, study: StudyRow, context: WorkspaceEditingContext):
-        return self._analysis_unit(dataset, study, context).get_raw_data_for_groups(
+        return self._analysis_unit(dataset, study, context).get_raw_data_for_arms(
             context.current_groups
         )
 
@@ -609,13 +599,13 @@ class WorkspaceEditingService:
         old_unit = copy.deepcopy(unit)
         try:
             position = context.raw_columns.index(target.column)
-            per_group = len(unit.get_raw_data_for_group(context.current_groups[0]))
+            per_group = len(unit.get_raw_data_for_arm(context.current_groups[0]))
             group = context.current_groups[0] if position < per_group else context.current_groups[1]
-            unit.get_raw_data_for_group(group)[position % per_group] = (
+            unit.get_raw_data_for_arm(group)[position % per_group] = (
                 "" if qt_text.is_blank(value) else float(qt_text.normalize_decimal_text(value)[0])
             )
             if recalculate is None:
-                self.update_outcome_if_possible(dataset, target.row, context)
+                self.update_outcome_if_possible(dataset, study.id, context)
             else:
                 recalculate(target.row)
         except Exception as exc:
@@ -719,7 +709,7 @@ class WorkspaceEditingService:
                 return AppliedWorkspaceEdit(error="Numeric covariates require numbers.")
         if context.covariate is None:
             return AppliedWorkspaceEdit(error="Cannot edit that cell.")
-        study.set_covariate_value(context.covariate, converted)
+        study.covariate_values[context.covariate['id']] = converted
         return AppliedWorkspaceEdit()
 
     @staticmethod
@@ -735,14 +725,14 @@ class WorkspaceEditingService:
     def update_outcome_if_possible(
         self,
         dataset: Dataset,
-        study_index: int,
+        row_id: str,
         context: WorkspaceEditingContext,
         *,
         update_inclusion: bool = True,
     ) -> None:
         if context.sheet_id is None or context.sheet_id is None:
             return
-        study = dataset.sheet(context.sheet_id).rows[study_index]
+        study = next(row for row in dataset.sheet(context.sheet_id).rows if row.id == row_id)
         unit = self._analysis_unit(dataset, study, context)
         raw_data = self._raw_data(dataset, study, context)
         if context.data_type in RATIO_DATA_TYPES:
@@ -774,7 +764,7 @@ class WorkspaceEditingService:
 
     def _should_clear_inclusion(self, unit: AnalysisUnit, context) -> bool:
         if context.data_type == DIAGNOSTIC:
-            if not raw_data_is_empty(unit.get_raw_data_for_groups(context.current_groups)):
+            if not raw_data_is_empty(unit.get_raw_data_for_arms(context.current_groups)):
                 return True
             return not any(
                 None not in unit.get_effect_and_se_for_source(

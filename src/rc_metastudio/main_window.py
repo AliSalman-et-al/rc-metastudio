@@ -254,7 +254,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.verticalLayout_3.replaceWidget(self.dataset_file_lbl, dataset_file_label)
         self.dataset_file_lbl.deleteLater()
         self.dataset_file_lbl = dataset_file_label
-        self.gridLayout.setHorizontalSpacing(8)
         self.workspace_hint = QLabel(self)
         qt_layout.configure_context_label(self.workspace_hint)
         self.workspace_hint.setTextFormat(Qt.TextFormat.PlainText)
@@ -478,7 +477,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         has_factor_covariates = bool(
             self.model
             and any(
-                cov.get_data_type() == meta_globals.FACTOR
+                cov['data_type'] == meta_globals.FACTOR
                 for cov in (self.model.current_sheet.covariates if self.model.current_sheet else [])
             )
         )
@@ -1136,327 +1135,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.synchronize_column_widths()
         self._refresh_advanced_analysis_actions()
 
-    def add_new(self, startup_outcome: main_wizard.DatasetInfo | None = None) -> None:
-        redo_f, undo_f = None, None
-        if self.current_dimension == "outcome" and not startup_outcome:
-            form = add_new_dialogs.AddOutcomeDialog(
-                parent=self, is_diagnostic=self.model.is_diagnostic()
-            )
-            form.outcome_name_le.setFocus()
-            if form.exec():
-                # then the user clicked ok and has added a new outcome.
-                # here we want to add the outcome to the dataset, and then
-                # display it
-                try:
-                    new_outcome_name = dataset_table_model.validate_new_outcome_name(
-                        self.model.dataset, form.outcome_name_le.text()
-                    )
-                except ValueError as exc:
-                    QMessageBox.warning(self, "Warning", str(exc))
-                    return
-                # the outcome type is one of the enumerated types; we don't worry about
-                # unicode encoding
-                new_outcome_type = str(form.datatype_cbo_box.currentText())
-
-                def redo_f():
-                    return self._add_new_outcome(new_outcome_name, new_outcome_type)
-
-                previous_outcome = str(self.model.current_outcome_name)
-
-                def undo_f():
-                    return self._undo_add_new_outcome(
-                        new_outcome_name, previous_outcome
-                    )
-        elif (
-            self.current_dimension == "outcome" and startup_outcome
-        ):  # For dealing with outcomes from the startup form
-            new_outcome_name = qt_text.to_native_text(startup_outcome["name"])
-            new_outcome_type = str(startup_outcome["data_type"])
-            new_outcome_subtype = startup_outcome.get("sub_type")
-
-            def redo_f():
-                return self._add_new_outcome(
-                    new_outcome_name, new_outcome_type, new_outcome_subtype, startup_outcome.get("groups")
-                )
-
-            previous_outcome = str(self.model.current_outcome_name)
-
-            def undo_f():
-                return self._undo_add_new_outcome(new_outcome_name, previous_outcome)
-        elif self.current_dimension == "group":
-            form = add_new_dialogs.AddGroupDialog(self)
-            form.group_name_le.setFocus()
-            if form.exec():
-                try:
-                    new_group_name = dataset_table_model.validate_new_group_name(
-                        self.model.dataset, form.group_name_le.text()
-                    )
-                except ValueError as exc:
-                    QMessageBox.warning(self, "Warning", str(exc))
-                    return
-                current_groups = list(self.model.get_current_groups())
-
-                def redo_f():
-                    return self._add_new_group(new_group_name)
-
-                def undo_f():
-                    return self._undo_add_new_group(new_group_name, current_groups)
-        else:
-            # then the dimension is follow-up
-            form = add_new_dialogs.AddFollowUpDialog(self)
-            form.follow_up_name_le.setFocus()
-            if form.exec():
-                try:
-                    follow_up_lbl = dataset_table_model.validate_new_follow_up_name(
-                        self.model.dataset,
-                        self.model.current_outcome_name,
-                        form.follow_up_name_le.text(),
-                    )
-                except ValueError as exc:
-                    QMessageBox.warning(self, "Warning", str(exc))
-                    return
-
-                def redo_f():
-                    return self._add_new_follow_up_for_cur_outcome(follow_up_lbl)
-
-                previous_follow_up = self.model.get_current_follow_up_name()
-
-                def undo_f():
-                    return self._undo_add_follow_up_for_cur_outcome(
-                        previous_follow_up, follow_up_lbl
-                    )
-
-        if redo_f is not None and undo_f is not None:
-            next_command = meta_globals.CallbackCommand(redo_f, undo_f)
-            self._commit_model_operation(next_command.redo)
-
-    def _add_new_group(self, new_group_name):
-        self.model.add_new_group(new_group_name)
-        current_groups = list(self.model.get_current_groups())
-        current_groups[1] = new_group_name
-        self.model.set_current_groups(current_groups)
-        # Refresh the displayed group columns after renaming.
-        self.display_groups(current_groups)
-
-    def _undo_add_new_group(self, added_group, previously_displayed_groups):
-        self.model.remove_group(added_group)
-        self.model.set_current_groups(previously_displayed_groups)
-        self.display_groups(previously_displayed_groups)
-
-    def _undo_add_new_outcome(self, added_outcome, previously_displayed_outcome):
-        self.model.remove_outcome(added_outcome)
-        self.display_outcome(previously_displayed_outcome)
-
-    def _add_new_outcome(self, outcome_name, outcome_type, sub_type=None, group_names=None):
-        if group_names is not None:
-            self.model.current_groups = list(group_names)
-        self.model.add_new_outcome(outcome_name, outcome_type, sub_type=sub_type, group_names=group_names)
-        self.display_outcome(outcome_name, group_names=group_names)
-
-    def _add_new_follow_up_for_cur_outcome(self, follow_up_lbl):
-        self.model.add_follow_up_to_current_outcome(follow_up_lbl)
-        self.display_follow_up(self.model.get_t_point_for_follow_up_name(follow_up_lbl))
-
-    def _undo_add_follow_up_for_cur_outcome(self, prev_follow_up, follow_up_to_del):
-        self.model.remove_follow_up_from_outcome(
-            follow_up_to_del, str(self.model.current_outcome_name)
-        )
-        self.display_follow_up(
-            self.model.get_t_point_for_follow_up_name(prev_follow_up)
-        )
-
-    def next(self):
-        # Disable navigation when there is no next item in this dimension.
-        # if there is only one point (e.g., outcome). otherwise you end
-        # up enqueueing a bunch of pointless undo/redos.
-        redo_f, undo_f = None, None
-        if self.current_dimension == "outcome":
-            old_outcome = self.model.current_outcome_name
-            # Preserve the current groups because the next outcome can select
-            # different defaults and undo must restore the original view.
-            previous_groups = self.model.get_current_groups()
-            next_outcome = self.model.get_next_outcome_name()
-
-            def redo_f():
-                return self.display_outcome(next_outcome)
-
-            previous_follow_up = self.model.get_current_follow_up_name()
-
-            def undo_f():
-                return self.display_outcome(
-                    old_outcome,
-                    follow_up_name=previous_follow_up,
-                    group_names=previous_groups,
-                )
-        elif self.current_dimension == "group":
-            previous_groups = self.model.get_current_groups()
-            new_groups = self.model.next_groups()
-
-            def redo_f():
-                return self.display_groups(new_groups)
-
-            def undo_f():
-                return self.display_groups(previous_groups)
-        elif self.current_dimension == "follow-up":
-            old_follow_up_t_point = self.model.current_follow_up_index
-            next_follow_up_t_point = self.model.get_next_follow_up()[0]
-
-            def redo_f():
-                return self.display_follow_up(next_follow_up_t_point)
-
-            def undo_f():
-                return self.display_follow_up(old_follow_up_t_point)
-
-        if redo_f is not None and undo_f is not None:
-            next_command = meta_globals.CallbackCommand(redo_f, undo_f)
-            self._commit_model_operation(next_command.redo)
-
-    def previous(self):
-        redo_f, undo_f = None, None
-        if self.current_dimension == "outcome":
-            old_outcome = self.model.current_outcome_name
-            next_outcome = self.model.get_previous_outcome_name()
-
-            def redo_f():
-                return self.display_outcome(next_outcome)
-
-            def undo_f():
-                return self.display_outcome(old_outcome)
-        elif self.current_dimension == "group":
-            current_groups = self.model.get_current_groups()
-            prev_groups = self.model.get_previous_groups()
-
-            def redo_f():
-                return self.display_groups(prev_groups)
-
-            def undo_f():
-                return self.display_groups(current_groups)
-        elif self.current_dimension == "follow-up":
-            old_follow_up_t_point = self.model.current_follow_up_index
-            previous_follow_up_t_point = self.model.get_previous_follow_up()[0]
-
-            def redo_f():
-                return self.display_follow_up(previous_follow_up_t_point)
-
-            def undo_f():
-                return self.display_follow_up(old_follow_up_t_point)
-
-        if redo_f is not None and undo_f is not None:
-            prev_command = meta_globals.CallbackCommand(redo_f, undo_f)
-            self._commit_model_operation(prev_command.redo)
-
-    def update_dimension(self):
-        self.current_dimension = self.navigation_dimension.currentData()
-        dimension = self.current_dimension
-        actions = (
-            (self.nav_left_btn, f"Previous {dimension}", f"Show the previous {dimension}."),
-            (self.nav_right_btn, f"Next {dimension}", f"Show the next {dimension}."),
-            (self.nav_add_btn, f"Add {dimension}", f"Add a new {dimension} to the dataset."),
-        )
-        for button, name, description in actions:
-            button.setText(name.split()[0])
-            button.setToolTip(name)
-            button.setStatusTip(description)
-            button.setAccessibleName(name)
-            button.setAccessibleDescription(description)
-        self._update_navigation_controls()
 
     def _update_navigation_controls(self):
         pass
 
-    def _navigation_availability(self):
-        dimension = self.current_dimension
-        if dimension == "outcome":
-            item_count = len([s.name for s in self.model.dataset.sheets])
-            can_navigate = item_count > 1
-            return can_navigate, can_navigate
-        elif dimension == "follow-up":
-            outcome_name = self.model.current_outcome_name
-            item_count = (
-                len(self.model.dataset.get_follow_up_names_for_outcome(outcome_name))
-                if outcome_name is not None
-                else 0
-            )
-            can_navigate = item_count > 1
-            return can_navigate, can_navigate
-        return self._group_navigation_availability()
-
-    def _group_navigation_availability(self):
-        outcome_name = self.model.current_outcome_name
-        follow_up_name = self.model.get_current_follow_up_name()
-        group_names = (
-            self.model.dataset.get_group_names_for_outcome_follow_up(
-                outcome_name, follow_up_name
-            )
-            if outcome_name is not None and follow_up_name is not None
-            else []
-        )
-        current_groups = tuple(self.model.get_current_groups())
-        previous_groups = tuple(self.model.get_previous_groups())
-        can_previous = (
-            bool(previous_groups)
-            and previous_groups != current_groups
-            and set(previous_groups).issubset(group_names)
-        )
-        return can_previous, len(group_names) > 1
-
-    def display_groups(self, groups):
-        self.model.set_current_groups(groups)
-        self.model.hydrate_derived_previews()
-        self.model.reset_model()
-        self.tableView.synchronize_column_widths()
-        self._update_navigation_controls()
-
-    def display_outcome(self, outcome_name, group_names=None, follow_up_name=None):
-        # Never retain a group or follow-up that belongs to another outcome.
-        self.model.set_current_outcome(outcome_name)
-        self.populate_metrics_menu()
-
-        if follow_up_name is not None:
-            self.model.set_current_follow_up(follow_up_name)
-        else:
-            # If a follow up isn't explicitly passed in, attempt to use
-            # the current follow up. If this does not exist for the outcome
-            # to be displayed, then display a different follow up.
-            current_follow_up = self.model.get_current_follow_up_name()
-            if not self.model.outcome_has_follow_up(outcome_name, current_follow_up):
-                # then the outcome does not have this follow up and we have to
-                # step on to the next one.
-                next_follow_up = self.model.get_next_follow_up()[1]
-                self.model.set_current_follow_up(next_follow_up)
-
-        # now we check the groups.
-        if group_names is not None:
-            self.model.set_current_groups(group_names)
-        else:
-            # then no group names were explicitly passed in; ascertain
-            # that the outcome/fu contains the current groups; if not,
-            # set them to something else.
-            current_groups = self.model.get_current_groups()
-            if not all(
-                [
-                    self.model.outcome_follow_up_has_group(
-                        outcome_name, self.model.get_current_follow_up_name(), group
-                    )
-                    for group in current_groups
-                ]
-            ):
-                self.model.set_current_groups(self.model.next_groups())
-
-        self.current_outcome_label.setText(str(outcome_name))
-        self.current_follow_up_label.setText(self.model.get_current_follow_up_name())
-        self.model.hydrate_derived_previews()
-        self.model.reset_model()
-        self.tableView.synchronize_column_widths()
-        self._update_navigation_controls()
-
-    def display_follow_up(self, time_point):
-        self.model.current_follow_up_index = time_point
-        self.update_follow_up_label()
-        self.model.hydrate_derived_previews()
-        self.model.reset_model()
-        self.tableView.synchronize_column_widths()
-        self._update_navigation_controls()
 
     def update_follow_up_label(self):
         pass
@@ -1599,7 +1281,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             )
 
     def rename_covariate(self, covariate):
-        orig_cov_name = copy.copy(covariate.name)
+        orig_cov_name = copy.copy(covariate['name'])
         # The group-name editor is also used for covariate labels.
         edit_cov_form = edit_name_dialogs.EditCovariateNameDialog(
             orig_cov_name, parent=self
@@ -1635,13 +1317,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         # the next atomic workspace change.
         self.data_dirtied()
         covariate_values_by_study = self.model.dataset.get_covariate_values(
-            covariate.name
+            covariate['name']
         )
         stable_id = getattr(covariate, "stable_id", None)
 
         def undo_f():
             self.model.add_covariate(
-                covariate.name,
+                covariate['name'],
                 meta_globals.COV_INTS_TO_STRS[covariate.data_type],
                 covariate_values=covariate_values_by_study,
                 stable_id=stable_id,
@@ -1660,12 +1342,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._enable_action_subgroup_ma()
 
     def _add_study(self, study, study_index=None):
-        self.model.dataset.add_study(study, study_index=study_index)
+        self.model.current_sheet.rows.insert(study_index if study_index is not None else len(self.model.current_sheet.rows), study)
         self.model.reset_model()
         self.data_dirtied()
 
     def _remove_study(self, study):
-        self.model.dataset.studies.remove(study)
+        self.model.current_sheet.rows.remove(study)
         self.model.reset_model()
         self.data_dirtied()
 
@@ -1695,18 +1377,18 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         recalculate_outcomes=True,
     ):
         # An empty dataset starts with one editable blank row.
-        add_blank_study = len(data_model) < 1
+        add_blank_study = not data_model.sheets
         self.model = dataset_table_model.DatasetTableModel(
             dataset=data_model, add_blank_study=add_blank_study
         )
 
         self._disconnect_model_signals()
-        if len(data_model) >= 2:
+        if bool(data_model.sheets and len(data_model.sheets[0].rows) >= 2):
             self.enable_menu_options_that_require_dataset()
         else:
             self.disable_menu_options_that_require_dataset()
 
-        self._enable_action_meta_regression(len(data_model) >= 2)
+        self._enable_action_meta_regression(bool(data_model.sheets and len(data_model.sheets[0].rows) >= 2))
 
         self.tableView.setModel(self.model)
 
@@ -1808,26 +1490,16 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._update_recent_project_nonfatal(destination, "saved")
         return True
 
-    def _make_new_dataset_and_setup_spreadsheet(self, dataset_info: main_wizard.DatasetInfo) -> None:
-        dataset_info = dataset_info.copy()
-        dataset_info["groups"] = dataset_info.get("groups") or meta_globals.default_group_names(
-            meta_globals.STR_TO_TYPE_DICT[required(dataset_info["data_type"], "Dataset data type")],
-            dataset_info.get("sub_type"))
-        is_diagnostic = dataset_info["data_type"] == "diagnostic"
-        self.new_dataset(is_diagnostic=is_diagnostic)
-        self.model.dataset.summary = copy.deepcopy(dataset_info)
-        self.model.dataset.summary.pop("groups", None)
-
-        tmp = self.current_dimension
-        self.current_dimension = "outcome"
-        self.add_new(dataset_info)  # add the outcome
-        self.current_dimension = tmp
-
-        if dataset_info["data_type"] in ["binary", "continuous", "time_to_event", "event_rates"]:
-            self.model.current_effect = dataset_info["effect"]  # set current effect
-            self.populate_metrics_menu(metric_to_check=self.model.current_effect)
-            self.model.try_to_update_outcomes()
-            self.model.reset_model()
+    def _make_new_dataset_and_setup_spreadsheet(self, dataset_info):
+        import uuid
+        from rc_metastudio.analysis_dataset import Sheet, Arm
+        data_type = meta_globals.STR_TO_TYPE_DICT[dataset_info['data_type']]
+        groups = dataset_info.get('groups') or meta_globals.default_group_names(data_type, dataset_info.get('sub_type'))
+        sheet = Sheet(uuid.uuid4().hex, dataset_info['name'], data_type, dataset_info.get('sub_type'), dataset_info['data_type'], [Arm(uuid.uuid4().hex, name) for name in groups], settings={'metric': dataset_info.get('effect')})
+        self.set_model(analysis_dataset.Dataset(sheets=[sheet]))
+        self.model.current_effect = dataset_info.get('effect')
+        self.populate_metrics_menu(metric_to_check=self.model.current_effect)
+        self.model.reset_model()
 
     def _handle_wizard_results(self, wizard_data):
         path = wizard_data["path"]  # route through wizard

@@ -391,7 +391,7 @@ def run(
             window,
             data_type=name,
             metric=metric,
-            included=sum(s.include for s in model.dataset.studies),
+            included=sum(s.include for s in model.current_sheet.rows),
         )
         window.out_path = str(work / "typed.rcms")
         columns = [model.NAME, *model.RAW_DATA, *model.OUTCOMES]
@@ -404,7 +404,7 @@ def run(
         assert window.model.current_effect == metric
         assert window.model.get_current_outcome_type() == family
         assert window.model.get_current_outcome_subtype() == subtype
-        assert sum(s.include for s in window.model.dataset.studies) == 6
+        assert sum(s.include for s in window.model.current_sheet.rows) == 6
         after = [
             [
                 str(window.model.data(window.model.index(row, column)))
@@ -432,7 +432,7 @@ def run(
         if sample == "continuous":
             import copy
 
-            for study in list(window.model.dataset.studies):
+            for study in list(window.model.current_sheet.rows):
                 duplicate = copy.deepcopy(study)
                 duplicate.id = window.model.dataset.max_study_id() + 1
                 duplicate.name += " replicate"

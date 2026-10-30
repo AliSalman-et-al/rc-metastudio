@@ -78,13 +78,11 @@ def dataset_identity(model, metric=None):
     comparison = model.current_effect in meta_globals.TWO_ARM_METRICS
     groups = " / ".join(model.current_groups if comparison else model.current_groups[:1])
     group_label = "Comparison" if comparison else "Group"
-    follow_up = model.get_current_follow_up_name()
-    labels = [model.current_outcome_name, dataset_label(model)]
+    labels = [model.current_sheet.name, dataset_label(model)]
     quantity = metric or metric_label(model)
     if quantity and model.current_effect != "TX Mean" and quantity.casefold() != labels[-1].casefold():
         labels.append(quantity)
     context = []
     if comparison or groups != "Group":
         context.append(f"{group_label}: {groups}")
-    context.append(f"Follow-up: {follow_up}")
     return " · ".join(labels) + "\n" + " · ".join(context)

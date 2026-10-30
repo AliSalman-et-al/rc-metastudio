@@ -872,7 +872,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             field_index = 0
             for col in (0, 1):
                 for row in (0, 1):
-                    val = self.analysis_unit.get_raw_data_for_group(
+                    val = self.analysis_unit.get_raw_data_for_arm(
                         self.group_comparison
                     )[field_index]
                     if val is not None:

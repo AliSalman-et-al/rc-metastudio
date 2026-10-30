@@ -105,10 +105,10 @@ def run(app, window, scenario, record):
                 assert model.setData(model.index(i, column), str(value)), model.last_data_error
             assert model.setData(model.index(i, model.OUTCOMES[5]), "90")
             if not hazard:
-                assert not model.dataset.studies[i].include
+                assert not model.current_sheet.rows[i].include
                 assert model.setData(model.index(i, model.OUTCOMES[6]), "reported")
                 assert model.setData(model.index(i, model.OUTCOMES[7]), "person-months")
-        assert model.dataset.studies[i].include
+        assert model.current_sheet.rows[i].include
     model.try_to_update_outcomes()
     if not hazard:
         assert [model.data(model.index(2, column)) for column in model.OUTCOMES[:3]] == [
@@ -155,7 +155,7 @@ def run(app, window, scenario, record):
     for sorted_rows in (False, True):
         assert model.setData(model.index(12, model.NAME), "Study 13")
         assert model.setData(model.index(12, model.YEAR), "2032")
-        added_id = model.dataset.studies[-1].id
+        added_id = model.current_sheet.rows[-1].id
         if sorted_rows:
             model.sort_studies(model.NAME, reverse=True)
             app.processEvents()
@@ -179,12 +179,12 @@ def run(app, window, scenario, record):
         modal(app, QtWidgets.QMessageBox, confirm_delete, delete.trigger)
         menu.close(); app.processEvents()
         model = window.model
-        assert added_id not in [study.id for study in model.dataset.studies]
+        assert added_id not in [study.id for study in model.current_sheet.rows]
         assert "Study 13" not in [model.data(model.index(i, model.NAME)) for i in range(model.rowCount())]
-        record("ratio-study-deleted", window, remaining_ids=[study.id for study in model.dataset.studies])
+        record("ratio-study-deleted", window, remaining_ids=[study.id for study in model.current_sheet.rows])
         window.undo(); app.processEvents()
         model = window.model
-        assert added_id in [study.id for study in model.dataset.studies]
+        assert added_id in [study.id for study in model.current_sheet.rows]
         assert "Study 13" in [model.data(model.index(i, model.NAME)) for i in range(model.rowCount())]
         deletion_undone = project_adapter.runtime_project_to_document(window.workspace.snapshot())
         (work / "delete-undone.json").write_text(json.dumps(dict(project=deletion_undone.project, state=deletion_undone.state), indent=2))
@@ -196,15 +196,15 @@ def run(app, window, scenario, record):
         model.sort_studies(model.YEAR, reverse=False)
         assert window.save() and window.open(str(project_path), raise_on_error=True)
         model = window.model
-        assert len(model.dataset.studies) == 12
+        assert len(model.current_sheet.rows) == 12
         record("ratio-delete-reopened", window, study_count=12)
     # Reverse the same comparison twice. Original source CI and SE must survive.
     groups = list(model.current_groups)
-    model.set_current_groups(list(reversed(groups)))
+    model.current_sheet.arms.reverse()
     reverse = model.get_current_analysis_unit_for_study(11).ratio_input(model.current_groups)
     assert abs(reverse.estimate * reopened.estimate - 1) < 1e-12
     assert reverse.confidence == reopened.confidence
-    model.set_current_groups(groups)
+    model.current_sheet.arms.reverse()
     assert model.get_current_analysis_unit_for_study(11).ratio_input(groups) == reopened
 
     # Import the exported original inputs through the production CSV preview.
@@ -233,7 +233,7 @@ def run(app, window, scenario, record):
     wizard.close(); app.processEvents()
     model = window.model
     assert model.get_current_analysis_unit_for_study(11).ratio_input(model.current_groups) == reopened
-    assert all(study.include for study in model.dataset.studies)
+    assert all(study.include for study in model.current_sheet.rows)
 
     # A usual RCMS CSV needs only the visible inputs. Advanced source fields
     # remain optional, and omitted fields must acquire documented defaults.
@@ -263,7 +263,7 @@ def run(app, window, scenario, record):
     for i in range(12):
         record_input = model.get_current_analysis_unit_for_study(i).ratio_input(model.current_groups)
         assert record_input.confidence == 95 and record_input.scale == "ratio"
-        assert record_input.unit == "person-years" and model.dataset.studies[i].include
+        assert record_input.unit == "person-years" and model.current_sheet.rows[i].include
     record("ratio-simple-csv-imported", window, csv=str(simple_csv), required_columns=len(basic_columns), defaults="ratio, 95% source CI, person-years")
     simple_project = work / f"{metric}-simple.rcms"
     window.out_path = str(simple_project)
@@ -319,10 +319,10 @@ def run(app, window, scenario, record):
         prefix += f'raw <- metafor::escalc("IRR", x1i={vector(0)}, t1i={vector(1)}, x2i={vector(2)}, t2i={vector(3)}, add=.5, to="only0", drop00=TRUE); e[1:8,] <- raw[1:8,c("yi","vi")]; '
     prefix += "keep <- is.finite(e$yi) & is.finite(e$vi) & e$vi > 0; e <- e[keep,]; "
     for name, kind, values in (
-        ("Region", "factor", {s.name: "A" if i % 2 else "B" for i, s in enumerate(model.dataset.studies)}),
-        ("Dose", "continuous", {s.name: float(i) for i,s in enumerate(model.dataset.studies)}),
+        ("Region", "factor", {s.label: "A" if i % 2 else "B" for i, s in enumerate(model.current_sheet.rows)}),
+        ("Dose", "continuous", {s.label: float(i) for i,s in enumerate(model.current_sheet.rows)}),
     ):
-        model.dataset.add_covariate(analysis_dataset.Covariate(name, kind), values)
+        model.add_covariate(name, kind, values)
     model.reset_model()
     window.enable_menu_options_that_require_dataset()
     # A visible rectangle crosses hidden input metadata. Copy/paste must reach
@@ -336,7 +336,7 @@ def run(app, window, scenario, record):
     window.action_paste.trigger(); app.processEvents()
     model = window.model
     assert model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.current_groups).confidence == 90
-    assert model.dataset.studies[edit_row].covariate_values["Region"] == "B"
+    assert model.current_sheet.rows[edit_row].covariate_values[model.current_sheet.covariates[0]['id']] == "B"
     record("ratio-compact-table-copy-paste", window, visible_outcomes=3, copied_columns=5)
 
     def analysis(workflow, suffix="random", confidence=95):
@@ -353,7 +353,7 @@ def run(app, window, scenario, record):
         method = family + "." + suffix
         if workflow == "meta-regression":
             for cov, checkbox in dialog.covs_and_check_boxes:
-                checkbox.setChecked(cov.name == "Dose")
+                checkbox.setChecked(cov['name'] == 'Dose')
         else:
             label = next(label for label, key in dialog.available_method_d.items() if key == method)
             dialog.method_cbo_box.setCurrentText(label); app.processEvents()
@@ -508,24 +508,24 @@ def verify_bundled_sample(app, window, hazard, record):
 
     def check_inputs():
         model = window.model
-        assert len(model.dataset.studies) == len(rows)
+        assert len(model.current_sheet.rows) == len(rows)
         assert model.current_effect == metric and model.get_current_outcome_type() == family
-        assert all(study.include for study in model.dataset.studies)
+        assert all(study.include for study in model.current_sheet.rows)
         for i, row in enumerate(rows):
-            study = model.dataset.studies[i]
+            study = model.current_sheet.rows[i]
             unit = model.get_current_analysis_unit_for_study(i)
             ratio = unit.ratio_input(model.current_groups)
-            assert study.name == (row["trial"] if hazard else row["authors"])
+            assert study.label == (row["trial"] if hazard else row["authors"])
             assert study.year == (None if hazard else row["year"])
             if hazard:
                 assert ratio.scale == "log" and ratio.source == "reported"
                 assert ratio.estimate == row["OmE"] / row["V"]
                 assert ratio.se == math.sqrt(1 / row["V"])
-                assert study.covariate_values["Original study ID"] == row["id"]
-                assert study.covariate_values["Chemotherapy timing"] == {1: "Adjuvant", 2: "Neoadjuvant", 3: "Concomitant"}[row["grp"]]
+                assert study.covariate_values[next(c['id'] for c in model.current_sheet.covariates if c['name']=='Original study ID')] == row["id"]
+                assert study.covariate_values[next(c['id'] for c in model.current_sheet.covariates if c['name']=='Chemotherapy timing')] == {1: "Adjuvant", 2: "Neoadjuvant", 3: "Concomitant"}[row["grp"]]
             else:
                 assert ratio.source == "raw" and ratio.unit == "catheter-days"
-                assert unit.get_raw_data_for_groups(model.current_groups) == [row["x1i"], row["t1i"], row["x2i"], row["t2i"]]
+                assert unit.get_raw_data_for_arms(model.current_groups) == [row["x1i"], row["t1i"], row["x2i"], row["t2i"]]
             assert math.isfinite(float(model.data(model.index(i, model.OUTCOMES[0]))))
 
     def visible(kind):

@@ -776,7 +776,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         """Sets events and non-events from stored events and arm totals."""
 
         for row, group in enumerate(self.current_groups):
-            events, total = self.analysis_unit.get_raw_data_for_group(group)
+            events, total = self.analysis_unit.get_raw_data_for_arm(group)
             no_events = None
             if events not in EMPTY_VALS and total not in EMPTY_VALS:
                 no_events = total - events
@@ -792,7 +792,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             total = self._get_int(row, 2)
             if events not in EMPTY_VALS and no_events not in EMPTY_VALS:
                 total = events + no_events
-            raw_data = self.analysis_unit.get_raw_data_for_group(
+            raw_data = self.analysis_unit.get_raw_data_for_arm(
                 self.current_groups[row]
             )
             raw_data[0] = events
@@ -1018,7 +1018,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         return x is None or x == ""
 
     def update_effect_from_raw_data(self):
-        e1, n1, e2, n2 = self.analysis_unit.get_raw_data_for_groups(self.current_groups)
+        e1, n1, e2, n2 = self.analysis_unit.get_raw_data_for_arms(self.current_groups)
 
         two_arm_raw_data_ok = not any([self._is_blank(x) for x in [e1, n1, e2, n2]])
         one_arm_raw_data_ok = not any([self._is_blank(x) for x in [e1, n1]])

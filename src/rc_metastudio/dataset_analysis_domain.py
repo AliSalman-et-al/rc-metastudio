@@ -42,8 +42,7 @@ def _checked_bridge(value: object) -> ScaleBridge:
     return value
 
 
-def ensure_analysis_unit(dataset, study, *args):
-    return study.analysis_unit
+
 
 
 def make_display_scale_converter(
@@ -176,7 +175,7 @@ def raw_data_is_empty(raw_data: Sequence[object]) -> bool:
 def has_entered_data(analysis_unit: AnalysisUnit) -> bool:
     return any(
         value not in EMPTY_VALS
-        for group in analysis_unit.groups.values()
+        for group in analysis_unit.arms_by_id.values()
         for value in group.raw_data
     ) or any(
         value not in EMPTY_VALS
@@ -186,18 +185,8 @@ def has_entered_data(analysis_unit: AnalysisUnit) -> bool:
     )
 
 
-def has_study_entered_data(study: StudyRow) -> bool:
-    if study.name.strip():
-        return True
-    if study.year not in EMPTY_VALS and study.year != 0:
-        return True
-    if any(value not in EMPTY_VALS for value in study.covariate_values.values()):
-        return True
-    return any(
-        has_entered_data(analysis_unit)
-        for follow_ups in study.analysis_units_by_outcome.values()
-        for analysis_unit in follow_ups.values()
-    )
+def has_study_entered_data(study):
+    return bool(study.label.strip() or study.year or any(v not in EMPTY_VALS for v in study.covariate_values.values()) or has_entered_data(study.analysis_unit))
 
 
 def included_studies_have_raw_data(
@@ -205,7 +194,7 @@ def included_studies_have_raw_data(
     raw_data_for_study: Callable[[int, bool], Sequence[object]],
     one_arm: bool,
 ) -> bool:
-    for index, study in enumerate(studies[:-1]):
+    for index, study in enumerate(studies):
         if study.include and not raw_data_is_complete(
             raw_data_for_study(index, one_arm)
         ):
@@ -219,6 +208,6 @@ def included_studies_have_effects(
 ) -> bool:
     return all(
         all(value is not None for value in effect_for_study(index))
-        for index, study in enumerate(studies[:-1])
+        for index, study in enumerate(studies)
         if study.include
     )

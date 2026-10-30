@@ -522,17 +522,15 @@ def dataset_to_simple_ratio_r_object(
     groups = table_model.current_groups
     records, raws, sources = [], [], []
     for study in studies:
-        unit = study.get_analysis_unit(
-            table_model.current_outcome_name, table_model.get_current_follow_up_name()
-        )
+        unit = study.analysis_unit
         record = unit.ratio_input(groups)
         record.validate()
-        raw = unit.get_raw_data_for_groups(groups)
+        raw = unit.get_raw_data_for_arms(groups)
         records.append(record)
         raws.append(raw if len(raw) == 4 else [None] * 4)
         sources.append(record.selected_source(raw, metric=table_model.current_effect))
     kwargs = _analysis_data_kwargs(
-        studies, [study.id for study in studies], table_model.dataset,
+        studies, [study.id for study in studies], table_model.current_sheet,
         covs_to_include, y=[None] * len(studies), standard_errors=[None] * len(studies),
     )
     for name in ("estimate", "lower", "upper", "se", "confidence"):
@@ -565,7 +563,7 @@ def dataset_to_simple_continuous_r_object(
     data_kwargs = _analysis_data_kwargs(
         studies,
         study_ids,
-        table_model.dataset,
+        table_model.current_sheet,
         covs_to_include,
         y=estimates,
         standard_errors=standard_errors,
@@ -614,7 +612,7 @@ def dataset_to_simple_binary_r_object(
     data_kwargs = _analysis_data_kwargs(
         studies,
         study_ids,
-        table_model.dataset,
+        table_model.current_sheet,
         covs_to_include,
         y=estimates,
         standard_errors=standard_errors,
@@ -699,7 +697,7 @@ def dataset_to_simple_diagnostic_r_object(
     data_kwargs = _analysis_data_kwargs(
         studies,
         study_ids,
-        table_model.dataset,
+        table_model.current_sheet,
         covs_to_include,
         y=estimates,
         standard_errors=standard_errors,
@@ -748,7 +746,7 @@ def _analysis_data_kwargs(
     return {
         "y": _r_numeric_vector(y),
         "SE": _r_numeric_vector(standard_errors),
-        "study.names": _r_character_vector([study.name for study in studies]),
+        "study.names": _r_character_vector([study.label for study in studies]),
         "years": _r_year_vector([study.year for study in studies]),
         "covariates": _r_covariate_list(dataset, study_ids, covs_to_include),
     }
@@ -785,15 +783,15 @@ def _r_covariate_list(dataset, study_ids, covariates=None):
 
 def _r_covariate_values(cov, study_ids, dataset):
     values = _cov_values_for_studies(cov, study_ids, dataset)
-    covariate_type = TYPE_TO_STR_DICT[cov.data_type]
-    if cov.data_type == CONTINUOUS:
+    covariate_type = TYPE_TO_STR_DICT[cov["data_type"]]
+    if cov["data_type"] == CONTINUOUS:
         covariate_values = _r_numeric_vector(values)
     else:
         covariate_values = _r_character_vector(values)
     return execute_r_function(
         "rcmetar.create.covariate.values",
         **{
-            "cov.name": str(cov.name),
+            "cov.name": str(cov["name"]),
             "cov.vals": covariate_values,
             "cov.type": covariate_type,
             "ref.var": _cov_ref_value(values),
@@ -802,9 +800,7 @@ def _r_covariate_values(cov, study_ids, dataset):
 
 
 def _cov_values_for_studies(cov, study_ids, dataset):
-    covariate_values_by_study = dataset.get_covariate_values(
-        cov.name, ids_for_keys=True
-    )
+    covariate_values_by_study = {row.id: row.covariate_values.get(cov["id"]) for row in dataset.rows}
     return [covariate_values_by_study.get(study_id) for study_id in study_ids]
 
 
@@ -844,19 +840,17 @@ def covariate_to_r_expression(
     """
     covariate_expression = None
     if named_list:
-        covariate_expression = "%s=c(" % cov.name
+        covariate_expression = "%s=c(" % cov["name"]
     else:
         covariate_expression = "c("
 
-    covariate_values_by_study = dataset.get_covariate_values(
-        cov.name, ids_for_keys=True
-    )
+    covariate_values_by_study = {row.id: row.covariate_values.get(cov["id"]) for row in dataset.rows}
 
     # get the study ids in the same order as the names
     covariate_values = []
 
     for study_id in study_ids:
-        if cov.data_type == CONTINUOUS:
+        if cov["data_type"] == CONTINUOUS:
             if study_id in covariate_values_by_study:
                 covariate_values.append("%s" % covariate_values_by_study[study_id])
             else:

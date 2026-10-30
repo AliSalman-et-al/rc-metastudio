@@ -108,8 +108,8 @@ class DatasetTableView(QtWidgets.QTableView):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self._batch_editing = False
-        self.setAccessibleName("StudyRow data")
-        self.setAccessibleDescription("StudyRow rows and input columns. Italic effect cells show estimates and intervals; gold marks the effect columns. Press Enter to edit a cell or use the row calculator. Ctrl+Tab leaves the grid.")
+        self.setAccessibleName("Study data")
+        self.setAccessibleDescription("Study rows and input columns. Italic effect cells show estimates and intervals; gold marks the effect columns. Press Enter to edit a cell or use the row calculator. Ctrl+Tab leaves the grid.")
 
         # the main gui is assumed to be the form
         # that owns this table view, i.e., the 'main'
@@ -258,13 +258,13 @@ class DatasetTableView(QtWidgets.QTableView):
 
             study = self.model()._study_for_row(study_index)
             study_index = self.model().current_sheet.rows.index(study)
-            delete_action = QAction('Delete study “%s”…' % study.name, self)
+            delete_action = QAction('Delete study “%s”…' % study.label, self)
 
             def delete_study():
                 answer = QMessageBox.question(
                     self,
-                    "Delete StudyRow",
-                    "Delete study %s?" % study.name,
+                    "Delete Study",
+                    "Delete study %s?" % study.label,
                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                     QMessageBox.StandardButton.No,
                 )
@@ -572,7 +572,7 @@ class DatasetTableView(QtWidgets.QTableView):
                     parent=self,
                 )
             study_name = _to_text(self.model().data(self.model().index(row, self.model().NAME)))
-            form.setWindowTitle(f"StudyRow data — {study_name}")
+            form.setWindowTitle(f"Study data — {study_name}")
             if form.exec():
                 self.model().set_current_analysis_unit_for_study(
                     study_index, form.analysis_unit

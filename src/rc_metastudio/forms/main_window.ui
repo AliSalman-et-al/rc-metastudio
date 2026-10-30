@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
@@ -99,182 +99,7 @@
               <property name="spacing">
                <number>0</number>
               </property>
-              <item>
-               <widget class="QFrame" name="frame_2">
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
-                </property>
-<layout class="QHBoxLayout" name="navigationLayout">
- <property name="spacing">
-  <number>8</number>
- </property>
- <property name="leftMargin">
-  <number>8</number>
- </property>
- <property name="topMargin">
-  <number>8</number>
- </property>
- <property name="rightMargin">
-  <number>8</number>
- </property>
- <property name="bottomMargin">
-  <number>8</number>
- </property>
- <item>
-  <widget class="QLabel" name="navigation_label">
-   <property name="text">
-    <string>Navigate:</string>
-   </property>
-  </widget>
- </item>
- <item>
-  <widget class="QComboBox" name="navigation_dimension">
-   <property name="accessibleName">
-    <string>Navigate outcomes, follow-ups or groups</string>
-   </property>
-   <property name="toolTip">
-    <string>Choose what the previous, next and add buttons control.</string>
-   </property>
-  </widget>
- </item>
- <item>
-  <widget class="QToolButton" name="nav_left_btn">
-   <property name="text">
-    <string>Previous item</string>
-   </property>
-   <property name="toolTip">
-    <string>Previous item in the selected navigation dimension</string>
-   </property>
-   <property name="statusTip">
-    <string>Show the previous item in the selected navigation dimension</string>
-   </property>
-   <property name="accessibleName">
-    <string>Previous item</string>
-   </property>
-   <property name="accessibleDescription">
-    <string>Move to the previous item in the selected navigation dimension.</string>
-   </property>
-   <property name="icon">
-    <iconset resource="../images/icons.qrc">
-     <normaloff>:/icons/actions/navigation-left.svg</normaloff>:/icons/actions/navigation-left.svg</iconset>
-   </property>
-   <property name="autoRaise">
-    <bool>true</bool>
-   </property>
-   <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonTextBesideIcon</enum>
-   </property>
-  </widget>
- </item>
- <item>
-  <widget class="QToolButton" name="nav_right_btn">
-   <property name="text">
-    <string>Next item</string>
-   </property>
-   <property name="toolTip">
-    <string>Next item in the selected navigation dimension</string>
-   </property>
-   <property name="statusTip">
-    <string>Show the next item in the selected navigation dimension</string>
-   </property>
-   <property name="accessibleName">
-    <string>Next item</string>
-   </property>
-   <property name="accessibleDescription">
-    <string>Move to the next item in the selected navigation dimension.</string>
-   </property>
-   <property name="icon">
-    <iconset resource="../images/icons.qrc">
-     <normaloff>:/icons/actions/navigation-right.svg</normaloff>:/icons/actions/navigation-right.svg</iconset>
-   </property>
-   <property name="autoRaise">
-    <bool>true</bool>
-   </property>
-   <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonTextBesideIcon</enum>
-   </property>
-  </widget>
- </item>
- <item>
-  <widget class="QToolButton" name="nav_add_btn">
-   <property name="text">
-    <string>Add item</string>
-   </property>
-   <property name="toolTip">
-    <string>Add an item to the selected navigation dimension</string>
-   </property>
-   <property name="statusTip">
-    <string>Add an item to the selected navigation dimension</string>
-   </property>
-   <property name="accessibleName">
-    <string>Add item</string>
-   </property>
-   <property name="accessibleDescription">
-    <string>Add an item to the selected navigation dimension.</string>
-   </property>
-   <property name="icon">
-    <iconset resource="../images/icons.qrc">
-     <normaloff>:/icons/actions/add.svg</normaloff>:/icons/actions/add.svg</iconset>
-   </property>
-   <property name="autoRaise">
-    <bool>true</bool>
-   </property>
-   <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonTextBesideIcon</enum>
-   </property>
-  </widget>
- </item>
-</layout>
-               </widget>
-              </item>
-              <item>
-               <layout class="QGridLayout" name="gridLayout">
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label">
-                  <property name="text">
-                   <string>Outcome:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="label_3">
-                  <property name="text">
-                   <string>Follow-up:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QLabel" name="current_follow_up_label">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QLabel" name="current_outcome_label">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-             </layout>
+              </layout>
             </item>
             <item>
              <spacer name="horizontalSpacer">
@@ -290,7 +115,7 @@
              </spacer>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="confidence_interval_layout"/>
+             <layout class="QHBoxLayout" name="confidence_interval_layout" />
             </item>
            </layout>
           </widget>
@@ -303,7 +128,7 @@
     <item>
      <widget class="QLabel" name="dataset_file_lbl">
       <property name="text">
-       <string/>
+       <string />
       </property>
      </widget>
     </item>
@@ -327,12 +152,12 @@
       <string>Open Recent</string>
      </property>
     </widget>
-    <addaction name="action_save"/>
-    <addaction name="action_save_as"/>
-    <addaction name="action_open"/>
-    <addaction name="action_open_recent_2"/>
-    <addaction name="action_import_csv"/>
-    <addaction name="action_quit"/>
+    <addaction name="action_save" />
+    <addaction name="action_save_as" />
+    <addaction name="action_open" />
+    <addaction name="action_open_recent_2" />
+    <addaction name="action_import_csv" />
+    <addaction name="action_quit" />
    </widget>
    <widget class="QMenu" name="menuAnalysis">
     <property name="title">
@@ -345,56 +170,56 @@
       <property name="toolTip"><string>Choose a metric or open effect-size calculator tools.</string></property>
       <property name="statusTip"><string>Choose a metric or open effect-size calculator tools.</string></property>
     </widget>
-    <addaction name="menuMetric"/>
-    <addaction name="separator"/>
-    <addaction name="action_go"/>
-    <addaction name="separator"/>
-    <addaction name="action_cum_ma"/>
-    <addaction name="action_loo_ma"/>
-    <addaction name="action_subgroup_ma"/>
-    <addaction name="separator"/>
-    <addaction name="action_meta_regression"/>
-    <addaction name="action_publication_bias"/>
-    <addaction name="action_change_confidence_level"/>
+    <addaction name="menuMetric" />
+    <addaction name="separator" />
+    <addaction name="action_go" />
+    <addaction name="separator" />
+    <addaction name="action_cum_ma" />
+    <addaction name="action_loo_ma" />
+    <addaction name="action_subgroup_ma" />
+    <addaction name="separator" />
+    <addaction name="action_meta_regression" />
+    <addaction name="action_publication_bias" />
+    <addaction name="action_change_confidence_level" />
    </widget>
    <widget class="QMenu" name="menuDataset">
     <property name="title">
      <string>Dataset</string>
     </property>
-    <addaction name="action_new_dataset"/>
-    <addaction name="separator"/>
-    <addaction name="action_edit"/>
-    <addaction name="action_add_covariate"/>
+    <addaction name="action_new_dataset" />
+    <addaction name="separator" />
+    <addaction name="action_edit" />
+    <addaction name="action_add_covariate" />
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
      <string>Edit</string>
     </property>
-    <addaction name="action_undo"/>
-    <addaction name="action_redo"/>
-    <addaction name="action_copy"/>
-    <addaction name="action_paste"/>
+    <addaction name="action_undo" />
+    <addaction name="action_redo" />
+    <addaction name="action_copy" />
+    <addaction name="action_paste" />
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="action_about_legal"/>
+    <addaction name="action_about_legal" />
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
      <string>View</string>
     </property>
-    <addaction name="action_auto_fit_columns"/>
+    <addaction name="action_auto_fit_columns" />
    </widget>
-   <addaction name="menu_file"/>
-   <addaction name="menuEdit"/>
-   <addaction name="menuView"/>
-   <addaction name="menuAnalysis"/>
-   <addaction name="menuDataset"/>
-   <addaction name="menuHelp"/>
+   <addaction name="menu_file" />
+   <addaction name="menuEdit" />
+   <addaction name="menuView" />
+   <addaction name="menuAnalysis" />
+   <addaction name="menuDataset" />
+   <addaction name="menuHelp" />
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar" />
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
     <string>Tool Bar</string>
@@ -411,18 +236,18 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="action_new_dataset"/>
-   <addaction name="action_open"/>
-   <addaction name="action_import_csv"/>
-   <addaction name="action_save"/>
-   <addaction name="separator"/>
-   <addaction name="action_go"/>
-   <addaction name="action_cum_ma"/>
-   <addaction name="action_loo_ma"/>
-   <addaction name="action_subgroup_ma"/>
-   <addaction name="action_meta_regression"/>
-   <addaction name="action_publication_bias"/>
-   <addaction name="action_change_confidence_level"/>
+   <addaction name="action_new_dataset" />
+   <addaction name="action_open" />
+   <addaction name="action_import_csv" />
+   <addaction name="action_save" />
+   <addaction name="separator" />
+   <addaction name="action_go" />
+   <addaction name="action_cum_ma" />
+   <addaction name="action_loo_ma" />
+   <addaction name="action_subgroup_ma" />
+   <addaction name="action_meta_regression" />
+   <addaction name="action_publication_bias" />
+   <addaction name="action_change_confidence_level" />
   </widget>
   <action name="action_save">
    <property name="icon">
@@ -629,7 +454,7 @@
   </action>
  </widget>
  <resources>
-  <include location="../images/icons.qrc"/>
+  <include location="../images/icons.qrc" />
  </resources>
- <connections/>
+ <connections />
 </ui>

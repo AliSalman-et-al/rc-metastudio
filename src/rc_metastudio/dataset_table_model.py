@@ -17,7 +17,6 @@ from rc_metastudio.analysis_dataset import Dataset, StudyRow
 from rc_metastudio.analysis_unit import AnalysisUnit
 import uuid
 from rc_metastudio.dataset_analysis_domain import (
-    ensure_analysis_unit,
     has_study_entered_data,
     included_studies_have_effects,
     included_studies_have_raw_data,
@@ -115,19 +114,7 @@ def validate_new_outcome_name(dataset, name):
 
 def validate_new_group_name(dataset, name):
     return name_validation.validate_unique_name(
-        "group", name, dataset.get_group_names()
-    )
-
-
-def validate_new_follow_up_name(dataset, outcome_name, name):
-    return name_validation.validate_unique_name(
-        "follow-up", name, dataset.get_follow_up_names_for_outcome(outcome_name)
-    )
-
-
-def validate_new_global_follow_up_name(dataset, name):
-    return name_validation.validate_unique_name(
-        "follow-up", name, dataset.get_follow_up_names()
+        "group", name, dataset.get_arm_names()
     )
 
 
@@ -165,7 +152,7 @@ class WorkspaceEdit:
     index: QModelIndex
     old_value: object
     new_value: object
-    added_study_id: int | None
+    added_study_id: str | None
     changed_top_left: QModelIndex
     changed_bottom_right: QModelIndex
     roles: tuple[int, ...]
@@ -213,6 +200,8 @@ class DatasetTableModel(QAbstractTableModel):
         self._display_studies = list(self.current_sheet.rows) if self.current_sheet else []
         self.update_column_indices()
         self.update_current_group_effect()
+        if self.current_sheet:
+            self.current_effect = self.current_sheet.settings.get("metric") or self.current_sheet.settings.get("active_effect") or self.current_effect
         self.endResetModel()
 
     dataset: Dataset
@@ -221,33 +210,11 @@ class DatasetTableModel(QAbstractTableModel):
     def current_outcome_name(self):
         return self.current_sheet.name if self.current_sheet else None
 
-    @property
-    def current_outcome_name(self):
-        return self.current_sheet.name if self.current_sheet else None
-
-    @property
-    def current_follow_up_index(self):
-        return self.view_state.current_follow_up_index
-
-    @current_follow_up_index.setter
-    def current_follow_up_index(self, value):
-        self.view_state.current_follow_up_index = value
 
     @property
     def current_groups(self):
         return [arm.name for arm in self.current_sheet.arms] if self.current_sheet else []
 
-    @property
-    def current_groups(self):
-        return [arm.name for arm in self.current_sheet.arms] if self.current_sheet else []
-
-    @property
-    def previous_groups(self):
-        return self.view_state.previous_groups
-
-    @previous_groups.setter
-    def previous_groups(self, value):
-        self.view_state.previous_groups = value
 
     @property
     def current_effect(self):
@@ -284,6 +251,7 @@ class DatasetTableModel(QAbstractTableModel):
         self.confidence_level = self.set_confidence_level(DEFAULT_CONFIDENCE_LEVEL)
 
         self.dataset = dataset if dataset is not None else Dataset()
+        self.current_sheet_id = self.dataset.sheets[0].id if self.dataset.sheets else None
         self.analysis_source_path: str | None = None
 
         self._blank_study: StudyRow | None = None
@@ -295,15 +263,12 @@ class DatasetTableModel(QAbstractTableModel):
             self._display_studies.append(self._blank_study)
 
 
-        self.group_index_a = 0
-        self.group_index_b = 1
-
         self.update_current_group_names()
 
         self.update_column_indices()
 
         # Default binary effect until the active outcome selection provides one.
-        self.current_effect = "OR"
+        self.update_current_group_effect()
 
         self.COVARIATES = None
         self.currently_displayed_covariates = []
@@ -351,6 +316,8 @@ class DatasetTableModel(QAbstractTableModel):
 
     def set_current_metric(self, metric):
         self.current_effect = metric
+        if self.current_sheet:
+            self.current_sheet.settings['metric'] = metric
 
     def update_current_outcome(self):
         self.set_current_sheet(self.dataset.sheets[0].id if self.dataset.sheets else None)
@@ -443,7 +410,7 @@ class DatasetTableModel(QAbstractTableModel):
         study = self._study_for_row(index.row())
         raw_data = self.get_current_analysis_unit_for_study(
             study_index=index.row()
-        ).get_raw_data_for_groups(self.current_groups)
+        ).get_raw_data_for_arms(self.current_groups)
         adjusted_index = index.column() - 3
         if len(raw_data) <= adjusted_index:
             return _item_data("")
@@ -491,7 +458,7 @@ class DatasetTableModel(QAbstractTableModel):
         record = unit.ratio_input(self.current_groups)
         if role == Qt.ItemDataRole.DisplayRole and outcome_index < 3:
             value = self._ratio_display_values(unit)[outcome_index]
-            raw = unit.get_raw_data_for_groups(self.current_groups)
+            raw = unit.get_raw_data_for_arms(self.current_groups)
             if value is None and record.ready(raw, metric=self.current_effect) and record.selected_source(raw, metric=self.current_effect) == "raw" and raw[0] == 0 and raw[2] == 0:
                 return _item_data("Not estimable" if outcome_index == 0 else "\u2014")
             return _item_data("" if value is None else self.format_float(value))
@@ -504,7 +471,7 @@ class DatasetTableModel(QAbstractTableModel):
         entry = unit.derived_effect_previews.get(effect, {}).get(comparison, {})
         if entry.get("display_conf_level") is None:
             return False
-        raw = unit.get_raw_data_for_groups(self.current_groups)
+        raw = unit.get_raw_data_for_arms(self.current_groups)
         if effect in ONE_ARM_METRICS:
             raw = raw[:len(raw) // 2]
         return bool(raw) and raw_data_is_complete(raw)
@@ -522,7 +489,7 @@ class DatasetTableModel(QAbstractTableModel):
 
     def _ratio_display_values(self, unit):
         record = unit.ratio_input(self.current_groups)
-        raw = unit.get_raw_data_for_groups(self.current_groups)
+        raw = unit.get_raw_data_for_arms(self.current_groups)
         try:
             source = record.selected_source(raw, metric=self.current_effect)
         except ValueError:
@@ -552,10 +519,10 @@ class DatasetTableModel(QAbstractTableModel):
         covariate = self.get_covariate_for_column(column)
         if covariate is None:
             return _item_data("")
-        value = study.covariate_values.get(covariate.name, "")
+        value = study.covariate_values.get(covariate['id'], "")
         if value is None:
             value = ""
-        if value != "" and covariate.data_type == CONTINUOUS:
+        if value != "" and covariate['data_type'] == CONTINUOUS:
             return _item_data(str(value) if role == Qt.ItemDataRole.EditRole else self.format_float(value))
         return _item_data(_to_native_text(value))
 
@@ -581,11 +548,11 @@ class DatasetTableModel(QAbstractTableModel):
         unit = self.get_current_analysis_unit_for_study(index.row())
         record = unit.ratio_input(self.current_groups)
         try:
-            source = record.selected_source(unit.get_raw_data_for_groups(self.current_groups), metric=self.current_effect)
+            source = record.selected_source(unit.get_raw_data_for_arms(self.current_groups), metric=self.current_effect)
         except ValueError as error:
             return str(error) + " Click the study row number to choose."
         if source == "raw":
-            raw = unit.get_raw_data_for_groups(self.current_groups)
+            raw = unit.get_raw_data_for_arms(self.current_groups)
             if len(raw) == 4 and raw[0] == 0 and raw[2] == 0:
                 return "Not estimable: zero events in both groups. The rate ratio is 0/0, so no individual IRR or confidence interval is shown. The default analysis omits this study's individual effect; analysis settings control zero-event handling. Click the study row number to edit."
             return f"Raw events/person-time ({record.unit}). Preview: {self.confidence_level:g}% CI, add 0.5 to zero-event studies, omit double-zero effects. Analysis settings are selected separately. Click the study row number to edit."
@@ -640,18 +607,8 @@ class DatasetTableModel(QAbstractTableModel):
         return _item_data()
 
     def get_current_group_comparison(self):
-        # we have to build a key (string) here to index into the
-        # correct outcome in the meta-analytic unit. the protocol is
-        # as follows. if we are dealing with a two group outcome,
-        # then the string is:
-        #    first group - second group
-        # A one-group outcome uses:
-        #    first group
-        if self.current_effect in ONE_ARM_METRICS:
-            group_comparison = self.current_groups[0]
-        else:
-            group_comparison = "-".join(self.current_groups)
-        return group_comparison
+        arms = self.current_sheet.arms if self.current_sheet else []
+        return tuple(a.id for a in (arms[:1] if self.current_effect in ONE_ARM_METRICS else arms))
 
     def _editing_context(self, column=None):
         covariate = (
@@ -673,13 +630,13 @@ class DatasetTableModel(QAbstractTableModel):
             year_column=self.YEAR,
             confidence_level=self.get_confidence_level(),
             confidence_multiplier=self.get_confidence_multiplier(),
-            covariate_name=covariate.name if covariate is not None else None,
-            covariate_type=covariate.data_type if covariate is not None else None,
+            covariate_name=covariate['name'] if covariate is not None else None,
+            covariate_type=covariate['data_type'] if covariate is not None else None,
             covariate=covariate,
         )
 
     def _display_effect_source(self, analysis_unit):
-        raw_data = analysis_unit.get_raw_data_for_groups(self.current_groups)
+        raw_data = analysis_unit.get_raw_data_for_arms(self.current_groups)
         return "derived_preview" if any(value not in (None, "") for value in raw_data) else "entered"
 
     def _inclusion_value_for_edit(self, index, value, role):
@@ -764,7 +721,8 @@ class DatasetTableModel(QAbstractTableModel):
             return False
         context, old_value, canonical_row, is_blank_study = target
         edit_target = workspace_editing.WorkspaceEditTarget(
-            row=canonical_row, column=index.column(), old_value=old_value
+            row=canonical_row, column=index.column(), old_value=old_value,
+            row_id=None if is_blank_study else self._study_for_row(index.row()).id
         )
         result = self.editing_service.apply_edit(
             self.dataset,
@@ -988,7 +946,7 @@ class DatasetTableModel(QAbstractTableModel):
         covariate = self._header_covariate(section)
         if covariate is None:
             return _item_data("")
-        return _item_data(f"{covariate.name} ({'Numeric' if covariate.get_type_str() == 'continuous' else 'Category'})")
+        return _item_data(f"{covariate['name']} ({'Numeric' if ('continuous' if covariate['data_type'] == CONTINUOUS else 'factor') == 'continuous' else 'Category'})")
 
     def _header_covariate(self, section):
         if self.current_outcome_name is None or section <= max(self.OUTCOMES):
@@ -1025,7 +983,7 @@ class DatasetTableModel(QAbstractTableModel):
         if covariate is not None:
             return WorkspaceColumnIdentity(
                 "covariate",
-                (stable_covariate_identity(self.dataset, covariate),),
+                (covariate['id'],),
             )
         return WorkspaceColumnIdentity("dataset-column", (section,))
 
@@ -1052,7 +1010,7 @@ class DatasetTableModel(QAbstractTableModel):
             unit = self.get_current_analysis_unit_for_study(index.row())
             record = unit.ratio_input(self.current_groups)
             try:
-                raw_source = record.selected_source(unit.get_raw_data_for_groups(self.current_groups), metric=self.current_effect) == "raw"
+                raw_source = record.selected_source(unit.get_raw_data_for_arms(self.current_groups), metric=self.current_effect) == "raw"
             except ValueError:
                 raw_source = False
             if raw_source or record.scale == "log":
@@ -1085,7 +1043,7 @@ class DatasetTableModel(QAbstractTableModel):
             return None
 
     def get_covariate_names(self):
-        return [cov.name for cov in (self.current_sheet.covariates if self.current_sheet else [])]
+        return [cov['name'] for cov in (self.current_sheet.covariates if self.current_sheet else [])]
 
     def rename_covariate(self, old_cov_name, new_cov_name):
         old_cov_obj = self.dataset.get_covariate(old_cov_name)
@@ -1151,23 +1109,14 @@ class DatasetTableModel(QAbstractTableModel):
             self.current_groups.insert(group_index, new_group_name)
         self.reset_model()
 
-    def add_follow_up_to_current_outcome(self, follow_up_name):
-        follow_up_name = validate_new_follow_up_name(
-            self.dataset, self.current_outcome_name, follow_up_name
-        )
-        self.dataset.add_follow_up_to_outcome(self.current_outcome_name, follow_up_name)
 
-    def remove_follow_up_from_outcome(self, follow_up_name, outcome_name):
-        self.dataset.remove_follow_up_from_outcome(follow_up_name, outcome_name)
-
-    def add_covariate(
-        self, covariate_name, covariate_type, covariate_values=None, stable_id=None
-    ):
-        covariate_name = validate_new_covariate_name(self.dataset, covariate_name)
-        covariate = Covariate(covariate_name, covariate_type, stable_id=stable_id)
-        self.dataset.add_covariate(covariate, covariate_values=covariate_values)
+    def add_covariate(self, covariate_name, covariate_type, covariate_values=None, stable_id=None):
+        cov = dict(id=stable_id or uuid.uuid4().hex, name=covariate_name, data_type=({'factor': 4, 'continuous': 1}.get(covariate_type, covariate_type)))
+        self.current_sheet.covariates.append(cov)
+        for row in self.current_sheet.rows:
+            row.covariate_values[cov['id']] = (covariate_values or {}).get(row.label)
         self.reset_model()
-        return covariate
+        return cov
 
     def remove_covariate(self, covariate_name):
         self.dataset.remove_covariate(covariate_name)
@@ -1181,165 +1130,26 @@ class DatasetTableModel(QAbstractTableModel):
     def get_name(self):
         return self.dataset.title
 
-    def get_next_outcome_name(self):
-        outcomes = [s.name for s in self.dataset.sheets]
-        current_index = outcomes.index(self.current_outcome_name)
-        next_outcome = (
-            outcomes[0]
-            if current_index == len(outcomes) - 1
-            else outcomes[current_index + 1]
-        )
-        return next_outcome
-
-    def get_previous_outcome_name(self):
-        outcomes = [s.name for s in self.dataset.sheets]
-        current_index = outcomes.index(self.current_outcome_name)
-        previous_outcome = (
-            outcomes[-1] if current_index == 0 else outcomes[current_index - 1]
-        )
-        return previous_outcome
-
-    def get_next_follow_up(self):
-        follow_up_indices = sorted(
-            self.dataset.follow_ups_by_outcome[self.current_outcome_name]
-        )
-        current_position = follow_up_indices.index(self.current_follow_up_index)
-        follow_up_index = follow_up_indices[
-            (current_position + 1) % len(follow_up_indices)
-        ]
-        return (
-            follow_up_index,
-            self.get_follow_up_name_for_t_point(follow_up_index),
-        )
-
-    def get_previous_follow_up(self):
-        follow_up_indices = sorted(
-            self.dataset.follow_ups_by_outcome[self.current_outcome_name]
-        )
-        current_position = follow_up_indices.index(self.current_follow_up_index)
-        follow_up_index = follow_up_indices[current_position - 1]
-        return (
-            follow_up_index,
-            self.get_follow_up_name_for_t_point(follow_up_index),
-        )
-
-    def set_current_follow_up_index(self, follow_up_index):
-        self.current_follow_up_index = follow_up_index
-        self.followUpChanged.emit()
-        self.reset_model()
-
-    def set_current_follow_up(self, follow_up_name):
-        t_point = self.dataset.follow_ups_by_outcome[self.current_outcome_name].get_key(
-            follow_up_name
-        )
-        self.set_current_follow_up_index(t_point)
-
-    def get_current_follow_up_name(self):
-        return self.current_sheet_id
-
-    def get_follow_up_name_for_t_point(self, t_point):
-        return self.dataset.follow_ups_by_outcome[self.current_outcome_name][t_point]
-
-    def get_t_point_for_follow_up_name(self, follow_up):
-        return self.dataset.follow_ups_by_outcome[self.current_outcome_name].get_key(
-            follow_up
-        )
 
     def get_current_groups(self):
         return self.current_groups
 
-    def get_previous_groups(self):
-        return self.previous_groups
-
-    def next_groups(self):
-        """Return the next two group names in round-robin order."""
-        if len(self.dataset.get_group_names()) == 0:
-            return []
-
-        # Restrict groups to the current outcome and follow-up.
-        group_names = self.dataset.get_group_names_for_outcome_follow_up(
-            self.current_outcome_name, self.get_current_follow_up_name()
-        )
-
-        self._next_group_indices(group_names)
-
-        if not self.is_diagnostic():
-            # shuffle over groups
-            while self.group_index_a == self.group_index_b:
-                self._next_group_indices(group_names)
-        else:
-            self._next_group_index(group_names)
-
-        next_txs = [group_names[self.group_index_a], group_names[self.group_index_b]]
-        return next_txs
-
-    def _next_group_indices(self, group_names):
-        if self.group_index_b < len(group_names) - 1:
-            self.group_index_b += 1
-        else:
-            # bump the a index
-            if self.group_index_a < len(group_names) - 1:
-                self.group_index_a += 1
-            else:
-                self.group_index_a = 0
-            self.group_index_b = 0
-
-    def _next_group_index(self, group_names):
-        # Advance the selected diagnostic test.
-        if self.group_index_a < len(group_names) - 1:
-            self.group_index_a += 1
-        else:
-            self.group_index_a = 0
-
-    def outcome_has_follow_up(self, outcome, follow_up):
-        if outcome is None:
-            return None
-        analysis_units_by_follow_up = self.dataset.follow_ups_by_outcome[outcome]
-
-        return follow_up in list(analysis_units_by_follow_up.keys())
-
-    def outcome_follow_up_has_group(self, outcome, follow_up, group):
-        # Dataset structure guarantees the same outcomes and follow-ups for
-        # every study, so inspect the first study.
-        analysis_units_by_follow_up = self.current_sheet.rows[0].analysis_units_by_outcome[
-            outcome
-        ]
-
-        return group in list(analysis_units_by_follow_up[follow_up].groups.keys())
-
-    def set_current_groups(self, group_names):
-        self.previous_groups = self.current_groups
-        self.current_groups = group_names
-        self.group_index_a = self.dataset.get_group_names().index(group_names[0])
-        self.group_index_b = (self.dataset.get_group_names().index(group_names[1])
-                              if len(group_names) > 1 else self.group_index_a)
 
     def get_group_names(self):
-        return self.dataset.get_group_names()
+        return self.current_groups
 
-    def _sort_studies_with_cmp(
-        self, compare_by, reverse, directions_to_analysis_unit=None
-    ):
-        comparator = self.dataset.cmp_studies(
-            compare_by=compare_by,
-            reverse=reverse,
-            directions_to_analysis_unit=directions_to_analysis_unit,
-            confidence_multiplier=self.get_confidence_multiplier(),
-        )
-        self._display_studies = sorted(
-            self.current_sheet.rows, key=cmp_to_key(comparator), reverse=reverse
-        )
-        if self._blank_study is not None:
-            self._display_studies.append(self._blank_study)
+    def _sort_studies_with_cmp(self, field, reverse, *args):
+        self.current_sheet.rows.sort(key=lambda row: getattr(row, 'label' if field == 'name' else field) or 0, reverse=reverse)
+        self._display_studies = list(self.current_sheet.rows)
 
     def _sort_outcomes_with_display_source(self, column, reverse):
         data_type = self.get_current_outcome_type(get_str=False)
-        follow_up = self.get_current_follow_up_name()
+        follow_up = self.current_sheet_id
         group_comparison = self.get_current_group_comparison()
         data_index = column - min(self.OUTCOMES)
 
         def outcome_value(study):
-            unit = study.get_analysis_unit(self.current_outcome_name, follow_up)
+            unit = study.analysis_unit
             if data_type in RATIO_DATA_TYPES:
                 return self._ratio_display_values(unit)[data_index] if data_index < 3 else getattr(unit.ratio_input(self.current_groups), RATIO_FIELDS[data_index])
             source = self._display_effect_source(unit)
@@ -1353,7 +1163,7 @@ class DatasetTableModel(QAbstractTableModel):
             )
             n1 = None
             if effect == "PFT":
-                n1 = unit.get_raw_data_for_groups(self.current_groups)[1]
+                n1 = unit.get_raw_data_for_arms(self.current_groups)[1]
             converter = self._get_conv_to_display_scale(data_type, effect, n1)
             return converter(values[index])
 
@@ -1381,9 +1191,7 @@ class DatasetTableModel(QAbstractTableModel):
             # need this to dig down to find right analysis_unit and data we're looking for to compare against
             analysis_unit_reference_info = {
                 "outcome_name": self.current_outcome_name,
-                "follow_up": self.get_follow_up_name_for_t_point(
-                    self.current_follow_up_index
-                ),
+                "sheet_id": self.current_sheet_id,
                 "current_groups": self.get_current_groups(),
                 "data_index": col - min(self.RAW_DATA),
             }
@@ -1399,14 +1207,14 @@ class DatasetTableModel(QAbstractTableModel):
         if col > self.OUTCOMES[-1]:
             # Columns to the right of outcomes are covariates.
             cov = self.get_covariate_for_column(col)
-            self._sort_studies_with_cmp(cov.name, reverse)
+            self._sort_studies_with_cmp(cov['name'], reverse)
         self.reset_model()
 
     def order_studies(self, ids):
         """Shuffles studies vector to the order specified by ids"""
         ordered_studies = []
         for an_id in ids:
-            for study in self.current_sheet.rows:
+            for study in (self.current_sheet.rows if self.current_sheet else []):
                 if study.id == an_id:
                     ordered_studies.append(study)
                     break
@@ -1426,7 +1234,7 @@ class DatasetTableModel(QAbstractTableModel):
         elif outcome_type == BINARY:
             self.current_effect = "OR"
         elif outcome_type == CONTINUOUS:
-            self.current_effect = "MD"
+            self.current_effect = "SMD"
         else:
             # Diagnostic rows display sensitivity/specificity instead of a
             # single current effect.
@@ -1487,7 +1295,7 @@ class DatasetTableModel(QAbstractTableModel):
         )
 
     def _get_raw_data_according_to_arms(self, study_index, first_arm_only=False):
-        if self.current_outcome_name is None or self.current_follow_up_index is None:
+        if self.current_outcome_name is None or self.current_sheet_id is None:
             return False
 
         raw_data = self._get_canonical_raw_data_for_study(study_index)
@@ -1524,18 +1332,18 @@ class DatasetTableModel(QAbstractTableModel):
         """Populate transient raw-data results without changing inclusion."""
         if (
             self.current_outcome_name is None
-            or self.get_current_follow_up_name() is None
+            or self.current_sheet_id is None
         ):
             return
         context = self._editing_context()
         for study_index in range(len(self.current_sheet.rows)):
             self.editing_service.update_outcome_if_possible(
-                self.dataset, study_index, context, update_inclusion=False
+                self.dataset, self.current_sheet.rows[study_index].id, context, update_inclusion=False
             )
 
     def blank_all_studies(self, include_them):
         # Keep the auto-added blank row excluded from include-all changes.
-        for study in self.current_sheet.rows:
+        for study in (self.current_sheet.rows if self.current_sheet else []):
             study.include = include_them
 
     def include_all_studies(self):
@@ -1552,7 +1360,7 @@ class DatasetTableModel(QAbstractTableModel):
 
     def update_outcome_if_possible(self, study_index):
         self.editing_service.update_outcome_if_possible(
-            self.dataset, study_index, self._editing_context()
+            self.dataset, self.current_sheet.rows[study_index].id, self._editing_context()
         )
 
     def get_current_raw_data(self, only_if_included=True, only_these_studies=None):
@@ -1584,7 +1392,7 @@ class DatasetTableModel(QAbstractTableModel):
         effect = effect or self.current_effect
         analysis_unit = self._get_canonical_analysis_unit(study_index)
         if self.get_current_outcome_type(get_str=False) in RATIO_DATA_TYPES:
-            raw = analysis_unit.get_raw_data_for_groups(self.current_groups)
+            raw = analysis_unit.get_raw_data_for_arms(self.current_groups)
             return analysis_unit.ratio_input(self.current_groups).ready(raw, metric=effect)
 
         if None in analysis_unit.get_effect_and_se_for_source(
@@ -1652,7 +1460,7 @@ class DatasetTableModel(QAbstractTableModel):
     def get_studies(self, only_if_included=True):
         included_studies = []
 
-        for study in self.current_sheet.rows:
+        for study in (self.current_sheet.rows if self.current_sheet else []):
             if not only_if_included or study.include:
                 included_studies.append(study)
         return list(included_studies)
@@ -1661,15 +1469,10 @@ class DatasetTableModel(QAbstractTableModel):
         return self._get_canonical_raw_data_for_study(study_index)
 
     def _get_canonical_analysis_unit(self, study_index):
-        return self.get_analysis_unit(
-            study=self.current_sheet.rows[study_index],
-            outcome=self.current_outcome_name,
-            follow_up=self.get_current_follow_up_name(),
-            groups=self.current_groups,
-        )
+        return self.current_sheet.rows[study_index].analysis_unit
 
     def _get_canonical_raw_data_for_study(self, study_index):
-        return self._get_canonical_analysis_unit(study_index).get_raw_data_for_groups(
+        return self._get_canonical_analysis_unit(study_index).get_raw_data_for_arms(
             self.current_groups
         )
 
@@ -1677,19 +1480,13 @@ class DatasetTableModel(QAbstractTableModel):
         self._study_for_row(study_index).analysis_unit = new_analysis_unit
 
     def get_current_analysis_unit_for_study(self, study_index):
-        """Return or create the study's currently selected analysis unit."""
-        return self.get_analysis_unit(
-            study_index=study_index,
-            outcome=self.current_outcome_name,
-            follow_up=self.get_current_follow_up_name(),
-            groups=self.current_groups,
-        )
+        return self._study_for_row(study_index).analysis_unit
 
     def get_analysis_unit(self, study=None, study_index=None, **kwargs):
         return (study if study is not None else self._study_for_row(study_index)).analysis_unit
 
     def recalculate_display_scale(self):
-        if self.current_outcome_name is None or self.get_current_follow_up_name() is None:
+        if self.current_outcome_name is None or self.current_sheet_id is None:
             return
         effect = self.current_effect
         group_comparison = self.get_current_group_comparison()

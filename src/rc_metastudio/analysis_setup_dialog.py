@@ -344,7 +344,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.lr_dor_panel._method_changed(values)
         if self.is_meta_regression:
             for covariate, checkbox in self.covs_and_check_boxes:
-                checkbox.setChecked(covariate.name in saved["covariates"])
+                checkbox.setChecked(covariate['name'] in saved["covariates"])
             self.fixed_effects_radio.setChecked(saved["fixed_effects"])
             self.random_effects_radio.setChecked(not saved["fixed_effects"])
         self._restore_plot_settings(parameters)
@@ -375,7 +375,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         model.analysis_source_path = self.model.analysis_source_path
         saved_parameters = copy.deepcopy(self.current_param_vals)
         saved = dict(method=self.current_method, parameters=saved_parameters,
-                     covariates=[cov.name for cov in self._selected_covariates()] if self.is_meta_regression else [],
+                     covariates=[cov['name'] for cov in self._selected_covariates()] if self.is_meta_regression else [],
                      fixed_effects=self.fixed_effects_radio.isChecked())
         if self._combined_diagnostic:
             saved["lr_dor"] = (self.lr_dor_panel.method, copy.deepcopy(self.lr_dor_panel.params))
@@ -605,8 +605,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             return
 
         self.covs_and_check_boxes = []
-        for row, covariate in enumerate(self.model.dataset.covariates):
-            checkbox = QtWidgets.QCheckBox(covariate.name, self.covariate_group_box)
+        for row, covariate in enumerate(self.model.current_sheet.covariates):
+            checkbox = QtWidgets.QCheckBox(covariate['name'], self.covariate_group_box)
             checkbox.setChecked(row == 0)
             checkbox.toggled.connect(
                 app_error_handler.safe_slot(
@@ -641,7 +641,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if not self.is_meta_regression:
             return
         selected = self._selected_covariates()
-        bubble_available = len(selected) == 1 and selected[0].data_type == CONTINUOUS
+        bubble_available = len(selected) == 1 and selected[0]['data_type'] == CONTINUOUS
         self.plot_tab.setEnabled(bubble_available)
         self.plot_tab.setToolTip(
             ""
@@ -946,7 +946,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         identity, details = analysis_identity.result_identity(
             self.model, self.analysis_type, self._result_metric_label(),
             model_label, applied_parameters, self.confidence_level,
-            [cov.name for cov in self._selected_covariates()] if self.is_meta_regression else [],
+            [cov['name'] for cov in self._selected_covariates()] if self.is_meta_regression else [],
             fits=fits,
         )
         project_path = self._project_path

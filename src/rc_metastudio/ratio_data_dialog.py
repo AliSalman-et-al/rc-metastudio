@@ -51,16 +51,16 @@ class RatioDataDialog(QDialog):
         source.addItem("Events and person-time", "raw")
         source.addItem("Reported IRR", "reported")
         try:
-            selected = record.selected_source(self.analysis_unit.get_raw_data_for_groups(self.groups), metric=self.effect_metric)
+            selected = record.selected_source(self.analysis_unit.get_raw_data_for_arms(self.groups), metric=self.effect_metric)
         except ValueError:
             selected = ""
-        if not any(value not in (None, "") for value in self.analysis_unit.get_raw_data_for_groups(self.groups)) and record.estimate is None:
+        if not any(value not in (None, "") for value in self.analysis_unit.get_raw_data_for_arms(self.groups)) and record.estimate is None:
             selected = "raw"
         source.setCurrentIndex(source.findData(selected))
         self.fields["source"] = source
         self.form.addRow("Study data", source)
         for group in self.groups:
-            for label, value in zip(("Events", "Person-time"), self.analysis_unit.get_raw_data_for_group(group)):
+            for label, value in zip(("Events", "Person-time"), self.analysis_unit.get_raw_data_for_arm(group)):
                 field = QLineEdit("" if value in (None, "") else str(value))
                 self.form.addRow(f"{group}: {label}", field)
                 self.raw_fields.append(field)
@@ -141,7 +141,7 @@ class RatioDataDialog(QDialog):
             return
         self.analysis_unit.set_ratio_input(self.groups, record)
         if self.effect_metric == "IRR":
-            self.analysis_unit.set_raw_data_for_groups(self.groups, [raw[:2], raw[2:]])
+            self.analysis_unit.set_raw_data_for_arms(self.groups, [raw[:2], raw[2:]])
         super().accept()
 
     @staticmethod

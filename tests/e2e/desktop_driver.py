@@ -60,9 +60,9 @@ def record_step(action, *widgets, **observations):
     groups = window.model.current_groups if window.model is not None else []
     user_names = [name for name in groups if name not in {"Group", "Intervention", "Control"}]
     if window.model is not None:
-        user_names += window.model.dataset.get_outcome_names()
-        user_names += window.model.dataset.get_covariate_names()
-        user_names += [study.name for study in window.model.dataset.studies]
+        user_names += [s.name for s in window.model.dataset.sheets]
+        user_names += [c["name"] for c in window.model.current_sheet.covariates] if window.model.current_sheet else []
+        user_names += [study.label for study in window.model.get_studies(False)]
     observations["visible_labels"] = [entry for widget in widgets for entry in visible_label_inventory(widget, user_names)]
     plot_paths = [value for value in observations.get("plots", {}).values() if isinstance(value, str)]
     for widget in widgets:
@@ -306,7 +306,7 @@ def sample_analysis(app, window, sample):
     assert (
         str(window.model.data(window.model.index(0, window.model.NAME))) == first_study
     )
-    assert sum(study.include for study in window.model.dataset.studies) == study_count
+    assert sum(study.include for study in window.model.get_studies(False)) == study_count
     method, case = {
         "amino": ("binary.random", "amino-binary-random"),
         "continuous": ("continuous.random", "continuous-random"),
@@ -471,17 +471,17 @@ def csv_import(app, window):
         str(window.model.data(window.model.index(0, window.model.NAME)))
         == "Alpha, München"
     )
-    assert window.model.dataset.studies[1].covariate_values["Dose"] == 7.0
-    assert window.model.dataset.studies[1].covariate_values["Region"] == "South"
-    assert all(study.include for study in window.model.dataset.studies)
+    assert window.model.get_studies(False)[1].covariate_values["Dose"] == 7.0
+    assert window.model.get_studies(False)[1].covariate_values["Region"] == "South"
+    assert all(study.include for study in window.model.get_studies(False))
     view = analyze(app, window, "binary.random")
     assert "Alpha" in view.texts.get("Weights", "")
     view.close()
     window.out_path = str(WORK / "imported.rcms")
     assert window.save()
     assert window.open(window.out_path, raise_on_error=True)
-    assert window.model.dataset.studies[0].name == "Alpha, München"
-    reopened = window.model.dataset.studies[1]
+    assert window.model.get_studies(False)[0].name == "Alpha, München"
+    reopened = window.model.get_studies(False)[1]
     assert reopened.covariate_values["Dose"] == 7.0
     assert reopened.covariate_values["Region"] == "South"
     assert window.model.current_effect == "OR"
