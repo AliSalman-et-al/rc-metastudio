@@ -39,7 +39,7 @@ linux_cran_repo="https://packagemanager.posit.co/cran/__linux__/noble/2026-07-16
 r_home="$work_root/r-home"
 r_library="$r_home/library"
 ppm_archives="$qualification_root/ppm-archives"
-runtime_probe="$archive_root/qualification/runtime-probe.json"
+runtime_probe="$qualification_root/runtime-probe.json"
 smoke_evidence="$qualification_root/packaged-smoke.json"
 smoke_log="$qualification_root/packaged-smoke.log"
 runtime_probe_stdout="$qualification_root/runtime-probe.stdout.log"
@@ -212,9 +212,13 @@ export RCMS_PYQT_ROOT="$($python_exe -c 'from pathlib import Path; import PyQt6;
 
 app_root="$dist_root/RCMetaStudio"
 [ -x "$app_root/RCMetaStudio" ] || die "PyInstaller did not create the Linux application executable."
-mkdir -p "$archive_root/qualification"
+mkdir -p "$archive_root"
 cp -a "$app_root" "$archive_root/RCMetaStudio"
 cp -a "$r_home" "$archive_root/R"
+# Installed package tests and demonstrations are development payload. Keep
+# runtime data, help, metadata, licenses and shared libraries intact.
+find "$archive_root/R/library" -mindepth 2 -maxdepth 2 -type d \
+  \( -name tests -o -name demo \) -exec rm -rf -- {} +
 cp -a "$repo_root/sample_projects" "$archive_root/sample_projects"
 cp "$repo_root/LICENSE" "$repo_root/NOTICE.md" "$archive_root/"
 
