@@ -362,3 +362,29 @@ Static inventory of functions referencing removed model APIs (includes callers r
 - `src/rc_metastudio/workspace_editing.py:WorkspaceEditingService._study_for_edit`
 - `src/rc_metastudio/workspace_editing.py:WorkspaceEditingService.update_outcome_if_possible`
 - `src/rc_metastudio/workspace_editing.py:module`
+
+## Slice 1b: placeholder discrepancy
+
+Inspected original archive bytes with `git show 322ede26:sample_projects/<file>`.
+All five extra pairs are empty **null-follow-up** units, not additional measured
+follow-ups. The auto-declared `first` pairs contain the data. No data-bearing pair
+was omitted from the original 8-pair numerical capture, so that capture needs no
+extension. Conversion now drops pairs without raw, entered-effect or ratio input
+data. An outcome with no data in any pair retains one sheet named for the outcome.
+
+| Original file | Dropped placeholder | Data-bearing pairs retained | Sheets |
+| --- | --- | --- | --- |
+| BCG.rcms | tuberculosis / null (13 empty units) | tuberculosis / first (13 populated) | 1 |
+| amino.rcms | clinical failure / null (20 empty units) | clinical failure / first (19 populated), nephrotoxic / first (19 populated) | 2 |
+| continuous.rcms | blood pressure / null (6 empty units) | blood pressure / first (6 populated) | 1 |
+| lymph.rcms | LAG positive / null (18 empty units) | LAG positive / first (17 populated) | 1 |
+| meantime.rcms | Death / null (65 empty units) | Death / first (65 populated) | 1 |
+| NielWeise2008-IRR.rcms | none | Catheter-related bloodstream infection / first (9 populated) | 1 |
+| Pignon2000-HR.rcms | none | Mortality / first (65 populated) | 1 |
+
+`uv run --no-sync python scripts/check_sheet_conversion.py` passed for all seven
+files (8 sheets). It compares exact data/settings from original archives, runtime
+and archive round trips, and bundled converted files. Five bundled archives changed;
+the HR/IRR archives were already correct and remain byte-identical. This supersedes
+the earlier 13-sheet conversion table. Core UI migration and desktop proof remain
+pending; this check establishes conversion preservation only.

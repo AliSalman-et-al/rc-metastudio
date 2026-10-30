@@ -11,7 +11,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import zipfile
-from rc_metastudio.project_format import load_project, save_project
+from rc_metastudio.project_format import load_project, save_project, legacy_pairs_with_data
 from rc_metastudio.project_adapter import project_to_dataset, dataset_to_project
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,9 +29,7 @@ def check():
             document = load_project(legacy)
             sheets = iter(document.project['sheets']); count = 0
             for outcome in source['outcomes']:
-                pairs = list(outcome['follow_ups'])
-                if not pairs or any(u['outcome']==outcome['name'] and u['follow_up'] is None for r in source['studies'] for u in r['analysis_units']):
-                    pairs.insert(0,None)
+                pairs = legacy_pairs_with_data(source, outcome)
                 for follow in pairs:
                     sheet = next(sheets); count += 1
                     assert sheet['covariates'] == source['covariates']

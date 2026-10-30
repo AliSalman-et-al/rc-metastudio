@@ -82,6 +82,26 @@ def reconstruct_analysis_dataset(document: ProjectDocument) -> AnalysisDataset:
 ProjectMigration: TypeAlias = Callable[
     [JsonObject, JsonObject], tuple[JsonObject, JsonObject]
 ]
+def legacy_pairs_with_data(source, outcome):
+    """Discard placeholder pairs, retaining one sheet for an entirely empty outcome."""
+    def has_data(unit):
+        return (
+            any(value not in (None, "") for arm in unit["groups"] for value in arm["raw_data"])
+            or any(value is not None for entries in unit["entered_effects"].values()
+                   for effect in entries.values() for value in effect.values())
+            or bool(unit.get("ratio_inputs"))
+        )
+
+    declared = list(outcome["follow_ups"])
+    units = [unit for row in source["studies"] for unit in row["analysis_units"]
+             if unit["outcome"] == outcome["name"]]
+    if not declared or any(unit["follow_up"] is None for unit in units):
+        declared.insert(0, None)
+    populated = [follow for follow in declared
+                 if any(unit["follow_up"] == follow and has_data(unit) for unit in units)]
+    return populated or [declared[0]]
+
+
 def _convert_pairs(project, state):
     from rc_metastudio.project_domain import validate_legacy_project_semantics
     validate_legacy_project_semantics(project, state)
@@ -89,9 +109,7 @@ def _convert_pairs(project, state):
     sheets, names, selection = [], set(), None
     families = {0: "binary", 1: "continuous", 2: "diagnostic", 5: "time_to_event", 6: "event_rates"}
     for outcome in source["outcomes"]:
-        follow_ups = list(outcome["follow_ups"])
-        if not follow_ups or any(u["outcome"] == outcome["name"] and u["follow_up"] is None for r in source["studies"] for u in r["analysis_units"]):
-            follow_ups.insert(0, None)
+        follow_ups = legacy_pairs_with_data(source, outcome)
         for follow_up in follow_ups:
             sid = f"sheet:{len(sheets)}"
             base = outcome["name"].strip() or "Untitled"
