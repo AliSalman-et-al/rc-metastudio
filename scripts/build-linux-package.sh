@@ -215,6 +215,19 @@ app_root="$dist_root/RCMetaStudio"
 mkdir -p "$archive_root"
 cp -a "$app_root" "$archive_root/RCMetaStudio"
 cp -a "$r_home" "$archive_root/R"
+# Resolve the installed closure before pruning only the staged runtime.
+"$r_home/bin/Rscript" "$repo_root/scripts/r-bundle-closure.R" "$r_library" "$qualification_root/r-closure.txt"
+"$python_exe" - "$archive_root/R/library" "$qualification_root/r-closure.txt" <<'PYTHON'
+from pathlib import Path
+import shutil
+import sys
+library = Path(sys.argv[1])
+keep = set(Path(sys.argv[2]).read_text().splitlines())
+for package in library.iterdir():
+    if package.is_dir() and package.name not in keep:
+        print("Removing R package:", package.name)
+        shutil.rmtree(package)
+PYTHON
 # Installed package tests and demonstrations are development payload. Keep
 # runtime data, help, metadata, licenses and shared libraries intact.
 find "$archive_root/R/library" -mindepth 2 -maxdepth 2 -type d \
@@ -250,7 +263,7 @@ cp "$cursor_notice" "$archive_root/third-party-notices/linux-runtime/libxcb-curs
 
 step "Bundling Noble R runtime shared libraries"
 runtime_notice_root="$archive_root/third-party-notices/linux-runtime"
-runtime_libraries=(libblas.so.3 liblapack.so.3 libgfortran.so.5 libgomp.so.1 libtk8.6.so)
+runtime_libraries=(libblas.so.3 liblapack.so.3 libgfortran.so.5 libgomp.so.1)
 {
   printf '# Bundled Linux runtime libraries\n\n'
   printf 'These Noble shared libraries are included for the private R runtime:\n\n'
@@ -284,7 +297,6 @@ check_bundled_dependency() {
 for soname in libblas.so.3 liblapack.so.3 libgfortran.so.5 libgomp.so.1; do
   check_bundled_dependency "$matrix_library" "$soname"
 done
-check_bundled_dependency "$archive_root/R/library/tcltk/libs/tcltk.so" libtk8.6.so
 
 cat > "$archive_root/LaunchRCMetaStudio.sh" <<'SH'
 #!/bin/bash
