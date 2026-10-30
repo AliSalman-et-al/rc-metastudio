@@ -1,7 +1,5 @@
 """Project-owned sheets with independent study rows."""
 from dataclasses import dataclass, field
-from typing import Any
-from uuid import uuid4
 from rc_metastudio.project_domain import SheetId, RowId, ArmId
 from rc_metastudio.analysis_unit import AnalysisUnit
 

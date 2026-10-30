@@ -5,7 +5,6 @@ Run: uv run python scripts/check_sheet_conversion.py
 Failures covered: lost/duplicated pairs or rows; reordered data; changed raw/effect,
 confidence, inclusion, covariate, label or settings values; lossy runtime/archive IO.
 """
-import hashlib
 import io
 import json
 from pathlib import Path
@@ -50,6 +49,8 @@ def check():
                         unit = next((u for u in old['analysis_units'] if (u['outcome'],u['follow_up'])==(outcome['name'],follow)),None)
                         expected_raw = {a['name']:a['raw_data'] for a in unit['groups']} if unit else {}
                         assert {labels[k]:v for k,v in row['raw_data'].items()} == expected_raw
+                        if unit:
+                            assert [a['name'] for a in sheet['arms'] if a['name'] in expected_raw] == [a['name'] for a in unit['groups']]
                         expected_effects = unit['entered_effects'] if unit else {}
                         effects = {}
                         for entry in row['entered_effects']:
@@ -63,5 +64,7 @@ def check():
             reopened = load_project(dest)
             assert reopened.project == document.project and reopened.state == document.state
             assert legacy.read_bytes() == original
+            bundled = load_project(path)
+            assert bundled.project == document.project and bundled.state == document.state
             print(f'| {path.name} | {count} → {len(document.project["sheets"])} | yes |')
 if __name__ == '__main__': check()
