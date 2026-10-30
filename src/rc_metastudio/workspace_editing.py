@@ -23,7 +23,7 @@ from rc_metastudio import r_backend, r_bridge
 from rc_metastudio.meta_globals import RATIO_DATA_TYPES, EVENT_RATES
 from rc_metastudio.ratio_data import RATIO_FIELDS
 
-from rc_metastudio.analysis_dataset import Dataset, Study
+from rc_metastudio.analysis_dataset import Dataset, StudyRow
 from rc_metastudio.analysis_unit import AnalysisUnit, EffectEstimate
 from rc_metastudio.dataset_analysis_domain import (
     BINARY,
@@ -76,8 +76,7 @@ def _effect_value(effect: Mapping[str, object] | EffectEstimate, field: str):
 class WorkspaceEditingContext:
     """Domain values needed to edit one visible workspace."""
 
-    outcome_name: str | None
-    follow_up_name: str | None
+    sheet_id: str | None
     current_groups: tuple[str, ...]
     current_effect: str | None
     data_type: object
@@ -99,10 +98,7 @@ class WorkspaceEditingContext:
 class WorkspaceViewState:
     """Serializable selection and confidence state for the workspace."""
 
-    current_outcome_name: str | None = None
-    current_follow_up_index: int = 0
-    current_groups: list[str] = field(default_factory=list)
-    previous_groups: list[str] = field(default_factory=list)
+    current_sheet_id: str | None = None
     current_effect: str | None = None
     confidence_level: float = 95.0
     confidence_multiplier: float = 1.96
@@ -251,7 +247,7 @@ class WorkspaceEditingService:
     ) -> AppliedWorkspaceEdit:
         if context.data_type in RATIO_DATA_TYPES and target.column in context.outcome_columns:
             return self._edit_ratio_input(dataset, study, target, context, value)
-        if context.outcome_name is not None and target.column in context.raw_columns:
+        if context.sheet_id is not None and target.column in context.raw_columns:
             return self._edit_raw_data(dataset, study, target, context, value, recalculate)
         if target.column in context.outcome_columns:
             return self._edit_outcome(dataset, study, target, context, value, import_csv)
@@ -276,11 +272,11 @@ class WorkspaceEditingService:
         return AppliedWorkspaceEdit()
 
     @staticmethod
-    def _edit_inclusion(study: Study, value: object) -> AppliedWorkspaceEdit:
+    def _edit_inclusion(study: StudyRow, value: object) -> AppliedWorkspaceEdit:
         included, valid = WorkspaceEditingService._parse_inclusion(value)
         if not valid:
             return AppliedWorkspaceEdit(
-                error="Study inclusion must be checked or unchecked."
+                error="StudyRow inclusion must be checked or unchecked."
             )
         study.include = included
         study.manually_excluded = not included
@@ -298,7 +294,7 @@ class WorkspaceEditingService:
     ) -> None:
         if (
             not result.applied
-            or context.outcome_name is None
+            or context.sheet_id is None
             or context.data_type == DIAGNOSTIC
             or target.column == context.include_column
             or (import_csv and not raw_data_is_empty(self._raw_data(dataset, study, context)))
@@ -339,13 +335,13 @@ class WorkspaceEditingService:
         context: WorkspaceEditingContext,
         value: object,
         allow_empty_names: bool,
-    ) -> Study | None:
+    ) -> StudyRow | None:
         self._last_error = None
         if target.row >= len(dataset):
             return self._new_study_for_edit(
                 dataset, target, context, value, allow_empty_names
             )
-        study = dataset.studies[target.row]
+        study = dataset.sheet(context.sheet_id).rows[target.row]
         if self._edit_requires_name(study, target, context, value, allow_empty_names):
             self._last_error = "Please enter a study name before entering study data."
             return None
@@ -353,7 +349,7 @@ class WorkspaceEditingService:
 
     def _new_study_for_edit(
         self, dataset, target, context, value, allow_empty_names
-    ) -> Study | None:
+    ) -> StudyRow | None:
         if target.column != context.name_column:
             self._last_error = "Please enter a study name before entering study data."
             return None
@@ -364,14 +360,14 @@ class WorkspaceEditingService:
                 self._last_error = str(error)
                 return None
         while len(dataset) <= target.row:
-            dataset.add_study(Study(dataset.max_study_id() + 1))
-        return dataset.studies[target.row]
+            dataset.add_study(StudyRow(dataset.max_study_id() + 1))
+        return dataset.sheet(context.sheet_id).rows[target.row]
 
     @staticmethod
     def _edit_requires_name(study, target, context, value, allow_empty_names):
         return (
             not allow_empty_names
-            and not study.name.strip()
+            and not study.label.strip()
             and WorkspaceEditingService._requires_named_study(target, context, value)
         )
 
@@ -381,7 +377,7 @@ class WorkspaceEditingService:
     ) -> bool:
         if target.column in (context.name_column, context.year_column):
             return False
-        if context.outcome_name is not None and target.column in context.raw_columns:
+        if context.sheet_id is not None and target.column in context.raw_columns:
             return not qt_text.is_blank(value)
         if target.column in context.outcome_columns:
             return not qt_text.is_blank(value)
@@ -390,7 +386,7 @@ class WorkspaceEditingService:
     def _edit_study_name(
         self,
         dataset: Dataset,
-        study: Study,
+        study: StudyRow,
         target: WorkspaceEditTarget,
         context: WorkspaceEditingContext,
         value: object,
@@ -405,23 +401,23 @@ class WorkspaceEditingService:
             except ValueError as error:
                 return AppliedWorkspaceEdit(error=str(error))
         existing_names = [
-            name_validation.normalize_name(existing.name)
-            for existing in dataset.studies
+            name_validation.normalize_name(existing.label)
+            for existing in dataset.sheet(context.sheet_id).rows
             if existing is not study
         ]
         if name in existing_names:
             return AppliedWorkspaceEdit(error="Duplicate study names not allowed")
         added_study_id = None
         if append_blank_study and name != "":
-            new_study = Study(dataset.max_study_id() + 1)
+            new_study = StudyRow(dataset.max_study_id() + 1)
             new_study.include = False
             dataset.add_study(new_study)
             added_study_id = int(new_study.id)
-        study.name = name
+        study.label = name
         return AppliedWorkspaceEdit(added_study_id=added_study_id)
 
     @staticmethod
-    def _edit_year(study: Study, value: object) -> AppliedWorkspaceEdit:
+    def _edit_year(study: StudyRow, value: object) -> AppliedWorkspaceEdit:
         text = qt_text.to_native_text(value)
         if not qt_text.is_blank(text) and not is_an_int(text):
             return AppliedWorkspaceEdit(error="Years need to be integers.")
@@ -431,26 +427,16 @@ class WorkspaceEditingService:
             return AppliedWorkspaceEdit(error="Years need to be integers.")
         return AppliedWorkspaceEdit()
 
-    def _analysis_unit(self, dataset: Dataset, study: Study, context: WorkspaceEditingContext) -> AnalysisUnit:
-        if context.outcome_name is None or context.follow_up_name is None:
-            raise ValueError("an outcome and follow-up are required for analysis edits")
-        from rc_metastudio.dataset_analysis_domain import ensure_analysis_unit
+    def _analysis_unit(self, dataset, study, context):
+        return study.analysis_unit
 
-        return ensure_analysis_unit(
-            dataset,
-            study,
-            context.outcome_name,
-            context.follow_up_name,
-            context.current_groups,
-        )
-
-    def _raw_data(self, dataset: Dataset, study: Study, context: WorkspaceEditingContext):
+    def _raw_data(self, dataset: Dataset, study: StudyRow, context: WorkspaceEditingContext):
         return self._analysis_unit(dataset, study, context).get_raw_data_for_groups(
             context.current_groups
         )
 
     def _verify_raw_data(
-        self, dataset: Dataset, study: Study, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object
+        self, dataset: Dataset, study: StudyRow, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object
     ) -> str | None:
         text, numeric_valid = qt_text.normalize_decimal_text(value)
         if not numeric_valid:
@@ -543,7 +529,7 @@ class WorkspaceEditingService:
         return None
 
     def _verify_outcome_data(
-        self, dataset: Dataset, study: Study, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object, import_csv: bool
+        self, dataset: Dataset, study: StudyRow, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object, import_csv: bool
     ) -> str | None:
         text, numeric_valid = qt_text.normalize_decimal_text(value)
         if not numeric_valid:
@@ -610,7 +596,7 @@ class WorkspaceEditingService:
     def _edit_raw_data(
         self,
         dataset: Dataset,
-        study: Study,
+        study: StudyRow,
         target: WorkspaceEditTarget,
         context: WorkspaceEditingContext,
         value: object,
@@ -639,7 +625,7 @@ class WorkspaceEditingService:
         return AppliedWorkspaceEdit()
 
     def _edit_outcome(
-        self, dataset: Dataset, study: Study, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object, import_csv: bool
+        self, dataset: Dataset, study: StudyRow, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object, import_csv: bool
     ) -> AppliedWorkspaceEdit:
         error = self._verify_outcome_data(dataset, study, target, context, value, import_csv)
         if error:
@@ -720,7 +706,7 @@ class WorkspaceEditingService:
             entered.estimate, entered.lower, entered.upper, se,
         )
 
-    def _edit_covariate(self, study: Study, context: WorkspaceEditingContext, value: object) -> AppliedWorkspaceEdit:
+    def _edit_covariate(self, study: StudyRow, context: WorkspaceEditingContext, value: object) -> AppliedWorkspaceEdit:
         if context.covariate_name is None:
             return AppliedWorkspaceEdit(error="Cannot edit that cell.")
         if context.covariate_type == FACTOR:
@@ -754,9 +740,9 @@ class WorkspaceEditingService:
         *,
         update_inclusion: bool = True,
     ) -> None:
-        if context.outcome_name is None or context.follow_up_name is None:
+        if context.sheet_id is None or context.sheet_id is None:
             return
-        study = dataset.studies[study_index]
+        study = dataset.sheet(context.sheet_id).rows[study_index]
         unit = self._analysis_unit(dataset, study, context)
         raw_data = self._raw_data(dataset, study, context)
         if context.data_type in RATIO_DATA_TYPES:

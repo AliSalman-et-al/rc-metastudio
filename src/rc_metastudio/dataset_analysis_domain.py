@@ -8,7 +8,7 @@ from rc_metastudio.meta_globals import RATIO_DATA_TYPES
 from collections.abc import Callable, Mapping, Sequence
 from typing import Protocol, TypeAlias, runtime_checkable
 
-from rc_metastudio.analysis_dataset import Dataset, Study
+from rc_metastudio.analysis_dataset import Dataset, StudyRow
 from rc_metastudio.analysis_unit import AnalysisUnit
 from rc_metastudio.meta_globals import (
     BINARY,
@@ -42,35 +42,8 @@ def _checked_bridge(value: object) -> ScaleBridge:
     return value
 
 
-def ensure_analysis_unit(
-    dataset: Dataset,
-    study: Study,
-    outcome: str,
-    follow_up: str,
-    groups: Sequence[str],
-) -> AnalysisUnit:
-    """Return the selected unit, creating missing structure for new studies."""
-    try:
-        analysis_unit = study.get_analysis_unit(outcome, follow_up)
-    except KeyError:
-        study.add_outcome(
-            dataset.get_outcome_obj(outcome),
-            group_names=dataset.get_group_names(),
-            follow_up_id=dataset.get_follow_up_stable_id(outcome, follow_up),
-        )
-        try:
-            analysis_unit = study.get_analysis_unit(outcome, follow_up)
-        except KeyError:
-            study.add_outcome_at_follow_up(
-                dataset.get_outcome_obj(outcome),
-                follow_up,
-                follow_up_id=dataset.get_follow_up_stable_id(outcome, follow_up),
-            )
-            analysis_unit = study.get_analysis_unit(outcome, follow_up)
-    for group in groups:
-        if group not in analysis_unit.get_group_names():
-            analysis_unit.add_group(group)
-    return analysis_unit
+def ensure_analysis_unit(dataset, study, *args):
+    return study.analysis_unit
 
 
 def make_display_scale_converter(
@@ -213,7 +186,7 @@ def has_entered_data(analysis_unit: AnalysisUnit) -> bool:
     )
 
 
-def has_study_entered_data(study: Study) -> bool:
+def has_study_entered_data(study: StudyRow) -> bool:
     if study.name.strip():
         return True
     if study.year not in EMPTY_VALS and study.year != 0:
@@ -228,7 +201,7 @@ def has_study_entered_data(study: Study) -> bool:
 
 
 def included_studies_have_raw_data(
-    studies: Sequence[Study],
+    studies: Sequence[StudyRow],
     raw_data_for_study: Callable[[int, bool], Sequence[object]],
     one_arm: bool,
 ) -> bool:
@@ -241,7 +214,7 @@ def included_studies_have_raw_data(
 
 
 def included_studies_have_effects(
-    studies: Sequence[Study],
+    studies: Sequence[StudyRow],
     effect_for_study: Callable[[int], Sequence[object]],
 ) -> bool:
     return all(

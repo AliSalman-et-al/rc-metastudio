@@ -255,8 +255,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.dataset_file_lbl.deleteLater()
         self.dataset_file_lbl = dataset_file_label
         self.gridLayout.setHorizontalSpacing(8)
-        self.current_outcome_label.setTextFormat(Qt.TextFormat.PlainText)
-        self.current_follow_up_label.setTextFormat(Qt.TextFormat.PlainText)
         self.workspace_hint = QLabel(self)
         qt_layout.configure_context_label(self.workspace_hint)
         self.workspace_hint.setTextFormat(Qt.TextFormat.PlainText)
@@ -270,13 +268,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         help_action = QAction("Quick start and shortcuts…", self)
         help_action.triggered.connect(app_error_handler.safe_slot(self.show_quick_start, parent=self))
         self.menuHelp.insertAction(self.action_about_legal, help_action)
-        qt_layout.configure_navigation_tool_buttons(
-            (
-                self.nav_left_btn,
-                self.nav_right_btn,
-                self.nav_add_btn,
-            )
-        )
         adaptive_window.register_adaptive_window(self, adaptive_window.WindowRole.MAIN)
         table_view = dataset_table_view.DatasetTableView(self.nav_frame)
         self.verticalLayout.replaceWidget(self.tableView, table_view)
@@ -296,17 +287,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.setModel(self.model)
         self.tableView.setItemDelegate(dataset_table_view.StudyDelegate(self.tableView))
 
-        for label, dimension in (("Outcomes", "outcome"), ("Follow-ups", "follow-up"), ("Groups", "group")):
-            self.navigation_dimension.addItem(label, dimension)
-        self.navigation_dimension.setMinimumContentsLength(10)
-        self.navigation_dimension.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
-        self.navigation_dimension.currentIndexChanged.connect(lambda _index: self.update_dimension())
-        self.update_dimension()
-        for before, after in zip(
-            (self.analysis_button, self.navigation_dimension, self.nav_left_btn, self.nav_right_btn, self.nav_add_btn),
-            (self.navigation_dimension, self.nav_left_btn, self.nav_right_btn, self.nav_add_btn, self.tableView),
-        ):
-            self.setTabOrder(before, after)
         self._model_signal_connections = []
         self._setup_connections()
         self._configure_standard_shortcuts()
@@ -434,30 +414,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             wizard_data = wizard.get_results()
             self._handle_wizard_results(wizard_data)
 
-    def new_dataset(
-        self, name=DEFAULT_DATASET_NAME, is_diagnostic=False, use_undo_framework=True
-    ):
-
-        data_model = analysis_dataset.Dataset(title=name, is_diagnostic=is_diagnostic)
-        # A new workspace needs one durable study for outcome setup. The table
-        # model's editable trailing row remains presentation-only.
-        data_model.add_study(analysis_dataset.Study(data_model.max_study_id() + 1))
-        existing_model = getattr(self, "model", None)
-        if existing_model is not None:
-            if use_undo_framework:
-                self._commit_model_operation(lambda: self.set_model(data_model))
-            else:  # CSV import manages its own undo boundary.
-                self.set_model(data_model)
-        else:
-            self.model = dataset_table_model.DatasetTableModel(dataset=data_model)
-            self.disable_menu_options_that_require_dataset()
-            self.workspace.update_live_state(
-                project_adapter.RuntimeProject(
-                    dataset=self.model.dataset,
-                    model_state=self.model.get_state(),
-                    restored_selection=False,
-                )
-            )
+    def new_dataset(self, name=DEFAULT_DATASET_NAME, is_diagnostic=False, use_undo_framework=True):
+        data_model = analysis_dataset.Dataset(title=name)
+        self.model = dataset_table_model.DatasetTableModel(dataset=data_model)
+        self.workspace.update_live_state(project_adapter.RuntimeProject(data_model, self.model.get_state(), False))
         self.out_path = None
         self._notify_user_that_data_is_unsaved()
 
@@ -469,7 +429,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         name = os.path.basename(path) if path else "Untitled dataset"
         dirty = self.workspace.is_dirty
         self.setWindowTitle(f"{name}{' *' if dirty else ''} — RC MetaStudio")
-        empty = not self.model.dataset.get_outcome_names()
+        empty = not [s.name for s in self.model.dataset.sheets]
         status = state or ("Ready to create or open a dataset" if empty and not dirty and not path else "Unsaved changes" if dirty else "Ready")
         self.dataset_file_lbl.setText(f"{status} · {name}")
         self.dataset_file_lbl.setToolTip(path or "Save the dataset to choose a project file.")
@@ -493,7 +453,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 hint += "\nChecked studies are included. Gold cells show effect estimates; click a study row to edit its inputs."
                 if not self.action_go.isEnabled():
                     hint += "\nInclude studies with complete data or entered effects to enable analyses. Start with study names, then enter data or use the row calculator."
-                if not self.model.dataset.covariates:
+                if not (self.model.current_sheet.covariates if self.model.current_sheet else []):
                     hint += "\nAdd a covariate (Dataset → Add covariate) for meta-regression; use a Category covariate for subgroup analysis."
                 self.workspace_hint.setText(hint)
             self.start_page.setVisible(not enable)
@@ -503,7 +463,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         """Enables action_meta_regression if analysis can run and covariates exist."""
         if dataset_analysis_enabled is None:
             dataset_analysis_enabled = self.action_go.isEnabled()
-        has_covariates = bool(self.model and self.model.dataset.covariates)
+        has_covariates = bool(self.model and (self.model.current_sheet.covariates if self.model.current_sheet else []))
         self.action_meta_regression.setEnabled(
             dataset_analysis_enabled and has_covariates
         )
@@ -519,7 +479,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.model
             and any(
                 cov.get_data_type() == meta_globals.FACTOR
-                for cov in self.model.dataset.covariates
+                for cov in (self.model.current_sheet.covariates if self.model.current_sheet else [])
             )
         )
         self.action_subgroup_ma.setEnabled(
@@ -670,16 +630,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             )
         )
         if menu_actions:
-            self.nav_add_btn.pressed.connect(
-                app_error_handler.safe_slot(self.add_new, parent=self)
-            )
-            self.nav_right_btn.pressed.connect(
-                app_error_handler.safe_slot(self.next, parent=self)
-            )
-            self.nav_left_btn.pressed.connect(
-                app_error_handler.safe_slot(self.previous, parent=self)
-            )
-
             _connect_action(self.action_save, self.save)
             _connect_action(self.action_save_as, self.save_as)
             _connect_action(self.action_open, self.open)
@@ -1412,32 +1362,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._update_navigation_controls()
 
     def _update_navigation_controls(self):
-        """Keep cyclic navigation affordances honest for the active dimension."""
-        self._update_workspace_guidance()
-        can_previous, can_next = self._navigation_availability()
-        dimension = self.current_dimension
-        for direction, button, can_navigate in (
-            ("previous", self.nav_left_btn, can_previous),
-            ("next", self.nav_right_btn, can_next),
-        ):
-            if can_navigate:
-                button.setEnabled(True)
-                button.setToolTip(f"{direction.title()} {dimension}")
-                button.setStatusTip(f"Show the {direction} {dimension}.")
-                button.setAccessibleDescription(
-                    f"Show the {direction} {dimension}."
-                )
-            else:
-                unavailable = f"No {direction} {dimension} available."
-                button.setEnabled(False)
-                button.setToolTip(unavailable)
-                button.setStatusTip(unavailable)
-                button.setAccessibleDescription(unavailable)
+        pass
 
     def _navigation_availability(self):
         dimension = self.current_dimension
         if dimension == "outcome":
-            item_count = len(self.model.dataset.get_outcome_names())
+            item_count = len([s.name for s in self.model.dataset.sheets])
             can_navigate = item_count > 1
             return can_navigate, can_navigate
         elif dimension == "follow-up":
@@ -1529,7 +1459,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._update_navigation_controls()
 
     def update_follow_up_label(self):
-        self.current_follow_up_label.setText(self.model.get_current_follow_up_name())
+        pass
 
     def open(self, file_path=None, raise_on_error=False):
         """Open a validated structured project and restore its durable working state.
@@ -1606,7 +1536,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model = model
         self.tableView.restore_model(model)
         self._setup_connections(menu_actions=False)
-        if len(model.dataset) >= 2:
+        if len(model.get_studies(False)) >= 2:
             self.enable_menu_options_that_require_dataset()
         else:
             self.disable_menu_options_that_require_dataset()
@@ -1796,49 +1726,18 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         )
 
     def model_updated(self, preserve_selection=False, recalculate_outcomes=True):
-        """Call me when the model is changed."""
-        if preserve_selection:
-            group_names = self.model.dataset.get_group_names()
-            if self.model.current_groups:
-                self.model.group_index_a = group_names.index(
-                    self.model.current_groups[0]
-                )
-                if len(self.model.current_groups) > 1:
-                    self.model.group_index_b = group_names.index(
-                        self.model.current_groups[1]
-                    )
-                else:
-                    self.model.group_index_b = self.model.group_index_a
-            self.model.previous_groups = list(self.model.current_groups)
-        else:
-            self.model.update_current_group_names()
-            self.model.update_current_outcome()
-            self.model.update_current_time_points()
-
-        if recalculate_outcomes and self.model.current_outcome_name is not None:
-            self.model.hydrate_derived_previews()
-
-        # The retired model remains connected to its slots, so reconnect the
-        # view but not menu actions, which would otherwise accumulate handlers.
+        if self.model.current_sheet:
+            self.model.set_current_sheet(self.model.dataset.sheets[0].id)
+            if recalculate_outcomes:
+                self.model.hydrate_derived_previews()
         self._setup_connections(menu_actions=False)
         self.tableView.synchronize_column_widths()
-        self.update_outcome_lbl()
-        self.update_follow_up_label()
-
-        current_data_type = self.tableView.model().get_current_outcome_type(
-            get_str=False
-        )
-        if self.metric_menu_is_set_for != current_data_type:
-            self.populate_metrics_menu(
-                metric_to_check=self.tableView.model().current_effect
-            )
-
+        self.populate_metrics_menu(metric_to_check=self.model.current_effect)
         self.model.reset_model()
         self._update_confidence_level_label()
-        self._update_navigation_controls()
 
     def update_outcome_lbl(self):
-        self.current_outcome_label.setText(str(self.model.current_outcome_name))
+        pass
 
     def quit(self):
         self.close()

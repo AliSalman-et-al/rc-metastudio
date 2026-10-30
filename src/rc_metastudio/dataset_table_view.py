@@ -34,7 +34,7 @@ from rc_metastudio import qt_layout
 from rc_metastudio import meta_globals
 from rc_metastudio import qt_text
 from rc_metastudio import tabular_data
-from rc_metastudio.analysis_dataset import Study
+from rc_metastudio.analysis_dataset import StudyRow
 from rc_metastudio.meta_globals import (
     BINARY_ONE_ARM_METRICS,
     CONTINUOUS,
@@ -108,8 +108,8 @@ class DatasetTableView(QtWidgets.QTableView):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self._batch_editing = False
-        self.setAccessibleName("Study data")
-        self.setAccessibleDescription("Study rows and input columns. Italic effect cells show estimates and intervals; gold marks the effect columns. Press Enter to edit a cell or use the row calculator. Ctrl+Tab leaves the grid.")
+        self.setAccessibleName("StudyRow data")
+        self.setAccessibleDescription("StudyRow rows and input columns. Italic effect cells show estimates and intervals; gold marks the effect columns. Press Enter to edit a cell or use the row calculator. Ctrl+Tab leaves the grid.")
 
         # the main gui is assumed to be the form
         # that owns this table view, i.e., the 'main'
@@ -253,17 +253,17 @@ class DatasetTableView(QtWidgets.QTableView):
             study_index = self.rowAt(event.y())
 
             # sense to provide a context-menu
-            if not 0 <= study_index < len(self.model().dataset.studies):
+            if not 0 <= study_index < len(self.model().current_sheet.rows):
                 return None
 
             study = self.model()._study_for_row(study_index)
-            study_index = self.model().dataset.studies.index(study)
+            study_index = self.model().current_sheet.rows.index(study)
             delete_action = QAction('Delete study “%s”…' % study.name, self)
 
             def delete_study():
                 answer = QMessageBox.question(
                     self,
-                    "Delete Study",
+                    "Delete StudyRow",
                     "Delete study %s?" % study.name,
                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                     QMessageBox.StandardButton.No,
@@ -524,7 +524,7 @@ class DatasetTableView(QtWidgets.QTableView):
         self._enable_analysis_menus_if_appropriate()
 
     def row_header_clicked(self, row):
-        if row > len(self.model().dataset) - 1:
+        if row > len(self.model().get_studies(False)) - 1:
             return
 
         # Prevent row-header signals while the edit dialog mutates row state.
@@ -572,7 +572,7 @@ class DatasetTableView(QtWidgets.QTableView):
                     parent=self,
                 )
             study_name = _to_text(self.model().data(self.model().index(row, self.model().NAME)))
-            form.setWindowTitle(f"Study data — {study_name}")
+            form.setWindowTitle(f"StudyRow data — {study_name}")
             if form.exec():
                 self.model().set_current_analysis_unit_for_study(
                     study_index, form.analysis_unit
@@ -624,7 +624,7 @@ class DatasetTableView(QtWidgets.QTableView):
         """
         original_metric = self.model().current_effect
 
-        if len(self.model().dataset) > 2:
+        if len(self.model().get_studies(False)) > 2:
             data_type = self.model().get_current_outcome_type()
             if data_type == "binary" or data_type == "continuous":
                 default_metric = {
@@ -765,7 +765,7 @@ class DatasetTableView(QtWidgets.QTableView):
         candidate.set_state(copy.deepcopy(model.get_state()))
         required_rows = origin_row + len(source_content)
         while candidate.rowCount() < required_rows:
-            candidate.dataset.add_study(Study(candidate.dataset.max_study_id() + 1))
+            candidate.dataset.add_study(StudyRow(candidate.dataset.max_study_id() + 1))
             candidate.reset_model()
         try:
             columns = self._paste_columns(origin_col)
@@ -834,7 +834,7 @@ class DatasetTableView(QtWidgets.QTableView):
     def _enable_analysis_menus_if_appropriate(self):
 
         if (
-            len(self.model().dataset) >= 2
+            len(self.model().get_studies(False)) >= 2
             and self._get_number_of_included_studies() >= 2
         ):
             self._main_gui().enable_menu_options_that_require_dataset()
@@ -842,7 +842,7 @@ class DatasetTableView(QtWidgets.QTableView):
             self._main_gui().disable_menu_options_that_require_dataset()
 
     def _get_number_of_included_studies(self):
-        studies = self.model().dataset.studies
+        studies = self.model().current_sheet.rows
         num_included = 0
         for study in studies:
             if study.include and (not study.manually_excluded):
@@ -912,18 +912,18 @@ class DatasetTableView(QtWidgets.QTableView):
         add them.
         """
         origin_row = upper_left_index.row()
-        num_existing_studies = len(self.model().dataset)
+        num_existing_studies = len(self.model().get_studies(False))
 
         num_to_add = len(content) - num_existing_studies - origin_row
 
         for _ in range(num_to_add):
             study_id = self.model().dataset.max_study_id() + 1
-            new_study = Study(study_id)
+            new_study = StudyRow(study_id)
             self.model().dataset.add_study(new_study)
 
         # now append a blank study if studies were added.
         if num_to_add > 0:
-            new_study = Study(self.model().dataset.max_study_id() + 1)
+            new_study = StudyRow(self.model().dataset.max_study_id() + 1)
             # Newly appended placeholder studies remain excluded until populated.
             new_study.include = False
             self.model().dataset.add_study(new_study)

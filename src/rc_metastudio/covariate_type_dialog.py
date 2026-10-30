@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QDialog, QMessageBox
 from rc_metastudio.meta_globals import CONTINUOUS, COV_INTS_TO_STRS, FACTOR
 from rc_metastudio import app_error_handler
 from rc_metastudio import adaptive_window
-from rc_metastudio.analysis_dataset import Covariate
+
 from rc_metastudio import qt_layout
 from rc_metastudio import qt_text
 

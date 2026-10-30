@@ -13,7 +13,9 @@ from rc_metastudio import analysis_identity, name_validation, qt_text, workspace
 from rc_metastudio.meta_globals import TIME_TO_EVENT, EVENT_RATES, RATIO_DATA_TYPES
 from rc_metastudio.ratio_data import RATIO_FIELDS, RATIO_HEADERS
 
-from rc_metastudio.analysis_dataset import Covariate, Dataset, Outcome, Study
+from rc_metastudio.analysis_dataset import Dataset, StudyRow
+from rc_metastudio.analysis_unit import AnalysisUnit
+import uuid
 from rc_metastudio.dataset_analysis_domain import (
     ensure_analysis_unit,
     has_study_entered_data,
@@ -171,7 +173,7 @@ class WorkspaceEdit:
 
 @dataclass(frozen=True)
 class _EditTarget:
-    study: Study
+    study: StudyRow
     column: int
     old_value: object
     data_type: str | None
@@ -192,15 +194,36 @@ class DatasetTableModel(QAbstractTableModel):
 
     headers = ["include", "study name", "year"]
 
+    @property
+    def current_sheet_id(self):
+        return self.view_state.current_sheet_id
+
+    @current_sheet_id.setter
+    def current_sheet_id(self, value):
+        self.view_state.current_sheet_id = value
+
+    @property
+    def current_sheet(self):
+        return self.dataset.sheet(self.current_sheet_id) if self.current_sheet_id else None
+
+    def set_current_sheet(self, sheet_id):
+        self.beginResetModel()
+        self.current_sheet_id = sheet_id
+        self._blank_study = None
+        self._display_studies = list(self.current_sheet.rows) if self.current_sheet else []
+        self.update_column_indices()
+        self.update_current_group_effect()
+        self.endResetModel()
+
     dataset: Dataset
 
     @property
     def current_outcome_name(self):
-        return self.view_state.current_outcome_name
+        return self.current_sheet.name if self.current_sheet else None
 
-    @current_outcome_name.setter
-    def current_outcome_name(self, value):
-        self.view_state.current_outcome_name = value
+    @property
+    def current_outcome_name(self):
+        return self.current_sheet.name if self.current_sheet else None
 
     @property
     def current_follow_up_index(self):
@@ -212,11 +235,11 @@ class DatasetTableModel(QAbstractTableModel):
 
     @property
     def current_groups(self):
-        return self.view_state.current_groups
+        return [arm.name for arm in self.current_sheet.arms] if self.current_sheet else []
 
-    @current_groups.setter
-    def current_groups(self, value):
-        self.view_state.current_groups = value
+    @property
+    def current_groups(self):
+        return [arm.name for arm in self.current_sheet.arms] if self.current_sheet else []
 
     @property
     def previous_groups(self):
@@ -263,16 +286,14 @@ class DatasetTableModel(QAbstractTableModel):
         self.dataset = dataset if dataset is not None else Dataset()
         self.analysis_source_path: str | None = None
 
-        self._blank_study: Study | None = None
+        self._blank_study: StudyRow | None = None
         self.study_auto_added = None
-        self._display_studies = list(self.dataset.studies)
-        if add_blank_study:
-            self._blank_study = Study(self.max_study_id() + 1, include=False)
+        self._display_studies = list(self.current_sheet.rows) if self.current_sheet else []
+        if add_blank_study and self.current_sheet:
+            self._blank_study = StudyRow(uuid.uuid4().hex, "", AnalysisUnit(self.current_sheet, arm_names=self.current_groups, arm_stable_ids=[a.id for a in self.current_sheet.arms]), include=False)
             self.study_auto_added = self._blank_study.id
             self._display_studies.append(self._blank_study)
 
-        self.current_outcome_name = None
-        self.current_follow_up_index = 0
 
         self.group_index_a = 0
         self.group_index_b = 1
@@ -314,7 +335,7 @@ class DatasetTableModel(QAbstractTableModel):
         return study is self._blank_study
 
     def _sync_display_studies(self):
-        canonical = list(self.dataset.studies)
+        canonical = list(self.current_sheet.rows) if self.current_sheet else []
         canonical_by_id = {study.id: study for study in canonical}
         visible = []
         seen = set()
@@ -332,37 +353,13 @@ class DatasetTableModel(QAbstractTableModel):
         self.current_effect = metric
 
     def update_current_outcome(self):
-        outcome_names = self.dataset.get_outcome_names()
-        self.current_outcome_name = outcome_names[0] if len(outcome_names) > 0 else None
-        self.reset_model()
+        self.set_current_sheet(self.dataset.sheets[0].id if self.dataset.sheets else None)
 
     def update_current_time_points(self):
-        if self.current_outcome_name is not None:
-            self.current_follow_up_index = list(
-                self.dataset.follow_ups_by_outcome[self.current_outcome_name].keys()
-            )[0]
-        else:
-            self.current_follow_up_index = 0
-        self.reset_model()
+        pass
 
     def update_current_group_names(self):
-        group_names = self.dataset.get_group_names()
-        n_groups = len(group_names)
-        if n_groups > 1:
-            self.group_index_a = self.group_index_a % n_groups
-            self.group_index_b = self.group_index_b % n_groups
-            while self.group_index_a == self.group_index_b:
-                self._next_group_indices(group_names)
-            self.current_groups = [
-                group_names[self.group_index_a],
-                group_names[self.group_index_b],
-            ]
-        else:
-            self.current_groups = group_names or default_group_names(
-                DIAGNOSTIC if self.is_diagnostic() else self.get_current_outcome_type(get_str=False),
-                self.get_current_outcome_subtype())
-        self.previous_groups = self.current_groups
-        self.reset_model()
+        pass
 
     def update_column_indices(self):
         current_data_type = self.get_current_outcome_type()
@@ -426,7 +423,7 @@ class DatasetTableModel(QAbstractTableModel):
     def _display_data(self, index, role, study):
         column = index.column()
         if column == self.NAME:
-            return _item_data(_editable_data(study.name))
+            return _item_data(_editable_data(study.label))
         if column == self.YEAR:
             return _item_data("" if study.year in (None, "", 0) else study.year)
         if column in self.RAW_DATA:
@@ -444,8 +441,6 @@ class DatasetTableModel(QAbstractTableModel):
         if self._is_blank_study(study) or self.current_outcome_name is None:
             return _item_data("")
         study = self._study_for_row(index.row())
-        if self.current_outcome_name not in study.analysis_units_by_outcome:
-            return _item_data("")
         raw_data = self.get_current_analysis_unit_for_study(
             study_index=index.row()
         ).get_raw_data_for_groups(self.current_groups)
@@ -546,13 +541,7 @@ class DatasetTableModel(QAbstractTableModel):
             return (None, None, None)
 
     def _outcome_cell_is_available(self, study):
-        if self._is_blank_study(study):
-            return False
-        if self.current_outcome_name is None:
-            return False
-        return self.get_current_follow_up_name() in study.analysis_units_by_outcome.get(
-            self.current_outcome_name, {}
-        )
+        return not self._is_blank_study(study) and self.current_sheet is not None
 
     def _diagnostic_outcome_cell_data(self, unit, source, comparison, outcome_index, role):
         effect = "Spec" if outcome_index >= 3 else "Sens"
@@ -606,7 +595,7 @@ class DatasetTableModel(QAbstractTableModel):
         if role == Qt.ItemDataRole.AccessibleTextRole:
             value = self._display_data(index, Qt.ItemDataRole.DisplayRole, study)
             header = self._horizontal_header_display(index.column())
-            return f"{study.name}, {header}: {value or ''}"
+            return f"{study.label}, {header}: {value or ''}"
         if role == Qt.ItemDataRole.AccessibleDescriptionRole:
             return self._effect_tooltip(index, study) or "Editable study data. Press Enter to edit; use the row calculator for study inputs."
         if role == Qt.ItemDataRole.FontRole and index.column() in self.OUTCOMES and self._study_has_entered_data(index.row()):
@@ -671,8 +660,7 @@ class DatasetTableModel(QAbstractTableModel):
             else None
         )
         return workspace_editing.WorkspaceEditingContext(
-            outcome_name=self.current_outcome_name,
-            follow_up_name=self.get_current_follow_up_name(),
+            sheet_id=self.current_sheet_id,
             current_groups=tuple(self.current_groups),
             current_effect=self.current_effect,
             data_type=self.get_current_outcome_type(get_str=False),
@@ -793,15 +781,15 @@ class DatasetTableModel(QAbstractTableModel):
             return False
         added_study_id = result.added_study_id
         if is_blank_study:
-            added_study_id = int(self.dataset.studies[canonical_row].id)
-            self._blank_study = Study(self.max_study_id() + 1, include=False)
+            added_study_id = self.current_sheet.rows[canonical_row].id
+            self._blank_study = StudyRow(uuid.uuid4().hex, "", AnalysisUnit(self.current_sheet, arm_names=self.current_groups, arm_stable_ids=[a.id for a in self.current_sheet.arms]), include=False)
             self.study_auto_added = self._blank_study.id
         self._sync_display_studies()
         edit = _EditTarget(
             study=(
                 self._study_for_row(index.row())
                 if index.row() < len(self._display_studies)
-                else self.dataset.studies[canonical_row]
+                else self.current_sheet.rows[canonical_row]
             ),
             column=index.column(),
             old_value=old_value,
@@ -828,7 +816,7 @@ class DatasetTableModel(QAbstractTableModel):
                 include=bool(study.include),
                 manually_excluded=bool(study.manually_excluded),
             )
-        canonical_row = self.dataset.studies.index(study) if study is not None else index.row()
+        canonical_row = self.current_sheet.rows.index(study) if study is not None else index.row()
         return self._editing_context(index.column()), old_value, canonical_row, is_blank_study
 
     def _valid_edit_index(self, index):
@@ -1018,10 +1006,10 @@ class DatasetTableModel(QAbstractTableModel):
             return WorkspaceColumnIdentity("fixed", (fixed[section],))
 
         outcome_type = (
-            self.dataset.get_outcome_type(self.current_outcome_name) or "none"
+            self.get_current_outcome_type(False) or "none"
         )
         outcome_subtype = (
-            self.dataset.get_outcome_subtype(self.current_outcome_name) or "none"
+            self.get_current_outcome_subtype() or "none"
         )
         if self.current_outcome_name is not None and section in self.RAW_DATA:
             return WorkspaceColumnIdentity(
@@ -1092,12 +1080,12 @@ class DatasetTableModel(QAbstractTableModel):
             else table_col_index - 3
         )
         try:
-            return self.dataset.covariates[covariate_index]
+            return (self.current_sheet.covariates if self.current_sheet else [])[covariate_index]
         except IndexError:
             return None
 
     def get_covariate_names(self):
-        return [cov.name for cov in self.dataset.covariates]
+        return [cov.name for cov in (self.current_sheet.covariates if self.current_sheet else [])]
 
     def rename_covariate(self, old_cov_name, new_cov_name):
         old_cov_obj = self.dataset.get_covariate(old_cov_name)
@@ -1109,12 +1097,10 @@ class DatasetTableModel(QAbstractTableModel):
         amongst other things (e.g., number of covariates).
         """
         num_cols = 3  # we always show study name and year (and include studies)
-        if len(self.dataset.get_outcome_names()) > 0:
+        if len([s.name for s in self.dataset.sheets]) > 0:
             num_effect_size_fields = 3  # point estimate, low, high
-            outcome_type = self.dataset.get_outcome_type(self.current_outcome_name)
-            outcome_subtype = self.dataset.get_outcome_subtype(
-                self.current_outcome_name
-            )
+            outcome_type = self.get_current_outcome_type(False)
+            outcome_subtype = self.get_current_outcome_subtype()
             if outcome_type in RATIO_DATA_TYPES:
                 num_effect_size_fields = 6 if outcome_type == TIME_TO_EVENT else 8
             if outcome_subtype == "generic_effect":
@@ -1126,7 +1112,7 @@ class DatasetTableModel(QAbstractTableModel):
 
             num_cols += num_effect_size_fields + self.num_data_cols_for_current_unit()
         # now add the covariates (if any)
-        num_cols += len(self.dataset.covariates)
+        num_cols += len((self.current_sheet.covariates if self.current_sheet else []))
         return num_cols
 
     def get_ordered_study_ids(self):
@@ -1188,7 +1174,7 @@ class DatasetTableModel(QAbstractTableModel):
         self.reset_model()
 
     def remove_study(self, an_id):
-        self.dataset.studies.pop(an_id)
+        self.current_sheet.rows.pop(an_id)
         self._sync_display_studies()
         self.reset_model()
 
@@ -1196,7 +1182,7 @@ class DatasetTableModel(QAbstractTableModel):
         return self.dataset.title
 
     def get_next_outcome_name(self):
-        outcomes = self.dataset.get_outcome_names()
+        outcomes = [s.name for s in self.dataset.sheets]
         current_index = outcomes.index(self.current_outcome_name)
         next_outcome = (
             outcomes[0]
@@ -1206,7 +1192,7 @@ class DatasetTableModel(QAbstractTableModel):
         return next_outcome
 
     def get_previous_outcome_name(self):
-        outcomes = self.dataset.get_outcome_names()
+        outcomes = [s.name for s in self.dataset.sheets]
         current_index = outcomes.index(self.current_outcome_name)
         previous_outcome = (
             outcomes[-1] if current_index == 0 else outcomes[current_index - 1]
@@ -1249,13 +1235,7 @@ class DatasetTableModel(QAbstractTableModel):
         self.set_current_follow_up_index(t_point)
 
     def get_current_follow_up_name(self):
-        if len(self.dataset.follow_ups_by_outcome) > 0:
-            try:
-                return self.dataset.follow_ups_by_outcome[self.current_outcome_name][
-                    self.current_follow_up_index
-                ]
-            except (KeyError, TypeError):
-                return None
+        return self.current_sheet_id
 
     def get_follow_up_name_for_t_point(self, t_point):
         return self.dataset.follow_ups_by_outcome[self.current_outcome_name][t_point]
@@ -1321,7 +1301,7 @@ class DatasetTableModel(QAbstractTableModel):
     def outcome_follow_up_has_group(self, outcome, follow_up, group):
         # Dataset structure guarantees the same outcomes and follow-ups for
         # every study, so inspect the first study.
-        analysis_units_by_follow_up = self.dataset.studies[0].analysis_units_by_outcome[
+        analysis_units_by_follow_up = self.current_sheet.rows[0].analysis_units_by_outcome[
             outcome
         ]
 
@@ -1347,7 +1327,7 @@ class DatasetTableModel(QAbstractTableModel):
             confidence_multiplier=self.get_confidence_multiplier(),
         )
         self._display_studies = sorted(
-            self.dataset.studies, key=cmp_to_key(comparator), reverse=reverse
+            self.current_sheet.rows, key=cmp_to_key(comparator), reverse=reverse
         )
         if self._blank_study is not None:
             self._display_studies.append(self._blank_study)
@@ -1383,7 +1363,7 @@ class DatasetTableModel(QAbstractTableModel):
             )
 
         self._display_studies = sorted(
-            self.dataset.studies, key=cmp_to_key(compare), reverse=reverse
+            self.current_sheet.rows, key=cmp_to_key(compare), reverse=reverse
         )
         if self._blank_study is not None:
             self._display_studies.append(self._blank_study)
@@ -1426,34 +1406,21 @@ class DatasetTableModel(QAbstractTableModel):
         """Shuffles studies vector to the order specified by ids"""
         ordered_studies = []
         for an_id in ids:
-            for study in self.dataset.studies:
+            for study in self.current_sheet.rows:
                 if study.id == an_id:
                     ordered_studies.append(study)
                     break
-        self.dataset.studies = ordered_studies
+        self.current_sheet.rows = ordered_studies
         self._display_studies = list(ordered_studies)
         if self._blank_study is not None:
             self._display_studies.append(self._blank_study)
         self.reset_model()
 
     def set_current_outcome(self, outcome_name):
-        previous_effect = self.current_effect
-        self.current_outcome_name = outcome_name
-        self.update_column_indices()
-        self.update_current_group_effect()
-        available_effects = {
-            BINARY: BINARY_METRIC_NAMES,
-            CONTINUOUS: CONTINUOUS_METRIC_NAMES,
-            DIAGNOSTIC: DIAGNOSTIC_METRIC_LABELS,
-            TIME_TO_EVENT: {"HR": "Hazard ratio"}, EVENT_RATES: {"IRR": "Incidence rate ratio"},
-        }.get(self.get_current_outcome_type(get_str=False))
-        if available_effects is not None and previous_effect in available_effects:
-            self.current_effect = previous_effect
-        self.outcomeChanged.emit()
-        self.reset_model()
+        self.set_current_sheet(next(s.id for s in self.dataset.sheets if s.name == outcome_name))
 
     def update_current_group_effect(self):
-        outcome_type = self.dataset.get_outcome_type(self.current_outcome_name)
+        outcome_type = self.get_current_outcome_type(False)
         if outcome_type in RATIO_DATA_TYPES:
             self.current_effect = "HR" if outcome_type == TIME_TO_EVENT else "IRR"
         elif outcome_type == BINARY:
@@ -1466,7 +1433,7 @@ class DatasetTableModel(QAbstractTableModel):
             self.current_effect = None
 
     def max_study_id(self):
-        return self.dataset.max_study_id()
+        return 0
 
     def num_data_cols_for_current_unit(self):
         """Returns the number of columns needed to display the raw data
@@ -1474,8 +1441,8 @@ class DatasetTableModel(QAbstractTableModel):
 
         Note again that outcome names are necessarily unique!
         """
-        data_type = self.dataset.get_outcome_type(self.current_outcome_name)
-        sub_type = self.dataset.get_outcome_subtype(self.current_outcome_name)
+        data_type = self.get_current_outcome_type(False)
+        sub_type = self.get_current_outcome_subtype()
         if data_type == TIME_TO_EVENT:
             return 0
         if data_type == EVENT_RATES:
@@ -1491,72 +1458,23 @@ class DatasetTableModel(QAbstractTableModel):
                 return 6
 
     def get_current_outcome_type(self, get_str=True):
-        """Returns the type of the currently displayed (or 'active') outcome (e.g., binary)."""
-        return self.dataset.get_outcome_type(
-            self.current_outcome_name, get_string=get_str
-        )
+        value = self.current_sheet.data_type if self.current_sheet else None
+        return {0:'binary',1:'continuous',2:'diagnostic',5:'time_to_event',6:'event_rates'}.get(value) if get_str else value
 
     def get_outcome_type(self, outcome, get_str=True):
         return self.dataset.get_outcome_type(outcome, get_string=get_str)
 
     def get_current_outcome_subtype(self):
-        return self.dataset.get_outcome_subtype(self.current_outcome_name)
+        return self.current_sheet.sub_type if self.current_sheet else None
 
     def get_state(self):
-        return {
-            "NAME": self.NAME,
-            "YEAR": self.YEAR,
-            "RAW_DATA": self.RAW_DATA,
-            "OUTCOMES": self.OUTCOMES,
-            "HEADERS": self.headers,
-            "current_outcome_name": self.current_outcome_name,
-            "current_follow_up_index": self.current_follow_up_index,
-            "current_groups": self.current_groups,
-            "current_effect": self.current_effect,
-            "study_auto_added": self.study_auto_added,
-            "confidence_level": self.confidence_level,
-        }
+        return {'current_sheet_id': self.current_sheet_id}
 
     def is_diagnostic(self):
-        """Return whether the dataset contains diagnostic outcomes."""
-        return self.dataset.is_diagnostic
+        return self.get_current_outcome_type(False) == DIAGNOSTIC
 
     def set_state(self, state_dict):
-        """Restore the persisted table state through the supported fields only."""
-        restored_attributes = {
-            "NAME": "NAME",
-            "YEAR": "YEAR",
-            "RAW_DATA": "RAW_DATA",
-            "OUTCOMES": "OUTCOMES",
-            "HEADERS": "headers",
-            "current_outcome_name": "current_outcome_name",
-            "current_follow_up_index": "current_follow_up_index",
-            "current_groups": "current_groups",
-            "current_effect": "current_effect",
-            "study_auto_added": "study_auto_added",
-        }
-        unknown_fields = (
-            set(state_dict) - set(restored_attributes) - {"confidence_level"}
-        )
-        if unknown_fields:
-            names = ", ".join(sorted(unknown_fields))
-            raise ValueError(f"Unsupported table state field(s): {names}")
-
-        for state_name, attribute_name in restored_attributes.items():
-            if state_name in state_dict:
-                setattr(self, attribute_name, state_dict[state_name])
-
-        self.set_confidence_level(
-            state_dict.get("confidence_level", DEFAULT_CONFIDENCE_LEVEL)
-        )
-
-        # Signals emitted by reset_model immediately query visible cells. Keep
-        # the column schema synchronized with the restored outcome before that
-        # reset so a continuous project cannot momentarily use the previous
-        # binary or diagnostic outcome indices.
-        self.update_column_indices()
-        self._sync_display_studies()
-        self.reset_model()
+        self.set_current_sheet(self.dataset.sheets[0].id if self.dataset.sheets else None)
 
     def raw_data_is_complete_for_study(self, study_index, first_arm_only=False):
         return raw_data_is_complete(
@@ -1589,7 +1507,7 @@ class DatasetTableModel(QAbstractTableModel):
         data_type = self.get_current_outcome_type(get_str=False)
         per_group_raw_data_size = 2 if data_type == BINARY else 3
         arms_have_data = [False, False]
-        for study_index in range(len(self.dataset.studies)):
+        for study_index in range(len(self.current_sheet.rows)):
             current_raw_data = self._get_canonical_raw_data_for_study(study_index)
             for arm, start in enumerate((0, per_group_raw_data_size)):
                 arms_have_data[arm] |= any(
@@ -1599,7 +1517,7 @@ class DatasetTableModel(QAbstractTableModel):
         return arms_have_data[0] != arms_have_data[1]
 
     def try_to_update_outcomes(self):
-        for study_index in range(len(self.dataset.studies)):
+        for study_index in range(len(self.current_sheet.rows)):
             self.update_outcome_if_possible(study_index)
 
     def hydrate_derived_previews(self):
@@ -1610,14 +1528,14 @@ class DatasetTableModel(QAbstractTableModel):
         ):
             return
         context = self._editing_context()
-        for study_index in range(len(self.dataset.studies)):
+        for study_index in range(len(self.current_sheet.rows)):
             self.editing_service.update_outcome_if_possible(
                 self.dataset, study_index, context, update_inclusion=False
             )
 
     def blank_all_studies(self, include_them):
         # Keep the auto-added blank row excluded from include-all changes.
-        for study in self.dataset.studies:
+        for study in self.current_sheet.rows:
             study.include = include_them
 
     def include_all_studies(self):
@@ -1627,10 +1545,10 @@ class DatasetTableModel(QAbstractTableModel):
         self.blank_all_studies(False)
 
     def all_studies_are_included(self):
-        return all([study.include for study in self.dataset.studies])
+        return all([study.include for study in self.current_sheet.rows])
 
     def all_studies_are_excluded(self):
-        return all([not study.include for study in self.dataset.studies])
+        return all([not study.include for study in self.current_sheet.rows])
 
     def update_outcome_if_possible(self, study_index):
         self.editing_service.update_outcome_if_possible(
@@ -1640,11 +1558,11 @@ class DatasetTableModel(QAbstractTableModel):
     def get_current_raw_data(self, only_if_included=True, only_these_studies=None):
         raw_data = []
 
-        for study_index in range(len(self.dataset.studies)):
-            if not only_if_included or self.dataset.studies[study_index].include:
+        for study_index in range(len(self.current_sheet.rows)):
+            if not only_if_included or self.current_sheet.rows[study_index].include:
                 if (
                     only_these_studies is None
-                    or self.dataset.studies[study_index].id in only_these_studies
+                    or self.current_sheet.rows[study_index].id in only_these_studies
                 ):
                     raw_data.append(self._get_canonical_raw_data_for_study(study_index))
 
@@ -1656,7 +1574,7 @@ class DatasetTableModel(QAbstractTableModel):
         For a one-arm metric, the active arm alone determines completeness.
         """
         return included_studies_have_raw_data(
-            self.dataset.studies,
+            self.current_sheet.rows,
             self._get_raw_data_according_to_arms,
             self.current_effect in ONE_ARM_METRICS,
         )
@@ -1696,12 +1614,12 @@ class DatasetTableModel(QAbstractTableModel):
     ):
         estimates, standard_errors = [], []
         effect = effect or self.current_effect
-        for study_index in range(len(self.dataset.studies)):
+        for study_index in range(len(self.current_sheet.rows)):
             if (
                 only_these_studies is None
-                or self.dataset.studies[study_index].id in only_these_studies
+                or self.current_sheet.rows[study_index].id in only_these_studies
             ):
-                if not only_if_included or self.dataset.studies[study_index].include:
+                if not only_if_included or self.current_sheet.rows[study_index].include:
                     estimate, standard_error = (
                         self.current_estimate_and_standard_error_for_study(
                             study_index, effect=effect
@@ -1719,10 +1637,10 @@ class DatasetTableModel(QAbstractTableModel):
         if self.get_current_outcome_type(get_str=False) in RATIO_DATA_TYPES:
             return all(
                 self.study_has_point_est(index, effect=effect)
-                for index, study in enumerate(self.dataset.studies) if study.include
+                for index, study in enumerate(self.current_sheet.rows) if study.include
             )
         return included_studies_have_effects(
-            self.dataset.studies,
+            self.current_sheet.rows,
             lambda index: self._get_canonical_analysis_unit(index).get_effect_and_se_for_source(
                 self._display_effect_source(self._get_canonical_analysis_unit(index)),
                 effect or self.current_effect,
@@ -1734,7 +1652,7 @@ class DatasetTableModel(QAbstractTableModel):
     def get_studies(self, only_if_included=True):
         included_studies = []
 
-        for study in self.dataset.studies:
+        for study in self.current_sheet.rows:
             if not only_if_included or study.include:
                 included_studies.append(study)
         return list(included_studies)
@@ -1744,7 +1662,7 @@ class DatasetTableModel(QAbstractTableModel):
 
     def _get_canonical_analysis_unit(self, study_index):
         return self.get_analysis_unit(
-            study=self.dataset.studies[study_index],
+            study=self.current_sheet.rows[study_index],
             outcome=self.current_outcome_name,
             follow_up=self.get_current_follow_up_name(),
             groups=self.current_groups,
@@ -1756,11 +1674,7 @@ class DatasetTableModel(QAbstractTableModel):
         )
 
     def set_current_analysis_unit_for_study(self, study_index, new_analysis_unit):
-        self._study_for_row(study_index).replace_analysis_unit(
-            self.current_outcome_name,
-            self.get_current_follow_up_name(),
-            new_analysis_unit,
-        )
+        self._study_for_row(study_index).analysis_unit = new_analysis_unit
 
     def get_current_analysis_unit_for_study(self, study_index):
         """Return or create the study's currently selected analysis unit."""
@@ -1771,36 +1685,21 @@ class DatasetTableModel(QAbstractTableModel):
             groups=self.current_groups,
         )
 
-    def get_analysis_unit(
-        self, study=None, study_index=None, outcome=None, follow_up=None, groups=None
-    ):
-        """Return or create an analysis unit for named outcome and follow-up values."""
-        if study is None:
-            if study_index is None:
-                raise ValueError("study or study_index must be specified")
-            study = self._study_for_row(study_index)
-        elif study_index is not None and study != self._study_for_row(study_index):
-            raise ValueError("study and study index don't match")
-
-        if outcome is None or follow_up is None:
-            raise ValueError("outcome and follow_up must be specified")
-
-        return ensure_analysis_unit(
-            self.dataset, study, outcome, follow_up, tuple(groups or ())
-        )
+    def get_analysis_unit(self, study=None, study_index=None, **kwargs):
+        return (study if study is not None else self._study_for_row(study_index)).analysis_unit
 
     def recalculate_display_scale(self):
         if self.current_outcome_name is None or self.get_current_follow_up_name() is None:
             return
         effect = self.current_effect
         group_comparison = self.get_current_group_comparison()
-        current_data_type = self.dataset.get_outcome_type(self.current_outcome_name)
+        current_data_type = self.get_current_outcome_type(False)
         if current_data_type in RATIO_DATA_TYPES:
             return
 
         analysis_units = []
         # Gather analysis_units for spreadsheet
-        for study_index in range(len(self.dataset.studies)):
+        for study_index in range(len(self.current_sheet.rows)):
             analysis_units.append(self._get_canonical_analysis_unit(study_index))
 
         for index, x in enumerate(analysis_units):
