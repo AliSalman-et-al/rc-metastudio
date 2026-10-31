@@ -27,7 +27,7 @@ def read_rm5(path: str | Path) -> Rm5Import:
             raise ValueError('Missing or repeated study identifier.')
         studies[identity] = study
     dataset = Dataset(title=root.findtext('COVER_SHEET/TITLE', 'Imported review'))
-    differences = ['Review text, references, risk-of-bias assessments and graphs are not imported.']
+    differences = []
     comparisons = list(root.iter('COMPARISON'))
     for comparison in comparisons:
         for outcome in comparison:
@@ -51,8 +51,10 @@ def read_rm5(path: str | Path) -> Rm5Import:
             if not records:
                 differences.append(f'{name}: empty outcome is not imported.')
                 continue
-            if any(s.name == name for s in dataset.sheets):
-                raise ValueError(f'Repeated sheet name: {name}. Rename the outcomes in RevMan first.')
+            base_name, suffix = name, 2
+            while any(s.name == name for s in dataset.sheets):
+                name = f'{base_name} ({suffix})'
+                suffix += 1
             names = [outcome.findtext(f'GROUP_LABEL_{i}', '').strip() for i in (1, 2)]
             if not all(names) or names[0] == names[1]:
                 raise ValueError(f'{name}: two distinct arm labels are required.')
@@ -62,8 +64,25 @@ def read_rm5(path: str | Path) -> Rm5Import:
             sheet = Sheet(uuid.uuid4().hex, name, data_type, family=family,
                           arms=[Arm(uuid.uuid4().hex, n) for n in names],
                           settings={'metric': metric, 'confidence_level': level})
-            # Until method parity is verified, disclose rather than claim equivalence.
-            differences.append(f'{name}: RevMan {outcome.get("METHOD", "IV")}, {"random" if outcome.get("RANDOM") == "YES" else "fixed"} settings are not applied; check Analysis setup.')
+            method = outcome.get('METHOD', 'IV')
+            random = outcome.get('RANDOM') == 'YES'
+            mapped = None
+            if random and method == 'IV':
+                mapped = f'{family}.random'
+            elif not random:
+                mapped = ({'IV': 'binary.fixed.inv.var', 'MH': 'binary.fixed.mh',
+                           'PETO': 'binary.fixed.peto'}.get(method) if family == 'binary'
+                          else 'continuous.fixed' if method == 'IV' else None)
+            if mapped == 'binary.fixed.peto' and metric != 'OR':
+                mapped = None
+            if mapped:
+                sheet.settings['analysis'] = dict(method=mapped,
+                    parameters={'rm.method': 'DL'} if random else {},
+                    fixed_effects=not random, covariates=[])
+            else:
+                differences.append(f'{name}: RevMan {method}, {"random (DerSimonian-Laird)" if random else "fixed"} is unavailable; Analysis setup retains its default.')
+            if metric == 'SMD':
+                differences.append(f"{name}: RCMS uses metafor's exact Hedges correction and sampling variance; RevMan's adjusted g approximation can give slightly different pooled results.")
             subgroups = {}
             for subgroup in outcome.iter('SUBGROUP'):
                 for record in subgroup.iter(tag):
@@ -75,7 +94,12 @@ def read_rm5(path: str | Path) -> Rm5Import:
                 if study is None:
                     raise ValueError(f'{name}: unknown study {record.get("STUDY_ID")}.')
                 raw = []
+                pending = all(record.get(f'TOTAL_{i}', '') in ('', '0') for i in (1, 2)) and all(
+                    record.get(f'{field}_{i}', '') == '' for i in (1, 2) for field in fields[:-1])
                 for i in (1, 2):
+                    if pending:
+                        raw.append([None] * len(fields))
+                        continue
                     values = [float(record.attrib[f'{field}_{i}']) for field in fields]
                     if not all(math.isfinite(v) for v in values):
                         raise ValueError(f'{name}: non-finite study data.')
@@ -91,7 +115,7 @@ def read_rm5(path: str | Path) -> Rm5Import:
                     raw.append(values if family == "binary" else [values[2], values[0], values[1]])
                 unit = AnalysisUnit(sheet, raw_data=raw, arm_names=names, arm_stable_ids=[a.id for a in sheet.arms])
                 row = StudyRow(uuid.uuid4().hex, study.get('NAME') or record.get('STUDY_ID'), unit,
-                               year=int(study.get('YEAR')) if study.get('YEAR') else None)
+                               include=not pending, year=int(study.get('YEAR')) if (study.get('YEAR') or '').isdigit() else None)
                 if subgroups:
                     row.covariate_values[sheet.covariates[0]['id']] = subgroups.get(id(record), '')
                 sheet.rows.append(row)
@@ -109,17 +133,35 @@ def read_rm5(path: str | Path) -> Rm5Import:
 
 
 def review_rm5(path, parent):
-    from PyQt6 import QtWidgets
+    from PyQt6 import QtWidgets, QtCore
     result = read_rm5(path)
     dialog = QtWidgets.QDialog(parent)
     dialog.setObjectName('rm5_review')
     dialog.setWindowTitle('Import RevMan review')
     layout = QtWidgets.QVBoxLayout(dialog)
-    text = QtWidgets.QPlainTextEdit(dialog)
-    text.setReadOnly(True)
-    text.setPlainText('Sheets to create\n' + '\n'.join(f'{s.name} · {s.family} · {len(s.rows)} studies' for s in result.dataset.sheets)
-                      + '\n\nNot imported or different\n' + '\n'.join(result.differences))
-    layout.addWidget(text)
+    table = QtWidgets.QTableWidget(len(result.dataset.sheets), 4, dialog)
+    table.setHorizontalHeaderLabels(['Sheet', 'Data type', 'Studies', 'Method'])
+    table.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+    table.verticalHeader().hide()
+    from rc_metastudio.analysis_method_labels import method_display_label
+    for row, sheet in enumerate(result.dataset.sheets):
+        values = (sheet.name, sheet.family.title(), str(len(sheet.rows)),
+                  method_display_label(sheet.settings['analysis']['method']) if 'analysis' in sheet.settings else 'Default')
+        for column, value in enumerate(values):
+            item = QtWidgets.QTableWidgetItem(value)
+            item.setToolTip(value)
+            table.setItem(row, column, item)
+    table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+    table.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
+    layout.addWidget(table)
+    if result.differences:
+        label = QtWidgets.QLabel('Not imported\n' + '\n'.join(result.differences), dialog)
+        label.setTextFormat(QtCore.Qt.TextFormat.PlainText)
+        label.setWordWrap(True)
+        layout.addWidget(label)
+    standing = QtWidgets.QLabel('Review text, references, risk-of-bias assessments and graphs are not imported.', dialog)
+    standing.setWordWrap(True)
+    layout.addWidget(standing)
     buttons = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok | QtWidgets.QDialogButtonBox.StandardButton.Cancel)
     buttons.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).setText('Import')
     buttons.accepted.connect(dialog.accept)

@@ -114,3 +114,15 @@ and years to live `meta::read.rm5`. It retains `meta::metacr` reference results
 but does not yet compare RCMS pooled analyses. GIV, DTA, subgroup fixtures,
 method-setting parity and the welcome entry point still need targeted proof.
 See `docs/ux-hill-climb/SLICE5.md`; this is not full RM5 acceptance.
+
+## RevMan import
+
+`rm5-import` exercises the File action and welcome wizard import button through
+review, default setup and Run on both Fleiss sheets. It compares raw cells with
+meta::read.rm5, displayed Aspirin results with RevMan's stored attributes and
+SMD with metacr at default precision (the exact-Hedges difference is disclosed).
+Derived XML inputs cover pending data, non-integer years, duplicate names and
+IV-random/DL, MH-random unavailable and Peto-fixed mapping. Dirty review Cancel
+preserves data/path/dirty/history; confirmation invokes the existing save prompt.
+Malformed and non-RevMan XML leave the project intact. Save/reopen retains settings.
+Native pickers, GIV/DTA and a second public fixture remain unexercised.

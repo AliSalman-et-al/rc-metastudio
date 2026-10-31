@@ -290,6 +290,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
+        if initial_settings is None and analysis_type is None and model.current_sheet:
+            initial_settings = model.current_sheet.settings.get('analysis')
         if initial_settings is not None:
             self._restore_settings(initial_settings)
         for field in self.findChildren(QLineEdit):
