@@ -104,13 +104,11 @@ rcmetar.add.subgroup.test <- function(summary, plot.data, params) {
   use.f <- !is.null(test$test) && test$test %in% c("t", "knha", "adhoc")
   df <- if (use.f) paste(test$df, test$df2, sep=", ") else test$df
   table <- rbind(c("Test", "Statistic", "df", "p-value"),
-                 c(if (use.f) "Subgroup differences (F)" else "Subgroup differences (Qm)",
+                 c(if (use.f) "Subgroup differences (F)" else "Subgroup differences (Q)",
                    rcmetar.format.effect.number(test$QM, display.digits(params)), df,
                    format.p.value.display(test$QMp, params$digits)))
   summary$arrays <- c(summary$arrays, list(table))
   summary$table.titles <- c(summary$table.titles, "Test of subgroup differences")
-  if (identical(test$method, "FE"))
-    summary$notes <- c(summary$notes, "Subgroup differences use a fixed-effect inverse-variance moderator fit (FE).")
   summary$notes <- c(summary$notes, "Subgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.")
   summary
 }

@@ -303,7 +303,7 @@ rcmetar.default.subgroup.difference.label <- function(test, params=NULL) {
         return(paste0("Test for subgroup differences: F = ", round.display(test$QM, digits),
             ", df = ", test$df, ", ", test$df2, " (", rcmetar.revman.p.value.label(test$QMp, digits), ")"))
     }
-    paste0("Test for subgroup differences: Qm = ", round.display(test$QM, digits),
+    paste0("Test for subgroup differences: Q = ", round.display(test$QM, digits),
            ", df = ", test$df, " (", rcmetar.revman.p.value.label(test$QMp, digits), ")")
 }
 

@@ -1,49 +1,48 @@
-# Fixed-effect subgroup correction
+# Statistical corrections
 
-The subgroup moderator fit received a missing `params$rm.method`, causing
-`metafor::rma.uni` to use its DL default. The pop in `_with_result_identity`
-only controls displayed identity, not execution. Fixed subgroup entry points
-now explicitly select FE, including when a stale random estimator is present.
-Regression already explicitly selects FE; sequential fits dispatch the selected
-base estimator for every subset.
+## Step 1 — Q among displayed subgroup estimates
 
-Fleiss1993 derived subgroup fixture: Q 4.852384 → 5.680480;
-p 0.027608 → 0.017155. Authority: direct metafor FE moderator fit and
-meta::metacr(method="Inverse") common subgroup test (desktop comparison 1e-6).
+The old moderator fit estimated a shared residual heterogeneity variance instead
+of testing the displayed subgroup estimates with their displayed standard errors.
+All subgroup estimators now use heterogeneity Q from an independent fixed-effect
+fit of those summary estimates (inverse squared SE weights, groups minus one df,
+chi-square p). The FE override and IV moderator convention are removed.
 
-MH and Peto retain the inverse-variance moderator convention, explicitly named
-in Results and Methods, rather than the estimator-specific common subgroup Q.
-For the authority script's OR fixture, RCMS/metafor FE Q=27.08745;
-meta::metabin(subgroup=group, method="MH", common=TRUE) Q=29.23978
-(difference −2.152332), and method="Peto" Q=26.63551
-(difference +0.4519434). These are convention differences, not equalities.
+Authorized numerical changes, listed by the task before implementation:
 
-No frozen oracle values have been edited. The first strict gate compared
-474 contracts / 415 numerical fields with no numerical drift (including all
-random-effects cases); its only failures were two random subgroup text notes.
-The correction note is now limited to fixed analyses to preserve those outputs.
+| Fixture | Old Q | New Q | Independent authority |
+| --- | ---: | ---: | --- |
+| BCG RR, absolute latitude >=35, DL | 15.544 (display) | 14.903849407 | meta::metabin, Inverse, DL, subgroup, tau.common=FALSE |
+| BCG RR, absolute latitude >=35, REML | 17.145 (display) | 18.001340175 | meta::metabin, Inverse, REML, subgroup, tau.common=FALSE |
+| OR authority fixture, MH | 27.08745 | 29.23978 | meta::metabin, MH, common subgroup Q |
+| OR authority fixture, Peto | 27.08745 | 26.63551 | meta::metabin, Peto, common subgroup Q |
+| OR authority fixture, DL | shared-tau moderator Q | 10.85996 | meta::metabin, Inverse, DL, tau.common=FALSE |
 
-Authority matrix: 96 cases passed in `build/sheets-baseline/stat-authority-green.json`.
-The expected desktop failure is retained at
-`artifacts/verification/rcms/20261031T191528Z-6d78a0af-rm5-import`.
-Installation log and source/installed SHA-256 provenance are under
-`build/sheets-baseline/stat-install*`. Final qualification passed after the last code change in one uninterrupted shell:
-rm5-import, amino, continuous, results-window, plot-workflow-subgroup,
-plot-workflow-regression; strict golden gate (474 comparisons, 415 numerical
-fields); full E2E matrix `uv run --no-sync python -m pytest tests/e2e -n 2 -q`
-(134 passed in 3062.05s). Logs: `build/sheets-baseline/stat-final-*.log`.
-Golden report: `build/qt6-verification/golden-compatibility-stat-final/compatibility-report.json`.
-All random frozen numerical contracts remained unchanged; no oracle edits.
+MH difference from meta: 1.421085e-14; Peto: -1.776357e-14.
+These fixtures have no zero cells; pooled/study results are unchanged.
+The earlier Fleiss1993 fixed-IV correction 4.852384 -> 5.680480 remains
+valid (p 0.027608 -> 0.017155); a fixed summary-estimate Q is algebraically
+equivalent to the previous FE moderator test. No frozen oracle was regenerated.
 
-Targeted evidence directories under `artifacts/verification/rcms/`:
+Test-first evidence: the new independent meta subgroup comparisons failed on
+MH before implementation (build/sheets-baseline/step1-before.log).
+After implementation all 96 recorded authority cases plus the new DL/REML BCG
+checks passed (step1-after.log and step1-authorities.json in the same directory).
+RCMetaR was reinstalled into build/sheets-r-library; installation log and
+source/installed SHA-256 provenance are step1-install.log and
+step1-install-provenance.json.
 
-- 20261031T192445Z-cf0ae46a-rm5-import
-- 20261031T192543Z-01f5739c-amino
-- 20261031T192556Z-1f4bc003-continuous
-- 20261031T192606Z-35b45944-results-window
-- 20261031T192700Z-1963377f-plot-workflow-subgroup
-- 20261031T192755Z-e8687ca3-plot-workflow-regression
+Strict golden gate: 474 comparisons / 415 numerical fields, no numerical
+drift. Two text_artifact_drift failures (amino-binary-subgroup and
+continuous-subgroup) reflect the new Q label; the frozen oracle is unchanged.
+Report: build/qt6-verification/golden-compatibility-step1/compatibility-report.json.
+Targeted offscreen desktop plot-workflow-subgroup passed; evidence:
+artifacts/verification/rcms/20261031T202614Z-2f8692ad-plot-workflow-subgroup.
+This exercises the real Qt/R subgroup plot and exports, not native OS gestures.
 
-Limitation: new direct sequential/regression authorities use continuous data;
-explicit binary sequential/regression authority additions remain unfinished.
-Desktop proof uses offscreen Qt, not native OS interaction.
+## Remaining work
+
+Steps 2–5 have not been implemented: zero-cell MH pooling, Methods truth,
+binary sequential/regression authority expansion, desktop swap and calculator
+confidence-level audits. Full final qualification and pushes remain pending.
+The old continuous-only sequential/regression limitation still applies.

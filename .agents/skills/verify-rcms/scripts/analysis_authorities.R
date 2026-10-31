@@ -148,8 +148,8 @@ for (heterogeneity in c("HE","DL","HS","HSk","SJ","ML","REML","EB","PM","PMM")) 
     check(data,"binary.random",p,ref,paste(heterogeneity,inference,"90% CI"))
   }
 }
-# Failure modes: missing/stale heterogeneity parameters must not select a random
-# moderator test for fixed analyses; random analyses must retain their DL fit.
+# Failure modes: subgroup tests must use displayed subgroup SEs, with separate
+# tau estimates for random subgroups, rather than a shared-tau moderator fit.
 group <- rep(c("A", "B"), each=6)
 effects <- metafor::escalc("OR", ai=a, bi=b, ci=c, di=d)
 for (method in c("binary.fixed.inv.var", "binary.fixed.mh", "binary.fixed.peto", "binary.random")) {
@@ -160,18 +160,31 @@ for (method in c("binary.fixed.inv.var", "binary.fixed.mh", "binary.fixed.peto",
   result <- RCMetaR:::subgroup.ma.binary(method, data, p)
   e <- new.env(); load(paste0(result$plot_params_paths[[1]], ".plotdata"), envir=e)
   actual <- e$plot.data$subgroups$difference_test
-  ref <- metafor::rma.uni(effects$yi, vi=effects$vi, mods=~factor(group),
-    method=if(method=="binary.random") "DL" else "FE")
-  close(actual$QM,ref$QM,paste(method,"subgroup QM"))
-  close(actual$QMp,ref$QMp,paste(method,"subgroup p"))
-  if (method %in% c("binary.fixed.mh", "binary.fixed.peto")) {
-    authority <- meta::metabin(a,a+b,c,c+d, subgroup=group, sm="OR",
-      method=if(method=="binary.fixed.mh") "MH" else "Peto", common=TRUE)
-    cat(method, "IV moderator convention QM",actual$QM,
-      "meta common subgroup Q",authority$Q.b.common,
-      "difference",actual$QM-authority$Q.b.common,"\n")
-  }
-  rows[[length(rows)+1L]] <- list(case=paste(method,"subgroup"), actual=actual$QM, expected=ref$QM)
+  authority <- meta::metabin(a,a+b,c,c+d, subgroup=group, sm="OR",
+    method=switch(method, binary.fixed.mh="MH", binary.fixed.peto="Peto", "Inverse"),
+    method.tau="DL", tau.common=FALSE)
+  expected <- if(method=="binary.random") authority$Q.b.random else authority$Q.b.common
+  close(actual$QM,expected,paste(method,"subgroup Q"))
+  close(actual$QMp,pchisq(expected,1,lower.tail=FALSE),paste(method,"subgroup p"))
+  cat(method, "RCMS",actual$QM,"meta",expected,"difference",actual$QM-expected,"\n")
+  rows[[length(rows)+1L]] <- list(case=paste(method,"subgroup"), actual=actual$QM, expected=expected)
+}
+# BCG latitude split: DL/REML must agree with meta's separate-tau subgroup Q.
+bcg <- metadat::dat.bcg
+g <- ifelse(bcg$ablat >= 35, "High", "Low")
+ef <- metafor::escalc("RR", ai=tpos,bi=tneg,ci=cpos,di=cneg,data=bcg)
+for (estimator in c("DL","REML")) {
+  p <- params("RR"); p$rm.method <- estimator; p$cov_name <- "Latitude"
+  data <- methods::new("BinaryData",g1O1=bcg$tpos,g1O2=bcg$tneg,
+    g2O1=bcg$cpos,g2O2=bcg$cneg,y=ef$yi,SE=sqrt(ef$vi),
+    study.names=bcg$author,
+    covariates=list(methods::new("CovariateValues",cov.name="Latitude",cov.vals=g,cov.type="factor")))
+  result <- RCMetaR:::subgroup.ma.binary("binary.random",data,p)
+  e <- new.env(); load(paste0(result$plot_params_paths[[1]],".plotdata"),envir=e)
+  authority <- meta::metabin(bcg$tpos,bcg$tpos+bcg$tneg,bcg$cpos,bcg$cpos+bcg$cneg,
+    sm="RR",method="Inverse",subgroup=g,tau.common=FALSE,method.tau=estimator)
+  close(e$plot.data$subgroups$difference_test$QM,authority$Q.b.random,paste("BCG",estimator))
+  cat("BCG",estimator,"Q",sprintf("%.9f",authority$Q.b.random),"\n")
 }
 # Continuous subgroup, sequential and regression use independently entered effects.
 p <- params("MD"); p$cov_name <- "Group"
