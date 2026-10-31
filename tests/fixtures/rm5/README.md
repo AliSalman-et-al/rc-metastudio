@@ -25,7 +25,7 @@ this is disclosed, not adjusted away. Full comparison and remaining work:
 
 The E2E workflow derives pending, year, duplicate-name and method-combination
 XML files in memory and retains those inputs in workflow evidence; it never
-changes this upstream fixture. GIV, diagnostic import and a second fixture remain.
+changes this upstream fixture. Diagnostic import remains outside this proof.
 
 
 ## Derived subgroup fixture (2026-10-31)
@@ -62,3 +62,25 @@ not RevMan output. It reuses three study identities with invented effects and
 standard errors, one IV_OUTCOME each for HR, OR, MD and Custom score. HR and
 Custom score use LOG_DATA=YES (ratio estimates); OR and MD use LOG_DATA=NO
 (analysis-scale estimates). meta::read.rm5 8.5-0 parses all twelve rows.
+
+
+## Generic inverse variance implementation
+
+Derived fixture parses with meta::read.rm5. HR maps to time-to-event fixed, storing log effect plus unchanged SE in ratio_inputs. OR and MD entered-effect-only probes both ran end to end without raw data; they map to binary fixed inverse variance and continuous fixed. No new analysis path or statistical method. Custom score is Not imported. O-E/variance is Not imported: inputs are not supported.
+
+Untouched setup comparisons (estimate/lower/upper on analysis scale, I² percent):
+
+- {'metric': 'HR', 'actual': [-0.12799999999999997, -0.2943084589219613, 0.03830845892196133, 25.062447960033325], 'expected': [-0.128, -0.294308458921961, 0.0383084589219613, 25.062447960033303]}
+
+- {'metric': 'OR', 'actual': [-0.12799999999999995, -0.2943084589219612, 0.03830845892196136, 25.062447960033314], 'expected': [-0.128, -0.294308458921961, 0.0383084589219613, 25.062447960033303]}
+
+- {'metric': 'MD', 'actual': [-0.12799999999999995, -0.2943084589219612, 0.03830845892196136, 25.062447960033314], 'expected': [-0.128, -0.294308458921961, 0.0383084589219613, 25.062447960033303]}
+
+All differences are below 1e-6; save/reopen preserves the complete project values. Test-first failure: 20261031T183943Z-f3998c24-rm5-import (unsupported IV outcomes after successful OR/MD probes). HR ratio+SE initially failed the existing path; storing log estimate+SE corrected it with one logarithm, without constructing rounded CIs. Pass: 20261031T184206Z-98129ec8-rm5-import.
+
+The derived fixture also contains one IPD_OUTCOME with O_E=2 and VAR=4,
+parsed by meta::read.rm5 and deliberately excluded by RCMS review. Header labels
+precede the IPD_DATA row as required by meta’s line-oriented XML extractor.
+
+SHA-256 (`generic-derived.rm5`):
+`4e01e17559b1f3a6ba481668386a9a27eb543e19dc62e2f5a4cacabf999e00d4`.

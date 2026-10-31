@@ -215,7 +215,7 @@ def run(app, window, ROOT, WORK, record_step):
                         (('estimate', 'EFFECT_SIZE'), ('lower_bound', 'CI_START'), ('upper_bound', 'CI_END'), ('i_squared', 'I2'))}
         else:
             with pooled.open() as stream:
-                ref = list(csv.DictReader(stream))[1]
+                ref = next(row for row in csv.DictReader(stream) if int(row["outcome"]) == 2)
             expected = dict(estimate=float(ref['estimate']), lower_bound=float(ref['lower']), upper_bound=float(ref['upper']), i_squared=100 * float(ref['I2']))
         if index == 0:
             from rc_metastudio import r_bridge

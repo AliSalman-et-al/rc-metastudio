@@ -106,15 +106,6 @@ colour on other operating systems.
 
 Sheet acceptance drives: `sheets-legacy` checks original 322ede26 archives against the retained pre-migration numerical fixture and input hashes; `sheets-edges` checks invalid names, deletion prompts, last-sheet retention and transactions; `sheets-swap` checks binary/continuous/HR/IRR pooled inversion, headers, counts, restoration, SVG arm labels and diagnostic gating; `sheets-persist` checks clipboard independence, local covariates and three-sheet reopen. Every desktop startup probes pre-ready R rejection. Clinical favours direction labels are user-defined, not inferred from arm names; automatic favours-label migration remains unexercised.
 
-## RevMan import checkpoint
-
-`rm5-import` drives File → Import RevMan file, review Cancel and Import, then
-Save As and reopen with the public Fleiss1993 fixture. It compares all raw data
-and years to live `meta::read.rm5`. It retains `meta::metacr` reference results
-but does not yet compare RCMS pooled analyses. GIV, DTA, subgroup fixtures,
-method-setting parity and the welcome entry point still need targeted proof.
-See `docs/ux-hill-climb/SLICE5.md`; this is not full RM5 acceptance.
-
 ## RevMan import
 
 `rm5-import` exercises the File action and welcome wizard import button through
@@ -125,4 +116,11 @@ Derived XML inputs cover pending data, non-integer years, duplicate names and
 IV-random/DL, MH-random unavailable and Peto-fixed mapping. Dirty review Cancel
 preserves data/path/dirty/history; confirmation invokes the existing save prompt.
 Malformed and non-RevMan XML leave the project intact. Save/reopen retains settings.
-Native pickers, GIV/DTA and a second public fixture remain unexercised.
+Native pickers, DTA and a second public fixture remain unexercised.
+
+RM5 derived-fixture extension: real subgroup dialog compares six grouped studies
+and fixed-IV subgroup estimates/CIs to metacr; the existing moderator Q/p
+difference is explicitly quantified in SLICE5.md. Generic IV HR, OR and MD run
+untouched setup, compare held pooled values/I² at 1e-6, and save/reopen. OR/MD
+entered-only capability is exercised first. Review excludes free-text effects
+and IPD O-E/variance. This does not qualify other RM5 structures or native pickers.
