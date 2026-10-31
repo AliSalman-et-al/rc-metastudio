@@ -426,7 +426,7 @@ def test_numeric_contract_covers_all_cases_and_rejects_shape_and_tolerance_drift
             for case in contract["cases"]
             for metrics in case["sections"].values()
         )
-        == 415
+        == 416
     )
     assert all(case["nonnumeric_omissions"] for case in contract["cases"])
 

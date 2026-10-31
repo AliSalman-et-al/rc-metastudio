@@ -197,3 +197,12 @@ undo/redo/save/reopen, compare SE with metafor::conv.wald and the explicit
 For bounds [1.2345678901234567e-8,1e12], source SE is
 13.934668740867144 before and after switching; source bounds remain intact.
 HR first-study weight is 0.0006822304378178452 percent after switching.
+
+CI desktop scenario passed:
+artifacts/verification/rcms/20261031T205616Z-ec3f69bc-calculator-ratio-precision.
+The archive's internal manifest also duplicates the cumulative text; initial
+strict startup caught the missed duplicate. Corrected the same authorized
+Gonzalez p cell there and refreshed bindings, without additional number edits.
+Numeric coverage ledger and its count assertion now include the authorized
+new field (415 -> 416 fields). Startup ledger mismatch was caught before any
+analysis; fixed ledger only, without broadening expected results.
