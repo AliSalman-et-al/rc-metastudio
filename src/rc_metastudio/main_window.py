@@ -317,7 +317,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.addAction(action)
         self.action_swap_arms = QAction("Swap intervention and control", self)
         self.menuDataset.addAction(self.action_swap_arms)
-        self.menuDataset.aboutToShow.connect(lambda: self.action_swap_arms.setEnabled(bool(self.model.current_sheet and self.model.current_sheet.family != "diagnostic" and len(self.model.current_sheet.arms) == 2 and self.model.current_effect not in meta_globals.ONE_ARM_METRICS)))
+        self.menuDataset.aboutToShow.connect(self._update_swap_arms_enabled)
         self.action_swap_arms.triggered.connect(self._swap_sheet_arms)
         self.workspace = WorkspaceSession()
         self.new_dataset()
@@ -1361,6 +1361,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._update_confidence_level_label()
         self._refresh_sheet_tabs()
 
+    def _update_swap_arms_enabled(self):
+        sheet = self.model.current_sheet
+        self.action_swap_arms.setEnabled(bool(sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2 and self.model.current_effect not in meta_globals.ONE_ARM_METRICS))
+
     def _swap_sheet_arms(self):
         sheet = self.model.current_sheet
         if sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2 and self.model.current_effect not in meta_globals.ONE_ARM_METRICS:
@@ -1377,6 +1381,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             if sheet.id == self.model.current_sheet_id:
                 self.sheet_tabs.setCurrentIndex(index)
         self.sheet_tabs.blockSignals(False)
+        self._update_swap_arms_enabled()
 
     def _select_sheet_tab(self, index):
         if index < 0:
@@ -1458,8 +1463,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if sheet.rows and QMessageBox.question(self, "Delete sheet", f'Delete “{sheet.name}” and its rows?') != QMessageBox.StandardButton.Yes:
             return
         def delete():
+            remaining = [item for item in self.model.dataset.sheets if item.id != sheet.id]
+            self.model.set_current_sheet(remaining[max(0, index - 1)].id)
             self.model.dataset.sheets.remove(sheet)
-            self.model.set_current_sheet(self.model.dataset.sheets[max(0, index - 1)].id)
         self._sheet_change(sheet.id, delete)
 
     def _move_sheet_tab(self, source, destination):
