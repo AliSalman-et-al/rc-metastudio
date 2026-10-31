@@ -298,9 +298,7 @@ def run(
         )
 
     def covariate(name, kind, values):
-        window.model.dataset.add_covariate(
-            analysis_dataset.Covariate(name, kind), values
-        )
+        window.model.add_covariate(name, kind, values)
         window.model.reset_model()
         window.enable_menu_options_that_require_dataset()
 
@@ -655,7 +653,7 @@ def run(
         assert properties.lr_dor_panel.method == lr_dor_method
         assert properties.lr_dor_panel.params == lr_dor_parameters
     if properties.is_meta_regression:
-        assert [cov.name for cov in properties._selected_covariates()] == [cov.name for cov in window.model.dataset.covariates]
+        assert [cov["name"] for cov in properties._selected_covariates()] == [cov["name"] for cov in window.model.current_sheet.covariates]
     record("properties-prefilled", properties, workflow=properties.analysis_type,
            method=properties.current_method, parameters=dict(properties.current_param_vals))
     properties.reject()

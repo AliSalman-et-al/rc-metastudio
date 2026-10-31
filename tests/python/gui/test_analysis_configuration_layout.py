@@ -27,7 +27,7 @@ else:
 
 class _AnalysisModel(object):
     current_outcome_name = "Outcome"
-    current_groups = ["A", "B"]
+    arm_names = ["A", "B"]
 
     def get_current_outcome_subtype(self):
         return None
@@ -1096,7 +1096,7 @@ from rc_metastudio import analysis_setup_dialog
 class Model:
     current_effect = "OR"
     current_outcome_name = "Outcome"
-    current_groups = ["A", "B"]
+    arm_names = ["A", "B"]
     def get_current_outcome_subtype(self):
         return None
     def get_current_follow_up_name(self):

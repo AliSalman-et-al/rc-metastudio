@@ -57,7 +57,7 @@ def record_step(action, *widgets, **observations):
     STEP += 1
     captures = []
     from tests.e2e.display_labels import visible_label_inventory, plot_label_inventory
-    groups = window.model.current_groups if window.model is not None else []
+    groups = window.model.arm_names if window.model is not None else []
     user_names = [name for name in groups if name not in {"Group", "Intervention", "Control"}]
     if window.model is not None:
         user_names += [s.name for s in window.model.dataset.sheets]
@@ -468,7 +468,7 @@ def sheets(app, window):
     assert len(window.model.current_sheet.rows) == 1
     tabs.setCurrentIndex(0)
     before = copy.deepcopy(window.model.current_sheet)
-    effect = window.model.get_current_group_comparison()
+    effect = window.model.get_current_arm_key()
     metric = window.model.current_effect
     unit = window.model.current_sheet.rows[0].analysis_unit
     value = unit.get_display_effect_for_source("derived_preview", metric, effect)
@@ -476,9 +476,9 @@ def sheets(app, window):
     window.action_swap_arms.trigger()
     assert window.model.current_sheet.arms == list(reversed(before.arms))
     assert [r.label for r in window.model.current_sheet.rows] == [r.label for r in before.rows]
-    assert window.model.get_current_group_comparison() != effect
+    assert window.model.get_current_arm_key() != effect
     unit = window.model.current_sheet.rows[0].analysis_unit
-    reversed_value = unit.get_display_effect_for_source("derived_preview", metric, window.model.get_current_group_comparison())
+    reversed_value = unit.get_display_effect_for_source("derived_preview", metric, window.model.get_current_arm_key())
     assert abs(value * reversed_value - 1) < 1e-8, (value, reversed_value)
     assert unit.get_raw_data_for_arms([a.name for a in before.arms]) == counts
     record_step("sheets-swapped", window, original_effect=value, reversed_effect=reversed_value, counts=counts)
@@ -600,8 +600,8 @@ def csv_import(app, window):
         str(window.model.data(window.model.index(0, window.model.NAME)))
         == "Alpha, München"
     )
-    assert window.model.get_studies(False)[1].covariate_values["Dose"] == 7.0
-    assert window.model.get_studies(False)[1].covariate_values["Region"] == "South"
+    assert window.model.get_studies(False)[1].covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == "Dose")] == 7.0
+    assert window.model.get_studies(False)[1].covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == "Region")] == "South"
     assert all(study.include for study in window.model.get_studies(False))
     view = analyze(app, window, "binary.random")
     assert "Alpha" in view.texts.get("Weights", "")
@@ -609,18 +609,18 @@ def csv_import(app, window):
     window.out_path = str(WORK / "imported.rcms")
     assert window.save()
     assert window.open(window.out_path, raise_on_error=True)
-    assert window.model.get_studies(False)[0].name == "Alpha, München"
+    assert window.model.get_studies(False)[0].label == "Alpha, München"
     reopened = window.model.get_studies(False)[1]
-    assert reopened.covariate_values["Dose"] == 7.0
-    assert reopened.covariate_values["Region"] == "South"
+    assert reopened.covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == "Dose")] == 7.0
+    assert reopened.covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == "Region")] == "South"
     assert window.model.current_effect == "OR"
     record_step(
         "csv-reopened",
         window,
         project=window.out_path,
         study="Alpha, München",
-        dose=reopened.covariate_values["Dose"],
-        region=reopened.covariate_values["Region"],
+        dose=reopened.covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == "Dose")],
+        region=reopened.covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == "Region")],
     )
 
 
@@ -762,8 +762,8 @@ def calculator(app, window, family):
     def raw():
         model = window.model
         return list(
-            model.get_current_analysis_unit_for_study(0).get_raw_data_for_group(
-                model.current_groups[0]
+            model.get_current_analysis_unit_for_study(0).get_raw_data_for_arm(
+                model.arm_names[0]
             )
         )
 
@@ -908,7 +908,7 @@ try:
         run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario in ("amino", "continuous", "lymph"):
         sample_analysis(app, window, scenario)
-    elif scenario == "sheets":
+    elif scenario in ("sheets", "project-structure"):
         sheets(app, window)
     elif scenario == "editing":
         editing(app, window)

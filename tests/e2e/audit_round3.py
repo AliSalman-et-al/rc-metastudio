@@ -1054,7 +1054,7 @@ def run_irr_context(app, window, record):
         labels = ["".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text")]
         assert all(label == label.strip() for label in labels if re.fullmatch(r"\s*[-+\d.]+\s*", label)), labels
         assert "Events" in labels and any("Person-time" in label for label in labels), labels
-        unit = window.model.get_current_analysis_unit_for_study(0).ratio_input(window.model.current_groups).unit
+        unit = window.model.get_current_analysis_unit_for_study(0).ratio_input(window.model.arm_names).unit
         assert any(unit in label for label in labels), (unit, labels)
         svg = ET.parse(path)
         nodes = list(svg.iter("{http://www.w3.org/2000/svg}text"))

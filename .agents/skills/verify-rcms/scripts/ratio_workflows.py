@@ -135,19 +135,19 @@ def run(app, window, scenario, record):
         record("ratio-calculator", dialog, source_confidence=dialog.fields["confidence"].text())
         click(dialog.findChild(QtWidgets.QDialogButtonBox).button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     modal(app, RatioDataDialog, calculator, lambda: window.tableView.row_header_clicked(11))
-    before = model.get_current_analysis_unit_for_study(11).ratio_input(model.current_groups)
+    before = model.get_current_analysis_unit_for_study(11).ratio_input(model.arm_names)
     def cancel(dialog):
         dialog.fields["estimate"].setText("2")
         click(dialog.findChild(QtWidgets.QDialogButtonBox).button(QtWidgets.QDialogButtonBox.StandardButton.Cancel))
     modal(app, RatioDataDialog, cancel, lambda: window.tableView.row_header_clicked(11))
-    assert model.get_current_analysis_unit_for_study(11).ratio_input(model.current_groups) == before
+    assert model.get_current_analysis_unit_for_study(11).ratio_input(model.arm_names) == before
 
     project_path = work / f"{metric}.rcms"
     window.out_path = str(project_path)
     assert window.save()
     assert window.open(str(project_path), raise_on_error=True)
     model = window.model
-    reopened = model.get_current_analysis_unit_for_study(11).ratio_input(model.current_groups)
+    reopened = model.get_current_analysis_unit_for_study(11).ratio_input(model.arm_names)
     assert reopened == before
     record("ratio-project-reopened", window, project=str(project_path), input=vars(reopened))
     # A deleted study must disappear from both the document and the displayed
@@ -199,9 +199,9 @@ def run(app, window, scenario, record):
         assert len(model.current_sheet.rows) == 12
         record("ratio-delete-reopened", window, study_count=12)
     # Reverse the same comparison twice. Original source CI and SE must survive.
-    groups = list(model.current_groups)
+    groups = list(model.arm_names)
     model.current_sheet.arms.reverse()
-    reverse = model.get_current_analysis_unit_for_study(11).ratio_input(model.current_groups)
+    reverse = model.get_current_analysis_unit_for_study(11).ratio_input(model.arm_names)
     assert abs(reverse.estimate * reopened.estimate - 1) < 1e-12
     assert reverse.confidence == reopened.confidence
     model.current_sheet.arms.reverse()
@@ -232,7 +232,7 @@ def run(app, window, scenario, record):
     window._handle_wizard_results(wizard.get_results())
     wizard.close(); app.processEvents()
     model = window.model
-    assert model.get_current_analysis_unit_for_study(11).ratio_input(model.current_groups) == reopened
+    assert model.get_current_analysis_unit_for_study(11).ratio_input(model.arm_names) == reopened
     assert all(study.include for study in model.current_sheet.rows)
 
     # A usual RCMS CSV needs only the visible inputs. Advanced source fields
@@ -261,7 +261,7 @@ def run(app, window, scenario, record):
     simple_wizard.close(); app.processEvents()
     model = window.model
     for i in range(12):
-        record_input = model.get_current_analysis_unit_for_study(i).ratio_input(model.current_groups)
+        record_input = model.get_current_analysis_unit_for_study(i).ratio_input(model.arm_names)
         assert record_input.confidence == 95 and record_input.scale == "ratio"
         assert record_input.unit == "person-years" and model.current_sheet.rows[i].include
     record("ratio-simple-csv-imported", window, csv=str(simple_csv), required_columns=len(basic_columns), defaults="ratio, 95% source CI, person-years")
@@ -271,25 +271,25 @@ def run(app, window, scenario, record):
     assert window.open(str(simple_project), raise_on_error=True)
     assert window.open(str(project_path), raise_on_error=True)
     model = window.model
-    assert model.get_current_analysis_unit_for_study(11).ratio_input(model.current_groups) == reopened
+    assert model.get_current_analysis_unit_for_study(11).ratio_input(model.arm_names) == reopened
 
     edit_row = 0 if hazard else 8
     window.tableView.setCurrentIndex(model.index(edit_row, model.OUTCOMES[0]))
-    original = model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.current_groups)
+    original = model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.arm_names)
     app.clipboard().setText("0.7\t2")
     with patch.object(QtWidgets.QMessageBox, "warning") as warning:
         window.action_paste.trigger(); app.processEvents()
-    assert model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.current_groups) == original
+    assert model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.arm_names) == original
     assert warning.called or model.last_data_error
     def change_confidence(dialog):
         dialog.fields["confidence"].setText("80")
         click(dialog.findChild(QtWidgets.QDialogButtonBox).button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     modal(app, RatioDataDialog, change_confidence, lambda: window.tableView.row_header_clicked(edit_row))
-    assert model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.current_groups).confidence == 80
+    assert model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.arm_names).confidence == 80
     window.action_undo.trigger(); model = window.model
-    assert model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.current_groups) == original
+    assert model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.arm_names) == original
     window.action_redo.trigger(); model = window.model
-    assert model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.current_groups).confidence == 80
+    assert model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.arm_names).confidence == 80
     window.action_undo.trigger(); model = window.model
     record("ratio-paste-rollback-undo-redo", window, invalid_paste="0.7 / lower 2", restored=vars(original))
 
@@ -308,7 +308,7 @@ def run(app, window, scenario, record):
         dialog.fields["se"].setText(str(ses[-1]))
         click(dialog.findChild(QtWidgets.QDialogButtonBox).button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     modal(app, RatioDataDialog, log_input, lambda: window.tableView.row_header_clicked(11))
-    assert model.get_current_analysis_unit_for_study(11).ratio_input(model.current_groups).scale == "log"
+    assert model.get_current_analysis_unit_for_study(11).ratio_input(model.arm_names).scale == "log"
     assert float(model.data(model.index(11, model.OUTCOMES[0]))) == round(math.exp(ys[-1]), model.NUM_DIGITS)
     record("ratio-log-effect-se-entered", window, estimate=ys[-1], log_se=ses[-1])
 
@@ -330,12 +330,12 @@ def run(app, window, scenario, record):
     dose_column = model.columnCount()-1
     window.tableView.copy_contents_in_range(model.index(11, model.OUTCOMES[0]), model.index(11, dose_column), to_clipboard=True)
     assert len(app.clipboard().text().split("\t")) == 5
-    original = model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.current_groups)
+    original = model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.arm_names)
     window.tableView.setCurrentIndex(model.index(edit_row, model.OUTCOMES[2]))
     app.clipboard().setText(f"{original.upper}\tB\t{edit_row}")
     window.action_paste.trigger(); app.processEvents()
     model = window.model
-    assert model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.current_groups).confidence == 90
+    assert model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.arm_names).confidence == 90
     assert model.current_sheet.rows[edit_row].covariate_values[model.current_sheet.covariates[0]['id']] == "B"
     record("ratio-compact-table-copy-paste", window, visible_outcomes=3, copied_columns=5)
 
@@ -388,7 +388,7 @@ def run(app, window, scenario, record):
     expected = json.loads(str(r_bridge.execute_r_string("{" + prefix + 'f <- metafor::rma.uni(e$yi,vi=e$vi,method="FE",level=90); jsonlite::toJSON(list(b=as.numeric(f$b),se=f$se,lower=f$ci.lb,upper=f$ci.ub),auto_unbox=TRUE,digits=16)}')[0]))
     for key, name in (("estimate","b"), ("standard_error","se"), ("lower_bound","lower"), ("upper_bound","upper")):
         assert abs(actual["calculation_scale."+key]-expected[name]) <= 1.1e-6, (actual, expected)
-    assert model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.current_groups).confidence == 90
+    assert model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.arm_names).confidence == 90
     record("ratio-independent-output-confidence", view, output_confidence=90, source_confidence=90, actual=actual, expected=expected)
     view.close(); app.processEvents()
     for workflow in ("cumulative", "leave-one-out", "subgroup", "meta-regression"):
@@ -514,7 +514,7 @@ def verify_bundled_sample(app, window, hazard, record):
         for i, row in enumerate(rows):
             study = model.current_sheet.rows[i]
             unit = model.get_current_analysis_unit_for_study(i)
-            ratio = unit.ratio_input(model.current_groups)
+            ratio = unit.ratio_input(model.arm_names)
             assert study.label == (row["trial"] if hazard else row["authors"])
             assert study.year == (None if hazard else row["year"])
             if hazard:
@@ -525,7 +525,7 @@ def verify_bundled_sample(app, window, hazard, record):
                 assert study.covariate_values[next(c['id'] for c in model.current_sheet.covariates if c['name']=='Chemotherapy timing')] == {1: "Adjuvant", 2: "Neoadjuvant", 3: "Concomitant"}[row["grp"]]
             else:
                 assert ratio.source == "raw" and ratio.unit == "catheter-days"
-                assert unit.get_raw_data_for_arms(model.current_groups) == [row["x1i"], row["t1i"], row["x2i"], row["t2i"]]
+                assert unit.get_raw_data_for_arms(model.arm_names) == [row["x1i"], row["t1i"], row["x2i"], row["t2i"]]
             assert math.isfinite(float(model.data(model.index(i, model.OUTCOMES[0]))))
 
     def visible(kind):

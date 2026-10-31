@@ -46,16 +46,6 @@ class WorkspaceDataset:
         covariate.name = new
 
 
-def _models(dataset):
-    return (
-        edit_list_models.TXGroupsModel(
-            dataset=dataset, outcome="Mortality", follow_up="6 months"
-        ),
-        edit_list_models.OutcomesModel(dataset=dataset),
-        edit_list_models.FollowUpsModel(dataset=dataset, outcome="Mortality"),
-        edit_list_models.StudiesModel(dataset=dataset),
-        edit_list_models.CovariatesModel(dataset=dataset),
-    )
 
 
 @pytest.mark.parametrize("model_index", range(5))

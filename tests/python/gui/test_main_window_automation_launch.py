@@ -524,126 +524,6 @@ def test_meantime_sample_project_loads_native_factor_covariate():
     assert set(present_values) == {"1", "2", "3", "4"}
 
 
-def test_edit_list_models_return_native_values_and_accept_native_edits():
-    from PyQt6 import QtCore
-    from rc_metastudio import edit_list_models
-
-    app, window = automation.start_automation()
-    try:
-        assert window.open(_sample_project_path("amino.rcms")) is True
-        dataset = window.model.dataset
-        window.model.add_covariate(
-            "Dose",
-            "continuous",
-            dict(
-                (study.name, index + 1) for index, study in enumerate(dataset.studies)
-            ),
-        )
-        follow_up_name = dataset.get_follow_up_names_for_outcome(
-            window.model.current_outcome_name
-        )[0]
-
-        models = [
-            edit_list_models.TXGroupsModel(
-                dataset=dataset,
-                outcome=window.model.current_outcome_name,
-                follow_up=follow_up_name,
-            ),
-            edit_list_models.OutcomesModel(dataset=dataset),
-            edit_list_models.FollowUpsModel(
-                dataset=dataset, outcome=window.model.current_outcome_name
-            ),
-            edit_list_models.StudiesModel(dataset=dataset),
-            edit_list_models.CovariatesModel(dataset=dataset),
-        ]
-
-        for list_model in models:
-            index = list_model.index(0, 0)
-            display_value = list_model.data(index, QtCore.Qt.ItemDataRole.DisplayRole)
-            alignment_value = list_model.data(
-                index, QtCore.Qt.ItemDataRole.TextAlignmentRole
-            )
-
-            assert display_value not in (None, "")
-            assert not hasattr(display_value, "value")
-            assert alignment_value == int(
-                QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter
-            )
-
-        group_model = edit_list_models.TXGroupsModel(
-            dataset=dataset,
-            outcome=window.model.current_outcome_name,
-            follow_up=follow_up_name,
-        )
-        assert group_model.setData(group_model.index(0, 0), "Renamed Group") is True
-        assert "Renamed Group" in [
-            group_model.data(
-                group_model.index(row, 0), QtCore.Qt.ItemDataRole.DisplayRole
-            )
-            for row in range(group_model.rowCount())
-        ]
-
-        follow_up_model = edit_list_models.FollowUpsModel(
-            dataset=dataset, outcome=window.model.current_outcome_name
-        )
-        assert (
-            follow_up_model.setData(follow_up_model.index(0, 0), "Renamed Follow Up")
-            is True
-        )
-        assert (
-            follow_up_model.data(
-                follow_up_model.index(0, 0), QtCore.Qt.ItemDataRole.DisplayRole
-            )
-            == "Renamed Follow Up"
-        )
-
-        studies_model = edit_list_models.StudiesModel(dataset=dataset)
-        assert studies_model.setData(studies_model.index(0, 0), "Renamed Study") is True
-        assert (
-            studies_model.data(
-                studies_model.index(0, 0), QtCore.Qt.ItemDataRole.DisplayRole
-            )
-            == "Renamed Study"
-        )
-
-        covariates_model = edit_list_models.CovariatesModel(dataset=dataset)
-        assert (
-            covariates_model.setData(covariates_model.index(0, 0), "Renamed Dose")
-            is True
-        )
-        assert (
-            covariates_model.data(
-                covariates_model.index(0, 0), QtCore.Qt.ItemDataRole.DisplayRole
-            )
-            == "Renamed Dose"
-        )
-
-        outcomes_model = edit_list_models.OutcomesModel(dataset=dataset)
-        assert (
-            outcomes_model.setData(outcomes_model.index(0, 0), "Renamed Outcome")
-            is True
-        )
-        assert (
-            outcomes_model.data(
-                outcomes_model.index(0, 0), QtCore.Qt.ItemDataRole.DisplayRole
-            )
-            == "Renamed Outcome"
-        )
-
-        errors = []
-        studies_model.dataError.connect(errors.append)
-        assert studies_model.setData(studies_model.index(0, 0), "") is False
-        assert errors == ["Study names cannot be empty."]
-
-        errors = []
-        covariates_model.dataError.connect(errors.append)
-        assert covariates_model.setData(covariates_model.index(0, 0), "") is False
-        assert errors == ["Covariate names cannot be empty."]
-    finally:
-        _mark_workspace_saved(window)
-        window.close()
-        app.processEvents()
-        os.chdir(REPO_ROOT)
 
 
 def test_change_covariate_type_model_returns_native_values_and_accepts_native_edits():
@@ -2041,28 +1921,6 @@ def test_edit_plot_dialog_round_trips_style_and_appearance_params(monkeypatch):
         app.processEvents()
 
 
-def test_shared_plot_options_surface_uses_default_arm_labels():
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio.plot_defaults import apply_default_forest_arm_labels
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    analysis_dialog = QtWidgets.QDialog()
-    analysis_form = Ui_AnalysisSetupDialog()
-    analysis_form.setupUi(analysis_dialog)
-    apply_default_forest_arm_labels(analysis_form)
-    edit_dialog = plot_editor_dialog.EditPlotDialog({}, "forest.png")
-
-    try:
-        assert analysis_form.col3_str_edit.text() == "Intervention"
-        assert analysis_form.col4_str_edit.text() == "Control"
-        assert edit_dialog.col3_str_edit.text() == "Intervention"
-        assert edit_dialog.col4_str_edit.text() == "Control"
-    finally:
-        edit_dialog.close()
-        analysis_dialog.close()
-        app.processEvents()
 
 
 def test_sroc_plot_editor_round_trips_reitsma_style_contract():
@@ -2466,7 +2324,7 @@ def test_diagnostic_forest_methods_enable_pre_run_plots_tab(
     class DiagnosticModel(object):
         current_effect = "Sens"
         current_outcome_name = "Outcome"
-        current_groups = ["Test"]
+        arm_names = ["Test"]
         def get_current_outcome_subtype(self):
             return None
         def get_current_follow_up_name(self):

@@ -540,4 +540,3 @@ def test_closing_csv_wizard_cancels_queued_entry_scroll_reset(qapp, monkeypatch)
     sip.delete(wizard)
     qapp.processEvents()
     assert not failures
-

@@ -190,7 +190,7 @@ def test_direct_table_view_mutation_is_checkpointed_for_one_undo(qapp):
     model = dataset_table_model.DatasetTableModel(dataset=dataset, add_blank_study=False)
     model.current_outcome_name = "Outcome"
     model.update_column_indices()
-    model.current_groups = []
+    model.arm_names = []
     initial = project_adapter.RuntimeProject(
         dataset=model.dataset,
         model_state=model.get_state(),

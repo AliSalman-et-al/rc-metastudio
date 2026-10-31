@@ -85,7 +85,7 @@ def _sortable_dataset_model():
 
     raw_events_by_name = {"Gamma": 3, "Alpha": 1, "Beta": 2}
     effects_by_name = {"Gamma": 0.3, "Alpha": 0.1, "Beta": 0.2}
-    group_comparison = "-".join(meta_globals.DEFAULT_GROUP_NAMES)
+    arm_key = "-".join(meta_globals.DEFAULT_GROUP_NAMES)
     for study in dataset.studies:
         analysis_unit = study.get_analysis_unit("Mortality", "first")
         analysis_unit.set_raw_data_for_groups(
@@ -94,7 +94,7 @@ def _sortable_dataset_model():
         )
         analysis_unit.set_effect_and_ci(
             "OR",
-            group_comparison,
+            arm_key,
             effects_by_name[study.name],
             effects_by_name[study.name] - 0.01,
             effects_by_name[study.name] + 0.01,
@@ -106,7 +106,7 @@ def _sortable_dataset_model():
     )
     model.current_outcome_name = "Mortality"
     model.current_effect = "OR"
-    model.current_groups = meta_globals.DEFAULT_GROUP_NAMES
+    model.arm_names = meta_globals.DEFAULT_GROUP_NAMES
     model.update_column_indices()
     return model
 
@@ -129,23 +129,23 @@ def test_follow_up_navigation_handles_removed_middle_index():
 
 def test_outcome_sort_uses_each_study_display_effect_source():
     model = _sortable_dataset_model()
-    group_comparison = model.get_current_group_comparison()
+    arm_key = model.get_current_arm_key()
     studies = {study.name: study for study in model.dataset.studies}
 
     for study in model.dataset.studies:
         unit = study.get_analysis_unit("Mortality", "first")
-        for group in model.current_groups:
+        for group in model.arm_names:
             unit.groups[group].raw_data[:] = ["", ""]
         unit.set_effect_for_source(
-            "entered", "OR", group_comparison,
+            "entered", "OR", arm_key,
             {"Alpha": 1.0, "Beta": 2.0, "Gamma": 3.0}[study.name],
             0.1,
             4.0,
         )
 
     alpha = studies["Alpha"].get_analysis_unit("Mortality", "first")
-    alpha.groups[model.current_groups[0]].raw_data[:] = [1, 10]
-    alpha.set_effect_for_source("derived_preview", "OR", group_comparison, 9.0, 8.0, 10.0)
+    alpha.groups[model.arm_names[0]].raw_data[:] = [1, 10]
+    alpha.set_effect_for_source("derived_preview", "OR", arm_key, 9.0, 8.0, 10.0)
 
     model.sort_studies(model.OUTCOMES[0], reverse=False)
 

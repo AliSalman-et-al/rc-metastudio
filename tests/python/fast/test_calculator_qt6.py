@@ -466,7 +466,7 @@ def test_continuous_imputation_uses_r_keys_not_visible_headers(qapp, monkeypatch
     form.simple_table.setHorizontalHeaderLabels(
         ["N", "Mean", "SD", "SE", "Variance", "Lower", "Upper", "P-Value"]
     )
-    form.current_groups = ["Group 1", "Group 2"]
+    form.arm_names = ["Group 1", "Group 2"]
     form.confidence_level = 95.0
     form.analysis_unit = object()
     from rc_metastudio.calculator_service import CalculatorService
@@ -506,7 +506,7 @@ def test_row_header_signals_are_restored_when_calculator_opening_raises(
 
     class FakeModel(QtCore.QAbstractTableModel):
         dataset = [object()]
-        current_groups = ["Group 1", "Group 2"]
+        arm_names = ["Group 1", "Group 2"]
         current_effect = "MD"
 
         def get_current_outcome_subtype(self):
@@ -524,7 +524,7 @@ def test_row_header_signals_are_restored_when_calculator_opening_raises(
         def get_current_analysis_unit_for_study(self, study_index):
             return FakeAnalysisUnit()
 
-        def get_current_group_comparison(self):
+        def get_current_arm_key(self):
             return "Group 1-Group 2"
 
         def get_current_outcome_type(self):
@@ -577,13 +577,13 @@ class FakeAnalysisUnit:
             values.extend(self.raw_data[group])
         return values
 
-    def get_effect_and_ci(self, metric, group_comparison, confidence_multiplier):
+    def get_effect_and_ci(self, metric, arm_key, confidence_multiplier):
         return 1.0, 0.5, 2.0
 
     def get_effect_and_ci_for_source(
-        self, source, effect, group_comparison, confidence_multiplier
+        self, source, effect, arm_key, confidence_multiplier
     ):
-        return self.get_effect_and_ci(effect, group_comparison, confidence_multiplier)
+        return self.get_effect_and_ci(effect, arm_key, confidence_multiplier)
 
     def set_effect_and_ci(self, *args, **kwargs):
         pass
@@ -798,7 +798,7 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
 
 
 @pytest.mark.parametrize(
-    ("data_type", "groups", "raw_data", "metric", "group_comparison", "partial"),
+    ("data_type", "groups", "raw_data", "metric", "arm_key", "partial"),
     [
         (
             meta_globals.BINARY,
@@ -828,7 +828,7 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
     ids=["binary", "continuous", "diagnostic"],
 )
 def test_calculator_effect_source_preserves_entered_partial_and_empty_data(
-    data_type, groups, raw_data, metric, group_comparison, partial
+    data_type, groups, raw_data, metric, arm_key, partial
 ):
     from rc_metastudio import analysis_dataset, calculator_routines
 
@@ -837,19 +837,19 @@ def test_calculator_effect_source_preserves_entered_partial_and_empty_data(
         raw_data=raw_data,
         group_names=groups,
     )
-    args = (unit, groups, metric, group_comparison, 1.96)
+    args = (unit, groups, metric, arm_key, 1.96)
 
-    unit.set_effect_for_source("entered", metric, group_comparison, 0.5, 0.4, 0.6)
+    unit.set_effect_for_source("entered", metric, arm_key, 0.5, 0.4, 0.6)
     assert calculator_routines.calculator_effect_source(*args) == "entered"
 
     unit.set_effect_for_source(
-        "derived_preview", metric, group_comparison, 0.6, 0.5, 0.7
+        "derived_preview", metric, arm_key, 0.6, 0.5, 0.7
     )
     assert calculator_routines.calculator_effect_source(*args) == "derived_preview"
 
     unit.set_raw_data_for_group(groups[0], partial)
     unit.set_effect_for_source(
-        "derived_preview", metric, group_comparison, 0.6, 0.5, 0.7
+        "derived_preview", metric, arm_key, 0.6, 0.5, 0.7
     )
     assert calculator_routines.calculator_effect_source(*args) == "entered"
 
@@ -1156,13 +1156,13 @@ class FakeDiagnosticAnalysisUnit:
     def get_raw_data_for_groups(self, groups):
         return self.raw_data
 
-    def get_effect_and_ci(self, metric, group_comparison, confidence_multiplier):
+    def get_effect_and_ci(self, metric, arm_key, confidence_multiplier):
         return None, None, None
 
     def get_effect_and_ci_for_source(
-        self, source, effect, group_comparison, confidence_multiplier
+        self, source, effect, arm_key, confidence_multiplier
     ):
-        return self.get_effect_and_ci(effect, group_comparison, confidence_multiplier)
+        return self.get_effect_and_ci(effect, arm_key, confidence_multiplier)
 
     def set_effect_and_ci(self, *args, **kwargs):
         pass
@@ -1251,9 +1251,9 @@ class FakeContinuousAnalysisUnit:
         return None, None, None
 
     def get_effect_and_ci_for_source(
-        self, source, effect, group_comparison, confidence_multiplier
+        self, source, effect, arm_key, confidence_multiplier
     ):
-        return self.get_effect_and_ci(effect, group_comparison, confidence_multiplier)
+        return self.get_effect_and_ci(effect, arm_key, confidence_multiplier)
 
     def set_effect_and_ci(self, *args, **kwargs):
         pass
@@ -1266,5 +1266,3 @@ class FakeContinuousAnalysisUnit:
 
     def set_upper(self, *args, **kwargs):
         pass
-
-

@@ -14,9 +14,9 @@ from test_types import key_click, required
 REPO_ROOT = os.getcwd()
 
 
-def _derived_effect_and_ci(analysis_unit, metric, group_comparison):
+def _derived_effect_and_ci(analysis_unit, metric, arm_key):
     value = analysis_unit.get_effect_for_source(
-        "derived_preview", metric, group_comparison
+        "derived_preview", metric, arm_key
     )
     return value.estimate, value.lower, value.upper
 
@@ -237,7 +237,7 @@ def test_dataset_model_rejects_invalid_added_entity_names():
                 method(*args)
 
         with pytest.raises(ValueError, match="already exists"):
-            window.model.add_new_group(window.model.get_current_groups()[0])
+            window.model.add_new_group(window.model.get_arm_names()[0])
 
         with pytest.raises(ValueError, match="already exists"):
             window.model.add_follow_up_to_current_outcome(
@@ -424,15 +424,15 @@ def test_diagnostic_complete_paste_recomputes_sens_spec_confidence_intervals(
         )
 
         analysis_unit = model.get_current_analysis_unit_for_study(0)
-        group_comparison = model.get_current_group_comparison()
+        arm_key = model.get_current_arm_key()
         assert _cell_text(model, 0, model.OUTCOMES[0]) == "0.750"
         assert all(_cell_text(model, 0, col) != "" for col in model.OUTCOMES)
-        assert _derived_effect_and_ci(analysis_unit, "Sens", group_comparison) == (
+        assert _derived_effect_and_ci(analysis_unit, "Sens", arm_key) == (
             0.750,
             0.588,
             0.873,
         )
-        assert _derived_effect_and_ci(analysis_unit, "PLR", group_comparison) == (
+        assert _derived_effect_and_ci(analysis_unit, "PLR", arm_key) == (
             61.5,
             8.8,
             431.0,
@@ -454,12 +454,12 @@ def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
         table.set_data_in_model(model.index(0, model.NAME), _variant("Lehman"))
         table.set_data_in_model(model.index(1, model.NAME), _variant("Lagasse"))
         analysis_unit = model.get_current_analysis_unit_for_study(1)
-        group_comparison = model.get_current_group_comparison()
-        analysis_unit.groups[group_comparison].raw_data = [15.0, 11.0, 16.0, 49.0]
+        arm_key = model.get_current_arm_key()
+        analysis_unit.groups[arm_key].raw_data = [15.0, 11.0, 16.0, 49.0]
         for metric in meta_globals.DIAGNOSTIC_METRICS:
             analysis_unit.set_effect_and_ci(
                 metric,
-                group_comparison,
+                arm_key,
                 0.577,
                 0.385,
                 0.748,
@@ -467,7 +467,7 @@ def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
             )
             analysis_unit.calculate_display_effect_and_ci(
                 metric,
-                group_comparison,
+                arm_key,
                 lambda value: value,
                 confidence_level=model.get_confidence_level(),
                 confidence_multiplier=model.get_confidence_multiplier(),
@@ -647,449 +647,22 @@ def test_invalid_paste_reports_validation_error_when_model_signals_are_blocked(
         _close_without_prompt(app, window)
 
 
-def test_add_outcome_dialog_rejects_blank_and_duplicate_names(monkeypatch):
-    from PyQt6 import QtWidgets
-
-    app, window = automation.start_automation()
-    try:
-        _create_binary_dataset(window)
-        main_window = sys.modules["rc_metastudio.main_window"]
-        warnings = []
-        monkeypatch.setattr(
-            main_window.QMessageBox,
-            "warning",
-            lambda *args, **kwargs: warnings.append(args),
-        )
-
-        class BlankOutcomeDialog(object):
-            def __init__(self, *args, **kwargs):
-                self.outcome_name_le = QtWidgets.QLineEdit()
-                self.outcome_name_le.setText("   ")
-                self.datatype_cbo_box = QtWidgets.QComboBox()
-                self.datatype_cbo_box.addItem("Binary")
-
-            def exec(self):
-                return True
-
-        monkeypatch.setattr(
-            main_window.add_new_dialogs, "AddOutcomeDialog", BlankOutcomeDialog
-        )
-
-        window.current_dimension = "outcome"
-        window.add_new()
-
-        assert warnings[-1][1:] == ("Warning", "Outcome names cannot be empty.")
-        assert window.model.dataset.get_outcome_names() == ["Mortality"]
-
-        class DuplicateOutcomeDialog(BlankOutcomeDialog):
-            def __init__(self, *args, **kwargs):
-                super(DuplicateOutcomeDialog, self).__init__(*args, **kwargs)
-                self.outcome_name_le.setText("Mortality")
-
-        monkeypatch.setattr(
-            main_window.add_new_dialogs, "AddOutcomeDialog", DuplicateOutcomeDialog
-        )
-
-        window.add_new()
-
-        assert warnings[-1][1:] == (
-            "Warning",
-            "An outcome named Mortality already exists. Please pick another name.",
-        )
-        assert window.model.dataset.get_outcome_names() == ["Mortality"]
-    finally:
-        _close_without_prompt(app, window)
-
-
-def test_edit_dialog_rejects_blank_outcome_name(monkeypatch):
-    from rc_metastudio import edit_dialog
-    from PyQt6 import QtWidgets
-
-    app, window = automation.start_automation()
-    dialog = None
-    try:
-        _create_binary_dataset(window)
-        warnings = []
-        monkeypatch.setattr(
-            edit_dialog.QMessageBox,
-            "warning",
-            lambda *args, **kwargs: warnings.append(args),
-        )
-
-        class BlankOutcomeDialog(object):
-            def __init__(self, *args, **kwargs):
-                self.outcome_name_le = QtWidgets.QLineEdit()
-                self.outcome_name_le.setText("")
-                self.datatype_cbo_box = QtWidgets.QComboBox()
-                self.datatype_cbo_box.addItem("Numeric", "continuous")
-
-            def exec(self):
-                return True
-
-        monkeypatch.setattr(
-            edit_dialog.add_new_dialogs, "AddOutcomeDialog", BlankOutcomeDialog
-        )
-
-        dialog = edit_dialog.EditDialog(window.model.dataset, parent=window)
-        dialog.add_outcome()
-
-        assert warnings[-1][1:] == ("Warning", "Outcome names cannot be empty.")
-        assert window.model.dataset.get_outcome_names() == ["Mortality"]
-    finally:
-        if dialog is not None:
-            dialog.close()
-        _close_without_prompt(app, window)
-
-
-def test_edit_dialog_rejects_blank_names_for_other_dataset_entities(monkeypatch):
-    from rc_metastudio import edit_dialog
-    from PyQt6 import QtWidgets
-
-    app, window = automation.start_automation()
-    dialog = None
-    try:
-        _create_binary_dataset(window)
-        warnings = []
-        monkeypatch.setattr(
-            edit_dialog.QMessageBox,
-            "warning",
-            lambda *args, **kwargs: warnings.append(args),
-        )
-
-        class BlankGroupDialog(object):
-            def __init__(self, *args, **kwargs):
-                self.group_name_le = QtWidgets.QLineEdit()
-                self.group_name_le.setText(" ")
-
-            def exec(self):
-                return True
-
-        class BlankFollowUpDialog(object):
-            def __init__(self, *args, **kwargs):
-                self.follow_up_name_le = QtWidgets.QLineEdit()
-                self.follow_up_name_le.setText("   ")
-
-            def exec(self):
-                return True
-
-        class BlankCovariateDialog(object):
-            def __init__(self, *args, **kwargs):
-                self.covariate_name_le = QtWidgets.QLineEdit()
-                self.covariate_name_le.setText("")
-                self.datatype_cbo_box = QtWidgets.QComboBox()
-                self.datatype_cbo_box.addItem("Numeric", "continuous")
-
-            def exec(self):
-                return True
-
-        class BlankStudyDialog(object):
-            def __init__(self, *args, **kwargs):
-                self.study_lbl = QtWidgets.QLineEdit()
-                self.study_lbl.setText(" ")
-
-            def exec(self):
-                return True
-
-        monkeypatch.setattr(
-            edit_dialog.add_new_dialogs, "AddGroupDialog", BlankGroupDialog
-        )
-        monkeypatch.setattr(
-            edit_dialog.add_new_dialogs, "AddFollowUpDialog", BlankFollowUpDialog
-        )
-        monkeypatch.setattr(
-            edit_dialog.add_new_dialogs, "AddCovariateDialog", BlankCovariateDialog
-        )
-        monkeypatch.setattr(
-            edit_dialog.add_new_dialogs, "AddStudyDialog", BlankStudyDialog
-        )
-
-        dialog = edit_dialog.EditDialog(window.model.dataset, parent=window)
-
-        dialog.add_group()
-        assert warnings[-1][1:] == ("Warning", "Group names cannot be empty.")
-
-        dialog.add_follow_up()
-        assert warnings[-1][1:] == ("Warning", "Follow-up names cannot be empty.")
-
-        dialog.add_covariate()
-        assert warnings[-1][1:] == ("Warning", "Covariate names cannot be empty.")
-
-        dialog.add_study()
-        assert warnings[-1][1:] == ("Warning", "Study names cannot be empty.")
-
-        assert " " not in window.model.dataset.get_group_names()
-        assert "   " not in window.model.dataset.get_follow_up_names()
-        assert "" not in window.model.get_covariate_names()
-        assert " " not in window.model.dataset.get_study_names()
-    finally:
-        if dialog is not None:
-            dialog.close()
-        _close_without_prompt(app, window)
-
-
-def test_add_dialogs_reject_blank_names_for_other_dataset_entities(monkeypatch):
-    from PyQt6 import QtWidgets
-
-    app, window = automation.start_automation()
-    try:
-        _create_binary_dataset(window)
-        main_window = sys.modules["rc_metastudio.main_window"]
-        warnings = []
-        monkeypatch.setattr(
-            main_window.QMessageBox,
-            "warning",
-            lambda *args, **kwargs: warnings.append(args),
-        )
-
-        class BlankGroupDialog(object):
-            def __init__(self, *args, **kwargs):
-                self.group_name_le = QtWidgets.QLineEdit()
-                self.group_name_le.setText("   ")
-
-            def exec(self):
-                return True
-
-        class BlankFollowUpDialog(object):
-            def __init__(self, *args, **kwargs):
-                self.follow_up_name_le = QtWidgets.QLineEdit()
-                self.follow_up_name_le.setText("")
-
-            def exec(self):
-                return True
-
-        class BlankCovariateDialog(object):
-            def __init__(self, *args, **kwargs):
-                self.covariate_name_le = QtWidgets.QLineEdit()
-                self.covariate_name_le.setText(" ")
-                self.datatype_cbo_box = QtWidgets.QComboBox()
-                self.datatype_cbo_box.addItem("Numeric", "continuous")
-
-            def exec(self):
-                return True
-
-        monkeypatch.setattr(
-            main_window.add_new_dialogs, "AddGroupDialog", BlankGroupDialog
-        )
-        monkeypatch.setattr(
-            main_window.add_new_dialogs, "AddFollowUpDialog", BlankFollowUpDialog
-        )
-        monkeypatch.setattr(
-            main_window.add_new_dialogs, "AddCovariateDialog", BlankCovariateDialog
-        )
-
-        window.current_dimension = "group"
-        window.add_new()
-        assert warnings[-1][1:] == ("Warning", "Group names cannot be empty.")
-
-        window.current_dimension = "follow-up"
-        window.add_new()
-        assert warnings[-1][1:] == ("Warning", "Follow-up names cannot be empty.")
-
-        window.add_covariate()
-        assert warnings[-1][1:] == ("Warning", "Covariate names cannot be empty.")
-
-        assert "   " not in window.model.dataset.get_group_names()
-        assert "" not in window.model.dataset.get_follow_up_names()
-        assert " " not in window.model.get_covariate_names()
-    finally:
-        _close_without_prompt(app, window)
-
-
-def test_main_window_dialog_text_slots_accept_native_pyqt6_line_edit_strings(
-    monkeypatch,
-):
-    from PyQt6 import QtWidgets
-
-    app, window = automation.start_automation()
-    try:
-        _create_binary_dataset(window)
-        main_window = sys.modules["rc_metastudio.main_window"]
-
-        class GroupNameDialog(object):
-            def __init__(self, *args, **kwargs):
-                self.group_name_le = QtWidgets.QLineEdit()
-                self.group_name_le.setText("Renamed group")
-
-            def exec(self):
-                return True
-
-        class CovariateNameDialog(object):
-            def __init__(self, *args, **kwargs):
-                self.group_name_le = QtWidgets.QLineEdit()
-                self.group_name_le.setText("Renamed dose")
-
-            def exec(self):
-                return True
-
-        class NewCovariateDialog(object):
-            def __init__(self, *args, **kwargs):
-                self.covariate_name_le = QtWidgets.QLineEdit()
-                self.covariate_name_le.setText("Dose")
-                self.datatype_cbo_box = QtWidgets.QComboBox()
-                self.datatype_cbo_box.addItem("Numeric", "continuous")
-
-            def exec(self):
-                return True
-
-        class NewOutcomeDialog(object):
-            def __init__(self, *args, **kwargs):
-                self.outcome_name_le = QtWidgets.QLineEdit()
-                self.outcome_name_le.setText("Recovery")
-                self.datatype_cbo_box = QtWidgets.QComboBox()
-                self.datatype_cbo_box.addItem("Binary")
-
-            def exec(self):
-                return True
-
-        class NewGroupDialog(object):
-            def __init__(self, *args, **kwargs):
-                self.group_name_le = QtWidgets.QLineEdit()
-                self.group_name_le.setText("Added group")
-
-            def exec(self):
-                return True
-
-        class NewFollowUpDialog(object):
-            def __init__(self, *args, **kwargs):
-                self.follow_up_name_le = QtWidgets.QLineEdit()
-                self.follow_up_name_le.setText("week 4")
-
-            def exec(self):
-                return True
-
-        monkeypatch.setattr(
-            main_window.edit_name_dialogs, "EditGroupNameDialog", GroupNameDialog
-        )
-        monkeypatch.setattr(
-            main_window.edit_name_dialogs,
-            "EditCovariateNameDialog",
-            CovariateNameDialog,
-        )
-        monkeypatch.setattr(
-            main_window.add_new_dialogs, "AddCovariateDialog", NewCovariateDialog
-        )
-        monkeypatch.setattr(
-            main_window.add_new_dialogs, "AddOutcomeDialog", NewOutcomeDialog
-        )
-        monkeypatch.setattr(
-            main_window.add_new_dialogs, "AddGroupDialog", NewGroupDialog
-        )
-        monkeypatch.setattr(
-            main_window.add_new_dialogs, "AddFollowUpDialog", NewFollowUpDialog
-        )
-
-        window.edit_group_name(window.model.get_current_groups()[0])
-        window.add_covariate()
-        window.current_dimension = "outcome"
-        window.add_new()
-        window.current_dimension = "group"
-        window.add_new()
-        window.current_dimension = "follow-up"
-        window.add_new()
-        window.rename_covariate(window.model.dataset.covariates[0])
-
-        assert "Renamed group" in window.model.get_current_groups()
-        assert "Recovery" in window.model.dataset.get_outcome_names()
-        assert "Added group" in window.model.dataset.get_group_names()
-        assert "week 4" in window.model.dataset.get_follow_up_names()
-        assert "Renamed dose" in window.model.get_covariate_names()
-    finally:
-        _close_without_prompt(app, window)
-
-
-def test_edit_dataset_rejection_leaves_main_dataset_unchanged(monkeypatch):
-    from rc_metastudio import edit_dialog
-
-    app, window = automation.start_automation()
-    try:
-        _create_binary_dataset(window)
-        original_dataset = window.model.dataset
-        original_names = [study.name for study in original_dataset.studies]
-        original_history = window.workspace.document
-
-        def reject_after_editing_copy(dialog):
-            dialog.dataset.studies[0].name = "Rejected dataset edit"
-            return QDialog.DialogCode.Rejected
-
-        monkeypatch.setattr(edit_dialog.EditDialog, "exec", reject_after_editing_copy)
-
-        window.edit_dataset()
-
-        assert window.model.dataset is original_dataset
-        assert [study.name for study in window.model.dataset.studies] == original_names
-        assert window.workspace.document == original_history
-    finally:
-        _close_without_prompt(app, window)
-
-
-def test_edit_empty_dataset_can_be_cancelled(monkeypatch):
-    from rc_metastudio import edit_dialog
-
-    app, window = automation.start_automation()
-    try:
-        original_dataset = window.model.dataset
-        monkeypatch.setattr(
-            edit_dialog.EditDialog,
-            "exec",
-            lambda dialog: QDialog.DialogCode.Rejected,
-        )
-
-        window.edit_dataset()
-
-        assert window.model.dataset is original_dataset
-        assert window.model.current_outcome_name is None
-    finally:
-        _close_without_prompt(app, window)
-
-
-def test_edit_empty_dataset_acceptance_preserves_state_without_empty_undo(monkeypatch):
-    from rc_metastudio import edit_dialog
-
-    app, window = automation.start_automation()
-    try:
-        monkeypatch.setattr(
-            edit_dialog.EditDialog,
-            "exec",
-            lambda dialog: QDialog.DialogCode.Accepted,
-        )
-
-        window.edit_dataset()
-
-        assert window.model.dataset.get_outcome_names() == []
-        assert window.model.current_outcome_name is None
-        assert not window.workspace.can_undo
-    finally:
-        _close_without_prompt(app, window)
-
-
-def test_edit_dataset_acceptance_propagates_copied_dataset_mutation(monkeypatch):
-    from rc_metastudio import edit_dialog
-
-    app, window = automation.start_automation()
-    try:
-        _create_binary_dataset(window)
-        original_dataset = window.model.dataset
-        original_name = original_dataset.studies[0].name
-        renamed_study = "Renamed through Edit Dataset"
-        original_history = window.workspace.document
-
-        def accept_after_renaming_study(dialog):
-            dialog.dataset.studies[0].name = renamed_study
-            return QDialog.DialogCode.Accepted
-
-        monkeypatch.setattr(edit_dialog.EditDialog, "exec", accept_after_renaming_study)
-
-        window.edit_dataset()
-
-        assert window.model.dataset is not original_dataset
-        assert window.model.dataset.studies[0].name == renamed_study
-        assert original_dataset.studies[0].name == original_name
-        assert window.workspace.can_undo
-
-        window.undo()
-        assert window.model.dataset.studies[0].name == original_name
-    finally:
-        _close_without_prompt(app, window)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def test_metric_selection_and_confidence_level_are_preserved_in_model_state():

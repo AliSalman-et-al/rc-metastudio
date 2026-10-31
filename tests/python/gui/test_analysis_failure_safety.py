@@ -38,7 +38,7 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
     class Model:
         current_effect = "OR"
         current_outcome_name = "Outcome"
-        current_groups = ["A", "B"]
+        arm_names = ["A", "B"]
 
         def get_current_outcome_subtype(self):
             return None

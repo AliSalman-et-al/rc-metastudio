@@ -255,7 +255,7 @@ def test_document_to_runtime_project_reconstructs_state_and_selection() -> None:
     assert runtime_project.model_state == {
         "current_outcome_name": "Outcome",
         "current_follow_up_index": 0,
-        "current_groups": ["Tx 1", "Tx 2"],
+        "arm_names": ["Tx 1", "Tx 2"],
         "current_effect": "OR",
         "study_auto_added": False,
         "confidence_level": 95.0,

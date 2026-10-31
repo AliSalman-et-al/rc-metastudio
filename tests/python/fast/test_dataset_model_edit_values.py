@@ -21,9 +21,9 @@ from rc_metastudio import meta_globals
 from rc_metastudio import r_bridge
 
 
-def _derived_effect_and_ci(analysis_unit, metric, group_comparison):
+def _derived_effect_and_ci(analysis_unit, metric, arm_key):
     value = analysis_unit.get_effect_for_source(
-        "derived_preview", metric, group_comparison
+        "derived_preview", metric, arm_key
     )
     return value.estimate, value.lower, value.upper
 
@@ -137,7 +137,7 @@ def _diagnostic_model_with_empty_cells():
         dataset=dataset, add_blank_study=False
     )
     model.current_outcome_name = "Accuracy"
-    model.current_groups = ["test 1"]
+    model.arm_names = ["test 1"]
     model.update_column_indices()
     return model
 
@@ -153,7 +153,7 @@ def _binary_model_with_blank_study():
     )
     model.current_outcome_name = "Mortality"
     model.current_effect = "OR"
-    model.current_groups = meta_globals.DEFAULT_GROUP_NAMES
+    model.arm_names = meta_globals.DEFAULT_GROUP_NAMES
     model.update_column_indices()
     return model
 
@@ -170,7 +170,7 @@ def _model_with_real_study_and_empty_new_entry_row(data_type):
     model = dataset_table_model.DatasetTableModel(dataset=dataset, add_blank_study=True)
     model.current_outcome_name = "Outcome"
     model.current_effect = "OR" if data_type == meta_globals.BINARY else "MD"
-    model.current_groups = (
+    model.arm_names = (
         ["test 1"]
         if data_type == meta_globals.DIAGNOSTIC
         else meta_globals.DEFAULT_GROUP_NAMES
@@ -206,7 +206,7 @@ def _continuous_model_with_named_study():
     )
     model.current_outcome_name = "Score"
     model.current_effect = "MD"
-    model.current_groups = meta_globals.DEFAULT_GROUP_NAMES
+    model.arm_names = meta_globals.DEFAULT_GROUP_NAMES
     model.update_column_indices()
     return model
 
@@ -263,7 +263,7 @@ def test_direct_effect_edit_on_unnamed_study_emits_study_name_error(monkeypatch)
     assert errors == ["Please enter a study name before entering study data."]
     assert study.include is False
     assert analysis_unit.get_entered_effect_and_ci(
-        "OR", model.get_current_group_comparison()
+        "OR", model.get_current_arm_key()
     ) == (
         None,
         None,
@@ -276,8 +276,8 @@ def test_pft_outcome_edit_uses_first_arm_sample_size_for_scale_conversion(monkey
     model.dataset.studies[0].name = "Alpha"
     model.current_effect = "PFT"
     analysis_unit = model.get_current_analysis_unit_for_study(0)
-    group = model.current_groups[0]
-    comparison = model.get_current_group_comparison()
+    group = model.arm_names[0]
+    comparison = model.get_current_arm_key()
     analysis_unit.groups[group].raw_data[:] = [1, 20]
     analysis_unit.set_effect_for_source(
         "entered", "PFT", comparison, 0.2, 0.1, 0.3
@@ -348,7 +348,7 @@ def test_diagnostic_raw_count_edit_rejects_complete_all_zero_table(monkeypatch):
         "enter at least one count greater than zero."
     )
     assert model.get_current_analysis_unit_for_study(0).get_raw_data_for_group(
-        model.current_groups[0]
+        model.arm_names[0]
     ) == [0.0, 0.0, 0.0, ""]
 
 
@@ -363,12 +363,12 @@ def test_diagnostic_raw_count_edit_allows_zero_cells_in_nonempty_table(monkeypat
 def test_diagnostic_partial_raw_count_edit_clears_all_derived_metrics(monkeypatch):
     model = _diagnostic_model_with_empty_cells()
     analysis_unit = model.get_current_analysis_unit_for_study(0)
-    group_comparison = model.get_current_group_comparison()
-    analysis_unit.groups[group_comparison].raw_data = [19.0, 10.0, 1.0, 81.0]
+    arm_key = model.get_current_arm_key()
+    analysis_unit.groups[arm_key].raw_data = [19.0, 10.0, 1.0, 81.0]
     for metric in meta_globals.DIAGNOSTIC_METRICS:
         analysis_unit.set_effect_and_ci(
             metric,
-            group_comparison,
+            arm_key,
             0.75,
             0.50,
             0.90,
@@ -376,7 +376,7 @@ def test_diagnostic_partial_raw_count_edit_clears_all_derived_metrics(monkeypatc
         )
         analysis_unit.calculate_display_effect_and_ci(
             metric,
-            group_comparison,
+            arm_key,
             lambda value: value,
             confidence_level=model.get_confidence_level(),
             confidence_multiplier=model.get_confidence_multiplier(),
@@ -392,16 +392,16 @@ def test_diagnostic_partial_raw_count_edit_clears_all_derived_metrics(monkeypatc
 
     assert model.setData(model.index(0, model.RAW_DATA[2]), "") is True
 
-    assert analysis_unit.groups[group_comparison].raw_data == [19.0, 10.0, "", 81.0]
+    assert analysis_unit.groups[arm_key].raw_data == [19.0, 10.0, "", 81.0]
     assert model.dataset.studies[0].include is False
     for metric in meta_globals.DIAGNOSTIC_METRICS:
-        assert analysis_unit.get_entered_effect_and_ci(metric, group_comparison) == (
+        assert analysis_unit.get_entered_effect_and_ci(metric, arm_key) == (
             None,
             None,
             None,
         )
         assert analysis_unit.get_display_effect_and_ci_for_source(
-            "derived_preview", metric, group_comparison
+            "derived_preview", metric, arm_key
         ) == (
             None,
             None,
@@ -414,10 +414,10 @@ def test_diagnostic_raw_count_edit_rolls_back_when_effect_calculation_fails(
 ):
     model = _diagnostic_model_with_empty_cells()
     analysis_unit = model.get_current_analysis_unit_for_study(0)
-    group_comparison = model.get_current_group_comparison()
-    analysis_unit.groups[group_comparison].raw_data = [19.0, 10.0, 1.0, 81.0]
+    arm_key = model.get_current_arm_key()
+    analysis_unit.groups[arm_key].raw_data = [19.0, 10.0, 1.0, 81.0]
     analysis_unit.set_effect_and_ci(
-        "Sens", group_comparison, 0.66, 0.50, 0.80, model.get_confidence_multiplier()
+        "Sens", arm_key, 0.66, 0.50, 0.80, model.get_confidence_multiplier()
     )
     model.dataset.studies[0].include = True
     errors = []
@@ -434,8 +434,8 @@ def test_diagnostic_raw_count_edit_rolls_back_when_effect_calculation_fails(
 
     assert model.setData(model.index(0, model.RAW_DATA[0]), "20") is False
 
-    assert analysis_unit.groups[group_comparison].raw_data == [19.0, 10.0, 1.0, 81.0]
-    assert _derived_effect_and_ci(analysis_unit, "Sens", group_comparison) == (
+    assert analysis_unit.groups[arm_key].raw_data == [19.0, 10.0, 1.0, 81.0]
+    assert _derived_effect_and_ci(analysis_unit, "Sens", arm_key) == (
         0.66,
         0.50,
         0.80,

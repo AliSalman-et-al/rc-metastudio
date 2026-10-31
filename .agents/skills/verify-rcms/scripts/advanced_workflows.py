@@ -819,8 +819,8 @@ def calculators(app, window, mode, record):
         "diagnostic": DiagnosticDataDialog,
     }[family]
     before = list(
-        window.model.get_current_analysis_unit_for_study(0).get_raw_data_for_groups(
-            window.model.current_groups
+        window.model.get_current_analysis_unit_for_study(0).get_raw_data_for_arms(
+            window.model.arm_names
         )
     )
     entered = mode.startswith("entered-")
@@ -831,7 +831,7 @@ def calculators(app, window, mode, record):
         unit = window.model.get_current_analysis_unit_for_study(0)
         return unit.get_entered_effect_and_ci(
             "Sens" if family == "diagnostic" else window.model.current_effect,
-            window.model.get_current_group_comparison(),
+            window.model.get_current_arm_key(),
         )
 
     before_entered = entered_values()
@@ -862,7 +862,7 @@ def calculators(app, window, mode, record):
 
     def preview(dialog, metric):
         value = float(dialog.effect_text_box.text().replace(",", "."))
-        raw = dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)
+        raw = dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)
         if family == "binary":
             a, n, c, m = raw
             expected = {
@@ -951,8 +951,8 @@ def calculators(app, window, mode, record):
                 text(dialog.prevalence_text_box, 0.5)
                 assert dialog.back_calculate_button.isEnabled()
                 click(app, dialog.back_calculate_button)
-                assert dialog.analysis_unit.get_raw_data_for_groups(
-                    dialog.current_groups
+                assert dialog.analysis_unit.get_raw_data_for_arms(
+                    dialog.arm_names
                 ) == [80, 20, 10, 90]
             else:
                 from rc_metastudio.binary_data_dialog import BinaryBackCalculationDialog
@@ -966,7 +966,7 @@ def calculators(app, window, mode, record):
                     else ContinuousBackCalculationDialog
                 )
                 raw_before = list(
-                    dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)
+                    dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)
                 )
 
                 def dialog_state():
@@ -1014,7 +1014,7 @@ def calculators(app, window, mode, record):
                     lambda: click(app, dialog.back_calculate_button),
                 )
                 assert (
-                    dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)
+                    dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)
                     == raw_before
                 )
                 assert dialog_state() == state_before
@@ -1034,8 +1034,8 @@ def calculators(app, window, mode, record):
                     accept_choice,
                     lambda: click(app, dialog.back_calculate_button),
                 )
-                actual = dialog.analysis_unit.get_raw_data_for_groups(
-                    dialog.current_groups
+                actual = dialog.analysis_unit.get_raw_data_for_arms(
+                    dialog.arm_names
                 )
                 if family == "binary":
                     assert actual in ([10, 100, 5, 100], [95, 100, 90, 100]), actual
@@ -1052,8 +1052,8 @@ def calculators(app, window, mode, record):
             click(app, dialog.clear_button)
             assert all(
                 v is None
-                for v in dialog.analysis_unit.get_raw_data_for_groups(
-                    dialog.current_groups
+                for v in dialog.analysis_unit.get_raw_data_for_arms(
+                    dialog.arm_names
                 )
             )
             values = (
@@ -1085,7 +1085,7 @@ def calculators(app, window, mode, record):
             z = r_bridge.get_confidence_multiplier_from_r(95)
             observed["authority_entered"] = [point, (upper - point) / z]
             actual_entered = dialog.analysis_unit.get_entered_effect_and_ci(
-                dialog.current_effect, dialog.group_comparison
+                dialog.current_effect, dialog.arm_key
             )
             assert all(
                 math.isclose(a, b, abs_tol=1e-10)
@@ -1103,13 +1103,13 @@ def calculators(app, window, mode, record):
                 for row, fields in enumerate(values):
                     for column, value in enumerate(fields):
                         cell(table, row, column, value)
-            raw_zero = dialog.analysis_unit.get_raw_data_for_groups(
-                dialog.current_groups
+            raw_zero = dialog.analysis_unit.get_raw_data_for_arms(
+                dialog.arm_names
             )
             assert math.isclose(raw_zero[2], math.sqrt(13), abs_tol=0.0001), raw_zero
             text(dialog.correlation_pre_post, 0.5)
             expected = [20, 4, math.sqrt(7), 20, 1, 2]
-            actual = dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)
+            actual = dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)
             assert all(
                 math.isclose(a, b, abs_tol=0.0001) for a, b in zip(actual, expected)
             ), (actual, expected)
@@ -1149,13 +1149,13 @@ def calculators(app, window, mode, record):
             cell(table, 0, column, float(table.item(0, column).text()) + 1)
             preview(dialog, metrics[-1])
         if entered:
-            before_invalid = list(dialog.analysis_unit.get_entered_effect_and_ci(dialog.current_effect, dialog.group_comparison))
+            before_invalid = list(dialog.analysis_unit.get_entered_effect_and_ci(dialog.current_effect, dialog.arm_key))
             modal(app, QtWidgets.QMessageBox,
                   lambda message: click(app, message.button(QtWidgets.QMessageBox.StandardButton.Ok)),
                   lambda: text(dialog.upper_text_box, "-1"))
             click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
             assert dialog.isVisible(), "invalid CI was accepted"
-            assert list(dialog.analysis_unit.get_entered_effect_and_ci(dialog.current_effect, dialog.group_comparison)) == before_invalid
+            assert list(dialog.analysis_unit.get_entered_effect_and_ci(dialog.current_effect, dialog.arm_key)) == before_invalid
             record("calculator-invalid-ci-blocked", dialog, mode=mode, entered=before_invalid)
             finished = []
             dialog.upper_text_box.editingFinished.connect(lambda: finished.append(True))
@@ -1167,7 +1167,7 @@ def calculators(app, window, mode, record):
                    editing_finished=len(finished), has_focus=dialog.upper_text_box.hasFocus(),
                    focus=focus.objectName() if focus else None,
                    invalid=dialog._validation_failed,
-                   stored=list(dialog.analysis_unit.get_entered_effect_and_ci(dialog.current_effect, dialog.group_comparison)))
+                   stored=list(dialog.analysis_unit.get_entered_effect_and_ci(dialog.current_effect, dialog.arm_key)))
             assert finished, ("CI correction did not commit through editingFinished", mode)
             assert not dialog._validation_failed
         if family == "continuous" and not entered:
@@ -1178,21 +1178,21 @@ def calculators(app, window, mode, record):
             samples = ("0.00001", "1e12", "0,12345678901234566", "1.2345678901234567e-8")
             for value in samples:
                 cell(dialog.simple_table, 0, 2, value)
-                actual = dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)[2]
+                actual = dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)[2]
                 expected = float(value.replace(",", "."))
                 record("calculator-precision-input", dialog, mode=mode, input=value,
                        stored=actual, expected=expected)
                 assert actual == expected, ("raw precision lost", mode, value, actual)
             cell(dialog.simple_table, 0, 1, "0,12345678901234566")
-            assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)[1] == 0.12345678901234566
+            assert dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)[1] == 0.12345678901234566
             cell(dialog.simple_table, 0, 0, "1e6")
-            assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)[0] == 1000000
+            assert dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)[0] == 1000000
             if mode not in {"onearm-mean", "pre-post"}:
                 cell(dialog.simple_table, 1, 2, "1e12")
-                assert dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)[5] == 1e12
+                assert dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)[5] == 1e12
             # Generated group intervals must describe the edited mean and SD.
             from statistics import NormalDist
-            n, mean, sd = dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)[:3]
+            n, mean, sd = dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)[:3]
             headers = dialog.get_column_header_strs()
             z = NormalDist().inv_cdf(.975)
             for name, expected in (("Lower", mean-z*sd/math.sqrt(n)), ("Upper", mean+z*sd/math.sqrt(n))):
@@ -1202,7 +1202,7 @@ def calculators(app, window, mode, record):
             if mode == "pre-post":
                 dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
         observed["accepted_raw"] = list(
-            dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)
+            dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)
         )
         observed["metric"] = dialog.current_effect
         if entered:
@@ -1210,7 +1210,7 @@ def calculators(app, window, mode, record):
                 dialog.analysis_unit.get_effect_and_ci_for_source(
                     "entered",
                     dialog.current_effect,
-                    dialog.group_comparison,
+                    dialog.arm_key,
                     dialog.confidence_multiplier,
                 )
             )
@@ -1261,8 +1261,8 @@ def calculators(app, window, mode, record):
     assert window.workspace.is_dirty
     assert (
         list(
-            window.model.get_current_analysis_unit_for_study(0).get_raw_data_for_groups(
-                window.model.current_groups
+            window.model.get_current_analysis_unit_for_study(0).get_raw_data_for_arms(
+                window.model.arm_names
             )
         )
         == observed["accepted_raw"]
@@ -1272,7 +1272,7 @@ def calculators(app, window, mode, record):
         click(app, dialog.clear_button)
         assert all(
             v is None
-            for v in dialog.analysis_unit.get_raw_data_for_groups(dialog.current_groups)
+            for v in dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)
         )
         click(
             app,
@@ -1284,8 +1284,8 @@ def calculators(app, window, mode, record):
     # Compare actual raw/entered values rather than mutable state-object identity.
     assert (
         list(
-            window.model.get_current_analysis_unit_for_study(0).get_raw_data_for_groups(
-                window.model.current_groups
+            window.model.get_current_analysis_unit_for_study(0).get_raw_data_for_arms(
+                window.model.arm_names
             )
         )
         == observed["accepted_raw"]
@@ -1294,8 +1294,8 @@ def calculators(app, window, mode, record):
     assert entered_values() == before_entered
     assert (
         list(
-            window.model.get_current_analysis_unit_for_study(0).get_raw_data_for_groups(
-                window.model.current_groups
+            window.model.get_current_analysis_unit_for_study(0).get_raw_data_for_arms(
+                window.model.arm_names
             )
         )
         == before
@@ -1305,8 +1305,8 @@ def calculators(app, window, mode, record):
     assert entered_values() == accepted_entered
     assert (
         list(
-            window.model.get_current_analysis_unit_for_study(0).get_raw_data_for_groups(
-                window.model.current_groups
+            window.model.get_current_analysis_unit_for_study(0).get_raw_data_for_arms(
+                window.model.arm_names
             )
         )
         == observed["accepted_raw"]
@@ -1315,11 +1315,11 @@ def calculators(app, window, mode, record):
     assert window.save() and window.open(window.out_path, raise_on_error=True)
     assert window.model.dataset.studies[0].include
     unit = window.model.get_current_analysis_unit_for_study(0)
-    assert list(unit.get_raw_data_for_groups(window.model.current_groups)) == [
+    assert list(unit.get_raw_data_for_arms(window.model.arm_names)) == [
         "" if value is None else value for value in observed["accepted_raw"]
     ]
     if entered:
-        comparison = window.model.get_current_group_comparison()
+        comparison = window.model.get_current_arm_key()
         values = list(
             unit.get_effect_and_ci_for_source(
                 "entered",
@@ -1333,7 +1333,7 @@ def calculators(app, window, mode, record):
         "calculator-mode-reopened",
         window,
         mode=mode,
-        raw=unit.get_raw_data_for_groups(window.model.current_groups),
+        raw=unit.get_raw_data_for_arms(window.model.arm_names),
         entered=observed.get("accepted_entered"),
     )
     from rc_metastudio import analysis_setup_dialog, results_window
@@ -1421,7 +1421,7 @@ def calculators(app, window, mode, record):
             if invalid_input == "partial":
                 partial = window.model.get_current_analysis_unit_for_study(
                     0
-                ).get_raw_data_for_groups(window.model.current_groups)
+                ).get_raw_data_for_arms(window.model.arm_names)
                 assert partial[0] == 1 and all(
                     value in (None, "") for value in partial[1:]
                 ), partial
@@ -1433,112 +1433,8 @@ def calculators(app, window, mode, record):
                 value in (None, "")
                 for value in window.model.get_current_analysis_unit_for_study(
                     0
-                ).get_raw_data_for_groups(window.model.current_groups)
+                ).get_raw_data_for_arms(window.model.arm_names)
             )
-
-
-def project_structure(app, window, record):
-    from rc_metastudio.add_new_dialogs import AddFollowUpDialog, AddGroupDialog
-    from rc_metastudio.edit_dialog import EditDialog
-
-    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
-    before = raw_rows(window)
-    ids = [s.stable_id for s in window.model.dataset.studies]
-    old_outcome = window.model.current_outcome_name
-
-    def rename(view, value):
-        index = view.model().index(0, 0)
-        view.setCurrentIndex(index)
-        view.edit(index)
-        app.processEvents()
-        field = view.findChild(QtWidgets.QLineEdit)
-        assert field is not None
-        field.setText(value)
-        QTest.keyClick(field, QtCore.Qt.Key.Key_Return)
-        app.processEvents()
-        assert str(view.model().data(view.model().index(0, 0))) == value
-
-    def edit(dialog):
-        for kind, button, field, name in (
-            (AddGroupDialog, dialog.add_group_btn, "group_name_le", "Extra group"),
-            (
-                AddFollowUpDialog,
-                dialog.add_follow_up_btn,
-                "follow_up_name_le",
-                "Extra follow-up",
-            ),
-        ):
-
-            def add(form, field=field, name=name):
-                getattr(form, field).setText(name)
-                click(
-                    app,
-                    form.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok),
-                )
-
-            modal(app, kind, add, lambda button=button: click(app, button))
-        rename(dialog.group_list, "Renamed group")
-        rename(dialog.follow_up_list, "Renamed baseline")
-        rename(dialog.outcome_list, "Renamed outcome")
-        for view in (dialog.outcome_list, dialog.follow_up_list):
-            index = view.model().index(0, 0)
-            QTest.mouseClick(
-                view.viewport(),
-                QtCore.Qt.MouseButton.LeftButton,
-                pos=view.visualRect(index).center(),
-            )
-        record(
-            "structure-draft",
-            dialog,
-            groups=dialog.groups_model.group_list,
-            follow_ups=dialog.follow_ups_model.follow_up_list,
-            outcomes=dialog.outcomes_model.outcome_list,
-        )
-        click(
-            app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
-        )
-
-    modal(app, EditDialog, edit, window.action_edit.trigger)
-    assert window.model.current_outcome_name == "Renamed outcome"
-    assert [s.stable_id for s in window.model.dataset.studies] == ids
-    assert raw_rows(window) == before, (
-        window.model.current_groups,
-        window.model.get_current_follow_up_name(),
-        raw_rows(window),
-        before,
-    )
-    assert "Extra group" in window.model.dataset.get_group_names()
-    assert "Extra follow-up" in window.model.dataset.get_follow_up_names_for_outcome(
-        "Renamed outcome"
-    )
-
-    def cancel(dialog):
-        rename(dialog.outcome_list, "Discarded outcome")
-        click(
-            app,
-            dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel),
-        )
-
-    modal(app, EditDialog, cancel, window.action_edit.trigger)
-    assert window.model.current_outcome_name == "Renamed outcome"
-    window.action_undo.trigger()
-    assert window.model.current_outcome_name == old_outcome
-    assert raw_rows(window) == before
-    window.action_redo.trigger()
-    window.out_path = str(Path(sys.argv[2]) / "structure.rcms")
-    assert window.save() and window.open(window.out_path, raise_on_error=True)
-    assert window.model.current_outcome_name == "Renamed outcome"
-    assert raw_rows(window) == before
-    assert [s.stable_id for s in window.model.dataset.studies] == ids
-    record(
-        "structure-reopened",
-        window,
-        outcome=window.model.current_outcome_name,
-        groups=window.model.current_groups,
-        follow_up=window.model.get_current_follow_up_name(),
-        rows=raw_rows(window),
-        study_ids=ids,
-    )
 
 
 def table_covariates(app, window, record):
@@ -1559,19 +1455,20 @@ def table_covariates(app, window, record):
     table = window.tableView
     model = window.model
     columns = table.get_covariate_columns()
+    dose_id, region_id = [c["id"] for c in model.current_sheet.covariates][-2:]
     first = model.index(0, columns[0])
     table.setCurrentIndex(first)
     values = "\n".join(f"{i + 1}\t{'North' if i % 2 else 'South'}" for i in range(19))
     app.clipboard().setText(values)
     window.action_paste.trigger()
     app.processEvents()
-    assert model.dataset.studies[0].covariate_values == {"Dose": 1.0, "Region": "South"}
-    assert model.dataset.studies[18].covariate_values == {
-        "Dose": 19.0,
-        "Region": "South",
+    assert model.current_sheet.rows[0].covariate_values == {dose_id: 1.0, region_id: "South"}
+    assert model.current_sheet.rows[18].covariate_values == {
+        dose_id: 19.0,
+        region_id: "South",
     }
     window.action_undo.trigger()
-    assert window.model.dataset.studies[0].covariate_values.get("Dose") in (None, "")
+    assert window.model.current_sheet.rows[0].covariate_values.get(dose_id) in (None, "")
     window.action_redo.trigger()
     model = window.model
     selection = QtCore.QItemSelection(
@@ -1586,8 +1483,8 @@ def table_covariates(app, window, record):
         for row in app.clipboard().text().strip().splitlines()
     ] == [[i + 1, "North" if i % 2 else "South"] for i in range(19)]
     identities = {
-        s.stable_id: (s.name, dict(s.covariate_values), s.include)
-        for s in model.dataset.studies
+        s.id: (s.label, dict(s.covariate_values), s.include)
+        for s in model.current_sheet.rows
     }
     table.scrollTo(window.model.index(0, window.model.NAME))
     app.processEvents()
@@ -1637,19 +1534,19 @@ def table_covariates(app, window, record):
     names = [str(name) for name in names if name not in (None, "")]
     assert names == sorted(names, key=str.casefold), names
     assert {
-        s.stable_id: (s.name, dict(s.covariate_values), s.include)
-        for s in window.model.dataset.studies
+        s.id: (s.label, dict(s.covariate_values), s.include)
+        for s in window.model.current_sheet.rows
     } == identities
     window.out_path = str(Path(sys.argv[2]) / "covariates.rcms")
     assert window.save() and window.open(window.out_path, raise_on_error=True)
     assert {
-        s.stable_id: (s.name, dict(s.covariate_values), s.include)
-        for s in window.model.dataset.studies
+        s.id: (s.label, dict(s.covariate_values), s.include)
+        for s in window.model.current_sheet.rows
     } == identities
     record(
         "table-covariates-reopened",
         window,
-        covariates=[(c.name, c.data_type) for c in window.model.dataset.covariates],
+        covariates=[(c["name"], c["data_type"]) for c in window.model.current_sheet.covariates],
         studies=list(identities.values()),
     )
     from analysis_matrix import set_parameter
@@ -1668,9 +1565,9 @@ def table_covariates(app, window, record):
     rows = raw_rows(window)
     vector = lambda index: "c(" + ",".join(str(row[index]) for row in rows) + ")"
     effects = f'metafor::escalc("OR", ai={vector(0)}, n1i={vector(1)}, ci={vector(2)}, n2i={vector(3)}, add=.5, to="only0", drop00=FALSE)'
-    included = [study for study in window.model.dataset.studies if study.include]
+    included = [study for study in window.model.current_sheet.rows if study.include]
     dose = (
-        "c(" + ",".join(str(study.covariate_values["Dose"]) for study in included) + ")"
+        "c(" + ",".join(str(study.covariate_values[dose_id]) for study in included) + ")"
     )
     for workflow in ("meta-regression", "subgroup"):
         (
@@ -1689,7 +1586,7 @@ def table_covariates(app, window, record):
         setup = visible(analysis_setup_dialog.AnalysisSetupDialog)
         if workflow == "meta-regression":
             for covariate, checkbox in setup.covs_and_check_boxes:
-                checkbox.setChecked(covariate.name == "Dose")
+                checkbox.setChecked(covariate["name"] == "Dose")
             setup.fixed_effects_radio.setChecked(False)
         else:
             setup.method_cbo_box.setCurrentText(
@@ -1727,7 +1624,7 @@ def table_covariates(app, window, record):
                     "c("
                     + ",".join(
                         "TRUE"
-                        if study.covariate_values["Region"] == region
+                        if study.covariate_values[region_id] == region
                         else "FALSE"
                         for study in included
                     )
@@ -1745,6 +1642,31 @@ def table_covariates(app, window, record):
                     <= 1e-6
                 ), (actual, region, expected)
         view.close()
+
+    from rc_metastudio.covariate_type_dialog import CovariateTypeDialog
+    sheet_id = window.model.current_sheet_id
+    other_sheet = window.model.dataset.sheets[1]
+    other_before = [(r.id, dict(r.covariate_values)) for r in other_sheet.rows], list(other_sheet.covariates)
+    dose = next(c for c in window.model.current_sheet.covariates if c["id"] == dose_id)
+    def convert(dialog):
+        assert dialog.cov_model.rowCount() == 19
+        assert dialog.cov_model.setData(dialog.cov_model.index(0, 2), "Low")
+        dialog.accept()
+    modal(app, CovariateTypeDialog, convert, lambda: window.change_covariate_type(dose))
+    converted = window.model.current_sheet.covariates[-1]
+    assert converted["name"] == "Dose (category)"
+    assert window.model.current_sheet.rows[0].covariate_values[converted["id"]] == "Low"
+    window._commit_model_operation(lambda: window.model.rename_covariate("Dose (category)", "Dose category"))
+    window.delete_covariate(converted)
+    assert converted["id"] not in [c["id"] for c in window.model.current_sheet.covariates]
+    window.undo()
+    assert converted["id"] in [c["id"] for c in window.model.current_sheet.covariates]
+    assert ([(r.id, dict(r.covariate_values)) for r in window.model.dataset.sheets[1].rows], list(window.model.dataset.sheets[1].covariates)) == other_before
+    assert window.model.current_sheet_id == sheet_id
+    window.out_path = str(Path(sys.argv[2]) / "covariate-types.rcms")
+    assert window.save() and window.open(window.out_path, raise_on_error=True)
+    assert window.model.current_sheet.covariates[-1]["name"] == "Dose category"
+    record("sheet-covariate-type-edit-delete-undo-reopened", window, covariates=window.model.current_sheet.covariates)
 
 
 def shell(app, window, record):
@@ -1904,8 +1826,6 @@ def run(app, window, scenario, record):
         confidence_inclusion(app, window, record)
     elif scenario == "options-zero-cells":
         zero_cells(app, window, record)
-    elif scenario == "project-structure":
-        project_structure(app, window, record)
     elif scenario == "project-table-covariates":
         table_covariates(app, window, record)
     elif scenario == "project-shell":

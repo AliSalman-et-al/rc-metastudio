@@ -29,7 +29,7 @@ def run(app, window, work, record):
     for case, (family, entered, expected) in enumerate(cases):
         window.workspace.mark_saved()
         view = matrix(app, window, "analysis-data-"+family, record, keep_results=True, group_names=entered)
-        assert tuple(window.model.current_groups) == expected, window.model.current_groups
+        assert tuple(window.model.arm_names) == expected, window.model.arm_names
         assert set(window.model.dataset.get_group_names()) == set(expected), window.model.dataset.get_group_names()
         headers = [str(window.model.headerData(i, QtCore.Qt.Orientation.Horizontal)) for i in range(window.model.columnCount())]
         if family.startswith("twoarm"):
@@ -132,9 +132,9 @@ def run(app, window, work, record):
                   "active_groups": [], "active_effect": None, "confidence_level": 95.0})
     original = legacy.read_bytes()
     assert window.open(str(legacy), raise_on_error=True)
-    assert window.model.current_groups == ["tx A", "tx B"], window.model.current_groups
+    assert window.model.arm_names == ["tx A", "tx B"], window.model.arm_names
     window.out_path=str(work / "legacy-arm-names.rcms")
     assert window.save() and window.open(window.out_path, raise_on_error=True)
-    assert window.model.current_groups == ["tx A", "tx B"]
+    assert window.model.arm_names == ["tx A", "tx B"]
     assert legacy.read_bytes() == original
-    record("round5-arm-legacy-reopened", window, groups=window.model.current_groups)
+    record("round5-arm-legacy-reopened", window, groups=window.model.arm_names)

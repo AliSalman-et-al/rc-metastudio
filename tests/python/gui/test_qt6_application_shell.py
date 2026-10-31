@@ -87,97 +87,6 @@ def test_startup_failure_injections_release_qt_objects_with_fatal_warnings():
         )
 
 
-def test_shell_actions_use_native_resources_and_fire_once(qapp, monkeypatch):
-    from rc_metastudio import about_legal_dialog
-    from rc_metastudio import main_window
-
-    about_calls: list[QtWidgets.QWidget] = []
-    open_calls: list[dict[str, object]] = []
-
-    monkeypatch.setattr(
-        about_legal_dialog.AboutLegalDialog,
-        "exec",
-        lambda dialog: about_calls.append(dialog.parentWidget()) or 0,
-    )
-    monkeypatch.setattr(
-        main_window.QFileDialog,
-        "getOpenFileName",
-        lambda **kwargs: open_calls.append(kwargs) or ("", ""),
-    )
-
-    app, window = automation.start_automation()
-    try:
-        connected_actions = (
-            window.action_save,
-            window.action_save_as,
-            window.action_open,
-            window.action_new_dataset,
-            window.action_quit,
-            window.action_go,
-            window.action_cum_ma,
-            window.action_loo_ma,
-            window.action_undo,
-            window.action_redo,
-            window.action_copy,
-            window.action_paste,
-            window.action_auto_fit_columns,
-            window.action_edit,
-            window.action_add_covariate,
-            window.action_meta_regression,
-            window.action_subgroup_ma,
-            window.action_about_legal,
-            window.action_change_confidence_level,
-            window.action_import_csv,
-        )
-        for action in connected_actions:
-            assert isinstance(action, QtGui.QAction)
-            assert action.text()
-            assert not action.icon().isNull()
-
-        assert [action.text() for action in window.menuBar().actions()] == [
-            "File",
-            "Edit",
-            "View",
-            "Analysis",
-            "Dataset",
-            "Help",
-        ]
-
-        assert (
-            window.action_open.shortcut().matches(
-                QtGui.QKeySequence(QtGui.QKeySequence.StandardKey.Open)
-            )
-            == QtGui.QKeySequence.SequenceMatch.ExactMatch
-        )
-        assert (
-            window.action_save.shortcut().matches(
-                QtGui.QKeySequence(QtGui.QKeySequence.StandardKey.Save)
-            )
-            == QtGui.QKeySequence.SequenceMatch.ExactMatch
-        )
-        assert (
-            window.action_new_dataset.shortcut().matches(
-                QtGui.QKeySequence(QtGui.QKeySequence.StandardKey.New)
-            )
-            == QtGui.QKeySequence.SequenceMatch.ExactMatch
-        )
-        assert (
-            window.action_quit.shortcut().matches(
-                QtGui.QKeySequence(QtGui.QKeySequence.StandardKey.Quit)
-            )
-            == QtGui.QKeySequence.SequenceMatch.ExactMatch
-        )
-
-        window.action_about_legal.trigger()
-        window.action_open.trigger()
-        app.processEvents()
-
-        assert about_calls == [window]
-        assert len(open_calls) == 1
-        assert open_calls[0]["parent"] is window
-        assert "*.rcms" in str(open_calls[0]["filter"])
-    finally:
-        _close_shell(app, window)
 
 
 def test_close_cancel_and_failed_save_keep_owned_shell_alive(qapp, monkeypatch):
@@ -430,14 +339,14 @@ def test_structured_project_restores_nondefault_active_selection_without_normali
         assert window.open(str(selected)) is True
         assert window.model.current_outcome_name == "nephrotoxic"
         assert window.model.get_current_follow_up_name() == "second"
-        assert window.model.current_groups == ["Control", "Intervention"]
+        assert window.model.arm_names == ["Control", "Intervention"]
         assert window.model.current_effect == "RR"
         assert window.model.get_confidence_level() == 90.0
         assert window.save() is True
         assert window.open(str(selected)) is True
         assert window.model.current_outcome_name == "nephrotoxic"
         assert window.model.get_current_follow_up_name() == "second"
-        assert window.model.current_groups == ["Control", "Intervention"]
+        assert window.model.arm_names == ["Control", "Intervention"]
         assert window.model.current_effect == "RR"
     finally:
         _close_shell(app, window)

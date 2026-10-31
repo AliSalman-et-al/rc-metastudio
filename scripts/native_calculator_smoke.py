@@ -342,14 +342,14 @@ def _run_main() -> int:
             table_view = window.tableView
             unit = model.get_current_analysis_unit_for_study(0)
             if data_type == "binary":
-                unit.get_raw_data_for_group(model.current_groups[0])[:] = [6, 20]
-                unit.get_raw_data_for_group(model.current_groups[1])[:] = [8, 22]
+                unit.get_raw_data_for_group(model.arm_names[0])[:] = [6, 20]
+                unit.get_raw_data_for_group(model.arm_names[1])[:] = [8, 22]
             elif data_type == "continuous":
-                unit.get_raw_data_for_group(model.current_groups[0])[:] = [10, 94, 2]
-                unit.get_raw_data_for_group(model.current_groups[1])[:] = [12, 90, 3]
+                unit.get_raw_data_for_group(model.arm_names[0])[:] = [10, 94, 2]
+                unit.get_raw_data_for_group(model.arm_names[1])[:] = [12, 90, 3]
             else:
-                unit.get_raw_data_for_group(model.current_groups[0])[:] = [12, 3, 4, 21]
-            before = list(unit.get_raw_data_for_group(model.current_groups[0]))
+                unit.get_raw_data_for_group(model.arm_names[0])[:] = [12, 3, 4, 21]
+            before = list(unit.get_raw_data_for_group(model.arm_names[0]))
             window.workspace.mark_saved()
             baseline_can_undo = window.workspace.can_undo
             baseline_digest = window.workspace.runtime_digest
@@ -483,7 +483,7 @@ def _run_main() -> int:
                 raise RuntimeError("native %s calculator was not exercised" % data_type)
 
             after = model.get_current_analysis_unit_for_study(0).get_raw_data_for_group(
-                model.current_groups[0]
+                model.arm_names[0]
             )
             if data_type == "binary" and after != [7, 21]:
                 raise RuntimeError("binary accepted edit did not reach the model")
