@@ -432,9 +432,9 @@ def run(
 
             for study in list(window.model.current_sheet.rows):
                 duplicate = copy.deepcopy(study)
-                duplicate.id = window.model.dataset.max_study_id() + 1
-                duplicate.name += " replicate"
-                window.model.dataset.add_study(duplicate)
+                duplicate.id = __import__("uuid").uuid4().hex
+                duplicate.label += " replicate"
+                window.model.current_sheet.rows.append(duplicate)
             window.model.set_state(window.model.get_state())
         callback_errors = []
 

@@ -262,12 +262,12 @@ def confidence_inclusion(app, window, record):
     window.tableView.setCurrentIndex(index)
     QTest.keyClick(window.tableView, QtCore.Qt.Key.Key_Space)
     app.processEvents()
-    assert not model.dataset.studies[0].include
-    assert sum(s.include for s in model.dataset.studies) == 18
+    assert not model.get_studies(False)[0].include
+    assert sum(s.include for s in model.get_studies(False)) == 18
     window.out_path = str(Path(sys.argv[2]) / "confidence-subset.rcms")
     assert window.save() and window.open(window.out_path, raise_on_error=True)
     assert window.model.get_confidence_level() == 90
-    assert not window.model.dataset.studies[0].include
+    assert not window.model.get_studies(False)[0].include
     window.action_go.trigger()
     app.processEvents()
     dialog = next(
@@ -294,7 +294,7 @@ def confidence_inclusion(app, window, record):
         "confidence-subset-reopened",
         window,
         confidence=window.model.get_confidence_level(),
-        included=[s.name for s in window.model.get_studies(only_if_included=True)],
+        included=[s.label for s in window.model.get_studies(only_if_included=True)],
     )
     view.close()
 
@@ -305,7 +305,7 @@ def zero_cells(app, window, record):
         columns = list(model.RAW_DATA)
         for row, column in ((0, columns[0]), (1, columns[0]), (1, columns[2])):
             assert model.setData(model.index(row, column), "0")
-        assert sum(s.include for s in model.dataset.studies) == 19
+        assert sum(s.include for s in model.get_studies(False)) == 19
         record("zero-cell-fixture", window, rows=raw_rows(window))
 
     for policy in ("only0", "all"):
@@ -824,7 +824,7 @@ def calculators(app, window, mode, record):
         )
     )
     entered = mode.startswith("entered-")
-    included_before = sum(study.include for study in window.model.dataset.studies)
+    included_before = sum(study.include for study in window.model.get_studies(False))
     observed = {}
 
     def entered_values():
@@ -1253,9 +1253,9 @@ def calculators(app, window, mode, record):
         QTest.mouseClick(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=point)
 
     modal(app, kind, drive, launch)
-    assert window.model.dataset.studies[0].include
+    assert window.model.get_studies(False)[0].include
     assert (
-        sum(study.include for study in window.model.dataset.studies) == included_before
+        sum(study.include for study in window.model.get_studies(False)) == included_before
     )
     accepted_entered = entered_values()
     assert window.workspace.is_dirty
@@ -1313,7 +1313,7 @@ def calculators(app, window, mode, record):
     )
     window.out_path = str(Path(sys.argv[2]) / "calculator-mode.rcms")
     assert window.save() and window.open(window.out_path, raise_on_error=True)
-    assert window.model.dataset.studies[0].include
+    assert window.model.get_studies(False)[0].include
     unit = window.model.get_current_analysis_unit_for_study(0)
     assert list(unit.get_raw_data_for_arms(window.model.arm_names)) == [
         "" if value is None else value for value in observed["accepted_raw"]
@@ -1417,7 +1417,7 @@ def calculators(app, window, mode, record):
                 )
 
             modal(app, kind, accept_invalid, launch)
-            assert not window.model.dataset.studies[0].include
+            assert not window.model.get_studies(False)[0].include
             if invalid_input == "partial":
                 partial = window.model.get_current_analysis_unit_for_study(
                     0
@@ -1427,7 +1427,7 @@ def calculators(app, window, mode, record):
                 ), partial
             record("diagnostic-unusable-excluded", window, input=invalid_input)
             window.action_undo.trigger()
-            assert window.model.dataset.studies[0].include
+            assert window.model.get_studies(False)[0].include
             assert entered_values() == saved_entered
             assert all(
                 value in (None, "")
@@ -1734,7 +1734,7 @@ def shell(app, window, record):
         QtWidgets.QFileDialog, "getOpenFileName", return_value=(sample, "")
     ):
         window.action_open.trigger()
-    assert window.model.dataset.studies[0].name == "Gonzalez"
+    assert window.model.get_studies(False)[0].label == "Gonzalez"
     assert window.model.setData(
         window.model.index(0, window.model.NAME), "Unsaved study"
     )
@@ -1749,7 +1749,7 @@ def shell(app, window, record):
         return_value=(str(ROOT / "sample_projects/continuous.rcms"), ""),
     ):
         modal(app, QtWidgets.QMessageBox, cancel, window.action_open.trigger)
-    assert window.model.dataset.studies[0].name == "Unsaved study"
+    assert window.model.get_studies(False)[0].label == "Unsaved study"
     assert window.workspace.is_dirty
     destination = Path(sys.argv[2]) / "shell.rcms"
     with patch.object(
@@ -1763,7 +1763,7 @@ def shell(app, window, record):
         if str(a.data()) == str(destination)
     )
     action.trigger()
-    assert window.model.dataset.studies[0].name == "Unsaved study"
+    assert window.model.get_studies(False)[0].label == "Unsaved study"
 
     def about(dialog):
         text = dialog.content_scroll_area.toPlainText()
@@ -1780,7 +1780,7 @@ def shell(app, window, record):
         "shell-reopened",
         window,
         project=window.out_path,
-        name=window.model.dataset.studies[0].name,
+        name=window.model.get_studies(False)[0].label,
     )
 
 

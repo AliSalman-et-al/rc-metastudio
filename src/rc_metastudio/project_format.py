@@ -145,16 +145,19 @@ def _convert_pairs(project, state):
             settings["metric"] = state.get("active_effect") or settings.get("effect")
             active = state.get("active_groups", [])
             settings["arms"] = [identities[n] for n in active] if active and all(n in identities for n in active) else [a["id"] for a in arms[:1 if outcome["data_type"] == 2 else 2]]
+            covariates = [dict(c, id=f"{sid}:cov:{i}") for i, c in enumerate(source["covariates"])]
+            covariate_ids = {c["name"]: c["id"] for c in covariates}
             rows = []
             for index, (row, unit) in enumerate(zip(source["studies"], units)):
                 record = {k: copy.deepcopy(v) for k,v in row.items() if k not in {"analysis_units", "id", "name"}}
                 record.update(id=f"{sid}:row:{index}", label=row["name"], raw_data={}, entered_effects=[], ratio_inputs=[])
+                record["covariates"] = {covariate_ids[k]: v for k, v in record["covariates"].items()}
                 if unit:
                     record["raw_data"] = {identities[a["name"]]: copy.deepcopy(a["raw_data"]) for a in unit["groups"]}
                     record["entered_effects"] = [{"metric": metric, "arms": comparisons[key], "values": copy.deepcopy(values)} for metric, entries in unit["entered_effects"].items() for key,values in entries.items()]
                     record["ratio_inputs"] = [{"arms": [identities[n] for n in value["groups"]], "input": copy.deepcopy(value["input"])} for value in unit.get("ratio_inputs", [])]
                 rows.append(record)
-            sheets.append(dict(id=sid, name=name, family=families[outcome["data_type"]], data_type=outcome["data_type"], sub_type=outcome["sub_type"], arms=arms, covariates=copy.deepcopy(source["covariates"]), settings=settings, rows=rows))
+            sheets.append(dict(id=sid, name=name, family=families[outcome["data_type"]], data_type=outcome["data_type"], sub_type=outcome["sub_type"], arms=arms, covariates=covariates, settings=settings, rows=rows))
             if (state.get("active_outcome"), state.get("active_follow_up")) == (outcome["name"], follow_up):
                 selection = sid
     return {"schema_version": 3, "title": source["title"], "notes": source["notes"], "sheets": sheets}, {"schema_version": 3, "current_sheet_id": selection or (sheets[0]["id"] if sheets else None)}

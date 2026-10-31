@@ -58,7 +58,7 @@ def references(window, method, workflow, metric):
     if workflow == "cumulative":
         subsets = [list(range(1, index + 2)) for index in range(n)]
         labels = [
-            study.name if index == 0 else "+ " + study.name
+            study.label if index == 0 else "+ " + study.label
             for index, study in enumerate(studies)
         ]
     elif workflow == "leave-one-out":
@@ -69,7 +69,7 @@ def references(window, method, workflow, metric):
                 for omitted in range(n)
             ],
         ]
-        labels = ["Overall", *["- " + study.name for study in studies]]
+        labels = ["Overall", *["- " + study.label for study in studies]]
     else:
         subsets = [
             [index + 1 for index in range(n) if index % 2 == parity]
@@ -94,7 +94,6 @@ def references(window, method, workflow, metric):
 
 
 def run(app, window, scenario, record):
-    from rc_metastudio.analysis_dataset import Covariate
     from tests.analysis_regression.golden.support.golden_analysis import (
         parsed_numeric_sections,
     )
@@ -110,10 +109,9 @@ def run(app, window, scenario, record):
     def prepare(target):
         if workflow == "subgroup":
             studies = target.model.get_studies(only_if_included=True)
-            target.model.dataset.add_covariate(
-                Covariate("Group", "factor"),
+            target.model.add_covariate("Group", "factor",
                 {
-                    study.name: "A" if index % 2 else "B"
+                    study.label: "A" if index % 2 else "B"
                     for index, study in enumerate(studies)
                 },
             )

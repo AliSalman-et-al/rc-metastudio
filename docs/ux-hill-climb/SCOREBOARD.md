@@ -57,6 +57,26 @@ and DOCX are unavailable, so its counts describe partial work only.
 | T4 | 3 | 0 | 0 | 2 | 4.34–4.57; 0.23 | yes |
 | T5 | 6 | 0 | 40 | 2 | 0.74–1.17; 0.43 | no (partial) |
 
+## After sheets
+
+Two real offscreen Qt/R repetitions; counts and numerical/text receipts match via
+`--compare-measures`. Counts remain derived from performed gestures.
+
+| Task | Clicks (Δ) | Shortcuts (Δ) | Characters (Δ) | Dialogs (Δ) | Seconds min–max | Δ seconds vs baseline first run (range) |
+| --- | ---: | ---: | ---: | ---: | --- | --- |
+| T1 | 21 (+0) | 1 (+0) | 9 (+0) | 2 (+0) | 9.63–17.50 | -3.57–+4.30 |
+| T2 | 50 (+0) | 74 (+0) | 85 (+0) | 5 (+0) | 16.98–39.94 | -2.68–+20.28 |
+| T3 | 2 (+0) | 0 (+0) | 0 (+0) | 1 (+0) | 2.91–5.25 | -0.58–+1.76 |
+| T4 | 3 (+0) | 0 (+0) | 0 (+0) | 2 (+0) | 2.69–7.04 | -1.65–+2.70 |
+| T5 | 6 (+0) | 0 (+0) | 40 (+0) | 2 (+0) | 0.66–0.99 | -0.09–+0.25 |
+
+Evidence: `20261031T001023Z-8aec8197-hillclimb` and
+`20261031T001407Z-6c744ee0-hillclimb` under `artifacts/verification/rcms/`.
+No task adds a gesture or dialog. The slower second repetition spent longer in
+analysis/result waits (T1–T4), with concurrent verification on a contended host;
+it does not identify an added sheet interaction. T5 remains partial (no manuscript
+PDF/DOCX). These tasks each use one sheet; they do not measure switching tabs.
+
 Avoidable steps for subsequent slices:
 
 - T1: wizard page transitions and twelve study-inclusion clicks after paste.

@@ -53,8 +53,8 @@ def run_predictions(app, window, work, record):
         for style in ('default', 'revman', 'bmj'):
             def prepare(target):
                 if workflow == 'subgroup':
-                    target.model.dataset.add_covariate(analysis_dataset.Covariate('Region', 'factor'),
-                        {s.name: 'A' if i % 2 else 'B' for i,s in enumerate(target.model.dataset.studies)})
+                    target.model.add_covariate('Region', 'factor',
+                        {s.label: 'A' if i % 2 else 'B' for i,s in enumerate(target.model.get_studies(False))})
                     target.model.reset_model()
                     target.enable_menu_options_that_require_dataset()
             window.workspace.mark_saved()

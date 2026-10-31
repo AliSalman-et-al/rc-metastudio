@@ -30,7 +30,7 @@ def run(app, window, work, record):
         window.workspace.mark_saved()
         view = matrix(app, window, "analysis-data-"+family, record, keep_results=True, group_names=entered)
         assert tuple(window.model.arm_names) == expected, window.model.arm_names
-        assert set(window.model.dataset.get_group_names()) == set(expected), window.model.dataset.get_group_names()
+        assert set(window.model.arm_names) == set(expected), window.model.arm_names
         headers = [str(window.model.headerData(i, QtCore.Qt.Orientation.Horizontal)) for i in range(window.model.columnCount())]
         if family.startswith("twoarm"):
             suffix = "events" if family.endswith("proportion") else "mean"
