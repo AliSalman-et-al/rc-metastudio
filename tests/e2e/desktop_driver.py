@@ -1084,6 +1084,7 @@ def grid_entry(app, window):
     cov = model.current_sheet.covariates[-1]["id"]
     assert [r.covariate_values.get(cov) for r in model.current_sheet.rows[:3]] == [21, 22, 23]
     window.undo(); window.redo()
+    model = window.model
     selection = QtCore.QItemSelection(model.index(0, column), model.index(2, column))
     table.selectionModel().select(selection, QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect)
     QTest.keyClick(table, QtCore.Qt.Key.Key_D, QtCore.Qt.KeyboardModifier.ControlModifier)
@@ -1094,6 +1095,7 @@ def grid_entry(app, window):
     QTest.keyClick(table, QtCore.Qt.Key.Key_Delete)
     assert all(r.covariate_values.get(cov) is None for r in model.current_sheet.rows[:3])
     window.undo(); window.redo()
+    model = window.model
     assert not model.current_sheet.rows[1].include
     assert sum(r.include for r in model.current_sheet.rows) == 10
     record_step("grid-entry-complete", window, included=10, skipped=1)
@@ -1108,8 +1110,8 @@ def grid_entry(app, window):
     QTest.keyClick(table, QtCore.Qt.Key.Key_V, QtCore.Qt.KeyboardModifier.ControlModifier)
     assert len(model.current_sheet.rows) == 62
     assert model.current_sheet.rows[-1].label == "Extra 49\tquoted\nname"
-    window.undo(); assert len(model.current_sheet.rows) == 12
-    window.redo(); assert len(model.current_sheet.rows) == 62
+    window.undo(); assert len(window.model.current_sheet.rows) == 12
+    window.redo(); assert len(window.model.current_sheet.rows) == 62
     record_step("grid-entry-large-quoted-paste", window, rows=62)
 
 

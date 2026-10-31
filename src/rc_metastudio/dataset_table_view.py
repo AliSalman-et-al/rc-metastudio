@@ -3,6 +3,8 @@
 """Custom QTableView with copy, paste, undo, and redo support."""
 
 import copy
+import csv
+import io
 from typing import TYPE_CHECKING, Protocol, cast
 
 from PyQt6 import QtCore, QtWidgets, QtGui
@@ -797,7 +799,7 @@ class DatasetTableView(QtWidgets.QTableView):
                         raise ValueError("Calculated ratios cannot be pasted over. Click the study row number to edit its original inputs.")
                     if not candidate.setData(index, value):
                         error = getattr(candidate, "last_data_error", None) or "Invalid clipboard cell"
-                        if "numeric" in error.lower() or "number" in error.lower():
+                        if any(word in error.lower() for word in ("numeric", "number", "integer")):
                             skipped += 1
                             continue
                         raise ValueError(error)
@@ -879,12 +881,7 @@ class DatasetTableView(QtWidgets.QTableView):
 
     def _str_to_matrix(self, text, col_delimiter="\t", row_delimiter="\n"):
         """Transforms raw text (e.g., from the clipboard) to a structured matrix"""
-        m = []
-        rows = text.split(row_delimiter)
-        for row in rows:
-            cur_row = row.split(col_delimiter)
-            m.append(cur_row)
-        return m
+        return list(csv.reader(io.StringIO(text, newline=""), delimiter=col_delimiter))
 
     def _normalize_matrix_rows(self, matrix):
         return tabular_data.normalize_rows(matrix)
