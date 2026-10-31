@@ -164,3 +164,12 @@ indentation error, stale test-model references after undo and quoted-parser
 failure. They are not counted as passing evidence. Static checking of the view
 still reports pre-existing removed-dataset-API errors in the unrelated row-add
 helper; no clean whole-project type-check is claimed.
+
+## Slice 3a: T5 manuscript export
+
+T5 completable: **no (partial text + plot export) → yes (PDF + DOCX report)**.
+The original baseline rows above remain historical measurements. The new route
+uses Export report twice and selects the PDF/Word file types. Both artifacts are
+retained in `artifacts/verification/rcms/20261031T123406Z-ed6eba48-hillclimb/workflow/`.
+The complete `-n 2` matrix passed all 133 cases; the strict golden gate passed
+without refreshing numerical or presentation oracles. See [SLICE3A.md](SLICE3A.md).

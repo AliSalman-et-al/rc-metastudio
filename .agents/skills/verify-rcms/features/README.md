@@ -18,8 +18,8 @@ driver and records gesture counts, wall time and numerical/text receipts in
 measures.json. See [SCOREBOARD.md](../../../../docs/ux-hill-climb/SCOREBOARD.md)
 for fixtures, starting states, repeat comparison and baseline. This is offscreen
 effort evidence with QAction activations; native menu traversal and human timing
-remain unmeasured. Manuscript PDF/DOCX remains unavailable; T5 verifies only text
-and plot-PDF partial exports.
+remain unmeasured. `manuscript-export` verifies PDF/DOCX report export for amino, continuous and
+diagnostic results; hillclimb T5 completes with both manuscript formats.
 
 ## Proof conventions
 
