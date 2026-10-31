@@ -45,6 +45,39 @@ def run(app, window, work, root, record, analyze):
     assert any(7 in row.covariate_values.values() for row in retained)
     assert len(retained) == 23, len(retained)
     record('legacy-row-boundaries', window, retained=len(retained), input=str(fixture))
+    with zipfile.ZipFile(root / 'sample_projects/amino.rcms') as archive:
+        members = {name: archive.read(name) for name in archive.namelist()}
+    project = json.loads(members['project.json'])
+    row = project['sheets'][0]['rows'][0]
+    for values in row['raw_data'].values():
+        values[0] = 0
+    row['entered_effects'] = []
+    members['project.json'] = json.dumps(project).encode()
+    manifest = json.loads(members['manifest.json'])
+    manifest['members']['project.json'] = {'size': len(members['project.json']), 'sha256': hashlib.sha256(members['project.json']).hexdigest()}
+    members['manifest.json'] = json.dumps(manifest).encode()
+    zero_fixture = work / 'double-zero.rcms'
+    with zipfile.ZipFile(zero_fixture, 'w') as archive:
+        for name, data in members.items():
+            archive.writestr(name, data)
+    window.workspace.mark_saved()
+    assert window.open(str(zero_fixture), raise_on_error=True)
+    view = analyze(app, window, "binary.random")
+    assert "3 studies with no events in either arm were retained with this correction." in view.manuscript.methods, view.manuscript.methods
+    record('manuscript-double-zero', view, methods=view.manuscript.methods)
+    view.close()
+    # Real result Methods must describe where correction enters each estimator.
+    for method in ("binary.fixed.mh", "binary.fixed.peto"):
+        window.workspace.mark_saved()
+        assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
+        view = analyze(app, window, method)
+        expected = "A continuity correction of 0.5 was applied to individual study estimates only; the pooled " + ("Mantel-Haenszel" if method.endswith("mh") else "Peto") + " estimate uses the original counts."
+        if method.endswith("peto"):
+            expected = "The continuity correction was also applied to the pooled Peto estimate."
+        assert expected in view.manuscript.methods, view.manuscript.methods
+        (work / (method + '-prose.txt')).write_text(view.manuscript.methods)
+        record('manuscript-correction-' + method, view, methods=view.manuscript.methods)
+        view.close()
     for sample, method in (("amino", "binary.random"), ("continuous", "continuous.random"), ("lymph", "diagnostic.reitsma"), ("Pignon2000-HR", "time_to_event.random")):
         window.workspace.mark_saved()
         assert window.open(str(root / 'sample_projects' / (sample + '.rcms')), raise_on_error=True)
@@ -101,7 +134,7 @@ def run(app, window, work, root, record, analyze):
                 assert view.manuscript.title == 'clinical failure: random-effects meta-analysis (odds ratio)'
                 assert 'The pooled odds ratio was 0.770 (95% CI 0.485 to 1.222; p = 0.267).' in view.manuscript.results
                 assert view.manuscript.results == '19 studies were included (1097 participants in Intervention, 1080 in Control). The pooled odds ratio was 0.770 (95% CI 0.485 to 1.222; p = 0.267). Heterogeneity: Q = 33.360 (df = 18; p = 0.015), I² = 46.0%, τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.', view.manuscript.results
-                assert view.manuscript.methods == "Odds ratios were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance. Confidence intervals (95%) used the normal approximation. A continuity correction of 0.5 was applied to studies with any zero cell. Heterogeneity was assessed with Cochran's Q and I². Analyses were performed in RC MetaStudio 0.5.0. R packages loaded for this analysis: metafor 5.0.1, meta 8.5-0."
+                assert view.manuscript.methods == "Odds ratios were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance. Confidence intervals (95%) used the normal approximation. A continuity correction of 0.5 was applied to studies with any zero cell. 2 studies with no events in either arm were retained with this correction. Heterogeneity was assessed with Cochran's Q and I². Analyses were performed in RC MetaStudio 0.5.0. R packages loaded for this analysis: metafor 5.0.1, meta 8.5-0."
                 assert '-0.262' in normalized
             record('manuscript-export-' + sample + '-' + suffix, view, exported=str(path))
         (work / (sample + '-prose.txt')).write_text('Methods\n' + view.manuscript.methods + '\n\nResults\n' + view.manuscript.results)

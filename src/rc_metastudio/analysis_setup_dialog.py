@@ -979,7 +979,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 zero = zero or any(row[i] == row[i + 1] for row in raw for i in range(0, len(row) - 1, 2))
             if policy not in ("none", "None") and (zero or policy in ("all", "All studies")):
                 label = {"only0": "studies with any zero cell", "all": "all studies", "if0all": "all studies if any zero exists"}.get(policy, policy)
-                context += f" A continuity correction of {applied_parameters['adjust']} was applied to {label}."
+                if self.data_type == "binary":
+                    from rc_metastudio.manuscript_report import binary_correction_prose
+                    double_zero = sum(len(row) == 4 and row[0] == 0 and row[2] == 0 for row in raw)
+                    context += " " + binary_correction_prose(self.current_method, applied_parameters['adjust'], label, double_zero)
+                else:
+                    context += f" A continuity correction of {applied_parameters['adjust']} was applied to {label}."
         from rc_metastudio.manuscript_report import methods_prose
         metric = self._result_metric_label().lower()
         model = "random-effects" if "random" in model_label.lower() else "fixed-effect" if "fixed" in model_label.lower() else model_label.lower()

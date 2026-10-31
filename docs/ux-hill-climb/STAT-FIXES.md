@@ -70,3 +70,13 @@ Authority evidence: build/sheets-baseline/mh-authorities.json (97 cases).
 Installed into build/sheets-r-library (mh-install.log).
 Peto add=.5: -0.2459687 [-0.7727998, 0.2808624]; add=0:
 -0.2541451 [-0.7896609, 0.2813707]. Correction reaches Peto pooling.
+
+## Methods truth
+
+Real result text assertions first failed on generic MH wording
+(build/sheets-baseline/methods-before.log). MH now describes individual-only
+correction; Peto explicitly describes correction to pooling. IV/DL reports
+retained double-zero counts (amino 2; modified real project 3).
+PDF/DOCX manuscript-export passed, including real MH/Peto Methods text:
+artifacts/verification/rcms/20261031T203534Z-c37bfdd2-manuscript-export.
+Source digests: build/sheets-baseline/mh-source-provenance.json.
