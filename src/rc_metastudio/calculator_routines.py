@@ -9,9 +9,10 @@ from functools import partial
 from typing import Protocol, TypeAlias
 from weakref import WeakKeyDictionary
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPainter
 
 from PyQt6.QtWidgets import (
-    QAbstractItemView, QLabel, QMessageBox, QSizePolicy, QStyle,
+    QAbstractItemView, QLabel, QLineEdit, QMessageBox, QSizePolicy, QStyle, QStyleOptionFrame,
     QStyledItemDelegate, QTableWidget, QTableWidgetItem, QWIDGETSIZE_MAX,
 )
 
@@ -40,7 +41,25 @@ class NumericSummaryDelegate(QStyledItemDelegate):
 
     def displayText(self, value, locale):
         number, valid = qt_text.parse_decimal(value)
-        return format(number, ".6g") if valid else str(value)
+        return format_calculator_display_value(number) if valid else str(value)
+
+
+class PrevalenceEdit(QLineEdit):
+    """Round only the unfocused readout; editing and calculations use exact text."""
+
+    def paintEvent(self, event):
+        number, valid = qt_text.parse_decimal(self.text())
+        if self.hasFocus() or not valid:
+            return super().paintEvent(event)
+        option = QStyleOptionFrame()
+        self.initStyleOption(option)
+        painter = QPainter(self)
+        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_PanelLineEdit, option, painter, self)
+        rect = self.style().subElementRect(QStyle.SubElement.SE_LineEditContents, option, self)
+        rect.adjust(2, 0, -2, 0)
+        painter.setPen(self.palette().text().color())
+        painter.drawText(rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+                         format_calculator_display_value(number))
 
 
 def cell_text_is_blank(value):
@@ -524,7 +543,6 @@ def update_calculator_readout(dialog, data_type):
             table.verticalHeader().hide()
             table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
             table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-            table.setMaximumHeight(130)
             table.horizontalHeader().setStretchLastSection(True)
             dialog.dialog_layout.insertWidget(dialog.dialog_layout.count() - 2, table)
             def select_metric(row, column):
@@ -544,7 +562,14 @@ def update_calculator_readout(dialog, data_type):
                     "" if value is None else format_calculator_display_value(value)
                 )
                 dialog.metric_readout.setItem(row, column, QTableWidgetItem(text))
-        dialog.metric_readout.resizeColumnsToContents()
+        table = dialog.metric_readout
+        table.resizeColumnsToContents()
+        table.resizeRowsToContents()
+        table.setFixedHeight(table.horizontalHeader().height()
+                             + sum(table.rowHeight(row) for row in range(table.rowCount()))
+                             + 2 * table.frameWidth())
+        table.setMinimumWidth(sum(table.columnWidth(col) for col in range(table.columnCount()))
+                              + 2 * table.frameWidth())
     if hasattr(dialog, "metric_readout"):
         dialog.metric_readout.setVisible(complete_binary)
 

@@ -933,7 +933,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                 prevalence = float(computed_params["c1sum"]) / float(
                     computed_params["total"]
                 )
-                prev_str = str(prevalence)[:7]
+                prev_str = repr(prevalence)
                 self.prevalence_text_box.setText("%s" % prev_str)
         self._grow_all_raw_data_columns_to_contents()
 

@@ -46,7 +46,7 @@
         <layout class="QFormLayout" name="diagnostic_fields_layout">
          <property name="fieldGrowthPolicy"><enum>QFormLayout::ExpandingFieldsGrow</enum></property>
           <item row="0" column="0"><widget class="QLabel" name="prevalence_lbl"><property name="text"><string>Prevalence (0–1)</string></property><property name="buddy"><cstring>prevalence_text_box</cstring></property></widget></item>
-         <item row="0" column="1"><widget class="QLineEdit" name="prevalence_text_box"><property name="accessibleName"><string>Prevalence</string></property><property name="accessibleDescription"><string>Enter disease prevalence from zero to one.</string></property></widget></item>
+         <item row="0" column="1"><widget class="PrevalenceEdit" name="prevalence_text_box"><property name="accessibleName"><string>Prevalence</string></property><property name="accessibleDescription"><string>Enter disease prevalence from zero to one.</string></property></widget></item>
          <item row="1" column="0"><widget class="QLabel" name="effect_metric_label"><property name="text"><string>Metric</string></property><property name="buddy"><cstring>effect_combo_box</cstring></property></widget></item>
          <item row="1" column="1"><widget class="QComboBox" name="effect_combo_box"><property name="accessibleName"><string>Diagnostic effect metric</string></property><property name="accessibleDescription"><string>Select the diagnostic effect measure.</string></property><property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Fixed"><horstretch>1</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="sizeAdjustPolicy"><enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum></property></widget></item>
         </layout>
@@ -82,4 +82,5 @@
   <connection><sender>buttonBox</sender><signal>accepted()</signal><receiver>DiagnosticDataDialog</receiver><slot>accept()</slot><hints/></connection>
   <connection><sender>buttonBox</sender><signal>rejected()</signal><receiver>DiagnosticDataDialog</receiver><slot>reject()</slot><hints/></connection>
  </connections>
+<customwidgets><customwidget><class>PrevalenceEdit</class><extends>QLineEdit</extends><header>rc_metastudio.calculator_routines</header></customwidget></customwidgets>
 </ui>

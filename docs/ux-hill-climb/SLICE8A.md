@@ -70,3 +70,5 @@ Both remote pushes were withheld. Remaining default-marker behavior when changin
 selection also needs review; the existing marker behavior was retained.
 
 Step 1: removed amber, italics and forced black text. Effect cells use a low-opacity neutral gray overlay and inherit theme text. No calculation changes.
+
+Step 2: group numeric cells use estimate precision only when painted; prevalence paints at estimate precision and retains round-trip text. Binary metric table fits its rows and columns. Existing accepted-row and numerical assertions remain the verification gate.
