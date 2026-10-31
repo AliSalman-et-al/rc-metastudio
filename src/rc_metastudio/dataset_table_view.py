@@ -46,10 +46,14 @@ from rc_metastudio.qt_workspace_columns import WorkspaceColumnWidthController
 
 if TYPE_CHECKING:
     from rc_metastudio.dataset_table_model import DatasetTableModel
+    from rc_metastudio.workspace_session import WorkspaceSession
 
 
 class MainWindowProtocol(Protocol):
     model: "DatasetTableModel"
+    workspace: "WorkspaceSession"
+
+    def statusBar(self) -> QtWidgets.QStatusBar: ...
     oneArmMetricMenu: QMenu
     twoArmMetricMenu: QMenu
 
@@ -152,6 +156,7 @@ class DatasetTableView(QtWidgets.QTableView):
     def model(self) -> "DatasetTableModel":
         """Return the concrete model required by the maintained workspace view."""
         from rc_metastudio.dataset_table_model import DatasetTableModel
+    from rc_metastudio.workspace_session import WorkspaceSession
 
         model = super().model()
         if model is None:
@@ -491,7 +496,10 @@ class DatasetTableView(QtWidgets.QTableView):
         return True
 
     def fill_down(self):
-        indexes = self.selectionModel().selectedIndexes()
+        selection = self.selectionModel()
+        if selection is None:
+            return
+        indexes = selection.selectedIndexes()
         if not indexes:
             return
         rows = sorted({index.row() for index in indexes})
@@ -778,10 +786,6 @@ class DatasetTableView(QtWidgets.QTableView):
             dataset=copy.deepcopy(model.dataset), add_blank_study=False
         )
         candidate.set_state(copy.deepcopy(model.get_state()))
-        required_rows = origin_row + len(source_content)
-        while candidate.rowCount() < required_rows:
-            candidate.dataset.add_study(StudyRow(candidate.dataset.max_study_id() + 1))
-            candidate.reset_model()
         skipped = 0
         try:
             columns = self._paste_columns(origin_col)
