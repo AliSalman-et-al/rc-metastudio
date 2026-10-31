@@ -108,11 +108,7 @@ def write_manifest(evidence: Path, record: dict[str, object]) -> None:
 
 def _scenario_timeout(scenario: str) -> int:
     timeout_seconds = 120
-<<<<<<< HEAD
-    if scenario == "sheets-baseline":
-=======
-    if scenario == "hillclimb":
->>>>>>> origin/ux/audit-improvements
+    if scenario in {"sheets-baseline", "hillclimb"}:
         return 600
     if scenario in {"ratios-hr", "ratios-irr", "project-display-labels", "project-round6-polish", "project-release-coefficients", "project-reviewer-predictions", "project-reviewer-groups", "project-reviewer-colours", "calculator-ratio-precision", "project-axis-proportions", "project-axis-others", "project-axis-sequential"}:
         timeout_seconds = 600

@@ -408,7 +408,7 @@ def analyze_existing(app, window, workflow, method, record, parameters=None):
     dialog = visible(analysis_setup_dialog.AnalysisSetupDialog)
     if workflow == "meta-regression":
         for covariate, checkbox in dialog.covs_and_check_boxes:
-            checkbox.setChecked(covariate.name == "Dose")
+            checkbox.setChecked(covariate["name"] == "Dose")
     else:
         dialog.method_cbo_box.setCurrentText(next(label for label, key in dialog.available_method_d.items() if key == method))
     app.processEvents()
@@ -486,22 +486,20 @@ def check_bubble_ticks(view, metric, record):
 
 def run(app, window, work, record, scenario):
     from analysis_matrix import DATA_TYPES, run as matrix
-    from rc_metastudio.analysis_dataset import Covariate
 
     def prepare(target):
         studies = target.model.get_studies(only_if_included=True)
-        target.model.dataset.add_covariate(Covariate("Group", "factor"),
-                                          {s.name: "A" if i % 2 else "B" for i, s in enumerate(studies)})
+        target.model.add_covariate("Group", "factor",
+                                          {s.label: "A" if i % 2 else "B" for i, s in enumerate(studies)})
         target.model.reset_model()
         target.enable_menu_options_that_require_dataset()
 
     def duplicate_names(target):
         studies = target.model.get_studies(only_if_included=True)
-        studies[1].name = studies[0].name
-        group = Covariate("Group", "factor")
-        target.model.dataset.add_covariate(group)
+        studies[1].label = studies[0].label
+        group = target.model.add_covariate("Group", "factor")
         for i, study in enumerate(studies):
-            study.set_covariate_value(group, "A" if i % 2 else "B")
+            study.covariate_values[group["id"]] = "A" if i % 2 else "B"
         target.model.reset_model()
         target.enable_menu_options_that_require_dataset()
 
@@ -746,8 +744,8 @@ def run(app, window, work, record, scenario):
                 if metric in {"PLO", "linear"}:
                     studies = target.model.get_studies(only_if_included=True)
                     assert len(studies) == 6, studies
-                    target.model.dataset.add_covariate(Covariate("Dose", "continuous"),
-                                                      {s.name: float(i) for i, s in enumerate(studies)})
+                    target.model.add_covariate("Dose", "continuous",
+                                                      {s.label: float(i) for i, s in enumerate(studies)})
                     target.model.reset_model()
                     target.enable_menu_options_that_require_dataset()
                     record("round3-proportion-input", target, metric=target.model.current_effect,
@@ -789,7 +787,7 @@ def run(app, window, work, record, scenario):
         duplicate_names(window)
         model = window.model
         assert model.setData(model.index(1, model.INCLUDE_STUDY), QtCore.Qt.CheckState.Unchecked, QtCore.Qt.ItemDataRole.CheckStateRole)
-        record("round3-ratio-excluded-study", window, family=family, excluded=model.dataset.studies[1].name)
+        record("round3-ratio-excluded-study", window, family=family, excluded=model.get_studies(False)[1].label)
         for workflow in ("cumulative", "leave-one-out", "subgroup"):
             view = analyze_existing(app, window, workflow, family + ".random", record)
             check_report(app, view, work, record)
@@ -804,7 +802,7 @@ def run(app, window, work, record, scenario):
         if family == "event_rates":
             # Only one included study has treated events. Omitting it leaves a
             # non-estimable MH fit while all other omission identities remain.
-            for row in range(len(model.dataset.studies)):
+            for row in range(len(model.get_studies(False))):
                 assert model.setData(model.index(row, model.RAW_DATA[0]), "3" if row == 0 else "0")
             view = analyze_existing(app, window, "leave-one-out", "event_rates.mh", record)
             check_report(app, view, work, record)
@@ -929,7 +927,7 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
                         if abs(float(rule.attrib["x2"]) - float(rule.attrib["x1"])) < 500 or abs(float(rule.attrib["y2"]) - float(rule.attrib["y1"])) > .01:
                             continue
                         assert not y-height < float(rule.attrib["y1"]) < y+height*.25, ("rule crosses subgroup heading", style, node.attrib, rule.attrib)
-            study_names = {study.name for study in window.model.get_studies(only_if_included=True)}
+            study_names = {study.label for study in window.model.get_studies(only_if_included=True)}
             study_y = sorted({float(node.attrib["y"]) for node in nodes if "".join(node.itertext()) in study_names})
             row_gap = min(b-a for a, b in zip(study_y, study_y[1:]))
             polygon_heights = []
@@ -968,11 +966,10 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
         record("round5-readable-type-matrix", window, measurements=measurements)
         return
     from rc_metastudio import meta_globals
-    from rc_metastudio.analysis_dataset import Covariate
     def add_dose(target):
         studies = target.model.get_studies(only_if_included=True)
-        target.model.dataset.add_covariate(Covariate("Dose", "continuous"),
-                                          {study.name: float(i) for i, study in enumerate(studies)})
+        target.model.add_covariate("Dose", "continuous",
+                                          {study.label: float(i) for i, study in enumerate(studies)})
         target.model.reset_model()
         target.enable_menu_options_that_require_dataset()
     def check_panel(view, family, metric):

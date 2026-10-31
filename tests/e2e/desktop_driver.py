@@ -955,9 +955,9 @@ def hillclimb(app, window):
         form = dialog(analysis_setup_dialog.AnalysisSetupDialog)
         if regression:
             for cov, checkbox in form.covs_and_check_boxes:
-                if checkbox.isChecked() != (cov.name == "Dose"):
+                if checkbox.isChecked() != (cov["name"] == "Dose"):
                     click(checkbox)
-            assert [cov.name for cov, checkbox in form.covs_and_check_boxes if checkbox.isChecked()] == ["Dose"]
+            assert [cov["name"] for cov, checkbox in form.covs_and_check_boxes if checkbox.isChecked()] == ["Dose"]
         ok(form)
         view = visible(results_window.ResultsWindow)
         assert view.results.sections
@@ -983,8 +983,8 @@ def hillclimb(app, window):
     QTest.mouseClick(window.tableView.viewport(), QtCore.Qt.MouseButton.LeftButton,
                      pos=window.tableView.visualRect(index).center())
     key(window.tableView, QtCore.Qt.Key.Key_V, QtCore.Qt.KeyboardModifier.ControlModifier)
-    assert len(window.model.dataset.studies) == 12
-    for row, study in enumerate(window.model.dataset.studies):
+    assert len(window.model.get_studies(False)) == 12
+    for row, study in enumerate(window.model.get_studies(False)):
         if study.include:
             continue
         index = window.model.index(row, 0)
@@ -1024,9 +1024,9 @@ def hillclimb(app, window):
             key(editor, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
             text(editor, str(value))
             key(editor, QtCore.Qt.Key.Key_Return)
-        assert [s.covariate_values[name] for s in window.model.dataset.studies] == values[name], [s.covariate_values[name] for s in window.model.dataset.studies]
-    record_step("covariates-entered", window, covariates=[(c.name, c.data_type) for c in window.model.dataset.covariates], included=[s.include for s in window.model.dataset.studies])
-    for row, study in enumerate(window.model.dataset.studies):
+        assert [s.covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == name)] for s in window.model.get_studies(False)] == values[name], [s.covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == name)] for s in window.model.get_studies(False)]
+    record_step("covariates-entered", window, covariates=[(c["name"], c["data_type"]) for c in window.model.current_sheet.covariates], included=[s.include for s in window.model.get_studies(False)])
+    for row, study in enumerate(window.model.get_studies(False)):
         if study.include:
             continue
         index = window.model.index(row, 0)
@@ -1133,15 +1133,12 @@ try:
         doctor(app, window)
     if scenario == "doctor":
         pass
-<<<<<<< HEAD
     elif scenario == "sheets-baseline":
         from tests.e2e.sheets_baseline import run
 
         run(app, window, record_step, analyze)
-=======
     elif scenario == "hillclimb":
         hillclimb(app, window)
->>>>>>> origin/ux/audit-improvements
     elif scenario.startswith("audit-round3-"):
         sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
         from tests.e2e.audit_round3 import run
