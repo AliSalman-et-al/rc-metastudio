@@ -23,7 +23,7 @@
    <item>
         <widget class="QLabel" name="instructions">
      <property name="text">
-      <string>Choose an Excel or CSV file.</string>
+      <string>Excel or CSV file</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

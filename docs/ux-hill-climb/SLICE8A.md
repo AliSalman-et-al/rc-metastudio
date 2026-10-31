@@ -84,3 +84,13 @@ Step 3: searched all top-level Python and forms UI text setters, titles, tooltip
 - csv_import_page.ui: Has column labels? → First row contains column names
 - csv_import_page.ui: CSV exported from Excel? → Use Excel CSV format
 - csv_import_page.ui: Preview of imported data → Data preview
+
+Step 4: remaining wizard page copy:
+- data_type_page: One piece of data from each study or studies with one group → One group per study
+- data_type_page: Data on two or more groups per study → Two or more groups per study
+- data_type_page: Data on test performance → Diagnostic test accuracy
+- outcome_name_page: Name the outcome and arms → Outcome and groups
+- outcome_name_page: Enter the outcome being measured → For example, mortality
+- outcome_name_page: Arm names are optional. Leave them blank to use Intervention and Control. → Default group names: Intervention and Control.
+- welcome_page: What would you like to do? → Start a review
+- csv_import_page: Choose an Excel or CSV file. → Excel or CSV file

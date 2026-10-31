@@ -855,6 +855,15 @@ def xlsx_import(app, window):
         buttons = types._data_type_buttons()
         assert all(not button.icon().isNull() for button in buttons)
         capture.grab().save(str(screens / f"slice7-{theme}-data-types.png"))
+        capture.grab().save(str(screens / f"slice8a-data-types-{theme}.png"))
+        for page_id, page_name in ((main_wizard.Page_Welcome, "welcome"),
+                                   (main_wizard.Page_OutcomeName, "outcome"),
+                                   (main_wizard.Page_CsvImport, "csv")):
+            capture.setStartId(page_id)
+            capture.restart()
+            app.processEvents()
+            capture.grab().save(str(screens / f"slice8a-{page_name}-{theme}.png"))
+        window.grab().save(str(screens / f"slice8a-grid-{theme}.png"))
         for index, button in enumerate(buttons):
             types._button_selected(button)
             if capture.require_dataset_info()["data_type"] == "diagnostic":
@@ -1278,6 +1287,8 @@ def calculator(app, window, family):
             return
         try:
             table = getattr(dialog, table_name)
+            app.processEvents()
+            dialog.grab().save(str(ROOT / f"docs/ux-hill-climb/screens/slice8a-calculator-{family}.png"))
             for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
                 width = field.fontMetrics().horizontalAdvance(field.text())
                 assert field.width() >= width + field.textMargins().left() + field.textMargins().right() + 12

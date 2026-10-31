@@ -45,7 +45,7 @@
       </font>
      </property>
      <property name="text">
-      <string>One piece of data from each study or studies with one group</string>
+      <string>One group per study</string>
      </property>
      <property name="wordWrap"><bool>true</bool></property>
     </widget>
@@ -196,7 +196,7 @@ Effect Size</string>
    <item>
     <widget class="QLabel" name="label_4">
      <property name="text">
-      <string>Data on two or more groups per study</string>
+      <string>Two or more groups per study</string>
      </property>
      <property name="wordWrap"><bool>true</bool></property>
     </widget>
@@ -324,7 +324,7 @@ and event rates</string></property>
    <item>
     <widget class="QLabel" name="label_5">
      <property name="text">
-      <string>Data on test performance</string>
+      <string>Diagnostic test accuracy</string>
      </property>
      <property name="wordWrap"><bool>true</bool></property>
     </widget>

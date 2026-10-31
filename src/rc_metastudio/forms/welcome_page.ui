@@ -20,7 +20,7 @@
    <string>WizardPage</string>
   </property>
   <property name="title">
-   <string>What would you like to do?</string>
+   <string>Start a review</string>
   </property>
   <layout class="QVBoxLayout" name="workflowPageLayout">
    <property name="leftMargin"><number>0</number></property>
