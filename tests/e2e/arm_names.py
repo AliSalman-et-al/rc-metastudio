@@ -48,7 +48,7 @@ def run(app, window, work, record):
             text = view.report_text.toPlainText()
             assert "TX Mean" not in text and "[default]" not in text, text
             if family.startswith("twoarm"):
-                assert comparison in view.identity_label.text(), view.identity_label.text()
+                assert comparison in view.results.identity, view.results.identity
                 assert comparison in app.clipboard().text(), app.clipboard().text()
                 if family.endswith("proportion"):
                     assert "equal odds in "+" and ".join(expected) in text, text
@@ -61,9 +61,9 @@ def run(app, window, work, record):
                     view.plot_service.export(regenerator="forest", params_path=view.params_paths[title], output_path=str(export))
                     assert all(name in export.read_text(encoding="utf-8") for name in expected)
             if expected[0] == "Group":
-                assert "Group: Group" not in view.identity_label.text(), view.identity_label.text()
+                assert "Group: Group" not in view.results.identity, view.results.identity
             else:
-                assert expected[0] in view.identity_label.text(), view.identity_label.text()
+                assert expected[0] in view.results.identity, view.results.identity
             (work/f"arms-{case}-{style}-report.txt").write_text(app.clipboard().text(), encoding="utf-8")
             record("round5-arm-report", view, case=case, style=style, groups=expected, plots=dict(view.results.display_images))
             view.close()

@@ -502,7 +502,7 @@ def plots(app, window, family, record, *, view=None):
             if family == "forest":
                 dialog.plot_lb_le.setText("10")
                 dialog.plot_ub_le.setText("11")
-                assert dialog.favours_left.text() == dialog.favours_right.text() == ""
+                assert [dialog.favours_left.text(), dialog.favours_right.text()] == ["Favours " + name for name in window.model.arm_names]
                 dialog.favours_left.setText("Favours treatment")
                 dialog.favours_right.setText("Favours control")
                 dialog.study_order.setCurrentIndex(dialog.study_order.findData("year"))

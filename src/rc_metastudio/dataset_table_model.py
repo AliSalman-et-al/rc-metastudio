@@ -352,11 +352,13 @@ class DatasetTableModel(QAbstractTableModel):
 
         return raws, outcomes
 
-    def format_float(self, float_var, num_digits=None):
+    def format_float(self, float_var, num_digits=None, *, ratio=False):
         """This method assumes the input can be cast to a float!"""
         float_var = float(float_var)
         precision = self.NUM_DIGITS if num_digits is None else num_digits
         formatted = f"{float_var:.{precision}f}"
+        if ratio and float_var > 0 and float(formatted) == 0:
+            return "<" + f"{10 ** -precision:.{precision}f}"
         return formatted
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
@@ -472,7 +474,7 @@ class DatasetTableModel(QAbstractTableModel):
         value = values[position]
         if value is None:
             return _item_data("")
-        return _item_data(str(value) if role == Qt.ItemDataRole.EditRole else self.format_float(value, num_digits=display_digits))
+        return _item_data(str(value) if role == Qt.ItemDataRole.EditRole else self.format_float(value, num_digits=display_digits, ratio=effect in {"OR", "RR", "HR", "IRR"}))
 
     def _ratio_display_values(self, unit):
         record = unit.ratio_input(self.arm_names)

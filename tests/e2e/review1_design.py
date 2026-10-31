@@ -177,7 +177,7 @@ def run(app, window, work, root, record, analyze):
     assert 'Test for overall effect (H' not in report
     assert 'Normal approximation' in report
     record('review1-report-top', view, text=report)
-    config = next(item for item in view.nav_tree.findItems('Model configuration', QtCore.Qt.MatchFlag.MatchExactly))
+    config = next(item for item in view.nav_tree.findItems('Settings', QtCore.Qt.MatchFlag.MatchExactly))
     view.nav_tree.setCurrentItem(config)
     assert view.report_text.isVisible()
     record('review1-report-configuration', view)

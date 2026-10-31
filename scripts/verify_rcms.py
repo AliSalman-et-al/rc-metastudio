@@ -35,6 +35,7 @@ SCENARIOS = (
     "analysis-dialog",
     "grid-entry",
     "ux-improvements",
+    "results-window",
     "amino",
     "sheets",
     "sheets-legacy",

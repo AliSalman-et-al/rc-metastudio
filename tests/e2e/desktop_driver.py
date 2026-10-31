@@ -317,14 +317,22 @@ def analysis_dialog(app, window):
         form.show()
         app.processEvents()
         if sample == "amino":
-            record_step("slice2b-main", window)
-            record_step("slice2b-default-collapsed", form)
+            giamarellou = next(row for row in range(window.model.rowCount()) if "Giamarellou" in str(window.model.data(window.model.index(row, window.model.NAME))))
+            assert str(window.model.data(window.model.index(giamarellou, window.model.OUTCOMES[1]))) == "<0.01"
+            assert window.model.format_float(0.000401, 3, ratio=True) == "<0.001"
+            assert window.tableView.columnWidth(window.model.columnCount() - 1) < 250
+            record_step("slice2c-main", window)
+            record_step("slice2c-analysis-collapsed", form)
+        assert any(label.text() == "Effect measure" and label.isVisible() for label in form.findChildren(QtWidgets.QLabel))
         toggle = form.advanced_toggle
+        assert toggle.text().startswith("▸ Advanced")
+        assert isinstance(toggle, QtWidgets.QToolButton)
         assert not toggle.isChecked()
         toggle.setFocus()
         key_click(toggle, QtCore.Qt.Key.Key_Space)
         assert toggle.isChecked() and form.advanced_panel.isVisible()
-        record_step("slice2b-default-expanded", form)
+        assert toggle.text().startswith("▾ Advanced")
+        record_step("slice2c-analysis-expanded", form)
         form.hide()
         reopened = analysis_setup_dialog.AnalysisSetupDialog(
             window.model, parent=window, confidence_level=95, **kwargs)
@@ -334,14 +342,15 @@ def analysis_dialog(app, window):
         digits = next(label.buddy() for label in form.findChildren(QtWidgets.QLabel)
                       if label.text().casefold() == "decimal places")
         digits.setValue(4)
-        assert "4" in toggle.text(), toggle.text()
+
         inference = next(label.buddy() for label in form.findChildren(QtWidgets.QLabel)
                          if "inference" in label.text().casefold())
         inference.setCurrentIndex((inference.currentIndex() + 1) % inference.count())
         expected_inference = inference.currentText()
-        assert expected_inference in toggle.text()
+
         key_click(toggle, QtCore.Qt.Key.Key_Return)
         assert not toggle.isChecked()
+        assert "4" in toggle.text() and expected_inference in toggle.text()
         record_step("advanced-collapsed", form, sample=sample, summary=toggle.text())
 
         mouse_click(form.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
@@ -1460,7 +1469,7 @@ try:
         from tests.e2e.review_workflows import run
 
         run(app, window, ROOT, record_step, analyze)
-    elif scenario == "ux-improvements":
+    elif scenario in ("ux-improvements", "results-window"):
         from tests.e2e.ux_workflows import run
 
         run(app, window, WORK, ROOT, record_step, analyze)

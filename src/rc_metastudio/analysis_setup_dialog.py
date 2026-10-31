@@ -245,7 +245,7 @@ class _CompactDoubleSpinBox(QDoubleSpinBox):
         return super().textFromValue(value).rstrip("0").rstrip(self.locale().decimalPoint())
 
 
-class _AdvancedButton(QtWidgets.QPushButton):
+class _AdvancedButton(QtWidgets.QToolButton):
     def keyPressEvent(self, event):
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             self.click()
@@ -303,7 +303,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _setup_result_context(self):
         self.setWindowTitle(f"{self.model.current_outcome_name} · {self._result_metric_label()}")
         required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button").setText("Run analysis")
-        self.gridLayout.addWidget(QLabel("Effect measure: " + self._result_metric_label()), 3, 0, 1, 4)
         self.analysis_error_label = QLabel(self)
         self.analysis_error_label.setWordWrap(True)
         self.analysis_error_label.setTextFormat(Qt.TextFormat.PlainText)
@@ -1230,7 +1229,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             else:
                 text = str(value)
             changes.append(f"{parameter_display_label(spec.name, spec.metadata)} {text}")
-        self.advanced_toggle.setText("Advanced" + (" · " + ", ".join(changes) if changes else ""))
+        self.advanced_toggle.setText(("▾ Advanced" if self.advanced_toggle.isChecked() else "▸ Advanced") + (" · " + ", ".join(changes) if changes and not self.advanced_toggle.isChecked() else ""))
 
     def _place_parameter(self, layout, row, spec, label, control, target, default):
         if spec.name in {"measure", "rm.method", "estimator", "conf.level"}:
@@ -1256,16 +1255,19 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _add_parameter_controls(self, layout, definitions, excluded_names):
         if not hasattr(self, "advanced_toggle"):
             self._advanced_entries = []
-            self.advanced_toggle = _AdvancedButton("Advanced")
+            self.advanced_toggle = _AdvancedButton(self)
+            self.advanced_toggle.setAutoRaise(True)
+            self.advanced_toggle.setSizePolicy(QtWidgets.QSizePolicy.Policy.Maximum, QtWidgets.QSizePolicy.Policy.Fixed)
             self.advanced_toggle.setCheckable(True)
-            self.advanced_toggle.setAutoDefault(False)
             self.advanced_panel = QtWidgets.QWidget()
             QGridLayout(self.advanced_panel)
             self.advanced_toggle.toggled.connect(self._expand_advanced)
             expanded = QtCore.QSettings().value("analysis/advancedExpanded", False, type=bool)
             self.advanced_toggle.setChecked(expanded)
             self.advanced_panel.setVisible(expanded)
-        row = 0
+        layout.addWidget(QLabel("Effect measure"), 0, 0)
+        layout.addWidget(QLabel(self._result_metric_label().capitalize()), 0, 1)
+        row = 1
         for spec in definitions:
             if spec.name in excluded_names:
                 self._register_shared_diagnostic_param(spec)
@@ -1282,6 +1284,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _expand_advanced(self, checked):
         self.advanced_panel.setVisible(checked)
+        self._refresh_advanced_summary()
         QtCore.QSettings().setValue("analysis/advancedExpanded", checked)
         self._schedule_local_reflow()
 
@@ -1694,6 +1697,12 @@ def add_plot_params(specs_form):
         )
         return
 
+    if specs_form.data_type != "diagnostic" and specs_form.model.current_effect not in ONE_ARM_METRICS and len(specs_form.model.arm_names) == 2:
+        labels = specs_form.model.current_sheet.settings.get("favours_labels")
+        if labels is None:
+            labels = ["Favours " + name for name in specs_form.model.arm_names]
+        for side, label in zip(("left", "right"), labels):
+            specs_form.current_param_vals.setdefault("fp_favours_" + side, label)
     specs_form.current_param_vals["fp_study_order"] = specs_form.study_order.currentData() if specs_form.analysis_type != "cumulative" else "table"
     specs_form.current_param_vals["fp_style"] = PLOT_STYLE_VALUES.get(
         str(specs_form.style_cbo.currentText()), "default"

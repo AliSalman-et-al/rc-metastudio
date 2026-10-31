@@ -73,28 +73,14 @@ def run(app, window, work, root, record, analyze):
     assert view.nav_tree.width() < view.width() / 3, (view.nav_tree.width(), view.width(), view.results_nav_splitter.sizes(), view._restored_splitter_proportions)
     assert not view.report_action.isChecked()
     assert view.content_stack.currentWidget() is view.figure_page
-    assert len(view.identity_label.text().splitlines()) <= 3
-    initial_identity_height = view.identity_label.height()
-    refit_waits = 0
-    while (
-        view.identity_label.height() > 3 * view.identity_label.fontMetrics().lineSpacing()
-        and refit_waits < 100
-    ):
-        wait(20)
-        refit_waits += 1
-    geometry = dict(
-        initial_identity_height=initial_identity_height,
-        identity_height=view.identity_label.height(),
-        measured_height=view.identity_label.heightForWidth(view.identity_label.width()),
-        identity_width=view.identity_label.width(),
-        font_height=view.identity_label.fontMetrics().height(),
-        line_spacing=view.identity_label.fontMetrics().lineSpacing(),
-        refit_waits=refit_waits,
-    )
-    assert view.identity_label.height() <= 3 * view.identity_label.fontMetrics().lineSpacing(), geometry
-    record("ux-header-geometry", view, **geometry)
-    assert "Included input studies" not in view.identity_label.text()
-    assert "Studies used in the model" not in view.identity_label.text()
+    from xml.etree import ElementTree
+    svg = " ".join(ElementTree.parse(next(iter(view.results.display_images.values()))).getroot().itertext())
+    for arm in window.model.arm_names:
+        assert "Favours" in svg and arm in svg
+    assert not hasattr(view, "identity_label")
+    assert view._fit_width_active
+    for item in view.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive):
+        assert view.nav_tree.fontMetrics().horizontalAdvance(item.text(0)) + 30 < view.nav_tree.width(), item.text(0)
     view.report_action.trigger()
     app.processEvents()
     assert view.report_text.isVisible()
@@ -189,7 +175,30 @@ def run(app, window, work, root, record, analyze):
     assert plot_rect.left() >= 0 and plot_rect.right() < view.graphics_view.viewport().width(), plot_rect
     assert view.graphics_view.horizontalScrollBar().value() == 0
     record("ux-plot-toolbar", view, saved=str(plot_path), zoom=view.zoom_control.value(), plot_bounds=[plot_rect.left(), plot_rect.right()], viewport_width=view.graphics_view.viewport().width())
+    record("slice2c-results-forest", view)
     view.close()
+    for custom in (False, True):
+        if custom:
+            edited = analyze(app, window, "binary.random")
+            def customise():
+                dialog = app.activeModalWidget()
+                dialog.favours_left.setText("Favours custom first")
+                dialog.favours_right.setText("Favours custom second")
+                mouse_click(required(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)), QtCore.Qt.MouseButton.LeftButton)
+            QtCore.QTimer.singleShot(0, customise)
+            edited.edit_plot_action.trigger()
+            assert window.model.current_sheet.settings["favours_labels"] == ["Favours custom first", "Favours custom second"]
+            edited.close()
+        before = list(window.model.arm_names)
+        window.action_swap_arms.trigger()
+        swapped = analyze(app, window, "binary.random")
+        text = " ".join(" ".join(ElementTree.parse(next(iter(swapped.results.display_images.values()))).getroot().itertext()).split())
+        left, right = ("custom second", "custom first") if custom else (before[1], before[0])
+        assert text.index(left) < text.index(right), text
+        assert text.count("Favours") >= 2
+        record("favours-swapped", swapped, custom=custom, svg_text=text)
+        swapped.close()
+        window.action_swap_arms.trigger()
 
     wizard = main_wizard.MainWizard(path="csv_import")
     wizard.set_dataset_info({"arms": "two", "data_type": "binary", "sub_type": "proportions", "effect": "OR", "metric_choices": [], "name": "Mapped mortality"})
@@ -273,7 +282,7 @@ def run(app, window, work, root, record, analyze):
     for column, value in ((window.model.RAW_DATA[1], 10000), (window.model.RAW_DATA[3], 10000), (window.model.RAW_DATA[0], 1), (window.model.RAW_DATA[2], 5000)):
         assert window.model.setData(window.model.index(0, column), value)
     estimate = str(window.model.data(window.model.index(0, window.model.OUTCOMES[0])))
-    assert estimate == "0.00"
+    assert estimate == "<0.01"
     stored_estimate = float(window.model.data(window.model.index(0, window.model.OUTCOMES[0]), QtCore.Qt.ItemDataRole.EditRole))
     assert 0 < stored_estimate < .001
     assert abs(stored_estimate - 1 / 9999) < 1e-6

@@ -1368,7 +1368,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _swap_sheet_arms(self):
         sheet = self.model.current_sheet
         if sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2 and self.model.current_effect not in meta_globals.ONE_ARM_METRICS:
-            self._sheet_change(sheet.id, sheet.arms.reverse)
+            def swap():
+                sheet.arms.reverse()
+                if "favours_labels" in sheet.settings:
+                    sheet.settings["favours_labels"].reverse()
+            self._sheet_change(sheet.id, swap)
 
     def _refresh_sheet_tabs(self):
         self.sheet_tabs.blockSignals(True)

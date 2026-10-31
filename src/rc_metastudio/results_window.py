@@ -358,10 +358,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._report_nav_anchors = {}
         entries = [("Text report", ""), ("Tables", None)]
         if self.results.details:
-            entries.append(("Model configuration", "model-configuration"))
+            entries.append(("Settings", "model-configuration"))
         for index, (title, anchor) in enumerate(entries):
             item = QTreeWidgetItem([title])
-            if title == "Model configuration":
+            if title == "Settings":
                 index = 2 + sum(section.kind == "text" and section.source_key != "Weights" and section.semantic_id != "text:references" for section in self.results.sections)
             self.nav_tree.insertTopLevelItem(index, item)
             item.setToolTip(0, "Read the report" if title == "Text report" else "Copy or export numerical tables" if title == "Tables" else "Inspect the executed model and settings")
@@ -382,15 +382,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if self.report_action.isChecked():
             self._activate_report(True)
         self._set_restored_splitter_sizes()
+        if not self.report_action.isChecked():
+            self._fit_width()
 
     def _setup_identity(self):
         identity = self.results.identity or "Analysis results"
-        self.identity_label = QLabel(identity, self)
-        qt_layout.configure_context_label(self.identity_label)
-        self.identity_label.setTextFormat(Qt.TextFormat.PlainText)
-        self.identity_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        self.verticalLayout.insertWidget(0, self.identity_label)
-        self.setWindowTitle(identity.split("\n")[0] + " — RC MetaStudio")
+        parent = self.parent()
+        self._source_sheet = parent.model.current_sheet if parent is not None and hasattr(parent, "model") else None
+        sheet_name = self._source_sheet.name if self._source_sheet else "Results"
+        self.setWindowTitle(sheet_name + " — " + identity.split(" — ")[0])
         self.verticalLayout.setContentsMargins(6, 6, 6, 6)
         self.verticalLayout.setSpacing(4)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
@@ -695,7 +695,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self.statusbar.showMessage(f"Saved report: {Path(path).resolve()}")
 
     def _export_name(self, title, extension):
-        context = (self.results.identity or self.identity_label.text()).split("\n")[0]
+        context = (self.results.identity or "Analysis results").split("\n")[0]
         name = re.sub(r'[<>:"/\\|?*\x00-\x1f]+', "-", context + " — " + title)
         return name.strip(" .")[:160] + "." + extension
 
@@ -930,9 +930,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.scene.setSceneRect(0, 0, scene_width, scene_height)
 
     def _refit_viewport_items(self):
-        if hasattr(self, "identity_label"):
-            # layout-audit: allow=content-sized-label; reason=wrapped identity uses its measured text height
-            self.identity_label.setMaximumHeight(self.identity_label.heightForWidth(self.identity_label.width()))
         self._update_wrapped_text_widths()
         self._refit_svg_plot_items()
         self._refit_raster_plot_items()
@@ -1333,6 +1330,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             dialog.mark_commit_failed(error)
             raise
 
+        parent = self.parent()
+        if self._source_sheet is not None and parent is not None and self._source_sheet in parent.model.dataset.sheets:
+            self._source_sheet.settings["favours_labels"] = [updated_params.get("fp_favours_left", ""), updated_params.get("fp_favours_right", "")]
+            parent.data_dirtied()
         self._refresh_plot_item(plot_item, artifact, outpath)
         dialog.mark_commit_succeeded()
 
