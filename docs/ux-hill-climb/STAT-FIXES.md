@@ -170,3 +170,18 @@ Authority: explicit user authorization; metafor::escalc OR with counts
 build/sheets-baseline/cumulative-authorized.R / cumulative-authorized.json.
 Other cumulative frozen rows already contain p-values. No other frozen
 numerical value changed; archive identity bindings updated narrowly.
+
+## Swap audit
+
+Prepared desktop assertions now load the actual saved plot parameters before
+comparing with metafor. OR/RD/MD use original arm counts and direct DL fits,
+with tolerance 1e-6 for estimate, both CI bounds and p; Favours follows arms.
+Observed before -> swapped (calculation scale): OR -0.261906186 ->
+0.261906186, CI [-0.724082087,0.200269715] -> [-0.200269715,0.724082087],
+p=0.266708759; RD -0.027142975 -> 0.027142975,
+CI [-0.060347200,0.006061251] -> [-0.006061251,0.060347200], p=0.109115104;
+MD 7.617160385 -> -7.617160385, CI [3.823294965,11.411025806] ->
+[-11.411025806,-3.823294965], p=0.0000831510923. No product defect found.
+Failed evidence retained: 20261031T205334Z-9a3da145-sheets-swap (unloaded
+params); d6d071dc retry briefly overlapped the corrected run due to an
+unfinished-session misread. Neither is claimed as serial final qualification.

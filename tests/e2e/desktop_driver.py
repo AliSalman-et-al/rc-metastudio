@@ -554,20 +554,39 @@ def sheets_swap(app, window):
     import copy
     import math
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections
-    for filename in ("amino.rcms", "continuous.rcms", "Pignon2000-HR.rcms", "NielWeise2008-IRR.rcms"):
+    for filename, metric in (("amino.rcms", "OR"), ("amino.rcms", "RD"), ("continuous.rcms", "MD"), ("Pignon2000-HR.rcms", "HR"), ("NielWeise2008-IRR.rcms", "IRR")):
         window.workspace.mark_saved()
         assert window.open(str(ROOT / "sample_projects" / filename), raise_on_error=True)
         model = window.model
+        model.set_current_metric(metric)
+        precise = []
         arms = [a.name for a in model.current_sheet.arms]
+        favours = copy.deepcopy(model.current_sheet.settings.get("favours_labels"))
         counts = copy.deepcopy([r.analysis_unit.get_raw_data_for_arms(arms) for r in model.current_sheet.rows])
         headers = [model.headerData(i, QtCore.Qt.Orientation.Horizontal) for i in range(model.columnCount())]
         values = []
         for iteration in range(3):
             assert window.action_swap_arms.isEnabled()
             view = analyze(app, window, model.get_current_outcome_type() + ".random")
+            if metric in ("OR", "RD", "MD"):
+                from rc_metastudio import r_bridge
+                r_bridge.load_vars_for_plot(next(iter(view.results.image_params_paths.values())))
+                raw = ('metafor::escalc(params$measure, ai=d@g1O1,bi=d@g1O2,ci=d@g2O1,di=d@g2O2,add=params$adjust,to=params$to,drop00=FALSE)' if metric != "MD" else
+                       'metafor::escalc("MD",m1i=d@mean1,sd1i=d@sd1,n1i=d@N1,m2i=d@mean2,sd2i=d@sd2,n2i=d@N2)')
+                receipt = json.loads(str(r_bridge.execute_r_string('jsonlite::toJSON(local({d<-result$input_data; e<-'+raw+'; ref<-metafor::rma.uni(e$yi,vi=e$vi,method="DL"); actual<-result$res; stopifnot(max(abs(c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)-c(ref$b,ref$ci.lb,ref$ci.ub,ref$pval)))<1e-6); c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)}),digits=16)')[0]))
+                observed_labels = list(r_bridge.execute_r_string('c(params$fp_favours_left,params$fp_favours_right)'))
+                expected_labels = model.current_sheet.settings.get("favours_labels", ["Favours " + name for name in model.arm_names])
+                assert observed_labels == expected_labels, (observed_labels, expected_labels)
+                precise.append(receipt)
+                if iteration == 1:
+                    before = precise[0]
+                    assert all(math.isclose(x,y,abs_tol=1e-6) for x,y in zip(receipt,[-before[0],-before[2],-before[1],before[3]])), precise
+                record_step("swap-direct-metafor", view, metric=metric, iteration=iteration, observed=receipt)
             sections = parsed_numeric_sections(view.results)
             summary = sections["Summary"]
             values.append(summary["estimate"])
+            if favours is not None:
+                assert model.current_sheet.settings["favours_labels"] == (list(reversed(favours)) if iteration == 1 else favours)
             record_step("swap-pooled-analysis", view, file=filename, iteration=iteration, sections=sections)
             if filename == "amino.rcms" and iteration == 1:
                 from xml.etree import ElementTree as ET
@@ -589,7 +608,7 @@ def sheets_swap(app, window):
                 window.action_swap_arms.trigger()
                 assert [model.headerData(i, QtCore.Qt.Orientation.Horizontal) for i in range(model.columnCount())] == headers
         assert values[2] == values[0], values
-        if filename == "continuous.rcms":
+        if metric in ("RD", "MD"):
             assert abs(values[0] + values[1]) <= .002, values
         else:
             assert math.isclose(values[1], 1 / values[0], abs_tol=.003), values
