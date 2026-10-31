@@ -164,3 +164,13 @@ standard/subgroup, About and HR/IRR secondary-table proofs are retained in
 `docs/ux-audit/2026-10-16-round6-release-fixes/` with a replay script. Linux source
 and the particular input cases are the scope; arbitrary names/values, OS DPI,
 assistive technology and packaged targets are separate qualifications.
+
+## Sheet presentation proof
+
+`analysis-dialog` checks the Advanced tool-button disclosure, keyboard expansion,
+persisted state, collapsed summary, effect-measure row, tiny-ratio display and
+content-width grid. `results-window` drives the existing results/CSV workflow plus
+fit-width startup, absence of the identity block, navigation label widths and SVG
+favours labels after default and plot-editor-customised arm swaps. The full
+132-scenario offscreen matrix passed for slice 2c; see
+`docs/ux-hill-climb/SLICE2C.md` for commands and evidence.
