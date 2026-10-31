@@ -103,3 +103,5 @@ palette contrast. `review1-design` additionally measures derived/selected grid
 contrast and keyboard traversal; native 1.5×/2× drives cover this host's scaling.
 These checks do not qualify assistive-technology behavior or every inactive/error
 colour on other operating systems.
+
+Sheet acceptance drives: `sheets-legacy` checks original 322ede26 archives against the retained pre-migration numerical fixture and input hashes; `sheets-edges` checks invalid names, deletion prompts, last-sheet retention and transactions; `sheets-swap` checks binary/continuous/HR/IRR pooled inversion, headers, counts, restoration, SVG arm labels and diagnostic gating; `sheets-persist` checks clipboard independence, local covariates and three-sheet reopen. Every desktop startup probes pre-ready R rejection. Clinical favours direction labels are user-defined, not inferred from arm names; automatic favours-label migration remains unexercised.

@@ -378,6 +378,191 @@ def sample_analysis(app, window, sample):
     view.close()
 
 
+def sheet_name_dialog(app, name):
+    def fill():
+        dialog = app.activeModalWidget()
+        dialog.findChild(QtWidgets.QLineEdit).setText(name)
+        mouse_click(dialog.findChild(QtWidgets.QDialogButtonBox).button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
+    QtCore.QTimer.singleShot(0, fill)
+
+
+def sheets_persist(app, window):
+    import copy
+    from rc_metastudio.project_adapter import dataset_to_project
+    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    sheet_name_dialog(app, "Third")
+    mouse_click(window.add_sheet_button, QtCore.Qt.MouseButton.LeftButton)
+    tabs = window.sheet_tabs
+    tabs.setCurrentIndex(0)
+    table = window.tableView
+    model = window.model
+    original = copy.deepcopy(dataset_to_project(model.dataset)["sheets"][0])
+    table.setFocus()
+    selection = QtCore.QItemSelection(model.index(0, model.NAME), model.index(0, model.columnCount() - 1))
+    table.selectionModel().select(selection, QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect)
+    key_click(table, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier)
+    assert app.clipboard().text()
+    tabs.setCurrentIndex(2)
+    table.setCurrentIndex(model.index(0, model.NAME))
+    table.setFocus()
+    key_click(table, QtCore.Qt.Key.Key_V, QtCore.Qt.KeyboardModifier.ControlModifier)
+    app.processEvents()
+    assert model.rowCount() > 1
+    table.setCurrentIndex(model.index(0, model.NAME))
+    table.edit(table.currentIndex())
+    app.processEvents()
+    editor = table.findChild(QtWidgets.QLineEdit)
+    editor.setText("Independent pasted row")
+    key_click(editor, QtCore.Qt.Key.Key_Return)
+    assert dataset_to_project(model.dataset)["sheets"][0] == original
+    tabs.setCurrentIndex(0)
+    def covariate():
+        dialog = app.activeModalWidget()
+        dialog.covariate_name_le.setText("Sheet local dose")
+        dialog.accept()
+    QtCore.QTimer.singleShot(0, covariate)
+    window.action_add_covariate.trigger()
+    column = table.get_covariate_columns()[-1]
+    assert model.setData(model.index(0, column), "7")
+    window.action_swap_arms.trigger()
+    tabs.setCurrentIndex(1)
+    assert "Sheet local dose" not in model.get_covariate_names()
+    expected = copy.deepcopy(dataset_to_project(model.dataset))
+    current_name = tabs.tabText(1)
+    destination = WORK / "persist-three-sheets.rcms"
+    with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(destination), "")):
+        window.action_save_as.trigger()
+    assert window.open(str(destination), raise_on_error=True)
+    assert dataset_to_project(model.dataset) == expected
+    assert tabs.tabText(tabs.currentIndex()) == current_name
+    tabs.setCurrentIndex(2)
+    model = window.model
+    assert model.data(model.index(0, model.NAME)) == "Independent pasted row"
+    record_step("independent-row-and-sheet-state-reopened", window, project=str(destination))
+
+
+def sheets_edges(app, window):
+    sheets(app, window)
+    tabs = window.sheet_tabs
+    def reject_name(name):
+        def fill():
+            dialog = app.activeModalWidget()
+            dialog.findChild(QtWidgets.QLineEdit).setText(name)
+            mouse_click(dialog.findChild(QtWidgets.QDialogButtonBox).button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
+            assert dialog.isVisible()
+            assert any(label.text() == "Choose a unique outcome name." for label in dialog.findChildren(QtWidgets.QLabel))
+            record_step("invalid-sheet-name-rejected", dialog, name=name)
+            dialog.reject()
+        QtCore.QTimer.singleShot(0, fill)
+        window._rename_sheet(0)
+    reject_name("")
+    reject_name(tabs.tabText(1))
+    tabs.setCurrentIndex(0)
+    count = tabs.count()
+    for answer in (QtWidgets.QMessageBox.StandardButton.No, QtWidgets.QMessageBox.StandardButton.Yes):
+        def confirm():
+            dialog = app.activeModalWidget()
+            assert isinstance(dialog, QtWidgets.QMessageBox)
+            dialog.setProperty("verificationExpectedMessage", True)
+            record_step("populated-delete-confirmation", dialog, answer=int(answer))
+            mouse_click(dialog.button(answer), QtCore.Qt.MouseButton.LeftButton)
+        QtCore.QTimer.singleShot(0, confirm)
+        window._delete_sheet(0)
+        assert tabs.count() == count - (answer == QtWidgets.QMessageBox.StandardButton.Yes)
+    tabs.setCurrentIndex(tabs.count() - 1)
+    window.action_undo.trigger()
+    assert tabs.currentIndex() == 0
+    window.action_redo.trigger()
+    sheet_name_dialog(app, "Empty deletion")
+    mouse_click(window.add_sheet_button, QtCore.Qt.MouseButton.LeftButton)
+    with patch.object(QtWidgets.QMessageBox, "question", side_effect=AssertionError("empty delete prompted")):
+        window._delete_sheet(tabs.currentIndex())
+    while tabs.count() > 1:
+        with patch.object(QtWidgets.QMessageBox, "question", return_value=QtWidgets.QMessageBox.StandardButton.Yes):
+            window._delete_sheet(0)
+    window._delete_sheet(0)
+    assert tabs.count() == 1
+    record_step("last-sheet-retained", window)
+
+
+def sheets_swap(app, window):
+    import copy
+    import math
+    from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections
+    for filename in ("amino.rcms", "continuous.rcms", "Pignon2000-HR.rcms", "NielWeise2008-IRR.rcms"):
+        window.workspace.mark_saved()
+        assert window.open(str(ROOT / "sample_projects" / filename), raise_on_error=True)
+        model = window.model
+        arms = [a.name for a in model.current_sheet.arms]
+        counts = copy.deepcopy([r.analysis_unit.get_raw_data_for_arms(arms) for r in model.current_sheet.rows])
+        headers = [model.headerData(i, QtCore.Qt.Orientation.Horizontal) for i in range(model.columnCount())]
+        values = []
+        for iteration in range(3):
+            assert window.action_swap_arms.isEnabled()
+            view = analyze(app, window, model.get_current_outcome_type() + ".random")
+            sections = parsed_numeric_sections(view.results)
+            summary = sections["Summary"]
+            values.append(summary["estimate"])
+            record_step("swap-pooled-analysis", view, file=filename, iteration=iteration, sections=sections)
+            if filename == "amino.rcms" and iteration == 1:
+                from xml.etree import ElementTree as ET
+                for title, params_path in view.results.image_params_paths.items():
+                    exported = WORK / "amino-swapped-forest.svg"
+                    view.plot_service.export(regenerator="forest", params_path=params_path, output_path=str(exported))
+                    labels = ["".join(node.itertext()) for node in ET.parse(exported).iter("{http://www.w3.org/2000/svg}text")]
+                    assert all(name in labels for name in arms), labels
+                    record_step("swapped-forest-arm-labels", view, labels=labels, plots={title: str(exported)})
+            view.close()
+            assert [r.analysis_unit.get_raw_data_for_arms(arms) for r in model.current_sheet.rows] == counts
+            if iteration == 0:
+                window.action_swap_arms.trigger()
+                swapped = [model.headerData(i, QtCore.Qt.Orientation.Horizontal) for i in range(model.columnCount())]
+                if filename != "Pignon2000-HR.rcms":
+                    assert swapped != headers
+                assert [a.name for a in model.current_sheet.arms] == list(reversed(arms))
+            elif iteration == 1:
+                window.action_swap_arms.trigger()
+                assert [model.headerData(i, QtCore.Qt.Orientation.Horizontal) for i in range(model.columnCount())] == headers
+        assert values[2] == values[0], values
+        if filename == "continuous.rcms":
+            assert abs(values[0] + values[1]) <= .002, values
+        else:
+            assert math.isclose(values[1], 1 / values[0], abs_tol=.003), values
+    window.workspace.mark_saved()
+    assert window.open(str(ROOT / "sample_projects/lymph.rcms"), raise_on_error=True)
+    assert not window.action_swap_arms.isEnabled()
+    sheet_name_dialog(app, "Diagnostic 2")
+    mouse_click(window.add_sheet_button, QtCore.Qt.MouseButton.LeftButton)
+    for index in (0, 1, 0):
+        window.sheet_tabs.setCurrentIndex(index)
+        assert not window.action_swap_arms.isEnabled()
+    record_step("diagnostic-swap-disabled", window)
+
+
+def sheets_legacy(app, window):
+    import hashlib
+    import subprocess
+    from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections
+    baseline = json.loads((ROOT / "tests/e2e/fixtures/sheets-original-numerics.json").read_text())
+    for filename in dict.fromkeys(row["file"] for row in baseline):
+        window.workspace.mark_saved()
+        source = WORK / filename
+        source.write_bytes(subprocess.check_output(["git", "show", "322ede26:sample_projects/" + filename], cwd=ROOT))
+        digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        assert window.open(str(source), raise_on_error=True)
+        rows = [row for row in baseline if row["file"] == filename]
+        names = [row["pair"]["outcome"] if sum(r["pair"]["outcome"] == row["pair"]["outcome"] for r in rows) == 1 else row["pair"]["outcome"] + " — " + row["pair"]["follow_up"] for row in rows]
+        assert [window.sheet_tabs.tabText(i) for i in range(window.sheet_tabs.count())] == names
+        for index, row in enumerate(rows):
+            window.sheet_tabs.setCurrentIndex(index)
+            view = analyze(app, window, row["method"])
+            actual = parsed_numeric_sections(view.results)
+            assert actual == row["sections"], (filename, actual, row["sections"])
+            record_step("legacy-original-numerics", view, file=filename, sha256=digest, sections=actual)
+            view.close()
+        assert hashlib.sha256(source.read_bytes()).hexdigest() == digest
+
+
 def sheets(app, window):
     import copy
     from rc_metastudio.project_adapter import dataset_to_project
@@ -389,7 +574,8 @@ def sheets(app, window):
     window.resize(1600, 828)
     app.processEvents()
     record_step("sheets-initial", window)
-    screens = ROOT / "docs/ux-hill-climb/screens"
+    screens = WORK / "sheets-screens"
+    screens.mkdir(exist_ok=True)
     window.grab().save(str(screens / "sheets-after-main.png"))
     window.action_go.trigger()
     app.processEvents()
@@ -1097,6 +1283,15 @@ try:
     assert "rpy2.robjects" not in sys.modules, "R imported before the window appeared"
     assert window.isVisible()
     assert not window.action_go.isEnabled()
+    from rc_metastudio import r_bridge, r_backend
+    try:
+        r_bridge.execute_r_string("1 + 1")
+    except r_backend.AnalysisBackendUnavailableError as error:
+        assert str(error) == "R is still starting", str(error)
+    else:
+        raise AssertionError("pre-ready R request succeeded")
+    app.processEvents()
+    assert r_backend.is_ready()
     if EVIDENCE is not None and os.environ.get("RCMS_DRIVE_STARTED"):
         import time
         app.processEvents()
@@ -1160,6 +1355,14 @@ try:
         run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario in ("amino", "continuous", "lymph"):
         sample_analysis(app, window, scenario)
+    elif scenario == "sheets-persist":
+        sheets_persist(app, window)
+    elif scenario == "sheets-edges":
+        sheets_edges(app, window)
+    elif scenario == "sheets-swap":
+        sheets_swap(app, window)
+    elif scenario == "sheets-legacy":
+        sheets_legacy(app, window)
     elif scenario in ("sheets", "project-structure"):
         sheets(app, window)
     elif scenario == "editing":
