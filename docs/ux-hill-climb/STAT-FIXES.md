@@ -56,3 +56,17 @@ escalc SMD with separate DL fits, Q=0.2926188, p=0.5885472.
 The meta SMD variance convention explains its different Q. Qm label becomes Q.
 numbers inside text sections are compared as whole strings, not among numerical fields.
 Inline continuous authority passed: build/sheets-baseline/text-authorities.json.
+
+## Zero-cell MH
+
+Shared binary MH fitter now passes original counts with metafor defaults;
+subgroup, leave-one-out and cumulative refits call that same fitter.
+Test-first authority failure: text-authorities.log, zero MH OR b.
+OR log estimate -0.246501 -> -0.2544752, CI [-0.7916301, 0.2826796];
+RR corrected estimate -0.2219334, CI [-0.6929202, 0.2490533].
+metafor::rma.mh defaults and meta::metabin(method="MH", MH.exact=TRUE)
+agree on both estimates and intervals within 1e-6. No non-MH numerical edits.
+Authority evidence: build/sheets-baseline/mh-authorities.json (97 cases).
+Installed into build/sheets-r-library (mh-install.log).
+Peto add=.5: -0.2459687 [-0.7727998, 0.2808624]; add=0:
+-0.2541451 [-0.7896609, 0.2813707]. Correction reaches Peto pooling.

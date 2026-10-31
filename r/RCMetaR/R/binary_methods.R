@@ -241,15 +241,12 @@ binary.fixed.mh <- function(binary.data, params){
         results <- list("Summary"=res,
                         "res"=res)
     } else {
-        counts <- rcmetar.corrected.binary.counts(binary.data, params)
-        res<-rma.mh(ai=counts$a, bi=counts$b,
-                    ci=counts$c, di=counts$d,
+        res<-rma.mh(ai=binary.data@g1O1, bi=binary.data@g1O2,
+                    ci=binary.data@g2O1, di=binary.data@g2O2,
                     slab=binary.data@study.names,
                     level=params$conf.level,
                     digits=params$digits,
-                    measure=params$measure,
-                    add=c(0, 0),
-                    to=c("none", "none"))
+                    measure=params$measure)
         pure.res <- res
         if (length(binary.data@y) == 0 || length(binary.data@SE) == 0) {
             binary.data <- compute.bin.point.estimates(binary.data, params)

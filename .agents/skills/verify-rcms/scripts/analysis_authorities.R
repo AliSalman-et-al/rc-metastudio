@@ -212,6 +212,30 @@ for (workflow in c("cum.ma.continuous","loo.ma.continuous")) {
   }
 }
 rows[[length(rows)+1L]] <- list(case="continuous fixed subgroup, sequential and regression",passed=TRUE)
+# Zero-cell failure modes: corrected pooled counts, dropped double-zero rows,
+# and different counts reaching sequential/subgroup refits.
+a <- c(0,0,6,3,19); n1 <- c(20,30,27,59,164)
+c <- c(5,0,9,7,13); n2 <- c(20,30,27,64,152)
+for (metric in c("OR","RR")) {
+  ef <- metafor::escalc(metric,ai=a,bi=n1-a,ci=c,di=n2-c)
+  data <- methods::new("BinaryData",g1O1=a,g1O2=n1-a,g2O1=c,g2O2=n2-c,
+    y=ef$yi,SE=sqrt(ef$vi),study.names=paste0("Zero",1:5))
+  p <- params(metric)
+  ref <- metafor::rma.mh(ai=a,bi=n1-a,ci=c,di=n2-c,measure=metric)
+  m <- meta::metabin(a,n1,c,n2,sm=metric,method="MH",MH.exact=TRUE)
+  cat("ZERO MH",metric,"metafor",as.numeric(ref$b),ref$ci.lb,ref$ci.ub,"meta",m$TE.common,m$lower.common,m$upper.common,"\n")
+  stopifnot(abs(as.numeric(ref$b)-m$TE.common)<1e-6,
+    abs(ref$ci.lb-m$lower.common)<1e-6,abs(ref$ci.ub-m$upper.common)<1e-6)
+  # Pooled coefficients/intervals are the contract; metafor drops double-zero
+  # from its pooled k by default, while individual display rows remain retained.
+  result <- RCMetaR:::binary.fixed.mh(data,p)
+  actual <- RCMetaR:::binary.fixed.mh.overall(result)
+  for (field in c("b","se","ci.lb","ci.ub")) close(actual[[field]],ref[[field]],paste("zero MH",metric,field))
+}
+p1 <- metafor::rma.peto(ai=a,bi=n1-a,ci=c,di=n2-c,add=c(.5,.5),to=c("only0","only0"),drop00=FALSE)
+p0 <- metafor::rma.peto(ai=a,bi=n1-a,ci=c,di=n2-c,add=0)
+cat("PETO add .5",as.numeric(p1$b),p1$ci.lb,p1$ci.ub,"add 0",as.numeric(p0$b),p0$ci.lb,p0$ci.ub,"\n")
+rows[[length(rows)+1L]] <- list(case="zero MH and Peto",passed=TRUE)
 # SMD convention authority: metafor escalc, separate DL fits, Q among summaries.
 x <- read.csv(text="label,group,n1,m1,s1,n2,m2,s2
 Carroll,early,60,94,22,60,92,20
