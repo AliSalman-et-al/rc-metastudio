@@ -305,27 +305,50 @@ def analysis_dialog(app, window):
     QtCore.QSettings().remove("analysis/advancedExpanded")
     for sample in ("amino", "continuous", "Pignon2000-HR", "lymph"):
         assert window.open(str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
+        for row in range(window.model.rowCount()):
+            texts = [str(window.model.data(window.model.index(row, column))) for column in window.model.OUTCOMES[:3]]
+            decimals = [len(text.split(".")[1]) for text in texts if "." in text and text.replace(".", "", 1).replace("-", "", 1).isdigit()]
+            assert len(set(decimals)) <= 1, texts
         kwargs = {"diagnostic_metrics": ["dor"]} if sample == "lymph" else {}
         form = analysis_setup_dialog.AnalysisSetupDialog(
             window.model, parent=window, confidence_level=95, **kwargs)
+        window.resize(1600, 828)
+        form.resize(631, 437)
         form.show()
         app.processEvents()
+        if sample == "amino":
+            record_step("slice2b-main", window)
+            record_step("slice2b-default-collapsed", form)
         toggle = form.advanced_toggle
         assert not toggle.isChecked()
         toggle.setFocus()
         key_click(toggle, QtCore.Qt.Key.Key_Space)
         assert toggle.isChecked() and form.advanced_panel.isVisible()
+        record_step("slice2b-default-expanded", form)
+        form.hide()
+        reopened = analysis_setup_dialog.AnalysisSetupDialog(
+            window.model, parent=window, confidence_level=95, **kwargs)
+        assert reopened.advanced_toggle.isChecked()
+        reopened.close()
+        form.show()
         digits = next(label.buddy() for label in form.findChildren(QtWidgets.QLabel)
                       if label.text().casefold() == "decimal places")
         digits.setValue(4)
         assert "4" in toggle.text(), toggle.text()
+        inference = next(label.buddy() for label in form.findChildren(QtWidgets.QLabel)
+                         if "inference" in label.text().casefold())
+        inference.setCurrentIndex((inference.currentIndex() + 1) % inference.count())
+        expected_inference = inference.currentText()
+        assert expected_inference in toggle.text()
         key_click(toggle, QtCore.Qt.Key.Key_Return)
         assert not toggle.isChecked()
         record_step("advanced-collapsed", form, sample=sample, summary=toggle.text())
-        form.close()
+
+        mouse_click(form.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
-        view = analyze(app, window, {"amino": "binary.random", "continuous": "continuous.random",
-            "Pignon2000-HR": "generic.random", "lymph": "diagnostic.random"}[sample])
+        view = next(w for w in app.topLevelWidgets() if isinstance(w, results_window.ResultsWindow) and w.isVisible())
+        assert expected_inference in view.results.details
+        record_step("advanced-result", view, configuration=view.results.details)
         view.close()
 
 

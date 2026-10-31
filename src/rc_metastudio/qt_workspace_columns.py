@@ -146,9 +146,7 @@ class WorkspaceColumnWidthController(QObject):
         widths = [self._widths.get(key, self.table.columnWidth(i)) for i, key in enumerate(keys)]
         extra = available - sum(width for i, width in enumerate(widths) if not self.table.isColumnHidden(i))
         automatic = [i for i, key in enumerate(keys) if key not in self._user_widths and not self.table.isColumnHidden(i)]
-        names = [i for i in automatic if keys[i].kind == "fixed" and keys[i].components == ("study-name",)]
-        if names:
-            automatic = names
+        automatic = automatic[-1:]
         if extra <= 0 or not automatic:
             return
 

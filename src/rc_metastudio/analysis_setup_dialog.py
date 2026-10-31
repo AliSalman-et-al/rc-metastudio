@@ -207,6 +207,7 @@ class _DiagnosticMethodPanel(object):
         self._method_changed()
 
     def _method_changed(self, saved=None):
+        self.owner._forget_advanced_controls(self.widgets)
         for widget in self.widgets:
             self.param_box.layout().removeWidget(widget)
             widget.deleteLater()
@@ -218,14 +219,9 @@ class _DiagnosticMethodPanel(object):
         )
         if saved is not None:
             defaults.update(saved)
-        self.param_box.setTitle(str(self.combo.currentText()))
-        description = QLabel(
-            "Description: %s" % self.owner.analysis_service.method_description(method)
-        )
-        description.setWordWrap(True)
-        self.param_box.layout().addWidget(description, 0, 0, 1, 2)
-        self.widgets.append(description)
-        row = 1
+        self.param_box.setTitle("")
+        self.param_box.setFlat(True)
+        row = 0
         for name in order or definitions:
             spec = _normalize_parameter_definition(
                 name, definitions[name], defaults.get(name), metadata.get(name)
@@ -238,12 +234,23 @@ class _DiagnosticMethodPanel(object):
             label = self.owner._parameter_label(spec)
             control = self.owner._create_parameter_control(spec, self.params)
             self.owner._configure_parameter_accessibility(label, control)
-            self.param_box.layout().addWidget(label, row, 0)
-            self.param_box.layout().addWidget(control, row, 1)
+            row = self.owner._place_parameter(self.param_box.layout(), row, spec, label, control, self.params, defaults.get(name))
             self.widgets.extend((label, control))
-            row += 1
         self.owner._set_analysis_tab_order()
         self.owner._schedule_local_reflow()
+
+
+class _CompactDoubleSpinBox(QDoubleSpinBox):
+    def textFromValue(self, value):
+        return super().textFromValue(value).rstrip("0").rstrip(self.locale().decimalPoint())
+
+
+class _AdvancedButton(QtWidgets.QPushButton):
+    def keyPressEvent(self, event):
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            self.click()
+        else:
+            super().keyPressEvent(event)
 
 
 class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
@@ -296,6 +303,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _setup_result_context(self):
         self.setWindowTitle(f"{self.model.current_outcome_name} · {self._result_metric_label()}")
         required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button").setText("Run analysis")
+        self.gridLayout.addWidget(QLabel("Effect measure: " + self._result_metric_label()), 3, 0, 1, 4)
         self.analysis_error_label = QLabel(self)
         self.analysis_error_label.setWordWrap(True)
         self.analysis_error_label.setTextFormat(Qt.TextFormat.PlainText)
@@ -421,6 +429,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             QSizePolicy.Policy.Ignored,
             self.parameter_grp_box.sizePolicy().verticalPolicy(),
         )
+        self.gridLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.gridLayout.setColumnStretch(0, 0)
         self.gridLayout.setColumnStretch(1, 1)
         self._layout_reflow_pending = False
@@ -1034,7 +1043,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._schedule_local_reflow()
 
     def _set_parameter_box_title(self, cbo_box, param_box):
-        param_box.setTitle(str(cbo_box.currentText()))
+        param_box.setTitle("")
+        param_box.setFlat(True)
 
     def populate_parameter_controls(self, cbo_box=None, param_box=None):
         if cbo_box is None:
@@ -1135,6 +1145,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def clear_param_ui(self):
         parameter_layout = self.parameter_grp_box.layout()
+        self._forget_advanced_controls(self.current_widgets)
         for widget in self.current_widgets:
             if parameter_layout is not None:
                 parameter_layout.removeWidget(widget)
@@ -1145,12 +1156,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def ui_for_params(self, adjust_root=True, excluded_names=()):
         self._configure_plot_option_groups()
         parameter_layout = self._parameter_layout()
-        method_description = self.analysis_service.method_description(
-            self.current_method
-        )
-        self.add_method_description(
-            parameter_layout, 0, "Description: %s" % method_description
-        )
         self._add_parameter_controls(
             parameter_layout, self._ordered_parameter_definitions(), excluded_names
         )
@@ -1166,6 +1171,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             controls.append(panel.combo)
             controls.extend(widget for widget in panel.widgets if widget.focusPolicy() & Qt.FocusPolicy.TabFocus)
         controls.extend(widget for widget in self._shared_diagnostic_widgets if widget.focusPolicy() & Qt.FocusPolicy.TabFocus)
+        controls.append(self.advanced_toggle)
+        controls.extend(control for _, control, _, _ in self._advanced_entries)
         controls.extend(button for button in (self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
                                               self.buttonBox.button(QDialogButtonBox.StandardButton.Cancel)) if button is not None)
         for before, after in zip(controls, controls[1:]):
@@ -1206,8 +1213,59 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             if spec.kind == kind
         ]
 
+    def _forget_advanced_controls(self, widgets):
+        self._advanced_entries = [entry for entry in getattr(self, "_advanced_entries", [])
+                                  if entry[1] not in widgets]
+
+    def _refresh_advanced_summary(self):
+        changes = []
+        for spec, control, target, default in self._advanced_entries:
+            value = target.get(spec.name)
+            if str(value) == str(default):
+                continue
+            if isinstance(control, QComboBox):
+                text = control.currentText()
+            elif isinstance(control, (QSpinBox, QDoubleSpinBox)):
+                text = f"{value:g}"
+            else:
+                text = str(value)
+            changes.append(f"{parameter_display_label(spec.name, spec.metadata)} {text}")
+        self.advanced_toggle.setText("Advanced" + (" · " + ", ".join(changes) if changes else ""))
+
+    def _place_parameter(self, layout, row, spec, label, control, target, default):
+        if spec.name in {"measure", "rm.method", "estimator", "conf.level"}:
+            layout.addWidget(label, row, 0)
+            layout.addWidget(control, row, 1)
+            return row + 1
+        advanced = self.advanced_panel.layout()
+        advanced_row = advanced.rowCount()
+        advanced.addWidget(label, advanced_row, 0)
+        advanced.addWidget(control, advanced_row, 1)
+        self._advanced_entries.append((spec, control, target, default))
+        if isinstance(control, QComboBox):
+            control.currentIndexChanged.connect(self._refresh_advanced_summary)
+        elif isinstance(control, (QSpinBox, QDoubleSpinBox)):
+            control.valueChanged.connect(self._refresh_advanced_summary)
+        elif isinstance(control, QCheckBox):
+            control.toggled.connect(self._refresh_advanced_summary)
+        else:
+            control.textChanged.connect(self._refresh_advanced_summary)
+        self._refresh_advanced_summary()
+        return row
+
     def _add_parameter_controls(self, layout, definitions, excluded_names):
-        row = 1
+        if not hasattr(self, "advanced_toggle"):
+            self._advanced_entries = []
+            self.advanced_toggle = _AdvancedButton("Advanced")
+            self.advanced_toggle.setCheckable(True)
+            self.advanced_toggle.setAutoDefault(False)
+            self.advanced_panel = QtWidgets.QWidget()
+            QGridLayout(self.advanced_panel)
+            self.advanced_toggle.toggled.connect(self._expand_advanced)
+            expanded = QtCore.QSettings().value("analysis/advancedExpanded", False, type=bool)
+            self.advanced_toggle.setChecked(expanded)
+            self.advanced_panel.setVisible(expanded)
+        row = 0
         for spec in definitions:
             if spec.name in excluded_names:
                 self._register_shared_diagnostic_param(spec)
@@ -1216,12 +1274,21 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             control = self._create_parameter_control(spec, self.current_param_vals)
             self._configure_parameter_accessibility(label, control)
             self.current_widgets.extend((label, control))
-            layout.addWidget(label, row, 0)
-            layout.addWidget(control, row, 1)
-            row += 1
+            row = self._place_parameter(layout, row, spec, label, control,
+                                        self.current_param_vals, self._method_defaults.get(spec.name))
+        self.gridLayout.addWidget(self.advanced_toggle, 20, 0, 1, 4)
+        self.gridLayout.addWidget(self.advanced_panel, 21, 0, 1, 4)
+        self._refresh_advanced_summary()
+
+    def _expand_advanced(self, checked):
+        self.advanced_panel.setVisible(checked)
+        QtCore.QSettings().setValue("analysis/advancedExpanded", checked)
+        self._schedule_local_reflow()
 
     def _parameter_label(self, spec):
         label = QLabel(parameter_display_label(spec.name, spec.metadata))
+        if spec.name == "rm.method":
+            label.setText("Heterogeneity (τ²) estimator")
         description = parameter_description(spec.name, spec.metadata)
         if spec.name == "estimator" and description == "No description provided.":
             description = "REML: restricted maximum likelihood; ML: maximum likelihood."
@@ -1292,7 +1359,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 )
             )
         elif spec.kind == "float":
-            control = QDoubleSpinBox()
+            control = _CompactDoubleSpinBox()
             control.setDecimals(1 if spec.name == "conf.level" else 6)
             if spec.name == "conf.level":
                 control.setRange(50, CONFIDENCE_LEVEL_DISPLAY_MAX)
@@ -1415,6 +1482,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.analysis_service.parameters(self.current_method)
         )
 
+        self._method_defaults = dict(self.current_defaults)
         for name, definition in self.current_params.items():
             if name not in self.current_param_vals:
                 continue
@@ -1467,6 +1535,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         layout = self.shared_diagnostic_params_box.layout()
         if not isinstance(layout, QGridLayout):
             raise RuntimeError("Shared diagnostic parameters require a grid layout")
+        self._forget_advanced_controls(self._shared_diagnostic_widgets)
         for widget in self._shared_diagnostic_widgets:
             layout.removeWidget(widget)
             widget.deleteLater()
@@ -1481,8 +1550,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             label = self._parameter_label(spec)
             control = self._create_parameter_control(spec, self.current_param_vals)
             self._configure_parameter_accessibility(label, control)
-            layout.addWidget(label, row, 0)
-            layout.addWidget(control, row, 1)
+            self._place_parameter(layout, row, spec, label, control, self.current_param_vals, self._shared_diagnostic_param_specs[name].default)
             self._shared_diagnostic_widgets.extend((label, control))
         self._set_analysis_tab_order()
 
