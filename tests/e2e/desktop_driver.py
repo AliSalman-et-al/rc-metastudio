@@ -865,6 +865,8 @@ def xlsx_import(app, window):
             metrics = capture.currentPage().metric_cbo_box
             assert all(metrics.itemIcon(i).isNull() for i in range(metrics.count()))
             capture.grab().save(str(screens / f"slice7-{theme}-metrics-{index}.png"))
+            if theme == "light" and index == 0:
+                capture.grab().save(str(screens / "slice8a-metric.png"))
         capture.close()
     app.setPalette(original_palette)
     from openpyxl import Workbook

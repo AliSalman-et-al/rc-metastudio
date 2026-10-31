@@ -427,7 +427,7 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
                 if metric == "TX Mean":
                     metric_pretty_name = {"generic_effect": "Entered effect", "reg_coef": "Regression coefficient"}.get(dataset_info["sub_type"], "Mean")
                 self.metric_cbo_box.addItem(
-                    metric_pretty_name if metric == "TX Mean" else metric + ": " + metric_pretty_name, userData=str(metric)
+                    ({"PR": "Proportion", "OR": "Odds ratio (OR)", "RR": "Risk ratio (RR)", "RD": "Risk difference (RD)", "MD": "Mean difference", "SMD": "Standardized mean difference (SMD)"}.get(metric, metric_pretty_name[:1] + metric_pretty_name[1:].lower())) if metric != "TX Mean" else metric_pretty_name, userData=str(metric)
                 )
             index_of_default = self.metric_cbo_box.findData(str(default_effect))
             if index_of_default < 0:

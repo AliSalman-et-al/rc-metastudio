@@ -20,7 +20,7 @@
    <string>WizardPage</string>
   </property>
   <property name="title">
-   <string>Choose a metric...</string>
+   <string>Choose a metric</string>
   </property>
   <property name="subTitle">
    <string/>
@@ -38,24 +38,12 @@
      <widget class="QWidget" name="pageScrollContent">
       <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
       <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Choose the metric used in your data. Imported estimates and confidence bounds must already use this metric; changing the selection does not convert entered values.
-
-Complete raw study data are used to calculate effects where supported. Generic effects use the entered estimate and standard error.</string>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Metric:</string>
+        <string>Metric</string>
        </property>
        <property name="buddy"><cstring>metric_cbo_box</cstring></property>
       </widget>
