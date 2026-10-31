@@ -1318,14 +1318,14 @@ def calculator(app, window, family):
                         text = dialog.wald_readout.text()
                         assert f"{result['se']:.4f}" in text
                         assert f"{result['z']:.4f}" in text
-                        assert f"{result['p']:.6g}" in text
+                        assert ("<0.001" if result["p"] < 0.001 else f"{result['p']:.3f}") in text
                     mouse_click(dialog.metric_readout.viewport(), QtCore.Qt.MouseButton.LeftButton,
                                 pos=dialog.metric_readout.visualItemRect(dialog.metric_readout.item(0, 0)).center())
                     selected = crosscheck[dialog.current_effect]
                     text = dialog.wald_readout.text()
                     assert f"{selected['se']:.4f}" in text
                     assert f"{selected['z']:.4f}" in text
-                    assert f"{selected['p']:.6g}" in text
+                    assert ("<0.001" if selected["p"] < 0.001 else f"{selected['p']:.3f}") in text
                     record_step("calculator-r-crosscheck", dialog, counts=counts, results=crosscheck)
 
                 record_step("calculator-effect-preview", dialog, family=family,

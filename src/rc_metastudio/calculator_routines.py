@@ -505,7 +505,10 @@ def update_calculator_readout(dialog, data_type):
                 scale = " (log scale)"
             elif current_effect in {"Sens", "Spec", "PLO"}:
                 scale = " (logit scale)"
-            summary = f"SE{scale}: {se:.4f}    Z: {z:.4f}    Two-sided P: {p:.6g}"
+            summary = f"SE{scale}: {se:.4f}"
+            if data_type != "diagnostic":
+                p_text = "<0.001" if p < 0.001 else f"{p:.3f}"
+                summary += f"    Z: {z:.4f}    Two-sided P: {p_text}"
     dialog.wald_readout.setText(summary)
     raw = analysis_unit.get_raw_data_for_arms(dialog.arm_names)
     complete_binary = (
