@@ -140,3 +140,15 @@ parameters must follow the arm order. Existing HR/IRR swap coverage remains.
 ## XLSX import
 
 `xlsx-import` drives the shared mapping/preview page: visible worksheet selection, CSV payload and analysis-text equivalence, precision/date disclosure, hidden rows, formula caches and missing caches, error cells, merges, corrupt/old formats, and save/reopen. Native picker gestures, packaged execution and exhaustive mapping combinations remain unverified.
+
+### Slice 7 import evidence
+
+`xlsx-import` now exercises toolbar picker cancellation and immediate loaded-page
+entry, multi-sheet selection, hidden rows/columns, protected/corrupt/formula/merged
+workbook rejection, one-step import undo/redo and normalized project equality with
+CSV. It asserts Preview first, the Import data title, hidden CSV options for XLSX
+and no page vertical scrollbar at the default size. It captures each data-type
+and metric page in light/dark palettes and checks uniform icon presence at each
+level. `csv` opens the initially collapsed CSV options and retains its Unicode,
+covariate, analysis and reopen assertions. Welcome-page picker entry and native
+OS file-picker operation remain unexercised by these automated scenarios.

@@ -260,7 +260,9 @@ def read_xlsx(path, worksheet=None, *, year_column=None, numeric_columns=(), not
                 hidden_rows = sum(bool(full.row_dimensions[number].hidden) for number in row_numbers)
                 hidden_cols = sum(1 for i in columns if any(d.hidden and d.min <= i+1 <= d.max for d in full.column_dimensions.values()))
                 if notices is not None and (hidden_rows or hidden_cols):
-                    notices.append(f"{hidden_rows} hidden rows and {hidden_cols} hidden columns are imported.")
+                    for count, label in ((hidden_rows, "row"), (hidden_cols, "column")):
+                        if count:
+                            notices.append(f"{count} hidden {label}{' was' if count == 1 else 's were'} imported.")
             finally:
                 normal.close()
         cached = {(c.row, c.column): c.value for row in saved[selected].iter_rows() for c in row if c.value is not None}

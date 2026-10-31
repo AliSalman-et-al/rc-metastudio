@@ -202,8 +202,15 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
             self.wizard().accept()
 
     def import_csv(self):
-        self.wizard().set_wizard_path("csv_import")
-        self.wizard().next()
+        path, _ = QFileDialog.getOpenFileName(self, "Import data", "", "Data files (*.csv *.xlsx *.xls)")
+        if not path:
+            return
+        wizard = self.wizard()
+        wizard.set_wizard_path("csv_import")
+        wizard.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions", effect="OR", metric_choices=[], name="Imported data"))
+        wizard.setStartId(Page_CsvImport)
+        wizard.restart()
+        wizard.page(Page_CsvImport).load_file(path)
 
     def new_dataset(self):
         self.wizard().set_wizard_path("new_dataset")
@@ -372,7 +379,7 @@ class DataTypePage(MainWizardPage, _ui_data_type_page.Ui_DataTypePage):
                 sub_type="hazard_ratio", effect="HR", metric_choices=["HR", "IRR"])
         # diagnostic
         elif button == self.diagnostic_Button:
-            self.summary["data_type"] = "diagnostic"
+            self.summary.update(arms=None, data_type="diagnostic", sub_type=None, effect=None, metric_choices=[])
 
         # Put information from pressing the button into the wizard storage area
         self.wizard().set_dataset_info(self.summary)
@@ -409,10 +416,6 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
         data_type = dataset_info["data_type"]
         metric_choices = dataset_info["metric_choices"]
         default_effect = dataset_info["effect"]
-        self.metric_cbo_box.setIconSize(
-            QSize(44, 36) if default_effect in ("HR", "IRR") else QSize(16, 16)
-        )
-
         # Add metric choices to combo box
         self.metric_cbo_box.blockSignals(True)
         self.metric_cbo_box.clear()
@@ -426,11 +429,6 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
                 self.metric_cbo_box.addItem(
                     metric_pretty_name if metric == "TX Mean" else metric + ": " + metric_pretty_name, userData=str(metric)
                 )
-                if metric in ("HR", "IRR"):
-                    theme = "dark" if self.palette().color(QPalette.ColorRole.Text).lightness() >= 128 else "light"
-                    name = "hazard-ratio.svg" if metric == "HR" else "incidence-rate-ratio.svg"
-                    self.metric_cbo_box.setItemIcon(self.metric_cbo_box.count() - 1,
-                        QIcon(f":/icons/dataset-types/{theme}/{name}"))
             index_of_default = self.metric_cbo_box.findData(str(default_effect))
             if index_of_default < 0:
                 raise ValueError(
@@ -472,15 +470,15 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self._entry_scroll_reset.timeout.connect(self._reset_entry_scroll)
         self.mapping_table = QTableWidget(self)
         self.mapping_table.setColumnCount(2)
-        self.mapping_table.setHorizontalHeaderLabels(["Required field", "CSV column"])
+        self.mapping_table.setHorizontalHeaderLabels(["Required field", "File column"])
         self.mapping_table.setAccessibleName("CSV column mapping")
         self.mapping_table.hide()
         self.import_tabs = QTabWidget(self)
-        self.import_tabs.addTab(self.groupBox_2, "Required fields")
-        self.import_tabs.addTab(self.mapping_table, "Map columns")
         self.import_tabs.addTab(self.preview_grp_box, "Preview")
+        self.import_tabs.addTab(self.mapping_table, "Map columns")
         self.verticalLayout_2.addWidget(self.import_tabs)
-        self.template_btn = QPushButton("Save CSV template…", self)
+        self.template_btn = QPushButton("Save a blank template", self)
+        self.template_btn.setFlat(True)
         self.template_btn.clicked.connect(app_error_handler.safe_slot(self._save_template, parent=self))
         self.verticalLayout_2.insertWidget(1, self.template_btn)
         self.import_status = QLabel(self)
@@ -514,32 +512,57 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 lambda _text: self._rebuild_display(), parent=self
             )
         )
+        self.groupBox.setTitle("")
+        self.verticalLayout_2.insertWidget(0, self.select_file_btn)
+        self.file_path_lbl.hide()
+        self.csv_options_btn = QPushButton("CSV options ▸", self)
+        self.csv_options_btn.setCheckable(True)
+        self.csv_options_btn.setFlat(True)
+        self.csv_options_btn.toggled.connect(self.groupBox.setVisible)
+        self.verticalLayout_2.insertWidget(2, self.csv_options_btn)
+        self.groupBox.hide()
+        self.verticalLayout_2.addWidget(self.import_status)
+        self.verticalLayout_2.addWidget(self.template_btn)
+        self.verticalLayout_2.setStretchFactor(self.import_tabs, 1)
+        self.data_type_combo = QComboBox(self)
+        self.data_type_combo.setAccessibleName("Data type")
+        self.data_type_label = QLabel("Data type", self)
+        self.data_type_label.setBuddy(self.data_type_combo)
+        self.verticalLayout_2.insertWidget(4, self.data_type_combo)
+        self.data_type_combo.currentIndexChanged.connect(self._change_data_type)
+        for widget in (self.select_file_btn, self.worksheet_combo, self.data_type_label, self.data_type_combo, self.import_tabs, self.import_status, self.csv_options_btn, self.groupBox, self.template_btn):
+            self.verticalLayout_2.addWidget(widget)
         self._update_dialect_controls()
 
+    def _change_data_type(self, index):
+        page = self.wizard().page(Page_DataType)
+        old = dict(self.wizard().require_dataset_info())
+        page._button_selected(page._data_type_buttons()[min(index, 8)])
+        if index == 9:
+            self.wizard().set_effect("IRR")
+        info = dict(self.wizard().require_dataset_info())
+        info["name"] = old.get("name") or "Imported data"
+        self.wizard().set_dataset_info(info)
+        self.required_header_labels = self._get_required_header_labels()
+        self._mapping_key = None
+        self._rebuild_display()
+
     def initializePage(self):
+        self.data_type_combo.blockSignals(True)
+        self.data_type_combo.clear()
+        self.data_type_combo.addItems(["One-group proportion", "One-group mean", "Regression coefficient", "Entered effect", "Two-group proportions", "Two-group means", "Standardized mean difference", "Diagnostic accuracy", "Hazard ratio"])
+        self.data_type_combo.setItemText(8, "Hazard ratio")
+        self.data_type_combo.addItem("Incidence rate ratio")
+        info = self.wizard().require_dataset_info()
+        keys = [("binary", "proportion"), ("continuous", "mean"), ("continuous", "reg_coef"), ("continuous", "generic_effect"), ("binary", "proportions"), ("continuous", "means"), ("continuous", "smd"), ("diagnostic", None), ("time_to_event", "hazard_ratio"), ("event_rates", "incidence_rate_ratio")]
+        key = (info["data_type"], info["sub_type"])
+        self.data_type_combo.setCurrentIndex(keys.index(key) if key in keys else 8)
+        self.data_type_combo.blockSignals(False)
         self.file_path = None
         self._mapping_key = None
         self._reset_data()
 
         self.required_header_labels = self._get_required_header_labels()
-        self.required_fmt_table.setRowCount(2)
-        self.required_fmt_table.setColumnCount(len(self.required_header_labels))
-
-        self.required_fmt_table.setHorizontalHeaderLabels(self.required_header_labels)
-        self.required_fmt_table.resizeColumnsToContents()
-        self.required_fmt_table.resizeRowsToContents()
-
-        # Set up preview format table
-        for row in range(self.required_fmt_table.rowCount()):
-            for col in range(self.required_fmt_table.columnCount()):
-                self.required_fmt_table.setItem(row, col, QTableWidgetItem(""))
-                item = self.required_fmt_table.item(row, col)
-                if item is None:
-                    raise RuntimeError("CSV format preview item was not created")
-                item.setFlags(Qt.ItemFlag.NoItemFlags)
-        # Keep required-schema columns readable. The table owns horizontal
-        # overflow so the wizard footer remains reachable at narrow sizes.
-        qt_layout.configure_compact_table(self.required_fmt_table)
         self.import_tabs.setCurrentIndex(0)
         self.select_file_btn.setFocus()
         self._entry_scroll_reset.start(0)
@@ -585,11 +608,18 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         )
         if not selected_path:
             return
+        self.load_file(selected_path)
+
+    def load_file(self, selected_path):
         self.file_path = qt_text.to_native_text(selected_path)
         self._mapping_key = None
 
         if self.file_path:
-            self.file_path_lbl.setText(self.file_path)
+            self.select_file_btn.setText(Path(self.file_path).name)
+            self.select_file_btn.setToolTip(self.file_path)
+            is_csv = Path(self.file_path).suffix.lower() == ".csv"
+            self.csv_options_btn.setVisible(is_csv)
+            self.groupBox.setVisible(is_csv and self.csv_options_btn.isChecked())
 
         self.worksheet_combo.blockSignals(True)
         self.worksheet_combo.clear()
@@ -603,6 +633,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 self.has_headers_chkbx.setChecked(True)
             except csv_import.CsvImportError as error:
                 self._reset_data()
+                self.import_status.setStyleSheet("color: #d32f2f;")
                 self.import_status.setText(str(error))
                 self.worksheet_combo.blockSignals(False)
                 return
@@ -623,6 +654,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
     def _rebuild_display(self):
         self._reset_data()
         self.import_status.clear()
+        self.import_status.setStyleSheet("color: #d32f2f;")
         try:
             file_path = self.file_path
             if not isinstance(file_path, str) or not file_path:
@@ -632,7 +664,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             column_mapping = None
             if mapping and any(index is None for index in mapping):
                 missing = self.required_header_labels[mapping.index(None)]
-                raise csv_import.CsvImportError(f'Select a CSV column for required field "{missing}".')
+                raise csv_import.CsvImportError(f'Select a column for required field "{missing}".')
             if mapping:
                 column_mapping = mapping
             notices = []
@@ -705,10 +737,8 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
 
             self.imported_data_ok = True
             self.import_tabs.setCurrentWidget(self.preview_grp_box)
-            covariates = ", ".join(f"{name}: {'Numeric' if kind == 'continuous' else 'Category'}" for name, kind in zip(self.covariate_names, self.covariate_types))
-            self.import_status.setText(f"Ready to import {num_rows} studies · UTF-8 · delimiter: {self._get_delimter()!r}" + (f"\nCovariates — {covariates}" if covariates else ""))
-            if notices:
-                self.import_status.setText(self.import_status.text() + "\n" + "\n".join(notices))
+            self.import_status.setStyleSheet("")
+            self.import_status.setText(f"Ready to import {num_rows} studies." + (" " + " ".join(notices) if notices else ""))
             self.completeChanged.emit()
         except csv_import.CsvImportError as error:
             self.import_status.setText(str(error))
@@ -716,7 +746,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             self.imported_data_ok = False
             return False
         except Exception as e:
-            self.import_status.setText("Could not preview the CSV: %s" % e)
+            self.import_status.setText("Could not preview the file: %s" % e)
             self.imported_data_ok = False
             return False
 

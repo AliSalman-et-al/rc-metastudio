@@ -627,9 +627,17 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _import_csv(self):
         """Import data from csv file"""
+        path, _ = QFileDialog.getOpenFileName(self, "Import data", "", "Data files (*.csv *.xlsx *.xls)")
+        if not path:
+            return
         if not self._authorize_destructive_project_action():
             return
         wizard = main_wizard.MainWizard(parent=self, path="csv_import")
+        wizard.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions", effect="OR", metric_choices=[], name="Imported data"))
+        wizard.setStartId(main_wizard.Page_CsvImport)
+        wizard.restart()
+        page = wizard.page(main_wizard.Page_CsvImport)
+        page.load_file(path)
         if wizard.exec():
             wizard_data = wizard.get_results()
             self._handle_wizard_results(wizard_data)
@@ -1619,7 +1627,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 ).redo()
 
             self._commit_model_operation(import_csv)
-            self.workspace.start_new_document()
             self.out_path = None
             self._notify_user_that_data_is_unsaved()
 

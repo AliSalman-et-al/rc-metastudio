@@ -837,6 +837,36 @@ def editing(app, window):
 
 
 def xlsx_import(app, window):
+    from rc_metastudio import main_wizard
+    original_palette = app.palette()
+    screens = ROOT / "docs/ux-hill-climb/screens"
+    screens.mkdir(parents=True, exist_ok=True)
+    for theme, foreground, background in (("light", "#202020", "#ffffff"), ("dark", "#eeeeee", "#202020")):
+        palette = QtGui.QPalette(original_palette)
+        for role in (QtGui.QPalette.ColorRole.Text, QtGui.QPalette.ColorRole.ButtonText, QtGui.QPalette.ColorRole.WindowText):
+            palette.setColor(role, QtGui.QColor(foreground))
+        for role in (QtGui.QPalette.ColorRole.Window, QtGui.QPalette.ColorRole.Button, QtGui.QPalette.ColorRole.Base):
+            palette.setColor(role, QtGui.QColor(background))
+        app.setPalette(palette)
+        capture = main_wizard.MainWizard(path="new_dataset")
+        capture.show()
+        app.processEvents()
+        types = capture.page(main_wizard.Page_DataType)
+        buttons = types._data_type_buttons()
+        assert all(not button.icon().isNull() for button in buttons)
+        capture.grab().save(str(screens / f"slice7-{theme}-data-types.png"))
+        for index, button in enumerate(buttons):
+            types._button_selected(button)
+            if capture.require_dataset_info()["data_type"] == "diagnostic":
+                continue
+            capture.setStartId(main_wizard.Page_ChooseMetric)
+            capture.restart()
+            app.processEvents()
+            metrics = capture.currentPage().metric_cbo_box
+            assert all(metrics.itemIcon(i).isNull() for i in range(metrics.count()))
+            capture.grab().save(str(screens / f"slice7-{theme}-metrics-{index}.png"))
+        capture.close()
+    app.setPalette(original_palette)
     from openpyxl import Workbook
     from rc_metastudio import main_wizard
     book = Workbook()
@@ -849,8 +879,24 @@ def xlsx_import(app, window):
     hidden = book.create_sheet("Hidden")
     hidden.sheet_state = "hidden"
     sheet.row_dimensions[2].hidden = True
+    sheet.column_dimensions["D"].hidden = True
     path = WORK / "studies.xlsx"
     book.save(path)
+    from rc_metastudio.project_adapter import dataset_to_project
+    unchanged = dataset_to_project(window.model.dataset)
+    with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=("", "")):
+        window.action_import_csv.trigger()
+    assert dataset_to_project(window.model.dataset) == unchanged
+    def inspect_import(dialog):
+        loaded = dialog.currentPage()
+        assert isinstance(loaded, main_wizard.CsvImportPage)
+        assert loaded.file_path == str(path)
+        assert loaded.isComplete(), loaded.import_status.text()
+        record_step("toolbar-import-loaded", dialog)
+        return 0
+    with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(path), "")), patch.object(main_wizard.MainWizard, "exec", inspect_import):
+        window.action_import_csv.trigger()
+    assert dataset_to_project(window.model.dataset) == unchanged
     wizard = main_wizard.MainWizard(path="csv_import")
     wizard.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions", effect="OR", metric_choices=[], name="Mortality"))
     wizard.page(main_wizard.Page_OutcomeName).outcome_name_LineEdit.setText("Mortality")
@@ -864,7 +910,12 @@ def xlsx_import(app, window):
     assert page.isComplete(), page.import_status.text()
     assert page.worksheet_combo.count() == 2
     assert page.worksheet_combo.currentText() == "Binary"
-    assert "1 hidden rows" in page.import_status.text()
+    assert "1 hidden row was imported" in page.import_status.text()
+    assert "1 hidden column was imported" in page.import_status.text()
+    assert page.title() == "Import data"
+    assert not page.csv_options_btn.isVisible()
+    assert page.preview_table.isVisible()
+    assert not page.pageScrollArea.verticalScrollBar().isVisible()
     payload = page.csv_data()
     import csv as csv_module
     csv_path = WORK / "equivalent.csv"
@@ -896,9 +947,9 @@ def xlsx_import(app, window):
     select(candidate)
     assert not page.isComplete()
     assert "C2:D2" in page.import_status.text()
-    for filename in ("old.xls", "corrupt.xlsx"):
+    for filename in ("old.xls", "corrupt.xlsx", "encrypted.xlsx"):
         candidate = WORK / filename
-        candidate.write_bytes(b"not a workbook")
+        candidate.write_bytes(bytes.fromhex("D0CF11E0A1B11AE1") if filename == "encrypted.xlsx" else b"not a workbook")
         select(candidate)
         assert not page.isComplete()
         assert dataset_to_project(window.model.dataset) == before
@@ -926,6 +977,11 @@ def xlsx_import(app, window):
     page.worksheet_combo.setCurrentText("Binary")
     assert page.isComplete()
     window._handle_wizard_results(wizard.get_results())
+    imported_project = dataset_to_project(window.model.dataset)
+    window.action_undo.trigger()
+    assert dataset_to_project(window.model.dataset) == before
+    window.action_redo.trigger()
+    assert dataset_to_project(window.model.dataset) == imported_project
     wizard.close()
     view = analyze(app, window, "binary.random")
     xlsx_results = dict(view.texts)
@@ -938,6 +994,16 @@ def xlsx_import(app, window):
     select(csv_path)
     assert page.isComplete(), page.import_status.text()
     window._handle_wizard_results(wizard.get_results())
+    def normalize_ids(value):
+        import re
+        text = json.dumps(value)
+        identifiers = re.findall(r'[0-9a-f]{32}', text)
+        for index, identifier in enumerate(dict.fromkeys(identifiers)):
+            text = text.replace(identifier, f"id-{index}")
+        return json.loads(text)
+    (WORK / "csv-project.json").write_text(json.dumps(dataset_to_project(window.model.dataset), indent=2))
+    (WORK / "xlsx-project.json").write_text(json.dumps(imported_project, indent=2))
+    assert normalize_ids(dataset_to_project(window.model.dataset)) == normalize_ids(imported_project)
     view = analyze(app, window, "binary.random")
     assert dict(view.texts) == xlsx_results
     view.close()
@@ -1005,6 +1071,11 @@ def csv_import(app, window):
         mouse_click(page.select_file_btn, QtCore.Qt.MouseButton.LeftButton)
     assert page.isComplete()
     assert page.preview_table.rowCount() == 3
+    assert page.csv_options_btn.isVisible()
+    assert not page.groupBox.isVisible()
+    mouse_click(page.csv_options_btn, QtCore.Qt.MouseButton.LeftButton)
+    assert page.delimter_le.isVisible()
+    assert page.has_headers_chkbx.isVisible()
     record_step("csv-preview", wizard, rows=3, file=str(csv))
     window._handle_wizard_results(wizard.get_results())
     wizard.close()

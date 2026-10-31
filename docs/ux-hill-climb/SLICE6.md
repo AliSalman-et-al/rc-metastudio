@@ -22,7 +22,7 @@ Limitations: native OS picker, password-encrypted fixture, hidden-column fixture
 all error codes, import undo gesture and project-JSON byte equality have not been
 separately driven. Payload equality and numerical result-text equality are proved;
 project identity bytes are not compared. Existing CSV validation/transaction is
-reused. No oracle changed. Screenshot: `screens/slice6-xlsx.png`.
+reused. No oracle changed. Screenshot: [screens/slice6-xlsx.png](screens/slice6-xlsx.png).
 
 Final serial receipts (`artifacts/verification/rcms/`):
 - `20261031T230328Z-052e237f-xlsx-import`
