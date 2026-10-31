@@ -61,11 +61,11 @@ for (metric in c("OR","RD","RR","AS","YUQ","YUY","PR","PLN","PLO","PAS","PFT")) 
     check(data, method, p, ref, paste(metric,method))
   }
   if (metric %in% c("OR","RR","RD")) {
-    ref <- metafor::rma.mh(ai=a, bi=b, ci=c, di=d, measure=metric, add=c(.5,.5), to=c("only0","only0"), drop00=FALSE, level=95)
+    ref <- metafor::rma.mh(ai=a, bi=b, ci=c, di=d, measure=metric, drop00=FALSE, level=95)
     check(data,"binary.fixed.mh",p,ref,paste(metric,"MH"))
   }
   if (metric == "OR") {
-    ref <- metafor::rma.peto(ai=a, bi=b, ci=c, di=d, add=c(.5,.5), to=c("only0","only0"), drop00=FALSE, level=95)
+    ref <- metafor::rma.peto(ai=a, bi=b, ci=c, di=d, add=c(.5,0), to=c("only0","none"), drop00=FALSE, level=95)
     check(data,"binary.fixed.peto",p,ref,"OR Peto")
   }
 }
@@ -133,7 +133,7 @@ for (metric in c("Sens","Spec","PLR","NLR","DOR")) {
     check(data,"diagnostic.fixed.mh",p,ref,paste(metric,"diagnostic MH"))
   }
   if (metric=="DOR") {
-    ref <- metafor::rma.peto(ai=TP,bi=FN,ci=FP,di=TN,add=c(.5,.5),to=c("only0","only0"))
+    ref <- metafor::rma.peto(ai=TP,bi=FN,ci=FP,di=TN,add=c(.5,0),to=c("only0","none"))
     check(data,"diagnostic.fixed.peto",p,ref,"DOR diagnostic Peto")
   }
 }
@@ -259,9 +259,9 @@ for (metric in c("OR","RR")) {
   actual <- RCMetaR:::binary.fixed.mh.overall(result)
   for (field in c("b","se","ci.lb","ci.ub")) close(actual[[field]],ref[[field]],paste("zero MH",metric,field))
 }
-p1 <- metafor::rma.peto(ai=a,bi=n1-a,ci=c,di=n2-c,add=c(.5,.5),to=c("only0","only0"),drop00=FALSE)
+p1 <- metafor::rma.peto(ai=a,bi=n1-a,ci=c,di=n2-c,add=c(.5,0),to=c("only0","none"),drop00=FALSE)
 p0 <- metafor::rma.peto(ai=a,bi=n1-a,ci=c,di=n2-c,add=0)
-cat("PETO add .5",as.numeric(p1$b),p1$ci.lb,p1$ci.ub,"add 0",as.numeric(p0$b),p0$ci.lb,p0$ci.ub,"\n")
+cat("PETO raw pooling with individual correction",as.numeric(p1$b),p1$ci.lb,p1$ci.ub,"add 0",as.numeric(p0$b),p0$ci.lb,p0$ci.ub,"\n")
 p <- params("OR")
 ef <- metafor::escalc("OR",ai=a,bi=n1-a,ci=c,di=n2-c,drop00=FALSE)
 data <- methods::new("BinaryData",g1O1=a,g1O2=n1-a,g2O1=c,g2O2=n2-c,

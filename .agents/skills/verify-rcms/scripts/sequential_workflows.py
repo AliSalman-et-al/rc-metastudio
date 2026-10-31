@@ -16,10 +16,12 @@ def references(window, method, workflow, metric):
     values = ",".join(str(value) for row in rows for value in row)
     if method.startswith("binary"):
         fitter = "rma.peto" if method.endswith("peto") else "rma.mh"
+        pooling = 'add=c(.5,0), to=c("only0","none"), ' if fitter == "rma.peto" else ""
         fit = (
             f"metafor::{fitter}(ai=d[i,1], n1i=d[i,2], ci=d[i,3], n2i=d[i,4], "
-            'add=c(.5,.5), to=c("only0","only0"), drop00=FALSE, level=95)'
+            f"{pooling}drop00=FALSE, level=95)"
         )
+        pooled_fit = fit
         fit = (
             "if (length(i) > 1) "
             + fit
@@ -27,6 +29,8 @@ def references(window, method, workflow, metric):
             'add=.5, to="only0"); list(b=e$yi, se=sqrt(e$vi), '
             "ci.lb=e$yi-qnorm(.975)*sqrt(e$vi), ci.ub=e$yi+qnorm(.975)*sqrt(e$vi)) }"
         )
+        if fitter == "rma.peto":
+            fit = pooled_fit
         transform = "exp"
     else:
         if method.startswith("continuous"):

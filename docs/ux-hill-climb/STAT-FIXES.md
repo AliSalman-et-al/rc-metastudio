@@ -261,3 +261,43 @@ No pushes performed because qualification failed.
 Failure evidence: artifacts/verification/rcms/20261031T214010Z-94837a3f-analysis-sequential-fixed-cumulative,
 20261031T214022Z-b00a7ac8-analysis-sequential-fixed-leave-one-out,
 20261031T214035Z-7ab5b416-analysis-sequential-fixed-subgroup.
+
+## Sequential reference repair
+
+The stale MH sequential reference corrected pooled counts a second time. It now
+uses metafor's default add/to on original counts. Independent first-three-study
+MH calculation (Gonzalez, Prins, Giamarellou) changes
+model.through_giamarellou.estimate from 0.382841267237438 to
+0.3690265486725664 (display 0.369027); see
+build/sheets-baseline/reference-independent-mh.log. The 1e-6 UI tolerance is
+unchanged; no frozen oracle or product code changed.
+Peto references in sequential_workflows.py and analysis_authorities.R now use
+add=c(.5,0), to=c("only0","none"): individual correction, pooled raw counts.
+Single-study Peto subsets also use rma.peto rather than an ordinary OR fallback.
+ratio_workflows.py has no Peto reference and already pools IRR MH on raw counts;
+other estimator references are untouched.
+
+Targeted scenarios all passed, with logs
+build/sheets-baseline/reference-analysis-sequential-fixed-{cumulative,leave-one-out,subgroup}.log.
+Evidence directories: artifacts/verification/rcms/20261031T220303Z-2ffa7637-analysis-sequential-fixed-cumulative,
+20261031T220324Z-3a92e1a0-analysis-sequential-fixed-leave-one-out,
+20261031T220347Z-5d360baa-analysis-sequential-fixed-subgroup.
+Authority matrix passed 100 cases (reference-authorities.json/.log under
+build/sheets-baseline). Strict golden gate passed:
+build/qt6-verification/golden-compatibility-references/compatibility-report.json;
+transcript build/sheets-baseline/reference-golden.log.
+All commands source build/sheets-baseline/ENV.sh and use uv run --no-sync for
+Python. Authority command: "$R_HOME/bin/Rscript"
+.agents/skills/verify-rcms/scripts/analysis_authorities.R
+build/sheets-baseline/reference-authorities.json.
+Targeted command: python scripts/verify_rcms.py <scenario>; golden command:
+python scripts/verify_golden_compatibility.py --output-root
+build/qt6-verification/golden-compatibility-references.
+
+Final qualification: `uv run --no-sync python -m pytest tests/e2e -n 2 -q`
+completed in one uninterrupted process, with no other worktree process launched:
+134 passed in 3011.84 seconds. Transcript:
+build/sheets-baseline/reference-e2e.log. Per-scenario manifests, inputs,
+screenshots and results remain under artifacts/verification/rcms/.
+Strict golden: 475 comparisons / 416 numeric fields, all passed.
+No tolerances were loosened; no remaining failures.
