@@ -14,6 +14,32 @@ def run(app, window, ROOT, WORK, record_step):
     from rc_metastudio.rm5_import import read_rm5
     source = ROOT / 'tests/fixtures/rm5/Fleiss1993.rm5'
     original = ET.parse(source).getroot()
+    subgroup_source = ROOT / 'tests/fixtures/rm5/Fleiss1993-subgroups-derived.rm5'
+    subgroup_import = read_rm5(subgroup_source)
+    subgroup_sheet = subgroup_import.dataset.sheets[0]
+    assert len(subgroup_sheet.covariates) == 1
+    covariate = subgroup_sheet.covariates[0]['id']
+    groups = {row.label: row.covariate_values[covariate] for row in subgroup_sheet.rows}
+    subgroup_xml = ET.parse(subgroup_source).getroot()
+    expected_groups = {row.get('STUDY_ID'): group.findtext('NAME')
+                       for group in subgroup_xml.iter('DICH_SUBGROUP')
+                       for row in group.iter('DICH_DATA')}
+    study_names = {study.get('ID'): study.get('NAME') for study in subgroup_xml.iter('STUDY')}
+    assert groups == {study_names[row.get('STUDY_ID')]: expected_groups.get(row.get('STUDY_ID'), '')
+                      for row in subgroup_xml.iter('DICH_DATA')}
+
+    subgroup_reference = WORK / 'subgroup-read-rm5.csv'
+    subprocess.run([os.environ['RCMS_R_HOME'] + '/bin/Rscript',
+                    str(ROOT / 'tests/e2e/rm5_reference.R'), str(subgroup_source),
+                    str(subgroup_reference), str(WORK / 'subgroup-metacr.csv')], check=True)
+    with subgroup_reference.open() as stream:
+        for ref in csv.DictReader(stream):
+            if ref['type'] == 'D':
+                # read.rm5 prefixes group labels with comparison/outcome/group numbers.
+                assert ref['grplab'].endswith(groups[ref['studlab']])
+    window.set_model(subgroup_import.dataset)
+    record_step('rm5-subgroup-covariate-imported', window, groups=groups,
+                reference=str(subgroup_reference))
     failures = []
     from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
     window.set_model(read_rm5(source).dataset)
@@ -88,7 +114,8 @@ def run(app, window, ROOT, WORK, record_step):
         assert [table.item(i, 2).text() for i in range(2)] == ['7', '5']
         text = '\n'.join(w.text() for w in dialog.findChildren(QtWidgets.QLabel))
         assert 'Review text, references' in text
-        assert 'Hedges' in text
+        assert 'Differs from RevMan\nSMD: RCMS uses exact Hedges' in text
+        assert 'Not imported' not in text
         assert 'settings are not applied' not in text
         record_step('rm5-review', dialog, summary=text)
         dialog.accept() if accept else dialog.reject()
@@ -148,8 +175,18 @@ def run(app, window, ROOT, WORK, record_step):
             with pooled.open() as stream:
                 ref = list(csv.DictReader(stream))[1]
             expected = dict(estimate=float(ref['estimate']), lower_bound=float(ref['lower']), upper_bound=float(ref['upper']), i_squared=100 * float(ref['I2']))
-        for key, value in expected.items():
-            assert actual[key] == round(value, 1 if key == 'i_squared' else 2), (key, actual, expected)
+        if index == 0:
+            from rc_metastudio import r_bridge
+            import math
+            raw = list(r_bridge.execute_r_string('c(exp(result$res$b[1]), exp(result$res$ci.lb), exp(result$res$ci.ub), result$res$I2)'))
+            full_precision = dict(zip(('estimate', 'lower_bound', 'upper_bound', 'i_squared'), map(float, raw)))
+            record_step('rm5-unrounded-aspirin', view, actual=full_precision, expected=expected)
+            for key, value in expected.items():
+                assert math.isclose(full_precision[key], value, rel_tol=0, abs_tol=1e-6), (key, full_precision, expected)
+        else:
+            # This display check does not claim SMD numerical parity (see the review).
+            for key, value in expected.items():
+                assert actual[key] == round(value, 1 if key == 'i_squared' else 2), (key, actual, expected)
         view.close()
     expected = dataset_to_project(window.model.dataset)
     destination = WORK / 'rm5.rcms'

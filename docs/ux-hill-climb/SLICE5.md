@@ -84,3 +84,47 @@ RM5 run and visually inspected: both full tab names fit at the default width.
 Final requested pytest selection: **6 passed in 188.91 seconds** after the last
 code change. Its RM5 evidence is `20261031T181445Z-3f691982-rm5-import`;
 the five direct workflows above also passed independently.
+
+
+## Partial implementation follow-up (2026-10-31)
+
+Fixed real RevMan typed subgroup tags (DICH_SUBGROUP/CONT_SUBGROUP), replacing
+the incorrect generic SUBGROUP lookup. The derived fixture above verifies every
+row's group name, including the blank ungrouped row, and compares group labels
+with meta::read.rm5. This is import mapping proof only: subgroup setup execution,
+per-group estimates and between-group statistics remain unverified.
+
+Split conditional review lists into “Not imported” and “Differs from RevMan”.
+The shortened SMD disclosure is under the latter. Aspirin is now checked against
+the unrounded retained R fit with absolute tolerance 1e-6: estimate
+0.896865560913071, CI [0.8405144008917794, 0.9569947088336492], I²
+39.67458045558399. Maximum estimate/bounds error is 1.11e-16; I² error is zero.
+SMD remains a display-only comparison with its known disclosed difference.
+
+Installed meta 8.5-0 source inspection: extract_outcomes reads IV_DATA EFFECT_SIZE
+and SE unchanged; metacr logs TE when LOG_DATA=YES and leaves it unchanged when
+LOG_DATA=NO. Therefore IV effects cannot be assumed to be on a log scale.
+This finding has not yet been exercised by a derived IV fixture.
+
+Unfinished: IV and O-E/variance fixture/import/analysis, unsupported IV measure
+review coverage, real subgroup analysis numerical comparison, and slice5-giv.png.
+No diagnostic changes or statistical methods were added; no oracle regenerated.
+The subgroup image shows the sheet after import; its covariate column is offscreen.
+Row assignments are retained in steps.jsonl, not established by that image.
+
+Test-first failures: 20261031T182041Z-53dd5ddd-rm5-import (review heading),
+20261031T182129Z-0cedfcd6-rm5-import (missing typed subgroup covariate).
+Final-code RM5 pass: 20261031T182223Z-dba07a10-rm5-import.
+Two intermediate RM5 runs accidentally overlapped; they are not final proof.
+
+
+Final-code validation after the last executable change (all passed):
+
+- rm5-import: `20261031T182223Z-dba07a10-rm5-import`
+- sheets: `20261031T182301Z-1985eb07-sheets`
+- amino: `20261031T182318Z-e3880fc7-amino`
+- ratios-hr: `20261031T182337Z-d61ede11-ratios-hr`
+- `uv run --no-sync python -m pytest tests/e2e -n 2 -q -k "rm5 or sheets or ratios"`:
+  **9 passed in 353.55s**. Evidence is under `artifacts/verification/rcms/`.
+
+All commands sourced `build/sheets-baseline/ENV.sh`; no uv sync was run.

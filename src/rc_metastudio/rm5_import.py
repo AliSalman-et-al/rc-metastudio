@@ -14,6 +14,7 @@ from rc_metastudio import meta_globals
 class Rm5Import:
     dataset: Dataset
     differences: list[str]
+    not_imported: list[str]
 
 
 def read_rm5(path: str | Path) -> Rm5Import:
@@ -28,6 +29,7 @@ def read_rm5(path: str | Path) -> Rm5Import:
         studies[identity] = study
     dataset = Dataset(title=root.findtext('COVER_SHEET/TITLE', 'Imported review'))
     differences = []
+    not_imported = []
     comparisons = list(root.iter('COMPARISON'))
     for comparison in comparisons:
         for outcome in comparison:
@@ -42,14 +44,14 @@ def read_rm5(path: str | Path) -> Rm5Import:
             elif outcome.tag == 'CONT_OUTCOME' and metric in ('MD', 'SMD'):
                 family, data_type, tag, fields = 'continuous', meta_globals.CONTINUOUS, 'CONT_DATA', ('MEAN', 'SD', 'TOTAL')
             else:
-                differences.append(f'{name}: {outcome.tag} ({metric or "no effect measure"}) is not imported.')
+                not_imported.append(f'{name}: {outcome.tag} ({metric or "no effect measure"}) is not imported.')
                 continue
             if outcome.get('SWAP_EVENTS', 'NO') != 'NO':
-                differences.append(f'{name}: reversed events are not supported; outcome not imported.')
+                not_imported.append(f'{name}: reversed events are not supported; outcome not imported.')
                 continue
             records = list(outcome.iter(tag))
             if not records:
-                differences.append(f'{name}: empty outcome is not imported.')
+                not_imported.append(f'{name}: empty outcome is not imported.')
                 continue
             base_name, suffix = name, 2
             while any(s.name == name for s in dataset.sheets):
@@ -82,9 +84,9 @@ def read_rm5(path: str | Path) -> Rm5Import:
             else:
                 differences.append(f'{name}: RevMan {method}, {"random (DerSimonian-Laird)" if random else "fixed"} is unavailable; Analysis setup retains its default.')
             if metric == 'SMD':
-                differences.append(f"{name}: RCMS uses metafor's exact Hedges correction and sampling variance; RevMan's adjusted g approximation can give slightly different pooled results.")
+                differences.append("SMD: RCMS uses exact Hedges' g; RevMan uses an approximation, so results can differ slightly.")
             subgroups = {}
-            for subgroup in outcome.iter('SUBGROUP'):
+            for subgroup in outcome.iter(outcome.tag.replace('_OUTCOME', '_SUBGROUP')):
                 for record in subgroup.iter(tag):
                     subgroups[id(record)] = subgroup.findtext('NAME', 'Unnamed subgroup')
             if subgroups:
@@ -122,14 +124,14 @@ def read_rm5(path: str | Path) -> Rm5Import:
             dataset.sheets.append(sheet)
     for tag in ('DATA_TEST', 'IPD'):
         if list(root.iter(tag)):
-            differences.append(f'{tag}: data are not imported.')
+            not_imported.append(f'{tag}: data are not imported.')
     if not dataset.sheets:
-        raise ValueError('No supported populated outcomes were found.\n' + '\n'.join(differences))
+        raise ValueError('No supported populated outcomes were found.\n' + '\n'.join(not_imported))
     from rc_metastudio.project_adapter import dataset_to_project
     from rc_metastudio.project_domain import validate_project_semantics
     validate_project_semantics(dataset_to_project(dataset),
                                {'schema_version': 3, 'current_sheet_id': dataset.sheets[0].id})
-    return Rm5Import(dataset, differences)
+    return Rm5Import(dataset, differences, not_imported)
 
 
 def review_rm5(path, parent):
@@ -154,11 +156,13 @@ def review_rm5(path, parent):
     table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
     table.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
     layout.addWidget(table)
-    if result.differences:
-        label = QtWidgets.QLabel('Not imported\n' + '\n'.join(result.differences), dialog)
-        label.setTextFormat(QtCore.Qt.TextFormat.PlainText)
-        label.setWordWrap(True)
-        layout.addWidget(label)
+    for heading, items in (('Not imported', result.not_imported),
+                           ('Differs from RevMan', result.differences)):
+        if items:
+            label = QtWidgets.QLabel(heading + '\n' + '\n'.join(dict.fromkeys(items)), dialog)
+            label.setTextFormat(QtCore.Qt.TextFormat.PlainText)
+            label.setWordWrap(True)
+            layout.addWidget(label)
     standing = QtWidgets.QLabel('Review text, references, risk-of-bias assessments and graphs are not imported.', dialog)
     standing.setWordWrap(True)
     layout.addWidget(standing)

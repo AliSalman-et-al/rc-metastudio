@@ -26,3 +26,26 @@ this is disclosed, not adjusted away. Full comparison and remaining work:
 The E2E workflow derives pending, year, duplicate-name and method-combination
 XML files in memory and retains those inputs in workflow evidence; it never
 changes this upstream fixture. GIV, diagnostic import and a second fixture remain.
+
+
+## Derived subgroup fixture (2026-10-31)
+
+`Fleiss1993-subgroups-derived.rm5` is a hand-edited derivative of the unchanged
+Fleiss1993 source linked above, **not RevMan output**. The first three aspirin
+studies are nested in DICH_SUBGROUP “Earlier trials”, the next three in “Later
+trials”; the seventh stays outside subgroups. All original numerical cells and
+outcome results remain unchanged. meta::read.rm5 8.5-0 parses it (six grouped
+binary rows and five continuous rows); its XML reader omits the ungrouped binary
+row when subgroups are present. RCMS preserves that row with a blank covariate.
+
+SHA-256: fc6d0dec9b2c155f58f3370c389ad399f30e0cd44e3d21ddb2f9c97967f2db31
+
+Public search found no additional fixture. GitHub code search for IV_OUTCOME
+returned HTTP 401 (authentication required); guido-s/meta's public inst/extdata
+listing contains only Fleiss1993.rm5. No claim of exhaustive search is made.
+
+The aspirin E2E comparison now reads the actual R fit retained by the real setup
+Run, rather than parsing rounded report text. RCMS OR 0.896865560913071,
+CI [0.8405144008917794, 0.9569947088336492], I² 39.67458045558399%; absolute
+error versus stored RevMan values is at most 1.11e-16 (I² exactly equal).
+Assertions use absolute tolerance 1e-6, without rounding.
