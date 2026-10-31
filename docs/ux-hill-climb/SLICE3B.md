@@ -141,7 +141,7 @@ Verification: manuscript-export, results-window
 `uv run --no-sync python -m pytest tests/e2e -n 2 -q -k 'audit or review or ux or hillclimb or manuscript or display-labels or round6-polish or release-coefficients or grid-precision or ratio-precision'`:
 **38 passed in 1945.56s** (`build/slice3b-review-fixes-pytest-final.log`).
 Per-scenario manifests, exact commands, inputs and observed results are under
-`artifacts/verification/rcms/20261031T164336*` through `20261031T171332*`;
+`artifacts/verification/rcms/20261031T164330*` through `20261031T171332*`;
 the repeated manuscript export is `20261031T170520Z-e12d04b3-manuscript-export`.
 An initial selected run exposed an overbroad new assertion applying merged labels
 to calculation-scale tables, which are retained intact in Supplementary details;
