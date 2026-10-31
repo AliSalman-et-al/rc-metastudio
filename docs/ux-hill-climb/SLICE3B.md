@@ -115,3 +115,35 @@ Strict golden passed: `build/qt6-verification/golden-compatibility-slice3b-ready
 Conversion checker passed all five archives. Final uninterrupted matrix: **133 passed in 3294.78 s**
 (`build/slice3b-matrix-ready.log`), on a44c290b. No numerical oracle was regenerated.
 The two earlier complete failed matrices remain preserved with their recovery explanations above.
+
+## Slice 3b review fixes
+
+Reproduced the oversized, clipped PDF caption in a fresh amino export and
+`pdftoppm -f 2 -l 2 -scale-to 1200 -png -singlefile` render. The new
+`pdftotext -bbox` assertion failed at 76.6125 pt for Figure versus 12.258 pt
+for Table (evidence `20261031T163405Z-cd393b09-manuscript-export`). QPainter
+resolved its default font at 600 DPI before the additional 600/96 transform.
+Figure captions now use the same QTextDocument layout as table captions, with
+measured caption space reserved on every page, including continuations.
+The refreshed `screens/slice3b-pdf-figure.png` comes from passing evidence
+`20261031T163457Z-d142ab12-manuscript-export/workflow/amino.pdf`.
+
+Report-copy checks again require ordered tab-joined rows and correctly labelled
+merged Summary values. Manuscript construction really dropped the Order,
+Each row, Subgroups by, Moderators, and Omission-only fits notes; these now
+survive in Supplementary details in copied text, PDF, and DOCX.
+No numerical oracle was changed.
+
+Verification: manuscript-export, results-window
+(`20261031T163623Z-fafcc896-results-window`), and amino
+(`20261031T163731Z-1aea3596-amino`) passed serially. Expanded selection:
+`source build/sheets-baseline/ENV.sh` then
+`uv run --no-sync python -m pytest tests/e2e -n 2 -q -k 'audit or review or ux or hillclimb or manuscript or display-labels or round6-polish or release-coefficients or grid-precision or ratio-precision'`:
+**38 passed in 1945.56s** (`build/slice3b-review-fixes-pytest-final.log`).
+Per-scenario manifests, exact commands, inputs and observed results are under
+`artifacts/verification/rcms/20261031T164336*` through `20261031T171332*`;
+the repeated manuscript export is `20261031T170520Z-e12d04b3-manuscript-export`.
+An initial selected run exposed an overbroad new assertion applying merged labels
+to calculation-scale tables, which are retained intact in Supplementary details;
+that assertion was corrected to require their ordered original rows. Its two
+failures and nine passes remain in `build/slice3b-review-fixes-pytest.log`.

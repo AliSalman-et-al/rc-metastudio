@@ -75,6 +75,19 @@ def run(app, window, work, root, record, analyze):
                 text = '\n'.join(p.text for p in doc.paragraphs) + '\n' + '\n'.join(c.text for t in doc.tables for r in t.rows for c in r.cells)
             else:
                 text = subprocess.check_output(['pdftotext', '-layout', str(path), '-']).decode()
+                from xml.etree import ElementTree as ET
+                bbox = subprocess.check_output(['pdftotext', '-bbox', str(path), '-'])
+                (work / (sample + '-bbox.html')).write_bytes(bbox)
+                pages = ET.fromstring(bbox).findall('.//{*}page')
+                tables = [word for page in pages for word in page.findall('.//{*}word') if word.text == 'Table']
+                figures = [(page, word) for page in pages for word in page.findall('.//{*}word') if word.text == 'Figure']
+                assert tables and figures
+                table_height = float(tables[0].get('yMax')) - float(tables[0].get('yMin'))
+                for page, word in figures:
+                    figure_height = float(word.get('yMax')) - float(word.get('yMin'))
+                    assert abs(figure_height - table_height) < 1, (sample, figure_height, table_height)
+                    assert 0 <= float(word.get('yMin')) < float(word.get('yMax')) <= float(page.get('height'))
+
             assert 'Methods' in text and 'RC MetaStudio' in ' '.join(text.split())
             normalized = ' '.join(unicodedata.normalize('NFKC', text).split())
             for prose in (view.manuscript.methods, view.manuscript.results):

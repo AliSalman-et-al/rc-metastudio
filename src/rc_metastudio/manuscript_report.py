@@ -131,6 +131,11 @@ class ManuscriptReport:
         packages = ', '.join(p.strip() for p in result.software.split(',') if not p.strip().startswith('RCMetaR'))
         if packages:
             methods += ' R packages loaded for this analysis: ' + packages + '.'
+        details = tuple(line for line in result.details.splitlines()
+                        if line.startswith(('Order:', 'Each row', 'Subgroups by', 'Moderators:', 'Omission-only fits:')))
+        if details:
+            supplementary.append(replace(next(s for s in result.sections if s.kind == 'text'),
+                                         title='Supplementary details', paragraphs=details, tables=(), value=''))
         figures = tuple((s.title, result.display_images.get(s.source_key, s.value)) for s in result.sections if s.kind == 'image')
         return cls(result.manuscript_title or 'Meta-analysis', methods, tuple(sections + supplementary), figures, tuple(summary), result.manuscript_comparison)
 
@@ -138,6 +143,7 @@ class ManuscriptReport:
         parts = [self.title, self.comparison, 'Methods', self.methods, 'Results', self.results]
         number = 0
         for section in self.sections:
+            parts.extend(section.paragraphs)
             for table in section.tables:
                 number += 1
                 parts.append(f'Table {number}. {table.title}')
@@ -154,6 +160,7 @@ class ManuscriptReport:
                 continue
             if section.title == 'Supplementary details' and (number == 1 or self.sections[number-2].title != section.title):
                 parts.append('<h2>Supplementary details</h2>')
+            parts.extend(f'<p>{escape(paragraph)}</p>' for paragraph in section.paragraphs)
             for table in section.tables:
                 table_number += 1
                 parts.append(f'<p><b>Table {table_number}. {escape(table.title)}</b></p><hr><table border="0" cellspacing="0" cellpadding="5">')
@@ -279,7 +286,11 @@ def write_pdf(report, path):
         mm = 180 if ratio > 1.4 or 'forest' in title.lower() else 85
         w = mm / 25.4 * writer.resolution()
         h = w / ratio
-        available = page.height() - 200
+        caption = QTextDocument()
+        caption.setTextWidth(width)
+        caption.setHtml(f'<b>Figure {number}. {escape(title)} (continued)</b>')
+        # Lay out captions in the same 96-DPI coordinates as table captions.
+        available = page.height() - (caption.size().height() + 12) * scale
         import math
         for part in range(math.ceil(h / available)):
             if part:
@@ -292,8 +303,9 @@ def write_pdf(report, path):
             painter.save()
             painter.scale(scale, scale)
             caption_y = min(h - part * available, available) / scale + 12
-            painter.drawText(QRectF(0, caption_y, width, 60), Qt.TextFlag.TextWordWrap,
-                             f'Figure {number}. {title}' + (' (continued)' if part else ''))
+            caption.setHtml(f'<b>Figure {number}. {escape(title)}' + (' (continued)' if part else '') + '</b>')
+            painter.translate(0, caption_y)
+            caption.drawContents(painter)
             painter.restore()
     if any(section.title == 'Supplementary details' for section in report.sections):
         document.setHtml(report.html(supplementary=True))

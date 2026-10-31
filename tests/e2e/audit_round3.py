@@ -54,11 +54,35 @@ def check_report(app, view, work, record):
     copied = app.clipboard().text()
     assert copied.startswith(view.manuscript.title + "\n"), copied
     assert view.manuscript.methods in copied and view.manuscript.results in copied
-    for section in view.results.sections:
+    cursor = 0
+    for section in view.manuscript.sections:
         for table in section.tables:
-            assert all(header in copied for header in table.headers), (table.title, copied)
-            for row in table.rows:
-                assert all(value in copied for value in row if value), (table.title, row, copied)
+            for row in (table.headers, *table.rows):
+                joined = "\t".join(row)
+                position = copied.find(joined, cursor)
+                assert position >= cursor, (table.title, row, copied)
+                cursor = position + len(joined)
+    for section in view.results.sections:
+        if section.title != 'Summary' or any(t.title.startswith('Calculation scale') for t in section.tables):
+            for table in section.tables:
+                if section.title == 'Summary' and not table.title.startswith('Calculation scale'):
+                    continue
+                position = 0
+                for row in (table.headers, *table.rows):
+                    joined = "\t".join(row)
+                    position = copied.find(joined, position)
+                    assert position >= 0, (table.title, row, copied)
+                    position += len(joined)
+        if section.title == 'Summary':
+            for table in section.tables:
+                if len(table.rows) == 1 and not table.title.startswith('Calculation scale'):
+                    for header, value in zip(table.headers, table.rows[0]):
+                        assert table.title + ': ' + header + "\t" + value in copied, (table.title, header, value, copied)
+    if "Omission-only fits:" in view.results.details:
+        assert copied.count("Omission-only fits:") == 1, copied
+    for line in view.results.details.splitlines():
+        if line.startswith(("Order:", "Each row", "Subgroups by", "Moderators:")):
+            assert line in copied, (line, copied)
     output = work / "round3-report.pdf"
     with patch.object(results_window.QFileDialog, "getSaveFileName", return_value=(str(output), "PDF (*.pdf)")):
         view.export_report_action.trigger()
