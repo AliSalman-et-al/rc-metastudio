@@ -194,7 +194,7 @@ class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
     def __init__(self, parent=None, min_=0, max_=10):
         super().__init__(parent)
 
-        self.setWindowTitle("Importing from CSV...")
+        self.setWindowTitle("Import CSV")
         self.progress_bar.setRange(min_, max_)
 
     def setValue(self, value):

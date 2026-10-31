@@ -65,7 +65,7 @@
          </layout>
         </widget>
        </item>
-       <item><widget class="QLabel" name="inconsistencyLabel"><property name="font"><font><weight>75</weight><bold>true</bold></font></property><property name="text"><string>INCONSISTENT FORM</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
+       <item><widget class="QLabel" name="inconsistencyLabel"><property name="font"><font><weight>75</weight><bold>true</bold></font></property><property name="text"><string>Check the study values</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
        <item><spacer name="content_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>0</height></size></property></spacer></item>
       </layout>
      </widget>

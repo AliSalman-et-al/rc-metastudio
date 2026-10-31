@@ -798,7 +798,7 @@ class DatasetTableView(QtWidgets.QTableView):
                     if candidate.get_current_outcome_type() in ("time_to_event", "event_rates") and columns[src_col] in candidate.OUTCOMES[:3] and not candidate.flags(index) & Qt.ItemFlag.ItemIsEditable:
                         raise ValueError("Calculated ratios cannot be pasted over. Click the study row number to edit its original inputs.")
                     if not candidate.setData(index, value):
-                        error = getattr(candidate, "last_data_error", None) or "Invalid clipboard cell"
+                        error = getattr(candidate, "last_data_error", None) or "Clipboard value cannot be used"
                         if any(word in error.lower() for word in ("numeric", "number", "integer")):
                             skipped += 1
                             continue

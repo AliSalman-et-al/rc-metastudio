@@ -72,3 +72,15 @@ selection also needs review; the existing marker behavior was retained.
 Step 1: removed amber, italics and forced black text. Effect cells use a low-opacity neutral gray overlay and inherit theme text. No calculation changes.
 
 Step 2: group numeric cells use estimate precision only when painted; prevalence paints at estimate precision and retains round-trip text. Binary metric table fits its rows and columns. Existing accepted-row and numerical assertions remain the verification gate.
+
+Step 3: searched all top-level Python and forms UI text setters, titles, tooltips, messages and strings (R output and method names excluded). Focused replacements:
+- dataset_table_view.py: Invalid clipboard cell → Clipboard value cannot be used
+- main_window.py: Importing from CSV... → Import CSV
+- diagnostic_data_dialog.ui: INCONSISTENT FORM → Check the study values
+- binary_data_dialog.ui: INCONSISTENT FORM → Check the study values
+- progress_dialog.ui: Running Analysis... → Running analysis
+- csv_import_page.ui: Quote Character: → Quote mark
+- csv_import_page.ui: Delimiter: → Column separator
+- csv_import_page.ui: Has column labels? → First row contains column names
+- csv_import_page.ui: CSV exported from Excel? → Use Excel CSV format
+- csv_import_page.ui: Preview of imported data → Data preview

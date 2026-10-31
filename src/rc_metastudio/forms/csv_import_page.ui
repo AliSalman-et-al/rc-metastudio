@@ -54,14 +54,14 @@
       <item>
        <widget class="QCheckBox" name="from_excel_chkbx">
         <property name="text">
-         <string>CSV exported from Excel?</string>
+         <string>Use Excel CSV format</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QCheckBox" name="has_headers_chkbx">
         <property name="text">
-         <string>Has column labels?</string>
+         <string>First row contains column names</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -73,7 +73,7 @@
         <item>
          <widget class="QLabel" name="delimiter_label">
           <property name="text">
-           <string>Delimiter:</string>
+           <string>Column separator</string>
           </property>
           <property name="buddy">
            <cstring>delimter_le</cstring>
@@ -114,7 +114,7 @@
         <item>
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>Quote Character:</string>
+           <string>Quote mark</string>
           </property>
           <property name="buddy">
            <cstring>quotechar_le</cstring>
@@ -182,7 +182,7 @@
    <item>
     <widget class="QGroupBox" name="preview_grp_box">
      <property name="title">
-      <string>Preview of imported data</string>
+      <string>Data preview</string>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_5">
       <item>
