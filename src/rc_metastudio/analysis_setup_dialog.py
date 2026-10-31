@@ -990,7 +990,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         return replace(result, identity=identity, details=details, software=software,
                        manuscript_context=context.split(". ")[0].rstrip(".") + ".",
                        manuscript_title=title, manuscript_methods=methods,
-                       manuscript_comparison=" vs ".join(self.model.arm_names))
+                       manuscript_comparison="Comparison: " + " / ".join(self.model.arm_names))
 
     def _diagnostic_fit_details(self):
         fits = []

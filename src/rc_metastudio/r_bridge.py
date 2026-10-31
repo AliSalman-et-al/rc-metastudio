@@ -1392,7 +1392,7 @@ def _parse_display_results(result):
             level = 100 * (1 - float(list(fields["level"])[0]))
             coefficients = fields["b"]
             names = _r_dimnames(coefficients)[0]
-            rows = [[str(name), *[_format_r_table_cell(list(fields[key])[i], field_name=header)
+            rows = [["Intercept" if str(name) == "intrcpt" else str(name), *[_format_r_table_cell(list(fields[key])[i], field_name=header)
                      for key, header in (("b", "Estimate"), ("ci.lb", "Lower bound"), ("ci.ub", "Upper bound"), ("pval", "p-value"))]]
                     for i, name in enumerate(names)]
             tables = [{"title": "Regression coefficients", "headers": ["Term", "Estimate", f"Lower bound ({level:g}% CI)", f"Upper bound ({level:g}% CI)", "p-value"], "rows": rows}]

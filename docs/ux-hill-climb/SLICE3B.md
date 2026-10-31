@@ -96,3 +96,9 @@ plain-text table captions. Copy now includes captions. Updated drives still
 require every held header and cell, but permit the intentionally merged summary
 layout and require manuscript title/Methods/Results. Numerical contracts are
 unchanged. Four representative recovery cases passed before requalification.
+
+Second uninterrupted matrix: 131 passed, 2 failed in 3713.37 s
+(`build/slice3b-matrix-final-complete.log`). The remaining failures exposed the
+raw regression intercept label `intrcpt` and a dropped `Comparison: arm / arm`
+copy label. Both are corrected without changing numbers; both affected recovery
+scenarios passed. Final qualification is repeated after these label fixes.
