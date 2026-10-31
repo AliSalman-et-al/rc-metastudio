@@ -98,9 +98,17 @@ result text matches the committed baseline. T1 first result: **20.553 s** after
 ready window versus **28.832 s** before (single runs, unchanged product code,
 not evidence of a performance gain).
 
-Full matrix command was started on the restored source with its transcript at
-`/tmp/rcms-final-matrix.log` (pytest PID 409091). At documentation time its first
-four cases had passed; 124 scenarios total, resource selection one worker. This
-is **pending**, not a claimed matrix pass. An earlier matrix begun during the
-rejected experiment was interrupted and is not qualification evidence. Each final
-case retains its normal per-scenario manifest and captured workflow artifacts.
+Full restored-source matrix: **124 passed in 7406.19 s (2:03:26)**,
+exit zero. Exact command:
+
+```bash
+source docs/ux-audit/2026-10-14-round3/ENV.sh
+uv run python -m pytest tests/e2e -n auto -q
+```
+
+Aggregate transcript: `artifacts/verification/startup/rcms-final-matrix.log`.
+Each case retains its normal per-scenario manifest and captured workflow artifacts
+under `artifacts/verification/rcms/`. Resource selection was one worker. An earlier
+matrix begun during the rejected experiment was interrupted and is not
+qualification evidence. This pass verifies the restored product startup path;
+it does not establish a startup performance improvement.
