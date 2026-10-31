@@ -46,3 +46,13 @@ Steps 2–5 have not been implemented: zero-cell MH pooling, Methods truth,
 binary sequential/regression authority expansion, desktop swap and calculator
 confidence-level audits. Full final qualification and pushes remain pending.
 The old continuous-only sequential/regression limitation still applies.
+
+## Golden text authorization
+
+amino-binary-subgroup: 0.187/0.666 -> 0.307/0.579, authority
+meta::metabin(allstudies=TRUE), Q=0.3073583, p=0.5793058.
+continuous-subgroup: 0.226/0.634 -> 0.293/0.589, authority metafor
+escalc SMD with separate DL fits, Q=0.2926188, p=0.5885472.
+The meta SMD variance convention explains its different Q. Qm label becomes Q.
+numbers inside text sections are compared as whole strings, not among numerical fields.
+Inline continuous authority passed: build/sheets-baseline/text-authorities.json.

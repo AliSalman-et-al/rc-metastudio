@@ -212,6 +212,18 @@ for (workflow in c("cum.ma.continuous","loo.ma.continuous")) {
   }
 }
 rows[[length(rows)+1L]] <- list(case="continuous fixed subgroup, sequential and regression",passed=TRUE)
+# SMD convention authority: metafor escalc, separate DL fits, Q among summaries.
+x <- read.csv(text="label,group,n1,m1,s1,n2,m2,s2
+Carroll,early,60,94,22,60,92,20
+Grant,late,65,98,21,65,92,22
+Peck,early,40,98,28,40,88,26
+Donat,late,200,94,19,200,82,17
+Stewart,early,50,98,21,45,88,22
+Young,late,85,96,21,85,92,22")
+e <- metafor::escalc("SMD",m1i=m1,sd1i=s1,n1i=n1,m2i=m2,sd2i=s2,n2i=n2,data=x)
+f <- lapply(split(e,e$group),function(d) metafor::rma(yi,vi,data=d,method="DL"))
+q <- metafor::rma(yi=sapply(f,function(r)as.numeric(r$b)),sei=sapply(f,function(r)r$se),method="FE")
+stopifnot(abs(q$QE-.2926188)<1e-6,abs(q$QEp-.5885472)<1e-6)
 dir.create(dirname(report),recursive=TRUE,showWarnings=FALSE)
 jsonlite::write_json(list(passed=TRUE,case_count=length(rows),r=R.version.string,
   authorities=authorities, cases=rows),report,auto_unbox=TRUE,pretty=TRUE)
