@@ -38,6 +38,9 @@ def read_rm5(path: str | Path) -> Rm5Import:
             name = outcome.findtext('NAME', 'Unnamed outcome')
             if len(comparisons) > 1:
                 name = f"{comparison.findtext('NAME', 'Unnamed comparison')} — {name}"
+            if outcome.tag == 'IPD_OUTCOME':
+                not_imported.append(f'{name}: O-E/variance inputs are not supported.')
+                continue
             metric = outcome.get('EFFECT_MEASURE')
             if outcome.tag == 'DICH_OUTCOME' and metric in ('OR', 'RR', 'RD'):
                 family, data_type, tag, fields = 'binary', meta_globals.BINARY, 'DICH_DATA', ('EVENTS', 'TOTAL')

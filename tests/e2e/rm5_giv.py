@@ -49,6 +49,7 @@ def run(app, window, ROOT, WORK, record_step):
         dialog = app.activeModalWidget()
         text = '\n'.join(w.text() for w in dialog.findChildren(QtWidgets.QLabel))
         assert 'Not imported' in text and 'Custom score' in text
+        assert 'O-E survival: O-E/variance inputs are not supported.' in text
         record_step('rm5-giv-review', dialog, summary=text)
         dialog.accept()
     QtCore.QTimer.singleShot(0, review)
