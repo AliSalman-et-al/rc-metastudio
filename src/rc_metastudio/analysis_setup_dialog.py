@@ -1287,8 +1287,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _parameter_label(self, spec):
         label = QLabel(parameter_display_label(spec.name, spec.metadata))
-        if spec.name == "rm.method":
-            label.setText("Heterogeneity (τ²) estimator")
         description = parameter_description(spec.name, spec.metadata)
         if spec.name == "estimator" and description == "No description provided.":
             description = "REML: restricted maximum likelihood; ML: maximum likelihood."
@@ -1419,16 +1417,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             item_data = item_data.value()
         return qt_text.to_native_text(item_data)
 
-    def add_method_description(self, layout, current_grid_row, text):
-        lbl = QLabel(text, self.parameter_grp_box)
-        lbl.setWordWrap(True)
-        # layout-audit: allow=content-overflow-control; reason=required content may consume available layout width
-        lbl.setMinimumWidth(0)
-        # QLabel's preferred width is the unwrapped text width. Ignored keeps
-        # that width out of QGridLayout's minimum while retaining word-wrap.
-        lbl.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
-        self.current_widgets.append(lbl)
-        layout.addWidget(lbl, current_grid_row, 0, 1, 2)
 
     def _configure_value_control(self, widget):
         adaptive_controls.configure_choice_control(widget, visible_characters=42)
