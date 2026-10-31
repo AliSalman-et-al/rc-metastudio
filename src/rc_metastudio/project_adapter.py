@@ -21,6 +21,13 @@ def project_to_dataset(project):
     for record in project['sheets']:
         sheet = Sheet(SheetId(record['id']), record['name'], record['data_type'], record['sub_type'], record['family'], [Arm(ArmId(a['id']), a['name']) for a in record['arms']], copy.deepcopy(record['covariates']), copy.deepcopy(record['settings']))
         for row in record['rows']:
+            # Older files persisted the grid's empty entry row as a study.
+            if (not row['label'] and not row['include'] and not row['manually_excluded']
+                    and row['year'] is None and row['sample_size'] is None
+                    and not row['notes'] and not row['covariates']
+                    and not row['entered_effects'] and not row['ratio_inputs']
+                    and all(v in ('', None) for values in row['raw_data'].values() for v in values)):
+                continue
             unit = AnalysisUnit(sheet, raw_data=[copy.deepcopy(row['raw_data'].get(a.id, [''] * {0:2,1:3,2:4,5:0,6:2}[sheet.data_type])) for a in sheet.arms], arm_names=[a.name for a in sheet.arms], arm_stable_ids=[a.id for a in sheet.arms])
             unit.entered_effects = {}
             for entry in row['entered_effects']:

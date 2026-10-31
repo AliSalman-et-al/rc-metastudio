@@ -10,6 +10,38 @@ from docx.shared import Mm
 from rc_metastudio import __version__
 
 
+def methods_prose(metric, model, parameters, confidence, workflow, details, fits):
+    from rc_metastudio.analysis_method_labels import parameter_value_display_label
+    plural = {"odds ratio": "Odds ratios", "risk ratio": "Risk ratios", "hazard ratio": "Hazard ratios",
+              "mean difference": "Mean differences", "standardized mean difference": "Standardized mean differences"}.get(metric, metric.capitalize() + " estimates")
+    sentence = f"{plural} were pooled using a {model} model"
+    estimator = parameters.get('rm.method', parameters.get('estimator'))
+    if estimator and model == 'random-effects':
+        label = parameter_value_display_label('rm.method', estimator).replace('DerSimonian-Laird', 'DerSimonian–Laird')
+        sentence += f" with the {label} estimator of between-study variance"
+    parts = [sentence + '.']
+    if any('reitsma' in method.lower() for _, method, _ in fits):
+        parts = []
+    inference = parameters.get('inference.method')
+    if inference in ('z', 'normal'):
+        parts.append(f"Confidence intervals ({float(confidence):g}%) used the normal approximation.")
+    elif inference:
+        parts.append(f"Confidence intervals ({float(confidence):g}%) used {parameter_value_display_label('inference.method', inference)}.")
+    if workflow == 'subgroup':
+        parts.append(f"Subgroup analyses were performed by {parameters.get('cov_name', 'the selected covariate')}.")
+    elif workflow == 'meta-regression':
+        moderators = next((line.removeprefix('Moderators: ') for line in details.splitlines() if line.startswith('Moderators: ')), '')
+        if moderators:
+            parts.append(f"Meta-regression was performed with {moderators} as moderators.")
+    elif workflow == 'cumulative':
+        parts.append('Cumulative meta-analysis was performed in current study order.')
+    elif workflow == 'leave-one-out':
+        parts.append('Leave-one-out analyses were performed by omitting each study in turn.')
+    if any('reitsma' in method.lower() for _, method, _ in fits):
+        parts.append('Sensitivity and specificity were jointly modeled using the Reitsma bivariate model.')
+    return ' '.join(parts)
+
+
 @dataclass(frozen=True)
 class ManuscriptReport:
     title: str
@@ -17,45 +49,93 @@ class ManuscriptReport:
     sections: tuple
     figures: tuple
     summary: tuple[str, ...]
+    comparison: str = ''
+
+    @property
+    def results(self):
+        return ' '.join(self.summary)
 
     @classmethod
     def from_result(cls, result):
-        methods = 'The analysis used the following executed settings. ' + '. '.join(x.strip().rstrip('.') for x in result.details.splitlines() if x.strip()) + '.'
-        methods += ' ' + result.manuscript_context
-        methods += f' Analyses were performed with RC MetaStudio {__version__}.'
-        if result.software:
-            methods += ' R packages loaded for this analysis: ' + result.software + '.'
-        sections = tuple(s for s in result.sections if s.kind == 'text')
-        figures = tuple((s.title, result.display_images.get(s.source_key, s.value)) for s in result.sections if s.kind == 'image')
-        summary = []
-        for section in sections:
+        from dataclasses import replace
+        from rc_metastudio.analysis_results import ResultTable
+        methods = result.manuscript_methods
+        sections = []
+        supplementary = []
+        summary = [result.manuscript_context] if result.manuscript_context else []
+        merged = []
+        for section in result.sections:
+            if section.kind != 'text':
+                continue
+            main = []
             for table in section.tables:
-                if table.headers and table.headers[0] in ("Q", "Z", "t"):
+                if table.title.startswith('Calculation scale') or section.source_key == 'Weights':
+                    supplementary.append(replace(section, title='Supplementary details', paragraphs=(), tables=(table,)))
+                    continue
+                main.append(table)
+                values = dict(zip(table.headers, table.rows[0])) if len(table.rows) == 1 else {}
+                if table.headers == ('Statistic', 'Value'):
+                    statistics = dict(table.rows)
+                    estimate = statistics.get('Estimate')
+                    lower = next((v for k,v in table.rows if k.startswith('Lower bound')), None)
+                    upper = next((v for k,v in table.rows if k.startswith('Upper bound')), None)
+                    if estimate and lower and upper:
+                        interval = next(k.partition('(')[2].rstrip(') ').strip() for k,v in table.rows if k.startswith('Lower bound'))
+                        summary.append(f"{table.title} was {estimate} ({interval} {lower} to {upper}).")
+                elif len(table.rows) > 1 and 'Estimate' in table.headers and 'Term' in table.headers:
                     for row in table.rows:
-                        values = "; ".join(f"{header} = {value}" for header, value in zip(table.headers, row))
-                        summary.append(("Heterogeneity: " if table.headers[0] == "Q" else "Overall test: ") + values + ".")
-        return cls(result.identity, methods, sections, figures, tuple(summary))
+                        values = dict(zip(table.headers, row))
+                        summary.append(f"{values['Term']}: estimate {values['Estimate']}.")
+                if section.title == 'Summary' and values:
+                    merged.extend((table.title + ': ' + header, value) for header, value in values.items())
+                if table.title.endswith('Model Results') and 'Estimate' in values and not any('reitsma' in t.lower() for t in result.texts):
+                    lower = next((v for k,v in values.items() if k.startswith('Lower bound')), None)
+                    upper = next((v for k,v in values.items() if k.startswith('Upper bound')), None)
+                    level = next((k.split('(')[1].rstrip(')') for k in values if k.startswith('Lower bound (')), '95% CI')
+                    metric = result.manuscript_title.rsplit('(', 1)[-1].rstrip(')')
+                    if lower is not None and upper is not None:
+                        p = '; p = ' + values['p-value'] if 'p-value' in values else ''
+                        summary.append(f"The pooled {metric} was {values['Estimate']} ({level} {lower} to {upper}{p}).")
+                elif table.title.endswith('Heterogeneity') and 'Q' in values:
+                    summary.append(f"Heterogeneity: Q = {values['Q']} (df = {values.get('df', '')}; p = {values.get('p-value', '')}), I² = {values.get('I²', '')}" + (f", τ² = {values['τ²']}" if 'τ²' in values else '') + '.')
+                elif table.title.endswith('Prediction interval') and len(table.rows) == 1:
+                    row = table.rows[0]
+                    level = table.headers[0].partition('(')[2].removesuffix(')').replace(' PI', '')
+                    summary.append(f"The {level} prediction interval was {row[0]} to {row[1]}.")
+            if main and section.title != 'Summary':
+                sections.append(replace(section, paragraphs=(), tables=tuple(main)))
+        if merged:
+            original = next(s for s in result.sections if s.title == 'Summary')
+            sections.insert(0, replace(original, title='Summary', paragraphs=(), tables=(ResultTable('Summary', ('Statistic', 'Value'), tuple(merged)),)))
+        if any(t.headers[0] == 'Q' for s in result.sections for t in s.tables) and 'Reitsma' not in methods:
+            methods += " Heterogeneity was assessed with Cochran's Q and I²."
+        methods += f' Analyses were performed in RC MetaStudio {__version__}.'
+        packages = ', '.join(p.strip() for p in result.software.split(',') if not p.strip().startswith('RCMetaR'))
+        if packages:
+            methods += ' R packages loaded for this analysis: ' + packages + '.'
+        figures = tuple((s.title, result.display_images.get(s.source_key, s.value)) for s in result.sections if s.kind == 'image')
+        return cls(result.manuscript_title or 'Meta-analysis', methods, tuple(sections + supplementary), figures, tuple(summary), result.manuscript_comparison)
 
     def plain_text(self):
-        parts = [self.title, "Methods", self.methods, "Results", *self.summary]
+        parts = [self.title, self.comparison, 'Methods', self.methods, 'Results', self.results]
         for section in self.sections:
-            parts.append(section.title)
-            parts.extend(section.paragraphs or (() if section.tables else (section.value,)))
             for table in section.tables:
-                parts.append("\n".join("\t".join(row) for row in (table.headers, *table.rows)))
-        return "\n\n".join(parts)
+                parts.extend(('\t'.join(table.headers), *('\t'.join(row) for row in table.rows)))
+        return '\n\n'.join(parts)
 
     def html(self):
-        parts = [f'<h1>{escape(self.title)}</h1><h2>Methods</h2><p>{escape(self.methods)}</p><h2>Results</h2>']
-        parts.extend(f"<p>{escape(p)}</p>" for p in self.summary)
-        for section in self.sections:
-            parts.append(f'<h3>{escape(section.title)}</h3>')
-            parts.extend(f'<p>{escape(p)}</p>' for p in (section.paragraphs or (() if section.tables else (section.value,))))
+        parts = [f'<h1>{escape(self.title)}</h1><p>{escape(self.comparison)}</p><h2>Methods</h2><p>{escape(self.methods)}</p><h2>Results</h2><p>{escape(self.results)}</p>']
+        table_number = 0
+        for number, section in enumerate(self.sections, 1):
+            if section.title == 'Supplementary details' and (number == 1 or self.sections[number-2].title != section.title):
+                parts.append('<h2>Supplementary details</h2>')
             for table in section.tables:
-                parts.append('<table border="1" cellpadding="5">')
-                for row in (table.headers, *table.rows):
-                    parts.append('<tr>' + ''.join('<td>' + escape(c) + '</td>' for c in row) + '</tr>')
-                parts.append('</table>')
+                table_number += 1
+                parts.append(f'<p><b>Table {table_number}. {escape(table.title)}</b></p><hr><table border="0" cellspacing="0" cellpadding="5">')
+                for index, row in enumerate((table.headers, *table.rows)):
+                    tag = 'th' if index == 0 else 'td'
+                    parts.append('<tr>' + ''.join(f'<{tag}>' + escape(c) + f'</{tag}>' for c in row) + '</tr>')
+                parts.append('</table><hr><p>&nbsp;</p>')
         return ''.join(parts)
 
 
@@ -83,35 +163,54 @@ def write_docx(report, path):
     section.page_width = Mm(210)
     section.left_margin = section.right_margin = Mm(15)
     document.add_heading(report.title, 0)
+    document.add_paragraph(report.comparison)
     document.add_heading('Methods', 1)
     document.add_paragraph(report.methods)
     document.add_heading('Results', 1)
-    for paragraph in report.summary:
-        document.add_paragraph(paragraph)
-    for section in report.sections:
-        document.add_heading(section.title, 2)
+    document.add_paragraph(report.results)
+    table_number = 0
+    for number, section in enumerate(report.sections, 1):
+        if section.title == 'Supplementary details' and (number == 1 or report.sections[number-2].title != section.title):
+            document.add_heading('Supplementary details', 1)
         for paragraph in section.paragraphs or (() if section.tables else (section.value,)):
             document.add_paragraph(paragraph)
         for table in section.tables:
+            table_number += 1
+            document.add_paragraph(f'Table {table_number}. {table.title}', style='Caption')
             target = document.add_table(rows=1, cols=len(table.headers))
-            target.style = 'Table Grid'
+            from docx.oxml import OxmlElement
+            from docx.oxml.ns import qn
+            borders = OxmlElement('w:tblBorders')
+            for edge in ('top', 'bottom'):
+                rule = OxmlElement('w:' + edge)
+                rule.set(qn('w:val'), 'single')
+                rule.set(qn('w:sz'), '6')
+                borders.append(rule)
+            target._tbl.tblPr.append(borders)
             for row, values in zip([target.rows[0], *[target.add_row() for _ in table.rows]], (table.headers, *table.rows)):
                 for cell, value in zip(row.cells, values):
                     cell.text = value
+            document.add_paragraph()
     from PyQt6.QtCore import QBuffer, QIODevice
     for number, (title, path_) in enumerate(report.figures, 1):
         source, ratio = figure_source(path_)
-        width = 180 if ratio > 1.4 else 85
-        image = QImage(round(width / 25.4 * 300), round(width / 25.4 * 300 / ratio), QImage.Format.Format_RGB32)
-        image.fill(Qt.GlobalColor.white)
-        painter = QPainter(image)
-        paint_figure(painter, source, QRectF(image.rect()))
-        painter.end()
-        buffer = QBuffer()
-        buffer.open(QIODevice.OpenModeFlag.WriteOnly)
-        image.save(buffer, 'PNG')
-        document.add_picture(io.BytesIO(bytes(buffer.data())), width=Mm(width))
-        document.add_paragraph(f'Figure {number}. {title}')
+        width = 180 if ratio > 1.4 or 'forest' in title.lower() else 85
+        pixel_width = round(width / 25.4 * 300)
+        pixel_height = round(pixel_width / ratio)
+        page_height = round(230 / 25.4 * 300)
+        for top in range(0, pixel_height, page_height):
+            image = QImage(pixel_width, min(page_height, pixel_height-top), QImage.Format.Format_RGB32)
+            image.fill(Qt.GlobalColor.white)
+            painter = QPainter(image)
+            painter.translate(0, -top)
+            paint_figure(painter, source, QRectF(0, 0, pixel_width, pixel_height))
+            painter.end()
+            buffer = QBuffer()
+            buffer.open(QIODevice.OpenModeFlag.WriteOnly)
+            image.save(buffer, 'PNG')
+            document.add_page_break()
+            document.add_picture(io.BytesIO(bytes(buffer.data())), width=Mm(width))
+            document.add_paragraph(f'Figure {number}. {title}' + (' (continued)' if top else ''))
     document.save(path)
 
 
@@ -144,16 +243,23 @@ def write_pdf(report, path):
     for number, (title, path_) in enumerate(report.figures, 1):
         writer.newPage()
         source, ratio = figure_source(path_)
-        mm = 180 if ratio > 1.4 else 85
+        mm = 180 if ratio > 1.4 or 'forest' in title.lower() else 85
         w = mm / 25.4 * writer.resolution()
         h = w / ratio
-        if h > page.height() - 200:
-            painter.end()
-            raise ValueError('Figure is too tall for an A4 manuscript page')
-        rect = QRectF((page.width() - w) / 2, 0, w, h)
-        paint_figure(painter, source, rect)
-        painter.save()
-        painter.scale(scale, scale)
-        painter.drawText(QRectF(0, h / scale + 12, width, 60), Qt.TextFlag.TextWordWrap, f'Figure {number}. {title}')
-        painter.restore()
+        available = page.height() - 200
+        import math
+        for part in range(math.ceil(h / available)):
+            if part:
+                writer.newPage()
+            painter.save()
+            painter.setClipRect(QRectF(0, 0, page.width(), available))
+            rect = QRectF((page.width() - w) / 2, -part * available, w, h)
+            paint_figure(painter, source, rect)
+            painter.restore()
+            painter.save()
+            painter.scale(scale, scale)
+            caption_y = min(h - part * available, available) / scale + 12
+            painter.drawText(QRectF(0, caption_y, width, 60), Qt.TextFlag.TextWordWrap,
+                             f'Figure {number}. {title}' + (' (continued)' if part else ''))
+            painter.restore()
     painter.end()

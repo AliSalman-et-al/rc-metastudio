@@ -955,16 +955,20 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             [cov['name'] for cov in self._selected_covariates()] if self.is_meta_regression else [],
             fits=fits,
         )
-        project_path = self._project_path
-        if project_path:
-            from pathlib import Path
-            details = "Project: " + Path(project_path).name + "\n" + details
         from rc_metastudio import r_bridge
         packages = r_bridge.execute_r_string('intersect(c("RCMetaR", "metafor", "meta", "mada"), loadedNamespaces())')
         software = ", ".join(f"{name} {r_bridge.get_r_package_version(str(name))}" for name in packages)
         included = len(self.model.get_studies())
         excluded = len(self.model.get_studies(only_if_included=False)) - included
-        context = f"The selected sheet contained {included} included and {excluded} excluded studies."
+        context = f"{included} studies were included"
+        if excluded:
+            context += f" ({excluded} studies were excluded)"
+        if self.data_type == 'binary':
+            raw = self.model.get_current_raw_data()
+            if len(self.model.arm_names) == 2 and raw and all(len(row) == 4 and all(isinstance(v, (int, float)) for v in row) for row in raw):
+                totals = [sum(row[i] for row in raw) for i in (1, 3)]
+                context += f" ({totals[0]:g} participants in {self.model.arm_names[0]}, {totals[1]:g} in {self.model.arm_names[1]})"
+        context += "."
         if self.data_type in ("binary", "diagnostic") and applied_parameters.get("adjust"):
             raw = self.model.get_current_raw_data()
             policy = applied_parameters.get("correction.policy", applied_parameters.get("to", "only0"))
@@ -974,7 +978,19 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             if policy not in ("none", "None") and (zero or policy in ("all", "All studies")):
                 label = {"only0": "studies with any zero cell", "all": "all studies", "if0all": "all studies if any zero exists"}.get(policy, policy)
                 context += f" A continuity correction of {applied_parameters['adjust']} was applied to {label}."
-        return replace(result, identity=identity, details=details, software=software, manuscript_context=context)
+        from rc_metastudio.manuscript_report import methods_prose
+        metric = self._result_metric_label().lower()
+        model = "random-effects" if "random" in model_label.lower() else "fixed-effect" if "fixed" in model_label.lower() else model_label.lower()
+        title = f"{self.model.current_sheet.name}: {model} meta-analysis ({metric})"
+        methods = methods_prose(metric, model, applied_parameters, self.confidence_level,
+                                self.analysis_type, details, fits)
+        correction = context.partition(". ")[2]
+        if correction:
+            methods += " " + correction
+        return replace(result, identity=identity, details=details, software=software,
+                       manuscript_context=context.split(". ")[0].rstrip(".") + ".",
+                       manuscript_title=title, manuscript_methods=methods,
+                       manuscript_comparison=" vs ".join(self.model.arm_names))
 
     def _diagnostic_fit_details(self):
         fits = []

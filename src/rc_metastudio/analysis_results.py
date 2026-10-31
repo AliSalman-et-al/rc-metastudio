@@ -93,6 +93,9 @@ class AnalysisResult:
     details: str = ""
     software: str = ""
     manuscript_context: str = ""
+    manuscript_title: str = ""
+    manuscript_methods: str = ""
+    manuscript_comparison: str = ""
 
 def _sections(
     texts: Mapping[str, str],

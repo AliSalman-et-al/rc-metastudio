@@ -352,11 +352,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _setup_report_controls(self):
         self._setup_identity()
+        self._setup_manuscript_page()
         self._setup_report_document()
         self._setup_result_tables()
         self._setup_results_actions()
         self._report_nav_anchors = {}
-        entries = [("Text report", ""), ("Tables", None)]
+        entries = [("Manuscript", "manuscript"), ("Text report", ""), ("Tables", None)]
         if self.results.details:
             entries.append(("Settings", "model-configuration"))
         for index, (title, anchor) in enumerate(entries):
@@ -394,6 +395,24 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.verticalLayout.setContentsMargins(6, 6, 6, 6)
         self.verticalLayout.setSpacing(4)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+
+    def _setup_manuscript_page(self):
+        from rc_metastudio.manuscript_report import ManuscriptReport
+        self.manuscript = ManuscriptReport.from_result(self.results)
+        self.manuscript_page = QWidget(self.content_stack)
+        layout = QVBoxLayout(self.manuscript_page)
+        for name, text in (("Methods", self.manuscript.methods), ("Results", self.manuscript.results)):
+            layout.addWidget(QLabel(name))
+            browser = QTextBrowser()
+            browser.setPlainText(text)
+            browser.setAccessibleName(name)
+            setattr(self, 'manuscript_' + name.lower(), browser)
+            layout.addWidget(browser)
+            button = QToolButton()
+            button.setText('Copy ' + name)
+            button.clicked.connect(lambda checked=False, value=text: QApplication.clipboard().setText(value))
+            layout.addWidget(button)
+        self.content_stack.addWidget(self.manuscript_page)
 
     def _setup_report_document(self):
         self.report_text = QTextBrowser(self.content_stack)
@@ -866,7 +885,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def item_clicked(self, item, column):
         if id(item) in getattr(self, "_report_nav_anchors", {}):
             anchor = self._report_nav_anchors[id(item)]
-            if anchor is None:
+            if anchor == "manuscript":
+                self.content_stack.setCurrentWidget(self.manuscript_page)
+            elif anchor is None:
                 self._show_tables()
             else:
                 self.report_action.setChecked(True)

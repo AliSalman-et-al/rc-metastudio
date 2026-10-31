@@ -120,7 +120,7 @@ def run(app, window, work, root, record, analyze):
     assert app.clipboard().text() == "Model:", repr(app.clipboard().text())
     key_click(view.report_text, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.ShiftModifier)
     copied_report = app.clipboard().text()
-    assert copied_report.startswith(view.results.identity + "\n")
+    assert copied_report.startswith(view.manuscript.title + "\n")
     for section in view.results.sections:
         for table in section.tables:
             assert all(cell in copied_report for cell in table.headers)
