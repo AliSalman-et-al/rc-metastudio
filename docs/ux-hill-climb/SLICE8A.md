@@ -68,3 +68,5 @@ Stopped cleanly for partial handback: 9 passed in 213.25s, exit 2
 (KeyboardInterrupt), no reported failures. This is incomplete, not a passing suite.
 Both remote pushes were withheld. Remaining default-marker behavior when changing
 selection also needs review; the existing marker behavior was retained.
+
+Step 1: removed amber, italics and forced black text. Effect cells use a low-opacity neutral gray overlay and inherit theme text. No calculation changes.

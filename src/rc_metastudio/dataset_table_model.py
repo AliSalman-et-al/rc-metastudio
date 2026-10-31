@@ -7,7 +7,7 @@ from functools import cmp_to_key
 import math
 
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSignal
-from PyQt6.QtGui import QColor, QIcon, QFont
+from PyQt6.QtGui import QColor, QIcon
 
 from rc_metastudio import analysis_identity, name_validation, qt_text, workspace_editing
 from rc_metastudio.meta_globals import TIME_TO_EVENT, EVENT_RATES, RATIO_DATA_TYPES
@@ -554,10 +554,6 @@ class DatasetTableModel(QAbstractTableModel):
             return f"{study.label}, {header}: {value or ''}"
         if role == Qt.ItemDataRole.AccessibleDescriptionRole:
             return self._effect_tooltip(index, study) or "Editable study data. Press Enter to edit; use the row calculator for study inputs."
-        if role == Qt.ItemDataRole.FontRole and index.column() in self.OUTCOMES and self._study_has_entered_data(index.row()):
-            font = QFont()
-            font.setItalic(True)
-            return font
         if role == Qt.ItemDataRole.ToolTipRole:
             tooltip = self._effect_tooltip(index, study)
             if tooltip is not None:
@@ -582,7 +578,7 @@ class DatasetTableModel(QAbstractTableModel):
         if not self._study_has_entered_data(index.row()):
             return _item_data()
         if index.column() in self.OUTCOMES:
-            return _item_data(QColor("#D6A93A"))
+            return _item_data(QColor(128, 128, 128, 24))
         if (
             index.column() in self.RAW_DATA[len(self.RAW_DATA) // 2 :]
             and self.current_effect in ONE_ARM_METRICS
@@ -591,8 +587,6 @@ class DatasetTableModel(QAbstractTableModel):
         return _item_data()
 
     def _foreground_data(self, index):
-        if self._study_has_entered_data(index.row()) and index.column() in self.OUTCOMES:
-            return _item_data(QColor(Qt.GlobalColor.black))
         return _item_data()
 
     def get_current_arm_key(self):
