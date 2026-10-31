@@ -916,7 +916,7 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
             assert layout["height"] > 18, layout
             nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
             captions = ["".join(n.itertext()) for n in nodes]
-            assert any("Follow-up: first" in text for text in captions), captions[-5:]
+            assert any(window.model.current_sheet.name in text for text in captions), captions[-5:]
             if workflow == "subgroup":
                 for node in nodes:
                     if "".join(node.itertext()) not in {"A", "B"}:
@@ -1006,7 +1006,7 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
                     if any(color in style for color in ("#7F7F7F", "#808080", "#BEBEBE")):
                         assert top <= float(line.attrib["y1"]) <= bottom, ("null outside panel", line.attrib, frame.attrib)
                         assert group.attrib.get("clip-path") == point_group.attrib["clip-path"], ("null guide lacks panel clipping", line.attrib)
-            assert any("Follow-up:" in "".join(n.itertext()) for n in svg.iter("{http://www.w3.org/2000/svg}text"))
+            assert any(window.model.current_sheet.name in "".join(n.itertext()) for n in svg.iter("{http://www.w3.org/2000/svg}text"))
         record("round5-bubble-bounds", view, family=family, metric=metric,
                explicit_x=[1,4], plots=dict(view.results.display_images), exports=exported)
     cases = [(family, None) for family in DATA_TYPES if family != "diagnostic"]

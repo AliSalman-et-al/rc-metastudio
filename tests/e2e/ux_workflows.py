@@ -19,7 +19,7 @@ def run(app, window, work, root, record, analyze):
     assert not window.workspace.is_dirty
     assert "Unsaved changes" not in window.dataset_file_lbl.text()
     assert "*" not in window.windowTitle()
-    record("ux-empty-workspace", window, guidance=window.workspace_hint.text(), device_pixel_ratio=window.devicePixelRatioF(), logical_size=[window.width(), window.height()])
+    record("ux-empty-workspace", window, guidance=window.start_page.accessibleName(), device_pixel_ratio=window.devicePixelRatioF(), logical_size=[window.width(), window.height()])
     guide_errors = []
     def read_guide():
         dialog = app.activeModalWidget()
@@ -263,8 +263,8 @@ def run(app, window, work, root, record, analyze):
     record("ux-csv-recovered", wizard, headers=page.headers, rows=page.preview_table.rowCount())
     window._handle_wizard_results(wizard.get_results())
     wizard.close()
-    assert window.model.dataset.studies[0].name == "Alpha, München"
-    assert window.model.dataset.studies[1].covariate_values["Dose"] == 7.0
+    assert window.model.current_sheet.rows[0].label == "Alpha, München"
+    assert window.model.current_sheet.rows[1].covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == "Dose")] == 7.0
     assert window.model.get_current_raw_data_for_study(0) == [1, 10, 2, 12]
     window.out_path = str(work / "mapped.rcms")
     assert window.save()
@@ -277,7 +277,7 @@ def run(app, window, work, root, record, analyze):
     assert abs(float(estimate) - 1 / 9999) < 1e-6
     record("ux-small-ratio", window, raw=[1, 10000, 5000, 10000], displayed_estimate=estimate)
 
-    form = add_new_dialogs.AddCovariateDialog(window, existing_names=window.model.dataset.get_covariate_names())
+    form = add_new_dialogs.AddCovariateDialog(window, existing_names=[c["name"] for c in window.model.current_sheet.covariates])
     form.show()
     app.processEvents()
     button = required(form.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))

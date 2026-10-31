@@ -8,6 +8,23 @@ def check_headers(source, names):
     tree = ET.parse(source)
     texts = list(tree.iter('{http://www.w3.org/2000/svg}text'))
     first = min(float(n.attrib['y']) for n in texts if ''.join(n.itertext()).startswith('Fixture 1'))
+    caption_nodes = set()
+    for group in tree.iter('{http://www.w3.org/2000/svg}g'):
+        lines = list(group.findall('{http://www.w3.org/2000/svg}text'))
+        for index, node in enumerate(lines):
+            if 'Comparison:' not in ''.join(node.itertext()):
+                continue
+            caption_nodes.add(node)
+            previous = node
+            size = float(required(re.search(r'font-size:\s*([\d.]+)px', node.attrib['style']))[1])
+            for continuation in lines[index + 1:]:
+                gap = float(continuation.attrib['y']) - float(previous.attrib['y'])
+                if (continuation.attrib['style'] != node.attrib['style']
+                        or continuation.attrib['x'] != node.attrib['x']
+                        or not 0 < gap <= 1.5 * size):
+                    break
+                caption_nodes.add(continuation)
+                previous = continuation
     measurements = []
     for node in texts:
         x, y = float(node.attrib['x']), float(node.attrib['y'])
@@ -24,8 +41,8 @@ def check_headers(source, names):
             a,b,c,d = (float(line.attrib[key]) for key in ('x1','y1','x2','y2'))
             if abs(b-d) < .02 and abs(a-c) > 20 and min(a,c) < box[2] and max(a,c) > box[0]:
                 assert not box[1] < b < box[3], ('header rule crosses text', source, text, box, (a,b,c,d))
-        measurements.append(dict(text=text, box=box))
-    captions = [m for m in measurements if 'Follow-up:' in m['text'] or 'Outcome:' in m['text'] or 'Comparison:' in m['text']]
+        measurements.append(dict(text=text, box=box, caption=node in caption_nodes))
+    captions = [m for m in measurements if m['caption']]
     assert captions, ('caption missing', source)
     caption_bottom = max(m['box'][3] for m in captions)
     headings = [m for m in measurements if m not in captions]

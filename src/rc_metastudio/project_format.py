@@ -128,6 +128,8 @@ def _convert_pairs(project, state):
                 for arm in unit["groups"] if unit else []:
                     if arm["name"] not in labels:
                         labels.append(arm["name"])
+            selected = [label for label in state.get("active_groups", []) if label in labels]
+            labels = selected + [label for label in labels if label not in selected]
             arms = [{"id": f"{sid}:arm:{i}", "name": label} for i, label in enumerate(labels)]
             identities = {a["name"]: a["id"] for a in arms}
             comparisons = {label: [identities[label]] for label in labels}

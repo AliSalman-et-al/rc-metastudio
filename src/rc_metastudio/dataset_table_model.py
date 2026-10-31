@@ -186,9 +186,11 @@ class DatasetTableModel(QAbstractTableModel):
         self._blank_study = None
         self._display_studies = list(self.current_sheet.rows) if self.current_sheet else []
         self.update_column_indices()
+        saved_metric = (self.current_sheet.settings.get("metric") or self.current_sheet.settings.get("active_effect")) if self.current_sheet else None
         self.update_current_group_effect()
         if self.current_sheet:
-            self.current_effect = self.current_sheet.settings.get("metric") or self.current_sheet.settings.get("active_effect") or self.current_effect
+            self.set_confidence_level(self.current_sheet.settings.get("confidence_level", DEFAULT_CONFIDENCE_LEVEL))
+            self.current_effect = saved_metric or self.current_effect
         self.endResetModel()
 
     dataset: Dataset
@@ -1533,6 +1535,8 @@ class DatasetTableModel(QAbstractTableModel):
 
         settings = self.editing_service.confidence_settings(confidence_level)
         self.confidence_level = settings.level
+        if self.current_sheet:
+            self.current_sheet.settings["confidence_level"] = settings.level
         self.confidence_multiplier = settings.multiplier
         self.editing_service.set_backend_confidence_level(settings.level)
 

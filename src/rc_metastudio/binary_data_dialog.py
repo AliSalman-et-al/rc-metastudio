@@ -541,7 +541,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             if self.current_effect in BINARY_ONE_ARM_METRICS
             else BINARY_TWO_ARM_METRICS
         )
-        q_effects = [effect for effect in metric_family if effect in available_effects]
+        q_effects = list(metric_family)
         if self.current_effect not in q_effects:
             q_effects.append(str(self.current_effect))
         with QSignalBlocker(self.effect_combo_box):
@@ -1115,12 +1115,8 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         )
 
     def get_current_arm_key(self):
-
-        if self.current_effect in BINARY_ONE_ARM_METRICS:
-            arm_key = self.arm_names[0]
-        else:
-            arm_key = "-".join(self.arm_names)
-        return arm_key
+        names = self.arm_names[:1] if self.current_effect in BINARY_ONE_ARM_METRICS else self.arm_names
+        return tuple(self.analysis_unit.arms[name].stable_id for name in names)
 
     def undo(self):
         self._field_history.undo()

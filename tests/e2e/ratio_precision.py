@@ -46,7 +46,7 @@ def run(app, window, work, record):
             modal(app, RatioDataDialog, drive, lambda: window.tableView.row_header_clicked(0))
             unit = window.model.get_current_analysis_unit_for_study(0)
             expected = asdict(unit.ratio_input(window.model.arm_names))
-            raw = list(unit.get_raw_data_for_groups(window.model.arm_names))
+            raw = list(unit.get_raw_data_for_arms(window.model.arm_names))
             if mode == 'raw':
                 assert raw == [1e6,1.2345678901234567e-8,5,1e12], raw
             else:
@@ -58,7 +58,7 @@ def run(app, window, work, record):
             assert window.save() and window.open(window.out_path, raise_on_error=True)
             unit = window.model.get_current_analysis_unit_for_study(0)
             assert asdict(unit.ratio_input(window.model.arm_names)) == expected
-            assert unit.get_raw_data_for_groups(window.model.arm_names) == raw
+            assert unit.get_raw_data_for_arms(window.model.arm_names) == raw
             view = analyze_existing(app, window, 'standard', 'time_to_event.random' if metric == 'HR' else 'event_rates.random', record,
                                     parameters={'digits':6,'rm.method':'DL','inference.method':'z'})
             if mode == 'raw':

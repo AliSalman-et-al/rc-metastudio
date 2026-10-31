@@ -99,13 +99,12 @@ def run(app, window, work, root, record, analyze):
     assert window.tableView.isVisible() and not window.start_page.isVisible()
     assert window.out_path == str(present)
     assert window.cl_label.text() == 'Confidence level: 95%'
-    assert window.navigation_dimension.currentData() == 'outcome'
-    window.navigation_dimension.setCurrentIndex(1)
-    assert window.current_dimension == 'follow-up'
-    window.navigation_dimension.setCurrentIndex(2)
-    assert window.current_dimension == 'group'
-    window.navigation_dimension.setCurrentIndex(0)
-    assert window.current_dimension == 'outcome'
+    assert window.sheet_tabs.count() == len(window.model.dataset.sheets)
+    for index, sheet in enumerate(window.model.dataset.sheets):
+        window.sheet_tabs.setCurrentIndex(index)
+        app.processEvents()
+        assert window.model.current_sheet.id == sheet.id
+    window.sheet_tabs.setCurrentIndex(0)
     def luminance(color):
         values = [value / 12.92 if value <= .04045 else ((value + .055) / 1.055) ** 2.4
                   for value in (color.redF(), color.greenF(), color.blueF())]
@@ -126,7 +125,7 @@ def run(app, window, work, root, record, analyze):
         cues.append(dict(foreground=foreground.name(), background=background.name(), contrast=ratio))
     record('round5-grid-cues', window, italic_effect_cells=True, colors=cues)
     record('review1-workspace-navigation', window)
-    keyboard_traversal(app, window, [window.analysis_button, window.navigation_dimension, window.tableView], record, "workspace")
+    keyboard_traversal(app, window, [window.analysis_button, window.sheet_tabs, window.tableView], record, "workspace")
     window.tableView.setFocus()
     key_click(window.tableView, QtCore.Qt.Key.Key_Tab, QtCore.Qt.KeyboardModifier.ControlModifier)
     app.processEvents()

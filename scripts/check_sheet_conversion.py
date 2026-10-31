@@ -47,7 +47,10 @@ def check():
                 pairs = [f for f in declared if f in populated] or [declared[0]]
                 for follow in pairs:
                     sheet = next(sheets); count += 1
-                    assert sheet['covariates'] == source['covariates']
+                    assert [{k:v for k,v in c.items() if k != 'id'} for c in sheet['covariates']] == source['covariates']
+                    ids = {c['name']: c['id'] for c in sheet['covariates']}
+                    assert len(set(ids.values())) == len(source['covariates'])
+                    assert load_project(legacy).project == document.project
                     for key,value in (source.get('summary') or {}).items():
                         assert sheet['settings']['summary'][key] == value
                     for key,value in state.items():
@@ -57,13 +60,16 @@ def check():
                     assert len(sheet['rows']) == len(source['studies'])
                     for old,row in zip(source['studies'],sheet['rows'],strict=True):
                         assert row['label'] == old['name']
-                        for key in ('year','sample_size','include','manually_excluded','notes','covariates'):
+                        for key in ('year','sample_size','include','manually_excluded','notes'):
                             assert row[key] == old[key], (path.name,key)
+                        assert row['covariates'] == {ids[k]:v for k,v in old['covariates'].items()}
                         unit = next((u for u in old['analysis_units'] if (u['outcome'],u['follow_up'])==(outcome['name'],follow)),None)
                         expected_raw = {a['name']:a['raw_data'] for a in unit['groups']} if unit else {}
                         assert {labels[k]:v for k,v in row['raw_data'].items()} == expected_raw
                         if unit:
-                            assert [a['name'] for a in sheet['arms'] if a['name'] in expected_raw] == [a['name'] for a in unit['groups']]
+                            assert set(labels.values()) >= set(expected_raw)
+                            selected = [n for n in state.get('active_groups', []) if n in labels.values()]
+                            assert [a['name'] for a in sheet['arms']][:len(selected)] == selected
                         expected_effects = unit['entered_effects'] if unit else {}
                         effects = {}
                         for entry in row['entered_effects']:

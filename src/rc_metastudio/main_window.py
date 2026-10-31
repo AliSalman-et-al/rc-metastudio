@@ -289,6 +289,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._sheet_dragging = False
         self.sheet_tabs = SheetTabBar(self)
         self.sheet_tabs.setObjectName("sheet_tabs")
+        self.sheet_tabs.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.setTabOrder(self.analysis_button, self.sheet_tabs)
+        self.setTabOrder(self.sheet_tabs, self.tableView)
         self.sheet_tabs.setExpanding(False)
         self.sheet_tabs.setMovable(True)
         self.sheet_tabs.setUsesScrollButtons(True)

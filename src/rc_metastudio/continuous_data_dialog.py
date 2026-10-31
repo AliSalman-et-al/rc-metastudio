@@ -1606,12 +1606,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         return str(effect)
 
     def get_current_arm_key(self):
-
-        if self.current_effect in CONTINUOUS_ONE_ARM_METRICS:
-            arm_key = self.arm_names[0]
-        else:
-            arm_key = "-".join(self.arm_names)
-        return arm_key
+        names = self.arm_names[:1] if self.current_effect in CONTINUOUS_ONE_ARM_METRICS else self.arm_names
+        return tuple(self.analysis_unit.arms[name].stable_id for name in names)
 
     def undo(self):
         self._field_history.undo()

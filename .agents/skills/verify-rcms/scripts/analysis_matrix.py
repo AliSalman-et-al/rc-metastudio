@@ -538,7 +538,7 @@ def run(
                     covariate(
                         "Group",
                         "factor",
-                        {s.name: "A" if i % 2 else "B" for i, s in enumerate(studies)},
+                        {s.label: "A" if i % 2 else "B" for i, s in enumerate(studies)},
                     )
                 if workflow == "meta-regression" and case.endswith(
                     ("continuous", "multiple")
@@ -546,7 +546,7 @@ def run(
                     covariate(
                         "Dose",
                         "continuous",
-                        {s.name: float(i + 1) for i, s in enumerate(studies)},
+                        {s.label: float(i + 1) for i, s in enumerate(studies)},
                     )
 
     if workflow_override:

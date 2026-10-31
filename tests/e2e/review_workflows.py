@@ -109,6 +109,6 @@ def run(app, window, root, record, analyze):
     app.processEvents()
     dialog = setup()
     assert not dialog.study_order.isEnabled()
-    assert "current study order" in dialog.context_label.text()
-    record("review-cumulative-order", dialog, explanation=dialog.context_label.text())
+    assert "current table order" in dialog.study_order.toolTip()
+    record("review-cumulative-order", dialog, explanation=dialog.study_order.toolTip())
     dialog.reject()

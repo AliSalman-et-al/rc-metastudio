@@ -328,6 +328,12 @@ class AnalysisUnit:
         source: EffectSource,
     ):
         if self.get_effect_for_source(source, effect, arm_comparison).estimate is None:
+            if source != "derived_preview":
+                return
+            entry = self._entry(source, effect, arm_comparison)
+            for field in ("display_est", "display_lower", "display_upper", "display_se"):
+                entry[field] = None
+            entry["display_conf_level"] = confidence_level
             return
         if None in [confidence_level, confidence_multiplier]:
             raise ValueError("confidence level and multiplier must be specified")

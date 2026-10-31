@@ -123,18 +123,16 @@ def run(app, window, work, record):
             wizard.reject()
     window.workspace.mark_saved()
     # Frozen legacy input remains intentional test data, separate from bundled examples.
-    import json
-    from rc_metastudio.project_format import CURRENT_FORMAT_VERSION, save_project
-    snapshot = json.loads((Path(__file__).resolve().parents[1] / "python/fixtures/project_snapshots/amino.rcms.json").read_text(encoding="utf-8"))
+    import subprocess
     legacy = work / "legacy-input-arm-names.rcms"
-    save_project(legacy, {"schema_version": CURRENT_FORMAT_VERSION, "dataset": snapshot["dataset"]},
-                 {"schema_version": CURRENT_FORMAT_VERSION, "active_outcome": None, "active_follow_up": None,
-                  "active_groups": [], "active_effect": None, "confidence_level": 95.0})
+    legacy.write_bytes(subprocess.check_output(
+        ["git", "show", "322ede26:sample_projects/amino.rcms"],
+        cwd=Path(__file__).resolve().parents[2]))
     original = legacy.read_bytes()
     assert window.open(str(legacy), raise_on_error=True)
-    assert window.model.arm_names == ["tx A", "tx B"], window.model.arm_names
+    assert window.model.arm_names == ["Intervention", "Control"], window.model.arm_names
     window.out_path=str(work / "legacy-arm-names.rcms")
     assert window.save() and window.open(window.out_path, raise_on_error=True)
-    assert window.model.arm_names == ["tx A", "tx B"]
+    assert window.model.arm_names == ["Intervention", "Control"]
     assert legacy.read_bytes() == original
     record("round5-arm-legacy-reopened", window, groups=window.model.arm_names)

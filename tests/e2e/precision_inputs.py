@@ -36,14 +36,14 @@ def run(app, window, record):
     expected = [float(value.replace(',', '.')) for value in inputs]
     for row, text in enumerate(inputs):
         column = window.model.RAW_DATA[2]
-        previous = window.model.get_current_analysis_unit_for_study(row).get_raw_data_for_groups(window.model.arm_names)[2]
+        previous = window.model.get_current_analysis_unit_for_study(row).get_raw_data_for_arms(window.model.arm_names)[2]
         edit(row, column, text)
         assert float(window.model.data(window.model.index(row, column), QtCore.Qt.ItemDataRole.EditRole)) == expected[row]
         window.action_undo.trigger()
-        assert window.model.get_current_analysis_unit_for_study(row).get_raw_data_for_groups(window.model.arm_names)[2] == previous
+        assert window.model.get_current_analysis_unit_for_study(row).get_raw_data_for_arms(window.model.arm_names)[2] == previous
         window.action_redo.trigger()
         assert float(edit(row, column)) == expected[row]
-        actual = window.model.get_current_analysis_unit_for_study(row).get_raw_data_for_groups(window.model.arm_names)[2]
+        actual = window.model.get_current_analysis_unit_for_study(row).get_raw_data_for_arms(window.model.arm_names)[2]
         assert actual == expected[row], (text, actual)
         window.tableView.copy_contents_in_range(window.model.index(row, column), window.model.index(row, column), True)
         assert float(app.clipboard().text()) == expected[row]
@@ -52,7 +52,7 @@ def run(app, window, record):
     window.out_path = str(destination)
     assert window.save() and window.open(str(destination), raise_on_error=True)
     for row, value in enumerate(expected):
-        assert window.model.get_current_analysis_unit_for_study(row).get_raw_data_for_groups(window.model.arm_names)[2] == value
+        assert window.model.get_current_analysis_unit_for_study(row).get_raw_data_for_arms(window.model.arm_names)[2] == value
     from tests.e2e.audit_round3 import analyze_existing
     view = analyze_existing(app, window, "standard", "continuous.random", record, parameters={"digits": 6, "rm.method": "DL", "inference.method": "z"})
     # analyze's default is DL/z; independent public metafor rebuilds from reopened raw values.
@@ -85,7 +85,7 @@ def run(app, window, record):
     window.out_path = str(work / 'precision-csv.rcms')
     assert window.save() and window.open(window.out_path, raise_on_error=True)
     for row, value in enumerate(expected):
-        raw = window.model.get_current_analysis_unit_for_study(row).get_raw_data_for_groups(window.model.arm_names)
+        raw = window.model.get_current_analysis_unit_for_study(row).get_raw_data_for_arms(window.model.arm_names)
         assert raw[:3] == [100, .12345678901234566, value], raw
     record('csv-precision-reopened', window, inputs=expected)
 
