@@ -301,6 +301,34 @@ def analyze(app, window, method):
     return view
 
 
+def analysis_dialog(app, window):
+    QtCore.QSettings().remove("analysis/advancedExpanded")
+    for sample in ("amino", "continuous", "Pignon2000-HR", "lymph"):
+        assert window.open(str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
+        kwargs = {"diagnostic_metrics": ["dor"]} if sample == "lymph" else {}
+        form = analysis_setup_dialog.AnalysisSetupDialog(
+            window.model, parent=window, confidence_level=95, **kwargs)
+        form.show()
+        app.processEvents()
+        toggle = form.advanced_toggle
+        assert not toggle.isChecked()
+        toggle.setFocus()
+        key_click(toggle, QtCore.Qt.Key.Key_Space)
+        assert toggle.isChecked() and form.advanced_panel.isVisible()
+        digits = next(label.buddy() for label in form.findChildren(QtWidgets.QLabel)
+                      if label.text().casefold() == "decimal places")
+        digits.setValue(4)
+        assert "4" in toggle.text(), toggle.text()
+        key_click(toggle, QtCore.Qt.Key.Key_Return)
+        assert not toggle.isChecked()
+        record_step("advanced-collapsed", form, sample=sample, summary=toggle.text())
+        form.close()
+        app.processEvents()
+        view = analyze(app, window, {"amino": "binary.random", "continuous": "continuous.random",
+            "Pignon2000-HR": "generic.random", "lymph": "diagnostic.random"}[sample])
+        view.close()
+
+
 def sample_analysis(app, window, sample):
     assert window.open(
         str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True
@@ -1398,6 +1426,8 @@ try:
         from tests.e2e.audit_round3 import run
 
         run(app, window, WORK, record_step, scenario)
+    elif scenario == "analysis-dialog":
+        analysis_dialog(app, window)
     elif scenario == "review1-design":
         sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
         from tests.e2e.review1_design import run
