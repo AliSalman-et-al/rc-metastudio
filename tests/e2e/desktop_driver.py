@@ -838,6 +838,7 @@ def editing(app, window):
 
 def xlsx_import(app, window):
     from rc_metastudio import main_wizard
+    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
     original_palette = app.palette()
     screens = ROOT / "docs/ux-hill-climb/screens"
     screens.mkdir(parents=True, exist_ok=True)
@@ -847,6 +848,7 @@ def xlsx_import(app, window):
             palette.setColor(role, QtGui.QColor(foreground))
         for role in (QtGui.QPalette.ColorRole.Window, QtGui.QPalette.ColorRole.Button, QtGui.QPalette.ColorRole.Base):
             palette.setColor(role, QtGui.QColor(background))
+        palette.setColor(QtGui.QPalette.ColorRole.AlternateBase, QtGui.QColor("#f6f6f6" if theme == "light" else "#292929"))
         app.setPalette(palette)
         capture = main_wizard.MainWizard(path="new_dataset")
         capture.show()
@@ -859,10 +861,13 @@ def xlsx_import(app, window):
         for page_id, page_name in ((main_wizard.Page_Welcome, "welcome"),
                                    (main_wizard.Page_OutcomeName, "outcome"),
                                    (main_wizard.Page_CsvImport, "csv")):
+            types._button_selected(buttons[0])
             capture.setStartId(page_id)
             capture.restart()
             app.processEvents()
             capture.grab().save(str(screens / f"slice8a-{page_name}-{theme}.png"))
+        window.tableView.horizontalScrollBar().setValue(window.tableView.horizontalScrollBar().maximum())
+        app.processEvents()
         window.grab().save(str(screens / f"slice8a-grid-{theme}.png"))
         for index, button in enumerate(buttons):
             types._button_selected(button)

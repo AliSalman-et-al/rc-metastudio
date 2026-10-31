@@ -94,3 +94,5 @@ Step 4: remaining wizard page copy:
 - outcome_name_page: Arm names are optional. Leave them blank to use Intervention and Control. → Default group names: Intervention and Control.
 - welcome_page: What would you like to do? → Start a review
 - csv_import_page: Choose an Excel or CSV file. → Excel or CSV file
+
+The outcome page runtime title also uses Outcome and groups / Outcome. Capture setup selects data before entering dependent pages and includes the alternate-row palette.

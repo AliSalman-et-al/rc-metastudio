@@ -907,7 +907,7 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
                 "continuous": "Two-arm continuous" if self._comparative else "Single-arm continuous",
                 "diagnostic": "Diagnostic accuracy", "time_to_event": "Time-to-event", "event_rates": "Event rates"}[info["data_type"]]
         self.setSubTitle(f"<p>{task} · {kind}" + (f"<br>{metric}" if metric else "") + "</p>")
-        self.setTitle("Name the outcome and arms" if self._comparative else "Name the outcome")
+        self.setTitle("Outcome and groups" if self._comparative else "Outcome")
         first_label = "Intervention name" if self._comparative else "Index test name" if data_type == meta_globals.DIAGNOSTIC else "Group name"
         self.first_group_label.setText(first_label)
         self.first_group_name.setAccessibleName(first_label)
