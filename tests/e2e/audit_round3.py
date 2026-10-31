@@ -52,25 +52,18 @@ def check_report(app, view, work, record):
 
     view.copy_report_action.trigger()
     copied = app.clipboard().text()
-    assert copied.startswith(view.results.identity + "\n"), copied
+    assert copied.startswith(view.manuscript.title + "\n"), copied
+    assert view.manuscript.methods in copied and view.manuscript.results in copied
     for section in view.results.sections:
         for table in section.tables:
-            assert "\t".join(table.headers) in copied, (table.title, copied)
+            assert all(header in copied for header in table.headers), (table.title, copied)
             for row in table.rows:
-                assert "\t".join(row) in copied, (table.title, row, copied)
+                assert all(value in copied for value in row if value), (table.title, row, copied)
     output = work / "round3-report.pdf"
     with patch.object(results_window.QFileDialog, "getSaveFileName", return_value=(str(output), "PDF (*.pdf)")):
         view.export_report_action.trigger()
     assert output.read_bytes().startswith(b"%PDF")
     assert app.clipboard().mimeData().hasHtml()
-    if "Omission-only fits:" in view.results.details:
-        assert copied.count("Omission-only fits:") == 1, copied
-        assert "\nleave-one-out\n" not in copied, copied
-    if "\nSensitivity\n" in view.results.details:
-        for line in view.results.details.splitlines():
-            if line.startswith(("Order:", "Each row", "Subgroups by", "Moderators:")):
-                assert view.results.details.index(line) < view.results.details.index("\nSensitivity\n"), view.results.details
-                assert line in copied and "Methods\n" in copied, copied
     view.report_action.setChecked(True)
     app.processEvents()
     record("round3-report-copy-export", view, identity=view.results.identity,

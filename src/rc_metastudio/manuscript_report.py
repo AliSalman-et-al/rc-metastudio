@@ -136,8 +136,11 @@ class ManuscriptReport:
 
     def plain_text(self):
         parts = [self.title, self.comparison, 'Methods', self.methods, 'Results', self.results]
+        number = 0
         for section in self.sections:
             for table in section.tables:
+                number += 1
+                parts.append(f'Table {number}. {table.title}')
                 parts.extend(('\t'.join(table.headers), *('\t'.join(row) for row in table.rows)))
         return '\n\n'.join(parts)
 

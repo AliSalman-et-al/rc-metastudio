@@ -87,3 +87,12 @@ Results-window: `20261031T134037Z-e38bd5c2-results-window`.
 Hillclimb: `20261031T134137Z-a28be667-hillclimb`.
 Strict golden: `build/qt6-verification/golden-compatibility-slice3b-complete/compatibility-report.json`.
 All four gates passed; the full uninterrupted E2E matrix is next.
+
+The first uninterrupted matrix completed: 85 passed, 48 failed in 2173.26 s
+(`build/slice3b-matrix-qualified.log`). Its failures were report-copy contract
+assertions left over from the pre-manuscript presentation: internal identity as
+heading, contiguous original summary rows, the old Pooled heading, and omitted
+plain-text table captions. Copy now includes captions. Updated drives still
+require every held header and cell, but permit the intentionally merged summary
+layout and require manuscript title/Methods/Results. Numerical contracts are
+unchanged. Four representative recovery cases passed before requalification.

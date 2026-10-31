@@ -185,7 +185,8 @@ def run(app, window, work, root, record, analyze):
     view.nav_tree.setCurrentItem(text_entry)
     view.copy_report_action.trigger()
     copied = app.clipboard().text()
-    assert copied.index('Methods') < copied.index('Pooled ')
+    assert copied.index('Methods') < copied.index('Results')
+    assert view.manuscript.results in copied
     output = work / 'review1-report.pdf'
     with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', return_value=(str(output), '')):
         view.export_report_action.trigger()
