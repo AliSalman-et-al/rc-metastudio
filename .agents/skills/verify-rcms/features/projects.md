@@ -105,3 +105,12 @@ These checks do not qualify assistive-technology behavior or every inactive/erro
 colour on other operating systems.
 
 Sheet acceptance drives: `sheets-legacy` checks original 322ede26 archives against the retained pre-migration numerical fixture and input hashes; `sheets-edges` checks invalid names, deletion prompts, last-sheet retention and transactions; `sheets-swap` checks binary/continuous/HR/IRR pooled inversion, headers, counts, restoration, SVG arm labels and diagnostic gating; `sheets-persist` checks clipboard independence, local covariates and three-sheet reopen. Every desktop startup probes pre-ready R rejection. Clinical favours direction labels are user-defined, not inferred from arm names; automatic favours-label migration remains unexercised.
+
+## RevMan import checkpoint
+
+`rm5-import` drives File → Import RevMan file, review Cancel and Import, then
+Save As and reopen with the public Fleiss1993 fixture. It compares all raw data
+and years to live `meta::read.rm5`. It retains `meta::metacr` reference results
+but does not yet compare RCMS pooled analyses. GIV, DTA, subgroup fixtures,
+method-setting parity and the welcome entry point still need targeted proof.
+See `docs/ux-hill-climb/SLICE5.md`; this is not full RM5 acceptance.

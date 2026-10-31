@@ -39,6 +39,7 @@ SCENARIOS = (
     "manuscript-export",
     "amino",
     "sheets",
+    "rm5-import",
     "sheets-legacy",
     "sheets-edges",
     "sheets-persist",

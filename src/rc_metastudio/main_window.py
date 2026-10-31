@@ -265,6 +265,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.dataset_file_lbl.deleteLater()
         self.dataset_file_lbl = dataset_file_label
         self.action_new_dataset.setText("Create dataset…")
+        self.action_import_rm5 = QAction("Import RevMan file (.rm5)…", self)
+        self.menu_file.addAction(self.action_import_rm5)
+        self.action_import_rm5.triggered.connect(self._import_rm5)
         self.start_page = start_page.StartPage(self.action_new_dataset, self.action_import_csv, self.action_open, self)
         self.verticalLayout_3.insertWidget(0, self.start_page)
         self.menu_file.insertAction(self.action_open, self.action_new_dataset)
@@ -604,6 +607,24 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 self.data_dirtied()
 
             self._commit_model_operation(apply_confidence_level)
+
+    def _import_rm5(self):
+        from xml.etree.ElementTree import ParseError
+        from rc_metastudio.rm5_import import review_rm5
+        path = _qt_dialog_path(QFileDialog.getOpenFileName(self, "Import RevMan review", "", "RevMan 5 (*.rm5)"))
+        if not path:
+            return
+        try:
+            dataset = review_rm5(path, self)
+        except (ValueError, KeyError, OSError, ParseError) as error:
+            QMessageBox.warning(self, "Could not import review", str(error))
+            return
+        if dataset is None or not self._authorize_destructive_project_action():
+            return
+        self.set_model(dataset)
+        self.workspace.start_new_document()
+        self.out_path = None
+        self._notify_user_that_data_is_unsaved()
 
     def _import_csv(self):
         """Import data from csv file"""
@@ -1575,6 +1596,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         if path == "open":
             self.open(file_path=wizard_data["selected_dataset"])
+        elif path == "rm5_import":
+            self.set_model(wizard_data["rm5_dataset"])
+            self.workspace.start_new_document()
+            self.out_path = None
+            self._notify_user_that_data_is_unsaved()
         elif path == "new_dataset":
             self._make_new_dataset_and_setup_spreadsheet(dataset_info)
             self.workspace.start_new_document()

@@ -97,6 +97,9 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
                 self.open_btn,
             )
         )
+        self.import_rm5_btn = QPushButton("Import RevMan file (.rm5)…", self)
+        self.layout().addWidget(self.import_rm5_btn)
+        self.import_rm5_btn.clicked.connect(self.import_rm5)
         self._setup_connections()
 
     def initializePage(self):
@@ -180,6 +183,22 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
 
         if self.selected_dataset != "":
             self.wizard().set_selected_dataset(self.selected_dataset)
+            self.wizard().accept()
+
+    def import_rm5(self):
+        from rc_metastudio.rm5_import import review_rm5
+        from xml.etree.ElementTree import ParseError
+        path, _ = QFileDialog.getOpenFileName(self, "Import RevMan review", "", "RevMan 5 (*.rm5)")
+        if not path:
+            return
+        try:
+            dataset = review_rm5(path, self)
+        except (ValueError, KeyError, OSError, ParseError) as error:
+            QMessageBox.warning(self, "Could not import review", str(error))
+            return
+        if dataset is not None:
+            self.wizard().rm5_dataset = dataset
+            self.wizard().set_wizard_path("rm5_import")
             self.wizard().accept()
 
     def import_csv(self):
@@ -1067,6 +1086,8 @@ class MainWizard(QWizard):
             raise RuntimeError(
                 f"dataset information is required for the {path!r} wizard path"
             )
+        if path == "rm5_import":
+            information["rm5_dataset"] = self.rm5_dataset
         information["path"] = path
         information["outcome_info"] = outcome_info
         # set outcome name

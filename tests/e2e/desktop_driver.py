@@ -1540,6 +1540,9 @@ try:
         run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario in ("amino", "continuous", "lymph"):
         sample_analysis(app, window, scenario)
+    elif scenario == "rm5-import":
+        from tests.e2e.rm5_import import run
+        run(app, window, ROOT, WORK, record_step)
     elif scenario == "sheets-persist":
         sheets_persist(app, window)
     elif scenario == "sheets-edges":
