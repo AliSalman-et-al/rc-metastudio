@@ -766,6 +766,8 @@ loo.ma.continuous <- function(fname, cont.data, params){
 }
 
 subgroup.ma.binary <- function(fname, binary.data, params){
+    # Fixed estimators have no heterogeneity parameter; never let rma default to DL.
+    if (grepl(".fixed", fname, fixed=TRUE)) params$rm.method <- "FE"
     if (!("BinaryData" %in% class(binary.data))) stop("Binary data expected.")
     cov.name <- as.character(params$cov_name)
     selected.cov <- get.cov(binary.data, cov.name)
@@ -859,6 +861,8 @@ get.subgroup.data.binary <- function(binary.data, cov.val, cov.vals) {
 
 
 subgroup.ma.continuous <- function(fname, cont.data, params){
+    # Fixed estimators have no heterogeneity parameter; never let rma default to DL.
+    if (grepl(".fixed", fname, fixed=TRUE)) params$rm.method <- "FE"
     if (!("ContinuousData" %in% class(cont.data))) stop("Continuous data expected.")
     suppressed_params <- params
     cov.name <- as.character(params$cov_name)
@@ -1188,6 +1192,8 @@ multiple.subgroup.diagnostic <- function(fnames, params.list, diagnostic.data) {
 }
 
 subgroup.ma.diagnostic <- function(fname, diagnostic.data, params, selected.cov){
+    # Fixed estimators have no heterogeneity parameter; never let rma default to DL.
+    if (grepl(".fixed", fname, fixed=TRUE)) params$rm.method <- "FE"
     if (!("DiagnosticData" %in% class(diagnostic.data))) stop("Diagnostic data expected.")
     cov.vals <- selected.cov@cov.vals
     suppressed_params <- params

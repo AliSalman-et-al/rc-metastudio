@@ -59,7 +59,6 @@ def run(app, window, ROOT, WORK, record_step):
     record_step('rm5-dta-reopened', window, project=str(destination))
     subgroup_source = ROOT / 'tests/fixtures/rm5/Fleiss1993-subgroups-derived.rm5'
     subgroup_import = read_rm5(subgroup_source)
-    assert "Subgroups: RCMS's between-group test uses a random-effects moderator fit, so it can differ from RevMan's." in subgroup_import.differences
     subgroup_sheet = subgroup_import.dataset.sheets[0]
     assert len(subgroup_sheet.covariates) == 1
     covariate = subgroup_sheet.covariates[0]['id']
@@ -122,9 +121,7 @@ def run(app, window, ROOT, WORK, record_step):
                 differences=differences, reference=str(reference))
     assert len(actual) == len(expected) == 8
     assert all(abs(delta) <= 1e-6 for delta in differences[:6]), differences
-    # The existing moderator test is not meta's common-effect Q decomposition.
-    held_difference = (-0.8280962797270925, 0.010453277674745395)
-    assert all(abs(delta - held) <= 1e-6 for delta, held in zip(differences[6:], held_difference)), differences
+    assert all(abs(delta) <= 1e-6 for delta in differences[6:]), differences
     view.close()
     failures = []
     from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog

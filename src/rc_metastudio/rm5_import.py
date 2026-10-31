@@ -97,8 +97,6 @@ def read_rm5(path: str | Path) -> Rm5Import:
             for subgroup in outcome.iter(outcome.tag.replace('_OUTCOME', '_SUBGROUP')):
                 for record in subgroup.iter(tag):
                     subgroups[id(record)] = subgroup.findtext('NAME', 'Unnamed subgroup')
-            if subgroups and not random:
-                differences.append("Subgroups: RCMS's between-group test uses a random-effects moderator fit, so it can differ from RevMan's.")
             if subgroups:
                 sheet.covariates.append({'id': uuid.uuid4().hex, 'name': outcome.findtext('SUBGROUP_LABEL', 'Subgroup'), 'data_type': 4})
             for record in records:

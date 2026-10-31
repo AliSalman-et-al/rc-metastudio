@@ -109,6 +109,8 @@ rcmetar.add.subgroup.test <- function(summary, plot.data, params) {
                    format.p.value.display(test$QMp, params$digits)))
   summary$arrays <- c(summary$arrays, list(table))
   summary$table.titles <- c(summary$table.titles, "Test of subgroup differences")
+  if (identical(test$method, "FE"))
+    summary$notes <- c(summary$notes, "Subgroup differences use a fixed-effect inverse-variance moderator fit (FE).")
   summary$notes <- c(summary$notes, "Subgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.")
   summary
 }

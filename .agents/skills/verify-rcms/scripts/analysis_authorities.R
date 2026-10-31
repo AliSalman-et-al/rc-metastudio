@@ -148,6 +148,57 @@ for (heterogeneity in c("HE","DL","HS","HSk","SJ","ML","REML","EB","PM","PMM")) 
     check(data,"binary.random",p,ref,paste(heterogeneity,inference,"90% CI"))
   }
 }
+# Failure modes: missing/stale heterogeneity parameters must not select a random
+# moderator test for fixed analyses; random analyses must retain their DL fit.
+group <- rep(c("A", "B"), each=6)
+effects <- metafor::escalc("OR", ai=a, bi=b, ci=c, di=d)
+for (method in c("binary.fixed.inv.var", "binary.fixed.mh", "binary.fixed.peto", "binary.random")) {
+  p <- params("OR"); p$cov_name <- "Group"
+  data <- methods::new("BinaryData", g1O1=a,g1O2=b,g2O1=c,g2O2=d,
+    y=effects$yi,SE=sqrt(effects$vi),study.names=names,
+    covariates=list(methods::new("CovariateValues", cov.name="Group", cov.vals=group, cov.type="factor")))
+  result <- RCMetaR:::subgroup.ma.binary(method, data, p)
+  e <- new.env(); load(paste0(result$plot_params_paths[[1]], ".plotdata"), envir=e)
+  actual <- e$plot.data$subgroups$difference_test
+  ref <- metafor::rma.uni(effects$yi, vi=effects$vi, mods=~factor(group),
+    method=if(method=="binary.random") "DL" else "FE")
+  close(actual$QM,ref$QM,paste(method,"subgroup QM"))
+  close(actual$QMp,ref$QMp,paste(method,"subgroup p"))
+  if (method %in% c("binary.fixed.mh", "binary.fixed.peto")) {
+    authority <- meta::metabin(a,a+b,c,c+d, subgroup=group, sm="OR",
+      method=if(method=="binary.fixed.mh") "MH" else "Peto", common=TRUE)
+    cat(method, "IV moderator convention QM",actual$QM,
+      "meta common subgroup Q",authority$Q.b.common,
+      "difference",actual$QM-authority$Q.b.common,"\n")
+  }
+  rows[[length(rows)+1L]] <- list(case=paste(method,"subgroup"), actual=actual$QM, expected=ref$QM)
+}
+# Continuous subgroup, sequential and regression use independently entered effects.
+p <- params("MD"); p$cov_name <- "Group"
+y <- c(.2,.8,-.1,.4,1.2,.6); v <- c(.04,.08,.03,.1,.06,.05)
+g <- rep(c("A","B"),each=3)
+data <- methods::new("ContinuousData",y=y,SE=sqrt(v),study.names=names[1:6],
+  covariates=list(methods::new("CovariateValues",cov.name="Group",cov.vals=g,cov.type="factor",ref.var="A")))
+r <- RCMetaR:::subgroup.ma.continuous("continuous.fixed",data,p)
+e <- new.env(); load(paste0(r$plot_params_paths[[1]],".plotdata"), envir=e)
+ref <- metafor::rma.uni(y,vi=v,mods=~factor(g),method="FE")
+close(e$plot.data$subgroups$difference_test$QM,ref$QM,"continuous subgroup FE")
+p$rm.method <- "FE"
+r <- RCMetaR:::meta.regression(data,p,stop.at.rma=TRUE)
+close(r$QM,ref$QM,"regression FE QM"); close(r$b,ref$b,"regression FE coefficients")
+for (workflow in c("cum.ma.continuous","loo.ma.continuous")) {
+  r <- get(workflow,asNamespace("RCMetaR"))("continuous.fixed",data,p)
+  table <- r$res$summary.table
+  for (i in seq_along(y)) {
+    ix <- if(workflow=="cum.ma.continuous") seq_len(i) else setdiff(seq_along(y),i)
+    ref <- metafor::rma.uni(y[ix],vi=v[ix],method="FE")
+    row <- if(workflow=="cum.ma.continuous") i else i+1L
+    estimate <- table$estimate[row]
+    close(estimate,ref$b,paste(workflow,i,"estimate"))
+    close(table$se[row],ref$se,paste(workflow,i,"se"))
+  }
+}
+rows[[length(rows)+1L]] <- list(case="continuous fixed subgroup, sequential and regression",passed=TRUE)
 dir.create(dirname(report),recursive=TRUE,showWarnings=FALSE)
 jsonlite::write_json(list(passed=TRUE,case_count=length(rows),r=R.version.string,
   authorities=authorities, cases=rows),report,auto_unbox=TRUE,pretty=TRUE)

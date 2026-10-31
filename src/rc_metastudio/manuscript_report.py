@@ -29,6 +29,7 @@ def methods_prose(metric, model, parameters, confidence, workflow, details, fits
         parts.append(f"Confidence intervals ({float(confidence):g}%) used {parameter_value_display_label('inference.method', inference)}.")
     if workflow == 'subgroup':
         parts.append(f"Subgroup analyses were performed by {parameters.get('cov_name', 'the selected covariate')}.")
+        parts.append(f"Subgroup differences were tested using an inverse-variance {model} moderator model.")
     elif workflow == 'meta-regression':
         moderators = next((line.removeprefix('Moderators: ') for line in details.splitlines() if line.startswith('Moderators: ')), '')
         if moderators:

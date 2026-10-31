@@ -162,12 +162,9 @@ The E2E independently parses cells with stdlib, observes the review table,
 runs default diagnostic setup and verifies full project equality after reopening.
 Counts only: RevMan diagnostic analyses and covariates are explicitly not imported.
 
-## Open statistical finding
+## Statistical correction
 
-With a fixed-effect subgroup analysis selected, RCMS reports per-subgroup fixed estimates, but its between-group test comes from a DerSimonian-Laird moderator fit (`params$rm.method`). On the derived fixture I reproduced this with metafor: method="DL" gives QM=4.852384, p=0.027608, matching RCMS, and method="FE" gives QM=5.680480, p=0.017155, matching meta. Unchanged because changing numbers is out of scope; awaiting the owner's decision.
-
-The import review now discloses this difference for fixed-effect outcomes with
-subgroups. No statistical method or numerical oracle changed.
+See [STAT-FIXES.md](STAT-FIXES.md) for the authorized fixed-effect subgroup correction.
 
 ## DTA final verification
 
