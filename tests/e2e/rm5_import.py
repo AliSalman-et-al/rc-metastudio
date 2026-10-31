@@ -260,3 +260,6 @@ def run(app, window, ROOT, WORK, record_step):
         window._handle_wizard_results(wizard.get_results())
     assert len(window.model.dataset.sheets) == 2
     record_step('rm5-welcome-imported', window)
+
+    from tests.e2e.rm5_giv import run as run_giv
+    run_giv(app, window, ROOT, WORK, record_step)

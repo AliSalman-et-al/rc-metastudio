@@ -1,0 +1,487 @@
+<?xml version='1.0' encoding='utf-8'?>
+<COCHRANE_REVIEW DESCRIPTION="" DOI="" GROUP_ID="" ID="861409081811071967" MERGED_FROM="" MODIFIED="2010-05-25 16:08:30 +0200" MODIFIED_BY="[Empty name]" REVIEW_NO="" REVMAN_SUB_VERSION="5.0.23" REVMAN_VERSION="5" SPLIT_FROM="" STAGE="R" STATUS="A" TYPE="INTERVENTION" VERSION_NO="0.0">
+  <COVER_SHEET MODIFIED="2009-09-01 11:02:47 +0200" MODIFIED_BY="[Empty name]">
+    <TITLE MODIFIED="2009-09-01 11:02:47 +0200" MODIFIED_BY="[Empty name]">Examples from Fleiss 1993</TITLE>
+    <CONTACT>
+      <PERSON ID="????" ROLE="UNKNOWN">
+        <PREFIX />
+        <FIRST_NAME />
+        <MIDDLE_INITIALS />
+        <LAST_NAME />
+        <SUFFIX />
+        <POSITION />
+        <EMAIL_1 />
+        <EMAIL_2 />
+        <URL />
+        <MOBILE_PHONE />
+        <ADDRESS>
+          <DEPARTMENT />
+          <ORGANISATION />
+          <ADDRESS_1 />
+          <ADDRESS_2 />
+          <CITY />
+          <ZIP />
+          <REGION />
+          <COUNTRY CODE="NONE">Not specified</COUNTRY>
+          <PHONE_1 />
+          <PHONE_2 />
+          <FAX_1 />
+          <FAX_2 />
+        </ADDRESS>
+        <FOOTNOTE />
+      </PERSON>
+    </CONTACT>
+    <CREATORS>
+      <PERSON ID="????" ROLE="AUTHOR">
+        <PREFIX />
+        <FIRST_NAME />
+        <MIDDLE_INITIALS />
+        <LAST_NAME />
+        <SUFFIX />
+        <POSITION />
+        <EMAIL_1 />
+        <EMAIL_2 />
+        <URL />
+        <MOBILE_PHONE />
+        <ADDRESS>
+          <DEPARTMENT />
+          <ORGANISATION />
+          <ADDRESS_1 />
+          <ADDRESS_2 />
+          <CITY />
+          <ZIP />
+          <REGION />
+          <COUNTRY CODE="NONE">Not specified</COUNTRY>
+          <PHONE_1 />
+          <PHONE_2 />
+          <FAX_1 />
+          <FAX_2 />
+        </ADDRESS>
+        <FOOTNOTE />
+      </PERSON>
+    </CREATORS>
+    <DATES>
+      <UP_TO_DATE>
+        <DATE DAY="" MONTH="" YEAR="" />
+      </UP_TO_DATE>
+      <LAST_SEARCH>
+        <DATE DAY="" MONTH="" YEAR="" />
+      </LAST_SEARCH>
+      <NEXT_STAGE>
+        <DATE DAY="" MONTH="" YEAR="" />
+      </NEXT_STAGE>
+      <PROTOCOL_PUBLISHED ISSUE="" YEAR="" />
+      <REVIEW_PUBLISHED ISSUE="" YEAR="" />
+      <LAST_CITATION_ISSUE ISSUE="" YEAR="" />
+    </DATES>
+    <WHATS_NEW />
+    <HISTORY />
+    <SOURCES_OF_SUPPORT>
+      <INTERNAL_SOURCES />
+      <EXTERNAL_SOURCES />
+    </SOURCES_OF_SUPPORT>
+    <MESH_TERMS VERIFIED="NO" />
+    <KEYWORDS />
+  </COVER_SHEET>
+  <MAIN_TEXT>
+    <SUMMARY>
+      <TITLE>[Plain language title]</TITLE>
+      <SUMMARY_BODY>
+        <P>[Summary text]</P>
+      </SUMMARY_BODY>
+    </SUMMARY>
+    <ABSTRACT>
+      <ABS_BACKGROUND />
+      <ABS_OBJECTIVES />
+      <ABS_SEARCH_STRATEGY />
+      <ABS_SELECTION_CRITERIA />
+      <ABS_DATA_COLLECTION />
+      <ABS_RESULTS />
+      <ABS_CONCLUSIONS />
+    </ABSTRACT>
+    <BODY>
+      <BACKGROUND>
+        <CONDITION />
+        <INTERVENTION />
+        <THEORY />
+        <IMPORTANCE />
+      </BACKGROUND>
+      <OBJECTIVES />
+      <METHODS>
+        <SELECTION_CRITERIA>
+          <CRIT_STUDIES />
+          <CRIT_PARTICIPANTS />
+          <CRIT_INTERVENTIONS />
+          <CRIT_OUTCOMES>
+            <CRIT_OUTCOMES_PRIMARY />
+            <CRIT_OUTCOMES_SECONDARY />
+          </CRIT_OUTCOMES>
+        </SELECTION_CRITERIA>
+        <SEARCH_METHODS>
+          <ELECTRONIC_SEARCHES />
+          <OTHER_SEARCHES />
+        </SEARCH_METHODS>
+        <DATA_COLLECTION>
+          <STUDY_SELECTION />
+          <DATA_EXTRACTION />
+          <QUALITY_ASSESSMENT />
+          <EFFECT_MEASURES />
+          <UNIT_OF_ANALYSIS />
+          <MISSING_DATA />
+          <HETEROGENEITY_ASSESSMENT />
+          <BIAS_ASSESSMENT />
+          <DATA_SYNTHESIS />
+          <SUBGROUP_ANALYSIS />
+          <SENSITIVITY_ANALYSIS />
+        </DATA_COLLECTION>
+      </METHODS>
+      <RESULTS>
+        <STUDY_DESCRIPTION>
+          <SEARCH_RESULTS />
+          <INCLUDED_STUDIES_DESCR />
+          <EXCLUDED_STUDIES_DESCR />
+        </STUDY_DESCRIPTION>
+        <STUDY_QUALITY>
+          <ALLOCATION />
+          <BLINDING />
+          <EXCLUSIONS />
+          <SELECTIVE_REPORTING />
+          <OTHER_BIAS_SOURCES />
+        </STUDY_QUALITY>
+        <INTERVENTION_EFFECTS />
+      </RESULTS>
+      <DISCUSSION>
+        <SUMMARY_OF_RESULTS />
+        <APPLICABILITY_OF_FINDINGS />
+        <QUALITY_OF_EVIDENCE />
+        <POTENTIAL_BIASES />
+        <AGREEMENT />
+      </DISCUSSION>
+      <CONCLUSIONS>
+        <IMPLICATIONS_PRACTICE />
+        <IMPLICATIONS_RESEARCH />
+      </CONCLUSIONS>
+    </BODY>
+    <ACKNOWLEDGEMENTS />
+    <CONFLICT_OF_INTEREST />
+    <CONTRIBUTIONS />
+    <PRO_REV_DIFF />
+    <PUBLIC_NOTES />
+  </MAIN_TEXT>
+  <STUDIES_AND_REFERENCES MODIFIED="2009-08-18 11:11:28 +0200" MODIFIED_BY="[Empty name]">
+    <STUDIES MODIFIED="2009-08-18 11:11:28 +0200" MODIFIED_BY="[Empty name]">
+      <INCLUDED_STUDIES MODIFIED="2009-08-18 11:11:28 +0200" MODIFIED_BY="[Empty name]">
+        <STUDY DATA_SOURCE="PUB" ID="STD-AMIS" MODIFIED="2009-08-18 11:09:51 +0200" MODIFIED_BY="[Empty name]" NAME="AMIS" YEAR="1980">
+          <REFERENCE PRIMARY="NO" TYPE="JOURNAL_ARTICLE">
+            <IDENTIFIERS />
+          </REFERENCE>
+          <IDENTIFIERS />
+        </STUDY>
+        <STUDY DATA_SOURCE="PUB" ID="STD-CDP" MODIFIED="2009-08-18 11:08:41 +0200" MODIFIED_BY="[Empty name]" NAME="CDP" YEAR="1976">
+          <REFERENCE PRIMARY="NO" TYPE="JOURNAL_ARTICLE">
+            <IDENTIFIERS />
+          </REFERENCE>
+          <IDENTIFIERS />
+        </STUDY>
+        <STUDY DATA_SOURCE="PUB" ID="STD-Davis" MODIFIED="2009-08-18 11:10:33 +0200" MODIFIED_BY="[Empty name]" NAME="Davis" YEAR="1973">
+          <REFERENCE PRIMARY="NO" TYPE="JOURNAL_ARTICLE">
+            <IDENTIFIERS />
+          </REFERENCE>
+          <IDENTIFIERS />
+        </STUDY>
+        <STUDY DATA_SOURCE="PUB" ID="STD-Florell" MODIFIED="2009-08-18 11:10:51 +0200" MODIFIED_BY="[Empty name]" NAME="Florell" YEAR="1971">
+          <REFERENCE PRIMARY="NO" TYPE="JOURNAL_ARTICLE">
+            <IDENTIFIERS />
+          </REFERENCE>
+          <IDENTIFIERS />
+        </STUDY>
+        <STUDY DATA_SOURCE="PUB" ID="STD-GASP" MODIFIED="2009-08-18 11:09:21 +0200" MODIFIED_BY="[Empty name]" NAME="GASP" YEAR="1979">
+          <REFERENCE PRIMARY="NO" TYPE="JOURNAL_ARTICLE">
+            <IDENTIFIERS />
+          </REFERENCE>
+          <IDENTIFIERS />
+        </STUDY>
+        <STUDY DATA_SOURCE="PUB" ID="STD-Gruen" MODIFIED="2009-08-18 11:11:03 +0200" MODIFIED_BY="[Empty name]" NAME="Gruen" YEAR="1975">
+          <REFERENCE PRIMARY="NO" TYPE="JOURNAL_ARTICLE">
+            <IDENTIFIERS />
+          </REFERENCE>
+          <IDENTIFIERS />
+        </STUDY>
+        <STUDY DATA_SOURCE="PUB" ID="STD-Hart" MODIFIED="2009-08-18 11:11:15 +0200" MODIFIED_BY="[Empty name]" NAME="Hart" YEAR="1975">
+          <REFERENCE PRIMARY="NO" TYPE="JOURNAL_ARTICLE">
+            <IDENTIFIERS />
+          </REFERENCE>
+          <IDENTIFIERS />
+        </STUDY>
+        <STUDY DATA_SOURCE="PUB" ID="STD-ISIS_x002d_2" MODIFIED="2009-08-18 11:10:09 +0200" MODIFIED_BY="[Empty name]" NAME="ISIS-2" YEAR="1988">
+          <REFERENCE PRIMARY="NO" TYPE="JOURNAL_ARTICLE">
+            <IDENTIFIERS />
+          </REFERENCE>
+          <IDENTIFIERS />
+        </STUDY>
+        <STUDY DATA_SOURCE="PUB" ID="STD-MRC_x002d_1" MODIFIED="2009-08-18 11:08:25 +0200" MODIFIED_BY="[Empty name]" NAME="MRC-1" YEAR="1974">
+          <REFERENCE PRIMARY="NO" TYPE="JOURNAL_ARTICLE">
+            <IDENTIFIERS />
+          </REFERENCE>
+          <IDENTIFIERS />
+        </STUDY>
+        <STUDY DATA_SOURCE="PUB" ID="STD-MRC_x002d_2" MODIFIED="2009-08-18 11:08:55 +0200" MODIFIED_BY="[Empty name]" NAME="MRC-2" YEAR="1979">
+          <REFERENCE PRIMARY="NO" TYPE="JOURNAL_ARTICLE">
+            <IDENTIFIERS />
+          </REFERENCE>
+          <IDENTIFIERS />
+        </STUDY>
+        <STUDY DATA_SOURCE="PUB" ID="STD-PARIS" MODIFIED="2009-08-18 11:09:33 +0200" MODIFIED_BY="[Empty name]" NAME="PARIS" YEAR="1980">
+          <REFERENCE PRIMARY="NO" TYPE="JOURNAL_ARTICLE">
+            <IDENTIFIERS />
+          </REFERENCE>
+          <IDENTIFIERS />
+        </STUDY>
+        <STUDY DATA_SOURCE="PUB" ID="STD-Wilson" MODIFIED="2009-08-18 11:11:28 +0200" MODIFIED_BY="[Empty name]" NAME="Wilson" YEAR="1977">
+          <REFERENCE PRIMARY="NO" TYPE="JOURNAL_ARTICLE">
+            <IDENTIFIERS />
+          </REFERENCE>
+          <IDENTIFIERS />
+        </STUDY>
+      </INCLUDED_STUDIES>
+      <EXCLUDED_STUDIES />
+      <AWAITING_STUDIES />
+      <ONGOING_STUDIES />
+    </STUDIES>
+    <OTHER_REFERENCES>
+      <ADDITIONAL_REFERENCES />
+      <OTHER_VERSIONS_REFERENCES />
+      <PENDING_REFERENCES />
+    </OTHER_REFERENCES>
+  </STUDIES_AND_REFERENCES>
+  <CHARACTERISTICS_OF_STUDIES MODIFIED="2009-08-18 11:11:28 +0200" MODIFIED_BY="[Empty name]">
+    <CHARACTERISTICS_OF_INCLUDED_STUDIES MODIFIED="2009-08-18 11:11:28 +0200" MODIFIED_BY="[Empty name]" SORT_BY="STUDY" USER_DEF_1_ENABLED="NO" USER_DEF_2_ENABLED="NO" USER_DEF_3_ENABLED="NO">
+      <INCLUDED_CHAR STUDY_ID="STD-AMIS">
+        <CHAR_METHODS />
+        <CHAR_PARTICIPANTS />
+        <CHAR_INTERVENTIONS />
+        <CHAR_OUTCOMES />
+        <CHAR_NOTES />
+      </INCLUDED_CHAR>
+      <INCLUDED_CHAR STUDY_ID="STD-CDP">
+        <CHAR_METHODS />
+        <CHAR_PARTICIPANTS />
+        <CHAR_INTERVENTIONS />
+        <CHAR_OUTCOMES />
+        <CHAR_NOTES />
+      </INCLUDED_CHAR>
+      <INCLUDED_CHAR STUDY_ID="STD-Davis">
+        <CHAR_METHODS />
+        <CHAR_PARTICIPANTS />
+        <CHAR_INTERVENTIONS />
+        <CHAR_OUTCOMES />
+        <CHAR_NOTES />
+      </INCLUDED_CHAR>
+      <INCLUDED_CHAR STUDY_ID="STD-Florell">
+        <CHAR_METHODS />
+        <CHAR_PARTICIPANTS />
+        <CHAR_INTERVENTIONS />
+        <CHAR_OUTCOMES />
+        <CHAR_NOTES />
+      </INCLUDED_CHAR>
+      <INCLUDED_CHAR STUDY_ID="STD-GASP">
+        <CHAR_METHODS />
+        <CHAR_PARTICIPANTS />
+        <CHAR_INTERVENTIONS />
+        <CHAR_OUTCOMES />
+        <CHAR_NOTES />
+      </INCLUDED_CHAR>
+      <INCLUDED_CHAR STUDY_ID="STD-Gruen">
+        <CHAR_METHODS />
+        <CHAR_PARTICIPANTS />
+        <CHAR_INTERVENTIONS />
+        <CHAR_OUTCOMES />
+        <CHAR_NOTES />
+      </INCLUDED_CHAR>
+      <INCLUDED_CHAR STUDY_ID="STD-Hart">
+        <CHAR_METHODS />
+        <CHAR_PARTICIPANTS />
+        <CHAR_INTERVENTIONS />
+        <CHAR_OUTCOMES />
+        <CHAR_NOTES />
+      </INCLUDED_CHAR>
+      <INCLUDED_CHAR STUDY_ID="STD-ISIS_x002d_2">
+        <CHAR_METHODS />
+        <CHAR_PARTICIPANTS />
+        <CHAR_INTERVENTIONS />
+        <CHAR_OUTCOMES />
+        <CHAR_NOTES />
+      </INCLUDED_CHAR>
+      <INCLUDED_CHAR STUDY_ID="STD-MRC_x002d_1">
+        <CHAR_METHODS />
+        <CHAR_PARTICIPANTS />
+        <CHAR_INTERVENTIONS />
+        <CHAR_OUTCOMES />
+        <CHAR_NOTES />
+      </INCLUDED_CHAR>
+      <INCLUDED_CHAR STUDY_ID="STD-MRC_x002d_2">
+        <CHAR_METHODS />
+        <CHAR_PARTICIPANTS />
+        <CHAR_INTERVENTIONS />
+        <CHAR_OUTCOMES />
+        <CHAR_NOTES />
+      </INCLUDED_CHAR>
+      <INCLUDED_CHAR STUDY_ID="STD-PARIS">
+        <CHAR_METHODS />
+        <CHAR_PARTICIPANTS />
+        <CHAR_INTERVENTIONS />
+        <CHAR_OUTCOMES />
+        <CHAR_NOTES />
+      </INCLUDED_CHAR>
+      <INCLUDED_CHAR STUDY_ID="STD-Wilson">
+        <CHAR_METHODS />
+        <CHAR_PARTICIPANTS />
+        <CHAR_INTERVENTIONS />
+        <CHAR_OUTCOMES />
+        <CHAR_NOTES />
+      </INCLUDED_CHAR>
+      <FOOTNOTES />
+    </CHARACTERISTICS_OF_INCLUDED_STUDIES>
+    <CHARACTERISTICS_OF_EXCLUDED_STUDIES SORT_BY="STUDY">
+      <FOOTNOTES />
+    </CHARACTERISTICS_OF_EXCLUDED_STUDIES>
+    <CHARACTERISTICS_OF_AWAITING_STUDIES SORT_BY="STUDY" USER_DEF_1_ENABLED="NO" USER_DEF_2_ENABLED="NO" USER_DEF_3_ENABLED="NO">
+      <FOOTNOTES />
+    </CHARACTERISTICS_OF_AWAITING_STUDIES>
+    <CHARACTERISTICS_OF_ONGOING_STUDIES SORT_BY="STUDY" USER_DEF_1_ENABLED="NO" USER_DEF_2_ENABLED="NO" USER_DEF_3_ENABLED="NO">
+      <FOOTNOTES />
+    </CHARACTERISTICS_OF_ONGOING_STUDIES>
+  </CHARACTERISTICS_OF_STUDIES>
+  <QUALITY_ITEMS MODIFIED="2009-08-18 11:11:28 +0200" MODIFIED_BY="[Empty name]">
+    <QUALITY_ITEM CORE_ITEM="YES" ID="QIT-01" LEVEL="STUDY" NO="1">
+      <NAME>Adequate sequence generation?</NAME>
+      <DESCRIPTION>
+        <P>Was the allocation sequence adequately generated?</P>
+      </DESCRIPTION>
+      <QUALITY_ITEM_DATA />
+    </QUALITY_ITEM>
+    <QUALITY_ITEM CORE_ITEM="YES" ID="QIT-02" LEVEL="STUDY" MODIFIED="2009-08-18 11:11:28 +0200" MODIFIED_BY="[Empty name]" NO="2">
+      <NAME>Allocation concealment?</NAME>
+      <DESCRIPTION>
+        <P>Was allocation adequately concealed?</P>
+      </DESCRIPTION>
+      <QUALITY_ITEM_DATA>
+        <QUALITY_ITEM_DATA_ENTRY RESULT="UNKNOWN" STUDY_ID="STD-AMIS">
+          <DESCRIPTION />
+        </QUALITY_ITEM_DATA_ENTRY>
+        <QUALITY_ITEM_DATA_ENTRY RESULT="UNKNOWN" STUDY_ID="STD-CDP">
+          <DESCRIPTION />
+        </QUALITY_ITEM_DATA_ENTRY>
+        <QUALITY_ITEM_DATA_ENTRY RESULT="UNKNOWN" STUDY_ID="STD-Davis">
+          <DESCRIPTION />
+        </QUALITY_ITEM_DATA_ENTRY>
+        <QUALITY_ITEM_DATA_ENTRY RESULT="UNKNOWN" STUDY_ID="STD-Florell">
+          <DESCRIPTION />
+        </QUALITY_ITEM_DATA_ENTRY>
+        <QUALITY_ITEM_DATA_ENTRY RESULT="UNKNOWN" STUDY_ID="STD-GASP">
+          <DESCRIPTION />
+        </QUALITY_ITEM_DATA_ENTRY>
+        <QUALITY_ITEM_DATA_ENTRY RESULT="UNKNOWN" STUDY_ID="STD-Gruen">
+          <DESCRIPTION />
+        </QUALITY_ITEM_DATA_ENTRY>
+        <QUALITY_ITEM_DATA_ENTRY RESULT="UNKNOWN" STUDY_ID="STD-Hart">
+          <DESCRIPTION />
+        </QUALITY_ITEM_DATA_ENTRY>
+        <QUALITY_ITEM_DATA_ENTRY RESULT="UNKNOWN" STUDY_ID="STD-ISIS_x002d_2">
+          <DESCRIPTION />
+        </QUALITY_ITEM_DATA_ENTRY>
+        <QUALITY_ITEM_DATA_ENTRY RESULT="UNKNOWN" STUDY_ID="STD-MRC_x002d_1">
+          <DESCRIPTION />
+        </QUALITY_ITEM_DATA_ENTRY>
+        <QUALITY_ITEM_DATA_ENTRY RESULT="UNKNOWN" STUDY_ID="STD-MRC_x002d_2">
+          <DESCRIPTION />
+        </QUALITY_ITEM_DATA_ENTRY>
+        <QUALITY_ITEM_DATA_ENTRY RESULT="UNKNOWN" STUDY_ID="STD-PARIS">
+          <DESCRIPTION />
+        </QUALITY_ITEM_DATA_ENTRY>
+        <QUALITY_ITEM_DATA_ENTRY RESULT="UNKNOWN" STUDY_ID="STD-Wilson">
+          <DESCRIPTION />
+        </QUALITY_ITEM_DATA_ENTRY>
+      </QUALITY_ITEM_DATA>
+    </QUALITY_ITEM>
+    <QUALITY_ITEM CORE_ITEM="YES" ID="QIT-03" LEVEL="GROUP" NO="3">
+      <NAME>Blinding?</NAME>
+      <DESCRIPTION>
+        <P>Was knowledge of the allocated interventions adequately prevented during the study?</P>
+      </DESCRIPTION>
+      <QUALITY_ITEM_DATA />
+    </QUALITY_ITEM>
+    <QUALITY_ITEM CORE_ITEM="YES" ID="QIT-04" LEVEL="GROUP" NO="4">
+      <NAME>Incomplete outcome data addressed?</NAME>
+      <DESCRIPTION>
+        <P>Were incomplete outcome data adequately addressed?</P>
+      </DESCRIPTION>
+      <QUALITY_ITEM_DATA />
+    </QUALITY_ITEM>
+    <QUALITY_ITEM CORE_ITEM="YES" ID="QIT-05" LEVEL="STUDY" NO="5">
+      <NAME>Free of selective reporting?</NAME>
+      <DESCRIPTION>
+        <P>Are reports of the study free of suggestion of selective outcome reporting?</P>
+      </DESCRIPTION>
+      <QUALITY_ITEM_DATA />
+    </QUALITY_ITEM>
+    <QUALITY_ITEM CORE_ITEM="YES" ID="QIT-06" LEVEL="STUDY" NO="6">
+      <NAME>Free of other bias?</NAME>
+      <DESCRIPTION>
+        <P>Was the study apparently free of other problems that could put it at a high risk of bias?</P>
+      </DESCRIPTION>
+      <QUALITY_ITEM_DATA />
+    </QUALITY_ITEM>
+  </QUALITY_ITEMS>
+  <SOF_TABLES />
+  <ADDITIONAL_TABLES />
+  <ANALYSES_AND_DATA CALCULATED_DATA="YES" MODIFIED="2010-05-25 16:08:30 +0200" MODIFIED_BY="[Empty name]">
+    <COMPARISON ID="CMP-001" MODIFIED="2010-05-25 16:08:30 +0200" MODIFIED_BY="[Empty name]" NO="1">
+      <NAME>Examples from Fleiss (1993)</NAME>
+      <IV_OUTCOME ID="giv1" NO="1" EFFECT_MEASURE="HR" LOG_DATA="YES" METHOD="IV" RANDOM="NO" CI_STUDY="95" CI_TOTAL="95" SWAP_EVENTS="NO">
+        <NAME>HR</NAME>
+        <GROUP_LABEL_1>Treatment</GROUP_LABEL_1>
+        <GROUP_LABEL_2>Control</GROUP_LABEL_2>
+        <GRAPH_LABEL_1>Treatment</GRAPH_LABEL_1>
+        <GRAPH_LABEL_2>Control</GRAPH_LABEL_2>
+        <IV_DATA STUDY_ID="STD-AMIS" EFFECT_SIZE="0.7408182206817179" SE="0.15" />
+        <IV_DATA STUDY_ID="STD-CDP" EFFECT_SIZE="1.1051709180756477" SE="0.2" />
+        <IV_DATA STUDY_ID="STD-Davis" EFFECT_SIZE="0.9048374180359595" SE="0.12" />
+      </IV_OUTCOME>
+      <IV_OUTCOME ID="giv2" NO="2" EFFECT_MEASURE="OR" LOG_DATA="NO" METHOD="IV" RANDOM="NO" CI_STUDY="95" CI_TOTAL="95" SWAP_EVENTS="NO">
+        <NAME>OR</NAME>
+        <GROUP_LABEL_1>Treatment</GROUP_LABEL_1>
+        <GROUP_LABEL_2>Control</GROUP_LABEL_2>
+        <GRAPH_LABEL_1>Treatment</GRAPH_LABEL_1>
+        <GRAPH_LABEL_2>Control</GRAPH_LABEL_2>
+        <IV_DATA STUDY_ID="STD-AMIS" EFFECT_SIZE="-0.3" SE="0.15" />
+        <IV_DATA STUDY_ID="STD-CDP" EFFECT_SIZE="0.1" SE="0.2" />
+        <IV_DATA STUDY_ID="STD-Davis" EFFECT_SIZE="-0.1" SE="0.12" />
+      </IV_OUTCOME>
+      <IV_OUTCOME ID="giv3" NO="3" EFFECT_MEASURE="MD" LOG_DATA="NO" METHOD="IV" RANDOM="NO" CI_STUDY="95" CI_TOTAL="95" SWAP_EVENTS="NO">
+        <NAME>MD</NAME>
+        <GROUP_LABEL_1>Treatment</GROUP_LABEL_1>
+        <GROUP_LABEL_2>Control</GROUP_LABEL_2>
+        <GRAPH_LABEL_1>Treatment</GRAPH_LABEL_1>
+        <GRAPH_LABEL_2>Control</GRAPH_LABEL_2>
+        <IV_DATA STUDY_ID="STD-AMIS" EFFECT_SIZE="-0.3" SE="0.15" />
+        <IV_DATA STUDY_ID="STD-CDP" EFFECT_SIZE="0.1" SE="0.2" />
+        <IV_DATA STUDY_ID="STD-Davis" EFFECT_SIZE="-0.1" SE="0.12" />
+      </IV_OUTCOME>
+      <IV_OUTCOME ID="giv4" NO="4" EFFECT_MEASURE="Custom score" LOG_DATA="YES" METHOD="IV" RANDOM="NO" CI_STUDY="95" CI_TOTAL="95" SWAP_EVENTS="NO">
+        <NAME>Custom score</NAME>
+        <GROUP_LABEL_1>Treatment</GROUP_LABEL_1>
+        <GROUP_LABEL_2>Control</GROUP_LABEL_2>
+        <GRAPH_LABEL_1>Treatment</GRAPH_LABEL_1>
+        <GRAPH_LABEL_2>Control</GRAPH_LABEL_2>
+        <IV_DATA STUDY_ID="STD-AMIS" EFFECT_SIZE="0.7408182206817179" SE="0.15" />
+        <IV_DATA STUDY_ID="STD-CDP" EFFECT_SIZE="1.1051709180756477" SE="0.2" />
+        <IV_DATA STUDY_ID="STD-Davis" EFFECT_SIZE="0.9048374180359595" SE="0.12" />
+      </IV_OUTCOME>
+    </COMPARISON>
+  </ANALYSES_AND_DATA>
+  <FIGURES />
+  <FEEDBACK />
+  <APPENDICES />
+  <EXTENSIONS />
+</COCHRANE_REVIEW>

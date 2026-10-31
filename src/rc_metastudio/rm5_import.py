@@ -43,6 +43,11 @@ def read_rm5(path: str | Path) -> Rm5Import:
                 family, data_type, tag, fields = 'binary', meta_globals.BINARY, 'DICH_DATA', ('EVENTS', 'TOTAL')
             elif outcome.tag == 'CONT_OUTCOME' and metric in ('MD', 'SMD'):
                 family, data_type, tag, fields = 'continuous', meta_globals.CONTINUOUS, 'CONT_DATA', ('MEAN', 'SD', 'TOTAL')
+            elif outcome.tag == 'IV_OUTCOME' and metric in ('HR', 'OR', 'MD'):
+                family, data_type = {'HR': ('time_to_event', meta_globals.TIME_TO_EVENT),
+                                     'OR': ('binary', meta_globals.BINARY),
+                                     'MD': ('continuous', meta_globals.CONTINUOUS)}[metric]
+                tag, fields = 'IV_DATA', ()
             else:
                 not_imported.append(f'{name}: {outcome.tag} ({metric or "no effect measure"}) is not imported.')
                 continue
@@ -74,7 +79,7 @@ def read_rm5(path: str | Path) -> Rm5Import:
             elif not random:
                 mapped = ({'IV': 'binary.fixed.inv.var', 'MH': 'binary.fixed.mh',
                            'PETO': 'binary.fixed.peto'}.get(method) if family == 'binary'
-                          else 'continuous.fixed' if method == 'IV' else None)
+                          else f'{family}.fixed' if method == 'IV' else None)
             if mapped == 'binary.fixed.peto' and metric != 'OR':
                 mapped = None
             if mapped:
@@ -95,6 +100,23 @@ def read_rm5(path: str | Path) -> Rm5Import:
                 study = studies.get(record.get('STUDY_ID'))
                 if study is None:
                     raise ValueError(f'{name}: unknown study {record.get("STUDY_ID")}.')
+                if tag == 'IV_DATA':
+                    estimate, se = float(record.attrib['EFFECT_SIZE']), float(record.attrib['SE'])
+                    scale = outcome.get('LOG_DATA')
+                    if scale not in ('YES', 'NO') or not math.isfinite(estimate) or not math.isfinite(se) or se <= 0:
+                        raise ValueError(f'{name}: invalid generic inverse-variance data.')
+                    # meta::metacr logs YES and retains NO; SE is on the analysis scale.
+                    te = math.log(estimate) if scale == 'YES' else estimate
+                    unit = AnalysisUnit(sheet, arm_names=names, arm_stable_ids=[a.id for a in sheet.arms])
+                    if metric == 'HR':
+                        from rc_metastudio.ratio_data import RatioInput
+                        unit.set_ratio_input(names, RatioInput(estimate=te, se=se,
+                            scale='log', source='reported', confidence=level))
+                    else:
+                        unit.set_effect_for_source('entered', metric, tuple(a.id for a in sheet.arms), te, standard_error=se)
+                    sheet.rows.append(StudyRow(uuid.uuid4().hex, study.get('NAME') or record.get('STUDY_ID'), unit,
+                        year=int(study.get('YEAR')) if (study.get('YEAR') or '').isdigit() else None))
+                    continue
                 raw = []
                 pending = all(record.get(f'TOTAL_{i}', '') in ('', '0') for i in (1, 2)) and all(
                     record.get(f'{field}_{i}', '') == '' for i in (1, 2) for field in fields[:-1])

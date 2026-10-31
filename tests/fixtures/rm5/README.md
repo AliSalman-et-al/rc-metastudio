@@ -56,3 +56,9 @@ Assertions use absolute tolerance 1e-6, without rounding.
 Six grouped studies, fixed inverse variance, real Subgroup dialog and setup.
 Log-OR estimate/lower/upper: earlier [-0.28857647961015254, -0.4857578858213545, -0.09139507339895059], later [0.02113006824755212, -0.140067677181497, 0.18232781367660125]. Maximum absolute difference from meta::metacr is 5e-16.
 Between-group RCMS moderator Q=4.852384056279537, p=0.027607948430352695; meta common-effect decomposition Q=5.68048033600663, p=0.0171546707556073. Differences (RCMS minus meta): Q -0.8280962797270925, p +0.010453277674745395. These are explicitly held discrepancies, not parity. The existing plot moderator fit uses params$rm.method independently of the fixed subgroup summaries. No statistical method changed.
+
+`generic-derived.rm5` is a synthetic derivative of the Fleiss review structure,
+not RevMan output. It reuses three study identities with invented effects and
+standard errors, one IV_OUTCOME each for HR, OR, MD and Custom score. HR and
+Custom score use LOG_DATA=YES (ratio estimates); OR and MD use LOG_DATA=NO
+(analysis-scale estimates). meta::read.rm5 8.5-0 parses all twelve rows.
