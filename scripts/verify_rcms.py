@@ -83,7 +83,8 @@ def run_metadata(scenario: str, native: bool) -> dict[str, object]:
         ).hexdigest(),
         "workflow_files_sha256": {
             path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
-            for path in sorted((ROOT / "tests/e2e").glob("*.py"))
+            for path in sorted((ROOT / "tests/e2e").iterdir())
+            if path.is_file() and path.suffix in {".py", ".json"}
         },
         "skill_files_sha256": {
             path.relative_to(ROOT).as_posix(): hashlib.sha256(

@@ -108,6 +108,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     ):
         super(ContinuousDataDialog, self).__init__(parent)
         self.setupUi(self)
+        self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.simple_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self._configure_tables()
         self._configure_semantic_fields()
         self._configure_focus_revelation()
@@ -193,6 +195,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
             "continuous calculator OK button",
         ).setDefault(True)
+        adaptive_window.set_content_preferred_width(
+            self, 480, self.fontMetrics().horizontalAdvance("-9999.9999") * 8 + 140
+        )
         self._request_initial_content_refit()
 
     def _update_input_modes(self):
@@ -226,7 +231,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
             header = table.horizontalHeader()
             header = required(header, "continuous table header")
-            header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+            header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
             header.setStretchLastSection(False)
             table.resizeColumnsToContents()
             table.resizeRowsToContents()
@@ -326,6 +331,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         content_widget = self.__dict__.get("content_widget")
         if content_layout is not None:
             content_layout.invalidate()
+            self.content_scroll.setMaximumHeight(content_layout.sizeHint().height() + 4)
         if content_widget is not None:
             content_widget.updateGeometry()
         self._request_initial_content_refit()
@@ -382,7 +388,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         required_width = max(
             header.sectionSizeHint(column), table.sizeHintForColumn(column)
         )
-        if required_width > table.columnWidth(column):
+        if header.sectionResizeMode(column) != QHeaderView.ResizeMode.Stretch and required_width > table.columnWidth(column):
             header.resizeSection(column, required_width)
 
     def _fit_tables_to_contents(self):
@@ -850,6 +856,13 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             table = self.simple_table
 
         row, col = row_index, var_index
+        header = table.horizontalHeaderItem(col)
+        if header is not None and self._imputation_field_name(header.text()) == "pval":
+            item = table.item(row, col)
+            if supplied is not True:
+                if item is not None and item.data(Qt.ItemDataRole.UserRole):
+                    return
+                val = None
         if is_nan(val):  # get out quick
             return
 

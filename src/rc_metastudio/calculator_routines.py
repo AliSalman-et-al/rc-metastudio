@@ -3,13 +3,17 @@
 """Shared calculator helpers for data-entry dialogs."""
 
 import sys
+import math
 from collections.abc import Callable
 from functools import partial
 from typing import Protocol, TypeAlias
 from weakref import WeakKeyDictionary
 from PyQt6.QtCore import Qt
 
-from PyQt6.QtWidgets import QMessageBox, QSizePolicy, QStyle, QStyledItemDelegate, QWIDGETSIZE_MAX
+from PyQt6.QtWidgets import (
+    QAbstractItemView, QLabel, QMessageBox, QSizePolicy, QStyle,
+    QStyledItemDelegate, QTableWidget, QTableWidgetItem, QWIDGETSIZE_MAX,
+)
 
 from rc_metastudio.meta_globals import (
     BINARY_ONE_ARM_METRICS,
@@ -327,8 +331,10 @@ def fit_effect_ci_line_edits_to_contents(
 
 
 def format_calculator_display_value(value, digits=CALC_NUM_DIGITS):
-    """Editable numeric text must round-trip without changing the stored float."""
-    return str(value)
+    """Format presentation only; the analysis unit retains the exact value."""
+    if value and (abs(value) < 10 ** -digits or abs(value) >= 1e8):
+        return format(value, f".{digits}g")
+    return format(value, f".{digits}f")
 
 
 def binary_effect_display_samples(metric, digits=CALC_NUM_DIGITS):
@@ -449,6 +455,7 @@ def set_current_effect_from_value(
             txt_box.setText("")
         txt_box.setProperty("calculatorValue", txt_box.text())
         txt_box.blockSignals(False)
+    update_calculator_readout(effect_tbox.window(), data_type)
     semantic_samples = {
         "binary": binary_effect_display_samples,
         "continuous": continuous_effect_display_samples,
@@ -458,6 +465,85 @@ def set_current_effect_from_value(
         [effect_tbox, lower_tbox, upper_tbox],
         semantic_samples=semantic_samples,
     )
+
+
+def update_calculator_readout(dialog, data_type):
+    """Refresh read-only statistics without replacing the user's editable text."""
+    analysis_unit = dialog.analysis_unit
+    current_effect = dialog.current_effect
+    arm_key = dialog.arm_key
+    confidence_multiplier = dialog.confidence_multiplier
+    source = calculator_effect_source(
+        analysis_unit, dialog.arm_names, current_effect, arm_key, confidence_multiplier
+    )
+    est, lower, upper = analysis_unit.get_effect_and_ci_for_source(
+        source, current_effect, arm_key, confidence_multiplier
+    )
+    converters = {
+        "binary": r_bridge.binary_convert_scale,
+        "continuous": r_bridge.continuous_convert_scale,
+        "diagnostic": r_bridge.diagnostic_convert_scale,
+    }
+    if not hasattr(dialog, "wald_readout"):
+        dialog.wald_readout = QLabel(dialog)
+        dialog.wald_readout.setObjectName("calculator_wald")
+        for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
+            field.editingFinished.connect(lambda: update_calculator_readout(dialog, data_type))
+        if data_type == "diagnostic":
+            dialog.effect_layout.addWidget(dialog.wald_readout, 2, 0, 1, 6)
+        else:
+            dialog.dialog_layout.insertWidget(dialog.dialog_layout.count() - 2, dialog.wald_readout)
+    summary = ""
+    if all(value is not None for value in (est, lower, upper)):
+        se = (upper - lower) / (2 * confidence_multiplier)
+        if se > 0:
+            z = est / se
+            p = math.erfc(abs(z) / math.sqrt(2))
+            log_scale = current_effect in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR", "PLN"}
+            scale = ""
+            if log_scale:
+                scale = " (log scale)"
+            elif current_effect in {"Sens", "Spec", "PLO"}:
+                scale = " (logit scale)"
+            summary = f"SE{scale}: {se:.4f}    Z: {z:.4f}    Two-sided P: {p:.6g}"
+    dialog.wald_readout.setText(summary)
+    raw = analysis_unit.get_raw_data_for_arms(dialog.arm_names)
+    complete_binary = (
+        data_type == "binary" and len(raw) == 4
+        and all(v not in EMPTY_VALS for v in raw)
+    )
+    if complete_binary:
+        if not hasattr(dialog, "metric_readout"):
+            table = QTableWidget(3, 4, dialog)
+            dialog.metric_readout = table
+            table.setObjectName("calculator_metrics")
+            table.setHorizontalHeaderLabels(["Metric", "Estimate", "Lower CI", "Upper CI"])
+            table.verticalHeader().hide()
+            table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+            table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+            table.setMaximumHeight(130)
+            table.horizontalHeader().setStretchLastSection(True)
+            dialog.dialog_layout.insertWidget(dialog.dialog_layout.count() - 2, table)
+            def select_metric(row, column):
+                index = dialog.effect_combo_box.findData(("OR", "RR", "RD")[row])
+                if index < 0:
+                    index = dialog.effect_combo_box.findText(("OR", "RR", "RD")[row])
+                dialog.effect_combo_box.setCurrentIndex(index)
+            table.cellClicked.connect(select_metric)
+        for row, metric in enumerate(("OR", "RR", "RD")):
+            result = dialog.calculator.effect_for_study(
+                *raw, metric=metric, confidence_level=dialog.confidence_level
+            )
+            values = dialog.calculator.effect_triplet(result)
+            display = [converters[data_type](v, metric, convert_to="display.scale") for v in values]
+            for column, value in enumerate([metric] + display):
+                text = value if isinstance(value, str) else (
+                    "" if value is None else format_calculator_display_value(value)
+                )
+                dialog.metric_readout.setItem(row, column, QTableWidgetItem(text))
+        dialog.metric_readout.resizeColumnsToContents()
+    if hasattr(dialog, "metric_readout"):
+        dialog.metric_readout.setVisible(complete_binary)
 
 
 def save_table_data(table):

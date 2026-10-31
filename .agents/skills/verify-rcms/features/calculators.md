@@ -89,3 +89,13 @@ unchanged commits, clipboard, CSV import, undo/redo and project reopening.
 persistence with public effects. Domains remain constrained: counts are integers
 and proportions remain in range. This does not qualify every reconstruction input
 combination or a platform's native file picker.
+
+## Calculator readouts
+
+The three baseline drives assert compact estimate/CI text and bit-identical saved
+raw/entered values against the retained pre-change accepted-row fixture.
+`calculator-continuous` also requires no horizontal table scrollbar.
+`calculator-binary` cross-checks OR/RR/RD intervals and selected Wald SE/Z/P using
+independent `metafor::escalc` and `pnorm` calls, recording counts and full results.
+These are offscreen Qt proofs, not native DPI qualification. Continuous arm
+p-values remain reconstruction inputs; computed arm p-values are left blank.

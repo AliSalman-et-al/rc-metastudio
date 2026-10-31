@@ -1052,6 +1052,44 @@ def calculator(app, window, family):
             if accept:
                 dialog.effect_text_box.setFocus()
                 app.processEvents()
+                from rc_metastudio.meta_globals import CALC_NUM_DIGITS
+                for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
+                    assert len(field.text().partition(".")[2]) <= CALC_NUM_DIGITS, field.text()
+                if family == "continuous":
+                    assert not table.horizontalScrollBar().isVisible()
+                assert dialog.findChild(QtWidgets.QLabel, "calculator_wald") is not None
+                if family == "binary":
+                    import math
+                    from rpy2 import robjects
+                    counts = dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)
+                    e1, n1, e2, n2 = counts
+                    crosscheck = {}
+                    for row, metric in enumerate(("OR", "RR", "RD")):
+                        result = robjects.r(f'local({{ x <- metafor::escalc(measure="{metric}", ai={e1}, bi={n1-e1}, ci={e2}, di={n2-e2}); se <- sqrt(x$vi); c(x$yi, se, x$yi/se, 2*pnorm(-abs(x$yi/se))) }})')
+                        est, se, z, p = map(float, result)
+                        transform = math.exp if metric != "RD" else float
+                        for col, value in enumerate((transform(est), transform(est-dialog.confidence_multiplier*se), transform(est+dialog.confidence_multiplier*se)), 1):
+                            assert dialog.metric_readout.item(row, col).text() == f"{value:.4f}", (metric, col, dialog.metric_readout.item(row, col).text(), value)
+                        crosscheck[metric] = dict(estimate=est, se=se, z=z, p=p)
+                    for row, metric in enumerate(("OR", "RR", "RD")):
+                        table_item = dialog.metric_readout.item(row, 0)
+                        mouse_click(dialog.metric_readout.viewport(), QtCore.Qt.MouseButton.LeftButton,
+                                    pos=dialog.metric_readout.visualItemRect(table_item).center())
+                        assert dialog.current_effect == metric
+                        result = crosscheck[metric]
+                        text = dialog.wald_readout.text()
+                        assert f"{result['se']:.4f}" in text
+                        assert f"{result['z']:.4f}" in text
+                        assert f"{result['p']:.6g}" in text
+                    mouse_click(dialog.metric_readout.viewport(), QtCore.Qt.MouseButton.LeftButton,
+                                pos=dialog.metric_readout.visualItemRect(dialog.metric_readout.item(0, 0)).center())
+                    selected = crosscheck[dialog.current_effect]
+                    text = dialog.wald_readout.text()
+                    assert f"{selected['se']:.4f}" in text
+                    assert f"{selected['z']:.4f}" in text
+                    assert f"{selected['p']:.6g}" in text
+                    record_step("calculator-r-crosscheck", dialog, counts=counts, results=crosscheck)
+
                 record_step("calculator-effect-preview", dialog, family=family,
                             previews=[field.text() for field in
                                       (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box)])
@@ -1096,6 +1134,23 @@ def calculator(app, window, family):
     assert raw() == expected
     window.out_path = str(WORK / "calculator.rcms")
     assert window.save()
+    import zipfile
+    saved_row = json.loads(zipfile.ZipFile(window.out_path).read("project.json"))["sheets"][0]["rows"][0]
+    baseline = json.loads((ROOT / "tests/e2e/calculator-accepted-baseline.json").read_text())["rows"][family]
+    def float_bits(value):
+        if isinstance(value, float):
+            return value.hex()
+        if isinstance(value, dict):
+            return {key: float_bits(val) for key, val in value.items()}
+        if isinstance(value, list):
+            return [float_bits(val) for val in value]
+        return value
+    for key in ("raw_data", "entered_effects", "ratio_inputs"):
+        actual = saved_row[key]
+        if key == "entered_effects":
+            # Visiting a previously unused metric creates an empty effect slot.
+            actual = [effect for effect in actual if any(value is not None for value in effect["values"].values())]
+        assert float_bits(actual) == float_bits(baseline[key]), key
     assert window.open(window.out_path, raise_on_error=True)
     assert raw() == expected
     method = {
