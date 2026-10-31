@@ -37,9 +37,7 @@ QtCore.QStandardPaths.setTestModeEnabled(True)
 
 from rc_metastudio import r_backend
 
-_startup_phases["r-backend:start"] = time.time()
-r_backend.install_r_backend()
-_startup_phases["r-backend:ready"] = time.time()
+
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
@@ -1096,13 +1094,16 @@ try:
     app, window = automation.start_automation(
         phase_callback=lambda phase: _startup_phases.update({phase: time.time()})
     )
+    assert "rpy2.robjects" not in sys.modules, "R imported before the window appeared"
+    assert window.isVisible()
+    assert not window.action_go.isEnabled()
     if EVIDENCE is not None and os.environ.get("RCMS_DRIVE_STARTED"):
         import time
         app.processEvents()
         assert window.isVisible()
-        (EVIDENCE / "startup.json").write_text(json.dumps({"seconds": time.time() - float(os.environ["RCMS_DRIVE_STARTED"]), "visible": True, "platform": app.platformName()}))
+        (EVIDENCE / "startup.json").write_text(json.dumps({"seconds": _startup_phases["window:visible"] - float(os.environ["RCMS_DRIVE_STARTED"]), "visible": True, "platform": app.platformName()}))
     if _startup_profile is not None and EVIDENCE is not None:
-        _startup_phases["window:visible"] = time.time()
+        _startup_phases["r:ready"] = time.time()
         _startup_profile.disable()
         _startup_profile.dump_stats(str(EVIDENCE / "startup.pstats"))
         (EVIDENCE / "startup-phases.json").write_text(json.dumps(_startup_phases, indent=2))

@@ -984,7 +984,10 @@ class DatasetTableModel(QAbstractTableModel):
             or not 0 <= index.column() < self.columnCount()
         ):
             return Qt.ItemFlag.NoItemFlags
-        elif index.column() == self.INCLUDE_STUDY:
+        from rc_metastudio import r_backend
+        if not r_backend.is_ready() and index.column() in self.OUTCOMES:
+            return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
+        if index.column() == self.INCLUDE_STUDY:
             if not self._study_has_entered_data(index.row()):
                 return Qt.ItemFlag(
                     Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
@@ -1327,6 +1330,9 @@ class DatasetTableModel(QAbstractTableModel):
 
     def hydrate_derived_previews(self):
         """Populate transient raw-data results without changing inclusion."""
+        from rc_metastudio import r_backend
+        if not r_backend.is_ready():
+            return
         if (
             self.current_outcome_name is None
             or self.current_sheet_id is None

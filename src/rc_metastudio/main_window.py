@@ -473,6 +473,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.dataset_file_lbl.setToolTip(path or "Save the dataset to choose a project file.")
 
     def toggle_menu_options_that_require_dataset(self, enable):
+        enable = enable and r_backend.is_ready()
         self.action_go.setEnabled(enable)
         self.action_cum_ma.setEnabled(enable)
         self.action_loo_ma.setEnabled(enable)
@@ -492,7 +493,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             dataset_analysis_enabled = self.action_go.isEnabled()
         has_covariates = bool(self.model and (self.model.current_sheet.covariates if self.model.current_sheet else []))
         self.action_meta_regression.setEnabled(
-            dataset_analysis_enabled and has_covariates
+            r_backend.is_ready() and dataset_analysis_enabled and has_covariates
         )
         self.action_meta_regression.setToolTip("Meta-regression" if has_covariates else "Add a covariate to run meta-regression.")
 
@@ -510,7 +511,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             )
         )
         self.action_subgroup_ma.setEnabled(
-            dataset_analysis_enabled and has_factor_covariates
+            r_backend.is_ready() and dataset_analysis_enabled and has_factor_covariates
         )
         self.action_subgroup_ma.setToolTip("Subgroup meta-analysis" if has_factor_covariates else "Add a categorical covariate to run subgroup analysis.")
 

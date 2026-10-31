@@ -169,7 +169,7 @@ class WorkspaceEditingService:
 
     def confidence_settings(self, level: object) -> ConfidenceSettings:
         validated = validate_confidence_level(level)
-        if r_backend.is_backend_installed():
+        if r_backend.is_ready():
             multiplier = self.bridge.get_confidence_multiplier_from_r(validated)
         else:
             tail = (1.0 + validated / 100.0) / 2.0
@@ -177,7 +177,7 @@ class WorkspaceEditingService:
         return ConfidenceSettings(float(validated), float(multiplier))
 
     def set_backend_confidence_level(self, level: float) -> None:
-        if r_backend.is_backend_installed():
+        if r_backend.is_ready():
             self.bridge.set_confidence_level(level)
 
     def preview_raw_effects(
@@ -207,6 +207,8 @@ class WorkspaceEditingService:
         effect: str | None,
         n1: object = None,
     ):
+        if not r_backend.is_ready():
+            return lambda value: None
         return make_display_scale_converter(self.bridge, data_type, effect, n1)
 
     def apply_edit(
@@ -739,7 +741,7 @@ class WorkspaceEditingService:
             self._clear_effect_and_display_ci(unit, context.current_effect, context)
             record = unit.ratio_input(context.arm_names)
             ready = record.ready(raw_data, metric=context.current_effect)
-            if ready and record.selected_source(raw_data, metric=context.current_effect) == "raw" and r_backend.is_backend_installed():
+            if ready and record.selected_source(raw_data, metric=context.current_effect) == "raw" and r_backend.is_ready():
                 est, lower, upper = r_bridge.incidence_rate_effect_preview(raw_data, context.confidence_level)
                 self._set_calculated(unit, context.current_effect, context, est, lower, upper)
             if update_inclusion:
@@ -748,6 +750,10 @@ class WorkspaceEditingService:
         complete = self._raw_data_is_complete_for_context(raw_data, context)
         if update_inclusion and self._should_clear_inclusion(unit, context):
             study.include = False
+        if complete and not r_backend.is_ready():
+            if update_inclusion:
+                study.include = not study.manually_excluded
+            return
         if complete:
             self._calculate_complete_outcome(
                 study, unit, raw_data, context, update_inclusion=update_inclusion

@@ -42,49 +42,55 @@ from rc_metastudio.meta_globals import (
     validate_confidence_level,
 )
 
-try:
-    import rpy2.robjects as ro
-except Exception as error:
-    raise RuntimeError(
-        "Cannot initialize rpy2. Check the bundled R runtime configuration."
-    ) from error
-import rpy2.robjects
-import rpy2.rinterface
-from rpy2.rinterface_lib.embedded import RRuntimeError
-
-
-try:
-    import rpy2.rinterface_lib.conversion as _rpy2_conversion
-
-    _rpy2_rchar_to_str = _rpy2_conversion._rchar_to_str
-
-    def _rchar_to_str_as_utf8(rchar, encoding: str) -> str:
-        try:
-            return str(_rpy2_conversion._utf8_rchar_to_str(rchar))
-        except UnicodeDecodeError:
-            return str(_rpy2_rchar_to_str(rchar, encoding))
-
-    # This private rpy2 hook is intentionally replaced at the integration
-    # boundary; its runtime signature is not expressible in rpy2's stubs.
-    setattr(_rpy2_conversion, "_rchar_to_str", _rchar_to_str_as_utf8)
-except (ImportError, AttributeError):
-    pass
-
-# R console callbacks on Windows are emitted in the native ANSI code page.
-# rpy2 otherwise initializes this private decoder from Python's UTF-8 default,
-# which turns ordinary non-ASCII diagnostics into callback UnicodeDecodeError
-# messages. Keep non-Windows behavior unchanged.
-if sys.platform == "win32":
+def initialize_r():
+    """Initialize embedded R explicitly, after the application shell is visible."""
+    global ro, rpy2, RRuntimeError, _rpy2_conversion, _rpy2_rchar_to_str
+    if "ro" in globals():
+        return
+    r_runtime.configure_bundled_r_environment()
     try:
-        from rpy2.rinterface_lib import callbacks as _rpy2_callbacks
+        import rpy2.robjects as ro
+    except Exception as error:
+        raise RuntimeError(
+            "Cannot initialize rpy2. Check the bundled R runtime configuration."
+        ) from error
+    import rpy2.robjects
+    import rpy2.rinterface
+    from rpy2.rinterface_lib.embedded import RRuntimeError
 
-        setattr(
-            _rpy2_callbacks,
-            "_CCHAR_ENCODING",
-            locale.getpreferredencoding(False),
-        )
+
+    try:
+        import rpy2.rinterface_lib.conversion as _rpy2_conversion
+
+        _rpy2_rchar_to_str = _rpy2_conversion._rchar_to_str
+
+        def _rchar_to_str_as_utf8(rchar, encoding: str) -> str:
+            try:
+                return str(_rpy2_conversion._utf8_rchar_to_str(rchar))
+            except UnicodeDecodeError:
+                return str(_rpy2_rchar_to_str(rchar, encoding))
+
+        # This private rpy2 hook is intentionally replaced at the integration
+        # boundary; its runtime signature is not expressible in rpy2's stubs.
+        setattr(_rpy2_conversion, "_rchar_to_str", _rchar_to_str_as_utf8)
     except (ImportError, AttributeError):
         pass
+
+    # R console callbacks on Windows are emitted in the native ANSI code page.
+    # rpy2 otherwise initializes this private decoder from Python's UTF-8 default,
+    # which turns ordinary non-ASCII diagnostics into callback UnicodeDecodeError
+    # messages. Keep non-Windows behavior unchanged.
+    if sys.platform == "win32":
+        try:
+            from rpy2.rinterface_lib import callbacks as _rpy2_callbacks
+
+            setattr(
+                _rpy2_callbacks,
+                "_CCHAR_ENCODING",
+                locale.getpreferredencoding(False),
+            )
+        except (ImportError, AttributeError):
+            pass
 
 
 _RFunction = Callable[..., object]
@@ -184,6 +190,9 @@ def execute_r_function(function_name, *args, **kwargs):
 
 
 class RLibraryLoader:
+    def __init__(self):
+        initialize_r()
+
     def load_meta(self):
         return self._load_r_lib("meta", expected_version="8.5-0")
 
@@ -191,7 +200,10 @@ class RLibraryLoader:
         return self._load_r_lib("metafor")
 
     def load_rcmetar(self):
-        return self._load_r_lib("RCMetaR")
+        result = self._load_r_lib("RCMetaR")
+        from rc_metastudio import r_backend
+        r_backend.mark_ready()
+        return result
 
     def load_grid(self):
         return self._load_r_lib("grid")

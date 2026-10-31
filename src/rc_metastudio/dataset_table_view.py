@@ -524,6 +524,9 @@ class DatasetTableView(QtWidgets.QTableView):
         self._enable_analysis_menus_if_appropriate()
 
     def row_header_clicked(self, row):
+        from rc_metastudio import r_backend
+        if not r_backend.is_ready():
+            return
         if row > len(self.model().get_studies(False)) - 1:
             return
 

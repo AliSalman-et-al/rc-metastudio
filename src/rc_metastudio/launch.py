@@ -309,13 +309,27 @@ def compose_application(
     splash = None
     try:
         settings.setup_directories()
-        splash = _load_composition_runtime(
-            app,
-            interactive=interactive,
-            phase_callback=phase_callback,
-            r_loader=r_loader,
-        )
-        meta = _finish_composition(app, main_window, splash=splash)
+        meta = _finish_composition(app, main_window, splash=None)
+        meta.toggle_menu_options_that_require_dataset(False)
+        meta.statusBar().showMessage("Starting R…")
+        app.processEvents()
+        _emit_automation_phase(phase_callback, "window:visible")
+
+        def start_r():
+            try:
+                _invoke_r_loader(r_loader or load_R_libraries, app, None, phase_callback)
+                from rc_metastudio import r_bridge
+                r_bridge.reset_r_working_directory()
+                r_backend.mark_ready()
+                meta.model.set_confidence_level(meta.model.get_confidence_level())
+                meta.model_updated()
+                meta.toggle_menu_options_that_require_dataset(meta.model.current_sheet is not None)
+                meta.statusBar().clearMessage()
+            except Exception as error:
+                meta.statusBar().showMessage("R failed to start")
+                meta._show_analysis_backend_error(error)
+
+        QtCore.QTimer.singleShot(0, start_r)
         return app, meta
     except BaseException:
         _dispose_new_top_levels(app, baseline_ids, (splash,))
@@ -323,7 +337,6 @@ def compose_application(
 
 
 def _prepare_composition(app, main_window_loader):
-    r_backend.install_r_backend()
     main_window = main_window_loader or _import_main_window()
     if app is None:
         app = app_error_handler.get_or_create_application(sys.argv)

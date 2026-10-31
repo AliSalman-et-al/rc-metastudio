@@ -816,9 +816,6 @@ def setup_directories():
     base_path = make_base_path()
     make_r_tmp()
 
-    from rc_metastudio import r_bridge
-
-    r_bridge.reset_r_working_directory()  # set working directory on R side
     os.chdir(os.path.normpath(base_path))  # set working directory on python side
 
     clear_r_tmp()

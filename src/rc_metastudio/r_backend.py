@@ -6,6 +6,16 @@ class AnalysisBackendUnavailableError(RuntimeError):
 
 
 _REAL_BACKEND = None
+_READY = False
+
+
+def is_ready() -> bool:
+    return _READY
+
+
+def mark_ready() -> None:
+    global _READY
+    _READY = True
 
 
 def is_backend_installed() -> bool:
@@ -31,6 +41,7 @@ def install_r_backend():
         r_runtime.configure_bundled_r_environment()
         from rc_metastudio import r_bridge
 
+        r_bridge.initialize_r()
         _REAL_BACKEND = r_bridge
         return _REAL_BACKEND
     except Exception as error:
