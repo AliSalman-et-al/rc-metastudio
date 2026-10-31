@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import copy
+from statistics import NormalDist
 from typing import Literal, NewType
 from rc_metastudio.project_domain import ArmId
 import uuid
@@ -268,6 +269,8 @@ class AnalysisUnit:
             raise ValueError("Mult must be specified")
 
         entry = self._entry(source, effect, arm_comparison)
+        if source == "entered":
+            confidence_multiplier = entry.get("source_multiplier", confidence_multiplier)
         if est is None:
             est = entry["est"]
         if lower is None:
@@ -289,9 +292,17 @@ class AnalysisUnit:
 
     def set_lower(self, effect, arm_comparison, lower):
         self.entered_effects[effect][arm_comparison]["lower"] = lower
+        entry = self.entered_effects[effect][arm_comparison]
+        entry["source_multiplier"] = NormalDist().inv_cdf(
+            .5 + float(self.sheet.settings.get("confidence_level", 95)) / 200
+        )
 
     def set_upper(self, effect, arm_comparison, upper):
         self.entered_effects[effect][arm_comparison]["upper"] = upper
+        entry = self.entered_effects[effect][arm_comparison]
+        entry["source_multiplier"] = NormalDist().inv_cdf(
+            .5 + float(self.sheet.settings.get("confidence_level", 95)) / 200
+        )
 
     def set_standard_error(self, effect, arm_comparison, se):
         self.entered_effects[effect][arm_comparison]["SE"] = se

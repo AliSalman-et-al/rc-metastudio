@@ -105,3 +105,8 @@ sheet confidence, verifies their SE by metafor::conv.wald and pooled weights
 by rma.uni DL, then changes sheet confidence to 95%. Original bounds and
 source confidence must remain unchanged, with the same analysis input SE.
 The source interval level is stored per study; output confidence is separate.
+
+`calculator-mode-entered-binary` and `calculator-mode-entered-continuous` also
+enter OR/MD intervals at 90%, switch sheet output confidence to 95%, save/reopen,
+and compare the actual study SE used in analysis to metafor::conv.wald and
+qnorm(.95) within 1e-6. Entered bounds retain their source multiplier.

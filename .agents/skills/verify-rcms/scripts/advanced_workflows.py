@@ -1399,6 +1399,9 @@ def calculators(app, window, mode, record):
         plots=dict(view.results.display_images),
     )
     view.close()
+    if entered and family in {"binary", "continuous"}:
+        from tests.e2e.entered_ci import check
+        check(app, window, kind, launch, text, family, record)
     if family == "diagnostic" and entered:
         saved_entered = entered_values()
         for invalid_input in ("empty", "partial"):

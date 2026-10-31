@@ -229,3 +229,20 @@ Final serial desktop receipts, all manifest passed=true / exit_code=0:
 - artifacts/verification/rcms/20261031T205616Z-ec3f69bc-calculator-ratio-precision
 Strict gate: 475 comparisons / 416 numeric fields. All requested targeted
 checks complete. Earlier overlapping attempts are excluded from these receipts.
+
+## Entered OR/MD source intervals retain their confidence
+
+The entered-effect store reconstructed SE using the current sheet multiplier,
+so changing output confidence from 90% to 95% silently narrowed input SE.
+The real entered-binary drive reproduced OR 2 [1, 4]: SE 0.353653019151067
+instead of 0.421403563941800. Bounds now retain their source multiplier in
+analysis_unit.py, shared by binary/continuous and RM5 generic OR/MD inputs.
+Existing entries without source metadata retain their prior interpretation;
+95%-only entries use the same 95% conversion. No oracle was regenerated.
+The entered-binary/continuous calculator scenarios additionally enter symmetric
+OR/MD intervals at 90%, switch output to 95%, save/reopen, and compare the
+actual R analysis study SE against metafor::conv.wald and qnorm(.95) at 1e-6.
+MD 2 [1, 3] requires SE 0.607956831911769.
+Targeted transcripts: build/sheets-baseline/entered-ci-{red,binary,md}.log.
+Qualification: build/sheets-baseline/entered-ci-qualification.log; individual
+strict gate, authority and E2E logs share the entered-ci prefix.
