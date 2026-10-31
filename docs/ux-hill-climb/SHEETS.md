@@ -405,3 +405,36 @@ migration inventory above remains outstanding for subsequent implementation.
 Conversion transcript: `build/sheets-baseline/slice-1b-conversion.log`.
 The conversion checker enumerates populated pairs independently of the converter;
 ratio input defaults alone do not count as study measurements.
+
+## Slice 2d presentation proof
+
+Commit `737243cd` aligns RevMan forest direction labels on one baseline, reports
+actual fitted SVG zoom, and resizes analysis setup around the active content.
+All commands used `source build/sheets-baseline/ENV.sh` and `uv run --no-sync`.
+The current R source was installed into the worktree library before verification
+(`build/slice2d-install.log`). No numerical or presentation goldens changed.
+
+- `python scripts/verify_rcms.py analysis-dialog`: passed, evidence
+  `artifacts/verification/rcms/20261031T110140Z-5cd00503-analysis-dialog`;
+  collapsed height is smaller than expanded, with unchanged top-left position.
+- Results-window: passed with an explicit 600-second helper bound, evidence
+  `artifacts/verification/rcms/20261031T111238Z-3629f9be-results-window`.
+  Exact invocation is retained in `build/slice2d-results-extended.log` and the
+  evidence manifest. Default 120-second attempts timed out and remain retained.
+  Exported SVG text rectangles do not overlap directions, title, ticks or other
+  text; each direction is one line. Applied SVG zoom matches the box after resize.
+- `python -m pytest tests/e2e -n 2 -q -k 'plot-workflow or sheets-swap'`:
+  **12 passed**, `build/slice2d-plots-swap.log`.
+- `python scripts/verify_golden_compatibility.py --output-root
+  build/qt6-verification/golden-compatibility-slice2d-final`: **passed**;
+  strict numerical and presentation comparison, no refresh.
+- `python -m pytest tests/e2e -n 2 -q`: **132 passed in 3190.84s**,
+  `build/slice2d-matrix-final.log`. An earlier matrix was interrupted after source
+  correction; its retained transcript is not counted as a pass.
+
+At the 796×796 default Results capture, fit scale is 0.524345 and study text is
+12.96 SVG units, approximately **5.10 pt** on screen (12.96 × scale × 72/96).
+This remains small; figure geometry and export fonts were not changed.
+Screens: `screens/slice2d-results-forest.png` (796×796) and
+`screens/slice2d-analysis-collapsed.png` (605×465 comparison canvas, actual captured
+collapsed dialog 533×299, padded without scaling).
