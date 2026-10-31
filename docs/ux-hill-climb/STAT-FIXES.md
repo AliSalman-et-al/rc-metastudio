@@ -160,3 +160,13 @@ Step 2's p-value fix is committed but cannot be qualified under current
 authorization. Desktop swap and ratio-confidence assertions are prepared in
 the dirty worktree but unrun/uncommitted. sheets-swap, calculator-ratio-precision,
 Manuscript-export and amino remain unrun in this session. No push or full matrix.
+
+## Authorized single-study cumulative p (2026-11-01)
+
+Only affected frozen row: amino-binary-cumulative, Gonzalez (k=1),
+model.gonzalez.p_value absent -> 0.365, and the identical text cell.
+Authority: explicit user authorization; metafor::escalc OR with counts
+6/27 versus 9/27, rma.uni FE Wald test. Exact probe and output:
+build/sheets-baseline/cumulative-authorized.R / cumulative-authorized.json.
+Other cumulative frozen rows already contain p-values. No other frozen
+numerical value changed; archive identity bindings updated narrowly.

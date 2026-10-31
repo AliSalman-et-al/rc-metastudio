@@ -115,17 +115,13 @@
           "reason": "Bibliographic and narrative numerals are not statistical result values.",
           "section": "References",
           "target": "entire_section"
-        },
-        {
-          "reason": "The first cumulative row has no inferential p-value in the observed output.",
-          "section": "Cumulative Summary",
-          "target": "model.gonzalez.p_value"
         }
       ],
       "sections": {
         "Cumulative Summary": {
           "model.gonzalez.estimate": 0.571,
           "model.gonzalez.lower_bound": 0.17,
+          "model.gonzalez.p_value": 0.365,
           "model.gonzalez.standard_error": 0.617,
           "model.gonzalez.upper_bound": 1.916,
           "model.through_de_vries.estimate": 0.646,
@@ -1058,7 +1054,7 @@
       ]
     }
   },
-  "oracle_sha256": "ee09379f877d49e4546c2e857b1a7a9a060f2a2e221c7445e6cbb5f84a38c6b6",
+  "oracle_sha256": "518cd040f96f00f3ffd7f9effe0d9d2854943209ac0aad178327f14cb0c5c3d2",
   "schema_version": 1,
   "tolerance_policy": {
     "absolute": 0.001,
