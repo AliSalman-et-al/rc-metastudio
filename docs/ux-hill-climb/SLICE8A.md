@@ -1,4 +1,6 @@
-# Slice 8A — partial implementation
+# Slice 8A
+
+The opening notes below describe the inherited partial implementation. The numbered completion record supersedes their unfinished items and interrupted test status.
 
 Import: the unlabelled “Binary” selector was a worksheet name, not a data family.
 It now has a Worksheet label; Data type remains the single format selector.
@@ -96,3 +98,5 @@ Step 4: remaining wizard page copy:
 - csv_import_page: Choose an Excel or CSV file. → Excel or CSV file
 
 The outcome page runtime title also uses Outcome and groups / Outcome. Capture setup selects data before entering dependent pages and includes the alternate-row palette.
+
+Visual follow-up: restrict fixed estimate precision to group SE and CI columns; sample sizes and other summaries retain their compact display. First full pytest attempt ended externally with SIGTERM (exit 143) after 13 passes, no failures or final summary. Owned orphan children were closed by PID before retry.

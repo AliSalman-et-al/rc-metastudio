@@ -41,7 +41,15 @@ class NumericSummaryDelegate(QStyledItemDelegate):
 
     def displayText(self, value, locale):
         number, valid = qt_text.parse_decimal(value)
-        return format_calculator_display_value(number) if valid else str(value)
+        return format(number, ".6g") if valid else str(value)
+
+    def initStyleOption(self, option, index):
+        super().initStyleOption(option, index)
+        header = index.model().headerData(index.column(), Qt.Orientation.Horizontal)
+        if header in {"SE", "Lower", "Upper"}:
+            number, valid = qt_text.parse_decimal(index.data())
+            if valid:
+                option.text = format_calculator_display_value(number)
 
 
 class PrevalenceEdit(QLineEdit):
