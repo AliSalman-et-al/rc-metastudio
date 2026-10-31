@@ -206,3 +206,26 @@ Gonzalez p cell there and refreshed bindings, without additional number edits.
 Numeric coverage ledger and its count assertion now include the authorized
 new field (415 -> 416 fields). Startup ledger mismatch was caught before any
 analysis; fixed ledger only, without broadening expected results.
+
+## Final qualification for swap/CI run
+
+Strict golden gate passed, 416 numeric fields (one authorized addition), no
+other frozen drift: build/qt6-verification/golden-compatibility-swap-ci/compatibility-report.json.
+Authority script passed 100 cases: build/sheets-baseline/swap-ci-authorities.json
+and swap-ci-authorities.log. IRR source SE also remains 13.934668740867144;
+its first-study weight is 0.029531164162110338 percent, matching metafor.
+Commands all source build/sheets-baseline/ENV.sh; Python uses uv run --no-sync:
+- python scripts/verify_golden_compatibility.py --output-root build/qt6-verification/golden-compatibility-swap-ci
+- "$R_HOME/bin/Rscript" .agents/skills/verify-rcms/scripts/analysis_authorities.R build/sheets-baseline/swap-ci-authorities.json
+- python scripts/verify_rcms.py sheets-swap
+- python scripts/verify_rcms.py calculator-ratio-precision
+- python scripts/verify_rcms.py amino
+No uv sync, full matrix or push. Qt offscreen with real R; native gestures and
+full qualification remain outside this run's scope.
+
+Final serial desktop receipts, all manifest passed=true / exit_code=0:
+- artifacts/verification/rcms/20261031T210049Z-a68be04c-sheets-swap
+- artifacts/verification/rcms/20261031T210242Z-1689e68e-amino
+- artifacts/verification/rcms/20261031T205616Z-ec3f69bc-calculator-ratio-precision
+Strict gate: 475 comparisons / 416 numeric fields. All requested targeted
+checks complete. Earlier overlapping attempts are excluded from these receipts.

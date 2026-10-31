@@ -132,3 +132,7 @@ review table, default diagnostic analysis and full save/reopen equality.
 Original-review redistribution and exhaustive DTA structures remain unqualified.
 Fixed-effect subgroup imports disclose the existing random moderator test in
 Differs from RevMan; subgroup estimates and the held discrepancy remain unchanged.
+
+`sheets-swap` verifies binary OR/RD and continuous MD before, after, and after
+swapping back, against direct metafor DL at 1e-6 (estimate, CI and p). Favours
+parameters must follow the arm order. Existing HR/IRR swap coverage remains.
