@@ -102,3 +102,16 @@ Second uninterrupted matrix: 131 passed, 2 failed in 3713.37 s
 raw regression intercept label `intrcpt` and a dropped `Comparison: arm / arm`
 copy label. Both are corrected without changing numbers; both affected recovery
 scenarios passed. Final qualification is repeated after these label fixes.
+
+## Final qualification — green
+
+Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/artifacts/verification/rcms/20261031T153211Z-4f435cbc-manuscript-export
+
+Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/artifacts/verification/rcms/20261031T153314Z-89b50b8e-results-window
+
+Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/artifacts/verification/rcms/20261031T153414Z-ab231788-hillclimb
+
+Strict golden passed: `build/qt6-verification/golden-compatibility-slice3b-ready/compatibility-report.json`.
+Conversion checker passed all five archives. Final uninterrupted matrix: **133 passed in 3294.78 s**
+(`build/slice3b-matrix-ready.log`), on a44c290b. No numerical oracle was regenerated.
+The two earlier complete failed matrices remain preserved with their recovery explanations above.
