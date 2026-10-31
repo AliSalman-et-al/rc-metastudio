@@ -72,8 +72,6 @@ def run(app, window, work, root, record, analyze):
         assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
         view = analyze(app, window, method)
         expected = "A continuity correction of 0.5 was applied to individual study estimates only; the pooled " + ("Mantel-Haenszel" if method.endswith("mh") else "Peto") + " estimate uses the original counts."
-        if method.endswith("peto"):
-            expected = "The continuity correction was also applied to the pooled Peto estimate."
         assert expected in view.manuscript.methods, view.manuscript.methods
         (work / (method + '-prose.txt')).write_text(view.manuscript.methods)
         record('manuscript-correction-' + method, view, methods=view.manuscript.methods)

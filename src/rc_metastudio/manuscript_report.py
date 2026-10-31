@@ -11,12 +11,11 @@ from rc_metastudio import __version__
 
 
 def binary_correction_prose(method, adjust, label, double_zero):
-    if method == "binary.fixed.mh":
-        return f"A continuity correction of {adjust} was applied to individual study estimates only; the pooled Mantel-Haenszel estimate uses the original counts."
+    if method in ("binary.fixed.mh", "binary.fixed.peto"):
+        estimator = "Mantel-Haenszel" if method.endswith("mh") else "Peto"
+        return f"A continuity correction of {adjust} was applied to individual study estimates only; the pooled {estimator} estimate uses the original counts."
     text = f"A continuity correction of {adjust} was applied to {label}."
-    if method == "binary.fixed.peto":
-        text += " The continuity correction was also applied to the pooled Peto estimate."
-    elif method in ("binary.random", "binary.fixed.inv.var") and double_zero:
+    if method in ("binary.random", "binary.fixed.inv.var") and double_zero:
         text += f" {double_zero} studies with no events in either arm were retained with this correction."
     return text
 

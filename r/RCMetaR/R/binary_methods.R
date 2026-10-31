@@ -362,18 +362,13 @@ binary.fixed.peto <- function(binary.data, params) {
 
     input.params <- params
 
-    if (length(binary.data@g1O1) == 1 || length(binary.data@y) == 1) {
-        res <- get.res.for.one.binary.study(binary.data, params)
-        results <- list("Summary"=res,
-                        "res"=res)
-    } else {
            res <- rma.peto(ai=binary.data@g1O1, bi=binary.data@g1O2,
                         ci=binary.data@g2O1, di=binary.data@g2O2,
                         slab=binary.data@study.names,
                         level=params$conf.level,
                         digits=params$digits,
-                        add=c(params$adjust,params$adjust),
-                        to=c(as.character(params$to), as.character(params$to)),
+                        add=c(params$adjust,0),
+                        to=c(as.character(params$to), "none"),
                         drop00 = FALSE)
         pure.res <- res
         binary.data@y <- res$yi
@@ -413,7 +408,6 @@ binary.fixed.peto <- function(binary.data, params) {
                         "res"=pure.res,
                         "res.info"=binary.fixed.peto.value.info(),
                         "Weights"=weights(res))
-    }
 
     results[["References"]] <- rcmetar.method.references("rma.peto")
     results

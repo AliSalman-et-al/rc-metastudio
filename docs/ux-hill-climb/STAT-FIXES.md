@@ -108,3 +108,28 @@ RCMS Peto is exactly the add=.5 result quoted above. Old corrected-count MH RR
 was -0.2149007 -> -0.2219334 (same metafor/meta authority). These MH probe
 values are not frozen golden fields. Installed/source digests are both retained
 in mh-source-provenance.json. Full matrix qualification remains for the later run.
+
+## Peto raw-count pooling (2026-11-01)
+
+Test first: `peto-before.log` fails `zero Peto raw pooling b`; after the fix,
+`peto-after.log` / `peto-after.json` pass 98 authority cases. Commands use
+`source build/sheets-baseline/ENV.sh` then `$R_HOME/bin/Rscript` with
+`.agents/skills/verify-rcms/scripts/analysis_authorities.R` and the JSON path.
+All named logs here are under build/sheets-baseline.
+
+Metafor's first add/to position controls individual estimates, second controls
+pooling (peto-semantics.log). `drop00=FALSE` retains k=5; scalar TRUE drops
+double-zero individual estimates but does not request pooled removal (scalar
+is expanded to c(TRUE,FALSE)). The shared Peto fitter now uses add=c(.5,0),
+to=c("only0","none"); subgroup, cumulative and leave-one-out call it. The
+single-study shortcut was removed so refits also use Peto O-E/V.
+
+Probe estimate -0.2459687 -> -0.2541451; CI
+[-0.7727998,0.2808624] -> [-0.7896609,0.2813707]. Raw metafor,
+meta::metabin(method="Peto",allstudies=TRUE), and independent one-line
+O-E/V calculation agree on -0.2541451. Both package intervals agree.
+These are probe values, not regenerated frozen expectations. Methods now says
+individual study estimates only; pooled Peto uses original counts, asserted
+by the manuscript desktop scenario. RCMetaR reinstalled into
+build/sheets-r-library (peto-install.log, peto-provenance.json).
+Strict golden gate and remaining requested steps are pending.

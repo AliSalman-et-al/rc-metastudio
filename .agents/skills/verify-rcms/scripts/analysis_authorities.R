@@ -235,6 +235,16 @@ for (metric in c("OR","RR")) {
 p1 <- metafor::rma.peto(ai=a,bi=n1-a,ci=c,di=n2-c,add=c(.5,.5),to=c("only0","only0"),drop00=FALSE)
 p0 <- metafor::rma.peto(ai=a,bi=n1-a,ci=c,di=n2-c,add=0)
 cat("PETO add .5",as.numeric(p1$b),p1$ci.lb,p1$ci.ub,"add 0",as.numeric(p0$b),p0$ci.lb,p0$ci.ub,"\n")
+p <- params("OR")
+ef <- metafor::escalc("OR",ai=a,bi=n1-a,ci=c,di=n2-c,drop00=FALSE)
+data <- methods::new("BinaryData",g1O1=a,g1O2=n1-a,g2O1=c,g2O2=n2-c,
+  y=ef$yi,SE=sqrt(ef$vi),study.names=paste0("Zero",1:5))
+ref <- metafor::rma.peto(ai=a,bi=n1-a,ci=c,di=n2-c,add=c(.5,0),to=c("only0","none"),drop00=FALSE)
+m <- meta::metabin(a,n1,c,n2,method="Peto",allstudies=TRUE)
+hand <- sum(a-n1*(a+c)/(n1+n2))/sum(n1*n2*(a+c)*(n1+n2-a-c)/((n1+n2)^2*(n1+n2-1)))
+cat("PETO raw metafor",as.numeric(ref$b),ref$ci.lb,ref$ci.ub,"k",ref$k,"meta",m$TE.common,m$lower.common,m$upper.common,"hand",hand,"\n")
+close(ref$b,m$TE.common,"Peto meta"); close(ref$b,hand,"Peto hand")
+check(data,"binary.fixed.peto",p,ref,"zero Peto raw pooling")
 rows[[length(rows)+1L]] <- list(case="zero MH and Peto",passed=TRUE)
 # SMD convention authority: metafor escalc, separate DL fits, Q among summaries.
 x <- read.csv(text="label,group,n1,m1,s1,n2,m2,s2
