@@ -75,10 +75,33 @@ def run(app, window, work, root, record, analyze):
     assert view.content_stack.currentWidget() is view.figure_page
     from xml.etree import ElementTree
     svg = " ".join(ElementTree.parse(next(iter(view.results.display_images.values()))).getroot().itertext())
+    nodes = list(ElementTree.parse(next(iter(view.results.display_images.values()))).getroot().iter("{http://www.w3.org/2000/svg}text"))
+    directions = [node for node in nodes if "Favours" in "".join(node.itertext())]
+    assert len(directions) == 2
+    def box(node):
+        import re
+        x, y = float(node.attrib["x"]), float(node.attrib["y"])
+        size = float(re.search(r"font-size:\s*([\d.]+)", node.attrib["style"])[1])
+        width = float(node.attrib["textLength"].removesuffix("px"))
+        anchor = node.attrib.get("text-anchor", "start")
+        x -= width if anchor == "end" else width / 2 if anchor == "middle" else 0
+        return QtCore.QRectF(x, y - size, width, size)
+    for node in directions:
+        assert "\n" not in "".join(node.itertext())
+        assert not any(box(node).intersects(box(other)) for other in nodes if other is not node)
+    assert directions[0].attrib["y"] == directions[1].attrib["y"]
     for arm in window.model.arm_names:
         assert "Favours" in svg and arm in svg
     assert not hasattr(view, "identity_label")
     assert view._fit_width_active
+    for width in (900, 796):
+        view.resize(width, 796)
+        app.processEvents()
+        app.processEvents()
+        selected_item = view._selected_plot()[1]
+        effective_scale = selected_item.deviceTransform(view.graphics_view.viewportTransform()).m11()
+        assert view.zoom_control.value() == round(effective_scale * 100), (view.zoom_control.value(), effective_scale)
+    record("slice2d-results-forest", view, effective_scale=effective_scale)
     for item in view.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive):
         assert view.nav_tree.fontMetrics().horizontalAdvance(item.text(0)) + 30 < view.nav_tree.width(), item.text(0)
     view.report_action.trigger()

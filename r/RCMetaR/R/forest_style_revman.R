@@ -713,55 +713,20 @@ rcmetar.draw.revman.bottom.blocks <- function(bundle, x, cex, layout=NULL) {
     prediction <- rcmetar.forest.prediction.label(bundle)
     if (nzchar(prediction)) graphics::text(x, -5, prediction, pos=4, cex=cex)
     axis.footer <- rcmetar.revman.axis.footer.layout(bundle, layout)
-    left.label <- ""
-    right.label <- ""
-    if (nzchar(bundle$style_blocks$favours_left)) {
-        left.label <- rcmetar.revman.constrained.direction.label(
-            bundle$style_blocks$favours_left,
-            cex,
-            axis.footer$left.max.width,
-            axis.footer$direction.width
-        )
+    # Keep direction labels on one baseline with a gap around the null line.
+    gap <- max(axis.footer$span * 0.035, 0.08)
+    direction.cex <- cex
+    for (side in c("left", "right")) {
+        width <- graphics::strwidth(bundle$style_blocks[[paste0("favours_", side)]], cex=cex)
+        available <- axis.footer[[paste0(side, ".max.width")]] - gap
+        direction.cex <- min(direction.cex, cex * available / max(width, .Machine$double.eps))
     }
-    if (nzchar(bundle$style_blocks$favours_right)) {
-        right.label <- rcmetar.revman.constrained.direction.label(
-            bundle$style_blocks$favours_right,
-            cex,
-            axis.footer$right.max.width,
-            axis.footer$direction.width
-        )
-    }
-    direction.y <- axis.footer$direction.y -
-        max(0, max(rcmetar.revman.line.count(left.label), rcmetar.revman.line.count(right.label)) - 2) * 0.36
-    label.wraps.deeply <- max(rcmetar.revman.line.count(left.label), rcmetar.revman.line.count(right.label)) > 2
-    left.x <- axis.footer$left.x
-    right.x <- axis.footer$right.x
-    left.adj <- 0.5
-    right.adj <- 0.5
-    if (label.wraps.deeply || (nzchar(left.label) && nzchar(right.label))) {
-        label.gap <- max(axis.footer$span * 0.035, 0.08)
-        left.x <- axis.footer$split.x - label.gap
-        right.x <- axis.footer$split.x + label.gap
-        left.adj <- 1
-        right.adj <- 0
-    }
-    if (nzchar(bundle$style_blocks$favours_left)) {
-        graphics::text(
-            left.x,
-            direction.y,
-            left.label,
-            cex=cex,
-            adj=left.adj
-        )
-    }
-    if (nzchar(bundle$style_blocks$favours_right)) {
-        graphics::text(
-            right.x,
-            direction.y,
-            right.label,
-            cex=cex,
-            adj=right.adj
-        )
+    for (side in c("left", "right")) {
+        label <- gsub("[\r\n]+", " ", bundle$style_blocks[[paste0("favours_", side)]])
+        if (!nzchar(label)) next
+        graphics::text(axis.footer$split.x + if (side == "left") -gap else gap,
+                       axis.footer$direction.y, label, cex=direction.cex,
+                       adj=if (side == "left") 1 else 0)
     }
     if (nzchar(bundle$style_blocks$axis_label)) {
         graphics::text(axis.footer$axis.x, axis.footer$axis.label.y, bundle$style_blocks$axis_label, cex=cex)

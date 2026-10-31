@@ -614,7 +614,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         viewport = required(self.graphics_view.viewport(), "figure viewport")
         scale = max(1, viewport.width() - 2) / max(1, width)
         self.graphics_view.setTransform(QTransform.fromScale(scale, scale))
-        self._figure_zoom_percent = round(scale * 100)
+        self._figure_zoom_percent = round(scale * (selected[1].scale() if selected else 1) * 100)
         if not self.report_action.isChecked():
             self._update_zoom_control(self._figure_zoom_percent)
         self._scroll_to_section(self.nav_tree.currentItem())

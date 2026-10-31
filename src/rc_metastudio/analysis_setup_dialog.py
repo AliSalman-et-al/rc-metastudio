@@ -551,7 +551,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                     value_width = max((combo.sizeHint().width() for combo in self.parameter_grp_box.findChildren(QComboBox)), default=0)
                     hint.setWidth(max(hint.width(), label_width + value_width + margins.left() + margins.right() + 80))
                 content_height = self.specs_tab.minimumSizeHint().height()
-                hint.setHeight(max(hint.height(), content_height + self.buttonBox.sizeHint().height() + 100))
+                hint.setHeight(self.content_scroll_area.minimumHeight() + self.buttonBox.sizeHint().height() + 30)
         return hint
 
     def _fit_active_tab_contents(self, current):
@@ -562,6 +562,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 policy = QSizePolicy.Policy.Preferred if index == current else QSizePolicy.Policy.Ignored
                 page.setSizePolicy(policy, policy)
         self.specs_tab.updateGeometry()
+        content_height = self.specs_tab.currentWidget().minimumSizeHint().height() + 40
+        self.content_scroll_area.setMinimumHeight(min(content_height + 2, 650))
+        position = self.pos()
+        self.adjustSize()
+        self.move(position)
 
     def showEvent(  # ty: ignore[invalid-method-override] -- PyQt6 multiple-inheritance stub mismatch
         self, event: QShowEvent | None
@@ -1439,7 +1444,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         )
 
     def _schedule_local_reflow(self):
-        """Coalesce dynamic content negotiation without resizing the root window."""
+        """Coalesce dynamic content negotiation."""
         if self._layout_reflow_pending:
             return
         self._layout_reflow_pending = True
@@ -1458,6 +1463,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 layout.invalidate()
         self.content_scroll_area_widget.updateGeometry()
         self.specs_tab.updateGeometry()
+        content_height = self.specs_tab.currentWidget().minimumSizeHint().height() + 40
+        self.content_scroll_area.setMinimumHeight(min(content_height + 2, 650))
+        position = self.pos()
+        self.adjustSize()
+        self.move(position)
         self._reveal_focused_control(None, QtWidgets.QApplication.focusWidget())
 
     def _reveal_focused_control(self, _old, focused):
