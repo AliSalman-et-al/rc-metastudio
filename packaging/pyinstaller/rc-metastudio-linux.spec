@@ -59,6 +59,7 @@ a = Analysis(
         *project_schema_data,
     ],
     hiddenimports=[
+        "openpyxl",
         "rpy2.robjects",
         "rpy2.rinterface",
         "_rinterface_cffi_api",

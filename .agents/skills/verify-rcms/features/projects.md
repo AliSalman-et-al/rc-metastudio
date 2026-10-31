@@ -136,3 +136,7 @@ Differs from RevMan; subgroup estimates and the held discrepancy remain unchange
 `sheets-swap` verifies binary OR/RD and continuous MD before, after, and after
 swapping back, against direct metafor DL at 1e-6 (estimate, CI and p). Favours
 parameters must follow the arm order. Existing HR/IRR swap coverage remains.
+
+## XLSX import
+
+`xlsx-import` drives the shared mapping/preview page: visible worksheet selection, CSV payload and analysis-text equivalence, precision/date disclosure, hidden rows, formula caches and missing caches, error cells, merges, corrupt/old formats, and save/reopen. Native picker gestures, packaged execution and exhaustive mapping combinations remain unverified.

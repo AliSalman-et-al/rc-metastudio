@@ -59,16 +59,25 @@ def parse_csv(
     optional_headers: Mapping[str, str] | None = None,
     column_mapping: tuple[int, ...] | None = None,
     header_aliases: Mapping[str, str] | None = None,
+    worksheet: str | None = None,
+    notices: list[str] | None = None,
 ) -> CsvImportResult:
     """Read, normalize, and validate one CSV file."""
-    with Path(path).open(encoding="utf-8-sig", newline="") as stream:
-        reader = (
-            csv.reader(stream, dialect="excel")
-            if from_excel
-            else csv.reader(stream, delimiter=delimiter, quotechar=quotechar)
-        )
-        headers = next(reader, []) if has_headers else []
-        rows = list(reader)
+    suffix = Path(path).suffix.lower()
+    if suffix == ".xls":
+        raise CsvImportError("Save this workbook as .xlsx before importing it.")
+    if suffix == ".xlsx":
+        headers, rows, _names, _selected = read_xlsx(path, worksheet, year_column=(column_mapping[year_column] if column_mapping else year_column), numeric_columns=set(column_mapping[1:] if column_mapping else range(1, len(expected_headers))), notices=notices)
+        has_headers = True
+    else:
+        with Path(path).open(encoding="utf-8-sig", newline="") as stream:
+            reader = (
+                csv.reader(stream, dialect="excel")
+                if from_excel
+                else csv.reader(stream, delimiter=delimiter, quotechar=quotechar)
+            )
+            headers = next(reader, []) if has_headers else []
+            rows = list(reader)
     if header_aliases:
         headers = [header_aliases.get(header.casefold(), header) for header in headers]
 
@@ -209,3 +218,84 @@ def _covariate_type(values: Iterable[str]) -> str:
         except ValueError:
             return "factor"
     return "continuous"
+
+
+def read_xlsx(path, worksheet=None, *, year_column=None, numeric_columns=(), notices=None):
+    """Read stored worksheet cells; preserve coordinates for actionable errors."""
+    from datetime import date, datetime
+    from zipfile import ZipFile
+    from xml.etree import ElementTree
+    from openpyxl import load_workbook
+
+    try:
+        book = load_workbook(path, read_only=True, data_only=False)
+        saved = load_workbook(path, read_only=True, data_only=True)
+    except Exception as exc:
+        raise CsvImportError("Could not read this workbook; use an unprotected .xlsx file.") from exc
+    try:
+        names = [s.title for s in book if s.sheet_state == "visible"]
+        if not names:
+            raise CsvImportError("This workbook has no visible worksheets.")
+        selected = worksheet if worksheet in names else next((name for name in names if any(any(c.value is not None for c in row) for row in book[name].iter_rows())), names[0])
+        sheet = book[selected]
+        cells = [list(row) for row in sheet.iter_rows() if any(c.value is not None for c in row)]
+        if not cells:
+            return [], [], names, selected
+        row_numbers = [next(c.row for c in row if c.value is not None) for row in cells]
+        columns = [i for i in range(max(map(len, cells))) if any(i < len(row) and row[i].value is not None for row in cells)]
+        # Streaming worksheets omit merge and visibility metadata. Inspect the XML
+        # first, opening a normal workbook only when that metadata is present.
+        with ZipFile(path) as archive:
+            xml = archive.read(sheet._worksheet_path)
+        root = ElementTree.fromstring(xml)
+        ns = {"s": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+        metadata = root.find("s:mergeCells", ns) is not None or any(e.get("hidden") == "1" for e in root.iter())
+        if metadata:
+            normal = load_workbook(path, read_only=False, data_only=False)
+            try:
+                full = normal[selected]
+                for merged in full.merged_cells.ranges:
+                    if merged.min_row <= row_numbers[-1] and merged.max_row >= row_numbers[0] and merged.min_col <= columns[-1]+1 and merged.max_col >= columns[0]+1:
+                        raise CsvImportError(f"{selected}!{merged} intersects the data; unmerge these cells first.")
+                hidden_rows = sum(bool(full.row_dimensions[number].hidden) for number in row_numbers)
+                hidden_cols = sum(1 for i in columns if any(d.hidden and d.min <= i+1 <= d.max for d in full.column_dimensions.values()))
+                if notices is not None and (hidden_rows or hidden_cols):
+                    notices.append(f"{hidden_rows} hidden rows and {hidden_cols} hidden columns are imported.")
+            finally:
+                normal.close()
+        cached = {(c.row, c.column): c.value for row in saved[selected].iter_rows() for c in row if c.value is not None}
+        formulas = 0
+        dates = []
+        result = []
+        for row_index, row in enumerate(cells):
+            values = []
+            for output_column, i in enumerate(columns):
+                cell = row[i]
+                value = cell.value
+                location = f"{selected}!{cell.coordinate}" if value is not None else ""
+                if cell.data_type == "f":
+                    value = cached.get((cell.row, cell.column))
+                    if value is None:
+                        raise CsvImportError(f"{location} has a formula with no saved value. Open and save it in Excel first.")
+                    formulas += 1
+                if row_index and output_column in numeric_columns and (cell.data_type == "e" or isinstance(value, str) and value.startswith(("#DIV/0!", "#N/A"))):
+                    raise CsvImportError(f"{location} contains an Excel error value.")
+                if isinstance(value, (datetime, date)):
+                    if row_index and output_column == year_column:
+                        dates.append(location)
+                        value = str(value.year)
+                    else:
+                        value = value.isoformat()
+                if isinstance(value, float):
+                    value = str(int(value)) if value.is_integer() else repr(value)
+                values.append("" if value is None else str(value))
+            result.append(values)
+        if notices is not None:
+            if formulas:
+                notices.append(f"{formulas} formula cells use their saved values.")
+            if dates:
+                notices.append("Dates use their year: " + ", ".join(dates) + ".")
+        return result[0], result[1:], names, selected
+    finally:
+        book.close()
+        saved.close()

@@ -836,6 +836,141 @@ def editing(app, window):
     analyze(app, window, "binary.random").close()
 
 
+def xlsx_import(app, window):
+    from openpyxl import Workbook
+    from rc_metastudio import main_wizard
+    book = Workbook()
+    book.active.title = "Empty"
+    sheet = book.create_sheet("Binary")
+    sheet.append(["Study Name", "Year", "Tx A #evts", "Tx A #total", "Tx B #evts", "Tx B #total", "OR", "Lower", "Upper"])
+    rows = [["Alpha", 2020, 1, 10, 2, 12, None, None, None], ["Beta", 2021, 3, 11, 4, 13, None, None, None]]
+    for row in rows:
+        sheet.append(row)
+    hidden = book.create_sheet("Hidden")
+    hidden.sheet_state = "hidden"
+    sheet.row_dimensions[2].hidden = True
+    path = WORK / "studies.xlsx"
+    book.save(path)
+    wizard = main_wizard.MainWizard(path="csv_import")
+    wizard.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions", effect="OR", metric_choices=[], name="Mortality"))
+    wizard.page(main_wizard.Page_OutcomeName).outcome_name_LineEdit.setText("Mortality")
+    wizard.setStartId(main_wizard.Page_CsvImport)
+    wizard.restart()
+    wizard.show()
+    app.processEvents()
+    page = wizard.currentPage()
+    with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(path), "")):
+        mouse_click(page.select_file_btn, QtCore.Qt.MouseButton.LeftButton)
+    assert page.isComplete(), page.import_status.text()
+    assert page.worksheet_combo.count() == 2
+    assert page.worksheet_combo.currentText() == "Binary"
+    assert "1 hidden rows" in page.import_status.text()
+    payload = page.csv_data()
+    import csv as csv_module
+    csv_path = WORK / "equivalent.csv"
+    with csv_path.open("w", newline="", encoding="utf-8") as stream:
+        writer = csv_module.writer(stream)
+        writer.writerow([c.value for c in sheet[1]])
+        writer.writerows(rows)
+    from rc_metastudio.csv_import import parse_csv
+    equivalent = parse_csv(csv_path, expected_headers=page.required_header_labels, has_headers=True, from_excel=True, header_aliases=page._legacy_header_aliases())
+    assert payload == equivalent.to_payload()
+    from rc_metastudio.project_adapter import dataset_to_project
+    before = dataset_to_project(window.model.dataset)
+    def select(candidate):
+        with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(candidate), "")):
+            mouse_click(page.select_file_btn, QtCore.Qt.MouseButton.LeftButton)
+    for filename, value, expected in [("formula.xlsx", "=1+1", "Binary!C2"), ("error.xlsx", "#DIV/0!", "Binary!C2")]:
+        sheet["C2"] = value
+        candidate = WORK / filename
+        book.save(candidate)
+        select(candidate)
+        assert not page.isComplete()
+        assert expected in page.import_status.text(), page.import_status.text()
+        assert dataset_to_project(window.model.dataset) == before
+        record_step(filename, wizard, error=page.import_status.text())
+    sheet["C2"] = 1
+    sheet.merge_cells("C2:D2")
+    candidate = WORK / "merged.xlsx"
+    book.save(candidate)
+    select(candidate)
+    assert not page.isComplete()
+    assert "C2:D2" in page.import_status.text()
+    for filename in ("old.xls", "corrupt.xlsx"):
+        candidate = WORK / filename
+        candidate.write_bytes(b"not a workbook")
+        select(candidate)
+        assert not page.isComplete()
+        assert dataset_to_project(window.model.dataset) == before
+    # Excel stores cached formula values in the worksheet XML; openpyxl does
+    # not calculate formulas, so write the cache explicitly in this fixture.
+    from zipfile import ZipFile, ZIP_DEFLATED
+    formula_path = WORK / "formula.xlsx"
+    cached_path = WORK / "cached.xlsx"
+    with ZipFile(formula_path) as source, ZipFile(cached_path, "w", ZIP_DEFLATED) as target:
+        for item in source.infolist():
+            content = source.read(item.filename)
+            if item.filename == "xl/worksheets/sheet2.xml":
+                content = content.replace(b"<f>1+1</f><v></v>", b"<f>1+1</f><v>2</v>")
+            target.writestr(item, content)
+    select(cached_path)
+    assert page.isComplete(), page.import_status.text()
+    assert "1 formula cells use their saved values" in page.import_status.text()
+    assert page.csv_data()["data"][0][2] == "2"
+    select(path)
+
+    assert payload["data"][0][:6] == ["Alpha", "2020", "1", "10", "2", "12"]
+    record_step("xlsx-preview", wizard, file=str(path), data=payload)
+    page.worksheet_combo.setCurrentText("Empty")
+    assert not page.isComplete()
+    page.worksheet_combo.setCurrentText("Binary")
+    assert page.isComplete()
+    window._handle_wizard_results(wizard.get_results())
+    wizard.close()
+    view = analyze(app, window, "binary.random")
+    xlsx_results = dict(view.texts)
+    view.close()
+    window.out_path = str(WORK / "xlsx.rcms")
+    assert window.save()
+    assert window.open(window.out_path, raise_on_error=True)
+    assert window.model.get_studies(False)[0].label == "Alpha"
+    record_step("xlsx-reopened", window, project=window.out_path)
+    select(csv_path)
+    assert page.isComplete(), page.import_status.text()
+    window._handle_wizard_results(wizard.get_results())
+    view = analyze(app, window, "binary.random")
+    assert dict(view.texts) == xlsx_results
+    view.close()
+
+
+    from datetime import datetime
+    continuous = Workbook()
+    sheet = continuous.active
+    sheet.title = "Continuous"
+    info = dict(arms="two", data_type="continuous", sub_type="means_and_std_devs", effect="MD", metric_choices=[], name="Precision")
+    precision_wizard = main_wizard.MainWizard(path="csv_import")
+    precision_wizard.set_dataset_info(info)
+    precision_wizard.setStartId(main_wizard.Page_CsvImport)
+    precision_wizard.restart()
+    precision_wizard.show()
+    app.processEvents()
+    precision_page = precision_wizard.currentPage()
+    sheet.append([])
+    sheet.append([None] + precision_page.required_header_labels)
+    values = ["Precision", datetime(2022, 1, 1), 12.0, 0.1, 1/3, 12.0, 0.1, 1/3]
+    sheet.append([None] + values)
+    sheet.row_dimensions[3].hidden = True
+    precision_path = WORK / "precision.xlsx"
+    continuous.save(precision_path)
+    with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(precision_path), "")):
+        mouse_click(precision_page.select_file_btn, QtCore.Qt.MouseButton.LeftButton)
+    assert precision_page.isComplete(), precision_page.import_status.text()
+    assert precision_page.csv_data()["data"][0][1:5] == ["2022", "12", "0.1", repr(1/3)]
+    assert "Continuous!C3" in precision_page.import_status.text()
+    record_step("xlsx-precision", precision_wizard, data=precision_page.csv_data())
+    precision_wizard.close()
+
+
 def csv_import(app, window):
     from rc_metastudio import main_wizard
 
@@ -1595,6 +1730,8 @@ try:
         run(app, window, scenario, record_step)
     elif scenario.startswith("calculator-"):
         calculator(app, window, scenario.removeprefix("calculator-"))
+    elif scenario == "xlsx-import":
+        xlsx_import(app, window)
     elif scenario == "csv":
         csv_import(app, window)
     elif scenario.startswith("ratios-"):

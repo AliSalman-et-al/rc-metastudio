@@ -48,6 +48,7 @@ SCENARIOS = (
     "lymph",
     "editing",
     "csv",
+    "xlsx-import",
     "plot-edit",
     "small-study-effects",
     "calculator-binary",

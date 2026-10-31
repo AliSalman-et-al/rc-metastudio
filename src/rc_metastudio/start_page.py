@@ -50,7 +50,7 @@ class StartPage(QtWidgets.QScrollArea):
         actions.setSpacing(16)
         for attribute, action, caption, description in (
             ('create_button', create_action, 'Create dataset…', 'Choose an outcome and effect measure, then enter study data.'),
-            ('import_button', import_action, 'Import CSV…', 'Map your spreadsheet columns and preview the data before importing.'),
+            ('import_button', import_action, 'Import data…', 'Map your spreadsheet columns and preview the data before importing.'),
             ('open_button', open_action, 'Open project…', 'Continue working with a saved .rcms project.'),
         ):
             card = QtWidgets.QGroupBox(content)

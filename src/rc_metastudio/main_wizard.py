@@ -462,6 +462,11 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.file_path: str | None = None
         self.mapping_controls = []
         self._mapping_key = None
+        self.worksheet_combo = QComboBox(self)
+        self.worksheet_combo.setAccessibleName("Worksheet")
+        self.worksheet_combo.hide()
+        self.verticalLayout_2.insertWidget(1, self.worksheet_combo)
+        self.worksheet_combo.currentTextChanged.connect(lambda _text: self._rebuild_display())
         self._entry_scroll_reset = QTimer(self)
         self._entry_scroll_reset.setSingleShot(True)
         self._entry_scroll_reset.timeout.connect(self._reset_entry_scroll)
@@ -571,9 +576,9 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
     def _select_file(self):
         selected_file = QFileDialog.getOpenFileName(
             parent=self,
-            caption="RCMetaStudio - Import CSV",
+            caption="RCMetaStudio - Import data",
             directory=str(Path(self.file_path).parent) if self.file_path else QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DocumentsLocation),
-            filter="csv files (*.csv)",
+            filter="Data files (*.csv *.xlsx *.xls)",
         )
         selected_path = (
             selected_file[0] if isinstance(selected_file, tuple) else selected_file
@@ -586,6 +591,22 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         if self.file_path:
             self.file_path_lbl.setText(self.file_path)
 
+        self.worksheet_combo.blockSignals(True)
+        self.worksheet_combo.clear()
+        self.worksheet_combo.hide()
+        if Path(self.file_path).suffix.lower() == ".xlsx":
+            try:
+                _, _, names, selected = csv_import.read_xlsx(self.file_path)
+                self.worksheet_combo.addItems(names)
+                self.worksheet_combo.setCurrentText(selected)
+                self.worksheet_combo.setVisible(len(names) > 1)
+                self.has_headers_chkbx.setChecked(True)
+            except csv_import.CsvImportError as error:
+                self._reset_data()
+                self.import_status.setText(str(error))
+                self.worksheet_combo.blockSignals(False)
+                return
+        self.worksheet_combo.blockSignals(False)
         self._rebuild_display()
 
     def _excel_mode_changed(self):
@@ -614,6 +635,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 raise csv_import.CsvImportError(f'Select a CSV column for required field "{missing}".')
             if mapping:
                 column_mapping = mapping
+            notices = []
             self._import_result = csv_import.parse_csv(
                 file_path,
                 expected_headers=self.required_header_labels,
@@ -625,6 +647,8 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 optional_headers=self._optional_ratio_headers(),
                 column_mapping=column_mapping,
                 header_aliases=self._legacy_header_aliases(),
+                worksheet=self.worksheet_combo.currentText(),
+                notices=notices,
             )
             payload = self._import_result.to_payload()
             self.headers = payload["headers"]
@@ -683,6 +707,8 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             self.import_tabs.setCurrentWidget(self.preview_grp_box)
             covariates = ", ".join(f"{name}: {'Numeric' if kind == 'continuous' else 'Category'}" for name, kind in zip(self.covariate_names, self.covariate_types))
             self.import_status.setText(f"Ready to import {num_rows} studies · UTF-8 · delimiter: {self._get_delimter()!r}" + (f"\nCovariates — {covariates}" if covariates else ""))
+            if notices:
+                self.import_status.setText(self.import_status.text() + "\n" + "\n".join(notices))
             self.completeChanged.emit()
         except csv_import.CsvImportError as error:
             self.import_status.setText(str(error))
@@ -695,7 +721,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             return False
 
     def _update_column_mapping(self):
-        key = (self.file_path, self._has_headers(), self._is_from_excel(), self._get_delimter(), self._get_quotechar())
+        key = (self.worksheet_combo.currentText(), self.file_path, self._has_headers(), self._is_from_excel(), self._get_delimter(), self._get_quotechar())
         if key == self._mapping_key:
             return
         self._mapping_key = key
@@ -704,9 +730,15 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.import_tabs.setTabEnabled(1, self._has_headers())
         if not self._has_headers():
             return
-        with Path(required(self.file_path, "selected CSV path")).open(encoding="utf-8-sig", newline="") as stream:
-            reader = csv.reader(stream, dialect="excel") if self._is_from_excel() else csv.reader(stream, delimiter=self._get_delimter(), quotechar=self._get_quotechar())
-            headers = next(reader, [])
+        suffix = Path(self.file_path).suffix.lower()
+        if suffix == ".xls":
+            raise csv_import.CsvImportError("Save this workbook as .xlsx before importing it.")
+        if suffix == ".xlsx":
+            headers, _, _, _ = csv_import.read_xlsx(self.file_path, self.worksheet_combo.currentText())
+        else:
+            with Path(required(self.file_path, "selected CSV path")).open(encoding="utf-8-sig", newline="") as stream:
+                reader = csv.reader(stream, dialect="excel") if self._is_from_excel() else csv.reader(stream, delimiter=self._get_delimter(), quotechar=self._get_quotechar())
+                headers = next(reader, [])
         if not headers:
             return
         aliases = self._legacy_header_aliases()
@@ -834,7 +866,7 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         metric = "Mean" if info["effect"] == "TX Mean" else meta_globals.ALL_METRIC_NAMES.get(info["effect"], info["effect"])
         if info["sub_type"] in {"reg_coef", "generic_effect"}:
             metric = "Regression coefficient" if info["sub_type"] == "reg_coef" else "Entered effect"
-        task = "Import CSV" if self.wizard().get_wizard_path() == "csv_import" else "Create dataset"
+        task = "Import data" if self.wizard().get_wizard_path() == "csv_import" else "Create dataset"
         kind = {"binary": "Two-arm binary" if self._comparative else "Single-arm proportion",
                 "continuous": "Two-arm continuous" if self._comparative else "Single-arm continuous",
                 "diagnostic": "Diagnostic accuracy", "time_to_event": "Time-to-event", "event_rates": "Event rates"}[info["data_type"]]

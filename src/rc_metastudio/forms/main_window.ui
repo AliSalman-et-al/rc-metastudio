@@ -430,7 +430,7 @@
      <normaloff>:/icons/actions/import-csv.svg</normaloff>:/icons/actions/import-csv.svg</iconset>
    </property>
    <property name="text">
-    <string>Import CSV…</string>
+    <string>Import data…</string>
    </property>
   </action>
   <action name="action_auto_fit_columns">
