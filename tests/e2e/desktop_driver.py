@@ -897,6 +897,17 @@ def xlsx_import(app, window):
     with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(path), "")), patch.object(main_wizard.MainWizard, "exec", inspect_import):
         window.action_import_csv.trigger()
     assert dataset_to_project(window.model.dataset) == unchanged
+    welcome = main_wizard.MainWizard()
+    welcome.show()
+    app.processEvents()
+    with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(path), "")):
+        mouse_click(welcome.page(main_wizard.Page_Welcome).import_csv_btn, QtCore.Qt.MouseButton.LeftButton)
+    assert isinstance(welcome.currentPage(), main_wizard.CsvImportPage)
+    assert welcome.currentPage().file_path == str(path)
+    assert welcome.currentPage().isComplete(), welcome.currentPage().import_status.text()
+    record_step("welcome-import-loaded", welcome)
+    welcome.grab().save(str(screens / "slice8a-import.png"))
+    welcome.close()
     wizard = main_wizard.MainWizard(path="csv_import")
     wizard.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions", effect="OR", metric_choices=[], name="Mortality"))
     wizard.page(main_wizard.Page_OutcomeName).outcome_name_LineEdit.setText("Mortality")

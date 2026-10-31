@@ -479,6 +479,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.verticalLayout_2.addWidget(self.import_tabs)
         self.template_btn = QPushButton("Save a blank template", self)
         self.template_btn.setFlat(True)
+        self.template_btn.setStyleSheet("QPushButton { color: palette(link); text-decoration: underline; }")
         self.template_btn.clicked.connect(app_error_handler.safe_slot(self._save_template, parent=self))
         self.verticalLayout_2.insertWidget(1, self.template_btn)
         self.import_status = QLabel(self)
@@ -524,13 +525,16 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.verticalLayout_2.addWidget(self.import_status)
         self.verticalLayout_2.addWidget(self.template_btn)
         self.verticalLayout_2.setStretchFactor(self.import_tabs, 1)
+        self.preview_grp_box.setTitle("")
         self.data_type_combo = QComboBox(self)
         self.data_type_combo.setAccessibleName("Data type")
         self.data_type_label = QLabel("Data type", self)
+        self.worksheet_label = QLabel("Worksheet", self)
+        self.worksheet_label.setBuddy(self.worksheet_combo)
         self.data_type_label.setBuddy(self.data_type_combo)
         self.verticalLayout_2.insertWidget(4, self.data_type_combo)
         self.data_type_combo.currentIndexChanged.connect(self._change_data_type)
-        for widget in (self.select_file_btn, self.worksheet_combo, self.data_type_label, self.data_type_combo, self.import_tabs, self.import_status, self.csv_options_btn, self.groupBox, self.template_btn):
+        for widget in (self.select_file_btn, self.worksheet_label, self.worksheet_combo, self.data_type_label, self.data_type_combo, self.import_tabs, self.import_status, self.csv_options_btn, self.groupBox, self.template_btn):
             self.verticalLayout_2.addWidget(widget)
         self._update_dialect_controls()
 
@@ -558,6 +562,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         key = (info["data_type"], info["sub_type"])
         self.data_type_combo.setCurrentIndex(keys.index(key) if key in keys else 8)
         self.data_type_combo.blockSignals(False)
+        self.worksheet_label.hide()
         self.file_path = None
         self._mapping_key = None
         self._reset_data()
@@ -628,6 +633,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             try:
                 _, _, names, selected = csv_import.read_xlsx(self.file_path)
                 self.worksheet_combo.addItems(names)
+                self.worksheet_label.setVisible(len(names) > 1)
                 self.worksheet_combo.setCurrentText(selected)
                 self.worksheet_combo.setVisible(len(names) > 1)
                 self.has_headers_chkbx.setChecked(True)
