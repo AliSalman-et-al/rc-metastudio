@@ -128,3 +128,10 @@ Final-code validation after the last executable change (all passed):
   **9 passed in 353.55s**. Evidence is under `artifacts/verification/rcms/`.
 
 All commands sourced `build/sheets-baseline/ENV.sh`; no uv sync was run.
+
+
+## Live derived subgroup comparison
+
+Six grouped studies, fixed inverse variance, real Subgroup dialog and setup.
+Log-OR estimate/lower/upper: earlier [-0.28857647961015254, -0.4857578858213545, -0.09139507339895059], later [0.02113006824755212, -0.140067677181497, 0.18232781367660125]. Maximum absolute difference from meta::metacr is 5e-16.
+Between-group RCMS moderator Q=4.852384056279537, p=0.027607948430352695; meta common-effect decomposition Q=5.68048033600663, p=0.0171546707556073. Differences (RCMS minus meta): Q -0.8280962797270925, p +0.010453277674745395. These are explicitly held discrepancies, not parity. The existing plot moderator fit uses params$rm.method independently of the fixed subgroup summaries. No statistical method changed.

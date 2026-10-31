@@ -40,6 +40,48 @@ def run(app, window, ROOT, WORK, record_step):
     window.set_model(subgroup_import.dataset)
     record_step('rm5-subgroup-covariate-imported', window, groups=groups,
                 reference=str(subgroup_reference))
+    from rc_metastudio import r_bridge
+    from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
+    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
+    from rc_metastudio.results_window import ResultsWindow
+    # read.rm5 omits the ungrouped row: compare identical study sets.
+    for row in subgroup_sheet.rows:
+        row.include = bool(row.covariate_values[covariate])
+    subgroup_sheet.settings['analysis'] = dict(method='binary.fixed.inv.var',
+        parameters={}, fixed_effects=True, covariates=[])
+    window.set_model(subgroup_import.dataset)
+    window.action_subgroup_ma.trigger()
+    app.processEvents()
+    selector = next(w for w in app.topLevelWidgets() if isinstance(w, SubgroupAnalysisDialog) and w.isVisible())
+    assert selector.covariate_combo_box.currentText() == subgroup_sheet.covariates[0]['name']
+    selector.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+    app.processEvents()
+    setup = next(w for w in app.topLevelWidgets() if isinstance(w, AnalysisSetupDialog) and w.isVisible())
+    setup.method_cbo_box.setCurrentText(next(label for label, method in setup.available_method_d.items() if method == 'binary.fixed.inv.var'))
+    assert setup.current_method == 'binary.fixed.inv.var'
+    setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+    app.processEvents()
+    view = next(w for w in app.topLevelWidgets() if isinstance(w, ResultsWindow) and w.isVisible())
+    actual = list(map(float, r_bridge.execute_r_string('unlist(lapply(result$res[1:2], function(x) c(x$b[1], x$ci.lb, x$ci.ub)))')))
+    reference = WORK / 'subgroup-fit.csv'
+    subprocess.run([os.environ['RCMS_R_HOME'] + '/bin/Rscript', '-e',
+        "library(meta); x <- read.rm5(commandArgs(TRUE)[1]); m <- metacr(x, outcome.no=1, method='Inverse'); write.csv(data.frame(estimate=m$TE.common.w, lower=m$lower.common.w, upper=m$upper.common.w, Q=m$Q.b.common, p=m$pval.Q.b.common), commandArgs(TRUE)[2], row.names=FALSE)",
+        str(subgroup_source), str(reference)], check=True)
+    with reference.open() as stream:
+        refs = list(csv.DictReader(stream))
+    expected = [float(row[key]) for row in refs for key in ('estimate', 'lower', 'upper')]
+    test = list(map(float, r_bridge.execute_r_string('local({e <- new.env(); load(paste0(result$plot_params_paths[[1]], ".plotdata"), envir=e); t <- e$plot.data$subgroups$difference_test; c(t$QM, t$QMp)})')))
+    actual.extend(test)
+    expected.extend(float(refs[0][key]) for key in ('Q', 'p'))
+    differences = [a - b for a, b in zip(actual, expected)]
+    record_step('rm5-subgroup-results', view, actual=actual, expected=expected,
+                differences=differences, reference=str(reference))
+    assert len(actual) == len(expected) == 8
+    assert all(abs(delta) <= 1e-6 for delta in differences[:6]), differences
+    # The existing moderator test is not meta's common-effect Q decomposition.
+    held_difference = (-0.8280962797270925, 0.010453277674745395)
+    assert all(abs(delta - held) <= 1e-6 for delta, held in zip(differences[6:], held_difference)), differences
+    view.close()
     failures = []
     from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
     window.set_model(read_rm5(source).dataset)
