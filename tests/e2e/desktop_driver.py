@@ -1097,6 +1097,21 @@ def grid_entry(app, window):
     assert not model.current_sheet.rows[1].include
     assert sum(r.include for r in model.current_sheet.rows) == 10
     record_step("grid-entry-complete", window, included=10, skipped=1)
+    import csv
+    import io
+    block = io.StringIO(newline="")
+    writer = csv.writer(block, delimiter="\t", lineterminator="\r\n")
+    for row in range(50):
+        writer.writerow([f"Extra {row}\tquoted\nname", 2020, 5, 80, 10, 90])
+    app.clipboard().setText(block.getvalue())
+    table.setCurrentIndex(model.index(12, model.NAME))
+    QTest.keyClick(table, QtCore.Qt.Key.Key_V, QtCore.Qt.KeyboardModifier.ControlModifier)
+    assert len(model.current_sheet.rows) == 62
+    assert model.current_sheet.rows[-1].label == "Extra 49\tquoted\nname"
+    window.undo(); assert len(model.current_sheet.rows) == 12
+    window.redo(); assert len(model.current_sheet.rows) == 62
+    record_step("grid-entry-large-quoted-paste", window, rows=62)
+
 
 
 def hillclimb(app, window):

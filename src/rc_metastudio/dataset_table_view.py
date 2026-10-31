@@ -156,7 +156,6 @@ class DatasetTableView(QtWidgets.QTableView):
     def model(self) -> "DatasetTableModel":
         """Return the concrete model required by the maintained workspace view."""
         from rc_metastudio.dataset_table_model import DatasetTableModel
-    from rc_metastudio.workspace_session import WorkspaceSession
 
         model = super().model()
         if model is None:
