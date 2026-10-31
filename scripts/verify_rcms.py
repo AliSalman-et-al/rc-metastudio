@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
@@ -30,6 +31,7 @@ SCENARIOS = (
     "review1-design",
     "review-workflows",
     "doctor",
+    "hillclimb",
     "ux-improvements",
     "amino",
     "sheets",
@@ -106,7 +108,11 @@ def write_manifest(evidence: Path, record: dict[str, object]) -> None:
 
 def _scenario_timeout(scenario: str) -> int:
     timeout_seconds = 120
+<<<<<<< HEAD
     if scenario == "sheets-baseline":
+=======
+    if scenario == "hillclimb":
+>>>>>>> origin/ux/audit-improvements
         return 600
     if scenario in {"ratios-hr", "ratios-irr", "project-display-labels", "project-round6-polish", "project-release-coefficients", "project-reviewer-predictions", "project-reviewer-groups", "project-reviewer-colours", "calculator-ratio-precision", "project-axis-proportions", "project-axis-others", "project-axis-sequential"}:
         timeout_seconds = 600
@@ -168,6 +174,7 @@ def main() -> int:
         action="store_true",
         help="Use the host Qt platform instead of offscreen",
     )
+    parser.add_argument("--compare-measures", type=Path, help="Compare hillclimb counts and numerical output with a previous measures.json")
     args = parser.parse_args()
     context = json.loads(os.environ["RCMS_E2E_CONTEXT"]) if os.environ.get("RCMS_E2E_CONTEXT") else None
     if context is not None and source_digest() != context["source_sha256"]:
@@ -207,6 +214,7 @@ def main() -> int:
             record["command"] = command
             print(f"Evidence: {evidence}", flush=True)
             try:
+                env["RCMS_DRIVE_STARTED"] = str(time.time())
                 with (
                     (evidence / "stdout.log").open("wb") as stdout,
                     (evidence / "stderr.log").open("wb") as stderr,
@@ -223,6 +231,15 @@ def main() -> int:
                 passed = result.returncode == 0 and "WORKFLOW PASSED" in (
                     evidence / "stdout.log"
                 ).read_text(encoding="utf-8", errors="replace")
+                if passed and args.scenario == "hillclimb":
+                    measured = json.loads((evidence / "measures.json").read_text())
+                    if args.compare_measures:
+                        previous = json.loads(args.compare_measures.read_text())
+                        stable = lambda data: {task: {k: v for k, v in values.items() if k != "wall_seconds"} for task, values in data.items()}
+                        if stable(measured) != stable(previous):
+                            passed = False
+                            print("Hillclimb counts or numerical output changed", file=sys.stderr)
+                    print(json.dumps(measured, indent=2))
                 record["passed"] = passed
             finally:
                 # Copy before TemporaryDirectory removes settings and R scratch files.
