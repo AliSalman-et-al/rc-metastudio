@@ -116,7 +116,7 @@ Derived XML inputs cover pending data, non-integer years, duplicate names and
 IV-random/DL, MH-random unavailable and Peto-fixed mapping. Dirty review Cancel
 preserves data/path/dirty/history; confirmation invokes the existing save prompt.
 Malformed and non-RevMan XML leave the project intact. Save/reopen retains settings.
-Native pickers, DTA and a second public fixture remain unexercised.
+Native pickers and exhaustive DTA structures remain unexercised.
 
 RM5 derived-fixture extension: real subgroup dialog compares six grouped studies
 and fixed-IV subgroup estimates/CIs to metacr; the existing moderator Q/p
@@ -124,3 +124,11 @@ difference is explicitly quantified in SLICE5.md. Generic IV HR, OR and MD run
 untouched setup, compare held pooled values/I² at 1e-6, and save/reopen. OR/MD
 entered-only capability is exercised first. Review excludes free-text effects
 and IPD O-E/variance. This does not qualify other RM5 structures or native pickers.
+
+DTA RM5 extension: Bristol's real workshop review verifies TESTS/TEST/
+TEST_DATA/TEST_DATA_ENTRY. A labelled synthetic fixture using that structure
+covers two index tests, independent stdlib count parsing in TP/FN/FP/TN order,
+review table, default diagnostic analysis and full save/reopen equality.
+Original-review redistribution and exhaustive DTA structures remain unqualified.
+Fixed-effect subgroup imports disclose the existing random moderator test in
+Differs from RevMan; subgroup estimates and the held discrepancy remain unchanged.

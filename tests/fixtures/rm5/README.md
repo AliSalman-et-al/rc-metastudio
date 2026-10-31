@@ -84,3 +84,12 @@ precede the IPD_DATA row as required by meta’s line-oriented XML extractor.
 
 SHA-256 (`generic-derived.rm5`):
 `4e01e17559b1f3a6ba481668386a9a27eb543e19dc62e2f5a4cacabf999e00d4`.
+
+### dta-derived.rm5
+
+Synthetic two-test fixture derived from the actual XML structure in Bristol's
+RevMan 5.3.5 workshop review, with invented labels and counts; not RevMan output
+or a published schema. Original source URL and both original hashes are recorded
+in docs/ux-hill-climb/SLICE5.md. The original has no explicit redistribution
+licence and is not committed. Fixture SHA-256:
+`b873d338c765ba537ab4430405bc4f454837ec14a420aec859873769665ff355`.

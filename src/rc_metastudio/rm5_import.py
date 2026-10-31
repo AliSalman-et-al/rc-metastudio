@@ -97,6 +97,8 @@ def read_rm5(path: str | Path) -> Rm5Import:
             for subgroup in outcome.iter(outcome.tag.replace('_OUTCOME', '_SUBGROUP')):
                 for record in subgroup.iter(tag):
                     subgroups[id(record)] = subgroup.findtext('NAME', 'Unnamed subgroup')
+            if subgroups and not random:
+                differences.append("Subgroups: RCMS's between-group test uses a random-effects moderator fit, so it can differ from RevMan's.")
             if subgroups:
                 sheet.covariates.append({'id': uuid.uuid4().hex, 'name': outcome.findtext('SUBGROUP_LABEL', 'Subgroup'), 'data_type': 4})
             for record in records:
@@ -147,11 +149,38 @@ def read_rm5(path: str | Path) -> Rm5Import:
                     row.covariate_values[sheet.covariates[0]['id']] = subgroups.get(id(record), '')
                 sheet.rows.append(row)
             dataset.sheets.append(sheet)
+    # Verified against Bristol's RevMan 5.3.5 DTA workshop review.
+    for test in root.findall('ANALYSES_AND_DATA/TESTS/TEST'):
+        name = test.findtext('NAME', 'Unnamed test')
+        records = test.findall('TEST_DATA/TEST_DATA_ENTRY')
+        if not records:
+            not_imported.append(f'{name}: empty test is not imported.')
+            continue
+        base_name, suffix = name, 2
+        while any(s.name == name for s in dataset.sheets):
+            name = f'{base_name} ({suffix})'
+            suffix += 1
+        arm = Arm(uuid.uuid4().hex, 'Index test')
+        sheet = Sheet(uuid.uuid4().hex, name, meta_globals.DIAGNOSTIC,
+                      family='diagnostic', arms=[arm])
+        for record in records:
+            study = studies.get(record.get('STUDY_ID'))
+            if study is None:
+                raise ValueError(f'{name}: unknown study {record.get("STUDY_ID")}.')
+            values = [float(record.attrib[key]) for key in ('TP', 'FN', 'FP', 'TN')]
+            if any(not math.isfinite(v) or v < 0 or not v.is_integer() for v in values):
+                raise ValueError(f'{name}: diagnostic counts must be non-negative integers.')
+            unit = AnalysisUnit(sheet, raw_data=[values], arm_names=[arm.name], arm_stable_ids=[arm.id])
+            sheet.rows.append(StudyRow(uuid.uuid4().hex, study.get('NAME') or record.get('STUDY_ID'), unit,
+                year=int(study.get('YEAR')) if (study.get('YEAR') or '').isdigit() else None))
+        dataset.sheets.append(sheet)
     for tag in ('DATA_TEST', 'IPD'):
         if list(root.iter(tag)):
             not_imported.append(f'{tag}: data are not imported.')
+    if root.find('ANALYSES_AND_DATA/TESTS') is not None:
+        differences.append('Diagnostic tests: counts only; RevMan analyses and covariates are not imported. Analysis setup uses RCMS defaults.')
     if not dataset.sheets:
-        raise ValueError('No supported populated outcomes were found.\n' + '\n'.join(not_imported))
+        raise ValueError('This review has no outcomes RC MetaStudio can import\nNot imported\n' + '\n'.join(not_imported))
     from rc_metastudio.project_adapter import dataset_to_project
     from rc_metastudio.project_domain import validate_project_semantics
     validate_project_semantics(dataset_to_project(dataset),

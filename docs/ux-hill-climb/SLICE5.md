@@ -1,7 +1,7 @@
 # Slice 5 — binary and continuous RM5 import
 
 No numerical oracle was regenerated and no statistical method was added.
-Diagnostic data and a second public fixture remain outside this slice.
+Diagnostic counts are now imported from a verified public format (see DTA evidence below).
 
 | RevMan | RCMS |
 | --- | --- |
@@ -85,7 +85,7 @@ real setup/Run, held R fits and complete project save/reopen. Subgroup estimates
 and CIs compare at 1e-6; the named Q/p differences above are held at 1e-6 rather
 than claimed as parity. GIV HR/OR/MD pooled values compare at 1e-6.
 
-Remaining: diagnostic import, another public fixture, exhaustive unsupported-item
+Remaining: exhaustive diagnostic structures, exhaustive unsupported-item
 preservation, and native UI/file-picker qualification. Offscreen proof does not
 qualify native window management or a release package.
 
@@ -129,3 +129,61 @@ Its nine evidence directories (same artifacts/verification/rcms/ root):
 
 All thirteen final direct/pytest manifests passed with exit zero and their retained
 artifact SHA-256 values were checked after teardown. No uv sync was run.
+
+## DTA evidence search and implementation (2026-11-01)
+
+Path **2a**. Searches: `RevMan 5 DTA rm5 XML schema DATA_TEST TP FP FN TN`,
+`github rm5 diagnostic test accuracy file`, `RevMan rm5 DTD schema diagnostic XML`,
+`site:github.com ".rm5" "TP" "FP"`, `RevMan diagnostic tutorial .rm5 download`,
+and `RevMan XML schema xsd DTA`. GitHub CLI code search returned no matches;
+web searches led to IEBH/revman, R meta's read.rm5 source and Cochrane documentation.
+None established DATA_TEST. Cochrane's current DTA import documentation describes
+CSV templates, not legacy XML:
+https://documentation.cochrane.org/revman-kb/import-and-export-dta-study-data-315949181.html
+
+A real public RevMan 5.3.5 diagnostic review was retrieved from Bristol's workshop:
+https://www.bristol.ac.uk/population-health-sciences/centres/beam-centre/nice/workshop/
+Download: https://www.bristol.ac.uk/social-community-medicine/media/mpes/anti-ccp2-for-rheumatoid-arthritis.zip
+ZIP SHA-256: c4fc64fd8d8441171c94190fd4494844058fa30c7feaee1f606375906ff88da6.
+Member `anti-ccp2-for-rheumatoid-arthritis.rm5` SHA-256:
+2d033cde5be5af71278f8dc569f8e7b291f93be5fc3b1be7249b7d28eb058e54.
+The actual structure is ANALYSES_AND_DATA/TESTS/TEST/TEST_DATA/TEST_DATA_ENTRY,
+with STUDY_ID and TP/FN/FP/TN attributes. DATA_TEST was incorrect.
+No published schema was located. No explicit redistribution licence accompanied
+the workshop download, so the original review is not committed.
+
+`tests/fixtures/rm5/dta-derived.rm5` is synthetic, derived from that observed
+structure (not a published schema and not RevMan output), with invented counts,
+study labels and two tests. SHA-256:
+b873d338c765ba537ab4430405bc4f454837ec14a420aec859873769665ff355.
+One diagnostic Sheet per test; RCMS raw order TP, FN, FP, TN. Test-first desktop
+failure: 20261031T190553Z-798b78fb-rm5-import, unsupported outcomes.
+The E2E independently parses cells with stdlib, observes the review table,
+runs default diagnostic setup and verifies full project equality after reopening.
+Counts only: RevMan diagnostic analyses and covariates are explicitly not imported.
+
+## Open statistical finding
+
+With a fixed-effect subgroup analysis selected, RCMS reports per-subgroup fixed estimates, but its between-group test comes from a DerSimonian-Laird moderator fit (`params$rm.method`). On the derived fixture I reproduced this with metafor: method="DL" gives QM=4.852384, p=0.027608, matching RCMS, and method="FE" gives QM=5.680480, p=0.017155, matching meta. Unchanged because changing numbers is out of scope; awaiting the owner's decision.
+
+The import review now discloses this difference for fixed-effect outcomes with
+subgroups. No statistical method or numerical oracle changed.
+
+## DTA final verification
+
+After the last code change, sourced `build/sheets-baseline/ENV.sh`, then ran
+sequentially with `uv run --no-sync`:
+
+- `python scripts/verify_rcms.py rm5-import`: passed,
+  `20261031T190604Z-0b688ed6-rm5-import`.
+- `python scripts/verify_rcms.py sheets`: passed,
+  `20261031T190707Z-f2d1b1d1-sheets`.
+- `python scripts/verify_rcms.py amino`: passed,
+  `20261031T191005Z-22526843-amino`.
+- `python -m pytest tests/e2e -n 2 -q -k rm5`: **1 passed in 60.55s**,
+  `20261031T191039Z-4db18ad9-rm5-import`.
+
+All four manifests passed with exit zero; all 235 retained file hashes were
+verified after teardown. Evidence root: `artifacts/verification/rcms/`.
+No uv sync, oracle regeneration or statistical-method changes. Offscreen Qt/R
+proof only; native picker and exhaustive DTA format coverage remain unfinished.

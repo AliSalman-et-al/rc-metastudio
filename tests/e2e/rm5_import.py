@@ -14,8 +14,52 @@ def run(app, window, ROOT, WORK, record_step):
     from rc_metastudio.rm5_import import read_rm5
     source = ROOT / 'tests/fixtures/rm5/Fleiss1993.rm5'
     original = ET.parse(source).getroot()
+    # Synthetic counts in the structure observed in Bristol's real DTA review.
+    dta_source = ROOT / 'tests/fixtures/rm5/dta-derived.rm5'
+    dta_xml = ET.parse(dta_source).getroot()
+    dta_names = {s.get('ID'): s.get('NAME') for s in dta_xml.iter('STUDY')}
+    expected_dta = [(t.findtext('NAME'), [(dta_names[r.get('STUDY_ID')],
+                    [int(r.get(k)) for k in ('TP', 'FN', 'FP', 'TN')])
+                    for r in t.findall('TEST_DATA/TEST_DATA_ENTRY')])
+                    for t in dta_xml.findall('ANALYSES_AND_DATA/TESTS/TEST')]
+    from rc_metastudio.rm5_import import review_rm5
+    def dta_review():
+        dialog = app.activeModalWidget()
+        table = dialog.findChild(QtWidgets.QTableWidget)
+        assert [table.item(i, 0).text() for i in range(table.rowCount())] == [n for n, _ in expected_dta]
+        record_step('rm5-dta-review', dialog)
+        dialog.accept()
+    QtCore.QTimer.singleShot(0, dta_review)
+    window.set_model(review_rm5(dta_source, window))
+    for sheet, (name, rows) in zip(window.model.dataset.sheets, expected_dta):
+        assert sheet.name == name
+        assert [(r.label, next(iter(r.analysis_unit.arms.values())).raw_data) for r in sheet.rows] == rows
+    assert len(window.model.dataset.sheets) == len(expected_dta)
+    from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
+    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
+    from rc_metastudio.results_window import ResultsWindow
+    window.action_go.trigger()
+    app.processEvents()
+    metrics = next(w for w in app.topLevelWidgets() if isinstance(w, DiagnosticMetricsDialog) and w.isVisible())
+    metrics.btn_ok.click()
+    app.processEvents()
+    setup = next(w for w in app.topLevelWidgets() if isinstance(w, AnalysisSetupDialog) and w.isVisible())
+    record_step('rm5-dta-default-setup', setup, method=setup.current_method)
+    setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+    app.processEvents()
+    view = next(w for w in app.topLevelWidgets() if isinstance(w, ResultsWindow) and w.isVisible())
+    record_step('rm5-dta-results', view, texts=dict(view.texts))
+    view.close()
+    dta_project = dataset_to_project(window.model.dataset)
+    destination = WORK / 'dta-import.rcms'
+    with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', return_value=(str(destination), '')):
+        window.action_save_as.trigger()
+    assert window.open(str(destination), raise_on_error=True)
+    assert dataset_to_project(window.model.dataset) == dta_project
+    record_step('rm5-dta-reopened', window, project=str(destination))
     subgroup_source = ROOT / 'tests/fixtures/rm5/Fleiss1993-subgroups-derived.rm5'
     subgroup_import = read_rm5(subgroup_source)
+    assert "Subgroups: RCMS's between-group test uses a random-effects moderator fit, so it can differ from RevMan's." in subgroup_import.differences
     subgroup_sheet = subgroup_import.dataset.sheets[0]
     assert len(subgroup_sheet.covariates) == 1
     covariate = subgroup_sheet.covariates[0]['id']
