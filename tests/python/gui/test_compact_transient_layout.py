@@ -56,6 +56,53 @@ def _assert_content_preferred_outer_size(window, available, fraction, tolerance=
 
 
 
+def _remaining_surface_inventory():
+    from rc_metastudio import about_legal_dialog
+    from rc_metastudio import add_new_dialogs
+    from rc_metastudio import edit_name_dialogs
+    from rc_metastudio import launch
+    from rc_metastudio import main_window
+    from rc_metastudio import progress_dialog
+
+    surfaces = [
+        ("add-study", "compact", add_new_dialogs.AddStudyDialog()),
+        ("add-covariate", "choice", add_new_dialogs.AddCovariateDialog()),
+        (
+            "edit-group-name",
+            "compact",
+            edit_name_dialogs.EditGroupNameDialog("Treatment group"),
+        ),
+        (
+            "edit-covariate-name",
+            "compact",
+            edit_name_dialogs.EditCovariateNameDialog("Baseline risk"),
+        ),
+        ("about-legal", "about", about_legal_dialog.AboutLegalDialog()),
+        (
+            "import-progress",
+            "progress",
+            main_window.ImportProgressDialog(min_=0, max_=100),
+        ),
+        ("shared-progress", "progress", progress_dialog.AnalysisProgressDialog()),
+        ("startup-splash", "splash", launch.create_startup_splash()),
+    ]
+    for _name, kind, window in surfaces:
+        for line_edit in window.findChildren(QtWidgets.QLineEdit):
+            line_edit.setText(LONG_VALUE)
+        if kind == "choice":
+            combo = required(window.findChild(QtWidgets.QComboBox), "choice combo")
+            combo.addItem(LONG_VALUE)
+            combo.setCurrentText(LONG_VALUE)
+        if kind == "progress":
+            progress_control = cast(
+                QtWidgets.QProgressBar,
+                required(getattr(window, "progress_bar", None), "progress bar"),
+            )
+            progress_control.setFormat("Loading analysis resources: %p%")
+        if kind == "splash":
+            cast(QtWidgets.QSplashScreen, window).showMessage(LONG_VALUE)
+    return surfaces
+
 def test_choice_control_state_is_typed_and_rejects_stale_ownership(qapp):
     from rc_metastudio import adaptive_controls
 
