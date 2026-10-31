@@ -68,6 +68,7 @@ class ManuscriptReport:
             if section.kind != 'text':
                 continue
             main = []
+            values = {}
             for table in section.tables:
                 if table.title.startswith('Calculation scale') or section.source_key == 'Weights':
                     supplementary.append(replace(section, title='Supplementary details', paragraphs=(), tables=(table,)))
@@ -85,7 +86,24 @@ class ManuscriptReport:
                 elif len(table.rows) > 1 and 'Estimate' in table.headers and 'Term' in table.headers:
                     for row in table.rows:
                         values = dict(zip(table.headers, row))
-                        summary.append(f"{values['Term']}: estimate {values['Estimate']}.")
+                        lower = next((v for k, v in values.items() if k.startswith('Lower bound')), None)
+                        upper = next((v for k, v in values.items() if k.startswith('Upper bound')), None)
+                        level = next((k.partition('(')[2].rstrip(')') for k in values if k.startswith('Lower bound (')), 'CI')
+                        interval = f" ({level} {lower} to {upper})" if lower is not None and upper is not None else ''
+                        p = f"; p = {values['p-value']}" if 'p-value' in values else ''
+                        summary.append(f"{values['Term']}: coefficient {values['Estimate']}{interval}{p}.")
+                if 'Subgroups' in table.headers and 'Estimate' in table.headers:
+                    for row in table.rows:
+                        cells = dict(zip(table.headers, row))
+                        lower = next((v for k, v in cells.items() if k.startswith('Lower bound')), None)
+                        upper = next((v for k, v in cells.items() if k.startswith('Upper bound')), None)
+                        if lower is not None and upper is not None:
+                            level = next(k.partition("(")[2].rstrip(")") for k in cells if k.startswith("Lower bound"))
+                            summary.append(f"{cells['Subgroups']}: estimate {cells['Estimate']} ({level} {lower} to {upper}).")
+                if table.title == 'Test of subgroup differences' and values:
+                    summary.append(f"Between-group test: {values['Test']} = {values['Statistic']} (df = {values['df']}; p = {values['p-value']}).")
+                if table.title == 'Residual heterogeneity' and values:
+                    summary.append('Residual heterogeneity: ' + ', '.join(f'{key} = {value}' for key, value in values.items()) + '.')
                 if section.title == 'Summary' and values:
                     merged.extend((table.title + ': ' + header, value) for header, value in values.items())
                 if table.title.endswith('Model Results') and 'Estimate' in values and not any('reitsma' in t.lower() for t in result.texts):
@@ -102,7 +120,7 @@ class ManuscriptReport:
                     row = table.rows[0]
                     level = table.headers[0].partition('(')[2].removesuffix(')').replace(' PI', '')
                     summary.append(f"The {level} prediction interval was {row[0]} to {row[1]}.")
-            if main and section.title != 'Summary':
+            if main and (section.title != 'Summary' or any(t.title == 'Regression coefficients' for t in main)):
                 sections.append(replace(section, paragraphs=(), tables=tuple(main)))
         if merged:
             original = next(s for s in result.sections if s.title == 'Summary')
@@ -123,10 +141,14 @@ class ManuscriptReport:
                 parts.extend(('\t'.join(table.headers), *('\t'.join(row) for row in table.rows)))
         return '\n\n'.join(parts)
 
-    def html(self):
+    def html(self, supplementary=False):
         parts = [f'<h1>{escape(self.title)}</h1><p>{escape(self.comparison)}</p><h2>Methods</h2><p>{escape(self.methods)}</p><h2>Results</h2><p>{escape(self.results)}</p>']
+        if supplementary:
+            parts = []
         table_number = 0
         for number, section in enumerate(self.sections, 1):
+            if (section.title == "Supplementary details") != supplementary:
+                continue
             if section.title == 'Supplementary details' and (number == 1 or self.sections[number-2].title != section.title):
                 parts.append('<h2>Supplementary details</h2>')
             for table in section.tables:
@@ -169,28 +191,33 @@ def write_docx(report, path):
     document.add_heading('Results', 1)
     document.add_paragraph(report.results)
     table_number = 0
-    for number, section in enumerate(report.sections, 1):
-        if section.title == 'Supplementary details' and (number == 1 or report.sections[number-2].title != section.title):
-            document.add_heading('Supplementary details', 1)
-        for paragraph in section.paragraphs or (() if section.tables else (section.value,)):
-            document.add_paragraph(paragraph)
-        for table in section.tables:
-            table_number += 1
-            document.add_paragraph(f'Table {table_number}. {table.title}', style='Caption')
-            target = document.add_table(rows=1, cols=len(table.headers))
-            from docx.oxml import OxmlElement
-            from docx.oxml.ns import qn
-            borders = OxmlElement('w:tblBorders')
-            for edge in ('top', 'bottom'):
-                rule = OxmlElement('w:' + edge)
-                rule.set(qn('w:val'), 'single')
-                rule.set(qn('w:sz'), '6')
-                borders.append(rule)
-            target._tbl.tblPr.append(borders)
-            for row, values in zip([target.rows[0], *[target.add_row() for _ in table.rows]], (table.headers, *table.rows)):
-                for cell, value in zip(row.cells, values):
-                    cell.text = value
-            document.add_paragraph()
+    def add_tables(supplementary):
+        nonlocal table_number
+        for number, section in enumerate(report.sections, 1):
+            if (section.title == "Supplementary details") != supplementary:
+                continue
+            if section.title == 'Supplementary details' and (number == 1 or report.sections[number-2].title != section.title):
+                document.add_heading('Supplementary details', 1)
+            for paragraph in section.paragraphs or (() if section.tables else (section.value,)):
+                document.add_paragraph(paragraph)
+            for table in section.tables:
+                table_number += 1
+                document.add_paragraph(f'Table {table_number}. {table.title}', style='Caption')
+                target = document.add_table(rows=1, cols=len(table.headers))
+                from docx.oxml import OxmlElement
+                from docx.oxml.ns import qn
+                borders = OxmlElement('w:tblBorders')
+                for edge in ('top', 'bottom'):
+                    rule = OxmlElement('w:' + edge)
+                    rule.set(qn('w:val'), 'single')
+                    rule.set(qn('w:sz'), '6')
+                    borders.append(rule)
+                target._tbl.tblPr.append(borders)
+                for row, values in zip([target.rows[0], *[target.add_row() for _ in table.rows]], (table.headers, *table.rows)):
+                    for cell, value in zip(row.cells, values):
+                        cell.text = value
+                document.add_paragraph()
+    add_tables(False)
     from PyQt6.QtCore import QBuffer, QIODevice
     for number, (title, path_) in enumerate(report.figures, 1):
         source, ratio = figure_source(path_)
@@ -211,6 +238,7 @@ def write_docx(report, path):
             document.add_page_break()
             document.add_picture(io.BytesIO(bytes(buffer.data())), width=Mm(width))
             document.add_paragraph(f'Figure {number}. {title}' + (' (continued)' if top else ''))
+    add_tables(True)
     document.save(path)
 
 
@@ -229,17 +257,19 @@ def write_pdf(report, path):
     width, height = page.width() / scale, page.height() / scale
     document.setPageSize(QSizeF(width, height))
     painter = QPainter(writer)
-    for number in range(document.pageCount()):
-        if number:
-            writer.newPage()
-        painter.save()
-        painter.scale(scale, scale)
-        painter.setClipRect(QRectF(0, 0, width, height))
-        painter.translate(0, -number * height)
-        context = QAbstractTextDocumentLayout.PaintContext()
-        context.clip = QRectF(0, number * height, width, height)
-        document.documentLayout().draw(painter, context)
-        painter.restore()
+    def print_pages(first_page=False):
+        for number in range(document.pageCount()):
+            if number or first_page:
+                writer.newPage()
+            painter.save()
+            painter.scale(scale, scale)
+            painter.setClipRect(QRectF(0, 0, width, height))
+            painter.translate(0, -number * height)
+            context = QAbstractTextDocumentLayout.PaintContext()
+            context.clip = QRectF(0, number * height, width, height)
+            document.documentLayout().draw(painter, context)
+            painter.restore()
+    print_pages()
     for number, (title, path_) in enumerate(report.figures, 1):
         writer.newPage()
         source, ratio = figure_source(path_)
@@ -262,4 +292,7 @@ def write_pdf(report, path):
             painter.drawText(QRectF(0, caption_y, width, 60), Qt.TextFlag.TextWordWrap,
                              f'Figure {number}. {title}' + (' (continued)' if part else ''))
             painter.restore()
+    if any(section.title == 'Supplementary details' for section in report.sections):
+        document.setHtml(report.html(supplementary=True))
+        print_pages(first_page=True)
     painter.end()

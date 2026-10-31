@@ -7,6 +7,44 @@ from PyQt6 import QtWidgets
 
 
 def run(app, window, work, root, record, analyze):
+    # Derive boundary cases from real legacy bytes, then open through production IO.
+    import copy, io, json, zipfile
+    legacy = subprocess.check_output(['git', 'show', '322ede26:sample_projects/amino.rcms'], cwd=root)
+    with zipfile.ZipFile(io.BytesIO(legacy)) as archive:
+        members = {name: archive.read(name) for name in archive.namelist()}
+    project = json.loads(members['project.json'])
+    dataset = project['dataset']
+    blank = copy.deepcopy(dataset['studies'][-1])
+    blank.update(name='', year=None, sample_size=None, include=False, manually_excluded=False, notes='', covariates={})
+    for unit in blank['analysis_units']:
+        unit['entered_effects'] = {}
+        for arm in unit['groups']:
+            arm['raw_data'] = [''] * len(arm['raw_data'])
+    dataset['covariates'].append({'name': 'Only covariate', 'data_type': 1, 'stable_id': 'only-covariate'})
+    variants = [blank, dict(blank, name='Named pending'), dict(blank, covariates={'Only covariate': 7}), dict(blank, year=2001), dict(blank, manually_excluded=True)]
+    for i, row in enumerate(variants):
+        row = copy.deepcopy(row)
+        row['id'] = 10000 + i
+        dataset['studies'].append(row)
+    for row in dataset['studies']:
+        row['covariates'].setdefault('Only covariate', None)
+    members['project.json'] = json.dumps(project).encode()
+    import hashlib
+    manifest = json.loads(members['manifest.json'])
+    manifest['members']['project.json'] = {'size': len(members['project.json']), 'sha256': hashlib.sha256(members['project.json']).hexdigest()}
+    members['manifest.json'] = json.dumps(manifest).encode()
+    fixture = work / 'legacy-row-boundaries.rcms'
+    with zipfile.ZipFile(fixture, 'w') as archive:
+        for name, data in members.items():
+            archive.writestr(name, data)
+    assert window.open(str(fixture), raise_on_error=True)
+    retained = window.model.get_studies(only_if_included=False)
+    assert any(row.label == 'Named pending' for row in retained)
+    assert any(row.year == 2001 for row in retained)
+    assert any(row.manually_excluded for row in retained)
+    assert any(7 in row.covariate_values.values() for row in retained)
+    assert len(retained) == 23, len(retained)
+    record('legacy-row-boundaries', window, retained=len(retained), input=str(fixture))
     for sample, method in (("amino", "binary.random"), ("continuous", "continuous.random"), ("lymph", "diagnostic.reitsma"), ("Pignon2000-HR", "time_to_event.random")):
         window.workspace.mark_saved()
         assert window.open(str(root / 'sample_projects' / (sample + '.rcms')), raise_on_error=True)
@@ -45,10 +83,11 @@ def run(app, window, work, root, record, analyze):
             assert view.manuscript_results.toPlainText() == view.manuscript.results
             assert all(value not in text for value in ('executed settings', 'Project:', '.rcms'))
             assert 'Supplementary details' in text
+            assert text.index('Supplementary details') > text.rindex('Figure ')
             if sample == 'amino':
                 assert view.manuscript.title == 'clinical failure: random-effects meta-analysis (odds ratio)'
                 assert 'The pooled odds ratio was 0.770 (95% CI 0.485 to 1.222; p = 0.267).' in view.manuscript.results
-                assert view.manuscript.results == '19 studies were included (1097 participants in Intervention, 1080 in Control). The pooled odds ratio was 0.770 (95% CI 0.485 to 1.222; p = 0.267). Heterogeneity: Q = 33.360 (df = 18; p = 0.015), I² = 46.0%, τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.'
+                assert view.manuscript.results == '19 studies were included (1097 participants in Intervention, 1080 in Control). The pooled odds ratio was 0.770 (95% CI 0.485 to 1.222; p = 0.267). Heterogeneity: Q = 33.360 (df = 18; p = 0.015), I² = 46.0%, τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.', view.manuscript.results
                 assert view.manuscript.methods == "Odds ratios were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance. Confidence intervals (95%) used the normal approximation. A continuity correction of 0.5 was applied to studies with any zero cell. Heterogeneity was assessed with Cochran's Q and I². Analyses were performed in RC MetaStudio 0.5.0. R packages loaded for this analysis: metafor 5.0.1, meta 8.5-0."
                 assert '-0.262' in normalized
             record('manuscript-export-' + sample + '-' + suffix, view, exported=str(path))
@@ -74,6 +113,44 @@ def run(app, window, work, root, record, analyze):
         write_docx(view.manuscript, work / (workflow + '.docx'))
         write_pdf(view.manuscript, work / (workflow + '.pdf'))
         assert workflow.split('-')[0].lower() in view.manuscript.methods.lower()
+        prose = view.manuscript.results
+        if workflow == 'subgroup':
+            assert 'Subgroup A: estimate' in prose and 'Subgroup B: estimate' in prose
+            assert 'Between-group test:' in prose
+        else:
+            assert 'coefficient' in prose and '95% CI' in prose and '; p = ' in prose, (prose, [(s.title, s.tables) for s in view.results.sections if s.kind == 'text'])
+            assert 'Residual heterogeneity:' in prose
+            assert any(t.title == 'Regression coefficients' for section in view.manuscript.sections for t in section.tables)
+        exported = Document(work / (workflow + '.docx'))
+        captions = [p.text for p in exported.paragraphs]
+        assert any(p.startswith('Table ') for p in captions)
+        if 'Supplementary details' in captions:
+            assert captions.index('Supplementary details') > max(i for i, p in enumerate(captions) if p.startswith('Figure '))
         (work / (workflow + '-prose.txt')).write_text('Methods\n' + view.manuscript.methods + '\n\nResults\n' + view.manuscript.results)
         record('manuscript-' + workflow, view)
         view.close()
+
+    from PyQt6.QtCore import QTimer
+    from rc_metastudio.publication_bias_dialog import PublicationBiasDialog
+    from rc_metastudio.results_window import ResultsWindow
+    window.workspace.mark_saved()
+    assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
+    errors = []
+    def run_small_study():
+        dialog = app.activeModalWidget()
+        try:
+            assert isinstance(dialog, PublicationBiasDialog)
+            dialog.run()
+            assert not dialog.failure_label.isVisible(), dialog.failure_label.text()
+        except Exception as error:
+            errors.append(error)
+        finally:
+            dialog.reject()
+    QTimer.singleShot(0, run_small_study)
+    window.action_publication_bias.trigger()
+    assert not errors, errors
+    view = next(w for w in app.topLevelWidgets() if isinstance(w, ResultsWindow) and w.isVisible())
+    assert 'Harbord' in view.manuscript.methods or 'Rücker' in view.manuscript.methods
+    assert not any(word in view.manuscript.methods.lower() for word in ('evidence', 'bias present', 'bias absent'))
+    record('manuscript-small-study-methods', view, methods=view.manuscript.methods)
+    view.close()

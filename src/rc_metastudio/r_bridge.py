@@ -1385,6 +1385,23 @@ def _parse_display_results(result):
         for index, key in enumerate(key for key in text_d if key not in text_sources):
             text_sources[key] = (text_n, index)
 
+    if "res" in result:
+        fit = result["res"]
+        if _has_r_names(fit) and all(key in list(fit.names) for key in ("b", "ci.lb", "ci.ub", "pval")) and len(fit.rx2("b")) > 1:
+            fields = dict(zip(list(fit.names), list(fit)))
+            level = 100 * (1 - float(list(fields["level"])[0]))
+            coefficients = fields["b"]
+            names = _r_dimnames(coefficients)[0]
+            rows = [[str(name), *[_format_r_table_cell(list(fields[key])[i], field_name=header)
+                     for key, header in (("b", "Estimate"), ("ci.lb", "Lower bound"), ("ci.ub", "Upper bound"), ("pval", "p-value"))]]
+                    for i, name in enumerate(names)]
+            tables = [{"title": "Regression coefficients", "headers": ["Term", "Estimate", f"Lower bound ({level:g}% CI)", f"Upper bound ({level:g}% CI)", "p-value"], "rows": rows}]
+            residual = [(key, label) for key, label in (("QE", "Q"), ("QEp", "p-value"), ("tau2", "τ²")) if key in fields]
+            if residual:
+                tables.append({"title": "Residual heterogeneity", "headers": [label for _, label in residual],
+                               "rows": [[_format_r_table_cell(list(fields[key])[0], field_name=label) for key, label in residual]]})
+            reports["Summary"] = {"paragraphs": [], "tables": tables}
+
     text_d, text_sources = _apply_text_value_keys(
         text_d, text_sources, metadata["sections"]
     )

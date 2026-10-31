@@ -80,3 +80,31 @@ but is not claimed as qualification of the final tree. The full matrix log is
 
 The four slice3b screenshots are retained for review, not a claim of complete
 qualification. `ux/audit-improvements` must not be advanced from this work.
+
+## Recovery and completed workflow implementation
+
+The results-window R error is the intentional `invalid-estimator` injection in
+`tests/e2e/ux_workflows.py`, introduced by 254d48888 and present before both
+5fce9f07 and 0de697fe. The driver restores DL and proves recovery. Reproduction
+20261031T132831Z-57fd1119-results-window passed. It is not a manuscript estimator
+regression. Hillclimb instead failed displaying its completed fit: manuscript
+content in the dirty predecessor of 1f4f1995 read `values` before assignment
+(the retained error log points to `from_result`, line 88). The committed tree
+already assigns it per table; an empty section is now initialized explicitly. Initialize the section-local accumulator before visiting tables.
+
+Persisted empty entry rows are recognized by one predicate: no label, year,
+sample size, notes, covariate value, entered effect, ratio input, raw value, or
+manual exclusion. Named pending rows and covariate-only rows survive. Both legacy
+conversion and runtime loading use that rule. The conversion checker compares
+all retained source rows independently and allows only empty placeholders to be
+omitted from bundled archives; raw data, effects, settings and original bytes
+are still compared. No numerical oracle is regenerated.
+
+Subgroup numerical prose uses per-group displayed estimates and confidence
+intervals and the held between-group table. Regression prose and captioned tables
+use the held coefficient, CI, p-value and residual heterogeneity fields. Small-study
+Methods name executed procedures from Method details and produced figures, without
+a bias verdict. Supplementary tables follow all figures in both print exporters.
+`manuscript-export` exercises real legacy bytes, manuscript prose, captions,
+export ordering, and small-study procedure names. Qualification results below
+supersede the outstanding-work receipt only when explicitly recorded as passed.
