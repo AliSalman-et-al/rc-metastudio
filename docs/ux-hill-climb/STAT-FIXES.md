@@ -246,3 +246,18 @@ MD 2 [1, 3] requires SE 0.607956831911769.
 Targeted transcripts: build/sheets-baseline/entered-ci-{red,binary,md}.log.
 Qualification: build/sheets-baseline/entered-ci-qualification.log; individual
 strict gate, authority and E2E logs share the entered-ci prefix.
+
+Entered-CI qualification completed on a4ef07fe in one uninterrupted serial shell:
+strict golden passed (475 comparisons, 416 numeric fields); authority passed
+100 cases; desktop E2E finished 131 passed / 3 failed in 3043.16 seconds.
+Failures: analysis-sequential-fixed-{cumulative,leave-one-out,subgroup}.
+Their public reference helper sequential_workflows.py passes add=c(.5,.5)
+to rma.mh, retaining pooling correction despite the earlier original-count MH
+fix documented above. Observed vs reference OR: cumulative through Giamarellou
+0.369027 vs 0.382841267237438; overall leave-one-out 0.711969 vs
+0.720292710361172; subgroup A 0.716852 vs 0.722098995928783.
+These comparisons remain unchanged and unresolved; no oracle regenerated.
+No pushes performed because qualification failed.
+Failure evidence: artifacts/verification/rcms/20261031T214010Z-94837a3f-analysis-sequential-fixed-cumulative,
+20261031T214022Z-b00a7ac8-analysis-sequential-fixed-leave-one-out,
+20261031T214035Z-7ab5b416-analysis-sequential-fixed-subgroup.
