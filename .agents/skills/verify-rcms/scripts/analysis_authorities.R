@@ -212,6 +212,33 @@ for (workflow in c("cum.ma.continuous","loo.ma.continuous")) {
   }
 }
 rows[[length(rows)+1L]] <- list(case="continuous fixed subgroup, sequential and regression",passed=TRUE)
+# Binary failure modes: wrong subset, estimator, moderator, or effect scale.
+for (method in c("binary.fixed.inv.var", "binary.random")) {
+  a <- c(4,6,3,62,33,180); b <- c(119,300,228,13536,5036,1361)
+  c <- c(11,29,11,248,47,372); d <- c(128,274,209,12619,5761,1079)
+  ef <- metafor::escalc("OR",ai=a,bi=b,ci=c,di=d)
+  g <- c(1,2,4,3,6,5)
+  data <- methods::new("BinaryData",g1O1=a,g1O2=b,g2O1=c,g2O2=d,
+    y=ef$yi,SE=sqrt(ef$vi),study.names=paste0("Binary",1:6),
+    covariates=list(methods::new("CovariateValues",cov.name="Moderator",cov.vals=g,cov.type="continuous")))
+  p <- params("OR"); p$cov_name <- "Moderator"
+  p$rm.method <- if(method=="binary.random") "DL" else "FE"
+  ref <- metafor::rma.uni(ef$yi,vi=ef$vi,mods=~g,method=p$rm.method)
+  r <- RCMetaR:::meta.regression(data,p,stop.at.rma=TRUE)
+  for (field in c("b","se","ci.lb","ci.ub","pval","QM","QMp","tau2")) close(r[[field]],ref[[field]],paste(method,"regression",field))
+  for (workflow in c("cum.ma.binary","loo.ma.binary")) {
+    r <- get(workflow,asNamespace("RCMetaR"))(method,data,p)
+    table <- r$res$summary.table
+    for(i in seq_along(a)) {
+      ix <- if(workflow=="cum.ma.binary") seq_len(i) else setdiff(seq_along(a),i)
+      ref <- metafor::rma.uni(ef$yi[ix],vi=ef$vi[ix],method=p$rm.method)
+      row <- if(workflow=="cum.ma.binary") i else i+1L
+      for(field in c("se","ci.lb","ci.ub","pval")) close(table[[field]][row],ref[[field]],paste(method,workflow,i,field))
+      close(table$estimate[row],ref$b,paste(method,workflow,i,"estimate"))
+    }
+  }
+  rows[[length(rows)+1L]] <- list(case=paste(method,"binary sequential and regression"),passed=TRUE)
+}
 # Zero-cell failure modes: corrected pooled counts, dropped double-zero rows,
 # and different counts reaching sequential/subgroup refits.
 a <- c(0,0,6,3,19); n1 <- c(20,30,27,59,164)

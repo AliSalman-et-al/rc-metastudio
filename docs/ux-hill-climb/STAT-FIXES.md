@@ -133,3 +133,30 @@ individual study estimates only; pooled Peto uses original counts, asserted
 by the manuscript desktop scenario. RCMetaR reinstalled into
 build/sheets-r-library (peto-install.log, peto-provenance.json).
 Strict golden gate and remaining requested steps are pending.
+
+## Binary sequential and regression authorities
+
+Added direct metafor FE/DL comparisons for binary cumulative, leave-one-out
+and continuous-moderator regression: estimates, SE, interval bounds and p-values;
+regression also compares QM/QMp and tau-squared. Failure modes were written
+before implementation. First targeted run failed on the first cumulative
+p-value: the single-study helper omitted it. It now returns the two-sided
+normal-test p-value. Targeted checks pass (binary-targeted.log before,
+binary-targeted-after.log after); binary-targeted.R retains the exact inputs.
+Reinstalled RCMetaR (binary-install.log). Full authority and golden reruns pending.
+The Peto-only strict golden gate passed 474 comparisons / 415 numerical fields
+with zero frozen drift: golden-compatibility-peto/compatibility-report.json
+under build/qt6-verification.
+
+## Stop: unauthorized frozen output change
+
+Full expanded authority script passed 100 cases (binary-final.log/json).
+The subsequent strict gate failed: amino-binary-cumulative Gonzalez now
+produces a p-value where the frozen result had none, plus cumulative text
+drift. This is outside the authorized Peto zero-cell changes. Stopped without
+changing any frozen oracle, as instructed. Report:
+build/qt6-verification/golden-compatibility-binary-final/compatibility-report.json.
+Step 2's p-value fix is committed but cannot be qualified under current
+authorization. Desktop swap and ratio-confidence assertions are prepared in
+the dirty worktree but unrun/uncommitted. sheets-swap, calculator-ratio-precision,
+Manuscript-export and amino remain unrun in this session. No push or full matrix.

@@ -128,7 +128,8 @@ get.res.for.one.binary.study <- function(binary.data, params) {
     mult <- get.mult.from.conf.level(params$conf.level)
     ub <- y + mult*se
     lb <- y - mult*se
-    res <- list("b"=c(y), "ci.lb"=lb, "ci.ub"=ub, "se"=se)
+    res <- list("b"=c(y), "ci.lb"=lb, "ci.ub"=ub, "se"=se,
+                "pval"=2*pnorm(-abs(y/se)))
     res
 }
 
