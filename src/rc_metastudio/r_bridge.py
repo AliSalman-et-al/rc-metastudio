@@ -3,6 +3,7 @@
 """R bridge for RCMetaR calls through rpy2."""
 
 import importlib
+from functools import wraps
 import importlib.metadata
 import locale
 import math
@@ -12,7 +13,7 @@ import sys
 from collections.abc import Mapping, Sequence
 from contextvars import ContextVar
 from pathlib import Path
-from typing import Callable, Literal, cast, overload
+from typing import Callable, Literal, ParamSpec, TypeVar, cast, overload
 
 from rc_metastudio import r_runtime
 from rc_metastudio.analysis_method_labels import (
@@ -27,7 +28,7 @@ from rc_metastudio.study_effect_shapes import (
     normalize_diagnostic_effects,
     normalize_effect_result,
 )
-from rc_metastudio.r_call_serialization import require_r_transaction, serialized_r_call
+from rc_metastudio.r_call_serialization import require_r_transaction, serialized_r_call as _serialized_r_call
 from rc_metastudio.meta_globals import (
     BINARY,
     CONTINUOUS,
@@ -42,15 +43,37 @@ from rc_metastudio.meta_globals import (
     validate_confidence_level,
 )
 
+_P = ParamSpec("_P")
+_T = TypeVar("_T")
+_INITIALIZATION_ERROR: Exception | None = None
+
+
+def _require_initialized_r() -> None:
+    from rc_metastudio.r_backend import AnalysisBackendUnavailableError
+    if _INITIALIZATION_ERROR is not None:
+        raise AnalysisBackendUnavailableError("R failed to start") from _INITIALIZATION_ERROR
+    if "ro" not in globals():
+        raise AnalysisBackendUnavailableError("R is still starting")
+
+
+def serialized_r_call(function: Callable[_P, _T]) -> Callable[_P, _T]:
+    @wraps(function)
+    def initialized(*args: _P.args, **kwargs: _P.kwargs) -> _T:
+        _require_initialized_r()
+        return function(*args, **kwargs)
+    return _serialized_r_call(initialized)
+
+
 def initialize_r():
     """Initialize embedded R explicitly, after the application shell is visible."""
-    global ro, rpy2, RRuntimeError, _rpy2_conversion, _rpy2_rchar_to_str
+    global _INITIALIZATION_ERROR, ro, rpy2, RRuntimeError, _rpy2_conversion, _rpy2_rchar_to_str
     if "ro" in globals():
         return
     r_runtime.configure_bundled_r_environment()
     try:
         import rpy2.robjects as ro
     except Exception as error:
+        _INITIALIZATION_ERROR = error
         raise RuntimeError(
             "Cannot initialize rpy2. Check the bundled R runtime configuration."
         ) from error
@@ -135,6 +158,7 @@ def packaged_runtime_observation() -> dict[str, object]:
 
 def _r_function(function_name: str) -> _RFunction:
     """Return a callable R function after checking rpy2's dynamic lookup."""
+    _require_initialized_r()
     function = ro.r[function_name]
     if not callable(function):
         raise TypeError("R object %r is not callable" % function_name)
@@ -143,6 +167,7 @@ def _r_function(function_name: str) -> _RFunction:
 
 def _r_eval(expression: str) -> object:
     """Evaluate an R expression after checking rpy2's dynamic evaluator."""
+    _require_initialized_r()
     evaluator = ro.r
     if not callable(evaluator):
         raise TypeError("rpy2's R evaluator is not callable")
@@ -167,6 +192,7 @@ def _first_dynamic(value: object) -> object:
 
 def _r_is_null(r_object):
     """Return whether an rpy2 object represents R's NULL value."""
+    _require_initialized_r()
     return r_object is rpy2.rinterface.NULL or isinstance(
         r_object, type(rpy2.rinterface.NULL)
     )
@@ -361,6 +387,7 @@ def r_iterable_to_list(r_iterable):
 
 
 def _r_singleton_to_scalar(singleton):
+    _require_initialized_r()
     if len(singleton) != 1:
         raise ValueError("expected an R sequence with one element")
     if isinstance(singleton, rpy2.robjects.vectors.FactorVector):
@@ -371,6 +398,7 @@ def _r_singleton_to_scalar(singleton):
 def _r_na_to_none(value):
     # Normalize typed R missing values without treating literal "NA" text as
     # missing. Infinities remain values for the typed calculator boundary.
+    _require_initialized_r()
     if isinstance(
         value,
         (
@@ -398,6 +426,7 @@ def _is_r_iterable(value, exclude_strings=True):
 
 
 def _has_r_names(value):
+    _require_initialized_r()
     if not isinstance(value, rpy2.robjects.vectors.Vector):
         return False
     # rpy2 exposes matrix/array dimnames through ``names`` as well.  Those
@@ -461,6 +490,7 @@ def set_confidence_level(confidence_level):
 
 
 def _r_null_if_none(value):
+    _require_initialized_r()
     return rpy2.rinterface.NULL if value is None else value
 
 
@@ -765,6 +795,7 @@ def _analysis_data_kwargs(
 
 
 def _r_character_vector(values):
+    _require_initialized_r()
     converted = [
         ro.NA_Character if _data_blank_or_none(value) else str(value)
         for value in values
@@ -773,6 +804,7 @@ def _r_character_vector(values):
 
 
 def _r_year_vector(values):
+    _require_initialized_r()
     converted = [
         ro.NA_Integer if _data_blank_or_none(value) else int(value) for value in values
     ]
@@ -780,6 +812,7 @@ def _r_year_vector(values):
 
 
 def _r_numeric_vector(values):
+    _require_initialized_r()
     converted = [
         ro.NA_Real if _data_blank_or_none(value) else float(value) for value in values
     ]
@@ -980,6 +1013,7 @@ def generate_small_study_effects_funnel(file_path, params_name="params"):
 
 
 def _r_param_value(param):
+    _require_initialized_r()
     if isinstance(param, ro.ListVector):
         return param
     if param is None:
@@ -1016,6 +1050,7 @@ def _r_param_value(param):
 
 def _to_r_params(params):
     """Given a Python dictionary of method arguments, return a named R list."""
+    _require_initialized_r()
     return ro.ListVector(
         {str(param): _r_param_value(params[param]) for param in list(params.keys())}
     )
@@ -1029,6 +1064,7 @@ def _r_symbol(name):
 
 
 def _r_object_from_symbol(name):
+    _require_initialized_r()
     return ro.globalenv[_r_symbol(name)]
 
 
@@ -1099,6 +1135,7 @@ def _execute_versioned_request(
     res_name: str,
     data_name: str,
 ) -> object:
+    _require_initialized_r()
     normalized = {
         "version": 1,
         "data_type": data_type,
@@ -1161,6 +1198,7 @@ def _execute_versioned_requests(
     res_name: str,
     diagnostic_data_name: str,
 ) -> object:
+    _require_initialized_r()
     request_list = execute_r_function(
         "list", *[_to_r_params(request) for request in requests]
     )
@@ -1696,6 +1734,7 @@ def _unique_result_section_id(kind, source_key, used_ids):
 
 def _result_items_for_display(result):
     """Return ``(section, value)`` pairs without leaking R's NULL names."""
+    _require_initialized_r()
     if _r_is_null(result):
         return []
     names = _r_result_names(result)
@@ -2075,10 +2114,12 @@ def _display_section_name(name):
 
 
 def _is_r_string_vector(r_object):
+    _require_initialized_r()
     return isinstance(r_object, rpy2.robjects.vectors.StrVector)
 
 
 def _r_dims(r_object):
+    _require_initialized_r()
     if not isinstance(r_object, rpy2.robjects.vectors.Vector):
         return []
     try:
