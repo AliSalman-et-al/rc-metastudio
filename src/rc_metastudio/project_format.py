@@ -158,11 +158,22 @@ def _convert_pairs(project, state):
                     record["raw_data"] = {identities[a["name"]]: copy.deepcopy(a["raw_data"]) for a in unit["groups"]}
                     record["entered_effects"] = [{"metric": metric, "arms": comparisons[key], "values": copy.deepcopy(values)} for metric, entries in unit["entered_effects"].items() for key,values in entries.items()]
                     record["ratio_inputs"] = [{"arms": [identities[n] for n in value["groups"]], "input": copy.deepcopy(value["input"])} for value in unit.get("ratio_inputs", [])]
+                if is_empty_entry_row(record):
+                    continue
                 rows.append(record)
             sheets.append(dict(id=sid, name=name, family=families[outcome["data_type"]], data_type=outcome["data_type"], sub_type=outcome["sub_type"], arms=arms, covariates=covariates, settings=settings, rows=rows))
             if (state.get("active_outcome"), state.get("active_follow_up")) == (outcome["name"], follow_up):
                 selection = sid
     return {"schema_version": 3, "title": source["title"], "notes": source["notes"], "sheets": sheets}, {"schema_version": 3, "current_sheet_id": selection or (sheets[0]["id"] if sheets else None)}
+
+
+def is_empty_entry_row(row):
+    """Recognize persisted grid placeholders without discarding partially entered studies."""
+    return (not row['label'] and not row['manually_excluded']
+            and row['year'] is None and row['sample_size'] is None and not row['notes']
+            and all(v in ('', None) for v in row['covariates'].values())
+            and not row['entered_effects'] and not row['ratio_inputs']
+            and all(v in ('', None) for cells in row['raw_data'].values() for v in cells))
 
 
 def convert_v1_to_sheet_project(project, state):

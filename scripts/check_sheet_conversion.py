@@ -57,8 +57,18 @@ def check():
                         if key not in {'schema_version','active_outcome','active_follow_up','active_groups'}:
                             assert sheet['settings'][key] == value
                     labels = {a['id']:a['name'] for a in sheet['arms']}
-                    assert len(sheet['rows']) == len(source['studies'])
-                    for old,row in zip(source['studies'],sheet['rows'],strict=True):
+                    retained = []
+                    for old in source['studies']:
+                        unit = next((u for u in old['analysis_units'] if (u['outcome'], u['follow_up']) == (outcome['name'], follow)), None)
+                        empty = (not old['name'] and old['year'] is None and old['sample_size'] is None
+                                 and not old['notes'] and not old['manually_excluded']
+                                 and all(v in ('', None) for v in old['covariates'].values())
+                                 and (unit is None or (not unit['entered_effects'] and not unit.get('ratio_inputs')
+                                      and all(v in ('', None) for arm in unit['groups'] for v in arm['raw_data']))))
+                        if not empty:
+                            retained.append(old)
+                    assert len(sheet['rows']) == len(retained)
+                    for old,row in zip(retained,sheet['rows'],strict=True):
                         assert row['label'] == old['name']
                         for key in ('year','sample_size','include','manually_excluded','notes'):
                             assert row[key] == old[key], (path.name,key)
@@ -84,6 +94,14 @@ def check():
             assert reopened.project == document.project and reopened.state == document.state
             assert legacy.read_bytes() == original
             bundled = load_project(path)
+            # Bundled v3 archives retain the historical empty entry row; legacy import omits it.
+            for sheet, converted in zip(bundled.project['sheets'], document.project['sheets'], strict=True):
+                omitted = [row for row in sheet['rows'] if row['id'] not in {r['id'] for r in converted['rows']}]
+                assert all(not row['label'] and row['year'] is None and not row['manually_excluded']
+                           and not row['entered_effects'] and not row['ratio_inputs']
+                           and not row['covariates'] and not row['notes'] and row['sample_size'] is None
+                           and all(v in ('', None) for cells in row['raw_data'].values() for v in cells) for row in omitted)
+                sheet['rows'][:] = [row for row in sheet['rows'] if row not in omitted]
             assert bundled.project == document.project and bundled.state == document.state
             print(f'| {path.name} | {count} → {len(document.project["sheets"])} | yes |')
 if __name__ == '__main__': check()
