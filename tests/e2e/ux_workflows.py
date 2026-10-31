@@ -273,8 +273,10 @@ def run(app, window, work, root, record, analyze):
     for column, value in ((window.model.RAW_DATA[1], 10000), (window.model.RAW_DATA[3], 10000), (window.model.RAW_DATA[0], 1), (window.model.RAW_DATA[2], 5000)):
         assert window.model.setData(window.model.index(0, column), value)
     estimate = str(window.model.data(window.model.index(0, window.model.OUTCOMES[0])))
-    assert 0 < float(estimate) < .001
-    assert abs(float(estimate) - 1 / 9999) < 1e-6
+    assert estimate == "0.00"
+    stored_estimate = float(window.model.data(window.model.index(0, window.model.OUTCOMES[0]), QtCore.Qt.ItemDataRole.EditRole))
+    assert 0 < stored_estimate < .001
+    assert abs(stored_estimate - 1 / 9999) < 1e-6
     record("ux-small-ratio", window, raw=[1, 10000, 5000, 10000], displayed_estimate=estimate)
 
     form = add_new_dialogs.AddCovariateDialog(window, existing_names=[c["name"] for c in window.model.current_sheet.covariates])
