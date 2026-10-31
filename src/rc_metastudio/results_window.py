@@ -672,26 +672,24 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         for section in deferred:
             yield section.semantic_id, "Study weights" if section.source_key == "Weights" else section.title, section.paragraphs if section.tables else (section.value,), section.tables
 
-    def _plain_text_report(self):
-        blocks = [self.results.identity]
-        for _anchor, heading, paragraphs, tables in self._report_blocks():
-            blocks.append(_report_heading(heading))
-            blocks.extend(paragraph for paragraph in paragraphs if paragraph.startswith("Pooled "))
-            for index, table in enumerate(tables):
-                caption = _report_heading(table.title) + "\n" if table.title != heading and not (index == 0 and table.title.endswith("Model Results")) else ""
-                blocks.append(caption + "\n".join(
-                    "\t".join(row) for row in (table.headers, *table.rows)))
-            blocks.extend(paragraph for paragraph in paragraphs if not paragraph.startswith("Pooled "))
-        return "\n\n".join(block for block in blocks if block) + "\n"
-
     def _copy_report(self):
-        required(QApplication.clipboard(), "system clipboard").setText(self._plain_text_report())
+        from PyQt6.QtCore import QMimeData
+        from rc_metastudio.manuscript_report import ManuscriptReport
+        report = ManuscriptReport.from_result(self.results)
+        mime = QMimeData()
+        mime.setHtml(report.html())
+        mime.setText(report.plain_text())
+        required(QApplication.clipboard(), "system clipboard").setMimeData(mime)
         self.statusbar.showMessage("Report copied")
 
     def _export_report(self):
-        path, _filter = QFileDialog.getSaveFileName(self, "Export analysis report", self._export_name("report", "txt"), "Text report (*.txt)")
+        from rc_metastudio.manuscript_report import ManuscriptReport, write_docx, write_pdf
+        path, selected = QFileDialog.getSaveFileName(self, "Export manuscript report", self._export_name("report", "pdf"), "PDF (*.pdf);;Word document (*.docx)")
         if path:
-            Path(path).write_text(self._plain_text_report(), encoding="utf-8")
+            extension = "docx" if "docx" in selected else "pdf"
+            path = str(Path(path).with_suffix("." + extension))
+            report = ManuscriptReport.from_result(self.results)
+            (write_docx if extension == "docx" else write_pdf)(report, path)
             self.statusbar.showMessage(f"Saved report: {Path(path).resolve()}")
 
     def _export_name(self, title, extension):

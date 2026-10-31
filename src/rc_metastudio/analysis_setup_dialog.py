@@ -959,7 +959,22 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if project_path:
             from pathlib import Path
             details = "Project: " + Path(project_path).name + "\n" + details
-        return replace(result, identity=identity, details=details)
+        from rc_metastudio import r_bridge
+        packages = r_bridge.execute_r_string('intersect(c("RCMetaR", "metafor", "meta", "mada"), loadedNamespaces())')
+        software = ", ".join(f"{name} {r_bridge.get_r_package_version(str(name))}" for name in packages)
+        included = len(self.model.get_studies())
+        excluded = len(self.model.get_studies(only_if_included=False)) - included
+        context = f"The selected sheet contained {included} included and {excluded} excluded studies."
+        if self.data_type in ("binary", "diagnostic") and applied_parameters.get("adjust"):
+            raw = self.model.get_current_raw_data()
+            policy = applied_parameters.get("correction.policy", applied_parameters.get("to", "only0"))
+            zero = any(value == 0 for row in raw for value in row)
+            if self.data_type == "binary":
+                zero = zero or any(row[i] == row[i + 1] for row in raw for i in range(0, len(row) - 1, 2))
+            if policy not in ("none", "None") and (zero or policy in ("all", "All studies")):
+                label = {"only0": "studies with any zero cell", "all": "all studies", "if0all": "all studies if any zero exists"}.get(policy, policy)
+                context += f" A continuity correction of {applied_parameters['adjust']} was applied to {label}."
+        return replace(result, identity=identity, details=details, software=software, manuscript_context=context)
 
     def _diagnostic_fit_details(self):
         fits = []

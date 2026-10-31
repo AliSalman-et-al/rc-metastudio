@@ -91,6 +91,8 @@ class AnalysisResult:
     sections: tuple[ResultSection, ...]
     identity: str = ""
     details: str = ""
+    software: str = ""
+    manuscript_context: str = ""
 
 def _sections(
     texts: Mapping[str, str],
