@@ -390,7 +390,7 @@ def calculator_effect_source(
     entered effect in that state so back-calculation and direct editing remain
     usable; switch to the preview only after the active metric has one.
     """
-    raw_data = analysis_unit.get_raw_data_for_groups(groups)
+    raw_data = analysis_unit.get_raw_data_for_arms(groups)
     if not any(value not in EMPTY_VALS for value in raw_data):
         return "entered"
     required_data = _ONE_ARM_REQUIRED_DATA.get(effect, len(raw_data))
@@ -592,7 +592,7 @@ def block_signals(widgets, state):
 def get_raw_data(analysis_unit, groups):
     raw_data_dict = {}
     for group in groups:
-        raw_data = analysis_unit.get_raw_data_for_group(group)
+        raw_data = analysis_unit.get_raw_data_for_arm(group)
         raw_data_dict[group] = raw_data
     return raw_data_dict
 

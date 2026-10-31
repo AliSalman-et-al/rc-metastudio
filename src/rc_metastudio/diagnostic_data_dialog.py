@@ -644,7 +644,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                 raw_data_index = DIAG_FIELDS_TO_RAW_INDICES[field]
 
                 # Preserve blanks while storing the imputed count.
-                self.analysis_unit.get_raw_data_for_arm(self.arm_key)[
+                self.analysis_unit.get_raw_data_for_arm(self.arm_names[0])[
                     raw_data_index
                 ] = (
                     None
@@ -657,7 +657,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         raw_dict = self.get_raw_diagnostic_data()  # values are floats or None
         for field in raw_dict.keys():
             i = DIAG_FIELDS_TO_RAW_INDICES[field]
-            self.analysis_unit.get_raw_data_for_arm(self.arm_key)[i] = raw_dict[
+            self.analysis_unit.get_raw_data_for_arm(self.arm_names[0])[i] = raw_dict[
                 field
             ]
 
@@ -873,7 +873,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             for col in (0, 1):
                 for row in (0, 1):
                     val = self.analysis_unit.get_raw_data_for_arm(
-                        self.arm_key
+                        self.arm_names[0]
                     )[field_index]
                     if val is not None:
                         try:

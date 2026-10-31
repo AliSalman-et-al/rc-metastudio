@@ -97,6 +97,12 @@ class CovariateTypeModel(QAbstractTableModel):
         else:
             new_name += " (category)"
 
+        existing = {cov["name"] for cov in self.dataset.covariates}
+        base_name = new_name
+        suffix = 2
+        while new_name in existing:
+            new_name = f"{base_name} {suffix}"
+            suffix += 1
         guessed_vals = self.guess_at_values()  # try and infer sensible values
         self.new_covariate = dict(id=uuid.uuid4().hex, name=new_name, data_type=self.new_data_type)
 
