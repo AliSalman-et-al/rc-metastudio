@@ -1044,6 +1044,60 @@ def calculator(app, window, family):
     analyze(app, window, method).close()
 
 
+def grid_entry(app, window):
+    from PyQt6.QtTest import QTest
+    from rc_metastudio import main_wizard
+    from PyQt6 import QtCore, QtWidgets
+    # Use the real wizard, clipboard, delegate and workspace history.
+    def create():
+        dialog = app.activeModalWidget()
+        dialog.currentPage().twoarm_proportions_Button.click()
+        dialog.button(QtWidgets.QWizard.WizardButton.NextButton).click()
+        if isinstance(dialog.currentPage(), main_wizard.ChooseMetricPage):
+            dialog.button(QtWidgets.QWizard.WizardButton.NextButton).click()
+        dialog.currentPage().outcome_name_LineEdit.setText("Grid entry")
+        dialog.button(QtWidgets.QWizard.WizardButton.FinishButton).click()
+    QtCore.QTimer.singleShot(100, create)
+    window.action_new_dataset.trigger()
+    table = window.tableView
+    fixture = (ROOT / "tests/e2e/fixtures/hillclimb/binary.tsv").read_text()
+    rows = [line.split("\t") for line in fixture.strip().splitlines()]
+    rows[0][2] = "bad"
+    app.clipboard().setText("\r\n".join("\t".join(row) for row in rows) + "\r\n")
+    table.setCurrentIndex(window.model.index(0, window.model.NAME))
+    QTest.keyClick(table, QtCore.Qt.Key.Key_V, QtCore.Qt.KeyboardModifier.ControlModifier)
+    assert sum(row.include for row in window.model.current_sheet.rows) == 11
+    assert "1 cell" in window.statusBar().currentMessage()
+    window.undo(); assert not window.model.current_sheet.rows
+    window.redo(); assert len(window.model.current_sheet.rows) == 12
+    model = window.model
+    model.setData(model.index(1, 0), False, QtCore.Qt.ItemDataRole.CheckStateRole)
+    model.add_covariate("Dose", "continuous")
+    column = table.get_covariate_columns()[-1]
+    table.setCurrentIndex(model.index(0, column))
+    for value in ("21", "22", "23"):
+        QTest.keyClicks(table, value)
+        editor = next(w for w in table.findChildren(QtWidgets.QLineEdit) if w.isVisible())
+        QTest.keyClick(editor, QtCore.Qt.Key.Key_Return)
+        app.processEvents()
+    cov = model.current_sheet.covariates[-1]["id"]
+    assert [r.covariate_values.get(cov) for r in model.current_sheet.rows[:3]] == [21, 22, 23]
+    window.undo(); window.redo()
+    selection = QtCore.QItemSelection(model.index(0, column), model.index(2, column))
+    table.selectionModel().select(selection, QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect)
+    QTest.keyClick(table, QtCore.Qt.Key.Key_D, QtCore.Qt.KeyboardModifier.ControlModifier)
+    assert [r.covariate_values.get(cov) for r in model.current_sheet.rows[:3]] == [21]*3
+    window.undo(); window.redo()
+    model = window.model
+    table.selectionModel().select(QtCore.QItemSelection(model.index(0, column), model.index(2, column)), QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect)
+    QTest.keyClick(table, QtCore.Qt.Key.Key_Delete)
+    assert all(r.covariate_values.get(cov) is None for r in model.current_sheet.rows[:3])
+    window.undo(); window.redo()
+    assert not model.current_sheet.rows[1].include
+    assert sum(r.include for r in model.current_sheet.rows) == 10
+    record_step("grid-entry-complete", window, included=10, skipped=1)
+
+
 def hillclimb(app, window):
     """Fixed effort route; setup/cleanup outside task boundaries is not counted."""
     import time
@@ -1333,6 +1387,8 @@ try:
         from tests.e2e.sheets_baseline import run
 
         run(app, window, record_step, analyze)
+    elif scenario == "grid-entry":
+        grid_entry(app, window)
     elif scenario == "hillclimb":
         hillclimb(app, window)
     elif scenario.startswith("audit-round3-"):

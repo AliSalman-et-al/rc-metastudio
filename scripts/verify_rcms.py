@@ -32,6 +32,7 @@ SCENARIOS = (
     "review-workflows",
     "doctor",
     "hillclimb",
+    "grid-entry",
     "ux-improvements",
     "amino",
     "sheets",
