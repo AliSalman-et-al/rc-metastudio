@@ -174,3 +174,10 @@ fit-width startup, absence of the identity block, navigation label widths and SV
 favours labels after default and plot-editor-customised arm swaps. The full
 132-scenario offscreen matrix passed for slice 2c; see
 `docs/ux-hill-climb/SLICE2C.md` for commands and evidence.
+
+Zero-cell binary MH pooling uses original counts and metafor defaults. The
+inline OR/RR authority fixture compares pooled estimates and intervals with
+both metafor and meta MH.exact. Sequential/subgroup workflows reuse this fitter;
+zero-cell sequential/subgroup combinations still need a targeted drive.
+`manuscript-export` asserts actual MH/Peto correction prose and retained
+IV/DL double-zero counts (2 in amino, 3 after adding a double-zero row).

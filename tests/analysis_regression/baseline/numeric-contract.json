@@ -1058,7 +1058,7 @@
       ]
     }
   },
-  "oracle_sha256": "1d437539e97fd30c5028f725872dd6a705cd579e8dea397f7510f2da83515848",
+  "oracle_sha256": "ee09379f877d49e4546c2e857b1a7a9a060f2a2e221c7445e6cbb5f84a38c6b6",
   "schema_version": 1,
   "tolerance_policy": {
     "absolute": 0.001,

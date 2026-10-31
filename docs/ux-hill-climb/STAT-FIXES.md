@@ -42,7 +42,7 @@ This exercises the real Qt/R subgroup plot and exports, not native OS gestures.
 
 ## Remaining work
 
-Steps 2–5 have not been implemented: zero-cell MH pooling, Methods truth,
+Zero-cell MH pooling and Methods truth are implemented below. Remaining:
 binary sequential/regression authority expansion, desktop swap and calculator
 confidence-level audits. Full final qualification and pushes remain pending.
 The old continuous-only sequential/regression limitation still applies.
@@ -80,3 +80,31 @@ retained double-zero counts (amino 2; modified real project 3).
 PDF/DOCX manuscript-export passed, including real MH/Peto Methods text:
 artifacts/verification/rcms/20261031T203534Z-c37bfdd2-manuscript-export.
 Source digests: build/sheets-baseline/mh-source-provenance.json.
+
+## Final targeted qualification (this run)
+
+Strict golden gate passed: 474 comparisons, 415 numerical fields; no numerical
+field drift. Only the two authorized text Q/p pairs changed. Qm -> Q also
+shortens table padding by one space. Archive SHA bindings in both contracts and
+the outer manifest were updated; numerical/plot expectations were not changed.
+Report: build/qt6-verification/golden-compatibility-stat-fixes/compatibility-report.json.
+Amino passed: artifacts/verification/rcms/20261031T203917Z-2fad9760-amino.
+Plot subgroup passed:
+artifacts/verification/rcms/20261031T203948Z-05646eaa-plot-workflow-subgroup.
+Manuscript-export passed at the path recorded above. All desktop runs used
+Qt offscreen with real R, serially. No full matrix or push was performed.
+
+Exact shell setup for all commands: `source build/sheets-baseline/ENV.sh`.
+Commands (logs under build/sheets-baseline):
+- `uv run --no-sync python scripts/verify_golden_compatibility.py --output-root build/qt6-verification/golden-compatibility-stat-fixes`
+- `"$R_HOME/bin/Rscript" .agents/skills/verify-rcms/scripts/analysis_authorities.R build/sheets-baseline/mh-authorities.json`
+- `uv run --no-sync python scripts/verify_rcms.py amino`
+- `uv run --no-sync python scripts/verify_rcms.py manuscript-export`
+- `uv run --no-sync python scripts/verify_rcms.py plot-workflow-subgroup`
+
+Additional exact probe: `"$R_HOME/bin/Rscript" build/sheets-baseline/peto-probe.R build/sheets-baseline/peto-probe.json`;
+retained inline inputs, command and output in peto-probe.R / peto-probe.log.
+RCMS Peto is exactly the add=.5 result quoted above. Old corrected-count MH RR
+was -0.2149007 -> -0.2219334 (same metafor/meta authority). These MH probe
+values are not frozen golden fields. Installed/source digests are both retained
+in mh-source-provenance.json. Full matrix qualification remains for the later run.
