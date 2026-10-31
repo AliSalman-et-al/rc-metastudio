@@ -382,7 +382,7 @@ def diagnostic_effect_display_samples(metric, digits=CALC_NUM_DIGITS):
 
 
 def calculator_effect_source(
-    analysis_unit, groups, effect, group_comparison, confidence_multiplier
+    analysis_unit, groups, effect, arm_key, confidence_multiplier
 ):
     """Return the active calculator effect authority.
 
@@ -397,7 +397,7 @@ def calculator_effect_source(
     if any(value in EMPTY_VALS for value in raw_data[:required_data]):
         return "entered"
     preview = analysis_unit.get_effect_and_ci_for_source(
-        "derived_preview", effect, group_comparison, confidence_multiplier
+        "derived_preview", effect, arm_key, confidence_multiplier
     )
     return "derived_preview" if any(value is not None for value in preview) else "entered"
 
@@ -406,7 +406,7 @@ def set_current_effect_from_value(
     analysis_unit,
     txt_boxes,
     current_effect,
-    group_comparison,
+    arm_key,
     data_type,
     confidence_multiplier=None,
     *,
@@ -433,7 +433,7 @@ def set_current_effect_from_value(
     ]
 
     (est, lower, upper) = analysis_unit.get_effect_and_ci_for_source(
-        source, current_effect, group_comparison, confidence_multiplier
+        source, current_effect, arm_key, confidence_multiplier
     )
     (display_estimate, display_lower, display_upper) = [
         conv_to_disp_scale(x) for x in (est, lower, upper)
@@ -631,7 +631,7 @@ def evaluate(
     new_text,
     analysis_unit,
     current_effect,
-    group_comparison,
+    arm_key,
     conv_to_disp_scale,
     ci_param=None,
     parent=None,
@@ -649,7 +649,7 @@ def evaluate(
         raise ValueError("confidence multiplier must be specified")
 
     est, lower, upper = analysis_unit.get_effect_and_ci_for_source(
-        source, current_effect, group_comparison, confidence_multiplier
+        source, current_effect, arm_key, confidence_multiplier
     )  # calc scale
     display_estimate, display_lower, display_upper = [
         conv_to_disp_scale(x) for x in (est, lower, upper)

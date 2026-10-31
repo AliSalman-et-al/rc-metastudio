@@ -69,7 +69,6 @@ from rc_metastudio import publication_bias_dialog
 from rc_metastudio import publication_bias
 from rc_metastudio import diagnostic_metrics_dialog
 from rc_metastudio import subgroup_analysis_dialog
-from rc_metastudio import edit_dialog
 from rc_metastudio import edit_name_dialogs
 from rc_metastudio import covariate_type_dialog
 from rc_metastudio import confidence_level_dialog
@@ -672,7 +671,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 self.action_auto_fit_columns, self.tableView.auto_fit_columns
             )
 
-            _connect_action(self.action_edit, self.edit_dataset)
             _connect_action(self.action_add_covariate, self.add_covariate)
 
             _connect_action(self.action_meta_regression, self.meta_reg)
@@ -897,52 +895,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if position is not None:
             self.tableView.setCurrentIndex(self.model.index(*position))
 
-    def edit_dataset(self):
-        current_dataset = self.workspace.snapshot().dataset
-        edit_window = edit_dialog.EditDialog(current_dataset, parent=self)
-
-        if edit_window.exec():
-            # if we edited the current dataset when there was no
-            # outcome yet, then we want to default to an outcome
-            # that was added.
-
-            old_state_dict = self.tableView.model().get_state()
-            new_state_dict = copy.deepcopy(old_state_dict)
-
-            # update the new state dict to reflect the currently selected
-            # outcomes, etc.
-            outcome_model = edit_window.outcomes_model
-            edited_outcomes = outcome_model.outcome_list
-            if outcome_model.current_outcome_name is not None:
-                new_state_dict["current_outcome_name"] = (
-                    outcome_model.current_outcome_name
-                )
-            elif old_state_dict["current_outcome_name"] in edited_outcomes:
-                new_state_dict["current_outcome_name"] = old_state_dict[
-                    "current_outcome_name"
-                ]
-            elif edited_outcomes:
-                # If the current outcome was removed, select the first remaining one.
-                new_state_dict["current_outcome_name"] = edited_outcomes[0]
-            else:
-                new_state_dict["current_outcome_name"] = None
-
-            new_state_dict["current_follow_up_index"] = max(
-                edit_window.follow_up_list.currentIndex().row(), 0
-            )
-            group_names = edit_window.groups_model.group_list
-
-            if len(group_names) >= 2:
-                new_state_dict["current_groups"] = group_names[:2]
-            else:
-                new_state_dict["current_groups"] = group_names or meta_globals.default_group_names(
-                    self.model.get_current_outcome_type(get_str=False), self.model.get_current_outcome_subtype())
-            modified_dataset = edit_window.dataset
-
-            self._commit_model_operation(
-                lambda: self.set_model(modified_dataset, new_state_dict)
-            )
-
     def populate_metrics_menu(self, metric_to_check=None):
         """Populates the `metric` sub-menu with available metrics for the
         current datatype.
@@ -1092,7 +1044,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         )
         if edit_group_form.exec():
             try:
-                existing_groups = list(self.model.dataset.get_group_names())
+                existing_groups = list(self.model.arm_names)
                 if orig_group_name in existing_groups:
                     existing_groups.remove(orig_group_name)
                 new_group_name = name_validation.validate_unique_name(
@@ -1112,13 +1064,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self._commit_model_operation(rename_group_command.redo)
 
     def add_covariate(self):
-        form = add_new_dialogs.AddCovariateDialog(self, existing_names=self.model.dataset.get_covariate_names())
+        form = add_new_dialogs.AddCovariateDialog(self, existing_names=self.model.get_covariate_names())
         form.covariate_name_le.setFocus()
         if form.exec():
             # then the user clicked 'ok'.
             try:
                 new_covariate_name = dataset_table_model.validate_new_covariate_name(
-                    self.model.dataset, form.covariate_name_le.text()
+                    self.model, form.covariate_name_le.text()
                 )
             except ValueError as exc:
                 QMessageBox.warning(self, "Warning", str(exc))
@@ -1139,7 +1091,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             covariate = self._add_new_covariate(
                 covariate_name, covariate_type, stable_id=state["stable_id"]
             )
-            state["stable_id"] = covariate.stable_id
+            state["stable_id"] = covariate["id"]
 
         def undo():
             self._undo_add_new_covariate(covariate_name)
@@ -1166,8 +1118,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         pass
 
 
-    def update_follow_up_label(self):
-        pass
 
     def open(self, file_path=None, raise_on_error=False):
         """Open a validated structured project and restore its durable working state.
@@ -1251,7 +1201,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._refresh_advanced_analysis_actions()
         self.populate_metrics_menu(metric_to_check=model.current_effect)
         self.update_outcome_lbl()
-        self.update_follow_up_label()
         selection_model = required(
             self.tableView.selectionModel(), "workspace selection model"
         )
@@ -1276,35 +1225,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._commit_model_operation(delete_command.redo)
 
     def change_covariate_type(self, covariate):
-        current_dataset = self.workspace.snapshot().dataset
-        # keep the current study order, because we're going to sort the studies
-        # on the change_cov_form but we want to revert to the ordering
-        # they came in with when we're done.
-        original_study_order = [study.name for study in self.model.dataset.studies]
-
-        change_type_form = covariate_type_dialog.CovariateTypeDialog(
-            current_dataset, covariate, parent=self
-        )
-
+        sheet = copy.deepcopy(self.model.current_sheet)
+        change_type_form = covariate_type_dialog.CovariateTypeDialog(sheet, covariate, parent=self)
         if change_type_form.exec():
-            modified_dataset = change_type_form.dataset
-            # revert to original study ordering
-            modified_dataset.studies.sort(
-                key=cmp_to_key(
-                    modified_dataset.cmp_studies(
-                        compare_by="ordered_list",
-                        ordered_list=original_study_order,
-                        confidence_multiplier=self.model.get_confidence_multiplier(),
-                    )
-                )
-            )
-
-            old_state_dict = self.tableView.model().get_state()
-            new_state_dict = copy.deepcopy(old_state_dict)
-
-            self._commit_model_operation(
-                lambda: self.set_model(modified_dataset, new_state_dict)
-            )
+            def apply():
+                self.model.current_sheet.covariates = sheet.covariates
+                self.model.current_sheet.rows = sheet.rows
+                self.model._sync_display_studies()
+                self.model.reset_model()
+            self._commit_model_operation(apply)
 
     def rename_covariate(self, covariate):
         orig_cov_name = copy.copy(covariate['name'])
@@ -1316,7 +1245,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             # the field names are also poorly named, in this case. here we mean the
             # **covariate name**, of course.
             try:
-                existing_covariates = list(self.model.dataset.get_covariate_names())
+                existing_covariates = list(self.model.get_covariate_names())
                 if orig_cov_name in existing_covariates:
                     existing_covariates.remove(orig_cov_name)
                 new_cov = name_validation.validate_unique_name(
@@ -1342,26 +1271,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         # Synchronize direct model edits made by an adapter before publishing
         # the next atomic workspace change.
         self.data_dirtied()
-        covariate_values_by_study = self.model.dataset.get_covariate_values(
-            covariate['name']
-        )
-        stable_id = getattr(covariate, "stable_id", None)
-
-        def undo_f():
-            self.model.add_covariate(
-                covariate['name'],
-                meta_globals.COV_INTS_TO_STRS[covariate.data_type],
-                covariate_values=covariate_values_by_study,
-                stable_id=stable_id,
-            )
-            self._refresh_advanced_analysis_actions()
-
-        def redo_f():
-            self.model.remove_covariate(covariate)
-            self._refresh_advanced_analysis_actions()
-
-        delete_command = meta_globals.CallbackCommand(redo_f, undo_f)
-        self._commit_model_operation(delete_command.redo)
+        self._commit_model_operation(lambda: self.model.remove_covariate(covariate))
+        self._refresh_advanced_analysis_actions()
 
     def _refresh_advanced_analysis_actions(self):
         self._enable_action_meta_regression()

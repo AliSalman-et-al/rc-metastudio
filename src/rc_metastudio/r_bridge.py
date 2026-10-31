@@ -519,7 +519,7 @@ def dataset_to_simple_ratio_r_object(
 ):
     if studies is None:
         studies = table_model.get_studies(only_if_included=True)
-    groups = table_model.current_groups
+    groups = table_model.arm_names
     records, raws, sources = [], [], []
     for study in studies:
         unit = study.analysis_unit
@@ -598,7 +598,7 @@ def dataset_to_simple_binary_r_object(
     covs_to_include=None,
     studies=None,
 ):
-    """Convert the table's selected outcome and follow-up to an RCMetaR object."""
+    """Convert the table's current sheet to an RCMetaR object."""
     if studies is None:
         # grab the study names. note: the list is pulled out in reverse order from the
         studies = table_model.get_studies(only_if_included=True)

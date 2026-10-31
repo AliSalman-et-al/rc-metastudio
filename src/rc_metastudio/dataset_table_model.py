@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Qt table model for dataset, outcome, follow-up, and treatment views."""
+"""Qt table model for the current sheet."""
 
 from dataclasses import dataclass
 from functools import cmp_to_key
@@ -106,18 +106,6 @@ def _to_native_text(value):
     return qt_text.to_native_text(value)
 
 
-def validate_new_outcome_name(dataset, name):
-    return name_validation.validate_unique_name(
-        "outcome", name, dataset.get_outcome_names()
-    )
-
-
-def validate_new_group_name(dataset, name):
-    return name_validation.validate_unique_name(
-        "group", name, dataset.get_arm_names()
-    )
-
-
 def validate_new_covariate_name(dataset, name):
     return name_validation.validate_unique_name(
         "covariate", name, dataset.get_covariate_names()
@@ -172,7 +160,6 @@ class DatasetTableModel(QAbstractTableModel):
 
     workspaceEditCommitted = pyqtSignal(WorkspaceEdit)
     outcomeChanged = pyqtSignal()
-    followUpChanged = pyqtSignal()
     dataError = pyqtSignal(str)
     editFocusRequested = pyqtSignal(QModelIndex)
     confLevelChanged = pyqtSignal()
@@ -212,7 +199,7 @@ class DatasetTableModel(QAbstractTableModel):
 
 
     @property
-    def current_groups(self):
+    def arm_names(self):
         return [arm.name for arm in self.current_sheet.arms] if self.current_sheet else []
 
 
@@ -258,7 +245,7 @@ class DatasetTableModel(QAbstractTableModel):
         self.study_auto_added = None
         self._display_studies = list(self.current_sheet.rows) if self.current_sheet else []
         if add_blank_study and self.current_sheet:
-            self._blank_study = StudyRow(uuid.uuid4().hex, "", AnalysisUnit(self.current_sheet, arm_names=self.current_groups, arm_stable_ids=[a.id for a in self.current_sheet.arms]), include=False)
+            self._blank_study = StudyRow(uuid.uuid4().hex, "", AnalysisUnit(self.current_sheet, arm_names=self.arm_names, arm_stable_ids=[a.id for a in self.current_sheet.arms]), include=False)
             self.study_auto_added = self._blank_study.id
             self._display_studies.append(self._blank_study)
 
@@ -410,7 +397,7 @@ class DatasetTableModel(QAbstractTableModel):
         study = self._study_for_row(index.row())
         raw_data = self.get_current_analysis_unit_for_study(
             study_index=index.row()
-        ).get_raw_data_for_arms(self.current_groups)
+        ).get_raw_data_for_arms(self.arm_names)
         adjusted_index = index.column() - 3
         if len(raw_data) <= adjusted_index:
             return _item_data("")
@@ -442,7 +429,7 @@ class DatasetTableModel(QAbstractTableModel):
             return _item_data("")
         unit = self.get_current_analysis_unit_for_study(index.row())
         source = self._display_effect_source(unit)
-        comparison = self.get_current_group_comparison()
+        comparison = self.get_current_arm_key()
         outcome_index = index.column() - self.OUTCOMES[0]
         if self.get_current_outcome_type(get_str=False) in RATIO_DATA_TYPES:
             return self._ratio_outcome_cell_data(unit, outcome_index, role)
@@ -455,10 +442,10 @@ class DatasetTableModel(QAbstractTableModel):
         return self._effect_cell_data(unit, source, self.current_effect, comparison, values, outcome_index, role)
 
     def _ratio_outcome_cell_data(self, unit, outcome_index, role):
-        record = unit.ratio_input(self.current_groups)
+        record = unit.ratio_input(self.arm_names)
         if role == Qt.ItemDataRole.DisplayRole and outcome_index < 3:
             value = self._ratio_display_values(unit)[outcome_index]
-            raw = unit.get_raw_data_for_arms(self.current_groups)
+            raw = unit.get_raw_data_for_arms(self.arm_names)
             if value is None and record.ready(raw, metric=self.current_effect) and record.selected_source(raw, metric=self.current_effect) == "raw" and raw[0] == 0 and raw[2] == 0:
                 return _item_data("Not estimable" if outcome_index == 0 else "\u2014")
             return _item_data("" if value is None else self.format_float(value))
@@ -471,7 +458,7 @@ class DatasetTableModel(QAbstractTableModel):
         entry = unit.derived_effect_previews.get(effect, {}).get(comparison, {})
         if entry.get("display_conf_level") is None:
             return False
-        raw = unit.get_raw_data_for_arms(self.current_groups)
+        raw = unit.get_raw_data_for_arms(self.arm_names)
         if effect in ONE_ARM_METRICS:
             raw = raw[:len(raw) // 2]
         return bool(raw) and raw_data_is_complete(raw)
@@ -488,14 +475,14 @@ class DatasetTableModel(QAbstractTableModel):
         return _item_data(str(value) if role == Qt.ItemDataRole.EditRole else self.format_float(value, num_digits=display_digits))
 
     def _ratio_display_values(self, unit):
-        record = unit.ratio_input(self.current_groups)
-        raw = unit.get_raw_data_for_arms(self.current_groups)
+        record = unit.ratio_input(self.arm_names)
+        raw = unit.get_raw_data_for_arms(self.arm_names)
         try:
             source = record.selected_source(raw, metric=self.current_effect)
         except ValueError:
             return (None, None, None)
         if source == "raw":
-            return unit.get_display_effect_and_ci_for_source("derived_preview", self.current_effect, self.get_current_group_comparison())
+            return unit.get_display_effect_and_ci_for_source("derived_preview", self.current_effect, self.get_current_arm_key())
         if record.scale == "ratio":
             return (record.estimate, record.lower, record.upper)
         values = (record.estimate, record.lower, record.upper)
@@ -539,20 +526,20 @@ class DatasetTableModel(QAbstractTableModel):
         if self.is_diagnostic():
             effect = "Spec" if index.column() - self.OUTCOMES[0] >= 3 else "Sens"
         source = self._display_effect_source(unit)
-        comparison = self.get_current_group_comparison()
+        comparison = self.get_current_arm_key()
         values = unit.get_display_effect_and_ci_for_source(source, effect, comparison)
         if self._complete_effect_preview(unit, source, effect, comparison) and (values[0] is None or not math.isfinite(float(values[0]))):
             return "Not estimable: the complete raw data do not define a finite effect for the selected metric and preview settings. Review the data or choose another applicable metric."
 
     def _ratio_effect_tooltip(self, index):
         unit = self.get_current_analysis_unit_for_study(index.row())
-        record = unit.ratio_input(self.current_groups)
+        record = unit.ratio_input(self.arm_names)
         try:
-            source = record.selected_source(unit.get_raw_data_for_arms(self.current_groups), metric=self.current_effect)
+            source = record.selected_source(unit.get_raw_data_for_arms(self.arm_names), metric=self.current_effect)
         except ValueError as error:
             return str(error) + " Click the study row number to choose."
         if source == "raw":
-            raw = unit.get_raw_data_for_arms(self.current_groups)
+            raw = unit.get_raw_data_for_arms(self.arm_names)
             if len(raw) == 4 and raw[0] == 0 and raw[2] == 0:
                 return "Not estimable: zero events in both groups. The rate ratio is 0/0, so no individual IRR or confidence interval is shown. The default analysis omits this study's individual effect; analysis settings control zero-event handling. Click the study row number to edit."
             return f"Raw events/person-time ({record.unit}). Preview: {self.confidence_level:g}% CI, add 0.5 to zero-event studies, omit double-zero effects. Analysis settings are selected separately. Click the study row number to edit."
@@ -606,7 +593,7 @@ class DatasetTableModel(QAbstractTableModel):
             return _item_data(QColor(Qt.GlobalColor.black))
         return _item_data()
 
-    def get_current_group_comparison(self):
+    def get_current_arm_key(self):
         arms = self.current_sheet.arms if self.current_sheet else []
         return tuple(a.id for a in (arms[:1] if self.current_effect in ONE_ARM_METRICS else arms))
 
@@ -618,11 +605,11 @@ class DatasetTableModel(QAbstractTableModel):
         )
         return workspace_editing.WorkspaceEditingContext(
             sheet_id=self.current_sheet_id,
-            current_groups=tuple(self.current_groups),
+            arm_names=tuple(self.arm_names),
             current_effect=self.current_effect,
             data_type=self.get_current_outcome_type(get_str=False),
             outcome_subtype=self.get_current_outcome_subtype(),
-            group_comparison=self.get_current_group_comparison(),
+            arm_key=self.get_current_arm_key(),
             raw_columns=tuple(self.RAW_DATA),
             outcome_columns=tuple(self.OUTCOMES),
             include_column=self.INCLUDE_STUDY,
@@ -636,7 +623,7 @@ class DatasetTableModel(QAbstractTableModel):
         )
 
     def _display_effect_source(self, analysis_unit):
-        raw_data = analysis_unit.get_raw_data_for_arms(self.current_groups)
+        raw_data = analysis_unit.get_raw_data_for_arms(self.arm_names)
         return "derived_preview" if any(value not in (None, "") for value in raw_data) else "entered"
 
     def _inclusion_value_for_edit(self, index, value, role):
@@ -740,7 +727,7 @@ class DatasetTableModel(QAbstractTableModel):
         added_study_id = result.added_study_id
         if is_blank_study:
             added_study_id = self.current_sheet.rows[canonical_row].id
-            self._blank_study = StudyRow(uuid.uuid4().hex, "", AnalysisUnit(self.current_sheet, arm_names=self.current_groups, arm_stable_ids=[a.id for a in self.current_sheet.arms]), include=False)
+            self._blank_study = StudyRow(uuid.uuid4().hex, "", AnalysisUnit(self.current_sheet, arm_names=self.arm_names, arm_stable_ids=[a.id for a in self.current_sheet.arms]), include=False)
             self.study_auto_added = self._blank_study.id
         self._sync_display_studies()
         edit = _EditTarget(
@@ -845,7 +832,7 @@ class DatasetTableModel(QAbstractTableModel):
         suffix = "\nSort on this column by right-clicking the column header and selecting 'sort studies by <column>'"
         if outcome_type == DIAGNOSTIC:
             return ("# True Positives", "# False Negatives", "# False Positives", "# True Negatives")[position] + suffix
-        group = self.current_groups[position // (2 if outcome_type == BINARY else 3)]
+        group = self.arm_names[position // (2 if outcome_type == BINARY else 3)]
         if outcome_type == BINARY:
             label = ("Events in {0} (numerator)", "Total participants in {0} (denominator)")[position % 2]
         else:
@@ -938,7 +925,7 @@ class DatasetTableModel(QAbstractTableModel):
             raw_columns=self.RAW_DATA,
             outcome_columns=self.OUTCOMES,
             current_effect=self.current_effect,
-            groups=self.current_groups,
+            groups=self.arm_names,
             outcome_is_present=self.current_outcome_name is not None,
         )
         if result:
@@ -1008,9 +995,9 @@ class DatasetTableModel(QAbstractTableModel):
             )
         if self.get_current_outcome_type(get_str=False) in RATIO_DATA_TYPES and index.column() in self.OUTCOMES[:3] and index.row() < len(self._display_studies) and self._outcome_cell_is_available(self._study_for_row(index.row())):
             unit = self.get_current_analysis_unit_for_study(index.row())
-            record = unit.ratio_input(self.current_groups)
+            record = unit.ratio_input(self.arm_names)
             try:
-                raw_source = record.selected_source(unit.get_raw_data_for_arms(self.current_groups), metric=self.current_effect) == "raw"
+                raw_source = record.selected_source(unit.get_raw_data_for_arms(self.arm_names), metric=self.current_effect) == "raw"
             except ValueError:
                 raw_source = False
             if raw_source or record.scale == "log":
@@ -1046,8 +1033,8 @@ class DatasetTableModel(QAbstractTableModel):
         return [cov['name'] for cov in (self.current_sheet.covariates if self.current_sheet else [])]
 
     def rename_covariate(self, old_cov_name, new_cov_name):
-        old_cov_obj = self.dataset.get_covariate(old_cov_name)
-        self.dataset.change_covariate_name(old_cov_obj, new_cov_name)
+        cov = next(c for c in self.current_sheet.covariates if c["name"] == old_cov_name)
+        cov["name"] = new_cov_name
         self.reset_model()
 
     def _get_col_count(self):
@@ -1093,22 +1080,16 @@ class DatasetTableModel(QAbstractTableModel):
     def remove_outcome(self, outcome_name):
         self.dataset.remove_outcome(outcome_name)
 
-    def add_new_group(self, name):
-        name = validate_new_group_name(self.dataset, name)
-        self.dataset.add_group(name, self.current_outcome_name)
-
-    def remove_group(self, group_name):
-        self.dataset.remove_group(group_name)
-
     def rename_group(self, old_group_name, new_group_name):
-        self.dataset.change_group_name(old_group_name, new_group_name)
-        if old_group_name in self.current_groups:
-            group_index = self.current_groups.index(old_group_name)
-            # now remove the old group from the list of current groups
-            self.current_groups.pop(group_index)
-            self.current_groups.insert(group_index, new_group_name)
+        arm = next(a for a in self.current_sheet.arms if a.name == old_group_name)
+        arm.name = new_group_name
+        for row in self.current_sheet.rows:
+            unit_arm = row.analysis_unit.arms.pop(old_group_name)
+            unit_arm.name = new_group_name
+            row.analysis_unit.arms[new_group_name] = unit_arm
+        self._blank_study = None
+        self._sync_display_studies()
         self.reset_model()
-
 
     def add_covariate(self, covariate_name, covariate_type, covariate_values=None, stable_id=None):
         cov = dict(id=stable_id or uuid.uuid4().hex, name=covariate_name, data_type=({'factor': 4, 'continuous': 1}.get(covariate_type, covariate_type)))
@@ -1119,7 +1100,10 @@ class DatasetTableModel(QAbstractTableModel):
         return cov
 
     def remove_covariate(self, covariate_name):
-        self.dataset.remove_covariate(covariate_name)
+        cov = covariate_name if isinstance(covariate_name, dict) else next(c for c in self.current_sheet.covariates if c["name"] == covariate_name)
+        self.current_sheet.covariates.remove(cov)
+        for row in self.current_sheet.rows:
+            row.covariate_values.pop(cov["id"], None)
         self.reset_model()
 
     def remove_study(self, an_id):
@@ -1131,27 +1115,38 @@ class DatasetTableModel(QAbstractTableModel):
         return self.dataset.title
 
 
-    def get_current_groups(self):
-        return self.current_groups
+    def get_arm_names(self):
+        return self.arm_names
 
 
     def get_group_names(self):
-        return self.current_groups
+        return self.arm_names
 
     def _sort_studies_with_cmp(self, field, reverse, *args):
-        self.current_sheet.rows.sort(key=lambda row: getattr(row, 'label' if field == 'name' else field) or 0, reverse=reverse)
+        def value(row):
+            if field == "name":
+                return row.label.casefold()
+            if field == "year":
+                return row.year
+            if field == "raw_data":
+                return row.analysis_unit.get_raw_data_for_arms(self.arm_names)[args[0]["data_index"]]
+            cov = next(c for c in self.current_sheet.covariates if c["name"] == field)
+            return row.covariate_values.get(cov["id"])
+        populated = [row for row in self.current_sheet.rows if row.label]
+        blank = [row for row in self.current_sheet.rows if not row.label]
+        populated.sort(key=lambda row: (value(row) is None, value(row)), reverse=reverse)
+        self.current_sheet.rows[:] = populated + blank
         self._display_studies = list(self.current_sheet.rows)
 
     def _sort_outcomes_with_display_source(self, column, reverse):
         data_type = self.get_current_outcome_type(get_str=False)
-        follow_up = self.current_sheet_id
-        group_comparison = self.get_current_group_comparison()
+        arm_key = self.get_current_arm_key()
         data_index = column - min(self.OUTCOMES)
 
         def outcome_value(study):
             unit = study.analysis_unit
             if data_type in RATIO_DATA_TYPES:
-                return self._ratio_display_values(unit)[data_index] if data_index < 3 else getattr(unit.ratio_input(self.current_groups), RATIO_FIELDS[data_index])
+                return self._ratio_display_values(unit)[data_index] if data_index < 3 else getattr(unit.ratio_input(self.arm_names), RATIO_FIELDS[data_index])
             source = self._display_effect_source(unit)
             effect = self.current_effect
             index = data_index
@@ -1159,11 +1154,11 @@ class DatasetTableModel(QAbstractTableModel):
                 effect = "Spec" if index >= 3 else "Sens"
                 index %= 3
             values = unit.get_effect_and_ci_for_source(
-                source, effect, group_comparison, self.get_confidence_multiplier()
+                source, effect, arm_key, self.get_confidence_multiplier()
             )
             n1 = None
             if effect == "PFT":
-                n1 = unit.get_raw_data_for_arms(self.current_groups)[1]
+                n1 = unit.get_raw_data_for_arms(self.arm_names)[1]
             converter = self._get_conv_to_display_scale(data_type, effect, n1)
             return converter(values[index])
 
@@ -1192,7 +1187,7 @@ class DatasetTableModel(QAbstractTableModel):
             analysis_unit_reference_info = {
                 "outcome_name": self.current_outcome_name,
                 "sheet_id": self.current_sheet_id,
-                "current_groups": self.get_current_groups(),
+                "arm_names": self.get_arm_names(),
                 "data_index": col - min(self.RAW_DATA),
             }
             self._sort_studies_with_cmp(
@@ -1388,17 +1383,17 @@ class DatasetTableModel(QAbstractTableModel):
         )
 
     def study_has_point_est(self, study_index, effect=None):
-        group_comparison = self.get_current_group_comparison()
+        arm_key = self.get_current_arm_key()
         effect = effect or self.current_effect
         analysis_unit = self._get_canonical_analysis_unit(study_index)
         if self.get_current_outcome_type(get_str=False) in RATIO_DATA_TYPES:
-            raw = analysis_unit.get_raw_data_for_arms(self.current_groups)
-            return analysis_unit.ratio_input(self.current_groups).ready(raw, metric=effect)
+            raw = analysis_unit.get_raw_data_for_arms(self.arm_names)
+            return analysis_unit.ratio_input(self.arm_names).ready(raw, metric=effect)
 
         if None in analysis_unit.get_effect_and_se_for_source(
             self._display_effect_source(analysis_unit),
             effect,
-            group_comparison,
+            arm_key,
             self.confidence_multiplier,
         ):
             return False
@@ -1406,14 +1401,14 @@ class DatasetTableModel(QAbstractTableModel):
         return True
 
     def current_estimate_and_standard_error_for_study(self, study_index, effect=None):
-        group_comparison = self.get_current_group_comparison()
+        arm_key = self.get_current_arm_key()
         analysis_unit = self._get_canonical_analysis_unit(study_index)
         effect = effect or self.current_effect
 
         source = self._display_effect_source(analysis_unit)
-        estimate = analysis_unit.get_estimate_for_source(source, effect, group_comparison)
+        estimate = analysis_unit.get_estimate_for_source(source, effect, arm_key)
         standard_error = analysis_unit.get_se(
-            source, effect, group_comparison, self.confidence_multiplier
+            source, effect, arm_key, self.confidence_multiplier
         )
         return estimate, standard_error
 
@@ -1452,7 +1447,7 @@ class DatasetTableModel(QAbstractTableModel):
             lambda index: self._get_canonical_analysis_unit(index).get_effect_and_se_for_source(
                 self._display_effect_source(self._get_canonical_analysis_unit(index)),
                 effect or self.current_effect,
-                self.get_current_group_comparison(),
+                self.get_current_arm_key(),
                 self.confidence_multiplier,
             ),
         )
@@ -1473,7 +1468,7 @@ class DatasetTableModel(QAbstractTableModel):
 
     def _get_canonical_raw_data_for_study(self, study_index):
         return self._get_canonical_analysis_unit(study_index).get_raw_data_for_arms(
-            self.current_groups
+            self.arm_names
         )
 
     def set_current_analysis_unit_for_study(self, study_index, new_analysis_unit):
@@ -1489,7 +1484,7 @@ class DatasetTableModel(QAbstractTableModel):
         if self.current_outcome_name is None or self.current_sheet_id is None:
             return
         effect = self.current_effect
-        group_comparison = self.get_current_group_comparison()
+        arm_key = self.get_current_arm_key()
         current_data_type = self.get_current_outcome_type(False)
         if current_data_type in RATIO_DATA_TYPES:
             return
@@ -1506,7 +1501,7 @@ class DatasetTableModel(QAbstractTableModel):
                 )
                 x.calculate_display_effect_and_ci(
                     effect,
-                    group_comparison,
+                    arm_key,
                     convert_to_display_scale,
                     confidence_level=self.get_confidence_level(),
                     confidence_multiplier=self.confidence_multiplier,
@@ -1517,7 +1512,7 @@ class DatasetTableModel(QAbstractTableModel):
                 for m_str in ["Sens", "Spec"]:
                     x.calculate_display_effect_and_ci(
                         m_str,
-                        group_comparison,
+                        arm_key,
                         convert_to_display_scale=self._get_conv_to_display_scale(
                             data_type=DIAGNOSTIC, effect=m_str
                         ),

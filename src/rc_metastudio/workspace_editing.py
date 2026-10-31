@@ -77,11 +77,11 @@ class WorkspaceEditingContext:
     """Domain values needed to edit one visible workspace."""
 
     sheet_id: str | None
-    current_groups: tuple[str, ...]
+    arm_names: tuple[str, ...]
     current_effect: str | None
     data_type: object
     outcome_subtype: str | None
-    group_comparison: str
+    arm_key: str
     raw_columns: tuple[int, ...]
     outcome_columns: tuple[int, ...]
     include_column: int
@@ -265,11 +265,11 @@ class WorkspaceEditingService:
             parsed = text
             if field in ("estimate", "lower", "upper", "se", "confidence"):
                 parsed = float(text) if text else (95.0 if field == "confidence" else None)
-            candidate = replace(unit.ratio_input(context.current_groups), **{field: parsed})
+            candidate = replace(unit.ratio_input(context.arm_names), **{field: parsed})
             candidate.validate()
         except (TypeError, ValueError) as error:
             return AppliedWorkspaceEdit(error=str(error))
-        unit.set_ratio_input(context.current_groups, candidate)
+        unit.set_ratio_input(context.arm_names, candidate)
         return AppliedWorkspaceEdit()
 
     @staticmethod
@@ -303,11 +303,11 @@ class WorkspaceEditingService:
             return
         unit = self._analysis_unit(dataset, study, context)
         if context.data_type in RATIO_DATA_TYPES:
-            raw = unit.get_raw_data_for_arms(context.current_groups)
-            study.include = not study.manually_excluded and unit.ratio_input(context.current_groups).ready(raw, metric=context.current_effect)
+            raw = unit.get_raw_data_for_arms(context.arm_names)
+            study.include = not study.manually_excluded and unit.ratio_input(context.arm_names).ready(raw, metric=context.current_effect)
             return
         effect = unit.get_effect_for_source(
-            "entered", context.current_effect or "", context.group_comparison
+            "entered", context.current_effect or "", context.arm_key
         )
         self.update_inclusion_after_edit(
             study,
@@ -422,7 +422,7 @@ class WorkspaceEditingService:
 
     def _raw_data(self, dataset: Dataset, study: StudyRow, context: WorkspaceEditingContext):
         return self._analysis_unit(dataset, study, context).get_raw_data_for_arms(
-            context.current_groups
+            context.arm_names
         )
 
     def _verify_raw_data(
@@ -545,13 +545,13 @@ class WorkspaceEditingService:
         if context.data_type == DIAGNOSTIC:
             metric = "Sens" if target.column in context.outcome_columns[:3] else "Spec"
             effect = unit.get_effect_and_ci_for_source(
-                "entered", metric, context.group_comparison, context.confidence_multiplier
+                "entered", metric, context.arm_key, context.confidence_multiplier
             )
             converter = self.display_scale_converter(DIAGNOSTIC, metric)
         else:
             n1 = self._raw_data(dataset, study, context)[1] if context.current_effect == "PFT" else None
             effect = unit.get_effect_and_ci_for_source(
-                "entered", context.current_effect or "", context.group_comparison, context.confidence_multiplier
+                "entered", context.current_effect or "", context.arm_key, context.confidence_multiplier
             )
             converter = self.display_scale_converter(context.data_type, context.current_effect, n1)
         return tuple(converter(item) for item in effect)
@@ -599,8 +599,8 @@ class WorkspaceEditingService:
         old_unit = copy.deepcopy(unit)
         try:
             position = context.raw_columns.index(target.column)
-            per_group = len(unit.get_raw_data_for_arm(context.current_groups[0]))
-            group = context.current_groups[0] if position < per_group else context.current_groups[1]
+            per_group = len(unit.get_raw_data_for_arm(context.arm_names[0]))
+            group = context.arm_names[0] if position < per_group else context.arm_names[1]
             unit.get_raw_data_for_arm(group)[position % per_group] = (
                 "" if qt_text.is_blank(value) else float(qt_text.normalize_decimal_text(value)[0])
             )
@@ -636,7 +636,7 @@ class WorkspaceEditingService:
         self._recalculate_entered_outcome(unit, metric, context)
         unit.calculate_display_effect_and_ci(
             metric,
-            context.group_comparison,
+            context.arm_key,
             self.display_scale_converter(context.data_type, metric, n1),
             confidence_level=context.confidence_level,
             confidence_multiplier=context.confidence_multiplier,
@@ -666,7 +666,7 @@ class WorkspaceEditingService:
         calculation_value,
         context: WorkspaceEditingContext,
     ) -> None:
-        entered = unit.get_effect_for_source("entered", metric, context.group_comparison)
+        entered = unit.get_effect_for_source("entered", metric, context.arm_key)
         if outcome_index == 0:
             values = (calculation_value, entered.lower, entered.upper, entered.standard_error)
         elif outcome_index == 1 and context.outcome_subtype == "generic_effect":
@@ -675,7 +675,7 @@ class WorkspaceEditingService:
             values = (entered.estimate, calculation_value, entered.upper, entered.standard_error)
         else:
             values = (entered.estimate, entered.lower, calculation_value, entered.standard_error)
-        unit.set_effect_for_source("entered", metric, context.group_comparison, *values)
+        unit.set_effect_for_source("entered", metric, context.arm_key, *values)
 
     @staticmethod
     def _recalculate_entered_outcome(
@@ -683,16 +683,16 @@ class WorkspaceEditingService:
     ) -> None:
         if context.outcome_subtype == "generic_effect":
             return
-        entered = unit.get_effect_for_source("entered", metric, context.group_comparison)
+        entered = unit.get_effect_for_source("entered", metric, context.arm_key)
         values = (entered.estimate, entered.lower, entered.upper)
         se = unit.calculate_se_if_possible(
             metric,
-            context.group_comparison,
+            context.arm_key,
             confidence_multiplier=context.confidence_multiplier,
             source="entered",
         ) if None not in values else None
         unit.set_effect_for_source(
-            "entered", metric, context.group_comparison,
+            "entered", metric, context.arm_key,
             entered.estimate, entered.lower, entered.upper, se,
         )
 
@@ -737,7 +737,7 @@ class WorkspaceEditingService:
         raw_data = self._raw_data(dataset, study, context)
         if context.data_type in RATIO_DATA_TYPES:
             self._clear_effect_and_display_ci(unit, context.current_effect, context)
-            record = unit.ratio_input(context.current_groups)
+            record = unit.ratio_input(context.arm_names)
             ready = record.ready(raw_data, metric=context.current_effect)
             if ready and record.selected_source(raw_data, metric=context.current_effect) == "raw" and r_backend.is_backend_installed():
                 est, lower, upper = r_bridge.incidence_rate_effect_preview(raw_data, context.confidence_level)
@@ -764,13 +764,13 @@ class WorkspaceEditingService:
 
     def _should_clear_inclusion(self, unit: AnalysisUnit, context) -> bool:
         if context.data_type == DIAGNOSTIC:
-            if not raw_data_is_empty(unit.get_raw_data_for_arms(context.current_groups)):
+            if not raw_data_is_empty(unit.get_raw_data_for_arms(context.arm_names)):
                 return True
             return not any(
                 None not in unit.get_effect_and_se_for_source(
                     "entered",
                     metric,
-                    context.group_comparison,
+                    context.arm_key,
                     context.confidence_multiplier,
                 )
                 for metric in DIAGNOSTIC_METRICS
@@ -810,7 +810,7 @@ class WorkspaceEditingService:
         return None not in unit.get_effect_and_se_for_source(
             "entered",
             context.current_effect or "",
-            context.group_comparison,
+            context.arm_key,
             context.confidence_multiplier,
         )
 
@@ -820,10 +820,10 @@ class WorkspaceEditingService:
     ) -> None:
         if metric is None:
             return
-        unit.set_effect_and_ci(metric, context.group_comparison, estimate, lower, upper, confidence_multiplier=context.confidence_multiplier)
+        unit.set_effect_and_ci(metric, context.arm_key, estimate, lower, upper, confidence_multiplier=context.confidence_multiplier)
         unit.calculate_display_effect_and_ci(
             metric,
-            context.group_comparison,
+            context.arm_key,
             self.display_scale_converter(context.data_type, metric, n1),
             confidence_level=context.confidence_level,
             confidence_multiplier=context.confidence_multiplier,
@@ -834,8 +834,8 @@ class WorkspaceEditingService:
     def _clear_effect_and_display_ci(unit: AnalysisUnit, metric: str | None, context: WorkspaceEditingContext) -> None:
         if metric is None:
             return
-        unit.set_effect_for_source("derived_preview", metric, context.group_comparison, None, None, None, None)
-        unit.set_display_effect_for_source("derived_preview", metric, context.group_comparison, None)
-        unit.set_display_lower_for_source("derived_preview", metric, context.group_comparison, None)
-        unit.set_display_upper_for_source("derived_preview", metric, context.group_comparison, None)
-        unit.set_display_se_for_source("derived_preview", metric, context.group_comparison, None)
+        unit.set_effect_for_source("derived_preview", metric, context.arm_key, None, None, None, None)
+        unit.set_display_effect_for_source("derived_preview", metric, context.arm_key, None)
+        unit.set_display_lower_for_source("derived_preview", metric, context.arm_key, None)
+        unit.set_display_upper_for_source("derived_preview", metric, context.arm_key, None)
+        unit.set_display_se_for_source("derived_preview", metric, context.arm_key, None)

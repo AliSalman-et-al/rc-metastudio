@@ -188,7 +188,6 @@
     </property>
     <addaction name="action_new_dataset" />
     <addaction name="separator" />
-    <addaction name="action_edit" />
     <addaction name="action_add_covariate" />
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -283,15 +282,6 @@
    </property>
    <property name="text">
     <string>Meta-analysis…</string>
-   </property>
-  </action>
-  <action name="action_edit">
-   <property name="icon">
-    <iconset resource="../images/icons.qrc">
-     <normaloff>:/icons/actions/edit-dataset.svg</normaloff>:/icons/actions/edit-dataset.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Edit dataset…</string>
    </property>
   </action>
   <action name="action_add_covariate">

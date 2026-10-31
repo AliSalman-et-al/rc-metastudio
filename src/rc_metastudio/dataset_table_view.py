@@ -332,7 +332,7 @@ class DatasetTableView(QtWidgets.QTableView):
         elif column_clicked in raw_data_columns and not data_type == "diagnostic":
             columns_per_group = 3 if data_type == "continuous" else 2
             group_index = raw_data_columns.index(column_clicked) // columns_per_group
-            corresponding_group = self.model().current_groups[group_index]
+            corresponding_group = self.model().arm_names[group_index]
 
             # renaming
             action_rename = QAction("Rename group %s…" % corresponding_group, self)
@@ -537,28 +537,28 @@ class DatasetTableView(QtWidgets.QTableView):
             analysis_unit = copy.deepcopy(
                 self.model().get_current_analysis_unit_for_study(study_index)
             )
-            current_groups = self.model().current_groups
+            arm_names = self.model().arm_names
             current_effect = self.model().current_effect
-            group_comparison = self.model().get_current_group_comparison()
+            arm_key = self.model().get_current_arm_key()
             data_type = self.model().get_current_outcome_type()
 
             if data_type == "binary":
                 form = binary_data_dialog.BinaryDataDialog(
                     analysis_unit,
-                    current_groups,
-                    group_comparison,
+                    arm_names,
+                    arm_key,
                     current_effect,
                     confidence_level=self.model().get_confidence_level(),
                     parent=self,
                 )
             elif data_type in ("time_to_event", "event_rates"):
                 from rc_metastudio.ratio_data_dialog import RatioDataDialog
-                form = RatioDataDialog(analysis_unit, current_groups, current_effect, parent=self)
+                form = RatioDataDialog(analysis_unit, arm_names, current_effect, parent=self)
             elif data_type == "continuous":
                 form = continuous_data_dialog.ContinuousDataDialog(
                     analysis_unit,
-                    current_groups,
-                    group_comparison,
+                    arm_names,
+                    arm_key,
                     current_effect,
                     confidence_level=self.model().get_confidence_level(),
                     parent=self,
@@ -566,8 +566,8 @@ class DatasetTableView(QtWidgets.QTableView):
             else:
                 form = diagnostic_data_dialog.DiagnosticDataDialog(
                     analysis_unit,
-                    current_groups,
-                    group_comparison,
+                    arm_names,
+                    arm_key,
                     confidence_level=self.model().get_confidence_level(),
                     parent=self,
                 )
