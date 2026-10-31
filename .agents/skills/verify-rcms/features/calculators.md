@@ -99,3 +99,9 @@ raw/entered values against the retained pre-change accepted-row fixture.
 independent `metafor::escalc` and `pnorm` calls, recording counts and full results.
 These are offscreen Qt proofs, not native DPI qualification. Continuous arm
 p-values remain reconstruction inputs; computed arm p-values are left blank.
+
+`calculator-ratio-precision` also accepts reported HR/IRR intervals at a 90%
+sheet confidence, verifies their SE by metafor::conv.wald and pooled weights
+by rma.uni DL, then changes sheet confidence to 95%. Original bounds and
+source confidence must remain unchanged, with the same analysis input SE.
+The source interval level is stored per study; output confidence is separate.

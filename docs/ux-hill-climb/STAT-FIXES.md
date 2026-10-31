@@ -185,3 +185,15 @@ MD 7.617160385 -> -7.617160385, CI [3.823294965,11.411025806] ->
 Failed evidence retained: 20261031T205334Z-9a3da145-sheets-swap (unloaded
 params); d6d071dc retry briefly overlapped the corrected run due to an
 unfinished-session misread. Neither is claimed as serial final qualification.
+
+## Entered interval confidence audit
+
+The simpler correct design already exists: RatioInput.confidence persists the
+original interval level independently of the sheet/output level. No new product
+mechanism or blocking dialog is needed. Added desktop assertions accept at 90%,
+undo/redo/save/reopen, compare SE with metafor::conv.wald and the explicit
+(logU-logL)/(2*qnorm(.95)) formula, compare DL weights at 1e-6, then switch to
+95% and require unchanged source bounds, source level and input SE.
+For bounds [1.2345678901234567e-8,1e12], source SE is
+13.934668740867144 before and after switching; source bounds remain intact.
+HR first-study weight is 0.0006822304378178452 percent after switching.

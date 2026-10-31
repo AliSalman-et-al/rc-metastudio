@@ -21,6 +21,15 @@ def run(app, window, work, record):
         for mode in modes:
             window.workspace.mark_saved()
             assert window.open(str(root/'sample_projects'/(sample+'.rcms')), raise_on_error=True)
+            def sheet_confidence(level):
+                from rc_metastudio.confidence_level_dialog import ConfidenceLevelDialog
+                def change(dialog):
+                    dialog.confidence_level_spinbox.setValue(level)
+                    click(app, dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+                modal(app, ConfidenceLevelDialog, change, window.action_change_confidence_level.trigger)
+                assert window.model.get_confidence_level() == level
+            if mode == 'ratio':
+                sheet_confidence(90)
             def text(field, value):
                 field.setFocus()
                 key_click(field, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
@@ -37,6 +46,7 @@ def run(app, window, work, record):
                     dialog.fields['scale'].setCurrentIndex(dialog.fields['scale'].findData(mode))
                     text(dialog.fields['estimate'], '0,12345678901234566')
                     if mode == 'ratio':
+                        text(dialog.fields['confidence'], '90')
                         text(dialog.fields['lower'], '1.2345678901234567e-8')
                         text(dialog.fields['upper'], '1e12')
                     else:
@@ -75,10 +85,25 @@ def run(app, window, work, record):
             derived = r_bridge.execute_r_string('c(result$input_data@y[1], result$input_data@SE[1])')
             assert math.isclose(float(derived[0]), expected_effect, abs_tol=1e-12)
             assert math.isclose(float(derived[1]), expected_se, rel_tol=1e-12, abs_tol=1e-15)
+            if mode == 'ratio':
+                from statistics import NormalDist
+                assert math.isclose(expected_se, (math.log(expected['upper'])-math.log(expected['lower']))/(2*NormalDist().inv_cdf(.95)), rel_tol=1e-12)
+                r_bridge.execute_r_string('local({d<-result$input_data; ref<-metafor::rma.uni(d@y,sei=d@SE,method="DL"); stopifnot(max(abs(weights(ref)-weights(result$res)))<1e-6)})')
             record('ratio-precision-reopened-fit', view, metric=metric, mode=mode,
                    source=expected, raw=raw, expected_effect=expected_effect, expected_se=expected_se,
                    observed_effect=float(derived[0]), observed_se=float(derived[1]))
             view.close()
+            if mode == 'ratio':
+                assert expected['confidence'] == 90
+                sheet_confidence(95)
+                assert asdict(window.model.get_current_analysis_unit_for_study(0).ratio_input(window.model.arm_names)) == expected
+                view = analyze_existing(app, window, 'standard', 'time_to_event.random' if metric == 'HR' else 'event_rates.random', record,
+                                        parameters={'digits':6,'rm.method':'DL','inference.method':'z'})
+                after = r_bridge.execute_r_string('result$input_data@SE[1]')
+                assert math.isclose(float(after[0]), expected_se, rel_tol=1e-12)
+                weights = r_bridge.execute_r_string('local({d<-result$input_data; ref<-metafor::rma.uni(d@y,sei=d@SE,method="DL"); stopifnot(max(abs(weights(ref)-weights(result$res)))<1e-6); weights(ref)})')
+                record('original-90-ci-after-sheet-95', view, source=expected, observed_se=float(after[0]), weights=list(weights))
+                view.close()
             if mode in ('raw', 'ratio'):
                 from xml.etree import ElementTree as ET
                 from tests.e2e.audit_round3 import check_annotation_spacing
