@@ -118,3 +118,49 @@ tar.gz; **459,948,481 bytes** whole-bundle logical; **66,769,599 bytes** R logic
 Source: [R-BUNDLE.md](R-BUNDLE.md), Final Linux result (qualified 30 October build).
 RevMan effort/timing, native human timings and packaged cold startup remain not
 measured. Full manuscript PDF/DOCX is not completable in today's application.
+
+## After slice 2a
+
+Real Qt/R offscreen final repetitions: `20261031T065611Z-e0d7bc97-hillclimb`
+and `20261031T065719Z-9b877928-hillclimb`. Counts, completion, numerical sections
+and result texts agree across both runs; all numerical/text receipts also match
+`baseline-measures.json`. Counts remain derived from the gesture helpers.
+
+| Task | Baseline clicks | After clicks | Delta | Baseline shortcuts | After shortcuts | Delta |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| T1 | 21 | 9 | -12 | 1 | 1 | 0 |
+| T2 | 50 | 16 | -34 | 74 | 26 | -48 |
+
+The slice drive pastes complete studies without inclusion clicks, selects the
+first cell of each covariate column once, then types each value and presses Enter.
+The original task descriptions above describe the baseline gestures. T3–T5 counts
+and outputs are unchanged. Script wall times remain unsuitable for human timing.
+
+The re-exclusion came from `_update_inclusion` checking only the entered-effect
+source after every edit, including covariates: raw-data-derived estimates were
+therefore treated as missing. Inclusion now changes only on effect/data edits,
+using raw completeness or entered-effect completeness and preserving explicit
+exclusions. Fill down and Clear group workspace history into one transaction;
+paste validates a detached candidate and publishes it once, skipping bad numeric
+cells with a status summary.
+
+Verification on settled source `ed888ef7`: full desktop matrix
+`source build/sheets-baseline/ENV.sh; uv run --no-sync python -m pytest tests/e2e -n 2 -q`
+passed **130/130**. Transcript: `build/slice2a-matrix-settled.log`; each child
+retains its own command, inputs, runtime, manifest, screenshots and results under
+`artifacts/verification/rcms`. Grid-entry includes a 12-row paste with a bad
+numeric cell, explicit exclusion across covariate creation/editing, keyboard
+entry, fill, clear and undo/redo, plus a 50-row quoted-tab/newline paste and
+undo/redo. Its targeted receipt is `20261031T065435Z-f4d5e968-grid-entry`.
+Sheets, sheets-edges, sheets-persist, amino, CSV and all three baseline calculators
+also passed targeted drives (`build/slice2a-targeted-final.log`).
+
+Strict golden gate (`scripts/verify_golden_compatibility.py --output-root
+build/qt6-verification/golden-compatibility-slice2a-final`) passed: **461 passes,
+13 existing accepted exceptions**, no numerical changes. Full report:
+`build/qt6-verification/golden-compatibility-slice2a-final/compatibility-report.json`.
+Earlier failed/interrupted development runs are retained, including a corrected
+indentation error, stale test-model references after undo and quoted-parser
+failure. They are not counted as passing evidence. Static checking of the view
+still reports pre-existing removed-dataset-API errors in the unrelated row-add
+helper; no clean whole-project type-check is claimed.
