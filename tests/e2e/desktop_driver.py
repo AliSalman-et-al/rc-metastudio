@@ -1076,8 +1076,9 @@ def grid_entry(app, window):
     column = table.get_covariate_columns()[-1]
     table.setCurrentIndex(model.index(0, column))
     for value in ("21", "22", "23"):
-        QTest.keyClicks(table, value)
+        QTest.keyClicks(table, value[0])
         editor = next(w for w in table.findChildren(QtWidgets.QLineEdit) if w.isVisible())
+        QTest.keyClicks(editor, value[1:])
         QTest.keyClick(editor, QtCore.Qt.Key.Key_Return)
         app.processEvents()
     cov = model.current_sheet.covariates[-1]["id"]
@@ -1222,15 +1223,7 @@ def hillclimb(app, window):
                      pos=window.tableView.visualRect(index).center())
     key(window.tableView, QtCore.Qt.Key.Key_V, QtCore.Qt.KeyboardModifier.ControlModifier)
     assert len(window.model.get_studies(False)) == 12
-    for row, study in enumerate(window.model.get_studies(False)):
-        if study.include:
-            continue
-        index = window.model.index(row, 0)
-        window.tableView.scrollTo(index)
-        event("clicks", label=f"include study {row + 1}")
-        QTest.mouseClick(window.tableView.viewport(), QtCore.Qt.MouseButton.LeftButton,
-                         pos=QtCore.QPoint(window.tableView.visualRect(index).left() + 10, window.tableView.visualRect(index).center().y()))
-        app.processEvents()
+    assert all(s.include for s in window.model.get_studies(False))
     basic = run_analysis(window.action_go)
     end(basic)
     window.out_path = str(WORK / "hillclimb-t1.rcms")
@@ -1250,29 +1243,21 @@ def hillclimb(app, window):
             ok(form)
         modal(add_new_dialogs.AddCovariateDialog, add, lambda: action(window.action_add_covariate))
         column = window.tableView.get_covariate_columns()[-1]
-        for row, value in enumerate(values[name]):
-            index = window.model.index(row, column)
-            window.tableView.scrollTo(index)
-            event("clicks", label=f"{name} row {row + 1}")
-            QTest.mouseClick(window.tableView.viewport(), QtCore.Qt.MouseButton.LeftButton,
-                             pos=window.tableView.visualRect(index).center())
-            key(window.tableView, QtCore.Qt.Key.Key_F2)
-            editor = next((w for w in window.tableView.findChildren(QtWidgets.QLineEdit) if w.isVisible()), None)
-            assert editor is not None
-            key(editor, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
-            text(editor, str(value))
+        index = window.model.index(0, column)
+        window.tableView.scrollTo(index)
+        event("clicks", label=f"{name} first cell")
+        QTest.mouseClick(window.tableView.viewport(), QtCore.Qt.MouseButton.LeftButton,
+                         pos=window.tableView.visualRect(index).center())
+        for value in values[name]:
+            value = str(value)
+            text(window.tableView, value[0])
+            editor = next(w for w in window.tableView.findChildren(QtWidgets.QLineEdit) if w.isVisible())
+            text(editor, value[1:])
             key(editor, QtCore.Qt.Key.Key_Return)
+            app.processEvents()
         assert [s.covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == name)] for s in window.model.get_studies(False)] == values[name], [s.covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == name)] for s in window.model.get_studies(False)]
     record_step("covariates-entered", window, covariates=[(c["name"], c["data_type"]) for c in window.model.current_sheet.covariates], included=[s.include for s in window.model.get_studies(False)])
-    for row, study in enumerate(window.model.get_studies(False)):
-        if study.include:
-            continue
-        index = window.model.index(row, 0)
-        window.tableView.scrollTo(index)
-        event("clicks", label=f"include study {row + 1}")
-        QTest.mouseClick(window.tableView.viewport(), QtCore.Qt.MouseButton.LeftButton,
-                         pos=QtCore.QPoint(window.tableView.visualRect(index).left() + 10, window.tableView.visualRect(index).center().y()))
-        app.processEvents()
+    assert all(s.include for s in window.model.get_studies(False))
     subgroup = run_analysis(window.action_subgroup_ma, subgroup=True)
     record_step("hillclimb-subgroup", subgroup, numbers=parsed_numeric_sections(subgroup.results), texts=dict(subgroup.texts))
     subgroup_numbers = parsed_numeric_sections(subgroup.results)

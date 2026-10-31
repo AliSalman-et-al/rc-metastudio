@@ -299,7 +299,7 @@ class WorkspaceEditingService:
             not result.applied
             or context.sheet_id is None
             or context.data_type == DIAGNOSTIC
-            or target.column == context.include_column
+            or target.column not in context.raw_columns + context.outcome_columns
             or (import_csv and not raw_data_is_empty(self._raw_data(dataset, study, context)))
         ):
             return
@@ -307,6 +307,9 @@ class WorkspaceEditingService:
         if context.data_type in RATIO_DATA_TYPES:
             raw = unit.get_raw_data_for_arms(context.arm_names)
             study.include = not study.manually_excluded and unit.ratio_input(context.arm_names).ready(raw, metric=context.current_effect)
+            return
+        if self._raw_data_is_complete_for_context(self._raw_data(dataset, study, context), context):
+            study.include = not study.manually_excluded
             return
         effect = unit.get_effect_for_source(
             "entered", context.current_effect or "", context.arm_key

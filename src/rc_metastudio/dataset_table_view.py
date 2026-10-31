@@ -108,6 +108,7 @@ class DatasetTableView(QtWidgets.QTableView):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self._batch_editing = False
+        self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.DoubleClicked | QtWidgets.QAbstractItemView.EditTrigger.EditKeyPressed | QtWidgets.QAbstractItemView.EditTrigger.AnyKeyPressed)
         self.setAccessibleName("Study data")
         self.setAccessibleDescription("Study rows and input columns. Italic effect cells show estimates and intervals; gold marks the effect columns. Press Enter to edit a cell or use the row calculator. Ctrl+Tab leaves the grid.")
 
@@ -417,6 +418,8 @@ class DatasetTableView(QtWidgets.QTableView):
                 self._main_gui().undo()
             elif event.key() == QtCore.Qt.Key.Key_Y:
                 self._main_gui().redo()
+            elif event.key() == QtCore.Qt.Key.Key_D:
+                self.fill_down()
             elif event.key() == QtCore.Qt.Key.Key_C:
                 # ctrl + c = copy
                 self.copy()
@@ -476,16 +479,37 @@ class DatasetTableView(QtWidgets.QTableView):
         if not editable_indexes:
             return False
 
-        failed_messages = []
-        for index in sorted(editable_indexes, key=lambda i: (i.row(), i.column())):
-            if not model.setData(index, ""):
-                failed_messages.append(self._model_data_error_message())
-
-        model.reset_model()
-        if failed_messages:
-            self._report_model_data_error(failed_messages[0])
+        owner = self._main_gui()
+        owner.workspace.begin_change()
+        try:
+            for index in editable_indexes:
+                model.setData(index, "")
+            model.reset_model()
+        finally:
+            owner.workspace.end_change()
         self._enable_analysis_menus_if_appropriate()
         return True
+
+    def fill_down(self):
+        indexes = self.selectionModel().selectedIndexes()
+        if not indexes:
+            return
+        rows = sorted({index.row() for index in indexes})
+        columns = sorted({index.column() for index in indexes})
+        if len(rows) < 2:
+            return
+        owner = self._main_gui()
+        owner.workspace.begin_change()
+        try:
+            model = self.model()
+            for column in columns:
+                value = model.data(model.index(rows[0], column), Qt.ItemDataRole.EditRole)
+                for row in rows[1:]:
+                    index = model.index(row, column)
+                    if model.flags(index) & Qt.ItemFlag.ItemIsEditable:
+                        model.setData(index, value)
+        finally:
+            owner.workspace.end_change()
 
     def _move_current_index_vertically(self, row_delta):
         self._move_index_vertically_from(self.currentIndex(), row_delta)
@@ -683,7 +707,7 @@ class DatasetTableView(QtWidgets.QTableView):
         new_content = self._str_to_matrix(clipboard_text)
 
         # Drop a trailing blank row commonly included in copied spreadsheet data.
-        if self._is_blank_row(new_content[-1]):
+        if new_content and self._is_blank_row(new_content[-1]):
             new_content = new_content[:-1]
         new_content = self._normalize_matrix_rows(new_content)
         if not new_content:
@@ -745,18 +769,6 @@ class DatasetTableView(QtWidgets.QTableView):
         if not source_content:
             return True
 
-        if (
-            isinstance(source_content[-1], list)
-            and len(" ".join(source_content[-1])) == 0
-        ):
-            # then there's a blank line; Excel has a habit
-            # of appending blank lines (\ns) to copied
-            # text -- we get rid of it here
-            source_content = source_content[:-1]
-            source_content = self._normalize_matrix_rows(source_content)
-            if not source_content:
-                return True
-
         valid, failure = self._preflight_paste(upper_left_index, source_content)
         if not valid:
             self._report_model_data_error(failure)
@@ -770,6 +782,7 @@ class DatasetTableView(QtWidgets.QTableView):
         while candidate.rowCount() < required_rows:
             candidate.dataset.add_study(StudyRow(candidate.dataset.max_study_id() + 1))
             candidate.reset_model()
+        skipped = 0
         try:
             columns = self._paste_columns(origin_col)
             for src_row, row in enumerate(source_content):
@@ -780,13 +793,16 @@ class DatasetTableView(QtWidgets.QTableView):
                     if candidate.get_current_outcome_type() in ("time_to_event", "event_rates") and columns[src_col] in candidate.OUTCOMES[:3] and not candidate.flags(index) & Qt.ItemFlag.ItemIsEditable:
                         raise ValueError("Calculated ratios cannot be pasted over. Click the study row number to edit its original inputs.")
                     if not candidate.setData(index, value):
-                        raise ValueError(
-                            getattr(candidate, "last_data_error", None)
-                            or "The clipboard data could not be validated."
-                        )
+                        error = getattr(candidate, "last_data_error", None) or "Invalid clipboard cell"
+                        if "numeric" in error.lower() or "number" in error.lower():
+                            skipped += 1
+                            continue
+                        raise ValueError(error)
         except (IndexError, TypeError, ValueError) as exc:
             self._report_model_data_error(str(exc))
             return False
+        if skipped:
+            self._main_gui().statusBar().showMessage(f"{skipped} cells skipped: not a number", 8000)
         model.dataset = candidate.dataset
         model.set_state(candidate.get_state())
         model.reset_model()
