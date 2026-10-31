@@ -79,7 +79,7 @@ def run_predictions(app, window, work, record):
                          metafor=as.character(packageVersion("metafor")))
                 })
             }),digits=16)''')[0]))
-            text = view._plain_text_report()
+            text = view.report_text.toPlainText()
             figure = labels(artifact.display_path())
             record('reviewer-prediction-before' if baseline else 'reviewer-prediction-observed', view,
                    measure=measure, workflow=workflow, style=style, reference=reference,

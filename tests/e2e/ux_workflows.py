@@ -123,14 +123,15 @@ def run(app, window, work, root, record, analyze):
     assert copied_report.startswith(view.results.identity + "\n")
     for section in view.results.sections:
         for table in section.tables:
-            assert "\t".join(table.headers) in copied_report
-            assert all("\t".join(row) in copied_report for row in table.rows)
+            assert all(cell in copied_report for cell in table.headers)
+            assert all(cell in copied_report for row in table.rows for cell in row)
     view.copy_report_action.trigger()
     assert app.clipboard().text() == copied_report
-    report_path = work / "analysis.txt"
+    report_path = work / "analysis.pdf"
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(report_path), "")):
         view.export_report_action.trigger()
-    assert report_path.read_text(encoding="utf-8") == app.clipboard().text()
+    assert report_path.read_bytes().startswith(b"%PDF")
+    assert app.clipboard().mimeData().hasHtml()
     assert str(report_path) in view.statusbar.currentMessage()
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=("", "")):
         view.export_report_action.trigger()

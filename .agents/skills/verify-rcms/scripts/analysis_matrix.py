@@ -219,7 +219,8 @@ def run(
         for section in view.results.sections:
             if section.kind == "text" and section.source_key == "Weights":
                 assert section.value.strip() not in rendered
-        report = view._plain_text_report()
+        view.copy_report_action.trigger()
+        report = app.clipboard().text()
         for section in view.results.sections:
             for table in section.tables:
                 assert "\t".join(table.headers) in report
@@ -230,7 +231,7 @@ def run(
             assert "diagnostic.reitsma.specificity.coefficients" not in view.report_text.toPlainText()
             if scenario == "analysis-diagnostic-regression-multiple":
                 assert view.report_text.toPlainText().count("Overall ML likelihood-ratio test") == 1
-                assert view._plain_text_report().count("Overall ML likelihood-ratio test") == 1
+                assert app.clipboard().text().count("Overall ML likelihood-ratio test") == 1
         assert view.results.images, dict(view.texts)
         if scenario == "analysis-data-twoarm-mean" and workflow == "standard":
             from rc_metastudio import r_bridge

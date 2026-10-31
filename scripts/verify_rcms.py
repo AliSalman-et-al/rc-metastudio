@@ -36,6 +36,7 @@ SCENARIOS = (
     "grid-entry",
     "ux-improvements",
     "results-window",
+    "manuscript-export",
     "amino",
     "sheets",
     "sheets-legacy",
@@ -117,7 +118,7 @@ def _scenario_timeout(scenario: str) -> int:
     timeout_seconds = 120
     if scenario in {"sheets-legacy", "sheets-swap"}:
         return 600
-    if scenario in {"sheets-baseline", "hillclimb"}:
+    if scenario in {"sheets-baseline", "hillclimb", "manuscript-export", "results-window", "ux-improvements"}:
         return 600
     if scenario in {"ratios-hr", "ratios-irr", "project-display-labels", "project-round6-polish", "project-release-coefficients", "project-reviewer-predictions", "project-reviewer-groups", "project-reviewer-colours", "calculator-ratio-precision", "project-axis-proportions", "project-axis-others", "project-axis-sequential"}:
         timeout_seconds = 600

@@ -185,11 +185,11 @@ def run(app, window, work, root, record, analyze):
     view.nav_tree.setCurrentItem(text_entry)
     view.copy_report_action.trigger()
     copied = app.clipboard().text()
-    assert copied.index('Pooled ') < copied.index('Model configuration')
-    output = work / 'review1-report.txt'
+    assert copied.index('Methods') < copied.index('Pooled ')
+    output = work / 'review1-report.pdf'
     with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', return_value=(str(output), '')):
         view.export_report_action.trigger()
-    assert output.read_text(encoding="utf-8") == copied
+    assert output.read_bytes().startswith(b"%PDF")
     tables_entry = next(item for item in view.nav_tree.findItems('Tables', QtCore.Qt.MatchFlag.MatchExactly))
     view.tables_action.trigger()
     assert view.nav_tree.currentItem() is tables_entry

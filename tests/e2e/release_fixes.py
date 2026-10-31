@@ -131,7 +131,7 @@ def run_presentation(app, window, work, record):
             click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
         modal(app, analysis_setup_dialog.AnalysisSetupDialog, regress, window.action_meta_regression.trigger)
         view = next(w for w in app.topLevelWidgets() if isinstance(w,results_window.ResultsWindow) and w.isVisible())
-        assert 'intrcpt' not in view._plain_text_report()
+        assert 'intrcpt' not in view.report_text.toPlainText()
         check_report(app, view, work, record)
         table = next(t for s in view.results.sections for t in s.tables if t.title.startswith('Exponentiated coefficients'))
         assert table.rows[0][0] == 'Intercept', table

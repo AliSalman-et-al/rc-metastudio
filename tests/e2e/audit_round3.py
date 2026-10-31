@@ -58,10 +58,11 @@ def check_report(app, view, work, record):
             assert "\t".join(table.headers) in copied, (table.title, copied)
             for row in table.rows:
                 assert "\t".join(row) in copied, (table.title, row, copied)
-    output = work / "round3-report.txt"
-    with patch.object(results_window.QFileDialog, "getSaveFileName", return_value=(str(output), "Text report (*.txt)")):
+    output = work / "round3-report.pdf"
+    with patch.object(results_window.QFileDialog, "getSaveFileName", return_value=(str(output), "PDF (*.pdf)")):
         view.export_report_action.trigger()
-    assert output.read_text(encoding="utf-8") == copied
+    assert output.read_bytes().startswith(b"%PDF")
+    assert app.clipboard().mimeData().hasHtml()
     if "Omission-only fits:" in view.results.details:
         assert copied.count("Omission-only fits:") == 1, copied
         assert "\nleave-one-out\n" not in copied, copied
@@ -69,7 +70,7 @@ def check_report(app, view, work, record):
         for line in view.results.details.splitlines():
             if line.startswith(("Order:", "Each row", "Subgroups by", "Moderators:")):
                 assert view.results.details.index(line) < view.results.details.index("\nSensitivity\n"), view.results.details
-                assert line in copied and "Model configuration\n" in copied, copied
+                assert line in copied and "Methods\n" in copied, copied
     view.report_action.setChecked(True)
     app.processEvents()
     record("round3-report-copy-export", view, identity=view.results.identity,
@@ -973,7 +974,7 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
         target.model.reset_model()
         target.enable_menu_options_that_require_dataset()
     def check_panel(view, family, metric):
-        assert not re.search(r"(?<![\d.eE])-0\.0+(?![\d.eE])", view._plain_text_report()), view._plain_text_report()
+        assert not re.search(r"(?<![\d.eE])-0\.0+(?![\d.eE])", view.report_text.toPlainText()), view.report_text.toPlainText()
         paths = list(view.results.display_images.items())
         exported = {}
         for title, _path in paths.copy():

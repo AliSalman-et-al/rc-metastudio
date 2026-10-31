@@ -1365,7 +1365,7 @@ def hillclimb(app, window):
     end(diagnostic)
     diagnostic.close()
 
-    # Restore T1 input for the partial export task; setup is excluded.
+    # Restore T1 input for manuscript export; setup is excluded.
     window.workspace.mark_saved()
     assert window.open(str(WORK / "hillclimb-t1.rcms"), raise_on_error=True)
     basic = analyze(app, window, "binary.random")
@@ -1375,20 +1375,22 @@ def hillclimb(app, window):
         picker.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog)
         picker.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)
         picker.setDirectory(str(WORK))
-        suffix = "txt" if "report" in str(args).lower() else "pdf"
+        suffix = next(formats)
+        picker.setNameFilter("Report (*." + suffix + ")")
         def save(form):
             field = form.findChild(QtWidgets.QLineEdit, "fileNameEdit")
             click(field)
             text(field, "hillclimb-export." + suffix)
             click(form.findChild(QtWidgets.QDialogButtonBox).button(QtWidgets.QDialogButtonBox.StandardButton.Save))
         modal(QtWidgets.QFileDialog, save, picker.exec)
-        return picker.selectedFiles()[0], ""
+        return picker.selectedFiles()[0], picker.selectedNameFilter()
+    formats = iter(("pdf", "docx"))
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", side_effect=save_picker):
         action(basic.export_report_action)
-        action(basic.export_plot_action)
-    assert (WORK / "hillclimb-export.txt").stat().st_size
+        action(basic.export_report_action)
+    assert (WORK / "hillclimb-export.docx").stat().st_size
     assert (WORK / "hillclimb-export.pdf").read_bytes().startswith(b"%PDF")
-    end(basic, False)
+    end(basic, True)
     basic.close()
 
 
@@ -1477,6 +1479,9 @@ try:
     elif scenario in ("ux-improvements", "results-window"):
         from tests.e2e.ux_workflows import run
 
+        run(app, window, WORK, ROOT, record_step, analyze)
+    elif scenario == "manuscript-export":
+        from tests.e2e.manuscript_export import run
         run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario in ("amino", "continuous", "lymph"):
         sample_analysis(app, window, scenario)
