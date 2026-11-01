@@ -275,8 +275,7 @@ def run(driver):
     index.write_text("# UI crawl\n\n", encoding="utf-8")
     original_record = driver.record_step
     captured = set()
-    missing = ["A shell: previous scaffold captures not refreshed",
-               "D deferred to next run", "H deferred to next run", "I deferred to next run", "J deferred to next run"]
+    missing = ["D deferred to next run", "H deferred to next run", "I deferred to next run", "J deferred to next run"]
 
     def capture(step, widget):
         assert step not in captured, step
