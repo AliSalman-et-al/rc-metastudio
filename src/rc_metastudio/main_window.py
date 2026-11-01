@@ -214,20 +214,21 @@ class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
 
 
 class SheetTabBar(QtWidgets.QTabBar):
-    def eventFilter(self, watched, event):
+    def eventFilter(self, a0: QtCore.QObject | None, a1: QtCore.QEvent | None) -> bool:
         window = self.window()
-        if isinstance(window, MainWindow) and event.type() == QtCore.QEvent.Type.KeyPress and event.key() == Qt.Key.Key_Escape:
+        event = a1
+        if isinstance(window, MainWindow) and isinstance(event, QKeyEvent) and event.key() == Qt.Key.Key_Escape:
             window._finish_sheet_rename(cancel=True)
             return True
-        return super().eventFilter(watched, event)
+        return super().eventFilter(a0, event)
 
     def tabSizeHint(self, index):
         size = super().tabSizeHint(index)
         size.setWidth(min(200, max(96, size.width())))
         return size
 
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
+    def resizeEvent(self, a0: QResizeEvent | None) -> None:
+        super().resizeEvent(a0)
         window = self.window()
         if isinstance(window, MainWindow):
             QtCore.QTimer.singleShot(0, window._scroll_to_sheet_tab)
@@ -1447,6 +1448,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.add_sheet_button.setStyleSheet("QToolButton { border: 1px solid palette(mid); border-radius: 11px; padding: 0; margin: 2px; } QToolButton:hover { background: palette(alternate-base); }")
         self.add_sheet_button.setFixedSize(26, 26)
         content = QtWidgets.QWidget(self)
+        self.sheet_tab_content = content
         row = QtWidgets.QHBoxLayout(content)
         row.setContentsMargins(0, 0, 4, 0)
         row.setSpacing(0)
@@ -1457,6 +1459,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.sheet_tab_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.sheet_tab_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.sheet_tab_scroll.setWidget(content)
+        self.sheet_tab_scrollbar = required(self.sheet_tab_scroll.horizontalScrollBar(), "sheet scrollbar")
         self.sheet_tab_scroll.setMinimumWidth(100)
         self.sheet_strip = QtWidgets.QWidget(self)
         strip = QtWidgets.QHBoxLayout(self.sheet_strip)
@@ -1467,18 +1470,18 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         for button, arrow, delta in ((self.sheet_scroll_left, Qt.ArrowType.LeftArrow, -160), (self.sheet_scroll_right, Qt.ArrowType.RightArrow, 160)):
             button.setArrowType(arrow)
             button.setAccessibleName("Scroll sheets left" if delta < 0 else "Scroll sheets right")
-            button.clicked.connect(lambda checked=False, delta=delta: self.sheet_tab_scroll.horizontalScrollBar().setValue(self.sheet_tab_scroll.horizontalScrollBar().value() + delta))
+            button.clicked.connect(lambda checked=False, delta=delta: self.sheet_tab_scrollbar.setValue(self.sheet_tab_scrollbar.value() + delta))
             strip.addWidget(button)
         strip.addWidget(self.sheet_tab_scroll, 1)
         self.sheet_strip.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
         self.verticalLayout.addWidget(self.sheet_strip)
-        scroll = self.sheet_tab_scroll.horizontalScrollBar()
+        scroll = self.sheet_tab_scrollbar
         scroll.rangeChanged.connect(self._sheet_scroll_changed)
         scroll.valueChanged.connect(self._sheet_scroll_changed)
         self._sheet_scroll_changed()
 
     def _sheet_scroll_changed(self, *_args):
-        scroll = self.sheet_tab_scroll.horizontalScrollBar()
+        scroll = self.sheet_tab_scrollbar
         overflow = scroll.maximum() > 0
         self.sheet_scroll_left.setVisible(overflow)
         self.sheet_scroll_right.setVisible(overflow)
@@ -1503,7 +1506,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             if sheet.id == self.model.current_sheet_id:
                 self.sheet_tabs.setCurrentIndex(index)
         self.sheet_tabs.blockSignals(False)
-        content = self.sheet_tab_scroll.widget()
+        content = self.sheet_tab_content
         content.adjustSize()
         self.sheet_tab_scroll.setFixedHeight(content.sizeHint().height())
         self.sheet_strip.setVisible(self.sheet_tabs.count() > 0)
@@ -1602,7 +1605,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         delete.setEnabled(self.sheet_tabs.count() > 1)
         for label, destination in (("Move left", index - 1), ("Move right", index + 1)):
             action = menu.addAction(label, lambda checked=False, destination=destination: self.sheet_tabs.moveTab(index, destination))
-            action.setEnabled(0 <= destination < self.sheet_tabs.count())
+            required(action, "sheet move action").setEnabled(0 <= destination < self.sheet_tabs.count())
         menu.exec(self.sheet_tabs.mapToGlobal(position))
 
     def _delete_sheet(self, index):

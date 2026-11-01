@@ -45,8 +45,7 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
             window.tableView.sizePolicy().verticalPolicy()
             == QtWidgets.QSizePolicy.Policy.Expanding
         )
-        assert [button.text() for button in (window.start_page.create_button,
-                window.start_page.import_button, window.start_page.open_button)] == [
+        assert [button.text() for button in (getattr(window.start_page, name) for name in ("create_button", "import_button", "open_button"))] == [
             "Create dataset", "Import data", "Open project"]
         labels = [label.text() for label in window.start_page.findChildren(QtWidgets.QLabel)]
         assert "Recent projects" in labels
