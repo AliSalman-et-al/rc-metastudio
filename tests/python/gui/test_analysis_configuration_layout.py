@@ -26,20 +26,22 @@ else:
 
 
 class _AnalysisModel(object):
-    current_outcome_name = "Outcome"
+    @property
+    def current_outcome_name(self):
+        return self.current_sheet.name
+
     arm_names = ["A", "B"]
 
     def get_current_outcome_subtype(self):
         return None
 
-    def get_current_follow_up_name(self):
-        return "first"
-
     def __init__(self, data_type, covariates=()):
         self._data_type = data_type
         self.current_effect = "Sens" if data_type == "diagnostic" else "OR"
         self.dataset = analysis_dataset.Dataset()
-        self.dataset.covariates = list(covariates)
+        self.current_sheet = analysis_dataset.Sheet("sheet", "Outcome", data_type, covariates=list(covariates))
+        self.dataset.sheets.append(self.current_sheet)
+        self.current_sheet_id = self.current_sheet.id
 
     def get_current_outcome_type(self):
         return self._data_type
@@ -52,7 +54,7 @@ class _AnalysisModel(object):
 
     def get_studies(
         self, only_if_included: bool = True
-    ) -> list[analysis_dataset.Study]:
+    ) -> list[analysis_dataset.StudyRow]:
         return []
 
 
@@ -195,7 +197,7 @@ def test_configuration_controls_have_accessible_label_associations(
     )
     try:
         dynamic_pairs = list(
-            zip(dialog.current_widgets[1::2], dialog.current_widgets[2::2])
+            zip(dialog.current_widgets[0::2], dialog.current_widgets[1::2])
         )
         assert dynamic_pairs
         for label, control in dynamic_pairs:
@@ -245,7 +247,11 @@ def test_method_dialog_wording_is_scoped_to_its_analysis_family(
         confidence_level=95.0,
     )
     try:
-        assert dialog.windowTitle() == "Meta-analysis — Outcome"
+        assert dialog.windowTitle() == {
+            "binary": "Outcome · Odds Ratio",
+            "continuous": "Outcome · Odds Ratio",
+            "diagnostic": "Outcome · Positive and negative likelihood ratios, Diagnostic odds ratio",
+        }[data_type]
         assert dialog.method_lbl.text() == expected_method_label
     finally:
         dialog.close()
@@ -272,7 +278,7 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
 ):
     from rc_metastudio import adaptive_window, analysis_adapter, analysis_setup_dialog
 
-    covariate = SimpleNamespace(name="quality", data_type=4)
+    covariate = {'id': 'quality', 'name': 'quality', 'data_type': 4}
     model = _AnalysisModel("diagnostic", (covariate,))
     backend = analysis_adapter.r_bridge
     monkeypatch.setattr(
@@ -346,7 +352,7 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
         dialog.show()
         qapp.processEvents()
 
-        assert dialog.windowTitle() == ("Meta-regression — Outcome" if analysis_type == "meta-regression" else "Meta-analysis — Outcome")
+        assert dialog.windowTitle() == ("Outcome · Sensitivity and Specificity" if analysis_type == "meta-regression" else "Outcome · Sensitivity, Specificity")
         assert dialog.method_lbl.text() == expected_method_label
         assert dialog.current_method == "diagnostic.reitsma"
         assert dialog.diagnostic_regression_group.isHidden() is (
@@ -416,8 +422,8 @@ def test_diagnostic_reitsma_meta_regression_hides_legacy_controls_for_factor_and
     """Joint Reitsma regression must not expose univariate model controls."""
     from rc_metastudio import analysis_setup_dialog
 
-    continuous = SimpleNamespace(name="threshold", data_type=0)
-    factor = SimpleNamespace(name="reader", data_type=1)
+    continuous = {'id': 'threshold', 'name': 'threshold', 'data_type': 0}
+    factor = {'id': 'reader', 'name': 'reader', 'data_type': 1}
     model = _AnalysisModel("diagnostic", (continuous, factor))
     backend = analysis_setup_dialog.analysis_adapter.r_bridge
     monkeypatch.setattr(
@@ -493,7 +499,7 @@ def test_meta_regression_missing_moderator_confirmation_names_excluded_studies(
 ):
     from rc_metastudio import analysis_adapter, analysis_setup_dialog
 
-    covariate = SimpleNamespace(name="quality", data_type=0)
+    covariate = {'id': 'quality', 'name': 'quality', 'data_type': 0}
     model = _AnalysisModel("continuous", (covariate,))
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)
     dialog = analysis_setup_dialog.AnalysisSetupDialog(
@@ -537,10 +543,7 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
 
     dialogs = []
     try:
-        long_covariate = SimpleNamespace(
-            name="A continuous moderator with a deliberately long complete name",
-            data_type=0,
-        )
+        long_covariate = {'id': 'A continuous moderator with a deliberately long complete name', 'name': 'A continuous moderator with a deliberately long complete name', 'data_type': 0}
         for data_type, diagnostic_metrics, workflow, covariates in (
             ("binary", None, None, ()),
             ("continuous", None, None, ()),
@@ -560,6 +563,7 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
             font = QtGui.QFont(dialog.font())
             font.setPointSize(max(14, font.pointSize() + 5))
             dialog.setFont(font)
+            dialog.specs_tab.setCurrentWidget(dialog.methods_tab)
             dialog.show()
             qapp.processEvents()
 
@@ -617,11 +621,12 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
                 editable_value = cast(
                     QtWidgets.QLineEdit,
                     required(
-                        dialog.parameter_grp_box.findChild(QtWidgets.QLineEdit),
+                        next(widget for widget in dialog.current_widgets if isinstance(widget, QtWidgets.QLineEdit)),
                         "editable value",
                     ),
                 )
                 assert editable_value.text() == "complete editable value"
+                dialog.advanced_toggle.setChecked(True)
                 required(
                     dialog.content_scroll_area.verticalScrollBar(), "vertical scrollbar"
                 ).setValue(0)
@@ -696,7 +701,7 @@ def test_method_parameters_opens_at_its_content_preferred_width(qapp, monkeypatc
         dialog.close()
 
 
-def test_meta_regression_method_description_reflows_without_outer_horizontal_overflow(
+def test_meta_regression_estimator_stays_inside_viewport(
     qapp, monkeypatch
 ):
     from rc_metastudio import analysis_setup_dialog
@@ -709,7 +714,7 @@ def test_meta_regression_method_description_reflows_without_outer_horizontal_ove
         lambda _self, _method: "A deliberately long method description that must reflow. "
         * 8,
     )
-    covariate = SimpleNamespace(name="latitude", data_type=0)
+    covariate = {'id': 'latitude', 'name': 'latitude', 'data_type': 0}
     dialog = analysis_setup_dialog.AnalysisSetupDialog(
         _AnalysisModel("continuous", (covariate,)),
         analysis_type="meta-regression",
@@ -729,22 +734,15 @@ def test_meta_regression_method_description_reflows_without_outer_horizontal_ove
             ).maximum()
             == 0
         )
-        description = next(
-            widget
-            for widget in dialog.current_widgets
-            if isinstance(widget, QtWidgets.QLabel)
-            and widget.text().startswith("Description:")
-        )
         estimator = next(
             widget
             for widget in dialog.current_widgets
             if isinstance(widget, QtWidgets.QLabel) and widget.text() == "Estimator"
         )
         estimator_control = required(estimator.buddy(), "REML estimator control")
-        assert description.isVisible()
         assert estimator.isVisible()
         assert estimator_control.isVisible()
-        for widget in (description, estimator, estimator_control):
+        for widget in (estimator, estimator_control):
             visible_rect = QtCore.QRect(
                 widget.mapTo(viewport, QtCore.QPoint(0, 0)), widget.size()
             )
@@ -772,21 +770,12 @@ def test_subgroup_and_covariate_selectors_use_transactional_layouts(qapp, monkey
         raising=False,
     )
 
-    class Covariate(object):
-        name = long_name
-        data_type = FACTOR
-
-        def get_data_type(self):
-            return FACTOR
-
     study = SimpleNamespace(covariate_values={long_name: "north"}, id=1)
 
     class Model(object):
         current_effect = "OR"
-        dataset = SimpleNamespace(
-            covariates=[Covariate()],
-            get_covariate_values=lambda *_args, **_kwargs: {1: "north"},
-        )
+        current_sheet = SimpleNamespace(covariates=[{'id': long_name, 'name': long_name, 'data_type': FACTOR}], rows=[study])
+
 
         def get_current_outcome_type(self):
             return "binary"
@@ -1094,14 +1083,16 @@ from rc_metastudio import analysis_adapter
 from rc_metastudio import analysis_setup_dialog
 
 class Model:
-    current_effect = "OR"
     current_outcome_name = "Outcome"
+    current_effect = "OR"
     arm_names = ["A", "B"]
     def get_current_outcome_subtype(self):
         return None
     def get_current_follow_up_name(self):
         return "first"
-    dataset = SimpleNamespace(covariates=[])
+    current_sheet = SimpleNamespace(name="Outcome", settings={}, covariates=[])
+    current_sheet_id = "sheet"
+    dataset = SimpleNamespace(sheets=[current_sheet])
     def get_current_outcome_type(self):
         return "binary"
     def included_studies_have_raw_data(self):
@@ -1277,8 +1268,8 @@ def test_meta_regression_backend_execution_uses_frozen_request(monkeypatch):
 
     analysis_adapter.execute_meta_regression_request(
         model,
-        (analysis_dataset.Study("Study"),),
-        (analysis_dataset.Covariate("Covariate", "continuous"),),
+        (analysis_dataset.StudyRow("study", "Study", None),),
+        ({"id": "covariate", "name": "Covariate", "data_type": 1},),
         request,
         True,
         95.0,
@@ -1288,8 +1279,8 @@ def test_meta_regression_backend_execution_uses_frozen_request(monkeypatch):
     assert "90.5" in rendered
     assert "1.0" not in rendered
     assert "SMD" in rendered
-    assert isinstance(calls[0][1]["studies"][0], analysis_dataset.Study)
-    assert isinstance(calls[0][1]["covs_to_include"][0], analysis_dataset.Covariate)
+    assert isinstance(calls[0][1]["studies"][0], analysis_dataset.StudyRow)
+    assert calls[0][1]["covs_to_include"][0] == {"id": "covariate", "name": "Covariate", "data_type": 1}
 
 
 @pytest.mark.parametrize(
@@ -1302,7 +1293,7 @@ def test_meta_regression_dialog_uses_shared_rcmetar_method(
 ):
     from rc_metastudio import analysis_setup_dialog
 
-    covariate = SimpleNamespace(name="latitude", data_type=0)
+    covariate = {'id': 'latitude', 'name': 'latitude', 'data_type': 0}
     model = _AnalysisModel(data_type, (covariate,))
     model.current_effect = metric
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)

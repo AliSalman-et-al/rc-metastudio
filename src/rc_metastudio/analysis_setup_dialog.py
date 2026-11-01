@@ -556,6 +556,16 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 hint.setHeight(self.content_scroll_area.minimumHeight() + self.buttonBox.sizeHint().height() + 30)
         return hint
 
+    def _set_scroll_body_height(self, content_height):
+        layout = self.layout()
+        margins = layout.contentsMargins()
+        frame_height = max(0, self.frameGeometry().height() - self.height())
+        policy = adaptive_window.WINDOW_POLICIES[adaptive_window.WindowRole.TRANSACTIONAL]
+        available = int(adaptive_window.available_geometry_for_window(self).height() * policy.maximum_screen_fraction)
+        body_height = (available - frame_height - margins.top() - margins.bottom()
+                       - layout.spacing() - self.buttonBox.sizeHint().height())
+        self.content_scroll_area.setMinimumHeight(max(0, min(content_height + 2, 650, body_height)))
+
     def _fit_active_tab_contents(self, current):
         # Hidden plot controls must not force the method page to scroll.
         for index in range(self.specs_tab.count()):
@@ -565,7 +575,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 page.setSizePolicy(policy, policy)
         self.specs_tab.updateGeometry()
         content_height = self.specs_tab.currentWidget().minimumSizeHint().height() + 40
-        self.content_scroll_area.setMinimumHeight(min(content_height + 2, 650))
+        self._set_scroll_body_height(content_height)
         position = self.pos()
         self.adjustSize()
         self.move(position)
@@ -1502,7 +1512,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.content_scroll_area_widget.updateGeometry()
         self.specs_tab.updateGeometry()
         content_height = self.specs_tab.currentWidget().minimumSizeHint().height() + 40
-        self.content_scroll_area.setMinimumHeight(min(content_height + 2, 650))
+        self._set_scroll_body_height(content_height)
         position = self.pos()
         self.adjustSize()
         self.move(position)
