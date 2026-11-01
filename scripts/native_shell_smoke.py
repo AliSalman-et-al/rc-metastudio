@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import argparse
 import sys
+import os
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,8 +32,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--failure-stage", choices=("r-load", "meta-form"))
     args = parser.parse_args(argv)
 
+    if args.native:
+        os.environ["QT_QPA_PLATFORM"] = {"win32": "windows", "darwin": "cocoa"}.get(sys.platform, "xcb")
+
     import faulthandler
-    from PyQt6.QtCore import qInstallMessageHandler
+    from PyQt6.QtCore import QSettings, qInstallMessageHandler
 
     faulthandler.enable()
     # On Windows Qt sends diagnostics to the debugger by default. Preserve
@@ -42,11 +47,21 @@ def main(argv: list[str] | None = None) -> int:
     _install_local_backend()
     from tests.python.gui.support import automation_scenarios
 
-    if args.failure_stage is not None:
-        return automation_scenarios.start_shell_failure_smoke(args.failure_stage)
-    return automation_scenarios.start_shell_smoke(
-        require_native_window=args.native
-    )
+    from rc_metastudio import app_error_handler, settings
+    with tempfile.TemporaryDirectory(prefix="rcms-native-shell-") as work:
+        QSettings.setDefaultFormat(QSettings.Format.IniFormat)
+        QSettings.setPath(QSettings.Format.IniFormat, QSettings.Scope.UserScope, work)
+        settings.get_base_path = lambda: work
+        app = app_error_handler.get_or_create_application(sys.argv)
+        if args.native:
+            expected = {"win32": "windows", "darwin": "cocoa"}.get(sys.platform, "xcb")
+            if app.platformName() != expected:
+                raise SystemExit(f"Expected native {expected}, got {app.platformName()}")
+        print(f"Qt platform: {app.platformName()}; fatal warnings: {os.environ.get('QT_FATAL_WARNINGS', '0')}", flush=True)
+        if args.failure_stage is not None:
+            return automation_scenarios.start_shell_failure_smoke(args.failure_stage)
+        return automation_scenarios.start_shell_smoke(require_native_window=args.native)
+
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ import copy
 import os
 from pathlib import Path
 import subprocess
+import shutil
 import sys
 from typing import cast
 import zipfile
@@ -66,22 +67,19 @@ def test_startup_failure_injections_release_qt_objects_with_fatal_warnings():
     environment["RCMS_QT6_BUILD_ROOT"] = os.environ.get(
         "RCMS_QT6_BUILD_ROOT", str(ROOT / "build" / "qt6")
     )
+    expected_platform = {"win32": "windows", "darwin": "cocoa"}.get(sys.platform, "xcb")
     for stage in ("r-load", "meta-form"):
+        command = [sys.executable, str(ROOT / "scripts/native_shell_smoke.py"),
+                   "--native", "--failure-stage", stage]
+        if sys.platform == "linux" and not environment.get("DISPLAY"):
+            assert shutil.which("xvfb-run"), "Native shell verification requires xvfb-run without a display"
+            command = ["xvfb-run", "-a", *command]
         result = subprocess.run(
-            [
-                sys.executable,
-                str(ROOT / "scripts" / "native_shell_smoke.py"),
-                "--failure-stage",
-                stage,
-            ],
-            cwd=ROOT,
-            env=environment,
-            capture_output=True,
-            text=True,
-            timeout=30,
-            check=False,
+            command, cwd=ROOT, env=environment, capture_output=True,
+            text=True, timeout=30, check=False,
         )
         assert result.returncode == 0, result.stdout + result.stderr
+        assert f"Qt platform: {expected_platform}; fatal warnings: 1" in result.stdout
         assert (
             "Application shell failure teardown passed at %s." % stage in result.stdout
         )
