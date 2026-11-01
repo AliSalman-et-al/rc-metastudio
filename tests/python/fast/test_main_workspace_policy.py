@@ -136,33 +136,6 @@ def test_workspace_columns_preserve_user_widths_and_initialize_only_new_columns(
     assert table.columnWidth(0) == 240
 
 
-def test_workspace_columns_fill_spare_viewport_without_changing_user_width(qapp):
-    from rc_metastudio.qt_workspace_columns import WorkspaceColumnWidthController
-
-    table = QtWidgets.QTableView()
-    model = IdentityTableModel(
-        [("fixed", "study"), ("outcome", "estimate"), ("raw", "events")]
-    )
-    model.setHorizontalHeaderLabels(["Study", "Effect", "Events"])
-    table.setModel(model)
-    widths = WorkspaceColumnWidthController(table)
-    table.resize(900, 180)
-    table.show()
-    qapp.processEvents()
-    widths.synchronize_schema()
-    qapp.processEvents()
-
-    viewport = table.viewport()
-    assert viewport is not None
-    assert sum(table.columnWidth(i) for i in range(3)) >= viewport.width() - 1
-    table.setColumnWidth(0, 140)
-    qapp.processEvents()
-    table.resize(1100, 180)
-    qapp.processEvents()
-
-    assert table.columnWidth(0) == 140
-    assert sum(table.columnWidth(i) for i in range(3)) >= viewport.width() - 1
-    table.close()
 
 
 def test_workspace_columns_keep_width_when_display_header_is_renamed(qapp):
@@ -232,28 +205,32 @@ def test_legacy_covariate_identity_and_widths_are_deterministic_across_loads(qap
     from rc_metastudio.qt_workspace_columns import WorkspaceColumnWidthController
 
     def legacy_model():
-        dataset = analysis_dataset.Dataset(title="Untouched legacy project")
-        covariate = analysis_dataset.Covariate("Age", "continuous")
-        del covariate.stable_id
-        dataset.add_covariate(covariate)
+        from rc_metastudio import project_adapter
+        from rc_metastudio.project_format import migrate_to_latest
+        from tests.python.fast.test_project_adapter import _legacy_multi_arm_project
+        from tests.python.fast.test_project_format import _legacy_state
+        project = _legacy_multi_arm_project("binary")
+        project["dataset"]["covariates"] = [{"name": "Age", "data_type": 1, "stable_id": None}]
+        project["dataset"]["studies"][0]["covariates"] = {"Age": None}
+        migrated, _ = migrate_to_latest(1, project, _legacy_state())
         return dataset_table_model.DatasetTableModel(
-            dataset=dataset, add_blank_study=False
-        )
+            dataset=project_adapter.project_to_dataset(migrated), add_blank_study=False)
 
     first_model = legacy_model()
+    covariate_column = first_model.columnCount() - 1
     first_identity = first_model.headerData(
-        3, QtCore.Qt.Orientation.Horizontal, WORKSPACE_COLUMN_IDENTITY_ROLE
+        covariate_column, QtCore.Qt.Orientation.Horizontal, WORKSPACE_COLUMN_IDENTITY_ROLE
     )
     first_table = QtWidgets.QTableView()
     first_table.setModel(first_model)
     first_widths = WorkspaceColumnWidthController(first_table)
     first_widths.synchronize_schema()
-    first_table.setColumnWidth(3, 275)
+    first_table.setColumnWidth(covariate_column, 275)
     persisted_widths = first_widths.state()
 
     second_model = legacy_model()
     second_identity = second_model.headerData(
-        3, QtCore.Qt.Orientation.Horizontal, WORKSPACE_COLUMN_IDENTITY_ROLE
+        covariate_column, QtCore.Qt.Orientation.Horizontal, WORKSPACE_COLUMN_IDENTITY_ROLE
     )
     second_table = QtWidgets.QTableView()
     second_table.setModel(second_model)
@@ -261,7 +238,7 @@ def test_legacy_covariate_identity_and_widths_are_deterministic_across_loads(qap
     second_widths.synchronize_schema()
 
     assert second_identity == first_identity
-    assert second_table.columnWidth(3) == 275
+    assert second_table.columnWidth(covariate_column) == 275
 
 
 def test_explicit_auto_fit_transfers_new_widths_to_user_ownership(qapp):

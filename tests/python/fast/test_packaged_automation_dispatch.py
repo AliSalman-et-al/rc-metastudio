@@ -27,7 +27,7 @@ def test_packaged_qualification_commands_validate_their_arguments():
 
 
 def test_atomic_project_hooks_report_failed_open_without_using_blank_workspace(
-    monkeypatch,
+    monkeypatch, qapp,
 ):
     from rc_metastudio import automation
 
@@ -42,8 +42,10 @@ def test_atomic_project_hooks_report_failed_open_without_using_blank_workspace(
         def save(self):
             raise AssertionError("a failed open must not save the blank workspace")
 
+    from rc_metastudio import r_backend
+    monkeypatch.setattr(r_backend, "is_ready", lambda: True)
     written = {}
-    monkeypatch.setattr(automation, "start_automation", lambda: (object(), Window()))
+    monkeypatch.setattr(automation, "start_automation", lambda phase_callback=None: (qapp, Window()))
     monkeypatch.setattr(automation, "_configure_package_locale", lambda: None)
     monkeypatch.setattr(
         automation,
