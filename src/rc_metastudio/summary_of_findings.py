@@ -60,7 +60,9 @@ class SummaryOfFindingsDialog(QtWidgets.QDialog):
                             effects.append(f"{label} {cells['Estimate']} ({level} {lower} to {upper})")
                     effect = '; '.join(effects)
                     if setup.data_type != 'diagnostic':
-                        effect += ', ' + setup.method_cbo_box.currentText().lower()
+                        method = setup.method_cbo_box.currentText().partition(' ')[2]
+                        method = method.replace('Fixed-Effect', 'fixed-effect').replace('Random-Effects', 'random-effects')
+                        effect += ', ' + method.replace('Inverse Variance', 'inverse variance')
                     raw = model.get_current_raw_data()
                     positions = {'binary': (1, 3), 'continuous': (0, 3), 'diagnostic': (0, 1, 2, 3)}.get(setup.data_type)
                     if positions is not None:

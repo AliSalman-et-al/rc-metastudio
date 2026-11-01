@@ -344,14 +344,31 @@ was repaired rather than weakening the assertion. Added an explicit frozen
 import/export observation hook for XLSX reader, RM5 reader and actual analysis
 DOCX write/reopen; this hook remains unqualified in a completed bundle.
 
-Rebuild stopped in pinned dependency installation: download.packages reported
-failed downloads for bslib, Hmisc, RcppEigen, ape, colorspace, data.table, farver,
-ggplot2, htmltools, htmlwidgets, irlba, isoband, knitr and labeling. Installer
-exited 1 with those packages missing from the closure. No source fallback,
-manifest change or statistical package substitution was made. **No tarball
-was produced, so size is unavailable.** Frozen doctor/smoke, XLSX/DOCX/RM5
-and packaged `Rscript -e 'cat(commandArgs(TRUE))' a b` are not claimed as
-passed. The full package step needs rerunning when downloads succeed.
+The original dependency failure is not explained by R's default 60-second
+timeout: `install-r-deps-linux.R` already set 600 seconds, as does the shared
+Windows/macOS binary installer. A direct Hmisc URL fetch returned HTTP 200,
+907,893 bytes in 4.866289 seconds (build/release-051-hmisc-fetch.log and headers).
+The old log retained only generic download failures, so its transport cause
+cannot be recovered. Do not describe the batch-timeout hypothesis as proven.
+Linux now allows 1,200 seconds, emits warnings immediately, and makes at most
+three install attempts, recomputing only the missing closure each time. The
+same snapshot, binary-only checks, versions and final missing-closure error stay.
+
+Rebuild with the command above exited 0; transcript:
+`build/release-051-package-retry.log`. The complete pinned binary closure
+installed on attempt 1, including all 14 previously missing packages.
+`artifacts/RCMetaStudio-linux-x64.tar.gz` is **167,265,177 bytes (159.52 MiB)**.
+The extracted frozen runtime probe and native packaged smoke passed with the
+build-time R home hidden; evidence is under
+`build/linux-package/work/qualification/`, including `packaged-smoke.json`.
+The explicit `--automation-package-import-export` frozen qualification passed:
+XLSX Binary sheet, two rows; RM5 two outcomes; analysis DOCX Methods reopened
+unchanged and reports **RC MetaStudio 0.5.1**. Inputs were amino.rcms,
+`artifacts/verification/rcms/20261031T232551Z-ac0303db-xlsx-import/workflow/studies.xlsx`
+and `tests/fixtures/rm5/Fleiss1993.rm5`; outputs are
+`build/release-051-frozen-import-export.{json,docx,log}`.
+Packaged `Rscript -e 'cat(commandArgs(TRUE))' a b` prints `a b`;
+`build/release-051-frozen-rscript.log` retains stdout.
 
 Logs: build/release-051-package-before.log, release-051-package.log,
 release-051-package-error.log and release-051-package-error.png. Source
@@ -371,5 +388,27 @@ one shell via `bash build/release-051-qualify.sh`, exited 0:
   Per-scenario manifests/inputs/commands/results remain in
   artifacts/verification/rcms; transcript: build/release-051-e2e.log.
 
-No push to origin/ux/sheets or origin/ux/audit-improvements: the package gate is
-incomplete. No PR was opened and no merge performed.
+Final follow-up qualification and push results are recorded below. No PR was
+opened and no merge performed.
+
+
+Follow-up final qualification after the installer/summary-label changes:
+`bash build/release-051-final-targeted.sh` exited 0. All four real scenarios
+passed: summary-of-findings (including all six binary/continuous estimator
+labels), sheets-persist, manuscript-export and amino. Summary doctor runtime
+`artifacts/verification/rcms/20261101T074739Z-bcf7af1d-summary-of-findings/runtime.json`
+reports RCMetaR **0.5.1**. Light/dark slice9 summary captures were refreshed.
+Strict golden compatibility passed **475 comparisons**, with no oracle edits;
+report: `build/qt6-verification/golden-compatibility-release-051-final/compatibility-report.json`.
+`uv run --no-sync python -m pytest tests/e2e -n 2 -q -k 'summary or manuscript or sheets'`
+passed **7 tests in 242.82 seconds**. Transcripts are
+`build/release-051-final-{summary-of-findings,sheets-persist,manuscript-export,amino,golden,e2e}.log`.
+Only the installer and summary label changed executable product behavior;
+the scenario was strengthened before implementing the label fix, and its
+original exact-suffix assertion failed as expected (release-051-sof-before.log).
+The complete prior 136-pass fresh matrix was not repeated.
+
+`bash build/release-051-frozen-checks.sh` retains exact frozen reader/export,
+argument and isolated-library version commands. The frozen runtime probe is
+the packaging lane's readiness check; the helper doctor above is a source
+desktop check, not a claim that the frozen executable runs the source driver.

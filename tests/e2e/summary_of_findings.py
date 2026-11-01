@@ -46,7 +46,8 @@ def run(app, window, work, root, record, analyze):
     for row in range(2):
         assert '; p =' not in dialog.table.item(row, 3).text()
         assert dialog.table.item(row, 2).text().isdigit()
-        assert ('random-effects' if row == 0 else 'fixed-effect') in dialog.table.item(row, 3).text()
+        assert dialog.table.item(row, 3).text().endswith(
+            ', random-effects' if row == 0 else ', fixed-effect Mantel-Haenszel')
         for section in expected[row].sections:
             for table in section.tables:
                 if table.title.endswith('Model Results'):
@@ -125,3 +126,31 @@ def run(app, window, work, root, record, analyze):
     assert refreshed.table.item(0, 3).text() != original_effect
     record('summary-data-refresh', refreshed, effect=refreshed.table.item(0, 3).text())
     refreshed.close()
+
+    # Exercise every non-diagnostic estimator label through the real summary.
+    from rc_metastudio.summary_of_findings import SummaryOfFindingsDialog
+    cases = (
+        ('amino.rcms', 'binary.fixed.inv.var', 'fixed-effect inverse variance'),
+        ('amino.rcms', 'binary.fixed.mh', 'fixed-effect Mantel-Haenszel'),
+        ('amino.rcms', 'binary.fixed.peto', 'fixed-effect Peto'),
+        ('amino.rcms', 'binary.random', 'random-effects'),
+        ('continuous.rcms', 'continuous.fixed', 'fixed-effect inverse variance'),
+        ('continuous.rcms', 'continuous.random', 'random-effects'),
+    )
+    sheets = []
+    for fixture, method, label in cases:
+        sheet = copy.deepcopy(load_dataset_model(root / 'sample_projects' / fixture).dataset.sheets[0])
+        sheet.id = SheetId(uuid.uuid4().hex)
+        sheet.settings['analysis'] = {'method': method, 'parameters': {'digits': 3}}
+        sheets.append(sheet)
+    offset = len(window.model.dataset.sheets)
+    window.model.dataset.sheets.extend(sheets)
+    window.model.set_current_sheet(sheets[0].id)
+    labels = SummaryOfFindingsDialog(window)
+    for row, (_, method, label) in enumerate(cases):
+        effect = labels.table.item(offset + row, 3).text()
+        assert effect.endswith(', ' + label), (method, effect)
+        assert 'CI' in effect, (method, effect)
+    record('summary-all-estimator-labels', labels,
+           effects=[labels.table.item(offset + row, 3).text() for row in range(len(cases))])
+    labels.close()
