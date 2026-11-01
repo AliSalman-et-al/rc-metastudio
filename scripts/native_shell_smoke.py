@@ -8,6 +8,7 @@ import argparse
 import sys
 import os
 import tempfile
+from unittest.mock import patch
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,10 +49,9 @@ def main(argv: list[str] | None = None) -> int:
     from tests.python.gui.support import automation_scenarios
 
     from rc_metastudio import app_error_handler, settings
-    with tempfile.TemporaryDirectory(prefix="rcms-native-shell-") as work:
+    with tempfile.TemporaryDirectory(prefix="rcms-native-shell-") as work, patch.object(settings, "get_base_path", return_value=work):
         QSettings.setDefaultFormat(QSettings.Format.IniFormat)
         QSettings.setPath(QSettings.Format.IniFormat, QSettings.Scope.UserScope, work)
-        settings.get_base_path = lambda: work
         app = app_error_handler.get_or_create_application(sys.argv)
         if args.native:
             expected = {"win32": "windows", "darwin": "cocoa"}.get(sys.platform, "xcb")
