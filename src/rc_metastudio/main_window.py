@@ -1456,6 +1456,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.sheet_tabs.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.sheet_tabs.palette_stylesheet = """
             QTabBar { background: palette(window); border: 0; }
+            QTabBar::tear { width: 0; border: 0; background: palette(window); }
             QTabBar::tab { background: palette(window); color: palette(window-text);
                 border: 0; border-right: 1px solid palette(mid);
                 border-bottom: 3px solid transparent; padding: 6px 12px; }
