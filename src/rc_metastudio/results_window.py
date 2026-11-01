@@ -49,6 +49,7 @@ from PyQt6.QtWidgets import (
     QLabel,
     QSpinBox,
     QTextBrowser,
+    QHeaderView,
     QTableWidget,
     QTableWidgetItem,
     QWidget,
@@ -471,7 +472,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.result_table.setAccessibleDescription("Read-only result cells with column headers. Ctrl+C copies selected cells, or the entire table when no cells are selected. Tab moves to the next control.")
         required(self.result_table.verticalHeader(), "result table row header").hide()
         layout.addWidget(self.result_table)
-        controls = QToolBar("Table actions", self.tables_page)
+        controls = self.table_controls = QToolBar("Table actions", self.tables_page)
         controls.setMovable(False)
         controls.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
         self.copy_table_action = QAction("Copy table", self)
@@ -486,6 +487,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         for action in (self.copy_table_action, self.export_table_action):
             controls.addAction(action)
         layout.addWidget(controls)
+        layout.addStretch()
         self.table_selector.currentIndexChanged.connect(self._select_result_table)
         self.content_stack.addWidget(self.tables_page)
         self._select_result_table(0)
@@ -505,10 +507,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 if _numeric_cell(cell):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
                 self.result_table.setItem(row_index, column_index, item)
-        self.result_table.resizeColumnsToContents()
-        for column in range(self.result_table.columnCount()):
-            self.result_table.setColumnWidth(column, min(360, self.result_table.columnWidth(column) + 12))
+        header = required(self.result_table.horizontalHeader(), "result table column header")
+        header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.result_table.resizeRowsToContents()
+        self.result_table.setMaximumHeight(
+            header.height() + sum(self.result_table.rowHeight(row)
+                                  for row in range(self.result_table.rowCount()))
+            + 2 * self.result_table.frameWidth()
+        )
 
     def _table_payload(self, delimiter, selected=False):
         table = self._report_tables[self.table_selector.currentIndex()]
