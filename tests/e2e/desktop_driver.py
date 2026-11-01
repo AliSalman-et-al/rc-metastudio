@@ -861,7 +861,7 @@ def xlsx_import(app, window):
     from rc_metastudio import main_wizard
     assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
     original_palette = app.palette()
-    screens = ROOT / "docs/ux-hill-climb/screens"
+    screens = WORK / "screens"
     screens.mkdir(parents=True, exist_ok=True)
     for theme, foreground, background in (("light", "#202020", "#ffffff"), ("dark", "#eeeeee", "#202020")):
         palette = QtGui.QPalette(original_palette)
@@ -1327,7 +1327,7 @@ def calculator(app, window, family):
             if family == "binary":
                 widths = [dialog.metric_readout.columnWidth(i) for i in range(4)]
                 assert max(widths) - min(widths) <= 1, widths
-            dialog.grab().save(str(ROOT / f"docs/ux-hill-climb/screens/slice8a-calculator-{family}.png"))
+            dialog.grab().save(str(WORK / f"slice8a-calculator-{family}.png"))
             for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
                 width = field.fontMetrics().horizontalAdvance(field.text())
                 assert field.width() >= width + field.textMargins().left() + field.textMargins().right() + 12
