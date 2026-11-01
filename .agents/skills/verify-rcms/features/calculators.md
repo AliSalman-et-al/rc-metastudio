@@ -110,3 +110,9 @@ The source interval level is stored per study; output confidence is separate.
 enter OR/MD intervals at 90%, switch sheet output confidence to 95%, save/reopen,
 and compare the actual study SE used in analysis to metafor::conv.wald and
 qnorm(.95) within 1e-6. Entered bounds retain their source multiplier.
+
+Slice 8A: continuous group SE/CI cells paint at estimate precision while retaining
+full item/editor text. Diagnostic prevalence uses a rounded unfocused readout and
+round-trip-safe text. Binary OR/RR/RD readouts fit their three rows and columns.
+The baseline acceptance fixtures and independent numerical comparisons remain
+unchanged. Refreshed offscreen screenshots are in docs/ux-hill-climb/screens/slice8a-*.

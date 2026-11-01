@@ -102,3 +102,20 @@ The outcome page runtime title also uses Outcome and groups / Outcome. Capture s
 Visual follow-up: restrict fixed estimate precision to group SE and CI columns; sample sizes and other summaries retain their compact display. First full pytest attempt ended externally with SIGTERM (exit 143) after 13 passes, no failures or final summary. Owned orphan children were closed by PID before retry.
 
 First uninterrupted selected suite: 50 passed, 1 failed in 1675.16s. review1-design timed out waiting behind the import file picker; its later italic/amber assertion was also obsolete. Updated the real start-page drive to supply a test-owned CSV and check normal font plus composited theme-text contrast. Targeted review1-design passed: artifacts/verification/rcms/20261101T002146Z-58823f8d-review1-design. All numerical assertions are unchanged.
+
+## Final completion evidence
+
+All nine requested serial scenarios passed on the final rerun. Commands used `source build/sheets-baseline/ENV.sh` and `uv run --no-sync python scripts/verify_rcms.py SCENARIO`; no uv sync was run.
+- xlsx-import: `artifacts/verification/rcms/20261101T002217Z-bf9d1df7-xlsx-import`
+- csv: `artifacts/verification/rcms/20261101T002236Z-8fd59e93-csv`
+- calculator-binary: `artifacts/verification/rcms/20261101T002247Z-d4e1f29e-calculator-binary`
+- calculator-continuous: `artifacts/verification/rcms/20261101T002302Z-5d20bf55-calculator-continuous`
+- calculator-diagnostic: `artifacts/verification/rcms/20261101T002314Z-750b1dfc-calculator-diagnostic`
+- calculator-ratio-precision: `artifacts/verification/rcms/20261101T002340Z-6f73c8e9-calculator-ratio-precision`
+- amino: `artifacts/verification/rcms/20261101T002524Z-f5b0ed3e-amino`
+- sheets: `artifacts/verification/rcms/20261101T002537Z-e368282f-sheets`
+- hillclimb: `artifacts/verification/rcms/20261101T002555Z-5c579446-hillclimb`
+
+Final uninterrupted command: `uv run --no-sync python -m pytest tests/e2e -n 2 -q -k "calculator or wizard or import or csv or ux or audit or review"`. Result: **51 passed in 1630.99s (27m10s), exit 0**. Transcript: [SLICE8A-pytest.txt](SLICE8A-pytest.txt). Each test retains its own evidence manifest under artifacts/verification/rcms. Earlier interrupted and failed evidence remains intact.
+
+Screens refreshed: import, metric, binary/continuous/diagnostic calculators, light/dark effect grid, and light/dark welcome/data-type/outcome/CSV pages. Scope: Qt offscreen, not native display qualification. Existing baseline accepted-row fixtures and numerical assertions passed unchanged. No numerical algorithms changed. All four numbered steps are complete.
