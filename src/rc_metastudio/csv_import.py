@@ -223,7 +223,6 @@ def _covariate_type(values: Iterable[str]) -> str:
 def _xlsx_metadata(path, sheet, selected, row_numbers, columns, notices):
     from zipfile import ZipFile
     from xml.etree import ElementTree
-    from openpyxl import load_workbook
     # Streaming worksheets omit merge and visibility metadata. Inspect the XML
     # first, opening a normal workbook only when that metadata is present.
     with ZipFile(path) as archive:
@@ -232,20 +231,28 @@ def _xlsx_metadata(path, sheet, selected, row_numbers, columns, notices):
     ns = {"s": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
     metadata = root.find("s:mergeCells", ns) is not None or any(e.get("hidden") == "1" for e in root.iter())
     if metadata:
-        normal = load_workbook(path, read_only=False, data_only=False)
-        try:
-            full = normal[selected]
-            for merged in full.merged_cells.ranges:
-                if merged.min_row <= row_numbers[-1] and merged.max_row >= row_numbers[0] and merged.min_col <= columns[-1]+1 and merged.max_col >= columns[0]+1:
-                    raise CsvImportError(f"{selected}!{merged} intersects the data; unmerge these cells first.")
-            hidden_rows = sum(bool(full.row_dimensions[number].hidden) for number in row_numbers)
-            hidden_cols = sum(1 for i in columns if any(d.hidden and d.min <= i+1 <= d.max for d in full.column_dimensions.values()))
-            if notices is not None and (hidden_rows or hidden_cols):
-                for count, label in ((hidden_rows, "row"), (hidden_cols, "column")):
-                    if count:
-                        notices.append(f"{count} hidden {label}{' was' if count == 1 else 's were'} imported.")
-        finally:
-            normal.close()
+        _xlsx_visible_metadata(path, selected, row_numbers, columns, notices)
+
+
+def _xlsx_visible_metadata(path, selected, row_numbers, columns, notices):
+    from openpyxl import load_workbook
+    normal = load_workbook(path, read_only=False, data_only=False)
+    try:
+        full = normal[selected]
+        for merged in full.merged_cells.ranges:
+            if merged.min_row <= row_numbers[-1] and merged.max_row >= row_numbers[0] and merged.min_col <= columns[-1]+1 and merged.max_col >= columns[0]+1:
+                raise CsvImportError(f"{selected}!{merged} intersects the data; unmerge these cells first.")
+        _xlsx_hidden_notices(full, row_numbers, columns, notices)
+    finally:
+        normal.close()
+
+def _xlsx_hidden_notices(full, row_numbers, columns, notices):
+    hidden_rows = sum(bool(full.row_dimensions[number].hidden) for number in row_numbers)
+    hidden_cols = sum(1 for i in columns if any(d.hidden and d.min <= i+1 <= d.max for d in full.column_dimensions.values()))
+    if notices is not None and (hidden_rows or hidden_cols):
+        for count, label in ((hidden_rows, "row"), (hidden_cols, "column")):
+            if count:
+                notices.append(f"{count} hidden {label}{' was' if count == 1 else 's were'} imported.")
 
 def _xlsx_cell_value(cell, cached, selected, row_index, output_column, year_column, numeric_columns, dates):
     from datetime import date, datetime
@@ -270,6 +277,30 @@ def _xlsx_cell_value(cell, cached, selected, row_index, output_column, year_colu
     return "" if value is None else str(value), formula
 
 
+def _xlsx_select_sheet(book, worksheet):
+    names = [sheet.title for sheet in book if sheet.sheet_state == "visible"]
+    if not names:
+        raise CsvImportError("This workbook has no visible worksheets.")
+    if worksheet in names:
+        return names, worksheet
+    selected = next((name for name in names if _xlsx_has_values(book[name])), names[0])
+    return names, selected
+
+
+def _xlsx_has_values(sheet):
+    return any(any(cell.value is not None for cell in row) for row in sheet.iter_rows())
+
+
+def _xlsx_cells(sheet):
+    cells = [list(row) for row in sheet.iter_rows() if any(cell.value is not None for cell in row)]
+    if not cells:
+        return [], [], []
+    row_numbers = [next(cell.row for cell in row if cell.value is not None) for row in cells]
+    columns = [i for i in range(max(map(len, cells)))
+               if any(i < len(row) and row[i].value is not None for row in cells)]
+    return cells, row_numbers, columns
+
+
 def read_xlsx(path, worksheet=None, *, year_column=None, numeric_columns=(), notices=None):
     """Read stored worksheet cells; preserve coordinates for actionable errors."""
     from openpyxl import load_workbook
@@ -280,16 +311,11 @@ def read_xlsx(path, worksheet=None, *, year_column=None, numeric_columns=(), not
     except Exception as exc:
         raise CsvImportError("Could not read this workbook; use an unprotected .xlsx file.") from exc
     try:
-        names = [s.title for s in book if s.sheet_state == "visible"]
-        if not names:
-            raise CsvImportError("This workbook has no visible worksheets.")
-        selected = worksheet if worksheet in names else next((name for name in names if any(any(c.value is not None for c in row) for row in book[name].iter_rows())), names[0])
+        names, selected = _xlsx_select_sheet(book, worksheet)
         sheet = book[selected]
-        cells = [list(row) for row in sheet.iter_rows() if any(c.value is not None for c in row)]
+        cells, row_numbers, columns = _xlsx_cells(sheet)
         if not cells:
             return [], [], names, selected
-        row_numbers = [next(c.row for c in row if c.value is not None) for row in cells]
-        columns = [i for i in range(max(map(len, cells))) if any(i < len(row) and row[i].value is not None for row in cells)]
         _xlsx_metadata(path, sheet, selected, row_numbers, columns, notices)
         cached = {(c.row, c.column): c.value for row in saved[selected].iter_rows() for c in row if c.value is not None}
         formulas = 0

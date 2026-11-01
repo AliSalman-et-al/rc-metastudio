@@ -115,6 +115,10 @@ def _legacy_sheet_arms(units, state, sid):
     labels = selected + [label for label in labels if label not in selected]
     arms = [{"id": f"{sid}:arm:{i}", "name": label} for i, label in enumerate(labels)]
     identities = {a["name"]: a["id"] for a in arms}
+    comparisons = _legacy_comparisons(labels, identities)
+    return arms, identities, comparisons
+
+def _legacy_comparisons(labels, identities):
     comparisons = {label: [identities[label]] for label in labels}
     for left in labels:
         for right in labels:
@@ -124,7 +128,7 @@ def _legacy_sheet_arms(units, state, sid):
                 if key in comparisons and comparisons[key] != pair:
                     raise ProjectFormatError("ambiguous legacy comparison: " + key)
                 comparisons[key] = pair
-    return arms, identities, comparisons
+    return comparisons
 
 def _legacy_sheet_settings(source, state, outcome, identities, arms):
     settings = copy.deepcopy(source.get("summary") or {})
@@ -135,6 +139,11 @@ def _legacy_sheet_settings(source, state, outcome, identities, arms):
     settings["arms"] = [identities[n] for n in active] if active and all(n in identities for n in active) else [a["id"] for a in arms[:1 if outcome["data_type"] == 2 else 2]]
     return settings
 
+def _convert_legacy_unit(record, unit, identities, comparisons):
+        record["raw_data"] = {identities[a["name"]]: copy.deepcopy(a["raw_data"]) for a in unit["groups"]}
+        record["entered_effects"] = [{"metric": metric, "arms": comparisons[key], "values": copy.deepcopy(values)} for metric, entries in unit["entered_effects"].items() for key,values in entries.items()]
+        record["ratio_inputs"] = [{"arms": [identities[n] for n in value["groups"]], "input": copy.deepcopy(value["input"])} for value in unit.get("ratio_inputs", [])]
+
 def _legacy_sheet_rows(source, units, sid, identities, comparisons, covariate_ids):
     rows = []
     for index, (row, unit) in enumerate(zip(source["studies"], units)):
@@ -142,13 +151,16 @@ def _legacy_sheet_rows(source, units, sid, identities, comparisons, covariate_id
         record.update(id=f"{sid}:row:{index}", label=row["name"], raw_data={}, entered_effects=[], ratio_inputs=[])
         record["covariates"] = {covariate_ids[k]: v for k, v in record["covariates"].items()}
         if unit:
-            record["raw_data"] = {identities[a["name"]]: copy.deepcopy(a["raw_data"]) for a in unit["groups"]}
-            record["entered_effects"] = [{"metric": metric, "arms": comparisons[key], "values": copy.deepcopy(values)} for metric, entries in unit["entered_effects"].items() for key,values in entries.items()]
-            record["ratio_inputs"] = [{"arms": [identities[n] for n in value["groups"]], "input": copy.deepcopy(value["input"])} for value in unit.get("ratio_inputs", [])]
+            _convert_legacy_unit(record, unit, identities, comparisons)
         if is_empty_entry_row(record):
             continue
         rows.append(record)
     return rows
+
+def _legacy_unit_for_pair(row, outcome, follow_up):
+    return next((unit for unit in row["analysis_units"]
+                 if (unit["outcome"], unit["follow_up"]) == (outcome, follow_up)), None)
+
 
 def _convert_pairs(project, state):
     from rc_metastudio.project_domain import validate_legacy_project_semantics
@@ -161,7 +173,7 @@ def _convert_pairs(project, state):
         for follow_up in follow_ups:
             sid = f"sheet:{len(sheets)}"
             name = _legacy_sheet_name(outcome, follow_up, follow_ups, names)
-            units = [next((u for u in r["analysis_units"] if (u["outcome"], u["follow_up"]) == (outcome["name"], follow_up)), None) for r in source["studies"]]
+            units = [_legacy_unit_for_pair(row, outcome["name"], follow_up) for row in source["studies"]]
             arms, identities, comparisons = _legacy_sheet_arms(units, state, sid)
             settings = _legacy_sheet_settings(source, state, outcome, identities, arms)
             covariates = [dict(c, id=f"{sid}:cov:{i}") for i, c in enumerate(source["covariates"])]

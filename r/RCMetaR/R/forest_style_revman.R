@@ -712,6 +712,11 @@ rcmetar.draw.revman.bottom.blocks <- function(bundle, x, cex, layout=NULL) {
     }
     prediction <- rcmetar.forest.prediction.label(bundle)
     if (nzchar(prediction)) graphics::text(x, -5, prediction, pos=4, cex=cex)
+    rcmetar.draw.revman.axis.footer(bundle, layout, cex)
+    invisible(NULL)
+}
+
+rcmetar.draw.revman.axis.footer <- function(bundle, layout, cex) {
     axis.footer <- rcmetar.revman.axis.footer.layout(bundle, layout)
     # Keep direction labels on one baseline with a gap around the null line.
     gap <- max(axis.footer$span * 0.035, 0.08)

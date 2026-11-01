@@ -953,11 +953,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if self.is_meta_regression and self.data_type != "diagnostic":
             model_label = "Fixed-effect meta-regression" if self.fixed_effects_radio.isChecked() else "Random-effects meta-regression"
         fits = self._diagnostic_fit_details()
-        definitions, _, _, _ = self.analysis_service.parameters(self.current_method)
-        applied_parameters = {key: value for key, value in self.current_param_vals.items()
-                              if key in definitions or key == "cov_name"}
-        if self.is_meta_regression and self.data_type != "diagnostic" and self.fixed_effects_radio.isChecked():
-            applied_parameters.pop("rm.method", None)
+        applied_parameters = self._applied_parameters()
         identity, details = analysis_identity.result_identity(
             self.model, self.analysis_type, self._result_metric_label(),
             model_label, applied_parameters, self.confidence_level,
@@ -982,6 +978,14 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                        manuscript_title=title, manuscript_methods=methods,
                        manuscript_comparison="Comparison: " + " / ".join(self.model.arm_names))
 
+    def _applied_parameters(self):
+        definitions, _, _, _ = self.analysis_service.parameters(self.current_method)
+        applied_parameters = {key: value for key, value in self.current_param_vals.items()
+                              if key in definitions or key == "cov_name"}
+        if self.is_meta_regression and self.data_type != "diagnostic" and self.fixed_effects_radio.isChecked():
+            applied_parameters.pop("rm.method", None)
+        return applied_parameters
+
     def _result_context(self, applied_parameters):
         included = len(self.model.get_studies())
         excluded = len(self.model.get_studies(only_if_included=False)) - included
@@ -997,21 +1001,25 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         return context + self._correction_context(applied_parameters)
 
     def _correction_context(self, applied_parameters):
-        if self.data_type in ("binary", "diagnostic") and applied_parameters.get("adjust"):
-            raw = self.model.get_current_raw_data()
-            policy = applied_parameters.get("correction.policy", applied_parameters.get("to", "only0"))
-            zero = any(value == 0 for row in raw for value in row)
-            if self.data_type == "binary":
-                zero = zero or any(row[i] == row[i + 1] for row in raw for i in range(0, len(row) - 1, 2))
-            if policy not in ("none", "None") and (zero or policy in ("all", "All studies")):
-                label = {"only0": "studies with any zero cell", "all": "all studies", "if0all": "all studies if any zero exists"}.get(policy, policy)
-                if self.data_type == "binary":
-                    from rc_metastudio.manuscript_report import binary_correction_prose
-                    double_zero = sum(len(row) == 4 and row[0] == 0 and row[2] == 0 for row in raw)
-                    return " " + binary_correction_prose(self.current_method, applied_parameters['adjust'], label, double_zero)
-                else:
-                    return f" A continuity correction of {applied_parameters['adjust']} was applied to {label}."
-        return ""
+        if self.data_type not in ("binary", "diagnostic") or not applied_parameters.get("adjust"):
+            return ""
+        raw = self.model.get_current_raw_data()
+        policy = applied_parameters.get("correction.policy", applied_parameters.get("to", "only0"))
+        zero = self._has_zero_cell(raw)
+        if policy in ("none", "None") or not (zero or policy in ("all", "All studies")):
+            return ""
+        label = {"only0": "studies with any zero cell", "all": "all studies", "if0all": "all studies if any zero exists"}.get(policy, policy)
+        if self.data_type == "binary":
+            from rc_metastudio.manuscript_report import binary_correction_prose
+            double_zero = sum(len(row) == 4 and row[0] == 0 and row[2] == 0 for row in raw)
+            return " " + binary_correction_prose(self.current_method, applied_parameters['adjust'], label, double_zero)
+        return f" A continuity correction of {applied_parameters['adjust']} was applied to {label}."
+
+    def _has_zero_cell(self, raw):
+        if any(value == 0 for row in raw for value in row):
+            return True
+        return self.data_type == "binary" and any(
+            row[i] == row[i + 1] for row in raw for i in range(0, len(row) - 1, 2))
 
     def _diagnostic_fit_details(self):
         fits = []

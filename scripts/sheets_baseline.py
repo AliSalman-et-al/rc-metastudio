@@ -20,6 +20,24 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _inventory_pairs(project):
+    dataset = project["dataset"]
+    pairs = []
+    for outcome in dataset["outcomes"]:
+        for label in outcome["follow_ups"] or [None]:
+            pairs.append({
+                "outcome": outcome["name"], "follow_up": label,
+                "data_type": outcome["data_type"],
+                "rows_with_unit": sum(
+                    any(unit["outcome"] == outcome["name"]
+                        and unit["follow_up"] == label
+                        for unit in row["analysis_units"])
+                    for row in dataset["studies"]
+                ),
+            })
+    return pairs
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path)
@@ -36,20 +54,7 @@ def main() -> int:
             manifest = json.loads(archive.read("manifest.json"))
             project = json.loads(archive.read("project.json"))
             state = json.loads(archive.read("state.json"))
-        dataset = project["dataset"]
-        pairs = []
-        for outcome in dataset["outcomes"]:
-            for label in outcome["follow_ups"] or [None]:
-                pairs.append({
-                    "outcome": outcome["name"], "follow_up": label,
-                    "data_type": outcome["data_type"],
-                    "rows_with_unit": sum(
-                        any(unit["outcome"] == outcome["name"]
-                            and unit["follow_up"] == label
-                            for unit in row["analysis_units"])
-                        for row in dataset["studies"]
-                    ),
-                })
+        pairs = _inventory_pairs(project)
         inventory.append({"file": path.name,
                           "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
                           "format_version": manifest["format_version"],

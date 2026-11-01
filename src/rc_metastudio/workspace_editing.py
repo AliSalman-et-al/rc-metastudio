@@ -747,14 +747,7 @@ class WorkspaceEditingService:
         unit = self._analysis_unit(dataset, study, context)
         raw_data = self._raw_data(dataset, study, context)
         if context.data_type in RATIO_DATA_TYPES:
-            self._clear_effect_and_display_ci(unit, context.current_effect, context)
-            record = unit.ratio_input(context.arm_names)
-            ready = record.ready(raw_data, metric=context.current_effect)
-            if ready and record.selected_source(raw_data, metric=context.current_effect) == "raw" and r_backend.is_ready():
-                est, lower, upper = r_bridge.incidence_rate_effect_preview(raw_data, context.confidence_level)
-                self._set_calculated(unit, context.current_effect, context, est, lower, upper)
-            if update_inclusion:
-                study.include = not study.manually_excluded and ready
+            self._update_ratio_outcome(study, unit, raw_data, context, update_inclusion)
             return
         complete = self._raw_data_is_complete_for_context(raw_data, context)
         if update_inclusion and self._should_clear_inclusion(unit, context):
@@ -769,6 +762,17 @@ class WorkspaceEditingService:
             )
         elif not raw_data_is_empty(raw_data):
             self._clear_incomplete_outcome(unit, context)
+
+    def _update_ratio_outcome(self, study, unit, raw_data, context, update_inclusion):
+        self._clear_effect_and_display_ci(unit, context.current_effect, context)
+        record = unit.ratio_input(context.arm_names)
+        ready = record.ready(raw_data, metric=context.current_effect)
+        if ready and record.selected_source(raw_data, metric=context.current_effect) == "raw" and r_backend.is_ready():
+            est, lower, upper = r_bridge.incidence_rate_effect_preview(raw_data, context.confidence_level)
+            self._set_calculated(unit, context.current_effect, context, est, lower, upper)
+        if update_inclusion:
+            study.include = not study.manually_excluded and ready
+
 
     @staticmethod
     def _raw_data_is_complete_for_context(raw_data, context) -> bool:

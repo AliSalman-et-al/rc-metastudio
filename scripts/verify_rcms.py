@@ -176,6 +176,40 @@ def _desktop_environment(work: Path, evidence: Path, native: bool) -> dict[str, 
     return env
 
 
+def _compare_hillclimb(passed, args, evidence):
+    if not passed or args.scenario != "hillclimb":
+        return passed
+    measured = json.loads((evidence / "measures.json").read_text())
+    if args.compare_measures:
+        previous = json.loads(args.compare_measures.read_text())
+        stable = lambda data: {task: {k: v for k, v in values.items() if k != "wall_seconds"} for task, values in data.items()}
+        if stable(measured) != stable(previous):
+            passed = False
+            print("Hillclimb counts or numerical output changed", file=sys.stderr)
+    print(json.dumps(measured, indent=2))
+    return passed
+
+
+def _desktop_command(scenario, work):
+    timeout_seconds = _scenario_timeout(scenario)
+    command = [
+        sys.executable,
+        str(ROOT / "scripts/run_with_timeout.py"),
+        "--timeout-seconds",
+        str(timeout_seconds),
+        "--label",
+        "RCMS " + scenario,
+        "--",
+        sys.executable,
+        "-X",
+        "faulthandler",
+        str(ROOT / "tests/e2e/desktop_driver.py"),
+        scenario,
+        str(work),
+    ]
+    return command
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("scenario", choices=(*SCENARIOS, "sheets-baseline"))
@@ -205,22 +239,7 @@ def main() -> int:
         ) as temporary:
             work = Path(temporary)
             env = _desktop_environment(work, evidence, args.native)
-            timeout_seconds = _scenario_timeout(args.scenario)
-            command = [
-                sys.executable,
-                str(ROOT / "scripts/run_with_timeout.py"),
-                "--timeout-seconds",
-                str(timeout_seconds),
-                "--label",
-                "RCMS " + args.scenario,
-                "--",
-                sys.executable,
-                "-X",
-                "faulthandler",
-                str(ROOT / "tests/e2e/desktop_driver.py"),
-                args.scenario,
-                str(work),
-            ]
+            command = _desktop_command(args.scenario, work)
             record["command"] = command
             print(f"Evidence: {evidence}", flush=True)
             try:
@@ -241,15 +260,7 @@ def main() -> int:
                 passed = result.returncode == 0 and "WORKFLOW PASSED" in (
                     evidence / "stdout.log"
                 ).read_text(encoding="utf-8", errors="replace")
-                if passed and args.scenario == "hillclimb":
-                    measured = json.loads((evidence / "measures.json").read_text())
-                    if args.compare_measures:
-                        previous = json.loads(args.compare_measures.read_text())
-                        stable = lambda data: {task: {k: v for k, v in values.items() if k != "wall_seconds"} for task, values in data.items()}
-                        if stable(measured) != stable(previous):
-                            passed = False
-                            print("Hillclimb counts or numerical output changed", file=sys.stderr)
-                    print(json.dumps(measured, indent=2))
+                passed = _compare_hillclimb(passed, args, evidence)
                 record["passed"] = passed
             finally:
                 # Copy before TemporaryDirectory removes settings and R scratch files.
