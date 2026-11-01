@@ -24,6 +24,12 @@ def analysis_setup(driver, capture, missing):
         form.close()
     driver.window.workspace.mark_saved()
     assert driver.window.open(str(driver.ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    original_record = driver.record_step
+    driver.record_step = lambda *args, **kwargs: None
+    try:
+        driver.csv_import(driver.app, driver.window)
+    finally:
+        driver.record_step = original_record
     for detail, action in (("subgroup", driver.window.action_subgroup_ma),
                            ("regression", driver.window.action_meta_regression)):
         if not action.isEnabled():
@@ -88,6 +94,18 @@ def plots(driver, capture, missing):
             view = driver.analyze(driver.app, driver.window, method)
             view.fit_width_action.trigger()
             capture(f"G-{family}-forest-default-fit", view)
+            if family == "binary":
+                import sys
+                sys.path.insert(0, str(driver.ROOT / ".agents/skills/verify-rcms/scripts"))
+                from advanced_workflows import modal
+                from rc_metastudio.plot_editor_dialog import EditPlotDialog
+                for style in ("RevMan", "BMJ"):
+                    def edit(dialog):
+                        dialog.style_cbo.setCurrentText(style)
+                        driver.mouse_click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
+                    modal(driver.app, EditPlotDialog, edit, view.edit_plot_action.trigger)
+                    view.fit_width_action.trigger()
+                    capture(f"G-binary-forest-{style.lower()}-fit", view)
             view.close()
         except (AssertionError, StopIteration) as error:
             missing.append(f"G {family} forest: {type(error).__name__}: {error}")
@@ -96,7 +114,41 @@ def plots(driver, capture, missing):
                     widget.close()
         finally:
             driver.record_step = original
-    missing.append("G RevMan/BMJ; subgroup; cumulative; leave-one-out; regression; ordinary/contour funnel; trim-and-fill; SROC; coefficient; Deeks: dedicated plot selection still needed")
+    import sys
+    sys.path.insert(0, str(driver.ROOT / ".agents/skills/verify-rcms/scripts"))
+    from analysis_matrix import run as matrix
+    producers = (
+        ("analysis-amino-binary-subgroup", (("subgroup", "subgroup_forest"),)),
+        ("analysis-amino-binary-cumulative", (("cumulative", "cumulative_forest"),)),
+        ("analysis-amino-binary-leave-one-out", (("leave-one-out", "leave_one_out_forest"),)),
+        ("analysis-amino-binary-meta-regression", (("regression", "regression"),)),
+        ("small-study-binary-extended", (("funnel", "funnel"), ("contour", "contour_funnel"), ("trim-and-fill", "trimfill_funnel"))),
+        ("analysis-diagnostic-joint", (("sroc", "sroc"),)),
+        ("analysis-diagnostic-regression-continuous", (("coefficient", "forest"),)),
+        ("small-study-diagnostic", (("deeks", "deeks_funnel"),)),
+    )
+    for producer, kinds in producers:
+        driver.window.workspace.mark_saved()
+        view = matrix(driver.app, driver.window, producer, lambda *args, **kwargs: None, keep_results=True)
+        for detail, kind in kinds:
+            artifacts = [view.create_plot_artifact(title, path, params_path=view.results.image_params_paths.get(title))
+                         for title, path in view.results.images.items()]
+            selected = [artifact for artifact in artifacts if artifact.plot_kind == kind]
+            if not selected:
+                missing.append(f"G {detail}: producer {producer} did not expose {kind}")
+                continue
+            section = next(section for section in view.results.sections if section.source_key == selected[0].title)
+            item = view.nav_tree.findItems(section.title, QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)[0]
+            view.nav_tree.setCurrentItem(item)
+            view.report_action.setChecked(False)
+            view._show_report(False)
+            view.fit_width_action.trigger()
+            capture(f"G-{detail}-fit", view)
+            if detail == "subgroup":
+                view.tables_action.trigger()
+                capture("F-subgroup-tables", view)
+                missing[:] = [entry for entry in missing if not entry.startswith("F subgroup")]
+        view.close()
 
 
 def create_dataset(driver, capture, missing):
