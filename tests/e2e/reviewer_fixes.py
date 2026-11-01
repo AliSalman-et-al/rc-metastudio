@@ -186,19 +186,18 @@ def run_groups(app, window, work, record):
     app.processEvents()
     record('reviewer-legacy-default-reopened',old_view,internal_style=old_style,plots=dict(old_view.results.display_images))
     close(app,old_view)
-    assert __version__ == '0.5.0'
     assert str(r_bridge.execute_r_string('as.character(packageVersion("RCMetaR"))')[0]) == __version__
     def about(dialog):
-        assert 'RC MetaStudio 0.5.0' in dialog.content_scroll_area.toPlainText()
+        assert f'RC MetaStudio {__version__}' in dialog.content_scroll_area.toPlainText()
         record('reviewer-about-version', dialog, version=__version__)
         click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Close))
     modal(app, AboutLegalDialog, about, window.action_about_legal.trigger)
-    project = work / 'release-0.5.0.rcms'
+    project = work / f'release-{__version__}.rcms'
     window.out_path = str(project)
     assert window.save()
     with ZipFile(project) as archive:
         manifest = json.loads(archive.read('manifest.json'))
-    assert manifest['application']['version'] == '0.5.0', manifest
+    assert manifest['application']['version'] == __version__, manifest
     assert window.open(str(project), raise_on_error=True)
     record('reviewer-version-reopened', window, manifest=manifest, project=str(project))
 
