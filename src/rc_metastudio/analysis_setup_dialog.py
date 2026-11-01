@@ -1514,7 +1514,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         content_height = self.specs_tab.currentWidget().minimumSizeHint().height() + 40
         self._set_scroll_body_height(content_height)
         position = self.pos()
+        previous_size = self.size()
         self.adjustSize()
+        self.resize(self.size().expandedTo(previous_size))
         self.move(position)
         self._reveal_focused_control(None, QtWidgets.QApplication.focusWidget())
 

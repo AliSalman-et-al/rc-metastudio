@@ -36,7 +36,6 @@ from rc_metastudio.meta_globals import (
     NUM_DIGITS,
     ONE_ARM_METRICS,
     OTHER,
-    STR_TO_TYPE_DICT,
     validate_confidence_level,
 )
 from rc_metastudio.workspace_column_identity import (
@@ -1060,19 +1059,6 @@ class DatasetTableModel(QAbstractTableModel):
             if not self._is_blank_study(study)
         ]
 
-    def add_new_outcome(self, name, data_type, sub_type=None, group_names=None):
-        name = validate_new_outcome_name(self.dataset, name)
-        if data_type is None:
-            raise ValueError("Cannot add an outcome without a data type")
-        data_type_key = str(data_type).lower()
-        if data_type_key not in STR_TO_TYPE_DICT:
-            raise ValueError("Unsupported outcome data type: %r" % data_type)
-        data_type = STR_TO_TYPE_DICT[data_type_key]
-        self.dataset.add_outcome(Outcome(name, data_type, sub_type=sub_type), group_names=group_names)
-
-    def remove_outcome(self, outcome_name):
-        self.dataset.remove_outcome(outcome_name)
-
     def rename_group(self, old_group_name, new_group_name):
         arm = next(a for a in self.current_sheet.arms if a.name == old_group_name)
         arm.name = new_group_name
@@ -1085,6 +1071,7 @@ class DatasetTableModel(QAbstractTableModel):
         self.reset_model()
 
     def add_covariate(self, covariate_name, covariate_type, covariate_values=None, stable_id=None):
+        covariate_name = validate_new_covariate_name(self, covariate_name)
         cov = dict(id=stable_id or uuid.uuid4().hex, name=covariate_name, data_type=({'factor': 4, 'continuous': 1}.get(covariate_type, covariate_type)))
         self.current_sheet.covariates.append(cov)
         for row in self.current_sheet.rows:

@@ -880,7 +880,12 @@ def test_choice_control_remeasures_font_and_style_before_bounded_popup(
                 return value + 30
             return value
 
-    style = WideChromeStyle()
+    native_style = required(qapp.style(), "application style")
+    while isinstance(native_style, QtWidgets.QProxyStyle):
+        native_style = required(native_style.baseStyle(), "native base style")
+    base_style = required(QtWidgets.QStyleFactory.create(native_style.objectName()), "independent base style")
+    style = WideChromeStyle(base_style)
+    style.setParent(combo)
     combo.setStyle(style)
     combo.showPopup()
     qapp.processEvents()

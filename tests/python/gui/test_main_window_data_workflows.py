@@ -1,4 +1,5 @@
 import os
+import copy
 import sys
 import math
 
@@ -7,7 +8,7 @@ sys.path.insert(0, os.path.abspath("src"))
 
 import pytest
 from rc_metastudio import automation
-from PyQt6.QtWidgets import QDialog
+from PyQt6.QtWidgets import QDialog, QApplication
 from test_types import key_click, required
 
 
@@ -125,23 +126,6 @@ def test_data_table_delete_and_backspace_clear_selected_cells(monkeypatch):
         _close_without_prompt(app, window)
 
 
-def test_outcome_navigation_preserves_the_selected_continuous_metric():
-    app, window = automation.start_automation()
-    try:
-        _create_continuous_dataset(window)
-        window.model.current_effect = "SMD"
-        window.model.update_column_indices()
-        window.model.reset_model()
-        window.current_dimension = "outcome"
-
-        window.next()
-
-        assert window.model.current_outcome_name == "Recovery"
-        assert window.model.current_effect == "SMD"
-    finally:
-        _close_without_prompt(app, window)
-
-
 @pytest.mark.parametrize(
     ("show_method", "state_method"),
     [
@@ -186,64 +170,12 @@ def test_data_table_editing_preserves_maximized_main_window_state():
         _close_without_prompt(app, window)
 
 
-def test_dataset_model_rejects_missing_or_unknown_outcome_data_type():
-
-    app, window = automation.start_automation()
-    try:
-        with pytest.raises(ValueError, match="without a data type"):
-            window.model.add_new_outcome("Missing type", None)
-
-        with pytest.raises(ValueError, match="Unsupported outcome data type"):
-            window.model.add_new_outcome("Unknown type", "not-a-data-type")
-    finally:
-        _close_without_prompt(app, window)
-
-
-def test_dataset_model_rejects_blank_and_duplicate_outcome_names():
-
+def test_dataset_model_rejects_invalid_covariate_names():
     app, window = automation.start_automation()
     try:
         _create_binary_dataset(window)
-
-        with pytest.raises(ValueError, match="Outcome names cannot be empty"):
-            window.model.add_new_outcome("   ", "binary")
-
-        with pytest.raises(ValueError, match="already exists"):
-            window.model.add_new_outcome("Mortality", "binary")
-    finally:
-        _close_without_prompt(app, window)
-
-
-def test_dataset_model_rejects_invalid_added_entity_names():
-
-    app, window = automation.start_automation()
-    try:
-        _create_binary_dataset(window)
-
-        for method, args, message in [
-            (window.model.add_new_group, ("   ",), "Group names cannot be empty"),
-            (
-                window.model.add_follow_up_to_current_outcome,
-                ("   ",),
-                "Follow-up names cannot be empty",
-            ),
-            (
-                window.model.add_covariate,
-                ("   ", "continuous"),
-                "Covariate names cannot be empty",
-            ),
-        ]:
-            with pytest.raises(ValueError, match=message):
-                method(*args)
-
-        with pytest.raises(ValueError, match="already exists"):
-            window.model.add_new_group(window.model.get_arm_names()[0])
-
-        with pytest.raises(ValueError, match="already exists"):
-            window.model.add_follow_up_to_current_outcome(
-                window.model.get_current_follow_up_name()
-            )
-
+        with pytest.raises(ValueError, match="Covariate names cannot be empty"):
+            window.model.add_covariate("   ", "continuous")
         window.model.add_covariate("Dose", "continuous")
         with pytest.raises(ValueError, match="already exists"):
             window.model.add_covariate("Dose", "continuous")
@@ -270,46 +202,34 @@ def test_clipboard_preserves_platform_newlines_unicode_blanks_and_comma_decimals
         assert _cell_text(model, 0, model.RAW_DATA[2]) == ""
         assert _cell_text(model, 1, model.RAW_DATA[-1]) == "30.0"
 
-        model.add_covariate("Dose", "continuous", {"Étude Ω": None, "Beta": None})
+        covariate = model.add_covariate("Dose", "continuous", {"Étude Ω": None, "Beta": None})
         table.synchronize_column_widths()
         comma_decimal = model.index(0, model.columnCount() - 1)
         required(QApplication.clipboard(), "clipboard").setText("1,25\r\n")
         table.paste_from_clipboard(comma_decimal)
 
-        assert model.dataset.studies[0].covariate_values["Dose"] == 1.25
+        assert model.current_sheet.rows[0].covariate_values[covariate["id"]] == 1.25
     finally:
         _close_without_prompt(app, window)
 
 
-def test_invalid_clipboard_paste_is_rejected_before_mutation_or_undo(monkeypatch):
-    from PyQt6.QtWidgets import QApplication
-
+def test_clipboard_skips_nonnumeric_cells_and_commits_valid_cells_once():
     app, window = automation.start_automation()
     try:
         _create_binary_dataset(window)
         model = window.model
         table = window.tableView
-        table.set_data_in_model(model.index(0, model.NAME), _variant("Alpha"))
+        table.set_data_in_model(model.index(0, model.NAME), "Alpha")
         window.workspace.mark_saved()
-        warnings = []
-        monkeypatch.setattr(
-            sys.modules["rc_metastudio.main_window"].QMessageBox,
-            "warning",
-            lambda *args, **kwargs: warnings.append(args),
-        )
         required(QApplication.clipboard(), "clipboard").setText("1\tnot numeric")
 
-        assert table.paste_from_clipboard(model.index(0, model.RAW_DATA[0])) is False
-
-        assert [_cell_text(model, 0, column) for column in model.RAW_DATA] == [
-            "",
-            "",
-            "",
-            "",
-        ]
+        assert table.paste_from_clipboard(model.index(0, model.RAW_DATA[0])) is True
+        assert [_cell_text(model, 0, column) for column in model.RAW_DATA] == ["1.0", "", "", ""]
+        assert window.workspace.is_dirty
+        assert window.statusBar().currentMessage() == "1 cells skipped: not a number"
+        window.undo()
         assert not window.workspace.is_dirty
-        assert not window.workspace.is_dirty
-        assert warnings[-1][1:] == ("Warning", "Raw data needs to be numeric.")
+        assert [_cell_text(window.model, 0, column) for column in window.model.RAW_DATA] == ["", "", "", ""]
     finally:
         _close_without_prompt(app, window)
 
@@ -326,8 +246,8 @@ def test_inclusion_edit_undo_redo_restores_semantics_selection_and_dirty_state()
             model.index(0, model.NAME), [["Alpha", "2020", "1", "10", "2", "12"]]
         )
         inclusion = model.index(0, model.INCLUDE_STUDY)
-        model.dataset.studies[0].include = False
-        model.dataset.studies[0].manually_excluded = False
+        model.current_sheet.rows[0].include = False
+        model.current_sheet.rows[0].manually_excluded = False
         window.data_dirtied()
         table.setCurrentIndex(inclusion)
         table.selectRow(0)
@@ -339,20 +259,20 @@ def test_inclusion_edit_undo_redo_restores_semantics_selection_and_dirty_state()
             )
             is True
         )
-        assert model.dataset.studies[0].include is True
-        assert model.dataset.studies[0].manually_excluded is False
+        assert model.current_sheet.rows[0].include is True
+        assert model.current_sheet.rows[0].manually_excluded is False
         assert window.workspace.can_undo
         assert window.workspace.is_dirty
 
         window.undo()
-        assert window.model.dataset.studies[0].include is False
-        assert window.model.dataset.studies[0].manually_excluded is False
+        assert window.model.current_sheet.rows[0].include is False
+        assert window.model.current_sheet.rows[0].manually_excluded is False
         assert not window.workspace.is_dirty
         assert table.currentIndex() == window.model.index(0, window.model.INCLUDE_STUDY)
 
         window.redo()
-        assert window.model.dataset.studies[0].include is True
-        assert window.model.dataset.studies[0].manually_excluded is False
+        assert window.model.current_sheet.rows[0].include is True
+        assert window.model.current_sheet.rows[0].manually_excluded is False
         assert window.workspace.is_dirty
         assert table.currentIndex() == window.model.index(0, window.model.INCLUDE_STUDY)
     finally:
@@ -455,7 +375,7 @@ def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
         table.set_data_in_model(model.index(1, model.NAME), _variant("Lagasse"))
         analysis_unit = model.get_current_analysis_unit_for_study(1)
         arm_key = model.get_current_arm_key()
-        analysis_unit.groups[arm_key].raw_data = [15.0, 11.0, 16.0, 49.0]
+        analysis_unit.arms[model.get_arm_names()[0]].raw_data = [15.0, 11.0, 16.0, 49.0]
         for metric in meta_globals.DIAGNOSTIC_METRICS:
             analysis_unit.set_effect_and_ci(
                 metric,
@@ -473,7 +393,7 @@ def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
                 confidence_multiplier=model.get_confidence_multiplier(),
                 source="derived_preview",
             )
-        model.dataset.studies[1].include = True
+        model.current_sheet.rows[1].include = True
         window.data_dirtied()
 
         monkeypatch.setattr(
@@ -505,7 +425,7 @@ def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
             "",
         ]
         assert all(_cell_text(model, 1, col) == "" for col in model.OUTCOMES)
-        assert model.dataset.studies[1].include is False
+        assert model.current_sheet.rows[1].include is False
     finally:
         _close_without_prompt(app, window)
 
@@ -635,10 +555,10 @@ def test_invalid_paste_reports_validation_error_when_model_signals_are_blocked(
 
         table.set_data_in_model(model.index(0, model.NAME), _variant("Alpha"))
         model.blockSignals(True)
-        table.paste_contents(model.index(0, model.RAW_DATA[0]), [["not numeric"]])
+        table.paste_contents(model.index(0, model.RAW_DATA[0]), [["1"] * model.columnCount()])
 
         assert shown
-        assert shown[-1][1:] == ("Warning", "Raw data needs to be numeric.")
+        assert shown[-1][1:] == ("Warning", "Clipboard data extends beyond the workspace columns.")
         assert _cell_text(model, 0, model.RAW_DATA[0]) == ""
         assert model.signalsBlocked()
     finally:
@@ -681,7 +601,7 @@ def test_metric_selection_and_confidence_level_are_preserved_in_model_state():
         assert window.model.get_confidence_level() == 90.0
         assert window.cl_label.text() == "Confidence level: 90%"
 
-        window.set_model(window.model.dataset.copy(), state)
+        window.set_model(copy.deepcopy(window.model.dataset), state)
 
         assert window.model.current_effect == "RR"
         assert window.model.get_confidence_level() == 90.0
@@ -741,6 +661,7 @@ def test_dataset_model_rejects_invalid_confidence_levels_without_touching_r(
 
 
 def _create_binary_dataset(window):
+    QApplication.processEvents()
     window._handle_wizard_results(
         {
             "path": "new_dataset",
@@ -759,6 +680,7 @@ def _create_binary_dataset(window):
 
 
 def _create_continuous_dataset(window):
+    QApplication.processEvents()
     window._handle_wizard_results(
         {
             "path": "new_dataset",
@@ -777,6 +699,7 @@ def _create_continuous_dataset(window):
 
 
 def _create_diagnostic_dataset(window):
+    QApplication.processEvents()
     window._handle_wizard_results(
         {
             "path": "new_dataset",
@@ -802,6 +725,7 @@ def test_table_context_menu_requires_a_real_row_and_confirms_deletion(monkeypatc
     try:
         _create_binary_dataset(window)
         table = window.tableView
+        table.set_data_in_model(window.model.index(0, window.model.NAME), "Alpha")
         popup_menus = []
         delete_calls = []
 

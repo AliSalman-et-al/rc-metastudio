@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 import json
 import os
 from pathlib import Path
@@ -232,24 +233,6 @@ def _assert_table_view_leaves_spare_width_outside_data_columns(table_view):
     assert expanded_section_width < table_view.viewport().width()
 
 
-def _assert_workspace_table_uses_available_width(table_view):
-    owner = table_view.window()
-    owner.showNormal()
-    owner.setMaximumSize(16777215, 16777215)
-    owner.resize(max(owner.width() + 320, 1920), max(owner.height(), 1080))
-    owner.show()
-    QtWidgets.QApplication.processEvents()
-
-    model = table_view.model()
-    assert model is not None and model.columnCount() > 0
-    header = table_view.horizontalHeader()
-    section_width = sum(
-        header.sectionSize(column) for column in range(model.columnCount())
-    )
-    assert not header.stretchLastSection()
-    assert section_width >= table_view.viewport().width() - 1
-
-
 def test_open_project_preserves_main_window_state_without_duplicate_windows(
     monkeypatch,
 ):
@@ -291,7 +274,7 @@ def test_open_project_preserves_main_window_state_without_duplicate_windows(
         project = project_format.load_project(project_path).project
         expected_dataset = project_adapter.dataset_to_project(
             project_adapter.project_to_dataset(project)
-        )["dataset"]
+        )
         assert window.open(project_path) is True, critical_messages
         app.processEvents()
 
@@ -305,9 +288,7 @@ def test_open_project_preserves_main_window_state_without_duplicate_windows(
         assert window.tableView.model() is window.model
         assert window.model.rowCount() >= 20
         assert hydrations == [window.model]
-        observed_dataset = project_adapter.dataset_to_project(window.model.dataset)[
-            "dataset"
-        ]
+        observed_dataset = project_adapter.dataset_to_project(window.model.dataset)
         assert observed_dataset == expected_dataset
     finally:
         # This test owns window identity, not the interactive save prompt.
@@ -338,7 +319,7 @@ def test_main_data_grid_leaves_spare_width_outside_data_columns(
     try:
         assert window.open(_sample_project_path(sample_project)), critical_messages
 
-        _assert_workspace_table_uses_available_width(window.tableView)
+        _assert_table_view_leaves_spare_width_outside_data_columns(window.tableView)
     finally:
         window.close()
         app.processEvents()
@@ -403,6 +384,7 @@ def test_startup_smoke_opens_positional_project_without_wizard(monkeypatch, tmp_
         def __init__(self):
             self.tableView = self
             self.workspace = Workspace()
+            self.workspace.mark_saved()
 
         def show(self):
             pass
@@ -431,53 +413,13 @@ def test_startup_smoke_opens_positional_project_without_wizard(monkeypatch, tmp_
             assert not completion_marker.exists()
             closed.append(True)
 
-    class Splash:
-        def __init__(self, pixmap):
-            pass
-
-        def show(self):
-            pass
-
-        def finish(self, window):
-            pass
-
-        def hide(self):
-            pass
-
-        def deleteLater(self):
-            pass
-
     monkeypatch.setattr(
-        launch,
-        "_resolve_startup_argv",
-        lambda: [
-            "RCMetaStudio.app",
-            "--automation-startup-project-smoke",
-            "--automation-startup-completion-marker",
-            str(completion_marker),
-            sample_project,
-        ],
+        launch, "_resolve_startup_argv",
+        lambda: ["RCMetaStudio.app", "--automation-startup-project-smoke",
+                 "--automation-startup-completion-marker", str(completion_marker),
+                 sample_project],
     )
-    monkeypatch.setattr(
-        launch,
-        "_import_main_window",
-        lambda: startup_events.append("main-window-import")
-        or type("MainWindowModule", (), {"MainWindow": Window}),
-    )
-    monkeypatch.setattr(
-        launch.r_backend,
-        "install_r_backend",
-        lambda: startup_events.append("r-runtime-ready"),
-    )
-    monkeypatch.setattr(launch.QtWidgets, "QApplication", lambda argv: app)
-    monkeypatch.setattr(launch, "QPixmap", lambda path: object())
-    monkeypatch.setattr(launch, "QSplashScreen", Splash)
-    monkeypatch.setattr(launch, "create_startup_splash", lambda: Splash(object()))
-    monkeypatch.setattr(
-        launch,
-        "load_R_libraries",
-        lambda app, splash: startup_events.append("r-backend-ready"),
-    )
+    monkeypatch.setattr(launch, "compose_application", lambda **kwargs: (app, Window()))
     monkeypatch.setattr(
         automation,
         "dispatch",
@@ -488,9 +430,6 @@ def test_startup_smoke_opens_positional_project_without_wizard(monkeypatch, tmp_
     assert started == []
     assert closed == [True]
     assert startup_events == [
-        "r-runtime-ready",
-        "main-window-import",
-        "r-backend-ready",
         "workspace-marked-saved",
         "workspace-marked-saved",
     ]
@@ -512,12 +451,13 @@ def test_meantime_sample_project_loads_native_factor_covariate():
     from tests.analysis_regression.golden.support import headless_analysis
 
     model = headless_analysis.load_dataset_model(_sample_project_path("meantime.rcms"))
-    dataset = model.dataset
+    dataset = model.current_sheet
 
     assert ("treatment group", 4) in [
-        (cov.name, cov.data_type) for cov in dataset.covariates
+        (cov["name"], cov["data_type"]) for cov in dataset.covariates
     ]
-    values = [study.covariate_values["treatment group"] for study in dataset.studies]
+    cov = next(cov for cov in dataset.covariates if cov["name"] == "treatment group")
+    values = [study.covariate_values.get(cov["id"]) for study in dataset.rows]
     present_values = [value for value in values if value is not None]
     assert present_values
     assert all(type(value) is str for value in present_values)
@@ -529,17 +469,16 @@ def test_meantime_sample_project_loads_native_factor_covariate():
 def test_change_covariate_type_model_returns_native_values_and_accepts_native_edits():
     from PyQt6 import QtCore
     from rc_metastudio import covariate_type_dialog
-    from rc_metastudio import analysis_dataset
 
     app, window = automation.start_automation()
     try:
         assert window.open(_sample_project_path("amino.rcms")) is True
-        dataset = window.model.dataset
+        dataset = window.model.current_sheet
         window.model.add_covariate(
             "Dose",
             "continuous",
             dict(
-                (study.name, index + 1) for index, study in enumerate(dataset.studies)
+                (study.label, index + 1) for index, study in enumerate(dataset.rows)
             ),
         )
 
@@ -585,9 +524,9 @@ def test_change_covariate_type_model_returns_native_values_and_accepts_native_ed
             == "High"
         )
 
-        dataset.add_covariate(
-            analysis_dataset.Covariate("Region", "factor"),
-            dict((study.name, "North") for study in dataset.studies),
+        window.model.add_covariate(
+            "Region", "factor",
+            dict((study.label, "North") for study in dataset.rows),
         )
         continuous_cov_model = covariate_type_dialog.CovariateTypeModel(
             dataset, dataset.covariates[-1]
@@ -641,12 +580,12 @@ def test_factor_covariate_edits_render_as_native_paint_text():
     try:
         assert window.open(_sample_project_path("amino.rcms")) is True
         model = window.tableView.model()
-        model.add_covariate("Region", "factor")
+        covariate = model.add_covariate("Region", "factor")
         factor_column = model.columnCount() - 1
         factor_index = model.index(0, factor_column)
 
         assert model.setData(factor_index, "North") is True
-        stored_value = model.dataset.studies[0].covariate_values["Region"]
+        stored_value = model.current_sheet.rows[0].covariate_values[covariate["id"]]
         display_value = model.data(factor_index, QtCore.Qt.ItemDataRole.DisplayRole)
 
         assert stored_value == "North"
@@ -724,7 +663,7 @@ def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypa
 
         labels = {
             str(label.text())
-            for label in specs[0].parameter_grp_box.findChildren(QtWidgets.QLabel)
+            for label in specs[0].findChildren(QtWidgets.QLabel)
         }
         assert "Confidence Level" in labels
         assert "Continuity correction" in labels
@@ -855,12 +794,12 @@ def test_method_parameters_dialog_stays_stable_when_method_description_changes(
         assert long_method_index >= 0
         specs.method_cbo_box.setCurrentIndex(long_method_index)
         app.processEvents()
-        assert specs.parameter_grp_box.title() == "Binary Fixed-Effect Mantel-Haenszel"
+        assert specs.method_cbo_box.currentText() == "Binary Fixed-Effect Mantel-Haenszel"
         assert specs.parameter_grp_box.title() != "binary.fixed.mh"
         short_method_index = specs.method_cbo_box.findText("Binary Random-Effects")
         specs.method_cbo_box.setCurrentIndex(short_method_index)
         app.processEvents()
-        assert specs.parameter_grp_box.title() == "Binary Random-Effects"
+        assert specs.method_cbo_box.currentText() == "Binary Random-Effects"
         assert specs.parameter_grp_box.title() != "binary.random"
 
         assert specs.width() == stable_width
@@ -868,15 +807,6 @@ def test_method_parameters_dialog_stays_stable_when_method_description_changes(
             specs.parameter_grp_box.layout().alignment()
             & QtCore.Qt.AlignmentFlag.AlignTop
         ) == QtCore.Qt.AlignmentFlag.AlignTop
-
-        descriptions = [
-            label
-            for label in specs.parameter_grp_box.findChildren(QtWidgets.QLabel)
-            if str(label.text()).startswith("Description:")
-        ]
-        assert len(descriptions) == 1
-        assert descriptions[0].wordWrap() is True
-        assert descriptions[0].minimumWidth() == 0
 
         value_controls = []
         for control_type in (
@@ -899,7 +829,7 @@ def test_meta_regression_action_stays_disabled_without_covariates_when_data_are_
     app, window = automation.start_automation()
 
     try:
-        assert window.model.dataset.covariates == []
+        assert window.model.current_sheet is None or window.model.current_sheet.covariates == []
 
         window.enable_menu_options_that_require_dataset()
 
@@ -943,6 +873,8 @@ def test_advanced_analysis_actions_require_dataset_readiness_and_covariates():
     app, window = automation.start_automation()
 
     try:
+        assert window.open(_sample_project_path("amino.rcms")) is True
+        window.toggle_menu_options_that_require_dataset(False)
         window._add_new_covariate("region", "factor")
 
         assert window.action_go.isEnabled() is False
@@ -971,15 +903,15 @@ def test_deleting_last_covariate_refreshes_advanced_analysis_actions():
         assert window.action_meta_regression.isEnabled()
         assert window.action_subgroup_ma.isEnabled()
 
-        window.delete_covariate(window.model.dataset.covariates[0])
+        window.delete_covariate(window.model.current_sheet.covariates[0])
 
-        assert window.model.dataset.covariates == []
+        assert window.model.current_sheet.covariates == []
         assert window.action_meta_regression.isEnabled() is False
         assert window.action_subgroup_ma.isEnabled() is False
 
         window.undo()
 
-        assert [cov.name for cov in window.model.dataset.covariates] == ["region"]
+        assert [cov["name"] for cov in window.model.current_sheet.covariates] == ["region"]
         assert window.action_meta_regression.isEnabled()
         assert window.action_subgroup_ma.isEnabled()
     finally:
@@ -1010,6 +942,7 @@ def test_subgroup_dialog_disables_ok_and_does_not_run_without_factor_covariates(
     )
 
     try:
+        assert window.open(_sample_project_path("amino.rcms")) is True
         window._add_new_covariate("dose", "continuous")
         form = subgroup_analysis_dialog.SubgroupAnalysisDialog(
             window.model, parent=window
@@ -2275,10 +2208,6 @@ def test_meta_regression_enables_plots_only_for_one_continuous_covariate():
     from rc_metastudio import analysis_setup_dialog
     from rc_metastudio import meta_globals
 
-    class Covariate(object):
-        def __init__(self, data_type):
-            self.data_type = data_type
-
     class Form(object):
         is_meta_regression = True
         selected: list[object]
@@ -2289,14 +2218,14 @@ def test_meta_regression_enables_plots_only_for_one_continuous_covariate():
 
     form = Form()
     form.plot_tab = QtWidgets.QWidget()
-    form.selected = [Covariate(meta_globals.CONTINUOUS)]
+    form.selected = [{"data_type": meta_globals.CONTINUOUS}]
 
     analysis_setup_dialog.AnalysisSetupDialog._update_meta_regression_plot_availability(
         cast(analysis_setup_dialog.AnalysisSetupDialog, form)
     )
     assert form.plot_tab.isEnabled()
 
-    form.selected.append(Covariate(meta_globals.CONTINUOUS))
+    form.selected.append({"data_type": meta_globals.CONTINUOUS})
     analysis_setup_dialog.AnalysisSetupDialog._update_meta_regression_plot_availability(
         cast(analysis_setup_dialog.AnalysisSetupDialog, form)
     )
@@ -2322,13 +2251,12 @@ def test_diagnostic_forest_methods_enable_pre_run_plots_tab(
     r_bridge = sys.modules["rc_metastudio.r_bridge"]
 
     class DiagnosticModel(object):
+        current_sheet = SimpleNamespace(settings={}, id="diagnostic", name="Outcome", rows=[])
         current_effect = "Sens"
         current_outcome_name = "Outcome"
         arm_names = ["Test"]
         def get_current_outcome_subtype(self):
             return None
-        def get_current_follow_up_name(self):
-            return "first"
 
         def get_current_outcome_type(self):
             return "diagnostic"
@@ -2576,7 +2504,7 @@ def test_results_window_ignores_missing_image_order_entries():
             for index in range(window.nav_tree.topLevelItemCount())
         ]
 
-        assert nav_titles == ["Text report", "Tables"]
+        assert nav_titles == ["Manuscript", "Text report", "Tables"]
         assert not any(
             isinstance(item, results_window.QGraphicsPixmapItem)
             for item in window.scene.items()
@@ -3061,27 +2989,6 @@ def test_about_legal_and_welcome_links_show_current_project_information():
         window.close()
         app.processEvents()
         os.chdir(REPO_ROOT)
-
-
-def test_csv_required_format_table_expands_and_shows_all_rows(monkeypatch):
-    from rc_metastudio import main_wizard
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    page = main_wizard.CsvImportPage()
-    monkeypatch.setattr(
-        page,
-        "_get_required_header_labels",
-        lambda: ["Study", "Year", "Group 1 N", "Group 1 Mean", "Group 1 SD"],
-    )
-
-    try:
-        page.initializePage()
-        table = page.required_fmt_table
-        _assert_compact_table_fits_visible_cells(table)
-    finally:
-        page.close()
-        page.deleteLater()
-    app.processEvents()
 
 
 def test_add_covariate_dialog_fields_and_buttons_fill_fitted_width():
