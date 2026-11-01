@@ -1,14 +1,22 @@
-from typing import Any
+from typing import Any, Callable, cast
+import sys
 """Reopen real manuscript exports and compare with the executed result."""
 from unittest.mock import patch
 import subprocess
 import unicodedata
 from rc_metastudio import __version__
 from docx import Document
-from PyQt6 import QtWidgets
+from PyQt6 import QtWidgets, QtCore, QtTest, sip
+from rc_metastudio import automation
+from tests.python.gui.test_types import mouse_click, required
 
 
 def run(app, window, work, root, record, analyze):
+    def close_result(view):
+        view.close()
+        automation.dispose_qobjects(app, (view,))
+        assert sip.isdeleted(view)
+
     # Derive boundary cases from real legacy bytes, then open through production IO.
     import copy, io, json, zipfile
     legacy = subprocess.check_output(['git', 'show', '322ede26:sample_projects/amino.rcms'], cwd=root)
@@ -64,36 +72,65 @@ def run(app, window, work, root, record, analyze):
             archive.writestr(name, data)
     window.workspace.mark_saved()
     assert window.open(str(zero_fixture), raise_on_error=True)
+    print("Manuscript analysis: double-zero binary.random", file=sys.stderr, flush=True)
     view = analyze(app, window, "binary.random")
     assert "3 studies with no events in either arm were retained with this correction." in view.manuscript.methods, view.manuscript.methods
     record('manuscript-double-zero', view, methods=view.manuscript.methods)
-    view.close()
+    close_result(view)
     # Real result Methods must describe where correction enters each estimator.
     for method in ("binary.fixed.mh", "binary.fixed.peto"):
         window.workspace.mark_saved()
         assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
+        print(f"Manuscript analysis: {method}", file=sys.stderr, flush=True)
         view = analyze(app, window, method)
         expected = "A continuity correction of 0.5 was applied to individual study estimates only; the pooled " + ("Mantel-Haenszel" if method.endswith("mh") else "Peto") + " estimate uses the original counts."
         assert expected in view.manuscript.methods, view.manuscript.methods
         (work / (method + '-prose.txt')).write_text(view.manuscript.methods, encoding='utf-8')
         record('manuscript-correction-' + method, view, methods=view.manuscript.methods)
-        view.close()
+        close_result(view)
     for sample, method in (("amino", "binary.random"), ("continuous", "continuous.random"), ("lymph", "diagnostic.reitsma"), ("Pignon2000-HR", "time_to_event.random")):
         window.workspace.mark_saved()
         assert window.open(str(root / 'sample_projects' / (sample + '.rcms')), raise_on_error=True)
+        print(f"Manuscript analysis: {method}", file=sys.stderr, flush=True)
         view = analyze(app, window, method)
         for suffix in ('pdf', 'docx'):
             path = work / (sample + '.' + suffix)
             def picker(*args, **kwargs):
+                assert args[0] is view and not sip.isdeleted(view) and view.isVisible()
+                record('manuscript-picker-before', view, sample=sample, suffix=suffix)
                 dialog = QtWidgets.QFileDialog(view)
                 dialog.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog)
                 dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)
                 dialog.setNameFilter('Report (*.' + suffix + ')')
+                dialog.setDirectory(str(work))
                 dialog.selectFile(str(path))
-                from PyQt6.QtCore import QTimer
-                QTimer.singleShot(0, dialog.accept)
-                assert dialog.exec()
-                return dialog.selectedFiles()[0], dialog.selectedNameFilter()
+                picker_errors = []
+                def save():
+                    try:
+                        assert cast(Callable[..., bool], QtTest.QTest.qWaitForWindowExposed)(dialog, 5000)
+                        assert not sip.isdeleted(view) and view.isVisible()
+                        from pathlib import Path
+                        assert Path(dialog.selectedFiles()[0]).resolve() == path.resolve()
+                        record('manuscript-picker-visible', dialog, sample=sample, suffix=suffix)
+                        box = required(dialog.findChild(QtWidgets.QDialogButtonBox))
+                        button = required(box.button(QtWidgets.QDialogButtonBox.StandardButton.Save))
+                        assert button.isEnabled()
+                        mouse_click(button, QtCore.Qt.MouseButton.LeftButton)
+                    except BaseException as error:
+                        picker_errors.append(error)
+                        dialog.reject()
+                QtCore.QTimer.singleShot(0, save)
+                try:
+                    accepted = dialog.exec()
+                    assert not picker_errors, picker_errors
+                    assert accepted
+                    selected = dialog.selectedFiles()[0], dialog.selectedNameFilter()
+                finally:
+                    automation.dispose_qobjects(app, (dialog,))
+                assert sip.isdeleted(dialog)
+                assert not sip.isdeleted(view) and view.isVisible()
+                record('manuscript-picker-after', view, sample=sample, suffix=suffix)
+                return selected
             with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', side_effect=picker):
                 view.export_report_action.trigger()
             assert path.exists()
@@ -141,9 +178,8 @@ def run(app, window, work, root, record, analyze):
         item = view.nav_tree.findItems('Manuscript', __import__('PyQt6.QtCore', fromlist=['Qt']).Qt.MatchFlag.MatchExactly)[0]
         view.nav_tree.setCurrentItem(item)
         record('manuscript-panel-' + sample, view)
-        view.close()
+        close_result(view)
 
-    import sys
     sys.path.insert(0, str(root / ".agents/skills/verify-rcms/scripts"))
     from tests.e2e.audit_round3 import analyze_existing
     for workflow in ('subgroup', 'meta-regression'):
@@ -174,7 +210,7 @@ def run(app, window, work, root, record, analyze):
             assert captions.index('Supplementary details') > max(i for i, p in enumerate(captions) if p.startswith('Figure '))
         (work / (workflow + '-prose.txt')).write_text('Methods\n' + view.manuscript.methods + '\n\nResults\n' + view.manuscript.results, encoding='utf-8')
         record('manuscript-' + workflow, view)
-        view.close()
+        close_result(view)
 
     from PyQt6.QtCore import QTimer
     from rc_metastudio.publication_bias_dialog import PublicationBiasDialog
@@ -204,4 +240,4 @@ def run(app, window, work, root, record, analyze):
     assert all(item.textWidth() >= view.graphics_view.viewport().width() * .9 for item in view._wrapped_text_items)
     record('manuscript-small-study-methods', view, methods=view.manuscript.methods,
            settled_zoom_percent=view._figure_zoom_percent)
-    view.close()
+    close_result(view)

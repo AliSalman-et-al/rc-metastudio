@@ -11,7 +11,13 @@ from tests.python.gui.test_types import mouse_click, key_click, required, wait
 
 
 def run(app, window, work, root, record, analyze):
-    from rc_metastudio import add_new_dialogs, main_wizard
+    from rc_metastudio import add_new_dialogs, main_wizard, automation
+    from PyQt6 import sip
+
+    def close_result(view):
+        view.close()
+        automation.dispose_qobjects(app, (view,))
+        assert sip.isdeleted(view)
 
     window.showMaximized()
     app.processEvents()
@@ -71,7 +77,7 @@ def run(app, window, work, root, record, analyze):
     recovered = next(widget for widget in app.topLevelWidgets() if isinstance(widget, ResultsWindow) and widget.isVisible())
     assert recovered.results.images
     record("ux-analysis-recovered", recovered, plots=dict(recovered.results.display_images), texts=dict(recovered.texts))
-    recovered.close()
+    close_result(recovered)
     app.processEvents()
     view = analyze(app, window, "binary.random")
     assert "clinical failure" in view.results.identity
@@ -257,19 +263,31 @@ def run(app, window, work, root, record, analyze):
     assert view.graphics_view.horizontalScrollBar().value() == 0
     record("ux-plot-toolbar", view, saved=str(plot_path), zoom=view.zoom_control.value(), plot_bounds=[plot_rect.left(), plot_rect.right()], viewport_width=view.graphics_view.viewport().width())
     record("slice2c-results-forest", view)
-    view.close()
+    close_result(view)
     for custom in (False, True):
         if custom:
             edited = analyze(app, window, "binary.random")
+            editor_errors = []
             def customise():
                 dialog = app.activeModalWidget()
-                dialog.favours_left.setText("Favours custom first")
-                dialog.favours_right.setText("Favours custom second")
-                mouse_click(required(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)), QtCore.Qt.MouseButton.LeftButton)
+                try:
+                    assert isinstance(dialog, QtWidgets.QDialog)
+                    assert cast(Callable[..., bool], QtTest.QTest.qWaitForWindowExposed)(dialog, 5000)
+                    record("ux-custom-editor-visible", dialog)
+                    dialog.favours_left.setText("Favours custom first")
+                    dialog.favours_right.setText("Favours custom second")
+                    mouse_click(required(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)), QtCore.Qt.MouseButton.LeftButton)
+                except BaseException as error:
+                    editor_errors.append(error)
+                    if dialog is not None:
+                        dialog.reject()
+            record("ux-custom-editor-before", edited)
             QtCore.QTimer.singleShot(0, customise)
             edited.edit_plot_action.trigger()
+            assert not editor_errors, editor_errors
+            record("ux-custom-editor-after", edited)
             assert window.model.current_sheet.settings["favours_labels"] == ["Favours custom first", "Favours custom second"]
-            edited.close()
+            close_result(edited)
         before = list(window.model.arm_names)
         window.action_swap_arms.trigger()
         swapped = analyze(app, window, "binary.random")
@@ -278,7 +296,7 @@ def run(app, window, work, root, record, analyze):
         assert text.index(left) < text.index(right), text
         assert text.count("Favours") >= 2
         record("favours-swapped", swapped, custom=custom, svg_text=text)
-        swapped.close()
+        close_result(swapped)
         window.action_swap_arms.trigger()
 
     wizard = main_wizard.MainWizard(path="csv_import")

@@ -57,6 +57,20 @@ EVIDENCE = (
 STEP = 0
 
 
+def capture_qt_message(kind, context, message):
+    line = f"Qt {kind.name}: {message}"
+    if EVIDENCE is not None:
+        with (EVIDENCE / "qt-messages.log").open("a", encoding="utf-8") as stream:
+            stream.write(line + "\n")
+    if previous_qt_handler is not None:
+        previous_qt_handler(kind, context, message)
+    else:
+        print(line, file=sys.__stderr__, flush=True)
+
+
+previous_qt_handler = QtCore.qInstallMessageHandler(capture_qt_message)
+
+
 def record_step(action, *widgets, **observations):
     """Capture the action and its observed state while the relevant UI still exists."""
     global STEP
@@ -215,6 +229,9 @@ def doctor(app, window):
         "r_home": os.environ.get("R_HOME"),
         "authorities": versions,
         "rcmetar": rcmetar_version,
+        "installed_revman_footer": str(r_bridge.execute_r_string(
+            'paste(deparse(body(RCMetaR:::rcmetar.draw.revman.axis.footer)), collapse="\\n")'
+        )[0]),
         "rpy2": metadata.version("rpy2"),
         "qt": QtCore.qVersion(),
         "pyqt": QtCore.PYQT_VERSION_STR,
@@ -1953,7 +1970,10 @@ try:
     assert not errors, errors
     record_step("workflow-passed", window, scenario=scenario)
 except BaseException:
-    traceback.print_exc()
+    failure = traceback.format_exc()
+    if EVIDENCE is not None:
+        (EVIDENCE / "failure.txt").write_text(failure, encoding="utf-8")
+    print(failure, file=sys.__stderr__, flush=True)
     raise
 finally:
     window.workspace.mark_saved()
