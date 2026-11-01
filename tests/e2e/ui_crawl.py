@@ -99,13 +99,34 @@ def plots(driver, capture, missing):
     missing.append("G RevMan/BMJ; subgroup; cumulative; leave-one-out; regression; ordinary/contour funnel; trim-and-fill; SROC; coefficient; Deeks: dedicated plot selection still needed")
 
 
+def create_dataset(driver, capture, missing):
+    from rc_metastudio import main_wizard as wizard
+    form = wizard.MainWizard(path="new_dataset")
+    types = form.page(wizard.Page_DataType)
+    form.show()
+    for page, detail in ((wizard.Page_Welcome, "welcome"), (wizard.Page_DataType, "data-type"),
+                         (wizard.Page_OutcomeName, "outcome-name")):
+        types._button_selected(types._data_type_buttons()[0])
+        form.setStartId(page)
+        form.restart()
+        capture("B-" + detail, form)
+    for number, button in enumerate(types._data_type_buttons()):
+        types._button_selected(button)
+        if form.require_dataset_info()["data_type"] == "diagnostic":
+            continue  # Diagnostic data has no metric wizard page.
+        form.setStartId(wizard.Page_ChooseMetric)
+        form.restart()
+        capture(f"B-metric-{number}", form)
+    form.close()
+
+
 def run(driver):
     index = driver.EVIDENCE / "ui-crawl-index.md"
     index.write_text("# UI crawl\n\n", encoding="utf-8")
     original_record = driver.record_step
     captured = set()
     missing = ["G fitted rendered plots and styles",
-               "B Create dataset wizard pages and metrics", "C import/options/map/error/RevMan",
+               "C import/options/map/error/RevMan",
                "D deferred to next run", "H deferred to next run", "I deferred to next run", "J deferred to next run"]
 
     def capture(step, widget):
@@ -126,6 +147,7 @@ def run(driver):
         analysis_setup(driver, capture, missing)
         results(driver, capture, missing)
         plots(driver, capture, missing)
+        create_dataset(driver, capture, missing)
     finally:
         with index.open("a", encoding="utf-8") as stream:
             stream.write("\nNOT CAPTURED:\n" + "\n".join("- " + item for item in missing) + "\n")
