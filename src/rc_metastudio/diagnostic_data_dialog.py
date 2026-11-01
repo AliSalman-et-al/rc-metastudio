@@ -869,20 +869,17 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
     def _update_raw_data(self):
         """Populates the 2x2 table with whatever parametric data was provided"""
         with QSignalBlocker(self.two_by_two_table):
-            field_index = 0
-            for col in (0, 1):
-                for row in (0, 1):
-                    val = self.analysis_unit.get_raw_data_for_arm(
-                        self.arm_names[0]
-                    )[field_index]
-                    if val is not None:
-                        try:
-                            val = str(int(val))
-                        except (TypeError, ValueError, OverflowError):
-                            val = str(val)
-                        item = QTableWidgetItem(val)
-                        self.two_by_two_table.setItem(row, col, item)
-                    field_index += 1
+            raw = self.analysis_unit.get_raw_data_for_arm(self.arm_names[0])
+            for field_index in range(4):
+                val = raw[field_index]
+                if val is None:
+                    continue
+                try:
+                    val = str(int(val))
+                except (TypeError, ValueError, OverflowError):
+                    val = str(val)
+                item = QTableWidgetItem(val)
+                self.two_by_two_table.setItem(field_index % 2, field_index // 2, item)
 
     def _populate_effect_cmbo_box(self):
         # Back-calculation is currently supported for sensitivity/specificity.

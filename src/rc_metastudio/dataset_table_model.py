@@ -971,12 +971,7 @@ class DatasetTableModel(QAbstractTableModel):
         return WorkspaceColumnIdentity("dataset-column", (section,))
 
     def flags(self, index):
-        if (
-            not index.isValid()
-            or index.model() is not self
-            or not 0 <= index.row() < self.rowCount()
-            or not 0 <= index.column() < self.columnCount()
-        ):
+        if not self._valid_edit_index(index):
             return Qt.ItemFlag.NoItemFlags
         from rc_metastudio import r_backend
         if not r_backend.is_ready() and index.column() in self.OUTCOMES:
@@ -989,7 +984,6 @@ class DatasetTableModel(QAbstractTableModel):
             return Qt.ItemFlag(
                 Qt.ItemFlag.ItemIsUserCheckable
                 | Qt.ItemFlag.ItemIsEnabled
-                | Qt.ItemFlag.ItemIsUserCheckable
                 | Qt.ItemFlag.ItemIsSelectable
             )
         if self.get_current_outcome_type(get_str=False) in RATIO_DATA_TYPES and index.column() in self.OUTCOMES[:3] and index.row() < len(self._display_studies) and self._outcome_cell_is_available(self._study_for_row(index.row())):

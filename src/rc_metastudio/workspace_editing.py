@@ -741,7 +741,7 @@ class WorkspaceEditingService:
         *,
         update_inclusion: bool = True,
     ) -> None:
-        if context.sheet_id is None or context.sheet_id is None:
+        if context.sheet_id is None:
             return
         study = next(row for row in dataset.sheet(context.sheet_id).rows if row.id == row_id)
         unit = self._analysis_unit(dataset, study, context)
