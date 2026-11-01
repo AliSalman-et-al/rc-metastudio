@@ -1,9 +1,10 @@
 """Entered-effect capability and derived generic-IV import proof."""
 import csv
 import math
-import os
 import subprocess
 from PyQt6 import QtCore, QtWidgets
+from rc_metastudio.runtime_types import required
+from scripts.r_verification_support import resolve_rscript
 from rc_metastudio import r_bridge
 from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
 from rc_metastudio.results_window import ResultsWindow
@@ -39,7 +40,7 @@ def run(app, window, ROOT, WORK, record_step):
     assert [s.settings['metric'] for s in imported.dataset.sheets] == ['HR', 'OR', 'MD']
     assert any('Custom score' in x for x in imported.not_imported)
     reference, pooled = WORK / 'giv-read.csv', WORK / 'giv-pooled.csv'
-    subprocess.run([os.environ['RCMS_R_HOME'] + '/bin/Rscript', str(ROOT / 'tests/e2e/rm5_reference.R'), str(source), str(reference), str(pooled)], check=True)
+    subprocess.run([str(required(resolve_rscript("Rscript"), "Rscript for independent RM5 reference")), str(ROOT / 'tests/e2e/rm5_reference.R'), str(source), str(reference), str(pooled)], check=True)
     with reference.open() as f:
         rows = list(csv.DictReader(f))
     with pooled.open() as f:
