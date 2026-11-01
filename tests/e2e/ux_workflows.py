@@ -56,6 +56,12 @@ def run(app, window, work, root, record, analyze):
     assert setup.isVisible()
     assert setup.analysis_error_label.isVisible()
     assert setup.analysis_error_label.hasFocus()
+    assert setup.analysis_error_label.text() == "Check the selected method and study data, then try again."
+    assert setup.analysis_error_details.isHidden()
+    mouse_click(setup.analysis_error_toggle, QtCore.Qt.MouseButton.LeftButton)
+    assert setup.analysis_error_details.isVisible()
+    assert "Unknown 'method' specified" in setup.analysis_error_details.toPlainText()
+    mouse_click(setup.analysis_error_toggle, QtCore.Qt.MouseButton.LeftButton)
     assert not any(isinstance(widget, QtWidgets.QMessageBox) and widget.isVisible() for widget in app.topLevelWidgets())
     record("ux-inline-analysis-error", setup, message=setup.analysis_error_label.text())
     setup.current_param_vals["rm.method"] = "DL"

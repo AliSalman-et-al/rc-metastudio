@@ -315,7 +315,25 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.analysis_error_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse | Qt.TextInteractionFlag.TextSelectableByKeyboard)
         self.analysis_error_label.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.analysis_error_label.hide()
-        self.verticalLayout.insertWidget(1, self.analysis_error_label)
+        self.analysis_error_panel = QtWidgets.QWidget(self)
+        error_layout = QtWidgets.QVBoxLayout(self.analysis_error_panel)
+        error_layout.setContentsMargins(0, 0, 0, 0)
+        error_layout.addWidget(self.analysis_error_label)
+        self.analysis_error_toggle = QtWidgets.QToolButton(self.analysis_error_panel)
+        self.analysis_error_toggle.setText("Details")
+        self.analysis_error_toggle.setCheckable(True)
+        self.analysis_error_toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.analysis_error_toggle.setArrowType(Qt.ArrowType.RightArrow)
+        error_layout.addWidget(self.analysis_error_toggle, 0, Qt.AlignmentFlag.AlignLeft)
+        self.analysis_error_details = QtWidgets.QPlainTextEdit(self.analysis_error_panel)
+        self.analysis_error_details.setReadOnly(True)
+        self.analysis_error_details.setAccessibleName("Technical analysis error details")
+        self.analysis_error_details.hide()
+        error_layout.addWidget(self.analysis_error_details)
+        self.analysis_error_toggle.toggled.connect(self.analysis_error_details.setVisible)
+        self.analysis_error_toggle.toggled.connect(lambda checked: self.analysis_error_toggle.setArrowType(Qt.ArrowType.DownArrow if checked else Qt.ArrowType.RightArrow))
+        self.analysis_error_panel.hide()
+        self.content_scroll_layout.insertWidget(0, self.analysis_error_panel)
         if (
             not self.is_meta_regression
             and self.model.current_effect == "TX Mean"
@@ -898,6 +916,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _run_analysis(self, operation, failure_message, string_result_is_failure=False):
         self.analysis_error_label.hide()
+        self.analysis_error_panel.hide()
+        self.analysis_error_toggle.setChecked(False)
         bar = progress_dialog.AnalysisProgressDialog(self)
         bar.show()
         result = None
@@ -909,7 +929,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             succeeded = True
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
-            self.analysis_error_label.setText(failure_message % error)
+            self.analysis_error_label.setText("Check the selected method and study data, then try again.")
+            self.analysis_error_details.setPlainText(failure_message % error)
+            self.analysis_error_panel.show()
             self.analysis_error_label.show()
             self._reset_working_dir_safely()
         finally:

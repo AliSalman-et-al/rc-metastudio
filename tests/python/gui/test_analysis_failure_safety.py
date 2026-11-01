@@ -206,7 +206,12 @@ def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(mo
         form.run_ma()
 
         assert not shown
-        assert "simulated R failure" in form.analysis_error_label.text()
+        assert "simulated R failure" in form.analysis_error_details.toPlainText()
+        assert "Check" in form.analysis_error_label.text()
+        assert "simulated R failure" not in form.analysis_error_label.text()
+        assert form.analysis_error_details.isHidden()
+        form.analysis_error_toggle.click()
+        assert not form.analysis_error_details.isHidden()
         assert not form.analysis_error_label.isHidden()
         assert results == []
     finally:
@@ -300,7 +305,12 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
         form.run_ma()
 
         assert not shown
-        assert "simulated recompute failure" in form.analysis_error_label.text()
+        assert "simulated recompute failure" in form.analysis_error_details.toPlainText()
+        assert "Check" in form.analysis_error_label.text()
+        assert "simulated recompute failure" not in form.analysis_error_label.text()
+        assert form.analysis_error_details.isHidden()
+        form.analysis_error_toggle.click()
+        assert not form.analysis_error_details.isHidden()
         assert not form.analysis_error_label.isHidden()
         assert results == []
     finally:
@@ -392,7 +402,12 @@ def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
         app.processEvents()
         assert sip.isdeleted(progress)
         assert not sip.isdeleted(form)
-        assert "simulated setup failure" in form.analysis_error_label.text()
+        assert "simulated setup failure" in form.analysis_error_details.toPlainText()
+        assert "Check" in form.analysis_error_label.text()
+        assert "simulated setup failure" not in form.analysis_error_label.text()
+        assert form.analysis_error_details.isHidden()
+        form.analysis_error_toggle.click()
+        assert not form.analysis_error_details.isHidden()
         form.close()
     finally:
         for name, value in saved.items():
