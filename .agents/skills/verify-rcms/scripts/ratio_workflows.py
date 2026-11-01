@@ -54,7 +54,8 @@ def run(app, window, scenario, record):
         page = wizard.currentPage()
         assert isinstance(page, main_wizard.ChooseMetricPage)
         assert [page.metric_cbo_box.itemData(i) for i in range(2)] == ["HR", "IRR"]
-        assert all(not page.metric_cbo_box.itemIcon(i).isNull() for i in range(2))
+        assert all(page.metric_cbo_box.itemIcon(i).isNull()
+                   for i in range(page.metric_cbo_box.count()))
         page.metric_cbo_box.setCurrentIndex(page.metric_cbo_box.findData(metric))
         assert wizard.require_dataset_info()["data_type"] == family
         assert wizard.require_dataset_info()["sub_type"] == ("hazard_ratio" if hazard else "incidence_rate_ratio")
