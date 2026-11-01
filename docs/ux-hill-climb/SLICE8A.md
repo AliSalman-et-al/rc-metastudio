@@ -100,3 +100,5 @@ Step 4: remaining wizard page copy:
 The outcome page runtime title also uses Outcome and groups / Outcome. Capture setup selects data before entering dependent pages and includes the alternate-row palette.
 
 Visual follow-up: restrict fixed estimate precision to group SE and CI columns; sample sizes and other summaries retain their compact display. First full pytest attempt ended externally with SIGTERM (exit 143) after 13 passes, no failures or final summary. Owned orphan children were closed by PID before retry.
+
+First uninterrupted selected suite: 50 passed, 1 failed in 1675.16s. review1-design timed out waiting behind the import file picker; its later italic/amber assertion was also obsolete. Updated the real start-page drive to supply a test-owned CSV and check normal font plus composited theme-text contrast. Targeted review1-design passed: artifacts/verification/rcms/20261101T002146Z-58823f8d-review1-design. All numerical assertions are unchanged.

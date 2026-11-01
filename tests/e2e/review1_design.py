@@ -88,7 +88,10 @@ def run(app, window, work, root, record, analyze):
                 wait(250)
             record('review1-start-wizard-' + expected, wizard)
             wizard.reject()
-        modal(app, main_wizard.MainWizard, cancel, lambda: mouse_click(button, QtCore.Qt.MouseButton.LeftButton))
+        import_file = work / "review-import.csv"
+        import_file.write_text("Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total\nStudy,2020,5,20,8,20\n")
+        with patch.object(QtWidgets.QFileDialog, 'getOpenFileName', return_value=(str(import_file), '')):
+            modal(app, main_wizard.MainWizard, cancel, lambda: mouse_click(button, QtCore.Qt.MouseButton.LeftButton))
         assert window.start_page.isVisible() and not window.workspace.is_dirty
     with patch.object(QtWidgets.QFileDialog, 'getOpenFileName', return_value=('', '')):
         mouse_click(window.start_page.open_button, QtCore.Qt.MouseButton.LeftButton)
@@ -110,12 +113,17 @@ def run(app, window, work, root, record, analyze):
                   for value in (color.redF(), color.greenF(), color.blueF())]
         return sum(value * coefficient for value, coefficient in zip(values, (.2126, .7152, .0722)))
     cell = window.model.index(0, window.model.OUTCOMES[0])
-    assert window.model.data(cell, QtCore.Qt.ItemDataRole.FontRole).italic()
+    font = window.model.data(cell, QtCore.Qt.ItemDataRole.FontRole)
+    assert font is None or not font.italic()
     assert window.model.data(cell, QtCore.Qt.ItemDataRole.AccessibleTextRole)
     assert window.model.data(cell, QtCore.Qt.ItemDataRole.AccessibleDescriptionRole)
     palette = window.tableView.palette()
-    pairs = [(window.model.data(cell, QtCore.Qt.ItemDataRole.ForegroundRole),
-              window.model.data(cell, QtCore.Qt.ItemDataRole.BackgroundRole)),
+    foreground = window.model.data(cell, QtCore.Qt.ItemDataRole.ForegroundRole) or palette.color(QtGui.QPalette.ColorRole.Text)
+    tint = window.model.data(cell, QtCore.Qt.ItemDataRole.BackgroundRole)
+    base = palette.color(QtGui.QPalette.ColorRole.Base)
+    alpha = tint.alphaF()
+    background = QtGui.QColor.fromRgbF(*(tint.getRgbF()[i] * alpha + base.getRgbF()[i] * (1 - alpha) for i in range(3)))
+    pairs = [(foreground, background),
              (palette.color(QtGui.QPalette.ColorRole.HighlightedText), palette.color(QtGui.QPalette.ColorRole.Highlight))]
     cues = []
     for foreground, background in pairs:
@@ -123,7 +131,7 @@ def run(app, window, work, root, record, analyze):
         ratio = (light + .05) / (dark + .05)
         assert ratio >= 4.5, (foreground.name(), background.name(), ratio)
         cues.append(dict(foreground=foreground.name(), background=background.name(), contrast=ratio))
-    record('round5-grid-cues', window, italic_effect_cells=True, colors=cues)
+    record('round5-grid-cues', window, italic_effect_cells=False, colors=cues)
     record('review1-workspace-navigation', window)
     keyboard_traversal(app, window, [window.analysis_button, window.sheet_tabs, window.tableView], record, "workspace")
     window.tableView.setFocus()
