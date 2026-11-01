@@ -1938,6 +1938,9 @@ try:
         doctor(app, window)
     if scenario == "doctor":
         pass
+    elif scenario == "ui-crawl":
+        from tests.e2e.ui_crawl import run
+        run(sys.modules[__name__])
     elif scenario == "sheets-baseline":
         from tests.e2e.sheets_baseline import run
 

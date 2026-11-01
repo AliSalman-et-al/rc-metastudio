@@ -40,6 +40,7 @@ SCENARIOS = (
     "manuscript-export",
     "amino",
     "sheets",
+    "ui-crawl",
     "rm5-import",
     "sheets-legacy",
     "sheets-edges",
@@ -119,6 +120,8 @@ def write_manifest(evidence: Path, record: dict[str, object]) -> None:
 
 
 def _scenario_timeout(scenario: str) -> int:
+    if scenario == "ui-crawl":
+        return 600
     timeout_seconds = 120
     if scenario in {"sheets-legacy", "sheets-swap"}:
         return 600
