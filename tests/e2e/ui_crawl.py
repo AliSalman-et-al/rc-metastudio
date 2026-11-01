@@ -61,7 +61,23 @@ def analysis_setup(driver, capture, missing):
     driver.window.action_summary_of_findings.trigger()
     capture("E-summary-of-findings", driver.window.summary_of_findings_dialog)
     driver.window.summary_of_findings_dialog.close()
-    missing.append("E error Details collapsed/expanded: real failing analysis not driven yet")
+    # The open setup can outlive the study selection in the model. Exercise the
+    # real empty-selection failure rather than replacing the analysis service.
+    form = AnalysisSetupDialog(driver.window.model, parent=driver.window, confidence_level=95)
+    form.show()
+    model = driver.window.model
+    for row in range(len(model.get_studies(False))):
+        assert model.setData(model.index(row, model.INCLUDE_STUDY), QtCore.Qt.CheckState.Unchecked.value, QtCore.Qt.ItemDataRole.CheckStateRole)
+    form.run_ma()
+    driver.app.processEvents()
+    assert form.analysis_error_panel.isVisible()
+    assert not form.analysis_error_details.isVisible()
+    capture("E-error-details-collapsed", form)
+    form.analysis_error_toggle.click()
+    assert form.analysis_error_details.isVisible()
+    capture("E-error-details-expanded", form)
+    form.close()
+    driver.window.workspace.mark_saved()
 
 
 def results(driver, capture, missing):
@@ -133,7 +149,8 @@ def plots(driver, capture, missing):
         for detail, kind in kinds:
             artifacts = [view.create_plot_artifact(title, path, params_path=view.results.image_params_paths.get(title))
                          for title, path in view.results.images.items()]
-            selected = [artifact for artifact in artifacts if artifact.plot_kind == kind]
+            selected = [artifact for artifact in artifacts if artifact.plot_kind == kind
+                        and (detail != "coefficient" or (artifact.params_path and view.plot_service.load_params(artifact.params_path).get("reitsma.coefficient.scale")))]
             if not selected:
                 missing.append(f"G {detail}: producer {producer} did not expose {kind}")
                 continue
@@ -237,6 +254,22 @@ def imports(driver, capture, missing):
             raise failures[0]
 
 
+def shell(driver, capture, missing):
+    driver.window.workspace.mark_saved()
+    assert driver.window.open(str(driver.ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    driver.window.resize(1280, 800)
+    capture("A-amino-grid", driver.window)
+    bar = driver.window.menuBar()
+    for number, action in enumerate(bar.actions()):
+        menu = action.menu()
+        if menu is not None:
+            menu.popup(bar.mapToGlobal(bar.actionGeometry(action).bottomLeft()))
+            capture(f"A-menu-{number}", menu)
+            menu.close()
+    driver.window.resize(1024, 700)
+    capture("A-grid-1024", driver.window)
+
+
 def run(driver):
     index = driver.EVIDENCE / "ui-crawl-index.md"
     index.write_text("# UI crawl\n\n", encoding="utf-8")
@@ -265,6 +298,7 @@ def run(driver):
         plots(driver, capture, missing)
         create_dataset(driver, capture, missing)
         imports(driver, capture, missing)
+        shell(driver, capture, missing)
     finally:
         with index.open("a", encoding="utf-8") as stream:
             stream.write("\nNOT CAPTURED:\n" + "\n".join("- " + item for item in missing) + "\n")
