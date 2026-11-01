@@ -375,8 +375,12 @@ def analysis_dialog(app, window):
 
         key_click(toggle, QtCore.Qt.Key.Key_Return)
         assert not toggle.isChecked()
-        assert "4" in toggle.text() and expected_inference in toggle.text()
-        record_step("advanced-collapsed", form, sample=sample, summary=toggle.text())
+        assert digits.value() == 4
+        assert "Decimal places 4" in toggle.toolTip()
+        assert expected_inference in toggle.toolTip()
+        assert toggle.text().startswith("▸ Advanced · ") and toggle.text().endswith(" changed")
+        assert toggle.width() >= toggle.fontMetrics().horizontalAdvance(toggle.text()) + 12
+        record_step("advanced-collapsed", form, sample=sample, summary=toggle.text(), changed_options=toggle.toolTip())
 
         mouse_click(required(form.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)), QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
