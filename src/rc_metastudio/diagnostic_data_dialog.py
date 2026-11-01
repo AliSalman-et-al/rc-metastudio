@@ -171,14 +171,12 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             + 2 * self.content_scroll.frameWidth()
             + scrollbar.sizeHint().width()
         )
+        # Content actions live inside the scroll area; only the persistent
+        # footer constrains the outer dialog at large native font metrics.
         minimum_width = (
-            self.clear_button.sizeHint().width()
-            + self.back_calculate_button.sizeHint().width()
-            + 40
+            self.buttonBox.minimumSizeHint().width()
             + margins.left()
             + margins.right()
-            + 2 * self.content_scroll.frameWidth()
-            + scrollbar.sizeHint().width()
         )
         adaptive_window.set_content_preferred_width(
             self, minimum_width, preferred_width

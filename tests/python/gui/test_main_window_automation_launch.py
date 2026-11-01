@@ -220,7 +220,11 @@ def _assert_table_view_leaves_spare_width_outside_data_columns(table_view):
     # viewport before asserting that fixed data columns leave spare table space.
     owner.showNormal()
     owner.setMaximumSize(16777215, 16777215)
-    owner.resize(max(owner.width() + 320, 1920), max(owner.height(), 1080))
+    chrome_width = owner.width() - table_view.viewport().width()
+    owner.resize(
+        max(owner.width() + 320, original_section_width + chrome_width + 320),
+        max(owner.height(), 1080),
+    )
     owner.show()
     QtWidgets.QApplication.processEvents()
 

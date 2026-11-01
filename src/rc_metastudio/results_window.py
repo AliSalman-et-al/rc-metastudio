@@ -3,6 +3,7 @@
 """Render and export meta-analysis results."""
 
 import gzip
+import math
 import csv
 import io
 import re
@@ -1023,7 +1024,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         next_y = float(self.add_offset)
         for item in self._layout_items:
             item.setPos(self.x_coord, next_y)
-            next_y += item.sceneBoundingRect().height()
+            next_y = math.ceil(item.sceneBoundingRect().bottom())
             if not isinstance(item, QGraphicsTextItem):
                 next_y += SECTION_SPACING
 

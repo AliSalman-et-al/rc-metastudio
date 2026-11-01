@@ -1545,12 +1545,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         active_page = self.specs_tab.currentWidget()
         assert active_page is not None
         content_height = active_page.minimumSizeHint().height() + 40
-        self._set_scroll_body_height(content_height)
-        position = self.pos()
-        previous_size = self.size()
-        self.adjustSize()
-        self.resize(self.size().expandedTo(previous_size))
-        self.move(position)
+        # Once shown, method changes reflow inside the scroll body. Growing
+        # its minimum would resize the whole dialog under native font metrics.
+        if not self.isVisible():
+            self._set_scroll_body_height(content_height)
+            self.adjustSize()
         self._reveal_focused_control(None, QtWidgets.QApplication.focusWidget())
 
     def _reveal_focused_control(self, _old, focused):
