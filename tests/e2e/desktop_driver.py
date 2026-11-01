@@ -366,6 +366,22 @@ def analysis_dialog(app, window):
         view.close()
 
 
+def assert_study_grid(app, window):
+    table = window.tableView
+    model = window.model
+    app.processEvents()
+    assert model.headerData(0, QtCore.Qt.Orientation.Horizontal) == "Include"
+    assert model.headerData(model.NAME, QtCore.Qt.Orientation.Horizontal) == "Study Name"
+    index = model.index(0, model.NAME)
+    assert index.data() == model.get_studies(False)[0].label
+    rect = table.visualRect(index).adjusted(4, 4, -4, -4)
+    assert table.viewport().rect().contains(rect), (rect, table.horizontalScrollBar().value())
+    rendered = table.viewport().grab(rect).toImage()
+    colors = {rendered.pixel(x, y) for x in range(rendered.width()) for y in range(rendered.height())}
+    assert len(colors) > 2, "Study name cell has no rendered text"
+    record_step("study-grid-visible", window, label=index.data(), pixel_colors=len(colors))
+
+
 def sample_analysis(app, window, sample):
     assert window.open(
         str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True
@@ -378,6 +394,7 @@ def sample_analysis(app, window, sample):
     assert (
         str(window.model.data(window.model.index(0, window.model.NAME))) == first_study
     )
+    assert_study_grid(app, window)
     assert sum(study.include for study in window.model.get_studies(False)) == study_count
     method, case = {
         "amino": ("binary.random", "amino-binary-random"),
@@ -653,6 +670,7 @@ def sheets(app, window):
     def project(dataset):
         return dataset_to_project(dataset)
     assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert_study_grid(app, window)
     tabs = window.sheet_tabs
     original = copy.deepcopy(window.model.dataset)
     window.resize(1600, 828)
@@ -866,8 +884,12 @@ def xlsx_import(app, window):
             capture.restart()
             app.processEvents()
             capture.grab().save(str(screens / f"slice8a-{page_name}-{theme}.png"))
-        window.tableView.horizontalScrollBar().setValue(window.tableView.horizontalScrollBar().maximum())
+        window.resize(1200, 828)
+        window.tableView.horizontalScrollBar().setValue(0)
+        window.tableView.viewport().repaint()
+        window.tableView.horizontalHeader().viewport().repaint()
         app.processEvents()
+        assert_study_grid(app, window)
         window.grab().save(str(screens / f"slice8a-grid-{theme}.png"))
         for index, button in enumerate(buttons):
             types._button_selected(button)
@@ -1293,6 +1315,9 @@ def calculator(app, window, family):
         try:
             table = getattr(dialog, table_name)
             app.processEvents()
+            if family == "binary":
+                widths = [dialog.metric_readout.columnWidth(i) for i in range(4)]
+                assert max(widths) - min(widths) <= 1, widths
             dialog.grab().save(str(ROOT / f"docs/ux-hill-climb/screens/slice8a-calculator-{family}.png"))
             for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
                 width = field.fontMetrics().horizontalAdvance(field.text())

@@ -12,7 +12,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPainter
 
 from PyQt6.QtWidgets import (
-    QAbstractItemView, QLabel, QLineEdit, QMessageBox, QSizePolicy, QStyle, QStyleOptionFrame,
+    QAbstractItemView, QHeaderView, QLabel, QLineEdit, QMessageBox, QSizePolicy, QStyle, QStyleOptionFrame,
     QStyledItemDelegate, QTableWidget, QTableWidgetItem, QWIDGETSIZE_MAX,
 )
 
@@ -551,7 +551,7 @@ def update_calculator_readout(dialog, data_type):
             table.verticalHeader().hide()
             table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
             table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-            table.horizontalHeader().setStretchLastSection(True)
+            table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
             dialog.dialog_layout.insertWidget(dialog.dialog_layout.count() - 2, table)
             def select_metric(row, column):
                 index = dialog.effect_combo_box.findData(("OR", "RR", "RD")[row])

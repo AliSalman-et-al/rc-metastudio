@@ -119,3 +119,40 @@ All nine requested serial scenarios passed on the final rerun. Commands used `so
 Final uninterrupted command: `uv run --no-sync python -m pytest tests/e2e -n 2 -q -k "calculator or wizard or import or csv or ux or audit or review"`. Result: **51 passed in 1630.99s (27m10s), exit 0**. Transcript: [SLICE8A-pytest.txt](SLICE8A-pytest.txt). Each test retains its own evidence manifest under artifacts/verification/rcms. Earlier interrupted and failed evidence remains intact.
 
 Screens refreshed: import, metric, binary/continuous/diagnostic calculators, light/dark effect grid, and light/dark welcome/data-type/outcome/CSV pages. Scope: Qt offscreen, not native display qualification. Existing baseline accepted-row fixtures and numerical assertions passed unchanged. No numerical algorithms changed. All four numbered steps are complete.
+
+## Grid capture correction
+
+The blank Include/Study Name columns were a capture artifact introduced by
+`f221b3d32ef45f6c5c6c06857810af846f300577` (forced rightmost horizontal scroll),
+not the neutral-tint model change. Reproduced with HEAD's real Qt/R capture in
+both palettes. The new visibility assertion failed at that capture state:
+row 1's name rectangle started at x=-73, outside the viewport. Capture now uses
+a 1200-pixel window, leftmost scroll and explicit viewport/header repaint.
+Both refreshed palette images show Include, Study Name and Gonzalez correctly.
+The sheets/amino drives check the headers, model study label and nonuniform
+interior pixels of the first study-name cell; the palette capture checks both.
+
+The calculator width assertion first failed with widths [43, 57, 57, 324].
+All four binary metric columns now share the viewport using Qt Stretch sections.
+No numerical computation or stored precision changed.
+
+Verification evidence (`artifacts/verification/rcms/`, retained manifests include
+commands, runtime, assertions and screenshots):
+
+- Original capture reproduction: `20261101T005620Z-ecd4c766-xlsx-import`.
+- Capture visibility failure: `20261101T005633Z-f5eac31e-xlsx-import`.
+- Calculator width failure: `20261101T005652Z-ce75a211-calculator-binary`.
+- Corrected light/dark capture: `20261101T005703Z-40de6e47-xlsx-import`.
+- Requested ordered drives: `20261101T005726Z-1d255bb5-sheets`,
+  `20261101T005744Z-241d10ed-amino`,
+  `20261101T005802Z-9d7d3c7f-calculator-binary`,
+  `20261101T005817Z-a9522284-hillclimb` (all passed).
+
+Commands use `source build/sheets-baseline/ENV.sh`, then
+`uv run --no-sync python scripts/verify_rcms.py SCENARIO`.
+This is real Qt offscreen/R evidence, not native window-manager qualification.
+
+The uninterrupted sheets → amino → calculator-binary → hillclimb sequence and
+`uv run --no-sync python -m pytest tests/e2e -n 2 -q -k "sheets or grid or editing or calculator"`
+passed: **24 tests in 373.23 seconds**. Selection evidence index:
+`artifacts/verification/rcms/slice8a-grid-correction-pytest.json`.

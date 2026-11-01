@@ -116,3 +116,6 @@ full item/editor text. Diagnostic prevalence uses a rounded unfocused readout an
 round-trip-safe text. Binary OR/RR/RD readouts fit their three rows and columns.
 The baseline acceptance fixtures and independent numerical comparisons remain
 unchanged. Refreshed offscreen screenshots are in docs/ux-hill-climb/screens/slice8a-*.
+
+- `calculator-binary` also checks that the OR/RR/RD readout's four visible
+  columns share width evenly (at most one pixel difference).

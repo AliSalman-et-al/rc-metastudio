@@ -157,3 +157,8 @@ Slice 8A: effect cells use a translucent neutral tint, normal font and inherited
 theme text. The xlsx-import drive captures the amino effect grid with light and
 dark palettes; review1-design checks composited text contrast and exercises the
 start-page import action with a controlled file-picker result.
+
+- **Study identity rendering.** `sheets` and `amino` assert Include/Study Name
+  header text, first-row label equality with the study model, a fully visible
+  name-cell rectangle and nonuniform interior viewport pixels. `xlsx-import`
+  repeats this rendering proof in light/dark palettes before grid capture.
