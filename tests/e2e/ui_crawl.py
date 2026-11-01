@@ -79,7 +79,7 @@ def plots(driver, capture, missing):
     for family, sample, method in (("binary", "amino", "binary.random"),
                                    ("continuous", "continuous", "continuous.random"),
                                    ("diagnostic", "lymph", "diagnostic.random"),
-                                   ("hr", "Pignon2000-HR", "binary.random")):
+                                   ("hr", "Pignon2000-HR", "time_to_event.random")):
         driver.window.workspace.mark_saved()
         assert driver.window.open(str(driver.ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
         original = driver.record_step
@@ -120,13 +120,77 @@ def create_dataset(driver, capture, missing):
     form.close()
 
 
+def imports(driver, capture, missing):
+    from unittest.mock import patch
+    from rc_metastudio import main_wizard as wizard
+    from openpyxl import Workbook
+    form = wizard.MainWizard(path="csv_import")
+    form.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions",
+                               effect="OR", metric_choices=[], name="Mortality"))
+    form.page(wizard.Page_OutcomeName).outcome_name_LineEdit.setText("Mortality")
+    form.setStartId(wizard.Page_CsvImport)
+    form.restart()
+    form.show()
+    page = form.currentPage()
+    def select(path):
+        with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(path), "")):
+            page.select_file_btn.click()
+        driver.app.processEvents()
+    csv = driver.WORK / "crawl.csv"
+    csv.write_text("Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total,OR,Lower,Upper\nAlpha,2020,1,10,2,12,,,\nBeta,2021,3,11,4,13,,,\n", encoding="utf-8")
+    select(csv)
+    assert page.isComplete(), page.import_status.text()
+    capture("C-csv-preview", form)
+    page.csv_options_btn.click()
+    capture("C-csv-options", form)
+    book = Workbook()
+    book.active.title = "Empty"
+    sheet = book.create_sheet("Binary")
+    for row in csv.read_text().splitlines():
+        sheet.append([int(cell) if cell.isdigit() else cell or None for cell in row.split(",")])
+    path = driver.WORK / "crawl.xlsx"
+    book.save(path)
+    select(path)
+    assert page.worksheet_combo.count() == 2
+    capture("C-xlsx-two-sheets", form)
+    for index in range(page.import_tabs.count()):
+        if "map" in page.import_tabs.tabText(index).lower():
+            page.import_tabs.setCurrentIndex(index)
+            capture("C-map-columns", form)
+            break
+    else:
+        missing.append("C Map columns: tab not found")
+    sheet["C2"] = "=1+1"
+    book.save(path)
+    select(path)
+    assert not page.isComplete()
+    capture("C-xlsx-error", form)
+    form.close()
+    from rc_metastudio.rm5_import import review_rm5
+    for name in ("Fleiss1993", "generic-derived"):
+        failures = []
+        def review():
+            dialog = driver.app.activeModalWidget()
+            try:
+                assert dialog.objectName() == "rm5_review"
+                capture("C-revman-" + name, dialog)
+            except BaseException as error:
+                failures.append(error)
+            finally:
+                if dialog:
+                    dialog.reject()
+        QtCore.QTimer.singleShot(0, review)
+        review_rm5(str(driver.ROOT / f"tests/fixtures/rm5/{name}.rm5"), driver.window)
+        if failures:
+            raise failures[0]
+
+
 def run(driver):
     index = driver.EVIDENCE / "ui-crawl-index.md"
     index.write_text("# UI crawl\n\n", encoding="utf-8")
     original_record = driver.record_step
     captured = set()
-    missing = ["G fitted rendered plots and styles",
-               "C import/options/map/error/RevMan",
+    missing = ["A shell: previous scaffold captures not refreshed",
                "D deferred to next run", "H deferred to next run", "I deferred to next run", "J deferred to next run"]
 
     def capture(step, widget):
@@ -148,6 +212,7 @@ def run(driver):
         results(driver, capture, missing)
         plots(driver, capture, missing)
         create_dataset(driver, capture, missing)
+        imports(driver, capture, missing)
     finally:
         with index.open("a", encoding="utf-8") as stream:
             stream.write("\nNOT CAPTURED:\n" + "\n".join("- " + item for item in missing) + "\n")
