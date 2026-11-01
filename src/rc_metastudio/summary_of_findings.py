@@ -1,6 +1,6 @@
 """Reviewers' cross-outcome summary, recalculated on every opening."""
 import copy
-import re
+from rc_metastudio import app_error_handler
 from PyQt6 import QtCore, QtWidgets
 from rc_metastudio.analysis_results import ResultSection, ResultTable
 from rc_metastudio.manuscript_report import ManuscriptReport, write_docx, write_pdf
@@ -30,7 +30,7 @@ class SummaryOfFindingsDialog(QtWidgets.QDialog):
         QtWidgets.QApplication.processEvents()
         try:
             for row, sheet in enumerate(window.model.dataset.sheets):
-                values = [sheet.name, 'Unavailable', 'Unavailable', 'No analysable data']
+                values = [sheet.name, '–', '–', 'No analysable data']
                 setup = None
                 try:
                     model = DatasetTableModel(dataset=copy.deepcopy(window.model.dataset), add_blank_study=False)
@@ -41,11 +41,35 @@ class SummaryOfFindingsDialog(QtWidgets.QDialog):
                                                 confidence_level=model.get_confidence_level(),
                                                 diagnostic_metrics=("sens", "spec") if model.get_current_outcome_type() == "diagnostic" else None, parent=self)
                     result = setup._with_result_identity(window.analysis_service.execute(model, setup.analysis_requests()))
-                    report = ManuscriptReport.from_result(result)
-                    effects = [text for text in report.summary if text.startswith('The pooled ') or ' CI ' in text]
-                    counts = re.findall(r'\(([^)]*participants[^)]*)\)', result.manuscript_context)
-                    values = [sheet.name, str(len(model.get_studies())), counts[0] if counts else 'Not reported', ' '.join(effects) or report.results]
+                    effects = []
+                    for section in result.sections:
+                        for table in section.tables:
+                            if table.headers == ('Statistic', 'Value') and table.title in ('Sensitivity', 'Specificity'):
+                                cells = dict(table.rows)
+                                if not any('CI' in key for key in cells):
+                                    continue
+                                label = table.title
+                            elif table.title.endswith('Model Results') and len(table.rows) == 1:
+                                cells = dict(zip(table.headers, table.rows[0]))
+                                label = model.current_effect
+                            else:
+                                continue
+                            lower = next(v for k, v in cells.items() if k.startswith('Lower bound'))
+                            upper = next(v for k, v in cells.items() if k.startswith('Upper bound'))
+                            level = next(k.partition('(')[2].rstrip(') ').strip() for k in cells if k.startswith('Lower bound'))
+                            effects.append(f"{label} {cells['Estimate']} ({level} {lower} to {upper})")
+                    effect = '; '.join(effects)
+                    if setup.data_type != 'diagnostic':
+                        effect += ', ' + setup.method_cbo_box.currentText().lower()
+                    raw = model.get_current_raw_data()
+                    positions = {'binary': (1, 3), 'continuous': (0, 3), 'diagnostic': (0, 1, 2, 3)}.get(setup.data_type)
+                    if positions is not None:
+                        participants = sum(sum(row[i] for i in positions if i < len(row)) for row in raw)
+                    else:
+                        participants = sum(study.sample_size or 0 for study in model.get_studies())
+                    values = [sheet.name, str(len(model.get_studies())), f'{participants:g}', effect]
                 except Exception as error:
+                    app_error_handler.log_exception(type(error), error, error.__traceback__)
                     values[3] = str(error).splitlines()[0] or 'Analysis could not be completed'
                 finally:
                     if setup is not None:
@@ -68,9 +92,12 @@ class SummaryOfFindingsDialog(QtWidgets.QDialog):
         finally:
             progress.close()
             progress.deleteLater()
-        self.table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.Stretch)
-        self.table.resizeRowsToContents()
+        header = self.table.horizontalHeader()
+        for column, width in enumerate((145, 75, 90, 425, 100, 220)):
+            header.setSectionResizeMode(column, QtWidgets.QHeaderView.ResizeMode.Interactive)
+            self.table.setColumnWidth(column, width)
+        header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.Stretch)
+        self.table.verticalHeader().setDefaultSectionSize(64)
 
     def edit(self, sheet_id, key, value):
         sheet = self.owner.model.dataset.sheet(sheet_id)
