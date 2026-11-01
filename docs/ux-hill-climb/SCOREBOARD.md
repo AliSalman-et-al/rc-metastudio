@@ -173,3 +173,45 @@ uses Export report twice and selects the PDF/Word file types. Both artifacts are
 retained in `artifacts/verification/rcms/20261031T123406Z-ed6eba48-hillclimb/workflow/`.
 The complete `-n 2` matrix passed all 133 cases; the strict golden gate passed
 without refreshing numerical or presentation oracles. See [SLICE3A.md](SLICE3A.md).
+
+## After hill climb
+
+Two fresh real Qt/R offscreen repetitions on `2e245e1c`; the second passed
+`--compare-measures` against the first. Counts, completion and numerical/text
+receipts match across repetitions. Deltas use the original committed baseline.
+
+| Task | Clicks (Δ) | Shortcuts (Δ) | Characters (Δ) | Dialogs (Δ) | Seconds min–max | Δ seconds vs baseline first run (range) | Completable |
+| --- | ---: | ---: | ---: | ---: | --- | --- | --- |
+| T1 | 9 (-12) | 1 (+0) | 9 (+0) | 2 (+0) | 5.76–5.80 | -7.45–-7.40 | yes |
+| T2 | 16 (-34) | 26 (-48) | 85 (+0) | 5 (+0) | 8.82–8.84 | -10.85–-10.82 | yes |
+| T3 | 2 (+0) | 0 (+0) | 0 (+0) | 1 (+0) | 1.38–1.45 | -2.12–-2.04 | yes |
+| T4 | 3 (+0) | 0 (+0) | 0 (+0) | 2 (+0) | 1.49–1.50 | -2.85–-2.84 | yes |
+| T5 | 6 (+0) | 0 (+0) | 41 (+1) | 2 (+0) | 0.41–0.42 | -0.33–-0.32 | yes |
+
+Evidence: `20261101T021424Z-61af403d-hillclimb` and
+`20261101T021548Z-e4deb9d7-hillclimb` under `artifacts/verification/rcms/`.
+Commands and transcripts: `build/final-qualification-hillclimb-{1,2}.log`.
+Scripted wall time includes analysis/capture waits; it is not human task timing.
+T5 now exports manuscript PDF/DOCX (baseline was partial text/plot export),
+with one additional typed filename character.
+
+Numerical receipt audit: **no T1–T5 parsed numerical fields or result-text
+sections differ from `baseline-measures.json`** in either run. The intentional
+subgroup Q/p, zero-cell MH/Peto pooling, sequential and source-confidence
+corrections in [STAT-FIXES.md](STAT-FIXES.md) affect their documented fixtures;
+they produce no differences in these five receipts. No baseline was refreshed.
+
+Qualification used `source build/sheets-baseline/ENV.sh` and `uv run --no-sync`.
+One uninterrupted process ran doctor, strict golden (475 comparisons / 416
+numeric fields), authority (100 cases), then fresh E2E (`-n 2 -q --fresh`).
+Doctor/golden/authority passed; E2E initially finished **133 passed, 2 failed**
+in 2958.27 seconds. Log: `build/final-qualification-20261101T011845Z.log`.
+The failures were `ratios-hr` and `ratios-irr`: wizard cleanup removed their
+metric icon assignment. Separate product commit `2e245e1c` restores it. Both
+failed cases passed fresh afterward (**2 passed**, 176.53 seconds), with their
+full analyses/exports: `build/final-qualification-ratio-repair.log`. The whole
+matrix was not rerun after this icon-only repair. No assertions or oracles changed.
+A pre-existing orphan driver (PID 1634154, adopted by PID 1, deleted scratch)
+was discovered during qualification and terminated by exact PID. The matrix
+also rewrote tracked slice7 screenshots; those generated changes are excluded
+from these commits.
