@@ -1,21 +1,9 @@
 from typing import NoReturn
 
 
-class AnalysisBackendUnavailableError(RuntimeError):
-    """Raised when the configured R analysis backend cannot service requests."""
-
+from rc_metastudio.r_runtime import AnalysisBackendUnavailableError, is_ready, mark_ready
 
 _REAL_BACKEND = None
-_READY = False
-
-
-def is_ready() -> bool:
-    return _READY
-
-
-def mark_ready() -> None:
-    global _READY
-    _READY = True
 
 
 def is_backend_installed() -> bool:

@@ -49,7 +49,7 @@ _INITIALIZATION_ERROR: Exception | None = None
 
 
 def _require_initialized_r() -> None:
-    from rc_metastudio.r_backend import AnalysisBackendUnavailableError
+    from rc_metastudio.r_runtime import AnalysisBackendUnavailableError
     if _INITIALIZATION_ERROR is not None:
         raise AnalysisBackendUnavailableError("R failed to start") from _INITIALIZATION_ERROR
     if "ro" not in globals():
@@ -227,8 +227,8 @@ class RLibraryLoader:
 
     def load_rcmetar(self):
         result = self._load_r_lib("RCMetaR")
-        from rc_metastudio import r_backend
-        r_backend.mark_ready()
+        from rc_metastudio import r_runtime
+        r_runtime.mark_ready()
         return result
 
     def load_grid(self):
