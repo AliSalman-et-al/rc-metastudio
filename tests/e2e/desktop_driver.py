@@ -749,6 +749,10 @@ def sheets(app, window):
     app.processEvents()
     key_click(table, QtCore.Qt.Key.Key_PageDown, QtCore.Qt.KeyboardModifier.ControlModifier)
     assert tabs.currentIndex() == 1
+    key_click(table, QtCore.Qt.Key.Key_PageUp, QtCore.Qt.KeyboardModifier.ControlModifier)
+    assert tabs.currentIndex() == 0
+    key_click(table, QtCore.Qt.Key.Key_PageDown, QtCore.Qt.KeyboardModifier.ControlModifier)
+    assert tabs.currentIndex() == 1
     cast(Callable[..., None], QTest.mousePress)(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(2).center())
     cast(Callable[..., None], QTest.mouseMove)(tabs, tabs.tabRect(3).center(), 100)
     mouse_release(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
@@ -833,6 +837,13 @@ def verify_sheet_strip(app, window, screens):
     for index in range(20):
         add_named_sheet(app, window, f"Long outcome {index + 1}: mortality and treatment response")
     assert window.sheet_scroll_left.isVisible() and window.sheet_scroll_right.isVisible()
+    scroll = window.sheet_tab_scrollbar
+    before_scroll = scroll.value()
+    mouse_click(window.sheet_scroll_left, QtCore.Qt.MouseButton.LeftButton)
+    assert scroll.value() < before_scroll
+    before_scroll = scroll.value()
+    mouse_click(window.sheet_scroll_right, QtCore.Qt.MouseButton.LeftButton)
+    assert scroll.value() > before_scroll
     for index in (0, tabs.count() - 1, 10):
         tabs.setCurrentIndex(index)
         app.processEvents()
