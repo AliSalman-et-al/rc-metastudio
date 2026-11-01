@@ -179,13 +179,13 @@ def create_dataset(driver, capture, missing):
         form.setStartId(page)
         form.restart()
         capture("B-" + detail, form)
-    for number, button in enumerate(types._data_type_buttons()):
+    for button in types._data_type_buttons():
         types._button_selected(button)
         if form.require_dataset_info()["data_type"] == "diagnostic":
             continue  # Diagnostic data has no metric wizard page.
         form.setStartId(wizard.Page_ChooseMetric)
         form.restart()
-        capture(f"B-metric-{number}", form)
+        capture("B-metric-" + "-".join(str(form.require_dataset_info().get(key)) for key in ("data_type", "sub_type")), form)
     form.close()
 
 
@@ -260,12 +260,35 @@ def shell(driver, capture, missing):
     driver.window.resize(1280, 800)
     capture("A-amino-grid", driver.window)
     bar = driver.window.menuBar()
-    for number, action in enumerate(bar.actions()):
+    for action in bar.actions():
         menu = action.menu()
         if menu is not None:
             menu.popup(bar.mapToGlobal(bar.actionGeometry(action).bottomLeft()))
-            capture(f"A-menu-{number}", menu)
+            capture("A-menu-" + action.text().replace("&", "").lower(), menu)
             menu.close()
+    driver.window.model.dataset.sheets[:] = [driver.window.model.current_sheet]
+    driver.window._refresh_sheet_tabs()
+    assert driver.window.sheet_tabs.count() == 1
+    capture("A-one-sheet", driver.window)
+    menu = driver.window.analysis_button.menu()
+    menu.popup(driver.window.analysis_button.mapToGlobal(QtCore.QPoint(0, driver.window.analysis_button.height())))
+    capture("A-analyses-dropdown", menu)
+    menu.close()
+    def tab_menu():
+        menu = driver.app.activePopupWidget()
+        capture("A-tab-context-menu", menu)
+        menu.close()
+    QtCore.QTimer.singleShot(0, tab_menu)
+    driver.window._sheet_menu(driver.window.sheet_tabs.tabRect(0).center())
+    driver.window._rename_sheet(0)
+    capture("A-inline-rename", driver.window)
+    driver.window._finish_sheet_rename(cancel=True)
+    for number in range(19):
+        driver.window._add_sheet()
+        driver.window.sheet_name_edit.setText(f"Outcome {number + 2}")
+        driver.window._finish_sheet_rename()
+    assert driver.window.sheet_tabs.count() == 20
+    capture("A-20-tab-overflow", driver.window)
     driver.window.resize(1024, 700)
     capture("A-grid-1024", driver.window)
 
@@ -292,12 +315,12 @@ def run(driver):
             stream.write(f"{driver.STEP:02d}-0-{step}.png | {step} | {widget.metaObject().className()}\n")
 
     try:
+        shell(driver, capture, missing)
         analysis_setup(driver, capture, missing)
         results(driver, capture, missing)
         plots(driver, capture, missing)
         create_dataset(driver, capture, missing)
         imports(driver, capture, missing)
-        shell(driver, capture, missing)
     finally:
         with index.open("a", encoding="utf-8") as stream:
             stream.write("\nNOT CAPTURED:\n" + "\n".join("- " + item for item in missing) + "\n")
