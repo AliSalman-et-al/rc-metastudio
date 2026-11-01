@@ -1258,6 +1258,15 @@ def small_study_effects(app, window):
         for w in app.topLevelWidgets()
         if isinstance(w, results_window.ResultsWindow) and w.isVisible()
     )
+    app.processEvents()
+    app.processEvents()
+    selected = view._selected_plot()
+    assert selected is not None
+    figure_width = selected[1].sceneBoundingRect().width() * view.graphics_view.transform().m11()
+    viewport_width = view.graphics_view.viewport().width()
+    assert figure_width >= viewport_width * .90, (figure_width, viewport_width)
+    assert view._figure_zoom_percent >= 50, view._figure_zoom_percent
+    assert all(item.textWidth() >= viewport_width * .90 for item in view._wrapped_text_items)
     assert view.results.images, dict(view.texts)
     assert any("Harbord" in text or "Rücker" in text for text in view.texts.values())
     for path in view.results.images.values():
@@ -1270,6 +1279,8 @@ def small_study_effects(app, window):
         view,
         texts=dict(view.texts),
         plots=dict(view.results.images),
+        settled_zoom_percent=view._figure_zoom_percent,
+        figure_width=figure_width, viewport_width=viewport_width,
     )
     view.close()
 
