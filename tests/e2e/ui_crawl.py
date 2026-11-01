@@ -98,6 +98,7 @@ def results(driver, capture, missing):
 
 
 def plots(driver, capture, missing):
+    editors = set()
     for family, sample, method in (("binary", "amino", "binary.random"),
                                    ("continuous", "continuous", "continuous.random"),
                                    ("diagnostic", "lymph", "diagnostic.random"),
@@ -122,6 +123,10 @@ def plots(driver, capture, missing):
                     modal(driver.app, EditPlotDialog, edit, view.edit_plot_action.trigger)
                     view.fit_width_action.trigger()
                     capture(f"G-binary-forest-{style.lower()}-fit", view)
+            if family == "binary":
+                artifact = next(view.create_plot_artifact(title, path, params_path=view.results.image_params_paths.get(title)) for title, path in view.results.images.items())
+                plot_editor(driver, capture, artifact, view, "forest")
+                editors.add("forest")
             view.close()
         except (AssertionError, StopIteration) as error:
             missing.append(f"G {family} forest: {type(error).__name__}: {error}")
@@ -161,11 +166,30 @@ def plots(driver, capture, missing):
             view._show_report(False)
             view.fit_width_action.trigger()
             capture(f"G-{detail}-fit", view)
+            editor_kind = "coefficient" if detail == "coefficient" else selected[0].plot_kind
+            if editor_kind not in editors:
+                plot_editor(driver, capture, selected[0], view, editor_kind)
+                editors.add(editor_kind)
             if detail == "subgroup":
                 view.tables_action.trigger()
                 capture("F-subgroup-tables", view)
                 missing[:] = [entry for entry in missing if not entry.startswith("F subgroup")]
         view.close()
+
+
+def plot_editor(driver, capture, artifact, view, detail, prefix="H"):
+    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+    from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
+    kind = FunnelPlotEditorDialog if artifact.capability.regenerator == "funnel" else EditPlotDialog
+    form = kind(view.plot_service.load_params(artifact.params_path), artifact.image_path,
+                          parent=view, plot_type=artifact.plot_kind)
+    form.show()
+    capture(f"{prefix}-{detail}-top", form)
+    for area in form.findChildren(QtWidgets.QScrollArea):
+        area.verticalScrollBar().setValue(area.verticalScrollBar().maximum())
+    if prefix == "H":
+        capture(f"{prefix}-{detail}-bottom", form)
+    form.close()
 
 
 def create_dataset(driver, capture, missing):
@@ -365,7 +389,7 @@ def run(driver):
     index.write_text("# UI crawl\n\n", encoding="utf-8")
     original_record = driver.record_step
     captured = set()
-    missing = [ "H deferred to next run", "I deferred to next run", "J deferred to next run"]
+    missing = [ "I deferred to next run", "J deferred to next run"]
 
     def capture(step, widget):
         assert step not in captured, step
