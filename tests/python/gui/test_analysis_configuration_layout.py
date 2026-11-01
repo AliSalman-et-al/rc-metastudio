@@ -584,6 +584,10 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
             assert dialog.buttonBox.isVisible()
             assert dialog.contentsRect().contains(dialog.buttonBox.geometry().center())
 
+            toggle = dialog.advanced_toggle
+            assert toggle.toolButtonStyle() == QtCore.Qt.ToolButtonStyle.ToolButtonTextOnly
+            assert toggle.width() >= toggle.fontMetrics().horizontalAdvance(toggle.text()) + 12
+            assert "..." not in toggle.text() and "…" not in toggle.text()
             stable_geometry = QtCore.QRect(dialog.frameGeometry())
             plot_was_enabled = dialog.plot_tab.isEnabled()
             if dialog.method_cbo_box.count() > 1:

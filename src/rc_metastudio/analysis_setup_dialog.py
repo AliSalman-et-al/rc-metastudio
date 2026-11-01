@@ -1304,7 +1304,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             else:
                 text = str(value)
             changes.append(f"{parameter_display_label(spec.name, spec.metadata)} {text}")
-        self.advanced_toggle.setText(("▾ Advanced" if self.advanced_toggle.isChecked() else "▸ Advanced") + (" · " + ", ".join(changes) if changes and not self.advanced_toggle.isChecked() else ""))
+        self.advanced_toggle.setText(("▾ Advanced" if self.advanced_toggle.isChecked() else "▸ Advanced") + (f" · {len(changes)} changed" if changes else ""))
+        self.advanced_toggle.setToolTip("\n".join(changes) or "Additional method options")
 
     def _place_parameter(self, layout, row, spec, label, control, target, default):
         if spec.name in {"measure", "rm.method", "estimator", "conf.level"}:
@@ -1333,7 +1334,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self._advanced_entries = []
             self.advanced_toggle = _AdvancedButton(self)
             self.advanced_toggle.setAutoRaise(True)
-            self.advanced_toggle.setSizePolicy(QtWidgets.QSizePolicy.Policy.Maximum, QtWidgets.QSizePolicy.Policy.Fixed)
+            self.advanced_toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
+            self.advanced_toggle.setSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
             self.advanced_toggle.setCheckable(True)
             self.advanced_panel = QtWidgets.QWidget()
             QGridLayout(self.advanced_panel)
