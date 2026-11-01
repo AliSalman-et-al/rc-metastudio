@@ -2,6 +2,8 @@
 import csv
 import math
 import subprocess
+import locale
+import xml.etree.ElementTree as ET
 from PyQt6 import QtCore, QtWidgets
 from rc_metastudio.runtime_types import required
 from scripts.r_verification_support import resolve_rscript
@@ -35,16 +37,32 @@ def run(app, window, ROOT, WORK, record_step):
         view = next(w for w in app.topLevelWidgets() if isinstance(w, ResultsWindow) and w.isVisible())
         record_step('rm5-entered-only-probe', view, metric=metric, method=method)
         view.close()
-    source = ROOT / 'tests/fixtures/rm5/generic-derived.rm5'
+    tree = ET.parse(ROOT / 'tests/fixtures/rm5/generic-derived.rm5')
+    study = tree.find('.//STUDY')
+    assert study is not None
+    study.set('NAME', 'München')
+    source = WORK / 'generic-unicode.rm5'
+    tree.write(source, encoding='utf-8', xml_declaration=True)
     imported = read_rm5(source)
+    assert any(row.label == 'München' for sheet in imported.dataset.sheets for row in sheet.rows)
+    # The public reader misdecodes literal UTF-8 names. XML character references
+    # preserve the same Unicode input for its independent numerical reference.
+    reference_source = WORK / 'generic-reference.rm5'
+    tree.write(reference_source, encoding='ascii', xml_declaration=True)
     assert [s.settings['metric'] for s in imported.dataset.sheets] == ['HR', 'OR', 'MD']
     assert any('Custom score' in x for x in imported.not_imported)
     reference, pooled = WORK / 'giv-read.csv', WORK / 'giv-pooled.csv'
-    subprocess.run([str(required(resolve_rscript("Rscript"), "Rscript for independent RM5 reference")), str(ROOT / 'tests/e2e/rm5_reference.R'), str(source), str(reference), str(pooled)], check=True)
-    with reference.open() as f:
-        rows = list(csv.DictReader(f))
-    with pooled.open() as f:
-        refs = list(csv.DictReader(f))
+    subprocess.run([str(required(resolve_rscript("Rscript"), "Rscript for independent RM5 reference")), str(ROOT / 'tests/e2e/rm5_reference.R'), str(reference_source), str(reference), str(pooled)], check=True)
+    previous_locale = locale.setlocale(locale.LC_CTYPE)
+    try:
+        locale.setlocale(locale.LC_CTYPE, 'C')
+        with reference.open(encoding="utf-8", newline="") as f:
+            rows = list(csv.DictReader(f))
+        with pooled.open(encoding="utf-8", newline="") as f:
+            refs = list(csv.DictReader(f))
+        assert any('München' in value for row in rows for value in row.values())
+    finally:
+        locale.setlocale(locale.LC_CTYPE, previous_locale)
     from rc_metastudio.rm5_import import review_rm5
     def review():
         dialog = app.activeModalWidget()
