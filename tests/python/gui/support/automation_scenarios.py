@@ -1518,16 +1518,33 @@ class _InjectedStartupFailure(RuntimeError):
 
 
 def start_shell_failure_smoke(stage):
-    """Prove startup failures release every newly owned top-level object."""
+    """Observe failed startup and prove the owned shell can be disposed."""
     if stage not in {"r-load", "meta-form"}:
         raise SystemExit("Unknown shell failure stage: %s" % stage)
     app = app_error_handler.get_or_create_application(sys.argv)
     configure_application(app)
     baseline_ids = _top_level_ids(app)
+    errors = []
 
     def r_loader(_app, _splash):
-        if stage == "r-load":
-            raise _InjectedStartupFailure(stage)
+        raise _InjectedStartupFailure(stage)
+
+    class FailureShell(QtWidgets.QMainWindow):
+        def __init__(self):
+            super().__init__()
+            from rc_metastudio.workspace_session import WorkspaceSession
+            from rc_metastudio.project_format import ProjectDocument
+            self.workspace = WorkspaceSession(ProjectDocument(3,
+                {"schema_version": 3, "title": "", "notes": "", "sheets": []},
+                {"schema_version": 3, "current_sheet_id": None}))
+            self.statusBar().hide()
+
+        def toggle_menu_options_that_require_dataset(self, enabled):
+            if enabled:
+                raise AssertionError("Analysis enabled before R startup")
+
+        def _show_analysis_backend_error(self, error):
+            errors.append(error)
 
     def meta_factory():
         if stage == "meta-form":
@@ -1536,31 +1553,27 @@ def start_shell_failure_smoke(stage):
             partial.show()
             app.processEvents()
             raise _InjectedStartupFailure(stage)
-        return QtWidgets.QMainWindow()
+        return FailureShell()
 
-    def main_window_loader():
-        return type("MainWindowModule", (), {"MainWindow": meta_factory})
-
+    module = type("MainWindowModule", (), {"MainWindow": meta_factory})
     try:
-        compose_application(
-            app=app,
-            interactive=True,
-            main_window_loader=main_window_loader(),
-            r_loader=r_loader,
-        )
+        _, window = compose_application(app=app, interactive=True,
+                                        main_window_loader=module, r_loader=r_loader)
     except _InjectedStartupFailure:
-        pass
+        if stage != "meta-form":
+            raise
     else:
-        raise SystemExit("Injected startup failure did not fire: %s" % stage)
+        app.processEvents()
+        if stage != "r-load" or len(errors) != 1 or not isinstance(errors[0], _InjectedStartupFailure):
+            raise SystemExit("Injected startup failure did not fire: %s" % stage)
+        if not window.isVisible() or window.statusBar().currentMessage() != "R failed to start":
+            raise SystemExit("R startup failure did not leave a visible failed shell")
+        dispose_qobjects(app, (window,))
 
-    leaked = [
-        widget for widget in app.topLevelWidgets() if id(widget) not in baseline_ids
-    ]
+    leaked = [widget for widget in app.topLevelWidgets() if id(widget) not in baseline_ids]
     if leaked:
-        raise SystemExit(
-            "Startup failure leaked top-level objects at %s: %s"
-            % (stage, [type(widget).__name__ for widget in leaked])
-        )
+        raise SystemExit("Startup failure leaked top-level objects at %s: %s"
+                         % (stage, [type(widget).__name__ for widget in leaked]))
     print("Application shell failure teardown passed at %s." % stage)
     return 0
 

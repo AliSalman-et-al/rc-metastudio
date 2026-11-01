@@ -91,6 +91,10 @@ def test_startup_failure_injections_release_qt_objects_with_fatal_warnings():
 
 def test_close_cancel_and_failed_save_keep_owned_shell_alive(qapp, monkeypatch):
 
+    from rc_metastudio import app_error_handler
+    unexpected = []
+    monkeypatch.setattr(app_error_handler, "show_unexpected_error",
+                        lambda error, parent=None: unexpected.append(str(error)))
     app, window = automation.start_automation()
     window.workspace.mark_dirty()
     monkeypatch.setattr(
@@ -120,6 +124,7 @@ def test_close_cancel_and_failed_save_keep_owned_shell_alive(qapp, monkeypatch):
     app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
     app.processEvents()
     assert window not in app.topLevelWidgets()
+    assert unexpected == []
 
 
 def test_qt6_settings_migration_preserves_domain_values_and_recent_projects(qapp):
@@ -307,27 +312,11 @@ def test_structured_project_restores_nondefault_active_selection_without_normali
 
     source = project_format.load_project(ROOT / "sample_projects" / "amino.rcms")
     project = _json_map(copy.deepcopy(source.project))
-    dataset = _json_map(project["dataset"])
-    for outcome in _json_maps(dataset["outcomes"]):
-        if outcome["name"] == "nephrotoxic":
-            _json_list(outcome["follow_ups"]).append("second")
-    for study in _json_maps(dataset["studies"]):
-        first = next(
-            unit
-            for unit in _json_maps(study["analysis_units"])
-            if unit["outcome"] == "nephrotoxic" and unit["follow_up"] == "first"
-        )
-        second = copy.deepcopy(first)
-        second["follow_up"] = "second"
-        _json_maps(study["analysis_units"]).append(second)
-    state = {
-        "schema_version": project_format.CURRENT_FORMAT_VERSION,
-        "active_outcome": "nephrotoxic",
-        "active_follow_up": "second",
-        "active_groups": ["Control", "Intervention"],
-        "active_effect": "RR",
-        "confidence_level": 90.0,
-    }
+    sheet = next(item for item in _json_maps(project["sheets"]) if item["name"] == "nephrotoxic")
+    _json_list(sheet["arms"]).reverse()
+    _json_map(sheet["settings"]).update(metric="RR", confidence_level=90.0)
+    state = {"schema_version": project_format.CURRENT_FORMAT_VERSION,
+             "current_sheet_id": sheet["id"]}
     selected = tmp_path / "selected.rcms"
     project_format.save_project(
         selected, cast(project_format.JsonObject, project), state
@@ -338,14 +327,12 @@ def test_structured_project_restores_nondefault_active_selection_without_normali
     try:
         assert window.open(str(selected)) is True
         assert window.model.current_outcome_name == "nephrotoxic"
-        assert window.model.get_current_follow_up_name() == "second"
         assert window.model.arm_names == ["Control", "Intervention"]
         assert window.model.current_effect == "RR"
         assert window.model.get_confidence_level() == 90.0
         assert window.save() is True
         assert window.open(str(selected)) is True
         assert window.model.current_outcome_name == "nephrotoxic"
-        assert window.model.get_current_follow_up_name() == "second"
         assert window.model.arm_names == ["Control", "Intervention"]
         assert window.model.current_effect == "RR"
     finally:
@@ -405,10 +392,14 @@ def test_new_dataset_clears_previous_project_destination_and_starts_dirty(
 
 
 def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards(
-    qapp, monkeypatch
+    qapp, monkeypatch, tmp_path
 ):
     from rc_metastudio import main_wizard
 
+    candidate = tmp_path / "candidate.csv"
+    candidate.write_text("Study,Year,Events,Total\nCandidate,2024,1,10\n", encoding="utf-8")
+    monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileName",
+                        lambda *_args, **_kwargs: (str(candidate), "CSV"))
     target = str(ROOT / "sample_projects" / "amino.rcms")
     for source_path in ("new_dataset", "csv_import"):
         app, window = automation.start_automation()
@@ -737,7 +728,7 @@ def test_post_replace_durability_failure_commits_save_and_authorizes_next_action
         assert window.model.analysis_source_path == str(destination)
         assert window.workspace.is_dirty is False
         saved_dataset = _json_map(
-            project_format.load_project(destination).project["dataset"]
+            project_format.load_project(destination).project
         )
         assert saved_dataset["notes"] == "save-as installed"
         assert warnings[-1][0] == "Project Saved; Durability Uncertain"
@@ -768,7 +759,7 @@ def test_post_replace_durability_failure_commits_save_and_authorizes_next_action
             assert window.save() is True
         assert window.workspace.is_dirty is False
         saved_dataset = _json_map(
-            project_format.load_project(destination).project["dataset"]
+            project_format.load_project(destination).project
         )
         assert saved_dataset["notes"] == "save installed"
         assert warnings[-1][0] == "Project Saved; Durability Uncertain"

@@ -329,7 +329,10 @@ def compose_application(
                 meta.statusBar().showMessage("R failed to start")
                 meta._show_analysis_backend_error(error)
 
-        QtCore.QTimer.singleShot(0, start_r)
+        startup_timer = QtCore.QTimer(meta)
+        startup_timer.setSingleShot(True)
+        startup_timer.timeout.connect(start_r)
+        startup_timer.start(0)
         return app, meta
     except BaseException:
         _dispose_new_top_levels(app, baseline_ids, (splash,))

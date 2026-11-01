@@ -46,9 +46,15 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
         def get_current_follow_up_name(self):
             return "first"
 
-        def get_studies(self):
+        def get_studies(self, only_if_included=True):
             return []
-        dataset = SimpleNamespace(covariates=[])
+
+        def get_current_raw_data(self):
+            return []
+
+        current_sheet = SimpleNamespace(id="sheet", name="Outcome", settings={}, covariates=[])
+        current_sheet_id = "sheet"
+        dataset = SimpleNamespace(sheets=[current_sheet])
 
         def get_current_outcome_type(self):
             return "binary"
