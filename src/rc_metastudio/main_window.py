@@ -234,6 +234,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.setupUi(self)
         qt_layout.configure_analysis_menu(self.menuAnalysis)
         self.menuAnalysis.setToolTipsVisible(True)
+        self.action_summary_of_findings = QAction("Summary of findings", self)
+        self.menuAnalysis.addAction(self.action_summary_of_findings)
+        self.action_summary_of_findings.triggered.connect(self._show_summary_of_findings)
         for action, icon_name in (
             (self.action_go, "meta-analysis"),
             (self.action_cum_ma, "cumulative-analysis"),
@@ -1054,6 +1057,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model.reset_model()
         self.tableView.synchronize_column_widths()
         self.toggle_menu_options_that_require_dataset(self.action_go.isEnabled())
+
+    def _show_summary_of_findings(self):
+        from rc_metastudio.summary_of_findings import SummaryOfFindingsDialog
+        self.summary_of_findings_dialog = SummaryOfFindingsDialog(self)
+        self.summary_of_findings_dialog.setModal(True)
+        self.summary_of_findings_dialog.show()
 
     def analysis(self, results: AnalysisResult, *, change_settings=None):
         try:

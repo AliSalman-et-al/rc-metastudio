@@ -36,6 +36,7 @@ SCENARIOS = (
     "grid-entry",
     "ux-improvements",
     "results-window",
+    "summary-of-findings",
     "manuscript-export",
     "amino",
     "sheets",

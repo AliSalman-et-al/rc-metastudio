@@ -1814,6 +1814,9 @@ try:
         from tests.e2e.ux_workflows import run
 
         run(app, window, WORK, ROOT, record_step, analyze)
+    elif scenario == "summary-of-findings":
+        from tests.e2e.summary_of_findings import run
+        run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario == "manuscript-export":
         from tests.e2e.manuscript_export import run
         run(app, window, WORK, ROOT, record_step, analyze)

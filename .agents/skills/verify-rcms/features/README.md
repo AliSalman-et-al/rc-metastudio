@@ -28,3 +28,12 @@ Pair a user action with its observed result and independent side effect. Menu an
 Evidence is stored per run under `artifacts/verification/rcms/`, outside scratch cleanup. Every run records the command, runtime, exit status, revision/dirty state, action snapshots, and file digests. Failed runs remain inspectable. Check the proof manifest after cleanup.
 
 For a broader feature request, complete affected rows of [coverage.md](../references/coverage.md), including the dataset/metric matrix. Numerical or packaging lanes cannot establish UI reachability by themselves. Record limitations explicitly. The complete desktop command runs every scenario registered in `scripts/verify_rcms.py` except the separate doctor check; ten original baselines alone are not an all-app verification pass.
+
+## Summary of findings (partial slice 9)
+
+`summary-of-findings` opens the real Analysis menu action on a derived
+amino/lymph/empty fixture, renders four rows, checks default certainty and empty
+reason, writes manuscript DOCX/PDF, checks extracted output and saves/reopens
+reviewer judgements. Evidence retains the derived project. Independent Run and
+metafor cell equality, data-edit refresh, diagnostic patient totals and Copy/export
+picker gestures remain unexercised; see `docs/ux-hill-climb/SLICE9.md`.
