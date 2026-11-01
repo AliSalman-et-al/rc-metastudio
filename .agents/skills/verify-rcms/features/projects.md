@@ -162,3 +162,5 @@ start-page import action with a controlled file-picker result.
   header text, first-row label equality with the study model, a fully visible
   name-cell rectangle and nonuniform interior viewport pixels. `xlsx-import`
   repeats this rendering proof in light/dark palettes before grid capture.
+
+The `sheets` drive also proves inline rename and Escape/invalid-name recovery, adjacent add-button geometry, context Move left with undo, and full active-tab visibility across 20 long-named sheets. It captures the flat strip in light/dark palettes and overflow. The native grid scrollbar remains above the strip: Qt’s scrollbar-row widget API clips controls to the scrollbar extent.

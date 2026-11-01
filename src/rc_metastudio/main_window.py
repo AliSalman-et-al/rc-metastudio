@@ -214,6 +214,24 @@ class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
 
 
 class SheetTabBar(QtWidgets.QTabBar):
+    def eventFilter(self, watched, event):
+        window = self.window()
+        if isinstance(window, MainWindow) and event.type() == QtCore.QEvent.Type.KeyPress and event.key() == Qt.Key.Key_Escape:
+            window._finish_sheet_rename(cancel=True)
+            return True
+        return super().eventFilter(watched, event)
+
+    def tabSizeHint(self, index):
+        size = super().tabSizeHint(index)
+        size.setWidth(min(200, max(96, size.width())))
+        return size
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        window = self.window()
+        if isinstance(window, MainWindow):
+            QtCore.QTimer.singleShot(0, window._scroll_to_sheet_tab)
+
     def mouseReleaseEvent(self, a0: QMouseEvent | None) -> None:
         event = a0
         try:
@@ -227,6 +245,7 @@ class SheetTabBar(QtWidgets.QTabBar):
 
 class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     model: dataset_table_model.DatasetTableModel
+    sheet_name_edit: QtWidgets.QLineEdit | None
     tableView: dataset_table_view.DatasetTableView
 
     def __init__(self, parent=None):
@@ -295,24 +314,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.statusbar.addWidget(self.cl_label, 1)
 
         self.frame.hide()
-        self._sheet_dragging = False
-        self.sheet_tabs = SheetTabBar(self)
-        self.sheet_tabs.setObjectName("sheet_tabs")
-        self.sheet_tabs.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        self.setTabOrder(self.analysis_button, self.sheet_tabs)
-        self.setTabOrder(self.sheet_tabs, self.tableView)
-        self.sheet_tabs.setExpanding(False)
-        self.sheet_tabs.setMovable(True)
-        self.sheet_tabs.setUsesScrollButtons(True)
-        self.sheet_tabs.setElideMode(Qt.TextElideMode.ElideNone)
-        self.sheet_tabs.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        sheet_bar = QtWidgets.QHBoxLayout()
-        sheet_bar.addWidget(self.sheet_tabs, 1)
-        self.add_sheet_button = QtWidgets.QToolButton(self)
-        self.add_sheet_button.setText("+")
-        self.add_sheet_button.setToolTip("Add sheet")
-        sheet_bar.addWidget(self.add_sheet_button)
-        self.verticalLayout.addLayout(sheet_bar)
+        self._setup_sheet_strip()
         self.sheet_tabs.currentChanged.connect(self._select_sheet_tab)
         self.sheet_tabs.tabMoved.connect(self._move_sheet_tab)
         self.sheet_tabs.tabBarDoubleClicked.connect(self._rename_sheet)
@@ -1415,7 +1417,82 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                     sheet.settings["favours_labels"].reverse()
             self._sheet_change(sheet.id, swap)
 
+    def _setup_sheet_strip(self):
+        self._sheet_dragging = False
+        self._adding_sheet = False
+        self.sheet_name_edit = None
+        self.sheet_tabs = SheetTabBar(self)
+        self.sheet_tabs.setObjectName("sheet_tabs")
+        self.sheet_tabs.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.setTabOrder(self.analysis_button, self.sheet_tabs)
+        self.setTabOrder(self.sheet_tabs, self.tableView)
+        self.sheet_tabs.setExpanding(False)
+        self.sheet_tabs.setMovable(True)
+        self.sheet_tabs.setUsesScrollButtons(False)
+        self.sheet_tabs.setElideMode(Qt.TextElideMode.ElideRight)
+        self.sheet_tabs.setAutoHide(False)
+        self.sheet_tabs.setDrawBase(False)
+        self.sheet_tabs.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.sheet_tabs.setStyleSheet("""
+            QTabBar::tab { background: transparent; color: palette(text);
+                border: 0; border-right: 1px solid palette(mid);
+                border-bottom: 3px solid transparent; padding: 6px 12px; }
+            QTabBar::tab:hover { background: palette(alternate-base); }
+            QTabBar::tab:selected { background: palette(base); font-weight: bold;
+                border-bottom: 3px solid palette(highlight); }
+        """)
+        self.add_sheet_button = QtWidgets.QToolButton(self)
+        self.add_sheet_button.setText("+")
+        self.add_sheet_button.setToolTip("Add sheet")
+        self.add_sheet_button.setStyleSheet("QToolButton { border: 1px solid palette(mid); border-radius: 11px; padding: 0; margin: 2px; } QToolButton:hover { background: palette(alternate-base); }")
+        self.add_sheet_button.setFixedSize(26, 26)
+        content = QtWidgets.QWidget(self)
+        row = QtWidgets.QHBoxLayout(content)
+        row.setContentsMargins(0, 0, 4, 0)
+        row.setSpacing(0)
+        row.addWidget(self.sheet_tabs)
+        row.addWidget(self.add_sheet_button)
+        self.sheet_tab_scroll = QtWidgets.QScrollArea(self)
+        self.sheet_tab_scroll.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
+        self.sheet_tab_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.sheet_tab_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.sheet_tab_scroll.setWidget(content)
+        self.sheet_tab_scroll.setMinimumWidth(100)
+        self.sheet_strip = QtWidgets.QWidget(self)
+        strip = QtWidgets.QHBoxLayout(self.sheet_strip)
+        strip.setContentsMargins(0, 0, 0, 0)
+        strip.setSpacing(0)
+        self.sheet_scroll_left = QtWidgets.QToolButton(self)
+        self.sheet_scroll_right = QtWidgets.QToolButton(self)
+        for button, arrow, delta in ((self.sheet_scroll_left, Qt.ArrowType.LeftArrow, -160), (self.sheet_scroll_right, Qt.ArrowType.RightArrow, 160)):
+            button.setArrowType(arrow)
+            button.setAccessibleName("Scroll sheets left" if delta < 0 else "Scroll sheets right")
+            button.clicked.connect(lambda checked=False, delta=delta: self.sheet_tab_scroll.horizontalScrollBar().setValue(self.sheet_tab_scroll.horizontalScrollBar().value() + delta))
+            strip.addWidget(button)
+        strip.addWidget(self.sheet_tab_scroll, 1)
+        self.sheet_strip.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
+        self.verticalLayout.addWidget(self.sheet_strip)
+        scroll = self.sheet_tab_scroll.horizontalScrollBar()
+        scroll.rangeChanged.connect(self._sheet_scroll_changed)
+        scroll.valueChanged.connect(self._sheet_scroll_changed)
+        self._sheet_scroll_changed()
+
+    def _sheet_scroll_changed(self, *_args):
+        scroll = self.sheet_tab_scroll.horizontalScrollBar()
+        overflow = scroll.maximum() > 0
+        self.sheet_scroll_left.setVisible(overflow)
+        self.sheet_scroll_right.setVisible(overflow)
+        self.sheet_scroll_left.setEnabled(scroll.value() > 0)
+        self.sheet_scroll_right.setEnabled(scroll.value() < scroll.maximum())
+
+    def _scroll_to_sheet_tab(self):
+        index = self.sheet_tabs.currentIndex()
+        if index >= 0:
+            rect = self.sheet_tabs.tabRect(index)
+            self.sheet_tab_scroll.ensureVisible(rect.center().x(), rect.center().y(), rect.width() // 2 + 2, 0)
+
     def _refresh_sheet_tabs(self):
+        self._finish_sheet_rename(cancel=True)
         self.sheet_tabs.blockSignals(True)
         while self.sheet_tabs.count():
             self.sheet_tabs.removeTab(0)
@@ -1426,11 +1503,18 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             if sheet.id == self.model.current_sheet_id:
                 self.sheet_tabs.setCurrentIndex(index)
         self.sheet_tabs.blockSignals(False)
+        content = self.sheet_tab_scroll.widget()
+        content.adjustSize()
+        self.sheet_tab_scroll.setFixedHeight(content.sizeHint().height())
+        self.sheet_strip.setVisible(self.sheet_tabs.count() > 0)
+        QtCore.QTimer.singleShot(0, self._scroll_to_sheet_tab)
         self._update_swap_arms_enabled()
 
     def _select_sheet_tab(self, index):
+        self._finish_sheet_rename()
         if index < 0:
             return
+        self._scroll_to_sheet_tab()
         self.model.set_current_sheet(self.sheet_tabs.tabData(index))
         self.workspace.select_sheet(self.model.current_sheet_id)
         self.model_updated()
@@ -1445,26 +1529,27 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.data_dirtied()
         self._commit_model_operation(commit)
 
-    def _sheet_name(self, title, default):
-        dialog = QtWidgets.QDialog(self)
-        dialog.setWindowTitle(title)
-        layout = QtWidgets.QVBoxLayout(dialog)
-        edit = QtWidgets.QLineEdit(default, dialog)
-        edit.selectAll()
-        layout.addWidget(edit)
-        error = QLabel(dialog)
-        layout.addWidget(error)
-        buttons = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok | QtWidgets.QDialogButtonBox.StandardButton.Cancel, dialog)
-        layout.addWidget(buttons)
-        def accept():
-            name = edit.text().strip()
-            if not name or any(sheet.name == name for sheet in self.model.dataset.sheets):
-                error.setText("Choose a unique outcome name.")
-                return
-            dialog.accept()
-        buttons.accepted.connect(accept)
-        buttons.rejected.connect(dialog.reject)
-        return edit.text().strip() if dialog.exec() else None
+    def _finish_sheet_rename(self, cancel=False):
+        edit = self.sheet_name_edit
+        if edit is None:
+            return
+        name = edit.text().strip()
+        sheet_id = edit.property("sheet_id")
+        if not cancel and (not name or any(item.id != sheet_id and item.name == name for item in self.model.dataset.sheets)):
+            edit.setToolTip("Choose a unique outcome name.")
+            QtWidgets.QToolTip.showText(edit.mapToGlobal(edit.rect().bottomLeft()), edit.toolTip(), edit)
+            edit.setFocus()
+            return
+        self.sheet_name_edit = None
+        edit.hide()
+        edit.deleteLater()
+        if not cancel:
+            sheet = self.model.dataset.sheet(sheet_id)
+            if name != sheet.name:
+                self._sheet_change(sheet.id, lambda: setattr(sheet, "name", name))
+        if self._adding_sheet:
+            self._adding_sheet = False
+            self.workspace.end_change()
 
     def _add_sheet(self):
         import uuid
@@ -1473,23 +1558,38 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         number = 2
         while any(sheet.name == f"Outcome {number}" for sheet in self.model.dataset.sheets):
             number += 1
-        name = self._sheet_name("Add sheet", f"Outcome {number}")
-        if name is None:
-            return
+        self._finish_sheet_rename()
+        self.workspace.begin_change()
+        self._adding_sheet = True
+        name = f"Outcome {number}"
         sheet = copy.deepcopy(self.model.current_sheet)
         sheet.id, sheet.name, sheet.rows = uuid.uuid4().hex, name, []
         def add():
             self.model.dataset.sheets.append(sheet)
             self.model.set_current_sheet(sheet.id)
         self._sheet_change(self.model.current_sheet_id, add)
+        self._rename_sheet(self.sheet_tabs.currentIndex())
 
     def _rename_sheet(self, index):
         if index < 0:
             return
+        if self.sheet_name_edit is not None:
+            self._finish_sheet_rename(cancel=True)
+        self.sheet_tabs.setCurrentIndex(index)
+        self._scroll_to_sheet_tab()
         sheet = self.model.dataset.sheet(self.sheet_tabs.tabData(index))
-        name = self._sheet_name("Rename sheet", sheet.name)
-        if name is not None:
-            self._sheet_change(sheet.id, lambda: setattr(sheet, "name", name))
+        edit = QtWidgets.QLineEdit(sheet.name, self)
+        self.sheet_name_edit = edit
+        edit.setObjectName("sheet_name_edit")
+        edit.setProperty("sheet_id", sheet.id)
+        rect = self.sheet_tabs.tabRect(index)
+        edit.setGeometry(QtCore.QRect(self.sheet_tabs.mapTo(self, rect.topLeft()), rect.size()))
+        edit.returnPressed.connect(self._finish_sheet_rename)
+        edit.editingFinished.connect(self._finish_sheet_rename)
+        edit.installEventFilter(self.sheet_tabs)
+        edit.show()
+        edit.setFocus()
+        edit.selectAll()
 
     def _sheet_menu(self, position):
         index = self.sheet_tabs.tabAt(position)
@@ -1500,6 +1600,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         delete = menu.addAction("Delete", lambda: self._delete_sheet(index))
         assert delete is not None
         delete.setEnabled(self.sheet_tabs.count() > 1)
+        for label, destination in (("Move left", index - 1), ("Move right", index + 1)):
+            action = menu.addAction(label, lambda checked=False, destination=destination: self.sheet_tabs.moveTab(index, destination))
+            action.setEnabled(0 <= destination < self.sheet_tabs.count())
         menu.exec(self.sheet_tabs.mapToGlobal(position))
 
     def _delete_sheet(self, index):

@@ -463,20 +463,34 @@ def sample_analysis(app, window, sample):
     view.close()
 
 
-def sheet_name_dialog(app, name):
-    def fill():
-        dialog = app.activeModalWidget()
-        dialog.findChild(QtWidgets.QLineEdit).setText(name)
-        mouse_click(dialog.findChild(QtWidgets.QDialogButtonBox).button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
-    QtCore.QTimer.singleShot(0, fill)
+def add_named_sheet(app, window, name):
+    mouse_click(window.add_sheet_button, QtCore.Qt.MouseButton.LeftButton)
+    rename_sheet_inline(app, window, name)
+
+
+def rename_sheet_inline(app, window, name, invalid=False):
+    edit = window.sheet_name_edit
+    assert isinstance(edit, QtWidgets.QLineEdit) and edit.isVisible()
+    assert app.activeModalWidget() is None, "sheet rename must stay in place"
+    edit.setText(name)
+    key_click(edit, QtCore.Qt.Key.Key_Return)
+    app.processEvents()
+    if invalid:
+        assert edit.isVisible()
+        assert edit.toolTip() == "Choose a unique outcome name."
+        record_step("invalid-sheet-name-rejected", window, name=name)
+        key_click(edit, QtCore.Qt.Key.Key_Escape)
+        assert window.sheet_name_edit is None
+    else:
+        assert window.sheet_name_edit is None
+        assert window.model.current_sheet.name == name
 
 
 def sheets_persist(app, window):
     import copy
     from rc_metastudio.project_adapter import dataset_to_project
     assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
-    sheet_name_dialog(app, "Third")
-    mouse_click(window.add_sheet_button, QtCore.Qt.MouseButton.LeftButton)
+    add_named_sheet(app, window, "Third")
     tabs = window.sheet_tabs
     tabs.setCurrentIndex(0)
     table = window.tableView
@@ -530,16 +544,8 @@ def sheets_edges(app, window):
     sheets(app, window)
     tabs = window.sheet_tabs
     def reject_name(name):
-        def fill():
-            dialog = app.activeModalWidget()
-            dialog.findChild(QtWidgets.QLineEdit).setText(name)
-            mouse_click(dialog.findChild(QtWidgets.QDialogButtonBox).button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
-            assert dialog.isVisible()
-            assert any(label.text() == "Choose a unique outcome name." for label in dialog.findChildren(QtWidgets.QLabel))
-            record_step("invalid-sheet-name-rejected", dialog, name=name)
-            dialog.reject()
-        QtCore.QTimer.singleShot(0, fill)
         window._rename_sheet(0)
+        rename_sheet_inline(app, window, name, invalid=True)
     reject_name("")
     reject_name(tabs.tabText(1))
     tabs.setCurrentIndex(0)
@@ -558,8 +564,7 @@ def sheets_edges(app, window):
     window.action_undo.trigger()
     assert tabs.currentIndex() == 0
     window.action_redo.trigger()
-    sheet_name_dialog(app, "Empty deletion")
-    mouse_click(window.add_sheet_button, QtCore.Qt.MouseButton.LeftButton)
+    add_named_sheet(app, window, "Empty deletion")
     with patch.object(QtWidgets.QMessageBox, "question", side_effect=AssertionError("empty delete prompted")):
         window._delete_sheet(tabs.currentIndex())
     while tabs.count() > 1:
@@ -635,8 +640,7 @@ def sheets_swap(app, window):
     window.workspace.mark_saved()
     assert window.open(str(ROOT / "sample_projects/lymph.rcms"), raise_on_error=True)
     assert not window.action_swap_arms.isEnabled()
-    sheet_name_dialog(app, "Diagnostic 2")
-    mouse_click(window.add_sheet_button, QtCore.Qt.MouseButton.LeftButton)
+    add_named_sheet(app, window, "Diagnostic 2")
     for index in (0, 1, 0):
         window.sheet_tabs.setCurrentIndex(index)
         assert not window.action_swap_arms.isEnabled()
@@ -690,38 +694,23 @@ def sheets(app, window):
     dialog.grab().save(str(screens / "sheets-after-analysis.png"))
     dialog.close()
 
-    def name_dialog(name, duplicate=False):
-        def fill():
-            dialog = app.activeModalWidget()
-            edit = dialog.findChild(QtWidgets.QLineEdit)
-            edit.setText(name)
-            ok = dialog.findChild(QtWidgets.QDialogButtonBox).button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
-            mouse_click(ok, QtCore.Qt.MouseButton.LeftButton)
-            if duplicate:
-                assert dialog.isVisible()
-                assert any(label.text() == "Choose a unique outcome name." for label in dialog.findChildren(QtWidgets.QLabel))
-                record_step("sheets-duplicate-rejected", dialog)
-                dialog.reject()
-        QtCore.QTimer.singleShot(0, fill)
-
     for name in ("Outcome 2", "Outcome 3"):
-        name_dialog(name)
-        mouse_click(window.add_sheet_button, QtCore.Qt.MouseButton.LeftButton)
+        add_named_sheet(app, window, name)
         assert window.model.current_sheet.name == name
         assert not window.model.current_sheet.rows
         tabs.setCurrentIndex(0)
         window.action_undo.trigger()
         assert name not in [s.name for s in window.model.dataset.sheets]
         window.action_redo.trigger()
-    name_dialog("Renamed outcome")
     cast(Callable[..., None], QTest.mouseDClick)(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
+    rename_sheet_inline(app, window, "Renamed outcome")
     assert window.model.current_sheet.name == "Renamed outcome"
     tabs.setCurrentIndex(0)
     window.action_undo.trigger()
     assert window.model.current_sheet.name == "Outcome 3"
     window.action_redo.trigger()
-    name_dialog(original.sheets[0].name, duplicate=True)
     cast(Callable[..., None], QTest.mouseDClick)(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
+    rename_sheet_inline(app, window, original.sheets[0].name, invalid=True)
     tabs.setCurrentIndex(2)
     table = window.tableView
     table.setCurrentIndex(window.model.index(0, window.model.NAME))
@@ -796,6 +785,61 @@ def sheets(app, window):
     assert window.open(str(destination), raise_on_error=True)
     assert project(window.model.dataset) == project(expected)
     record_step("sheets-reopened", window, names=[s.name for s in expected.sheets])
+    verify_sheet_strip(app, window, screens)
+    window.workspace.mark_saved()
+    assert window.open(str(destination), raise_on_error=True)
+
+
+def verify_sheet_strip(app, window, screens):
+    tabs = window.sheet_tabs
+    app.processEvents()
+    last = tabs.tabRect(tabs.count() - 1)
+    plus = tabs.mapFromGlobal(window.add_sheet_button.mapToGlobal(QtCore.QPoint(0, 0)))
+    assert 0 <= plus.x() - last.right() <= 10, (last, plus)
+    assert not window.sheet_scroll_left.isVisible()
+    assert tabs.visibleRegion().boundingRect().height() == tabs.height()
+    assert window.add_sheet_button.visibleRegion().boundingRect().size() == window.add_sheet_button.size()
+    assert window.sheet_strip.mapTo(window, QtCore.QPoint()).y() >= window.tableView.mapTo(window, window.tableView.rect().bottomLeft()).y()
+    original_palette = app.palette()
+    for theme, foreground, background in (("light", "#202020", "#ffffff"), ("dark", "#eeeeee", "#202020")):
+        palette = QtGui.QPalette(original_palette)
+        for role in (QtGui.QPalette.ColorRole.Text, QtGui.QPalette.ColorRole.ButtonText, QtGui.QPalette.ColorRole.WindowText):
+            palette.setColor(role, QtGui.QColor(foreground))
+        for role in (QtGui.QPalette.ColorRole.Window, QtGui.QPalette.ColorRole.Button, QtGui.QPalette.ColorRole.Base):
+            palette.setColor(role, QtGui.QColor(background))
+        palette.setColor(QtGui.QPalette.ColorRole.AlternateBase, QtGui.QColor("#f6f6f6" if theme == "light" else "#292929"))
+        app.setPalette(palette)
+        app.processEvents()
+        assert window.grab().save(str(screens / ("slice10-tabs-" + theme + ".png")))
+        record_step("sheet-strip-" + theme, window)
+    app.setPalette(original_palette)
+    for index in range(20):
+        add_named_sheet(app, window, f"Long outcome {index + 1}: mortality and treatment response")
+    assert window.sheet_scroll_left.isVisible() and window.sheet_scroll_right.isVisible()
+    for index in (0, tabs.count() - 1, 10):
+        tabs.setCurrentIndex(index)
+        app.processEvents()
+        rect = tabs.tabRect(index)
+        rect.moveTopLeft(tabs.mapTo(window.sheet_tab_scroll.viewport(), rect.topLeft()))
+        assert window.sheet_tab_scroll.viewport().rect().contains(rect), (index, rect, window.sheet_tab_scroll.viewport().rect())
+        assert tabs.tabToolTip(index) == window.model.current_sheet.name
+        assert 96 <= rect.width() <= 200
+    before = [sheet.id for sheet in window.model.dataset.sheets]
+    index = tabs.currentIndex()
+    def move_menu():
+        menu = app.activePopupWidget()
+        assert {action.text() for action in menu.actions()} == {"Rename", "Delete", "Move left", "Move right"}
+        action = next(action for action in menu.actions() if action.text() == "Move left")
+        mouse_click(menu, QtCore.Qt.MouseButton.LeftButton, menu.actionGeometry(action).center())
+    QtCore.QTimer.singleShot(0, move_menu)
+    window._sheet_menu(tabs.tabRect(index).center())
+    assert window.model.dataset.sheets[index - 1].id == before[index]
+    window.action_undo.trigger()
+    assert [sheet.id for sheet in window.model.dataset.sheets] == before
+    app.processEvents()
+    assert window.grab().save(str(screens / "slice10-tabs-overflow.png"))
+    record_step("sheet-strip-overflow", window, count=tabs.count())
+
 
 
 def editing(app, window):

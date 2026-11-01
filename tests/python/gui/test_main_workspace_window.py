@@ -51,6 +51,7 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
         labels = [label.text() for label in window.start_page.findChildren(QtWidgets.QLabel)]
         assert "Recent projects" in labels
         assert "From data to results" not in labels
+        assert not window.sheet_strip.isVisible()
         assert window.add_sheet_button.toolTip() == "Add sheet"
         assert window.sheet_tabs.expanding() is False
         assert window.sheet_tabs.isMovable()
@@ -74,6 +75,13 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
                 "selected_dataset": None,
             }
         )
+        window.show()
+        qapp.processEvents()
+        assert window.sheet_tabs.count() == 1
+        assert window.sheet_tabs.isVisible()
+        assert window.sheet_tabs.tabText(0) == "Outcome"
+        assert not window.sheet_tabs.autoHide()
+        assert window.sheet_tabs.elideMode() == QtCore.Qt.TextElideMode.ElideRight
         assert [action.text() for action in window.menuMetric.actions()] == [
             "Two-arm metrics",
             "One-arm metrics",
