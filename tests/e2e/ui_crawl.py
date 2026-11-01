@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Deliberate surface inventory; omissions remain a failing acceptance gate."""
-from PyQt6 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtTest import QTest
 
 
@@ -93,8 +93,51 @@ def results(driver, capture, missing):
         item = view.nav_tree.findItems(detail, QtCore.Qt.MatchFlag.MatchExactly)[0]
         view.nav_tree.setCurrentItem(item)
         capture("F-amino-" + detail.lower().replace(" ", "-"), view)
+    exports(driver, capture, missing, view)
     view.close()
     missing.append("F subgroup Tables: eligible moderator fixture still needed")
+
+
+def exports(driver, capture, missing, view):
+    import subprocess
+    from unittest.mock import patch
+    from PyQt6 import QtGui
+    from rc_metastudio.manuscript_report import ManuscriptReport, write_docx, write_pdf
+    report = ManuscriptReport.from_result(view.results)
+    pdf = driver.WORK / "manuscript.pdf"
+    docx = driver.WORK / "manuscript.docx"
+    write_pdf(report, str(pdf))
+    write_docx(report, str(docx))
+    def render(path, detail, last=False):
+        info = subprocess.run(["pdfinfo", str(path)], check=True, capture_output=True, text=True).stdout
+        pages = int(next(line.split(":")[1] for line in info.splitlines() if line.startswith("Pages:")))
+        page = pages if last else 1
+        output = driver.WORK / detail
+        subprocess.run(["pdftoppm", "-f", str(page), "-l", str(page), "-scale-to", "1400", "-singlefile", "-png", str(path), str(output)], check=True, capture_output=True)
+        image = QtGui.QImage(str(output) + ".png")
+        assert not image.isNull(), detail
+        capture("I-" + detail, image)
+    render(pdf, "manuscript-first")
+    render(pdf, "manuscript-last", last=True)
+    converted = driver.WORK / "docx-render"
+    converted.mkdir(exist_ok=True)
+    try:
+        subprocess.run(["soffice", "-env:UserInstallation=" + (driver.WORK / "soffice-profile").as_uri(), "--headless", "--convert-to", "pdf", "--outdir", str(converted), str(docx)], check=True, capture_output=True, timeout=45)
+        render(converted / "manuscript.pdf", "docx-page-1")
+    except (OSError, subprocess.SubprocessError) as error:
+        missing.append(f"I DOCX page 1: {error}; {getattr(error, 'stderr', b'')!r}")
+    driver.window.action_summary_of_findings.trigger()
+    form = driver.window.summary_of_findings_dialog
+    path = driver.WORK / "summary-of-findings.pdf"
+    write_pdf(form.report(), str(path))
+    render(path, "summary-of-findings")
+    form.close()
+    title, image = next(iter(view.results.images.items()))
+    artifact = view.create_plot_artifact(title, image, params_path=view.results.image_params_paths.get(title))
+    path = driver.WORK / "plot.pdf"
+    with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(path), "PDF (*.pdf)")):
+        view.save_image_as(artifact, format="pdf")
+    render(path, "plot")
 
 
 def plots(driver, capture, missing):
@@ -389,21 +432,27 @@ def run(driver):
     index.write_text("# UI crawl\n\n", encoding="utf-8")
     original_record = driver.record_step
     captured = set()
-    missing = [ "I deferred to next run", "J deferred to next run"]
+    missing = [ "J deferred to next run"]
 
     def capture(step, widget):
         assert step not in captured, step
         driver.app.processEvents()
         QTest.qWait(100)
-        assert widget.isVisible(), step
-        image = widget.grab().toImage()
+        rendered_page = isinstance(widget, QtGui.QImage)
+        if not rendered_page:
+            assert widget.isVisible(), step
+        image = widget if rendered_page else widget.grab().toImage()
         assert not image.isNull(), step
         colours = {image.pixelColor(x, y).rgba() for x in range(0, image.width(), 8) for y in range(0, image.height(), 8)}
-        assert len(colours) > 4, f"Blank surface: {step}"
-        original_record(step, widget)
+        assert len(colours) > (1 if step.startswith("I-") else 4), f"Blank surface: {step}"
+        if rendered_page:
+            original_record(step, artifacts={"Rendered page": f"{driver.STEP + 1:02d}-0-{step}.png"})
+            assert image.save(str(driver.EVIDENCE / f"{driver.STEP:02d}-0-{step}.png"))
+        else:
+            original_record(step, widget)
         captured.add(step)
         with index.open("a", encoding="utf-8") as stream:
-            stream.write(f"{driver.STEP:02d}-0-{step}.png | {step} | {widget.metaObject().className()}\n")
+            stream.write(f"{driver.STEP:02d}-0-{step}.png | {step} | {type(widget).__name__}\n")
 
     try:
         shell(driver, capture, missing)
