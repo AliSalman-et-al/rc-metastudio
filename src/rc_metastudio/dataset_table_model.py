@@ -3,7 +3,6 @@
 """Qt table model for the current sheet."""
 
 from dataclasses import dataclass
-from functools import cmp_to_key
 import math
 
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSignal
@@ -33,6 +32,7 @@ from rc_metastudio.meta_globals import (
     default_group_names,
     DIAGNOSTIC,
     DIAGNOSTIC_METRIC_LABELS,
+    EMPTY_VALS,
     NUM_DIGITS,
     ONE_ARM_METRICS,
     OTHER,
@@ -1125,11 +1125,15 @@ class DatasetTableModel(QAbstractTableModel):
                 return row.analysis_unit.get_raw_data_for_arms(self.arm_names)[args[0]["data_index"]]
             cov = next(c for c in self.current_sheet.covariates if c["name"] == field)
             return row.covariate_values.get(cov["id"])
-        populated = [row for row in self.current_sheet.rows if row.label]
-        blank = [row for row in self.current_sheet.rows if not row.label]
-        populated.sort(key=lambda row: (value(row) is None, value(row)), reverse=reverse)
-        self.current_sheet.rows[:] = populated + blank
-        self._display_studies = list(self.current_sheet.rows)
+        self._sort_display_studies(value, reverse)
+
+    def _sort_display_studies(self, value, reverse):
+        values = [(row, value(row)) for row in self.current_sheet.rows]
+        populated = [(row, cell) for row, cell in values if cell not in EMPTY_VALS]
+        empty = [row for row, cell in values if cell in EMPTY_VALS]
+        populated.sort(key=lambda item: item[1], reverse=reverse)
+        empty.sort(key=lambda row: row.label.casefold(), reverse=reverse)
+        self._display_studies = [row for row, _ in populated] + empty
 
     def _sort_outcomes_with_display_source(self, column, reverse):
         data_type = self.get_current_outcome_type(get_str=False)
@@ -1155,16 +1159,7 @@ class DatasetTableModel(QAbstractTableModel):
             converter = self._get_conv_to_display_scale(data_type, effect, n1)
             return converter(values[index])
 
-        def compare(study_a, study_b):
-            return self.dataset._meta_cmp_wrapper(
-                study_a, study_b, outcome_value(study_a), outcome_value(study_b), reverse
-            )
-
-        self._display_studies = sorted(
-            self.current_sheet.rows, key=cmp_to_key(compare), reverse=reverse
-        )
-        if self._blank_study is not None:
-            self._display_studies.append(self._blank_study)
+        self._sort_display_studies(outcome_value, reverse)
 
     def sort_studies(self, col, reverse):
         if col == self.NAME:
