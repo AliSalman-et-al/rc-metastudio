@@ -307,9 +307,12 @@ def compose_application(
     _emit_automation_phase(phase_callback, "application:configured")
     baseline_ids = _top_level_ids(app)
     splash = None
+    previous_directory = os.getcwd()
     try:
         settings.setup_directories()
         meta = _finish_composition(app, main_window, splash=None)
+        # Windows cannot remove an application base directory while it is cwd.
+        meta.destroyed.connect(lambda: os.chdir(previous_directory))
         meta.toggle_menu_options_that_require_dataset(False)
         meta.statusBar().showMessage("Starting R…")
         app.processEvents()
@@ -336,6 +339,7 @@ def compose_application(
         return app, meta
     except BaseException:
         _dispose_new_top_levels(app, baseline_ids, (splash,))
+        os.chdir(previous_directory)
         raise
 
 
