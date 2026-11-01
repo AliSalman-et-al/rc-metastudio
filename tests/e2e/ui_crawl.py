@@ -75,6 +75,30 @@ def results(driver, capture, missing):
     missing.append("F subgroup Tables: eligible moderator fixture still needed")
 
 
+def plots(driver, capture, missing):
+    for family, sample, method in (("binary", "amino", "binary.random"),
+                                   ("continuous", "continuous", "continuous.random"),
+                                   ("diagnostic", "lymph", "diagnostic.random"),
+                                   ("hr", "Pignon2000-HR", "binary.random")):
+        driver.window.workspace.mark_saved()
+        assert driver.window.open(str(driver.ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
+        original = driver.record_step
+        driver.record_step = lambda *args, **kwargs: None
+        try:
+            view = driver.analyze(driver.app, driver.window, method)
+            view.fit_width_action.trigger()
+            capture(f"G-{family}-forest-default-fit", view)
+            view.close()
+        except (AssertionError, StopIteration) as error:
+            missing.append(f"G {family} forest: {type(error).__name__}: {error}")
+            for widget in driver.app.topLevelWidgets():
+                if widget is not driver.window and widget.isVisible():
+                    widget.close()
+        finally:
+            driver.record_step = original
+    missing.append("G RevMan/BMJ; subgroup; cumulative; leave-one-out; regression; ordinary/contour funnel; trim-and-fill; SROC; coefficient; Deeks: dedicated plot selection still needed")
+
+
 def run(driver):
     index = driver.EVIDENCE / "ui-crawl-index.md"
     index.write_text("# UI crawl\n\n", encoding="utf-8")
@@ -101,6 +125,7 @@ def run(driver):
     try:
         analysis_setup(driver, capture, missing)
         results(driver, capture, missing)
+        plots(driver, capture, missing)
     finally:
         with index.open("a", encoding="utf-8") as stream:
             stream.write("\nNOT CAPTURED:\n" + "\n".join("- " + item for item in missing) + "\n")
