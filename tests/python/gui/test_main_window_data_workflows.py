@@ -226,7 +226,7 @@ def test_clipboard_skips_nonnumeric_cells_and_commits_valid_cells_once():
         assert table.paste_from_clipboard(model.index(0, model.RAW_DATA[0])) is True
         assert [_cell_text(model, 0, column) for column in model.RAW_DATA] == ["1.0", "", "", ""]
         assert window.workspace.is_dirty
-        assert window.statusBar().currentMessage() == "1 cells skipped: not a number"
+        assert window.statusBar().currentMessage() == "1 cell skipped: not a number"
         window.undo()
         assert not window.workspace.is_dirty
         assert [_cell_text(window.model, 0, column) for column in window.model.RAW_DATA] == ["", "", "", ""]

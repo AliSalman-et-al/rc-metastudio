@@ -807,7 +807,8 @@ class DatasetTableView(QtWidgets.QTableView):
             self._report_model_data_error(str(exc))
             return False
         if skipped:
-            self._main_gui().statusBar().showMessage(f"{skipped} cells skipped: not a number", 8000)
+            noun = "cell" if skipped == 1 else "cells"
+            self._main_gui().statusBar().showMessage(f"{skipped} {noun} skipped: not a number", 8000)
         model.dataset = candidate.dataset
         model.set_state(candidate.get_state())
         model.reset_model()
