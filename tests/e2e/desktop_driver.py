@@ -1579,15 +1579,26 @@ def hillclimb(app, window):
 
     def modal(cls, operate, trigger):
         failures = []
+        timer = QtCore.QTimer(app)
         def callback():
+            # Embedded R can dispatch native Windows events while the dialog
+            # constructor is still computing its preview. Drive only after Show.
+            if not any(isinstance(w, cls) and w.isVisible() for w in app.topLevelWidgets()):
+                return
+            timer.stop()
             try:
                 operate(dialog(cls))
             except BaseException as error:
                 failures.append(error)
                 if app.activeModalWidget():
                     app.activeModalWidget().reject()
-        QtCore.QTimer.singleShot(0, callback)
-        trigger()
+        timer.timeout.connect(callback)
+        timer.start(10)
+        try:
+            trigger()
+        finally:
+            timer.stop()
+            timer.deleteLater()
         if failures:
             raise failures[0]
 
