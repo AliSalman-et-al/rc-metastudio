@@ -163,6 +163,9 @@ start-page import action with a controlled file-picker result.
   name-cell rectangle and nonuniform interior viewport pixels. `xlsx-import`
   repeats this rendering proof in light/dark palettes before grid capture.
 
-The `sheets` drive also proves inline rename and Escape/invalid-name recovery, adjacent add-button geometry, context Move left with undo, and full active-tab visibility across 20 long-named sheets. It captures the flat strip in light/dark palettes and overflow. The native grid scrollbar remains above the strip: Qt’s scrollbar-row widget API clips controls to the scrollbar extent.
+The `sheets` drive also proves inline rename and Escape/invalid-name recovery, adjacent add-button geometry, context Move left with undo, and full active-tab visibility across 20 long-named sheets. It captures the flat strip in light/dark palettes and overflow. A shared horizontal scrollbar in the strip follows the grid range and hides when the grid fits. The drive captures amino at 1024×700 with an expanded study-name column, drags the strip thumb in both directions, checks grid-to-strip scrolling, and asserts hidden-on-fit at 1600×828. The tab separators, content background and add button follow the light/dark palette.
 
 The overflow proof also narrows the window during inline rename and checks both tab/editor visibility and alignment. Arrow visibility is deferred out of the scroll-area range signal to avoid re-entering the active layout.
+
+
+`ui-crawl` deliberately captures each named surface once, in sections E, F, G, B, C, then retained shell section A. It uses selected real analysis drivers with their assertions intact for the specialized plots. Its index lists omissions and the scenario intentionally fails while D, H, I and J await the next run. This is a visual inventory, not full parameter or native-platform qualification.
