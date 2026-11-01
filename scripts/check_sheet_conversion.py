@@ -24,15 +24,20 @@ def _source_pairs(source, outcome):
         declared.insert(0, None)
     populated = set()
     for unit in units:
-        measurements = [v for a in unit['groups'] for v in a['raw_data']]
-        measurements += [v for es in unit['entered_effects'].values()
-                         for e in es.values() for v in e.values()]
-        measurements += [entry['input'].get(k)
-                         for entry in unit.get('ratio_inputs', [])
-                         for k in ('estimate', 'lower', 'upper', 'se')]
+        measurements = _unit_measurements(unit)
         if any(v not in (None, '') for v in measurements):
             populated.add(unit['follow_up'])
     return [f for f in declared if f in populated] or [declared[0]]
+
+
+def _unit_measurements(unit):
+    measurements = [v for a in unit['groups'] for v in a['raw_data']]
+    measurements += [v for es in unit['entered_effects'].values()
+                     for e in es.values() for v in e.values()]
+    measurements += [entry['input'].get(k)
+                     for entry in unit.get('ratio_inputs', [])
+                     for k in ('estimate', 'lower', 'upper', 'se')]
+    return measurements
 
 
 def _source_unit(row, outcome, follow):
@@ -72,10 +77,15 @@ def _check_effects(row, unit, labels):
             for entry in row['ratio_inputs']] == (unit.get('ratio_inputs', []) if unit else [])
 
 
-def _check_pair(sheet, source, state, outcome, follow, path):
+def _check_covariates(sheet, source):
     assert [{k: v for k, v in c.items() if k != 'id'} for c in sheet['covariates']] == source['covariates']
     ids = {c['name']: c['id'] for c in sheet['covariates']}
     assert len(set(ids.values())) == len(source['covariates'])
+    return ids
+
+
+def _check_pair(sheet, source, state, outcome, follow, path):
+    ids = _check_covariates(sheet, source)
     for key, value in (source.get('summary') or {}).items():
         assert sheet['settings']['summary'][key] == value
     for key, value in state.items():
