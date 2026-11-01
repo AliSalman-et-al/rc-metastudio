@@ -1,18 +1,14 @@
 from __future__ import annotations
-
 import copy
 from pathlib import Path
-
 import pytest
-
-from rc_metastudio.project_format import JsonObject, JsonValue, ProjectDocument
-
-
 from rc_metastudio import project_adapter
+from rc_metastudio.project_format import ProjectDocument, migrate_to_latest, JsonObject, JsonValue
 from rc_metastudio.workspace_session import WorkspaceSession
+from tests.python.fast.test_project_format import _group_project, _legacy_state
 
 
-def _multi_arm_project(family: str) -> JsonObject:
+def _legacy_multi_arm_project(family: str) -> JsonObject:
     data_type = {"binary": 0, "continuous": 1}[family]
     subtype = {"binary": "proportions", "continuous": "means"}[family]
     raw_values = {
@@ -67,197 +63,80 @@ def _multi_arm_project(family: str) -> JsonObject:
     }
 
 
-def _object(value: JsonValue) -> JsonObject:
-    if not isinstance(value, dict):
-        raise AssertionError("expected JSON object")
-    return value
-
-
-def _objects(value: JsonValue) -> list[JsonObject]:
-    if not isinstance(value, list) or not all(isinstance(item, dict) for item in value):
-        raise AssertionError("expected JSON object array")
-    return value
+def _multi_arm_project(family):
+    raw = {"binary": [[1, 10], [2, 20], [3, 30]],
+           "continuous": [[10, 1., .5], [20, 2., .75], [30, 3., 1.]]}[family]
+    return _group_project(family, {"binary": "proportions", "continuous": "means"}[family], raw)
 
 
 @pytest.mark.parametrize("family", ["binary", "continuous"])
-def test_adapter_round_trip_preserves_every_multi_arm_group(family: str) -> None:
+def test_adapter_round_trip_preserves_every_multi_arm_group(family):
     project = _multi_arm_project(family)
-
     dataset = project_adapter.project_to_dataset(copy.deepcopy(project))
-    rebuilt = project_adapter.dataset_to_project(dataset)
-
-    expected_units = _objects(
-        _object(_objects(_object(project["dataset"])["studies"])[0])["analysis_units"]
-    )
-    rebuilt_units = _objects(
-        _object(_objects(_object(rebuilt["dataset"])["studies"])[0])["analysis_units"]
-    )
-    assert [
-        {key: value for key, value in unit.items() if key != "stable_id"}
-        | {
-            "groups": [
-                {key: value for key, value in group.items() if key != "stable_id"}
-                for group in _objects(unit["groups"])
-            ]
-        }
-        for unit in rebuilt_units
-    ] == expected_units
-    assert list(
-        dataset.studies[0].analysis_units_by_outcome["Outcome"]["first"].groups
-    ) == [
-        "Tx 1",
-        "Tx 2",
-        "Tx 3",
-    ]
+    assert project_adapter.dataset_to_project(dataset) == project
+    assert list(dataset.sheets[0].rows[0].analysis_unit.arms) == ["Tx 1", "Tx 2", "Tx 3"]
 
 
-def test_adapter_reconstructs_internal_identities_across_reopen() -> None:
+def _identities(dataset):
+    sheet = dataset.sheets[0]
+    return sheet.id, tuple(row.id for row in sheet.rows), tuple(arm.id for arm in sheet.arms)
+
+
+def test_adapter_reconstructs_sheet_row_and_arm_identities_across_reopen():
     dataset = project_adapter.project_to_dataset(_multi_arm_project("binary"))
-    original = (
-        dataset.studies[0].stable_id,
-        dataset.get_outcome_obj("Outcome").stable_id,
-        dataset.studies[0].analysis_units_by_outcome["Outcome"]["first"].stable_id,
-        dataset.studies[0]
-        .analysis_units_by_outcome["Outcome"]["first"]
-        .groups["Tx 1"]
-        .stable_id,
-    )
-    reopened = project_adapter.project_to_dataset(
-        project_adapter.dataset_to_project(dataset)
-    )
-    assert original == (
-        reopened.studies[0].stable_id,
-        reopened.get_outcome_obj("Outcome").stable_id,
-        reopened.studies[0].analysis_units_by_outcome["Outcome"]["first"].stable_id,
-        reopened.studies[0]
-        .analysis_units_by_outcome["Outcome"]["first"]
-        .groups["Tx 1"]
-        .stable_id,
-    )
+    reopened = project_adapter.project_to_dataset(project_adapter.dataset_to_project(dataset))
+    assert _identities(reopened) == _identities(dataset)
+    assert reopened.sheets[0].rows[0].analysis_unit.sheet is reopened.sheets[0]
+    assert tuple(reopened.sheets[0].rows[0].analysis_unit.arms_by_id) == tuple(a.id for a in reopened.sheets[0].arms)
 
 
-def test_adapter_does_not_write_internal_identities_to_v1() -> None:
-    project = project_adapter.dataset_to_project(
-        project_adapter.project_to_dataset(_multi_arm_project("binary"))
-    )
-    dataset = _object(project["dataset"])
-    outcome = _objects(dataset["outcomes"])[0]
-    study = _objects(dataset["studies"])[0]
-    unit = _objects(study["analysis_units"])[0]
-    group = _objects(unit["groups"])[0]
-
-    assert "stable_id" not in outcome
-    assert "follow_up_ids" not in outcome
-    assert "stable_id" not in study
-    assert "stable_id" not in unit
-    assert "stable_id" not in group
-
-
-def test_entered_effect_edits_survive_history_and_save(tmp_path: Path) -> None:
+def test_entered_effect_edits_survive_history_and_save(tmp_path):
     project = _multi_arm_project("continuous")
-    dataset_data = _object(project["dataset"])
-    _objects(dataset_data["outcomes"])[0]["sub_type"] = "generic_effect"
-    unit_data = _objects(_objects(dataset_data["studies"])[0]["analysis_units"])[0]
-    for group in _objects(unit_data["groups"]):
-        group["raw_data"] = ["", "", ""]
-    state: JsonObject = {
-        "schema_version": 1,
-        "active_outcome": "Outcome",
-        "active_follow_up": "first",
-        "active_groups": ["Tx 1", "Tx 2"],
-        "active_effect": "TX Mean",
-        "confidence_level": 95.0,
-    }
-    session = WorkspaceSession(ProjectDocument(1, project, state))
+    sheet = project["sheets"][0]
+    sheet["sub_type"] = "generic_effect"
+    sheet["rows"][0]["raw_data"] = {arm["id"]: ["", "", ""] for arm in sheet["arms"]}
+    state = {"schema_version": 3, "current_sheet_id": sheet["id"]}
+    session = WorkspaceSession(ProjectDocument(3, project, state))
     runtime = session.runtime
-    assert runtime is not None
-    unit = runtime.dataset.studies[0].get_analysis_unit("Outcome", "first")
-    unit.set_effect_for_source("entered", "TX Mean", "Tx 1", 1.5, None, None)
+    unit = runtime.dataset.sheets[0].rows[0].analysis_unit
+    key = (sheet["arms"][0]["id"],)
+    unit.set_effect_for_source("entered", "TX Mean", key, 1.5, None, None)
     session.checkpoint()
-    assert session.is_dirty
-    assert session.can_undo
-    unit.set_effect_for_source("entered", "TX Mean", "Tx 1", 1.5, None, None, 0.2)
+    assert session.is_dirty and session.can_undo
+    unit.set_effect_for_source("entered", "TX Mean", key, 1.5, None, None, .2)
     session.checkpoint()
-    runtime.dataset.studies[0].include = False
+    runtime.dataset.sheets[0].rows[0].include = False
     session.checkpoint()
-
     assert session.undo()
-    assert session.runtime is not None
-    restored = session.runtime.dataset.studies[0].get_analysis_unit("Outcome", "first")
-    assert restored.get_effect_for_source("entered", "TX Mean", "Tx 1").standard_error == 0.2
+    restored = session.runtime.dataset.sheets[0].rows[0].analysis_unit
+    assert restored.get_effect_for_source("entered", "TX Mean", key).standard_error == .2
     assert session.undo()
-    assert session.runtime is not None
-    restored = session.runtime.dataset.studies[0].get_analysis_unit("Outcome", "first")
-    effect = restored.get_effect_for_source("entered", "TX Mean", "Tx 1")
-    assert effect.estimate == 1.5
-    assert effect.standard_error is None
+    restored = session.runtime.dataset.sheets[0].rows[0].analysis_unit
+    effect = restored.get_effect_for_source("entered", "TX Mean", key)
+    assert effect.estimate == 1.5 and effect.standard_error is None
     assert session.redo()
     destination = tmp_path / "entered.rcms"
     session.save(destination)
     reopened = WorkspaceSession()
     reopened.open(destination)
-    assert reopened.runtime is not None
-    restored = reopened.runtime.dataset.studies[0].get_analysis_unit("Outcome", "first")
-    effect = restored.get_effect_for_source("entered", "TX Mean", "Tx 1")
-    assert effect.estimate == 1.5
-    assert effect.standard_error == 0.2
+    effect = reopened.runtime.dataset.sheets[0].rows[0].analysis_unit.get_effect_for_source("entered", "TX Mean", key)
+    assert effect.estimate == 1.5 and effect.standard_error == .2
 
 
-def test_adapter_derives_repeatable_identities_for_legacy_projects() -> None:
+def test_reader_derives_repeatable_sheet_identities_for_legacy_projects():
+    project = _legacy_multi_arm_project("binary")
+    first, _ = migrate_to_latest(1, copy.deepcopy(project), _legacy_state())
+    second, _ = migrate_to_latest(1, copy.deepcopy(project), _legacy_state())
+    assert _identities(project_adapter.project_to_dataset(first)) == _identities(project_adapter.project_to_dataset(second))
+
+
+def test_document_to_runtime_project_reconstructs_state_and_selection():
     project = _multi_arm_project("binary")
-
-    first = project_adapter.project_to_dataset(copy.deepcopy(project))
-    second = project_adapter.project_to_dataset(copy.deepcopy(project))
-
-    def identities(dataset):
-        unit = dataset.studies[0].analysis_units_by_outcome["Outcome"]["first"]
-        return (
-            dataset.studies[0].stable_id,
-            dataset.get_outcome_obj("Outcome").stable_id,
-            dataset.get_follow_up_stable_id("Outcome", "first"),
-            unit.stable_id,
-            tuple(group.stable_id for group in unit.groups.values()),
-        )
-
-    assert identities(first) == identities(second)
-
-
-def test_adding_follow_up_after_legacy_reopen_preserves_follow_up_order() -> None:
-    dataset = project_adapter.project_to_dataset(_multi_arm_project("binary"))
-
-    dataset.add_follow_up_to_outcome("Outcome", "week 4")
-
-    assert dataset.get_follow_up_names_for_outcome("Outcome") == ["first", "week 4"]
-    follow_ups = next(iter(dataset.follow_ups_by_outcome_id.values()))
-    follow_up_values = list(follow_ups.values())
-    assert [follow_up.label for follow_up in follow_up_values] == ["first", "week 4"]
-    assert follow_up_values[0].ordinal is None
-    assert follow_up_values[-1].ordinal == 1
-
-
-def test_document_to_runtime_project_reconstructs_state_and_selection() -> None:
-    project = _multi_arm_project("binary")
-    state: JsonObject = {
-        "schema_version": 1,
-        "active_outcome": "Outcome",
-        "active_follow_up": "first",
-        "active_groups": ["Tx 1", "Tx 2"],
-        "active_effect": "OR",
-        "confidence_level": 95.0,
-    }
-
-    runtime_project = project_adapter.document_to_runtime_project(
-        ProjectDocument(format_version=1, project=project, state=state)
-    )
-
-    assert isinstance(runtime_project, project_adapter.RuntimeProject)
-    assert runtime_project.dataset.get_outcome_names() == ["Outcome"]
-    assert runtime_project.model_state == {
-        "current_outcome_name": "Outcome",
-        "current_follow_up_index": 0,
-        "arm_names": ["Tx 1", "Tx 2"],
-        "current_effect": "OR",
-        "study_auto_added": False,
-        "confidence_level": 95.0,
-    }
-    assert runtime_project.restored_selection is True
+    project["sheets"][0]["settings"] = {"metric": "OR", "confidence_level": 95., "arms": ["arm:0", "arm:1"]}
+    state = {"schema_version": 3, "current_sheet_id": "sheet"}
+    runtime = project_adapter.document_to_runtime_project(ProjectDocument(3, project, state))
+    assert isinstance(runtime, project_adapter.RuntimeProject)
+    assert [s.name for s in runtime.dataset.sheets] == ["Outcome"]
+    assert runtime.model_state == {"current_sheet_id": "sheet"}
+    assert runtime.dataset.sheets[0].settings == project["sheets"][0]["settings"]
+    assert runtime.restored_selection is True
