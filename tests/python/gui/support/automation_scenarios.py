@@ -1530,19 +1530,13 @@ def start_shell_failure_smoke(stage):
     def r_loader(_app, _splash):
         raise _InjectedStartupFailure(stage)
 
-    class FailureShell(QtWidgets.QMainWindow):
-        def __init__(self):
-            super().__init__()
-            from rc_metastudio.workspace_session import WorkspaceSession
-            from rc_metastudio.project_format import ProjectDocument
-            self.workspace = WorkspaceSession(ProjectDocument(3,
-                {"schema_version": 3, "title": "", "notes": "", "sheets": []},
-                {"schema_version": 3, "current_sheet_id": None}))
-            required(self.statusBar(), "status bar").hide()
+    from rc_metastudio.main_window import MainWindow
 
+    class FailureShell(MainWindow):
         def toggle_menu_options_that_require_dataset(self, enabled):
             if enabled:
                 raise AssertionError("Analysis enabled before R startup")
+            super().toggle_menu_options_that_require_dataset(enabled)
 
         def _show_analysis_backend_error(self, error):
             errors.append(error)

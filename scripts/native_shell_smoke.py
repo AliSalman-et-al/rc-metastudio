@@ -30,6 +30,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--failure-stage", choices=("r-load", "meta-form"))
     args = parser.parse_args(argv)
 
+    import faulthandler
+    from PyQt6.QtCore import qInstallMessageHandler
+
+    faulthandler.enable()
+    # On Windows Qt sends diagnostics to the debugger by default. Preserve
+    # fatal-warning evidence in the subprocess transcript on every platform.
+    qInstallMessageHandler(
+        lambda kind, context, message: print(f"Qt {kind.name}: {message}", file=sys.stderr, flush=True)
+    )
     _install_local_backend()
     from tests.python.gui.support import automation_scenarios
 

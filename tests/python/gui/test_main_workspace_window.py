@@ -290,16 +290,17 @@ def test_deleted_covariate_keeps_identity_and_width_through_undo_redo(qapp):
 
 
 @pytest.mark.skipif(
-    sys.platform not in ("win32", "darwin"),
-    reason="Native fractional-scale evidence is collected on qwindows and cocoa.",
+    sys.platform not in ("win32", "darwin") and not os.environ.get("DISPLAY"),
+    reason="Native fractional-scale evidence requires a window-system display.",
 )
 def test_workspace_table_uses_valid_logical_geometry_at_fractional_scale_factors():
     script = r"""
 import json
 from rc_metastudio import automation
 from scripts.local_r_test_backend import create
-from rc_metastudio import r_bridge
+from rc_metastudio import r_backend, r_bridge
 
+r_backend.install_r_backend = lambda: r_bridge
 for name, implementation in vars(create()).items():
     setattr(r_bridge, name, implementation)
 
@@ -332,7 +333,7 @@ finally:
     window.close()
     app.processEvents()
 """
-    expected_platform = "windows" if sys.platform == "win32" else "cocoa"
+    expected_platform = {"win32": "windows", "darwin": "cocoa"}.get(sys.platform, "xcb")
     evidence_by_factor = {}
     for factor in ("1", "1.5"):
         environment = os.environ.copy()
