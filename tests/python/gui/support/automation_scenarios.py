@@ -4,6 +4,7 @@
 """Verification and automation workflows for RC MetaStudio."""
 
 from __future__ import annotations
+from rc_metastudio.runtime_types import required
 
 import faulthandler
 import hashlib
@@ -1537,7 +1538,7 @@ def start_shell_failure_smoke(stage):
             self.workspace = WorkspaceSession(ProjectDocument(3,
                 {"schema_version": 3, "title": "", "notes": "", "sheets": []},
                 {"schema_version": 3, "current_sheet_id": None}))
-            self.statusBar().hide()
+            required(self.statusBar(), "status bar").hide()
 
         def toggle_menu_options_that_require_dataset(self, enabled):
             if enabled:

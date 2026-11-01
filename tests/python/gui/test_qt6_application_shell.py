@@ -319,7 +319,7 @@ def test_structured_project_restores_nondefault_active_selection_without_normali
              "current_sheet_id": sheet["id"]}
     selected = tmp_path / "selected.rcms"
     project_format.save_project(
-        selected, cast(project_format.JsonObject, project), state
+        selected, cast(project_format.JsonObject, project), cast(project_format.JsonObject, state)
     )
 
     app, window = automation.start_automation()

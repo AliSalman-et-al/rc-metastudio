@@ -1,3 +1,4 @@
+from rc_metastudio.project_domain import SheetId
 import os
 from pathlib import Path
 from typing import cast
@@ -24,7 +25,7 @@ prepare_generated_ui_imports()
 
 class FakeContinuousAnalysisUnit:
     def __init__(self, raw_data=None, effects=None):
-        self.sheet = Sheet("sheet", "Measured outcome", CONTINUOUS, sub_type="means")
+        self.sheet = Sheet(SheetId("sheet"), "Measured outcome", CONTINUOUS, sub_type="means")
         self.raw_data = raw_data or {
             "Group 1": [10, 94, 2],
             "Group 2": [12, 90, 3],

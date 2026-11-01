@@ -1,3 +1,4 @@
+from rc_metastudio.project_domain import RowId, SheetId
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 from dataclasses import dataclass
@@ -38,11 +39,11 @@ class Study:
 
 def test_study_rename_normalizes_and_rejects_blank_or_duplicate_names():
     dataset = Dataset()
-    sheet = Sheet("sheet", "Outcome", 0)
+    sheet = Sheet(SheetId("sheet"), "Outcome", 0)
     dataset.sheets.append(sheet)
-    sheet.rows.extend(StudyRow(str(i), name, AnalysisUnit(sheet)) for i, name in enumerate(("Alpha", "Beta")))
+    sheet.rows.extend(StudyRow(RowId(str(i)), name, AnalysisUnit(sheet)) for i, name in enumerate(("Alpha", "Beta")))
     context = WorkspaceEditingContext(
-        sheet_id="sheet",
+        sheet_id=SheetId("sheet"),
         arm_names=(),
         current_effect=None,
         data_type=None,
@@ -75,9 +76,9 @@ def test_study_rename_normalizes_and_rejects_blank_or_duplicate_names():
 
 
 def test_new_study_rejects_whitespace_name_without_mutating_dataset():
-    dataset = Dataset(sheets=[Sheet("sheet", "Outcome", 0)])
+    dataset = Dataset(sheets=[Sheet(SheetId("sheet"), "Outcome", 0)])
     context = WorkspaceEditingContext(
-        sheet_id="sheet",
+        sheet_id=SheetId("sheet"),
         arm_names=(),
         current_effect=None,
         data_type=None,

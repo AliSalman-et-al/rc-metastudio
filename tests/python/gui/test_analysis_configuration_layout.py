@@ -1,3 +1,5 @@
+from rc_metastudio.analysis_unit import AnalysisUnit
+from rc_metastudio.project_domain import RowId, SheetId
 import json
 import os
 from pathlib import Path
@@ -39,7 +41,7 @@ class _AnalysisModel(object):
         self._data_type = data_type
         self.current_effect = "Sens" if data_type == "diagnostic" else "OR"
         self.dataset = analysis_dataset.Dataset()
-        self.current_sheet = analysis_dataset.Sheet("sheet", "Outcome", data_type, covariates=list(covariates))
+        self.current_sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", data_type, covariates=list(covariates))
         self.dataset.sheets.append(self.current_sheet)
         self.current_sheet_id = self.current_sheet.id
 
@@ -1276,7 +1278,7 @@ def test_meta_regression_backend_execution_uses_frozen_request(monkeypatch):
 
     analysis_adapter.execute_meta_regression_request(
         model,
-        (analysis_dataset.StudyRow("study", "Study", None),),
+        (analysis_dataset.StudyRow(RowId("study"), "Study", AnalysisUnit(analysis_dataset.Sheet(SheetId("unit-sheet"), "Outcome", 1))),),
         ({"id": "covariate", "name": "Covariate", "data_type": 1},),
         request,
         True,

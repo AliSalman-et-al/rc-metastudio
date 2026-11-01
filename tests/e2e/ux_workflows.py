@@ -81,7 +81,9 @@ def run(app, window, work, root, record, analyze):
     def box(node):
         import re
         x, y = float(node.attrib["x"]), float(node.attrib["y"])
-        size = float(re.search(r"font-size:\s*([\d.]+)", node.attrib["style"])[1])
+        match = re.search(r"font-size:\s*([\d.]+)", node.attrib["style"])
+        assert match is not None
+        size = float(match[1])
         width = float(node.attrib["textLength"].removesuffix("px"))
         anchor = node.attrib.get("text-anchor", "start")
         x -= width if anchor == "end" else width / 2 if anchor == "middle" else 0

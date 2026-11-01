@@ -1,3 +1,4 @@
+from rc_metastudio.project_domain import ArmId, RowId, SheetId
 import json
 import os
 import subprocess
@@ -22,13 +23,13 @@ from rc_metastudio import meta_globals
 def _sortable_dataset_model():
     from rc_metastudio.analysis_unit import AnalysisUnit
     names = list(meta_globals.DEFAULT_GROUP_NAMES)
-    arms = [analysis_dataset.Arm(f"arm:{i}", name) for i, name in enumerate(names)]
-    sheet = analysis_dataset.Sheet("sheet", "Mortality", meta_globals.BINARY, arms=arms,
+    arms = [analysis_dataset.Arm(ArmId(f"arm:{i}"), name) for i, name in enumerate(names)]
+    sheet = analysis_dataset.Sheet(SheetId("sheet"), "Mortality", meta_globals.BINARY, arms=arms,
         covariates=[{"id": "Dose", "name": "Dose", "data_type": meta_globals.CONTINUOUS}])
     dataset = analysis_dataset.Dataset(sheets=[sheet])
     for i, (name, year, dose) in enumerate((("Gamma", 1988, 30), ("Alpha", 1977, 10), ("Beta", 1989, 20))):
         unit = AnalysisUnit(sheet, arm_names=names, arm_stable_ids=[a.id for a in arms])
-        sheet.rows.append(analysis_dataset.StudyRow(str(i), name, unit, year=year, covariate_values={"Dose": dose}))
+        sheet.rows.append(analysis_dataset.StudyRow(RowId(str(i)), name, unit, year=year, covariate_values={"Dose": dose}))
 
     raw_events_by_name = {"Gamma": 3, "Alpha": 1, "Beta": 2}
     effects_by_name = {"Gamma": 0.3, "Alpha": 0.1, "Beta": 0.2}

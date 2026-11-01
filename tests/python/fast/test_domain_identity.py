@@ -1,3 +1,4 @@
+from rc_metastudio.project_domain import ArmId, RowId, SheetId
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 from rc_metastudio import analysis_dataset, meta_globals
@@ -5,10 +6,10 @@ from rc_metastudio.analysis_unit import AnalysisUnit
 
 
 def test_editable_labels_do_not_change_domain_identities():
-    arm = analysis_dataset.Arm("arm", "Intervention")
-    sheet = analysis_dataset.Sheet("sheet", "Outcome", meta_globals.CONTINUOUS, arms=[arm])
+    arm = analysis_dataset.Arm(ArmId("arm"), "Intervention")
+    sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", meta_globals.CONTINUOUS, arms=[arm])
     unit = AnalysisUnit(sheet, arm_names=[arm.name], arm_stable_ids=[arm.id])
-    row = analysis_dataset.StudyRow("row", "Study", unit)
+    row = analysis_dataset.StudyRow(RowId("row"), "Study", unit)
     sheet.rows.append(row)
     dataset = analysis_dataset.Dataset(sheets=[sheet])
     unit_id = unit.stable_id
@@ -16,7 +17,7 @@ def test_editable_labels_do_not_change_domain_identities():
     row.label = "Renamed study"
     unit.rename_arm(arm.name, "Renamed arm")
     arm.name = "Renamed arm"
-    assert dataset.sheet("sheet") is sheet
+    assert dataset.sheet(SheetId("sheet")) is sheet
     assert sheet.rows[0] is row and row.id == "row"
     assert row.analysis_unit is unit and unit.stable_id == unit_id
     assert unit.sheet is sheet
@@ -24,7 +25,7 @@ def test_editable_labels_do_not_change_domain_identities():
 
 
 def _unit():
-    sheet = analysis_dataset.Sheet("sheet", "Outcome", meta_globals.CONTINUOUS)
+    sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", meta_globals.CONTINUOUS)
     return AnalysisUnit(sheet, arm_names=["group 1"], arm_stable_ids=["arm"])
 
 

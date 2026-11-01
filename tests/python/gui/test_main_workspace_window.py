@@ -1,3 +1,4 @@
+from rc_metastudio.project_domain import ArmId, RowId, SheetId
 import os
 import sys
 import json
@@ -89,9 +90,9 @@ def test_direct_table_view_mutation_is_checkpointed_for_one_undo(qapp):
     from rc_metastudio.meta_globals import BINARY
 
     from rc_metastudio.analysis_unit import AnalysisUnit
-    sheet = analysis_dataset.Sheet("sheet", "Outcome", BINARY, arms=[
-        analysis_dataset.Arm("a", "Group A"), analysis_dataset.Arm("b", "Group B")])
-    sheet.rows = [analysis_dataset.StudyRow(str(i), label, AnalysisUnit(sheet, arm_names=["Group A", "Group B"], arm_stable_ids=["a", "b"]))
+    sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", BINARY, arms=[
+        analysis_dataset.Arm(ArmId("a"), "Group A"), analysis_dataset.Arm(ArmId("b"), "Group B")])
+    sheet.rows = [analysis_dataset.StudyRow(RowId(str(i)), label, AnalysisUnit(sheet, arm_names=["Group A", "Group B"], arm_stable_ids=["a", "b"]))
                   for i, label in enumerate(("Beta", "Alpha"), 1)]
     dataset = analysis_dataset.Dataset(sheets=[sheet])
     model = dataset_table_model.DatasetTableModel(dataset=dataset, add_blank_study=False)

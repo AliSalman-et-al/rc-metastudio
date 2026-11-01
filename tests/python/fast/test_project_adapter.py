@@ -98,6 +98,7 @@ def test_entered_effect_edits_survive_history_and_save(tmp_path):
     state = {"schema_version": 3, "current_sheet_id": sheet["id"]}
     session = WorkspaceSession(ProjectDocument(3, project, state))
     runtime = session.runtime
+    assert runtime is not None
     unit = runtime.dataset.sheets[0].rows[0].analysis_unit
     key = (sheet["arms"][0]["id"],)
     unit.set_effect_for_source("entered", "TX Mean", key, 1.5, None, None)
@@ -108,9 +109,11 @@ def test_entered_effect_edits_survive_history_and_save(tmp_path):
     runtime.dataset.sheets[0].rows[0].include = False
     session.checkpoint()
     assert session.undo()
+    assert session.runtime is not None
     restored = session.runtime.dataset.sheets[0].rows[0].analysis_unit
     assert restored.get_effect_for_source("entered", "TX Mean", key).standard_error == .2
     assert session.undo()
+    assert session.runtime is not None
     restored = session.runtime.dataset.sheets[0].rows[0].analysis_unit
     effect = restored.get_effect_for_source("entered", "TX Mean", key)
     assert effect.estimate == 1.5 and effect.standard_error is None
@@ -119,6 +122,7 @@ def test_entered_effect_edits_survive_history_and_save(tmp_path):
     session.save(destination)
     reopened = WorkspaceSession()
     reopened.open(destination)
+    assert reopened.runtime is not None
     effect = reopened.runtime.dataset.sheets[0].rows[0].analysis_unit.get_effect_for_source("entered", "TX Mean", key)
     assert effect.estimate == 1.5 and effect.standard_error == .2
 

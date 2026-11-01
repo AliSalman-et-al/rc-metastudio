@@ -1,3 +1,4 @@
+from rc_metastudio.project_domain import ArmId, RowId, SheetId
 import os
 import sys
 
@@ -128,11 +129,11 @@ def test_inclusion_edit_accepts_only_explicit_pyqt6_check_states_and_booleans():
 def _sheet_model(data_type, label="Alpha", add_blank_study=False):
     diagnostic = data_type == meta_globals.DIAGNOSTIC
     names = ["test 1"] if diagnostic else list(meta_globals.DEFAULT_GROUP_NAMES)
-    arms = [analysis_dataset.Arm(f"arm:{i}", name) for i, name in enumerate(names)]
-    sheet = analysis_dataset.Sheet("sheet", "Outcome", data_type,
+    arms = [analysis_dataset.Arm(ArmId(f"arm:{i}"), name) for i, name in enumerate(names)]
+    sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", data_type,
         family={0: "binary", 1: "continuous", 2: "diagnostic"}[data_type], arms=arms)
     unit = AnalysisUnit(sheet, arm_names=names, arm_stable_ids=[a.id for a in arms])
-    sheet.rows.append(analysis_dataset.StudyRow("study1", label, unit, include=bool(label)))
+    sheet.rows.append(analysis_dataset.StudyRow(RowId("study1"), label, unit, include=bool(label)))
     return dataset_table_model.DatasetTableModel(
         dataset=analysis_dataset.Dataset(sheets=[sheet]), add_blank_study=add_blank_study)
 

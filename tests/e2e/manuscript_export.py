@@ -1,3 +1,4 @@
+from typing import Any
 """Reopen real manuscript exports and compare with the executed result."""
 from unittest.mock import patch
 import subprocess
@@ -22,7 +23,7 @@ def run(app, window, work, root, record, analyze):
         for arm in unit['groups']:
             arm['raw_data'] = [''] * len(arm['raw_data'])
     dataset['covariates'].append({'name': 'Only covariate', 'data_type': 1, 'stable_id': 'only-covariate'})
-    variants = [blank, dict(blank, name='Named pending'), dict(blank, covariates={'Only covariate': 7}), dict(blank, year=2001), dict(blank, manually_excluded=True)]
+    variants: list[dict[str, Any]] = [blank, dict(blank, name='Named pending'), dict(blank, covariates={'Only covariate': 7}), dict(blank, year=2001), dict(blank, manually_excluded=True)]
     for i, row in enumerate(variants):
         row = copy.deepcopy(row)
         row['id'] = 10000 + i
@@ -114,11 +115,11 @@ def run(app, window, work, root, record, analyze):
                 tables = [word for page in pages for word in page.findall('.//{*}word') if word.text == 'Table']
                 figures = [(page, word) for page in pages for word in page.findall('.//{*}word') if word.text == 'Figure']
                 assert tables and figures
-                table_height = float(tables[0].get('yMax')) - float(tables[0].get('yMin'))
+                table_height = float(tables[0].attrib['yMax']) - float(tables[0].attrib['yMin'])
                 for page, word in figures:
-                    figure_height = float(word.get('yMax')) - float(word.get('yMin'))
+                    figure_height = float(word.attrib['yMax']) - float(word.attrib['yMin'])
                     assert abs(figure_height - table_height) < 1, (sample, figure_height, table_height)
-                    assert 0 <= float(word.get('yMin')) < float(word.get('yMax')) <= float(page.get('height'))
+                    assert 0 <= float(word.attrib['yMin']) < float(word.attrib['yMax']) <= float(page.attrib['height'])
 
             assert 'Methods' in text and 'RC MetaStudio' in ' '.join(text.split())
             normalized = ' '.join(unicodedata.normalize('NFKC', text).split())

@@ -1,3 +1,4 @@
+from tests.python.gui.test_types import required
 """Drive the all-outcome summary through the Analysis menu."""
 from PyQt6 import QtWidgets
 from docx import Document
@@ -148,9 +149,9 @@ def run(app, window, work, root, record, analyze):
     window.model.set_current_sheet(sheets[0].id)
     labels = SummaryOfFindingsDialog(window)
     for row, (_, method, label) in enumerate(cases):
-        effect = labels.table.item(offset + row, 3).text()
+        effect = required(labels.table.item(offset + row, 3)).text()
         assert effect.endswith(', ' + label), (method, effect)
         assert 'CI' in effect, (method, effect)
     record('summary-all-estimator-labels', labels,
-           effects=[labels.table.item(offset + row, 3).text() for row in range(len(cases))])
+           effects=[required(labels.table.item(offset + row, 3)).text() for row in range(len(cases))])
     labels.close()

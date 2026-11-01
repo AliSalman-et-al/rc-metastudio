@@ -10,6 +10,7 @@ import shutil
 import sys
 import traceback
 from typing import Callable, cast
+from collections.abc import Iterable
 from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import patch
@@ -23,7 +24,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtTest import QTest
 
-from tests.python.gui.test_types import key_click, mouse_click, required
+from tests.python.gui.test_types import key_click, key_clicks, mouse_click, mouse_release, required
 
 ROOT = Path(__file__).resolve().parents[2]
 WORK = Path(sys.argv[2])
@@ -346,10 +347,12 @@ def analysis_dialog(app, window):
         form.show()
         digits = next(label.buddy() for label in form.findChildren(QtWidgets.QLabel)
                       if label.text().casefold() == "decimal places")
+        assert isinstance(digits, QtWidgets.QSpinBox)
         digits.setValue(4)
 
         inference = next(label.buddy() for label in form.findChildren(QtWidgets.QLabel)
                          if "inference" in label.text().casefold())
+        assert isinstance(inference, QtWidgets.QComboBox)
         inference.setCurrentIndex((inference.currentIndex() + 1) % inference.count())
         expected_inference = inference.currentText()
 
@@ -358,7 +361,7 @@ def analysis_dialog(app, window):
         assert "4" in toggle.text() and expected_inference in toggle.text()
         record_step("advanced-collapsed", form, sample=sample, summary=toggle.text())
 
-        mouse_click(form.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
+        mouse_click(required(form.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)), QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
         view = next(w for w in app.topLevelWidgets() if isinstance(w, results_window.ResultsWindow) and w.isVisible())
         assert expected_inference in view.results.details
@@ -711,14 +714,14 @@ def sheets(app, window):
         assert name not in [s.name for s in window.model.dataset.sheets]
         window.action_redo.trigger()
     name_dialog("Renamed outcome")
-    QTest.mouseDClick(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
+    QTest().mouseDClick(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
     assert window.model.current_sheet.name == "Renamed outcome"
     tabs.setCurrentIndex(0)
     window.action_undo.trigger()
     assert window.model.current_sheet.name == "Outcome 3"
     window.action_redo.trigger()
     name_dialog(original.sheets[0].name, duplicate=True)
-    QTest.mouseDClick(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
+    QTest().mouseDClick(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
     tabs.setCurrentIndex(2)
     table = window.tableView
     table.setCurrentIndex(window.model.index(0, window.model.NAME))
@@ -740,9 +743,9 @@ def sheets(app, window):
     app.processEvents()
     key_click(table, QtCore.Qt.Key.Key_PageDown, QtCore.Qt.KeyboardModifier.ControlModifier)
     assert tabs.currentIndex() == 1
-    QTest.mousePress(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(2).center())
-    QTest.mouseMove(tabs, tabs.tabRect(3).center(), 100)
-    QTest.mouseRelease(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
+    QTest().mousePress(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(2).center())
+    QTest().mouseMove(tabs, tabs.tabRect(3).center(), 100)
+    mouse_release(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
     assert tabs.tabText(3) == "Outcome 2"
     tabs.setCurrentIndex(0)
     window.action_undo.trigger()
@@ -872,6 +875,7 @@ def xlsx_import(app, window):
         capture.show()
         app.processEvents()
         types = capture.page(main_wizard.Page_DataType)
+        assert isinstance(types, main_wizard.DataTypePage)
         buttons = types._data_type_buttons()
         assert all(not button.icon().isNull() for button in buttons)
         capture.grab().save(str(screens / f"slice7-{theme}-data-types.png"))
@@ -898,7 +902,9 @@ def xlsx_import(app, window):
             capture.setStartId(main_wizard.Page_ChooseMetric)
             capture.restart()
             app.processEvents()
-            metrics = capture.currentPage().metric_cbo_box
+            metric_page = capture.currentPage()
+            assert isinstance(metric_page, main_wizard.ChooseMetricPage)
+            metrics = metric_page.metric_cbo_box
             assert all(metrics.itemIcon(i).isNull() for i in range(metrics.count()))
             capture.grab().save(str(screens / f"slice7-{theme}-metrics-{index}.png"))
             if theme == "light" and index == 0:
@@ -939,21 +945,22 @@ def xlsx_import(app, window):
     welcome.show()
     app.processEvents()
     with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(path), "")):
-        mouse_click(welcome.page(main_wizard.Page_Welcome).import_csv_btn, QtCore.Qt.MouseButton.LeftButton)
+        mouse_click(cast(main_wizard.WelcomePage, welcome.page(main_wizard.Page_Welcome)).import_csv_btn, QtCore.Qt.MouseButton.LeftButton)
     assert isinstance(welcome.currentPage(), main_wizard.CsvImportPage)
-    assert welcome.currentPage().file_path == str(path)
-    assert welcome.currentPage().isComplete(), welcome.currentPage().import_status.text()
+    assert cast(main_wizard.CsvImportPage, welcome.currentPage()).file_path == str(path)
+    assert cast(main_wizard.CsvImportPage, welcome.currentPage()).isComplete(), cast(main_wizard.CsvImportPage, welcome.currentPage()).import_status.text()
     record_step("welcome-import-loaded", welcome)
     welcome.grab().save(str(screens / "slice8a-import.png"))
     welcome.close()
     wizard = main_wizard.MainWizard(path="csv_import")
     wizard.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions", effect="OR", metric_choices=[], name="Mortality"))
-    wizard.page(main_wizard.Page_OutcomeName).outcome_name_LineEdit.setText("Mortality")
+    cast(main_wizard.OutcomeNamePage, wizard.page(main_wizard.Page_OutcomeName)).outcome_name_LineEdit.setText("Mortality")
     wizard.setStartId(main_wizard.Page_CsvImport)
     wizard.restart()
     wizard.show()
     app.processEvents()
     page = wizard.currentPage()
+    assert isinstance(page, main_wizard.CsvImportPage)
     with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(path), "")):
         mouse_click(page.select_file_btn, QtCore.Qt.MouseButton.LeftButton)
     assert page.isComplete(), page.import_status.text()
@@ -964,7 +971,7 @@ def xlsx_import(app, window):
     assert page.title() == "Import data"
     assert not page.csv_options_btn.isVisible()
     assert page.preview_table.isVisible()
-    assert not page.pageScrollArea.verticalScrollBar().isVisible()
+    assert not required(page.pageScrollArea.verticalScrollBar()).isVisible()
     payload = page.csv_data()
     import csv as csv_module
     csv_path = WORK / "equivalent.csv"
@@ -1062,7 +1069,7 @@ def xlsx_import(app, window):
     continuous = Workbook()
     sheet = continuous.active
     sheet.title = "Continuous"
-    info = dict(arms="two", data_type="continuous", sub_type="means_and_std_devs", effect="MD", metric_choices=[], name="Precision")
+    info: main_wizard.DatasetInfo = dict(arms="two", data_type="continuous", sub_type="means_and_std_devs", effect="MD", metric_choices=[], name="Precision")
     precision_wizard = main_wizard.MainWizard(path="csv_import")
     precision_wizard.set_dataset_info(info)
     precision_wizard.setStartId(main_wizard.Page_CsvImport)
@@ -1070,6 +1077,7 @@ def xlsx_import(app, window):
     precision_wizard.show()
     app.processEvents()
     precision_page = precision_wizard.currentPage()
+    assert isinstance(precision_page, main_wizard.CsvImportPage)
     sheet.append([])
     sheet.append([None] + precision_page.required_header_labels)
     values = ["Precision", datetime(2022, 1, 1), 12.0, 0.1, 1/3, 12.0, 0.1, 1/3]
@@ -1113,6 +1121,7 @@ def csv_import(app, window):
     wizard.show()
     app.processEvents()
     page = wizard.currentPage()
+    assert isinstance(page, main_wizard.CsvImportPage)
     assert isinstance(page, main_wizard.CsvImportPage)
     with patch.object(
         QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(csv), "")
@@ -1345,7 +1354,8 @@ def calculator(app, window, family):
                     crosscheck = {}
                     for row, metric in enumerate(("OR", "RR", "RD")):
                         result = robjects.r(f'local({{ x <- metafor::escalc(measure="{metric}", ai={e1}, bi={n1-e1}, ci={e2}, di={n2-e2}); se <- sqrt(x$vi); c(x$yi, se, x$yi/se, 2*pnorm(-abs(x$yi/se))) }})')
-                        est, se, z, p = map(float, result)
+                        assert isinstance(result, robjects.vectors.FloatVector)
+                        est, se, z, p = map(float, cast(Iterable[float], result))
                         transform = math.exp if metric != "RD" else float
                         for col, value in enumerate((transform(est), transform(est-dialog.confidence_multiplier*se), transform(est+dialog.confidence_multiplier*se)), 1):
                             assert dialog.metric_readout.item(row, col).text() == f"{value:.4f}", (metric, col, dialog.metric_readout.item(row, col).text(), value)
@@ -1464,7 +1474,7 @@ def grid_entry(app, window):
     rows[0][2] = "bad"
     app.clipboard().setText("\r\n".join("\t".join(row) for row in rows) + "\r\n")
     table.setCurrentIndex(window.model.index(0, window.model.NAME))
-    QTest.keyClick(table, QtCore.Qt.Key.Key_V, QtCore.Qt.KeyboardModifier.ControlModifier)
+    key_click(table, QtCore.Qt.Key.Key_V, QtCore.Qt.KeyboardModifier.ControlModifier)
     assert sum(row.include for row in window.model.current_sheet.rows) == 11
     assert "1 cell" in window.statusBar().currentMessage()
     window.undo(); assert not window.model.current_sheet.rows
@@ -1475,10 +1485,10 @@ def grid_entry(app, window):
     column = table.get_covariate_columns()[-1]
     table.setCurrentIndex(model.index(0, column))
     for value in ("21", "22", "23"):
-        QTest.keyClicks(table, value[0])
+        key_clicks(table, value[0])
         editor = next(w for w in table.findChildren(QtWidgets.QLineEdit) if w.isVisible())
-        QTest.keyClicks(editor, value[1:])
-        QTest.keyClick(editor, QtCore.Qt.Key.Key_Return)
+        key_clicks(editor, value[1:])
+        key_click(editor, QtCore.Qt.Key.Key_Return)
         app.processEvents()
     cov = model.current_sheet.covariates[-1]["id"]
     assert [r.covariate_values.get(cov) for r in model.current_sheet.rows[:3]] == [21, 22, 23]
@@ -1486,12 +1496,12 @@ def grid_entry(app, window):
     model = window.model
     selection = QtCore.QItemSelection(model.index(0, column), model.index(2, column))
     table.selectionModel().select(selection, QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect)
-    QTest.keyClick(table, QtCore.Qt.Key.Key_D, QtCore.Qt.KeyboardModifier.ControlModifier)
+    key_click(table, QtCore.Qt.Key.Key_D, QtCore.Qt.KeyboardModifier.ControlModifier)
     assert [r.covariate_values.get(cov) for r in model.current_sheet.rows[:3]] == [21]*3
     window.undo(); window.redo()
     model = window.model
     table.selectionModel().select(QtCore.QItemSelection(model.index(0, column), model.index(2, column)), QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect)
-    QTest.keyClick(table, QtCore.Qt.Key.Key_Delete)
+    key_click(table, QtCore.Qt.Key.Key_Delete)
     assert all(r.covariate_values.get(cov) is None for r in model.current_sheet.rows[:3])
     window.undo(); window.redo()
     model = window.model
@@ -1506,7 +1516,7 @@ def grid_entry(app, window):
         writer.writerow([f"Extra {row}\tquoted\nname", 2020, 5, 80, 10, 90])
     app.clipboard().setText(block.getvalue())
     table.setCurrentIndex(model.index(12, model.NAME))
-    QTest.keyClick(table, QtCore.Qt.Key.Key_V, QtCore.Qt.KeyboardModifier.ControlModifier)
+    key_click(table, QtCore.Qt.Key.Key_V, QtCore.Qt.KeyboardModifier.ControlModifier)
     assert len(model.current_sheet.rows) == 62
     assert model.current_sheet.rows[-1].label == "Extra 49\tquoted\nname"
     window.undo(); assert len(window.model.current_sheet.rows) == 12
@@ -1535,7 +1545,7 @@ def hillclimb(app, window):
         assert widget.isEnabled(), widget.objectName()
         event("clicks", label=widget.objectName() or widget.text())
         if isinstance(widget, QtWidgets.QCheckBox):
-            QTest.mouseClick(widget, QtCore.Qt.MouseButton.LeftButton, pos=QtCore.QPoint(8, widget.height() // 2))
+            mouse_click(widget, QtCore.Qt.MouseButton.LeftButton, pos=QtCore.QPoint(8, widget.height() // 2))
         else:
             mouse_click(widget, QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
@@ -1548,12 +1558,12 @@ def hillclimb(app, window):
 
     def key(widget, value, modifier=QtCore.Qt.KeyboardModifier.NoModifier):
         event("shortcuts", label=str(value))
-        QTest.keyClick(widget, value, modifier)
+        key_click(widget, value, modifier)
         app.processEvents()
 
     def text(widget, value):
         event("typed_characters", len(value), value)
-        QTest.keyClicks(widget, value)
+        key_clicks(widget, value)
         app.processEvents()
 
     def visible(cls):
@@ -1599,7 +1609,7 @@ def hillclimb(app, window):
             measures[task]["texts"] = dict(view.texts)
             record_step("hillclimb-result", view, task=task, measures=measures[task],
                         texts=dict(view.texts), plots=dict(view.results.display_images))
-        (EVIDENCE / "measures.json").write_text(json.dumps(measures, indent=2) + "\n")
+        (required(EVIDENCE) / "measures.json").write_text(json.dumps(measures, indent=2) + "\n")
 
     def run_analysis(handle, subgroup=False, diagnostic=False, regression=False):
         action(handle)
@@ -1635,7 +1645,7 @@ def hillclimb(app, window):
     index = window.model.index(0, window.model.NAME)
     window.tableView.scrollTo(index)
     event("clicks", label="first study cell")
-    QTest.mouseClick(window.tableView.viewport(), QtCore.Qt.MouseButton.LeftButton,
+    mouse_click(window.tableView.viewport(), QtCore.Qt.MouseButton.LeftButton,
                      pos=window.tableView.visualRect(index).center())
     key(window.tableView, QtCore.Qt.Key.Key_V, QtCore.Qt.KeyboardModifier.ControlModifier)
     assert len(window.model.get_studies(False)) == 12
@@ -1662,7 +1672,7 @@ def hillclimb(app, window):
         index = window.model.index(0, column)
         window.tableView.scrollTo(index)
         event("clicks", label=f"{name} first cell")
-        QTest.mouseClick(window.tableView.viewport(), QtCore.Qt.MouseButton.LeftButton,
+        mouse_click(window.tableView.viewport(), QtCore.Qt.MouseButton.LeftButton,
                          pos=window.tableView.visualRect(index).center())
         for value in values[name]:
             value = str(value)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+from typing import cast
 import hashlib
 import io
 import json
@@ -254,9 +255,9 @@ def test_project_schema_rejects_unknown_fields_and_invalid_types(
 
 @pytest.mark.parametrize(("mutation", "message"), [
     (lambda project: project["sheets"].append(copy.deepcopy(project["sheets"][0])), "duplicate identity"),
-    (lambda project: _first_study(project)["raw_data"].update(missing=[1, 10]), "raw data reference undeclared arm"),
+    (lambda project: cast(dict, _first_study(project)["raw_data"]).update(missing=[1, 10]), "raw data reference undeclared arm"),
     (lambda project: _first_populated_raw(project).__setitem__(slice(None), [1.0]), "raw-data arity"),
-    (lambda project: _first_study(project)["entered_effects"].append({"metric": "OR", "arms": ["missing"], "values": {}}), "comparison references undeclared arm"),
+    (lambda project: cast(list, _first_study(project)["entered_effects"]).append({"metric": "OR", "arms": ["missing"], "values": {}}), "comparison references undeclared arm"),
 ], ids=["duplicate-sheet", "raw-arm-reference", "raw-arity", "comparison-reference"])
 def test_semantic_validation_rejects_invalid_domain_relationships(tmp_path, mutation, message):
     project = _snapshot_project("amino.rcms")

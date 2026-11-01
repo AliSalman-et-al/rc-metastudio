@@ -19,7 +19,7 @@ def run(app, window, ROOT, WORK, record_step):
     dta_xml = ET.parse(dta_source).getroot()
     dta_names = {s.get('ID'): s.get('NAME') for s in dta_xml.iter('STUDY')}
     expected_dta = [(t.findtext('NAME'), [(dta_names[r.get('STUDY_ID')],
-                    [int(r.get(k)) for k in ('TP', 'FN', 'FP', 'TN')])
+                    [int(r.attrib[k]) for k in ('TP', 'FN', 'FP', 'TN')])
                     for r in t.findall('TEST_DATA/TEST_DATA_ENTRY')])
                     for t in dta_xml.findall('ANALYSES_AND_DATA/TESTS/TEST')]
     from rc_metastudio.rm5_import import review_rm5
@@ -252,7 +252,7 @@ def run(app, window, ROOT, WORK, record_step):
         actual = numbers['Summary']
         if index == 0:
             outcome = next(original.iter('DICH_OUTCOME'))
-            expected = {key: float(outcome.get(attr)) for key, attr in
+            expected = {key: float(outcome.attrib[attr]) for key, attr in
                         (('estimate', 'EFFECT_SIZE'), ('lower_bound', 'CI_START'), ('upper_bound', 'CI_END'), ('i_squared', 'I2'))}
         else:
             with pooled.open() as stream:

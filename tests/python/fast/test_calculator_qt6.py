@@ -1,3 +1,4 @@
+from rc_metastudio.project_domain import SheetId
 import hashlib
 import importlib.util
 import json
@@ -648,7 +649,7 @@ def test_continuous_metric_switch_does_not_reuse_effect_se_as_arm_se(
     )
 
     unit = analysis_dataset.AnalysisUnit(
-        analysis_dataset.Sheet("sheet", "Outcome", meta_globals.CONTINUOUS),
+        analysis_dataset.Sheet(SheetId("sheet"), "Outcome", meta_globals.CONTINUOUS),
         raw_data=[[60, 94, 22], [60, 92, 20]],
         arm_names=["Group 1", "Group 2"],
     )
@@ -746,7 +747,7 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
         calculator_service.r_bridge, "impute_pre_post_continuous_data", prepost
     )
     unit = analysis_dataset.AnalysisUnit(
-        analysis_dataset.Sheet("sheet", "Outcome", meta_globals.CONTINUOUS),
+        analysis_dataset.Sheet(SheetId("sheet"), "Outcome", meta_globals.CONTINUOUS),
         raw_data=[[None, None, None], [60, 92, 20]],
         arm_names=["Group 1", "Group 2"],
     )
@@ -840,7 +841,7 @@ def test_calculator_effect_source_preserves_entered_partial_and_empty_data(
     from rc_metastudio import analysis_dataset, calculator_routines
 
     unit = analysis_dataset.AnalysisUnit(
-        analysis_dataset.Sheet("sheet", "Outcome", data_type),
+        analysis_dataset.Sheet(SheetId("sheet"), "Outcome", data_type),
         raw_data=raw_data,
         arm_names=groups,
     )

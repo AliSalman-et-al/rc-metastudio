@@ -1,4 +1,5 @@
 """Isolation and stable-arm contracts for sheet-owned rows."""
+from rc_metastudio.project_domain import RowId, SheetId
 import copy
 
 from rc_metastudio.analysis_dataset import Dataset, Sheet, StudyRow
@@ -7,11 +8,11 @@ from rc_metastudio.meta_globals import BINARY
 
 
 def _dataset():
-    sheet = Sheet("sheet", "Outcome", BINARY, covariates=[{"name": "Region", "type": "factor"}])
+    sheet = Sheet(SheetId("sheet"), "Outcome", BINARY, covariates=[{"name": "Region", "type": "factor"}])
     unit = AnalysisUnit(sheet, arm_names=["Usual-care", "Treatment"], arm_stable_ids=["control", "treatment"])
     unit.set_raw_data_for_arm("Usual-care", [3, 10])
     unit.set_effect_for_source("entered", "OR", ("control", "treatment"), .75)
-    sheet.rows.append(StudyRow("row", "Study 1", unit, covariate_values={"Region": "north"}))
+    sheet.rows.append(StudyRow(RowId("row"), "Study 1", unit, covariate_values={"Region": "north"}))
     return Dataset(title="Contract dataset", notes="dataset notes", sheets=[sheet])
 
 
