@@ -318,3 +318,58 @@ survive, and `tests/e2e/rm5_reference.R` receives its input and two output paths
 and produces both outcome estimates. Run the shell scripts from the repo root.
 No original build files were modified. A full package rebuild and qualification
 are still required to ship the corrected launcher; none was performed here.
+
+## 0.5.1 release rebuild (2026-11-01)
+
+Worktree: `/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a`, branch
+`ux/sheets`. Version bumped in pyproject.toml, Python __init__, RCMetaR
+DESCRIPTION and uv.lock (uv lock only). No frozen oracle embeds 0.5.0;
+no golden/oracle file was changed. Release/manifest checks read DESCRIPTION
+or project metadata; no additional release pin required changing. The 0.5.0
+mock package identity in the isolated golden-capture test is synthetic, not
+a release assertion. Reviewer and manuscript assertions now use __version__;
+no numerical assertion or tolerance changed.
+
+Build command (after `source build/sheets-baseline/ENV.sh`):
+`LIBRARY_PATH="$PWD/build/release-051-linker" bash scripts/build-linux-package.sh --python-exe "$PWD/.venv/bin/python"`.
+Task-owned linker symlinks select libdeflate.so.0, libzstd.so.1 and libtirpc.so.3
+from /lib/x86_64-linux-gnu. No primary-checkout build files were removed.
+
+First attempt compiled the frozen application but its pre-archive probe failed:
+`R is still starting`. The observation called the newly deferred R bridge before
+initialization. Fixed runtime-probe initialization and separated package-only
+startup readiness from the shared desktop-driver composition contract. The
+unchanged doctor assertion caught an initial over-broad readiness wait; that
+was repaired rather than weakening the assertion. Added an explicit frozen
+import/export observation hook for XLSX reader, RM5 reader and actual analysis
+DOCX write/reopen; this hook remains unqualified in a completed bundle.
+
+Rebuild stopped in pinned dependency installation: download.packages reported
+failed downloads for bslib, Hmisc, RcppEigen, ape, colorspace, data.table, farver,
+ggplot2, htmltools, htmlwidgets, irlba, isoband, knitr and labeling. Installer
+exited 1 with those packages missing from the closure. No source fallback,
+manifest change or statistical package substitution was made. **No tarball
+was produced, so size is unavailable.** Frozen doctor/smoke, XLSX/DOCX/RM5
+and packaged `Rscript -e 'cat(commandArgs(TRUE))' a b` are not claimed as
+passed. The full package step needs rerunning when downloads succeed.
+
+Logs: build/release-051-package-before.log, release-051-package.log,
+release-051-package-error.log and release-051-package-error.png. Source
+qualification commands are retained in build/release-051-qualify.sh; logs use
+build/release-051-{doctor,golden,authorities,e2e}.log. All Python invocations use
+uv run --no-sync; no uv sync was run and no numerical oracle regenerated.
+
+Final source qualification after the last code change (9b582b8d), serially in
+one shell via `bash build/release-051-qualify.sh`, exited 0:
+- Doctor passed; evidence: artifacts/verification/rcms/20261101T063438Z-02e84128-doctor.
+- Strict golden gate passed, 475 comparisons / 416 numerical fields, with no
+  oracle changes; report under
+  build/qt6-verification/golden-compatibility-release-051/compatibility-report.json.
+- Authority matrix passed 100 cases; build/release-051-authorities.json.
+- `uv run --no-sync python -m pytest tests/e2e -n 2 -q --fresh`: **136 passed
+  in 3147.25 seconds (52:27)**, one uninterrupted process, no evidence reuse.
+  Per-scenario manifests/inputs/commands/results remain in
+  artifacts/verification/rcms; transcript: build/release-051-e2e.log.
+
+No push to origin/ux/sheets or origin/ux/audit-improvements: the package gate is
+incomplete. No PR was opened and no merge performed.
