@@ -543,6 +543,12 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
         lambda _window: QtCore.QRect(0, 0, 800, 600),
     )
 
+    monkeypatch.setattr(
+        analysis_setup_dialog.adaptive_controls,
+        "available_geometry_for_choice_control",
+        lambda _combo: QtCore.QRect(0, 0, 800, 600),
+    )
+
     dialogs = []
     try:
         long_covariate = {'id': 'A continuous moderator with a deliberately long complete name', 'name': 'A continuous moderator with a deliberately long complete name', 'data_type': 0}

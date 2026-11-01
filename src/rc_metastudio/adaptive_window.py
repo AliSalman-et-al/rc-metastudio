@@ -504,11 +504,8 @@ class AdaptiveWindowController(QObject):
         self.runtimeClampApplied.emit()
 
     def _available_geometry(self):
-        if self._runtime_screen is not None:
-            try:
-                return QRect(self._runtime_screen.availableGeometry())
-            except RuntimeError:
-                self._runtime_screen = None
+        # The provider owns geometry. The cached screen only owns signal
+        # connections; it must not replace an explicitly supplied geometry.
         try:
             return QRect(self._available_geometry_provider(self.window))
         except RuntimeError:
