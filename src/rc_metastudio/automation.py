@@ -22,7 +22,12 @@ def start_automation(phase_callback=None):
     """Construct the ordinary application composition for tests and packaging."""
     from rc_metastudio.launch import compose_application
 
-    return compose_application(phase_callback=phase_callback)
+    app, window = compose_application(phase_callback=phase_callback)
+    app.processEvents()
+    from rc_metastudio import r_backend
+    if not r_backend.is_ready():
+        raise RuntimeError("Packaged application R startup failed")
+    return app, window
 
 
 def _close_automation_window(app, window) -> None:
@@ -216,6 +221,7 @@ def start_package_runtime_probe(output_path: str) -> int:
     if primary is None:
         raise SystemExit("Packaged runtime probe found no primary screen.")
 
+    r_bridge.initialize_r()
     runtime = r_bridge.packaged_runtime_observation()
     shared_path = Path(configured.get("R_HOME", "")) / "bin" / "x64" / "R.dll"
     if sys.platform == "darwin":
