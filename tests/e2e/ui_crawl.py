@@ -293,12 +293,79 @@ def shell(driver, capture, missing):
     capture("A-grid-1024", driver.window)
 
 
+def dialogs(driver, capture, missing):
+    from rc_metastudio.about_legal_dialog import AboutLegalDialog
+    from rc_metastudio.confidence_level_dialog import ConfidenceLevelDialog
+    from rc_metastudio.add_new_dialogs import AddCovariateDialog, AddStudyDialog
+    from rc_metastudio.covariate_type_dialog import CovariateTypeDialog
+    from rc_metastudio.edit_name_dialogs import EditCovariateNameDialog
+    driver.window.workspace.mark_saved()
+    assert driver.window.open(str(driver.ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    driver.window.model.add_covariate("Dose", "continuous")
+    sheet = driver.window.model.current_sheet
+    for detail, form in (
+        ("about", AboutLegalDialog(driver.window)),
+        ("confidence-level", ConfidenceLevelDialog(95, driver.window)),
+        ("add-covariate", AddCovariateDialog(driver.window)),
+        ("covariate-type", CovariateTypeDialog(sheet, sheet.covariates[-1], parent=driver.window)),
+        ("add-study", AddStudyDialog(driver.window)),
+        ("rename", EditCovariateNameDialog("Dose", parent=driver.window)),
+    ):
+        form.show()
+        capture("D-" + detail, form)
+        form.close()
+    calculators(driver, capture, missing)
+
+
+def calculators(driver, capture, missing, prefix="D", families=None):
+    from rc_metastudio.binary_data_dialog import BinaryDataDialog
+    from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
+    from rc_metastudio.diagnostic_data_dialog import DiagnosticDataDialog
+    from rc_metastudio.ratio_data_dialog import RatioDataDialog
+    for family, sample, kind in (
+        ("binary", "amino", BinaryDataDialog),
+        ("continuous", "continuous", ContinuousDataDialog),
+        ("diagnostic", "lymph", DiagnosticDataDialog),
+        ("hr", "Pignon2000-HR", RatioDataDialog),
+        ("irr", "NielWeise2008-IRR", RatioDataDialog),
+    ):
+        if families and family not in families:
+            continue
+        driver.window.workspace.mark_saved()
+        assert driver.window.open(str(driver.ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
+        model = driver.window.model
+        unit = model.get_current_analysis_unit_for_study(0)
+        if kind is RatioDataDialog:
+            form = kind(unit, model.arm_names, family.upper(), parent=driver.window)
+        else:
+            args = [unit, model.arm_names, model.get_current_arm_key()]
+            if family != "diagnostic":
+                args.append(model.current_effect)
+            form = kind(*args, confidence_level=95, parent=driver.window)
+        form.show()
+        if kind is RatioDataDialog:
+            sources = ("raw", "reported") if family == "irr" else ("reported",)
+            for source in sources:
+                if family == "irr":
+                    form.fields["source"].setCurrentIndex(form.fields["source"].findData(source))
+                for scale in (("ratio", "log") if source == "reported" else ("ratio",)):
+                    form.fields["scale"].setCurrentIndex(form.fields["scale"].findData(scale))
+                    capture(f"{prefix}-calculator-{family}-{source}-{scale}", form)
+        elif hasattr(form, "input_mode_combo"):
+            for index in range(1 if prefix == "J" else form.input_mode_combo.count()):
+                form.input_mode_combo.setCurrentIndex(index)
+                capture(f"{prefix}-calculator-{family}-{form.input_mode_combo.currentData()}", form)
+        else:
+            capture(f"{prefix}-calculator-{family}-counts", form)
+        form.close()
+
+
 def run(driver):
     index = driver.EVIDENCE / "ui-crawl-index.md"
     index.write_text("# UI crawl\n\n", encoding="utf-8")
     original_record = driver.record_step
     captured = set()
-    missing = ["D deferred to next run", "H deferred to next run", "I deferred to next run", "J deferred to next run"]
+    missing = [ "H deferred to next run", "I deferred to next run", "J deferred to next run"]
 
     def capture(step, widget):
         assert step not in captured, step
@@ -316,6 +383,7 @@ def run(driver):
 
     try:
         shell(driver, capture, missing)
+        dialogs(driver, capture, missing)
         analysis_setup(driver, capture, missing)
         results(driver, capture, missing)
         plots(driver, capture, missing)
