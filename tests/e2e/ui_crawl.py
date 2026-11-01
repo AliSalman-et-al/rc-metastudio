@@ -58,12 +58,29 @@ def analysis_setup(driver, capture, missing):
     missing.append("E error Details collapsed/expanded: real failing analysis not driven yet")
 
 
+def results(driver, capture, missing):
+    driver.window.workspace.mark_saved()
+    assert driver.window.open(str(driver.ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    original = driver.record_step
+    driver.record_step = lambda *args, **kwargs: None
+    try:
+        view = driver.analyze(driver.app, driver.window, "binary.random")
+    finally:
+        driver.record_step = original
+    for detail in ("Manuscript", "Text report", "Tables", "Settings"):
+        item = view.nav_tree.findItems(detail, QtCore.Qt.MatchFlag.MatchExactly)[0]
+        view.nav_tree.setCurrentItem(item)
+        capture("F-amino-" + detail.lower().replace(" ", "-"), view)
+    view.close()
+    missing.append("F subgroup Tables: eligible moderator fixture still needed")
+
+
 def run(driver):
     index = driver.EVIDENCE / "ui-crawl-index.md"
     index.write_text("# UI crawl\n\n", encoding="utf-8")
     original_record = driver.record_step
     captured = set()
-    missing = ["F results navigation and subgroup Tables", "G fitted rendered plots and styles",
+    missing = ["G fitted rendered plots and styles",
                "B Create dataset wizard pages and metrics", "C import/options/map/error/RevMan",
                "D deferred to next run", "H deferred to next run", "I deferred to next run", "J deferred to next run"]
 
@@ -83,6 +100,7 @@ def run(driver):
 
     try:
         analysis_setup(driver, capture, missing)
+        results(driver, capture, missing)
     finally:
         with index.open("a", encoding="utf-8") as stream:
             stream.write("\nNOT CAPTURED:\n" + "\n".join("- " + item for item in missing) + "\n")
