@@ -103,54 +103,7 @@ cp -a "$work_root/r-extract/opt/R/4.6.1/lib/R" "$r_home"
 [ -x "$r_home/bin/exec/R" ] || die "Pinned R archive does not contain the expected R 4.6.1 runtime."
 
 step "Making Posit R launchers relocatable"
-"$python_exe" - "$r_home" <<'PY'
-from pathlib import Path
-import sys
-
-home = Path(sys.argv[1]).resolve()
-launcher = home / "bin" / "R"
-text = launcher.read_text(encoding="utf-8")
-marker = "R_HOME_DIR=\"/opt/R/4.6.1/lib/R\""
-if marker not in text:
-    raise SystemExit("unexpected Posit R launcher; cannot make it relocatable")
-tail = text[text.index("usage=\"") :]
-header = '''#!/bin/bash
-# Relocatable wrapper for the private R runtime.
-r_script_dir=${0%/*}
-R_HOME_DIR="$(CDPATH= cd -- "$r_script_dir/.." && pwd)"
-if test -n "${R_HOME}" && test "${R_HOME}" != "${R_HOME_DIR}"; then
-  echo "WARNING: ignoring environment value of R_HOME" >&2
-fi
-R_HOME="${R_HOME_DIR}"
-export R_HOME
-R_SHARE_DIR="${R_HOME}/share"
-export R_SHARE_DIR
-R_INCLUDE_DIR="${R_HOME}/include"
-export R_INCLUDE_DIR
-R_DOC_DIR="${R_HOME}/doc"
-export R_DOC_DIR
-
-'''
-launcher.write_text(header + tail, encoding="utf-8")
-launcher.chmod(0o755)
-
-rscript = home / "bin" / "Rscript"
-rscript.write_text('''#!/bin/sh
-r_script_dir=${0%/*}
-R_HOME="$(CDPATH= cd -- "$r_script_dir/.." && pwd)"
-export R_HOME
-export R_SHARE_DIR="$R_HOME/share"
-export R_INCLUDE_DIR="$R_HOME/include"
-export R_DOC_DIR="$R_HOME/doc"
-if [ "$#" -gt 0 ] && [ "${1#-}" = "$1" ]; then
-  script="$1"
-  shift
-  exec "$R_HOME/bin/R" --no-save --no-restore --no-echo "--file=$script" --args "$@"
-fi
-exec "$R_HOME/bin/R" --no-save --no-restore --no-echo "$@"
-''', encoding="utf-8")
-rscript.chmod(0o755)
-PY
+"$python_exe" "$repo_root/scripts/configure_linux_r_launchers.py" "$r_home"
 
 step "Checking the relocated private R runtime"
 R_HOME="$r_home" LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \

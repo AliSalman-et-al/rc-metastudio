@@ -287,3 +287,34 @@ scenarios, not every possible analysis input or unbuilt platform.
 All implementation commits were pushed fast-forward individually: 19604d6c,
 0dfa985d, 7cb9b207, 23584563, 681f2bfc, c9ebf412. No push failure or retry.
 Final evidence manifest hashes the retained local inputs, commands and outputs.
+
+## Packaged-R QA
+
+Earlier packaged-R QA evidence survives at `/tmp/rcms-qa-evidence/`:
+11 `*-plot-workflow-*` runs, doctor (`20261030T223837Z-2115274e-doctor`),
+and the reported 14 analysis scenarios all retain `stdout.log`, `runtime.json`,
+`manifest.json`, steps and captures. Inspection also found a fifteenth analysis
+run, `20261030T230903Z-88dd92fa-options-zero-cells`; all 27 saved stdout logs
+contain `WORKFLOW PASSED`. These are October 30 observations, not freshly rerun
+workflows. The 91 passed authority comparisons remain in
+`/home/ali/Documents/Code/rc-metastudio/artifacts/verification/r-bundle/authorities.log`,
+with `packaged-authorities.R`, `checks.sh` and `authorities.json` beside it.
+
+The packaged `Rscript -e 'cat(commandArgs(TRUE))' a b` ignored both arguments;
+the unreduced `build/ux-round3/r-home` launcher printed `a b`, and packaged
+`R --vanilla -f` with `--args` also worked. The cause was relocation, not removed
+packages: build-linux-package.sh replaced native Rscript with a shell wrapper
+that passed expression arguments straight to R without the `--args` delimiter.
+Its filename branch happened to insert the delimiter. Quoting was intact.
+
+The relocation step now lives in `scripts/configure_linux_r_launchers.py` and
+preserves upstream `Rscript` as `Rscript.real`, setting its `RHOME` override to
+the runtime's current location. Upstream handles expression/file option parsing.
+A copy of the reduced packaged runtime, with upstream launchers restored from
+the original extracted archive, passed this exact build step in isolation.
+`artifacts/verification/rscript-launcher/` retains reproduction/proof commands,
+logs and RM5 CSV outputs: expression arguments print `a b`, quoted/empty arguments
+survive, and `tests/e2e/rm5_reference.R` receives its input and two output paths
+and produces both outcome estimates. Run the shell scripts from the repo root.
+No original build files were modified. A full package rebuild and qualification
+are still required to ship the corrected launcher; none was performed here.
