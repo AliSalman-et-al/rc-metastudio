@@ -836,6 +836,9 @@ def verify_sheet_strip(app, window, screens):
         app.setPalette(palette)
         app.processEvents()
         assert window.grab().save(str(screens / ("slice10-tabs-" + theme + ".png")))
+        if theme == "dark":
+            colour = tabs.grab().toImage().pixelColor(tabs.tabRect(tabs.currentIndex()).topLeft() + QtCore.QPoint(8, 8))
+            assert abs(colour.lightness() - palette.color(QtGui.QPalette.ColorRole.Window).lightness()) < 40, (colour.name(), tabs.palette().color(QtGui.QPalette.ColorRole.Window).name())
         record_step("sheet-strip-" + theme, window)
     app.setPalette(original_palette)
     for index in range(20):
@@ -895,6 +898,22 @@ def verify_sheet_strip(app, window, screens):
     assert [sheet.id for sheet in window.model.dataset.sheets] == before
     app.processEvents()
     assert window.grab().save(str(screens / "slice10-tabs-overflow.png"))
+    assert window.add_sheet_button.visibleRegion().boundingRect().size() == window.add_sheet_button.size()
+    plus_rect = window.add_sheet_button.rect()
+    plus_rect.moveTopLeft(window.add_sheet_button.mapTo(window.sheet_strip, QtCore.QPoint()))
+    assert window.sheet_strip.rect().contains(plus_rect)
+    grid_scroll = window.sheet_grid_scrollbar
+    native_scroll = window.tableView.horizontalScrollBar()
+    window.tableView.setColumnWidth(0, window.width() * 2)
+    app.processEvents()
+    app.processEvents()
+    assert grid_scroll.isVisible() and grid_scroll.maximum() == native_scroll.maximum()
+    grid_scroll.setValue(grid_scroll.maximum())
+    assert native_scroll.value() == grid_scroll.value()
+    native_scroll.setValue(0)
+    assert grid_scroll.value() == 0
+    window.tableView.setColumnWidth(0, 100)
+    app.processEvents()
     record_step("sheet-strip-overflow", window, count=tabs.count())
 
 

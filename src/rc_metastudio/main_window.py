@@ -8,7 +8,7 @@ from rc_metastudio.project_domain import ArmId, SheetId
 import os
 from functools import cmp_to_key
 from typing import TYPE_CHECKING, cast
-from PyQt6 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import (
     QMouseEvent,
@@ -214,7 +214,20 @@ class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
 
 
 class SheetTabBar(QtWidgets.QTabBar):
+    def changeEvent(self, event):
+        super().changeEvent(event)
+        if event.type() in (QtCore.QEvent.Type.ApplicationPaletteChange, QtCore.QEvent.Type.PaletteChange) and not getattr(self, "_updating_palette", False):
+            self._updating_palette = True
+            palette = QtWidgets.QApplication.palette()
+            template = getattr(self, "palette_stylesheet", self.styleSheet())
+            for name, role in (("window", QtGui.QPalette.ColorRole.Window), ("window-text", QtGui.QPalette.ColorRole.WindowText), ("alternate-base", QtGui.QPalette.ColorRole.AlternateBase), ("mid", QtGui.QPalette.ColorRole.Mid), ("highlight", QtGui.QPalette.ColorRole.Highlight)):
+                template = template.replace("palette(" + name + ")", palette.color(role).name())
+            self.setStyleSheet(template)
+            self._updating_palette = False
+
     def eventFilter(self, a0: QtCore.QObject | None, a1: QtCore.QEvent | None) -> bool:
+        if a1 is not None and a1.type() == QtCore.QEvent.Type.ApplicationPaletteChange:
+            self.changeEvent(a1)
         window = self.window()
         event = a1
         if isinstance(window, MainWindow) and isinstance(event, QKeyEvent) and event.key() == Qt.Key.Key_Escape:
@@ -1423,6 +1436,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._adding_sheet = False
         self.sheet_name_edit = None
         self.sheet_tabs = SheetTabBar(self)
+        QtWidgets.QApplication.instance().installEventFilter(self.sheet_tabs)
         self.sheet_tabs.setObjectName("sheet_tabs")
         self.sheet_tabs.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.setTabOrder(self.analysis_button, self.sheet_tabs)
@@ -1434,14 +1448,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.sheet_tabs.setAutoHide(False)
         self.sheet_tabs.setDrawBase(False)
         self.sheet_tabs.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self.sheet_tabs.setStyleSheet("""
-            QTabBar::tab { background: transparent; color: palette(text);
+        self.sheet_tabs.palette_stylesheet = """
+            QTabBar::tab { background: palette(window); color: palette(window-text);
                 border: 0; border-right: 1px solid palette(mid);
                 border-bottom: 3px solid transparent; padding: 6px 12px; }
             QTabBar::tab:hover { background: palette(alternate-base); }
-            QTabBar::tab:selected { background: palette(base); font-weight: bold;
+            QTabBar::tab:selected { background: palette(window); font-weight: bold;
                 border-bottom: 3px solid palette(highlight); }
-        """)
+        """
+        self.sheet_tabs.setStyleSheet(self.sheet_tabs.palette_stylesheet)
         self.add_sheet_button = QtWidgets.QToolButton(self)
         self.add_sheet_button.setText("+")
         self.add_sheet_button.setToolTip("Add sheet")
@@ -1453,7 +1468,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         row.setContentsMargins(0, 0, 4, 0)
         row.setSpacing(0)
         row.addWidget(self.sheet_tabs)
-        row.addWidget(self.add_sheet_button)
         self.sheet_tab_scroll = QtWidgets.QScrollArea(self)
         self.sheet_tab_scroll.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
         self.sheet_tab_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -1473,7 +1487,22 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             button.clicked.connect(lambda checked=False, delta=delta: self.sheet_tab_scrollbar.setValue(self.sheet_tab_scrollbar.value() + delta))
             button.hide()
             strip.addWidget(button)
-        strip.addWidget(self.sheet_tab_scroll, 1)
+        strip.addWidget(self.sheet_tab_scroll, 3)
+        strip.addWidget(self.add_sheet_button)
+        strip.addStretch(0)
+        self.sheet_grid_scrollbar = QtWidgets.QScrollBar(Qt.Orientation.Horizontal, self.sheet_strip)
+        strip.addWidget(self.sheet_grid_scrollbar, 2)
+        self.tableView.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        grid = required(self.tableView.horizontalScrollBar(), "grid scrollbar")
+        self.sheet_grid_scrollbar.valueChanged.connect(grid.setValue)
+        grid.valueChanged.connect(self.sheet_grid_scrollbar.setValue)
+        def sync_grid_scrollbar(*_args):
+            self.sheet_grid_scrollbar.setRange(grid.minimum(), grid.maximum())
+            self.sheet_grid_scrollbar.setPageStep(grid.pageStep())
+            self.sheet_grid_scrollbar.setSingleStep(grid.singleStep())
+            self.sheet_grid_scrollbar.setVisible(grid.maximum() > grid.minimum())
+        grid.rangeChanged.connect(sync_grid_scrollbar)
+        sync_grid_scrollbar()
         self.sheet_strip.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
         self.verticalLayout.addWidget(self.sheet_strip)
         scroll = self.sheet_tab_scrollbar
@@ -1490,6 +1519,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._sheet_strip_timer.start(0)
 
     def _update_sheet_strip(self):
+        self.sheet_tab_scroll.setMaximumWidth(self.sheet_tab_content.sizeHint().width() + 2)
         overflow = self.sheet_tab_scrollbar.maximum() > 0
         self.sheet_scroll_left.setVisible(overflow)
         self.sheet_scroll_right.setVisible(overflow)
