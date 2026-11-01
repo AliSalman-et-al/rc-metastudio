@@ -198,5 +198,10 @@ def run(app, window, work, root, record, analyze):
     view = next(w for w in app.topLevelWidgets() if isinstance(w, ResultsWindow) and w.isVisible())
     assert 'Harbord' in view.manuscript.methods or 'Rücker' in view.manuscript.methods
     assert not any(word in view.manuscript.methods.lower() for word in ('evidence', 'bias present', 'bias absent'))
-    record('manuscript-small-study-methods', view, methods=view.manuscript.methods)
+    app.processEvents()
+    app.processEvents()
+    assert view._figure_zoom_percent >= 50, view._figure_zoom_percent
+    assert all(item.textWidth() >= view.graphics_view.viewport().width() * .9 for item in view._wrapped_text_items)
+    record('manuscript-small-study-methods', view, methods=view.manuscript.methods,
+           settled_zoom_percent=view._figure_zoom_percent)
     view.close()
