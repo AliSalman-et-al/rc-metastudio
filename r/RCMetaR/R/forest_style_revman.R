@@ -731,7 +731,7 @@ rcmetar.draw.revman.axis.footer <- function(bundle, layout, cex) {
         if (!nzchar(label)) next
         graphics::text(axis.footer$split.x + if (side == "left") -gap else gap,
                        axis.footer$direction.y, label, cex=direction.cex,
-                       adj=if (side == "left") 1 else 0)
+                       adj=c(if (side == "left") 1 else 0, 0))
     }
     if (nzchar(bundle$style_blocks$axis_label)) {
         graphics::text(axis.footer$axis.x, axis.footer$axis.label.y, bundle$style_blocks$axis_label, cex=cex)
