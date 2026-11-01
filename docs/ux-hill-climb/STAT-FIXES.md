@@ -301,3 +301,12 @@ build/sheets-baseline/reference-e2e.log. Per-scenario manifests, inputs,
 screenshots and results remain under artifacts/verification/rcms/.
 Strict golden: 475 comparisons / 416 numeric fields, all passed.
 No tolerances were loosened; no remaining failures.
+
+## Fixed-effect Reitsma covariance display audit
+
+The fixed-effect coefficient covariance (`stats::vcov(fit)`) is not displayed.
+In `reitsma_methods.R` it supplies summary confidence intervals and prediction
+calculations; `results_display.R` does not expose that matrix. The displayed
+“Sensitivity-specificity covariance” is the between-study `fit$Psi` covariance,
+with its FPR sign changed to specificity. Consequently no displayed fixed-effect
+covariance comparison was added to `analysis_authorities.R`. No numerical change.
