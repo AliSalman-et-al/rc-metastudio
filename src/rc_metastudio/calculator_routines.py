@@ -482,7 +482,6 @@ def set_current_effect_from_value(
             txt_box.setText("")
         txt_box.setProperty("calculatorValue", txt_box.text())
         txt_box.blockSignals(False)
-    update_calculator_readout(effect_tbox.window(), data_type)
     semantic_samples = {
         "binary": binary_effect_display_samples,
         "continuous": continuous_effect_display_samples,

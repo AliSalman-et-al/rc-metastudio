@@ -912,6 +912,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                 self.confidence_multiplier,
             ),
         )
+        calc_fncs.update_calculator_readout(self, "diagnostic")
 
     def _update_data_table(self):
         """Try to calculate rest of 2x2 table from existing cells"""

@@ -734,6 +734,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 self.confidence_multiplier,
             ),
         )
+        calc_fncs.update_calculator_readout(self, "continuous")
 
         self.change_row_color_according_to_metric()
 

@@ -615,6 +615,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                 self.confidence_multiplier,
             ),
         )
+        calc_fncs.update_calculator_readout(self, "binary")
 
         self.change_row_color_according_to_metric()
 

@@ -509,6 +509,9 @@ def test_row_header_signals_are_restored_when_calculator_opening_raises(
         arm_names = ["Group 1", "Group 2"]
         current_effect = "MD"
 
+        def get_studies(self, only_if_included=True):
+            return self.dataset
+
         def get_current_outcome_subtype(self):
             return None
 
@@ -562,16 +565,20 @@ class FakeAnalysisUnit:
         }
         self.raw_data = {"Group 1": [6, 20], "Group 2": [8, 22]}
 
+        from types import SimpleNamespace
+        names = list(self.raw_data) if isinstance(self.raw_data, dict) else ["Group 1"]
+        self.arms = {name: SimpleNamespace(stable_id=name) for name in names}
+
     def get_effect_names(self):
         return list(self.effects.keys())
 
     def get_effects(self):
         return self.effects
 
-    def get_raw_data_for_group(self, group):
+    def get_raw_data_for_arm(self, group):
         return self.raw_data[group]
 
-    def get_raw_data_for_groups(self, groups):
+    def get_raw_data_for_arms(self, groups):
         values = []
         for group in groups:
             values.extend(self.raw_data[group])
@@ -641,9 +648,9 @@ def test_continuous_metric_switch_does_not_reuse_effect_se_as_arm_se(
     )
 
     unit = analysis_dataset.AnalysisUnit(
-        analysis_dataset.Outcome("Outcome", meta_globals.CONTINUOUS),
+        analysis_dataset.Sheet("sheet", "Outcome", meta_globals.CONTINUOUS),
         raw_data=[[60, 94, 22], [60, 92, 20]],
-        group_names=["Group 1", "Group 2"],
+        arm_names=["Group 1", "Group 2"],
     )
     unit.set_effect_for_source(
         "entered", "SMD", "Group 1-Group 2", 0.1, -0.1, 0.3,
@@ -739,9 +746,9 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
         calculator_service.r_bridge, "impute_pre_post_continuous_data", prepost
     )
     unit = analysis_dataset.AnalysisUnit(
-        analysis_dataset.Outcome("Outcome", meta_globals.CONTINUOUS),
+        analysis_dataset.Sheet("sheet", "Outcome", meta_globals.CONTINUOUS),
         raw_data=[[None, None, None], [60, 92, 20]],
-        group_names=["Group 1", "Group 2"],
+        arm_names=["Group 1", "Group 2"],
     )
     unit.set_effect_for_source(
         "entered", "SMD", "Group 1-Group 2", 0.0945, -0.1, 0.29
@@ -759,12 +766,12 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
 
     dialog.impute_pre_post_data(dialog.g1_pre_post_table, 0)
 
-    assert unit.get_raw_data_for_group("Group 1") == [60, -2, 29.7321]
-    assert unit.get_raw_data_for_group("Group 2") == [60, 92, 20]
-    assert dialog.effect_text_box.text() == "-0.5"
+    assert unit.get_raw_data_for_arm("Group 1") == [60, -2, 29.7321]
+    assert unit.get_raw_data_for_arm("Group 2") == [60, 92, 20]
+    assert dialog.effect_text_box.text() == "-0.5000"
 
     dialog.impute_pre_post_data(dialog.g2_pre_post_table, 1)
-    assert unit.get_raw_data_for_group("Group 2") == [60, 92, 20]
+    assert unit.get_raw_data_for_arm("Group 2") == [60, 92, 20]
 
     assert unit.derived_effect_previews
     dialog._set_val(0, 1, None, dialog.simple_table)
@@ -773,7 +780,7 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
 
     dialog._set_val(0, 1, -2, dialog.simple_table)
     dialog._copy_raw_data_from_table_to_analysis_unit()
-    original_raw = unit.get_raw_data_for_groups(["Group 1", "Group 2"])
+    original_raw = unit.get_raw_data_for_arms(["Group 1", "Group 2"])
     calls = []
 
     def failing_second_group(data, correlation, alpha):
@@ -792,7 +799,7 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
         dialog.val_changed("correlation_pre_post")
 
     assert len(calls) == 2
-    assert unit.get_raw_data_for_groups(["Group 1", "Group 2"]) == original_raw
+    assert unit.get_raw_data_for_arms(["Group 1", "Group 2"]) == original_raw
     assert dialog.correlation_pre_post.text() == "0.0"
     dialog.close()
 
@@ -833,9 +840,9 @@ def test_calculator_effect_source_preserves_entered_partial_and_empty_data(
     from rc_metastudio import analysis_dataset, calculator_routines
 
     unit = analysis_dataset.AnalysisUnit(
-        analysis_dataset.Outcome("Outcome", data_type),
+        analysis_dataset.Sheet("sheet", "Outcome", data_type),
         raw_data=raw_data,
-        group_names=groups,
+        arm_names=groups,
     )
     args = (unit, groups, metric, arm_key, 1.96)
 
@@ -847,13 +854,13 @@ def test_calculator_effect_source_preserves_entered_partial_and_empty_data(
     )
     assert calculator_routines.calculator_effect_source(*args) == "derived_preview"
 
-    unit.set_raw_data_for_group(groups[0], partial)
+    unit.set_raw_data_for_arm(groups[0], partial)
     unit.set_effect_for_source(
         "derived_preview", metric, arm_key, 0.6, 0.5, 0.7
     )
     assert calculator_routines.calculator_effect_source(*args) == "entered"
 
-    unit.set_raw_data_for_groups(groups, [[""] * len(values) for values in raw_data])
+    unit.set_raw_data_for_arms(groups, [[""] * len(values) for values in raw_data])
     assert calculator_routines.calculator_effect_source(*args) == "entered"
 
 
@@ -1111,7 +1118,7 @@ def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
     assert widths["PR"] == widths["PLO"]
     assert widths["AS"] >= widths["RD"]
 
-    maximum_rendered_ratio = str(round(sys.float_info.max, 4))
+    maximum_rendered_ratio = "1.798e+308"
     assert (
         calculator_routines.format_calculator_display_value(sys.float_info.max)
         == maximum_rendered_ratio
@@ -1150,10 +1157,14 @@ class FakeDiagnosticAnalysisUnit:
         self.raw_data = [1, 2, 3, 4]
         self.groups = {"Group 1-Group 2": FakeDiagnosticGroup(self.raw_data)}
 
-    def get_raw_data_for_group(self, group):
+        from types import SimpleNamespace
+        names = list(self.raw_data) if isinstance(self.raw_data, dict) else ["Group 1"]
+        self.arms = {name: SimpleNamespace(stable_id=name) for name in names}
+
+    def get_raw_data_for_arm(self, group):
         return self.raw_data
 
-    def get_raw_data_for_groups(self, groups):
+    def get_raw_data_for_arms(self, groups):
         return self.raw_data
 
     def get_effect_and_ci(self, metric, arm_key, confidence_multiplier):
@@ -1223,22 +1234,26 @@ def test_diagnostic_calculator_grid_columns_fill_expanded_table_width(
 class FakeContinuousAnalysisUnit:
     def __init__(self):
         from types import SimpleNamespace
-        self.outcome = SimpleNamespace(sub_type="means")
+        self.sheet = SimpleNamespace(sub_type="means")
         self.raw_data = {
             "Group 1": [10, 94, 2],
             "Group 2": [12, 90, 3],
         }
 
+        from types import SimpleNamespace
+        names = list(self.raw_data) if isinstance(self.raw_data, dict) else ["Group 1"]
+        self.arms = {name: SimpleNamespace(stable_id=name) for name in names}
+
     def get_effect_names(self):
         return ["ROM"]
 
-    def get_raw_data_for_group(self, group):
+    def get_raw_data_for_arm(self, group):
         return self.raw_data[group]
 
-    def set_raw_data_for_group(self, group, values):
+    def set_raw_data_for_arm(self, group, values):
         self.raw_data[group] = list(values)
 
-    def get_raw_data_for_groups(self, groups):
+    def get_raw_data_for_arms(self, groups):
         values = []
         for group in groups:
             values.extend(self.raw_data[group])
