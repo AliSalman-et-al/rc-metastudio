@@ -429,13 +429,6 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
                 self.metric_cbo_box.addItem(
                     ({"PR": "Proportion", "OR": "Odds ratio (OR)", "RR": "Risk ratio (RR)", "RD": "Risk difference (RD)", "MD": "Mean difference", "SMD": "Standardized mean difference (SMD)"}.get(metric, metric_pretty_name[:1] + metric_pretty_name[1:].lower())) if metric != "TX Mean" else metric_pretty_name, userData=str(metric)
                 )
-                if metric in ("HR", "IRR"):
-                    theme = "dark" if self.palette().color(QPalette.ColorRole.Text).lightness() >= 128 else "light"
-                    name = "hazard-ratio.svg" if metric == "HR" else "incidence-rate-ratio.svg"
-                    self.metric_cbo_box.setItemIcon(
-                        self.metric_cbo_box.count() - 1,
-                        QIcon(f":/icons/dataset-types/{theme}/{name}"),
-                    )
             index_of_default = self.metric_cbo_box.findData(str(default_effect))
             if index_of_default < 0:
                 raise ValueError(
