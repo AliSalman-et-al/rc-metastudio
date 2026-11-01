@@ -300,7 +300,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             )
         )
 
-        self.nav_tree.setHeaderLabels(["Results"])
+        self.nav_tree.setHeaderHidden(True)
         self.nav_tree.setAccessibleName("Result sections")
         self.nav_tree.setAccessibleDescription("Choose a figure, the text report, numerical tables or model configuration.")
         self.graphics_view.setAccessibleName("Analysis figures")
@@ -369,6 +369,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             item.setDisabled(title == "Tables" and not self._report_tables)
             self._report_nav_anchors[id(item)] = anchor
         self.nav_tree.currentItemChanged.connect(lambda item, _previous: self.item_clicked(item, 0) if item is not None else None)
+        self.nav_tree.resizeColumnToContents(0)
+        self.nav_tree.setFixedWidth(self.nav_tree.sizeHintForColumn(0) + 12)
         self._show_initial_result()
 
     def _show_initial_result(self):
@@ -559,12 +561,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_action.setShortcut("Ctrl+T")
         self.report_action.toggled.connect(self._show_report)
         self.report_action.triggered.connect(self._activate_report)
-        toolbar.addAction(self.report_action)
         self.tables_action = QAction("Tables", self)
         self.tables_action.setShortcut("Ctrl+Shift+T")
         self.tables_action.setEnabled(bool(self._report_tables))
         self.tables_action.triggered.connect(self._show_tables)
-        toolbar.addAction(self.tables_action)
         self.copy_report_action = QAction("Copy report", self)
         self.copy_report_action.setShortcut("Ctrl+Shift+C")
         self.copy_report_action.triggered.connect(self._copy_report)

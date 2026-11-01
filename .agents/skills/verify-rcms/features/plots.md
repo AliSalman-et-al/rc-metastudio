@@ -229,3 +229,11 @@ spanners in three styles, installed 0.5.0, About and saved/reopened project iden
 `project-reviewer-colours` checks Default markers/intervals/caps/diamonds and four
 export formats across standard/sequential/subgroup, single-arm, diagnostic and
 HR/IRR families, including the unchanged persisted `default` key in Edit plot.
+
+## Compact Results navigation
+
+`results-window` measures amino study-label nominal font height from SVG text size
+and its effective viewport transform at 1280×800 (96 DPI equivalent), requiring
+at least 9 pt and 85% drawn-text width coverage. It rejects toolbar actions that
+duplicate sidebar navigation. Six light/dark forest, manuscript and table captures
+are retained. See `docs/ux-hill-climb/SLICE8B.md` for the measurements and limits.

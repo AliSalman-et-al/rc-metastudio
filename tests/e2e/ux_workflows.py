@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Callable, cast
 from unittest.mock import patch
 
-from PyQt6 import QtCore, QtWidgets, QtTest
+from PyQt6 import QtCore, QtGui, QtWidgets, QtTest
 
 from tests.python.gui.test_types import mouse_click, key_click, required, wait
 
@@ -90,6 +90,46 @@ def run(app, window, work, root, record, analyze):
         assert "\n" not in "".join(node.itertext())
         assert not any(box(node).intersects(box(other)) for other in nodes if other is not node)
     assert directions[0].attrib["y"] == directions[1].attrib["y"]
+    view.showNormal()
+    view.resize(1280, 800)
+    app.processEvents()
+    app.processEvents()
+    selected_item = view._selected_plot()[1]
+    effective_scale = selected_item.deviceTransform(view.graphics_view.viewportTransform()).m11()
+    svg_root = ElementTree.parse(view._selected_plot()[0].display_path()).getroot()
+    coordinate_scale = selected_item.boundingRect().width() / float(svg_root.attrib["viewBox"].split()[2])
+    study = next(node for node in nodes if "Gonzalez" in "".join(node.itertext()))
+    label_pt = box(study).height() * coordinate_scale * effective_scale * 72 / 96
+    bounds = box(nodes[0])
+    for node in nodes[1:]:
+        bounds = bounds.united(box(node))
+    coverage = bounds.width() * coordinate_scale * effective_scale / view.graphics_view.viewport().width()
+    nav_names = {item.text(0) for item in view.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive)}
+    duplicates = [action.text() for toolbar in view.findChildren(QtWidgets.QToolBar) for action in toolbar.actions() if action.text() in nav_names]
+    record("slice8b-readability", view, study_label_pt=label_pt, drawn_width_fraction=coverage, duplicate_navigation=duplicates)
+    assert not duplicates, duplicates
+    assert label_pt >= 9, label_pt
+    assert coverage >= .85, coverage
+    original_palette = app.palette()
+    for theme, background, text, base in (("light", "#efefef", "#202020", "#ffffff"), ("dark", "#303238", "#f0f0f0", "#25272b")):
+        palette = QtGui.QPalette(original_palette)
+        for role in (QtGui.QPalette.ColorRole.Window, QtGui.QPalette.ColorRole.Button):
+            palette.setColor(role, QtGui.QColor(background))
+        for role in (QtGui.QPalette.ColorRole.WindowText, QtGui.QPalette.ColorRole.Text, QtGui.QPalette.ColorRole.ButtonText):
+            palette.setColor(role, QtGui.QColor(text))
+        palette.setColor(QtGui.QPalette.ColorRole.Base, QtGui.QColor(base))
+        app.setPalette(palette)
+        for page in ("forest", "manuscript", "tables"):
+            item = next(item for item in view.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive) if item.text(0) == {"forest": "Forest Plot", "manuscript": "Manuscript", "tables": "Tables"}[page])
+            view.nav_tree.setCurrentItem(item)
+            app.processEvents()
+            app.processEvents()
+            record("slice8b-results-" + page + "-" + theme, view)
+    app.setPalette(original_palette)
+    view.nav_tree.setCurrentItem(next(item for item in view.nav_tree.findItems("Forest Plot", QtCore.Qt.MatchFlag.MatchExactly)))
+    app.processEvents()
+
+
     for arm in window.model.arm_names:
         assert "Favours" in svg and arm in svg
     assert not hasattr(view, "identity_label")
