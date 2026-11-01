@@ -237,3 +237,10 @@ and its effective viewport transform at 1280×800 (96 DPI equivalent), requiring
 at least 9 pt and 85% drawn-text width coverage. It rejects toolbar actions that
 duplicate sidebar navigation. Six light/dark forest, manuscript and table captures
 are retained. See `docs/ux-hill-climb/SLICE8B.md` for the measurements and limits.
+
+The shared `ux-improvements` / `results-window` drive waits for the visible
+`EditPlotDialog` before editing direction labels. It deliberately dispatches a
+timer turn before the editor opens: Windows embedded R may dispatch native events
+while loading saved parameters, so a one-shot callback can otherwise be consumed
+before there is a modal to operate. Both paths retain label persistence and
+arm-swap assertions; the 600-second bound is unchanged.

@@ -267,11 +267,19 @@ def run(app, window, work, root, record, analyze):
     for custom in (False, True):
         if custom:
             edited = analyze(app, window, "binary.random")
+            from rc_metastudio.plot_editor_dialog import EditPlotDialog
             editor_errors = []
+            editor_driven = []
+            waiting_callbacks = []
+            editor_timer = QtCore.QTimer(edited)
             def customise():
                 dialog = app.activeModalWidget()
+                if not isinstance(dialog, EditPlotDialog) or not dialog.isVisible():
+                    waiting_callbacks.append(True)
+                    return
+                editor_timer.stop()
+                editor_driven.append(True)
                 try:
-                    assert isinstance(dialog, QtWidgets.QDialog)
                     assert cast(Callable[..., bool], QtTest.QTest.qWaitForWindowExposed)(dialog, 5000)
                     record("ux-custom-editor-visible", dialog)
                     dialog.favours_left.setText("Favours custom first")
@@ -282,10 +290,21 @@ def run(app, window, work, root, record, analyze):
                     if dialog is not None:
                         dialog.reject()
             record("ux-custom-editor-before", edited)
-            QtCore.QTimer.singleShot(0, customise)
-            edited.edit_plot_action.trigger()
+            editor_timer.timeout.connect(customise)
+            editor_timer.start(10)
+            try:
+                # Windows R calls can dispatch this callback while saved plot
+                # parameters load, before the editor exists. Prove that turn
+                # cannot consume the only attempt to operate the dialog.
+                QtTest.QTest.qWait(30)
+                assert waiting_callbacks
+                edited.edit_plot_action.trigger()
+            finally:
+                editor_timer.stop()
+                editor_timer.deleteLater()
+            assert editor_driven, "Edit plot did not open its editor"
             assert not editor_errors, editor_errors
-            record("ux-custom-editor-after", edited)
+            record("ux-custom-editor-after", edited, callbacks_before_editor=len(waiting_callbacks))
             assert window.model.current_sheet.settings["favours_labels"] == ["Favours custom first", "Favours custom second"]
             close_result(edited)
         before = list(window.model.arm_names)
