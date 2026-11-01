@@ -22,7 +22,11 @@ def start_automation(phase_callback=None):
     """Construct the ordinary application composition for tests and packaging."""
     from rc_metastudio.launch import compose_application
 
-    app, window = compose_application(phase_callback=phase_callback)
+    return compose_application(phase_callback=phase_callback)
+
+
+def _start_package_application(phase_callback=None):
+    app, window = start_automation(phase_callback=phase_callback)
     app.processEvents()
     from rc_metastudio import r_backend
     if not r_backend.is_ready():
@@ -51,7 +55,7 @@ def start_package_open_report(output_path: str, project_path: str) -> int:
     try:
         record_phase(f"project:{Path(project_path).name}")
         record_phase("composition:start")
-        app, window = start_automation(phase_callback=record_phase)
+        app, window = _start_package_application(phase_callback=record_phase)
         try:
             record_phase("project-open:start")
             opened = window.open(os.path.abspath(project_path), raise_on_error=True)
@@ -85,7 +89,7 @@ def start_package_edit_save(
 ) -> int:
     """Edit one explicit cell and save to one explicit destination."""
     _configure_package_locale()
-    app, window = start_automation()
+    app, window = _start_package_application()
     try:
         opened = bool(window.open(os.path.abspath(project_path), raise_on_error=True))
         edited = saved = False
@@ -113,7 +117,7 @@ def start_package_edit_save(
 def start_package_analyze(output_path: str, project_path: str, analysis_method: str) -> int:
     """Open one explicit project and run one explicit analysis method."""
     _configure_package_locale()
-    app, window = start_automation()
+    app, window = _start_package_application()
     try:
         opened = bool(window.open(os.path.abspath(project_path), raise_on_error=True))
         if not opened:
@@ -148,7 +152,7 @@ def start_package_import_export(output_path, project_path, xlsx_path, rm5_path):
 
     headers, rows, names, selected = csv_import.read_xlsx(xlsx_path)
     review = rm5_import.read_rm5(rm5_path)
-    app, window = start_automation()
+    app, window = _start_package_application()
     try:
         if not window.open(os.path.abspath(project_path), raise_on_error=True):
             raise RuntimeError("project did not open")
@@ -262,7 +266,7 @@ def start_package_surface_smoke(evidence_path: str, requested_scale: str) -> int
     from PyQt6 import QtCore, QtGui, QtNetwork, QtWidgets
 
     _configure_surface_locale(QtCore)
-    app, window = start_automation()
+    app, window = _start_package_application()
     close_attempted = False
     try:
         record = _surface_record(
