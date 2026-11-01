@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QFileDialog
 from rc_metastudio import adaptive_window, app_error_handler, qt_text
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
+    size_plot_text_editor,
     plot_text_value,
 )
 from rc_metastudio.publication_bias import (
@@ -120,6 +121,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         )
         self.button_box.clicked.connect(self._button_clicked)
         self._connect_dirty_signals()
+        size_plot_text_editor(self)
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )

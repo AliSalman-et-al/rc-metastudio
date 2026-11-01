@@ -478,6 +478,11 @@ def plots(app, window, family, record, *, view=None):
 
     def edit(dialog):
         field = dialog.x_label_edit if funnel else dialog.x_lbl_le
+        for heading in ("figure_caption", "col1_str_edit", "col2_str_edit", "col3_str_edit", "col4_str_edit", "x_lbl_le", "x_label_edit", "y_label_edit"):
+            control = getattr(dialog, heading, None)
+            if control is not None and control.isVisible():
+                text = control.text() or control.placeholderText()
+                assert control.contentsRect().width() - 8 >= control.fontMetrics().horizontalAdvance(text), (heading, text, control.width())
         field.setText(label)
         assert dialog.figure_caption.isVisible(), "figure caption cannot be edited"
         assert dialog.figure_caption.text(), "standalone figure lacks context"

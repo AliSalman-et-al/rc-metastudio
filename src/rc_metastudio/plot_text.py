@@ -67,3 +67,21 @@ def plot_parameter_text_value(widget):
         plot_text_value(widget),
         was_edited=bool(widget.property("plotTextWasEdited")),
     )
+
+
+def size_plot_text_editor(surface):
+    """Give heading fields the spare width in the screen-bounded editor."""
+    from PyQt6.QtWidgets import QGridLayout, QLineEdit, QSizePolicy
+    from rc_metastudio import adaptive_window
+
+    widest = 0
+    for field in surface.findChildren(QLineEdit):
+        field.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        widest = max(widest, field.fontMetrics().horizontalAdvance(field.text() or field.placeholderText()))
+        layout = field.parentWidget().layout()
+        if isinstance(layout, QGridLayout):
+            index = layout.indexOf(field)
+            if index >= 0:
+                _, column, _, _ = layout.getItemPosition(index)
+                layout.setColumnStretch(column, 1)
+    adaptive_window.set_content_preferred_width(surface, 360, max(680, widest + 240))

@@ -23,6 +23,7 @@ from rc_metastudio import adaptive_window, app_error_handler, plot_capabilities,
 from rc_metastudio.plot_defaults import FOREST_ARM_LABELS
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
+    size_plot_text_editor,
     plot_parameter_text_value,
     plot_text_value,
     set_plot_text_value,
@@ -135,6 +136,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.setTabOrder(self.style_cbo, self.figure_caption)
         self.setTabOrder(self.figure_caption, self.show_1)
         self._configure_option_groups()
+        size_plot_text_editor(self)
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
