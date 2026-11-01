@@ -536,7 +536,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         width = max(content_hint.width(), self._method_width_hint())
         hint.setWidth(max(hint.width(), width + horizontal_margins + scrollbar.sizeHint().width(),
                           self._parameter_width_hint() + horizontal_margins + 80))
-        hint.setHeight(self.content_scroll_area.minimumHeight() + self.buttonBox.sizeHint().height() + 30)
+        hint.setHeight(
+            self.content_scroll_area.minimumHeight() + self.buttonBox.sizeHint().height()
+            + margins.top() + margins.bottom() + root_layout.spacing()
+        )
         return hint
 
     def _method_width_hint(self):
@@ -1555,8 +1558,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             position = self.pos()
             previous_size = self.size()
             self._set_scroll_body_height(content_height)
-            self.adjustSize()
-            self.resize(self.size().expandedTo(previous_size))
+            if self.isVisible():
+                self.resize(previous_size.width(), max(previous_size.height(), self.sizeHint().height()))
+            else:
+                self.adjustSize()
             self.move(position)
         self._reveal_focused_control(None, QtWidgets.QApplication.focusWidget())
 
