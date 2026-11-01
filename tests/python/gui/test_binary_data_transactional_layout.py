@@ -328,7 +328,7 @@ def test_binary_back_calculation_unlocks_from_arm_totals_and_effect(monkeypatch)
         assert observed[-1]["N_A"] == 100
         assert observed[-1]["N_B"] == 100
         assert dialog.back_calculate_button.isEnabled()
-        assert dialog.analysis_unit.get_raw_data_for_groups(dialog.arm_names) == [
+        assert dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names) == [
             None,
             100,
             None,
@@ -344,7 +344,7 @@ def test_binary_back_calculation_unlocks_from_arm_totals_and_effect(monkeypatch)
         mouse_click(dialog.back_calculate_button, QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
 
-        assert dialog.analysis_unit.get_raw_data_for_groups(dialog.arm_names) == [
+        assert dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names) == [
             10,
             100,
             5,
@@ -411,8 +411,8 @@ def test_binary_back_calculation_chooser_cancel_is_an_exact_nested_transaction(
         app.processEvents()
 
         assert _binary_table_snapshot(dialog) == table_before
-        assert dialog.analysis_unit.get_raw_data_for_groups(dialog.arm_names) == (
-            model_before.get_raw_data_for_groups(dialog.arm_names)
+        assert dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names) == (
+            model_before.get_raw_data_for_arms(dialog.arm_names)
         )
         assert dialog.analysis_unit.entered_effects == model_before.entered_effects
         assert window.workspace.is_dirty is dirty_before
@@ -468,7 +468,7 @@ def test_binary_back_calculation_chooser_accept_commits_selected_option(monkeypa
 
         assert selected_second == [True]
         assert _binary_table_snapshot(dialog)[:6] == ["4", "10", "14", "5", "11", "16"]
-        assert dialog.analysis_unit.get_raw_data_for_groups(dialog.arm_names) == [
+        assert dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names) == [
             4,
             14,
             5,

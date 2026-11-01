@@ -493,32 +493,7 @@ def set_current_effect_from_value(
     )
 
 
-def update_calculator_readout(dialog, data_type):
-    """Refresh read-only statistics without replacing the user's editable text."""
-    analysis_unit = dialog.analysis_unit
-    current_effect = dialog.current_effect
-    arm_key = dialog.arm_key
-    confidence_multiplier = dialog.confidence_multiplier
-    source = calculator_effect_source(
-        analysis_unit, dialog.arm_names, current_effect, arm_key, confidence_multiplier
-    )
-    est, lower, upper = analysis_unit.get_effect_and_ci_for_source(
-        source, current_effect, arm_key, confidence_multiplier
-    )
-    converters = {
-        "binary": r_bridge.binary_convert_scale,
-        "continuous": r_bridge.continuous_convert_scale,
-        "diagnostic": r_bridge.diagnostic_convert_scale,
-    }
-    if not hasattr(dialog, "wald_readout"):
-        dialog.wald_readout = QLabel(dialog)
-        dialog.wald_readout.setObjectName("calculator_wald")
-        for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
-            field.editingFinished.connect(lambda: update_calculator_readout(dialog, data_type))
-        if data_type == "diagnostic":
-            dialog.effect_layout.addWidget(dialog.wald_readout, 2, 0, 1, 6)
-        else:
-            dialog.dialog_layout.insertWidget(dialog.dialog_layout.count() - 2, dialog.wald_readout)
+def _wald_summary(data_type, current_effect, est, lower, upper, confidence_multiplier) -> str:
     summary = ""
     if all(value is not None for value in (est, lower, upper)):
         se = (upper - lower) / (2 * confidence_multiplier)
@@ -535,6 +510,69 @@ def update_calculator_readout(dialog, data_type):
             if data_type != "diagnostic":
                 p_text = "<0.001" if p < 0.001 else f"{p:.3f}"
                 summary += f"    Z: {z:.4f}    Two-sided P: {p_text}"
+    return summary
+
+
+def _update_binary_metric_table(dialog, raw) -> None:
+    if not hasattr(dialog, "metric_readout"):
+        table = QTableWidget(3, 4, dialog)
+        dialog.metric_readout = table
+        table.setObjectName("calculator_metrics")
+        table.setHorizontalHeaderLabels(["Metric", "Estimate", "Lower CI", "Upper CI"])
+        table.verticalHeader().hide()
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        dialog.content_layout.addWidget(table)
+        def select_metric(row, column):
+            index = dialog.effect_combo_box.findData(("OR", "RR", "RD")[row])
+            if index < 0:
+                index = dialog.effect_combo_box.findText(("OR", "RR", "RD")[row])
+            dialog.effect_combo_box.setCurrentIndex(index)
+        table.cellClicked.connect(select_metric)
+    for row, metric in enumerate(("OR", "RR", "RD")):
+        result = dialog.calculator.effect_for_study(
+            *raw, metric=metric, confidence_level=dialog.confidence_level
+        )
+        values = dialog.calculator.effect_triplet(result)
+        display = [r_bridge.binary_convert_scale(v, metric, convert_to="display.scale") for v in values]
+        for column, value in enumerate([metric] + display):
+            text = value if isinstance(value, str) else (
+                "" if value is None else format_calculator_display_value(value)
+            )
+            dialog.metric_readout.setItem(row, column, QTableWidgetItem(text))
+    table = dialog.metric_readout
+    table.resizeColumnsToContents()
+    table.resizeRowsToContents()
+    table.setFixedHeight(table.horizontalHeader().height()
+                         + sum(table.rowHeight(row) for row in range(table.rowCount()))
+                         + 2 * table.frameWidth())
+    table.setMinimumWidth(sum(table.columnWidth(col) for col in range(table.columnCount()))
+                          + 2 * table.frameWidth())
+
+
+def update_calculator_readout(dialog, data_type):
+    """Refresh read-only statistics without replacing the user's editable text."""
+    analysis_unit = dialog.analysis_unit
+    current_effect = dialog.current_effect
+    arm_key = dialog.arm_key
+    confidence_multiplier = dialog.confidence_multiplier
+    source = calculator_effect_source(
+        analysis_unit, dialog.arm_names, current_effect, arm_key, confidence_multiplier
+    )
+    est, lower, upper = analysis_unit.get_effect_and_ci_for_source(
+        source, current_effect, arm_key, confidence_multiplier
+    )
+    if not hasattr(dialog, "wald_readout"):
+        dialog.wald_readout = QLabel(dialog)
+        dialog.wald_readout.setObjectName("calculator_wald")
+        for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
+            field.editingFinished.connect(lambda: update_calculator_readout(dialog, data_type))
+        if data_type == "diagnostic":
+            dialog.effect_layout.addWidget(dialog.wald_readout, 2, 0, 1, 6)
+        else:
+            dialog.content_layout.addWidget(dialog.wald_readout)
+    summary = _wald_summary(data_type, current_effect, est, lower, upper, confidence_multiplier)
     dialog.wald_readout.setText(summary)
     raw = analysis_unit.get_raw_data_for_arms(dialog.arm_names)
     complete_binary = (
@@ -542,41 +580,7 @@ def update_calculator_readout(dialog, data_type):
         and all(v not in EMPTY_VALS for v in raw)
     )
     if complete_binary:
-        if not hasattr(dialog, "metric_readout"):
-            table = QTableWidget(3, 4, dialog)
-            dialog.metric_readout = table
-            table.setObjectName("calculator_metrics")
-            table.setHorizontalHeaderLabels(["Metric", "Estimate", "Lower CI", "Upper CI"])
-            table.verticalHeader().hide()
-            table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-            table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-            table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-            dialog.dialog_layout.insertWidget(dialog.dialog_layout.count() - 2, table)
-            def select_metric(row, column):
-                index = dialog.effect_combo_box.findData(("OR", "RR", "RD")[row])
-                if index < 0:
-                    index = dialog.effect_combo_box.findText(("OR", "RR", "RD")[row])
-                dialog.effect_combo_box.setCurrentIndex(index)
-            table.cellClicked.connect(select_metric)
-        for row, metric in enumerate(("OR", "RR", "RD")):
-            result = dialog.calculator.effect_for_study(
-                *raw, metric=metric, confidence_level=dialog.confidence_level
-            )
-            values = dialog.calculator.effect_triplet(result)
-            display = [converters[data_type](v, metric, convert_to="display.scale") for v in values]
-            for column, value in enumerate([metric] + display):
-                text = value if isinstance(value, str) else (
-                    "" if value is None else format_calculator_display_value(value)
-                )
-                dialog.metric_readout.setItem(row, column, QTableWidgetItem(text))
-        table = dialog.metric_readout
-        table.resizeColumnsToContents()
-        table.resizeRowsToContents()
-        table.setFixedHeight(table.horizontalHeader().height()
-                             + sum(table.rowHeight(row) for row in range(table.rowCount()))
-                             + 2 * table.frameWidth())
-        table.setMinimumWidth(sum(table.columnWidth(col) for col in range(table.columnCount()))
-                              + 2 * table.frameWidth())
+        _update_binary_metric_table(dialog, raw)
     if hasattr(dialog, "metric_readout"):
         dialog.metric_readout.setVisible(complete_binary)
 
