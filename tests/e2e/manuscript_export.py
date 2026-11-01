@@ -86,6 +86,18 @@ def run(app, window, work, root, record, analyze):
         expected = "A continuity correction of 0.5 was applied to individual study estimates only; the pooled " + ("Mantel-Haenszel" if method.endswith("mh") else "Peto") + " estimate uses the original counts."
         assert expected in view.manuscript.methods, view.manuscript.methods
         (work / (method + '-prose.txt')).write_text(view.manuscript.methods, encoding='utf-8')
+        for suffix in ('pdf', 'docx'):
+            path = work / (method + '.' + suffix)
+            with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', return_value=(str(path), suffix)):
+                view.export_report_action.trigger()
+            if suffix == 'pdf':
+                text = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', str(path), '-'], text=True, encoding='utf-8')
+            else:
+                doc = Document(path)
+                text = '\n'.join(p.text for p in doc.paragraphs) + '\n' + '\n'.join(c.text for t in doc.tables for r in t.rows for c in r.cells)
+            assert ' '.join(expected.split()) in ' '.join(text.split())
+            import re
+            assert not re.search(r"\b(?:NaN|Inf)\b", text), text
         record('manuscript-correction-' + method, view, methods=view.manuscript.methods)
         close_result(view)
     for sample, method in (("amino", "binary.random"), ("continuous", "continuous.random"), ("lymph", "diagnostic.reitsma"), ("Pignon2000-HR", "time_to_event.random")):
