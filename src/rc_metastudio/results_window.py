@@ -263,6 +263,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._raster_plot_items = []
         self._refitting_svg_plots = False
         self._viewport_refit_pending = False
+        self._closing = False
+        self._viewport_refit_timer = QTimer(self)
+        self._viewport_refit_timer.setSingleShot(True)
+        self._viewport_refit_timer.timeout.connect(self._run_scheduled_viewport_refit)
         self._viewport_width_override = None
         self._first_show_refit_pending = True
         self._layout_items = []
@@ -280,6 +284,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         viewport = self.graphics_view.viewport()
         if viewport is None:
             raise RuntimeError("Results graphics view has no viewport")
+        self._graphics_viewport = viewport
         viewport.installEventFilter(self)
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.RESULTS
@@ -962,14 +967,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._relayout_sections()
 
     def _schedule_viewport_refit(self):
-        if self._viewport_refit_pending:
+        if self._closing or self._viewport_refit_pending:
             return
         self._viewport_refit_pending = True
-        QTimer.singleShot(0, self._run_scheduled_viewport_refit)
+        self._viewport_refit_timer.start(0)
 
     def _run_scheduled_viewport_refit(self):
         self._viewport_refit_pending = False
-        if self.isVisible():
+        if not self._closing and self.isVisible():
             if self._first_show_refit_pending:
                 self._first_show_refit_pending = False
                 self._set_restored_splitter_sizes()
@@ -986,8 +991,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     ) -> bool:
         if (
             event is not None
-            and watched is self.graphics_view.viewport()
             and event.type() == QEvent.Type.Resize
+            and watched is self._graphics_viewport
         ):
             self._schedule_viewport_refit()
         return super(ResultsWindow, self).eventFilter(watched, event)
@@ -1077,6 +1082,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     ) -> None:
         save_results_window_state(self)
         super(ResultsWindow, self).closeEvent(event)
+        if event is not None and not event.isAccepted():
+            return
+        # A later modal loop may deliver deferred deletion. Stop rendering while
+        # the window, viewport and scene are still alive, before that boundary.
+        self._closing = True
+        self._viewport_refit_timer.stop()
+        self._viewport_refit_pending = False
+        self._graphics_viewport.removeEventFilter(self)
+        self.graphics_view.setScene(None)
         self.deleteLater()
 
     def create_pixmap_item(

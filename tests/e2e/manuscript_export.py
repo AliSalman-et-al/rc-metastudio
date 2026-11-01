@@ -1,5 +1,6 @@
 from typing import Any, Callable, cast
 import sys
+import gc
 """Reopen real manuscript exports and compare with the executed result."""
 from unittest.mock import patch
 import subprocess
@@ -12,10 +13,27 @@ from tests.python.gui.test_types import mouse_click, required
 
 
 def run(app, window, work, root, record, analyze):
+    pending_close = None
+
+    def lifetime_marker(phase, view):
+        deleted = sip.isdeleted(view)
+        state = {"phase": phase, "view": hex(id(view)), "deleted": deleted}
+        if pending_close is not None:
+            state["previous_result_deleted"] = sip.isdeleted(pending_close)
+        if not deleted:
+            state.update(visible=view.isVisible(), refit_pending=view._viewport_refit_pending,
+                         scene_deleted=sip.isdeleted(view.scene),
+                         viewport_deleted=sip.isdeleted(view.graphics_view.viewport()))
+        print("Manuscript lifetime: " + repr(state), file=sys.stderr, flush=True)
+
     def close_result(view):
+        lifetime_marker("close-before", view)
         view.close()
         automation.dispose_qobjects(app, (view,))
         assert sip.isdeleted(view)
+        gc.collect()
+        app.processEvents()
+        lifetime_marker("close-after", view)
 
     # Derive boundary cases from real legacy bytes, then open through production IO.
     import copy, io, json, zipfile
@@ -109,6 +127,7 @@ def run(app, window, work, root, record, analyze):
             path = work / (sample + '.' + suffix)
             def picker(*args, **kwargs):
                 assert args[0] is view and not sip.isdeleted(view) and view.isVisible()
+                lifetime_marker(f"{sample}-{suffix}-picker-create", view)
                 record('manuscript-picker-before', view, sample=sample, suffix=suffix)
                 dialog = QtWidgets.QFileDialog(view)
                 dialog.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog)
@@ -120,6 +139,9 @@ def run(app, window, work, root, record, analyze):
                 def save():
                     try:
                         assert cast(Callable[..., bool], QtTest.QTest.qWaitForWindowExposed)(dialog, 5000)
+                        gc.collect()
+                        app.processEvents()
+                        lifetime_marker(f"{sample}-{suffix}-picker-visible", view)
                         assert not sip.isdeleted(view) and view.isVisible()
                         from pathlib import Path
                         assert Path(dialog.selectedFiles()[0]).resolve() == path.resolve()
@@ -133,7 +155,9 @@ def run(app, window, work, root, record, analyze):
                         dialog.reject()
                 QtCore.QTimer.singleShot(0, save)
                 try:
+                    lifetime_marker(f"{sample}-{suffix}-picker-exec-enter", view)
                     accepted = dialog.exec()
+                    lifetime_marker(f"{sample}-{suffix}-picker-exec-return", view)
                     assert not picker_errors, picker_errors
                     assert accepted
                     selected = dialog.selectedFiles()[0], dialog.selectedNameFilter()
@@ -190,7 +214,41 @@ def run(app, window, work, root, record, analyze):
         item = view.nav_tree.findItems('Manuscript', __import__('PyQt6.QtCore', fromlist=['Qt']).Qt.MatchFlag.MatchExactly)[0]
         view.nav_tree.setCurrentItem(item)
         record('manuscript-panel-' + sample, view)
+        result = view.results
         close_result(view)
+        from rc_metastudio.results_window import ResultsWindow
+        for cycle in range(3):
+            # Leave a real close/deferred-delete pending across the next save
+            # dialog, as opposed to only testing explicit harness disposal.
+            previous = ResultsWindow(result, parent=window)
+            previous.show()
+            previous.resize(previous.width() + 1, previous.height())
+            lifetime_marker(f"{sample}-stress-{cycle}-previous-close", previous)
+            previous.close()
+            pending_close = previous
+            lifetime_marker(f"{sample}-stress-{cycle}-previous-closed", previous)
+            assert previous.graphics_view.scene() is None, "Closing Results must detach the viewport before deferred deletion"
+            view = ResultsWindow(result, parent=window)
+            view.show()
+            view.resize(view.width() + 1, view.height())
+            gc.collect()
+            path = work / f"stress-{sample}-{cycle}.pdf"
+            suffix = "pdf"
+            lifetime_marker(f"{sample}-stress-{cycle}-export", view)
+            with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', side_effect=picker):
+                view.export_report_action.trigger()
+            assert path.read_bytes().startswith(b"%PDF")
+            app.processEvents()
+            assert sip.isdeleted(previous)
+            assert sip.isdeleted(previous.scene)
+            assert all(sip.isdeleted(item) for item in previous._layout_items)
+            record("manuscript-lifetime-stress", view, sample=sample, cycle=cycle,
+                   previous_deleted=True, exported=str(path))
+            close_result(view)
+            pending_close = None
+            del previous
+            gc.collect()
+            app.processEvents()
 
     sys.path.insert(0, str(root / ".agents/skills/verify-rcms/scripts"))
     from tests.e2e.audit_round3 import analyze_existing

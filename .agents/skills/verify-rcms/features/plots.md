@@ -244,3 +244,16 @@ timer turn before the editor opens: Windows embedded R may dispatch native event
 while loading saved parameters, so a one-shot callback can otherwise be consumed
 before there is a modal to operate. Both paths retain label persistence and
 arm-swap assertions; the 600-second bound is unchanged.
+
+## Results close/export lifetime
+
+`manuscript-export` additionally repeats three close/open/export cycles for each
+of binary, continuous, joint diagnostic and HR results (12 cycles total). Each
+leaves an ordinary close/deferred-delete pending across the next real Qt save
+picker, forces `gc.collect()` and event processing, exports a PDF, and checks
+that the old scene and every old item were deleted. Flushed `Manuscript lifetime`
+markers surround close and picker entry/return for `-X faulthandler` diagnosis.
+The closing viewport must already be detached before deletion; refit work is
+owned by a child timer and canceled on close. Linux evidence does not establish
+that the reported Windows native access violation is fixed; that requires the
+targeted Windows rerun, including its native event receiver if it faults again.
