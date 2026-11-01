@@ -825,6 +825,33 @@ def verify_sheet_strip(app, window, screens):
     assert tabs.visibleRegion().boundingRect().height() == tabs.height()
     assert window.add_sheet_button.visibleRegion().boundingRect().size() == window.add_sheet_button.size()
     assert window.sheet_strip.mapTo(window, QtCore.QPoint()).y() >= window.tableView.mapTo(window, window.tableView.rect().bottomLeft()).y()
+    tabs.setCurrentIndex(0)
+    window.tableView.setColumnWidth(0, 500)
+    window.resize(1024, 700)
+    app.processEvents()
+    app.processEvents()
+    grid_scroll = window.sheet_grid_scrollbar
+    native_scroll = window.tableView.horizontalScrollBar()
+    assert grid_scroll.isVisible() and grid_scroll.maximum() > 0
+    option = QtWidgets.QStyleOptionSlider()
+    grid_scroll.initStyleOption(option)
+    handle = grid_scroll.style().subControlRect(QtWidgets.QStyle.ComplexControl.CC_ScrollBar, option, QtWidgets.QStyle.SubControl.SC_ScrollBarSlider, grid_scroll)
+    start = handle.center()
+    before = grid_scroll.value()
+    QTest.mousePress(grid_scroll, QtCore.Qt.MouseButton.LeftButton, pos=start)
+    QTest.mouseMove(grid_scroll, start + QtCore.QPoint(80, 0), 100)
+    QTest.mouseRelease(grid_scroll, QtCore.Qt.MouseButton.LeftButton, pos=start + QtCore.QPoint(80, 0))
+    assert grid_scroll.value() > before
+    assert native_scroll.value() == grid_scroll.value()
+    window.tableView.scrollTo(window.model.index(0, 0))
+    app.processEvents()
+    assert native_scroll.value() == grid_scroll.value() == 0
+    record_step("sheet-strip-grid-drag-1024", window)
+    assert window.grab().save(str(screens / "slice10-tabs-scrollbar-1024.png"))
+    window.resize(1600, 828)
+    app.processEvents()
+    app.processEvents()
+    assert native_scroll.maximum() == 0 and not grid_scroll.isVisible()
     original_palette = app.palette()
     for theme, foreground, background in (("light", "#202020", "#ffffff"), ("dark", "#eeeeee", "#202020")):
         palette = QtGui.QPalette(original_palette)

@@ -221,8 +221,14 @@ class SheetTabBar(QtWidgets.QTabBar):
             palette = QtWidgets.QApplication.palette()
             template = getattr(self, "palette_stylesheet", self.styleSheet())
             for name, role in (("window", QtGui.QPalette.ColorRole.Window), ("window-text", QtGui.QPalette.ColorRole.WindowText), ("alternate-base", QtGui.QPalette.ColorRole.AlternateBase), ("mid", QtGui.QPalette.ColorRole.Mid), ("highlight", QtGui.QPalette.ColorRole.Highlight)):
-                template = template.replace("palette(" + name + ")", palette.color(role).name())
+                colour = palette.color(role)
+                if name == "mid":
+                    colour = palette.color(QtGui.QPalette.ColorRole.Window)
+                    colour = colour.lighter(140) if colour.lightness() < 128 else colour.darker(115)
+                template = template.replace("palette(" + name + ")", colour.name())
             self.setStyleSheet(template)
+            if hasattr(self.window(), "add_sheet_button"):
+                self.window().add_sheet_button.setStyleSheet("QToolButton { color: " + palette.color(QtGui.QPalette.ColorRole.WindowText).name() + "; background: transparent; border: 0; font-size: 18px; }")
             self._updating_palette = False
 
     def eventFilter(self, a0: QtCore.QObject | None, a1: QtCore.QEvent | None) -> bool:
@@ -1452,6 +1458,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             QTabBar::tab { background: palette(window); color: palette(window-text);
                 border: 0; border-right: 1px solid palette(mid);
                 border-bottom: 3px solid transparent; padding: 6px 12px; }
+            QTabBar::tab:last { border-right: 0; }
             QTabBar::tab:hover { background: palette(alternate-base); }
             QTabBar::tab:selected { background: palette(window); font-weight: bold;
                 border-bottom: 3px solid palette(highlight); }
@@ -1460,7 +1467,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.add_sheet_button = QtWidgets.QToolButton(self)
         self.add_sheet_button.setText("+")
         self.add_sheet_button.setToolTip("Add sheet")
-        self.add_sheet_button.setStyleSheet("QToolButton { border: 1px solid palette(mid); border-radius: 11px; padding: 0; margin: 2px; } QToolButton:hover { background: palette(alternate-base); }")
+        self.add_sheet_button.setStyleSheet("QToolButton { color: palette(window-text); background: transparent; border: 0; font-size: 18px; padding: 0; margin: 2px; } QToolButton:hover { background: palette(alternate-base); }")
         self.add_sheet_button.setFixedSize(26, 26)
         content = QtWidgets.QWidget(self)
         self.sheet_tab_content = content
