@@ -437,6 +437,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.gridLayout.setColumnStretch(0, 0)
         self.gridLayout.setColumnStretch(1, 1)
         self._layout_reflow_pending = False
+        self._resize_on_reflow = False
         self._layout_reflow_timer = QtCore.QTimer(self)
         self._layout_reflow_timer.setSingleShot(True)
         self._layout_reflow_timer.timeout.connect(self._apply_local_reflow)
@@ -1358,6 +1359,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.advanced_panel.setVisible(checked)
         self._refresh_advanced_summary()
         QtCore.QSettings().setValue("analysis/advancedExpanded", checked)
+        self._resize_on_reflow = True
         self._schedule_local_reflow()
 
     def _parameter_label(self, spec):
@@ -1531,6 +1533,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _apply_local_reflow(self):
         self._layout_reflow_pending = False
+        resize_window = self._resize_on_reflow
+        self._resize_on_reflow = False
         for combo in self.content_scroll_area.findChildren(QComboBox):
             adaptive_controls.refresh_choice_popup_width(combo)
         for layout in (
@@ -1545,11 +1549,15 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         active_page = self.specs_tab.currentWidget()
         assert active_page is not None
         content_height = active_page.minimumSizeHint().height() + 40
-        # Once shown, method changes reflow inside the scroll body. Growing
-        # its minimum would resize the whole dialog under native font metrics.
-        if not self.isVisible():
+        # Method changes stay inside the scroll body. Explicit disclosure of
+        # Advanced controls may grow the dialog while preserving its placement.
+        if not self.isVisible() or resize_window:
+            position = self.pos()
+            previous_size = self.size()
             self._set_scroll_body_height(content_height)
             self.adjustSize()
+            self.resize(self.size().expandedTo(previous_size))
+            self.move(position)
         self._reveal_focused_control(None, QtWidgets.QApplication.focusWidget())
 
     def _reveal_focused_control(self, _old, focused):
