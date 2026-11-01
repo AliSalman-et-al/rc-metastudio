@@ -359,6 +359,12 @@ class WorkspaceEditingService:
         if target.column != context.name_column:
             self._last_error = 'Please enter a study name before entering study data.'
             return None
+        if not allow_empty_names:
+            try:
+                name_validation.validate_required_name("study", value)
+            except ValueError as error:
+                self._last_error = str(error)
+                return None
         while len(sheet.rows) <= target.row:
             sheet.rows.append(StudyRow(uuid.uuid4().hex, '', AnalysisUnit(sheet, arm_names=[a.name for a in sheet.arms], arm_stable_ids=[a.id for a in sheet.arms])))
         return sheet.rows[target.row]
