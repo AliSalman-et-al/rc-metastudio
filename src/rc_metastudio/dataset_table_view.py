@@ -926,30 +926,6 @@ class DatasetTableView(QtWidgets.QTableView):
             return lower_right
         return None
 
-    def _add_studies_if_necessary(self, upper_left_index, content):
-        """If there are not enough studies to contain the content, this will
-        add them.
-        """
-        origin_row = upper_left_index.row()
-        num_existing_studies = len(self.model().get_studies(False))
-
-        num_to_add = len(content) - num_existing_studies - origin_row
-
-        for _ in range(num_to_add):
-            study_id = self.model().dataset.max_study_id() + 1
-            new_study = StudyRow(study_id)
-            self.model().dataset.add_study(new_study)
-
-        # now append a blank study if studies were added.
-        if num_to_add > 0:
-            new_study = StudyRow(self.model().dataset.max_study_id() + 1)
-            # Newly appended placeholder studies remain excluded until populated.
-            new_study.include = False
-            self.model().dataset.add_study(new_study)
-            self.model().study_auto_added = int(new_study.id)
-
-        self.model().reset_model()
-
 
 class StudyDelegate(QItemDelegate):
     def __init__(self, parent=None):

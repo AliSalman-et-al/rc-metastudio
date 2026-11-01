@@ -13,6 +13,7 @@ import sys
 from collections.abc import Mapping, Sequence
 from contextvars import ContextVar
 from pathlib import Path
+from types import ModuleType
 from typing import Callable, Literal, ParamSpec, TypeVar, cast, overload
 
 from rc_metastudio import r_runtime
@@ -45,6 +46,12 @@ from rc_metastudio.meta_globals import (
 
 _P = ParamSpec("_P")
 _T = TypeVar("_T")
+# These modules are bound by initialize_r after the shell is visible.
+ro: ModuleType
+rpy2: ModuleType
+RRuntimeError: type[Exception]
+_rpy2_conversion: ModuleType
+_rpy2_rchar_to_str: Callable[..., str]
 _INITIALIZATION_ERROR: Exception | None = None
 
 

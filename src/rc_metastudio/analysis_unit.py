@@ -37,6 +37,8 @@ class EffectEstimate:
 class AnalysisUnit:
     """Store one study row’s measurements and effect estimates."""
 
+    present_raw_arms: set[str]
+
     def __init__(
         self,
         sheet,
@@ -193,7 +195,7 @@ class AnalysisUnit:
         self,
         source: EffectSource,
         effect: str,
-        arm_comparison: str,
+        arm_comparison: str | tuple[str, ...],
         estimate: float | None,
         lower: float | None = None,
         upper: float | None = None,
@@ -222,13 +224,13 @@ class AnalysisUnit:
             "analysis": self.analysis_effects,
         }[source]
 
-    def _entry(self, source: EffectSource, effect: str, arm_comparison: str):
+    def _entry(self, source: EffectSource, effect: str, arm_comparison: str | tuple[str, ...]):
         return self._store(source).setdefault(effect, {}).setdefault(
             arm_comparison, self._new_effect_entry()
         )
 
     def get_effect_for_source(
-        self, source: EffectSource, effect: str, arm_comparison: str
+        self, source: EffectSource, effect: str, arm_comparison: str | tuple[str, ...]
     ) -> EffectEstimate:
         entry = self._store(source).get(effect, {}).get(arm_comparison, {})
         return EffectEstimate(

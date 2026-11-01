@@ -392,7 +392,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _setup_identity(self):
         identity = self.results.identity or "Analysis results"
         parent = self.parent()
-        self._source_sheet = parent.model.current_sheet if parent is not None and hasattr(parent, "model") else None
+        self._source_sheet = model.current_sheet if (model := getattr(parent, "model", None)) is not None else None
         sheet_name = self._source_sheet.name if self._source_sheet else "Results"
         self.setWindowTitle(sheet_name + " — " + identity.split(" — ")[0])
         self.verticalLayout.setContentsMargins(6, 6, 6, 6)
@@ -413,7 +413,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             layout.addWidget(browser)
             button = QToolButton()
             button.setText('Copy ' + name)
-            button.clicked.connect(lambda checked=False, value=text: QApplication.clipboard().setText(value))
+            button.clicked.connect(lambda checked=False, value=text: required(QApplication.clipboard(), "clipboard").setText(value))
             layout.addWidget(button)
         self.content_stack.addWidget(self.manuscript_page)
 
@@ -1356,9 +1356,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             raise
 
         parent = self.parent()
-        if self._source_sheet is not None and parent is not None and self._source_sheet in parent.model.dataset.sheets:
+        model = getattr(parent, "model", None)
+        if self._source_sheet is not None and model is not None and self._source_sheet in model.dataset.sheets:
             self._source_sheet.settings["favours_labels"] = [updated_params.get("fp_favours_left", ""), updated_params.get("fp_favours_right", "")]
-            parent.data_dirtied()
+            getattr(parent, "data_dirtied")()
         self._refresh_plot_item(plot_item, artifact, outpath)
         dialog.mark_commit_succeeded()
 

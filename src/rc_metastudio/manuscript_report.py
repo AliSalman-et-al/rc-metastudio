@@ -1,4 +1,5 @@
 """Manuscript content taken exclusively from an executed result."""
+from rc_metastudio.runtime_types import required
 from dataclasses import dataclass
 from html import escape
 import io
@@ -54,6 +55,7 @@ def _statistic_summary(table, summary):
 
 
 def _regression_summary(table, summary):
+    values = {}
     for row in table.rows:
         values = dict(zip(table.headers, row))
         lower = next((v for k, v in values.items() if k.startswith('Lower bound')), None)
@@ -62,6 +64,7 @@ def _regression_summary(table, summary):
         interval = f" ({level} {lower} to {upper})" if lower is not None and upper is not None else ''
         p = f"; p = {values['p-value']}" if 'p-value' in values else ''
         summary.append(f"{values['Term']}: coefficient {values['Estimate']}{interval}{p}.")
+
     return values
 
 
@@ -309,7 +312,7 @@ def write_docx(report, path):
             buffer.open(QIODevice.OpenModeFlag.WriteOnly)
             image.save(buffer, 'PNG')
             document.add_page_break()
-            document.add_picture(io.BytesIO(bytes(buffer.data())), width=Mm(width))
+            document.add_picture(io.BytesIO(bytes(required(buffer.data().data(), "encoded figure"))), width=Mm(width))
             document.add_paragraph(f'Figure {number}. {title}' + (' (continued)' if top else ''))
     _docx_sections(document, report, True, table_number)
     document.save(path)
@@ -340,7 +343,7 @@ def write_pdf(report, path):
             painter.translate(0, -number * height)
             context = QAbstractTextDocumentLayout.PaintContext()
             context.clip = QRectF(0, number * height, width, height)
-            document.documentLayout().draw(painter, context)
+            required(document.documentLayout(), "report document layout").draw(painter, context)
             painter.restore()
     print_pages()
     for number, (title, path_) in enumerate(report.figures, 1):

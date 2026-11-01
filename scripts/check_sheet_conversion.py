@@ -6,6 +6,7 @@ Failures covered: lost/duplicated pairs or rows; reordered data; changed raw/eff
 confidence, inclusion, covariate, label or settings values; lossy runtime/archive IO.
 """
 import io
+from typing import cast
 import json
 from pathlib import Path
 import subprocess
@@ -109,7 +110,7 @@ def _empty_bundled_row(row):
 def _check_bundled(path, document):
     bundled = load_project(path)
     # Bundled v3 archives retain the historical empty entry row; legacy import omits it.
-    for sheet, converted in zip(bundled.project['sheets'], document.project['sheets'], strict=True):
+    for sheet, converted in zip(cast(list[dict], bundled.project['sheets']), document.project['sheets'], strict=True):
         ids = {r['id'] for r in converted['rows']}
         omitted = [row for row in sheet['rows'] if row['id'] not in ids]
         assert all(_empty_bundled_row(row) for row in omitted)
@@ -126,7 +127,8 @@ def _check_file(path):
         legacy = Path(tmp) / 'source.rcms'
         legacy.write_bytes(original)
         document = load_project(legacy)
-        sheets = iter(document.project['sheets'])
+        converted_sheets = cast(list[dict], document.project['sheets'])
+        sheets = iter(converted_sheets)
         count = 0
         for outcome in source['outcomes']:
             for follow in _source_pairs(source, outcome):
@@ -141,7 +143,7 @@ def _check_file(path):
         assert reopened.project == document.project and reopened.state == document.state
         assert legacy.read_bytes() == original
         _check_bundled(path, document)
-        print(f'| {path.name} | {count} → {len(document.project["sheets"])} | yes |')
+        print(f'| {path.name} | {count} → {len(converted_sheets)} | yes |')
 
 
 def check():

@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Qt table model for the current sheet."""
+from rc_metastudio.project_domain import RowId
 
 from dataclasses import dataclass
 import math
@@ -41,7 +42,6 @@ from rc_metastudio.meta_globals import (
 from rc_metastudio.workspace_column_identity import (
     WORKSPACE_COLUMN_IDENTITY_ROLE,
     WorkspaceColumnIdentity,
-    stable_covariate_identity,
 )
 
 # number of (empty) rows in the spreadsheet to show
@@ -246,7 +246,7 @@ class DatasetTableModel(QAbstractTableModel):
         self.study_auto_added = None
         self._display_studies = list(self.current_sheet.rows) if self.current_sheet else []
         if add_blank_study and self.current_sheet:
-            self._blank_study = StudyRow(uuid.uuid4().hex, "", AnalysisUnit(self.current_sheet, arm_names=self.arm_names, arm_stable_ids=[a.id for a in self.current_sheet.arms]), include=False)
+            self._blank_study = StudyRow(RowId(uuid.uuid4().hex), "", AnalysisUnit(self.current_sheet, arm_names=self.arm_names, arm_stable_ids=[a.id for a in self.current_sheet.arms]), include=False)
             self.study_auto_added = self._blank_study.id
             self._display_studies.append(self._blank_study)
 
@@ -722,7 +722,7 @@ class DatasetTableModel(QAbstractTableModel):
         added_study_id = result.added_study_id
         if is_blank_study:
             added_study_id = self.current_sheet.rows[canonical_row].id
-            self._blank_study = StudyRow(uuid.uuid4().hex, "", AnalysisUnit(self.current_sheet, arm_names=self.arm_names, arm_stable_ids=[a.id for a in self.current_sheet.arms]), include=False)
+            self._blank_study = StudyRow(RowId(uuid.uuid4().hex), "", AnalysisUnit(self.current_sheet, arm_names=self.arm_names, arm_stable_ids=[a.id for a in self.current_sheet.arms]), include=False)
             self.study_auto_added = self._blank_study.id
         self._sync_display_studies()
         edit = _EditTarget(
@@ -1238,9 +1238,6 @@ class DatasetTableModel(QAbstractTableModel):
     def get_current_outcome_type(self, get_str=True):
         value = self.current_sheet.data_type if self.current_sheet else None
         return {0:'binary',1:'continuous',2:'diagnostic',5:'time_to_event',6:'event_rates'}.get(value) if get_str else value
-
-    def get_outcome_type(self, outcome, get_str=True):
-        return self.dataset.get_outcome_type(outcome, get_string=get_str)
 
     def get_current_outcome_subtype(self):
         return self.current_sheet.sub_type if self.current_sheet else None

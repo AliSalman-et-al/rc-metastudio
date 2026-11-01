@@ -1,4 +1,6 @@
 """Read RevMan XML at the import boundary, without changing the live project."""
+from rc_metastudio.runtime_types import required
+from rc_metastudio.project_domain import ArmId, RowId, SheetId
 from dataclasses import dataclass
 import math
 from pathlib import Path
@@ -67,7 +69,7 @@ def _raw_row(sheet, record, study, names, fields):
             continue
         raw.append(_raw_arm(record, i, fields, family, name))
     unit = AnalysisUnit(sheet, raw_data=raw, arm_names=names, arm_stable_ids=[a.id for a in sheet.arms])
-    row = StudyRow(uuid.uuid4().hex, study.get('NAME') or record.get('STUDY_ID'), unit,
+    row = StudyRow(RowId(uuid.uuid4().hex), study.get('NAME') or record.get('STUDY_ID'), unit,
                    include=not pending, year=int(study.get('YEAR')) if (study.get('YEAR') or '').isdigit() else None)
     return row
 
@@ -87,7 +89,7 @@ def _append_iv_row(sheet, outcome, record, study, names, metric, level):
             scale='log', source='reported', confidence=level))
     else:
         unit.set_effect_for_source('entered', metric, tuple(a.id for a in sheet.arms), te, standard_error=se)
-    sheet.rows.append(StudyRow(uuid.uuid4().hex, study.get('NAME') or record.get('STUDY_ID'), unit,
+    sheet.rows.append(StudyRow(RowId(uuid.uuid4().hex), study.get('NAME') or record.get('STUDY_ID'), unit,
         year=int(study.get('YEAR')) if (study.get('YEAR') or '').isdigit() else None))
 
 
@@ -103,8 +105,8 @@ def _append_diagnostic_tests(root, dataset, studies, not_imported):
         while any(s.name == name for s in dataset.sheets):
             name = f'{base_name} ({suffix})'
             suffix += 1
-        arm = Arm(uuid.uuid4().hex, 'Index test')
-        sheet = Sheet(uuid.uuid4().hex, name, meta_globals.DIAGNOSTIC,
+        arm = Arm(ArmId(uuid.uuid4().hex), 'Index test')
+        sheet = Sheet(SheetId(uuid.uuid4().hex), name, meta_globals.DIAGNOSTIC,
                       family='diagnostic', arms=[arm])
         for record in records:
             _append_diagnostic_row(sheet, record, studies, name)
@@ -116,10 +118,10 @@ def _append_diagnostic_row(sheet, record, studies, name):
     if study is None:
         raise ValueError(f'{name}: unknown study {record.get("STUDY_ID")}.')
     values = [float(record.attrib[key]) for key in ('TP', 'FN', 'FP', 'TN')]
-    if any(not math.isfinite(v) or v < 0 or not v.is_integer() for v in values):
+    if any(not math.isfinite(v) or v < 0 or v % 1 != 0 for v in values):
         raise ValueError(f'{name}: diagnostic counts must be non-negative integers.')
     unit = AnalysisUnit(sheet, raw_data=[values], arm_names=[sheet.arms[0].name], arm_stable_ids=[sheet.arms[0].id])
-    sheet.rows.append(StudyRow(uuid.uuid4().hex, study.get('NAME') or record.get('STUDY_ID'), unit,
+    sheet.rows.append(StudyRow(RowId(uuid.uuid4().hex), study.get('NAME') or record.get('STUDY_ID'), unit,
         year=int(study.get('YEAR')) if (study.get('YEAR') or '').isdigit() else None))
 
 
@@ -147,8 +149,8 @@ def _comparative_sheet(dataset, outcome, name, data_type, family, metric):
     level = float(outcome.get('CI_TOTAL', '95'))
     if not math.isfinite(level) or not 0 < level < 100:
         raise ValueError(f'{name}: invalid confidence level.')
-    sheet = Sheet(uuid.uuid4().hex, name, data_type, family=family,
-                  arms=[Arm(uuid.uuid4().hex, n) for n in names],
+    sheet = Sheet(SheetId(uuid.uuid4().hex), name, data_type, family=family,
+                  arms=[Arm(ArmId(uuid.uuid4().hex), n) for n in names],
                   settings={'metric': metric, 'confidence_level': level})
     return sheet, names, level
 
@@ -245,7 +247,7 @@ def review_rm5(path, parent):
     table = QtWidgets.QTableWidget(len(result.dataset.sheets), 4, dialog)
     table.setHorizontalHeaderLabels(['Sheet', 'Data type', 'Studies', 'Method'])
     table.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
-    table.verticalHeader().hide()
+    required(table.verticalHeader(), "import row header").hide()
     from rc_metastudio.analysis_method_labels import method_display_label
     for row, sheet in enumerate(result.dataset.sheets):
         values = (sheet.name, sheet.family.title(), str(len(sheet.rows)),
@@ -254,8 +256,8 @@ def review_rm5(path, parent):
             item = QtWidgets.QTableWidgetItem(value)
             item.setToolTip(value)
             table.setItem(row, column, item)
-    table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-    table.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
+    required(table.horizontalHeader(), "import column header").setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+    required(table.horizontalHeader(), "import column header").setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
     layout.addWidget(table)
     for heading, items in (('Not imported', result.not_imported),
                            ('Differs from RevMan', result.differences)):
@@ -268,7 +270,7 @@ def review_rm5(path, parent):
     standing.setWordWrap(True)
     layout.addWidget(standing)
     buttons = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok | QtWidgets.QDialogButtonBox.StandardButton.Cancel)
-    buttons.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).setText('Import')
+    required(buttons.button(QtWidgets.QDialogButtonBox.StandardButton.Ok), 'import button').setText('Import')
     buttons.accepted.connect(dialog.accept)
     buttons.rejected.connect(dialog.reject)
     layout.addWidget(buttons)

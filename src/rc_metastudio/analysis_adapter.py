@@ -51,7 +51,7 @@ class CovariateDataset(Protocol):
 class CovariateSelectionModel(Protocol):
     """Model operations required by covariate-qualified study selection."""
 
-    dataset: CovariateDataset
+    current_sheet: analysis_dataset.Sheet
 
     def get_studies(
         self, only_if_included: bool = True

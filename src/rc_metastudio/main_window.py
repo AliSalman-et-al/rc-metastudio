@@ -3,6 +3,7 @@
 """Main RC MetaStudio desktop window."""
 
 from __future__ import annotations
+from rc_metastudio.project_domain import ArmId, SheetId
 
 import os
 from functools import cmp_to_key
@@ -10,6 +11,7 @@ from typing import TYPE_CHECKING, cast
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import (
+    QMouseEvent,
     QAction,
     QCloseEvent,
     QKeyEvent,
@@ -212,12 +214,13 @@ class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
 
 
 class SheetTabBar(QtWidgets.QTabBar):
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, a0: QMouseEvent | None) -> None:
+        event = a0
         try:
             super().mouseReleaseEvent(event)
         finally:
             window = self.window()
-            if window._sheet_dragging:
+            if isinstance(window, MainWindow) and window._sheet_dragging:
                 window._sheet_dragging = False
                 window.workspace.end_change()
 
@@ -640,6 +643,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         wizard.setStartId(main_wizard.Page_CsvImport)
         wizard.restart()
         page = wizard.page(main_wizard.Page_CsvImport)
+        assert isinstance(page, main_wizard.CsvImportPage)
         page.load_file(path)
         if wizard.exec():
             wizard_data = wizard.get_results()
@@ -1494,6 +1498,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         menu = QtWidgets.QMenu(self)
         menu.addAction("Rename", lambda: self._rename_sheet(index))
         delete = menu.addAction("Delete", lambda: self._delete_sheet(index))
+        assert delete is not None
         delete.setEnabled(self.sheet_tabs.count() > 1)
         menu.exec(self.sheet_tabs.mapToGlobal(position))
 
@@ -1599,7 +1604,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         from rc_metastudio.analysis_dataset import Sheet, Arm
         data_type = meta_globals.STR_TO_TYPE_DICT[dataset_info['data_type']]
         groups = dataset_info.get('groups') or meta_globals.default_group_names(data_type, dataset_info.get('sub_type'))
-        sheet = Sheet(uuid.uuid4().hex, dataset_info['name'], data_type, dataset_info.get('sub_type'), dataset_info['data_type'], [Arm(uuid.uuid4().hex, name) for name in groups], settings={'metric': dataset_info.get('effect')})
+        sheet = Sheet(SheetId(uuid.uuid4().hex), dataset_info['name'], data_type, dataset_info.get('sub_type'), dataset_info['data_type'], [Arm(ArmId(uuid.uuid4().hex), name) for name in groups], settings={'metric': dataset_info.get('effect')})
         self.set_model(analysis_dataset.Dataset(sheets=[sheet]))
         self.model.current_effect = dataset_info.get('effect')
         self.populate_metrics_menu(metric_to_check=self.model.current_effect)

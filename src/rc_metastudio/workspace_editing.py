@@ -9,6 +9,7 @@ calculate the same raw-data preview as the table.
 """
 
 from __future__ import annotations
+from rc_metastudio.project_domain import RowId, SheetId
 
 import copy
 import math
@@ -76,7 +77,7 @@ def _effect_value(effect: Mapping[str, object] | EffectEstimate, field: str):
 class WorkspaceEditingContext:
     """Domain values needed to edit one visible workspace."""
 
-    sheet_id: str | None
+    sheet_id: SheetId | None
     arm_names: tuple[str, ...]
     current_effect: str | None
     data_type: object
@@ -91,14 +92,14 @@ class WorkspaceEditingContext:
     confidence_multiplier: float
     covariate_name: str | None = None
     covariate_type: object | None = None
-    covariate: object | None = None
+    covariate: dict | None = None
 
 
 @dataclass(slots=True)
 class WorkspaceViewState:
     """Serializable selection and confidence state for the workspace."""
 
-    current_sheet_id: str | None = None
+    current_sheet_id: SheetId | None = None
     current_effect: str | None = None
     confidence_level: float = 95.0
     confidence_multiplier: float = 1.96
@@ -343,6 +344,7 @@ class WorkspaceEditingService:
         allow_empty_names: bool,
     ) -> StudyRow | None:
         self._last_error = None
+        assert context.sheet_id is not None
         if target.row >= len(dataset.sheet(context.sheet_id).rows):
             return self._new_study_for_edit(
                 dataset, target, context, value, allow_empty_names
@@ -366,7 +368,7 @@ class WorkspaceEditingService:
                 self._last_error = str(error)
                 return None
         while len(sheet.rows) <= target.row:
-            sheet.rows.append(StudyRow(uuid.uuid4().hex, '', AnalysisUnit(sheet, arm_names=[a.name for a in sheet.arms], arm_stable_ids=[a.id for a in sheet.arms])))
+            sheet.rows.append(StudyRow(RowId(uuid.uuid4().hex), '', AnalysisUnit(sheet, arm_names=[a.name for a in sheet.arms], arm_stable_ids=[a.id for a in sheet.arms])))
         return sheet.rows[target.row]
 
     @staticmethod
@@ -406,6 +408,7 @@ class WorkspaceEditingService:
                 name = name_validation.validate_required_name("study", value)
             except ValueError as error:
                 return AppliedWorkspaceEdit(error=str(error))
+        assert context.sheet_id is not None
         existing_names = [
             name_validation.normalize_name(existing.label)
             for existing in dataset.sheet(context.sheet_id).rows

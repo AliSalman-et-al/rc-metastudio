@@ -4,7 +4,7 @@
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QCloseEvent, QColor, QHideEvent, QShowEvent
+from PyQt6.QtGui import QKeyEvent, QCloseEvent, QColor, QHideEvent, QShowEvent
 from PyQt6.QtWidgets import (
     QComboBox,
     QCheckBox,
@@ -241,12 +241,15 @@ class _DiagnosticMethodPanel(object):
 
 
 class _CompactDoubleSpinBox(QDoubleSpinBox):
-    def textFromValue(self, value):
-        return super().textFromValue(value).rstrip("0").rstrip(self.locale().decimalPoint())
+    def textFromValue(self, v: float) -> str:
+        return super().textFromValue(v).rstrip("0").rstrip(self.locale().decimalPoint())
 
 
 class _AdvancedButton(QtWidgets.QToolButton):
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, e: QKeyEvent | None) -> None:
+        if e is None:
+            return
+        event = e
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             self.click()
         else:
@@ -555,6 +558,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _set_scroll_body_height(self, content_height):
         layout = self.layout()
+        assert layout is not None
         margins = layout.contentsMargins()
         frame_height = max(0, self.frameGeometry().height() - self.height())
         policy = adaptive_window.WINDOW_POLICIES[adaptive_window.WindowRole.TRANSACTIONAL]
@@ -571,7 +575,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 policy = QSizePolicy.Policy.Preferred if index == current else QSizePolicy.Policy.Ignored
                 page.setSizePolicy(policy, policy)
         self.specs_tab.updateGeometry()
-        content_height = self.specs_tab.currentWidget().minimumSizeHint().height() + 40
+        active_page = self.specs_tab.currentWidget()
+        assert active_page is not None
+        content_height = active_page.minimumSizeHint().height() + 40
         self._set_scroll_body_height(content_height)
         position = self.pos()
         self.adjustSize()
@@ -1302,6 +1308,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             layout.addWidget(control, row, 1)
             return row + 1
         advanced = self.advanced_panel.layout()
+        assert isinstance(advanced, QGridLayout)
         advanced_row = advanced.rowCount()
         advanced.addWidget(label, advanced_row, 0)
         advanced.addWidget(control, advanced_row, 1)
@@ -1535,7 +1542,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 layout.invalidate()
         self.content_scroll_area_widget.updateGeometry()
         self.specs_tab.updateGeometry()
-        content_height = self.specs_tab.currentWidget().minimumSizeHint().height() + 40
+        active_page = self.specs_tab.currentWidget()
+        assert active_page is not None
+        content_height = active_page.minimumSizeHint().height() + 40
         self._set_scroll_body_height(content_height)
         position = self.pos()
         previous_size = self.size()

@@ -1,4 +1,5 @@
 """Reviewers' cross-outcome summary, recalculated on every opening."""
+from rc_metastudio.runtime_types import required
 import copy
 from rc_metastudio import app_error_handler
 from PyQt6 import QtCore, QtWidgets
@@ -103,12 +104,12 @@ class SummaryOfFindingsDialog(QtWidgets.QDialog):
         finally:
             progress.close()
             progress.deleteLater()
-        header = self.table.horizontalHeader()
+        header = required(self.table.horizontalHeader(), "findings header")
         for column, width in enumerate((145, 75, 90, 425, 100, 220)):
             header.setSectionResizeMode(column, QtWidgets.QHeaderView.ResizeMode.Interactive)
             self.table.setColumnWidth(column, width)
         header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.Stretch)
-        self.table.verticalHeader().setDefaultSectionSize(64)
+        required(self.table.verticalHeader(), "findings row header").setDefaultSectionSize(64)
 
     def _populate_row(self, row, sheet, values):
         for column, value in enumerate(values):
@@ -133,11 +134,21 @@ class SummaryOfFindingsDialog(QtWidgets.QDialog):
             self.owner.data_dirtied()
         self.owner._commit_model_operation(commit)
 
+    def _certainty_control(self, row):
+        control = self.table.cellWidget(row, 4)
+        assert isinstance(control, QtWidgets.QComboBox)
+        return control
+
+    def _footnote_control(self, row):
+        control = self.table.cellWidget(row, 5)
+        assert isinstance(control, QtWidgets.QLineEdit)
+        return control
+
     def report(self):
-        rows = tuple(tuple(self.table.item(row, col).text() for col in range(4)) +
-                     (self.table.cellWidget(row, 4).currentText(), self.table.cellWidget(row, 5).text())
+        rows = tuple(tuple(required(self.table.item(row, col), "findings cell").text() for col in range(4)) +
+                     (self._certainty_control(row).currentText(), self._footnote_control(row).text())
                      for row in range(self.table.rowCount()))
-        table = ResultTable('Summary of findings', tuple(self.table.horizontalHeaderItem(i).text() for i in range(6)), rows)
+        table = ResultTable('Summary of findings', tuple(required(self.table.horizontalHeaderItem(i), "findings column").text() for i in range(6)), rows)
         section = ResultSection('summary-of-findings', 'text', 0, 'Summary of findings', '', '', tables=(table,))
         return ManuscriptReport('Summary of findings', '', (section,), (), ())
 
@@ -146,7 +157,7 @@ class SummaryOfFindingsDialog(QtWidgets.QDialog):
         mime = QtCore.QMimeData()
         mime.setHtml(report.html())
         mime.setText(report.plain_text())
-        QtWidgets.QApplication.clipboard().setMimeData(mime)
+        required(QtWidgets.QApplication.clipboard(), "clipboard").setMimeData(mime)
 
     def export(self, extension):
         path, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Export summary of findings', 'summary-of-findings.' + extension, extension.upper() + ' (*.' + extension + ')')

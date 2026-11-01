@@ -9,7 +9,7 @@ from functools import partial
 from typing import Protocol, TypeAlias
 from weakref import WeakKeyDictionary
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPainter
+from PyQt6.QtGui import QPainter, QPaintEvent
 
 from PyQt6.QtWidgets import (
     QAbstractItemView, QHeaderView, QLabel, QLineEdit, QMessageBox, QSizePolicy, QStyle, QStyleOptionFrame,
@@ -55,15 +55,18 @@ class NumericSummaryDelegate(QStyledItemDelegate):
 class PrevalenceEdit(QLineEdit):
     """Round only the unfocused readout; editing and calculations use exact text."""
 
-    def paintEvent(self, event):
+    def paintEvent(self, a0: QPaintEvent | None) -> None:
+        event = a0
         number, valid = qt_text.parse_decimal(self.text())
         if self.hasFocus() or not valid:
             return super().paintEvent(event)
         option = QStyleOptionFrame()
         self.initStyleOption(option)
         painter = QPainter(self)
-        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_PanelLineEdit, option, painter, self)
-        rect = self.style().subElementRect(QStyle.SubElement.SE_LineEditContents, option, self)
+        style = self.style()
+        assert style is not None
+        style.drawPrimitive(QStyle.PrimitiveElement.PE_PanelLineEdit, option, painter, self)
+        rect = style.subElementRect(QStyle.SubElement.SE_LineEditContents, option, self)
         rect.adjust(2, 0, -2, 0)
         painter.setPen(self.palette().text().color())
         painter.drawText(rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
@@ -519,10 +522,14 @@ def _update_binary_metric_table(dialog, raw) -> None:
         dialog.metric_readout = table
         table.setObjectName("calculator_metrics")
         table.setHorizontalHeaderLabels(["Metric", "Estimate", "Lower CI", "Upper CI"])
-        table.verticalHeader().hide()
+        vertical_header = table.verticalHeader()
+        assert vertical_header is not None
+        vertical_header.hide()
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        horizontal_header = table.horizontalHeader()
+        assert horizontal_header is not None
+        horizontal_header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         dialog.content_layout.addWidget(table)
         def select_metric(row, column):
             index = dialog.effect_combo_box.findData(("OR", "RR", "RD")[row])
@@ -544,7 +551,9 @@ def _update_binary_metric_table(dialog, raw) -> None:
     table = dialog.metric_readout
     table.resizeColumnsToContents()
     table.resizeRowsToContents()
-    table.setFixedHeight(table.horizontalHeader().height()
+    header = table.horizontalHeader()
+    assert header is not None
+    table.setFixedHeight(header.height()
                          + sum(table.rowHeight(row) for row in range(table.rowCount()))
                          + 2 * table.frameWidth())
     table.setMinimumWidth(sum(table.columnWidth(col) for col in range(table.columnCount()))

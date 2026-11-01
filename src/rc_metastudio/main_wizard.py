@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from decimal import Decimal, InvalidOperation
-from typing import TYPE_CHECKING, TypedDict
+from typing import cast, TYPE_CHECKING, TypedDict
 import csv
 from pathlib import Path
 
@@ -98,7 +98,7 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
             )
         )
         self.import_rm5_btn = QPushButton("Import RevMan file (.rm5)…", self)
-        self.layout().addWidget(self.import_rm5_btn)
+        required(self.layout(), "welcome layout").addWidget(self.import_rm5_btn)
         self.import_rm5_btn.clicked.connect(self.import_rm5)
         self._setup_connections()
 
@@ -210,7 +210,9 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
         wizard.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions", effect="OR", metric_choices=[], name="Imported data"))
         wizard.setStartId(Page_CsvImport)
         wizard.restart()
-        wizard.page(Page_CsvImport).load_file(path)
+        page = wizard.page(Page_CsvImport)
+        assert isinstance(page, CsvImportPage)
+        page.load_file(path)
 
     def new_dataset(self):
         self.wizard().set_wizard_path("new_dataset")
@@ -540,13 +542,14 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
 
     def _change_data_type(self, index):
         page = self.wizard().page(Page_DataType)
+        assert isinstance(page, DataTypePage)
         old = dict(self.wizard().require_dataset_info())
         page._button_selected(page._data_type_buttons()[min(index, 8)])
         if index == 9:
             self.wizard().set_effect("IRR")
         info = dict(self.wizard().require_dataset_info())
         info["name"] = old.get("name") or "Imported data"
-        self.wizard().set_dataset_info(info)
+        self.wizard().set_dataset_info(cast(DatasetInfo, info))
         self.required_header_labels = self._get_required_header_labels()
         self._mapping_key = None
         self._rebuild_display()
@@ -766,6 +769,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.import_tabs.setTabEnabled(1, self._has_headers())
         if not self._has_headers():
             return
+        assert self.file_path is not None
         suffix = Path(self.file_path).suffix.lower()
         if suffix == ".xls":
             raise csv_import.CsvImportError("Save this workbook as .xlsx before importing it.")
@@ -956,6 +960,7 @@ Page_Welcome, Page_DataType, Page_ChooseMetric, Page_OutcomeName, Page_CsvImport
 
 
 class MainWizard(QWizard):
+    rm5_dataset: object
     def __init__(self, parent=None, path=None, recent_datasets=None):
         super(MainWizard, self).__init__(parent)
         self.setWizardStyle(QWizard.WizardStyle.ModernStyle)

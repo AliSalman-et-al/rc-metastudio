@@ -160,7 +160,7 @@ def start_package_import_export(output_path, project_path, xlsx_path, rm5_path):
         report = ManuscriptReport.from_result(result)
         destination = Path(output_path).with_suffix('.docx')
         write_docx(report, destination)
-        paragraphs = [p.text for p in Document(destination).paragraphs]
+        paragraphs = [p.text for p in Document(str(destination)).paragraphs]
         if report.methods not in paragraphs:
             raise RuntimeError("DOCX Methods did not round-trip")
         _write_json(output_path, {
