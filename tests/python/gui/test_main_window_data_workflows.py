@@ -717,6 +717,7 @@ def test_dataset_model_rejects_invalid_confidence_levels_without_touching_r(
 
     app, window = automation.start_automation()
     try:
+        app.processEvents()
         calls = []
 
         def fail_if_called(confidence_level):
