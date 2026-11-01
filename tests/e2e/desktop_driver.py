@@ -714,14 +714,14 @@ def sheets(app, window):
         assert name not in [s.name for s in window.model.dataset.sheets]
         window.action_redo.trigger()
     name_dialog("Renamed outcome")
-    QTest().mouseDClick(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
+    cast(Callable[..., None], QTest.mouseDClick)(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
     assert window.model.current_sheet.name == "Renamed outcome"
     tabs.setCurrentIndex(0)
     window.action_undo.trigger()
     assert window.model.current_sheet.name == "Outcome 3"
     window.action_redo.trigger()
     name_dialog(original.sheets[0].name, duplicate=True)
-    QTest().mouseDClick(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
+    cast(Callable[..., None], QTest.mouseDClick)(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
     tabs.setCurrentIndex(2)
     table = window.tableView
     table.setCurrentIndex(window.model.index(0, window.model.NAME))
@@ -743,8 +743,8 @@ def sheets(app, window):
     app.processEvents()
     key_click(table, QtCore.Qt.Key.Key_PageDown, QtCore.Qt.KeyboardModifier.ControlModifier)
     assert tabs.currentIndex() == 1
-    QTest().mousePress(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(2).center())
-    QTest().mouseMove(tabs, tabs.tabRect(3).center(), 100)
+    cast(Callable[..., None], QTest.mousePress)(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(2).center())
+    cast(Callable[..., None], QTest.mouseMove)(tabs, tabs.tabRect(3).center(), 100)
     mouse_release(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(3).center())
     assert tabs.tabText(3) == "Outcome 2"
     tabs.setCurrentIndex(0)
