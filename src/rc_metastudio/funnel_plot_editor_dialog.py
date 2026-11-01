@@ -67,8 +67,9 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         caption_label = QLabel("Figure caption:", self)
         caption_label.setBuddy(self.figure_caption)
         caption_row = self.appearance_layout.rowCount()
-        self.appearance_layout.addWidget(caption_label, caption_row, 0)
-        self.appearance_layout.addWidget(self.figure_caption, caption_row, 1)
+        caption_columns = self.appearance_layout.columnCount()
+        self.appearance_layout.addWidget(caption_label, caption_row, 0, 1, caption_columns)
+        self.appearance_layout.addWidget(self.figure_caption, caption_row + 1, 0, 1, caption_columns)
         self._dirty = False
         self._pending_ok = False
         self._allow_close = True

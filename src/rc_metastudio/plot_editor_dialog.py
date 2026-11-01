@@ -108,8 +108,9 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         caption_label = QLabel("Figure caption:", self)
         caption_label.setBuddy(self.figure_caption)
         caption_row = self.style_layout.rowCount()
-        self.style_layout.addWidget(caption_label, caption_row, 0)
-        self.style_layout.addWidget(self.figure_caption, caption_row, 1, 1, 2)
+        caption_columns = self.style_layout.columnCount()
+        self.style_layout.addWidget(caption_label, caption_row, 0, 1, caption_columns)
+        self.style_layout.addWidget(self.figure_caption, caption_row + 1, 0, 1, caption_columns)
         self._sroc_group = None
         if self.plot_type == "sroc":
             self._build_sroc_controls()

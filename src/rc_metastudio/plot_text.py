@@ -79,9 +79,12 @@ def size_plot_text_editor(surface):
         field.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         widest = max(widest, field.fontMetrics().horizontalAdvance(field.text() or field.placeholderText()))
         layout = field.parentWidget().layout()
-        if isinstance(layout, QGridLayout):
-            index = layout.indexOf(field)
-            if index >= 0:
-                _, column, _, _ = layout.getItemPosition(index)
-                layout.setColumnStretch(column, 1)
+        if not isinstance(layout, QGridLayout):
+            continue
+        index = layout.indexOf(field)
+        if index < 0:
+            continue
+        _, column, _, column_span = layout.getItemPosition(index)
+        if column_span == 1:
+            layout.setColumnStretch(column, 1)
     adaptive_window.set_content_preferred_width(surface, 360, max(680, widest + 240))
