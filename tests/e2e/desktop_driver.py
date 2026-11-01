@@ -838,12 +838,21 @@ def verify_sheet_strip(app, window, screens):
         add_named_sheet(app, window, f"Long outcome {index + 1}: mortality and treatment response")
     assert window.sheet_scroll_left.isVisible() and window.sheet_scroll_right.isVisible()
     scroll = window.sheet_tab_scrollbar
+    app.processEvents()
+    app.processEvents()
     before_scroll = scroll.value()
-    mouse_click(window.sheet_scroll_left, QtCore.Qt.MouseButton.LeftButton)
-    assert scroll.value() < before_scroll
+    mouse_click(window.sheet_scroll_left, QtCore.Qt.MouseButton.LeftButton, window.sheet_scroll_left.rect().center())
+    app.processEvents()
+    assert scroll.value() < before_scroll, (scroll.value(), before_scroll, scroll.maximum())
     before_scroll = scroll.value()
-    mouse_click(window.sheet_scroll_right, QtCore.Qt.MouseButton.LeftButton)
-    assert scroll.value() > before_scroll
+    record_step("sheet-strip-before-right-arrow", window, scroll=scroll.value(), maximum=scroll.maximum(), left=str(window.sheet_scroll_left.geometry()), right=str(window.sheet_scroll_right.geometry()))
+    assert window.sheet_scroll_right.isEnabled()
+    for button in (window.sheet_scroll_left, window.sheet_scroll_right):
+        assert button.width() > 0
+        assert button.visibleRegion().boundingRect().size() == button.size()
+    mouse_click(window.sheet_scroll_right, QtCore.Qt.MouseButton.LeftButton, window.sheet_scroll_right.rect().center())
+    app.processEvents()
+    assert scroll.value() > before_scroll, (scroll.value(), before_scroll, scroll.maximum(), str(window.sheet_scroll_right.geometry()))
     for index in (0, tabs.count() - 1, 10):
         tabs.setCurrentIndex(index)
         app.processEvents()
@@ -852,6 +861,22 @@ def verify_sheet_strip(app, window, screens):
         assert window.sheet_tab_scroll.viewport().rect().contains(rect), (index, rect, window.sheet_tab_scroll.viewport().rect())
         assert tabs.tabToolTip(index) == window.model.current_sheet.name
         assert 96 <= rect.width() <= 200
+    original_size = window.size()
+    window._rename_sheet(tabs.currentIndex())
+    window.resize(1000, 700)
+    app.processEvents()
+    app.processEvents()
+    rect = tabs.tabRect(tabs.currentIndex())
+    rect.moveTopLeft(tabs.mapTo(window.sheet_tab_scroll.viewport(), rect.topLeft()))
+    assert window.sheet_tab_scroll.viewport().rect().contains(rect), (rect, window.sheet_tab_scroll.viewport().rect())
+    edit = required(window.sheet_name_edit)
+    assert edit.mapToGlobal(QtCore.QPoint()) == tabs.mapToGlobal(tabs.tabRect(tabs.currentIndex()).topLeft())
+    assert edit.visibleRegion().boundingRect().size() == edit.size()
+    key_click(edit, QtCore.Qt.Key.Key_Escape)
+    assert window.sheet_name_edit is None
+    window.resize(original_size)
+    app.processEvents()
+    app.processEvents()
     before = [sheet.id for sheet in window.model.dataset.sheets]
     index = tabs.currentIndex()
     def move_menu():

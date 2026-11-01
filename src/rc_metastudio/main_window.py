@@ -1471,20 +1471,33 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             button.setArrowType(arrow)
             button.setAccessibleName("Scroll sheets left" if delta < 0 else "Scroll sheets right")
             button.clicked.connect(lambda checked=False, delta=delta: self.sheet_tab_scrollbar.setValue(self.sheet_tab_scrollbar.value() + delta))
+            button.hide()
             strip.addWidget(button)
         strip.addWidget(self.sheet_tab_scroll, 1)
         self.sheet_strip.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
         self.verticalLayout.addWidget(self.sheet_strip)
         scroll = self.sheet_tab_scrollbar
-        scroll.rangeChanged.connect(self._sheet_scroll_changed)
+        self._sheet_strip_timer = QtCore.QTimer(self)
+        self._sheet_strip_timer.setSingleShot(True)
+        self._sheet_strip_timer.timeout.connect(self._update_sheet_strip)
+        scroll.rangeChanged.connect(self._schedule_sheet_strip_update)
         scroll.valueChanged.connect(self._sheet_scroll_changed)
+        self._schedule_sheet_strip_update()
+
+    def _schedule_sheet_strip_update(self, *_args):
+        # Range changes arrive inside QScrollArea resize/layout processing.
+        # Changing child visibility there can leave a shown arrow at zero width.
+        self._sheet_strip_timer.start(0)
+
+    def _update_sheet_strip(self):
+        overflow = self.sheet_tab_scrollbar.maximum() > 0
+        self.sheet_scroll_left.setVisible(overflow)
+        self.sheet_scroll_right.setVisible(overflow)
         self._sheet_scroll_changed()
+        self._scroll_to_sheet_tab()
 
     def _sheet_scroll_changed(self, *_args):
         scroll = self.sheet_tab_scrollbar
-        overflow = scroll.maximum() > 0
-        self.sheet_scroll_left.setVisible(overflow)
-        self.sheet_scroll_right.setVisible(overflow)
         self.sheet_scroll_left.setEnabled(scroll.value() > 0)
         self.sheet_scroll_right.setEnabled(scroll.value() < scroll.maximum())
 
@@ -1581,12 +1594,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.sheet_tabs.setCurrentIndex(index)
         self._scroll_to_sheet_tab()
         sheet = self.model.dataset.sheet(self.sheet_tabs.tabData(index))
-        edit = QtWidgets.QLineEdit(sheet.name, self)
+        edit = QtWidgets.QLineEdit(sheet.name, self.sheet_tabs)
         self.sheet_name_edit = edit
         edit.setObjectName("sheet_name_edit")
         edit.setProperty("sheet_id", sheet.id)
         rect = self.sheet_tabs.tabRect(index)
-        edit.setGeometry(QtCore.QRect(self.sheet_tabs.mapTo(self, rect.topLeft()), rect.size()))
+        edit.setGeometry(rect)
         edit.returnPressed.connect(self._finish_sheet_rename)
         edit.editingFinished.connect(self._finish_sheet_rename)
         edit.installEventFilter(self.sheet_tabs)

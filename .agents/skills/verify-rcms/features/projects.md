@@ -164,3 +164,5 @@ start-page import action with a controlled file-picker result.
   repeats this rendering proof in light/dark palettes before grid capture.
 
 The `sheets` drive also proves inline rename and Escape/invalid-name recovery, adjacent add-button geometry, context Move left with undo, and full active-tab visibility across 20 long-named sheets. It captures the flat strip in light/dark palettes and overflow. The native grid scrollbar remains above the strip: Qt’s scrollbar-row widget API clips controls to the scrollbar extent.
+
+The overflow proof also narrows the window during inline rename and checks both tab/editor visibility and alignment. Arrow visibility is deferred out of the scroll-area range signal to avoid re-entering the active layout.
