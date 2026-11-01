@@ -902,6 +902,9 @@ def test_choice_control_remeasures_font_and_style_before_bounded_popup(
     finally:
         combo.hidePopup()
         combo.close()
+        combo.setStyle(None)
+        combo.deleteLater()
+        qapp.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
 
 
 def test_choice_popup_show_burst_coalesces_measurement_tooltips_and_clamp(qapp):
