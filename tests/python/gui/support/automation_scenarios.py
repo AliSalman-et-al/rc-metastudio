@@ -372,20 +372,21 @@ def _exercise_all_packaged_samples(meta, representative_sample):
         if raw_sha256 != metadata[name]["sha256"]:
             raise RuntimeError("packaged sample hash mismatch: %s" % name)
         document = project_format.load_project(path)
-        reconstructed = project_format.reconstruct_analysis_dataset(document)
-        if reconstructed.semantic_sha256 != metadata[name]["semantic_sha256"]:
+        semantic_payload = (json.dumps(document.project, sort_keys=True, ensure_ascii=False, allow_nan=False, separators=(",", ":")) + "\n").encode("utf-8")
+        semantic_sha256 = hashlib.sha256(semantic_payload).hexdigest()
+        if semantic_sha256 != metadata[name]["semantic_sha256"]:
             raise RuntimeError("packaged sample semantic mismatch: %s" % name)
         if not meta.open(str(path), raise_on_error=True):
             raise RuntimeError("packaged application could not open sample: %s" % name)
         observed = _dataset_record(
-            project_adapter.dataset_to_project(meta.model.dataset)["dataset"]
+            project_adapter.dataset_to_project(meta.model.dataset)
         )
         expected = _dataset_record(
             project_adapter.dataset_to_project(
                 project_adapter.project_to_dataset(document.project)
-            )["dataset"]
+            )
         )
-        for field in ("title", "analysis_family", "outcomes", "studies"):
+        for field in ("title", "notes", "sheets"):
             if observed[field] != expected[field]:
                 raise RuntimeError(
                     "packaged application loaded different %s semantics: %s"
@@ -395,7 +396,7 @@ def _exercise_all_packaged_samples(meta, representative_sample):
             {
                 "project": name,
                 "sha256": raw_sha256,
-                "semantic_sha256": reconstructed.semantic_sha256,
+                "semantic_sha256": semantic_sha256,
                 "opened_in_packaged_application": True,
             }
         )

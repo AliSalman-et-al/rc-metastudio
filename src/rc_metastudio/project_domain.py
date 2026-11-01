@@ -2,119 +2,15 @@
 
 from __future__ import annotations
 
-import copy
-import hashlib
-import json
 import math
 from collections.abc import Mapping
-from dataclasses import dataclass
 from typing import NewType, TypeAlias, cast
 
 JsonScalar: TypeAlias = str | int | float | bool | None
 JsonValue: TypeAlias = JsonScalar | list["JsonValue"] | dict[str, "JsonValue"]
 JsonObject: TypeAlias = dict[str, JsonValue]
-StudyId = NewType("StudyId", str)
-OutcomeId = NewType("OutcomeId", str)
-FollowUpId = NewType("FollowUpId", str)
-GroupId = NewType("GroupId", str)
-CovariateId = NewType("CovariateId", str)
-
-
-@dataclass(frozen=True, slots=True)
-class FollowUpSnapshot:
-    identity: FollowUpId
-    label: str
-
-
-@dataclass(frozen=True, slots=True)
-class OutcomeSnapshot:
-    identity: OutcomeId
-    label: str
-    data_type: int
-    sub_type: str | None
-    follow_ups: tuple[FollowUpSnapshot, ...]
-    wire: tuple[tuple[str, JsonValue], ...]
-
-
-@dataclass(frozen=True, slots=True)
-class CovariateSnapshot:
-    identity: CovariateId
-    label: str
-    data_type: int
-    wire: tuple[tuple[str, JsonValue], ...]
-
-
-@dataclass(frozen=True, slots=True)
-class GroupSnapshot:
-    identity: GroupId
-    label: str
-    raw_data: tuple[JsonValue, ...]
-    wire: tuple[tuple[str, JsonValue], ...]
-
-
-@dataclass(frozen=True, slots=True)
-class UnitSnapshot:
-    outcome: OutcomeId
-    follow_up: FollowUpId | None
-    groups: tuple[GroupSnapshot, ...]
-    entered_effects: Mapping[str, JsonValue]
-    wire: tuple[tuple[str, JsonValue], ...]
-
-
-@dataclass(frozen=True, slots=True)
-class StudySnapshot:
-    identity: StudyId
-    label: str
-    year: int | None
-    include: bool
-    sample_size: float | None
-    covariates: Mapping[str, JsonValue]
-    units: tuple[UnitSnapshot, ...]
-    wire: tuple[tuple[str, JsonValue], ...]
-
-
 class ProjectSemanticError(ValueError):
     """Schema-valid project content violates a domain relationship."""
-
-
-@dataclass(frozen=True, slots=True)
-class AnalysisDataset:
-    """Normalized input contract for later Analysis Adapter integration."""
-
-    analysis_family: str
-    title: str
-    outcomes: tuple[OutcomeSnapshot, ...]
-    covariates: tuple[CovariateSnapshot, ...]
-    studies: tuple[StudySnapshot, ...]
-    is_diagnostic: bool
-    notes: str
-    summary: JsonValue
-
-    def to_json(self) -> JsonObject:
-        return {
-            "analysis_family": self.analysis_family,
-            "covariates": [dict(item.wire) for item in self.covariates],
-            "is_diagnostic": self.is_diagnostic,
-            "notes": self.notes,
-            "outcomes": [dict(item.wire) for item in self.outcomes],
-            "studies": [dict(item.wire) for item in self.studies],
-            "summary": copy.deepcopy(self.summary),
-            "title": self.title,
-        }
-
-    @property
-    def semantic_sha256(self) -> str:
-        payload = (
-            json.dumps(
-                self.to_json(),
-                allow_nan=False,
-                ensure_ascii=False,
-                separators=(",", ":"),
-                sort_keys=True,
-            )
-            + "\n"
-        ).encode("utf-8")
-        return hashlib.sha256(payload).hexdigest()
 
 
 _FAMILY_DATA_TYPES = {"binary": 0, "continuous": 1, "diagnostic": 2, "time_to_event": 5, "event_rates": 6}
@@ -586,178 +482,77 @@ def validate_legacy_project_semantics(
     _validate_active_state(state, family, outcomes, available_groups)
 
 
-def _wire_pairs(value: Mapping[str, object]) -> tuple[tuple[str, JsonValue], ...]:
-    return tuple(
-        (key, cast(JsonValue, copy.deepcopy(item))) for key, item in value.items()
-    )
-
-
-def _typed_outcome(value: Mapping[str, object], index: int) -> OutcomeSnapshot:
-    label = cast(str, value["name"])
-    identity = OutcomeId(f"outcome:{index}")
-    labels = cast(list[str], value["follow_ups"])
-    follow_ups = tuple(
-        FollowUpSnapshot(
-            FollowUpId(f"{identity}:follow-up:{follow_up_index}"),
-            name,
-        )
-        for follow_up_index, name in enumerate(labels)
-    )
-    return OutcomeSnapshot(
-        identity,
-        label,
-        cast(int, value["data_type"]),
-        cast(str | None, value["sub_type"]),
-        follow_ups,
-        _wire_pairs(value),
-    )
-
-
-def _typed_covariate(value: Mapping[str, object], index: int) -> CovariateSnapshot:
-    label = cast(str, value["name"])
-    return CovariateSnapshot(
-        CovariateId(cast(str, value.get("stable_id") or f"covariate:{index}")),
-        label,
-        cast(int, value["data_type"]),
-        _wire_pairs(value),
-    )
-
-
-def _follow_up_snapshot(
-    outcome: OutcomeSnapshot, label: str | None
-) -> FollowUpSnapshot | None:
-    return next((item for item in outcome.follow_ups if item.label == label), None)
-
-
-def _typed_group(value: Mapping[str, object], unit_identity: str, index: int):
-    identity = f"{unit_identity}:group:{index}"
-    raw_data = tuple(
-        cast(JsonValue, copy.deepcopy(item))
-        for item in cast(list[object], value["raw_data"])
-    )
-    return GroupSnapshot(
-        GroupId(identity),
-        cast(str, value["name"]),
-        raw_data,
-        _wire_pairs(value),
-    )
-
-
-def _typed_unit(
-    value: Mapping[str, object], outcomes: Mapping[str, OutcomeSnapshot]
-) -> UnitSnapshot:
-    outcome = cast(str, value["outcome"])
-    follow_up = cast(str | None, value["follow_up"])
-    outcome_snapshot = outcomes[outcome]
-    follow_up_snapshot = _follow_up_snapshot(outcome_snapshot, follow_up)
-    fallback_identity = (
-        follow_up_snapshot.identity if follow_up_snapshot is not None else "default"
-    )
-    unit_identity = f"{outcome_snapshot.identity}:{fallback_identity}"
-    groups = tuple(
-        _typed_group(group, unit_identity, index)
-        for index, group in enumerate(
-            _object(item, "group") for item in _array(value["groups"], "groups")
-        )
-    )
-    return UnitSnapshot(
-        outcome_snapshot.identity,
-        None if follow_up_snapshot is None else follow_up_snapshot.identity,
-        groups,
-        cast(
-            Mapping[str, JsonValue],
-            copy.deepcopy(_object(value["entered_effects"], "entered_effects")),
-        ),
-        _wire_pairs(value),
-    )
-
-
-def _typed_study(
-    value: Mapping[str, object],
-    outcomes: Mapping[str, OutcomeSnapshot],
-    index: int,
-) -> StudySnapshot:
-    name = cast(str, value["name"])
-    year = cast(int | None, value["year"])
-    sample_size = cast(float | None, value["sample_size"])
-    units = tuple(
-        _typed_unit(_object(item, "analysis unit"), outcomes)
-        for item in _array(value["analysis_units"], "analysis_units")
-    )
-    return StudySnapshot(
-        StudyId(f"study:{index}"),
-        name,
-        year,
-        cast(bool, value["include"]),
-        sample_size,
-        cast(
-            Mapping[str, JsonValue],
-            copy.deepcopy(_object(value["covariates"], "covariates")),
-        ),
-        units,
-        _wire_pairs(value),
-    )
-
-
-def reconstruct_analysis_dataset(
-    project: Mapping[str, JsonValue], state: Mapping[str, JsonValue]
-) -> AnalysisDataset:
-    validate_project_semantics(project, state)
-    dataset = _object(project["dataset"], "project.json/dataset")
-    typed_outcomes = tuple(
-        _typed_outcome(_object(value, "outcome"), index)
-        for index, value in enumerate(_array(dataset["outcomes"], "outcomes"))
-    )
-    outcomes_by_label = {item.label: item for item in typed_outcomes}
-    return AnalysisDataset(
-        analysis_family=cast(str, dataset["analysis_family"]),
-        title=cast(str, dataset["title"]),
-        outcomes=typed_outcomes,
-        covariates=tuple(
-            _typed_covariate(_object(value, "covariate"), index)
-            for index, value in enumerate(_array(dataset["covariates"], "covariates"))
-        ),
-        studies=tuple(
-            _typed_study(_object(value, "study"), outcomes_by_label, index)
-            for index, value in enumerate(_array(dataset["studies"], "studies"))
-        ),
-        is_diagnostic=cast(bool, dataset["is_diagnostic"]),
-        notes=cast(str, dataset["notes"]),
-        summary=cast(JsonValue, copy.deepcopy(dataset["summary"])),
-    )
-
-
 SheetId = NewType("SheetId", str)
 RowId = NewType("RowId", str)
 ArmId = NewType("ArmId", str)
+
+
+def _unique_sheet_items(items, location):
+    ids = [item.get("id") for item in items]
+    if any(not isinstance(i, str) or not i for i in ids) or len(ids) != len(set(ids)):
+        raise ProjectSemanticError(f"{location}: invalid or duplicate identity")
+
+
+def _validate_sheet_comparisons(sheet, row, arms):
+    for record in row["entered_effects"] + row["ratio_inputs"]:
+        if not record["arms"] or not set(record["arms"]) <= arms:
+            raise ProjectSemanticError("comparison references undeclared arm")
+    for record in row["entered_effects"]:
+        if record["metric"] not in _FAMILY_METRICS[sheet["family"]]:
+            raise ProjectSemanticError("metric conflicts with family")
+        values = {key: value for key, value in record["values"].items() if value is not None}
+        _validate_effect(values, row["id"])
+
+
+def _validate_sheet_row(sheet, row, arms, covariates):
+    _validate_sample_size(row, row["id"])
+    if not set(row["raw_data"]) <= arms:
+        raise ProjectSemanticError("raw data reference undeclared arm")
+    for values in row["raw_data"].values():
+        _validate_raw(sheet["family"], values, row["id"])
+    if not set(row["covariates"]) <= set(covariates):
+        raise ProjectSemanticError("covariate references do not match declarations")
+    for identity, value in row["covariates"].items():
+        if value is None or value == "":
+            continue
+        if covariates[identity]["data_type"] == 1:
+            _finite(value, f"study {row['id']} covariate {identity}")
+        elif not isinstance(value, str):
+            raise ProjectSemanticError("factor value must be text")
+    _validate_sheet_comparisons(sheet, row, arms)
+
+
+def _validate_sheet(sheet):
+    family = sheet["family"]
+    if sheet["data_type"] != _FAMILY_DATA_TYPES[family]:
+        raise ProjectSemanticError("data_type conflicts with family")
+    if sheet["sub_type"] not in _FAMILY_SUBTYPES[family]:
+        raise ProjectSemanticError("sub_type conflicts with family")
+    _unique_sheet_items(sheet["arms"], "arms")
+    _unique_sheet_items(sheet["rows"], "rows")
+    _unique_sheet_items(sheet["covariates"], "covariates")
+    names = [cov["name"] for cov in sheet["covariates"]]
+    if len(names) != len(set(names)):
+        raise ProjectSemanticError("duplicate covariate identifier")
+    _validate_group_count(sheet["id"], 0, sheet, family, len(sheet["arms"]))
+    arms = {a["id"] for a in sheet["arms"]}
+    if not set(sheet["settings"].get("arms", [])) <= arms:
+        raise ProjectSemanticError("settings reference undeclared arm")
+    covariates = {cov["id"]: cov for cov in sheet["covariates"]}
+    for row in sheet["rows"]:
+        _validate_sheet_row(sheet, row, arms, covariates)
 
 
 def validate_project_semantics(project, state):
     """Validate the sole live sheet graph; legacy validation is read-seam only."""
     if project.get("schema_version") != 3:
         return validate_legacy_project_semantics(project, state)
-    def unique(items, location):
-        ids = [item["id"] for item in items]
-        if any(not isinstance(i, str) or not i for i in ids) or len(ids) != len(set(ids)):
-            raise ProjectSemanticError(f"{location}: invalid or duplicate identity")
     sheets = project["sheets"]
-    unique(sheets, "sheets")
+    _unique_sheet_items(sheets, "sheets")
     names = [s["name"] for s in sheets]
     if any(not n.strip() for n in names) or len(names) != len(set(names)):
         raise ProjectSemanticError("blank or duplicate sheet name")
     for sheet in sheets:
-        unique(sheet["arms"], "arms")
-        unique(sheet["rows"], "rows")
-        arms = {a["id"] for a in sheet["arms"]}
-        if not set(sheet["settings"].get("arms", [])) <= arms:
-            raise ProjectSemanticError("settings reference undeclared arm")
-        for row in sheet["rows"]:
-            if not set(row["raw_data"]) <= arms:
-                raise ProjectSemanticError("raw data reference undeclared arm")
-            for values in row["raw_data"].values():
-                _validate_raw(sheet["family"], values, row["id"])
-            for record in row["entered_effects"] + row["ratio_inputs"]:
-                if not record["arms"] or not set(record["arms"]) <= arms:
-                    raise ProjectSemanticError("comparison references undeclared arm")
+        _validate_sheet(sheet)
     if state["current_sheet_id"] is not None and state["current_sheet_id"] not in {s["id"] for s in sheets}:
         raise ProjectSemanticError("unknown current sheet")

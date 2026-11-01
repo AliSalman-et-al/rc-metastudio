@@ -5,8 +5,7 @@ import json
 import math
 from pathlib import Path
 
-from rc_metastudio.project_domain import reconstruct_analysis_dataset
-from rc_metastudio.project_format import load_project, save_project
+from rc_metastudio.project_format import load_project, save_project, migrate_to_latest
 
 ROOT = Path(__file__).resolve().parents[1]
 SAMPLES = ROOT / "sample_projects"
@@ -68,12 +67,13 @@ def build(name, hazard, source):
     state = dict(schema_version=2, active_outcome=outcome, active_follow_up="first", active_groups=groups, active_effect=metric, confidence_level=95.0)
     filename = "Pignon2000-HR.rcms" if hazard else "NielWeise2008-IRR.rcms"
     path = SAMPLES / filename
+    project, state = migrate_to_latest(2, project, state)
     save_project(path, project, state)
     loaded = load_project(path)
     assert loaded.project == project and loaded.state == state
     return dict(
-        file=filename, format_version=2, sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
-        semantic_sha256=reconstruct_analysis_dataset(loaded.project, loaded.state).semantic_sha256,
+        file=filename, format_version=3, sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+        semantic_sha256=hashlib.sha256((json.dumps(loaded.project, sort_keys=True, ensure_ascii=False, allow_nan=False, separators=(",", ":")) + "\n").encode("utf-8")).hexdigest(),
         analysis_evidence="ratios-samples",
         scientific_name=dataset["title"], analysis_family=family, study_count=len(rows),
         provenance=f"metadat::{name}; original data retained in sources/metadat-ratios.json",

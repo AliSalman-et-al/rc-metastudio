@@ -22,9 +22,7 @@ from jsonschema.exceptions import SchemaError, ValidationError
 
 from rc_metastudio import __version__
 from rc_metastudio.project_domain import (
-    AnalysisDataset,
     ProjectSemanticError,
-    reconstruct_analysis_dataset as _reconstruct_analysis_dataset,
     validate_project_semantics,
 )
 
@@ -69,14 +67,6 @@ class ProjectDocument:
     format_version: int
     project: JsonObject
     state: JsonObject
-
-
-def reconstruct_analysis_dataset(document: ProjectDocument) -> AnalysisDataset:
-    """Return the Qt-independent Analysis Adapter input for a loaded project."""
-    try:
-        return _reconstruct_analysis_dataset(document.project, document.state)
-    except (ProjectSemanticError, RecursionError) as exc:
-        raise ProjectFormatError(f"project semantics: {exc}") from exc
 
 
 ProjectMigration: TypeAlias = Callable[
@@ -433,12 +423,15 @@ def migrate_to_latest(
         migrated_state = cast(JsonObject, copy.deepcopy(dict(state)))
     except RecursionError as exc:
         raise ProjectFormatError("project migration input nesting is too deep") from exc
-    if version in (1, 2):
-        converter = convert_v1_to_sheet_project if version == 1 else convert_v2_to_sheet_project
-        migrated_project, migrated_state = converter(migrated_project, migrated_state)
-    _validate(3, "project.json", migrated_project)
-    _validate(3, "state.json", migrated_state)
-    validate_project_semantics(migrated_project, migrated_state)
+    try:
+        if version in (1, 2):
+            converter = convert_v1_to_sheet_project if version == 1 else convert_v2_to_sheet_project
+            migrated_project, migrated_state = converter(migrated_project, migrated_state)
+        _validate(3, "project.json", migrated_project)
+        _validate(3, "state.json", migrated_state)
+        validate_project_semantics(migrated_project, migrated_state)
+    except (ProjectSemanticError, RecursionError) as exc:
+        raise ProjectFormatError(f"project semantics: {exc}") from exc
     return migrated_project, migrated_state
 
 
