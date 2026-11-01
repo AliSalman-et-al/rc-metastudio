@@ -86,26 +86,24 @@ _DRIVER = textwrap.dedent(
         assert callbacks._CCHAR_ENCODING == locale.getpreferredencoding(False)
 
 
-    class FakeCovariate:
-        def __init__(self, name, data_type):
-            self.name = name
-            self.data_type = data_type
+    def FakeCovariate(name, data_type):
+        return {"id": name, "name": name, "data_type": data_type}
 
     class FakeStudy:
         def __init__(self, study_id, name, year):
             self.id = study_id
-            self.name = name
+            self.label = name
             self.year = year
             self.include = True
 
     class FakeDataset:
         def __init__(self, covariates, values):
+            from rc_metastudio.analysis_dataset import StudyRow
             self.covariates = covariates
-            self._values = values
-
-        def get_covariate_values(self, covariate, ids_for_keys=False):
-            assert ids_for_keys is True
-            return self._values[covariate]
+            ids = dict.fromkeys(i for entries in values.values() for i in entries)
+            self.rows = [StudyRow(i, "", None, covariate_values={
+                name: entries[i] for name, entries in values.items() if i in entries
+            }) for i in ids]
 
     class FakeModel:
         def __init__(self, data_type, raw_data, effect="OR"):
@@ -123,16 +121,20 @@ _DRIVER = textwrap.dedent(
             self.dataset = FakeDataset(
                 covariates,
                 {
-                    covariates[0].name: {
+                    covariates[0]["name"]: {
                         1: 'alpha "quoted" \\\\ café τ',
                         2: "beta",
                     },
-                    covariates[1].name: {
+                    covariates[1]["name"]: {
                         1: 1.5,
                         2: 2.5,
                     },
                 },
             )
+
+        @property
+        def current_sheet(self):
+            return self.dataset
 
         def get_studies(self, only_if_included=True):
             return self._studies
@@ -254,10 +256,15 @@ _DRIVER = textwrap.dedent(
         == forest_display_path
     )
 
-    from PyQt6 import QtWidgets
+    from PyQt6 import QtWidgets, QtCore
     from rc_metastudio import results_window
 
+    QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
+    QtCore.QSettings.setPath(QtCore.QSettings.Format.IniFormat, QtCore.QSettings.Scope.UserScope,
+                            os.environ["RCMS_R_TEST_SETTINGS_DIR"])
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+    app.setOrganizationName("RCMS tests")
+    app.setApplicationName("bridge contract")
     result_window = results_window.ResultsWindow(continuous_result)
     result_window.resize(700, 500)
     result_window.show()
@@ -268,7 +275,7 @@ _DRIVER = textwrap.dedent(
         if isinstance(item, results_window.QGraphicsSvgItem)
     )
     initial_window_width = result_window.width()
-    initial_plot_width = plot_item.sceneBoundingRect().width()
+    initial_plot_width = result_window.graphics_view.viewportTransform().mapRect(plot_item.sceneBoundingRect()).width()
     initial_available_width = (
         result_window.graphics_view.viewport().width()
         - result_window.x_coord
@@ -283,7 +290,7 @@ _DRIVER = textwrap.dedent(
     )
     for _ in range(3):
         app.processEvents()
-    shrunken_width = plot_item.sceneBoundingRect().width()
+    shrunken_width = result_window.graphics_view.viewportTransform().mapRect(plot_item.sceneBoundingRect()).width()
     assert shrunken_width < initial_plot_width
 
     result_window.resize(
@@ -292,13 +299,15 @@ _DRIVER = textwrap.dedent(
     )
     for _ in range(3):
         app.processEvents()
-    assert plot_item.sceneBoundingRect().width() > shrunken_width
+    assert result_window.graphics_view.viewportTransform().mapRect(plot_item.sceneBoundingRect()).width() > shrunken_width
 
-    before_splitter_width = plot_item.sceneBoundingRect().width()
+    before_splitter_width = result_window.graphics_view.viewportTransform().mapRect(plot_item.sceneBoundingRect()).width()
+    navigation_width = result_window.nav_tree.width()
     result_window.results_nav_splitter.moveSplitter(360, 1)
     for _ in range(3):
         app.processEvents()
-    assert plot_item.sceneBoundingRect().width() < before_splitter_width
+    assert result_window.nav_tree.width() == navigation_width
+    assert result_window.graphics_view.viewportTransform().mapRect(plot_item.sceneBoundingRect()).width() == before_splitter_width
     result_window.close()
     app.processEvents()
 
@@ -333,12 +342,9 @@ _DRIVER = textwrap.dedent(
 
     class FilteredDiagnosticDataset:
         def __init__(self, covariate):
-            self.covariate = covariate
-
-        def get_covariate_values(self, covariate, ids_for_keys=False):
-            assert ids_for_keys is True
-            assert covariate == self.covariate.name
-            return {1: 1.0, 2: 2.0, 3: 3.0, 4: 4.0, 5: 5.0}
+            from rc_metastudio.analysis_dataset import StudyRow
+            self.covariates = [covariate]
+            self.rows = [StudyRow(i, "", None, covariate_values={covariate["id"]: float(i)}) for i in range(1, 6)]
 
     class FilteredDiagnosticModel:
         def __init__(self):
@@ -353,6 +359,10 @@ _DRIVER = textwrap.dedent(
             ]
             self.covariate = FakeCovariate("Moderator", r_bridge.CONTINUOUS)
             self.dataset = FilteredDiagnosticDataset(self.covariate)
+
+        @property
+        def current_sheet(self):
+            return self.dataset
 
         def get_studies(self, only_if_included=True):
             assert only_if_included is True
@@ -814,9 +824,10 @@ _SUMMARY_PRINT_DRIVER = textwrap.dedent(
 ).replace("__REPO_ROOT__", repr(REPO_ROOT))
 
 
-def test_inprocess_rpy2_backend_contract():
+def test_inprocess_rpy2_backend_contract(tmp_path):
     # Require the real in-process rpy2 path in this integration driver.
     env = dict(os.environ)
+    env["RCMS_R_TEST_SETTINGS_DIR"] = str(tmp_path / "settings")
     env["RCMS_REQUIRE_IN_PROCESS_RPY2"] = "1"
     result = run_python_driver(_DRIVER, env=env)
     combined_output = result.stdout + result.stderr
