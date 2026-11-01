@@ -2,7 +2,6 @@
 import copy
 import xml.etree.ElementTree as ET
 import csv
-import os
 import subprocess
 from unittest.mock import patch
 from PyQt6 import QtCore, QtWidgets
