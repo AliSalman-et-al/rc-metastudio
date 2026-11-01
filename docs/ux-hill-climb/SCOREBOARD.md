@@ -201,17 +201,21 @@ subgroup Q/p, zero-cell MH/Peto pooling, sequential and source-confidence
 corrections in [STAT-FIXES.md](STAT-FIXES.md) affect their documented fixtures;
 they produce no differences in these five receipts. No baseline was refreshed.
 
-Qualification used `source build/sheets-baseline/ENV.sh` and `uv run --no-sync`.
-One uninterrupted process ran doctor, strict golden (475 comparisons / 416
-numeric fields), authority (100 cases), then fresh E2E (`-n 2 -q --fresh`).
-Doctor/golden/authority passed; E2E initially finished **133 passed, 2 failed**
-in 2958.27 seconds. Log: `build/final-qualification-20261101T011845Z.log`.
-The failures were `ratios-hr` and `ratios-irr`: wizard cleanup removed their
-metric icon assignment. Separate product commit `2e245e1c` restores it. Both
-failed cases passed fresh afterward (**2 passed**, 176.53 seconds), with their
-full analyses/exports: `build/final-qualification-ratio-repair.log`. The whole
-matrix was not rerun after this icon-only repair. No assertions or oracles changed.
-A pre-existing orphan driver (PID 1634154, adopted by PID 1, deleted scratch)
-was discovered during qualification and terminated by exact PID. The matrix
-also rewrote tracked slice7 screenshots; those generated changes are excluded
-from these commits.
+Final qualification used `source build/sheets-baseline/ENV.sh` and
+`uv run --no-sync` on `1d9df980`, after reverting the icon restoration in
+`2e245e1c`. Slice 7 intentionally makes every metric choice text-only; the
+shared `ratios-hr` / `ratios-irr` assertion now checks every combo entry has no
+icon. All other workflow assertions, including numerical checks, are retained.
+
+One uninterrupted process ran the two targeted workflows (**2 passed**, 176.75
+seconds), then the complete fresh E2E matrix (`-n 2 -q --fresh`, **135 passed**,
+3017.98 seconds), then the strict golden gate (**passed**, 475 comparisons / 416
+numeric fields). Evidence reuse was disabled throughout. Exact commands and
+results: `build/final-qualification-2-run.sh` and
+`build/final-qualification-2-all.log`; golden report:
+`build/qt6-verification/golden-compatibility-final-2/compatibility-report.json`.
+Each desktop workflow retains its own inputs, runtime, manifest, transcript and
+screenshots under `artifacts/verification/rcms/`. This final full-matrix run
+supersedes the earlier qualification with two stale icon-assertion failures.
+No numerical implementation, assertions or oracles changed. Generated tracked
+slice7 screenshots are excluded from these commits.
