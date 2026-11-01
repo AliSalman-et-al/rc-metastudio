@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from rc_metastudio import r_bridge
+from rc_metastudio import r_bridge, r_backend
 from rc_metastudio.r_backend import AnalysisBackendUnavailableError
 from rc_metastudio.study_effect_shapes import (
     effect_triplet,
@@ -69,6 +69,7 @@ class _TestLoader:
 @pytest.fixture
 def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
     """Inject a local, explicit test capability at the R boundary."""
+    monkeypatch.setattr(r_backend, "is_ready", lambda: True)
     functions = {
         "get_confidence_multiplier_from_r": _confidence,
         "set_confidence_level": lambda level: float(level),
