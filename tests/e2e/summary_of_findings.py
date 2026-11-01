@@ -99,7 +99,7 @@ def run(app, window, work, root, record, analyze):
     assert document.tables[0].cell(1, 4).text == 'Not rated'
     record('summary-of-findings', dialog, rows=report.sections[0].tables[0].rows)
     import subprocess
-    pdf_text = subprocess.check_output(['pdftotext', str(work / 'summary.pdf'), '-'], text=True)
+    pdf_text = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', str(work / 'summary.pdf'), '-'], text=True, encoding='utf-8')
     import unicodedata
     pdf_text = unicodedata.normalize('NFKC', pdf_text)
     assert 'Summary of findings' in pdf_text and 'Not rated' in pdf_text

@@ -410,6 +410,7 @@ def verify(args: argparse.Namespace) -> None:
     )
     rscript = resolve_rscript(args.rscript)
     base_env = r_support.verification_base_env(dict(os.environ))
+    base_env["RCMS_RSCRIPT"] = str(rscript)
     policy = binary_dependency_policy(root)
     configured_repo = args.cran_repo or base_env.get("RCMS_CRAN_REPO")
     if configured_repo and configured_repo != policy["repository"]:

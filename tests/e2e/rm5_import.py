@@ -8,10 +8,13 @@ from unittest.mock import patch
 from PyQt6 import QtCore, QtWidgets
 
 from rc_metastudio.project_adapter import dataset_to_project
+from rc_metastudio.runtime_types import required
+from scripts.r_verification_support import resolve_rscript
 
 
 def run(app, window, ROOT, WORK, record_step):
     from rc_metastudio.rm5_import import read_rm5
+    rscript = str(required(resolve_rscript("Rscript"), "Rscript for independent RM5 reference"))
     source = ROOT / 'tests/fixtures/rm5/Fleiss1993.rm5'
     original = ET.parse(source).getroot()
     # Synthetic counts in the structure observed in Bristol's real DTA review.
@@ -72,10 +75,10 @@ def run(app, window, ROOT, WORK, record_step):
                       for row in subgroup_xml.iter('DICH_DATA')}
 
     subgroup_reference = WORK / 'subgroup-read-rm5.csv'
-    subprocess.run([os.environ['RCMS_R_HOME'] + '/bin/Rscript',
+    subprocess.run([rscript,
                     str(ROOT / 'tests/e2e/rm5_reference.R'), str(subgroup_source),
                     str(subgroup_reference), str(WORK / 'subgroup-metacr.csv')], check=True)
-    with subgroup_reference.open() as stream:
+    with subgroup_reference.open(encoding="utf-8", newline="") as stream:
         for ref in csv.DictReader(stream):
             if ref['type'] == 'D':
                 # read.rm5 prefixes group labels with comparison/outcome/group numbers.
@@ -107,10 +110,10 @@ def run(app, window, ROOT, WORK, record_step):
     view = next(w for w in app.topLevelWidgets() if isinstance(w, ResultsWindow) and w.isVisible())
     actual = list(map(float, r_bridge.execute_r_string('unlist(lapply(result$res[1:2], function(x) c(x$b[1], x$ci.lb, x$ci.ub)))')))
     reference = WORK / 'subgroup-fit.csv'
-    subprocess.run([os.environ['RCMS_R_HOME'] + '/bin/Rscript', '-e',
-        "library(meta); x <- read.rm5(commandArgs(TRUE)[1]); m <- metacr(x, outcome.no=1, method='Inverse'); write.csv(data.frame(estimate=m$TE.common.w, lower=m$lower.common.w, upper=m$upper.common.w, Q=m$Q.b.common, p=m$pval.Q.b.common), commandArgs(TRUE)[2], row.names=FALSE)",
+    subprocess.run([rscript, '-e',
+        "library(meta); x <- read.rm5(commandArgs(TRUE)[1]); m <- metacr(x, outcome.no=1, method='Inverse'); write.csv(data.frame(estimate=m$TE.common.w, lower=m$lower.common.w, upper=m$upper.common.w, Q=m$Q.b.common, p=m$pval.Q.b.common), commandArgs(TRUE)[2], row.names=FALSE, fileEncoding='UTF-8')",
         str(subgroup_source), str(reference)], check=True)
-    with reference.open() as stream:
+    with reference.open(encoding="utf-8", newline="") as stream:
         refs = list(csv.DictReader(stream))
     expected = [float(row[key]) for row in refs for key in ('estimate', 'lower', 'upper')]
     test = list(map(float, r_bridge.execute_r_string('local({e <- new.env(); load(paste0(result$plot_params_paths[[1]], ".plotdata"), envir=e); t <- e$plot.data$subgroups$difference_test; c(t$QM, t$QMp)})')))
@@ -221,8 +224,8 @@ def run(app, window, ROOT, WORK, record_step):
     assert [a.name for a in window.model.dataset.sheets[0].arms] == ['Aspirin', 'Control']
     reference = WORK / 'read-rm5.csv'
     pooled = WORK / 'metacr.csv'
-    subprocess.run([os.environ['RCMS_R_HOME'] + '/bin/Rscript', str(ROOT / 'tests/e2e/rm5_reference.R'), str(source), str(reference), str(pooled)], check=True)
-    with reference.open() as stream:
+    subprocess.run([rscript, str(ROOT / 'tests/e2e/rm5_reference.R'), str(source), str(reference), str(pooled)], check=True)
+    with reference.open(encoding="utf-8", newline="") as stream:
         rows = list(csv.DictReader(stream))
     for index, sheet in enumerate(window.model.dataset.sheets, 1):
         reference_rows = {r['studlab']: r for r in rows if int(r['outcome.no']) == index}
@@ -255,7 +258,7 @@ def run(app, window, ROOT, WORK, record_step):
             expected = {key: float(outcome.attrib[attr]) for key, attr in
                         (('estimate', 'EFFECT_SIZE'), ('lower_bound', 'CI_START'), ('upper_bound', 'CI_END'), ('i_squared', 'I2'))}
         else:
-            with pooled.open() as stream:
+            with pooled.open(encoding="utf-8", newline="") as stream:
                 ref = next(row for row in csv.DictReader(stream) if int(row["outcome"]) == 2)
             expected = dict(estimate=float(ref['estimate']), lower_bound=float(ref['lower']), upper_bound=float(ref['upper']), i_squared=100 * float(ref['I2']))
         if index == 0:

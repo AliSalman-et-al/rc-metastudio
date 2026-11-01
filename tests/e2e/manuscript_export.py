@@ -75,7 +75,7 @@ def run(app, window, work, root, record, analyze):
         view = analyze(app, window, method)
         expected = "A continuity correction of 0.5 was applied to individual study estimates only; the pooled " + ("Mantel-Haenszel" if method.endswith("mh") else "Peto") + " estimate uses the original counts."
         assert expected in view.manuscript.methods, view.manuscript.methods
-        (work / (method + '-prose.txt')).write_text(view.manuscript.methods)
+        (work / (method + '-prose.txt')).write_text(view.manuscript.methods, encoding='utf-8')
         record('manuscript-correction-' + method, view, methods=view.manuscript.methods)
         view.close()
     for sample, method in (("amino", "binary.random"), ("continuous", "continuous.random"), ("lymph", "diagnostic.reitsma"), ("Pignon2000-HR", "time_to_event.random")):
@@ -107,9 +107,9 @@ def run(app, window, work, root, record, analyze):
                 assert all(round(s.width / 36000) in (85, 180) for s in doc.inline_shapes)
                 text = '\n'.join(p.text for p in doc.paragraphs) + '\n' + '\n'.join(c.text for t in doc.tables for r in t.rows for c in r.cells)
             else:
-                text = subprocess.check_output(['pdftotext', '-layout', str(path), '-']).decode()
+                text = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', '-layout', str(path), '-'], text=True, encoding='utf-8')
                 from xml.etree import ElementTree as ET
-                bbox = subprocess.check_output(['pdftotext', '-bbox', str(path), '-'])
+                bbox = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', '-bbox', str(path), '-'])
                 (work / (sample + '-bbox.html')).write_bytes(bbox)
                 pages = ET.fromstring(bbox).findall('.//{*}page')
                 tables = [word for page in pages for word in page.findall('.//{*}word') if word.text == 'Table']
@@ -137,7 +137,7 @@ def run(app, window, work, root, record, analyze):
                 assert view.manuscript.methods == f"Odds ratios were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance. Confidence intervals (95%) used the normal approximation. A continuity correction of 0.5 was applied to studies with any zero cell. 2 studies with no events in either arm were retained with this correction. Heterogeneity was assessed with Cochran's Q and I². Analyses were performed in RC MetaStudio {__version__}. R packages loaded for this analysis: metafor 5.0.1, meta 8.5-0."
                 assert '-0.262' in normalized
             record('manuscript-export-' + sample + '-' + suffix, view, exported=str(path))
-        (work / (sample + '-prose.txt')).write_text('Methods\n' + view.manuscript.methods + '\n\nResults\n' + view.manuscript.results)
+        (work / (sample + '-prose.txt')).write_text('Methods\n' + view.manuscript.methods + '\n\nResults\n' + view.manuscript.results, encoding='utf-8')
         item = view.nav_tree.findItems('Manuscript', __import__('PyQt6.QtCore', fromlist=['Qt']).Qt.MatchFlag.MatchExactly)[0]
         view.nav_tree.setCurrentItem(item)
         record('manuscript-panel-' + sample, view)
@@ -172,7 +172,7 @@ def run(app, window, work, root, record, analyze):
         assert any(p.startswith('Table ') for p in captions)
         if 'Supplementary details' in captions:
             assert captions.index('Supplementary details') > max(i for i, p in enumerate(captions) if p.startswith('Figure '))
-        (work / (workflow + '-prose.txt')).write_text('Methods\n' + view.manuscript.methods + '\n\nResults\n' + view.manuscript.results)
+        (work / (workflow + '-prose.txt')).write_text('Methods\n' + view.manuscript.methods + '\n\nResults\n' + view.manuscript.results, encoding='utf-8')
         record('manuscript-' + workflow, view)
         view.close()
 
