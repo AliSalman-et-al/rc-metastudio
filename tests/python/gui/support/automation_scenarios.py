@@ -1533,13 +1533,13 @@ def start_shell_failure_smoke(stage):
     from rc_metastudio.main_window import MainWindow
 
     class FailureShell(MainWindow):
-        def toggle_menu_options_that_require_dataset(self, enabled):
-            if enabled:
+        def toggle_menu_options_that_require_dataset(self, enable):
+            if enable:
                 raise AssertionError("Analysis enabled before R startup")
-            super().toggle_menu_options_that_require_dataset(enabled)
+            super().toggle_menu_options_that_require_dataset(enable)
 
-        def _show_analysis_backend_error(self, error):
-            errors.append(error)
+        def _show_analysis_backend_error(self, exception):
+            errors.append(exception)
 
     def meta_factory():
         if stage == "meta-form":
