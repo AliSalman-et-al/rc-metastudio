@@ -220,11 +220,58 @@ def _covariate_type(values: Iterable[str]) -> str:
     return "continuous"
 
 
-def read_xlsx(path, worksheet=None, *, year_column=None, numeric_columns=(), notices=None):
-    """Read stored worksheet cells; preserve coordinates for actionable errors."""
-    from datetime import date, datetime
+def _xlsx_metadata(path, sheet, selected, row_numbers, columns, notices):
     from zipfile import ZipFile
     from xml.etree import ElementTree
+    from openpyxl import load_workbook
+    # Streaming worksheets omit merge and visibility metadata. Inspect the XML
+    # first, opening a normal workbook only when that metadata is present.
+    with ZipFile(path) as archive:
+        xml = archive.read(sheet._worksheet_path)
+    root = ElementTree.fromstring(xml)
+    ns = {"s": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+    metadata = root.find("s:mergeCells", ns) is not None or any(e.get("hidden") == "1" for e in root.iter())
+    if metadata:
+        normal = load_workbook(path, read_only=False, data_only=False)
+        try:
+            full = normal[selected]
+            for merged in full.merged_cells.ranges:
+                if merged.min_row <= row_numbers[-1] and merged.max_row >= row_numbers[0] and merged.min_col <= columns[-1]+1 and merged.max_col >= columns[0]+1:
+                    raise CsvImportError(f"{selected}!{merged} intersects the data; unmerge these cells first.")
+            hidden_rows = sum(bool(full.row_dimensions[number].hidden) for number in row_numbers)
+            hidden_cols = sum(1 for i in columns if any(d.hidden and d.min <= i+1 <= d.max for d in full.column_dimensions.values()))
+            if notices is not None and (hidden_rows or hidden_cols):
+                for count, label in ((hidden_rows, "row"), (hidden_cols, "column")):
+                    if count:
+                        notices.append(f"{count} hidden {label}{' was' if count == 1 else 's were'} imported.")
+        finally:
+            normal.close()
+
+def _xlsx_cell_value(cell, cached, selected, row_index, output_column, year_column, numeric_columns, dates):
+    from datetime import date, datetime
+    formula = 0
+    value = cell.value
+    location = f"{selected}!{cell.coordinate}" if value is not None else ""
+    if cell.data_type == "f":
+        value = cached.get((cell.row, cell.column))
+        if value is None:
+            raise CsvImportError(f"{location} has a formula with no saved value. Open and save it in Excel first.")
+        formula = 1
+    if row_index and output_column in numeric_columns and (cell.data_type == "e" or isinstance(value, str) and value.startswith(("#DIV/0!", "#N/A"))):
+        raise CsvImportError(f"{location} contains an Excel error value.")
+    if isinstance(value, (datetime, date)):
+        if row_index and output_column == year_column:
+            dates.append(location)
+            value = str(value.year)
+        else:
+            value = value.isoformat()
+    if isinstance(value, float):
+        value = str(int(value)) if value.is_integer() else repr(value)
+    return "" if value is None else str(value), formula
+
+
+def read_xlsx(path, worksheet=None, *, year_column=None, numeric_columns=(), notices=None):
+    """Read stored worksheet cells; preserve coordinates for actionable errors."""
     from openpyxl import load_workbook
 
     try:
@@ -243,28 +290,7 @@ def read_xlsx(path, worksheet=None, *, year_column=None, numeric_columns=(), not
             return [], [], names, selected
         row_numbers = [next(c.row for c in row if c.value is not None) for row in cells]
         columns = [i for i in range(max(map(len, cells))) if any(i < len(row) and row[i].value is not None for row in cells)]
-        # Streaming worksheets omit merge and visibility metadata. Inspect the XML
-        # first, opening a normal workbook only when that metadata is present.
-        with ZipFile(path) as archive:
-            xml = archive.read(sheet._worksheet_path)
-        root = ElementTree.fromstring(xml)
-        ns = {"s": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
-        metadata = root.find("s:mergeCells", ns) is not None or any(e.get("hidden") == "1" for e in root.iter())
-        if metadata:
-            normal = load_workbook(path, read_only=False, data_only=False)
-            try:
-                full = normal[selected]
-                for merged in full.merged_cells.ranges:
-                    if merged.min_row <= row_numbers[-1] and merged.max_row >= row_numbers[0] and merged.min_col <= columns[-1]+1 and merged.max_col >= columns[0]+1:
-                        raise CsvImportError(f"{selected}!{merged} intersects the data; unmerge these cells first.")
-                hidden_rows = sum(bool(full.row_dimensions[number].hidden) for number in row_numbers)
-                hidden_cols = sum(1 for i in columns if any(d.hidden and d.min <= i+1 <= d.max for d in full.column_dimensions.values()))
-                if notices is not None and (hidden_rows or hidden_cols):
-                    for count, label in ((hidden_rows, "row"), (hidden_cols, "column")):
-                        if count:
-                            notices.append(f"{count} hidden {label}{' was' if count == 1 else 's were'} imported.")
-            finally:
-                normal.close()
+        _xlsx_metadata(path, sheet, selected, row_numbers, columns, notices)
         cached = {(c.row, c.column): c.value for row in saved[selected].iter_rows() for c in row if c.value is not None}
         formulas = 0
         dates = []
@@ -272,25 +298,11 @@ def read_xlsx(path, worksheet=None, *, year_column=None, numeric_columns=(), not
         for row_index, row in enumerate(cells):
             values = []
             for output_column, i in enumerate(columns):
-                cell = row[i]
-                value = cell.value
-                location = f"{selected}!{cell.coordinate}" if value is not None else ""
-                if cell.data_type == "f":
-                    value = cached.get((cell.row, cell.column))
-                    if value is None:
-                        raise CsvImportError(f"{location} has a formula with no saved value. Open and save it in Excel first.")
-                    formulas += 1
-                if row_index and output_column in numeric_columns and (cell.data_type == "e" or isinstance(value, str) and value.startswith(("#DIV/0!", "#N/A"))):
-                    raise CsvImportError(f"{location} contains an Excel error value.")
-                if isinstance(value, (datetime, date)):
-                    if row_index and output_column == year_column:
-                        dates.append(location)
-                        value = str(value.year)
-                    else:
-                        value = value.isoformat()
-                if isinstance(value, float):
-                    value = str(int(value)) if value.is_integer() else repr(value)
-                values.append("" if value is None else str(value))
+                value, formula = _xlsx_cell_value(
+                    row[i], cached, selected, row_index, output_column,
+                    year_column, numeric_columns, dates)
+                formulas += formula
+                values.append(value)
             result.append(values)
         if notices is not None:
             if formulas:

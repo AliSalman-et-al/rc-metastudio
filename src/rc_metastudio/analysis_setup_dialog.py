@@ -520,41 +520,38 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def sizeHint(self):
         """Include the scroll body's content width in first-use negotiation."""
         hint = super(AnalysisSetupDialog, self).sizeHint()
-        if hasattr(self, "specs_tab"):
-            content_hint = self.specs_tab.minimumSizeHint()
-            if content_hint.isValid():
-                root_layout = self.layout()
-                if root_layout is None:
-                    return hint
-                margins = root_layout.contentsMargins()
-                scrollbar = self.content_scroll_area.verticalScrollBar()
-                if scrollbar is None:
-                    return hint
-                scrollbar_width = scrollbar.sizeHint().width()
-                method_width = 0
-                if hasattr(self, "method_cbo_box"):
-                    method_width = self.method_cbo_box.sizeHint().width()
-                    if hasattr(self, "method_lbl"):
-                        method_width += self.method_lbl.sizeHint().width()
-                    if hasattr(self, "gridLayout"):
-                        method_width += self.gridLayout.horizontalSpacing()
-                hint.setWidth(
-                    max(
-                        hint.width(),
-                        max(content_hint.width(), method_width)
-                        + margins.left()
-                        + margins.right()
-                        + scrollbar_width,
-                    )
-                )
-                parameters = self.parameter_grp_box.layout()
-                if parameters is not None:
-                    label_width = max((label.sizeHint().width() for label in self.parameter_grp_box.findChildren(QLabel) if label.buddy() is not None), default=0)
-                    value_width = max((combo.sizeHint().width() for combo in self.parameter_grp_box.findChildren(QComboBox)), default=0)
-                    hint.setWidth(max(hint.width(), label_width + value_width + margins.left() + margins.right() + 80))
-                content_height = self.specs_tab.minimumSizeHint().height()
-                hint.setHeight(self.content_scroll_area.minimumHeight() + self.buttonBox.sizeHint().height() + 30)
+        if not hasattr(self, "specs_tab"):
+            return hint
+        content_hint = self.specs_tab.minimumSizeHint()
+        root_layout = self.layout()
+        scrollbar = self.content_scroll_area.verticalScrollBar()
+        if not content_hint.isValid() or root_layout is None or scrollbar is None:
+            return hint
+        margins = root_layout.contentsMargins()
+        horizontal_margins = margins.left() + margins.right()
+        width = max(content_hint.width(), self._method_width_hint())
+        hint.setWidth(max(hint.width(), width + horizontal_margins + scrollbar.sizeHint().width(),
+                          self._parameter_width_hint() + horizontal_margins + 80))
+        hint.setHeight(self.content_scroll_area.minimumHeight() + self.buttonBox.sizeHint().height() + 30)
         return hint
+
+    def _method_width_hint(self):
+        if not hasattr(self, "method_cbo_box"):
+            return 0
+        width = self.method_cbo_box.sizeHint().width()
+        if hasattr(self, "method_lbl"):
+            width += self.method_lbl.sizeHint().width()
+        if hasattr(self, "gridLayout"):
+            width += self.gridLayout.horizontalSpacing()
+        return width
+
+    def _parameter_width_hint(self):
+        if self.parameter_grp_box.layout() is None:
+            return -80
+        label_width = max((label.sizeHint().width() for label in self.parameter_grp_box.findChildren(QLabel)
+                           if label.buddy() is not None), default=0)
+        value_width = max((combo.sizeHint().width() for combo in self.parameter_grp_box.findChildren(QComboBox)), default=0)
+        return label_width + value_width
 
     def _set_scroll_body_height(self, content_height):
         layout = self.layout()
@@ -970,31 +967,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         from rc_metastudio import r_bridge
         packages = r_bridge.execute_r_string('intersect(c("RCMetaR", "metafor", "meta", "mada"), loadedNamespaces())')
         software = ", ".join(f"{name} {r_bridge.get_r_package_version(str(name))}" for name in packages)
-        included = len(self.model.get_studies())
-        excluded = len(self.model.get_studies(only_if_included=False)) - included
-        context = f"{included} studies were included"
-        if excluded:
-            context += f" ({excluded} studies were excluded)"
-        if self.data_type == 'binary':
-            raw = self.model.get_current_raw_data()
-            if len(self.model.arm_names) == 2 and raw and all(len(row) == 4 and all(isinstance(v, (int, float)) for v in row) for row in raw):
-                totals = [sum(row[i] for row in raw) for i in (1, 3)]
-                context += f" ({totals[0]:g} participants in {self.model.arm_names[0]}, {totals[1]:g} in {self.model.arm_names[1]})"
-        context += "."
-        if self.data_type in ("binary", "diagnostic") and applied_parameters.get("adjust"):
-            raw = self.model.get_current_raw_data()
-            policy = applied_parameters.get("correction.policy", applied_parameters.get("to", "only0"))
-            zero = any(value == 0 for row in raw for value in row)
-            if self.data_type == "binary":
-                zero = zero or any(row[i] == row[i + 1] for row in raw for i in range(0, len(row) - 1, 2))
-            if policy not in ("none", "None") and (zero or policy in ("all", "All studies")):
-                label = {"only0": "studies with any zero cell", "all": "all studies", "if0all": "all studies if any zero exists"}.get(policy, policy)
-                if self.data_type == "binary":
-                    from rc_metastudio.manuscript_report import binary_correction_prose
-                    double_zero = sum(len(row) == 4 and row[0] == 0 and row[2] == 0 for row in raw)
-                    context += " " + binary_correction_prose(self.current_method, applied_parameters['adjust'], label, double_zero)
-                else:
-                    context += f" A continuity correction of {applied_parameters['adjust']} was applied to {label}."
+        context = self._result_context(applied_parameters)
         from rc_metastudio.manuscript_report import methods_prose
         metric = self._result_metric_label().lower()
         model = "random-effects" if "random" in model_label.lower() else "fixed-effect" if "fixed" in model_label.lower() else model_label.lower()
@@ -1008,6 +981,37 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                        manuscript_context=context.split(". ")[0].rstrip(".") + ".",
                        manuscript_title=title, manuscript_methods=methods,
                        manuscript_comparison="Comparison: " + " / ".join(self.model.arm_names))
+
+    def _result_context(self, applied_parameters):
+        included = len(self.model.get_studies())
+        excluded = len(self.model.get_studies(only_if_included=False)) - included
+        context = f"{included} studies were included"
+        if excluded:
+            context += f" ({excluded} studies were excluded)"
+        if self.data_type == 'binary':
+            raw = self.model.get_current_raw_data()
+            if len(self.model.arm_names) == 2 and raw and all(len(row) == 4 and all(isinstance(v, (int, float)) for v in row) for row in raw):
+                totals = [sum(row[i] for row in raw) for i in (1, 3)]
+                context += f" ({totals[0]:g} participants in {self.model.arm_names[0]}, {totals[1]:g} in {self.model.arm_names[1]})"
+        context += "."
+        return context + self._correction_context(applied_parameters)
+
+    def _correction_context(self, applied_parameters):
+        if self.data_type in ("binary", "diagnostic") and applied_parameters.get("adjust"):
+            raw = self.model.get_current_raw_data()
+            policy = applied_parameters.get("correction.policy", applied_parameters.get("to", "only0"))
+            zero = any(value == 0 for row in raw for value in row)
+            if self.data_type == "binary":
+                zero = zero or any(row[i] == row[i + 1] for row in raw for i in range(0, len(row) - 1, 2))
+            if policy not in ("none", "None") and (zero or policy in ("all", "All studies")):
+                label = {"only0": "studies with any zero cell", "all": "all studies", "if0all": "all studies if any zero exists"}.get(policy, policy)
+                if self.data_type == "binary":
+                    from rc_metastudio.manuscript_report import binary_correction_prose
+                    double_zero = sum(len(row) == 4 and row[0] == 0 and row[2] == 0 for row in raw)
+                    return " " + binary_correction_prose(self.current_method, applied_parameters['adjust'], label, double_zero)
+                else:
+                    return f" A continuity correction of {applied_parameters['adjust']} was applied to {label}."
+        return ""
 
     def _diagnostic_fit_details(self):
         fits = []
@@ -1368,81 +1372,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             control.toggled.connect(lambda checked: target.__setitem__(spec.name, "TRUE" if checked else "FALSE"))
             return control
         elif spec.kind == "enum":
-            control = adaptive_controls.AdaptiveComboBox()
-            for value in spec.values:
-                control.addItem(
-                    parameter_value_display_label(spec.name, value, spec.metadata),
-                    value,
-                )
-            if spec.default is not None:
-                index = self._find_enum_item_index(control, spec.default)
-                if index >= 0:
-                    control.setCurrentIndex(index)
-                target[spec.name] = self._enum_item_value(control.currentData())
-            combo = control
-            control.currentIndexChanged[int].connect(
-                app_error_handler.safe_slot(
-                    lambda index: target.__setitem__(
-                        spec.name, self._enum_item_value(combo.itemData(index))
-                    ),
-                    parent=self,
-                )
-            )
+            control = self._enum_parameter_control(spec, target)
         elif spec.kind == "int":
-            control = QSpinBox()
-            if spec.name == "digits":
-                control.setRange(ANALYSIS_DIGITS_MIN, ANALYSIS_DIGITS_MAX)
-            else:
-                control.setRange(-2147483648, 2147483647)
-            control.setCorrectionMode(
-                QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToPreviousValue
-            )
-            if spec.default is not None:
-                value = (
-                    validate_analysis_digits(spec.default)
-                    if spec.name == "digits"
-                    else (
-                        _coerce_integer_default(spec.name, spec.default)
-                    )
-                )
-                control.setValue(value)
-                target[spec.name] = value
-            control.valueChanged[int].connect(
-                app_error_handler.safe_slot(
-                    lambda value: target.__setitem__(spec.name, value), parent=self
-                )
-            )
+            control = self._integer_parameter_control(spec, target)
         elif spec.kind == "float":
-            control = _CompactDoubleSpinBox()
-            control.setDecimals(1 if spec.name == "conf.level" else 6)
-            if spec.name == "conf.level":
-                control.setRange(50, CONFIDENCE_LEVEL_DISPLAY_MAX)
-                control.setSingleStep(0.1)
-                control.setSuffix("%")
-            elif spec.name in ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS:
-                control.setRange(0, ANALYSIS_NUMERIC_MAX)
-            else:
-                control.setRange(ANALYSIS_NUMERIC_MIN, ANALYSIS_NUMERIC_MAX)
-            control.setCorrectionMode(
-                QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToPreviousValue
-            )
-            if spec.default is not None:
-                value = (
-                    validate_confidence_level(spec.default)
-                    if spec.name == "conf.level"
-                    else (
-                        validate_correction_factor(spec.default)
-                        if spec.name in ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS
-                        else validate_analysis_float(spec.name, spec.default)
-                    )
-                )
-                control.setValue(value)
-                target[spec.name] = value
-            control.valueChanged[float].connect(
-                app_error_handler.safe_slot(
-                    lambda value: target.__setitem__(spec.name, value), parent=self
-                )
-            )
+            control = self._float_parameter_control(spec, target)
         else:
             control = QLineEdit()
             if spec.default is not None:
@@ -1460,6 +1394,88 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self._configure_value_control(control)
         else:
             adaptive_controls.configure_numeric_value_control(control)
+        return control
+
+    def _enum_parameter_control(self, spec, target):
+        control = adaptive_controls.AdaptiveComboBox()
+        for value in spec.values:
+            control.addItem(
+                parameter_value_display_label(spec.name, value, spec.metadata),
+                value,
+            )
+        if spec.default is not None:
+            index = self._find_enum_item_index(control, spec.default)
+            if index >= 0:
+                control.setCurrentIndex(index)
+            target[spec.name] = self._enum_item_value(control.currentData())
+        combo = control
+        control.currentIndexChanged[int].connect(
+            app_error_handler.safe_slot(
+                lambda index: target.__setitem__(
+                    spec.name, self._enum_item_value(combo.itemData(index))
+                ),
+                parent=self,
+            )
+        )
+        return control
+
+    def _integer_parameter_control(self, spec, target):
+        control = QSpinBox()
+        if spec.name == "digits":
+            control.setRange(ANALYSIS_DIGITS_MIN, ANALYSIS_DIGITS_MAX)
+        else:
+            control.setRange(-2147483648, 2147483647)
+        control.setCorrectionMode(
+            QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToPreviousValue
+        )
+        if spec.default is not None:
+            value = (
+                validate_analysis_digits(spec.default)
+                if spec.name == "digits"
+                else (
+                    _coerce_integer_default(spec.name, spec.default)
+                )
+            )
+            control.setValue(value)
+            target[spec.name] = value
+        control.valueChanged[int].connect(
+            app_error_handler.safe_slot(
+                lambda value: target.__setitem__(spec.name, value), parent=self
+            )
+        )
+        return control
+
+    def _float_parameter_control(self, spec, target):
+        control = _CompactDoubleSpinBox()
+        control.setDecimals(1 if spec.name == "conf.level" else 6)
+        if spec.name == "conf.level":
+            control.setRange(50, CONFIDENCE_LEVEL_DISPLAY_MAX)
+            control.setSingleStep(0.1)
+            control.setSuffix("%")
+        elif spec.name in ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS:
+            control.setRange(0, ANALYSIS_NUMERIC_MAX)
+        else:
+            control.setRange(ANALYSIS_NUMERIC_MIN, ANALYSIS_NUMERIC_MAX)
+        control.setCorrectionMode(
+            QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToPreviousValue
+        )
+        if spec.default is not None:
+            value = (
+                validate_confidence_level(spec.default)
+                if spec.name == "conf.level"
+                else (
+                    validate_correction_factor(spec.default)
+                    if spec.name in ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS
+                    else validate_analysis_float(spec.name, spec.default)
+                )
+            )
+            control.setValue(value)
+            target[spec.name] = value
+        control.valueChanged[float].connect(
+            app_error_handler.safe_slot(
+                lambda value: target.__setitem__(spec.name, value), parent=self
+            )
+        )
         return control
 
     def _find_enum_item_index(self, cbo_box, value):

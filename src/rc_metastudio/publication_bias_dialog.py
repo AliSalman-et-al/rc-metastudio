@@ -445,14 +445,7 @@ class PublicationBiasDialog(
         self.failure_label.setVisible(False)
         try:
             result = self.analysis_service.execute(self.model, request)
-            from rc_metastudio.analysis_identity import dataset_identity
-            result = replace(result, identity="Small-study effects — " + dataset_identity(self.model, "Diagnostic odds ratio" if self.model.get_current_outcome_type() == "diagnostic" else None))
-            details = next((section.value for section in result.sections if section.title == "Method details"), "")
-            procedures = [line for line in details.splitlines() if line and not line[0].isspace()
-                          and line != "No formal method details are available."]
-            procedures.extend(section.title for section in result.sections if section.kind == "image")
-            result = replace(result, manuscript_title="Small-study effects", manuscript_methods=(
-                "Small-study effects procedures run: " + "; ".join(procedures) + "." if procedures else "No formal small-study effects procedure was run."))
+            result = self._with_report_identity(result)
             owner = self.parentWidget()
             callback = getattr(owner, "analysis", None)
             if not callable(callback):
@@ -469,3 +462,14 @@ class PublicationBiasDialog(
             )
             if run_button is not None:
                 run_button.setEnabled(True)
+
+    def _with_report_identity(self, result):
+        from rc_metastudio.analysis_identity import dataset_identity
+        result = replace(result, identity="Small-study effects — " + dataset_identity(self.model, "Diagnostic odds ratio" if self.model.get_current_outcome_type() == "diagnostic" else None))
+        details = next((section.value for section in result.sections if section.title == "Method details"), "")
+        procedures = [line for line in details.splitlines() if line and not line[0].isspace()
+                      and line != "No formal method details are available."]
+        procedures.extend(section.title for section in result.sections if section.kind == "image")
+        result = replace(result, manuscript_title="Small-study effects", manuscript_methods=(
+            "Small-study effects procedures run: " + "; ".join(procedures) + "." if procedures else "No formal small-study effects procedure was run."))
+        return result

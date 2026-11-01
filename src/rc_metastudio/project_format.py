@@ -94,6 +94,62 @@ def legacy_pairs_with_data(source, outcome):
     return populated or [declared[0]]
 
 
+def _legacy_sheet_name(outcome, follow_up, follow_ups, names):
+    base = outcome["name"].strip() or "Untitled"
+    if len(follow_ups) > 1:
+        base += " — " + (follow_up or "Unnamed")
+    name, suffix = base, 2
+    while name in names:
+        name = f"{base} ({suffix})"
+        suffix += 1
+    names.add(name)
+    return name
+
+def _legacy_sheet_arms(units, state, sid):
+    labels = []
+    for unit in units:
+        for arm in unit["groups"] if unit else []:
+            if arm["name"] not in labels:
+                labels.append(arm["name"])
+    selected = [label for label in state.get("active_groups", []) if label in labels]
+    labels = selected + [label for label in labels if label not in selected]
+    arms = [{"id": f"{sid}:arm:{i}", "name": label} for i, label in enumerate(labels)]
+    identities = {a["name"]: a["id"] for a in arms}
+    comparisons = {label: [identities[label]] for label in labels}
+    for left in labels:
+        for right in labels:
+            if left != right:
+                key = left + "-" + right
+                pair = [identities[left], identities[right]]
+                if key in comparisons and comparisons[key] != pair:
+                    raise ProjectFormatError("ambiguous legacy comparison: " + key)
+                comparisons[key] = pair
+    return arms, identities, comparisons
+
+def _legacy_sheet_settings(source, state, outcome, identities, arms):
+    settings = copy.deepcopy(source.get("summary") or {})
+    settings["summary"] = copy.deepcopy(source.get("summary"))
+    settings.update({k: copy.deepcopy(v) for k,v in state.items() if k not in {"schema_version", "active_outcome", "active_follow_up", "active_groups"}})
+    settings["metric"] = state.get("active_effect") or settings.get("effect")
+    active = state.get("active_groups", [])
+    settings["arms"] = [identities[n] for n in active] if active and all(n in identities for n in active) else [a["id"] for a in arms[:1 if outcome["data_type"] == 2 else 2]]
+    return settings
+
+def _legacy_sheet_rows(source, units, sid, identities, comparisons, covariate_ids):
+    rows = []
+    for index, (row, unit) in enumerate(zip(source["studies"], units)):
+        record = {k: copy.deepcopy(v) for k,v in row.items() if k not in {"analysis_units", "id", "name"}}
+        record.update(id=f"{sid}:row:{index}", label=row["name"], raw_data={}, entered_effects=[], ratio_inputs=[])
+        record["covariates"] = {covariate_ids[k]: v for k, v in record["covariates"].items()}
+        if unit:
+            record["raw_data"] = {identities[a["name"]]: copy.deepcopy(a["raw_data"]) for a in unit["groups"]}
+            record["entered_effects"] = [{"metric": metric, "arms": comparisons[key], "values": copy.deepcopy(values)} for metric, entries in unit["entered_effects"].items() for key,values in entries.items()]
+            record["ratio_inputs"] = [{"arms": [identities[n] for n in value["groups"]], "input": copy.deepcopy(value["input"])} for value in unit.get("ratio_inputs", [])]
+        if is_empty_entry_row(record):
+            continue
+        rows.append(record)
+    return rows
+
 def _convert_pairs(project, state):
     from rc_metastudio.project_domain import validate_legacy_project_semantics
     validate_legacy_project_semantics(project, state)
@@ -104,53 +160,13 @@ def _convert_pairs(project, state):
         follow_ups = legacy_pairs_with_data(source, outcome)
         for follow_up in follow_ups:
             sid = f"sheet:{len(sheets)}"
-            base = outcome["name"].strip() or "Untitled"
-            if len(follow_ups) > 1:
-                base += " — " + (follow_up or "Unnamed")
-            name, suffix = base, 2
-            while name in names:
-                name = f"{base} ({suffix})"
-                suffix += 1
-            names.add(name)
+            name = _legacy_sheet_name(outcome, follow_up, follow_ups, names)
             units = [next((u for u in r["analysis_units"] if (u["outcome"], u["follow_up"]) == (outcome["name"], follow_up)), None) for r in source["studies"]]
-            labels = []
-            for unit in units:
-                for arm in unit["groups"] if unit else []:
-                    if arm["name"] not in labels:
-                        labels.append(arm["name"])
-            selected = [label for label in state.get("active_groups", []) if label in labels]
-            labels = selected + [label for label in labels if label not in selected]
-            arms = [{"id": f"{sid}:arm:{i}", "name": label} for i, label in enumerate(labels)]
-            identities = {a["name"]: a["id"] for a in arms}
-            comparisons = {label: [identities[label]] for label in labels}
-            for left in labels:
-                for right in labels:
-                    if left != right:
-                        key = left + "-" + right
-                        pair = [identities[left], identities[right]]
-                        if key in comparisons and comparisons[key] != pair:
-                            raise ProjectFormatError("ambiguous legacy comparison: " + key)
-                        comparisons[key] = pair
-            settings = copy.deepcopy(source.get("summary") or {})
-            settings["summary"] = copy.deepcopy(source.get("summary"))
-            settings.update({k: copy.deepcopy(v) for k,v in state.items() if k not in {"schema_version", "active_outcome", "active_follow_up", "active_groups"}})
-            settings["metric"] = state.get("active_effect") or settings.get("effect")
-            active = state.get("active_groups", [])
-            settings["arms"] = [identities[n] for n in active] if active and all(n in identities for n in active) else [a["id"] for a in arms[:1 if outcome["data_type"] == 2 else 2]]
+            arms, identities, comparisons = _legacy_sheet_arms(units, state, sid)
+            settings = _legacy_sheet_settings(source, state, outcome, identities, arms)
             covariates = [dict(c, id=f"{sid}:cov:{i}") for i, c in enumerate(source["covariates"])]
             covariate_ids = {c["name"]: c["id"] for c in covariates}
-            rows = []
-            for index, (row, unit) in enumerate(zip(source["studies"], units)):
-                record = {k: copy.deepcopy(v) for k,v in row.items() if k not in {"analysis_units", "id", "name"}}
-                record.update(id=f"{sid}:row:{index}", label=row["name"], raw_data={}, entered_effects=[], ratio_inputs=[])
-                record["covariates"] = {covariate_ids[k]: v for k, v in record["covariates"].items()}
-                if unit:
-                    record["raw_data"] = {identities[a["name"]]: copy.deepcopy(a["raw_data"]) for a in unit["groups"]}
-                    record["entered_effects"] = [{"metric": metric, "arms": comparisons[key], "values": copy.deepcopy(values)} for metric, entries in unit["entered_effects"].items() for key,values in entries.items()]
-                    record["ratio_inputs"] = [{"arms": [identities[n] for n in value["groups"]], "input": copy.deepcopy(value["input"])} for value in unit.get("ratio_inputs", [])]
-                if is_empty_entry_row(record):
-                    continue
-                rows.append(record)
+            rows = _legacy_sheet_rows(source, units, sid, identities, comparisons, covariate_ids)
             sheets.append(dict(id=sid, name=name, family=families[outcome["data_type"]], data_type=outcome["data_type"], sub_type=outcome["sub_type"], arms=arms, covariates=covariates, settings=settings, rows=rows))
             if (state.get("active_outcome"), state.get("active_follow_up")) == (outcome["name"], follow_up):
                 selection = sid
