@@ -24,23 +24,23 @@ def check_table_surface(app, view, work, record, title, label):
     import csv
     import io
     from unittest.mock import patch
-    from tests.e2e.report_retention import assert_report
+    from tests.e2e.report_retention import assert_report, assert_retained_table
     assert_report(view)
     held = [(section, table) for section in view.results.sections for table in section.tables if table.title == title]
     assert len(held) == 1, (title, [(s.title, t.title) for s, t in held])
     section, original = held[0]
-    caption = title if section.title == title else section.title + ' — ' + title
+    retained = assert_retained_table(view, section, original)
     view.tables_action.trigger()
-    index = next(i for i,table in enumerate(view._report_tables) if table.title == caption)
+    index = next(i for i,table in enumerate(view._report_tables) if table is retained)
     view.table_selector.setCurrentIndex(index)
     app.processEvents()
     table = view._report_tables[index]
     headers = [view.result_table.horizontalHeaderItem(i).text() for i in range(view.result_table.columnCount())]
     rows = [[view.result_table.item(r,c).text() for c in range(view.result_table.columnCount())] for r in range(view.result_table.rowCount())]
-    assert [" ".join(h.split()) for h in headers] == [" ".join(h.split()) for h in original.headers]
-    assert rows == [list(row) for row in original.rows]
-    assert (table.headers, table.rows) == (original.headers, original.rows)
-    headers = list(original.headers)
+    assert [" ".join(h.split()) for h in headers] == [" ".join(h.split()) for h in retained.headers]
+    assert rows == [list(row) for row in retained.rows]
+    assert (table.headers, table.rows) == (retained.headers, retained.rows)
+    headers = list(retained.headers)
     view.result_table.clearSelection()
     view.copy_table_action.trigger()
     assert list(csv.reader(io.StringIO(app.clipboard().text()),delimiter='\t')) == [headers,*rows]

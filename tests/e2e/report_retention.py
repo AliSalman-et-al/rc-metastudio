@@ -319,6 +319,16 @@ def presentation_rows(rows, digits):
                        for cell in row) for row in rows)
 
 
+def assert_retained_table(view, section, source):
+    title = source.title if section.title == source.title else section.title + ' — ' + source.title
+    tables = [table for table in view._report_tables if table.title == 'Full-precision results']
+    assert len(tables) == 1, [table.title for table in view._report_tables]
+    expected = tuple((title, '\n'.join(f'{h}: {v}' for h, v in zip(source.headers, row))) for row in source.rows)
+    observed = tuple(row for row in tables[0].rows if row[0] == title)
+    assert observed == expected, (title, observed, expected)
+    return tables[0]
+
+
 def assert_report(view):
     tables = [table for section in view.manuscript.sections for table in section.tables]
     assert [table.title for table in tables[:3]] == ['Pooled effect', 'Model fit', 'Study results']

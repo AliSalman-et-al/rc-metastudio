@@ -231,10 +231,10 @@ def run(
             assert "diagnostic.reitsma.sensitivity.coefficients" not in view.report_text.toPlainText()
             assert "diagnostic.reitsma.specificity.coefficients" not in view.report_text.toPlainText()
             if scenario == "analysis-diagnostic-regression-multiple":
-                tests = [table for table in view._report_tables if table.title == "Overall ML likelihood-ratio test"]
-                held = [table for section in view.results.sections for table in section.tables if table.title == "Overall ML likelihood-ratio test"]
-                assert len(tests) == len(held) == 1
-                assert (tests[0].headers, tests[0].rows) == (held[0].headers, held[0].rows)
+                from tests.e2e.report_retention import assert_retained_table
+                held = [(section, table) for section in view.results.sections for table in section.tables if table.title == "Overall ML likelihood-ratio test"]
+                assert len(held) == 1, held
+                assert_retained_table(view, *held[0])
         assert view.results.images, dict(view.texts)
         if scenario == "analysis-data-twoarm-mean" and workflow == "standard":
             from rc_metastudio import r_bridge
@@ -692,7 +692,8 @@ def run(
         assert report.startswith("Pooled effect\n"), report
         sensitivity = next(s for s in view.results.sections if s.title == "Sensitivity Summary")
         heterogeneity = next(t for t in sensitivity.tables if t.title.endswith('Heterogeneity'))
-        assert any(t.title == sensitivity.title + ' — ' + heterogeneity.title for t in view._report_tables)
+        from tests.e2e.report_retention import assert_retained_table
+        assert_retained_table(view, sensitivity, heterogeneity)
         assert report.index("Pooled effect") < report.index("Model fit") < report.index("Study results") < report.index("Model configuration"), report
     if scenario == "analysis-diagnostic-joint":
         point = view.texts["Summary operating point"]
