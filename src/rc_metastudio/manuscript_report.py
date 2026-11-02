@@ -153,7 +153,7 @@ def _study_results(result, template, level):
     if rows and all(row[2:4] == ('—', '—') for row in rows):
         headers = ('Analysis', row_label, 'Weight')
         rows = [(row[0], row[1], row[4]) for row in rows]
-    paragraphs = () if rows else ('No study-level estimates or weights are held for this workflow.',)
+    paragraphs = () if rows else ('No study-level estimates or weights are available for this workflow.',)
     return replace(template, title='Study results', paragraphs=paragraphs,
                    tables=(ResultTable('Study results', headers, tuple(rows)),))
 
@@ -164,13 +164,15 @@ def _held_sections(result):
         if section.kind != 'text':
             continue
         tables = tuple(replace(table, title=table.title if section.title == table.title else section.title + ' — ' + table.title) for table in section.tables)
-        if section.tables and section.paragraphs:
-            tables += (ResultTable(section.title + ' — Held notes', ('Held note',),
-                                   tuple((paragraph,) for paragraph in section.paragraphs)),)
-        if not tables and section.value:
-            tables = (ResultTable(section.title + ' — Held output', ('Held output',),
+        paragraphs = section.paragraphs
+        if section.source_key == 'References':
+            tables = ()
+            paragraphs = tuple(f"{number}. {line}" if not re.match(r"^\d+[.)]\s", line) else line
+                               for number, line in enumerate(filter(None, section.value.splitlines()), 1))
+        elif not tables and section.value:
+            tables = (ResultTable(section.title + ' — Output', ('Output',),
                                   tuple((line,) for line in section.value.splitlines())),)
-        sections.append(replace(section, title='Supplementary details', value='', paragraphs=('Held output at producer precision.',), tables=tables))
+        sections.append(replace(section, title='Supplementary details', value='', paragraphs=paragraphs, tables=tables))
     return sections
 
 
@@ -361,15 +363,15 @@ def _report_sections(result, summary):
 def _primary_sections(result, text_sections, pooled, fit, level, statistic):
     template = text_sections[0]
     sections = [replace(template, title='Pooled effect', paragraphs=(() if pooled else
-                         ('No structured pooled estimates are held for this workflow; the complete held output is in Supplementary details.',)),
+                         ('No structured pooled estimates are available for this workflow; the complete output is in Supplementary details.',)),
                         tables=(ResultTable('Pooled effect', ('Effect', 'Estimate', level, 'SE', statistic, 'p'), _presentation_rows(pooled, result.manuscript_digits)),)),
                 replace(template, title='Model fit', paragraphs=(),
                         tables=(ResultTable('Model fit', ('Statistic', 'Value'), _presentation_rows(fit, result.manuscript_digits)),)),
                 _study_results(_presentation_result(result), template, level)]
     if not any(section.tables for section in text_sections):
         comparisons = [s for s in text_sections if s.title in ('Pooled comparison', 'Extrapolation') or s.title.startswith('Trim-and-fill')]
-        sections[0] = replace(template, title='Pooled effect', paragraphs=('Held model comparisons and sensitivity analyses.',),
-                              tables=(ResultTable('Pooled effect', ('Analysis', 'Held output'), tuple((s.title, s.value) for s in comparisons)),))
+        sections[0] = replace(template, title='Pooled effect', paragraphs=('Model comparisons and sensitivity analyses.',),
+                              tables=(ResultTable('Pooled effect', ('Analysis', 'Output'), tuple((s.title, s.value) for s in comparisons)),))
         sections[1] = replace(template, title='Model fit', paragraphs=(),
                               tables=(ResultTable('Model fit', ('Statistic', 'Value'), tuple((s.title, _presentation_cell(s.value, result.manuscript_digits)) for s in text_sections if s.title in ('Data and eligibility', 'Tests'))),))
     return sections
@@ -434,11 +436,13 @@ class ManuscriptReport:
                 parts.extend((heading, text))
         number = 0
         for section in self.sections:
-            parts.extend(section.paragraphs)
+            if section.source_key == "References":
+                parts.append("References")
             for table in section.tables:
                 number += 1
                 parts.append(f'Table {number}. {table.title}')
                 parts.extend(('\t'.join(table.headers), *('\t'.join(row) for row in table.rows)))
+            parts.extend(section.paragraphs)
         return '\n\n'.join(parts)
 
     def html(self, supplementary=False):
@@ -459,10 +463,12 @@ class ManuscriptReport:
                 continue
             if section.title == 'Supplementary details' and (number == 1 or self.sections[number-2].title != section.title):
                 parts.append('<h2>Supplementary details</h2>')
-            parts.extend(f'<p>{escape(paragraph)}</p>' for paragraph in section.paragraphs)
+            if section.source_key == 'References':
+                parts.append('<h2>References</h2>')
             for table in section.tables:
                 table_number += 1
                 parts.append(_table_html(table, table_number))
+            parts.extend(f'<p>{escape(paragraph)}</p>' for paragraph in section.paragraphs)
         return ''.join(parts)
 
 
@@ -522,13 +528,15 @@ def _docx_sections(document, report, supplementary, table_number):
             continue
         if section.title == 'Supplementary details' and (number == 1 or report.sections[number-2].title != section.title):
             document.add_heading('Supplementary details', 1)
-        for paragraph in section.paragraphs or (() if section.tables else (section.value,)):
-            document.add_paragraph(paragraph)
+        if section.source_key == 'References':
+            document.add_heading('References', 1)
         for table in section.tables:
             table_number += 1
             document.add_paragraph(f'Table {table_number}. {table.title}', style='Caption')
             _docx_table(document, table)
             document.add_paragraph()
+        for paragraph in section.paragraphs:
+            document.add_paragraph(paragraph)
     return table_number
 
 

@@ -24,7 +24,10 @@ diagnostic results; hillclimb T5 completes with both manuscript formats.
 Shared report observers compare the complete rows of Pooled effect, Model fit and
 Study results with held inputs, including sequential fit identities and diagnostic
 metric labels. Every original table is also retained, unchanged and labelled by
-source section, in Supplementary details. Structured notes are retained verbatim.
+source section, in Supplementary details. Structured notes are retained verbatim as prose beneath their source tables.
+References are retained as a numbered prose section rather than a table.
+The manuscript export drive checks every prose paragraph in clipboard, PDF and DOCX
+and rejects developer-facing “Held” labels.
 Unstructured small-study output is
 retained line by line; its model comparisons remain distinct from individual study
 results. Copy HTML/plain text, DOCX tables and ordered PDF table contents are checked

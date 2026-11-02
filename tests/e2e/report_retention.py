@@ -330,7 +330,7 @@ def assert_report(view):
         assert pooled.headers[3:] in (('SE', 'z', 'p'), ('SE', 't', 'p'))
         assert pooled.rows == presentation_rows(expected_pooled(view.results), view.results.manuscript_digits), (pooled.rows, expected_pooled(view.results))
     else:
-        assert pooled.headers == ('Analysis', 'Held output')
+        assert pooled.headers == ('Analysis', 'Output')
         assert pooled.rows == tuple((s.title, s.value) for s in view.results.sections
                                     if s.kind == 'text' and (s.title in ('Pooled comparison', 'Extrapolation') or s.title.startswith('Trim-and-fill')))
     assert fit.headers == ('Statistic', 'Value')
@@ -346,20 +346,41 @@ def assert_report(view):
             assert len(retained) == 1, title
             assert (retained[0].headers, retained[0].rows) == (source.headers, source.rows), title
         if section.tables and section.paragraphs:
-            notes = [t for t in tables[3:] if t.title == section.title + ' — Held notes']
+            notes = [s for s in view.manuscript.sections if s.title == 'Supplementary details'
+                     and any(t.title == (section.tables[0].title if section.title == section.tables[0].title
+                                        else section.title + ' — ' + section.tables[0].title) for t in s.tables)]
             assert len(notes) == 1, section.title
-            assert notes[0].headers == ('Held note',)
-            assert notes[0].rows == tuple((paragraph,) for paragraph in section.paragraphs)
+            assert notes[0].paragraphs == section.paragraphs
         if section.kind == 'text' and not section.tables and section.value:
-            retained = [t for t in tables[3:] if t.title == section.title + ' — Held output']
-            assert len(retained) == 1, section.title
-            assert retained[0].headers == ('Held output',)
-            assert retained[0].rows == tuple((line,) for line in section.value.splitlines())
+            if section.source_key == 'References':
+                references = [s for s in view.manuscript.sections if s.source_key == 'References'
+                              and s.title == 'Supplementary details']
+                assert len(references) == 1
+                assert not references[0].tables
+                expected = tuple(f"{n}. {line}" if not re.match(r"^\d+[.)]\s", line) else line
+                                 for n, line in enumerate(filter(None, section.value.splitlines()), 1))
+                assert references[0].paragraphs == expected
+            else:
+                retained = [t for t in tables[3:] if t.title == section.title + ' — Output']
+                assert len(retained) == 1, section.title
+                assert retained[0].headers == ('Output',)
+                assert retained[0].rows == tuple((line,) for line in section.value.splitlines())
     data = capture(view, Path(sys.argv[2]) / 'report-retention')
     assert_exports(view, data)
     document = QTextDocument()
     document.setHtml(required(required(QApplication.clipboard(), 'clipboard').mimeData(), 'copied report').html())
     assert document_tables(document) == [[list(t.headers), *[list(row) for row in t.rows]] for t in tables]
+    prose_surfaces = [
+        (Path(data['directory']) / 'copy.txt').read_text(encoding='utf-8'),
+        (Path(data['directory']) / 'pdf.txt').read_text(encoding='utf-8'),
+        '\n'.join(p.text for p in Document(str(Path(data['directory']) / 'report.docx')).paragraphs),
+    ]
+    for text in prose_surfaces:
+        assert not re.search(r'\bHeld\b', text)
+        normalized = re.sub(r'\s+', '', unicodedata.normalize('NFKC', text))
+        for section in view.manuscript.sections:
+            for paragraph in section.paragraphs:
+                assert re.sub(r'\s+', '', unicodedata.normalize('NFKC', paragraph)) in normalized, paragraph
     selected = view.table_selector.currentIndex()
     for index, table in enumerate(tables):
         view.table_selector.setCurrentIndex(index)
