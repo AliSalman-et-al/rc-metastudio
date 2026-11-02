@@ -505,4 +505,44 @@ def run(app, window, work, root, record, analyze):
             text = required(table.horizontalHeaderItem(column)).text()
             assert header.sectionSize(column) >= max(header.fontMetrics().horizontalAdvance(line) for line in text.splitlines()) + 8, (text, header.sectionSize(column))
         record('subgroup-table-headers-unclipped', subgroup, title=subgroup.table_selector.currentText(), widths=[header.sectionSize(c) for c in range(table.columnCount())])
+    subgroup.showNormal()
+    table = subgroup.result_table
+    font = QtGui.QFont(table.font())
+    font.setPointSizeF(font.pointSizeF() * 1.5)
+    font.setStretch(140)
+    table.setFont(font)
+    for index in range(subgroup.table_selector.count()):
+        subgroup.table_selector.setCurrentIndex(index)
+        header = required(table.horizontalHeader())
+        minimums = []
+        for column in range(table.columnCount()):
+            texts = [required(table.horizontalHeaderItem(column)).text()]
+            widths = [header.fontMetrics().horizontalAdvance(line) + 8 for line in texts[0].splitlines()]
+            for row in range(table.rowCount()):
+                item = required(table.item(row, column))
+                cell_font = item.data(QtCore.Qt.ItemDataRole.FontRole) or table.font()
+                widths.extend(QtGui.QFontMetrics(cell_font).horizontalAdvance(line) + 8 for line in item.text().splitlines())
+            minimums.append(max(widths))
+        table.setFixedWidth(160)
+        app.processEvents()
+        for column, minimum in enumerate(minimums):
+            assert header.sectionSize(column) >= minimum, (index, column, header.sectionSize(column), minimum)
+        record('table-wide-font-narrow-viewport', subgroup, title=subgroup.table_selector.currentText(),
+               font=font.toString(), minimums=minimums, widths=[header.sectionSize(c) for c in range(table.columnCount())])
+        table.setMinimumWidth(0)
+        table.setMaximumWidth(16777215)
+        subgroup.resize(max(1280, sum(minimums) + 700), 800)
+        app.processEvents()
+        before = [header.sectionSize(c) for c in range(table.columnCount())]
+        for size, minimum in zip(before, minimums):
+            assert size >= minimum, (index, size, minimum)
+        viewport_before = required(table.viewport()).width()
+        subgroup.resize(subgroup.width() + table.columnCount() * 24, subgroup.height())
+        app.processEvents()
+        after = [header.sectionSize(c) for c in range(table.columnCount())]
+        gains = [b - a for a, b in zip(before, after)]
+        assert min(gains) > 0 and max(gains) - min(gains) <= 1, (before, after, gains)
+        assert sum(gains) == required(table.viewport()).width() - viewport_before
+        record('table-wide-font-even-width-sharing', subgroup, title=subgroup.table_selector.currentText(),
+               font=font.toString(), minimums=minimums, before=before, after=after, gains=gains)
     close_result(subgroup)

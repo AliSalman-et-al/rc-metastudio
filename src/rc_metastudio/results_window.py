@@ -27,6 +27,7 @@ from PyQt6.QtGui import (
     QAction,
     QCloseEvent,
     QFont,
+    QFontMetrics,
     QImage,
     QPainter,
     QPixmap,
@@ -481,6 +482,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.result_table.setTabKeyNavigation(False)
         self.result_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.result_table.setAlternatingRowColors(True)
+        self.result_table.setWordWrap(False)
+        header = required(self.result_table.horizontalHeader(), "result table column header")
+        header.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+        header.setStretchLastSection(False)
+        header.setResizeContentsPrecision(-1)
+        self._sizing_result_table = False
+        for widget in (self.result_table, self.result_table.viewport(), header):
+            required(widget, "table sizing surface").installEventFilter(self)
         self.result_table.setFont(self._report_base_font)
         self.result_table.setAccessibleDescription("Read-only result cells with column headers. Ctrl+C copies selected cells, or the entire table when no cells are selected. Tab moves to the next control.")
         required(self.result_table.verticalHeader(), "result table row header").hide()
@@ -523,15 +532,47 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 if _numeric_cell(cell):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
                 self.result_table.setItem(row_index, column_index, item)
-        header = required(self.result_table.horizontalHeader(), "result table column header")
-        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
-        header.setStretchLastSection(True)
-        self.result_table.resizeRowsToContents()
-        self.result_table.setMaximumHeight(
-            header.sizeHint().height() + sum(self.result_table.rowHeight(row)
-                                  for row in range(self.result_table.rowCount()))
-            + 2 * self.result_table.frameWidth()
-        )
+        self._size_result_table_columns()
+
+    def _size_result_table_columns(self):
+        table = self.result_table
+        count = table.columnCount()
+        if self._sizing_result_table or not count:
+            return
+        headers = [table.horizontalHeaderItem(column) for column in range(count)]
+        if any(item is None for item in headers):
+            return
+        self._sizing_result_table = True
+        try:
+            header = required(table.horizontalHeader(), "result table column header")
+            metrics = header.fontMetrics()
+            minimums = []
+            for column, item in enumerate(headers):
+                minimum = max(
+                    header.minimumSectionSize(),
+                    max(metrics.horizontalAdvance(line) for line in required(item, "table header").text().splitlines()) + 8,
+                    table.sizeHintForColumn(column),
+                )
+                for row in range(table.rowCount()):
+                    cell = table.item(row, column)
+                    if cell is None:
+                        continue
+                    font = cell.data(Qt.ItemDataRole.FontRole)
+                    cell_metrics = QFontMetrics(font) if font is not None else table.fontMetrics()
+                    minimum = max(minimum, max((cell_metrics.horizontalAdvance(line)
+                                               for line in cell.text().splitlines()), default=0) + 8)
+                minimums.append(minimum)
+            spare, remainder = divmod(max(0, required(table.viewport(), "table viewport").width() - sum(minimums)), count)
+            for column, minimum in enumerate(minimums):
+                table.setColumnWidth(column, minimum + spare + (column < remainder))
+            table.resizeRowsToContents()
+            scrollbar_height = (required(table.horizontalScrollBar(), "table scrollbar").sizeHint().height()
+                                if sum(minimums) > required(table.viewport(), "table viewport").width() else 0)
+            table.setMaximumHeight(header.sizeHint().height()
+                                   + sum(table.rowHeight(row) for row in range(table.rowCount()))
+                                   + 2 * table.frameWidth() + scrollbar_height)
+        finally:
+            self._sizing_result_table = False
 
     def _table_payload(self, delimiter, selected=False):
         table = self._report_tables[self.table_selector.currentIndex()]
@@ -1000,6 +1041,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             and watched is self._graphics_viewport
         ):
             self._schedule_viewport_refit()
+        table = getattr(self, "result_table", None)
+        if table is not None and event is not None and event.type() in (
+            QEvent.Type.Resize, QEvent.Type.FontChange, QEvent.Type.StyleChange,
+        ) and watched in (table, table.viewport(), table.horizontalHeader()):
+            self._size_result_table_columns()
         return super(ResultsWindow, self).eventFilter(watched, event)
 
     def _refit_svg_plot_items(self):
