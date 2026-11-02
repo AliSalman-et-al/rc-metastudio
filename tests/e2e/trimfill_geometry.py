@@ -1,5 +1,7 @@
 """Count actual display markers against the fit and an independent metafor fit."""
 import re
+from typing import cast
+from rpy2.robjects.functions import SignatureTranslatedFunction
 from xml.etree import ElementTree as ET
 from rpy2 import robjects as ro
 
@@ -16,7 +18,9 @@ def check_trimfill(view, record):
         y = list(params['prepared.effects'])
         se = list(params['prepared.standard.errors'])
         observed = [i for i, fill in enumerate(filled) if not fill]
-        fit = ro.r('function(y,se,side) metafor::trimfill(metafor::rma(yi=y,sei=se,method="REML"),side=side)')(
+        trimfill = cast(SignatureTranslatedFunction, ro.r(
+            'function(y,se,side) metafor::trimfill(metafor::rma(yi=y,sei=se,method="REML"),side=side)'))
+        fit = trimfill(
             ro.FloatVector([y[i] for i in observed]), ro.FloatVector([se[i] for i in observed]),
             'right' if 'right' in title.lower() else 'left')
         k0 = int(fit.rx2('k0')[0])

@@ -258,7 +258,7 @@ def review_rm5(path, parent):
             table.setItem(row, column, item)
     required(table.horizontalHeader(), "import column header").setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
     required(table.horizontalHeader(), "import column header").setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
-    table.setFixedHeight(table.horizontalHeader().height() + sum(table.rowHeight(row) for row in range(table.rowCount())) + 2 * table.frameWidth())
+    table.setFixedHeight(required(table.horizontalHeader(), "import column header").height() + sum(table.rowHeight(row) for row in range(table.rowCount())) + 2 * table.frameWidth())
     layout.addWidget(table)
     for heading, items in (('Not imported', result.not_imported),
                            ('Differs from RevMan', result.differences)):
