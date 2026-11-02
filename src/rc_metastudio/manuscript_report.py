@@ -69,11 +69,13 @@ def _interval_fields(headers):
     return lower, upper, level or "95% CI"
 
 
-def _interval_meaning(lower, upper, metric, arms, favours, *, coefficient=False):
+def _interval_meaning(lower, upper, metric, arms, *, coefficient=False):
     if not lower or not upper or lower == "NA" or upper == "NA":
         return ""
     ratio = metric in ("odds ratio", "risk ratio", "hazard ratio", "incidence rate ratio") and not coefficient
     if not coefficient and not ratio and metric not in ("mean difference", "standardized mean difference", "risk difference"):
+        return ""
+    if not coefficient and len(arms) != 2:
         return ""
     null = 1 if ratio else 0
     lo, hi = float(lower), float(upper)
@@ -82,11 +84,17 @@ def _interval_meaning(lower, upper, metric, arms, favours, *, coefficient=False)
         return f"The confidence interval includes {null}, so these data do not show a clear difference{comparison}."
     if coefficient:
         return f"The confidence interval is entirely {'above' if lo > 0 else 'below'} 0."
-    if len(arms) == 2 and len(favours) == 2:
-        favoured = favours[0] if hi < null else favours[1]
-        if favoured in arms:
-            return f"The confidence interval excludes {null} and favours {favoured}."
-    return f"The confidence interval excludes {null}."
+    quantity = {
+        "odds ratio": "odds of the outcome",
+        "risk ratio": "risk",
+        "risk difference": "risk",
+        "mean difference": "mean values",
+        "standardized mean difference": "mean values",
+        "hazard ratio": "hazard",
+        "incidence rate ratio": "event rate",
+    }[metric]
+    direction = "lower" if hi < null else "higher"
+    return f"The confidence interval excludes {null}, with {direction} {quantity} in {arms[0]} than in {arms[1]}."
 
 
 def _heterogeneity_sentence(values, prefix=""):
@@ -171,7 +179,7 @@ def _report_sections(result, summary):
                     lead = f"For {effect}, the coefficient" if coefficient else f"For {effect}, the pooled {effect_metric}" if 'Subgroups' in values or 'Term' in values else f"The pooled {effect_metric}"
                     inference = (f", {statistic} = {test}" if test != '—' else '') + (', ' + _p_clause(p) if p != '—' else '')
                     summary.append(f"{lead} was {values['Estimate']} ({level} [{values[lower]}, {values[upper]}]{inference}).")
-                    meaning = _interval_meaning(values[lower], values[upper], effect_metric, result.manuscript_arms, result.manuscript_favours, coefficient=coefficient)
+                    meaning = _interval_meaning(values[lower], values[upper], effect_metric, result.manuscript_arms, coefficient=coefficient)
                     if meaning:
                         summary.append(meaning)
                 continue

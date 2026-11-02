@@ -388,6 +388,10 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                     assert abs(figure_height - table_height) < 1, (sample, figure_height, table_height)
                     assert 0 <= float(word.attrib['yMin']) < float(word.attrib['yMax']) <= float(page.attrib['height'])
 
+            assert 'favours' not in view.manuscript.results.lower()
+            if sample == 'lymph':
+                assert 'than in' not in view.manuscript.results
+                assert 'between Intervention and Control' not in view.manuscript.results
             assert 'Methods' in text and 'RC MetaStudio' in ' '.join(text.split())
             normalized = ' '.join(unicodedata.normalize('NFKC', text).split())
             for prose in (view.manuscript.methods, view.manuscript.results):
@@ -405,7 +409,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 assert '-0.262' in normalized
             if sample == 'continuous':
                 assert 'The pooled standardized mean difference was 0.358 (95% CI [0.152, 0.565], z = 3.400, p < .001).' in view.manuscript.results
-                assert 'The confidence interval excludes 0 and favours Control.' in view.manuscript.results
+                assert 'The confidence interval excludes 0, with higher mean values in Intervention than in Control.' in view.manuscript.results
                 assert 'I² = 58.0%, which may represent moderate heterogeneity or substantial heterogeneity (Cochrane Handbook ranges).' in view.manuscript.results
             record('manuscript-export-' + sample + '-' + suffix, view, exported=str(path))
         (work / (sample + '-prose.txt')).write_text('Methods\n' + view.manuscript.methods + '\n\nResults\n' + view.manuscript.results, encoding='utf-8')
@@ -457,7 +461,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     assert_manuscript_tables(view)
     expected_swap = 'The pooled standardized mean difference was -0.358 (95% CI [-0.565, -0.152], z = -3.400, p < .001).'
     assert expected_swap in view.manuscript.results, view.manuscript.results
-    assert 'The confidence interval excludes 0 and favours Intervention.' in view.manuscript.results
+    assert 'The confidence interval excludes 0, with lower mean values in Control than in Intervention.' in view.manuscript.results
     assert view.results.manuscript_favours == ('Intervention', 'Control')
     assert view.results.manuscript_arms == ('Control', 'Intervention')
     for suffix in ('pdf', 'docx'):
