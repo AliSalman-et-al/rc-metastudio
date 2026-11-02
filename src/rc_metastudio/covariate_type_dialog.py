@@ -245,7 +245,7 @@ class CovariateTypeModel(QAbstractTableModel):
             return None
         if orientation == Qt.Orientation.Horizontal:
             if section == self.STUDY_COL:
-                return "study"
+                return "Study"
             elif section == self.ORIG_VAL:
                 return self.covariate["name"]
             elif section == self.NEW_VAL:
