@@ -494,6 +494,10 @@ def plots(app, window, family, record, *, view=None):
                 for style in ("Default (metafor)", "RevMan", "BMJ"):
                     dialog.style_cbo.setCurrentText(style)
                     click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+                    if family in {"cumulative", "leave-one-out"}:
+                        from xml.etree import ElementTree as ET
+                        labels = ["".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text")]
+                        assert sum(text.startswith("Favours") for text in labels) == 2, labels
                     measurements = check_forest_footer(path)
                     retained = Path(sys.argv[2]) / f"{family}-{style.split()[0]}-arms-{len(names[0])}.svg"
                     retained.write_bytes(path.read_bytes())

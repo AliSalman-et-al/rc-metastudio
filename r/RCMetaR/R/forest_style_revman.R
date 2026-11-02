@@ -457,7 +457,9 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
     on.exit(graphics::par(op), add=TRUE)
     bottom.margin <- if (nzchar(plan$x$xlab)) 3.1 else 2.15
     directions <- rcmetar.revman.direction.labels(bundle)
-    if (nzchar(directions$left) || nzchar(directions$right)) bottom.margin <- 6
+    if (nzchar(directions$left) || nzchar(directions$right)) {
+        bottom.margin <- max(6, 4.5 + size$direction_lines * 1.6)
+    }
     graphics::par(
         bg="white",
         mar=c(bottom.margin, 0.8, 0.9, 0.8),
@@ -514,6 +516,7 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
     ticks <- rcmetar.forest.spaced.ticks(bundle, plan$x$at, size$cex)
     graphics::axis(1, at=ticks, labels=rcmetar.revman.axis.labels(bundle, ticks), cex.axis=plan$typography$cex.axis)
     rcmetar.draw.metafor.sequential.text(bundle, rows, layout, k, plan$typography$cex)
+    rcmetar.draw.forest.direction(bundle, alim, plan$typography$cex)
     invisible(bundle$changed.params)
     }, display.path=display.path, caption=bundle$params$plot_caption)
 }
