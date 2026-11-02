@@ -38,7 +38,7 @@ def run(app, window, work, root, record, analyze):
         view.close()
     window.model.set_current_sheet(window.model.dataset.sheets[0].id)
     action = next((a for a in window.menuAnalysis.actions()
-                   if a.text() == 'Summary of findings'), None)
+                   if a.text() == 'Summary of findings…'), None)
     assert action is not None, 'Analysis menu lacks Summary of findings'
     action.trigger()
     app.processEvents()
@@ -95,6 +95,7 @@ def run(app, window, work, root, record, analyze):
             next(b for b in dialog.findChildren(QtWidgets.QPushButton) if b.text() == 'Export to ' + suffix.upper()).click()
         assert path.exists()
     document = Document(work / 'summary.docx')
+    assert not {'Methods', 'Results'} & {p.text for p in document.paragraphs}
     assert len(document.tables[0].rows) == 5
     assert document.tables[0].cell(1, 4).text == 'Not rated'
     record('summary-of-findings', dialog, rows=report.sections[0].tables[0].rows)
@@ -102,6 +103,7 @@ def run(app, window, work, root, record, analyze):
     pdf_text = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', str(work / 'summary.pdf'), '-'], text=True, encoding='utf-8')
     import unicodedata
     pdf_text = unicodedata.normalize('NFKC', pdf_text)
+    assert not {'Methods', 'Results'} & set(pdf_text.splitlines())
     assert 'Summary of findings' in pdf_text and 'Not rated' in pdf_text
     dialog.table.cellWidget(0, 4).setCurrentText('Moderate')
     window.undo()

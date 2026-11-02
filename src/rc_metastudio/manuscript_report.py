@@ -184,7 +184,10 @@ class ManuscriptReport:
         return cls(result.manuscript_title or 'Meta-analysis', methods, tuple(sections + supplementary), figures, tuple(summary), result.manuscript_comparison)
 
     def plain_text(self):
-        parts = [self.title, self.comparison, 'Methods', self.methods, 'Results', self.results]
+        parts = [self.title, self.comparison]
+        for heading, text in (('Methods', self.methods), ('Results', self.results)):
+            if text.strip():
+                parts.extend((heading, text))
         number = 0
         for section in self.sections:
             parts.extend(section.paragraphs)
@@ -195,10 +198,14 @@ class ManuscriptReport:
         return '\n\n'.join(parts)
 
     def html(self, supplementary=False):
-        parts = [f'<h1>{escape(self.title)}</h1><p>{escape(self.comparison)}</p><h2>Methods</h2><p>{escape(self.methods)}</p><h2>Results</h2><p>{escape(self.results)}</p>']
+        parts = [f'<h1>{escape(self.title)}</h1><p>{escape(self.comparison)}</p>']
+        for heading, text in (('Methods', self.methods), ('Results', self.results)):
+            if text.strip():
+                parts.append(f'<h2>{heading}</h2><p>{escape(text)}</p>')
         if supplementary:
             parts = []
-        table_number = 0
+        table_number = sum(len(section.tables) for section in self.sections
+                           if section.title != "Supplementary details") if supplementary else 0
         for number, section in enumerate(self.sections, 1):
             if (section.title == "Supplementary details") != supplementary:
                 continue
@@ -207,11 +214,11 @@ class ManuscriptReport:
             parts.extend(f'<p>{escape(paragraph)}</p>' for paragraph in section.paragraphs)
             for table in section.tables:
                 table_number += 1
-                parts.append(f'<p><b>Table {table_number}. {escape(table.title)}</b></p><hr><table border="0" cellspacing="0" cellpadding="5">')
+                parts.append(f'<p><b>Table {table_number}. {escape(table.title)}</b></p><hr width="100%"><table width="100%" border="0" cellspacing="0" cellpadding="5">')
                 for index, row in enumerate((table.headers, *table.rows)):
                     tag = 'th' if index == 0 else 'td'
                     parts.append('<tr>' + ''.join(f'<{tag}>' + escape(c) + f'</{tag}>' for c in row) + '</tr>')
-                parts.append('</table><hr><p>&nbsp;</p>')
+                parts.append('</table><hr width="100%">')
         return ''.join(parts)
 
 
@@ -288,10 +295,10 @@ def write_docx(report, path):
     section.left_margin = section.right_margin = Mm(15)
     document.add_heading(report.title, 0)
     document.add_paragraph(report.comparison)
-    document.add_heading('Methods', 1)
-    document.add_paragraph(report.methods)
-    document.add_heading('Results', 1)
-    document.add_paragraph(report.results)
+    for heading, text in (('Methods', report.methods), ('Results', report.results)):
+        if text.strip():
+            document.add_heading(heading, 1)
+            document.add_paragraph(text)
     table_number = 0
     table_number = _docx_sections(document, report, False, table_number)
     from PyQt6.QtCore import QBuffer, QIODevice

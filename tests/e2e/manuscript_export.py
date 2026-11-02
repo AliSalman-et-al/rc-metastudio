@@ -262,7 +262,8 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
             if suffix == 'docx':
                 doc = Document(path)
                 assert doc.paragraphs[0].text == view.manuscript.title
-                assert 'Table 1.' in '\n'.join(p.text for p in doc.paragraphs)
+                captions = [p.text for p in doc.paragraphs if p.text.startswith('Table ')]
+                assert captions and len(captions) == len(set(c.split('.')[0] for c in captions)), captions
                 if sample == 'amino':
                     assert doc.tables[0].rows[0].cells[0].text == 'Statistic'
                 assert len(doc.inline_shapes) >= len(view.results.images)
@@ -270,6 +271,9 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 text = '\n'.join(p.text for p in doc.paragraphs) + '\n' + '\n'.join(c.text for t in doc.tables for r in t.rows for c in r.cells)
             else:
                 text = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', '-layout', str(path), '-'], text=True, encoding='utf-8')
+                import re
+                numbers = re.findall(r'Table (\d+)\.', text)
+                assert numbers and len(numbers) == len(set(numbers)), numbers
                 from xml.etree import ElementTree as ET
                 bbox = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', '-bbox', str(path), '-'])
                 (work / (sample + '-bbox.html')).write_bytes(bbox)
