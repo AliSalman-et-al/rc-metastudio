@@ -37,17 +37,22 @@ def compare_result(path, after):
                for surface in ('copy', 'pdf', 'docx')}
     restored = {surface: absent_values(new, (Path(new['directory']) / (surface + '.txt')).read_text())
                 for surface in ('copy', 'pdf', 'docx')}
-    retained_rows = []
-    for table in new['held']:
-        caption = table['title'] if table['section'] == table['title'] else table['section'] + ' — ' + table['title']
-        target = next(t for t in new['presented'] if t['title'] == 'Full-precision results')
-        expected = [[caption, '\n'.join(f'{h}: {v}' for h, v in zip(table['headers'], row))] for row in table['rows']]
-        assert [row for row in target['rows'] if row[0] == caption] == expected
-        retained_rows.append(dict(section=table['section'], table=table['title'], rows=len(table['rows'])))
+    retained_rows = check_held_tables(new)
     retained_lines = check_held_text(new)
     assert not any(restored.values()), (scenario, restored)
     return dict(scenario=scenario, before_missing=missing, after_missing=restored,
                 exact_labelled_tables=retained_rows, exact_labelled_text_lines=retained_lines)
+
+
+def check_held_tables(data):
+    retained_rows = []
+    for table in data['held']:
+        caption = table['title'] if table['section'] == table['title'] else table['section'] + ' — ' + table['title']
+        target = next(t for t in data['presented'] if t['title'] == 'Full-precision results')
+        expected = [[caption, '\n'.join(f'{h}: {v}' for h, v in zip(table['headers'], row))] for row in table['rows']]
+        assert [row for row in target['rows'] if row[0] == caption] == expected
+        retained_rows.append(dict(section=table['section'], table=table['title'], rows=len(table['rows'])))
+    return retained_rows
 
 
 def check_held_text(data):

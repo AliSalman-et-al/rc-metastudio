@@ -139,7 +139,7 @@ def _study_inputs(result):
                 yield section, table
 
 
-def _study_results(result, template, level):
+def _study_result_rows(result):
     rows = []
     for section, table in _study_inputs(result):
         analysis = section.title.removesuffix(' Summary')
@@ -148,6 +148,11 @@ def _study_results(result, template, level):
         for row in table.rows:
             values = (row[0], row[1], row[2] + ' to ' + row[3], row[4]) if len(row) == 5 else (row[0], '—', '—', row[1])
             rows.append((analysis, *values))
+    return rows
+
+
+def _study_results(result, template, level):
+    rows = _study_result_rows(result)
     row_label = 'Fit' if any('leave-one-out' in s.title.casefold() for s in result.sections) else 'Study'
     headers = ('Analysis', row_label, 'Effect', level, 'Weight')
     if rows and all(row[2:4] == ('—', '—') for row in rows):
@@ -161,21 +166,26 @@ def _study_results(result, template, level):
                    tables=(ResultTable('Study results', headers, tuple(rows)),))
 
 
+def _held_section_content(section):
+    tables = tuple(replace(table, title=table.title if section.title == table.title else section.title + ' — ' + table.title) for table in section.tables)
+    paragraphs = section.paragraphs
+    if section.source_key == 'References':
+        tables = ()
+        paragraphs = tuple(f"{number}. {line}" if not re.match(r"^\d+[.)]\s", line) else line
+                           for number, line in enumerate(filter(None, section.value.splitlines()), 1))
+    elif not tables and section.value:
+        tables = (ResultTable(section.title + ' — Output', ('Output',),
+                              tuple((line,) for line in section.value.splitlines())),)
+    return tables, paragraphs
+
+
 def _held_sections(result):
     sections = []
     full_rows = []
     for section in result.sections:
         if section.kind != 'text':
             continue
-        tables = tuple(replace(table, title=table.title if section.title == table.title else section.title + ' — ' + table.title) for table in section.tables)
-        paragraphs = section.paragraphs
-        if section.source_key == 'References':
-            tables = ()
-            paragraphs = tuple(f"{number}. {line}" if not re.match(r"^\d+[.)]\s", line) else line
-                               for number, line in enumerate(filter(None, section.value.splitlines()), 1))
-        elif not tables and section.value:
-            tables = (ResultTable(section.title + ' — Output', ('Output',),
-                                  tuple((line,) for line in section.value.splitlines())),)
+        tables, paragraphs = _held_section_content(section)
         for table in tables:
             full_rows.extend((table.title, '\n'.join(f'{h}: {v}' for h, v in zip(table.headers, row))) for row in table.rows)
         sections.append(replace(section, title='Supplementary details', value='', paragraphs=paragraphs, tables=()))

@@ -498,18 +498,7 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
     }
     xlim <- axis.limits(style$plot.lb %||% "[default]", style$plot.ub %||% "[default]", c(0, 1))
     ylim <- axis.limits(style$y.plot.lb %||% "[default]", style$y.plot.ub %||% "[default]", c(0, 1))
-    draw <- function() {
-        plot(plot.data$fpr, plot.data$sensitivity, xlim=xlim, ylim=ylim, xaxt="n", yaxt="n",
-             xlab=as.character(style$xlabel %||% "False Positive Rate"),
-             ylab=as.character(style$ylabel %||% "Sensitivity"), pch=as.integer(style$point.pch %||% 21), bg="white",
-             col=accent.color,
-             cex=size.multiplier * if (identical(style$marker.area, "sample-size") || scalar.bool(style$point.area.by.sample.size, FALSE))
-                 sqrt(plot.data$sample.size / mean(plot.data$sample.size)) else 1)
-        axis(1, at=axis.ticks(style$xticks %||% "[default]", xlim))
-        axis(2, at=axis.ticks(style$yticks %||% "[default]", ylim))
-        if (!is.null(plot.data$curve)) lines(plot.data$curve[,1], plot.data$curve[,2], lwd=2, col=curve.color, lty=as.integer(style$curve.lty %||% 1))
-        if (scalar.bool(style$show.confidence, TRUE) && !is.null(plot.data$confidence.region)) lines(plot.data$confidence.region, col=confidence.color, lty=as.integer(style$confidence.lty %||% 2))
-        if (scalar.bool(style$show.prediction, TRUE) && !is.null(plot.data$prediction.region)) lines(plot.data$prediction.region, col=prediction.color, lty=as.integer(style$prediction.lty %||% 3))
+    draw.annotations <- function() {
         point <- plot.data$summary.point
         if (scalar.bool(style$show.summary, TRUE)) points(1 - point$specificity[["estimate"]], point$sensitivity[["estimate"]], pch=19, col=accent.color)
         if (scalar.bool(style$show.labels, FALSE)) text(plot.data$fpr, plot.data$sensitivity, labels=plot.data$study.names, pos=4, cex=as.numeric(style$text.cex %||% .8))
@@ -528,6 +517,20 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
                              lty=legend.spec$lty, pch=legend.spec$pch,
                              pt.cex=legend.spec$pt.cex, pt.bg=legend.spec$pt.bg, cex=.8, bty="n")
         }
+    }
+    draw <- function() {
+        plot(plot.data$fpr, plot.data$sensitivity, xlim=xlim, ylim=ylim, xaxt="n", yaxt="n",
+             xlab=as.character(style$xlabel %||% "False Positive Rate"),
+             ylab=as.character(style$ylabel %||% "Sensitivity"), pch=as.integer(style$point.pch %||% 21), bg="white",
+             col=accent.color,
+             cex=size.multiplier * if (identical(style$marker.area, "sample-size") || scalar.bool(style$point.area.by.sample.size, FALSE))
+                 sqrt(plot.data$sample.size / mean(plot.data$sample.size)) else 1)
+        axis(1, at=axis.ticks(style$xticks %||% "[default]", xlim))
+        axis(2, at=axis.ticks(style$yticks %||% "[default]", ylim))
+        if (!is.null(plot.data$curve)) lines(plot.data$curve[,1], plot.data$curve[,2], lwd=2, col=curve.color, lty=as.integer(style$curve.lty %||% 1))
+        if (scalar.bool(style$show.confidence, TRUE) && !is.null(plot.data$confidence.region)) lines(plot.data$confidence.region, col=confidence.color, lty=as.integer(style$confidence.lty %||% 2))
+        if (scalar.bool(style$show.prediction, TRUE) && !is.null(plot.data$prediction.region)) lines(plot.data$prediction.region, col=prediction.color, lty=as.integer(style$prediction.lty %||% 3))
+        draw.annotations()
     }
     dir.create(dirname(outpath), recursive=TRUE, showWarnings=FALSE)
     rcmetar.render.plot_file(outpath, size, draw, display.path=plot.data$display.path, caption=plot.data$style$caption)
