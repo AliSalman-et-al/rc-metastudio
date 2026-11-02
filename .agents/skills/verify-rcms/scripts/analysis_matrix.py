@@ -483,6 +483,9 @@ def run(
             assert any("contour" in key for key in view.results.images)
             assert any("trim-and-fill" in key for key in view.texts)
             assert "small-study.extrapolation" in view.texts
+        if sample == "amino":
+            from tests.e2e.trimfill_geometry import check_trimfill
+            check_trimfill(view, record)
         if keep_results:
             return view
         view.close()
