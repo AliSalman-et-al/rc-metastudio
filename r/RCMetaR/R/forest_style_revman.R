@@ -513,7 +513,7 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
         psize=rcmetar.metafor.psize(bundle),
         pch=compact.pch
     )
-    ticks <- rcmetar.forest.spaced.ticks(bundle, plan$x$at, size$cex)
+    ticks <- rcmetar.forest.spaced.ticks(bundle, plan$x$at, size$cex, plan$x$alim)
     graphics::axis(1, at=ticks, labels=rcmetar.revman.axis.labels(bundle, ticks), cex.axis=plan$typography$cex.axis)
     rcmetar.draw.metafor.sequential.text(bundle, rows, layout, k, plan$typography$cex)
     rcmetar.draw.forest.direction(bundle, alim, plan$typography$cex)
@@ -634,7 +634,7 @@ rcmetar.draw.revman.summary.diamond <- function(summary, row, color, alim) {
 
 rcmetar.draw.revman.axis <- function(bundle, layout, cex) {
     ticks <- rcmetar.revman.axis.ticks(bundle, layout$alim)
-    ticks <- rcmetar.forest.spaced.ticks(bundle, ticks, cex)
+    ticks <- rcmetar.forest.spaced.ticks(bundle, ticks, cex, layout$alim)
     labels <- rcmetar.revman.axis.labels(bundle, ticks)
     y.axis <- -2.3
     y.tick <- -2.12

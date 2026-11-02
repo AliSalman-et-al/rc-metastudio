@@ -703,7 +703,8 @@ rcmetar.metafor.axis.ticks <- function(bundle, alim) {
     pretty(alim, n=6)
 }
 
-rcmetar.forest.spaced.ticks <- function(bundle, ticks, cex) {
+rcmetar.forest.spaced.ticks <- function(bundle, ticks, cex, alim) {
+    ticks <- ticks[is.finite(ticks) & ticks >= alim[[1]] & ticks <= alim[[2]]]
     if (!rcmetar.is.plot.default.text(bundle$params$fp_xticks)) return(ticks)
     labels <- rcmetar.revman.axis.labels(bundle, ticks)
     valid <- is.finite(ticks) & !is.na(labels) & nzchar(labels)
@@ -718,6 +719,11 @@ rcmetar.forest.spaced.ticks <- function(bundle, ticks, cex) {
         if (!length(chosen) || all(abs(ticks[index] - ticks[chosen]) > half.width[index] + half.width[chosen] + gap)) {
             chosen <- c(chosen, index)
         }
+    }
+    # A central label can block both ends even when the two end labels fit.
+    if (length(chosen) < 2 && length(ticks) >= 2) {
+        ends <- c(which.min(ticks), which.max(ticks))
+        if (diff(range(ticks)) > sum(half.width[ends]) + gap) chosen <- ends
     }
     sort(ticks[chosen])
 }

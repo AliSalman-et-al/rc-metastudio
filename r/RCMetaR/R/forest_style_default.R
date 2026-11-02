@@ -397,7 +397,7 @@ rcmetar.draw.default.forest.panel <- function(bundle, plan) {
     } else {
         rcmetar.draw.forest.refline(plan)
     }
-    ticks <- rcmetar.forest.spaced.ticks(bundle, plan$x$at, size$cex)
+    ticks <- rcmetar.forest.spaced.ticks(bundle, plan$x$at, size$cex, plan$x$alim)
     graphics::axis(1, at=ticks, labels=rcmetar.revman.axis.labels(bundle, ticks), cex.axis=plan$typography$cex.axis)
     rcmetar.draw.default.annotations(bundle, plan)
 
