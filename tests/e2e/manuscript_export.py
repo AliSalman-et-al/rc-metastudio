@@ -329,7 +329,8 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
             suffix = "pdf"
             operation = f"{sample}-stress-{cycle}-pdf"
             lifetime_marker(f"{sample}-stress-{cycle}-export", view)
-            export_report(view, path, suffix, picker)
+            export_report(view, path, suffix)
+            record("manuscript-stress-picker-seam", view, mode=mode, sample=sample, cycle=cycle, exported=str(path))
             assert path.read_bytes().startswith(b"%PDF")
             app.processEvents()
             assert sip.isdeleted(previous)
@@ -383,6 +384,9 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     errors = []
     def run_small_study():
         dialog = app.activeModalWidget()
+        if not isinstance(dialog, PublicationBiasDialog) or not dialog.isVisible():
+            QTimer.singleShot(10, run_small_study)
+            return
         try:
             assert isinstance(dialog, PublicationBiasDialog)
             dialog.run()
@@ -404,3 +408,5 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     record('manuscript-small-study-methods', view, methods=view.manuscript.methods,
            settled_zoom_percent=view._figure_zoom_percent)
     close_result(view)
+    assert picker_number == (0 if direct_write else 8), (mode, picker_number)
+    record("manuscript-picker-coverage", mode=mode, real_pickers=picker_number)

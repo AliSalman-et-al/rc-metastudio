@@ -61,7 +61,7 @@ def run(app, window, work, root, record, analyze):
     app.processEvents()
     assert setup.isVisible()
     assert setup.analysis_error_label.isVisible()
-    assert setup.analysis_error_label.hasFocus()
+    assert setup.analysis_error_toggle.hasFocus()
     assert setup.analysis_error_label.text() == "Check the selected method and study data, then try again."
     assert setup.analysis_error_details.isHidden()
     mouse_click(setup.analysis_error_toggle, QtCore.Qt.MouseButton.LeftButton)
