@@ -112,3 +112,15 @@ def check_contour_colours(source):
     regions = fills.get('polygon', set()) - {'#ffffff'}
     keys = fills.get('rect', set()) - {'#ffffff'}
     assert len(regions) >= 3 and regions <= keys, (source, regions, keys)
+
+
+def check_sroc_legend_bounds(source):
+    root = ET.parse(source).getroot()
+    width = float(root.attrib['viewBox'].split()[2])
+    nodes = [n for n in root.iter('{http://www.w3.org/2000/svg}text')
+             if ''.join(n.itertext()) == 'Joint prediction region']
+    assert nodes, source
+    for node in nodes:
+        x = float(node.attrib['x'])
+        length = float(node.attrib['textLength'].removesuffix('px'))
+        assert 0 <= x and x + length <= width, (source, x, length, width)

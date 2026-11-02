@@ -225,6 +225,9 @@ def plots(driver, capture, missing):
             view.report_action.setChecked(False)
             view._show_report(False)
             view.fit_width_action.trigger()
+            if detail == "sroc":
+                from tests.e2e.header_geometry import check_sroc_legend_bounds
+                check_sroc_legend_bounds(view.results.display_images[selected[0].title])
             if detail == "contour":
                 from tests.e2e.header_geometry import check_contour_colours
                 check_contour_colours(view.results.display_images[selected[0].title])

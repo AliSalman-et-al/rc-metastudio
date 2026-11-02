@@ -526,7 +526,7 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
         if (length(legend.spec$labels)) {
             graphics::legend("bottomright", legend=legend.spec$labels, col=legend.spec$col,
                              lty=legend.spec$lty, pch=legend.spec$pch,
-                             pt.cex=legend.spec$pt.cex, pt.bg=legend.spec$pt.bg, bty="n")
+                             pt.cex=legend.spec$pt.cex, pt.bg=legend.spec$pt.bg, cex=.8, bty="n")
         }
     }
     dir.create(dirname(outpath), recursive=TRUE, showWarnings=FALSE)
