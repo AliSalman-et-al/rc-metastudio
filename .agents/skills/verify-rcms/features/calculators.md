@@ -18,6 +18,7 @@ Users edit a study's raw inputs, inspect the derived effect preview, accept or c
 
 Preconditions: doctor passes; the matching committed sample supplies compatible raw inputs.
 
+- **Default-size visibility.** `calculator-binary` requires the count grid, SE/Z/P readout and OR/RR/RD table to fit fully in the visible content viewport without vertical scrolling. `ui-crawl` also checks both continuous pre/post arm tables and compact entered-estimate placement. Large-font overflow remains covered by the transactional calculator layout tests.
 - **Binary.** Run `uv run python scripts/verify_rcms.py calculator-binary`. The row-header path opens `BinaryDataDialog`; `raw_data_table` accepts the first study's increased event count and corresponding total.
 - **Continuous.** Run `uv run python scripts/verify_rcms.py calculator-continuous`. `ContinuousDataDialog.simple_table` changes the first study mean by `1.5` using a comma decimal.
 - **Diagnostic.** Run `uv run python scripts/verify_rcms.py calculator-diagnostic`. `DiagnosticDataDialog.two_by_two_table` changes the first study TP count by one.

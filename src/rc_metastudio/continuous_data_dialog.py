@@ -108,6 +108,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     ):
         super(ContinuousDataDialog, self).__init__(parent)
         self.setupUi(self)
+        self.dialog_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.simple_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self._configure_tables()
@@ -195,10 +196,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
             "continuous calculator OK button",
         ).setDefault(True)
-        adaptive_window.set_content_preferred_width(
-            self, 480, self.fontMetrics().horizontalAdvance("-9999.9999") * 8 + 140
-        )
-        self._request_initial_content_refit()
+        self._request_content_refit()
 
     def _update_input_modes(self):
         index = self.input_mode_combo.findData("pre-post")
@@ -211,10 +209,12 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
     def _input_mode_changed(self):
         mode = self.input_mode_combo.currentData()
+        mode_changed = mode != getattr(self, "_active_input_mode", None)
+        self._active_input_mode = mode
         self.content_scroll.setVisible(mode != "estimate")
         self.simple_group.setVisible(mode == "summary")
         self.pre_post_group_box.setVisible(mode == "pre-post")
-        self._content_layout_changed()
+        self._content_layout_changed(mode_changed=mode_changed)
 
     def _configure_tables(self):
         """Give each data grid its own overflow and user-adjustable columns."""
@@ -320,21 +320,30 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         except RuntimeError:
             pass
 
-    def _request_initial_content_refit(self):
+    def _request_content_refit(self, *, mode_changed=False):
         controller = self.__dict__.get("_layout_controller")
-        if controller is not None and not self.isVisible():
+        if controller is not None and (mode_changed or not self.isVisible()):
+            height = self.dialog_layout.sizeHint().height()
+            if not self.content_scroll.isHidden():
+                height += (
+                    self.content_layout.sizeHint().height()
+                    - self.content_scroll.sizeHint().height()
+                    + 2 * self.content_scroll.frameWidth()
+                )
+            adaptive_window.set_content_preferred_width(
+                self, 480, self.fontMetrics().horizontalAdvance("-9999.9999") * 8 + 140, height
+            )
             controller.request_content_refit()
 
-    def _content_layout_changed(self):
-        """Relayout dynamic content without taking visible root geometry ownership."""
+    def _content_layout_changed(self, *, mode_changed=False):
+        """Refit the active inputs within the screen bounds."""
         content_layout = self.__dict__.get("content_layout")
         content_widget = self.__dict__.get("content_widget")
         if content_layout is not None:
             content_layout.invalidate()
-            self.content_scroll.setMaximumHeight(content_layout.sizeHint().height() + 4)
         if content_widget is not None:
             content_widget.updateGeometry()
-        self._request_initial_content_refit()
+        self._request_content_refit(mode_changed=mode_changed)
 
     def _update_effect_choice_accessibility(self):
         combo = self.effect_combo_box

@@ -444,7 +444,17 @@ def calculators(driver, capture, missing, prefix="D", families=None):
         elif isinstance(form, (BinaryDataDialog, ContinuousDataDialog)):
             for index in range(1 if prefix == "J" else form.input_mode_combo.count()):
                 form.input_mode_combo.setCurrentIndex(index)
-                capture(f"{prefix}-calculator-{family}-{form.input_mode_combo.currentData()}", form)
+                driver.app.processEvents()
+                mode = form.input_mode_combo.currentData()
+                if prefix == "D" and isinstance(form, ContinuousDataDialog) and mode == "pre-post":
+                    viewport = form.content_scroll.viewport()
+                    for table in (form.g1_pre_post_table, form.g2_pre_post_table):
+                        assert viewport.rect().contains(QtCore.QRect(table.mapTo(viewport, QtCore.QPoint()), table.size()))
+                    assert form.content_scroll.verticalScrollBar().maximum() == 0
+                if prefix == "D" and mode == "estimate":
+                    effect_group = form.groupBox if isinstance(form, BinaryDataDialog) else form.effect_group
+                    assert effect_group.y() < form.input_mode_combo.geometry().bottom() + form.fontMetrics().lineSpacing() * 4
+                capture(f"{prefix}-calculator-{family}-{mode}", form)
         else:
             capture(f"{prefix}-calculator-{family}-counts", form)
         form.close()
