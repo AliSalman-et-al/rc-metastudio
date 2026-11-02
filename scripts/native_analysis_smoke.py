@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import os
@@ -21,9 +22,9 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def validate_evidence(path: Path) -> dict[str, object]:
+def validate_evidence(path: Path, *, expected_qpa: str = "windows") -> dict[str, object]:
     evidence = json.loads(path.read_text(encoding="utf-8"))
-    if evidence.get("qpa") != "windows":
+    if evidence.get("qpa") != expected_qpa:
         raise ValueError("native analysis evidence was not captured with qwindows")
     if evidence.get("request") != {
         "data_type": "binary",
@@ -49,9 +50,20 @@ def validate_evidence(path: Path) -> dict[str, object]:
         "configuration_visible": True,
         "progress_deleted": True,
         "error_visible": True,
-        "error_message": "Sorry, this analysis could not be completed:\n\nnative backend failure",
+        "error_message": "Check the selected method and study data, then try again.",
+        "error_details": "native backend failure",
+        "details_visible": True,
+        "run_enabled": True,
     }:
         raise ValueError("native backend failure did not preserve recoverable configuration")
+    failure = scenarios["backend_failure"]
+    before, after = failure.get("request_before"), failure.get("request_after")
+    if (
+        not isinstance(before, dict)
+        or before != after
+        or before.get("params", {}).get("conf.level") != 90.5
+    ):
+        raise ValueError("failed analysis changed the user's selected configuration")
     image = path.parent / "analysis-configuration.png"
     if not image.is_file() or image.stat().st_size != evidence.get("image_size"):
         raise ValueError("native analysis screenshot is missing or has the wrong size")
@@ -68,6 +80,14 @@ def _install_backend_test_double(
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--offscreen", action="store_true",
+        help="Check lifecycle behavior locally; not native platform qualification.",
+    )
+    args = parser.parse_args()
+    if args.offscreen:
+        os.environ["QT_QPA_PLATFORM"] = "offscreen"
     prepare_generated_ui_imports()
     repo_root = Path(__file__).resolve().parents[1]
     from local_r_test_backend import create
@@ -196,7 +216,9 @@ def main() -> int:
     confidence_input.interpretText()
     request = configuration.analysis_requests()[0]
 
-    evidence_root = repo_root / "build/qt6-verification/native-analysis"
+    evidence_root = repo_root / "build/qt6-verification" / (
+        "offscreen-analysis" if args.offscreen else "native-analysis"
+    )
     evidence_root.mkdir(parents=True, exist_ok=True)
     image = evidence_root / "analysis-configuration.png"
     screen = configuration.screen()
@@ -246,6 +268,11 @@ def main() -> int:
 
     failing = make_configuration()
     _phase("failure-configuration-created")
+    failure_confidence = failing.parameter_grp_box.findChild(QtWidgets.QDoubleSpinBox)
+    if failure_confidence is None:
+        raise RuntimeError("failure confidence-level input is missing")
+    failure_confidence.setValue(90.5)
+    request_before = failing.analysis_requests()[0].to_mapping()
     progress_count = len(created_progress_dialogs)
     backend.run_versioned_analysis_request = lambda *_args, **_kwargs: (
         _ for _ in ()
@@ -266,16 +293,25 @@ def main() -> int:
     _phase("failure-progress-found")
     deferred_delete()
     _phase("failure-deferred-delete-return")
+    failing.analysis_error_toggle.setChecked(True)
+    app.processEvents()
+    run_button = failing.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
     failure_state = {
         "configuration_visible": failing.isVisible(),
         "progress_deleted": sip.isdeleted(failing_progress),
         "error_visible": failing.analysis_error_label.isVisible(),
         "error_message": failing.analysis_error_label.text(),
+        "error_details": failing.analysis_error_details.toPlainText(),
+        "details_visible": failing.analysis_error_details.isVisible(),
+        "run_enabled": run_button is not None and run_button.isEnabled(),
     }
+    request_after = failing.analysis_requests()[0].to_mapping()
     failing.reject()
     deferred_delete()
     scenarios["backend_failure"] = {
         "failure_state": failure_state,
+        "request_before": request_before,
+        "request_after": request_after,
         "deleted": {
             "configuration": sip.isdeleted(failing),
             "progress": sip.isdeleted(failing_progress),
@@ -320,7 +356,7 @@ def main() -> int:
     evidence_path.write_text(
         json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
-    validate_evidence(evidence_path)
+    validate_evidence(evidence_path, expected_qpa="offscreen" if args.offscreen else "windows")
     _phase("evidence-validated")
     print(evidence_path.read_text(encoding="utf-8"))
     return 0
