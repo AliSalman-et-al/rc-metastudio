@@ -35,14 +35,20 @@ def run(app, window, work, root, record, analyze, *, direct_write=False):
 
             state = dict(mode=mode, format=extension, path=str(path), number=sum(writes.values()) + 1)
             print("Manuscript writer: " + repr(dict(state, phase="enter")), file=sys.stderr, flush=True)
-            with ExitStack() as stack:
-                for name in ("QPdfWriter", "QPainter", "QTextDocument"):
-                    factory = getattr(manuscript_report, name)
-                    stack.enter_context(patch.object(manuscript_report, name, new=observed(factory)))
-                writer(report, path)
-            # No GC or event pumping: returning from the writer must release its
-            # paint devices before a subsequent save dialog can process events.
-            alive = [name for name, reference in resources if reference() is not None]
+            gc_enabled = gc.isenabled()
+            gc.disable()
+            try:
+                with ExitStack() as stack:
+                    for name in ("QPdfWriter", "QPainter", "QTextDocument"):
+                        factory = getattr(manuscript_report, name)
+                        stack.enter_context(patch.object(manuscript_report, name, new=observed(factory)))
+                    writer(report, path)
+                # Reference-counted Qt resources must go away on return, without
+                # cyclic collection concealing a retained writer or paint device.
+                alive = [name for name, reference in resources if reference() is not None]
+            finally:
+                if gc_enabled:
+                    gc.enable()
             created = dict(Counter(name for name, _reference in resources))
             print("Manuscript writer: " + repr(dict(state, phase="returned", created=created, alive=alive)), file=sys.stderr, flush=True)
             assert not alive, (state, "writer resources retained after return", alive)

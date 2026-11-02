@@ -256,7 +256,8 @@ process cannot prevent the direct case from retaining its result. Hillclimb
 also retains its two real save dialogs.
 
 Both cases weakly observe real QPdfWriter, QPainter and QTextDocument instances
-and assert release on normal writer return, before GC or event processing.
+and assert release on normal writer return with cyclic GC disabled and no event
+processing.
 Writer markers identify format, path and write number. Dialog markers identify
 the operation, picker number, prior dialog deletion and child item-model
 teardown after deleteLater/deferred-event processing. This explicit cleanup is
