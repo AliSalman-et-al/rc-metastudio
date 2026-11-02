@@ -222,25 +222,35 @@ class SheetTabBar(QtWidgets.QTabBar):
         event = a0
         if event is None:
             return
-        if event.type() in (QtCore.QEvent.Type.ApplicationPaletteChange, QtCore.QEvent.Type.PaletteChange) and not self._updating_palette:
-            self._updating_palette = True
+        if event.type() not in (QtCore.QEvent.Type.ApplicationPaletteChange, QtCore.QEvent.Type.PaletteChange) or self._updating_palette:
+            return
+        self._updating_palette = True
+        try:
             palette = QtWidgets.QApplication.palette()
-            template = self.palette_stylesheet or self.styleSheet()
-            for name, role in (("window", QtGui.QPalette.ColorRole.Window), ("window-text", QtGui.QPalette.ColorRole.WindowText), ("alternate-base", QtGui.QPalette.ColorRole.AlternateBase), ("mid", QtGui.QPalette.ColorRole.Mid), ("highlight", QtGui.QPalette.ColorRole.Highlight)):
-                colour = palette.color(role)
-                if name == "mid":
-                    colour = palette.color(QtGui.QPalette.ColorRole.Window)
-                    colour = colour.lighter(140) if colour.lightness() < 128 else colour.darker(115)
-                template = template.replace("palette(" + name + ")", colour.name())
-            self.setStyleSheet(template)
-            window = self.window()
-            if isinstance(window, MainWindow):
-                # Palette events can arrive while the sheet strip is being built.
-                if hasattr(window, "sheet_tab_content"):
-                    window.sheet_tab_content.setPalette(palette)
-                if hasattr(window, "add_sheet_button"):
-                    window.add_sheet_button.setStyleSheet("QToolButton { color: " + palette.color(QtGui.QPalette.ColorRole.WindowText).name() + "; background: transparent; border: 0; font-size: 18px; }")
+            self._apply_tab_palette(palette)
+            self._apply_strip_palette(palette)
+        finally:
             self._updating_palette = False
+
+    def _apply_tab_palette(self, palette: QtGui.QPalette) -> None:
+        template = self.palette_stylesheet or self.styleSheet()
+        for name, role in (("window", QtGui.QPalette.ColorRole.Window), ("window-text", QtGui.QPalette.ColorRole.WindowText), ("alternate-base", QtGui.QPalette.ColorRole.AlternateBase), ("mid", QtGui.QPalette.ColorRole.Mid), ("highlight", QtGui.QPalette.ColorRole.Highlight)):
+            colour = palette.color(role)
+            if name == "mid":
+                colour = palette.color(QtGui.QPalette.ColorRole.Window)
+                colour = colour.lighter(140) if colour.lightness() < 128 else colour.darker(115)
+            template = template.replace("palette(" + name + ")", colour.name())
+        self.setStyleSheet(template)
+
+    def _apply_strip_palette(self, palette: QtGui.QPalette) -> None:
+        window = self.window()
+        if not isinstance(window, MainWindow):
+            return
+        # Palette events can arrive while the sheet strip is being built.
+        if hasattr(window, "sheet_tab_content"):
+            window.sheet_tab_content.setPalette(palette)
+        if hasattr(window, "add_sheet_button"):
+            window.add_sheet_button.setStyleSheet("QToolButton { color: " + palette.color(QtGui.QPalette.ColorRole.WindowText).name() + "; background: transparent; border: 0; font-size: 18px; }")
 
     def eventFilter(self, a0: QtCore.QObject | None, a1: QtCore.QEvent | None) -> bool:
         if a1 is not None and a1.type() == QtCore.QEvent.Type.ApplicationPaletteChange:

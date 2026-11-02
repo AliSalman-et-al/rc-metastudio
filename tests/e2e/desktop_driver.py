@@ -700,6 +700,23 @@ def sheets(app, window):
     assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
     assert_study_grid(app, window)
     tabs = window.sheet_tabs
+    original_palette = app.palette()
+    dark_palette = QtGui.QPalette(original_palette)
+    dark_palette.setColor(QtGui.QPalette.ColorRole.Window, QtGui.QColor("#202020"))
+    dark_palette.setColor(QtGui.QPalette.ColorRole.WindowText, QtGui.QColor("#eeeeee"))
+    try:
+        app.setPalette(dark_palette)
+        app.processEvents()
+        assert "#202020" in tabs.styleSheet()
+        assert "#eeeeee" in tabs.styleSheet()
+        assert "#eeeeee" in window.add_sheet_button.styleSheet()
+        assert window.sheet_tab_content.palette().color(QtGui.QPalette.ColorRole.Window).name() == "#202020"
+        assert not tabs._updating_palette
+        record_step("sheets-dark-palette", window)
+    finally:
+        app.setPalette(original_palette)
+        app.processEvents()
+    assert not tabs._updating_palette
     original = copy.deepcopy(window.model.dataset)
     window.resize(1600, 828)
     app.processEvents()
