@@ -377,6 +377,24 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
         method_text_width = dialog.method_cbo_box.fontMetrics().horizontalAdvance(
             dialog.method_cbo_box.currentText()
         )
+        layout_details = {
+            "font": dialog.method_lbl.font().toString(),
+            "label_text_width": dialog.method_lbl.fontMetrics().horizontalAdvance(dialog.method_lbl.text()),
+            "label_hint": dialog.method_lbl.sizeHint(),
+            "label_minimum": dialog.method_lbl.minimumSize(),
+            "label_policy": (dialog.method_lbl.sizePolicy().horizontalPolicy(),
+                             dialog.method_lbl.sizePolicy().verticalPolicy(),
+                             dialog.method_lbl.sizePolicy().retainSizeWhenHidden()),
+            "layout": type(dialog.gridLayout).__name__,
+            "columns": [(dialog.gridLayout.columnStretch(i), dialog.gridLayout.columnMinimumWidth(i))
+                        for i in range(dialog.gridLayout.columnCount())],
+            "siblings": [(widget.objectName(),
+                          dialog.gridLayout.getItemPosition(i),
+                          widget.sizeHint())
+                         for i in range(dialog.gridLayout.count())
+                         if (item := dialog.gridLayout.itemAt(i)) is not None
+                         if (widget := item.widget()) is not None],
+        }
         assert method_text_width <= dialog.method_cbo_box.width(), (
             method_text_width,
             dialog.method_cbo_box.width(),
@@ -388,6 +406,7 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
                 dialog.method_cbo_box.parentWidget(), "method combo parent"
             ).width(),
             dialog.parameter_grp_box.width(),
+            layout_details,
         )
         estimator = next(
             combo

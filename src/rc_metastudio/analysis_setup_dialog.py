@@ -454,6 +454,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.method_lbl.setSizePolicy(
             QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred
         )
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.gridLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.gridLayout.setColumnStretch(0, 0)
         self.gridLayout.setColumnStretch(1, 1)
@@ -623,6 +624,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         width = min(self.sizeHint().width(),
                     int(available.width() * policy.maximum_screen_fraction) - frame_width)
         self.resize(max(self.width(), width), self.height())
+        self._schedule_local_reflow()
         app = QtWidgets.QApplication.instance()
         if isinstance(app, QtWidgets.QApplication) and not self._focus_reveal_connected:
             app.focusChanged.connect(self._reveal_focused_control)
@@ -1623,7 +1625,32 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             else:
                 self.adjustSize()
             self.move(position)
+        if self.isVisible():
+            self._fit_method_text()
         self._reveal_focused_control(None, QtWidgets.QApplication.focusWidget())
+
+    def _fit_method_text(self):
+        # A readable selector may need the screen margin reserved by the usual
+        # transactional policy. Measure after font propagation and layout, not
+        # from the combo's character-count size hint.
+        self.gridLayout.activate()
+        needed = self.method_cbo_box.fontMetrics().horizontalAdvance(
+            self.method_cbo_box.currentText()
+        )
+        deficit = max(0, needed - self.method_cbo_box.width())
+        available = adaptive_window.available_geometry_for_window(self)
+        frame_width = max(0, self.frameGeometry().width() - self.width())
+        width = self.width() + deficit
+        if self.width() < width <= available.width() - frame_width:
+            self.resize(width, self.height())
+
+    def changeEvent(  # ty: ignore[invalid-method-override] -- PyQt6 multiple-inheritance stub mismatch
+        self, event: QtCore.QEvent | None
+    ) -> None:
+        super(AnalysisSetupDialog, self).changeEvent(event)
+        if event is not None and event.type() == QtCore.QEvent.Type.FontChange and hasattr(self, "_layout_reflow_timer"):
+            self._schedule_local_reflow()
+
 
     def _reveal_focused_control(self, _old, focused):
         if focused is not None and self.content_scroll_area.isAncestorOf(focused):
