@@ -164,7 +164,7 @@ class _DiagnosticMethodPanel(object):
         self.params = {}
         self.widgets = []
         self.label = label_widget
-        self.label.setText(label)
+        self.label.setText("Analysis method: " + label)
         self.combo = combo
         self.param_box = param_box
         owner._configure_method_selector(self.combo)
@@ -1347,6 +1347,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 text = str(value)
             changes.append(f"{parameter_display_label(spec.name, spec.metadata)} {text}")
         self.advanced_toggle.setText(("▾ Advanced" if self.advanced_toggle.isChecked() else "▸ Advanced") + (f" · {len(changes)} changed" if changes else ""))
+        self.advanced_toggle.setMinimumWidth(self.advanced_toggle.fontMetrics().horizontalAdvance(self.advanced_toggle.text()) + 12)
         self.advanced_toggle.setToolTip("\n".join(changes) or "Additional method options")
 
     def _place_parameter(self, layout, row, spec, label, control, target, default):
@@ -1399,7 +1400,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.current_widgets.extend((label, control))
             row = self._place_parameter(layout, row, spec, label, control,
                                         self.current_param_vals, self._method_defaults.get(spec.name))
-        self.gridLayout.addWidget(self.advanced_toggle, 20, 0, 1, 4)
+        self.gridLayout.addWidget(self.advanced_toggle, 20, 0, 1, 4, Qt.AlignmentFlag.AlignLeft)
         self.gridLayout.addWidget(self.advanced_panel, 21, 0, 1, 4)
         self._refresh_advanced_summary()
 
