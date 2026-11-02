@@ -250,6 +250,15 @@ def _pixmap_device_independent_size(pixmap):
     return (float(pixmap.width()) / dpr, float(pixmap.height()) / dpr)
 
 
+class _ManuscriptText(QTextBrowser):
+    def resizeEvent(self, a0: QResizeEvent | None) -> None:
+        super().resizeEvent(a0)
+        document = self.document()
+        if document is not None:
+            document.setTextWidth(required(self.viewport(), "manuscript viewport").width())
+            self.setFixedHeight(math.ceil(document.size().height()) + 2 * self.frameWidth())
+
+
 class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def __init__(
         self,
@@ -413,7 +422,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         layout = QVBoxLayout(self.manuscript_page)
         for name, text in (("Methods", self.manuscript.methods), ("Results", self.manuscript.results)):
             layout.addWidget(QLabel(name))
-            browser = QTextBrowser()
+            browser = _ManuscriptText()
             browser.setPlainText(text)
             browser.setAccessibleName(name)
             setattr(self, 'manuscript_' + name.lower(), browser)
@@ -422,6 +431,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             button.setText('Copy ' + name)
             button.clicked.connect(lambda checked=False, value=text: required(QApplication.clipboard(), "clipboard").setText(value))
             layout.addWidget(button)
+        layout.addStretch()
         self.content_stack.addWidget(self.manuscript_page)
 
     def _setup_report_document(self):
