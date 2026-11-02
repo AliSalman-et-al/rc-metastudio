@@ -212,7 +212,7 @@ def plots(driver, capture, missing):
         ("analysis-amino-binary-cumulative", (("cumulative", "cumulative_forest"),)),
         ("analysis-amino-binary-leave-one-out", (("leave-one-out", "leave_one_out_forest"),)),
         ("analysis-amino-binary-meta-regression", (("regression", "regression"),)),
-        ("small-study-binary-extended", (("funnel", "funnel"), ("contour", "contour_funnel"), ("trim-and-fill", "trimfill_funnel"))),
+        ("small-study-binary-extended", (("funnel", "funnel"), ("contour", "contour_funnel"), ("trim-and-fill", "trimfill_funnel"), ("trim-and-fill-right", "trimfill_funnel"))),
         ("analysis-diagnostic-joint", (("sroc", "sroc"),)),
         ("analysis-diagnostic-regression-continuous", (("coefficient", "forest"),)),
         ("small-study-diagnostic", (("deeks", "deeks_funnel"),)),
@@ -224,6 +224,7 @@ def plots(driver, capture, missing):
             artifacts = [view.create_plot_artifact(title, path, params_path=view.results.image_params_paths.get(title))
                          for title, path in view.results.images.items()]
             selected = [artifact for artifact in artifacts if artifact.plot_kind == kind
+                        and (detail != "trim-and-fill-right" or "right" in artifact.title.lower())
                         and (detail != "coefficient" or (artifact.params_path and view.plot_service.load_params(artifact.params_path).get("reitsma.coefficient.scale")))]
             if not selected:
                 missing.append(f"G {detail}: producer {producer} did not expose {kind}")
@@ -234,16 +235,30 @@ def plots(driver, capture, missing):
             view.report_action.setChecked(False)
             view._show_report(False)
             view.fit_width_action.trigger()
+            if detail in {"contour", "sroc", "trim-and-fill-right"}:
+                svg = driver.WORK / f"{detail}-geometry.svg"
+                view.plot_service.export(regenerator=selected[0].capability.regenerator,
+                                         params_path=selected[0].params_path, output_path=str(svg))
             if detail == "sroc":
                 from tests.e2e.header_geometry import check_sroc_legend_bounds
-                check_sroc_legend_bounds(view.results.display_images[selected[0].title])
+                check_sroc_legend_bounds(svg)
             if detail == "contour":
                 from tests.e2e.header_geometry import check_contour_colours
-                check_contour_colours(view.results.display_images[selected[0].title])
+                check_contour_colours(svg)
             heading = view._layout_items[view._layout_items.index(view._nav_items_to_sections[id(item)]) - 1]
             assert abs(heading.scale() * view.graphics_view.transform().m22() - 1) < .001
             assert heading.font().pointSizeF() == view.font().pointSizeF()
             capture(f"G-{detail}-fit", view)
+            if detail == "trim-and-fill-right":
+                from xml.etree import ElementTree as ET
+                root = ET.parse(svg).getroot()
+                hollow = [n for n in root.iter('{http://www.w3.org/2000/svg}circle') if 'fill: none' in n.attrib.get('style', '') or n.attrib.get('fill') == 'none']
+                assert len(hollow) == 4, len(hollow)
+                capture("G-trim-and-fill-right", view)
+            if detail == "cumulative":
+                scrollbar = required(view.graphics_view.verticalScrollBar())
+                scrollbar.setValue(scrollbar.maximum())
+                capture("G-cumulative-bottom", view)
             editor_kind = "coefficient" if detail == "coefficient" else selected[0].plot_kind
             if editor_kind not in editors:
                 plot_editor(driver, capture, selected[0], view, editor_kind)
