@@ -885,7 +885,6 @@ rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, k, cex) {
         graphics::text(study.x, -0.5, rcmetar.forest.model.label(bundle$summary_res), pos=4, font=2, cex=cex)
         rcmetar.draw.forest.inference(bundle, study.x, -0.5, cex, bundle$summary_res)
     }
-    rcmetar.draw.forest.direction(bundle, layout$alim, cex)
     if (rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
         labels <- rcmetar.metafor.effect.labels(bundle)
         graphics::text(annotation.x, rows, labels, pos=2, cex=cex, col="black")

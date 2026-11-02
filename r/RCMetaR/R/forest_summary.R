@@ -26,12 +26,46 @@ rcmetar.draw.forest.diamond <- function(center, lower, upper, row, height, alim,
     invisible(NULL)
 }
 
+rcmetar.forest.direction.lines <- function(label, width, cex, font=1, units="user") {
+    # Wrap by rendered width, including arm names containing an unbroken word.
+    lines <- character()
+    current <- ""
+    for (word in strsplit(trimws(label), "\\s+")[[1]]) {
+        candidate <- paste0(current, if (nzchar(current)) " " else "", word)
+        if (nzchar(current) && graphics::strwidth(candidate, units=units, cex=cex, font=font) > width) {
+            lines <- c(lines, current)
+            current <- ""
+        }
+        for (letter in strsplit(paste0(if (nzchar(current)) " " else "", word), "")[[1]]) {
+            if (nzchar(current) && graphics::strwidth(paste0(current, letter), units=units, cex=cex, font=font) > width) {
+                lines <- c(lines, current)
+                current <- ""
+            }
+            current <- paste0(current, letter)
+        }
+    }
+    c(lines, current)[nzchar(c(lines, current))]
+}
+
+rcmetar.draw.forest.direction.blocks <- function(bundle, footer, top, cex, font=1) {
+    labels <- rcmetar.revman.direction.labels(bundle)
+    spacing <- graphics::strheight("M", cex=cex, font=font) * 2.2
+    for (side in c("left", "right")) {
+        lines <- rcmetar.forest.direction.lines(labels[[side]], footer[[paste0(side, ".max.width")]], cex, font)
+        if (length(lines)) graphics::text(footer[[paste0(side, ".x")]],
+            top - (seq_along(lines) - 1) * spacing, lines, cex=cex, font=font)
+    }
+    invisible(NULL)
+}
+
 rcmetar.draw.forest.direction <- function(bundle, alim, cex) {
     labels <- rcmetar.revman.direction.labels(bundle)
     for (side in c("left", "right")) {
         if (nzchar(labels[[side]])) {
             at <- if (side == "left") mean(c(alim[[1]], mean(alim))) else mean(c(mean(alim), alim[[2]]))
-            graphics::mtext(rcmetar.revman.wrap.direction(labels[[side]]), side=1, line=4.5, at=at, cex=cex)
+            lines <- rcmetar.forest.direction.lines(labels[[side]], diff(alim) * 0.44, cex)
+            for (index in seq_along(lines)) graphics::mtext(lines[[index]], side=1,
+                line=4.5 + (index - 1) * 1.6, at=at, cex=cex)
         }
     }
     invisible(NULL)

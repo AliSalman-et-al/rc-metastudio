@@ -505,6 +505,11 @@ def run(driver):
         assert not image.isNull(), step
         colours = {image.pixelColor(x, y).rgba() for x in range(0, image.width(), 8) for y in range(0, image.height(), 8)}
         assert len(colours) > (1 if step.startswith("I-") else 4), f"Blank surface: {step}"
+        if step.startswith("G-"):
+            from tests.e2e.header_geometry import check_forest_footer
+            for path in widget.results.display_images.values():
+                if str(path).endswith(".svg"):
+                    check_forest_footer(path)
         if rendered_page:
             original_record(step, artifacts={"Rendered page": f"{driver.STEP + 1:02d}-0-{step}.png"})
             assert image.save(str(driver.EVIDENCE / f"{driver.STEP:02d}-0-{step}.png"))

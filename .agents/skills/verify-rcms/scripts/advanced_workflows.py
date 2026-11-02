@@ -418,6 +418,9 @@ def plots(app, window, family, record, *, view=None):
         initial_svg = Path(sys.argv[2]) / (family + "-initial.svg")
         view.plot_service.export(regenerator=artifact.capability.regenerator, params_path=artifact.params_path, output_path=str(initial_svg))
     check_caption(initial_svg, dataset_identity(window.model))
+    if artifact.capability.regenerator == "forest":
+        from tests.e2e.header_geometry import check_forest_footer
+        check_forest_footer(initial_svg)
     if family in {"funnel", "contour", "trimfill"}:
         from xml.etree import ElementTree as ET
         labels = {"".join(node.itertext()) for node in ET.parse(initial_svg).iter("{http://www.w3.org/2000/svg}text")}
@@ -448,6 +451,8 @@ def plots(app, window, family, record, *, view=None):
     accepted = {}
 
     def snapshot():
+        if artifact.capability.regenerator == "forest":
+            check_forest_footer(path)
         base = Path(artifact.params_path)
         paths = [path, *(base.parent.glob(base.name + ".*"))]
         return {str(file): file.read_bytes() for file in paths if file.is_file()}
@@ -477,6 +482,26 @@ def plots(app, window, family, record, *, view=None):
         return values
 
     def edit(dialog):
+        if family in {"forest", "cumulative", "leave-one-out", "subgroup"}:
+            original_style = dialog.style_cbo.currentText()
+            original_directions = (dialog.favours_left.text(), dialog.favours_right.text())
+            for names in (("Intervention", "Control"), (
+                "Intensive individualized cognitive behavioural therapy plus structured clinical follow-up",
+                "Intensive individualized cognitive behavioural therapy plus structured clinical follow-through",
+            )):
+                dialog.favours_left.setText("Favours " + names[0])
+                dialog.favours_right.setText("Favours " + names[1])
+                for style in ("Default (metafor)", "RevMan", "BMJ"):
+                    dialog.style_cbo.setCurrentText(style)
+                    click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+                    measurements = check_forest_footer(path)
+                    retained = Path(sys.argv[2]) / f"{family}-{style.split()[0]}-arms-{len(names[0])}.svg"
+                    retained.write_bytes(path.read_bytes())
+                    record("forest-footer-geometry", dialog, family=family, style=style,
+                           names=names, measurements=measurements, artifacts={"SVG": str(retained)})
+            dialog.style_cbo.setCurrentText(original_style)
+            dialog.favours_left.setText(original_directions[0])
+            dialog.favours_right.setText(original_directions[1])
         field = dialog.x_label_edit if funnel else dialog.x_lbl_le
         for heading in ("figure_caption", "col1_str_edit", "col2_str_edit", "col3_str_edit", "col4_str_edit", "x_lbl_le", "x_label_edit", "y_label_edit"):
             control = getattr(dialog, heading, None)

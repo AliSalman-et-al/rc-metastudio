@@ -341,7 +341,10 @@ rcmetar.draw.default.forest.panel <- function(bundle, plan) {
     manual.sequential.labels <- plan$rows$manual_sequential_labels
     plot.margin <- if (manual.sequential.labels) c(3.6, 1.0, 1.0, 1.0) else c(4.8, 1.0, 1.4, 1.0)
     directions <- rcmetar.revman.direction.labels(bundle)
-    if (any(nzchar(c(directions$left, directions$right)))) plot.margin[[1]] <- 6
+    if (any(nzchar(c(directions$left, directions$right)))) {
+        lines <- size$direction_lines
+        plot.margin[[1]] <- max(6, 4.5 + lines * 1.6)
+    }
     graphics::par(bg="white", mar=plot.margin, fg="black", col.axis="black", col.lab="black")
     ylim <- rcmetar.forest.header.ylim(plan, max(c(rows, bundle$subgroups$header_rows)) + 1)
 

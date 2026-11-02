@@ -665,19 +665,6 @@ rcmetar.revman.axis.footer.layout <- function(bundle, layout) {
     rcmetar.forest.revman.axis.footer(bundle, layout)
 }
 
-rcmetar.revman.constrained.direction.label <- function(label, cex, max.width, preferred.width) {
-    widths <- sort(unique(pmax(18, c(preferred.width, 24, 22, 20, 18))), decreasing=TRUE)
-    for (width in widths) {
-        wrapped <- rcmetar.revman.wrap.direction(label, width)
-        lines <- unlist(strsplit(wrapped, "\n", fixed=TRUE), use.names=FALSE)
-        if (length(lines) == 0 || length(lines) <= 3 ||
-                max(graphics::strwidth(lines, units="user", cex=cex), na.rm=TRUE) <= max.width) {
-            return(wrapped)
-        }
-    }
-    rcmetar.revman.wrap.direction(label, 18)
-}
-
 rcmetar.revman.line.count <- function(label) {
     if (is.null(label) || !nzchar(label)) {
         return(0)
@@ -718,24 +705,11 @@ rcmetar.draw.revman.bottom.blocks <- function(bundle, x, cex, layout=NULL) {
 
 rcmetar.draw.revman.axis.footer <- function(bundle, layout, cex) {
     axis.footer <- rcmetar.revman.axis.footer.layout(bundle, layout)
-    # Keep direction labels on one baseline with a gap around the null line.
-    gap <- max(axis.footer$span * 0.035, 0.08)
-    direction.cex <- cex
-    for (side in c("left", "right")) {
-        width <- graphics::strwidth(bundle$style_blocks[[paste0("favours_", side)]], cex=cex)
-        available <- axis.footer[[paste0(side, ".max.width")]] - gap
-        direction.cex <- min(direction.cex, cex * available / max(width, .Machine$double.eps))
-    }
-    for (side in c("left", "right")) {
-        label <- gsub("[\r\n]+", " ", bundle$style_blocks[[paste0("favours_", side)]])
-        if (!nzchar(label)) next
-        graphics::text(axis.footer$split.x + if (side == "left") -gap else gap,
-                       axis.footer$direction.y, label, cex=direction.cex,
-                       adj=c(if (side == "left") 1 else 0, 0))
-    }
     if (nzchar(bundle$style_blocks$axis_label)) {
         graphics::text(axis.footer$axis.x, axis.footer$axis.label.y, bundle$style_blocks$axis_label, cex=cex)
     }
+    spacing <- graphics::strheight("M", cex=cex) * 2.2
+    rcmetar.draw.forest.direction.blocks(bundle, axis.footer, axis.footer$axis.label.y - spacing, cex)
     invisible(NULL)
 }
 
