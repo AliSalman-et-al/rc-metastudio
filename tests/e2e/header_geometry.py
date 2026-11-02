@@ -99,3 +99,16 @@ def check_forest_footer(source):
                        min(a['box'][3], b['box'][3]) - max(a['box'][1], b['box'][1]))
             assert overlap[0] <= 0 or overlap[1] <= 0, ('forest footer text overlaps', source, a, b, overlap)
     return measurements
+
+
+def check_contour_colours(source):
+    root = ET.parse(source).getroot()
+    fills = {}
+    for node in root.iter():
+        style = node.attrib.get('style', '')
+        match = re.search(r'fill:\s*(#[0-9A-Fa-f]{6})', style)
+        if match and node.tag.rsplit('}', 1)[-1] in {'polygon', 'rect'}:
+            fills.setdefault(node.tag.rsplit('}', 1)[-1], set()).add(match[1].lower())
+    regions = fills.get('polygon', set()) - {'#ffffff'}
+    keys = fills.get('rect', set()) - {'#ffffff'}
+    assert len(regions) >= 3 and regions <= keys, (source, regions, keys)

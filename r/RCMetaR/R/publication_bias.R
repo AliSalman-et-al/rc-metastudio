@@ -1461,7 +1461,7 @@ rcmetar.run.small.study.effects <- function(om.data, params=list()) {
     args <- .small.study.funnel.args(settings, center, ratio)
     args$refline <- if (settings$show.reference) 0 else NULL
     args$level <- levels
-    args$shade <- settings$region.color
+    args$shade <- grDevices::colorRampPalette(c(settings$region.color, "#666666"))(length(levels))
     args$colci <- settings$reference.color
     do.call(metafor::funnel, c(list(model), args))
     .small.study.draw.ratio.axis(settings, ratio)
@@ -1471,7 +1471,7 @@ rcmetar.run.small.study.effects <- function(om.data, params=list()) {
     legend("topright", legend=c(paste0(levels, "% null contours"),
                                  if (settings$show.pooled) "Pooled display"),
            pch=c(rep(22, length(levels)), if (settings$show.pooled) NA),
-           pt.bg=c(rep(settings$region.color, length.out=length(levels)), if (settings$show.pooled) NA),
+           pt.bg=c(args$shade, if (settings$show.pooled) NA),
            col=settings$reference.color,
            lty=c(rep(NA, length(levels)), if (settings$show.pooled) 2), bty="n")
 }
