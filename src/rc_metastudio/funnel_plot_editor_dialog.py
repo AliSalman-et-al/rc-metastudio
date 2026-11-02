@@ -82,7 +82,6 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self.plot_type = str(plot_type)
         self._validate_kind_descriptor()
         self.kind = self._kind_from_params()
-        self.kind_label.setText(f"Funnel kind: {self.kind}")
         self._load_params(image_path)
         self._configure_kind()
         self.setTabOrder(self.background_color_button, self.figure_caption)
@@ -413,8 +412,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         )
         if trimfill:
             self.rerun_note.setText(
-                "Only augmented-funnel presentation can be edited here. The trim-and-fill "
-                "estimator, side, model, imputed studies, and eligible study set require a full rerun."
+                "Rerun the analysis to change statistical settings."
             )
 
     def _browse_image_path(self):

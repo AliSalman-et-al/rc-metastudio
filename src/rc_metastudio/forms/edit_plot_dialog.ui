@@ -95,7 +95,7 @@
          <string>Opens a color picker for the plot accent color.</string>
         </property>
         <property name="text">
-         <string>...</string>
+         <string>Choose color…</string>
         </property>
        </widget>
       </item>
