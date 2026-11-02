@@ -60,7 +60,7 @@ def _configure_qsettings_identity(qapp: QtWidgets.QApplication) -> None:
     qapp.setApplicationName("RCMetaStudio")
 
 
-def test_startup_failure_injections_release_qt_objects_with_fatal_warnings():
+def test_shell_success_and_failures_release_qt_objects_and_directory_with_fatal_warnings():
     environment = os.environ.copy()
     environment["QT_QPA_PLATFORM"] = "offscreen"
     environment["QT_FATAL_WARNINGS"] = "1"
@@ -68,9 +68,11 @@ def test_startup_failure_injections_release_qt_objects_with_fatal_warnings():
         "RCMS_QT6_BUILD_ROOT", str(ROOT / "build" / "qt6")
     )
     expected_platform = {"win32": "windows", "darwin": "cocoa"}.get(sys.platform, "xcb")
-    for stage in ("r-load", "meta-form"):
+    for stage in (None, "r-load", "meta-form"):
         command = [sys.executable, str(ROOT / "scripts/native_shell_smoke.py"),
-                   "--native", "--failure-stage", stage]
+                   "--native"]
+        if stage is not None:
+            command.extend(["--failure-stage", stage])
         if sys.platform == "linux" and not environment.get("DISPLAY"):
             assert shutil.which("xvfb-run"), "Native shell verification requires xvfb-run without a display"
             command = ["xvfb-run", "-a", *command]
@@ -80,9 +82,11 @@ def test_startup_failure_injections_release_qt_objects_with_fatal_warnings():
         )
         assert result.returncode == 0, result.stdout + result.stderr
         assert f"Qt platform: {expected_platform}; fatal warnings: 1" in result.stdout
-        assert (
-            "Application shell failure teardown passed at %s." % stage in result.stdout
-        )
+        assert "Shell disposal restored cwd and removed its temporary directory in-process." in result.stdout
+        if stage is not None:
+            assert "Application shell failure teardown passed at %s." % stage in result.stdout
+        else:
+            assert "Application shell smoke passed" in result.stdout
 
 
 

@@ -49,6 +49,7 @@ def main(argv: list[str] | None = None) -> int:
     from tests.python.gui.support import automation_scenarios
 
     from rc_metastudio import app_error_handler, settings
+    caller_directory = Path.cwd()
     with tempfile.TemporaryDirectory(prefix="rcms-native-shell-") as work, patch.object(settings, "get_base_path", return_value=work):
         QSettings.setDefaultFormat(QSettings.Format.IniFormat)
         QSettings.setPath(QSettings.Format.IniFormat, QSettings.Scope.UserScope, work)
@@ -59,8 +60,15 @@ def main(argv: list[str] | None = None) -> int:
                 raise SystemExit(f"Expected native {expected}, got {app.platformName()}")
         print(f"Qt platform: {app.platformName()}; fatal warnings: {os.environ.get('QT_FATAL_WARNINGS', '0')}", flush=True)
         if args.failure_stage is not None:
-            return automation_scenarios.start_shell_failure_smoke(args.failure_stage)
-        return automation_scenarios.start_shell_smoke(require_native_window=args.native)
+            result = automation_scenarios.start_shell_failure_smoke(args.failure_stage)
+        else:
+            result = automation_scenarios.start_shell_smoke(require_native_window=args.native)
+        if Path.cwd() != caller_directory:
+            raise RuntimeError(f"Shell disposal left cwd at {Path.cwd()}; expected {caller_directory}")
+    if Path(work).exists():
+        raise RuntimeError(f"Shell temporary directory was not removed: {work}")
+    print("Shell disposal restored cwd and removed its temporary directory in-process.", flush=True)
+    return result
 
 
 
