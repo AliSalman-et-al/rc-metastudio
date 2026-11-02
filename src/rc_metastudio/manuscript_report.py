@@ -214,11 +214,14 @@ class ManuscriptReport:
             parts.extend(f'<p>{escape(paragraph)}</p>' for paragraph in section.paragraphs)
             for table in section.tables:
                 table_number += 1
-                parts.append(f'<p><b>Table {table_number}. {escape(table.title)}</b></p><hr width="100%"><table width="100%" border="0" cellspacing="0" cellpadding="5">')
+                parts.append(f'<p><b>Table {table_number}. {escape(table.title)}</b></p><table width="100%" border="0" cellspacing="0" cellpadding="5">')
                 for index, row in enumerate((table.headers, *table.rows)):
                     tag = 'th' if index == 0 else 'td'
-                    parts.append('<tr>' + ''.join(f'<{tag}>' + escape(c) + f'</{tag}>' for c in row) + '</tr>')
-                parts.append('</table><hr width="100%">')
+                    border = 'border-top: 1px solid black;' if index == 0 else ''
+                    if index == len(table.rows):
+                        border += 'border-bottom: 1px solid black;'
+                    parts.append('<tr>' + ''.join(f'<{tag} style="{border}">' + escape(c) + f'</{tag}>' for c in row) + '</tr>')
+                parts.append('</table>')
         return ''.join(parts)
 
 
