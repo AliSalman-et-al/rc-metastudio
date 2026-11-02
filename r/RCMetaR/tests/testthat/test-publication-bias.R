@@ -674,7 +674,8 @@ test_that("trim-and-fill uses native L0/R0 controls and persists augmented plots
   expect_identical(params$`funnel.index`, 1L)
   load(paste0(path, ".data"))
   load(paste0(path, ".res"))
-  regenerated <- tempfile(fileext=".png")
+  # Compare the persisted vector image with the same export format.
+  regenerated <- tempfile(fileext=".svg")
   expect_true(file.exists(rcmetar.regenerate.small.study.funnel(om.data, res, params, regenerated)))
   expect_gt(file.info(regenerated)$size, 0)
   trimfill.title <- grep("Trim-and-fill", names(result$images), value=TRUE)[[1L]]
