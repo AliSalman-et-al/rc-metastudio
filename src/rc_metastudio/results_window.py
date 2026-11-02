@@ -643,7 +643,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         selected = self._selected_plot()
         width = selected[1].sceneBoundingRect().right() + padding if selected else self.scene.sceneRect().width()
         viewport = required(self.graphics_view.viewport(), "figure viewport")
-        scale = max(1, viewport.width() - 2) / max(1, width)
+        scale = min(1 / (selected[1].scale() if selected else 1),
+                    max(1, viewport.width() - 2) / max(1, width))
         self.graphics_view.setTransform(QTransform.fromScale(scale, scale))
         self._figure_zoom_percent = round(scale * (selected[1].scale() if selected else 1) * 100)
         if not self.report_action.isChecked():
