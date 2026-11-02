@@ -247,7 +247,9 @@ arm-swap assertions; the 600-second bound is unchanged.
 
 ## Results close/export lifetime
 
-`manuscript-export` retains the action and real non-native save-dialog path.
+`manuscript-export` retains eight real non-native save dialogs: the first PDF
+and DOCX of each main analysis. Its stress cycles trigger the same export action
+with the picker seam returning a path; every file/content check remains.
 `manuscript-export-direct` calls the real write functions without a save dialog.
 Both run the same 20 PDF/eight DOCX writes, file/content assertions and 12
 close/reopen stress cycles, including an old Results window pending deletion.
@@ -263,9 +265,17 @@ the operation, picker number, prior dialog deletion and child item-model
 teardown after deleteLater/deferred-event processing. This explicit cleanup is
 equivalent to the previous disposal helper; it is not by itself a Windows fix.
 
-Compare both manifests and transcripts in one Windows run. Retained writer
-resources indicate a product-lifetime failure. A passing direct case and a
-failing dialog case with released writers/deleted prior dialogs implicate the
-nested-dialog route, without identifying an icon-provider or watcher-thread
-implementation. If both pass, the original cause remains unproven. Linux passes
-do not qualify Windows. The original manuscript scenario is not skipped.
+Windows decision evidence cleared all 28 direct writes and their resources; a
+later small-study modal race is guarded by waiting for the visible dialog. The
+dialog case crashed in non-native QFileDialog exec during stress cycling despite
+released writers and deleted prior dialogs. See `docs/ux-hill-climb/WINDOWS.md`
+for the evidence and boundary. No production source forces DontUseNativeDialog.
+The native Windows picker remains untested by automation and needs a person
+to check it. Linux passes do not qualify Windows; both CI cases remain enabled.
+
+The font-stress footer drive in `r/RCMetaR/inst/qa/render_footer_metrics.R` uses
+16-point DejaVu Sans Mono in the production SVG renderer and retains all three
+styles with short/long arm names. `check_footer_metrics.py` reuses the existing
+footer bounds/non-overlap assertions and requires exact equal Favours baselines.
+Inputs, SVGs and geometry receipts remain in its chosen output directory; see
+the Windows notes for the install and run commands.
