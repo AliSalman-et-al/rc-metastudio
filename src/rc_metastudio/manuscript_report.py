@@ -326,13 +326,20 @@ def _section_statistics(section):
     return overall, calculation
 
 
+def _presentation_cell(value, digits):
+    return re.sub(r"(?<![\w.])-?\d+\.\d+(?![\w.])",
+                  lambda match: f"{Decimal(match[0]):.{digits}f}", value)
+
+
+def _presentation_rows(rows, digits):
+    return tuple(tuple(_presentation_cell(value, digits) for value in row) for row in rows)
+
+
 def _presentation_result(result):
-    def cell(value):
-        return re.sub(r"(?<![\w.])-?\d+\.\d+(?![\w.])",
-                      lambda match: f"{Decimal(match[0]):.{result.manuscript_digits}f}", value)
     return replace(result, sections=tuple(
         replace(section, tables=tuple(replace(table, rows=tuple(
-            tuple(cell(value) for value in row) for row in table.rows))
+            tuple(value if header == 'p-value' or (table.headers == ('Statistic', 'Value') and row[0] == 'p-value') else _presentation_cell(value, result.manuscript_digits)
+                  for header, value in zip(table.headers, row)) for row in table.rows))
             for table in section.tables)) for section in result.sections))
 
 
@@ -355,16 +362,16 @@ def _primary_sections(result, text_sections, pooled, fit, level, statistic):
     template = text_sections[0]
     sections = [replace(template, title='Pooled effect', paragraphs=(() if pooled else
                          ('No structured pooled estimates are held for this workflow; the complete held output is in Supplementary details.',)),
-                        tables=(ResultTable('Pooled effect', ('Effect', 'Estimate', level, 'SE', statistic, 'p'), tuple(pooled)),)),
+                        tables=(ResultTable('Pooled effect', ('Effect', 'Estimate', level, 'SE', statistic, 'p'), _presentation_rows(pooled, result.manuscript_digits)),)),
                 replace(template, title='Model fit', paragraphs=(),
-                        tables=(ResultTable('Model fit', ('Statistic', 'Value'), tuple(fit)),)),
+                        tables=(ResultTable('Model fit', ('Statistic', 'Value'), _presentation_rows(fit, result.manuscript_digits)),)),
                 _study_results(_presentation_result(result), template, level)]
     if not any(section.tables for section in text_sections):
         comparisons = [s for s in text_sections if s.title in ('Pooled comparison', 'Extrapolation') or s.title.startswith('Trim-and-fill')]
         sections[0] = replace(template, title='Pooled effect', paragraphs=('Held model comparisons and sensitivity analyses.',),
                               tables=(ResultTable('Pooled effect', ('Analysis', 'Held output'), tuple((s.title, s.value) for s in comparisons)),))
         sections[1] = replace(template, title='Model fit', paragraphs=(),
-                              tables=(ResultTable('Model fit', ('Statistic', 'Value'), tuple((s.title, s.value) for s in text_sections if s.title in ('Data and eligibility', 'Tests'))),))
+                              tables=(ResultTable('Model fit', ('Statistic', 'Value'), tuple((s.title, _presentation_cell(s.value, result.manuscript_digits)) for s in text_sections if s.title in ('Data and eligibility', 'Tests'))),))
     return sections
 
 
