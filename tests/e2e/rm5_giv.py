@@ -67,7 +67,13 @@ def run(app, window, ROOT, WORK, record_step):
     def review():
         dialog = app.activeModalWidget()
         text = '\n'.join(w.text() for w in dialog.findChildren(QtWidgets.QLabel))
-        assert 'Not imported' in text and 'Custom score' in text
+        assert 'Custom score: effect measure not supported' in text
+        table = dialog.findChild(QtWidgets.QTableWidget)
+        displayed = text + ' '.join(table.item(r, c).text() for r in range(table.rowCount()) for c in range(table.columnCount()))
+        assert '_' not in displayed
+        assert 'IV_OUTCOME' not in displayed
+        assert 'Time-to-event' in displayed
+        assert 'Time-to-event Fixed-Effect Inverse Variance' in displayed
         assert 'O-E survival: O-E/variance inputs are not supported.' in text
         record_step('rm5-giv-review', dialog, summary=text)
         dialog.accept()

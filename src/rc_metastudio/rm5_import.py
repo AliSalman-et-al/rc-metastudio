@@ -186,7 +186,7 @@ def _import_outcome(dataset, comparison, outcome, multiple_comparisons, studies,
     metric = outcome.get('EFFECT_MEASURE')
     spec = _outcome_format(outcome, metric)
     if spec is None:
-        not_imported.append(f'{name}: {outcome.tag} ({metric or "no effect measure"}) is not imported.')
+        not_imported.append(f'{name}: effect measure not supported')
         return
     family, data_type, tag, fields = spec
     if outcome.get('SWAP_EVENTS', 'NO') != 'NO':
@@ -250,7 +250,7 @@ def review_rm5(path, parent):
     required(table.verticalHeader(), "import row header").hide()
     from rc_metastudio.analysis_method_labels import method_display_label
     for row, sheet in enumerate(result.dataset.sheets):
-        values = (sheet.name, sheet.family.title(), str(len(sheet.rows)),
+        values = (sheet.name, sheet.family.replace("_", "-").capitalize(), str(len(sheet.rows)),
                   method_display_label(sheet.settings['analysis']['method']) if 'analysis' in sheet.settings else 'Default')
         for column, value in enumerate(values):
             item = QtWidgets.QTableWidgetItem(value)
@@ -258,6 +258,7 @@ def review_rm5(path, parent):
             table.setItem(row, column, item)
     required(table.horizontalHeader(), "import column header").setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
     required(table.horizontalHeader(), "import column header").setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
+    table.setFixedHeight(table.horizontalHeader().height() + sum(table.rowHeight(row) for row in range(table.rowCount())) + 2 * table.frameWidth())
     layout.addWidget(table)
     for heading, items in (('Not imported', result.not_imported),
                            ('Differs from RevMan', result.differences)):
@@ -274,5 +275,5 @@ def review_rm5(path, parent):
     buttons.accepted.connect(dialog.accept)
     buttons.rejected.connect(dialog.reject)
     layout.addWidget(buttons)
-    dialog.resize(720, 420)
+    dialog.resize(720, dialog.sizeHint().height())
     return result.dataset if dialog.exec() else None
