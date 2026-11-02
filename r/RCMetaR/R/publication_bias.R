@@ -1129,6 +1129,8 @@ publication.bias.effects <- function(om.data, params) {
     run.params$funnel.kind <- "trimfill"
     run.params$funnel.index <- 1L
     run.params$trimfill.scenario <- name
+    if (scenario$imputed.k0 == 0L)
+        run.params$plot_caption <- paste(c(params$plot_caption, "No studies imputed"), collapse="\n")
     run.params$trim.and.fill.estimator <- scenario$estimator
     run.params$trim.and.fill.side <- scenario$side
     run.params$trim.and.fill.model <- scenario$model
