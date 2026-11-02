@@ -7,7 +7,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
-from typing import Callable
+from typing import Callable, cast
 
 from PyQt6 import QtCore, QtWidgets, sip
 
@@ -46,7 +46,17 @@ def validate_evidence(path: Path, *, expected_qpa: str = "windows") -> dict[str,
             raise ValueError("native %s surfaces did not complete teardown" % name)
         if scenario.get("top_level_delta") != 0:
             raise ValueError("native %s leaked a top-level widget" % name)
-    if scenarios["backend_failure"].get("failure_state") != {
+    _validate_failed_analysis(scenarios["backend_failure"])
+    image = path.parent / "analysis-configuration.png"
+    if not image.is_file() or image.stat().st_size != evidence.get("image_size"):
+        raise ValueError("native analysis screenshot is missing or has the wrong size")
+    if _sha256(image) != evidence.get("image_sha256"):
+        raise ValueError("native analysis screenshot hash does not match")
+    return evidence
+
+
+def _validate_failed_analysis(failure: dict[str, object]) -> None:
+    if failure.get("failure_state") != {
         "configuration_visible": True,
         "progress_deleted": True,
         "error_visible": True,
@@ -56,20 +66,14 @@ def validate_evidence(path: Path, *, expected_qpa: str = "windows") -> dict[str,
         "run_enabled": True,
     }:
         raise ValueError("native backend failure did not preserve recoverable configuration")
-    failure = scenarios["backend_failure"]
     before, after = failure.get("request_before"), failure.get("request_after")
-    if (
-        not isinstance(before, dict)
-        or before != after
-        or before.get("params", {}).get("conf.level") != 90.5
-    ):
+    if not isinstance(before, dict) or not isinstance(after, dict):
         raise ValueError("failed analysis changed the user's selected configuration")
-    image = path.parent / "analysis-configuration.png"
-    if not image.is_file() or image.stat().st_size != evidence.get("image_size"):
-        raise ValueError("native analysis screenshot is missing or has the wrong size")
-    if _sha256(image) != evidence.get("image_sha256"):
-        raise ValueError("native analysis screenshot hash does not match")
-    return evidence
+    params = cast(dict[str, object], before).get("params")
+    if before != after:
+        raise ValueError("failed analysis changed the user's selected configuration")
+    if not isinstance(params, dict) or cast(dict[str, object], params).get("conf.level") != 90.5:
+        raise ValueError("failed analysis changed the user's confidence level")
 
 
 def _install_backend_test_double(
