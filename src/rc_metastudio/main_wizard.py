@@ -399,7 +399,7 @@ class DataTypePage(MainWizardPage, _ui_data_type_page.Ui_DataTypePage):
         if self.buttonGroup.checkedButton() is None:
             return Page_ChooseMetric
         dataset_info = self.wizard().get_dataset_info()
-        if dataset_info is not None and dataset_info["data_type"] == "diagnostic":
+        if dataset_info is not None and (dataset_info["data_type"] == "diagnostic" or len(dataset_info["metric_choices"]) == 1):
             return Page_OutcomeName
         else:  # normal case
             return Page_ChooseMetric
@@ -441,7 +441,8 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
             self.metric_cbo_box.setCurrentIndex(index_of_default)
 
             default_item_text = self.metric_cbo_box.itemText(index_of_default)
-            default_item_text += " (default)"
+            if len(metric_choices) > 1:
+                default_item_text += " (default)"
             self.metric_cbo_box.setItemText(index_of_default, default_item_text)
             self.metric_cbo_box.blockSignals(False)
 
