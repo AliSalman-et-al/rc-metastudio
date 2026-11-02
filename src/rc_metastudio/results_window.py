@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Render and export meta-analysis results."""
 
+import textwrap
 import gzip
 import math
 import csv
@@ -505,7 +506,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.result_table.clear()
         self.result_table.setColumnCount(len(table.headers))
         self.result_table.setRowCount(len(table.rows))
-        self.result_table.setHorizontalHeaderLabels(list(table.headers))
+        self.result_table.setHorizontalHeaderLabels([
+            "\n".join(textwrap.wrap(label, width=16, break_long_words=False, break_on_hyphens=False))
+            for label in table.headers
+        ])
         self.result_table.setAccessibleName(_report_heading(table.title))
         for row_index, row in enumerate(table.rows):
             for column_index, cell in enumerate(row):
