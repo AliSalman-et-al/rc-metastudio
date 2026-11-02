@@ -235,10 +235,11 @@ def plots(driver, capture, missing):
             view.report_action.setChecked(False)
             view._show_report(False)
             view.fit_width_action.trigger()
+            svg = driver.WORK / f"{detail}-geometry.svg"
             if detail in {"contour", "sroc", "trim-and-fill-right"}:
-                svg = driver.WORK / f"{detail}-geometry.svg"
                 view.plot_service.export(regenerator=selected[0].capability.regenerator,
                                          params_path=selected[0].params_path, output_path=str(svg))
+                assert svg.is_file() and svg.stat().st_size > 0, f"Missing or empty {detail} geometry SVG after export: {svg}"
             if detail == "sroc":
                 from tests.e2e.header_geometry import check_sroc_legend_bounds
                 check_sroc_legend_bounds(svg)
