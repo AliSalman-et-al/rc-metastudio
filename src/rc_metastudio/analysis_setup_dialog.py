@@ -1790,11 +1790,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.setWindowTitle(QtCore.QCoreApplication.translate("Dialog", window_title))
         self.method_lbl.setText("Analysis method: " + method_label)
         if self.data_type == "diagnostic" and not self._combined_diagnostic:
-            # Keep the truthful diagnostic label visible without letting its
-            # preferred width starve the method selector on narrow screens.
+            # Let the grid reserve space for the wrapping diagnostic label.
+            self.method_lbl.setMinimumWidth(
+                self.method_lbl.fontMetrics().horizontalAdvance("Analysis method:") + 12
+            )
             self.method_lbl.setWordWrap(True)
             self.method_lbl.setSizePolicy(
-                QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred
+                QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred
             )
 
 

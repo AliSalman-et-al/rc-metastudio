@@ -343,6 +343,13 @@ def analysis_dialog(app, window):
         form.resize(631, 437)
         form.show()
         app.processEvents()
+        from tests.python.gui.test_types import wait
+        wait(100)
+        assert form.method_lbl.isVisible()
+        assert form.method_lbl.text().startswith("Analysis method:")
+        assert form.method_lbl.width() >= form.method_lbl.fontMetrics().horizontalAdvance("Analysis method:")
+        assert (form.method_lbl.mapTo(form, QtCore.QPoint(form.method_lbl.width(), 0)).x()
+                <= form.method_cbo_box.mapTo(form, QtCore.QPoint(0, 0)).x()), (sample, form.method_lbl.geometry(), form.method_cbo_box.geometry())
         if sample == "amino":
             giamarellou = next(row for row in range(window.model.rowCount()) if "Giamarellou" in str(window.model.data(window.model.index(row, window.model.NAME))))
             assert str(window.model.data(window.model.index(giamarellou, window.model.OUTCOMES[1]))) == "<0.01"
