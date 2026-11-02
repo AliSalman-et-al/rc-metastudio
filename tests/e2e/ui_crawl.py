@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Deliberate surface inventory; omissions remain a failing acceptance gate."""
 from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtTest import QTest
+from tests.python.gui.test_types import required, wait
 
 
 def analysis_setup(driver, capture, missing):
@@ -229,7 +229,8 @@ def plot_editor(driver, capture, artifact, view, detail, prefix="H"):
     form.show()
     capture(f"{prefix}-{detail}-top", form)
     for area in form.findChildren(QtWidgets.QScrollArea):
-        area.verticalScrollBar().setValue(area.verticalScrollBar().maximum())
+        scrollbar = required(area.verticalScrollBar(), "plot editor scrollbar")
+        scrollbar.setValue(scrollbar.maximum())
     if prefix == "H":
         capture(f"{prefix}-{detail}-bottom", form)
     form.close()
@@ -239,6 +240,7 @@ def create_dataset(driver, capture, missing):
     from rc_metastudio import main_wizard as wizard
     form = wizard.MainWizard(path="new_dataset")
     types = form.page(wizard.Page_DataType)
+    assert isinstance(types, wizard.DataTypePage)
     form.show()
     for page, detail in ((wizard.Page_Welcome, "welcome"), (wizard.Page_DataType, "data-type"),
                          (wizard.Page_OutcomeName, "outcome-name")):
@@ -263,11 +265,14 @@ def imports(driver, capture, missing):
     form = wizard.MainWizard(path="csv_import")
     form.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions",
                                effect="OR", metric_choices=[], name="Mortality"))
-    form.page(wizard.Page_OutcomeName).outcome_name_LineEdit.setText("Mortality")
+    outcome_page = form.page(wizard.Page_OutcomeName)
+    assert isinstance(outcome_page, wizard.OutcomeNamePage)
+    outcome_page.outcome_name_LineEdit.setText("Mortality")
     form.setStartId(wizard.Page_CsvImport)
     form.restart()
     form.show()
     page = form.currentPage()
+    assert isinstance(page, wizard.CsvImportPage)
     def select(path):
         with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(path), "")):
             page.select_file_btn.click()
@@ -410,7 +415,7 @@ def calculators(driver, capture, missing, prefix="D", families=None):
                 args.append(model.current_effect)
             form = kind(*args, confidence_level=95, parent=driver.window)
         form.show()
-        if kind is RatioDataDialog:
+        if isinstance(form, RatioDataDialog):
             sources = ("raw", "reported") if family == "irr" else ("reported",)
             for source in sources:
                 if family == "irr":
@@ -418,7 +423,7 @@ def calculators(driver, capture, missing, prefix="D", families=None):
                 for scale in (("ratio", "log") if source == "reported" else ("ratio",)):
                     form.fields["scale"].setCurrentIndex(form.fields["scale"].findData(scale))
                     capture(f"{prefix}-calculator-{family}-{source}-{scale}", form)
-        elif hasattr(form, "input_mode_combo"):
+        elif isinstance(form, (BinaryDataDialog, ContinuousDataDialog)):
             for index in range(1 if prefix == "J" else form.input_mode_combo.count()):
                 form.input_mode_combo.setCurrentIndex(index)
                 capture(f"{prefix}-calculator-{family}-{form.input_mode_combo.currentData()}", form)
@@ -501,7 +506,7 @@ def run(driver):
             widget.showNormal()
             widget.resize(1024, 700) if step == "A-grid-1024" else widget.resize(1280, 800)
         driver.app.processEvents()
-        QTest.qWait(100)
+        wait(100)
         if not rendered_page:
             if widget is driver.window or widget.metaObject().className() == "ResultsWindow":
                 expected = QtCore.QSize(1024, 700) if step == "A-grid-1024" else QtCore.QSize(1280, 800)

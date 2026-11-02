@@ -24,7 +24,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtTest import QTest
 
-from tests.python.gui.test_types import key_click, key_clicks, mouse_click, mouse_release, required
+from tests.python.gui.test_types import key_click, key_clicks, mouse_click, mouse_move, mouse_press, mouse_release, required
 
 ROOT = Path(__file__).resolve().parents[2]
 WORK = Path(sys.argv[2])
@@ -839,18 +839,18 @@ def verify_sheet_strip(app, window, screens):
     handle = grid_scroll.style().subControlRect(QtWidgets.QStyle.ComplexControl.CC_ScrollBar, option, QtWidgets.QStyle.SubControl.SC_ScrollBarSlider, grid_scroll)
     start = handle.center()
     before = grid_scroll.value()
-    QTest.mousePress(grid_scroll, QtCore.Qt.MouseButton.LeftButton, pos=start)
-    QTest.mouseMove(grid_scroll, start + QtCore.QPoint(80, 0), 100)
-    QTest.mouseRelease(grid_scroll, QtCore.Qt.MouseButton.LeftButton, pos=start + QtCore.QPoint(80, 0))
+    mouse_press(grid_scroll, QtCore.Qt.MouseButton.LeftButton, pos=start)
+    mouse_move(grid_scroll, start + QtCore.QPoint(80, 0), 100)
+    mouse_release(grid_scroll, QtCore.Qt.MouseButton.LeftButton, pos=start + QtCore.QPoint(80, 0))
     assert grid_scroll.value() > before
     assert native_scroll.value() == grid_scroll.value()
     grid_scroll.initStyleOption(option)
     handle = grid_scroll.style().subControlRect(QtWidgets.QStyle.ComplexControl.CC_ScrollBar, option, QtWidgets.QStyle.SubControl.SC_ScrollBarSlider, grid_scroll)
     start = handle.center()
     before = grid_scroll.value()
-    QTest.mousePress(grid_scroll, QtCore.Qt.MouseButton.LeftButton, pos=start)
-    QTest.mouseMove(grid_scroll, start - QtCore.QPoint(40, 0), 100)
-    QTest.mouseRelease(grid_scroll, QtCore.Qt.MouseButton.LeftButton, pos=start - QtCore.QPoint(40, 0))
+    mouse_press(grid_scroll, QtCore.Qt.MouseButton.LeftButton, pos=start)
+    mouse_move(grid_scroll, start - QtCore.QPoint(40, 0), 100)
+    mouse_release(grid_scroll, QtCore.Qt.MouseButton.LeftButton, pos=start - QtCore.QPoint(40, 0))
     assert grid_scroll.value() < before
     assert native_scroll.value() == grid_scroll.value()
     window.tableView.scrollTo(window.model.index(0, 0))

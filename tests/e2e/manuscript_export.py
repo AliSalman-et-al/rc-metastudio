@@ -123,50 +123,50 @@ def run(app, window, work, root, record, analyze):
         assert window.open(str(root / 'sample_projects' / (sample + '.rcms')), raise_on_error=True)
         print(f"Manuscript analysis: {method}", file=sys.stderr, flush=True)
         view = analyze(app, window, method)
+        def picker(*args, **kwargs):
+            assert args[0] is view and not sip.isdeleted(view) and view.isVisible()
+            lifetime_marker(f"{sample}-{suffix}-picker-create", view)
+            record('manuscript-picker-before', view, sample=sample, suffix=suffix)
+            dialog = QtWidgets.QFileDialog(view)
+            dialog.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog)
+            dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)
+            dialog.setNameFilter('Report (*.' + suffix + ')')
+            dialog.setDirectory(str(work))
+            dialog.selectFile(str(path))
+            picker_errors = []
+            def save():
+                try:
+                    assert cast(Callable[..., bool], QtTest.QTest.qWaitForWindowExposed)(dialog, 5000)
+                    gc.collect()
+                    app.processEvents()
+                    lifetime_marker(f"{sample}-{suffix}-picker-visible", view)
+                    assert not sip.isdeleted(view) and view.isVisible()
+                    from pathlib import Path
+                    assert Path(dialog.selectedFiles()[0]).resolve() == path.resolve()
+                    record('manuscript-picker-visible', dialog, sample=sample, suffix=suffix)
+                    box = required(dialog.findChild(QtWidgets.QDialogButtonBox))
+                    button = required(box.button(QtWidgets.QDialogButtonBox.StandardButton.Save))
+                    assert button.isEnabled()
+                    mouse_click(button, QtCore.Qt.MouseButton.LeftButton)
+                except BaseException as error:
+                    picker_errors.append(error)
+                    dialog.reject()
+            QtCore.QTimer.singleShot(0, save)
+            try:
+                lifetime_marker(f"{sample}-{suffix}-picker-exec-enter", view)
+                accepted = dialog.exec()
+                lifetime_marker(f"{sample}-{suffix}-picker-exec-return", view)
+                assert not picker_errors, picker_errors
+                assert accepted
+                selected = dialog.selectedFiles()[0], dialog.selectedNameFilter()
+            finally:
+                automation.dispose_qobjects(app, (dialog,))
+            assert sip.isdeleted(dialog)
+            assert not sip.isdeleted(view) and view.isVisible()
+            record('manuscript-picker-after', view, sample=sample, suffix=suffix)
+            return selected
         for suffix in ('pdf', 'docx'):
             path = work / (sample + '.' + suffix)
-            def picker(*args, **kwargs):
-                assert args[0] is view and not sip.isdeleted(view) and view.isVisible()
-                lifetime_marker(f"{sample}-{suffix}-picker-create", view)
-                record('manuscript-picker-before', view, sample=sample, suffix=suffix)
-                dialog = QtWidgets.QFileDialog(view)
-                dialog.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog)
-                dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)
-                dialog.setNameFilter('Report (*.' + suffix + ')')
-                dialog.setDirectory(str(work))
-                dialog.selectFile(str(path))
-                picker_errors = []
-                def save():
-                    try:
-                        assert cast(Callable[..., bool], QtTest.QTest.qWaitForWindowExposed)(dialog, 5000)
-                        gc.collect()
-                        app.processEvents()
-                        lifetime_marker(f"{sample}-{suffix}-picker-visible", view)
-                        assert not sip.isdeleted(view) and view.isVisible()
-                        from pathlib import Path
-                        assert Path(dialog.selectedFiles()[0]).resolve() == path.resolve()
-                        record('manuscript-picker-visible', dialog, sample=sample, suffix=suffix)
-                        box = required(dialog.findChild(QtWidgets.QDialogButtonBox))
-                        button = required(box.button(QtWidgets.QDialogButtonBox.StandardButton.Save))
-                        assert button.isEnabled()
-                        mouse_click(button, QtCore.Qt.MouseButton.LeftButton)
-                    except BaseException as error:
-                        picker_errors.append(error)
-                        dialog.reject()
-                QtCore.QTimer.singleShot(0, save)
-                try:
-                    lifetime_marker(f"{sample}-{suffix}-picker-exec-enter", view)
-                    accepted = dialog.exec()
-                    lifetime_marker(f"{sample}-{suffix}-picker-exec-return", view)
-                    assert not picker_errors, picker_errors
-                    assert accepted
-                    selected = dialog.selectedFiles()[0], dialog.selectedNameFilter()
-                finally:
-                    automation.dispose_qobjects(app, (dialog,))
-                assert sip.isdeleted(dialog)
-                assert not sip.isdeleted(view) and view.isVisible()
-                record('manuscript-picker-after', view, sample=sample, suffix=suffix)
-                return selected
             with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', side_effect=picker):
                 view.export_report_action.trigger()
             assert path.exists()

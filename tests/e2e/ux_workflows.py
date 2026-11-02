@@ -296,7 +296,7 @@ def run(app, window, work, root, record, analyze):
                 # Windows R calls can dispatch this callback while saved plot
                 # parameters load, before the editor exists. Prove that turn
                 # cannot consume the only attempt to operate the dialog.
-                QtTest.QTest.qWait(30)
+                wait(30)
                 assert waiting_callbacks
                 edited.edit_plot_action.trigger()
             finally:

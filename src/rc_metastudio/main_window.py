@@ -214,12 +214,18 @@ class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
 
 
 class SheetTabBar(QtWidgets.QTabBar):
-    def changeEvent(self, event):
-        super().changeEvent(event)
-        if event.type() in (QtCore.QEvent.Type.ApplicationPaletteChange, QtCore.QEvent.Type.PaletteChange) and not getattr(self, "_updating_palette", False):
+    palette_stylesheet: str = ""
+    _updating_palette: bool = False
+
+    def changeEvent(self, a0: QtCore.QEvent | None) -> None:
+        super().changeEvent(a0)
+        event = a0
+        if event is None:
+            return
+        if event.type() in (QtCore.QEvent.Type.ApplicationPaletteChange, QtCore.QEvent.Type.PaletteChange) and not self._updating_palette:
             self._updating_palette = True
             palette = QtWidgets.QApplication.palette()
-            template = getattr(self, "palette_stylesheet", self.styleSheet())
+            template = self.palette_stylesheet or self.styleSheet()
             for name, role in (("window", QtGui.QPalette.ColorRole.Window), ("window-text", QtGui.QPalette.ColorRole.WindowText), ("alternate-base", QtGui.QPalette.ColorRole.AlternateBase), ("mid", QtGui.QPalette.ColorRole.Mid), ("highlight", QtGui.QPalette.ColorRole.Highlight)):
                 colour = palette.color(role)
                 if name == "mid":
@@ -227,10 +233,13 @@ class SheetTabBar(QtWidgets.QTabBar):
                     colour = colour.lighter(140) if colour.lightness() < 128 else colour.darker(115)
                 template = template.replace("palette(" + name + ")", colour.name())
             self.setStyleSheet(template)
-            if hasattr(self.window(), "sheet_tab_content"):
-                self.window().sheet_tab_content.setPalette(palette)
-            if hasattr(self.window(), "add_sheet_button"):
-                self.window().add_sheet_button.setStyleSheet("QToolButton { color: " + palette.color(QtGui.QPalette.ColorRole.WindowText).name() + "; background: transparent; border: 0; font-size: 18px; }")
+            window = self.window()
+            if isinstance(window, MainWindow):
+                # Palette events can arrive while the sheet strip is being built.
+                if hasattr(window, "sheet_tab_content"):
+                    window.sheet_tab_content.setPalette(palette)
+                if hasattr(window, "add_sheet_button"):
+                    window.add_sheet_button.setStyleSheet("QToolButton { color: " + palette.color(QtGui.QPalette.ColorRole.WindowText).name() + "; background: transparent; border: 0; font-size: 18px; }")
             self._updating_palette = False
 
     def eventFilter(self, a0: QtCore.QObject | None, a1: QtCore.QEvent | None) -> bool:
@@ -1443,8 +1452,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._sheet_dragging = False
         self._adding_sheet = False
         self.sheet_name_edit = None
-        self.sheet_tabs = SheetTabBar(self)
-        QtWidgets.QApplication.instance().installEventFilter(self.sheet_tabs)
+        self.sheet_tabs: SheetTabBar = SheetTabBar(self)
+        required(QtWidgets.QApplication.instance(), "application").installEventFilter(self.sheet_tabs)
         self.sheet_tabs.setObjectName("sheet_tabs")
         self.sheet_tabs.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.setTabOrder(self.analysis_button, self.sheet_tabs)
