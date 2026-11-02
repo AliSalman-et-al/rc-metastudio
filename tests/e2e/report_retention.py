@@ -156,7 +156,7 @@ def capture(view, directory):
     surfaces = {
         'copy': required(QApplication.clipboard(), 'clipboard').text(),
         'pdf': pdf,
-        'docx': '\n'.join(c for t in doc_tables for r in t for c in r),
+        'docx': '\n'.join([*(p.text for p in doc.paragraphs), *(c for t in doc_tables for r in t for c in r)]),
     }
     missing = {}
     for surface, text in surfaces.items():
