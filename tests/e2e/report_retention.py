@@ -20,21 +20,110 @@ def numeric_tokens(text):
     return re.findall(r"(?<![\w.])[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?%?(?![\w.])", text)
 
 
-def visible_pdf_text(path):
-    raw = subprocess.check_output(['pdftotext', '-raw', str(path), '-'], text=True)
-    path.with_name('pdf-raw.txt').write_text(raw)
-    bbox = subprocess.check_output(['pdftotext', '-raw', '-bbox', str(path), '-'], text=True)
-    path.with_name('pdf-bbox.xhtml').write_text(bbox)
+def _pdf_line(words: list[ET.Element]) -> list[ET.Element]:
+    top = float(words[0].attrib['yMin'])
+    return [word for word in words if abs(float(word.attrib['yMin']) - top) < .01]
+
+
+def _restore_page_cell(previous: list[ET.Element], visible: list[ET.Element],
+                       clipped: list[ET.Element]) -> None:
+    # A clipped duplicate identifies a cell continued from the previous page.
+    # Move its first visible line beside that exact prefix, ahead of sibling
+    # cells, only when both text and horizontal coordinates identify the row.
+    if not clipped or not visible:
+        return
+    clipped = _pdf_line(clipped)
+    continuation = _pdf_line(visible)
+    left = float(clipped[0].attrib['xMin'])
+    if abs(float(continuation[0].attrib['xMin']) - left) >= .01:
+        return
+    if float(continuation[0].attrib['yMin']) > 2 * (float(continuation[0].attrib['yMax']) - float(continuation[0].attrib['yMin'])):
+        return
+    expected = [(w.text, w.attrib['xMin']) for w in clipped]
+    observed = [(w.text, w.attrib['xMin']) for w in previous]
+    for start in range(len(previous) - len(clipped) - 1, -1, -1):
+        end = start + len(clipped)
+        if observed[start:end] != expected:
+            continue
+        sibling = previous[end]
+        if abs(float(sibling.attrib['yMin']) - float(previous[start].attrib['yMin'])) >= .01:
+            return
+        if max(float(w.attrib['xMax']) for w in continuation) >= float(sibling.attrib['xMin']):
+            return
+        previous[end:end] = continuation
+        del visible[:len(continuation)]
+        return
+
+
+def _restore_header_units(words: list[ET.Element], visible: list[ET.Element],
+                          previous_page: list[ET.Element], previous_height: float) -> None:
+    if not previous_page or not visible:
+        return
+    continuation = _pdf_line(visible)
+    if not all(re.fullmatch(r'\([^()]+\)', word.text or '') for word in continuation):
+        return
+    line_height = float(continuation[0].attrib['yMax']) - float(continuation[0].attrib['yMin'])
+    if float(continuation[0].attrib['yMin']) > 2 * line_height:
+        return
+    last_y = max(float(word.attrib['yMin']) for word in previous_page)
+    if previous_height - last_y > 4 * line_height:
+        return
+    last_line = [word for word in previous_page if abs(float(word.attrib['yMin']) - last_y) < .01]
+    insertions = []
+    for unit in continuation:
+        center = (float(unit.attrib['xMin']) + float(unit.attrib['xMax'])) / 2
+        matches = [word for word in last_line
+                   if abs((float(word.attrib['xMin']) + float(word.attrib['xMax'])) / 2 - center) < .01]
+        if len(matches) != 1:
+            return
+        insertions.append((words.index(matches[0]) + 1, unit))
+    # Centered units can wrap onto the next page independently in several
+    # header cells. Exact column centers retain their original cell order.
+    for index, unit in sorted(insertions, key=lambda entry: entry[0], reverse=True):
+        words.insert(index, unit)
+    del visible[:len(continuation)]
+
+
+def _ordered_pdf_text(bbox: str) -> str:
     words = []
+    previous_page = []
+    previous_height = 0.0
     for page in ET.fromstring(bbox).iter('{http://www.w3.org/1999/xhtml}page'):
         width, height = float(page.attrib['width']), float(page.attrib['height'])
+        visible, clipped = [], []
         for word in page.iter('{http://www.w3.org/1999/xhtml}word'):
-            x_min, y_min, x_max, y_max = (float(word.attrib[key]) for key in ('xMin', 'yMin', 'xMax', 'yMax'))
-            # Qt can emit clipped copies beyond a page boundary. They are not
-            # visible report content and must not count as retained values.
-            if 0 <= x_min <= x_max <= width and 0 <= y_min <= y_max <= height:
-                words.append(word.text or '')
-    return ' '.join(words)
+            x, y, right, bottom = (float(word.attrib[key]) for key in ('xMin', 'yMin', 'xMax', 'yMax'))
+            if 0 <= x <= right <= width and 0 <= y <= bottom <= height:
+                visible.append(word)
+            elif 0 <= x <= right <= width and y < 0 < bottom:
+                clipped.append(word)
+        _restore_page_cell(words, visible, clipped)
+        _restore_header_units(words, visible, previous_page, previous_height)
+        words.extend(visible)
+        previous_page, previous_height = visible, height
+    text = []
+    previous = None
+    for word in words:
+        x, y, bottom = (float(word.attrib[key]) for key in ('xMin', 'yMin', 'yMax'))
+        value = word.text or ''
+        # Join only a decimal's digit continuation on the next line of its cell.
+        if (previous is not None and re.fullmatch(r'[+-]?\d+\.\d+', text[-1])
+                and value.isascii() and value.isdigit()
+                and abs(x - previous[0]) < .01 and -1 <= y - previous[1] <= .5):
+            text[-1] += value
+        else:
+            text.append(value)
+        previous = (x, bottom)
+    return ' '.join(text)
+
+
+def visible_pdf_text(path):
+    raw = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', '-raw', str(path), '-'], text=True, encoding="utf-8")
+    path.with_name('pdf-raw.txt').write_text(raw, encoding="utf-8")
+    bbox = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', '-raw', '-bbox', str(path), '-'], text=True, encoding="utf-8")
+    path.with_name('pdf-bbox.xhtml').write_text(bbox, encoding="utf-8")
+    return _ordered_pdf_text(bbox)
+
 
 
 def capture(view, directory):
@@ -53,12 +142,12 @@ def capture(view, directory):
     target = directory / key
     view._copy_report()
     if (target / 'audit.json').exists():
-        data = json.loads((target / 'audit.json').read_text())
+        data = json.loads((target / 'audit.json').read_text(encoding="utf-8"))
         data['directory'] = str(target)
         return data
     target.mkdir(exist_ok=True)
     report = view.manuscript
-    (target / 'copy.html').write_text(required(required(QApplication.clipboard(), 'clipboard').mimeData(), 'copied report').html())
+    (target / 'copy.html').write_text(required(required(QApplication.clipboard(), 'clipboard').mimeData(), 'copied report').html(), encoding="utf-8")
     write_docx(report, target / 'report.docx')
     write_pdf(report, target / 'report.pdf')
     doc = Document(str(target / 'report.docx'))
@@ -77,10 +166,10 @@ def capture(view, directory):
                             for t in held for i, row in enumerate(t['rows'])
                             for header, value in zip(t['headers'], row)
                             if any(token not in tokens for token in numeric_tokens(value))]
-        (target / (surface + '.txt')).write_text(text)
+        (target / (surface + '.txt')).write_text(text, encoding="utf-8")
     data = dict(title=report.title, held=held, held_text=held_text, held_notes=held_notes, presented=presented,
                 docx_tables=doc_tables, missing=missing, directory=str(target))
-    (target / 'audit.json').write_text(json.dumps(data, indent=2, ensure_ascii=False))
+    (target / 'audit.json').write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
     return data
 
 
@@ -203,10 +292,10 @@ def assert_exports(view, data):
     tables = [table for section in view.manuscript.sections for table in section.tables]
     expected = [[list(table.headers), *[list(row) for row in table.rows]] for table in tables]
     assert data['docx_tables'] == expected, (data['docx_tables'], expected)
-    copied = (Path(data['directory']) / 'copy.txt').read_text()
+    copied = (Path(data['directory']) / 'copy.txt').read_text(encoding="utf-8")
     # PDF wraps URLs and hyphenated labels. Compare whole tables while preserving
     # every digit, sign and punctuation mark across those physical line breaks.
-    pdf = re.findall(r'\w+|[^\w\s]', unicodedata.normalize('NFKC', (Path(data['directory']) / 'pdf.txt').read_text()))
+    pdf = re.findall(r'\w+|[^\w\s]', unicodedata.normalize('NFKC', (Path(data['directory']) / 'pdf.txt').read_text(encoding="utf-8")))
     cursor = 0
     for number, table in enumerate(tables, 1):
         caption = f'Table {number}. {table.title}'

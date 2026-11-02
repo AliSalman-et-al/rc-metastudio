@@ -3,6 +3,7 @@
 """Drive application controls with the production R backend."""
 
 import json
+import io
 import time
 import cProfile
 import os
@@ -14,6 +15,11 @@ from collections.abc import Iterable
 from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import patch
+
+# Evidence transcripts are decoded as UTF-8 by verify_rcms on every platform.
+for stream in (sys.stdout, sys.stderr):
+    assert isinstance(stream, io.TextIOWrapper)
+    stream.reconfigure(encoding="utf-8")
 
 _startup_profile = cProfile.Profile() if os.environ.get("RCMS_PROFILE_STARTUP") else None
 _startup_phases = {"driver:entry": time.time()}
