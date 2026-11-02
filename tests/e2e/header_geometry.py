@@ -116,6 +116,20 @@ def check_contour_colours(source):
     regions = fills.get('polygon', set()) - {'#ffffff'}
     keys = fills.get('rect', set()) - {'#ffffff'}
     assert len(regions) >= 3 and regions <= keys, (source, regions, keys)
+    def luminance(colour):
+        channels = [int(colour[i:i+2], 16) / 255 for i in (1, 3, 5)]
+        return sum((c / 12.92 if c <= .04045 else ((c + .055) / 1.055) ** 2.4) * w
+                   for c, w in zip(channels, (.2126, .7152, .0722)))
+    points = {match[1].lower() for node in root.iter('{http://www.w3.org/2000/svg}circle')
+              if (match := re.search(r'fill:\s*(#[0-9A-Fa-f]{6})', node.attrib.get('style', '')))}
+    assert points, ('study point colours missing', source)
+    ratios = {(point, band): (max(luminance(point), luminance(band)) + .05) /
+              (min(luminance(point), luminance(band)) + .05)
+              for point in points for band in regions}
+    # The original blue/grey palette has 1.8:1 minimum contrast; the darkened
+    # #666666 band falls below this and must not silently return.
+    assert min(ratios.values()) >= 1.8, (source, ratios)
+    return ratios
 
 
 def check_sroc_legend_bounds(source):

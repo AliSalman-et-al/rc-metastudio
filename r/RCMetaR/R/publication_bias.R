@@ -1461,7 +1461,9 @@ rcmetar.run.small.study.effects <- function(om.data, params=list()) {
     args <- .small.study.funnel.args(settings, center, ratio)
     args$refline <- if (settings$show.reference) 0 else NULL
     args$level <- levels
-    args$shade <- grDevices::colorRampPalette(c(settings$region.color, "#666666"))(length(levels))
+    # Match metafor 5.0-1's scalar-shade expansion on our white device.
+    args$shade <- grDevices::colorRampPalette(c(settings$region.color, "#7F7F7F"))(length(levels))
+    if (length(levels) > 1L) args$shade[-1L] <- rev(args$shade[-1L])
     args$colci <- settings$reference.color
     do.call(metafor::funnel, c(list(model), args))
     .small.study.draw.ratio.axis(settings, ratio)
