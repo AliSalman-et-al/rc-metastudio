@@ -79,6 +79,9 @@ class WorkspaceColumnWidthController(QObject):
                     self.table.setColumnWidth(column, width)
                     self._widths[key] = width
                 else:
+                    if key.kind == "raw":
+                        width = max(width, self._header_width(column))
+                        self._widths[key] = width
                     self.table.setColumnWidth(column, width)
         finally:
             self._applying = False

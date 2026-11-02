@@ -611,6 +611,18 @@ def run(driver):
                 expected = QtCore.QSize(1024, 700) if step == "A-grid-1024" else QtCore.QSize(1280, 800)
                 assert widget.size() == expected, (step, widget.size(), expected)
             assert widget.isVisible(), step
+        if step == "J-grid-tabs":
+            table = driver.window.tableView
+            header = table.horizontalHeader()
+            font = QtGui.QFont(header.font())
+            font.setBold(True)
+            metrics = QtGui.QFontMetrics(font)
+            labels = []
+            for column in driver.window.model.RAW_DATA:
+                text = str(driver.window.model.headerData(column, QtCore.Qt.Orientation.Horizontal))
+                labels.append(text)
+                assert table.columnWidth(column) >= metrics.horizontalAdvance(text) + 24, (text, table.columnWidth(column))
+            assert "Standard catheter person-time" in labels, labels
         image = widget if rendered_page else widget.grab().toImage()
         assert not image.isNull(), step
         colours = {image.pixelColor(x, y).rgba() for x in range(0, image.width(), 8) for y in range(0, image.height(), 8)}
