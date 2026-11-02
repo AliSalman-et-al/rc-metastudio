@@ -320,6 +320,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 assert view.manuscript.methods == f"Odds ratios were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance. Confidence intervals (95%) used the normal approximation. A continuity correction of 0.5 was applied to studies with any zero cell. 2 studies with no events in either arm were retained with this correction. Heterogeneity was assessed with Cochran's Q and I². Analyses were performed in RC MetaStudio {__version__}. R packages loaded for this analysis: metafor 5.0.1, meta 8.5-0."
                 assert '-0.262' in normalized
             if sample == 'continuous':
+                assert '500 participants in Intervention, 495 in Control' in view.manuscript.results
                 assert 'The pooled standardized mean difference was 0.358 (95% CI [0.152, 0.565], z = 3.400, p < .001).' in view.manuscript.results
                 assert 'The confidence interval excludes 0, with higher mean values in Intervention than in Control.' in view.manuscript.results
                 assert 'I² = 58.000%, which may represent moderate to substantial heterogeneity (Cochrane Handbook ranges).' in view.manuscript.results

@@ -1021,11 +1021,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _manuscript_model_info(self):
         model_info = [("Studies (k)", str(len(self.model.get_studies())))]
         raw = self.model.get_current_raw_data()
-        if self.data_type == "binary" and len(self.model.arm_names) == 2 and raw and all(
-            len(row) == 4 and all(isinstance(v, (int, float)) for v in row) for row in raw
+        if self.data_type in ("binary", "continuous") and len(self.model.arm_names) == 2 and raw and all(
+            len(row) == (4 if self.data_type == "binary" else 6) and all(isinstance(v, (int, float)) for v in row) for row in raw
         ):
             model_info.extend((f"Participants in {name}", f"{sum(row[index] for row in raw):g}")
-                              for name, index in zip(self.model.arm_names, (1, 3)))
+                              for name, index in zip(self.model.arm_names, (1, 3) if self.data_type == "binary" else (0, 3)))
         if len(model_info) == 1:
             model_info.append(("Participants", "Not available in held results"))
         return model_info
@@ -1044,10 +1044,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         context = f"{included} studies were included"
         if excluded:
             context += f" ({excluded} studies were excluded)"
-        if self.data_type == 'binary':
+        if self.data_type in ('binary', 'continuous'):
             raw = self.model.get_current_raw_data()
-            if len(self.model.arm_names) == 2 and raw and all(len(row) == 4 and all(isinstance(v, (int, float)) for v in row) for row in raw):
-                totals = [sum(row[i] for row in raw) for i in (1, 3)]
+            if len(self.model.arm_names) == 2 and raw and all(len(row) == (4 if self.data_type == "binary" else 6) and all(isinstance(v, (int, float)) for v in row) for row in raw):
+                totals = [sum(row[i] for row in raw) for i in ((1, 3) if self.data_type == "binary" else (0, 3))]
                 context += f" ({totals[0]:g} participants in {self.model.arm_names[0]}, {totals[1]:g} in {self.model.arm_names[1]})"
         context += "."
         return context + self._correction_context(applied_parameters)
