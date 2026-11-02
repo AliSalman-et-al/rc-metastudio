@@ -231,6 +231,9 @@ def plots(driver, capture, missing):
             if detail == "contour":
                 from tests.e2e.header_geometry import check_contour_colours
                 check_contour_colours(view.results.display_images[selected[0].title])
+            heading = view._layout_items[view._layout_items.index(view._nav_items_to_sections[id(item)]) - 1]
+            assert abs(heading.scale() * view.graphics_view.transform().m22() - 1) < .001
+            assert heading.font().pointSizeF() == view.font().pointSizeF()
             capture(f"G-{detail}-fit", view)
             editor_kind = "coefficient" if detail == "coefficient" else selected[0].plot_kind
             if editor_kind not in editors:

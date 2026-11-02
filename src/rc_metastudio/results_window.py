@@ -657,6 +657,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         scale = min(1 / (selected[1].scale() if selected else 1),
                     max(1, viewport.width() - 2) / max(1, width))
         self.graphics_view.setTransform(QTransform.fromScale(scale, scale))
+        self._relayout_sections()
         self._figure_zoom_percent = round(scale * (selected[1].scale() if selected else 1) * 100)
         if not self.report_action.isChecked():
             self._update_zoom_control(self._figure_zoom_percent)
@@ -685,6 +686,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self._fit_width_active = False
             self._figure_zoom_percent = percent
             self.graphics_view.setTransform(QTransform.fromScale(percent / 100, percent / 100))
+            self._relayout_sections()
 
     def _show_report(self, checked):
         self.content_stack.setCurrentWidget(self.report_text if checked else self.figure_page)
@@ -1031,6 +1033,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         """Place every result item from its current measured size and stored order."""
         next_y = float(self.add_offset)
         for item in self._layout_items:
+            if isinstance(item, QGraphicsTextItem):
+                item.setScale(1 / self.graphics_view.transform().m22())
             item.setPos(self.x_coord, next_y)
             next_y = math.ceil(item.sceneBoundingRect().bottom())
             if not isinstance(item, QGraphicsTextItem):
