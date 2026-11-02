@@ -207,7 +207,7 @@ def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(mo
 
         assert not shown
         assert "simulated R failure" in form.analysis_error_details.toPlainText()
-        assert "Check" in form.analysis_error_label.text()
+        assert form.analysis_error_label.text() == "No studies are included. Tick Include for at least one study with complete data."
         assert "simulated R failure" not in form.analysis_error_label.text()
         assert form.analysis_error_details.isHidden()
         form.analysis_error_toggle.click()
@@ -306,7 +306,7 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
 
         assert not shown
         assert "simulated recompute failure" in form.analysis_error_details.toPlainText()
-        assert "Check" in form.analysis_error_label.text()
+        assert form.analysis_error_label.text() == "No studies are included. Tick Include for at least one study with complete data."
         assert "simulated recompute failure" not in form.analysis_error_label.text()
         assert form.analysis_error_details.isHidden()
         form.analysis_error_toggle.click()
@@ -403,7 +403,7 @@ def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
         assert sip.isdeleted(progress)
         assert not sip.isdeleted(form)
         assert "simulated setup failure" in form.analysis_error_details.toPlainText()
-        assert "Check" in form.analysis_error_label.text()
+        assert form.analysis_error_label.text() == "No studies are included. Tick Include for at least one study with complete data."
         assert "simulated setup failure" not in form.analysis_error_label.text()
         assert form.analysis_error_details.isHidden()
         form.analysis_error_toggle.click()

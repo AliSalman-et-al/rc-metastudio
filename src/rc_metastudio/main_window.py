@@ -287,7 +287,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.setupUi(self)
         qt_layout.configure_analysis_menu(self.menuAnalysis)
         self.menuAnalysis.setToolTipsVisible(True)
-        self.action_summary_of_findings = QAction("Summary of findings", self)
+        self.action_summary_of_findings = QAction("Summary of findings…", self)
         self.menuAnalysis.addAction(self.action_summary_of_findings)
         self.action_summary_of_findings.triggered.connect(self._show_summary_of_findings)
         for action, icon_name in (
@@ -322,11 +322,18 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.dataset_file_lbl = dataset_file_label
         self.action_new_dataset.setText("Create dataset…")
         self.action_import_rm5 = QAction("Import RevMan file (.rm5)…", self)
-        self.menu_file.addAction(self.action_import_rm5)
         self.action_import_rm5.triggered.connect(self._import_rm5)
         self.start_page = start_page.StartPage(self.action_new_dataset, self.action_import_csv, self.action_open, self)
         self.verticalLayout_3.insertWidget(0, self.start_page)
-        self.menu_file.insertAction(self.action_open, self.action_new_dataset)
+        self.menu_file.clear()
+        for action in (self.action_new_dataset, self.action_open,
+                       self.action_open_recent_2.menuAction(), self.action_import_csv,
+                       self.action_import_rm5):
+            self.menu_file.addAction(action)
+        self.menu_file.addSeparator()
+        self.menu_file.addActions([self.action_save, self.action_save_as])
+        self.menu_file.addSeparator()
+        self.menu_file.addAction(self.action_quit)
         self.action_publication_bias.setText("Small-study effects…")
         help_action = QAction("Quick start and shortcuts…", self)
         help_action.triggered.connect(app_error_handler.safe_slot(self.show_quick_start, parent=self))
@@ -470,9 +477,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             (self.action_new_dataset, QKeySequence.StandardKey.New),
             (self.action_open, QKeySequence.StandardKey.Open),
             (self.action_save, QKeySequence.StandardKey.Save),
-            (self.action_quit, QKeySequence.StandardKey.Quit),
         ):
             action.setShortcut(QKeySequence(standard_key))
+        self.action_quit.setShortcut(QKeySequence("Ctrl+Q"))
 
     def _model_about_to_be_reset(self):
         """Call all the functions here that should be called when the model is

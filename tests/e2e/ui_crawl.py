@@ -48,6 +48,8 @@ def analysis_setup(driver, capture, missing):
     driver.window.action_go.trigger()
     driver.app.processEvents()
     form = next(w for w in driver.app.topLevelWidgets() if isinstance(w, DiagnosticMetricsDialog) and w.isVisible())
+    assert not form.availability_label.isVisible()
+    assert form.btn_cancel.isVisible()
     capture("E-diagnostic-metrics", form)
     form.close()
     driver.window.workspace.mark_saved()
@@ -56,6 +58,8 @@ def analysis_setup(driver, capture, missing):
     form = PublicationBiasDialog(driver.window.model, parent=driver.window,
                                  analysis_service=driver.window.small_study_effects_service)
     form.show()
+    assert "19 included" in form.context_label.text(), form.context_label.text()
+    assert "17 eligible" in form.context_label.text(), form.context_label.text()
     capture("E-small-study", form)
     form.close()
     driver.window.action_summary_of_findings.trigger()
@@ -70,6 +74,9 @@ def analysis_setup(driver, capture, missing):
         assert model.setData(model.index(row, model.INCLUDE_STUDY), QtCore.Qt.CheckState.Unchecked.value, QtCore.Qt.ItemDataRole.CheckStateRole)
     form.run_ma()
     driver.app.processEvents()
+    assert form.analysis_error_label.text() == "No studies are included. Tick Include for at least one study with complete data."
+    assert form.analysis_error_label.focusPolicy() == QtCore.Qt.FocusPolicy.NoFocus
+    assert "Sorry" not in form.analysis_error_details.toPlainText()
     assert form.analysis_error_panel.isVisible()
     assert not form.analysis_error_details.isVisible()
     capture("E-error-details-collapsed", form)
@@ -329,6 +336,17 @@ def imports(driver, capture, missing):
 def shell(driver, capture, missing):
     driver.window.workspace.mark_saved()
     assert driver.window.open(str(driver.ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert driver.window.menu_file.actions() == [
+        driver.window.action_new_dataset, driver.window.action_open,
+        driver.window.action_open_recent_2.menuAction(), driver.window.action_import_csv,
+        driver.window.action_import_rm5, driver.window.menu_file.actions()[5],
+        driver.window.action_save, driver.window.action_save_as,
+        driver.window.menu_file.actions()[8], driver.window.action_quit,
+    ]
+    assert driver.window.menu_file.actions()[5].isSeparator()
+    assert driver.window.menu_file.actions()[8].isSeparator()
+    assert driver.window.action_quit.shortcut().toString() == "Ctrl+Q"
+    assert driver.window.action_summary_of_findings.text().endswith("…")
     driver.window.resize(1280, 800)
     capture("A-amino-grid", driver.window)
     bar = driver.window.menuBar()

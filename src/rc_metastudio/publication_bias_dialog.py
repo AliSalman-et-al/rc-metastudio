@@ -293,21 +293,23 @@ class PublicationBiasDialog(
     def _context_summary(self, report=None) -> str:
         data_type = str(self.model.get_current_outcome_type())
         metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
-        dataset = getattr(self.model, "dataset", None)
-        studies = getattr(dataset, "studies", None)
-        included = (
-            sum(bool(getattr(study, "include", True)) for study in studies)
-            if studies is not None
-            else "?"
-        )
+        included = len(self.model.get_studies())
         report = report or self._eligibility_report
         eligible = report.usable_studies if report is not None else "?"
         outcome_label = data_type.replace("_", " ").capitalize()
         from rc_metastudio.analysis_identity import metric_label as display_metric
         metric_label = display_metric(self.model, metric)
+        explanation = ""
+        if data_type == "binary" and metric == "OR" and report is not None:
+            double_zero = sum(
+                len(row) == 4 and row[0] == 0 and row[2] == 0
+                for row in self.model.get_current_raw_data()
+            )
+            if double_zero and included - report.usable_studies == double_zero:
+                explanation = f"\n{double_zero} studies with no events in either arm are ineligible for odds-ratio asymmetry tests."
         return (
             f"{outcome_label}  ·  {metric_label}  ·  "
-            f"{included} included  ·  {eligible} eligible"
+            f"{included} included  ·  {eligible} eligible{explanation}"
         )
 
     def _refresh_eligibility(self):

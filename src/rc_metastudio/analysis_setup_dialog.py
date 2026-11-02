@@ -312,8 +312,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.analysis_error_label.setWordWrap(True)
         self.analysis_error_label.setTextFormat(Qt.TextFormat.PlainText)
         self.analysis_error_label.setAccessibleName("Analysis error")
-        self.analysis_error_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse | Qt.TextInteractionFlag.TextSelectableByKeyboard)
-        self.analysis_error_label.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.analysis_error_label.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
+        self.analysis_error_label.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.analysis_error_label.hide()
         self.analysis_error_panel = QtWidgets.QWidget(self)
         error_layout = QtWidgets.QVBoxLayout(self.analysis_error_panel)
@@ -789,7 +789,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 fixed_effects,
                 self.confidence_level,
             ),
-            "Sorry, there was an error performing the regression.\n%s",
             string_result_is_failure=True,
         )
 
@@ -911,10 +910,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def run_ma(self):
         self._run_analysis(
             lambda: self.analysis_service.execute(self.model, self.analysis_requests()),
-            "Sorry, this analysis could not be completed:\n\n%s",
         )
 
-    def _run_analysis(self, operation, failure_message, string_result_is_failure=False):
+    def _run_analysis(self, operation, string_result_is_failure=False):
         self.analysis_error_label.hide()
         self.analysis_error_panel.hide()
         self.analysis_error_toggle.setChecked(False)
@@ -929,8 +927,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             succeeded = True
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
-            self.analysis_error_label.setText("Check the selected method and study data, then try again.")
-            self.analysis_error_details.setPlainText(failure_message % error)
+            self.analysis_error_label.setText(
+                "No studies are included. Tick Include for at least one study with complete data."
+                if not self.model.get_studies()
+                else "Check the selected method and study data, then try again."
+            )
+            self.analysis_error_details.setPlainText(str(error))
             self.analysis_error_panel.show()
             self.analysis_error_label.show()
             self._reset_working_dir_safely()
@@ -939,7 +941,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if not succeeded:
             self._schedule_local_reflow()
             self.activateWindow()
-            self.analysis_error_label.setFocus()
+            self.analysis_error_toggle.setFocus()
         if succeeded:
             try:
                 self._deliver_result(result)

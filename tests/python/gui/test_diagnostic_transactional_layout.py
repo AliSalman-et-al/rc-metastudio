@@ -578,9 +578,8 @@ def test_diagnostic_metric_availability_preserves_workflow_and_explains_limits(
         assert dialog.availability_label.wordWrap()
         assert AVAILABLE.contains(dialog.frameGeometry())
         if model.raw_available:
-            assert "All diagnostic metrics are available" in (
-                dialog.availability_label.text()
-            )
+            assert dialog.availability_label.isHidden()
+            assert dialog.btn_cancel.text() == "Cancel"
             # The joint Sensitivity/Specificity path is the default, while
             # univariate DOR/LR remain explicit, available requests.
             assert dialog.chk_box_lr.isEnabled()

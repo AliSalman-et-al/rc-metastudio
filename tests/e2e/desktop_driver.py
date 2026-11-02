@@ -1397,6 +1397,9 @@ def small_study_effects(app, window):
             button = dialog.button_box.button(
                 QtWidgets.QDialogButtonBox.StandardButton.Ok
             )
+            assert "19 included" in dialog.context_label.text(), dialog.context_label.text()
+            assert "17 eligible" in dialog.context_label.text(), dialog.context_label.text()
+            assert "2 studies with no events in either arm" in dialog.context_label.text(), dialog.context_label.text()
             assert button.isEnabled()
             if not dialog.ordinary_funnel_check.isChecked():
                 dialog.ordinary_funnel_check.setChecked(True)

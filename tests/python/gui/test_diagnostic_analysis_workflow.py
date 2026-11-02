@@ -162,7 +162,7 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
         form.run_ma()
 
         assert not shown
-        assert form.analysis_error_label.text() == "Check the selected method and study data, then try again."
+        assert form.analysis_error_label.text() == "No studies are included. Tick Include for at least one study with complete data."
         assert form.analysis_error_details.isHidden()
         assert "simulated diagnostic failure" in form.analysis_error_details.toPlainText()
         form.analysis_error_toggle.click()
