@@ -107,6 +107,10 @@ def results(driver, capture, missing):
 
 def exports(driver, capture, missing, view):
     import subprocess
+    import os
+    import shutil
+    import sys
+    from pathlib import Path
     from unittest.mock import patch
     from PyQt6 import QtGui
     from rc_metastudio.manuscript_report import ManuscriptReport, write_docx, write_pdf
@@ -128,8 +132,14 @@ def exports(driver, capture, missing, view):
     render(pdf, "manuscript-last", last=True)
     converted = driver.WORK / "docx-render"
     converted.mkdir(exist_ok=True)
+    conversion_env = os.environ.copy()
+    if sys.platform == "linux" and (executable := shutil.which("soffice")):
+        # Writer loads private libraries lazily; the embedded R loader path
+        # does not include LibreOffice's installation directory.
+        program = str(Path(executable).resolve().parent)
+        conversion_env["LD_LIBRARY_PATH"] = program + os.pathsep + conversion_env.get("LD_LIBRARY_PATH", "")
     try:
-        subprocess.run(["soffice", "-env:UserInstallation=" + (driver.WORK / "soffice-profile").as_uri(), "--headless", "--convert-to", "pdf", "--outdir", str(converted), str(docx)], check=True, capture_output=True, timeout=45)
+        subprocess.run(["soffice", "-env:UserInstallation=" + (driver.WORK / "soffice-profile").as_uri(), "--headless", "--convert-to", "pdf", "--outdir", str(converted), str(docx)], check=True, capture_output=True, timeout=45, env=conversion_env)
         render(converted / "manuscript.pdf", "docx-page-1")
     except (OSError, subprocess.SubprocessError) as error:
         missing.append(f"I DOCX page 1: {error}; {getattr(error, 'stderr', b'')!r}")
@@ -402,6 +412,11 @@ def dialogs(driver, capture, missing):
         ("rename", EditCovariateNameDialog("Dose", parent=driver.window)),
     ):
         form.show()
+        for field in form.findChildren(QtWidgets.QLineEdit):
+            if detail in {"add-covariate", "add-study", "rename"}:
+                assert field.alignment() & QtCore.Qt.AlignmentFlag.AlignLeft
+        if detail == "confidence-level":
+            assert form.confidence_level_label.text() == "Confidence level:"
         capture("D-" + detail, form)
         form.close()
     calculators(driver, capture, missing)
