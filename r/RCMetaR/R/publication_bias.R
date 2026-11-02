@@ -1461,7 +1461,11 @@ rcmetar.run.small.study.effects <- function(om.data, params=list()) {
     if (settings$show.pooled)
         abline(v=center, col=settings$reference.color, lwd=2, lty=2)
     legend("topright", legend=c(paste0(levels, "% null contours"),
-                                 if (settings$show.pooled) "Pooled display"), bty="n")
+                                 if (settings$show.pooled) "Pooled display"),
+           pch=c(rep(22, length(levels)), if (settings$show.pooled) NA),
+           pt.bg=c(rep(settings$region.color, length.out=length(levels)), if (settings$show.pooled) NA),
+           col=settings$reference.color,
+           lty=c(rep(NA, length(levels)), if (settings$show.pooled) 2), bty="n")
 }
 
 rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.path=NULL) {
