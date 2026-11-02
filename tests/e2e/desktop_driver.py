@@ -1497,6 +1497,13 @@ def calculator(app, window, family):
             table = getattr(dialog, table_name)
             app.processEvents()
             if family == "binary":
+                viewport = dialog.content_scroll.viewport()
+                for widget in (dialog.raw_data_table, dialog.wald_readout, dialog.metric_readout):
+                    assert widget.isVisible()
+                    assert viewport.rect().contains(QtCore.QRect(widget.mapTo(viewport, QtCore.QPoint()), widget.size())), (widget.objectName(), widget.geometry(), viewport.size())
+                assert dialog.content_scroll.verticalScrollBar().maximum() == 0
+                assert dialog.raw_data_table.verticalScrollBar().maximum() == 0
+                assert "SE" in dialog.wald_readout.text() and "Two-sided P" in dialog.wald_readout.text()
                 widths = [dialog.metric_readout.columnWidth(i) for i in range(4)]
                 assert max(widths) - min(widths) <= 1, widths
             dialog.grab().save(str(WORK / f"slice8a-calculator-{family}.png"))

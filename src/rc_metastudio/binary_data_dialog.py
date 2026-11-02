@@ -71,6 +71,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
     ):
         super(BinaryDataDialog, self).__init__(parent)
         self.setupUi(self)
+        self.dialog_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self._configure_raw_data_table()
         self._configure_focus_revelation()
         self._layout_controller = adaptive_window.register_adaptive_window(
@@ -201,8 +202,14 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             + 2 * self.content_scroll.frameWidth()
             + scrollbar.sizeHint().width()
         )
+        preferred_height = self.dialog_layout.sizeHint().height()
+        if not self.content_scroll.isHidden():
+            preferred_height += (
+                layout.sizeHint().height() - self.content_scroll.sizeHint().height()
+                + 2 * self.content_scroll.frameWidth()
+            )
         adaptive_window.set_content_preferred_width(
-            self, minimum_width, preferred_width
+            self, minimum_width, preferred_width, preferred_height
         )
 
     def _fit_raw_data_columns_for_first_display(self):
@@ -251,6 +258,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         return super(BinaryDataDialog, self).eventFilter(watched, event)
 
     def _request_content_refit(self):
+        self._set_content_preferred_width()
         controller = getattr(self, "_layout_controller", None)
         if controller is not None:
             controller.request_content_refit()
