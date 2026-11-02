@@ -62,22 +62,9 @@ def check_report(app, view, work, record):
                 position = copied.find(joined, cursor)
                 assert position >= cursor, (table.title, row, copied)
                 cursor = position + len(joined)
-    for section in view.results.sections:
-        if section.title != 'Summary' or any(t.title.startswith('Calculation scale') for t in section.tables):
-            for table in section.tables:
-                if section.title == 'Summary' and not table.title.startswith('Calculation scale'):
-                    continue
-                position = 0
-                for row in (table.headers, *table.rows):
-                    joined = "\t".join(row)
-                    position = copied.find(joined, position)
-                    assert position >= 0, (table.title, row, copied)
-                    position += len(joined)
-        if section.title == 'Summary':
-            for table in section.tables:
-                if len(table.rows) == 1 and not table.title.startswith('Calculation scale'):
-                    for header, value in zip(table.headers, table.rows[0]):
-                        assert table.title + ': ' + header + "\t" + value in copied, (table.title, header, value, copied)
+    from tests.e2e.manuscript_export import assert_manuscript_tables
+    assert_manuscript_tables(view)
+
     if "Omission-only fits:" in view.results.details:
         assert copied.count("Omission-only fits:") == 1, copied
     for line in view.results.details.splitlines():

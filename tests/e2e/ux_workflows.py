@@ -140,7 +140,7 @@ def run(app, window, work, root, record, analyze):
             app.processEvents()
             if page == "tables":
                 table = view.result_table
-                assert table.accessibleName() == "Model results"
+                assert table.accessibleName() == "Pooled effect"
                 assert not table.horizontalScrollBar().isVisible()
                 last_row = table.visualRect(table.model().index(table.rowCount() - 1, 0))
                 row_bottom = table.viewport().mapTo(view.tables_page, last_row.bottomLeft()).y()
@@ -184,10 +184,10 @@ def run(app, window, work, root, record, analyze):
     key_click(view.report_text, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.ShiftModifier)
     copied_report = app.clipboard().text()
     assert copied_report.startswith(view.manuscript.title + "\n")
-    for section in view.results.sections:
+    for section in view.manuscript.sections:
         for table in section.tables:
-            assert all(cell in copied_report for cell in table.headers)
-            assert all(cell in copied_report for row in table.rows for cell in row)
+            for row in (table.headers, *table.rows):
+                assert "\t".join(row) in copied_report, (table.title, row)
     view.copy_report_action.trigger()
     assert app.clipboard().text() == copied_report
     report_path = work / "analysis.pdf"

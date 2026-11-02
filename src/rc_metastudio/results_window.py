@@ -250,15 +250,6 @@ def _pixmap_device_independent_size(pixmap):
     return (float(pixmap.width()) / dpr, float(pixmap.height()) / dpr)
 
 
-class _ManuscriptText(QTextBrowser):
-    def resizeEvent(self, a0: QResizeEvent | None) -> None:
-        super().resizeEvent(a0)
-        document = self.document()
-        if document is not None:
-            document.setTextWidth(required(self.viewport(), "manuscript viewport").width())
-            self.setFixedHeight(math.ceil(document.size().height()) + 2 * self.frameWidth())
-
-
 class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def __init__(
         self,
@@ -420,18 +411,17 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.manuscript = ManuscriptReport.from_result(self.results)
         self.manuscript_page = QWidget(self.content_stack)
         layout = QVBoxLayout(self.manuscript_page)
+        actions = QToolBar("Manuscript text", self.manuscript_page)
+        actions.setMovable(False)
         for name, text in (("Methods", self.manuscript.methods), ("Results", self.manuscript.results)):
-            layout.addWidget(QLabel(name))
-            browser = _ManuscriptText()
-            browser.setPlainText(text)
-            browser.setAccessibleName(name)
-            setattr(self, 'manuscript_' + name.lower(), browser)
-            layout.addWidget(browser)
-            button = QToolButton()
-            button.setText('Copy ' + name)
-            button.clicked.connect(lambda checked=False, value=text: required(QApplication.clipboard(), "clipboard").setText(value))
-            layout.addWidget(button)
-        layout.addStretch()
+            action = QAction('Copy ' + name, actions)
+            action.triggered.connect(lambda checked=False, value=text: required(QApplication.clipboard(), "clipboard").setText(value))
+            actions.addAction(action)
+        layout.addWidget(actions)
+        self.manuscript_text = QTextBrowser(self.manuscript_page)
+        self.manuscript_text.setAccessibleName("Manuscript")
+        self.manuscript_text.setHtml(self.manuscript.html() + self.manuscript.html(supplementary=True))
+        layout.addWidget(self.manuscript_text)
         self.content_stack.addWidget(self.manuscript_page)
 
     def _setup_report_document(self):
@@ -470,14 +460,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_text.setHtml(self._report_html)
 
     def _setup_result_tables(self):
-        self._report_tables = [table for section in self.results.sections for table in section.tables]
+        self._report_tables = [table for section in self.manuscript.sections for table in section.tables]
         self.tables_page = QWidget(self.content_stack)
         layout = QVBoxLayout(self.tables_page)
         layout.setContentsMargins(12, 12, 12, 12)
         layout.setSpacing(8)
         self.table_selector = QComboBox(self.tables_page)
         self.table_selector.setAccessibleName("Result table")
-        for section in self.results.sections:
+        for section in self.manuscript.sections:
             for table in section.tables:
                 self.table_selector.addItem(_report_heading(table.title if table.title == section.title or section.title.endswith("Summary") else section.title + " — " + table.title))
         layout.addWidget(self.table_selector)
@@ -702,29 +692,20 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.zoom_control.blockSignals(False)
 
     def _report_blocks(self):
-        deferred = []
-        calculation = []
-        for section in sorted(self.results.sections, key=lambda section: section.order):
-            if section.kind != "text":
-                continue
-            if section.semantic_id == "text:references" or section.source_key == "Weights":
-                deferred.append(section)
-                continue
-            calculation.extend(table for table in section.tables if table.title.startswith("Calculation scale"))
-            yield _report_section_block(section)
+        for index, section in enumerate(self.manuscript.sections):
+            yield f"manuscript:{index}", section.title, section.paragraphs, section.tables
         if self.results.details:
             yield "model-configuration", "Model configuration", (self.results.details,), ()
-        if calculation:
-            yield "calculation-details", "Calculation details", (), tuple(calculation)
-        for section in deferred:
-            yield section.semantic_id, "Study weights" if section.source_key == "Weights" else section.title, section.paragraphs if section.tables else (section.value,), section.tables
+        for section in self.results.sections:
+            if section.semantic_id == "text:references":
+                yield section.semantic_id, section.title, (section.value,), ()
 
     def _copy_report(self):
         from PyQt6.QtCore import QMimeData
         from rc_metastudio.manuscript_report import ManuscriptReport
         report = ManuscriptReport.from_result(self.results)
         mime = QMimeData()
-        mime.setHtml(report.html())
+        mime.setHtml(report.html() + report.html(supplementary=True))
         mime.setText(report.plain_text())
         required(QApplication.clipboard(), "system clipboard").setMimeData(mime)
         self.statusbar.showMessage("Report copied")

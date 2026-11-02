@@ -1007,9 +1007,22 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         correction = context.partition(". ")[2]
         if correction:
             methods += " " + correction
+        model_info = [("Studies (k)", str(len(self.model.get_studies())))]
+        raw = self.model.get_current_raw_data()
+        if self.data_type == "binary" and len(self.model.arm_names) == 2 and raw and all(
+            len(row) == 4 and all(isinstance(v, (int, float)) for v in row) for row in raw
+        ):
+            model_info.extend((f"Participants in {name}", f"{sum(row[index] for row in raw):g}")
+                              for name, index in zip(self.model.arm_names, (1, 3)))
+        if len(model_info) == 1:
+            model_info.append(("Participants", "Not available in held results"))
         return replace(result, identity=identity, details=details, software=software,
                        manuscript_context=context.split(". ")[0].rstrip(".") + ".",
                        manuscript_title=title, manuscript_methods=methods,
+                       manuscript_metric=metric, manuscript_arms=tuple(self.model.arm_names),
+                       manuscript_favours=tuple(label.removeprefix("Favours ").strip() for label in
+                           self.model.current_sheet.settings.get("favours_labels", ["Favours " + name for name in self.model.arm_names])),
+                       manuscript_model_info=tuple(model_info),
                        manuscript_comparison="Comparison: " + " / ".join(self.model.arm_names))
 
     def _applied_parameters(self):

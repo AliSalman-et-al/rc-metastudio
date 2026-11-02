@@ -12,6 +12,97 @@ from rc_metastudio import automation
 from tests.python.gui.test_types import mouse_click, required
 
 
+def assert_manuscript_tables(view):
+    tables = [table for section in view.manuscript.sections for table in section.tables]
+    pooled = next(table for table in tables if table.title == "Pooled effect")
+    fit = next(table for table in tables if table.title == "Model fit")
+    assert pooled.headers[0:2] == ("Effect", "Estimate")
+    assert pooled.headers[2].endswith("% CI")
+    assert pooled.headers[3:] in (("SE", "z", "p"), ("SE", "t", "p"))
+    assert fit.headers == ("Statistic", "Value")
+    assert sum(table.title == "Study results" for table in tables) == 1
+    assert all(":" not in label for label, value in fit.rows)
+    from decimal import Decimal
+    def expected_p(value):
+        if not value:
+            return '—'
+        if value.startswith('<') or Decimal(value) < Decimal('.001'):
+            return '< .001'
+        return f'{Decimal(value):.3f}'.removeprefix('0')
+    source_tables = [table for section in view.results.sections for table in section.tables]
+    candidates = []
+    for section in view.results.sections:
+        overall = next((dict(zip(t.headers, t.rows[0])) for t in section.tables
+                        if len(t.rows) == 1 and ('Z' in t.headers or 't' in t.headers)), {})
+        calculation = next((dict(zip(t.headers, t.rows[0])) for t in section.tables
+                            if t.title.startswith('Calculation scale') and t.rows), {})
+        for source in section.tables:
+            table = source
+            vertical = table.headers == ('Statistic', 'Value') and 'Estimate' in dict(table.rows)
+            if vertical:
+                from rc_metastudio.analysis_results import ResultTable
+                values = dict(table.rows)
+                table = ResultTable(table.title, tuple(values), (tuple(values.values()),))
+            if table.title.startswith('Calculation scale'):
+                continue
+            low = next((h for h in table.headers if h.startswith('Lower bound')), None)
+            high = next((h for h in table.headers if h.startswith('Upper bound')), None)
+            if low and low.partition('(')[2].rstrip(') ').endswith(' PI'):
+                continue
+            if 'Estimate' not in table.headers or not low or not high:
+                continue
+            for row in table.rows:
+                values = dict(zip(table.headers, row))
+                if not values['Estimate']:
+                    continue
+                stat = next((values.get(h, overall.get(h)) for h in ('t', 'z', 'Z', 't-value', 'z-value') if h in values or h in overall), '—')
+                se = next((value for key, value in {**calculation, **values}.items() if key.startswith('SE')), '—')
+                candidates.append((values.get('Term', values.get('Subgroups', table.title if vertical else section.title.removesuffix(' Summary').lower() if ',' in view.results.manuscript_metric else view.results.manuscript_metric)), values['Estimate'],
+                                   values[low] + ' to ' + values[high], se, stat, expected_p(values.get('p-value', ''))))
+    assert pooled.rows == tuple(candidates), (pooled.rows, candidates)
+    held_values = {cell for table in source_tables for row in table.rows for cell in row}
+    held_values.update(value for label, value in view.results.manuscript_model_info)
+    held_values.update(expected_p(value) for table in source_tables for row in table.rows
+                       for header, value in zip(table.headers, row) if header == 'p-value')
+    held_values.update(row[0] + ' to ' + row[1] for table in source_tables
+                       if table.title.endswith('Prediction interval') for row in table.rows if len(row) == 2)
+    for source in source_tables:
+        rows = [dict(source.rows)] if source.headers == ('Statistic', 'Value') else [dict(zip(source.headers, row)) for row in source.rows]
+        low = next((h for h in rows[0] if h.startswith('Lower bound')), None) if rows else None
+        high = next((h for h in rows[0] if h.startswith('Upper bound')), None) if rows else None
+        if low and high:
+            held_values.update(row[low] + ' to ' + row[high] for row in rows)
+        if source.title in ('Heterogeneity', 'Residual heterogeneity'):
+            labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity p', 'I²': 'I²', 'τ²': 'Between-study variance (τ²)'}
+            for row in rows:
+                for key, label in labels.items():
+                    if key in row:
+                        context = ' (' + row['Subgroups'] + ')' if 'Subgroups' in row else ''
+                        assert (label + context, expected_p(row[key]) if key == 'p-value' else row[key]) in fit.rows
+    for pair in view.results.manuscript_model_info:
+        assert pair in fit.rows
+    for label, value in fit.rows:
+        assert value in held_values, (label, value)
+    for section in view.manuscript.sections:
+        for table in section.tables:
+            if table.title == "Study results":
+                assert section.title == "Supplementary details"
+                assert table.headers == ("Study", "Effect", pooled.headers[2], "Weight")
+                weights = next(t for t in source_tables if t.title == 'Study weights')
+                if all(len(row) == 5 for row in weights.rows):
+                    assert table.rows == tuple((row[0], row[1], row[2] + ' to ' + row[3], row[4]) for row in weights.rows)
+                else:
+                    assert view.results.manuscript_metric == 'odds ratio'
+                    assert all(len(row) == 2 for row in weights.rows)
+                    assert table.rows == tuple((row[0], '—', '—', row[1]) for row in weights.rows)
+                    assert section.paragraphs == ('Study estimates and intervals on the displayed metric scale were not held for this analysis; only study weights are available.',)
+    visible_tables = view.manuscript_text.toPlainText()
+    for table in tables:
+        for row in (table.headers, *table.rows):
+            assert all(cell in visible_tables for cell in row), (table.title, row)
+    return pooled, fit
+
+
 def run(app, window, work, root, record, analyze, *, direct_write=False):
     """Compare the same writers/assertions with and without a real save dialog."""
     from collections import Counter
@@ -61,7 +152,7 @@ def run(app, window, work, root, record, analyze, *, direct_write=False):
     with patch.object(manuscript_report, "write_pdf", new=checked_writer("pdf", manuscript_report.write_pdf)), \
          patch.object(manuscript_report, "write_docx", new=checked_writer("docx", manuscript_report.write_docx)):
         _run(app, window, work, root, record, analyze, direct_write=direct_write)
-    assert writes == {"pdf": 20, "docx": 8}, (mode, writes)
+    assert writes == {"pdf": 21, "docx": 9}, (mode, writes)
     record("manuscript-export-mode-complete", mode=mode, writes=dict(writes))
 
 
@@ -258,6 +349,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         assert window.open(str(root / 'sample_projects' / (sample + '.rcms')), raise_on_error=True)
         print(f"Manuscript analysis: {method}", file=sys.stderr, flush=True)
         view = analyze(app, window, method)
+        assert_manuscript_tables(view)
         for suffix in ('pdf', 'docx'):
             operation = f"{sample}-{suffix}"
             path = work / (sample + '.' + suffix)
@@ -269,7 +361,12 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 captions = [p.text for p in doc.paragraphs if p.text.startswith('Table ')]
                 assert captions and len(captions) == len(set(c.split('.')[0] for c in captions)), captions
                 if sample == 'amino':
-                    assert doc.tables[0].rows[0].cells[0].text == 'Statistic'
+                    assert doc.tables[0].rows[0].cells[0].text == 'Effect'
+                expected_tables = [table for supplementary in (False, True) for section in view.manuscript.sections
+                                   if (section.title == 'Supplementary details') == supplementary for table in section.tables]
+                assert len(doc.tables) == len(expected_tables)
+                for actual, expected_table in zip(doc.tables, expected_tables):
+                    assert tuple(tuple(cell.text for cell in row.cells) for row in actual.rows) == (expected_table.headers, *expected_table.rows)
                 assert len(doc.inline_shapes) >= len(view.results.images)
                 assert all(round(s.width / 36000) in (85, 180) for s in doc.inline_shapes)
                 text = '\n'.join(p.text for p in doc.paragraphs) + '\n' + '\n'.join(c.text for t in doc.tables for r in t.rows for c in r.cells)
@@ -295,17 +392,21 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
             normalized = ' '.join(unicodedata.normalize('NFKC', text).split())
             for prose in (view.manuscript.methods, view.manuscript.results):
                 assert ' '.join(unicodedata.normalize('NFKC', prose).split()) in normalized, (sample, suffix, prose, normalized)
-            assert view.manuscript_methods.toPlainText() == view.manuscript.methods
-            assert view.manuscript_results.toPlainText() == view.manuscript.results
+            assert view.manuscript.methods in view.manuscript_text.toPlainText()
+            assert view.manuscript.results in view.manuscript_text.toPlainText()
             assert all(value not in text for value in ('executed settings', 'Project:', '.rcms'))
             assert 'Supplementary details' in text
             assert text.index('Supplementary details') > text.rindex('Figure ')
             if sample == 'amino':
                 assert view.manuscript.title == 'clinical failure: random-effects meta-analysis (odds ratio)'
-                assert 'The pooled odds ratio was 0.770 (95% CI 0.485 to 1.222; p = 0.267).' in view.manuscript.results
-                assert view.manuscript.results == '19 studies were included (1097 participants in Intervention, 1080 in Control). The pooled odds ratio was 0.770 (95% CI 0.485 to 1.222; p = 0.267). Heterogeneity: Q = 33.360 (df = 18; p = 0.015), I² = 46.0%, τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.', view.manuscript.results
+                assert 'The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, p = .267).' in view.manuscript.results
+                assert view.manuscript.results == '19 studies were included (1097 participants in Intervention, 1080 in Control). The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, p = .267). The confidence interval includes 1, so these data do not show a clear difference between Intervention and Control. Heterogeneity: Q = 33.360, df = 18, p = .015. I² = 46.0%, which may represent moderate heterogeneity (Cochrane Handbook ranges). Between-study variance was τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.', view.manuscript.results
                 assert view.manuscript.methods == f"Odds ratios were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance. Confidence intervals (95%) used the normal approximation. A continuity correction of 0.5 was applied to studies with any zero cell. 2 studies with no events in either arm were retained with this correction. Heterogeneity was assessed with Cochran's Q and I². Analyses were performed in RC MetaStudio {__version__}. R packages loaded for this analysis: metafor 5.0.1, meta 8.5-0."
                 assert '-0.262' in normalized
+            if sample == 'continuous':
+                assert 'The pooled standardized mean difference was 0.358 (95% CI [0.152, 0.565], z = 3.400, p < .001).' in view.manuscript.results
+                assert 'The confidence interval excludes 0 and favours Control.' in view.manuscript.results
+                assert 'I² = 58.0%, which may represent moderate heterogeneity or substantial heterogeneity (Cochrane Handbook ranges).' in view.manuscript.results
             record('manuscript-export-' + sample + '-' + suffix, view, exported=str(path))
         (work / (sample + '-prose.txt')).write_text('Methods\n' + view.manuscript.methods + '\n\nResults\n' + view.manuscript.results, encoding='utf-8')
         item = view.nav_tree.findItems('Manuscript', __import__('PyQt6.QtCore', fromlist=['Qt']).Qt.MatchFlag.MatchExactly)[0]
@@ -348,6 +449,23 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
             gc.collect()
             app.processEvents()
 
+    window.workspace.mark_saved()
+    assert window.open(str(root / 'sample_projects/continuous.rcms'), raise_on_error=True)
+    window.model.current_sheet.settings['favours_labels'] = ['Favours Control', 'Favours Intervention']
+    window.action_swap_arms.trigger()
+    view = analyze(app, window, 'continuous.random')
+    assert_manuscript_tables(view)
+    expected_swap = 'The pooled standardized mean difference was -0.358 (95% CI [-0.565, -0.152], z = -3.400, p < .001).'
+    assert expected_swap in view.manuscript.results, view.manuscript.results
+    assert 'The confidence interval excludes 0 and favours Intervention.' in view.manuscript.results
+    assert view.results.manuscript_favours == ('Intervention', 'Control')
+    assert view.results.manuscript_arms == ('Control', 'Intervention')
+    for suffix in ('pdf', 'docx'):
+        path = work / ('continuous-swapped.' + suffix)
+        export_report(view, path, suffix)
+    record('manuscript-swapped', view, results=view.manuscript.results)
+    close_result(view)
+
     sys.path.insert(0, str(root / ".agents/skills/verify-rcms/scripts"))
     from tests.e2e.audit_round3 import analyze_existing
     for workflow in ('subgroup', 'meta-regression'):
@@ -363,21 +481,26 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         write_docx(view.manuscript, work / (workflow + '.docx'))
         write_pdf(view.manuscript, work / (workflow + '.pdf'))
         assert workflow.split('-')[0].lower() in view.manuscript.methods.lower()
+        assert_manuscript_tables(view)
         prose = view.manuscript.results
         if workflow == 'subgroup':
-            assert 'Subgroup A: estimate' in prose and 'Subgroup B: estimate' in prose
-            assert 'Between-group test:' in prose
+            assert 'For Subgroup A, the pooled odds ratio was' in prose and 'For Subgroup B, the pooled odds ratio was' in prose
+            assert 'For Subgroup B, the pooled odds ratio was 0.623174 (95% CI [0.270874, 1.433678], z = -1.112524, p = .266).' in prose
+            assert 'For Subgroup A, the pooled odds ratio was 0.826928 (95% CI [0.475570, 1.437876], z = -0.673290, p = .501).' in prose
+            assert 'Between-group test: Subgroup differences (Q) = 0.307358 (df = 1, p = .579).' in prose
         else:
-            assert 'coefficient' in prose and '95% CI' in prose and '; p = ' in prose, (prose, [(s.title, s.tables) for s in view.results.sections if s.kind == 'text'])
-            assert 'Residual heterogeneity:' in prose
-            assert any(t.title == 'Regression coefficients' for section in view.manuscript.sections for t in section.tables)
+            assert 'coefficient' in prose and '95% CI' in prose and ', p = ' in prose, (prose, [(s.title, s.tables) for s in view.results.sections if s.kind == 'text'])
+            assert 'For Intercept, the coefficient was -0.804625 (95% CI [-1.701427, 0.092177], z = -1.758512, p = .079).' in prose
+            assert 'For Dose, the coefficient was 0.062679 (95% CI [-0.026108, 0.151467], z = 1.383632, p = .166).' in prose
+            assert 'Residual Heterogeneity:' in prose
+            assert any(t.title == 'Pooled effect' for section in view.manuscript.sections for t in section.tables)
         exported = Document(work / (workflow + '.docx'))
         captions = [p.text for p in exported.paragraphs]
         assert any(p.startswith('Table ') for p in captions)
         if 'Supplementary details' in captions:
             assert captions.index('Supplementary details') > max(i for i, p in enumerate(captions) if p.startswith('Figure '))
         (work / (workflow + '-prose.txt')).write_text('Methods\n' + view.manuscript.methods + '\n\nResults\n' + view.manuscript.results, encoding='utf-8')
-        record('manuscript-' + workflow, view)
+        record('manuscript-' + workflow, view, results=prose)
         close_result(view)
 
     from PyQt6.QtCore import QTimer

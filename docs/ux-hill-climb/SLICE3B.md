@@ -147,3 +147,38 @@ An initial selected run exposed an overbroad new assertion applying merged label
 to calculation-scale tables, which are retained intact in Supplementary details;
 that assertion was corrected to require their ordered original rows. Its two
 failures and nine passes remain in `build/slice3b-review-fixes-pytest.log`.
+
+## Held-result presentation — 2 November 2026
+
+Manuscript, Copy, PDF and DOCX now share Pooled effect (one CI cell), Model fit
+(one plain label per value), and supplementary Study results tables. Tables and
+Text report use the same presentation cells; producer text and golden oracles
+remain unchanged. Estimates, intervals, SEs and test statistics retain their held
+precision. P-values alone use three decimals or `< .001`.
+
+Amino: “The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111,
+p = .267).” Subgroup B: “For Subgroup B, the pooled odds ratio was 0.623174
+(95% CI [0.270874, 1.433678], z = -1.112524, p = .266).” Interval descriptions
+use the displayed null and held sheet direction labels, including after Swap. I² descriptions preserve the
+[Cochrane Handbook’s overlapping ranges](https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-10)
+and use “may”; between-group tests carry no verdict.
+
+Copy assertions intentionally replace obsolete compound Summary labels and
+split-CI rows with complete presentation-row comparisons. E2E checks compare
+pooled cells, model-fit values and study rows with held fields, compare DOCX
+rows exactly, and check exact amino, continuous, subgroup, regression and swapped
+sentences. The Manuscript page uses one scrollable document with the same HTML, including
+supplementary notes; Copy Methods and Copy Results remain available. No package or statistical method was added.
+
+Final export evidence: `20261102T053854Z-c5443cfe-manuscript-export` and
+`20261102T054036Z-56a91e14-manuscript-export-direct` under
+`artifacts/verification/rcms/`. Strict golden compatibility passed in
+`build/qt6-verification/golden-compatibility-manuscript-final`. Results-window still
+fails its existing CSV-instructions visibility assertion; Windows-target ty
+reports the ten existing `winreg` diagnostics. Neither assertion nor oracle was
+loosened.
+
+Held-data boundary: regression bubble artifacts do not hold individual-study
+estimates/CIs on the displayed metric scale. Those Study results cells show `—`
+with an explanation; weights remain exact. Missing participant counts are marked
+unavailable. No interval or participant count is invented from printed text.

@@ -39,109 +39,194 @@ def methods_prose(metric, model, parameters, confidence, workflow, details, fits
     elif inference:
         parts.append(f"Confidence intervals ({float(confidence):g}%) used {parameter_value_display_label('inference.method', inference)}.")
     parts.extend(_workflow_prose(workflow, parameters, details))
+    if workflow == 'meta-regression' and metric in ('odds ratio', 'risk ratio', 'hazard ratio', 'incidence rate ratio'):
+        parts.append('Regression coefficients and their confidence intervals are on the log scale.')
     if any('reitsma' in method.lower() for _, method, _ in fits):
         parts.append('Sensitivity and specificity were jointly modeled using the Reitsma bivariate model.')
     return ' '.join(parts)
 
 
-def _statistic_summary(table, summary):
-    statistics = dict(table.rows)
-    estimate = statistics.get('Estimate')
-    lower = next((v for k,v in table.rows if k.startswith('Lower bound')), None)
-    upper = next((v for k,v in table.rows if k.startswith('Upper bound')), None)
-    if estimate and lower and upper:
-        interval = next(k.partition('(')[2].rstrip(') ').strip() for k,v in table.rows if k.startswith('Lower bound'))
-        summary.append(f"{table.title} was {estimate} ({interval} {lower} to {upper}).")
+def p_value(value):
+    """Presentation only: the producer's held p-value or bound is authoritative."""
+    if not value or value in ("NA", "—"):
+        return "—"
+    if value.strip().startswith("<"):
+        bound = float(value.strip().removeprefix("<").strip())
+        return "< .001" if bound <= .001 else "< " + f"{bound:.3f}".removeprefix("0")
+    if float(value) < .001:
+        return "< .001"
+    return f"{float(value):.3f}".removeprefix("0")
 
 
-def _regression_summary(table, summary):
-    values = {}
-    for row in table.rows:
-        values = dict(zip(table.headers, row))
-        lower = next((v for k, v in values.items() if k.startswith('Lower bound')), None)
-        upper = next((v for k, v in values.items() if k.startswith('Upper bound')), None)
-        level = next((k.partition('(')[2].rstrip(')') for k in values if k.startswith('Lower bound (')), 'CI')
-        interval = f" ({level} {lower} to {upper})" if lower is not None and upper is not None else ''
-        p = f"; p = {values['p-value']}" if 'p-value' in values else ''
-        summary.append(f"{values['Term']}: coefficient {values['Estimate']}{interval}{p}.")
-
-    return values
+def _p_clause(value):
+    return "p " + (value if value.startswith("<") else "= " + value)
 
 
-def _subgroup_summary(table, summary):
-    for row in table.rows:
-        cells = dict(zip(table.headers, row))
-        lower = next((v for k, v in cells.items() if k.startswith('Lower bound')), None)
-        upper = next((v for k, v in cells.items() if k.startswith('Upper bound')), None)
-        if lower is not None and upper is not None:
-            level = next(k.partition("(")[2].rstrip(")") for k in cells if k.startswith("Lower bound"))
-            summary.append(f"{cells['Subgroups']}: estimate {cells['Estimate']} ({level} {lower} to {upper}).")
+def _interval_fields(headers):
+    lower = next((h for h in headers if h.startswith("Lower bound")), None)
+    upper = next((h for h in headers if h.startswith("Upper bound")), None)
+    level = lower.partition("(")[2].removesuffix(")").strip() if lower else "95% CI"
+    return lower, upper, level or "95% CI"
 
 
-def _pooled_summary(table, result, values, summary):
-    lower = next((v for k,v in values.items() if k.startswith('Lower bound')), None)
-    upper = next((v for k,v in values.items() if k.startswith('Upper bound')), None)
-    level = next((k.split('(')[1].rstrip(')') for k in values if k.startswith('Lower bound (')), '95% CI')
-    metric = result.manuscript_title.rsplit('(', 1)[-1].rstrip(')')
-    if lower is not None and upper is not None:
-        p = '; p = ' + values['p-value'] if 'p-value' in values else ''
-        summary.append(f"The pooled {metric} was {values['Estimate']} ({level} {lower} to {upper}{p}).")
+def _interval_meaning(lower, upper, metric, arms, favours, *, coefficient=False):
+    if not lower or not upper or lower == "NA" or upper == "NA":
+        return ""
+    ratio = metric in ("odds ratio", "risk ratio", "hazard ratio", "incidence rate ratio") and not coefficient
+    if not coefficient and not ratio and metric not in ("mean difference", "standardized mean difference", "risk difference"):
+        return ""
+    null = 1 if ratio else 0
+    lo, hi = float(lower), float(upper)
+    if lo <= null <= hi:
+        comparison = f" between {arms[0]} and {arms[1]}" if len(arms) == 2 and not coefficient else " from zero" if coefficient else ""
+        return f"The confidence interval includes {null}, so these data do not show a clear difference{comparison}."
+    if coefficient:
+        return f"The confidence interval is entirely {'above' if lo > 0 else 'below'} 0."
+    if len(arms) == 2 and len(favours) == 2:
+        favoured = favours[0] if hi < null else favours[1]
+        if favoured in arms:
+            return f"The confidence interval excludes {null} and favours {favoured}."
+    return f"The confidence interval excludes {null}."
 
 
-def _heterogeneity_summary(table, values, summary):
-    if table.title.endswith('Heterogeneity') and 'Q' in values:
-        summary.append(f"Heterogeneity: Q = {values['Q']} (df = {values.get('df', '')}; p = {values.get('p-value', '')}), I² = {values.get('I²', '')}" + (f", τ² = {values['τ²']}" if 'τ²' in values else '') + '.')
-    elif table.title.endswith('Prediction interval') and len(table.rows) == 1:
-        row = table.rows[0]
-        level = table.headers[0].partition('(')[2].removesuffix(')').replace(' PI', '')
-        summary.append(f"The {level} prediction interval was {row[0]} to {row[1]}.")
-
-
-def _collect_table_summary(table, section, result, summary, merged):
-    values = dict(zip(table.headers, table.rows[0])) if len(table.rows) == 1 else {}
-    if table.headers == ('Statistic', 'Value'):
-        _statistic_summary(table, summary)
-    elif len(table.rows) > 1 and 'Estimate' in table.headers and 'Term' in table.headers:
-        values = _regression_summary(table, summary)
-    if 'Subgroups' in table.headers and 'Estimate' in table.headers:
-        _subgroup_summary(table, summary)
-    _context_summary(table, section, values, summary, merged)
-    if table.title.endswith('Model Results') and 'Estimate' in values and not any('reitsma' in t.lower() for t in result.texts):
-        _pooled_summary(table, result, values, summary)
-    else:
-        _heterogeneity_summary(table, values, summary)
-
-
-def _context_summary(table, section, values, summary, merged):
-    if table.title == 'Test of subgroup differences' and values:
-        summary.append(f"Between-group test: {values['Test']} = {values['Statistic']} (df = {values['df']}; p = {values['p-value']}).")
-    if table.title == 'Residual heterogeneity' and values:
-        summary.append('Residual heterogeneity: ' + ', '.join(f'{key} = {value}' for key, value in values.items()) + '.')
-    if section.title == 'Summary' and values:
-        merged.extend((table.title + ': ' + header, value) for header, value in values.items())
+def _heterogeneity_sentence(values, prefix=""):
+    parts = []
+    if "Q" in values:
+        test = f"Q = {values['Q']}"
+        if "df" in values:
+            test += f", df = {values['df']}"
+        if "p-value" in values:
+            test += ", " + _p_clause(p_value(values['p-value']))
+        parts.append(prefix + "Heterogeneity: " + test + ".")
+    if values.get('I²') and values['I²'] not in ("NA", "NaN"):
+        value = values['I²']
+        number = float(value.rstrip('%'))
+        descriptions = []
+        if number <= 40:
+            descriptions.append("heterogeneity that might not be important")
+        for low, high, label in ((30, 60, "moderate"), (50, 90, "substantial"), (75, 100, "considerable")):
+            if low <= number <= high:
+                descriptions.append(label + " heterogeneity")
+        parts.append(prefix + f"I² = {value}, which may represent " + " or ".join(descriptions) + " (Cochrane Handbook ranges).")
+    if 'τ²' in values:
+        parts.append(prefix + f"Between-study variance was τ² = {values['τ²']}.")
+    return parts
 
 
 def _report_sections(result, summary):
     from dataclasses import replace
     from rc_metastudio.analysis_results import ResultTable
-    sections, supplementary, merged = [], [], []
-    for section in result.sections:
-        if section.kind != 'text':
-            continue
-        main = []
-        values = {}
-        for table in section.tables:
-            if table.title.startswith('Calculation scale') or section.source_key == 'Weights':
+    text_sections = [section for section in result.sections if section.kind == 'text']
+    if not text_sections:
+        return [], []
+    pooled, fit, supplementary, extra = [], list(result.manuscript_model_info), [], []
+    metric = result.manuscript_metric or 'effect'
+    level, statistic = '95% CI', 'z'
+    for section in text_sections:
+        overall = next((dict(zip(t.headers, t.rows[0])) for t in section.tables
+                        if len(t.rows) == 1 and ('Z' in t.headers or 't' in t.headers)), {})
+        calculation = next((dict(zip(t.headers, t.rows[0])) for t in section.tables
+                            if t.title.startswith('Calculation scale') and t.rows), {})
+        for source in section.tables:
+            table = source
+            vertical = table.headers == ('Statistic', 'Value') and 'Estimate' in {row[0]: row[1] for row in table.rows}
+            if vertical:
+                values = {row[0]: row[1] for row in table.rows}
+                table = ResultTable(table.title, tuple(values), (tuple(values.values()),))
+            if table.title.startswith('Calculation scale'):
                 supplementary.append(replace(section, title='Supplementary details', paragraphs=(), tables=(table,)))
                 continue
-            main.append(table)
-            _collect_table_summary(table, section, result, summary, merged)
-        if main and (section.title != 'Summary' or any(t.title == 'Regression coefficients' for t in main)):
-            sections.append(replace(section, paragraphs=(), tables=tuple(main)))
-    if merged:
-        original = next(s for s in result.sections if s.title == 'Summary')
-        sections.insert(0, replace(original, title='Summary', paragraphs=(), tables=(ResultTable('Summary', ('Statistic', 'Value'), tuple(merged)),)))
-    return sections, supplementary
+            if section.source_key == 'Weights' or table.title == 'Study weights':
+                rows = tuple((row[0], row[1], row[2] + ' to ' + row[3], row[4]) if len(row) == 5 else (row[0], '—', '—', row[1]) for row in table.rows)
+                supplementary.append(replace(section, title='Supplementary details',
+                    paragraphs=(() if all(len(row) == 5 for row in table.rows) else ('Study estimates and intervals on the displayed metric scale were not held for this analysis; only study weights are available.',)),
+                    tables=(ResultTable('Study results', ('Study', 'Effect', level, 'Weight'), rows),)))
+                continue
+            lower, upper, ci_level = _interval_fields(table.headers)
+            if lower and upper and ci_level.endswith(' PI'):
+                for row in table.rows:
+                    values = dict(zip(table.headers, row))
+                    context = values.get('Subgroups', table.title if vertical else '')
+                    interval = values[lower] + ' to ' + values[upper]
+                    fit.append((ci_level.replace(' PI', '') + ' prediction interval' + (' (' + context + ')' if context else ''), interval))
+                    summary.append((context + ': ' if context else '') + f"The {ci_level.replace(' PI', '')} prediction interval was {interval}.")
+                continue
+            if 'Estimate' in table.headers and lower and upper:
+                level = ci_level
+                coefficient = table.title == 'Regression coefficients'
+                for row in table.rows:
+                    values = dict(zip(table.headers, row))
+                    if not values.get('Estimate'):
+                        continue
+                    if 'k' in values and 'Subgroups' in values:
+                        fit.append(('Studies (k) (' + values['Subgroups'] + ')', values['k']))
+                    effect_metric = table.title.lower() if vertical else section.title.removesuffix(' Summary').lower() if ',' in metric else metric
+                    effect = values.get('Term', values.get('Subgroups', table.title if vertical else effect_metric))
+                    stat = next((key for key in ('t', 'z', 'Z', 'z-value', 't-value') if key in values or key in overall), None)
+                    statistic = 't' if stat in ('t', 't-value') else 'z'
+                    se = next((v for h, v in {**calculation, **values}.items() if h.startswith('SE')), '—')
+                    test = values.get(stat, overall.get(stat, '—')) if stat else '—'
+                    p = p_value(values.get('p-value', overall.get('p-value', '')))
+                    pooled.append((effect, values['Estimate'], values[lower] + ' to ' + values[upper], se, test, p))
+                    lead = f"For {effect}, the coefficient" if coefficient else f"For {effect}, the pooled {effect_metric}" if 'Subgroups' in values or 'Term' in values else f"The pooled {effect_metric}"
+                    inference = (f", {statistic} = {test}" if test != '—' else '') + (', ' + _p_clause(p) if p != '—' else '')
+                    summary.append(f"{lead} was {values['Estimate']} ({level} [{values[lower]}, {values[upper]}]{inference}).")
+                    meaning = _interval_meaning(values[lower], values[upper], effect_metric, result.manuscript_arms, result.manuscript_favours, coefficient=coefficient)
+                    if meaning:
+                        summary.append(meaning)
+                continue
+            if table.title.endswith('Heterogeneity') or table.title == 'Residual heterogeneity':
+                for row in table.rows:
+                    values = dict(zip(table.headers, row))
+                    prefix = values.get('Subgroups', '')
+                    prefix = prefix + ': ' if prefix else 'Residual ' if table.title == 'Residual heterogeneity' else ''
+                    summary.extend(_heterogeneity_sentence(values, prefix))
+                    labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity p', 'I²': 'I²', 'τ²': 'Between-study variance (τ²)'}
+                    fit.extend((labels[h] + (' (' + values['Subgroups'] + ')' if 'Subgroups' in values else ''), p_value(v) if h == 'p-value' else v) for h, v in values.items() if h in labels)
+                continue
+            if table.title.endswith('Prediction interval') and len(table.rows) == 1:
+                row = table.rows[0]
+                pi_level = table.headers[0].partition('(')[2].removesuffix(')') or '95% PI'
+                fit.append((pi_level.replace(' PI', '') + ' prediction interval', row[0] + ' to ' + row[1]))
+                summary.append(f"The {pi_level.replace(' PI', '')} prediction interval was {row[0]} to {row[1]}.")
+                continue
+            if table.title == 'Test of subgroup differences' and table.rows:
+                values = dict(zip(table.headers, table.rows[0]))
+                summary.append(f"Between-group test: {values['Test']} = {values['Statistic']} (df = {values['df']}, {_p_clause(p_value(values['p-value']))}).")
+                fit.extend((label, p_value(values[key]) if key == 'p-value' else values[key])
+                           for key, label in (("Test", "Between-group test"), ("Statistic", "Between-group statistic"), ("df", "Between-group degrees of freedom"), ("p-value", "Between-group p")))
+                continue
+            if table.title in ('Model overview', 'Residual model fit') and table.headers == ('Statistic', 'Value'):
+                fit.extend(table.rows)
+                values = {row[0]: row[1] for row in table.rows}
+                if 'Residual I²' in values:
+                    summary.extend(_heterogeneity_sentence({'I²': values['Residual I²']}, 'Residual '))
+                continue
+            if table.title == 'Model tests':
+                for row in table.rows:
+                    values = dict(zip(table.headers, row))
+                    name = values['Test']
+                    fit.extend((label + ' (' + name + ')', p_value(values[key]) if key == 'p-value' else values[key])
+                               for key, label in (('Statistic', 'Test statistic'), ('df', 'Test degrees of freedom'), ('p-value', 'Test p')))
+                continue
+            if table.title == 'Model specification':
+                supplementary.append(replace(section, title='Supplementary details', paragraphs=(), tables=(table,)))
+                continue
+            if table.rows and ('Z' in table.headers or 't' in table.headers) and 'Estimate' not in table.headers:
+                continue
+            extra.append(replace(section, paragraphs=(), tables=(table,)))
+    sections = []
+    if pooled:
+        sections.append(replace(text_sections[0], title='Pooled effect', paragraphs=(),
+            tables=(ResultTable('Pooled effect', ('Effect', 'Estimate', level, 'SE', statistic, 'p'), tuple(pooled)),)))
+    if fit:
+        sections.append(replace(text_sections[0], title='Model fit', paragraphs=(),
+            tables=(ResultTable('Model fit', ('Statistic', 'Value'), tuple(fit)),)))
+    def formatted(section):
+        tables = tuple(replace(table, rows=tuple(tuple(p_value(cell) if 'p-value' in header.lower() else cell
+                           for header, cell in zip(table.headers, row)) for row in table.rows)) for table in section.tables)
+        return replace(section, tables=tables)
+    return [formatted(section) for section in sections + extra], [formatted(section) for section in supplementary]
 
 
 def _report_methods(result):
@@ -217,6 +302,10 @@ class ManuscriptReport:
                 parts.append(f'<h2>{heading}</h2><p>{escape(text)}</p>')
         if supplementary:
             parts = []
+        return ''.join(parts) + self.tables_html(supplementary)
+
+    def tables_html(self, supplementary=False):
+        parts = []
         table_number = sum(len(section.tables) for section in self.sections
                            if section.title != "Supplementary details") if supplementary else 0
         for number, section in enumerate(self.sections, 1):

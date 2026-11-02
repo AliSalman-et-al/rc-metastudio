@@ -96,6 +96,10 @@ class AnalysisResult:
     manuscript_title: str = ""
     manuscript_methods: str = ""
     manuscript_comparison: str = ""
+    manuscript_metric: str = ""
+    manuscript_arms: tuple[str, ...] = ()
+    manuscript_favours: tuple[str, ...] = ()
+    manuscript_model_info: tuple[tuple[str, str], ...] = ()
 
 def _sections(
     texts: Mapping[str, str],
