@@ -693,8 +693,14 @@ def run(app, window, work, record, scenario):
         for path in view.results.display_images.values():
             svg = ET.parse(path)
             captions = ["".join(node.itertext()) for node in svg.iter("{http://www.w3.org/2000/svg}text")]
-            ticks = {caption for caption in captions if re.fullmatch(r"[-+\d.]+e[-+]\d+", caption)}
-            assert len(ticks) >= 2, ticks
+            numeric = [node for node in svg.iter("{http://www.w3.org/2000/svg}text")
+                       if node.attrib.get("text-anchor") == "middle"
+                       and re.fullmatch(r"[-+\d.]+(?:e[-+]\d+)?", "".join(node.itertext()))]
+            axis_y = max(float(node.attrib["y"]) for node in numeric)
+            axis = [node for node in numeric if abs(float(node.attrib["y"]) - axis_y) < .01]
+            ticks = {float("".join(node.itertext())) for node in axis}
+            assert len(ticks) >= 2 and len(ticks) == len(axis), (ticks, axis)
+            assert all(value != 0 and math.isfinite(value) for value in ticks), ticks
             width = float(svg.getroot().attrib["width"].removesuffix("pt"))
             intervals = [node.attrib for node in svg.iter("{http://www.w3.org/2000/svg}line")
                          if abs(float(node.attrib["y1"]) - float(node.attrib["y2"])) < .01
