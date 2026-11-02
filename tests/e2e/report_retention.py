@@ -224,7 +224,7 @@ def expected_effect_values(values, headers, low, high, metric, vertical, title, 
         label = row.get('Term', row.get('Subgroups', context))
         statistic = next((row.get(h, overall.get(h)) for h in ('t', 'z', 'Z', 'z-value', 't-value') if h in row or h in overall), '—')
         se = next((value for key, value in {**calculation, **row}.items() if key.startswith('SE')), '—')
-        rows.append((label, row['Estimate'], row[low] + ' to ' + row[high], se, statistic, expected_p(row.get('p-value', overall.get('p-value', '')))))
+        rows.append((label[:1].upper() + label[1:], row['Estimate'], row[low] + ' to ' + row[high], se, statistic, expected_p(row.get('p-value', overall.get('p-value', '')))))
     return rows
 
 
@@ -335,10 +335,16 @@ def assert_report(view):
                                     if s.kind == 'text' and (s.title in ('Pooled comparison', 'Extrapolation') or s.title.startswith('Trim-and-fill')))
     assert fit.headers == ('Statistic', 'Value')
     row_label = 'Fit' if any('leave-one-out' in s.title.casefold() for s in view.results.sections) else 'Study'
-    assert studies.headers[:2] == ('Analysis', row_label)
-    assert studies.headers[2:] == (('Weight',) if studies.rows and len(studies.rows[0]) == 3 else ('Effect', pooled.headers[2] if structured else '95% CI', 'Weight'))
+    expected = expected_studies(view.results)
+    headers = ('Analysis', row_label, 'Effect', pooled.headers[2] if structured else '95% CI', 'Weight')
+    if expected and len(expected[0]) == 3:
+        headers = ('Analysis', row_label, 'Weight')
+    if len({row[0] for row in expected}) == 1:
+        headers = headers[1:]
+        expected = tuple(row[1:] for row in expected)
+    assert studies.headers == headers
     assert fit.rows == presentation_rows(expected_fit(view.results), view.results.manuscript_digits), (fit.rows, expected_fit(view.results))
-    assert studies.rows == presentation_rows(expected_studies(view.results), view.results.manuscript_digits)
+    assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
     for section in view.results.sections:
         for source in section.tables:
             title = source.title if section.title == source.title else section.title + ' — ' + source.title

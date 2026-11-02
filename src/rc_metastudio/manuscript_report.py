@@ -153,6 +153,9 @@ def _study_results(result, template, level):
     if rows and all(row[2:4] == ('—', '—') for row in rows):
         headers = ('Analysis', row_label, 'Weight')
         rows = [(row[0], row[1], row[4]) for row in rows]
+    if len({row[0] for row in rows}) == 1:
+        headers = headers[1:]
+        rows = [row[1:] for row in rows]
     paragraphs = () if rows else ('No study-level estimates or weights are available for this workflow.',)
     return replace(template, title='Study results', paragraphs=paragraphs,
                    tables=(ResultTable('Study results', headers, tuple(rows)),))
@@ -230,7 +233,7 @@ def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overa
         context = next((values[h] for h in table.headers if h.startswith(('Study added', 'Study omitted'))), table.title if vertical else effect_metric)
         effect = values.get('Term', values.get('Subgroups', context))
         statistic, se, test, p = _pooled_statistics(values, overall, calculation)
-        pooled.append((effect, values['Estimate'], values[lower] + ' to ' + values[upper], se, test, p))
+        pooled.append((effect[:1].upper() + effect[1:], values['Estimate'], values[lower] + ' to ' + values[upper], se, test, p))
         _pooled_prose(result, values, effect, effect_metric, coefficient, statistic, test, p, level, lower, upper, summary)
     return level, statistic
 
@@ -401,7 +404,7 @@ def _table_html(table, table_number):
         border = 'border-top: 1px solid black;' if index == 0 else ''
         if index == len(table.rows):
             border += 'border-bottom: 1px solid black;'
-        parts.append('<tr>' + ''.join(f'<{tag} style="white-space:pre-wrap; {border}">' + escape(c).replace('\n', '<br>') + f'</{tag}>' for c in row) + '</tr>')
+        parts.append('<tr>' + ''.join(f'<{tag} align="left" style="text-align:left; white-space:pre-wrap; {border}">' + escape(c).replace('\n', '<br>') + f'</{tag}>' for c in row) + '</tr>')
     parts.append('</table>')
     return ''.join(parts)
 
@@ -525,6 +528,9 @@ def _docx_table(document, table):
     for row, values in zip([target.rows[0], *[target.add_row() for _ in table.rows]], (table.headers, *table.rows)):
         for cell, value in zip(row.cells, values):
             cell.text = value
+            from docx.enum.text import WD_ALIGN_PARAGRAPH
+            for paragraph in cell.paragraphs:
+                paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
 
 
 def _docx_sections(document, report, supplementary, table_number):

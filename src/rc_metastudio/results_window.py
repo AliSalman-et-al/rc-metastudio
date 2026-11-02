@@ -424,6 +424,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             actions.addAction(action)
         layout.addWidget(actions)
         self.manuscript_text = QTextBrowser(self.manuscript_page)
+        self.manuscript_text.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.manuscript_text.setAccessibleName("Manuscript")
         self.manuscript_text.setHtml(self.manuscript.html() + self.manuscript.html(supplementary=True))
         layout.addWidget(self.manuscript_text)
