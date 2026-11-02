@@ -179,7 +179,9 @@ def run(app, window, work, root, record, analyze):
     view.report_action.trigger()
     assert view.nav_tree.currentItem().text(0) == 'Text report'
     report = view.report_text.toPlainText()
-    assert report.index('Pooled ') < report.index('Heterogeneity') < report.index('Test for overall effect') < report.index('Prediction interval') < report.index('Model configuration')
+    from tests.e2e.report_retention import assert_report
+    assert_report(view)
+    assert report.index('Pooled effect') < report.index('Model fit') < report.index('Study results') < report.index('Model configuration')
     assert 'Inference Method' not in report
     assert 'Confidence level: 95%' in report and '95.0%' not in report
     assert 'Test for overall effect (H' not in report

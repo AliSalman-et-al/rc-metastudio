@@ -21,6 +21,17 @@ effort evidence with QAction activations; native menu traversal and human timing
 remain unmeasured. `manuscript-export` verifies PDF/DOCX report export for amino, continuous and
 diagnostic results; hillclimb T5 completes with both manuscript formats.
 
+Shared report observers compare the complete rows of Pooled effect, Model fit and
+Study results with held inputs, including sequential fit identities and diagnostic
+metric labels. Every original table is also retained, unchanged and labelled by
+source section, in Supplementary details. Structured notes are retained verbatim.
+Unstructured small-study output is
+retained line by line; its model comparisons remain distinct from individual study
+results. Copy HTML/plain text, DOCX tables and ordered PDF table contents are checked
+against the same complete rows. `scripts/audit_report_retention.py` captures real
+results and writes per-surface before/after loss inventories; each observed report
+also retains its inputs and exports under the workflow's `report-retention/` folder.
+
 ## Proof conventions
 
 Pair a user action with its observed result and independent side effect. Menu and toolbar items sharing a QAction are separate entry points when a change touches their reachability. The automated scenarios use the handles documented in each feature; do not claim an unexercised shortcut or native picker is covered.

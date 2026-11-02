@@ -45,6 +45,9 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 prepare_generated_ui_imports()
 
 from rc_metastudio import analysis_setup_dialog, automation, results_window, settings
+if os.environ.get('RCMS_REPORT_AUDIT_DIR'):
+    from tests.e2e.report_retention import install_capture
+    install_capture(os.environ['RCMS_REPORT_AUDIT_DIR'])
 from tests.analysis_regression.golden.support.golden_analysis import (
     parsed_numeric_sections,
 )
@@ -454,8 +457,8 @@ def sample_analysis(app, window, sample):
     app.processEvents()
     assert view.report_text.isVisible()
     rendered_text = view.report_text.toPlainText()
-    for row in summary_section.tables[0].rows:
-        assert all(cell in rendered_text for cell in row), (row, rendered_text)
+    from tests.e2e.report_retention import assert_report
+    assert_report(view)
     record_step(
         "numerical-oracle",
         view,

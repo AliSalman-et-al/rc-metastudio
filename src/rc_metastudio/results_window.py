@@ -1494,7 +1494,7 @@ def _report_table_html(table, section_heading: str, suppress_title=False) -> str
     body = [] if suppress_title or table.title == section_heading else [f"<h3>{escape(_report_heading(table.title))}</h3>"]
     body.append("<table cellpadding='7' cellspacing='0'>")
     body.append("<tr>" + "".join(f"<th align='{align[index]}'>{escape(header)}</th>" for index, header in enumerate(headers)) + "</tr>")
-    body.extend("<tr>" + "".join(f"<td align='{align[index]}'>{escape(cell)}</td>" for index, cell in enumerate(row)) + "</tr>" for row in rows)
+    body.extend("<tr>" + "".join(f"<td align='{align[index]}' style='white-space:pre-wrap;'>" + escape(cell).replace('\n', '<br>') + "</td>" for index, cell in enumerate(row)) + "</tr>" for row in rows)
     body.append("</table>")
     return "".join(body)
 

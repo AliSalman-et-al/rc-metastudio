@@ -54,14 +54,6 @@ def check_report(app, view, work, record):
     copied = app.clipboard().text()
     assert copied.startswith(view.manuscript.title + "\n"), copied
     assert view.manuscript.methods in copied and view.manuscript.results in copied
-    cursor = 0
-    for section in view.manuscript.sections:
-        for table in section.tables:
-            for row in (table.headers, *table.rows):
-                joined = "\t".join(row)
-                position = copied.find(joined, cursor)
-                assert position >= cursor, (table.title, row, copied)
-                cursor = position + len(joined)
     from tests.e2e.manuscript_export import assert_manuscript_tables
     assert_manuscript_tables(view)
 
@@ -214,8 +206,9 @@ def check_standard_heterogeneity(view, record):
                 assert abs(float(cell.rstrip("%"))-expected[key]) <= (.05001 if key == "I2" else 5.01e-7), (cell, expected)
         if expected["data_type"] in {"binary", "continuous"}:
             weights = next(t for section in view.results.sections for t in section.tables if t.title == "Study weights")
-            assert weights.headers == ("Study", "Weight (%)"), weights
-            assert len(weights.rows) > 0 and all(row[1].endswith("%") for row in weights.rows), weights
+            assert weights.headers == ("Study", "Effect", "Lower bound", "Upper bound", "Weight (%)"), weights
+            assert weights.rows and all(len(row) == 5 and row[0] and row[4].endswith("%") for row in weights.rows), weights
+            assert all(float(row[2]) <= float(row[1]) <= float(row[3]) for row in weights.rows), weights
         assert "Pooled " in view.report_text.toPlainText(), view.report_text.toPlainText()
         assert "Calculation scale: log - estimate" not in view.report_text.toPlainText()
         record("round3-standard-heterogeneity-public-reference", view, expected=expected,
@@ -556,7 +549,9 @@ def run(app, window, work, record, scenario):
                             nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
                             expected_null = {"PLN": "proportion = 1", "PLO": "proportion = 0.5", "PAS": "proportion = 0", "PFT": "Freeman–Tukey transformed proportion = 0"}[metric]
                             assert any("H₀: " + expected_null in "".join(node.itertext()) for node in nodes), (metric, ["".join(node.itertext()) for node in nodes])
-                            assert "Pooled Proportion:" in view.report_text.toPlainText()
+                            from tests.e2e.report_retention import assert_report
+                            pooled, _fit = assert_report(view)
+                            assert len(pooled.rows) == 1 and pooled.rows[0][0] == 'proportion'
                             last_study_y = max(float(node.attrib["y"]) for node in nodes if "".join(node.itertext()).startswith("Fixture "))
                             axis_labels = ["".join(node.itertext()) for node in nodes if float(node.attrib["y"]) > last_study_y]
                             assert any(label.startswith("Proportion") for label in axis_labels), (metric, axis_labels)

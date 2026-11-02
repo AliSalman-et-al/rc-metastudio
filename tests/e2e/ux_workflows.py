@@ -184,10 +184,8 @@ def run(app, window, work, root, record, analyze):
     key_click(view.report_text, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.ShiftModifier)
     copied_report = app.clipboard().text()
     assert copied_report.startswith(view.manuscript.title + "\n")
-    for section in view.manuscript.sections:
-        for table in section.tables:
-            for row in (table.headers, *table.rows):
-                assert "\t".join(row) in copied_report, (table.title, row)
+    from tests.e2e.report_retention import assert_report
+    assert_report(view)
     view.copy_report_action.trigger()
     assert app.clipboard().text() == copied_report
     report_path = work / "analysis.pdf"
@@ -296,7 +294,9 @@ def run(app, window, work, root, record, analyze):
                 # Windows R calls can dispatch this callback while saved plot
                 # parameters load, before the editor exists. Prove that turn
                 # cannot consume the only attempt to operate the dialog.
-                wait(30)
+                deadline = QtCore.QDeadlineTimer(5000)
+                while not (waiting_callbacks or editor_errors or editor_driven or deadline.hasExpired()):
+                    wait(10)
                 assert waiting_callbacks
                 edited.edit_plot_action.trigger()
             finally:

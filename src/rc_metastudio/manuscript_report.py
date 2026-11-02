@@ -1,6 +1,7 @@
 """Manuscript content taken exclusively from an executed result."""
 from rc_metastudio.runtime_types import required
 from dataclasses import dataclass, replace
+from decimal import Decimal
 from rc_metastudio.analysis_results import ResultTable
 from html import escape
 import io
@@ -52,11 +53,14 @@ def p_value(value):
     if not value or value in ("NA", "—"):
         return "—"
     if value.strip().startswith("<"):
-        bound = float(value.strip().removeprefix("<").strip())
-        return "< .001" if bound <= .001 else "< " + f"{bound:.3f}".removeprefix("0")
-    if float(value) < .001:
+        bound = Decimal(value.strip().removeprefix("<").strip())
+        return "< .001" if bound <= Decimal('.001') else "< " + f"{bound:.3f}".removeprefix("0")
+    number = Decimal(value)
+    if not number.is_finite():
+        return f"{float(value):.3f}"
+    if number < Decimal('.001'):
         return "< .001"
-    return f"{float(value):.3f}".removeprefix("0")
+    return f"{number:.3f}".removeprefix("0")
 
 
 def _p_clause(value):
@@ -127,12 +131,46 @@ def _heterogeneity_sentence(values, prefix=""):
 
 
 
-def _study_results(section, table, level, supplementary):
-    rows = tuple((row[0], row[1], row[2] + ' to ' + row[3], row[4]) if len(row) == 5 else (row[0], '—', '—', row[1]) for row in table.rows)
-    supplementary.append(replace(section, title='Supplementary details',
-        paragraphs=(() if all(len(row) == 5 for row in table.rows) else ('Study estimates and intervals on the displayed metric scale were not held for this analysis; only study weights are available.',)),
-        tables=(ResultTable('Study results', ('Study', 'Effect', level, 'Weight'), rows),)))
+def _study_inputs(result):
+    for section in result.sections:
+        for table in section.tables:
+            if table.title == 'Study weights':
+                yield section, table
 
+
+def _study_results(result, template, level):
+    rows = []
+    for section, table in _study_inputs(result):
+        analysis = section.title.removesuffix(' Summary')
+        if section.source_key == 'Weights':
+            analysis = result.manuscript_metric or section.title
+        for row in table.rows:
+            values = (row[0], row[1], row[2] + ' to ' + row[3], row[4]) if len(row) == 5 else (row[0], '—', '—', row[1])
+            rows.append((analysis, *values))
+    row_label = 'Fit' if any('leave-one-out' in s.title.casefold() for s in result.sections) else 'Study'
+    headers = ('Analysis', row_label, 'Effect', level, 'Weight')
+    if rows and all(row[2:4] == ('—', '—') for row in rows):
+        headers = ('Analysis', row_label, 'Weight')
+        rows = [(row[0], row[1], row[4]) for row in rows]
+    paragraphs = () if rows else ('No study-level estimates or weights are held for this workflow.',)
+    return replace(template, title='Study results', paragraphs=paragraphs,
+                   tables=(ResultTable('Study results', headers, tuple(rows)),))
+
+
+def _held_sections(result):
+    sections = []
+    for section in result.sections:
+        if section.kind != 'text':
+            continue
+        tables = tuple(replace(table, title=table.title if section.title == table.title else section.title + ' — ' + table.title) for table in section.tables)
+        if section.tables and section.paragraphs:
+            tables += (ResultTable(section.title + ' — Held notes', ('Held note',),
+                                   tuple((paragraph,) for paragraph in section.paragraphs)),)
+        if not tables and section.value:
+            tables = (ResultTable(section.title + ' — Held output', ('Held output',),
+                                  tuple((line,) for line in section.value.splitlines())),)
+        sections.append(replace(section, title='Supplementary details', value='', paragraphs=(), tables=tables))
+    return sections
 
 
 def _prediction_rows(table, lower, upper, ci_level, vertical, fit, summary):
@@ -175,7 +213,10 @@ def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overa
         if 'k' in values and 'Subgroups' in values:
             fit.append(('Studies (k) (' + values['Subgroups'] + ')', values['k']))
         effect_metric = table.title.lower() if vertical else section.title.removesuffix(' Summary').lower() if ',' in metric else metric
-        effect = values.get('Term', values.get('Subgroups', table.title if vertical else effect_metric))
+        if not coefficient and effect_metric.endswith('transformed proportion'):
+            effect_metric = 'proportion'
+        context = next((values[h] for h in table.headers if h.startswith(('Study added', 'Study omitted'))), table.title if vertical else effect_metric)
+        effect = values.get('Term', values.get('Subgroups', context))
         statistic, se, test, p = _pooled_statistics(values, overall, calculation)
         pooled.append((effect, values['Estimate'], values[lower] + ' to ' + values[upper], se, test, p))
         _pooled_prose(result, values, effect, effect_metric, coefficient, statistic, test, p, level, lower, upper, summary)
@@ -193,7 +234,7 @@ def _heterogeneity_rows(table, fit, summary):
         fit.extend((labels[h] + (' (' + values['Subgroups'] + ')' if 'Subgroups' in values else ''), p_value(v) if h == 'p-value' else v) for h, v in values.items() if h in labels)
 
 
-def _fit_table(table, fit, summary, section, supplementary):
+def _fit_table(table, fit, summary):
     if table.title.endswith('Prediction interval') and len(table.rows) == 1:
         row = table.rows[0]
         pi_level = table.headers[0].partition('(')[2].removesuffix(')') or '95% PI'
@@ -206,10 +247,10 @@ def _fit_table(table, fit, summary, section, supplementary):
         fit.extend((label, p_value(values[key]) if key == 'p-value' else values[key])
                    for key, label in (("Test", "Between-group test"), ("Statistic", "Between-group statistic"), ("df", "Between-group degrees of freedom"), ("p-value", "Between-group p")))
         return True
-    return _model_fit_table(table, fit, summary, section, supplementary)
+    return _model_fit_table(table, fit, summary)
 
 
-def _model_fit_table(table, fit, summary, section, supplementary):
+def _model_fit_table(table, fit, summary):
     if table.title in ('Model overview', 'Residual model fit') and table.headers == ('Statistic', 'Value'):
         fit.extend(table.rows)
         values = {row[0]: row[1] for row in table.rows}
@@ -224,7 +265,6 @@ def _model_fit_table(table, fit, summary, section, supplementary):
                        for key, label in (('Statistic', 'Test statistic'), ('df', 'Test degrees of freedom'), ('p-value', 'Test p')))
         return True
     if table.title == 'Model specification':
-        supplementary.append(replace(section, title='Supplementary details', paragraphs=(), tables=(table,)))
         return True
     if table.rows and ('Z' in table.headers or 't' in table.headers) and 'Estimate' not in table.headers:
         return True
@@ -239,27 +279,26 @@ def _horizontal_table(table):
     return table, vertical
 
 
-def _report_table(result, section, table, summary, pooled, fit, supplementary, extra, level, statistic, overall, calculation):
+def _report_table(result, section, table, summary, pooled, fit, level, statistic, overall, calculation):
     table, vertical = _horizontal_table(table)
     if table.title.startswith('Calculation scale'):
-        supplementary.append(replace(section, title='Supplementary details', paragraphs=(), tables=(table,)))
         return level, statistic
     if section.source_key == 'Weights' or table.title == 'Study weights':
-        _study_results(section, table, level, supplementary)
         return level, statistic
     lower, upper, ci_level = _interval_fields(table.headers)
     if lower and upper and ci_level.endswith(' PI'):
         _prediction_rows(table, lower, upper, ci_level, vertical, fit, summary)
         return level, statistic
-    if 'Estimate' in table.headers and lower and upper:
+    if 'Estimate' in table.headers and lower and upper and section.title != 'Marginal prediction':
         level, statistic = _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overall, calculation, pooled, fit, summary)
         return level, statistic
     if table.title.endswith('Heterogeneity') or table.title == 'Residual heterogeneity':
+        start = len(fit)
         _heterogeneity_rows(table, fit, summary)
+        if ',' in result.manuscript_metric:
+            fit[start:] = [(label + ' (' + section.title.removesuffix(' Summary') + ')', value) for label, value in fit[start:]]
         return level, statistic
-    if _fit_table(table, fit, summary, section, supplementary):
-        return level, statistic
-    extra.append(replace(section, paragraphs=(), tables=(table,)))
+    _fit_table(table, fit, summary)
     return level, statistic
 
 
@@ -275,25 +314,30 @@ def _report_sections(result, summary):
     text_sections = [section for section in result.sections if section.kind == 'text']
     if not text_sections:
         return [], []
-    pooled, fit, supplementary, extra = [], list(result.manuscript_model_info), [], []
-    metric = result.manuscript_metric or 'effect'
+    pooled, fit = [], list(result.manuscript_model_info)
     level, statistic = '95% CI', 'z'
     for section in text_sections:
         overall, calculation = _section_statistics(section)
         for table in section.tables:
-            level, statistic = _report_table(result, section, table, summary, pooled, fit, supplementary, extra, level, statistic, overall, calculation)
-    sections = []
-    if pooled:
-        sections.append(replace(text_sections[0], title='Pooled effect', paragraphs=(),
-            tables=(ResultTable('Pooled effect', ('Effect', 'Estimate', level, 'SE', statistic, 'p'), tuple(pooled)),)))
-    if fit:
-        sections.append(replace(text_sections[0], title='Model fit', paragraphs=(),
-            tables=(ResultTable('Model fit', ('Statistic', 'Value'), tuple(fit)),)))
-    def formatted(section):
-        tables = tuple(replace(table, rows=tuple(tuple(p_value(cell) if 'p-value' in header.lower() else cell
-                           for header, cell in zip(table.headers, row)) for row in table.rows)) for table in section.tables)
-        return replace(section, tables=tables)
-    return [formatted(section) for section in sections + extra], [formatted(section) for section in supplementary]
+            level, statistic = _report_table(result, section, table, summary, pooled, fit, level, statistic, overall, calculation)
+    return _primary_sections(result, text_sections, pooled, fit, level, statistic), _held_sections(result)
+
+
+def _primary_sections(result, text_sections, pooled, fit, level, statistic):
+    template = text_sections[0]
+    sections = [replace(template, title='Pooled effect', paragraphs=(() if pooled else
+                         ('No structured pooled estimates are held for this workflow; the complete held output is in Supplementary details.',)),
+                        tables=(ResultTable('Pooled effect', ('Effect', 'Estimate', level, 'SE', statistic, 'p'), tuple(pooled)),)),
+                replace(template, title='Model fit', paragraphs=(),
+                        tables=(ResultTable('Model fit', ('Statistic', 'Value'), tuple(fit)),)),
+                _study_results(result, template, level)]
+    if not any(section.tables for section in text_sections):
+        comparisons = [s for s in text_sections if s.title in ('Pooled comparison', 'Extrapolation') or s.title.startswith('Trim-and-fill')]
+        sections[0] = replace(template, title='Pooled effect', paragraphs=('Held model comparisons and sensitivity analyses.',),
+                              tables=(ResultTable('Pooled effect', ('Analysis', 'Held output'), tuple((s.title, s.value) for s in comparisons)),))
+        sections[1] = replace(template, title='Model fit', paragraphs=(),
+                              tables=(ResultTable('Model fit', ('Statistic', 'Value'), tuple((s.title, s.value) for s in text_sections if s.title in ('Data and eligibility', 'Tests'))),))
+    return sections
 
 
 def _report_methods(result):
@@ -315,7 +359,7 @@ def _table_html(table, table_number):
         border = 'border-top: 1px solid black;' if index == 0 else ''
         if index == len(table.rows):
             border += 'border-bottom: 1px solid black;'
-        parts.append('<tr>' + ''.join(f'<{tag} style="{border}">' + escape(c) + f'</{tag}>' for c in row) + '</tr>')
+        parts.append('<tr>' + ''.join(f'<{tag} style="white-space:pre-wrap; {border}">' + escape(c).replace('\n', '<br>') + f'</{tag}>' for c in row) + '</tr>')
     parts.append('</table>')
     return ''.join(parts)
 

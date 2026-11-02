@@ -546,14 +546,16 @@ def plots(app, window, family, record, *, view=None):
         record("family-editor-controls", dialog, family=family, capture_surface="desktop-composite")
         click(app, box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
         assert path.read_bytes() != before
-        if funnel:
+        if path.suffix.lower() == '.svg':
+            renderer = QSvgRenderer(str(path))
+            assert renderer.isValid()
+            assert renderer.defaultSize().width() > 100 and renderer.defaultSize().height() > 100
+        else:
             from PIL import Image
 
             with Image.open(path) as image:
                 image.load()
                 assert image.width > 100 and image.height > 100
-        else:
-            assert QSvgRenderer(str(path)).isValid()
         params = view.plot_service.load_params(artifact.params_path)
         expected_params = {
             key: label,
