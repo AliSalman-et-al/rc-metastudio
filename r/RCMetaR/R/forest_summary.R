@@ -78,10 +78,11 @@ rcmetar.draw.forest.direction <- function(bundle, alim, cex) {
     previous <- graphics::par(cex=1)
     on.exit(graphics::par(previous), add=TRUE)
     labels <- rcmetar.revman.direction.labels(bundle)
+    footer <- rcmetar.forest.revman.axis.footer(bundle, list(alim=alim))
     for (side in c("left", "right")) {
         if (nzchar(labels[[side]])) {
-            at <- if (side == "left") mean(c(alim[[1]], mean(alim))) else mean(c(mean(alim), alim[[2]]))
-            lines <- rcmetar.forest.direction.lines(labels[[side]], diff(alim) * 0.44, cex)
+            at <- footer[[paste0(side, ".x")]]
+            lines <- rcmetar.forest.direction.lines(labels[[side]], footer[[paste0(side, ".max.width")]], cex)
             for (index in seq_along(lines)) graphics::mtext(lines[[index]], side=1,
                 line=4.5 + (index - 1) * 1.6, at=at, cex=cex, adj=0.5, padj=0)
         }

@@ -524,7 +524,11 @@ rcmetar.forest.revman.axis.footer <- function(bundle, layout) {
         layout <- list(alim=graphics::par("usr")[1:2])
     }
     alim <- as.numeric(layout$alim)
-    split.x <- rcmetar.metafor.refline(bundle, alim)
+    labels <- rcmetar.revman.direction.labels(bundle)
+    if (nzchar(labels$left) || nzchar(labels$right)) alim <- alim + c(-.1, .1) * diff(alim)
+    widths <- rcmetar.forest.with.measurement.device(graphics::strwidth(c(labels$left, labels$right), units="inches"))
+    share <- if (sum(widths) > 0) widths[[1]] / sum(widths) else .5
+    split.x <- if (sum(widths) > 0) alim[[1]] + diff(alim) * max(.25, min(.75, share)) else rcmetar.metafor.refline(bundle, alim)
     if (!is.finite(split.x) || split.x <= alim[[1]] || split.x >= alim[[2]]) {
         split.x <- mean(alim)
     }

@@ -170,6 +170,15 @@ def plots(driver, capture, missing):
         try:
             view = driver.analyze(driver.app, driver.window, method)
             view.fit_width_action.trigger()
+            if family == "continuous":
+                from xml.etree import ElementTree as ET
+                texts = [n for path in view.results.display_images.values() for n in ET.parse(path).iter('{http://www.w3.org/2000/svg}text')]
+                directions = [n for n in texts if ''.join(n.itertext()).startswith('Favours')]
+                assert {''.join(n.itertext()) for n in directions} == {'Favours Intervention', 'Favours Control'}
+                assert len({n.attrib['y'] for n in directions}) == 1
+                import re
+                ticks = [n for n in texts if re.fullmatch(r'-?\d+(\.\d+)?', ''.join(n.itertext())) and float(n.attrib['y']) > max(float(t.attrib['y']) for t in texts if 'Random-effects model' in ''.join(t.itertext()))]
+                assert len(ticks) >= 3, [(n.text, n.attrib) for n in ticks]
             capture(f"G-{family}-forest-default-fit", view)
             if family == "binary":
                 import sys

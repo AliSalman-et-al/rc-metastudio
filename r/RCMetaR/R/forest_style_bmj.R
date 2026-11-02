@@ -256,7 +256,10 @@ rcmetar.bmj.axis.footer.layout <- function(bundle, layout) {
         layout <- list(alim=graphics::par("usr")[1:2])
     }
     alim <- as.numeric(layout$alim)
-    split.x <- rcmetar.metafor.refline(bundle, alim)
+    labels <- rcmetar.revman.direction.labels(bundle)
+    widths <- rcmetar.forest.with.measurement.device(graphics::strwidth(c(labels$left, labels$right), units="inches"))
+    share <- if (sum(widths) > 0) widths[[1]] / sum(widths) else .5
+    split.x <- if (sum(widths) > 0) alim[[1]] + diff(alim) * max(.25, min(.75, share)) else rcmetar.metafor.refline(bundle, alim)
     if (!is.finite(split.x) || split.x <= alim[[1]] || split.x >= alim[[2]]) {
         split.x <- mean(alim)
     }

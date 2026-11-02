@@ -658,7 +658,7 @@ rcmetar.revman.axis.labels <- function(bundle, ticks) {
         return(trimws(formatC(values, digits=3, format="fg")))
     }
     digits <- max(0, min(2, as.integer(bundle$params$digits)))
-    rcmetar.format.effect.number(values, digits, scale=max(abs(values)))
+    vapply(values, function(value) format(signif(value, 3), trim=TRUE, scientific=FALSE), character(1))
 }
 
 rcmetar.revman.axis.footer.layout <- function(bundle, layout) {

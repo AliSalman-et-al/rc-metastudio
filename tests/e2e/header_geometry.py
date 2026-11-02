@@ -71,6 +71,10 @@ def check_forest_footer(source):
     directions = [node for node in texts if ''.join(node.itertext()).startswith('Favours')]
     if not directions:
         return []  # Single-arm and diagnostic plots have no treatment direction.
+    if any(''.join(n.itertext()) == 'Favours Control' for n in directions):
+        intervention = [n for n in directions if ''.join(n.itertext()) == 'Favours Intervention']
+        assert intervention, ('short direction wrapped', source)
+        assert len({n.attrib['y'] for n in directions}) == 1, ('direction baselines', source)
     measurements = []
     root = ET.parse(source).getroot()
     _, _, device_width, device_height = map(float, root.attrib['viewBox'].split())

@@ -700,7 +700,7 @@ rcmetar.metafor.axis.ticks <- function(bundle, alim) {
         ticks <- to.calculation(values)
         return(ticks[is.finite(ticks) & ticks >= alim[[1]] & ticks <= alim[[2]]])
     }
-    pretty(alim, n=4)
+    pretty(alim, n=6)
 }
 
 rcmetar.forest.spaced.ticks <- function(bundle, ticks, cex) {
