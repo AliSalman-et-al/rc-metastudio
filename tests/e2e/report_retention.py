@@ -342,15 +342,12 @@ def assert_report(view):
     for section in view.results.sections:
         for source in section.tables:
             title = source.title if section.title == source.title else section.title + ' — ' + source.title
-            retained = [t for t in tables[3:] if t.title == title]
-            assert len(retained) == 1, title
-            assert (retained[0].headers, retained[0].rows) == (source.headers, source.rows), title
+            retained = next(t for t in tables[3:] if t.title == 'Full-precision results')
+            expected = tuple((title, '\n'.join(f'{h}: {v}' for h, v in zip(source.headers, row))) for row in source.rows)
+            assert tuple(row for row in retained.rows if row[0] == title) == expected, title
         if section.tables and section.paragraphs:
-            notes = [s for s in view.manuscript.sections if s.title == 'Supplementary details'
-                     and any(t.title == (section.tables[0].title if section.title == section.tables[0].title
-                                        else section.title + ' — ' + section.tables[0].title) for t in s.tables)]
-            assert len(notes) == 1, section.title
-            assert notes[0].paragraphs == section.paragraphs
+            assert any(s.paragraphs == section.paragraphs for s in view.manuscript.sections
+                       if s.title == 'Supplementary details'), section.title
         if section.kind == 'text' and not section.tables and section.value:
             if section.source_key == 'References':
                 references = [s for s in view.manuscript.sections if s.source_key == 'References'
@@ -361,10 +358,8 @@ def assert_report(view):
                                  for n, line in enumerate(filter(None, section.value.splitlines()), 1))
                 assert references[0].paragraphs == expected
             else:
-                retained = [t for t in tables[3:] if t.title == section.title + ' — Output']
-                assert len(retained) == 1, section.title
-                assert retained[0].headers == ('Output',)
-                assert retained[0].rows == tuple((line,) for line in section.value.splitlines())
+                retained = next(t for t in tables[3:] if t.title == 'Full-precision results')
+                assert tuple(row for row in retained.rows if row[0] == section.title + ' — Output') == tuple((section.title + ' — Output', 'Output: ' + line) for line in section.value.splitlines())
     data = capture(view, Path(sys.argv[2]) / 'report-retention')
     assert_exports(view, data)
     document = QTextDocument()

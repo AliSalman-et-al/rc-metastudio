@@ -40,8 +40,9 @@ def compare_result(path, after):
     retained_rows = []
     for table in new['held']:
         caption = table['title'] if table['section'] == table['title'] else table['section'] + ' — ' + table['title']
-        target = next(t for t in new['presented'] if t['title'] == caption)
-        assert (target['headers'], target['rows']) == (table['headers'], table['rows'])
+        target = next(t for t in new['presented'] if t['title'] == 'Full-precision results')
+        expected = [[caption, '\n'.join(f'{h}: {v}' for h, v in zip(table['headers'], row))] for row in table['rows']]
+        assert [row for row in target['rows'] if row[0] == caption] == expected
         retained_rows.append(dict(section=table['section'], table=table['title'], rows=len(table['rows'])))
     retained_lines = check_held_text(new)
     assert not any(restored.values()), (scenario, restored)

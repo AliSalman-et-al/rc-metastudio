@@ -160,6 +160,7 @@ def _study_results(result, template, level):
 
 def _held_sections(result):
     sections = []
+    full_rows = []
     for section in result.sections:
         if section.kind != 'text':
             continue
@@ -172,7 +173,11 @@ def _held_sections(result):
         elif not tables and section.value:
             tables = (ResultTable(section.title + ' — Output', ('Output',),
                                   tuple((line,) for line in section.value.splitlines())),)
-        sections.append(replace(section, title='Supplementary details', value='', paragraphs=paragraphs, tables=tables))
+        for table in tables:
+            full_rows.extend((table.title, '\n'.join(f'{h}: {v}' for h, v in zip(table.headers, row))) for row in table.rows)
+        sections.append(replace(section, title='Supplementary details', value='', paragraphs=paragraphs, tables=()))
+    if full_rows:
+        sections.insert(0, replace(sections[0], source_key='', paragraphs=(), tables=(ResultTable('Full-precision results', ('Source', 'Results'), tuple(full_rows)),)))
     return sections
 
 
