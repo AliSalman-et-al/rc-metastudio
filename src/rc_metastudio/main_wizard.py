@@ -33,6 +33,7 @@ from PyQt6.QtWidgets import (
     QApplication,
     QFileDialog,
     QFrame,
+    QHBoxLayout,
     QAbstractButton,
     QMenu,
     QMessageBox,
@@ -561,7 +562,14 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.data_type_label.setBuddy(self.data_type_combo)
         self.verticalLayout_2.insertWidget(4, self.data_type_combo)
         self.data_type_combo.currentIndexChanged.connect(self._change_data_type)
-        for widget in (self.select_file_btn, self.worksheet_label, self.worksheet_combo, self.data_type_label, self.data_type_combo, self.import_tabs, self.import_status, self.csv_options_btn, self.groupBox, self.template_btn):
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_2.addWidget(self.select_file_btn)
+        for label, combo in ((self.worksheet_label, self.worksheet_combo), (self.data_type_label, self.data_type_combo)):
+            row = QHBoxLayout()
+            row.addWidget(label)
+            row.addWidget(combo, 1)
+            self.verticalLayout_2.addLayout(row)
+        for widget in (self.import_tabs, self.import_status, self.csv_options_btn, self.groupBox, self.template_btn):
             self.verticalLayout_2.addWidget(widget)
         self._update_dialect_controls()
 
