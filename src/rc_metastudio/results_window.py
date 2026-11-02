@@ -521,7 +521,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.result_table.resizeRowsToContents()
         self.result_table.setMaximumHeight(
-            header.height() + sum(self.result_table.rowHeight(row)
+            header.sizeHint().height() + sum(self.result_table.rowHeight(row)
                                   for row in range(self.result_table.rowCount()))
             + 2 * self.result_table.frameWidth()
         )
