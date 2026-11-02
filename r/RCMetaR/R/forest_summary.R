@@ -37,13 +37,7 @@ rcmetar.forest.direction.lines <- function(label, width, cex, font=1, units="use
             lines <- c(lines, current)
             current <- ""
         }
-        for (letter in strsplit(paste0(if (nzchar(current)) " " else "", word), "")[[1]]) {
-            if (nzchar(current) && graphics::strwidth(paste0(current, letter), units=units, cex=cex, font=font) > width) {
-                lines <- c(lines, current)
-                current <- ""
-            }
-            current <- paste0(current, letter)
-        }
+        current <- paste0(current, if (nzchar(current)) " " else "", word)
     }
     c(lines, current)[nzchar(c(lines, current))]
 }
