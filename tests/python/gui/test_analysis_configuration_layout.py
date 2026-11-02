@@ -174,7 +174,7 @@ def test_analysis_setup_plot_actions_expose_browse_metadata(qapp):
     ui = Ui_AnalysisSetupDialog()
     ui.setupUi(dialog)
     try:
-        assert ui.color_btn.text() == "Choose color..."
+        assert ui.color_btn.text() == "Choose color…"
         assert ui.color_btn.accessibleName() == "Choose plot accent color"
         assert ui.color_btn.accessibleDescription()
         assert ui.color_btn.toolTip()
@@ -228,7 +228,7 @@ def test_configuration_controls_have_accessible_label_associations(
             "diagnostic",
             ["lr", "dor"],
             "Method & Parameters for Likelihood Ratios and Diagnostic Odds Ratio",
-            "Method for Likelihood Ratios and Diagnostic Odds Ratio",
+            "Analysis method: Method for Likelihood Ratios and Diagnostic Odds Ratio",
         ),
     ),
 )
@@ -265,12 +265,12 @@ def test_method_dialog_wording_is_scoped_to_its_analysis_family(
         (
             "meta-regression",
             "Reitsma Meta-Regression",
-            "Reitsma bivariate model",
+            "Analysis method: Reitsma bivariate model",
         ),
         (
             None,
             "Method & Parameters for Sensitivity and Specificity",
-            "Method for Sensitivity and Specificity",
+            "Analysis method: Method for Sensitivity and Specificity",
         ),
     ),
     ids=["meta-regression", "standard"],
