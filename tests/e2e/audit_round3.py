@@ -551,7 +551,7 @@ def run(app, window, work, record, scenario):
                             assert any("H₀: " + expected_null in "".join(node.itertext()) for node in nodes), (metric, ["".join(node.itertext()) for node in nodes])
                             from tests.e2e.report_retention import assert_report
                             pooled, _fit = assert_report(view)
-                            assert len(pooled.rows) == 1 and pooled.rows[0][0] == 'proportion'
+                            assert len(pooled.rows) == 1 and pooled.rows[0][0] == 'Proportion'
                             last_study_y = max(float(node.attrib["y"]) for node in nodes if "".join(node.itertext()).startswith("Fixture "))
                             axis_labels = ["".join(node.itertext()) for node in nodes if float(node.attrib["y"]) > last_study_y]
                             assert any(label.startswith("Proportion") for label in axis_labels), (metric, axis_labels)
