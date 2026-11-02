@@ -424,3 +424,68 @@ def run(app, window, work, root, record, analyze):
     mouse_click(button, QtCore.Qt.MouseButton.LeftButton)
     assert form.result() == QtWidgets.QDialog.DialogCode.Accepted.value
     record("ux-mapped-reopened", window, project=window.out_path)
+
+    # Exercise the layouts whose geometry cannot be proved by the binary default.
+    import sys
+    sys.path.insert(0, str(root / '.agents/skills/verify-rcms/scripts'))
+    from advanced_workflows import modal
+    from analysis_matrix import run as matrix
+    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+    window.workspace.mark_saved()
+    assert window.open(str(root / 'sample_projects/continuous.rcms'), raise_on_error=True)
+    continuous = analyze(app, window, 'continuous.random')
+    def forest_nodes(result):
+        artifact = result._selected_plot()[0]
+        return list(ElementTree.parse(artifact.display_path()).getroot().iter('{http://www.w3.org/2000/svg}text'))
+    continuous_nodes = forest_nodes(continuous)
+    direction_nodes = [n for n in continuous_nodes if 'Favours' in ''.join(n.itertext())]
+    assert len(direction_nodes) == 2
+    direction_lines = []
+    for node, arm in zip(direction_nodes, window.model.arm_names, strict=True):
+        expected = ('Favours ' + arm).split()
+        lines = sorted((n for n in continuous_nodes
+                        if n.attrib['x'] == node.attrib['x']
+                        and float(n.attrib['y']) >= float(node.attrib['y'])),
+                       key=lambda n: float(n.attrib['y']))
+        observed = []
+        for line in lines:
+            observed.extend(''.join(line.itertext()).split())
+            if len(observed) >= len(expected):
+                break
+        assert observed == expected, (observed, expected)
+        direction_lines.append(observed)
+    record('continuous-favours-whole-words', continuous, directions=direction_lines)
+    close_result(continuous)
+    window.workspace.mark_saved()
+    assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
+    bmj = analyze(app, window, 'binary.random')
+    def bmj_style(dialog):
+        dialog.style_cbo.setCurrentText('BMJ')
+        mouse_click(required(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)), QtCore.Qt.MouseButton.LeftButton)
+    modal(app, EditPlotDialog, bmj_style, bmj.edit_plot_action.trigger)
+    bmj_nodes = forest_nodes(bmj)
+    study_nodes = [n for n in bmj_nodes if any(row.label in ''.join(n.itertext()) for row in window.model.current_sheet.rows if row.label)]
+    assert len(study_nodes) >= 19, len(study_nodes)
+    left, right = min(box(n).left() for n in study_nodes), max(box(n).right() for n in study_nodes)
+    top, bottom = min(box(n).top() for n in study_nodes), max(box(n).bottom() for n in study_nodes)
+    column_nodes = [n for n in bmj_nodes if box(n).left() < right and box(n).right() > left and top <= box(n).top() <= bottom]
+    for index, node in enumerate(column_nodes):
+        for other in column_nodes[index + 1:]:
+            assert not box(node).intersects(box(other)), (''.join(node.itertext()), ''.join(other.itertext()))
+    record('bmj-study-column-no-overlap', bmj, labels=[''.join(n.itertext()) for n in column_nodes])
+    close_result(bmj)
+    window.workspace.mark_saved()
+    subgroup = matrix(app, window, 'analysis-amino-binary-subgroup', record, keep_results=True)
+    tables_item = next(item for item in subgroup.nav_tree.findItems('Tables', QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive))
+    subgroup.nav_tree.setCurrentItem(tables_item)
+    app.processEvents()
+    for index in range(subgroup.table_selector.count()):
+        subgroup.table_selector.setCurrentIndex(index)
+        app.processEvents()
+        table = subgroup.result_table
+        header = table.horizontalHeader()
+        for column in range(table.columnCount()):
+            text = required(table.horizontalHeaderItem(column)).text()
+            assert header.sectionSize(column) >= max(header.fontMetrics().horizontalAdvance(line) for line in text.splitlines()) + 8, (text, header.sectionSize(column))
+        record('subgroup-table-headers-unclipped', subgroup, title=subgroup.table_selector.currentText(), widths=[header.sectionSize(c) for c in range(table.columnCount())])
+    close_result(subgroup)

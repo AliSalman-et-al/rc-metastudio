@@ -518,7 +518,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
                 self.result_table.setItem(row_index, column_index, item)
         header = required(self.result_table.horizontalHeader(), "result table column header")
-        header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        header.setStretchLastSection(True)
         self.result_table.resizeRowsToContents()
         self.result_table.setMaximumHeight(
             header.sizeHint().height() + sum(self.result_table.rowHeight(row)
