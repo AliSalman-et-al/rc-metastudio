@@ -496,10 +496,16 @@ def run(driver):
 
     def capture(step, widget):
         assert step not in captured, step
+        rendered_page = isinstance(widget, QtGui.QImage)
+        if not rendered_page and (widget is driver.window or widget.metaObject().className() == "ResultsWindow"):
+            widget.showNormal()
+            widget.resize(1024, 700) if step == "A-grid-1024" else widget.resize(1280, 800)
         driver.app.processEvents()
         QTest.qWait(100)
-        rendered_page = isinstance(widget, QtGui.QImage)
         if not rendered_page:
+            if widget is driver.window or widget.metaObject().className() == "ResultsWindow":
+                expected = QtCore.QSize(1024, 700) if step == "A-grid-1024" else QtCore.QSize(1280, 800)
+                assert widget.size() == expected, (step, widget.size(), expected)
             assert widget.isVisible(), step
         image = widget if rendered_page else widget.grab().toImage()
         assert not image.isNull(), step
