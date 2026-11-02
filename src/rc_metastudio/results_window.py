@@ -323,6 +323,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
         self.graphics_view.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        # Every content page scrolls. Its minimum size hint must not push the
+        # fixed navigation outside a narrow screen when the splitter moves.
+        self.content_stack.setSizePolicy(
+            QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Expanding
+        )
         self.results_nav_splitter.setChildrenCollapsible(False)
         self.results_nav_splitter.setStretchFactor(0, 1)
         self.results_nav_splitter.setStretchFactor(1, 5)

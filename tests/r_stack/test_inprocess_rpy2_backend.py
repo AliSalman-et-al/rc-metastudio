@@ -307,7 +307,17 @@ _DRIVER = textwrap.dedent(
     for _ in range(3):
         app.processEvents()
     assert result_window.nav_tree.width() == navigation_width
-    assert result_window.graphics_view.viewportTransform().mapRect(plot_item.sceneBoundingRect()).width() == before_splitter_width
+    after_splitter_width = result_window.graphics_view.viewportTransform().mapRect(plot_item.sceneBoundingRect()).width()
+    assert after_splitter_width == before_splitter_width, (
+        "moving the fixed-width navigation splitter changed the rendered plot width",
+        {"before": before_splitter_width, "after": after_splitter_width,
+         "navigation_before": navigation_width, "navigation_after": result_window.nav_tree.width(),
+         "viewport": result_window.graphics_view.viewport().width(), "qpa": app.platformName()},
+    )
+    assert result_window.nav_tree.x() >= 0, "splitter moved Results navigation outside the window"
+    assert result_window.content_stack.geometry().right() < result_window.results_nav_splitter.width(), (
+        "splitter moved Results content outside its available width"
+    )
     result_window.close()
     app.processEvents()
 
