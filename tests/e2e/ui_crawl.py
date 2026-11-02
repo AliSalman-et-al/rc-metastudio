@@ -533,7 +533,20 @@ def dark(driver, capture, missing):
             form.restart()
             capture("J-" + detail, form)
         form.close()
-        imports(driver, lambda step, widget: capture("J-import", widget) if step == "C-csv-preview" else None, missing)
+        def capture_import(step, widget):
+            if step != "C-csv-preview":
+                return
+            button = widget.findChild(QtWidgets.QPushButton, "templateLink")
+            assert button is not None
+            def luminance(colour):
+                channels = [colour.redF(), colour.greenF(), colour.blueF()]
+                return sum((c / 12.92 if c <= .04045 else ((c + .055) / 1.055) ** 2.4) * w
+                           for c, w in zip(channels, (.2126, .7152, .0722)))
+            foreground = luminance(button.palette().color(QtGui.QPalette.ColorRole.ButtonText))
+            background = luminance(button.palette().color(QtGui.QPalette.ColorRole.Window))
+            assert (max(foreground, background) + .05) / (min(foreground, background) + .05) >= 4.5
+            capture("J-import", widget)
+        imports(driver, capture_import, missing)
         calculators(driver, capture, missing, prefix="J", families={"binary"})
         form = AnalysisSetupDialog(driver.window.model, parent=driver.window, confidence_level=95)
         form.show()

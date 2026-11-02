@@ -32,6 +32,7 @@ from PyQt6.QtGui import (
 from PyQt6.QtWidgets import (
     QApplication,
     QFileDialog,
+    QFrame,
     QAbstractButton,
     QMenu,
     QMessageBox,
@@ -80,6 +81,13 @@ class MainWizardPage(QWizardPage):
             palette = QPalette()
             palette.setColor(QPalette.ColorRole.Link, QColor("#80bfff"))
             self.setPalette(palette)
+
+    def style_link_button(self, button):
+        palette = QPalette(self.palette())
+        palette.setColor(QPalette.ColorRole.ButtonText, palette.color(QPalette.ColorRole.Link))
+        button.setPalette(palette)
+        button.setStyleSheet("QPushButton { text-decoration: underline; }")
+
     def wizard(self) -> "MainWizard":
         wizard = super().wizard()
         if not isinstance(wizard, MainWizard):
@@ -98,7 +106,6 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
             if "<a " in label.text():
                 colour = self.palette().color(QPalette.ColorRole.Link).name()
                 label.setText(label.text().replace("<a ", f'<a style="color: {colour}" '))
-        self.setStyleSheet('QFrame[frameShape="4"] { color: palette(mid); }')
 
         self.recent_datasets = normalize_recent_files(recent_datasets)
         self.selected_dataset = None
@@ -496,7 +503,8 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.verticalLayout_2.addWidget(self.import_tabs)
         self.template_btn = QPushButton("Save a blank template", self)
         self.template_btn.setFlat(True)
-        self.template_btn.setStyleSheet("QPushButton { color: palette(link); text-decoration: underline; }")
+        self.template_btn.setObjectName("templateLink")
+        self.style_link_button(self.template_btn)
         self.template_btn.clicked.connect(app_error_handler.safe_slot(self._save_template, parent=self))
         self.verticalLayout_2.insertWidget(1, self.template_btn)
         self.import_status = QLabel(self)
@@ -1005,6 +1013,9 @@ class MainWizard(QWizard):
         self.setPage(Page_ChooseMetric, ChooseMetricPage())
         self.setPage(Page_OutcomeName, OutcomeNamePage())
         self.setPage(Page_CsvImport, CsvImportPage())
+        for frame in self.findChildren(QFrame):
+            if frame.frameShape() == QFrame.Shape.HLine:
+                frame.setStyleSheet("color: palette(mid);")
 
         if path is None:
             self.setStartId(Page_Welcome)
