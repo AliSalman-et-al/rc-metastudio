@@ -3,6 +3,7 @@
 """Qt adapter for persisted workspace column widths."""
 
 from PyQt6.QtCore import QObject, Qt
+from PyQt6.QtGui import QFont, QFontMetrics
 from PyQt6.QtWidgets import QTableView
 
 from rc_metastudio.workspace_column_identity import (
@@ -74,6 +75,7 @@ class WorkspaceColumnWidthController(QObject):
                         width = max(width, self.table.fontMetrics().horizontalAdvance("2026") + 12)
                     elif key.kind == "covariate":
                         width = min(width, self.table.fontMetrics().horizontalAdvance("M" * 20))
+                    width = max(width, self._header_width(column))
                     self.table.setColumnWidth(column, width)
                     self._widths[key] = width
                 else:
@@ -85,9 +87,19 @@ class WorkspaceColumnWidthController(QObject):
         self._applying = True
         try:
             QTableView.resizeColumnsToContents(self.table)
+            for column in range(self.table.model().columnCount()):
+                if not self.table.isColumnHidden(column):
+                    self.table.setColumnWidth(column, max(self.table.columnWidth(column), self._header_width(column)))
         finally:
             self._applying = False
         self._capture_visible_widths(mark_user=True)
+
+    def _header_width(self, column):
+        header = self.table.horizontalHeader()
+        font = QFont(header.font())
+        font.setBold(True)
+        text = str(self.table.model().headerData(column, Qt.Orientation.Horizontal) or "")
+        return max(QFontMetrics(font).horizontalAdvance(line) for line in text.split("\n")) + 24
 
     def _capture_visible_widths(self, mark_user=False):
         for column, key in enumerate(self._schema_keys()):

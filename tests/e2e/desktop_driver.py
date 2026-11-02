@@ -702,6 +702,19 @@ def sheets_legacy(app, window):
 
 
 def sheets(app, window):
+    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    table = window.tableView
+    for fit in (False, True):
+        if fit:
+            table.auto_fit_columns()
+        header = required(table.horizontalHeader())
+        font = QtGui.QFont(header.font())
+        font.setBold(True)
+        metrics = QtGui.QFontMetrics(font)
+        for column in window.model.RAW_DATA:
+            text = str(window.model.headerData(column, QtCore.Qt.Orientation.Horizontal))
+            assert table.columnWidth(column) >= metrics.horizontalAdvance(text) + 8, text
+    record_step("sheets-full-arm-headers", window)
     import copy
     from rc_metastudio.project_adapter import dataset_to_project
     def project(dataset):
