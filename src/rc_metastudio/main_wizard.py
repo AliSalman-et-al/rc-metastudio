@@ -76,12 +76,10 @@ class DatasetInfo(TypedDict, total=False):
 class MainWizardPage(QWizardPage):
     def __init__(self, parent=None):
         super().__init__(parent)
-        palette = self.palette()
-        if palette.color(QPalette.ColorRole.Window).lightness() < 128:
+        if self.palette().color(QPalette.ColorRole.Window).lightness() < 128:
+            palette = QPalette()
             palette.setColor(QPalette.ColorRole.Link, QColor("#80bfff"))
             self.setPalette(palette)
-        self.setStyleSheet('QFrame[frameShape="4"] { color: palette(mid); }')
-
     def wizard(self) -> "MainWizard":
         wizard = super().wizard()
         if not isinstance(wizard, MainWizard):
