@@ -114,7 +114,7 @@ def run_headers(app, window, work, record):
             record('wrapped-arm-header-before-assertion', view, style=style, names=names,
                    plots={title:path}, export=str(export))
             measurements = [measurement for source in (path, str(export))
-                            for measurement in (check_headers(source, names) + check_forest_footer(source))]
+                            for measurement in (check_headers(source, names) + check_forest_footer(source, expected_directions=tuple("Favours " + name for name in names)))]
             if len(names[0]) > 80:
                 from advanced_workflows import export_formats
                 export_formats(app, view, work / ('headers-' + style + '-' + str(len(names[1]))),

@@ -65,16 +65,27 @@ def check_headers(source, names):
     return measurements
 
 
-def check_forest_footer(source):
+def check_direction_text(texts, directions, expected):
+    ordered = sorted(directions, key=lambda node: float(node.attrib['x']))
+    assert len(ordered) == len(expected), ('direction labels missing', expected, [''.join(n.itertext()) for n in ordered])
+    for start, label in zip(ordered, expected, strict=True):
+        lines = sorted((node for node in texts
+                        if abs(float(node.attrib['x']) - float(start.attrib['x'])) < .01
+                        and float(node.attrib['y']) >= float(start.attrib['y'])),
+                       key=lambda node: float(node.attrib['y']))
+        observed = ' '.join(''.join(node.itertext()) for node in lines)
+        assert observed == label, ('direction text changed', observed, label)
+
+
+def check_forest_footer(source, expected_directions=None):
     """Measure rendered direction lines and the axis title, including wrapped arms."""
     texts = list(ET.parse(source).iter('{http://www.w3.org/2000/svg}text'))
     directions = [node for node in texts if ''.join(node.itertext()).startswith('Favours')]
+    if expected_directions is not None:
+        check_direction_text(texts, directions, expected_directions)
     if not directions:
         return []  # Single-arm and diagnostic plots have no treatment direction.
-    if any(''.join(n.itertext()) == 'Favours Control' for n in directions):
-        intervention = [n for n in directions if ''.join(n.itertext()) == 'Favours Intervention']
-        assert intervention, ('short direction wrapped', source)
-        assert len({n.attrib['y'] for n in directions}) == 1, ('direction baselines', source)
+    assert len({node.attrib['y'] for node in directions}) == 1, ('direction baselines', source)
     measurements = []
     root = ET.parse(source).getroot()
     _, _, device_width, device_height = map(float, root.attrib['viewBox'].split())

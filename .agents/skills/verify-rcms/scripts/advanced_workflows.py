@@ -498,7 +498,7 @@ def plots(app, window, family, record, *, view=None):
                         from xml.etree import ElementTree as ET
                         labels = ["".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text")]
                         assert sum(text.startswith("Favours") for text in labels) == 2, labels
-                    measurements = check_forest_footer(path)
+                    measurements = check_forest_footer(path, expected_directions=tuple("Favours " + name for name in names))
                     retained = Path(sys.argv[2]) / f"{family}-{style.split()[0]}-arms-{len(names[0])}.svg"
                     retained.write_bytes(path.read_bytes())
                     record("forest-footer-geometry", dialog, family=family, style=style,
