@@ -247,13 +247,24 @@ arm-swap assertions; the 600-second bound is unchanged.
 
 ## Results close/export lifetime
 
-`manuscript-export` additionally repeats three close/open/export cycles for each
-of binary, continuous, joint diagnostic and HR results (12 cycles total). Each
-leaves an ordinary close/deferred-delete pending across the next real Qt save
-picker, forces `gc.collect()` and event processing, exports a PDF, and checks
-that the old scene and every old item were deleted. Flushed `Manuscript lifetime`
-markers surround close and picker entry/return for `-X faulthandler` diagnosis.
-The closing viewport must already be detached before deletion; refit work is
-owned by a child timer and canceled on close. Linux evidence does not establish
-that the reported Windows native access violation is fixed; that requires the
-targeted Windows rerun, including its native event receiver if it faults again.
+`manuscript-export` retains the action and real non-native save-dialog path.
+`manuscript-export-direct` calls the real write functions without a save dialog.
+Both run the same 20 PDF/eight DOCX writes, file/content assertions and 12
+close/reopen stress cycles, including an old Results window pending deletion.
+They are separate cases in the ordinary CI E2E selection, so a fatal dialog
+process cannot prevent the direct case from retaining its result. Hillclimb
+also retains its two real save dialogs.
+
+Both cases weakly observe real QPdfWriter, QPainter and QTextDocument instances
+and assert release on normal writer return, before GC or event processing.
+Writer markers identify format, path and write number. Dialog markers identify
+the operation, picker number, prior dialog deletion and child item-model
+teardown after deleteLater/deferred-event processing. This explicit cleanup is
+equivalent to the previous disposal helper; it is not by itself a Windows fix.
+
+Compare both manifests and transcripts in one Windows run. Retained writer
+resources indicate a product-lifetime failure. A passing direct case and a
+failing dialog case with released writers/deleted prior dialogs implicate the
+nested-dialog route, without identifying an icon-provider or watcher-thread
+implementation. If both pass, the original cause remains unproven. Linux passes
+do not qualify Windows. The original manuscript scenario is not skipped.

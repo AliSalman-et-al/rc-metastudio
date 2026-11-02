@@ -2010,9 +2010,10 @@ try:
     elif scenario == "summary-of-findings":
         from tests.e2e.summary_of_findings import run
         run(app, window, WORK, ROOT, record_step, analyze)
-    elif scenario == "manuscript-export":
+    elif scenario in ("manuscript-export", "manuscript-export-direct"):
         from tests.e2e.manuscript_export import run
-        run(app, window, WORK, ROOT, record_step, analyze)
+        run(app, window, WORK, ROOT, record_step, analyze,
+            direct_write=scenario == "manuscript-export-direct")
     elif scenario in ("amino", "continuous", "lymph"):
         sample_analysis(app, window, scenario)
     elif scenario == "rm5-import":

@@ -12,12 +12,76 @@ from rc_metastudio import automation
 from tests.python.gui.test_types import mouse_click, required
 
 
-def run(app, window, work, root, record, analyze):
+def run(app, window, work, root, record, analyze, *, direct_write=False):
+    """Compare the same writers/assertions with and without a real save dialog."""
+    from collections import Counter
+    from contextlib import ExitStack
+    import weakref
+    from rc_metastudio import manuscript_report
+
+    mode = "direct" if direct_write else "dialog"
+    writes = Counter()
+
+    def checked_writer(extension, writer):
+        def write(report, path):
+            resources = []
+
+            def observed(factory):
+                def create(*args, **kwargs):
+                    value = factory(*args, **kwargs)
+                    resources.append((factory.__name__, weakref.ref(value)))
+                    return value
+                return create
+
+            state = dict(mode=mode, format=extension, path=str(path), number=sum(writes.values()) + 1)
+            print("Manuscript writer: " + repr(dict(state, phase="enter")), file=sys.stderr, flush=True)
+            with ExitStack() as stack:
+                for name in ("QPdfWriter", "QPainter", "QTextDocument"):
+                    factory = getattr(manuscript_report, name)
+                    stack.enter_context(patch.object(manuscript_report, name, new=observed(factory)))
+                writer(report, path)
+            # No GC or event pumping: returning from the writer must release its
+            # paint devices before a subsequent save dialog can process events.
+            alive = [name for name, reference in resources if reference() is not None]
+            created = dict(Counter(name for name, _reference in resources))
+            print("Manuscript writer: " + repr(dict(state, phase="returned", created=created, alive=alive)), file=sys.stderr, flush=True)
+            assert not alive, (state, "writer resources retained after return", alive)
+            assert pathlib.Path(path).is_file(), path
+            writes[extension] += 1
+            record("manuscript-writer-released", **state, created=created, alive=alive)
+        return write
+
+    import pathlib
+    with patch.object(manuscript_report, "write_pdf", new=checked_writer("pdf", manuscript_report.write_pdf)), \
+         patch.object(manuscript_report, "write_docx", new=checked_writer("docx", manuscript_report.write_docx)):
+        _run(app, window, work, root, record, analyze, direct_write=direct_write)
+    assert writes == {"pdf": 20, "docx": 8}, (mode, writes)
+    record("manuscript-export-mode-complete", mode=mode, writes=dict(writes))
+
+
+def _run(app, window, work, root, record, analyze, *, direct_write):
     pending_close = None
+    previous_dialog: QtWidgets.QFileDialog | None = None
+    picker_number = 0
+    operation = "setup"
+    mode = "direct" if direct_write else "dialog"
+
+    def export_report(view, path, suffix, picker=None):
+        if direct_write:
+            from rc_metastudio.manuscript_report import ManuscriptReport, write_docx, write_pdf
+            (write_pdf if suffix == "pdf" else write_docx)(ManuscriptReport.from_result(view.results), path)
+        elif picker is None:
+            with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', return_value=(str(path), suffix)):
+                view.export_report_action.trigger()
+        else:
+            with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', side_effect=picker):
+                view.export_report_action.trigger()
 
     def lifetime_marker(phase, view):
         deleted = sip.isdeleted(view)
-        state = {"phase": phase, "view": hex(id(view)), "deleted": deleted}
+        state = {"phase": phase, "view": hex(id(view)), "deleted": deleted,
+                 "mode": mode, "operation": operation, "picker_number": picker_number,
+                 "previous_dialog_deleted": None if previous_dialog is None else sip.isdeleted(previous_dialog)}
         if pending_close is not None:
             state["previous_result_deleted"] = sip.isdeleted(pending_close)
         if not deleted:
@@ -106,8 +170,7 @@ def run(app, window, work, root, record, analyze):
         (work / (method + '-prose.txt')).write_text(view.manuscript.methods, encoding='utf-8')
         for suffix in ('pdf', 'docx'):
             path = work / (method + '.' + suffix)
-            with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', return_value=(str(path), suffix)):
-                view.export_report_action.trigger()
+            export_report(view, path, suffix)
             if suffix == 'pdf':
                 text = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', str(path), '-'], text=True, encoding='utf-8')
             else:
@@ -124,6 +187,9 @@ def run(app, window, work, root, record, analyze):
         print(f"Manuscript analysis: {method}", file=sys.stderr, flush=True)
         view = analyze(app, window, method)
         def picker(*args, **kwargs):
+            nonlocal previous_dialog, picker_number
+            assert previous_dialog is None or sip.isdeleted(previous_dialog)
+            picker_number += 1
             assert args[0] is view and not sip.isdeleted(view) and view.isVisible()
             lifetime_marker(f"{sample}-{suffix}-picker-create", view)
             record('manuscript-picker-before', view, sample=sample, suffix=suffix)
@@ -133,6 +199,10 @@ def run(app, window, work, root, record, analyze):
             dialog.setNameFilter('Report (*.' + suffix + ')')
             dialog.setDirectory(str(work))
             dialog.selectFile(str(path))
+            models = dialog.findChildren(QtCore.QAbstractItemModel)
+            model_names = [required(model.metaObject(), "file-dialog model type").className() for model in models]
+            print("Manuscript dialog: " + repr(dict(operation=operation, picker_number=picker_number,
+                  phase="created", directory=str(work), models=model_names)), file=sys.stderr, flush=True)
             picker_errors = []
             def save():
                 try:
@@ -160,15 +230,28 @@ def run(app, window, work, root, record, analyze):
                 assert accepted
                 selected = dialog.selectedFiles()[0], dialog.selectedNameFilter()
             finally:
-                automation.dispose_qobjects(app, (dialog,))
+                # Explicitly finish this dialog's deferred destruction before
+                # the next writer or nested event loop. This also checks models.
+                dialog.hide()
+                dialog.deleteLater()
+                for _ in range(2):
+                    app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+                    app.processEvents()
+                destroyed = sip.isdeleted(dialog)
+                models_destroyed = [sip.isdeleted(model) for model in models]
+                print("Manuscript dialog: " + repr(dict(operation=operation, picker_number=picker_number,
+                      phase="deleted", dialog_deleted=destroyed, models=model_names,
+                      models_deleted=models_destroyed)), file=sys.stderr, flush=True)
+                assert destroyed and all(models_destroyed), (operation, destroyed, models_destroyed)
+                previous_dialog = dialog
             assert sip.isdeleted(dialog)
             assert not sip.isdeleted(view) and view.isVisible()
             record('manuscript-picker-after', view, sample=sample, suffix=suffix)
             return selected
         for suffix in ('pdf', 'docx'):
+            operation = f"{sample}-{suffix}"
             path = work / (sample + '.' + suffix)
-            with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', side_effect=picker):
-                view.export_report_action.trigger()
+            export_report(view, path, suffix, picker)
             assert path.exists()
             if suffix == 'docx':
                 doc = Document(path)
@@ -234,9 +317,9 @@ def run(app, window, work, root, record, analyze):
             gc.collect()
             path = work / f"stress-{sample}-{cycle}.pdf"
             suffix = "pdf"
+            operation = f"{sample}-stress-{cycle}-pdf"
             lifetime_marker(f"{sample}-stress-{cycle}-export", view)
-            with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', side_effect=picker):
-                view.export_report_action.trigger()
+            export_report(view, path, suffix, picker)
             assert path.read_bytes().startswith(b"%PDF")
             app.processEvents()
             assert sip.isdeleted(previous)
