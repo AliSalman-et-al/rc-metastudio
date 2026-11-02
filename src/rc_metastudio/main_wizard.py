@@ -1015,7 +1015,8 @@ class MainWizard(QWizard):
         self.setPage(Page_CsvImport, CsvImportPage())
         for frame in self.findChildren(QFrame):
             if frame.frameShape() == QFrame.Shape.HLine:
-                frame.setStyleSheet("color: palette(mid);")
+                frame.setFixedHeight(1)
+                frame.setStyleSheet("border: none; background-color: palette(mid);")
 
         if path is None:
             self.setStartId(Page_Welcome)

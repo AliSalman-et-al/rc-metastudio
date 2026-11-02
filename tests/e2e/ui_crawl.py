@@ -520,6 +520,7 @@ def dark(driver, capture, missing):
     for role in (QtGui.QPalette.ColorRole.Window, QtGui.QPalette.ColorRole.Button, QtGui.QPalette.ColorRole.Base):
         palette.setColor(role, QtGui.QColor("#202020"))
     palette.setColor(QtGui.QPalette.ColorRole.AlternateBase, QtGui.QColor("#292929"))
+    palette.setColor(QtGui.QPalette.ColorRole.Mid, QtGui.QColor("#404040"))
     driver.app.setPalette(palette)
     try:
         capture("J-grid-tabs", driver.window)
@@ -532,6 +533,14 @@ def dark(driver, capture, missing):
         for page, detail in ((wizard.Page_Welcome, "welcome"), (wizard.Page_DataType, "wizard")):
             form.setStartId(page)
             form.restart()
+            if detail == "welcome":
+                line = required(form.page(wizard.Page_Welcome)).findChild(QtWidgets.QFrame, "line")
+                assert line is not None and line.isVisible()
+                driver.app.processEvents()
+                pixel = line.grab().toImage().pixelColor(line.width() // 2, line.height() // 2)
+                mid = line.palette().color(QtGui.QPalette.ColorRole.Mid)
+                assert pixel == mid, (pixel.name(), mid.name())
+                assert abs(pixel.lightness() - palette.color(QtGui.QPalette.ColorRole.Window).lightness()) < 64
             capture("J-" + detail, form)
         form.close()
         def capture_import(step, widget):
