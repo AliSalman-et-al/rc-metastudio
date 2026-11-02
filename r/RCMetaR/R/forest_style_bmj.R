@@ -569,7 +569,7 @@ rcmetar.forest.bmj.layout.preflight <- function(bundle, size.policy="export") {
     bottom.padding <- 4.5 + max(0, size$direction_lines - 1) * 0.8
     rows <- list(
         k=k,
-        study_rows=k:1,
+        study_rows=k:1 + 0.65,
         ylim=c(-bottom.padding, k + top.padding),
         top=k + top.padding,
         manual_sequential_labels=FALSE,
