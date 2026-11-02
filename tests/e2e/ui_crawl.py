@@ -427,12 +427,72 @@ def calculators(driver, capture, missing, prefix="D", families=None):
         form.close()
 
 
+def dark(driver, capture, missing):
+    from PyQt6 import QtGui
+    from rc_metastudio import main_wizard as wizard
+    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
+    original = driver.app.palette()
+    palette = QtGui.QPalette(original)
+    for role in (QtGui.QPalette.ColorRole.Text, QtGui.QPalette.ColorRole.ButtonText, QtGui.QPalette.ColorRole.WindowText):
+        palette.setColor(role, QtGui.QColor("#eeeeee"))
+    for role in (QtGui.QPalette.ColorRole.Window, QtGui.QPalette.ColorRole.Button, QtGui.QPalette.ColorRole.Base):
+        palette.setColor(role, QtGui.QColor("#202020"))
+    palette.setColor(QtGui.QPalette.ColorRole.AlternateBase, QtGui.QColor("#292929"))
+    driver.app.setPalette(palette)
+    try:
+        capture("J-grid-tabs", driver.window)
+        menu = driver.window.menuAnalysis
+        menu.popup(driver.window.analysis_button.mapToGlobal(QtCore.QPoint(0, 0)))
+        capture("J-menu", menu)
+        menu.close()
+        form = wizard.MainWizard(path="new_dataset")
+        form.show()
+        for page, detail in ((wizard.Page_Welcome, "welcome"), (wizard.Page_DataType, "wizard")):
+            form.setStartId(page)
+            form.restart()
+            capture("J-" + detail, form)
+        form.close()
+        imports(driver, lambda step, widget: capture("J-import", widget) if step == "C-csv-preview" else None, missing)
+        calculators(driver, capture, missing, prefix="J", families={"binary"})
+        form = AnalysisSetupDialog(driver.window.model, parent=driver.window, confidence_level=95)
+        form.show()
+        form.advanced_toggle.setChecked(True)
+        capture("J-setup-advanced", form)
+        form.close()
+        original_record = driver.record_step
+        driver.record_step = lambda *args, **kwargs: None
+        try:
+            view = driver.analyze(driver.app, driver.window, "binary.random")
+        finally:
+            driver.record_step = original_record
+        item = view.nav_tree.findItems("Manuscript", QtCore.Qt.MatchFlag.MatchExactly)[0]
+        view.nav_tree.setCurrentItem(item)
+        capture("J-manuscript", view)
+        title, image = next(iter(view.results.images.items()))
+        section = next(section for section in view.results.sections if section.source_key == title)
+        item = view.nav_tree.findItems(section.title, QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)[0]
+        view.nav_tree.setCurrentItem(item)
+        view.report_action.setChecked(False)
+        view._show_report(False)
+        view.fit_width_action.trigger()
+        capture("J-forest", view)
+        title, image = next(iter(view.results.images.items()))
+        artifact = view.create_plot_artifact(title, image, params_path=view.results.image_params_paths.get(title))
+        plot_editor(driver, capture, artifact, view, "plot-editor", prefix="J")
+        driver.window.action_summary_of_findings.trigger()
+        capture("J-summary-of-findings", driver.window.summary_of_findings_dialog)
+        driver.window.summary_of_findings_dialog.close()
+        view.close()
+    finally:
+        driver.app.setPalette(original)
+
+
 def run(driver):
     index = driver.EVIDENCE / "ui-crawl-index.md"
     index.write_text("# UI crawl\n\n", encoding="utf-8")
     original_record = driver.record_step
     captured = set()
-    missing = [ "J deferred to next run"]
+    missing = []
 
     def capture(step, widget):
         assert step not in captured, step
@@ -457,6 +517,7 @@ def run(driver):
     try:
         shell(driver, capture, missing)
         dialogs(driver, capture, missing)
+        dark(driver, capture, missing)
         analysis_setup(driver, capture, missing)
         results(driver, capture, missing)
         plots(driver, capture, missing)
@@ -465,4 +526,4 @@ def run(driver):
     finally:
         with index.open("a", encoding="utf-8") as stream:
             stream.write("\nNOT CAPTURED:\n" + "\n".join("- " + item for item in missing) + "\n")
-    raise AssertionError("UI crawl incomplete: " + "; ".join(missing))
+    assert not missing, "UI crawl incomplete: " + "; ".join(missing)
