@@ -1762,7 +1762,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             )
 
         # Reflect the selected method in the dialog labels.
-        window_title, method_label = "", ""
+        window_title = ""
         if self.is_meta_regression:
             # Diagnostic Reitsma meta-regression always models both sides.
             # The legacy univariate effect radios would otherwise advertise a
@@ -1774,30 +1774,18 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             # that fixed effects can be requested.
             self.regression_model_group.hide()
             window_title = "Reitsma meta-regression"
-            method_label = "Reitsma bivariate model"
         elif self._combined_diagnostic:
             window_title = "Method and parameters"
-            method_label = diagnostic_metric_group_display_label("sens_spec")
         elif self.sens_spec:
             metric_group_label = diagnostic_metric_group_display_label("sens_spec")
             window_title = "Method and parameters for %s" % metric_group_label
-            method_label = "Method for %s" % metric_group_label
         else:
             metric_group_label = diagnostic_metric_group_display_label("lr_dor")
             window_title = "Method and parameters for %s" % metric_group_label
-            method_label = "Method for %s" % metric_group_label
 
         self.setWindowTitle(QtCore.QCoreApplication.translate("Dialog", window_title))
-        self.method_lbl.setText("Analysis method: " + method_label)
-        if self.data_type == "diagnostic" and not self._combined_diagnostic:
-            # Let the grid reserve space for the wrapping diagnostic label.
-            self.method_lbl.setMinimumWidth(
-                self.method_lbl.fontMetrics().horizontalAdvance("Analysis method:") + 12
-            )
-            self.method_lbl.setWordWrap(True)
-            self.method_lbl.setSizePolicy(
-                QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred
-            )
+        self.method_lbl.setText("Analysis method:")
+        self.method_lbl.setWordWrap(False)
 
 
 def _dispose_progress(progress):

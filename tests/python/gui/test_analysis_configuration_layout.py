@@ -228,7 +228,7 @@ def test_configuration_controls_have_accessible_label_associations(
             "diagnostic",
             ["lr", "dor"],
             "Method & Parameters for Likelihood Ratios and Diagnostic Odds Ratio",
-            "Analysis method: Method for Likelihood Ratios and Diagnostic Odds Ratio",
+            "Analysis method:",
         ),
     ),
 )
@@ -254,7 +254,12 @@ def test_method_dialog_wording_is_scoped_to_its_analysis_family(
             "continuous": "Outcome · Odds Ratio",
             "diagnostic": "Outcome · Positive and negative likelihood ratios, Diagnostic odds ratio",
         }[data_type]
+        dialog.show()
+        qapp.processEvents()
         assert dialog.method_lbl.text() == expected_method_label
+        assert not dialog.method_lbl.wordWrap()
+        assert dialog.method_lbl.fontMetrics().horizontalAdvance(expected_method_label) <= dialog.method_lbl.width()
+        assert not dialog.lr_dor_method_lbl.isVisible()
     finally:
         dialog.close()
 
@@ -265,12 +270,12 @@ def test_method_dialog_wording_is_scoped_to_its_analysis_family(
         (
             "meta-regression",
             "Reitsma Meta-Regression",
-            "Analysis method: Reitsma bivariate model",
+            "Analysis method:",
         ),
         (
             None,
             "Method & Parameters for Sensitivity and Specificity",
-            "Analysis method: Method for Sensitivity and Specificity",
+            "Analysis method:",
         ),
     ),
     ids=["meta-regression", "standard"],
@@ -349,13 +354,19 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
         )
         font = QtGui.QFont(dialog.font())
         font.setPointSize(max(14, font.pointSize() + 5))
+        font.setStretch(120)
         dialog.setFont(font)
         dialog.specs_tab.setCurrentWidget(dialog.methods_tab)
         dialog.show()
         qapp.processEvents()
 
         assert dialog.windowTitle() == ("Outcome · Sensitivity and Specificity" if analysis_type == "meta-regression" else "Outcome · Sensitivity, Specificity")
+        dialog.show()
+        qapp.processEvents()
         assert dialog.method_lbl.text() == expected_method_label
+        assert not dialog.method_lbl.wordWrap()
+        assert dialog.method_lbl.fontMetrics().horizontalAdvance(expected_method_label) <= dialog.method_lbl.width()
+        assert not dialog.lr_dor_method_lbl.isVisible()
         assert dialog.current_method == "diagnostic.reitsma"
         assert dialog.diagnostic_regression_group.isHidden() is (
             analysis_type == "meta-regression"
