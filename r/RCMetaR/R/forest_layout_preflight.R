@@ -17,18 +17,9 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, size.
     if (length(bundle$display_order) == length(plan$rows$study_rows)) {
         plan$rows$study_rows[bundle$display_order] <- sort(plan$rows$study_rows, decreasing=TRUE)
     }
-    directions <- rcmetar.revman.direction.labels(bundle)
-    direction.lines <- rcmetar.forest.with.measurement.device({
-        max(vapply(c(directions$left, directions$right), function(label) {
-            length(rcmetar.forest.direction.lines(label, plan$device$plot_width * 0.35,
-                plan$typography$cex, font=if (style == "bmj") 2 else 1, units="inches"))
-        }, integer(1)), 1L)
-    })
-    plan$device$direction_lines <- direction.lines
-    plan$device$height <- plan$device$height + max(0, direction.lines - 2) * 0.3
-    if (plan$style$name %in% c("revman", "bmj") && !plan$rows$manual_sequential_labels) {
-        plan$rows$ylim[[1]] <- min(plan$rows$ylim[[1]], -5 - direction.lines * 0.9)
-    }
+    direction <- rcmetar.forest.direction.metrics(bundle, plan)
+    plan$device$direction_lines <- direction$lines
+    plan$device$height <- plan$device$height + max(0, direction$lines - 2) * direction$spacing
     plan$headers$height <- rcmetar.forest.header.height(bundle, plan$typography$cex)
     plan$device$height <- plan$device$height + max(0, plan$headers$height - 0.5)
     plan
@@ -110,7 +101,7 @@ rcmetar.forest.layout.cap.warnings <- function(size, min.cex=0.78, max.width=18,
 
 rcmetar.forest.with.measurement.device <- function(expr) {
     scratch <- rcmetar.scratch.path("INTER")
-    grDevices::png(filename=scratch, width=1200, height=800, res=144)
+    rcmetar.open.svg_device(scratch, list(width=1200 / 144, height=800 / 144))
     on.exit(grDevices::dev.off(), add=TRUE)
     force(expr)
 }
