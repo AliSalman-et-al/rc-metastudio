@@ -3,42 +3,10 @@
 """Stable semantic identities and serialization for workspace columns."""
 
 import json
-import uuid
 from dataclasses import dataclass
 
 WORKSPACE_COLUMN_IDENTITY_ROLE = 0x0100 + 73
 WORKSPACE_COLUMN_WIDTH_STATE_VERSION = 1
-
-
-def stable_covariate_identity(dataset, covariate):
-    """Return a neutral durable ID, migrating legacy domain objects here."""
-    existing = getattr(covariate, "stable_id", None)
-    if existing:
-        return existing
-
-    ordinal = dataset.covariates.index(covariate)
-    legacy_schema = {
-        "title": dataset.title or "",
-        "is_diagnostic": bool(dataset.is_diagnostic),
-        "outcomes": [
-            {
-                "name": name,
-                "type": dataset.get_outcome_type(name),
-                "subtype": dataset.get_outcome_subtype(name),
-            }
-            for name in dataset.get_outcome_names()
-        ],
-        "covariates": [
-            {"name": item.name, "type": int(item.data_type)}
-            for item in dataset.covariates
-        ],
-    }
-    seed = "rc-metastudio/legacy-covariate/v1/%s/%d" % (
-        json.dumps(legacy_schema, sort_keys=True, separators=(",", ":")),
-        ordinal,
-    )
-    covariate.stable_id = uuid.uuid5(uuid.NAMESPACE_URL, seed).hex
-    return covariate.stable_id
 
 
 @dataclass(frozen=True, order=True)

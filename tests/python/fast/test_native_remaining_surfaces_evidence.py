@@ -85,30 +85,6 @@ EXPECTED_SURFACES = {
         "content-preferred",
         "content_preferred",
     ),
-    "add-follow-up": (
-        "accept-cancel",
-        "TRANSACTIONAL",
-        "transactional",
-        "application-first-use",
-        "content-preferred",
-        "content_preferred",
-    ),
-    "add-group": (
-        "accept-cancel",
-        "TRANSACTIONAL",
-        "transactional",
-        "application-first-use",
-        "content-preferred",
-        "content_preferred",
-    ),
-    "add-outcome": (
-        "accept-cancel",
-        "TRANSACTIONAL",
-        "transactional",
-        "application-first-use",
-        "content-preferred",
-        "content_preferred",
-    ),
     "add-study": (
         "accept-cancel",
         "TRANSACTIONAL",
@@ -444,7 +420,7 @@ def test_native_remaining_surface_evidence_rejects_mismatched_scale_surface_path
     _write_bundle(tmp_path)
     record_path = native_smoke._record_path(tmp_path, 1.0)
     record = json.loads(record_path.read_text(encoding="utf-8"))
-    record["surfaces"]["add-group"]["capture"]["path"] = "scale-1.5/add-group.png"
+    record["surfaces"]["add-study"]["capture"]["path"] = "scale-1.5/add-study.png"
     record_path.write_text(json.dumps(record), encoding="utf-8")
 
     with pytest.raises(ValueError, match="does not match its scale and surface"):
@@ -455,7 +431,7 @@ def test_native_remaining_surface_evidence_rejects_duplicate_capture_path(tmp_pa
     _write_bundle(tmp_path)
     record_path = native_smoke._record_path(tmp_path, 1.0)
     record = json.loads(record_path.read_text(encoding="utf-8"))
-    record["surfaces"]["add-group"]["capture"] = dict(
+    record["surfaces"]["add-study"]["capture"] = dict(
         record["surfaces"]["about-legal"]["capture"]
     )
     record_path.write_text(json.dumps(record), encoding="utf-8")
@@ -468,7 +444,7 @@ def test_native_remaining_surface_evidence_rejects_unobserved_behavior(tmp_path)
     _write_bundle(tmp_path)
     record_path = native_smoke._record_path(tmp_path, 1.0)
     record = json.loads(record_path.read_text(encoding="utf-8"))
-    surface = record["surfaces"]["add-group"]
+    surface = record["surfaces"]["add-study"]
     surface["actions"]["accepted_observed"] = False
     record_path.write_text(json.dumps(record), encoding="utf-8")
 
@@ -480,7 +456,7 @@ def test_native_remaining_surface_evidence_rejects_unmoved_focus(tmp_path):
     _write_bundle(tmp_path)
     record_path = native_smoke._record_path(tmp_path, 1.0)
     record = json.loads(record_path.read_text(encoding="utf-8"))
-    focus = record["surfaces"]["add-group"]["focus"]
+    focus = record["surfaces"]["add-study"]["focus"]
     focus["after_tab"] = focus["initial"]
     focus["moved"] = False
     record_path.write_text(json.dumps(record), encoding="utf-8")

@@ -2,7 +2,7 @@
 <ui version="4.0">
  <class>WizardPage</class>
  <widget class="QWizardPage" name="WizardPage">
-  <property name="title"><string>Name the outcome and arms</string></property>
+  <property name="title"><string>Outcome and groups</string></property>
   <layout class="QVBoxLayout" name="workflowPageLayout">
    <property name="leftMargin"><number>0</number></property><property name="topMargin"><number>0</number></property><property name="rightMargin"><number>0</number></property><property name="bottomMargin"><number>0</number></property>
    <item><widget class="QScrollArea" name="pageScrollArea">
@@ -13,13 +13,13 @@
       <item><layout class="QFormLayout" name="formLayout">
        <property name="fieldGrowthPolicy"><enum>QFormLayout::AllNonFixedFieldsGrow</enum></property><property name="rowWrapPolicy"><enum>QFormLayout::WrapAllRows</enum></property>
        <item row="0" column="0"><widget class="QLabel" name="label"><property name="text"><string>Outcome name</string></property><property name="buddy"><cstring>outcome_name_LineEdit</cstring></property></widget></item>
-       <item row="0" column="1"><widget class="QLineEdit" name="outcome_name_LineEdit"><property name="placeholderText"><string>Enter the outcome being measured</string></property><property name="accessibleName"><string>Outcome name</string></property></widget></item>
+       <item row="0" column="1"><widget class="QLineEdit" name="outcome_name_LineEdit"><property name="placeholderText"><string>For example, mortality</string></property><property name="accessibleName"><string>Outcome name</string></property></widget></item>
        <item row="1" column="0"><widget class="QLabel" name="first_group_label"><property name="text"><string>Intervention name</string></property><property name="buddy"><cstring>first_group_name</cstring></property></widget></item>
        <item row="1" column="1"><widget class="QLineEdit" name="first_group_name"><property name="placeholderText"><string>Intervention</string></property><property name="accessibleName"><string>Intervention name</string></property></widget></item>
        <item row="2" column="0"><widget class="QLabel" name="second_group_label"><property name="text"><string>Control name</string></property><property name="buddy"><cstring>second_group_name</cstring></property></widget></item>
        <item row="2" column="1"><widget class="QLineEdit" name="second_group_name"><property name="placeholderText"><string>Control</string></property><property name="accessibleName"><string>Control name</string></property></widget></item>
       </layout></item>
-      <item><widget class="QLabel" name="name_note"><property name="text"><string>Arm names are optional. Leave them blank to use Intervention and Control.</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
+      <item><widget class="QLabel" name="name_note"><property name="text"><string>Default group names: Intervention and Control.</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
       <item><widget class="QLabel" name="validation_label"><property name="text"><string/></property><property name="wordWrap"><bool>true</bool></property><property name="accessibleName"><string>Name validation</string></property></widget></item>
       <item><spacer name="namingSpacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>20</height></size></property></spacer></item>
      </layout>

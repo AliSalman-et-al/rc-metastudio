@@ -13,6 +13,10 @@ Choose checks that can detect the changed failure. Preserve transcripts and dist
 
 ## Native and typing commands
 
+Every qualification runs the repository-wide strict Ty invocation in `scripts/verify-qt6.ps1` before GUI tests. On POSIX, preserve its generated-module search paths and full source selection, using the configured `RCMS_QT6_BUILD_ROOT`.
+
+For Windows-target qualification on another host, add `--python-platform win32` so platform-specific APIs such as `winreg` resolve against Windows. Keep that target on subsequent qualification runs. Retain the exact command and transcript. Record typing and GUI results separately: a failed typing gate means the following GUI phase has not run.
+
 On Windows the repository owns the complete Qt lane:
 
 ```powershell

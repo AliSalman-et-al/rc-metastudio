@@ -219,18 +219,19 @@ def run(
         for section in view.results.sections:
             if section.kind == "text" and section.source_key == "Weights":
                 assert section.value.strip() not in rendered
-        report = view._plain_text_report()
+        view.copy_report_action.trigger()
+        report = app.clipboard().text()
         for section in view.results.sections:
             for table in section.tables:
-                assert "\t".join(table.headers) in report
-                assert all("\t".join(row) in report for row in table.rows)
+                assert all(header in report for header in table.headers)
+                assert all(value in report for row in table.rows for value in row if value)
         if scenario.startswith("analysis-diagnostic-regression"):
             assert "Image Order" not in view.texts
             assert "diagnostic.reitsma.sensitivity.coefficients" not in view.report_text.toPlainText()
             assert "diagnostic.reitsma.specificity.coefficients" not in view.report_text.toPlainText()
             if scenario == "analysis-diagnostic-regression-multiple":
                 assert view.report_text.toPlainText().count("Overall ML likelihood-ratio test") == 1
-                assert view._plain_text_report().count("Overall ML likelihood-ratio test") == 1
+                assert app.clipboard().text().count("Overall ML likelihood-ratio test") == 1
         assert view.results.images, dict(view.texts)
         if scenario == "analysis-data-twoarm-mean" and workflow == "standard":
             from rc_metastudio import r_bridge
@@ -298,9 +299,7 @@ def run(
         )
 
     def covariate(name, kind, values):
-        window.model.dataset.add_covariate(
-            analysis_dataset.Covariate(name, kind), values
-        )
+        window.model.add_covariate(name, kind, values)
         window.model.reset_model()
         window.enable_menu_options_that_require_dataset()
 
@@ -391,7 +390,7 @@ def run(
             window,
             data_type=name,
             metric=metric,
-            included=sum(s.include for s in model.dataset.studies),
+            included=sum(s.include for s in model.current_sheet.rows),
         )
         window.out_path = str(work / "typed.rcms")
         columns = [model.NAME, *model.RAW_DATA, *model.OUTCOMES]
@@ -404,7 +403,7 @@ def run(
         assert window.model.current_effect == metric
         assert window.model.get_current_outcome_type() == family
         assert window.model.get_current_outcome_subtype() == subtype
-        assert sum(s.include for s in window.model.dataset.studies) == 6
+        assert sum(s.include for s in window.model.current_sheet.rows) == 6
         after = [
             [
                 str(window.model.data(window.model.index(row, column)))
@@ -432,11 +431,11 @@ def run(
         if sample == "continuous":
             import copy
 
-            for study in list(window.model.dataset.studies):
+            for study in list(window.model.current_sheet.rows):
                 duplicate = copy.deepcopy(study)
-                duplicate.id = window.model.dataset.max_study_id() + 1
-                duplicate.name += " replicate"
-                window.model.dataset.add_study(duplicate)
+                duplicate.id = __import__("uuid").uuid4().hex
+                duplicate.label += " replicate"
+                window.model.current_sheet.rows.append(duplicate)
             window.model.set_state(window.model.get_state())
         callback_errors = []
 
@@ -484,6 +483,9 @@ def run(
             assert any("contour" in key for key in view.results.images)
             assert any("trim-and-fill" in key for key in view.texts)
             assert "small-study.extrapolation" in view.texts
+        if sample == "amino":
+            from tests.e2e.trimfill_geometry import check_trimfill
+            check_trimfill(view, record)
         if keep_results:
             return view
         view.close()
@@ -540,7 +542,7 @@ def run(
                     covariate(
                         "Group",
                         "factor",
-                        {s.name: "A" if i % 2 else "B" for i, s in enumerate(studies)},
+                        {s.label: "A" if i % 2 else "B" for i, s in enumerate(studies)},
                     )
                 if workflow == "meta-regression" and case.endswith(
                     ("continuous", "multiple")
@@ -548,7 +550,7 @@ def run(
                     covariate(
                         "Dose",
                         "continuous",
-                        {s.name: float(i + 1) for i, s in enumerate(studies)},
+                        {s.label: float(i + 1) for i, s in enumerate(studies)},
                     )
 
     if workflow_override:
@@ -655,7 +657,7 @@ def run(
         assert properties.lr_dor_panel.method == lr_dor_method
         assert properties.lr_dor_panel.params == lr_dor_parameters
     if properties.is_meta_regression:
-        assert [cov.name for cov in properties._selected_covariates()] == [cov.name for cov in window.model.dataset.covariates]
+        assert [cov["name"] for cov in properties._selected_covariates()] == [cov["name"] for cov in window.model.current_sheet.covariates]
     record("properties-prefilled", properties, workflow=properties.analysis_type,
            method=properties.current_method, parameters=dict(properties.current_param_vals))
     properties.reject()

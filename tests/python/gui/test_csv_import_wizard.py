@@ -43,7 +43,7 @@ def _write_csv(path, *, quoted_study=False):
     )
 
 
-def test_csv_schema_tables_keep_readable_columns_and_own_overflow(
+def test_csv_preview_keeps_readable_columns_and_owns_overflow(
     tmp_path, qapp
 ):
     from PyQt6 import QtWidgets
@@ -53,23 +53,6 @@ def test_csv_schema_tables_keep_readable_columns_and_own_overflow(
     _write_csv(csv_path)
     wizard, page = _new_csv_wizard()
     try:
-        for table in (page.required_fmt_table,):
-            header = table.horizontalHeader()
-            assert (
-                table.horizontalScrollBarPolicy()
-                == QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded
-            )
-            for column in range(table.columnCount()):
-                assert (
-                    header.sectionResizeMode(column)
-                    == QtWidgets.QHeaderView.ResizeMode.Interactive
-                )
-                label = table.horizontalHeaderItem(column)
-                assert label is not None
-                assert table.columnWidth(column) >= table.fontMetrics().horizontalAdvance(
-                    label.text()
-                )
-
         wizard.setStartId(main_wizard.Page_CsvImport)
         wizard.restart()
         page = wizard.page(main_wizard.Page_CsvImport)

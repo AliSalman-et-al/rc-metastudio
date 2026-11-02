@@ -23,6 +23,7 @@ from rc_metastudio import adaptive_window, app_error_handler, plot_capabilities,
 from rc_metastudio.plot_defaults import FOREST_ARM_LABELS
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
+    size_plot_text_editor,
     plot_parameter_text_value,
     plot_text_value,
     set_plot_text_value,
@@ -102,13 +103,14 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.figure_caption = QLineEdit(self)
         self.figure_caption.setText(str(self._scalar(self._params.get("plot_caption", "")) or "").replace("\n", " · "))
         self.figure_caption.setAccessibleName("Figure caption")
-        self.figure_caption.setToolTip("Outcome, comparison and follow-up for standalone figures. Edit or clear to remove.")
+        self.figure_caption.setToolTip("Sheet and arm comparison for standalone figures. Edit or clear to remove.")
         self.figure_caption.setMaxLength(1000)
         caption_label = QLabel("Figure caption:", self)
         caption_label.setBuddy(self.figure_caption)
         caption_row = self.style_layout.rowCount()
-        self.style_layout.addWidget(caption_label, caption_row, 0)
-        self.style_layout.addWidget(self.figure_caption, caption_row, 1, 1, 2)
+        caption_columns = self.style_layout.columnCount()
+        self.style_layout.addWidget(caption_label, caption_row, 0, 1, caption_columns)
+        self.style_layout.addWidget(self.figure_caption, caption_row + 1, 0, 1, caption_columns)
         self._sroc_group = None
         if self.plot_type == "sroc":
             self._build_sroc_controls()
@@ -135,6 +137,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.setTabOrder(self.style_cbo, self.figure_caption)
         self.setTabOrder(self.figure_caption, self.show_1)
         self._configure_option_groups()
+        size_plot_text_editor(self)
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )

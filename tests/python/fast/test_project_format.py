@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+from typing import cast
 import hashlib
 import io
 import json
@@ -12,6 +13,8 @@ import zipfile
 import pytest
 
 import rc_metastudio.project_format as project_format
+from rc_metastudio import project_adapter
+from rc_metastudio.project_domain import validate_project_semantics, ProjectSemanticError
 from rc_metastudio.project_format import (
     CURRENT_FORMAT_VERSION,
     ProjectArchiveLimits,
@@ -20,7 +23,6 @@ from rc_metastudio.project_format import (
     load_project,
     migrate_to_latest,
     save_project,
-    reconstruct_analysis_dataset,
     JsonObject,
     JsonValue,
 )
@@ -34,43 +36,25 @@ SAMPLE_DIR = ROOT / "sample_projects"
 def _minimal_project() -> JsonObject:
     return {
         "schema_version": CURRENT_FORMAT_VERSION,
-        "dataset": {
-            "analysis_family": "binary",
-            "covariates": [],
-            "is_diagnostic": False,
-            "notes": "",
-            "outcomes": [
-                {
-                    "data_type": 0,
-                    "follow_ups": ["first"],
-                    "name": "Mortality",
-                    "sub_type": None,
-                }
-            ],
-            "studies": [],
-            "summary": None,
-            "title": "Example",
-        },
+        "title": "Example", "notes": "",
+        "sheets": [{"id": "sheet", "name": "Mortality", "family": "binary",
+                    "data_type": 0, "sub_type": None,
+                    "arms": [{"id": "tx", "name": "Intervention"},
+                             {"id": "control", "name": "Control"}],
+                    "covariates": [], "settings": {}, "rows": []}],
     }
 
 
 def _minimal_state() -> JsonObject:
-    return {
-        "schema_version": CURRENT_FORMAT_VERSION,
-        "active_outcome": None,
-        "active_follow_up": None,
-        "active_groups": [],
-        "active_effect": None,
-        "confidence_level": 95.0,
-    }
+    return {"schema_version": CURRENT_FORMAT_VERSION, "current_sheet_id": None}
 
 
-def _group_project(
+def _legacy_group_project(
     family: str, subtype: str | None, raw_values: list[list[JsonValue]]
 ) -> JsonObject:
     data_type = {"binary": 0, "continuous": 1, "diagnostic": 2}[family]
     return {
-        "schema_version": CURRENT_FORMAT_VERSION,
+        "schema_version": 1,
         "dataset": {
             "analysis_family": family,
             "covariates": [],
@@ -117,9 +101,30 @@ def _group_project(
     }
 
 
+def _group_project(family, subtype, raw_values):
+    arms = [{"id": f"arm:{i}", "name": f"Tx {i + 1}"} for i in range(len(raw_values))]
+    return {"schema_version": CURRENT_FORMAT_VERSION, "title": "Group contract", "notes": "",
+            "sheets": [{"id": "sheet", "name": "Outcome", "family": family,
+                        "data_type": {"binary": 0, "continuous": 1, "diagnostic": 2}[family],
+                        "sub_type": subtype, "arms": arms, "settings": {}, "covariates": [],
+                        "rows": [{"id": "row", "label": "Study", "year": 2026,
+                                  "sample_size": None, "include": True, "manually_excluded": False,
+                                  "notes": "", "covariates": {}, "entered_effects": [], "ratio_inputs": [],
+                                  "raw_data": {arm["id"]: raw for arm, raw in zip(arms, raw_values)}}]}]}
+
+
+def _legacy_state():
+    return {"schema_version": 1, "active_outcome": None, "active_follow_up": None,
+            "active_groups": [], "active_effect": None, "confidence_level": 95.0}
+
+
+def _first_sheet(project):
+    return _objects(project["sheets"])[0]
+
+
 def _snapshot_project(name: str) -> JsonObject:
     snapshot = json.loads((SNAPSHOT_DIR / f"{name}.json").read_text("utf-8"))
-    return {"schema_version": CURRENT_FORMAT_VERSION, "dataset": snapshot["dataset"]}
+    return migrate_to_latest(1, {"schema_version": 1, "dataset": snapshot["dataset"]}, _legacy_state())[0]
 
 
 def _json_bytes(value: object) -> bytes:
@@ -145,7 +150,7 @@ def _objects(value: JsonValue) -> list[JsonObject]:
 
 
 def _first_study(project: JsonObject) -> JsonObject:
-    return _objects(_object(project["dataset"])["studies"])[0]
+    return _objects(_first_sheet(project)["rows"])[0]
 
 
 def _write_archive(path: Path, members: list[tuple[str, bytes]]) -> None:
@@ -187,14 +192,12 @@ def _replace_raw_member(path: Path, member: str, payload: bytes) -> None:
 
 
 def _first_populated_raw(project: JsonObject) -> list[JsonValue]:
-    dataset = _object(project["dataset"])
-    for study in _objects(dataset["studies"]):
-        for unit in _objects(study["analysis_units"]):
-            for group in _objects(unit["groups"]):
-                raw = group["raw_data"]
+    for sheet in _objects(project["sheets"]):
+        for row in _objects(sheet["rows"]):
+            for raw in _object(row["raw_data"]).values():
                 if not isinstance(raw, list):
                     raise AssertionError("expected raw-data array")
-                if any(value != "" for value in raw):
+                if any(value not in (None, "") for value in raw):
                     return raw
     raise AssertionError("sample has no populated raw data")
 
@@ -250,54 +253,18 @@ def test_project_schema_rejects_unknown_fields_and_invalid_types(
         load_project(destination)
 
 
-@pytest.mark.parametrize(
-    ("mutation", "message"),
-    [
-        (
-            lambda dataset: dataset["outcomes"].append(dataset["outcomes"][0].copy()),
-            "duplicate outcome identifier",
-        ),
-        (
-            lambda dataset: dataset["studies"][0]["analysis_units"][0].update(
-                outcome="missing"
-            ),
-            "undeclared outcome",
-        ),
-        (
-            lambda dataset: dataset["studies"][0]["analysis_units"][1]["groups"][
-                0
-            ].update(raw_data=[1.0]),
-            "raw-data arity",
-        ),
-        (
-            lambda dataset: dataset["studies"][0]["analysis_units"][1][
-                "entered_effects"
-            ]["OR"].update(
-                {
-                    "unknown comparison": next(
-                        iter(
-                            dataset["studies"][0]["analysis_units"][1][
-                                "entered_effects"
-                            ]["OR"].values()
-                        )
-                    )
-                }
-            ),
-            "undeclared group comparison",
-        ),
-    ],
-    ids=["duplicate-outcome", "outcome-reference", "raw-arity", "group-reference"],
-)
-def test_semantic_validation_rejects_invalid_domain_relationships(
-    tmp_path: Path, mutation, message: str
-) -> None:
-    destination = tmp_path / "semantic.rcms"
+@pytest.mark.parametrize(("mutation", "message"), [
+    (lambda project: project["sheets"].append(copy.deepcopy(project["sheets"][0])), "duplicate identity"),
+    (lambda project: cast(dict, _first_study(project)["raw_data"]).update(missing=[1, 10]), "raw data reference undeclared arm"),
+    (lambda project: _first_populated_raw(project).__setitem__(slice(None), [1.0]), "raw-data arity"),
+    (lambda project: cast(list, _first_study(project)["entered_effects"]).append({"metric": "OR", "arms": ["missing"], "values": {}}), "comparison references undeclared arm"),
+], ids=["duplicate-sheet", "raw-arm-reference", "raw-arity", "comparison-reference"])
+def test_semantic_validation_rejects_invalid_domain_relationships(tmp_path, mutation, message):
     project = _snapshot_project("amino.rcms")
-    dataset = _object(project["dataset"])
-    mutation(dataset)
-
+    mutation(project)
     with pytest.raises(ProjectFormatError, match=message):
-        save_project(destination, project, _minimal_state())
+        save_project(tmp_path / "semantic.rcms", project, _minimal_state())
+
 
 
 @pytest.mark.parametrize(
@@ -357,117 +324,41 @@ def test_schema_rejects_values_outside_the_domain_vocabulary(
     tmp_path: Path, field: str, value: JsonValue
 ) -> None:
     project = _snapshot_project("amino.rcms")
-    dataset = _object(project["dataset"])
-    outcome = _objects(dataset["outcomes"])[0]
+    outcome = _first_sheet(project)
     outcome[field] = value
 
     with pytest.raises(ProjectFormatError, match=field):
         save_project(tmp_path / "vocabulary.rcms", project, _minimal_state())
 
 
-@pytest.mark.parametrize(
-    ("sample", "mutation", "message"),
-    [
-        (
-            "amino.rcms",
-            lambda dataset: dataset["studies"].append(
-                copy.deepcopy(dataset["studies"][0])
-            ),
-            "duplicate study identifier",
-        ),
-        (
-            "amino.rcms",
-            lambda dataset: dataset["studies"][0]["analysis_units"][1]["groups"][
-                1
-            ].update(id=0),
-            "duplicate group identifier",
-        ),
-        (
-            "BCG.rcms",
-            lambda dataset: dataset["covariates"].append(
-                copy.deepcopy(dataset["covariates"][0])
-            ),
-            "duplicate covariate identifier",
-        ),
-        (
-            "amino.rcms",
-            lambda dataset: dataset["studies"][0]["analysis_units"][1].update(
-                follow_up="missing"
-            ),
-            "undeclared follow-up",
-        ),
-        (
-            "amino.rcms",
-            lambda dataset: dataset["studies"][0]["analysis_units"][1][
-                "entered_effects"
-            ].update(
-                MD=dataset["studies"][0]["analysis_units"][1]["entered_effects"]["OR"]
-            ),
-            "metric conflicts with family",
-        ),
-        (
-            "amino.rcms",
-            lambda dataset: dataset["studies"][0]["analysis_units"][1]["groups"][
-                0
-            ].update(raw_data=[-1.0, 27.0]),
-            "count data cannot be negative",
-        ),
-    ],
-    ids=[
-        "study-identifier",
-        "group-identifier",
-        "covariate-identifier",
-        "follow-up-reference",
-        "cross-family-metric",
-        "numeric-domain",
-    ],
-)
-def test_semantic_validation_enforces_domain_identity_family_and_numeric_contracts(
-    tmp_path: Path, sample: str, mutation, message: str
-) -> None:
+@pytest.mark.parametrize(("sample", "mutation", "message"), [
+    ("amino.rcms", lambda sheet: sheet["rows"].append(copy.deepcopy(sheet["rows"][0])), "duplicate identity"),
+    ("amino.rcms", lambda sheet: sheet["arms"][1].update(id=sheet["arms"][0]["id"]), "duplicate identity"),
+    ("BCG.rcms", lambda sheet: sheet["covariates"].append(copy.deepcopy(sheet["covariates"][0])), "covariates: invalid or duplicate identity"),
+    ("amino.rcms", lambda sheet: sheet["rows"][0]["entered_effects"].append({"metric": "MD", "arms": [a["id"] for a in sheet["arms"][:2]], "values": {"est": .2, "lower": .1, "upper": .3, "SE": None}}), "metric conflicts with family"),
+    ("amino.rcms", lambda sheet: next(iter(sheet["rows"][0]["raw_data"].values())).__setitem__(0, -1.0), "count data cannot be negative"),
+], ids=["row-identifier", "arm-identifier", "covariate-identifier", "cross-family-metric", "numeric-domain"])
+def test_semantic_validation_enforces_domain_identity_family_and_numeric_contracts(tmp_path, sample, mutation, message):
     project = _snapshot_project(sample)
-    mutation(_object(project["dataset"]))
-
+    mutation(_first_sheet(project))
     with pytest.raises(ProjectFormatError, match=message):
         save_project(tmp_path / "invalid-domain.rcms", project, _minimal_state())
 
 
-def test_typed_snapshot_relationships_do_not_depend_on_editable_labels() -> None:
+
+def test_typed_snapshot_relationships_do_not_depend_on_editable_labels():
     project = _group_project("binary", "proportions", [[1, 10], [2, 20]])
-    dataset = _object(project["dataset"])
-    outcome = _objects(dataset["outcomes"])[0]
-    study = _objects(dataset["studies"])[0]
-    unit = _objects(study["analysis_units"])[0]
-    groups = _objects(unit["groups"])
+    before = project_adapter.project_to_dataset(project)
+    sheet = _first_sheet(project)
+    sheet["name"] = "Renamed outcome"
+    sheet["rows"][0]["label"] = "Renamed study"
+    sheet["arms"][0]["name"] = "Renamed treatment"
+    after = project_adapter.project_to_dataset(project)
+    assert after.sheets[0].id == before.sheets[0].id
+    assert after.sheets[0].rows[0].id == before.sheets[0].rows[0].id
+    assert after.sheets[0].arms[0].id == before.sheets[0].arms[0].id
+    assert after.sheets[0].rows[0].analysis_unit.get_raw_data_for_arms([a.name for a in after.sheets[0].arms]) == before.sheets[0].rows[0].analysis_unit.get_raw_data_for_arms([a.name for a in before.sheets[0].arms])
 
-    before = reconstruct_analysis_dataset(
-        project_format.ProjectDocument(1, project, _minimal_state())
-    )
-    outcome["name"] = "Renamed outcome"
-    outcome["follow_ups"] = ["Renamed follow-up"]
-    unit["outcome"] = "Renamed outcome"
-    unit["follow_up"] = "Renamed follow-up"
-    groups[0]["name"] = "Renamed treatment"
-    after = reconstruct_analysis_dataset(
-        project_format.ProjectDocument(1, project, _minimal_state())
-    )
-
-    assert after.outcomes[0].identity == before.outcomes[0].identity
-    assert (
-        after.outcomes[0].follow_ups[0].identity
-        == before.outcomes[0].follow_ups[0].identity
-    )
-    assert after.studies[0].identity == before.studies[0].identity
-    assert (
-        after.studies[0].units[0].outcome == before.studies[0].units[0].outcome
-    )
-    assert (
-        after.studies[0].units[0].follow_up == before.studies[0].units[0].follow_up
-    )
-    assert (
-        after.studies[0].units[0].groups[0].identity
-        == before.studies[0].units[0].groups[0].identity
-    )
 
 
 @pytest.mark.parametrize(
@@ -484,12 +375,12 @@ def test_v1_schema_rejects_internal_identity_fields(
     tmp_path: Path, path: tuple[str, str]
 ) -> None:
     destination = tmp_path / "identity-field.rcms"
-    save_project(
-        destination,
-        _group_project("binary", "proportions", [[1, 10], [2, 20]]),
-        _minimal_state(),
-    )
-    project = _group_project("binary", "proportions", [[1, 10], [2, 20]])
+    save_project(destination, _minimal_project(), _minimal_state())
+    project = _legacy_group_project("binary", "proportions", [[1, 10], [2, 20]])
+    _replace_json_member(destination, "state.json", _legacy_state())
+    manifest = json.loads(_members(destination)["manifest.json"])
+    manifest["format_version"] = 1
+    _replace_json_member(destination, "manifest.json", manifest)
     dataset = _object(project["dataset"])
     if path[0] == "outcomes":
         target = _objects(dataset["outcomes"])[0]
@@ -532,22 +423,22 @@ def test_reader_rejects_oversized_overflowing_and_nonfinite_numeric_literals(
     source = tmp_path / "numeric-source.rcms"
     save_project(source, _snapshot_project("amino.rcms"), _minimal_state())
     source_project = _members(source)["project.json"]
-    assert b'"raw_data":[6.0,27.0]' in source_project
+    assert b'[6.0,27.0]' in source_project
     assert b'"sample_size":null' in source_project
 
     cases = {
         "oversized-integer": source_project.replace(
-            b'"raw_data":[6.0,27.0]',
-            b'"raw_data":[' + (b"1" * 4301) + b",27.0]",
+            b'[6.0,27.0]',
+            b'[' + (b"1" * 4301) + b",27.0]",
             1,
         ),
         "overflowing-integer": source_project.replace(
-            b'"raw_data":[6.0,27.0]',
-            b'"raw_data":[' + (b"9" * 400) + b",27.0]",
+            b'[6.0,27.0]',
+            b'[' + (b"9" * 400) + b",27.0]",
             1,
         ),
         "overflowing-exponent": source_project.replace(
-            b'"raw_data":[6.0,27.0]', b'"raw_data":[1e999,27.0]', 1
+            b'[6.0,27.0]', b'[1e999,27.0]', 1
         ),
         "overflowing-sample-size": source_project.replace(
             b'"sample_size":null', b'"sample_size":1e400', 1
@@ -561,7 +452,7 @@ def test_reader_rejects_oversized_overflowing_and_nonfinite_numeric_literals(
             load_project(destination)
 
 
-def test_writer_and_reconstruction_normalize_numeric_conversion_overflow(
+def test_writer_and_domain_validation_normalize_numeric_conversion_overflow(
     tmp_path: Path,
 ) -> None:
     huge_count_project = _snapshot_project("amino.rcms")
@@ -574,8 +465,8 @@ def test_writer_and_reconstruction_normalize_numeric_conversion_overflow(
         project=huge_count_project,
         state=_minimal_state(),
     )
-    with pytest.raises(ProjectFormatError, match="expected a finite number"):
-        reconstruct_analysis_dataset(document)
+    with pytest.raises(ProjectSemanticError, match="expected a finite number"):
+        validate_project_semantics(document.project, document.state)
 
     oversized_project = _snapshot_project("amino.rcms")
     _first_study(oversized_project)["year"] = 10**5000
@@ -821,7 +712,7 @@ def test_failed_atomic_replace_preserves_the_previous_project(
     original = _minimal_project()
     save_project(destination, original, _minimal_state())
     changed = _minimal_project()
-    _object(changed["dataset"])["title"] = "Changed"
+    changed["title"] = "Changed"
 
     def fail_replace(_source: object, _destination: object) -> None:
         raise OSError("injected replace failure")
@@ -841,7 +732,7 @@ def test_pre_replace_failures_preserve_previous_project_and_clean_temporary_file
     original = _minimal_project()
     save_project(destination, original, _minimal_state())
     changed = _minimal_project()
-    _object(changed["dataset"])["title"] = "Changed"
+    changed["title"] = "Changed"
     real_load = project_format.load_project
 
     stages = [
@@ -995,7 +886,7 @@ def test_post_replace_directory_fsync_failure_reports_new_file_is_installed(
     destination = tmp_path / "post-replace.rcms"
     save_project(destination, _minimal_project(), _minimal_state())
     changed = _minimal_project()
-    _object(changed["dataset"])["title"] = "Already replaced"
+    changed["title"] = "Already replaced"
     real_fsync = project_format.os.fsync
 
     monkeypatch.setattr(project_format, "_supports_directory_fsync", lambda: True)
@@ -1022,7 +913,7 @@ def test_post_replace_directory_close_failure_reports_durability_uncertainty(
 ) -> None:
     destination = tmp_path / "close-failure.rcms"
     changed = _minimal_project()
-    _object(changed["dataset"])["title"] = "Installed before close failure"
+    changed["title"] = "Installed before close failure"
     real_fsync = project_format.os.fsync
 
     monkeypatch.setattr(project_format, "_supports_directory_fsync", lambda: True)
@@ -1055,7 +946,7 @@ def test_directory_close_failure_annotates_primary_post_replace_fsync_error(
 ) -> None:
     destination = tmp_path / "fsync-and-close-failure.rcms"
     changed = _minimal_project()
-    _object(changed["dataset"])["title"] = "Installed before both failures"
+    changed["title"] = "Installed before both failures"
     real_fsync = project_format.os.fsync
 
     monkeypatch.setattr(project_format, "_supports_directory_fsync", lambda: True)
@@ -1102,13 +993,27 @@ def test_writer_output_and_current_version_migration_are_deterministic(
     migrated_project, migrated_state = migrate_to_latest(
         CURRENT_FORMAT_VERSION, project, state
     )
-    _object(migrated_project["dataset"])["title"] = "Independent copy"
+    migrated_project["title"] = "Independent copy"
 
     assert first.read_bytes() == second.read_bytes()
-    assert _object(project["dataset"])["title"] == "Example"
+    assert project["title"] == "Example"
     assert migrated_state == state
     with pytest.raises(ProjectFormatError, match="unsupported project format version"):
         migrate_to_latest(999, project, state)
+
+
+def _sheet_semantics(project):
+    """Ignore entry rows and cache metadata; compare every stored measurement."""
+    project = copy.deepcopy(project)
+    for sheet in project["sheets"]:
+        sheet["rows"] = [row for row in sheet["rows"] if not project_format.is_empty_entry_row(row)]
+        for row in sheet["rows"]:
+            row["entered_effects"].sort(key=lambda entry: (entry["metric"], entry["arms"]))
+            for entry in row["entered_effects"]:
+                entry["values"] = {key: value for key, value in entry["values"].items()
+                                   if value is not None and key != "display_conf_level"}
+    return project
+
 
 
 def test_all_committed_samples_match_the_frozen_semantics_and_round_trip(
@@ -1118,8 +1023,8 @@ def test_all_committed_samples_match_the_frozen_semantics_and_round_trip(
     assert snapshot_paths
     sample_manifest = json.loads((SAMPLE_DIR / "manifest.json").read_text("utf-8"))
     manifest_projects = {item["file"]: item for item in sample_manifest["projects"]}
-    # The released samples remain version 1 and exercise the reader migration.
-    assert sample_manifest["format_version"] == 1
+    # Frozen legacy values are compared with the current bundled sheet files.
+    assert sample_manifest["format_version"] == CURRENT_FORMAT_VERSION
 
     for snapshot_path in snapshot_paths:
         snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
@@ -1141,18 +1046,12 @@ def test_all_committed_samples_match_the_frozen_semantics_and_round_trip(
                 return {current_labels(key): current_labels(item) for key, item in value.items()}
             return value
         expected_dataset = current_labels(snapshot["dataset"])
-        assert loaded.project["dataset"] == expected_dataset
-        assert loaded.state == {
-            "schema_version": CURRENT_FORMAT_VERSION,
-            "active_outcome": None,
-            "active_follow_up": None,
-            "active_groups": [],
-            "active_effect": None,
-            "confidence_level": 95.0,
-        }
-
-        reconstructed = reconstruct_analysis_dataset(loaded)
-        assert reconstructed.to_json() == expected_dataset
+        expected_project, expected_state = migrate_to_latest(1,
+            {"schema_version": 1, "dataset": expected_dataset}, _legacy_state())
+        assert _sheet_semantics(loaded.project) == _sheet_semantics(expected_project)
+        assert loaded.state == expected_state
+        reconstructed = project_adapter.project_to_dataset(loaded.project)
+        assert _sheet_semantics(project_adapter.dataset_to_project(reconstructed)) == _sheet_semantics(expected_project)
 
         round_trip = tmp_path / sample_path.name
         save_project(round_trip, loaded.project, loaded.state)

@@ -3,6 +3,7 @@
 """R bridge for RCMetaR calls through rpy2."""
 
 import importlib
+from functools import wraps
 import importlib.metadata
 import locale
 import math
@@ -12,7 +13,8 @@ import sys
 from collections.abc import Mapping, Sequence
 from contextvars import ContextVar
 from pathlib import Path
-from typing import Callable, Literal, cast, overload
+from types import ModuleType
+from typing import Callable, Literal, ParamSpec, TypeVar, cast, overload
 
 from rc_metastudio import r_runtime
 from rc_metastudio.analysis_method_labels import (
@@ -27,7 +29,7 @@ from rc_metastudio.study_effect_shapes import (
     normalize_diagnostic_effects,
     normalize_effect_result,
 )
-from rc_metastudio.r_call_serialization import require_r_transaction, serialized_r_call
+from rc_metastudio.r_call_serialization import require_r_transaction, serialized_r_call as _serialized_r_call
 from rc_metastudio.meta_globals import (
     BINARY,
     CONTINUOUS,
@@ -42,49 +44,83 @@ from rc_metastudio.meta_globals import (
     validate_confidence_level,
 )
 
-try:
-    import rpy2.robjects as ro
-except Exception as error:
-    raise RuntimeError(
-        "Cannot initialize rpy2. Check the bundled R runtime configuration."
-    ) from error
-import rpy2.robjects
-import rpy2.rinterface
-from rpy2.rinterface_lib.embedded import RRuntimeError
+_P = ParamSpec("_P")
+_T = TypeVar("_T")
+# These modules are bound by initialize_r after the shell is visible.
+ro: ModuleType
+rpy2: ModuleType
+RRuntimeError: type[Exception]
+_rpy2_conversion: ModuleType
+_rpy2_rchar_to_str: Callable[..., str]
+_INITIALIZATION_ERROR: Exception | None = None
 
 
-try:
-    import rpy2.rinterface_lib.conversion as _rpy2_conversion
+def _require_initialized_r() -> None:
+    from rc_metastudio.r_runtime import AnalysisBackendUnavailableError
+    if _INITIALIZATION_ERROR is not None:
+        raise AnalysisBackendUnavailableError("R failed to start") from _INITIALIZATION_ERROR
+    if "ro" not in globals():
+        raise AnalysisBackendUnavailableError("R is still starting")
 
-    _rpy2_rchar_to_str = _rpy2_conversion._rchar_to_str
 
-    def _rchar_to_str_as_utf8(rchar, encoding: str) -> str:
-        try:
-            return str(_rpy2_conversion._utf8_rchar_to_str(rchar))
-        except UnicodeDecodeError:
-            return str(_rpy2_rchar_to_str(rchar, encoding))
+def serialized_r_call(function: Callable[_P, _T]) -> Callable[_P, _T]:
+    @wraps(function)
+    def initialized(*args: _P.args, **kwargs: _P.kwargs) -> _T:
+        _require_initialized_r()
+        return function(*args, **kwargs)
+    return _serialized_r_call(initialized)
 
-    # This private rpy2 hook is intentionally replaced at the integration
-    # boundary; its runtime signature is not expressible in rpy2's stubs.
-    setattr(_rpy2_conversion, "_rchar_to_str", _rchar_to_str_as_utf8)
-except (ImportError, AttributeError):
-    pass
 
-# R console callbacks on Windows are emitted in the native ANSI code page.
-# rpy2 otherwise initializes this private decoder from Python's UTF-8 default,
-# which turns ordinary non-ASCII diagnostics into callback UnicodeDecodeError
-# messages. Keep non-Windows behavior unchanged.
-if sys.platform == "win32":
+def initialize_r():
+    """Initialize embedded R explicitly, after the application shell is visible."""
+    global _INITIALIZATION_ERROR, ro, rpy2, RRuntimeError, _rpy2_conversion, _rpy2_rchar_to_str
+    if "ro" in globals():
+        return
+    r_runtime.configure_bundled_r_environment()
     try:
-        from rpy2.rinterface_lib import callbacks as _rpy2_callbacks
+        import rpy2.robjects as ro
+    except Exception as error:
+        _INITIALIZATION_ERROR = error
+        raise RuntimeError(
+            "Cannot initialize rpy2. Check the bundled R runtime configuration."
+        ) from error
+    import rpy2.robjects
+    import rpy2.rinterface
+    from rpy2.rinterface_lib.embedded import RRuntimeError
 
-        setattr(
-            _rpy2_callbacks,
-            "_CCHAR_ENCODING",
-            locale.getpreferredencoding(False),
-        )
+
+    try:
+        import rpy2.rinterface_lib.conversion as _rpy2_conversion
+
+        _rpy2_rchar_to_str = _rpy2_conversion._rchar_to_str
+
+        def _rchar_to_str_as_utf8(rchar, encoding: str) -> str:
+            try:
+                return str(_rpy2_conversion._utf8_rchar_to_str(rchar))
+            except UnicodeDecodeError:
+                return str(_rpy2_rchar_to_str(rchar, encoding))
+
+        # This private rpy2 hook is intentionally replaced at the integration
+        # boundary; its runtime signature is not expressible in rpy2's stubs.
+        setattr(_rpy2_conversion, "_rchar_to_str", _rchar_to_str_as_utf8)
     except (ImportError, AttributeError):
         pass
+
+    # R console callbacks on Windows are emitted in the native ANSI code page.
+    # rpy2 otherwise initializes this private decoder from Python's UTF-8 default,
+    # which turns ordinary non-ASCII diagnostics into callback UnicodeDecodeError
+    # messages. Keep non-Windows behavior unchanged.
+    if sys.platform == "win32":
+        try:
+            from rpy2.rinterface_lib import callbacks as _rpy2_callbacks
+
+            setattr(
+                _rpy2_callbacks,
+                "_CCHAR_ENCODING",
+                locale.getpreferredencoding(False),
+            )
+        except (ImportError, AttributeError):
+            pass
 
 
 _RFunction = Callable[..., object]
@@ -129,6 +165,7 @@ def packaged_runtime_observation() -> dict[str, object]:
 
 def _r_function(function_name: str) -> _RFunction:
     """Return a callable R function after checking rpy2's dynamic lookup."""
+    _require_initialized_r()
     function = ro.r[function_name]
     if not callable(function):
         raise TypeError("R object %r is not callable" % function_name)
@@ -137,6 +174,7 @@ def _r_function(function_name: str) -> _RFunction:
 
 def _r_eval(expression: str) -> object:
     """Evaluate an R expression after checking rpy2's dynamic evaluator."""
+    _require_initialized_r()
     evaluator = ro.r
     if not callable(evaluator):
         raise TypeError("rpy2's R evaluator is not callable")
@@ -161,6 +199,7 @@ def _first_dynamic(value: object) -> object:
 
 def _r_is_null(r_object):
     """Return whether an rpy2 object represents R's NULL value."""
+    _require_initialized_r()
     return r_object is rpy2.rinterface.NULL or isinstance(
         r_object, type(rpy2.rinterface.NULL)
     )
@@ -184,6 +223,9 @@ def execute_r_function(function_name, *args, **kwargs):
 
 
 class RLibraryLoader:
+    def __init__(self):
+        initialize_r()
+
     def load_meta(self):
         return self._load_r_lib("meta", expected_version="8.5-0")
 
@@ -191,7 +233,10 @@ class RLibraryLoader:
         return self._load_r_lib("metafor")
 
     def load_rcmetar(self):
-        return self._load_r_lib("RCMetaR")
+        result = self._load_r_lib("RCMetaR")
+        from rc_metastudio import r_runtime
+        r_runtime.mark_ready()
+        return result
 
     def load_grid(self):
         return self._load_r_lib("grid")
@@ -349,6 +394,7 @@ def r_iterable_to_list(r_iterable):
 
 
 def _r_singleton_to_scalar(singleton):
+    _require_initialized_r()
     if len(singleton) != 1:
         raise ValueError("expected an R sequence with one element")
     if isinstance(singleton, rpy2.robjects.vectors.FactorVector):
@@ -359,6 +405,7 @@ def _r_singleton_to_scalar(singleton):
 def _r_na_to_none(value):
     # Normalize typed R missing values without treating literal "NA" text as
     # missing. Infinities remain values for the typed calculator boundary.
+    _require_initialized_r()
     if isinstance(
         value,
         (
@@ -386,6 +433,7 @@ def _is_r_iterable(value, exclude_strings=True):
 
 
 def _has_r_names(value):
+    _require_initialized_r()
     if not isinstance(value, rpy2.robjects.vectors.Vector):
         return False
     # rpy2 exposes matrix/array dimnames through ``names`` as well.  Those
@@ -449,6 +497,7 @@ def set_confidence_level(confidence_level):
 
 
 def _r_null_if_none(value):
+    _require_initialized_r()
     return rpy2.rinterface.NULL if value is None else value
 
 
@@ -519,20 +568,18 @@ def dataset_to_simple_ratio_r_object(
 ):
     if studies is None:
         studies = table_model.get_studies(only_if_included=True)
-    groups = table_model.current_groups
+    groups = table_model.arm_names
     records, raws, sources = [], [], []
     for study in studies:
-        unit = study.get_analysis_unit(
-            table_model.current_outcome_name, table_model.get_current_follow_up_name()
-        )
+        unit = study.analysis_unit
         record = unit.ratio_input(groups)
         record.validate()
-        raw = unit.get_raw_data_for_groups(groups)
+        raw = unit.get_raw_data_for_arms(groups)
         records.append(record)
         raws.append(raw if len(raw) == 4 else [None] * 4)
         sources.append(record.selected_source(raw, metric=table_model.current_effect))
     kwargs = _analysis_data_kwargs(
-        studies, [study.id for study in studies], table_model.dataset,
+        studies, [study.id for study in studies], table_model.current_sheet,
         covs_to_include, y=[None] * len(studies), standard_errors=[None] * len(studies),
     )
     for name in ("estimate", "lower", "upper", "se", "confidence"):
@@ -565,7 +612,7 @@ def dataset_to_simple_continuous_r_object(
     data_kwargs = _analysis_data_kwargs(
         studies,
         study_ids,
-        table_model.dataset,
+        table_model.current_sheet,
         covs_to_include,
         y=estimates,
         standard_errors=standard_errors,
@@ -600,7 +647,7 @@ def dataset_to_simple_binary_r_object(
     covs_to_include=None,
     studies=None,
 ):
-    """Convert the table's selected outcome and follow-up to an RCMetaR object."""
+    """Convert the table's current sheet to an RCMetaR object."""
     if studies is None:
         # grab the study names. note: the list is pulled out in reverse order from the
         studies = table_model.get_studies(only_if_included=True)
@@ -614,7 +661,7 @@ def dataset_to_simple_binary_r_object(
     data_kwargs = _analysis_data_kwargs(
         studies,
         study_ids,
-        table_model.dataset,
+        table_model.current_sheet,
         covs_to_include,
         y=estimates,
         standard_errors=standard_errors,
@@ -699,7 +746,7 @@ def dataset_to_simple_diagnostic_r_object(
     data_kwargs = _analysis_data_kwargs(
         studies,
         study_ids,
-        table_model.dataset,
+        table_model.current_sheet,
         covs_to_include,
         y=estimates,
         standard_errors=standard_errors,
@@ -748,13 +795,14 @@ def _analysis_data_kwargs(
     return {
         "y": _r_numeric_vector(y),
         "SE": _r_numeric_vector(standard_errors),
-        "study.names": _r_character_vector([study.name for study in studies]),
+        "study.names": _r_character_vector([study.label for study in studies]),
         "years": _r_year_vector([study.year for study in studies]),
         "covariates": _r_covariate_list(dataset, study_ids, covs_to_include),
     }
 
 
 def _r_character_vector(values):
+    _require_initialized_r()
     converted = [
         ro.NA_Character if _data_blank_or_none(value) else str(value)
         for value in values
@@ -763,6 +811,7 @@ def _r_character_vector(values):
 
 
 def _r_year_vector(values):
+    _require_initialized_r()
     converted = [
         ro.NA_Integer if _data_blank_or_none(value) else int(value) for value in values
     ]
@@ -770,6 +819,7 @@ def _r_year_vector(values):
 
 
 def _r_numeric_vector(values):
+    _require_initialized_r()
     converted = [
         ro.NA_Real if _data_blank_or_none(value) else float(value) for value in values
     ]
@@ -785,15 +835,15 @@ def _r_covariate_list(dataset, study_ids, covariates=None):
 
 def _r_covariate_values(cov, study_ids, dataset):
     values = _cov_values_for_studies(cov, study_ids, dataset)
-    covariate_type = TYPE_TO_STR_DICT[cov.data_type]
-    if cov.data_type == CONTINUOUS:
+    covariate_type = TYPE_TO_STR_DICT[cov["data_type"]]
+    if cov["data_type"] == CONTINUOUS:
         covariate_values = _r_numeric_vector(values)
     else:
         covariate_values = _r_character_vector(values)
     return execute_r_function(
         "rcmetar.create.covariate.values",
         **{
-            "cov.name": str(cov.name),
+            "cov.name": str(cov["name"]),
             "cov.vals": covariate_values,
             "cov.type": covariate_type,
             "ref.var": _cov_ref_value(values),
@@ -802,9 +852,7 @@ def _r_covariate_values(cov, study_ids, dataset):
 
 
 def _cov_values_for_studies(cov, study_ids, dataset):
-    covariate_values_by_study = dataset.get_covariate_values(
-        cov.name, ids_for_keys=True
-    )
+    covariate_values_by_study = {row.id: row.covariate_values.get(cov["id"]) for row in dataset.rows}
     return [covariate_values_by_study.get(study_id) for study_id in study_ids]
 
 
@@ -844,19 +892,17 @@ def covariate_to_r_expression(
     """
     covariate_expression = None
     if named_list:
-        covariate_expression = "%s=c(" % cov.name
+        covariate_expression = "%s=c(" % cov["name"]
     else:
         covariate_expression = "c("
 
-    covariate_values_by_study = dataset.get_covariate_values(
-        cov.name, ids_for_keys=True
-    )
+    covariate_values_by_study = {row.id: row.covariate_values.get(cov["id"]) for row in dataset.rows}
 
     # get the study ids in the same order as the names
     covariate_values = []
 
     for study_id in study_ids:
-        if cov.data_type == CONTINUOUS:
+        if cov["data_type"] == CONTINUOUS:
             if study_id in covariate_values_by_study:
                 covariate_values.append("%s" % covariate_values_by_study[study_id])
             else:
@@ -974,6 +1020,7 @@ def generate_small_study_effects_funnel(file_path, params_name="params"):
 
 
 def _r_param_value(param):
+    _require_initialized_r()
     if isinstance(param, ro.ListVector):
         return param
     if param is None:
@@ -1010,6 +1057,7 @@ def _r_param_value(param):
 
 def _to_r_params(params):
     """Given a Python dictionary of method arguments, return a named R list."""
+    _require_initialized_r()
     return ro.ListVector(
         {str(param): _r_param_value(params[param]) for param in list(params.keys())}
     )
@@ -1023,6 +1071,7 @@ def _r_symbol(name):
 
 
 def _r_object_from_symbol(name):
+    _require_initialized_r()
     return ro.globalenv[_r_symbol(name)]
 
 
@@ -1093,6 +1142,7 @@ def _execute_versioned_request(
     res_name: str,
     data_name: str,
 ) -> object:
+    _require_initialized_r()
     normalized = {
         "version": 1,
         "data_type": data_type,
@@ -1155,6 +1205,7 @@ def _execute_versioned_requests(
     res_name: str,
     diagnostic_data_name: str,
 ) -> object:
+    _require_initialized_r()
     request_list = execute_r_function(
         "list", *[_to_r_params(request) for request in requests]
     )
@@ -1319,6 +1370,27 @@ def parse_out_results(result):
         _RESULT_DISPLAY_DIGITS.reset(token)
 
 
+def _add_regression_reports(result, reports):
+    if "res" not in result:
+        return
+    fit = result["res"]
+    if _has_r_names(fit) and all(key in list(fit.names) for key in ("b", "ci.lb", "ci.ub", "pval")) and len(fit.rx2("b")) > 1:
+        fields = dict(zip(list(fit.names), list(fit)))
+        level = 100 * (1 - float(list(fields["level"])[0]))
+        coefficients = fields["b"]
+        names = _r_dimnames(coefficients)[0]
+        rows = [["Intercept" if str(name) == "intrcpt" else str(name), *[_format_r_table_cell(list(fields[key])[i], field_name=header)
+                 for key, header in (("b", "Estimate"), ("ci.lb", "Lower bound"), ("ci.ub", "Upper bound"), ("pval", "p-value"))]]
+                for i, name in enumerate(names)]
+        tables = [{"title": "Regression coefficients", "headers": ["Term", "Estimate", f"Lower bound ({level:g}% CI)", f"Upper bound ({level:g}% CI)", "p-value"], "rows": rows}]
+        residual = [(key, label) for key, label in (("QE", "Q"), ("QEp", "p-value"), ("tau2", "τ²")) if key in fields]
+        if residual:
+            tables.append({"title": "Residual heterogeneity", "headers": [label for _, label in residual],
+                           "rows": [[_format_r_table_cell(list(fields[key])[0], field_name=label) for key, label in residual]]})
+        reports["Summary"] = {"paragraphs": [], "tables": tables}
+
+
+
 def _parse_display_results(result):
     study_names = _study_names_from_result(result)
     metadata = _result_metadata(result)
@@ -1340,6 +1412,8 @@ def _parse_display_results(result):
             reports.update(_structured_result_reports(_display_section_name(text_n), text, study_names))
         for index, key in enumerate(key for key in text_d if key not in text_sources):
             text_sources[key] = (text_n, index)
+
+    _add_regression_reports(result, reports)
 
     text_d, text_sources = _apply_text_value_keys(
         text_d, text_sources, metadata["sections"]
@@ -1690,6 +1764,7 @@ def _unique_result_section_id(kind, source_key, used_ids):
 
 def _result_items_for_display(result):
     """Return ``(section, value)`` pairs without leaking R's NULL names."""
+    _require_initialized_r()
     if _r_is_null(result):
         return []
     names = _r_result_names(result)
@@ -2069,10 +2144,12 @@ def _display_section_name(name):
 
 
 def _is_r_string_vector(r_object):
+    _require_initialized_r()
     return isinstance(r_object, rpy2.robjects.vectors.StrVector)
 
 
 def _r_dims(r_object):
+    _require_initialized_r()
     if not isinstance(r_object, rpy2.robjects.vectors.Vector):
         return []
     try:

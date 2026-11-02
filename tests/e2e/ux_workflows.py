@@ -5,13 +5,19 @@ from pathlib import Path
 from typing import Callable, cast
 from unittest.mock import patch
 
-from PyQt6 import QtCore, QtWidgets, QtTest
+from PyQt6 import QtCore, QtGui, QtWidgets, QtTest
 
 from tests.python.gui.test_types import mouse_click, key_click, required, wait
 
 
 def run(app, window, work, root, record, analyze):
-    from rc_metastudio import add_new_dialogs, main_wizard
+    from rc_metastudio import add_new_dialogs, main_wizard, automation
+    from PyQt6 import sip
+
+    def close_result(view):
+        view.close()
+        automation.dispose_qobjects(app, (view,))
+        assert sip.isdeleted(view)
 
     window.showMaximized()
     app.processEvents()
@@ -19,7 +25,7 @@ def run(app, window, work, root, record, analyze):
     assert not window.workspace.is_dirty
     assert "Unsaved changes" not in window.dataset_file_lbl.text()
     assert "*" not in window.windowTitle()
-    record("ux-empty-workspace", window, guidance=window.workspace_hint.text(), device_pixel_ratio=window.devicePixelRatioF(), logical_size=[window.width(), window.height()])
+    record("ux-empty-workspace", window, guidance=window.start_page.accessibleName(), device_pixel_ratio=window.devicePixelRatioF(), logical_size=[window.width(), window.height()])
     guide_errors = []
     def read_guide():
         dialog = app.activeModalWidget()
@@ -55,7 +61,13 @@ def run(app, window, work, root, record, analyze):
     app.processEvents()
     assert setup.isVisible()
     assert setup.analysis_error_label.isVisible()
-    assert setup.analysis_error_label.hasFocus()
+    assert setup.analysis_error_toggle.hasFocus()
+    assert setup.analysis_error_label.text() == "Check the selected method and study data, then try again."
+    assert setup.analysis_error_details.isHidden()
+    mouse_click(setup.analysis_error_toggle, QtCore.Qt.MouseButton.LeftButton)
+    assert setup.analysis_error_details.isVisible()
+    assert "Unknown 'method' specified" in setup.analysis_error_details.toPlainText()
+    mouse_click(setup.analysis_error_toggle, QtCore.Qt.MouseButton.LeftButton)
     assert not any(isinstance(widget, QtWidgets.QMessageBox) and widget.isVisible() for widget in app.topLevelWidgets())
     record("ux-inline-analysis-error", setup, message=setup.analysis_error_label.text())
     setup.current_param_vals["rm.method"] = "DL"
@@ -65,7 +77,7 @@ def run(app, window, work, root, record, analyze):
     recovered = next(widget for widget in app.topLevelWidgets() if isinstance(widget, ResultsWindow) and widget.isVisible())
     assert recovered.results.images
     record("ux-analysis-recovered", recovered, plots=dict(recovered.results.display_images), texts=dict(recovered.texts))
-    recovered.close()
+    close_result(recovered)
     app.processEvents()
     view = analyze(app, window, "binary.random")
     assert "clinical failure" in view.results.identity
@@ -73,28 +85,88 @@ def run(app, window, work, root, record, analyze):
     assert view.nav_tree.width() < view.width() / 3, (view.nav_tree.width(), view.width(), view.results_nav_splitter.sizes(), view._restored_splitter_proportions)
     assert not view.report_action.isChecked()
     assert view.content_stack.currentWidget() is view.figure_page
-    assert len(view.identity_label.text().splitlines()) <= 3
-    initial_identity_height = view.identity_label.height()
-    refit_waits = 0
-    while (
-        view.identity_label.height() > 3 * view.identity_label.fontMetrics().lineSpacing()
-        and refit_waits < 100
-    ):
-        wait(20)
-        refit_waits += 1
-    geometry = dict(
-        initial_identity_height=initial_identity_height,
-        identity_height=view.identity_label.height(),
-        measured_height=view.identity_label.heightForWidth(view.identity_label.width()),
-        identity_width=view.identity_label.width(),
-        font_height=view.identity_label.fontMetrics().height(),
-        line_spacing=view.identity_label.fontMetrics().lineSpacing(),
-        refit_waits=refit_waits,
-    )
-    assert view.identity_label.height() <= 3 * view.identity_label.fontMetrics().lineSpacing(), geometry
-    record("ux-header-geometry", view, **geometry)
-    assert "Included input studies" not in view.identity_label.text()
-    assert "Studies used in the model" not in view.identity_label.text()
+    from xml.etree import ElementTree
+    svg = " ".join(ElementTree.parse(next(iter(view.results.display_images.values()))).getroot().itertext())
+    nodes = list(ElementTree.parse(next(iter(view.results.display_images.values()))).getroot().iter("{http://www.w3.org/2000/svg}text"))
+    directions = [node for node in nodes if "Favours" in "".join(node.itertext())]
+    assert len(directions) == 2
+    def box(node):
+        import re
+        x, y = float(node.attrib["x"]), float(node.attrib["y"])
+        match = re.search(r"font-size:\s*([\d.]+)", node.attrib["style"])
+        assert match is not None
+        size = float(match[1])
+        width = float(node.attrib["textLength"].removesuffix("px"))
+        anchor = node.attrib.get("text-anchor", "start")
+        x -= width if anchor == "end" else width / 2 if anchor == "middle" else 0
+        return QtCore.QRectF(x, y - size, width, size)
+    for node in directions:
+        assert "\n" not in "".join(node.itertext())
+        assert not any(box(node).intersects(box(other)) for other in nodes if other is not node)
+    assert directions[0].attrib["y"] == directions[1].attrib["y"]
+    view.showNormal()
+    view.resize(1280, 800)
+    app.processEvents()
+    app.processEvents()
+    selected_item = view._selected_plot()[1]
+    effective_scale = selected_item.deviceTransform(view.graphics_view.viewportTransform()).m11()
+    svg_root = ElementTree.parse(view._selected_plot()[0].display_path()).getroot()
+    coordinate_scale = selected_item.boundingRect().width() / float(svg_root.attrib["viewBox"].split()[2])
+    study = next(node for node in nodes if "Gonzalez" in "".join(node.itertext()))
+    label_pt = box(study).height() * coordinate_scale * effective_scale * 72 / 96
+    bounds = box(nodes[0])
+    for node in nodes[1:]:
+        bounds = bounds.united(box(node))
+    coverage = bounds.width() * coordinate_scale * effective_scale / view.graphics_view.viewport().width()
+    nav_names = {item.text(0) for item in view.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive)}
+    duplicates = [action.text() for toolbar in view.findChildren(QtWidgets.QToolBar) for action in toolbar.actions() if action.text() in nav_names]
+    record("slice8b-readability", view, study_label_pt=label_pt, drawn_width_fraction=coverage, duplicate_navigation=duplicates)
+    assert not duplicates, duplicates
+    assert label_pt >= 9, label_pt
+    assert coverage >= .85, coverage
+    original_palette = app.palette()
+    for theme, background, text, base in (("light", "#efefef", "#202020", "#ffffff"), ("dark", "#303238", "#f0f0f0", "#25272b")):
+        palette = QtGui.QPalette(original_palette)
+        for role in (QtGui.QPalette.ColorRole.Window, QtGui.QPalette.ColorRole.Button):
+            palette.setColor(role, QtGui.QColor(background))
+        for role in (QtGui.QPalette.ColorRole.WindowText, QtGui.QPalette.ColorRole.Text, QtGui.QPalette.ColorRole.ButtonText):
+            palette.setColor(role, QtGui.QColor(text))
+        palette.setColor(QtGui.QPalette.ColorRole.Base, QtGui.QColor(base))
+        app.setPalette(palette)
+        for page in ("forest", "manuscript", "tables"):
+            item = next(item for item in view.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive) if item.text(0) == {"forest": "Forest Plot", "manuscript": "Manuscript", "tables": "Tables"}[page])
+            view.nav_tree.setCurrentItem(item)
+            app.processEvents()
+            app.processEvents()
+            if page == "tables":
+                table = view.result_table
+                assert table.accessibleName() == "Model results"
+                assert not table.horizontalScrollBar().isVisible()
+                last_row = table.visualRect(table.model().index(table.rowCount() - 1, 0))
+                row_bottom = table.viewport().mapTo(view.tables_page, last_row.bottomLeft()).y()
+                button = view.table_controls.widgetForAction(view.copy_table_action)
+                button_top = button.mapTo(view.tables_page, button.rect().topLeft()).y()
+                assert 0 <= button_top - row_bottom <= 32, (button_top, row_bottom)
+            record("slice8b-results-" + page + "-" + theme, view)
+    app.setPalette(original_palette)
+    view.nav_tree.setCurrentItem(next(item for item in view.nav_tree.findItems("Forest Plot", QtCore.Qt.MatchFlag.MatchExactly)))
+    app.processEvents()
+
+
+    for arm in window.model.arm_names:
+        assert "Favours" in svg and arm in svg
+    assert not hasattr(view, "identity_label")
+    assert view._fit_width_active
+    for width in (900, 796):
+        view.resize(width, 796)
+        app.processEvents()
+        app.processEvents()
+        selected_item = view._selected_plot()[1]
+        effective_scale = selected_item.deviceTransform(view.graphics_view.viewportTransform()).m11()
+        assert view.zoom_control.value() == round(effective_scale * 100), (view.zoom_control.value(), effective_scale)
+    record("slice2d-results-forest", view, effective_scale=effective_scale)
+    for item in view.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive):
+        assert view.nav_tree.fontMetrics().horizontalAdvance(item.text(0)) + 30 < view.nav_tree.width(), item.text(0)
     view.report_action.trigger()
     app.processEvents()
     assert view.report_text.isVisible()
@@ -111,17 +183,18 @@ def run(app, window, work, root, record, analyze):
     assert app.clipboard().text() == "Model:", repr(app.clipboard().text())
     key_click(view.report_text, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.ShiftModifier)
     copied_report = app.clipboard().text()
-    assert copied_report.startswith(view.results.identity + "\n")
+    assert copied_report.startswith(view.manuscript.title + "\n")
     for section in view.results.sections:
         for table in section.tables:
-            assert "\t".join(table.headers) in copied_report
-            assert all("\t".join(row) in copied_report for row in table.rows)
+            assert all(cell in copied_report for cell in table.headers)
+            assert all(cell in copied_report for row in table.rows for cell in row)
     view.copy_report_action.trigger()
     assert app.clipboard().text() == copied_report
-    report_path = work / "analysis.txt"
+    report_path = work / "analysis.pdf"
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(report_path), "")):
         view.export_report_action.trigger()
-    assert report_path.read_text(encoding="utf-8") == app.clipboard().text()
+    assert report_path.read_bytes().startswith(b"%PDF")
+    assert app.clipboard().mimeData().hasHtml()
     assert str(report_path) in view.statusbar.currentMessage()
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=("", "")):
         view.export_report_action.trigger()
@@ -189,7 +262,61 @@ def run(app, window, work, root, record, analyze):
     assert plot_rect.left() >= 0 and plot_rect.right() < view.graphics_view.viewport().width(), plot_rect
     assert view.graphics_view.horizontalScrollBar().value() == 0
     record("ux-plot-toolbar", view, saved=str(plot_path), zoom=view.zoom_control.value(), plot_bounds=[plot_rect.left(), plot_rect.right()], viewport_width=view.graphics_view.viewport().width())
-    view.close()
+    record("slice2c-results-forest", view)
+    close_result(view)
+    for custom in (False, True):
+        if custom:
+            edited = analyze(app, window, "binary.random")
+            from rc_metastudio.plot_editor_dialog import EditPlotDialog
+            editor_errors = []
+            editor_driven = []
+            waiting_callbacks = []
+            editor_timer = QtCore.QTimer(edited)
+            def customise():
+                dialog = app.activeModalWidget()
+                if not isinstance(dialog, EditPlotDialog) or not dialog.isVisible():
+                    waiting_callbacks.append(True)
+                    return
+                editor_timer.stop()
+                editor_driven.append(True)
+                try:
+                    assert cast(Callable[..., bool], QtTest.QTest.qWaitForWindowExposed)(dialog, 5000)
+                    record("ux-custom-editor-visible", dialog)
+                    dialog.favours_left.setText("Favours custom first")
+                    dialog.favours_right.setText("Favours custom second")
+                    mouse_click(required(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)), QtCore.Qt.MouseButton.LeftButton)
+                except BaseException as error:
+                    editor_errors.append(error)
+                    if dialog is not None:
+                        dialog.reject()
+            record("ux-custom-editor-before", edited)
+            editor_timer.timeout.connect(customise)
+            editor_timer.start(10)
+            try:
+                # Windows R calls can dispatch this callback while saved plot
+                # parameters load, before the editor exists. Prove that turn
+                # cannot consume the only attempt to operate the dialog.
+                wait(30)
+                assert waiting_callbacks
+                edited.edit_plot_action.trigger()
+            finally:
+                editor_timer.stop()
+                editor_timer.deleteLater()
+            assert editor_driven, "Edit plot did not open its editor"
+            assert not editor_errors, editor_errors
+            record("ux-custom-editor-after", edited, callbacks_before_editor=len(waiting_callbacks))
+            assert window.model.current_sheet.settings["favours_labels"] == ["Favours custom first", "Favours custom second"]
+            close_result(edited)
+        before = list(window.model.arm_names)
+        window.action_swap_arms.trigger()
+        swapped = analyze(app, window, "binary.random")
+        text = " ".join(" ".join(ElementTree.parse(next(iter(swapped.results.display_images.values()))).getroot().itertext()).split())
+        left, right = ("custom second", "custom first") if custom else (before[1], before[0])
+        assert text.index(left) < text.index(right), text
+        assert text.count("Favours") >= 2
+        record("favours-swapped", swapped, custom=custom, svg_text=text)
+        close_result(swapped)
+        window.action_swap_arms.trigger()
 
     wizard = main_wizard.MainWizard(path="csv_import")
     wizard.set_dataset_info({"arms": "two", "data_type": "binary", "sub_type": "proportions", "effect": "OR", "metric_choices": [], "name": "Mapped mortality"})
@@ -263,8 +390,8 @@ def run(app, window, work, root, record, analyze):
     record("ux-csv-recovered", wizard, headers=page.headers, rows=page.preview_table.rowCount())
     window._handle_wizard_results(wizard.get_results())
     wizard.close()
-    assert window.model.dataset.studies[0].name == "Alpha, München"
-    assert window.model.dataset.studies[1].covariate_values["Dose"] == 7.0
+    assert window.model.current_sheet.rows[0].label == "Alpha, München"
+    assert window.model.current_sheet.rows[1].covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == "Dose")] == 7.0
     assert window.model.get_current_raw_data_for_study(0) == [1, 10, 2, 12]
     window.out_path = str(work / "mapped.rcms")
     assert window.save()
@@ -273,11 +400,13 @@ def run(app, window, work, root, record, analyze):
     for column, value in ((window.model.RAW_DATA[1], 10000), (window.model.RAW_DATA[3], 10000), (window.model.RAW_DATA[0], 1), (window.model.RAW_DATA[2], 5000)):
         assert window.model.setData(window.model.index(0, column), value)
     estimate = str(window.model.data(window.model.index(0, window.model.OUTCOMES[0])))
-    assert 0 < float(estimate) < .001
-    assert abs(float(estimate) - 1 / 9999) < 1e-6
+    assert estimate == "<0.01"
+    stored_estimate = float(window.model.data(window.model.index(0, window.model.OUTCOMES[0]), QtCore.Qt.ItemDataRole.EditRole))
+    assert 0 < stored_estimate < .001
+    assert abs(stored_estimate - 1 / 9999) < 1e-6
     record("ux-small-ratio", window, raw=[1, 10000, 5000, 10000], displayed_estimate=estimate)
 
-    form = add_new_dialogs.AddCovariateDialog(window, existing_names=window.model.dataset.get_covariate_names())
+    form = add_new_dialogs.AddCovariateDialog(window, existing_names=[c["name"] for c in window.model.current_sheet.covariates])
     form.show()
     app.processEvents()
     button = required(form.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
@@ -295,3 +424,68 @@ def run(app, window, work, root, record, analyze):
     mouse_click(button, QtCore.Qt.MouseButton.LeftButton)
     assert form.result() == QtWidgets.QDialog.DialogCode.Accepted.value
     record("ux-mapped-reopened", window, project=window.out_path)
+
+    # Exercise the layouts whose geometry cannot be proved by the binary default.
+    import sys
+    sys.path.insert(0, str(root / '.agents/skills/verify-rcms/scripts'))
+    from advanced_workflows import modal
+    from analysis_matrix import run as matrix
+    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+    window.workspace.mark_saved()
+    assert window.open(str(root / 'sample_projects/continuous.rcms'), raise_on_error=True)
+    continuous = analyze(app, window, 'continuous.random')
+    def forest_nodes(result):
+        artifact = result._selected_plot()[0]
+        return list(ElementTree.parse(artifact.display_path()).getroot().iter('{http://www.w3.org/2000/svg}text'))
+    continuous_nodes = forest_nodes(continuous)
+    direction_nodes = [n for n in continuous_nodes if 'Favours' in ''.join(n.itertext())]
+    assert len(direction_nodes) == 2
+    direction_lines = []
+    for node, arm in zip(direction_nodes, window.model.arm_names, strict=True):
+        expected = ('Favours ' + arm).split()
+        lines = sorted((n for n in continuous_nodes
+                        if n.attrib['x'] == node.attrib['x']
+                        and float(n.attrib['y']) >= float(node.attrib['y'])),
+                       key=lambda n: float(n.attrib['y']))
+        observed = []
+        for line in lines:
+            observed.extend(''.join(line.itertext()).split())
+            if len(observed) >= len(expected):
+                break
+        assert observed == expected, (observed, expected)
+        direction_lines.append(observed)
+    record('continuous-favours-whole-words', continuous, directions=direction_lines)
+    close_result(continuous)
+    window.workspace.mark_saved()
+    assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
+    bmj = analyze(app, window, 'binary.random')
+    def bmj_style(dialog):
+        dialog.style_cbo.setCurrentText('BMJ')
+        mouse_click(required(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)), QtCore.Qt.MouseButton.LeftButton)
+    modal(app, EditPlotDialog, bmj_style, bmj.edit_plot_action.trigger)
+    bmj_nodes = forest_nodes(bmj)
+    study_nodes = [n for n in bmj_nodes if any(row.label in ''.join(n.itertext()) for row in window.model.current_sheet.rows if row.label)]
+    assert len(study_nodes) >= 19, len(study_nodes)
+    left, right = min(box(n).left() for n in study_nodes), max(box(n).right() for n in study_nodes)
+    top, bottom = min(box(n).top() for n in study_nodes), max(box(n).bottom() for n in study_nodes)
+    column_nodes = [n for n in bmj_nodes if box(n).left() < right and box(n).right() > left and top <= box(n).top() <= bottom]
+    for index, node in enumerate(column_nodes):
+        for other in column_nodes[index + 1:]:
+            assert not box(node).intersects(box(other)), (''.join(node.itertext()), ''.join(other.itertext()))
+    record('bmj-study-column-no-overlap', bmj, labels=[''.join(n.itertext()) for n in column_nodes])
+    close_result(bmj)
+    window.workspace.mark_saved()
+    subgroup = matrix(app, window, 'analysis-amino-binary-subgroup', record, keep_results=True)
+    tables_item = next(item for item in subgroup.nav_tree.findItems('Tables', QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive))
+    subgroup.nav_tree.setCurrentItem(tables_item)
+    app.processEvents()
+    for index in range(subgroup.table_selector.count()):
+        subgroup.table_selector.setCurrentIndex(index)
+        app.processEvents()
+        table = subgroup.result_table
+        header = table.horizontalHeader()
+        for column in range(table.columnCount()):
+            text = required(table.horizontalHeaderItem(column)).text()
+            assert header.sectionSize(column) >= max(header.fontMetrics().horizontalAdvance(line) for line in text.splitlines()) + 8, (text, header.sectionSize(column))
+        record('subgroup-table-headers-unclipped', subgroup, title=subgroup.table_selector.currentText(), widths=[header.sectionSize(c) for c in range(table.columnCount())])
+    close_result(subgroup)

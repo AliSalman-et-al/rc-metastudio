@@ -826,3 +826,32 @@ test_that("diagnostic Deeks requires complete counts", {
   expect_false(incomplete.result$eligibility$methods[[1]]$available)
   expect_match(incomplete.result$eligibility$methods[[1]]$reason, "complete TP/FN/FP/TN")
 })
+
+test_that("ratio funnels use readable ticks without moving points or limits", {
+  model <- metafor::rma.uni(yi=c(-3, -1, 0, 1), sei=c(.3, .6, .9, .5), method="FE")
+  settings <- RCMetaR:::.small.study.funnel.settings(list(metric="OR"))
+  settings$xlim <- c(-5, 3)
+  draw <- function(readable) {
+    path <- tempfile(fileext=".svg")
+    svglite::svglite(path)
+    if (readable) {
+      data <- new("BinaryData", y=model$yi, SE=sqrt(model$vi), study.names=letters[1:4])
+      RCMetaR:::.small.study.draw.standard.funnel(data, model, list(metric="OR"), settings, data@y, data@SE, rep(TRUE, 4))
+    } else {
+      metafor::funnel(model, xlim=settings$xlim, atransf=exp)
+    }
+    limits <- graphics::par("usr")
+    grDevices::dev.off()
+    list(svg=paste(readLines(path), collapse="\n"), limits=limits)
+  }
+  before <- draw(FALSE)
+  after <- draw(TRUE)
+  expect_equal(after$limits, before$limits)
+  points <- function(svg) regmatches(svg, gregexpr("<circle[^>]+>", svg))[[1]]
+  expect_identical(points(after$svg), points(before$svg))
+  for (label in c("0.01", "0.1", "1", "10"))
+    expect_match(after$svg, paste0(">", label, "</text>"), fixed=TRUE)
+  expect_false(grepl(">0.14</text>", after$svg, fixed=TRUE))
+  settings$at <- c(-4, 0, 2)
+  expect_equal(RCMetaR:::.small.study.funnel.args(settings, 0, TRUE)$at, settings$at)
+})

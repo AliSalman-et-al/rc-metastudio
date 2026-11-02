@@ -410,6 +410,7 @@ def verify(args: argparse.Namespace) -> None:
     )
     rscript = resolve_rscript(args.rscript)
     base_env = r_support.verification_base_env(dict(os.environ))
+    base_env["RCMS_RSCRIPT"] = str(rscript)
     policy = binary_dependency_policy(root)
     configured_repo = args.cran_repo or base_env.get("RCMS_CRAN_REPO")
     if configured_repo and configured_repo != policy["repository"]:
@@ -482,11 +483,13 @@ def verify(args: argparse.Namespace) -> None:
         run(pytest_command, cwd=root, env=env)
         # Fresh offscreen children can overlap within the measured memory budget.
         # The E2E hook reserves host capacity; native drives remain separate/serial.
-        run(
-            [python, "-m", "pytest", "tests/e2e", "-n", "auto", "--durations=10"],
-            cwd=root,
-            env=env,
-        )
+        desktop_command = [
+            python, "-m", "pytest", "tests/e2e", "-n", args.desktop_workers,
+            "-q", "--durations=10",
+        ]
+        if args.fresh:
+            desktop_command.append("--fresh")
+        run(desktop_command, cwd=root, env=env)
         run(
             [
                 python,
@@ -509,6 +512,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--python", default=sys.executable)
     parser.add_argument("--rscript", default="Rscript")
     parser.add_argument("--pytest-runner", default="uv", choices=("uv", "pytest"))
+    parser.add_argument("--desktop-workers", default="auto")
+    parser.add_argument("--fresh", action="store_true", help="Do not reuse passed desktop evidence")
     parser.add_argument("--work-dir", type=Path, default=None)
     parser.add_argument("--r-library-cache-root", type=Path, default=None)
     parser.add_argument("--cran-repo", default=None)

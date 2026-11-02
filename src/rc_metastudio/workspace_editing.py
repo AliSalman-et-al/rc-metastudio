@@ -9,6 +9,7 @@ calculate the same raw-data preview as the table.
 """
 
 from __future__ import annotations
+from rc_metastudio.project_domain import RowId, SheetId
 
 import copy
 import math
@@ -23,7 +24,7 @@ from rc_metastudio import r_backend, r_bridge
 from rc_metastudio.meta_globals import RATIO_DATA_TYPES, EVENT_RATES
 from rc_metastudio.ratio_data import RATIO_FIELDS
 
-from rc_metastudio.analysis_dataset import Dataset, Study
+from rc_metastudio.analysis_dataset import Dataset, StudyRow
 from rc_metastudio.analysis_unit import AnalysisUnit, EffectEstimate
 from rc_metastudio.dataset_analysis_domain import (
     BINARY,
@@ -76,13 +77,12 @@ def _effect_value(effect: Mapping[str, object] | EffectEstimate, field: str):
 class WorkspaceEditingContext:
     """Domain values needed to edit one visible workspace."""
 
-    outcome_name: str | None
-    follow_up_name: str | None
-    current_groups: tuple[str, ...]
+    sheet_id: SheetId | None
+    arm_names: tuple[str, ...]
     current_effect: str | None
     data_type: object
     outcome_subtype: str | None
-    group_comparison: str
+    arm_key: str
     raw_columns: tuple[int, ...]
     outcome_columns: tuple[int, ...]
     include_column: int
@@ -92,17 +92,14 @@ class WorkspaceEditingContext:
     confidence_multiplier: float
     covariate_name: str | None = None
     covariate_type: object | None = None
-    covariate: object | None = None
+    covariate: dict | None = None
 
 
 @dataclass(slots=True)
 class WorkspaceViewState:
     """Serializable selection and confidence state for the workspace."""
 
-    current_outcome_name: str | None = None
-    current_follow_up_index: int = 0
-    current_groups: list[str] = field(default_factory=list)
-    previous_groups: list[str] = field(default_factory=list)
+    current_sheet_id: SheetId | None = None
     current_effect: str | None = None
     confidence_level: float = 95.0
     confidence_multiplier: float = 1.96
@@ -113,11 +110,12 @@ class WorkspaceEditTarget:
     row: int
     column: int
     old_value: object
+    row_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
 class AppliedWorkspaceEdit:
-    added_study_id: int | None = None
+    added_study_id: str | None = None
     error: str | None = None
 
     @property
@@ -172,7 +170,7 @@ class WorkspaceEditingService:
 
     def confidence_settings(self, level: object) -> ConfidenceSettings:
         validated = validate_confidence_level(level)
-        if r_backend.is_backend_installed():
+        if r_backend.is_ready():
             multiplier = self.bridge.get_confidence_multiplier_from_r(validated)
         else:
             tail = (1.0 + validated / 100.0) / 2.0
@@ -180,7 +178,7 @@ class WorkspaceEditingService:
         return ConfidenceSettings(float(validated), float(multiplier))
 
     def set_backend_confidence_level(self, level: float) -> None:
-        if r_backend.is_backend_installed():
+        if r_backend.is_ready():
             self.bridge.set_confidence_level(level)
 
     def preview_raw_effects(
@@ -210,6 +208,8 @@ class WorkspaceEditingService:
         effect: str | None,
         n1: object = None,
     ):
+        if not r_backend.is_ready():
+            return lambda value: None
         return make_display_scale_converter(self.bridge, data_type, effect, n1)
 
     def apply_edit(
@@ -251,7 +251,7 @@ class WorkspaceEditingService:
     ) -> AppliedWorkspaceEdit:
         if context.data_type in RATIO_DATA_TYPES and target.column in context.outcome_columns:
             return self._edit_ratio_input(dataset, study, target, context, value)
-        if context.outcome_name is not None and target.column in context.raw_columns:
+        if context.sheet_id is not None and target.column in context.raw_columns:
             return self._edit_raw_data(dataset, study, target, context, value, recalculate)
         if target.column in context.outcome_columns:
             return self._edit_outcome(dataset, study, target, context, value, import_csv)
@@ -268,15 +268,15 @@ class WorkspaceEditingService:
             parsed = text
             if field in ("estimate", "lower", "upper", "se", "confidence"):
                 parsed = float(text) if text else (95.0 if field == "confidence" else None)
-            candidate = replace(unit.ratio_input(context.current_groups), **{field: parsed})
+            candidate = replace(unit.ratio_input(context.arm_names), **{field: parsed})
             candidate.validate()
         except (TypeError, ValueError) as error:
             return AppliedWorkspaceEdit(error=str(error))
-        unit.set_ratio_input(context.current_groups, candidate)
+        unit.set_ratio_input(context.arm_names, candidate)
         return AppliedWorkspaceEdit()
 
     @staticmethod
-    def _edit_inclusion(study: Study, value: object) -> AppliedWorkspaceEdit:
+    def _edit_inclusion(study: StudyRow, value: object) -> AppliedWorkspaceEdit:
         included, valid = WorkspaceEditingService._parse_inclusion(value)
         if not valid:
             return AppliedWorkspaceEdit(
@@ -298,19 +298,22 @@ class WorkspaceEditingService:
     ) -> None:
         if (
             not result.applied
-            or context.outcome_name is None
+            or context.sheet_id is None
             or context.data_type == DIAGNOSTIC
-            or target.column == context.include_column
+            or target.column not in context.raw_columns + context.outcome_columns
             or (import_csv and not raw_data_is_empty(self._raw_data(dataset, study, context)))
         ):
             return
         unit = self._analysis_unit(dataset, study, context)
         if context.data_type in RATIO_DATA_TYPES:
-            raw = unit.get_raw_data_for_groups(context.current_groups)
-            study.include = not study.manually_excluded and unit.ratio_input(context.current_groups).ready(raw, metric=context.current_effect)
+            raw = unit.get_raw_data_for_arms(context.arm_names)
+            study.include = not study.manually_excluded and unit.ratio_input(context.arm_names).ready(raw, metric=context.current_effect)
+            return
+        if self._raw_data_is_complete_for_context(self._raw_data(dataset, study, context), context):
+            study.include = not study.manually_excluded
             return
         effect = unit.get_effect_for_source(
-            "entered", context.current_effect or "", context.group_comparison
+            "entered", context.current_effect or "", context.arm_key
         )
         self.update_inclusion_after_edit(
             study,
@@ -339,23 +342,24 @@ class WorkspaceEditingService:
         context: WorkspaceEditingContext,
         value: object,
         allow_empty_names: bool,
-    ) -> Study | None:
+    ) -> StudyRow | None:
         self._last_error = None
-        if target.row >= len(dataset):
+        assert context.sheet_id is not None
+        if target.row >= len(dataset.sheet(context.sheet_id).rows):
             return self._new_study_for_edit(
                 dataset, target, context, value, allow_empty_names
             )
-        study = dataset.studies[target.row]
+        study = (next(row for row in dataset.sheet(context.sheet_id).rows if row.id == target.row_id) if target.row_id else dataset.sheet(context.sheet_id).rows[target.row])
         if self._edit_requires_name(study, target, context, value, allow_empty_names):
             self._last_error = "Please enter a study name before entering study data."
             return None
         return study
 
-    def _new_study_for_edit(
-        self, dataset, target, context, value, allow_empty_names
-    ) -> Study | None:
+    def _new_study_for_edit(self, dataset, target, context, value, allow_empty_names):
+        import uuid
+        sheet = dataset.sheet(context.sheet_id)
         if target.column != context.name_column:
-            self._last_error = "Please enter a study name before entering study data."
+            self._last_error = 'Please enter a study name before entering study data.'
             return None
         if not allow_empty_names:
             try:
@@ -363,15 +367,15 @@ class WorkspaceEditingService:
             except ValueError as error:
                 self._last_error = str(error)
                 return None
-        while len(dataset) <= target.row:
-            dataset.add_study(Study(dataset.max_study_id() + 1))
-        return dataset.studies[target.row]
+        while len(sheet.rows) <= target.row:
+            sheet.rows.append(StudyRow(RowId(uuid.uuid4().hex), '', AnalysisUnit(sheet, arm_names=[a.name for a in sheet.arms], arm_stable_ids=[a.id for a in sheet.arms])))
+        return sheet.rows[target.row]
 
     @staticmethod
     def _edit_requires_name(study, target, context, value, allow_empty_names):
         return (
             not allow_empty_names
-            and not study.name.strip()
+            and not study.label.strip()
             and WorkspaceEditingService._requires_named_study(target, context, value)
         )
 
@@ -381,7 +385,7 @@ class WorkspaceEditingService:
     ) -> bool:
         if target.column in (context.name_column, context.year_column):
             return False
-        if context.outcome_name is not None and target.column in context.raw_columns:
+        if context.sheet_id is not None and target.column in context.raw_columns:
             return not qt_text.is_blank(value)
         if target.column in context.outcome_columns:
             return not qt_text.is_blank(value)
@@ -390,7 +394,7 @@ class WorkspaceEditingService:
     def _edit_study_name(
         self,
         dataset: Dataset,
-        study: Study,
+        study: StudyRow,
         target: WorkspaceEditTarget,
         context: WorkspaceEditingContext,
         value: object,
@@ -404,24 +408,20 @@ class WorkspaceEditingService:
                 name = name_validation.validate_required_name("study", value)
             except ValueError as error:
                 return AppliedWorkspaceEdit(error=str(error))
+        assert context.sheet_id is not None
         existing_names = [
-            name_validation.normalize_name(existing.name)
-            for existing in dataset.studies
+            name_validation.normalize_name(existing.label)
+            for existing in dataset.sheet(context.sheet_id).rows
             if existing is not study
         ]
         if name in existing_names:
             return AppliedWorkspaceEdit(error="Duplicate study names not allowed")
         added_study_id = None
-        if append_blank_study and name != "":
-            new_study = Study(dataset.max_study_id() + 1)
-            new_study.include = False
-            dataset.add_study(new_study)
-            added_study_id = int(new_study.id)
-        study.name = name
+        study.label = name
         return AppliedWorkspaceEdit(added_study_id=added_study_id)
 
     @staticmethod
-    def _edit_year(study: Study, value: object) -> AppliedWorkspaceEdit:
+    def _edit_year(study: StudyRow, value: object) -> AppliedWorkspaceEdit:
         text = qt_text.to_native_text(value)
         if not qt_text.is_blank(text) and not is_an_int(text):
             return AppliedWorkspaceEdit(error="Years need to be integers.")
@@ -431,26 +431,16 @@ class WorkspaceEditingService:
             return AppliedWorkspaceEdit(error="Years need to be integers.")
         return AppliedWorkspaceEdit()
 
-    def _analysis_unit(self, dataset: Dataset, study: Study, context: WorkspaceEditingContext) -> AnalysisUnit:
-        if context.outcome_name is None or context.follow_up_name is None:
-            raise ValueError("an outcome and follow-up are required for analysis edits")
-        from rc_metastudio.dataset_analysis_domain import ensure_analysis_unit
+    def _analysis_unit(self, dataset, study, context):
+        return study.analysis_unit
 
-        return ensure_analysis_unit(
-            dataset,
-            study,
-            context.outcome_name,
-            context.follow_up_name,
-            context.current_groups,
-        )
-
-    def _raw_data(self, dataset: Dataset, study: Study, context: WorkspaceEditingContext):
-        return self._analysis_unit(dataset, study, context).get_raw_data_for_groups(
-            context.current_groups
+    def _raw_data(self, dataset: Dataset, study: StudyRow, context: WorkspaceEditingContext):
+        return self._analysis_unit(dataset, study, context).get_raw_data_for_arms(
+            context.arm_names
         )
 
     def _verify_raw_data(
-        self, dataset: Dataset, study: Study, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object
+        self, dataset: Dataset, study: StudyRow, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object
     ) -> str | None:
         text, numeric_valid = qt_text.normalize_decimal_text(value)
         if not numeric_valid:
@@ -543,7 +533,7 @@ class WorkspaceEditingService:
         return None
 
     def _verify_outcome_data(
-        self, dataset: Dataset, study: Study, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object, import_csv: bool
+        self, dataset: Dataset, study: StudyRow, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object, import_csv: bool
     ) -> str | None:
         text, numeric_valid = qt_text.normalize_decimal_text(value)
         if not numeric_valid:
@@ -569,13 +559,13 @@ class WorkspaceEditingService:
         if context.data_type == DIAGNOSTIC:
             metric = "Sens" if target.column in context.outcome_columns[:3] else "Spec"
             effect = unit.get_effect_and_ci_for_source(
-                "entered", metric, context.group_comparison, context.confidence_multiplier
+                "entered", metric, context.arm_key, context.confidence_multiplier
             )
             converter = self.display_scale_converter(DIAGNOSTIC, metric)
         else:
             n1 = self._raw_data(dataset, study, context)[1] if context.current_effect == "PFT" else None
             effect = unit.get_effect_and_ci_for_source(
-                "entered", context.current_effect or "", context.group_comparison, context.confidence_multiplier
+                "entered", context.current_effect or "", context.arm_key, context.confidence_multiplier
             )
             converter = self.display_scale_converter(context.data_type, context.current_effect, n1)
         return tuple(converter(item) for item in effect)
@@ -610,7 +600,7 @@ class WorkspaceEditingService:
     def _edit_raw_data(
         self,
         dataset: Dataset,
-        study: Study,
+        study: StudyRow,
         target: WorkspaceEditTarget,
         context: WorkspaceEditingContext,
         value: object,
@@ -623,13 +613,13 @@ class WorkspaceEditingService:
         old_unit = copy.deepcopy(unit)
         try:
             position = context.raw_columns.index(target.column)
-            per_group = len(unit.get_raw_data_for_group(context.current_groups[0]))
-            group = context.current_groups[0] if position < per_group else context.current_groups[1]
-            unit.get_raw_data_for_group(group)[position % per_group] = (
+            per_group = len(unit.get_raw_data_for_arm(context.arm_names[0]))
+            group = context.arm_names[0] if position < per_group else context.arm_names[1]
+            unit.get_raw_data_for_arm(group)[position % per_group] = (
                 "" if qt_text.is_blank(value) else float(qt_text.normalize_decimal_text(value)[0])
             )
             if recalculate is None:
-                self.update_outcome_if_possible(dataset, target.row, context)
+                self.update_outcome_if_possible(dataset, study.id, context)
             else:
                 recalculate(target.row)
         except Exception as exc:
@@ -639,7 +629,7 @@ class WorkspaceEditingService:
         return AppliedWorkspaceEdit()
 
     def _edit_outcome(
-        self, dataset: Dataset, study: Study, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object, import_csv: bool
+        self, dataset: Dataset, study: StudyRow, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object, import_csv: bool
     ) -> AppliedWorkspaceEdit:
         error = self._verify_outcome_data(dataset, study, target, context, value, import_csv)
         if error:
@@ -660,7 +650,7 @@ class WorkspaceEditingService:
         self._recalculate_entered_outcome(unit, metric, context)
         unit.calculate_display_effect_and_ci(
             metric,
-            context.group_comparison,
+            context.arm_key,
             self.display_scale_converter(context.data_type, metric, n1),
             confidence_level=context.confidence_level,
             confidence_multiplier=context.confidence_multiplier,
@@ -690,7 +680,7 @@ class WorkspaceEditingService:
         calculation_value,
         context: WorkspaceEditingContext,
     ) -> None:
-        entered = unit.get_effect_for_source("entered", metric, context.group_comparison)
+        entered = unit.get_effect_for_source("entered", metric, context.arm_key)
         if outcome_index == 0:
             values = (calculation_value, entered.lower, entered.upper, entered.standard_error)
         elif outcome_index == 1 and context.outcome_subtype == "generic_effect":
@@ -699,7 +689,7 @@ class WorkspaceEditingService:
             values = (entered.estimate, calculation_value, entered.upper, entered.standard_error)
         else:
             values = (entered.estimate, entered.lower, calculation_value, entered.standard_error)
-        unit.set_effect_for_source("entered", metric, context.group_comparison, *values)
+        unit.set_effect_for_source("entered", metric, context.arm_key, *values)
 
     @staticmethod
     def _recalculate_entered_outcome(
@@ -707,20 +697,20 @@ class WorkspaceEditingService:
     ) -> None:
         if context.outcome_subtype == "generic_effect":
             return
-        entered = unit.get_effect_for_source("entered", metric, context.group_comparison)
+        entered = unit.get_effect_for_source("entered", metric, context.arm_key)
         values = (entered.estimate, entered.lower, entered.upper)
         se = unit.calculate_se_if_possible(
             metric,
-            context.group_comparison,
+            context.arm_key,
             confidence_multiplier=context.confidence_multiplier,
             source="entered",
         ) if None not in values else None
         unit.set_effect_for_source(
-            "entered", metric, context.group_comparison,
+            "entered", metric, context.arm_key,
             entered.estimate, entered.lower, entered.upper, se,
         )
 
-    def _edit_covariate(self, study: Study, context: WorkspaceEditingContext, value: object) -> AppliedWorkspaceEdit:
+    def _edit_covariate(self, study: StudyRow, context: WorkspaceEditingContext, value: object) -> AppliedWorkspaceEdit:
         if context.covariate_name is None:
             return AppliedWorkspaceEdit(error="Cannot edit that cell.")
         if context.covariate_type == FACTOR:
@@ -733,7 +723,7 @@ class WorkspaceEditingService:
                 return AppliedWorkspaceEdit(error="Numeric covariates require numbers.")
         if context.covariate is None:
             return AppliedWorkspaceEdit(error="Cannot edit that cell.")
-        study.set_covariate_value(context.covariate, converted)
+        study.covariate_values[context.covariate['id']] = converted
         return AppliedWorkspaceEdit()
 
     @staticmethod
@@ -749,35 +739,43 @@ class WorkspaceEditingService:
     def update_outcome_if_possible(
         self,
         dataset: Dataset,
-        study_index: int,
+        row_id: str,
         context: WorkspaceEditingContext,
         *,
         update_inclusion: bool = True,
     ) -> None:
-        if context.outcome_name is None or context.follow_up_name is None:
+        if context.sheet_id is None:
             return
-        study = dataset.studies[study_index]
+        study = next(row for row in dataset.sheet(context.sheet_id).rows if row.id == row_id)
         unit = self._analysis_unit(dataset, study, context)
         raw_data = self._raw_data(dataset, study, context)
         if context.data_type in RATIO_DATA_TYPES:
-            self._clear_effect_and_display_ci(unit, context.current_effect, context)
-            record = unit.ratio_input(context.current_groups)
-            ready = record.ready(raw_data, metric=context.current_effect)
-            if ready and record.selected_source(raw_data, metric=context.current_effect) == "raw" and r_backend.is_backend_installed():
-                est, lower, upper = r_bridge.incidence_rate_effect_preview(raw_data, context.confidence_level)
-                self._set_calculated(unit, context.current_effect, context, est, lower, upper)
-            if update_inclusion:
-                study.include = not study.manually_excluded and ready
+            self._update_ratio_outcome(study, unit, raw_data, context, update_inclusion)
             return
         complete = self._raw_data_is_complete_for_context(raw_data, context)
         if update_inclusion and self._should_clear_inclusion(unit, context):
             study.include = False
+        if complete and not r_backend.is_ready():
+            if update_inclusion:
+                study.include = not study.manually_excluded
+            return
         if complete:
             self._calculate_complete_outcome(
                 study, unit, raw_data, context, update_inclusion=update_inclusion
             )
         elif not raw_data_is_empty(raw_data):
             self._clear_incomplete_outcome(unit, context)
+
+    def _update_ratio_outcome(self, study, unit, raw_data, context, update_inclusion):
+        self._clear_effect_and_display_ci(unit, context.current_effect, context)
+        record = unit.ratio_input(context.arm_names)
+        ready = record.ready(raw_data, metric=context.current_effect)
+        if ready and record.selected_source(raw_data, metric=context.current_effect) == "raw" and r_backend.is_ready():
+            est, lower, upper = r_bridge.incidence_rate_effect_preview(raw_data, context.confidence_level)
+            self._set_calculated(unit, context.current_effect, context, est, lower, upper)
+        if update_inclusion:
+            study.include = not study.manually_excluded and ready
+
 
     @staticmethod
     def _raw_data_is_complete_for_context(raw_data, context) -> bool:
@@ -788,13 +786,13 @@ class WorkspaceEditingService:
 
     def _should_clear_inclusion(self, unit: AnalysisUnit, context) -> bool:
         if context.data_type == DIAGNOSTIC:
-            if not raw_data_is_empty(unit.get_raw_data_for_groups(context.current_groups)):
+            if not raw_data_is_empty(unit.get_raw_data_for_arms(context.arm_names)):
                 return True
             return not any(
                 None not in unit.get_effect_and_se_for_source(
                     "entered",
                     metric,
-                    context.group_comparison,
+                    context.arm_key,
                     context.confidence_multiplier,
                 )
                 for metric in DIAGNOSTIC_METRICS
@@ -834,7 +832,7 @@ class WorkspaceEditingService:
         return None not in unit.get_effect_and_se_for_source(
             "entered",
             context.current_effect or "",
-            context.group_comparison,
+            context.arm_key,
             context.confidence_multiplier,
         )
 
@@ -844,10 +842,10 @@ class WorkspaceEditingService:
     ) -> None:
         if metric is None:
             return
-        unit.set_effect_and_ci(metric, context.group_comparison, estimate, lower, upper, confidence_multiplier=context.confidence_multiplier)
+        unit.set_effect_and_ci(metric, context.arm_key, estimate, lower, upper, confidence_multiplier=context.confidence_multiplier)
         unit.calculate_display_effect_and_ci(
             metric,
-            context.group_comparison,
+            context.arm_key,
             self.display_scale_converter(context.data_type, metric, n1),
             confidence_level=context.confidence_level,
             confidence_multiplier=context.confidence_multiplier,
@@ -858,8 +856,8 @@ class WorkspaceEditingService:
     def _clear_effect_and_display_ci(unit: AnalysisUnit, metric: str | None, context: WorkspaceEditingContext) -> None:
         if metric is None:
             return
-        unit.set_effect_for_source("derived_preview", metric, context.group_comparison, None, None, None, None)
-        unit.set_display_effect_for_source("derived_preview", metric, context.group_comparison, None)
-        unit.set_display_lower_for_source("derived_preview", metric, context.group_comparison, None)
-        unit.set_display_upper_for_source("derived_preview", metric, context.group_comparison, None)
-        unit.set_display_se_for_source("derived_preview", metric, context.group_comparison, None)
+        unit.set_effect_for_source("derived_preview", metric, context.arm_key, None, None, None, None)
+        unit.set_display_effect_for_source("derived_preview", metric, context.arm_key, None)
+        unit.set_display_lower_for_source("derived_preview", metric, context.arm_key, None)
+        unit.set_display_upper_for_source("derived_preview", metric, context.arm_key, None)
+        unit.set_display_se_for_source("derived_preview", metric, context.arm_key, None)

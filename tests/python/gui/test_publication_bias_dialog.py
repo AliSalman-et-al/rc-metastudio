@@ -19,7 +19,13 @@ class _Model:
         self._data_type = data_type
         self.current_effect = metric
         self._confidence_level = confidence_level
-        self.dataset: object | None = None
+        self.studies = [SimpleNamespace(include=True), SimpleNamespace(include=False)]
+
+    def get_studies(self):
+        return [study for study in self.studies if study.include]
+
+    def get_current_raw_data(self):
+        return []
 
     def get_current_outcome_type(self):
         return self._data_type
@@ -252,9 +258,6 @@ def test_context_is_compact_and_distinguishes_included_and_eligible_counts(
         lambda *args, **kwargs: report,
     )
     model = _Model("continuous", "MD")
-    model.dataset = SimpleNamespace(
-        studies=[SimpleNamespace(include=True), SimpleNamespace(include=False)]
-    )
     dialog = publication_bias_dialog.PublicationBiasDialog(model)
     try:
         assert dialog.context_label.text() == (

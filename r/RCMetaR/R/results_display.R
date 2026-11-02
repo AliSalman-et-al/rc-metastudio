@@ -104,7 +104,7 @@ rcmetar.add.subgroup.test <- function(summary, plot.data, params) {
   use.f <- !is.null(test$test) && test$test %in% c("t", "knha", "adhoc")
   df <- if (use.f) paste(test$df, test$df2, sep=", ") else test$df
   table <- rbind(c("Test", "Statistic", "df", "p-value"),
-                 c(if (use.f) "Subgroup differences (F)" else "Subgroup differences (Qm)",
+                 c(if (use.f) "Subgroup differences (F)" else "Subgroup differences (Q)",
                    rcmetar.format.effect.number(test$QM, display.digits(params)), df,
                    format.p.value.display(test$QMp, params$digits)))
   summary$arrays <- c(summary$arrays, list(table))

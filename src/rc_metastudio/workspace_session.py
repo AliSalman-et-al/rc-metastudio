@@ -129,6 +129,12 @@ class WorkspaceSession:
         self._redo.clear()
         self._checkpoint = _copy_runtime(self._runtime)
 
+    def select_sheet(self, sheet_id) -> None:
+        """Selection is navigation, not a separate undoable edit."""
+        for runtime in (self._runtime, self._checkpoint):
+            if runtime is not None:
+                runtime.model_state["current_sheet_id"] = sheet_id
+
     def begin_change(self) -> None:
         """Start one atomic UI operation."""
         if self._runtime is None:

@@ -95,7 +95,7 @@ def run(app, window, work, record):
 def run_headers(app, window, work, record):
     from analysis_matrix import run as matrix
     from tests.e2e.audit_round3 import check_report
-    from tests.e2e.header_geometry import check_headers
+    from tests.e2e.header_geometry import check_headers, check_forest_footer
     pairs = (
         ("Drug", "Control"),
         ("Cognitive behavioural therapy plus usual care", "Usual care only"),
@@ -114,7 +114,7 @@ def run_headers(app, window, work, record):
             record('wrapped-arm-header-before-assertion', view, style=style, names=names,
                    plots={title:path}, export=str(export))
             measurements = [measurement for source in (path, str(export))
-                            for measurement in check_headers(source, names)]
+                            for measurement in (check_headers(source, names) + check_forest_footer(source))]
             if len(names[0]) > 80:
                 from advanced_workflows import export_formats
                 export_formats(app, view, work / ('headers-' + style + '-' + str(len(names[1]))),

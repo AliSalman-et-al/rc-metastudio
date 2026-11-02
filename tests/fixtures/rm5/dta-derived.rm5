@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<COCHRANE_REVIEW TYPE="DIAGNOSTIC">
+  <COVER_SHEET>
+    <TITLE>Derived DTA example</TITLE>
+  </COVER_SHEET>
+  <STUDIES>
+    <STUDY ID="S0" NAME="Example 1" YEAR="2020" />
+    <STUDY ID="S1" NAME="Example 2" YEAR="2020" />
+    <STUDY ID="S2" NAME="Example 3" YEAR="2020" />
+    <STUDY ID="S3" NAME="Example 4" YEAR="2020" />
+    <STUDY ID="S4" NAME="Example 5" YEAR="2020" />
+    <STUDY ID="S5" NAME="Example 6" YEAR="2020" />
+  </STUDIES>
+  <ANALYSES_AND_DATA>
+    <TESTS>
+      <TEST ID="T0">
+        <NAME>Index test 1</NAME>
+        <TEST_DATA>
+          <TEST_DATA_ENTRY STUDY_ID="S0" TP="30" FN="8" FP="4" TN="50" />
+          <TEST_DATA_ENTRY STUDY_ID="S1" TP="33" FN="9" FP="5" TN="52" />
+          <TEST_DATA_ENTRY STUDY_ID="S2" TP="36" FN="10" FP="6" TN="54" />
+          <TEST_DATA_ENTRY STUDY_ID="S3" TP="39" FN="11" FP="7" TN="56" />
+          <TEST_DATA_ENTRY STUDY_ID="S4" TP="42" FN="12" FP="8" TN="58" />
+          <TEST_DATA_ENTRY STUDY_ID="S5" TP="45" FN="13" FP="9" TN="60" />
+        </TEST_DATA>
+      </TEST>
+      <TEST ID="T1">
+        <NAME>Index test 2</NAME>
+        <TEST_DATA>
+          <TEST_DATA_ENTRY STUDY_ID="S0" TP="31" FN="8" FP="5" TN="50" />
+          <TEST_DATA_ENTRY STUDY_ID="S1" TP="34" FN="9" FP="6" TN="52" />
+          <TEST_DATA_ENTRY STUDY_ID="S2" TP="37" FN="10" FP="7" TN="54" />
+          <TEST_DATA_ENTRY STUDY_ID="S3" TP="40" FN="11" FP="8" TN="56" />
+          <TEST_DATA_ENTRY STUDY_ID="S4" TP="43" FN="12" FP="9" TN="58" />
+          <TEST_DATA_ENTRY STUDY_ID="S5" TP="46" FN="13" FP="10" TN="60" />
+        </TEST_DATA>
+      </TEST>
+    </TESTS>
+  </ANALYSES_AND_DATA>
+</COCHRANE_REVIEW>

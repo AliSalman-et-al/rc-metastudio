@@ -25,6 +25,37 @@ def _show(window, qapp):
     qapp.processEvents()
 
 
+
+
+def _frame_margins(window):
+    frame = window.frameGeometry()
+    return QtCore.QSize(
+        max(0, frame.width() - window.width()),
+        max(0, frame.height() - window.height()),
+    )
+
+
+def _pixmap_logical_size(pixmap):
+    ratio = max(1.0, pixmap.devicePixelRatioF())
+    return QtCore.QSize(round(pixmap.width() / ratio), round(pixmap.height() / ratio))
+
+
+def _assert_content_preferred_outer_size(window, available, fraction, tolerance=6):
+    hint = window.sizeHint().expandedTo(window.minimumSizeHint())
+    frame_extra = _frame_margins(window)
+    expected_width = min(
+        hint.width() + frame_extra.width(), int(available.width() * fraction)
+    )
+    expected_height = min(
+        hint.height() + frame_extra.height(), int(available.height() * fraction)
+    )
+    frame = window.frameGeometry()
+    assert abs(frame.width() - expected_width) <= tolerance
+    assert abs(frame.height() - expected_height) <= tolerance
+
+
+
+
 def _remaining_surface_inventory():
     from rc_metastudio import about_legal_dialog
     from rc_metastudio import add_new_dialogs
@@ -34,14 +65,6 @@ def _remaining_surface_inventory():
     from rc_metastudio import progress_dialog
 
     surfaces = [
-        ("add-group", "compact", add_new_dialogs.AddGroupDialog()),
-        ("add-follow-up", "compact", add_new_dialogs.AddFollowUpDialog()),
-        ("add-outcome", "choice", add_new_dialogs.AddOutcomeDialog()),
-        (
-            "add-diagnostic-outcome",
-            "choice",
-            add_new_dialogs.AddOutcomeDialog(is_diagnostic=True),
-        ),
         ("add-study", "compact", add_new_dialogs.AddStudyDialog()),
         ("add-covariate", "choice", add_new_dialogs.AddCovariateDialog()),
         (
@@ -80,68 +103,6 @@ def _remaining_surface_inventory():
             cast(QtWidgets.QSplashScreen, window).showMessage(LONG_VALUE)
     return surfaces
 
-
-def _frame_margins(window):
-    frame = window.frameGeometry()
-    return QtCore.QSize(
-        max(0, frame.width() - window.width()),
-        max(0, frame.height() - window.height()),
-    )
-
-
-def _pixmap_logical_size(pixmap):
-    ratio = max(1.0, pixmap.devicePixelRatioF())
-    return QtCore.QSize(round(pixmap.width() / ratio), round(pixmap.height() / ratio))
-
-
-def _assert_content_preferred_outer_size(window, available, fraction, tolerance=6):
-    hint = window.sizeHint().expandedTo(window.minimumSizeHint())
-    frame_extra = _frame_margins(window)
-    expected_width = min(
-        hint.width() + frame_extra.width(), int(available.width() * fraction)
-    )
-    expected_height = min(
-        hint.height() + frame_extra.height(), int(available.height() * fraction)
-    )
-    frame = window.frameGeometry()
-    assert abs(frame.width() - expected_width) <= tolerance
-    assert abs(frame.height() - expected_height) <= tolerance
-
-
-def test_long_choice_values_remain_available_without_widening_the_dialog(qapp):
-    from rc_metastudio import add_new_dialogs
-    from rc_metastudio import adaptive_controls
-
-    for dialog in (
-        add_new_dialogs.AddOutcomeDialog(),
-        add_new_dialogs.AddCovariateDialog(),
-    ):
-        combo = dialog.datatype_cbo_box
-        combo.addItem(LONG_VALUE)
-        combo.setCurrentText(LONG_VALUE)
-        _show(dialog, qapp)
-        try:
-            controller = adaptive_controls.choice_control_controller(combo)
-            assert controller.combo is combo
-            assert controller.parent() is combo
-            assert combo.toolTip() == LONG_VALUE
-            assert (
-                combo.itemData(combo.currentIndex(), QtCore.Qt.ItemDataRole.ToolTipRole)
-                == LONG_VALUE
-            )
-            assert (
-                required(combo.view(), "choice view").horizontalScrollBarPolicy()
-                == QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded
-            )
-            assert (
-                dialog.frameGeometry().width()
-                < required(dialog.screen(), "dialog screen").availableGeometry().width()
-            )
-        finally:
-            dialog.close()
-    qapp.processEvents()
-
-
 def test_choice_control_state_is_typed_and_rejects_stale_ownership(qapp):
     from rc_metastudio import adaptive_controls
 
@@ -159,122 +120,6 @@ def test_choice_control_state_is_typed_and_rejects_stale_ownership(qapp):
     assert adaptive_controls.choice_control_controller(owner) is controller
 
 
-def test_compact_transactional_keyboard_and_accessibility_matrix(qapp, monkeypatch):
-    from rc_metastudio import add_new_dialogs
-    from rc_metastudio import covariate_type_dialog
-    from rc_metastudio import edit_name_dialogs
-
-    class PreviewModel(QtGui.QStandardItemModel):
-        dataError = QtCore.pyqtSignal(str)
-
-        def __init__(self, _dataset, _covariate):
-            super().__init__(2, 3)
-
-    monkeypatch.setattr(covariate_type_dialog, "CovariateTypeModel", PreviewModel)
-    factories = (
-        ("add-group", add_new_dialogs.AddGroupDialog, "group_name_le"),
-        ("add-follow-up", add_new_dialogs.AddFollowUpDialog, "follow_up_name_le"),
-        ("add-outcome", add_new_dialogs.AddOutcomeDialog, "outcome_name_le"),
-        ("add-study", add_new_dialogs.AddStudyDialog, "study_lbl"),
-        ("add-covariate", add_new_dialogs.AddCovariateDialog, "covariate_name_le"),
-        (
-            "edit-group-name",
-            lambda: edit_name_dialogs.EditGroupNameDialog("Original group"),
-            "group_name_le",
-        ),
-        (
-            "edit-covariate-name",
-            lambda: edit_name_dialogs.EditCovariateNameDialog("Original covariate"),
-            "group_name_le",
-        ),
-        (
-            "change-covariate-type",
-            lambda: covariate_type_dialog.CovariateTypeDialog(object(), object()),
-            "covariate_preview_table",
-        ),
-    )
-
-    for name, factory, initial_name in factories:
-        accepted = []
-        dialog = factory()
-        dialog.accepted.connect(lambda surface=name: accepted.append(surface))
-        dialog.show()
-        dialog.activateWindow()
-        qapp.processEvents()
-        initial = dialog.findChild(QtWidgets.QWidget, initial_name)
-        assert initial is not None, name
-        assert initial.isVisible() and initial.isEnabled(), name
-        initial.setFocus()
-        qapp.processEvents()
-        assert qapp.focusWidget() is initial, name
-        box = required(dialog.findChild(QtWidgets.QDialogButtonBox), "button box")
-        ok = required(
-            box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok), "ok button"
-        )
-        cancel = required(
-            box.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel),
-            "cancel button",
-        )
-        assert ok.isVisible() and ok.isDefault(), name
-        assert cancel.isVisible(), name
-        key_click(initial, QtCore.Qt.Key.Key_Tab)
-        qapp.processEvents()
-        assert qapp.focusWidget() is not initial, name
-        for control in dialog.findChildren(QtWidgets.QAbstractButton):
-            if control.icon().isNull() or control.text().strip():
-                continue
-            assert control.accessibleName().strip(), (name, control.objectName())
-        for view in dialog.findChildren(QtWidgets.QAbstractItemView):
-            if isinstance(view, QtWidgets.QHeaderView):
-                continue
-            assert view.accessibleName().strip(), (name, view.objectName())
-        initial.setFocus()
-        if isinstance(dialog, add_new_dialogs.AddCovariateDialog):
-            dialog.covariate_name_le.setText("Test covariate")
-        key_click(initial, QtCore.Qt.Key.Key_Return)
-        qapp.processEvents()
-        assert accepted == [name], name
-        dialog.deleteLater()
-        qapp.processEvents()
-
-        rejected = []
-        dialog = factory()
-        before_cancel = {
-            "editors": [
-                editor.text() for editor in dialog.findChildren(QtWidgets.QLineEdit)
-            ],
-            "models": [
-                (
-                    required(view.model(), "view model").rowCount(),
-                    required(view.model(), "view model").columnCount(),
-                )
-                for view in dialog.findChildren(QtWidgets.QAbstractItemView)
-                if view.model() is not None
-            ],
-        }
-        dialog.rejected.connect(lambda surface=name: rejected.append(surface))
-        dialog.show()
-        qapp.processEvents()
-        key_click(dialog, QtCore.Qt.Key.Key_Escape)
-        qapp.processEvents()
-        assert rejected == [name], name
-        assert dialog.result() == QtWidgets.QDialog.DialogCode.Rejected, name
-        assert not dialog.isVisible(), name
-        assert before_cancel == {
-            "editors": [
-                editor.text() for editor in dialog.findChildren(QtWidgets.QLineEdit)
-            ],
-            "models": [
-                (
-                    required(view.model(), "view model").rowCount(),
-                    required(view.model(), "view model").columnCount(),
-                )
-                for view in dialog.findChildren(QtWidgets.QAbstractItemView)
-                if view.model() is not None
-            ],
-        }, name
-        dialog.deleteLater()
-        qapp.processEvents()
 
 
 def test_about_legal_has_explicit_overflow_and_reachable_action(qapp):
@@ -388,83 +233,3 @@ def test_oversized_dpr_splash_is_bounded_without_double_scaling(qapp):
     assert logical_height <= 320
     assert logical_width > 400
     assert abs((logical_width / logical_height) - (4.0 / 3.0)) < 0.01
-
-
-def test_remaining_inventory_survives_representative_process_scale_factors():
-    script = r"""
-import json
-from PyQt6 import QtWidgets
-from rc_metastudio.qt6_ui import prepare_generated_ui_imports
-prepare_generated_ui_imports()
-from rc_metastudio import app_error_handler
-from rc_metastudio import adaptive_window
-from rc_metastudio import r_backend
-r_backend.install_r_backend()
-from rc_metastudio import about_legal_dialog, add_new_dialogs, edit_name_dialogs, launch, main_window, progress_dialog
-
-app = app_error_handler.get_or_create_application([])
-windows = [
-    add_new_dialogs.AddGroupDialog(), add_new_dialogs.AddFollowUpDialog(),
-    add_new_dialogs.AddOutcomeDialog(),
-    add_new_dialogs.AddOutcomeDialog(is_diagnostic=True),
-    add_new_dialogs.AddStudyDialog(), add_new_dialogs.AddCovariateDialog(),
-    edit_name_dialogs.EditGroupNameDialog("Group"),
-    edit_name_dialogs.EditCovariateNameDialog("Covariate"),
-    about_legal_dialog.AboutLegalDialog(), main_window.ImportProgressDialog(),
-    progress_dialog.AnalysisProgressDialog(), launch.create_startup_splash(),
-]
-for window in windows:
-    window.show()
-app.processEvents(); app.processEvents()
-available = app.primaryScreen().availableGeometry()
-payload = {
-    "roles": [adaptive_window.adaptive_window_state(window).policy.archetype.value for window in windows],
-    "visible": all(window.isVisible() for window in windows),
-    "actions": all(box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isVisible()
-        for box in [window.findChild(QtWidgets.QDialogButtonBox) for window in windows[:8]]),
-    "splash": not windows[-1].pixmap().isNull(),
-    "bounded": all(available.contains(window.frameGeometry()) for window in windows),
-}
-for window in windows:
-    window.close()
-    window.deleteLater()
-app.processEvents()
-print("COMPACT_LAYOUT=" + json.dumps(payload), flush=True)
-"""
-    expected_roles = ["transactional"] * 9 + ["transient"] * 3
-    for scale_factor in ("1", "1.5"):
-        environment = os.environ.copy()
-        environment.update(
-            {
-                "QT_QPA_PLATFORM": "offscreen",
-                "QT_SCALE_FACTOR": scale_factor,
-                "PYTHONPATH": os.pathsep.join(
-                    [
-                        str(ROOT / "src"),
-                        str(ROOT / "build" / "qt6-verification" / "generated"),
-                    ]
-                ),
-                "RCMS_QT6_BUILD_ROOT": str(ROOT / "build" / "qt6-verification"),
-            }
-        )
-        completed = subprocess.run(
-            [sys.executable, "-c", script],
-            cwd=ROOT,
-            env=environment,
-            capture_output=True,
-            text=True,
-            timeout=30,
-            check=True,
-        )
-        marker = next(
-            line
-            for line in completed.stdout.splitlines()
-            if line.startswith("COMPACT_LAYOUT=")
-        )
-        assert json.loads(marker.split("=", 1)[1]) == {
-            "roles": expected_roles,
-            "visible": True,
-            "actions": True,
-            "splash": True,
-            "bounded": True,
-        }

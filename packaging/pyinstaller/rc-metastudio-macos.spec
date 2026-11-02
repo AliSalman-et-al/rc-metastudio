@@ -7,7 +7,7 @@ import importlib.util
 import json
 from pathlib import Path
 
-from PyInstaller.utils.hooks import copy_metadata
+from PyInstaller.utils.hooks import collect_data_files, copy_metadata
 
 
 repo_root = Path(SPECPATH).resolve().parents[1]
@@ -59,11 +59,15 @@ a = Analysis(
     binaries=[],
     datas=[
         *copy_metadata("rpy2"),
+        *collect_data_files("docx", includes=["templates/*"]),
         (str(binary_resource), "resources"),
         *project_schema_data,
         *direct_r_datas,
     ],
     hiddenimports=[
+        "openpyxl",
+        "docx",
+        "lxml.etree",
         "rpy2.robjects",
         "rpy2.rinterface",
         "_rinterface_cffi_api",

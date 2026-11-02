@@ -17,6 +17,9 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, size.
     if (length(bundle$display_order) == length(plan$rows$study_rows)) {
         plan$rows$study_rows[bundle$display_order] <- sort(plan$rows$study_rows, decreasing=TRUE)
     }
+    direction <- rcmetar.forest.direction.metrics(bundle, plan)
+    plan$device$direction_lines <- direction$lines
+    plan$device$height <- plan$device$height + max(0, direction$lines - 2) * direction$spacing
     plan$headers$height <- rcmetar.forest.header.height(bundle, plan$typography$cex)
     plan$device$height <- plan$device$height + max(0, plan$headers$height - 0.5)
     plan
@@ -98,7 +101,7 @@ rcmetar.forest.layout.cap.warnings <- function(size, min.cex=0.78, max.width=18,
 
 rcmetar.forest.with.measurement.device <- function(expr) {
     scratch <- rcmetar.scratch.path("INTER")
-    grDevices::png(filename=scratch, width=1200, height=800, res=144)
+    rcmetar.open.svg_device(scratch, list(width=1200 / 144, height=800 / 144))
     on.exit(grDevices::dev.off(), add=TRUE)
     force(expr)
 }

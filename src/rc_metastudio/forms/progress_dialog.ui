@@ -4,7 +4,7 @@
  <widget class="QDialog" name="ProgressDialog">
   <property name="windowModality"><enum>Qt::ApplicationModal</enum></property>
   <property name="geometry"><rect><x>0</x><y>0</y><width>0</width><height>0</height></rect></property>
-  <property name="windowTitle"><string>Running Analysis...</string></property>
+  <property name="windowTitle"><string>Running analysis</string></property>
   <property name="windowIcon"><iconset><normaloff>:/misc/meta.png</normaloff>:/misc/meta.png</iconset></property>
   <property name="sizeGripEnabled"><bool>false</bool></property>
   <property name="modal"><bool>true</bool></property>

@@ -1,115 +1,71 @@
+from rc_metastudio.project_domain import ArmId, RowId, SheetId
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 from rc_metastudio import analysis_dataset, meta_globals
+from rc_metastudio.analysis_unit import AnalysisUnit
 
 
 def test_editable_labels_do_not_change_domain_identities():
-    dataset = analysis_dataset.Dataset()
-    outcome = analysis_dataset.Outcome("Outcome", meta_globals.CONTINUOUS)
-    study = analysis_dataset.Study(0, "Study")
-    dataset.add_study(study)
-    dataset.add_outcome(outcome)
-    dataset.add_follow_up_to_outcome("Outcome", "week 2")
-    unit = study.get_analysis_unit("Outcome", "week 2")
-    group_id = unit.groups["Intervention"].stable_id
-    outcome_id = outcome.stable_id
-    study_id = study.stable_id
-    follow_up_id = dataset.get_follow_up_stable_id("Outcome", "week 2")
+    arm = analysis_dataset.Arm(ArmId("arm"), "Intervention")
+    sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", meta_globals.CONTINUOUS, arms=[arm])
+    unit = AnalysisUnit(sheet, arm_names=[arm.name], arm_stable_ids=[arm.id])
+    row = analysis_dataset.StudyRow(RowId("row"), "Study", unit)
+    sheet.rows.append(row)
+    dataset = analysis_dataset.Dataset(sheets=[sheet])
     unit_id = unit.stable_id
+    sheet.name = "Renamed outcome"
+    row.label = "Renamed study"
+    unit.rename_arm(arm.name, "Renamed arm")
+    arm.name = "Renamed arm"
+    assert dataset.sheet(SheetId("sheet")) is sheet
+    assert sheet.rows[0] is row and row.id == "row"
+    assert row.analysis_unit is unit and unit.stable_id == unit_id
+    assert unit.sheet is sheet
+    assert unit.arms_by_id["arm"] is unit.arms["Renamed arm"]
 
-    assert dataset.outcomes_by_id[outcome_id] is outcome
-    assert dataset.follow_ups_by_outcome_id[outcome_id][follow_up_id].label == "week 2"
-    assert study.analysis_units_by_id[unit_id] is unit
-    assert unit.groups_by_id[group_id] is unit.groups["Intervention"]
 
-    dataset.change_outcome_name("Outcome", "Renamed outcome")
-    dataset.change_follow_up_name("Renamed outcome", "week 2", "Renamed follow-up")
-    dataset.change_group_name("Intervention", "Renamed group")
-    outcome = dataset.get_outcome_obj("Renamed outcome")
-
-    assert outcome is not None and outcome.stable_id == outcome_id
-    assert study.stable_id == study_id
-    assert dataset.get_follow_up_stable_id("Renamed outcome", "Renamed follow-up") == (
-        follow_up_id
-    )
-    assert study.get_analysis_unit("Renamed outcome", "Renamed follow-up").groups[
-        "Renamed group"
-    ].stable_id == group_id
-    assert dataset.outcomes_by_id[outcome_id] is outcome
-    assert dataset.follow_ups_by_outcome_id[outcome_id][follow_up_id].label == (
-        "Renamed follow-up"
-    )
-    assert study.analysis_units_by_id[unit_id] is unit
-    assert unit.groups_by_id[group_id] is unit.groups["Renamed group"]
+def _unit():
+    sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", meta_globals.CONTINUOUS)
+    return AnalysisUnit(sheet, arm_names=["group 1"], arm_stable_ids=["arm"])
 
 
 def test_effect_authority_is_explicit_and_preview_is_not_entered_data():
-    outcome = analysis_dataset.Outcome("Outcome", meta_globals.CONTINUOUS)
-    unit = analysis_dataset.AnalysisUnit(outcome, group_names=["group 1"])
-    unit.set_effect_for_source("entered", "TX Mean", "group 1", 1.0, 0.5, 1.5)
-    unit.set_effect_for_source(
-        "derived_preview", "TX Mean", "group 1", 2.0, 1.5, 2.5
-    )
-
-    assert unit.get_effect_for_source("entered", "TX Mean", "group 1").estimate == 1.0
-    assert unit.get_effect_for_source(
-        "derived_preview", "TX Mean", "group 1"
-    ).estimate == 2.0
-    assert unit.get_entered_effect_and_ci("TX Mean", "group 1") == (1.0, 0.5, 1.5)
+    unit = _unit()
+    key = ("arm",)
+    unit.set_effect_for_source("entered", "TX Mean", key, 1.0, 0.5, 1.5)
+    unit.set_effect_for_source("derived_preview", "TX Mean", key, 2.0, 1.5, 2.5)
+    assert unit.get_effect_for_source("entered", "TX Mean", key).estimate == 1.0
+    assert unit.get_effect_for_source("derived_preview", "TX Mean", key).estimate == 2.0
+    assert unit.get_entered_effect_and_ci("TX Mean", key) == (1.0, 0.5, 1.5)
 
 
-def test_group_rename_preserves_each_effect_authority_store():
-    dataset = analysis_dataset.Dataset()
-    dataset.add_study(analysis_dataset.Study(0, "Study"))
-    dataset.add_outcome(analysis_dataset.Outcome("Outcome", meta_globals.BINARY))
-    unit = dataset.studies[0].get_analysis_unit("Outcome", "first")
-    left, right = unit.get_group_names()
-    comparison = f"{left}-{right}"
-
-    for source, estimate in (
-        ("entered", 1.0),
-        ("derived_preview", 2.0),
-        ("analysis", 3.0),
-    ):
-        unit.set_effect_for_source(source, "OR", comparison, estimate, 0.5, 4.0)
-
-    dataset.change_group_name(left, "renamed-arm")
-    renamed_comparison = f"renamed-arm-{right}"
-
-    assert all(
-        unit.get_effect_for_source(source, "OR", renamed_comparison).estimate == estimate
-        for source, estimate in (
-            ("entered", 1.0),
-            ("derived_preview", 2.0),
-            ("analysis", 3.0),
-        )
-    )
-    assert comparison not in unit.entered_effects["OR"]
-    assert comparison not in unit.derived_effect_previews["OR"]
-    assert comparison not in unit.analysis_effects["OR"]
+def test_arm_rename_preserves_each_effect_authority_store():
+    unit = _unit()
+    key = ("arm",)
+    for source, estimate in (("entered", 1.0), ("derived_preview", 2.0), ("analysis", 3.0)):
+        unit.set_effect_for_source(source, "TX Mean", key, estimate, .5, 4.0)
+    unit.rename_arm("group 1", "renamed-arm")
+    assert "group 1" not in unit.arms
+    assert unit.arms["renamed-arm"].stable_id == "arm"
+    for source, estimate in (("entered", 1.0), ("derived_preview", 2.0), ("analysis", 3.0)):
+        assert unit.get_effect_for_source(source, "TX Mean", key).estimate == estimate
+        assert set(unit._store(source)["TX Mean"]) == {key}
 
 
-def test_legacy_calculated_effects_are_published_as_previews():
-    outcome = analysis_dataset.Outcome("Outcome", meta_globals.CONTINUOUS)
-    unit = analysis_dataset.AnalysisUnit(outcome, group_names=["group 1"])
-
-    unit.set_effect("TX Mean", "group 1", 1.0)
-    unit.set_effect_and_ci("TX Mean", "group 1", 2.0, 1.5, 2.5, 1.96)
-
-    assert unit.get_effect_for_source("entered", "TX Mean", "group 1").estimate == 1.0
-    assert unit.get_effect_for_source(
-        "derived_preview", "TX Mean", "group 1"
-    ).estimate == 2.0
-    assert unit.get_estimate_for_source("derived_preview", "TX Mean", "group 1") == 2.0
+def test_calculated_effects_are_published_as_previews():
+    unit = _unit()
+    key = ("arm",)
+    unit.set_effect("TX Mean", key, 1.0)
+    unit.set_effect_and_ci("TX Mean", key, 2.0, 1.5, 2.5, 1.96)
+    assert unit.get_effect_for_source("entered", "TX Mean", key).estimate == 1.0
+    assert unit.get_effect_for_source("derived_preview", "TX Mean", key).estimate == 2.0
+    assert unit.get_estimate_for_source("derived_preview", "TX Mean", key) == 2.0
 
 
 def test_entered_edit_does_not_hide_which_source_a_preview_belongs_to():
-    outcome = analysis_dataset.Outcome("Outcome", meta_globals.CONTINUOUS)
-    unit = analysis_dataset.AnalysisUnit(outcome, group_names=["group 1"])
-    unit.set_effect_and_ci("TX Mean", "group 1", 2.0, 1.5, 2.5, 1.96)
-    unit.set_effect("TX Mean", "group 1", 3.0)
-
-    assert unit.get_effect_for_source("entered", "TX Mean", "group 1").estimate == 3.0
-    assert unit.get_effect_for_source(
-        "derived_preview", "TX Mean", "group 1"
-    ).estimate == 2.0
+    unit = _unit()
+    key = ("arm",)
+    unit.set_effect_and_ci("TX Mean", key, 2.0, 1.5, 2.5, 1.96)
+    unit.set_effect("TX Mean", key, 3.0)
+    assert unit.get_effect_for_source("entered", "TX Mean", key).estimate == 3.0
+    assert unit.get_effect_for_source("derived_preview", "TX Mean", key).estimate == 2.0

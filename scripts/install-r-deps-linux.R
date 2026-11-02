@@ -28,7 +28,8 @@ if (linux$distribution != "noble" || linux$r_version_series != "4.6" ||
 repo <- linux$repository
 options(
   repos = c(CRAN = repo),
-  timeout = 600,
+  timeout = 1200,
+  warn = 1,
   install.packages.check.source = "no",
   install.packages.compile.from.source = "never",
   HTTPUserAgent = sprintf(
@@ -114,18 +115,22 @@ while (length(queue)) {
 message("Installing PPM Linux binaries only: ", paste(sort(binary_packages), collapse = ", "))
 cpu_count <- parallel::detectCores(logical = FALSE)
 if (is.na(cpu_count)) cpu_count <- 2L
-utils::install.packages(
-  required,
-  lib = library,
-  repos = repo,
-  dependencies = NA,
-  destdir = archive_dir,
-  Ncpus = max(1L, cpu_count - 1L),
-  quiet = FALSE
-)
+missing <- setdiff(binary_packages, rownames(utils::installed.packages(lib.loc = library)))
+for (attempt in seq_len(3L)) {
+  if (!length(missing)) break
+  message("Linux binary install attempt ", attempt, ": ", paste(missing, collapse = ", "))
+  utils::install.packages(
+    missing,
+    lib = library,
+    repos = repo,
+    dependencies = NA,
+    destdir = archive_dir,
+    Ncpus = max(1L, cpu_count - 1L),
+    quiet = FALSE
+  )
+  missing <- setdiff(binary_packages, rownames(utils::installed.packages(lib.loc = library)))
+}
 
-installed <- rownames(utils::installed.packages(lib.loc = library))
-missing <- setdiff(binary_packages, installed)
 if (length(missing)) {
   stop("Linux binary dependency closure was not installed: ", paste(missing, collapse = ", "))
 }

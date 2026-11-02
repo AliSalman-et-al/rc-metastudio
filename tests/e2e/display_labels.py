@@ -65,7 +65,7 @@ def run(app, window, record):
     def check(text, surface):
         text = str(text).replace('&', '').strip()
         # These are investigator text, never built-in vocabulary to rename.
-        for name in window.model.current_groups:
+        for name in window.model.arm_names:
             if name not in {'Group', 'Intervention', 'Control'}:
                 text = text.replace(name, '')
         assert not FORBIDDEN.search(text), (surface, text)
@@ -74,7 +74,7 @@ def run(app, window, record):
             inventory.append(dict(surface=surface, text=text))
 
     def inspect(widget):
-        names = [name for name in window.model.current_groups if name not in {'Group', 'Intervention', 'Control'}]
+        names = [name for name in window.model.arm_names if name not in {'Group', 'Intervention', 'Control'}]
         inventory.extend(visible_label_inventory(widget, names))
 
     def observe(action, *widgets, **observations):

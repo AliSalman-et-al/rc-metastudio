@@ -11,6 +11,16 @@ Read the relevant feature before driving it. Start each scenario in the fresh ap
 | [Results, plot editing, and export](plots.md) | `plot-edit`, eleven `plot-workflow-*` editor/decoded PDF/PNG/TIFF/SVG drives | Remaining appearance controls, failed regeneration/IO recovery, parameterless PNG, native fractional DPI and long/narrow layouts |
 | [Small-study effects analysis](small-study-effects.md) | `small-study-effects`, `small-study-binary-extended`, `small-study-continuous-extended`, `small-study-diagnostic` | Low-heterogeneity Harbord; MD asymmetry; descriptive-only metrics; eligibility/error recovery; direct numerical asymmetry oracles |
 
+## UX effort scoreboard
+
+`hillclimb` drives the five fixed tasks from PLAN.md through the shared desktop
+driver and records gesture counts, wall time and numerical/text receipts in
+measures.json. See [SCOREBOARD.md](../../../../docs/ux-hill-climb/SCOREBOARD.md)
+for fixtures, starting states, repeat comparison and baseline. This is offscreen
+effort evidence with QAction activations; native menu traversal and human timing
+remain unmeasured. `manuscript-export` verifies PDF/DOCX report export for amino, continuous and
+diagnostic results; hillclimb T5 completes with both manuscript formats.
+
 ## Proof conventions
 
 Pair a user action with its observed result and independent side effect. Menu and toolbar items sharing a QAction are separate entry points when a change touches their reachability. The automated scenarios use the handles documented in each feature; do not claim an unexercised shortcut or native picker is covered.
@@ -18,3 +28,12 @@ Pair a user action with its observed result and independent side effect. Menu an
 Evidence is stored per run under `artifacts/verification/rcms/`, outside scratch cleanup. Every run records the command, runtime, exit status, revision/dirty state, action snapshots, and file digests. Failed runs remain inspectable. Check the proof manifest after cleanup.
 
 For a broader feature request, complete affected rows of [coverage.md](../references/coverage.md), including the dataset/metric matrix. Numerical or packaging lanes cannot establish UI reachability by themselves. Record limitations explicitly. The complete desktop command runs every scenario registered in `scripts/verify_rcms.py` except the separate doctor check; ten original baselines alone are not an all-app verification pass.
+
+## Summary of findings (partial slice 9)
+
+`summary-of-findings` opens the real Analysis menu action on a derived
+amino/lymph/empty fixture, renders four rows, checks default certainty and empty
+reason, writes manuscript DOCX/PDF, checks extracted output and saves/reopens
+reviewer judgements. Evidence retains the derived project. Independent Run and
+metafor cell equality, data-edit refresh, diagnostic patient totals and Copy/export
+picker gestures remain unexercised; see `docs/ux-hill-climb/SLICE9.md`.

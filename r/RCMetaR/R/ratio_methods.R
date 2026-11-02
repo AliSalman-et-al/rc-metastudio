@@ -186,15 +186,9 @@ ratio.subgroup <- function(data, request, suppressed) {
         list(subgroup.list=groups, grouped.data=c(subsets, list(data)), results=fits,
              row.indices=lapply(groups, function(group) which(as.character(cov@cov.vals) == group))))
     result <- list("Subgroup Summary"=disp, res=construct.subgroup.res.output(fits))
-    if (!endsWith(method, ".mh") && length(groups) > 1) {
-        moderation <- metafor::rma.uni(data@y, sei=data@SE, mods=~factor(cov@cov.vals),
-            method=if (endsWith(method, ".random")) params$rm.method else "FE",
-            test=rcmetar.inference.method(params), level=params$conf.level)
-        test <- list(QM=moderation$QM, QMp=moderation$QMp,
-                     df=moderation$QMdf[[1]], df2=moderation$QMdf[[2]], test=moderation$test)
-        disp <- rcmetar.add.subgroup.test(disp, list(subgroups=list(difference_test=test)), params)
-        result[["Subgroup Summary"]] <- disp
-    } else if (endsWith(method, ".mh")) result[["Subgroup differences"]] <- "Mantel-Haenszel supplies within-subgroup summaries; no moderator test."
+    test <- rcmetar.metafor.subgroup.difference.test(fits[seq_along(groups)])
+    disp <- rcmetar.add.subgroup.test(disp, list(subgroups=list(difference_test=test)), params)
+    result[["Subgroup Summary"]] <- disp
     title <- "Subgroup Forest Plot"
     plot.name <- "subgroup_forest_plot"
     list(result=result, fits=fits, labels=labels, title=title, plot.name=plot.name, plot=plot)

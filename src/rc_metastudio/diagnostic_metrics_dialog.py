@@ -36,6 +36,7 @@ class DiagnosticMetricsDialog(
         self.owner = parent
         self.external_params = external_params
         self.analysis_type = analysis_type
+        self.btn_cancel.clicked.connect(self.reject)
         self.btn_ok.pressed.connect(app_error_handler.safe_slot(self.ok, parent=self))
         self._configure_metric_checkboxes()
         for metric in self.SELECTABLE_METRICS:
@@ -134,9 +135,7 @@ class DiagnosticMetricsDialog(
                 "Some metrics are unavailable:\n" + "\n".join(unavailable)
             )
         else:
-            self.availability_label.setText(
-                "All diagnostic metrics are available for the included studies."
-            )
+            self.availability_label.hide()
         self._refresh_ok_enabled()
 
     def _entered_estimates_available_for_metric(self, metric):

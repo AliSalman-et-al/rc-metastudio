@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 3
+    },
+    "current_sheet_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "current_sheet_id"
+  ],
+  "additionalProperties": false
+}

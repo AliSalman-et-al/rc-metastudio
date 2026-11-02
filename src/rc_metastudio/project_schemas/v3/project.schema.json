@@ -1,0 +1,212 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 3
+    },
+    "title": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "sheets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "family": {
+            "enum": [
+              "binary",
+              "continuous",
+              "diagnostic",
+              "time_to_event",
+              "event_rates"
+            ]
+          },
+          "data_type": {
+            "enum": [
+              0,
+              1,
+              2,
+              5,
+              6
+            ]
+          },
+          "sub_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "arms": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "covariates": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "settings": {
+            "type": "object"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "year": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "sample_size": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "include": {
+                  "type": "boolean"
+                },
+                "manually_excluded": {
+                  "type": "boolean"
+                },
+                "notes": {
+                  "type": "string"
+                },
+                "covariates": {
+                  "type": "object"
+                },
+                "raw_data": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": [
+                        "number",
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "entered_effects": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "metric": {
+                        "type": "string"
+                      },
+                      "arms": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "values": {
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "metric",
+                      "arms",
+                      "values"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "ratio_inputs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "arms": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "input": {
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "arms",
+                      "input"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "label",
+                "year",
+                "sample_size",
+                "include",
+                "manually_excluded",
+                "notes",
+                "covariates",
+                "raw_data",
+                "entered_effects",
+                "ratio_inputs"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "family",
+          "data_type",
+          "sub_type",
+          "arms",
+          "covariates",
+          "settings",
+          "rows"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "title",
+    "notes",
+    "sheets"
+  ],
+  "additionalProperties": false
+}

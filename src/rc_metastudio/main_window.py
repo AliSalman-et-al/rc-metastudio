@@ -3,13 +3,15 @@
 """Main RC MetaStudio desktop window."""
 
 from __future__ import annotations
+from rc_metastudio.project_domain import ArmId, SheetId
 
 import os
 from functools import cmp_to_key
 from typing import TYPE_CHECKING, cast
-from PyQt6 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import (
+    QMouseEvent,
     QAction,
     QCloseEvent,
     QKeyEvent,
@@ -69,7 +71,6 @@ from rc_metastudio import publication_bias_dialog
 from rc_metastudio import publication_bias
 from rc_metastudio import diagnostic_metrics_dialog
 from rc_metastudio import subgroup_analysis_dialog
-from rc_metastudio import edit_dialog
 from rc_metastudio import edit_name_dialogs
 from rc_metastudio import covariate_type_dialog
 from rc_metastudio import confidence_level_dialog
@@ -195,7 +196,7 @@ class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
     def __init__(self, parent=None, min_=0, max_=10):
         super().__init__(parent)
 
-        self.setWindowTitle("Importing from CSV...")
+        self.setWindowTitle("Import CSV")
         self.progress_bar.setRange(min_, max_)
 
     def setValue(self, value):
@@ -212,8 +213,80 @@ class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
         return self.progress_bar.value()
 
 
+class SheetTabBar(QtWidgets.QTabBar):
+    palette_stylesheet: str = ""
+    _updating_palette: bool = False
+
+    def changeEvent(self, a0: QtCore.QEvent | None) -> None:
+        super().changeEvent(a0)
+        event = a0
+        if event is None:
+            return
+        if event.type() not in (QtCore.QEvent.Type.ApplicationPaletteChange, QtCore.QEvent.Type.PaletteChange) or self._updating_palette:
+            return
+        self._updating_palette = True
+        try:
+            palette = QtWidgets.QApplication.palette()
+            self._apply_tab_palette(palette)
+            self._apply_strip_palette(palette)
+        finally:
+            self._updating_palette = False
+
+    def _apply_tab_palette(self, palette: QtGui.QPalette) -> None:
+        template = self.palette_stylesheet or self.styleSheet()
+        for name, role in (("window", QtGui.QPalette.ColorRole.Window), ("window-text", QtGui.QPalette.ColorRole.WindowText), ("alternate-base", QtGui.QPalette.ColorRole.AlternateBase), ("mid", QtGui.QPalette.ColorRole.Mid), ("highlight", QtGui.QPalette.ColorRole.Highlight)):
+            colour = palette.color(role)
+            if name == "mid":
+                colour = palette.color(QtGui.QPalette.ColorRole.Window)
+                colour = colour.lighter(140) if colour.lightness() < 128 else colour.darker(115)
+            template = template.replace("palette(" + name + ")", colour.name())
+        self.setStyleSheet(template)
+
+    def _apply_strip_palette(self, palette: QtGui.QPalette) -> None:
+        window = self.window()
+        if not isinstance(window, MainWindow):
+            return
+        # Palette events can arrive while the sheet strip is being built.
+        if hasattr(window, "sheet_tab_content"):
+            window.sheet_tab_content.setPalette(palette)
+        if hasattr(window, "add_sheet_button"):
+            window.add_sheet_button.setStyleSheet("QToolButton { color: " + palette.color(QtGui.QPalette.ColorRole.WindowText).name() + "; background: transparent; border: 0; font-size: 18px; }")
+
+    def eventFilter(self, a0: QtCore.QObject | None, a1: QtCore.QEvent | None) -> bool:
+        if a1 is not None and a1.type() == QtCore.QEvent.Type.ApplicationPaletteChange:
+            self.changeEvent(a1)
+        window = self.window()
+        event = a1
+        if isinstance(window, MainWindow) and isinstance(event, QKeyEvent) and event.key() == Qt.Key.Key_Escape:
+            window._finish_sheet_rename(cancel=True)
+            return True
+        return super().eventFilter(a0, event)
+
+    def tabSizeHint(self, index):
+        size = super().tabSizeHint(index)
+        size.setWidth(min(200, max(96, size.width())))
+        return size
+
+    def resizeEvent(self, a0: QResizeEvent | None) -> None:
+        super().resizeEvent(a0)
+        window = self.window()
+        if isinstance(window, MainWindow):
+            QtCore.QTimer.singleShot(0, window._scroll_to_sheet_tab)
+
+    def mouseReleaseEvent(self, a0: QMouseEvent | None) -> None:
+        event = a0
+        try:
+            super().mouseReleaseEvent(event)
+        finally:
+            window = self.window()
+            if isinstance(window, MainWindow) and window._sheet_dragging:
+                window._sheet_dragging = False
+                window.workspace.end_change()
+
+
 class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     model: dataset_table_model.DatasetTableModel
+    sheet_name_edit: QtWidgets.QLineEdit | None
     tableView: dataset_table_view.DatasetTableView
 
     def __init__(self, parent=None):
@@ -224,6 +297,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.setupUi(self)
         qt_layout.configure_analysis_menu(self.menuAnalysis)
         self.menuAnalysis.setToolTipsVisible(True)
+        self.action_summary_of_findings = QAction("Summary of findings…", self)
+        self.menuAnalysis.addAction(self.action_summary_of_findings)
+        self.action_summary_of_findings.triggered.connect(self._show_summary_of_findings)
         for action, icon_name in (
             (self.action_go, "meta-analysis"),
             (self.action_cum_ma, "cumulative-analysis"),
@@ -254,29 +330,24 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.verticalLayout_3.replaceWidget(self.dataset_file_lbl, dataset_file_label)
         self.dataset_file_lbl.deleteLater()
         self.dataset_file_lbl = dataset_file_label
-        self.gridLayout.setHorizontalSpacing(8)
-        self.current_outcome_label.setTextFormat(Qt.TextFormat.PlainText)
-        self.current_follow_up_label.setTextFormat(Qt.TextFormat.PlainText)
-        self.workspace_hint = QLabel(self)
-        qt_layout.configure_context_label(self.workspace_hint)
-        self.workspace_hint.setTextFormat(Qt.TextFormat.PlainText)
-        self.workspace_hint.setAccessibleName("Workspace guidance")
-        self.verticalLayout.insertWidget(0, self.workspace_hint)
         self.action_new_dataset.setText("Create dataset…")
+        self.action_import_rm5 = QAction("Import RevMan file (.rm5)…", self)
+        self.action_import_rm5.triggered.connect(self._import_rm5)
         self.start_page = start_page.StartPage(self.action_new_dataset, self.action_import_csv, self.action_open, self)
         self.verticalLayout_3.insertWidget(0, self.start_page)
-        self.menu_file.insertAction(self.action_open, self.action_new_dataset)
+        self.menu_file.clear()
+        for action in (self.action_new_dataset, self.action_open,
+                       self.action_open_recent_2.menuAction(), self.action_import_csv,
+                       self.action_import_rm5):
+            self.menu_file.addAction(action)
+        self.menu_file.addSeparator()
+        self.menu_file.addActions([self.action_save, self.action_save_as])
+        self.menu_file.addSeparator()
+        self.menu_file.addAction(self.action_quit)
         self.action_publication_bias.setText("Small-study effects…")
         help_action = QAction("Quick start and shortcuts…", self)
         help_action.triggered.connect(app_error_handler.safe_slot(self.show_quick_start, parent=self))
         self.menuHelp.insertAction(self.action_about_legal, help_action)
-        qt_layout.configure_navigation_tool_buttons(
-            (
-                self.nav_left_btn,
-                self.nav_right_btn,
-                self.nav_add_btn,
-            )
-        )
         adaptive_window.register_adaptive_window(self, adaptive_window.WindowRole.MAIN)
         table_view = dataset_table_view.DatasetTableView(self.nav_frame)
         self.verticalLayout.replaceWidget(self.tableView, table_view)
@@ -290,23 +361,28 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.cl_label.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.statusbar.addWidget(self.cl_label, 1)
 
+        self.frame.hide()
+        self._setup_sheet_strip()
+        self.sheet_tabs.currentChanged.connect(self._select_sheet_tab)
+        self.sheet_tabs.tabMoved.connect(self._move_sheet_tab)
+        self.sheet_tabs.tabBarDoubleClicked.connect(self._rename_sheet)
+        self.sheet_tabs.customContextMenuRequested.connect(self._sheet_menu)
+        self.add_sheet_button.clicked.connect(self._add_sheet)
+        for sequence, delta in (("Ctrl+PgDown", 1), ("Ctrl+PgUp", -1)):
+            action = QAction(self)
+            action.setShortcut(QKeySequence(sequence))
+            action.triggered.connect(lambda checked=False, delta=delta: self.sheet_tabs.setCurrentIndex((self.sheet_tabs.currentIndex() + delta) % max(1, self.sheet_tabs.count())))
+            self.addAction(action)
+        self.action_swap_arms = QAction("Swap intervention and control", self)
+        self.menuDataset.addAction(self.action_swap_arms)
+        self.menuDataset.aboutToShow.connect(self._update_swap_arms_enabled)
+        self.action_swap_arms.triggered.connect(self._swap_sheet_arms)
         self.workspace = WorkspaceSession()
         self.new_dataset()
 
         self.tableView.setModel(self.model)
         self.tableView.setItemDelegate(dataset_table_view.StudyDelegate(self.tableView))
 
-        for label, dimension in (("Outcomes", "outcome"), ("Follow-ups", "follow-up"), ("Groups", "group")):
-            self.navigation_dimension.addItem(label, dimension)
-        self.navigation_dimension.setMinimumContentsLength(10)
-        self.navigation_dimension.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
-        self.navigation_dimension.currentIndexChanged.connect(lambda _index: self.update_dimension())
-        self.update_dimension()
-        for before, after in zip(
-            (self.analysis_button, self.navigation_dimension, self.nav_left_btn, self.nav_right_btn, self.nav_add_btn),
-            (self.navigation_dimension, self.nav_left_btn, self.nav_right_btn, self.nav_add_btn, self.tableView),
-        ):
-            self.setTabOrder(before, after)
         self._model_signal_connections = []
         self._setup_connections()
         self._configure_standard_shortcuts()
@@ -411,9 +487,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             (self.action_new_dataset, QKeySequence.StandardKey.New),
             (self.action_open, QKeySequence.StandardKey.Open),
             (self.action_save, QKeySequence.StandardKey.Save),
-            (self.action_quit, QKeySequence.StandardKey.Quit),
         ):
             action.setShortcut(QKeySequence(standard_key))
+        self.action_quit.setShortcut(QKeySequence("Ctrl+Q"))
 
     def _model_about_to_be_reset(self):
         """Call all the functions here that should be called when the model is
@@ -434,30 +510,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             wizard_data = wizard.get_results()
             self._handle_wizard_results(wizard_data)
 
-    def new_dataset(
-        self, name=DEFAULT_DATASET_NAME, is_diagnostic=False, use_undo_framework=True
-    ):
-
-        data_model = analysis_dataset.Dataset(title=name, is_diagnostic=is_diagnostic)
-        # A new workspace needs one durable study for outcome setup. The table
-        # model's editable trailing row remains presentation-only.
-        data_model.add_study(analysis_dataset.Study(data_model.max_study_id() + 1))
-        existing_model = getattr(self, "model", None)
-        if existing_model is not None:
-            if use_undo_framework:
-                self._commit_model_operation(lambda: self.set_model(data_model))
-            else:  # CSV import manages its own undo boundary.
-                self.set_model(data_model)
-        else:
-            self.model = dataset_table_model.DatasetTableModel(dataset=data_model)
-            self.disable_menu_options_that_require_dataset()
-            self.workspace.update_live_state(
-                project_adapter.RuntimeProject(
-                    dataset=self.model.dataset,
-                    model_state=self.model.get_state(),
-                    restored_selection=False,
-                )
-            )
+    def new_dataset(self, name=DEFAULT_DATASET_NAME, is_diagnostic=False, use_undo_framework=True):
+        data_model = analysis_dataset.Dataset(title=name)
+        self.model = dataset_table_model.DatasetTableModel(dataset=data_model)
+        self.workspace.update_live_state(project_adapter.RuntimeProject(data_model, self.model.get_state(), False))
         self.out_path = None
         self._notify_user_that_data_is_unsaved()
 
@@ -469,12 +525,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         name = os.path.basename(path) if path else "Untitled dataset"
         dirty = self.workspace.is_dirty
         self.setWindowTitle(f"{name}{' *' if dirty else ''} — RC MetaStudio")
-        empty = not self.model.dataset.get_outcome_names()
+        empty = not [s.name for s in self.model.dataset.sheets]
         status = state or ("Ready to create or open a dataset" if empty and not dirty and not path else "Unsaved changes" if dirty else "Ready")
         self.dataset_file_lbl.setText(f"{status} · {name}")
         self.dataset_file_lbl.setToolTip(path or "Save the dataset to choose a project file.")
 
     def toggle_menu_options_that_require_dataset(self, enable):
+        enable = enable and r_backend.is_ready()
         self.action_go.setEnabled(enable)
         self.action_cum_ma.setEnabled(enable)
         self.action_loo_ma.setEnabled(enable)
@@ -484,28 +541,17 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._update_workspace_guidance()
 
     def _update_workspace_guidance(self):
-        if hasattr(self, "workspace_hint"):
-            enable = hasattr(self, "model") and self.model.current_outcome_name is not None
-            if not enable:
-                self.workspace_hint.setText("Create a dataset, import a CSV, or open an existing project to begin.")
-            else:
-                hint = analysis_identity.dataset_identity(self.model)
-                hint += "\nChecked studies are included. Gold cells show effect estimates; click a study row to edit its inputs."
-                if not self.action_go.isEnabled():
-                    hint += "\nInclude studies with complete data or entered effects to enable analyses. Start with study names, then enter data or use the row calculator."
-                if not self.model.dataset.covariates:
-                    hint += "\nAdd a covariate (Dataset → Add covariate) for meta-regression; use a Category covariate for subgroup analysis."
-                self.workspace_hint.setText(hint)
-            self.start_page.setVisible(not enable)
-            self.nav_frame.setVisible(enable)
+        enable = hasattr(self, "model") and self.model.current_outcome_name is not None
+        self.start_page.setVisible(not enable)
+        self.nav_frame.setVisible(enable)
 
     def _enable_action_meta_regression(self, dataset_analysis_enabled=None):
         """Enables action_meta_regression if analysis can run and covariates exist."""
         if dataset_analysis_enabled is None:
             dataset_analysis_enabled = self.action_go.isEnabled()
-        has_covariates = bool(self.model and self.model.dataset.covariates)
+        has_covariates = bool(self.model and (self.model.current_sheet.covariates if self.model.current_sheet else []))
         self.action_meta_regression.setEnabled(
-            dataset_analysis_enabled and has_covariates
+            r_backend.is_ready() and dataset_analysis_enabled and has_covariates
         )
         self.action_meta_regression.setToolTip("Meta-regression" if has_covariates else "Add a covariate to run meta-regression.")
 
@@ -518,12 +564,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         has_factor_covariates = bool(
             self.model
             and any(
-                cov.get_data_type() == meta_globals.FACTOR
-                for cov in self.model.dataset.covariates
+                cov['data_type'] == meta_globals.FACTOR
+                for cov in (self.model.current_sheet.covariates if self.model.current_sheet else [])
             )
         )
         self.action_subgroup_ma.setEnabled(
-            dataset_analysis_enabled and has_factor_covariates
+            r_backend.is_ready() and dataset_analysis_enabled and has_factor_covariates
         )
         self.action_subgroup_ma.setToolTip("Subgroup meta-analysis" if has_factor_covariates else "Add a categorical covariate to run subgroup analysis.")
 
@@ -617,11 +663,38 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
             self._commit_model_operation(apply_confidence_level)
 
+    def _import_rm5(self):
+        from xml.etree.ElementTree import ParseError
+        from rc_metastudio.rm5_import import review_rm5
+        path = _qt_dialog_path(QFileDialog.getOpenFileName(self, "Import RevMan review", "", "RevMan 5 (*.rm5)"))
+        if not path:
+            return
+        try:
+            dataset = review_rm5(path, self)
+        except (ValueError, KeyError, OSError, ParseError) as error:
+            QMessageBox.warning(self, "Could not import review", str(error))
+            return
+        if dataset is None or not self._authorize_destructive_project_action():
+            return
+        self.set_model(dataset)
+        self.workspace.start_new_document()
+        self.out_path = None
+        self._notify_user_that_data_is_unsaved()
+
     def _import_csv(self):
         """Import data from csv file"""
+        path, _ = QFileDialog.getOpenFileName(self, "Import data", "", "Data files (*.csv *.xlsx *.xls)")
+        if not path:
+            return
         if not self._authorize_destructive_project_action():
             return
         wizard = main_wizard.MainWizard(parent=self, path="csv_import")
+        wizard.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions", effect="OR", metric_choices=[], name="Imported data"))
+        wizard.setStartId(main_wizard.Page_CsvImport)
+        wizard.restart()
+        page = wizard.page(main_wizard.Page_CsvImport)
+        assert isinstance(page, main_wizard.CsvImportPage)
+        page.load_file(path)
         if wizard.exec():
             wizard_data = wizard.get_results()
             self._handle_wizard_results(wizard_data)
@@ -670,16 +743,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             )
         )
         if menu_actions:
-            self.nav_add_btn.pressed.connect(
-                app_error_handler.safe_slot(self.add_new, parent=self)
-            )
-            self.nav_right_btn.pressed.connect(
-                app_error_handler.safe_slot(self.next, parent=self)
-            )
-            self.nav_left_btn.pressed.connect(
-                app_error_handler.safe_slot(self.previous, parent=self)
-            )
-
             _connect_action(self.action_save, self.save)
             _connect_action(self.action_save_as, self.save_as)
             _connect_action(self.action_open, self.open)
@@ -697,7 +760,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 self.action_auto_fit_columns, self.tableView.auto_fit_columns
             )
 
-            _connect_action(self.action_edit, self.edit_dataset)
             _connect_action(self.action_add_covariate, self.add_covariate)
 
             _connect_action(self.action_meta_regression, self.meta_reg)
@@ -922,52 +984,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if position is not None:
             self.tableView.setCurrentIndex(self.model.index(*position))
 
-    def edit_dataset(self):
-        current_dataset = self.workspace.snapshot().dataset
-        edit_window = edit_dialog.EditDialog(current_dataset, parent=self)
-
-        if edit_window.exec():
-            # if we edited the current dataset when there was no
-            # outcome yet, then we want to default to an outcome
-            # that was added.
-
-            old_state_dict = self.tableView.model().get_state()
-            new_state_dict = copy.deepcopy(old_state_dict)
-
-            # update the new state dict to reflect the currently selected
-            # outcomes, etc.
-            outcome_model = edit_window.outcomes_model
-            edited_outcomes = outcome_model.outcome_list
-            if outcome_model.current_outcome_name is not None:
-                new_state_dict["current_outcome_name"] = (
-                    outcome_model.current_outcome_name
-                )
-            elif old_state_dict["current_outcome_name"] in edited_outcomes:
-                new_state_dict["current_outcome_name"] = old_state_dict[
-                    "current_outcome_name"
-                ]
-            elif edited_outcomes:
-                # If the current outcome was removed, select the first remaining one.
-                new_state_dict["current_outcome_name"] = edited_outcomes[0]
-            else:
-                new_state_dict["current_outcome_name"] = None
-
-            new_state_dict["current_follow_up_index"] = max(
-                edit_window.follow_up_list.currentIndex().row(), 0
-            )
-            group_names = edit_window.groups_model.group_list
-
-            if len(group_names) >= 2:
-                new_state_dict["current_groups"] = group_names[:2]
-            else:
-                new_state_dict["current_groups"] = group_names or meta_globals.default_group_names(
-                    self.model.get_current_outcome_type(get_str=False), self.model.get_current_outcome_subtype())
-            modified_dataset = edit_window.dataset
-
-            self._commit_model_operation(
-                lambda: self.set_model(modified_dataset, new_state_dict)
-            )
-
     def populate_metrics_menu(self, metric_to_check=None):
         """Populates the `metric` sub-menu with available metrics for the
         current datatype.
@@ -1096,6 +1112,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.synchronize_column_widths()
         self.toggle_menu_options_that_require_dataset(self.action_go.isEnabled())
 
+    def _show_summary_of_findings(self):
+        from rc_metastudio.summary_of_findings import SummaryOfFindingsDialog
+        self.summary_of_findings_dialog = SummaryOfFindingsDialog(self)
+        self.summary_of_findings_dialog.setModal(True)
+        self.summary_of_findings_dialog.show()
+
     def analysis(self, results: AnalysisResult, *, change_settings=None):
         try:
             form = results_window.ResultsWindow(results, parent=self, change_settings=change_settings)
@@ -1117,7 +1139,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         )
         if edit_group_form.exec():
             try:
-                existing_groups = list(self.model.dataset.get_group_names())
+                existing_groups = list(self.model.arm_names)
                 if orig_group_name in existing_groups:
                     existing_groups.remove(orig_group_name)
                 new_group_name = name_validation.validate_unique_name(
@@ -1137,13 +1159,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self._commit_model_operation(rename_group_command.redo)
 
     def add_covariate(self):
-        form = add_new_dialogs.AddCovariateDialog(self, existing_names=self.model.dataset.get_covariate_names())
+        form = add_new_dialogs.AddCovariateDialog(self, existing_names=self.model.get_covariate_names())
         form.covariate_name_le.setFocus()
         if form.exec():
             # then the user clicked 'ok'.
             try:
                 new_covariate_name = dataset_table_model.validate_new_covariate_name(
-                    self.model.dataset, form.covariate_name_le.text()
+                    self.model, form.covariate_name_le.text()
                 )
             except ValueError as exc:
                 QMessageBox.warning(self, "Warning", str(exc))
@@ -1164,7 +1186,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             covariate = self._add_new_covariate(
                 covariate_name, covariate_type, stable_id=state["stable_id"]
             )
-            state["stable_id"] = covariate.stable_id
+            state["stable_id"] = covariate["id"]
 
         def undo():
             self._undo_add_new_covariate(covariate_name)
@@ -1186,350 +1208,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.synchronize_column_widths()
         self._refresh_advanced_analysis_actions()
 
-    def add_new(self, startup_outcome: main_wizard.DatasetInfo | None = None) -> None:
-        redo_f, undo_f = None, None
-        if self.current_dimension == "outcome" and not startup_outcome:
-            form = add_new_dialogs.AddOutcomeDialog(
-                parent=self, is_diagnostic=self.model.is_diagnostic()
-            )
-            form.outcome_name_le.setFocus()
-            if form.exec():
-                # then the user clicked ok and has added a new outcome.
-                # here we want to add the outcome to the dataset, and then
-                # display it
-                try:
-                    new_outcome_name = dataset_table_model.validate_new_outcome_name(
-                        self.model.dataset, form.outcome_name_le.text()
-                    )
-                except ValueError as exc:
-                    QMessageBox.warning(self, "Warning", str(exc))
-                    return
-                # the outcome type is one of the enumerated types; we don't worry about
-                # unicode encoding
-                new_outcome_type = str(form.datatype_cbo_box.currentText())
-
-                def redo_f():
-                    return self._add_new_outcome(new_outcome_name, new_outcome_type)
-
-                previous_outcome = str(self.model.current_outcome_name)
-
-                def undo_f():
-                    return self._undo_add_new_outcome(
-                        new_outcome_name, previous_outcome
-                    )
-        elif (
-            self.current_dimension == "outcome" and startup_outcome
-        ):  # For dealing with outcomes from the startup form
-            new_outcome_name = qt_text.to_native_text(startup_outcome["name"])
-            new_outcome_type = str(startup_outcome["data_type"])
-            new_outcome_subtype = startup_outcome.get("sub_type")
-
-            def redo_f():
-                return self._add_new_outcome(
-                    new_outcome_name, new_outcome_type, new_outcome_subtype, startup_outcome.get("groups")
-                )
-
-            previous_outcome = str(self.model.current_outcome_name)
-
-            def undo_f():
-                return self._undo_add_new_outcome(new_outcome_name, previous_outcome)
-        elif self.current_dimension == "group":
-            form = add_new_dialogs.AddGroupDialog(self)
-            form.group_name_le.setFocus()
-            if form.exec():
-                try:
-                    new_group_name = dataset_table_model.validate_new_group_name(
-                        self.model.dataset, form.group_name_le.text()
-                    )
-                except ValueError as exc:
-                    QMessageBox.warning(self, "Warning", str(exc))
-                    return
-                current_groups = list(self.model.get_current_groups())
-
-                def redo_f():
-                    return self._add_new_group(new_group_name)
-
-                def undo_f():
-                    return self._undo_add_new_group(new_group_name, current_groups)
-        else:
-            # then the dimension is follow-up
-            form = add_new_dialogs.AddFollowUpDialog(self)
-            form.follow_up_name_le.setFocus()
-            if form.exec():
-                try:
-                    follow_up_lbl = dataset_table_model.validate_new_follow_up_name(
-                        self.model.dataset,
-                        self.model.current_outcome_name,
-                        form.follow_up_name_le.text(),
-                    )
-                except ValueError as exc:
-                    QMessageBox.warning(self, "Warning", str(exc))
-                    return
-
-                def redo_f():
-                    return self._add_new_follow_up_for_cur_outcome(follow_up_lbl)
-
-                previous_follow_up = self.model.get_current_follow_up_name()
-
-                def undo_f():
-                    return self._undo_add_follow_up_for_cur_outcome(
-                        previous_follow_up, follow_up_lbl
-                    )
-
-        if redo_f is not None and undo_f is not None:
-            next_command = meta_globals.CallbackCommand(redo_f, undo_f)
-            self._commit_model_operation(next_command.redo)
-
-    def _add_new_group(self, new_group_name):
-        self.model.add_new_group(new_group_name)
-        current_groups = list(self.model.get_current_groups())
-        current_groups[1] = new_group_name
-        self.model.set_current_groups(current_groups)
-        # Refresh the displayed group columns after renaming.
-        self.display_groups(current_groups)
-
-    def _undo_add_new_group(self, added_group, previously_displayed_groups):
-        self.model.remove_group(added_group)
-        self.model.set_current_groups(previously_displayed_groups)
-        self.display_groups(previously_displayed_groups)
-
-    def _undo_add_new_outcome(self, added_outcome, previously_displayed_outcome):
-        self.model.remove_outcome(added_outcome)
-        self.display_outcome(previously_displayed_outcome)
-
-    def _add_new_outcome(self, outcome_name, outcome_type, sub_type=None, group_names=None):
-        if group_names is not None:
-            self.model.current_groups = list(group_names)
-        self.model.add_new_outcome(outcome_name, outcome_type, sub_type=sub_type, group_names=group_names)
-        self.display_outcome(outcome_name, group_names=group_names)
-
-    def _add_new_follow_up_for_cur_outcome(self, follow_up_lbl):
-        self.model.add_follow_up_to_current_outcome(follow_up_lbl)
-        self.display_follow_up(self.model.get_t_point_for_follow_up_name(follow_up_lbl))
-
-    def _undo_add_follow_up_for_cur_outcome(self, prev_follow_up, follow_up_to_del):
-        self.model.remove_follow_up_from_outcome(
-            follow_up_to_del, str(self.model.current_outcome_name)
-        )
-        self.display_follow_up(
-            self.model.get_t_point_for_follow_up_name(prev_follow_up)
-        )
-
-    def next(self):
-        # Disable navigation when there is no next item in this dimension.
-        # if there is only one point (e.g., outcome). otherwise you end
-        # up enqueueing a bunch of pointless undo/redos.
-        redo_f, undo_f = None, None
-        if self.current_dimension == "outcome":
-            old_outcome = self.model.current_outcome_name
-            # Preserve the current groups because the next outcome can select
-            # different defaults and undo must restore the original view.
-            previous_groups = self.model.get_current_groups()
-            next_outcome = self.model.get_next_outcome_name()
-
-            def redo_f():
-                return self.display_outcome(next_outcome)
-
-            previous_follow_up = self.model.get_current_follow_up_name()
-
-            def undo_f():
-                return self.display_outcome(
-                    old_outcome,
-                    follow_up_name=previous_follow_up,
-                    group_names=previous_groups,
-                )
-        elif self.current_dimension == "group":
-            previous_groups = self.model.get_current_groups()
-            new_groups = self.model.next_groups()
-
-            def redo_f():
-                return self.display_groups(new_groups)
-
-            def undo_f():
-                return self.display_groups(previous_groups)
-        elif self.current_dimension == "follow-up":
-            old_follow_up_t_point = self.model.current_follow_up_index
-            next_follow_up_t_point = self.model.get_next_follow_up()[0]
-
-            def redo_f():
-                return self.display_follow_up(next_follow_up_t_point)
-
-            def undo_f():
-                return self.display_follow_up(old_follow_up_t_point)
-
-        if redo_f is not None and undo_f is not None:
-            next_command = meta_globals.CallbackCommand(redo_f, undo_f)
-            self._commit_model_operation(next_command.redo)
-
-    def previous(self):
-        redo_f, undo_f = None, None
-        if self.current_dimension == "outcome":
-            old_outcome = self.model.current_outcome_name
-            next_outcome = self.model.get_previous_outcome_name()
-
-            def redo_f():
-                return self.display_outcome(next_outcome)
-
-            def undo_f():
-                return self.display_outcome(old_outcome)
-        elif self.current_dimension == "group":
-            current_groups = self.model.get_current_groups()
-            prev_groups = self.model.get_previous_groups()
-
-            def redo_f():
-                return self.display_groups(prev_groups)
-
-            def undo_f():
-                return self.display_groups(current_groups)
-        elif self.current_dimension == "follow-up":
-            old_follow_up_t_point = self.model.current_follow_up_index
-            previous_follow_up_t_point = self.model.get_previous_follow_up()[0]
-
-            def redo_f():
-                return self.display_follow_up(previous_follow_up_t_point)
-
-            def undo_f():
-                return self.display_follow_up(old_follow_up_t_point)
-
-        if redo_f is not None and undo_f is not None:
-            prev_command = meta_globals.CallbackCommand(redo_f, undo_f)
-            self._commit_model_operation(prev_command.redo)
-
-    def update_dimension(self):
-        self.current_dimension = self.navigation_dimension.currentData()
-        dimension = self.current_dimension
-        actions = (
-            (self.nav_left_btn, f"Previous {dimension}", f"Show the previous {dimension}."),
-            (self.nav_right_btn, f"Next {dimension}", f"Show the next {dimension}."),
-            (self.nav_add_btn, f"Add {dimension}", f"Add a new {dimension} to the dataset."),
-        )
-        for button, name, description in actions:
-            button.setText(name.split()[0])
-            button.setToolTip(name)
-            button.setStatusTip(description)
-            button.setAccessibleName(name)
-            button.setAccessibleDescription(description)
-        self._update_navigation_controls()
 
     def _update_navigation_controls(self):
-        """Keep cyclic navigation affordances honest for the active dimension."""
-        self._update_workspace_guidance()
-        can_previous, can_next = self._navigation_availability()
-        dimension = self.current_dimension
-        for direction, button, can_navigate in (
-            ("previous", self.nav_left_btn, can_previous),
-            ("next", self.nav_right_btn, can_next),
-        ):
-            if can_navigate:
-                button.setEnabled(True)
-                button.setToolTip(f"{direction.title()} {dimension}")
-                button.setStatusTip(f"Show the {direction} {dimension}.")
-                button.setAccessibleDescription(
-                    f"Show the {direction} {dimension}."
-                )
-            else:
-                unavailable = f"No {direction} {dimension} available."
-                button.setEnabled(False)
-                button.setToolTip(unavailable)
-                button.setStatusTip(unavailable)
-                button.setAccessibleDescription(unavailable)
+        pass
 
-    def _navigation_availability(self):
-        dimension = self.current_dimension
-        if dimension == "outcome":
-            item_count = len(self.model.dataset.get_outcome_names())
-            can_navigate = item_count > 1
-            return can_navigate, can_navigate
-        elif dimension == "follow-up":
-            outcome_name = self.model.current_outcome_name
-            item_count = (
-                len(self.model.dataset.get_follow_up_names_for_outcome(outcome_name))
-                if outcome_name is not None
-                else 0
-            )
-            can_navigate = item_count > 1
-            return can_navigate, can_navigate
-        return self._group_navigation_availability()
 
-    def _group_navigation_availability(self):
-        outcome_name = self.model.current_outcome_name
-        follow_up_name = self.model.get_current_follow_up_name()
-        group_names = (
-            self.model.dataset.get_group_names_for_outcome_follow_up(
-                outcome_name, follow_up_name
-            )
-            if outcome_name is not None and follow_up_name is not None
-            else []
-        )
-        current_groups = tuple(self.model.get_current_groups())
-        previous_groups = tuple(self.model.get_previous_groups())
-        can_previous = (
-            bool(previous_groups)
-            and previous_groups != current_groups
-            and set(previous_groups).issubset(group_names)
-        )
-        return can_previous, len(group_names) > 1
-
-    def display_groups(self, groups):
-        self.model.set_current_groups(groups)
-        self.model.hydrate_derived_previews()
-        self.model.reset_model()
-        self.tableView.synchronize_column_widths()
-        self._update_navigation_controls()
-
-    def display_outcome(self, outcome_name, group_names=None, follow_up_name=None):
-        # Never retain a group or follow-up that belongs to another outcome.
-        self.model.set_current_outcome(outcome_name)
-        self.populate_metrics_menu()
-
-        if follow_up_name is not None:
-            self.model.set_current_follow_up(follow_up_name)
-        else:
-            # If a follow up isn't explicitly passed in, attempt to use
-            # the current follow up. If this does not exist for the outcome
-            # to be displayed, then display a different follow up.
-            current_follow_up = self.model.get_current_follow_up_name()
-            if not self.model.outcome_has_follow_up(outcome_name, current_follow_up):
-                # then the outcome does not have this follow up and we have to
-                # step on to the next one.
-                next_follow_up = self.model.get_next_follow_up()[1]
-                self.model.set_current_follow_up(next_follow_up)
-
-        # now we check the groups.
-        if group_names is not None:
-            self.model.set_current_groups(group_names)
-        else:
-            # then no group names were explicitly passed in; ascertain
-            # that the outcome/fu contains the current groups; if not,
-            # set them to something else.
-            current_groups = self.model.get_current_groups()
-            if not all(
-                [
-                    self.model.outcome_follow_up_has_group(
-                        outcome_name, self.model.get_current_follow_up_name(), group
-                    )
-                    for group in current_groups
-                ]
-            ):
-                self.model.set_current_groups(self.model.next_groups())
-
-        self.current_outcome_label.setText(str(outcome_name))
-        self.current_follow_up_label.setText(self.model.get_current_follow_up_name())
-        self.model.hydrate_derived_previews()
-        self.model.reset_model()
-        self.tableView.synchronize_column_widths()
-        self._update_navigation_controls()
-
-    def display_follow_up(self, time_point):
-        self.model.current_follow_up_index = time_point
-        self.update_follow_up_label()
-        self.model.hydrate_derived_previews()
-        self.model.reset_model()
-        self.tableView.synchronize_column_widths()
-        self._update_navigation_controls()
-
-    def update_follow_up_label(self):
-        self.current_follow_up_label.setText(self.model.get_current_follow_up_name())
 
     def open(self, file_path=None, raise_on_error=False):
         """Open a validated structured project and restore its durable working state.
@@ -1606,14 +1289,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model = model
         self.tableView.restore_model(model)
         self._setup_connections(menu_actions=False)
-        if len(model.dataset) >= 2:
+        if len(model.get_studies(False)) >= 2:
             self.enable_menu_options_that_require_dataset()
         else:
             self.disable_menu_options_that_require_dataset()
         self._refresh_advanced_analysis_actions()
         self.populate_metrics_menu(metric_to_check=model.current_effect)
         self.update_outcome_lbl()
-        self.update_follow_up_label()
         selection_model = required(
             self.tableView.selectionModel(), "workspace selection model"
         )
@@ -1638,38 +1320,18 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._commit_model_operation(delete_command.redo)
 
     def change_covariate_type(self, covariate):
-        current_dataset = self.workspace.snapshot().dataset
-        # keep the current study order, because we're going to sort the studies
-        # on the change_cov_form but we want to revert to the ordering
-        # they came in with when we're done.
-        original_study_order = [study.name for study in self.model.dataset.studies]
-
-        change_type_form = covariate_type_dialog.CovariateTypeDialog(
-            current_dataset, covariate, parent=self
-        )
-
+        sheet = copy.deepcopy(self.model.current_sheet)
+        change_type_form = covariate_type_dialog.CovariateTypeDialog(sheet, covariate, parent=self)
         if change_type_form.exec():
-            modified_dataset = change_type_form.dataset
-            # revert to original study ordering
-            modified_dataset.studies.sort(
-                key=cmp_to_key(
-                    modified_dataset.cmp_studies(
-                        compare_by="ordered_list",
-                        ordered_list=original_study_order,
-                        confidence_multiplier=self.model.get_confidence_multiplier(),
-                    )
-                )
-            )
-
-            old_state_dict = self.tableView.model().get_state()
-            new_state_dict = copy.deepcopy(old_state_dict)
-
-            self._commit_model_operation(
-                lambda: self.set_model(modified_dataset, new_state_dict)
-            )
+            def apply():
+                self.model.current_sheet.covariates = sheet.covariates
+                self.model.current_sheet.rows = sheet.rows
+                self.model._sync_display_studies()
+                self.model.reset_model()
+            self._commit_model_operation(apply)
 
     def rename_covariate(self, covariate):
-        orig_cov_name = copy.copy(covariate.name)
+        orig_cov_name = copy.copy(covariate['name'])
         # The group-name editor is also used for covariate labels.
         edit_cov_form = edit_name_dialogs.EditCovariateNameDialog(
             orig_cov_name, parent=self
@@ -1678,7 +1340,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             # the field names are also poorly named, in this case. here we mean the
             # **covariate name**, of course.
             try:
-                existing_covariates = list(self.model.dataset.get_covariate_names())
+                existing_covariates = list(self.model.get_covariate_names())
                 if orig_cov_name in existing_covariates:
                     existing_covariates.remove(orig_cov_name)
                 new_cov = name_validation.validate_unique_name(
@@ -1704,38 +1366,20 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         # Synchronize direct model edits made by an adapter before publishing
         # the next atomic workspace change.
         self.data_dirtied()
-        covariate_values_by_study = self.model.dataset.get_covariate_values(
-            covariate.name
-        )
-        stable_id = getattr(covariate, "stable_id", None)
-
-        def undo_f():
-            self.model.add_covariate(
-                covariate.name,
-                meta_globals.COV_INTS_TO_STRS[covariate.data_type],
-                covariate_values=covariate_values_by_study,
-                stable_id=stable_id,
-            )
-            self._refresh_advanced_analysis_actions()
-
-        def redo_f():
-            self.model.remove_covariate(covariate)
-            self._refresh_advanced_analysis_actions()
-
-        delete_command = meta_globals.CallbackCommand(redo_f, undo_f)
-        self._commit_model_operation(delete_command.redo)
+        self._commit_model_operation(lambda: self.model.remove_covariate(covariate))
+        self._refresh_advanced_analysis_actions()
 
     def _refresh_advanced_analysis_actions(self):
         self._enable_action_meta_regression()
         self._enable_action_subgroup_ma()
 
     def _add_study(self, study, study_index=None):
-        self.model.dataset.add_study(study, study_index=study_index)
+        self.model.current_sheet.rows.insert(study_index if study_index is not None else len(self.model.current_sheet.rows), study)
         self.model.reset_model()
         self.data_dirtied()
 
     def _remove_study(self, study):
-        self.model.dataset.studies.remove(study)
+        self.model.current_sheet.rows.remove(study)
         self.model.reset_model()
         self.data_dirtied()
 
@@ -1765,18 +1409,18 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         recalculate_outcomes=True,
     ):
         # An empty dataset starts with one editable blank row.
-        add_blank_study = len(data_model) < 1
+        add_blank_study = not data_model.sheets
         self.model = dataset_table_model.DatasetTableModel(
             dataset=data_model, add_blank_study=add_blank_study
         )
 
         self._disconnect_model_signals()
-        if len(data_model) >= 2:
+        if bool(data_model.sheets and len(data_model.sheets[0].rows) >= 2):
             self.enable_menu_options_that_require_dataset()
         else:
             self.disable_menu_options_that_require_dataset()
 
-        self._enable_action_meta_regression(len(data_model) >= 2)
+        self._enable_action_meta_regression(bool(data_model.sheets and len(data_model.sheets[0].rows) >= 2))
 
         self.tableView.setModel(self.model)
 
@@ -1796,49 +1440,280 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         )
 
     def model_updated(self, preserve_selection=False, recalculate_outcomes=True):
-        """Call me when the model is changed."""
-        if preserve_selection:
-            group_names = self.model.dataset.get_group_names()
-            if self.model.current_groups:
-                self.model.group_index_a = group_names.index(
-                    self.model.current_groups[0]
-                )
-                if len(self.model.current_groups) > 1:
-                    self.model.group_index_b = group_names.index(
-                        self.model.current_groups[1]
-                    )
-                else:
-                    self.model.group_index_b = self.model.group_index_a
-            self.model.previous_groups = list(self.model.current_groups)
-        else:
-            self.model.update_current_group_names()
-            self.model.update_current_outcome()
-            self.model.update_current_time_points()
-
-        if recalculate_outcomes and self.model.current_outcome_name is not None:
-            self.model.hydrate_derived_previews()
-
-        # The retired model remains connected to its slots, so reconnect the
-        # view but not menu actions, which would otherwise accumulate handlers.
+        if self.model.current_sheet:
+            self.model.set_current_sheet(self.model.current_sheet_id)
+            if recalculate_outcomes:
+                self.model.hydrate_derived_previews()
+        self._disconnect_model_signals()
         self._setup_connections(menu_actions=False)
         self.tableView.synchronize_column_widths()
-        self.update_outcome_lbl()
-        self.update_follow_up_label()
-
-        current_data_type = self.tableView.model().get_current_outcome_type(
-            get_str=False
-        )
-        if self.metric_menu_is_set_for != current_data_type:
-            self.populate_metrics_menu(
-                metric_to_check=self.tableView.model().current_effect
-            )
-
+        self.populate_metrics_menu(metric_to_check=self.model.current_effect)
         self.model.reset_model()
         self._update_confidence_level_label()
-        self._update_navigation_controls()
+        self._refresh_sheet_tabs()
+
+    def _update_swap_arms_enabled(self):
+        sheet = self.model.current_sheet
+        self.action_swap_arms.setEnabled(bool(sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2 and self.model.current_effect not in meta_globals.ONE_ARM_METRICS))
+
+    def _swap_sheet_arms(self):
+        sheet = self.model.current_sheet
+        if sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2 and self.model.current_effect not in meta_globals.ONE_ARM_METRICS:
+            def swap():
+                sheet.arms.reverse()
+                if "favours_labels" in sheet.settings:
+                    sheet.settings["favours_labels"].reverse()
+            self._sheet_change(sheet.id, swap)
+
+    def _setup_sheet_strip(self):
+        self._sheet_dragging = False
+        self._adding_sheet = False
+        self.sheet_name_edit = None
+        self.sheet_tabs: SheetTabBar = SheetTabBar(self)
+        required(QtWidgets.QApplication.instance(), "application").installEventFilter(self.sheet_tabs)
+        self.sheet_tabs.setObjectName("sheet_tabs")
+        self.sheet_tabs.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.setTabOrder(self.analysis_button, self.sheet_tabs)
+        self.setTabOrder(self.sheet_tabs, self.tableView)
+        self.sheet_tabs.setExpanding(False)
+        self.sheet_tabs.setMovable(True)
+        self.sheet_tabs.setUsesScrollButtons(False)
+        self.sheet_tabs.setElideMode(Qt.TextElideMode.ElideRight)
+        self.sheet_tabs.setAutoHide(False)
+        self.sheet_tabs.setDrawBase(False)
+        self.sheet_tabs.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.sheet_tabs.palette_stylesheet = """
+            QTabBar { background: palette(window); border: 0; }
+            QTabBar::tab { background: palette(window); color: palette(window-text);
+                border: 0; border-right: 1px solid palette(mid);
+                border-bottom: 3px solid transparent; padding: 6px 12px; }
+            QTabBar::tab:last { border-right: 0; }
+            QTabBar::tab:hover { background: palette(alternate-base); }
+            QTabBar::tab:selected { background: palette(window); font-weight: bold;
+                border-bottom: 3px solid palette(highlight); }
+        """
+        self.sheet_tabs.setStyleSheet(self.sheet_tabs.palette_stylesheet)
+        self.add_sheet_button = QtWidgets.QToolButton(self)
+        self.add_sheet_button.setText("+")
+        self.add_sheet_button.setToolTip("Add sheet")
+        self.add_sheet_button.setStyleSheet("QToolButton { color: palette(window-text); background: transparent; border: 0; font-size: 18px; padding: 0; margin: 2px; } QToolButton:hover { background: palette(alternate-base); }")
+        self.add_sheet_button.setFixedSize(26, 26)
+        content = QtWidgets.QWidget(self)
+        self.sheet_tab_content = content
+        row = QtWidgets.QHBoxLayout(content)
+        row.setContentsMargins(0, 0, 4, 0)
+        row.setSpacing(0)
+        row.addWidget(self.sheet_tabs)
+        self.sheet_tab_scroll = QtWidgets.QScrollArea(self)
+        self.sheet_tab_scroll.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
+        self.sheet_tab_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.sheet_tab_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.sheet_tab_scroll.setWidget(content)
+        self.sheet_tab_scrollbar = required(self.sheet_tab_scroll.horizontalScrollBar(), "sheet scrollbar")
+        self.sheet_tab_scroll.setMinimumWidth(100)
+        self.sheet_strip = QtWidgets.QWidget(self)
+        strip = QtWidgets.QHBoxLayout(self.sheet_strip)
+        strip.setContentsMargins(0, 0, 0, 0)
+        strip.setSpacing(0)
+        self.sheet_scroll_left = QtWidgets.QToolButton(self)
+        self.sheet_scroll_right = QtWidgets.QToolButton(self)
+        for button, arrow, delta in ((self.sheet_scroll_left, Qt.ArrowType.LeftArrow, -160), (self.sheet_scroll_right, Qt.ArrowType.RightArrow, 160)):
+            button.setArrowType(arrow)
+            button.setAccessibleName("Scroll sheets left" if delta < 0 else "Scroll sheets right")
+            button.clicked.connect(lambda checked=False, delta=delta: self.sheet_tab_scrollbar.setValue(self.sheet_tab_scrollbar.value() + delta))
+            button.hide()
+            strip.addWidget(button)
+        strip.addWidget(self.sheet_tab_scroll, 3)
+        strip.addWidget(self.add_sheet_button)
+        strip.addStretch(0)
+        self.sheet_grid_scrollbar = QtWidgets.QScrollBar(Qt.Orientation.Horizontal, self.sheet_strip)
+        strip.addWidget(self.sheet_grid_scrollbar, 2)
+        self.tableView.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        grid = required(self.tableView.horizontalScrollBar(), "grid scrollbar")
+        self.sheet_grid_scrollbar.valueChanged.connect(grid.setValue)
+        grid.valueChanged.connect(self.sheet_grid_scrollbar.setValue)
+        def sync_grid_scrollbar(*_args):
+            self.sheet_grid_scrollbar.setRange(grid.minimum(), grid.maximum())
+            self.sheet_grid_scrollbar.setPageStep(grid.pageStep())
+            self.sheet_grid_scrollbar.setSingleStep(grid.singleStep())
+            self.sheet_grid_scrollbar.setVisible(grid.maximum() > grid.minimum())
+        grid.rangeChanged.connect(sync_grid_scrollbar)
+        sync_grid_scrollbar()
+        self.sheet_strip.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
+        self.verticalLayout.addWidget(self.sheet_strip)
+        scroll = self.sheet_tab_scrollbar
+        self._sheet_strip_timer = QtCore.QTimer(self)
+        self._sheet_strip_timer.setSingleShot(True)
+        self._sheet_strip_timer.timeout.connect(self._update_sheet_strip)
+        scroll.rangeChanged.connect(self._schedule_sheet_strip_update)
+        scroll.valueChanged.connect(self._sheet_scroll_changed)
+        self._schedule_sheet_strip_update()
+
+    def _schedule_sheet_strip_update(self, *_args):
+        # Range changes arrive inside QScrollArea resize/layout processing.
+        # Changing child visibility there can leave a shown arrow at zero width.
+        self._sheet_strip_timer.start(0)
+
+    def _update_sheet_strip(self):
+        self.sheet_tab_scroll.setMaximumWidth(self.sheet_tab_content.sizeHint().width() + 2)
+        overflow = self.sheet_tab_scrollbar.maximum() > 0
+        self.sheet_scroll_left.setVisible(overflow)
+        self.sheet_scroll_right.setVisible(overflow)
+        self._sheet_scroll_changed()
+        self._scroll_to_sheet_tab()
+
+    def _sheet_scroll_changed(self, *_args):
+        scroll = self.sheet_tab_scrollbar
+        self.sheet_scroll_left.setEnabled(scroll.value() > 0)
+        self.sheet_scroll_right.setEnabled(scroll.value() < scroll.maximum())
+
+    def _scroll_to_sheet_tab(self):
+        index = self.sheet_tabs.currentIndex()
+        if index >= 0:
+            rect = self.sheet_tabs.tabRect(index)
+            self.sheet_tab_scroll.ensureVisible(rect.center().x(), rect.center().y(), rect.width() // 2 + 2, 0)
+
+    def _refresh_sheet_tabs(self):
+        self._finish_sheet_rename(cancel=True)
+        self.sheet_tabs.blockSignals(True)
+        while self.sheet_tabs.count():
+            self.sheet_tabs.removeTab(0)
+        for sheet in self.model.dataset.sheets:
+            index = self.sheet_tabs.addTab(sheet.name)
+            self.sheet_tabs.setTabData(index, sheet.id)
+            self.sheet_tabs.setTabToolTip(index, sheet.name)
+            if sheet.id == self.model.current_sheet_id:
+                self.sheet_tabs.setCurrentIndex(index)
+        self.sheet_tabs.blockSignals(False)
+        content = self.sheet_tab_content
+        content.adjustSize()
+        self.sheet_tab_scroll.setFixedHeight(content.sizeHint().height())
+        self.sheet_strip.setVisible(self.sheet_tabs.count() > 0)
+        QtCore.QTimer.singleShot(0, self._scroll_to_sheet_tab)
+        self._update_swap_arms_enabled()
+
+    def _select_sheet_tab(self, index):
+        self._finish_sheet_rename()
+        if index < 0:
+            return
+        self._scroll_to_sheet_tab()
+        self.model.set_current_sheet(self.sheet_tabs.tabData(index))
+        self.workspace.select_sheet(self.model.current_sheet_id)
+        self.model_updated()
+        self._update_workspace_guidance()
+
+    def _sheet_change(self, sheet_id, operation):
+        self.model.set_current_sheet(sheet_id)
+        self.workspace.select_sheet(sheet_id)
+        def commit():
+            operation()
+            self.model_updated()
+            self.data_dirtied()
+        self._commit_model_operation(commit)
+
+    def _finish_sheet_rename(self, cancel=False):
+        edit = self.sheet_name_edit
+        if edit is None:
+            return
+        name = edit.text().strip()
+        sheet_id = edit.property("sheet_id")
+        if not cancel and (not name or any(item.id != sheet_id and item.name == name for item in self.model.dataset.sheets)):
+            edit.setToolTip("Choose a unique outcome name.")
+            QtWidgets.QToolTip.showText(edit.mapToGlobal(edit.rect().bottomLeft()), edit.toolTip(), edit)
+            edit.setFocus()
+            return
+        self.sheet_name_edit = None
+        edit.hide()
+        edit.deleteLater()
+        if not cancel:
+            sheet = self.model.dataset.sheet(sheet_id)
+            if name != sheet.name:
+                self._sheet_change(sheet.id, lambda: setattr(sheet, "name", name))
+        if self._adding_sheet:
+            self._adding_sheet = False
+            self.workspace.end_change()
+
+    def _add_sheet(self):
+        import uuid
+        if not self.model.current_sheet:
+            return
+        number = 2
+        while any(sheet.name == f"Outcome {number}" for sheet in self.model.dataset.sheets):
+            number += 1
+        self._finish_sheet_rename()
+        self.workspace.begin_change()
+        self._adding_sheet = True
+        name = f"Outcome {number}"
+        sheet = copy.deepcopy(self.model.current_sheet)
+        sheet.id, sheet.name, sheet.rows = uuid.uuid4().hex, name, []
+        def add():
+            self.model.dataset.sheets.append(sheet)
+            self.model.set_current_sheet(sheet.id)
+        self._sheet_change(self.model.current_sheet_id, add)
+        self._rename_sheet(self.sheet_tabs.currentIndex())
+
+    def _rename_sheet(self, index):
+        if index < 0:
+            return
+        if self.sheet_name_edit is not None:
+            self._finish_sheet_rename(cancel=True)
+        self.sheet_tabs.setCurrentIndex(index)
+        self._scroll_to_sheet_tab()
+        sheet = self.model.dataset.sheet(self.sheet_tabs.tabData(index))
+        edit = QtWidgets.QLineEdit(sheet.name, self.sheet_tabs)
+        self.sheet_name_edit = edit
+        edit.setObjectName("sheet_name_edit")
+        edit.setProperty("sheet_id", sheet.id)
+        rect = self.sheet_tabs.tabRect(index)
+        edit.setGeometry(rect)
+        edit.returnPressed.connect(self._finish_sheet_rename)
+        edit.editingFinished.connect(self._finish_sheet_rename)
+        edit.installEventFilter(self.sheet_tabs)
+        edit.show()
+        edit.setFocus()
+        edit.selectAll()
+
+    def _sheet_menu(self, position):
+        index = self.sheet_tabs.tabAt(position)
+        if index < 0:
+            return
+        menu = QtWidgets.QMenu(self)
+        menu.addAction("Rename", lambda: self._rename_sheet(index))
+        delete = menu.addAction("Delete", lambda: self._delete_sheet(index))
+        assert delete is not None
+        delete.setEnabled(self.sheet_tabs.count() > 1)
+        for label, destination in (("Move left", index - 1), ("Move right", index + 1)):
+            action = menu.addAction(label, lambda checked=False, destination=destination: self.sheet_tabs.moveTab(index, destination))
+            required(action, "sheet move action").setEnabled(0 <= destination < self.sheet_tabs.count())
+        menu.exec(self.sheet_tabs.mapToGlobal(position))
+
+    def _delete_sheet(self, index):
+        sheet = self.model.dataset.sheet(self.sheet_tabs.tabData(index))
+        if len(self.model.dataset.sheets) == 1:
+            return
+        if sheet.rows and QMessageBox.question(self, "Delete sheet", f'Delete “{sheet.name}” and its rows?') != QMessageBox.StandardButton.Yes:
+            return
+        def delete():
+            remaining = [item for item in self.model.dataset.sheets if item.id != sheet.id]
+            self.model.set_current_sheet(remaining[max(0, index - 1)].id)
+            self.model.dataset.sheets.remove(sheet)
+        self._sheet_change(sheet.id, delete)
+
+    def _move_sheet_tab(self, source, destination):
+        sheet_id = self.model.current_sheet_id
+        self.model.set_current_sheet(sheet_id)
+        self.workspace.select_sheet(sheet_id)
+        if QApplication.mouseButtons() & Qt.MouseButton.LeftButton and not self._sheet_dragging:
+            self.workspace.begin_change()
+            self._sheet_dragging = True
+        def move():
+            sheets = self.model.dataset.sheets
+            sheets.insert(destination, sheets.pop(source))
+            self.data_dirtied()
+        self._commit_model_operation(move)
 
     def update_outcome_lbl(self):
-        self.current_outcome_label.setText(str(self.model.current_outcome_name))
+        pass
 
     def quit(self):
         self.close()
@@ -1909,26 +1784,16 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._update_recent_project_nonfatal(destination, "saved")
         return True
 
-    def _make_new_dataset_and_setup_spreadsheet(self, dataset_info: main_wizard.DatasetInfo) -> None:
-        dataset_info = dataset_info.copy()
-        dataset_info["groups"] = dataset_info.get("groups") or meta_globals.default_group_names(
-            meta_globals.STR_TO_TYPE_DICT[required(dataset_info["data_type"], "Dataset data type")],
-            dataset_info.get("sub_type"))
-        is_diagnostic = dataset_info["data_type"] == "diagnostic"
-        self.new_dataset(is_diagnostic=is_diagnostic)
-        self.model.dataset.summary = copy.deepcopy(dataset_info)
-        self.model.dataset.summary.pop("groups", None)
-
-        tmp = self.current_dimension
-        self.current_dimension = "outcome"
-        self.add_new(dataset_info)  # add the outcome
-        self.current_dimension = tmp
-
-        if dataset_info["data_type"] in ["binary", "continuous", "time_to_event", "event_rates"]:
-            self.model.current_effect = dataset_info["effect"]  # set current effect
-            self.populate_metrics_menu(metric_to_check=self.model.current_effect)
-            self.model.try_to_update_outcomes()
-            self.model.reset_model()
+    def _make_new_dataset_and_setup_spreadsheet(self, dataset_info):
+        import uuid
+        from rc_metastudio.analysis_dataset import Sheet, Arm
+        data_type = meta_globals.STR_TO_TYPE_DICT[dataset_info['data_type']]
+        groups = dataset_info.get('groups') or meta_globals.default_group_names(data_type, dataset_info.get('sub_type'))
+        sheet = Sheet(SheetId(uuid.uuid4().hex), dataset_info['name'], data_type, dataset_info.get('sub_type'), dataset_info['data_type'], [Arm(ArmId(uuid.uuid4().hex), name) for name in groups], settings={'metric': dataset_info.get('effect')})
+        self.set_model(analysis_dataset.Dataset(sheets=[sheet]))
+        self.model.current_effect = dataset_info.get('effect')
+        self.populate_metrics_menu(metric_to_check=self.model.current_effect)
+        self.model.reset_model()
 
     def _handle_wizard_results(self, wizard_data):
         path = wizard_data["path"]  # route through wizard
@@ -1937,6 +1802,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         if path == "open":
             self.open(file_path=wizard_data["selected_dataset"])
+        elif path == "rm5_import":
+            self.set_model(wizard_data["rm5_dataset"])
+            self.workspace.start_new_document()
+            self.out_path = None
+            self._notify_user_that_data_is_unsaved()
         elif path == "new_dataset":
             self._make_new_dataset_and_setup_spreadsheet(dataset_info)
             self.workspace.start_new_document()
@@ -1956,7 +1826,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 ).redo()
 
             self._commit_model_operation(import_csv)
-            self.workspace.start_new_document()
             self.out_path = None
             self._notify_user_that_data_is_unsaved()
 

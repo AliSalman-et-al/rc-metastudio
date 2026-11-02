@@ -328,11 +328,12 @@ def test_screen_metric_changes_clamp_and_reconnect_to_new_screen(qapp):
     initial = QtCore.QRect(0, 0, 1200, 900)
     first_screen = FakeScreen(initial)
     second_screen = FakeScreen(QtCore.QRect(1200, 0, 800, 600))
+    current_screen = first_screen
     dialog = _dialog_with_content()
     controller = adaptive_window.register_adaptive_window(
         dialog,
         adaptive_window.WindowRole.TRANSACTIONAL,
-        available_geometry_provider=lambda _window: QtCore.QRect(initial),
+        available_geometry_provider=lambda _window: current_screen.availableGeometry(),
     )
     dialog.show()
     qapp.processEvents()
@@ -348,6 +349,7 @@ def test_screen_metric_changes_clamp_and_reconnect_to_new_screen(qapp):
     assert initial.contains(dialog.frameGeometry())
     assert len(clamps) == 1
 
+    current_screen = second_screen
     controller.handle_screen_assignment_change(second_screen)
     qapp.processEvents()
     assert second_screen.availableGeometry().contains(dialog.frameGeometry())

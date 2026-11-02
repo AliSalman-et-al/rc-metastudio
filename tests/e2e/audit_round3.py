@@ -52,24 +52,42 @@ def check_report(app, view, work, record):
 
     view.copy_report_action.trigger()
     copied = app.clipboard().text()
-    assert copied.startswith(view.results.identity + "\n"), copied
-    for section in view.results.sections:
+    assert copied.startswith(view.manuscript.title + "\n"), copied
+    assert view.manuscript.methods in copied and view.manuscript.results in copied
+    cursor = 0
+    for section in view.manuscript.sections:
         for table in section.tables:
-            assert "\t".join(table.headers) in copied, (table.title, copied)
-            for row in table.rows:
-                assert "\t".join(row) in copied, (table.title, row, copied)
-    output = work / "round3-report.txt"
-    with patch.object(results_window.QFileDialog, "getSaveFileName", return_value=(str(output), "Text report (*.txt)")):
-        view.export_report_action.trigger()
-    assert output.read_text(encoding="utf-8") == copied
+            for row in (table.headers, *table.rows):
+                joined = "\t".join(row)
+                position = copied.find(joined, cursor)
+                assert position >= cursor, (table.title, row, copied)
+                cursor = position + len(joined)
+    for section in view.results.sections:
+        if section.title != 'Summary' or any(t.title.startswith('Calculation scale') for t in section.tables):
+            for table in section.tables:
+                if section.title == 'Summary' and not table.title.startswith('Calculation scale'):
+                    continue
+                position = 0
+                for row in (table.headers, *table.rows):
+                    joined = "\t".join(row)
+                    position = copied.find(joined, position)
+                    assert position >= 0, (table.title, row, copied)
+                    position += len(joined)
+        if section.title == 'Summary':
+            for table in section.tables:
+                if len(table.rows) == 1 and not table.title.startswith('Calculation scale'):
+                    for header, value in zip(table.headers, table.rows[0]):
+                        assert table.title + ': ' + header + "\t" + value in copied, (table.title, header, value, copied)
     if "Omission-only fits:" in view.results.details:
         assert copied.count("Omission-only fits:") == 1, copied
-        assert "\nleave-one-out\n" not in copied, copied
-    if "\nSensitivity\n" in view.results.details:
-        for line in view.results.details.splitlines():
-            if line.startswith(("Order:", "Each row", "Subgroups by", "Moderators:")):
-                assert view.results.details.index(line) < view.results.details.index("\nSensitivity\n"), view.results.details
-                assert line in copied and "Model configuration\n" in copied, copied
+    for line in view.results.details.splitlines():
+        if line.startswith(("Order:", "Each row", "Subgroups by", "Moderators:")):
+            assert line in copied, (line, copied)
+    output = work / "round3-report.pdf"
+    with patch.object(results_window.QFileDialog, "getSaveFileName", return_value=(str(output), "PDF (*.pdf)")):
+        view.export_report_action.trigger()
+    assert output.read_bytes().startswith(b"%PDF")
+    assert app.clipboard().mimeData().hasHtml()
     view.report_action.setChecked(True)
     app.processEvents()
     record("round3-report-copy-export", view, identity=view.results.identity,
@@ -408,7 +426,7 @@ def analyze_existing(app, window, workflow, method, record, parameters=None):
     dialog = visible(analysis_setup_dialog.AnalysisSetupDialog)
     if workflow == "meta-regression":
         for covariate, checkbox in dialog.covs_and_check_boxes:
-            checkbox.setChecked(covariate.name == "Dose")
+            checkbox.setChecked(covariate["name"] == "Dose")
     else:
         dialog.method_cbo_box.setCurrentText(next(label for label, key in dialog.available_method_d.items() if key == method))
     app.processEvents()
@@ -486,22 +504,20 @@ def check_bubble_ticks(view, metric, record):
 
 def run(app, window, work, record, scenario):
     from analysis_matrix import DATA_TYPES, run as matrix
-    from rc_metastudio.analysis_dataset import Covariate
 
     def prepare(target):
         studies = target.model.get_studies(only_if_included=True)
-        target.model.dataset.add_covariate(Covariate("Group", "factor"),
-                                          {s.name: "A" if i % 2 else "B" for i, s in enumerate(studies)})
+        target.model.add_covariate("Group", "factor",
+                                          {s.label: "A" if i % 2 else "B" for i, s in enumerate(studies)})
         target.model.reset_model()
         target.enable_menu_options_that_require_dataset()
 
     def duplicate_names(target):
         studies = target.model.get_studies(only_if_included=True)
-        studies[1].name = studies[0].name
-        group = Covariate("Group", "factor")
-        target.model.dataset.add_covariate(group)
+        studies[1].label = studies[0].label
+        group = target.model.add_covariate("Group", "factor")
         for i, study in enumerate(studies):
-            study.set_covariate_value(group, "A" if i % 2 else "B")
+            study.covariate_values[group["id"]] = "A" if i % 2 else "B"
         target.model.reset_model()
         target.enable_menu_options_that_require_dataset()
 
@@ -746,8 +762,8 @@ def run(app, window, work, record, scenario):
                 if metric in {"PLO", "linear"}:
                     studies = target.model.get_studies(only_if_included=True)
                     assert len(studies) == 6, studies
-                    target.model.dataset.add_covariate(Covariate("Dose", "continuous"),
-                                                      {s.name: float(i) for i, s in enumerate(studies)})
+                    target.model.add_covariate("Dose", "continuous",
+                                                      {s.label: float(i) for i, s in enumerate(studies)})
                     target.model.reset_model()
                     target.enable_menu_options_that_require_dataset()
                     record("round3-proportion-input", target, metric=target.model.current_effect,
@@ -789,7 +805,7 @@ def run(app, window, work, record, scenario):
         duplicate_names(window)
         model = window.model
         assert model.setData(model.index(1, model.INCLUDE_STUDY), QtCore.Qt.CheckState.Unchecked, QtCore.Qt.ItemDataRole.CheckStateRole)
-        record("round3-ratio-excluded-study", window, family=family, excluded=model.dataset.studies[1].name)
+        record("round3-ratio-excluded-study", window, family=family, excluded=model.get_studies(False)[1].label)
         for workflow in ("cumulative", "leave-one-out", "subgroup"):
             view = analyze_existing(app, window, workflow, family + ".random", record)
             check_report(app, view, work, record)
@@ -804,7 +820,7 @@ def run(app, window, work, record, scenario):
         if family == "event_rates":
             # Only one included study has treated events. Omitting it leaves a
             # non-estimable MH fit while all other omission identities remain.
-            for row in range(len(model.dataset.studies)):
+            for row in range(len(model.get_studies(False))):
                 assert model.setData(model.index(row, model.RAW_DATA[0]), "3" if row == 0 else "0")
             view = analyze_existing(app, window, "leave-one-out", "event_rates.mh", record)
             check_report(app, view, work, record)
@@ -918,7 +934,7 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
             assert layout["height"] > 18, layout
             nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
             captions = ["".join(n.itertext()) for n in nodes]
-            assert any("Follow-up: first" in text for text in captions), captions[-5:]
+            assert any(window.model.current_sheet.name in text for text in captions), captions[-5:]
             if workflow == "subgroup":
                 for node in nodes:
                     if "".join(node.itertext()) not in {"A", "B"}:
@@ -929,7 +945,7 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
                         if abs(float(rule.attrib["x2"]) - float(rule.attrib["x1"])) < 500 or abs(float(rule.attrib["y2"]) - float(rule.attrib["y1"])) > .01:
                             continue
                         assert not y-height < float(rule.attrib["y1"]) < y+height*.25, ("rule crosses subgroup heading", style, node.attrib, rule.attrib)
-            study_names = {study.name for study in window.model.get_studies(only_if_included=True)}
+            study_names = {study.label for study in window.model.get_studies(only_if_included=True)}
             study_y = sorted({float(node.attrib["y"]) for node in nodes if "".join(node.itertext()) in study_names})
             row_gap = min(b-a for a, b in zip(study_y, study_y[1:]))
             polygon_heights = []
@@ -968,15 +984,14 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
         record("round5-readable-type-matrix", window, measurements=measurements)
         return
     from rc_metastudio import meta_globals
-    from rc_metastudio.analysis_dataset import Covariate
     def add_dose(target):
         studies = target.model.get_studies(only_if_included=True)
-        target.model.dataset.add_covariate(Covariate("Dose", "continuous"),
-                                          {study.name: float(i) for i, study in enumerate(studies)})
+        target.model.add_covariate("Dose", "continuous",
+                                          {study.label: float(i) for i, study in enumerate(studies)})
         target.model.reset_model()
         target.enable_menu_options_that_require_dataset()
     def check_panel(view, family, metric):
-        assert not re.search(r"(?<![\d.eE])-0\.0+(?![\d.eE])", view._plain_text_report()), view._plain_text_report()
+        assert not re.search(r"(?<![\d.eE])-0\.0+(?![\d.eE])", view.report_text.toPlainText()), view.report_text.toPlainText()
         paths = list(view.results.display_images.items())
         exported = {}
         for title, _path in paths.copy():
@@ -1009,7 +1024,7 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
                     if any(color in style for color in ("#7F7F7F", "#808080", "#BEBEBE")):
                         assert top <= float(line.attrib["y1"]) <= bottom, ("null outside panel", line.attrib, frame.attrib)
                         assert group.attrib.get("clip-path") == point_group.attrib["clip-path"], ("null guide lacks panel clipping", line.attrib)
-            assert any("Follow-up:" in "".join(n.itertext()) for n in svg.iter("{http://www.w3.org/2000/svg}text"))
+            assert any(window.model.current_sheet.name in "".join(n.itertext()) for n in svg.iter("{http://www.w3.org/2000/svg}text"))
         record("round5-bubble-bounds", view, family=family, metric=metric,
                explicit_x=[1,4], plots=dict(view.results.display_images), exports=exported)
     cases = [(family, None) for family in DATA_TYPES if family != "diagnostic"]
@@ -1054,7 +1069,7 @@ def run_irr_context(app, window, record):
         labels = ["".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text")]
         assert all(label == label.strip() for label in labels if re.fullmatch(r"\s*[-+\d.]+\s*", label)), labels
         assert "Events" in labels and any("Person-time" in label for label in labels), labels
-        unit = window.model.get_current_analysis_unit_for_study(0).ratio_input(window.model.current_groups).unit
+        unit = window.model.get_current_analysis_unit_for_study(0).ratio_input(window.model.arm_names).unit
         assert any(unit in label for label in labels), (unit, labels)
         svg = ET.parse(path)
         nodes = list(svg.iter("{http://www.w3.org/2000/svg}text"))

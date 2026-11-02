@@ -4,8 +4,8 @@ Users open an `.rcms` project, edit studies, undo or redo changes, save/reopen t
 
 ## Advanced transaction proof
 
-- `project-structure` opens the real structure editor, adds a group/follow-up, renames the first group/follow-up/outcome through list delegates, and requires unchanged raw arm order and stable study identity. Cancel a second rename; undo/redo; save/reopen and observe the accepted names/data. Renaming a group must not reorder its analysis arms.
-- `project-table-covariates` creates numeric Dose and factor Region through their dialogs, pastes/copies a 19×2 clipboard rectangle, undoes/redoes once, sorts through the actual name-header context menu, and saves/reopens. Compare study identity, inclusion and attached covariates before/after. Sorting changes display order, not canonical dataset identity. Run the reopened Dose regression and Region subgroup with independent numerical fits.
+- `project-structure` uses the same sheet-tab transaction drive as `sheets`: add, rename, delete, undo/redo, arm swap and persistence. The obsolete structure editor is removed.
+- `project-table-covariates` creates numeric Dose and factor Region through their dialogs, pastes/copies a 19×2 clipboard rectangle, undoes/redoes once, sorts through the actual name-header context menu, and saves/reopens. Compare study identity, inclusion and attached covariates before/after. Sorting changes display order, not canonical dataset identity. Run the reopened Dose regression and Region subgroup with independent numerical fits. It also converts/edits a covariate type, renames/deletes/undoes it, reopens the saved result and checks the other sheet remains unchanged.
 - `project-shell` opens through the real Open action with a test-owned picker path, edits a name, cancels a dirty-open prompt, saves through Save As, opens the recent-file action, and reads the actual About/Legal dialog. The accepted name and clean state must survive.
 
 These add to `editing`, `csv`, and the eight original New Dataset workflows plus the HR/IRR metric variants. They do not establish structural deletion, every navigation state, all dirty-close responses, shortcuts, native picker interaction, earlier import pages, or Excel import. Use the targeted recipes below when those paths change.
@@ -103,3 +103,69 @@ palette contrast. `review1-design` additionally measures derived/selected grid
 contrast and keyboard traversal; native 1.5×/2× drives cover this host's scaling.
 These checks do not qualify assistive-technology behavior or every inactive/error
 colour on other operating systems.
+
+Sheet acceptance drives: `sheets-legacy` checks original 322ede26 archives against the retained pre-migration numerical fixture and input hashes; `sheets-edges` checks invalid names, deletion prompts, last-sheet retention and transactions; `sheets-swap` checks binary/continuous/HR/IRR pooled inversion, headers, counts, restoration, SVG arm labels and diagnostic gating; `sheets-persist` checks clipboard independence, local covariates and three-sheet reopen. Every desktop startup probes pre-ready R rejection. Clinical favours direction labels are user-defined, not inferred from arm names; automatic favours-label migration remains unexercised.
+
+## RevMan import
+
+`rm5-import` exercises the File action and welcome wizard import button through
+review, default setup and Run on both Fleiss sheets. It compares raw cells with
+meta::read.rm5, displayed Aspirin results with RevMan's stored attributes and
+SMD with metacr at default precision (the exact-Hedges difference is disclosed).
+Derived XML inputs cover pending data, non-integer years, duplicate names and
+IV-random/DL, MH-random unavailable and Peto-fixed mapping. Dirty review Cancel
+preserves data/path/dirty/history; confirmation invokes the existing save prompt.
+Malformed and non-RevMan XML leave the project intact. Save/reopen retains settings.
+Native pickers and exhaustive DTA structures remain unexercised.
+
+RM5 derived-fixture extension: real subgroup dialog compares six grouped studies
+and fixed-IV subgroup estimates/CIs to metacr; the existing moderator Q/p
+difference is explicitly quantified in SLICE5.md. Generic IV HR, OR and MD run
+untouched setup, compare held pooled values/I² at 1e-6, and save/reopen. OR/MD
+entered-only capability is exercised first. Review excludes free-text effects
+and IPD O-E/variance. This does not qualify other RM5 structures or native pickers.
+
+DTA RM5 extension: Bristol's real workshop review verifies TESTS/TEST/
+TEST_DATA/TEST_DATA_ENTRY. A labelled synthetic fixture using that structure
+covers two index tests, independent stdlib count parsing in TP/FN/FP/TN order,
+review table, default diagnostic analysis and full save/reopen equality.
+Original-review redistribution and exhaustive DTA structures remain unqualified.
+Fixed-effect subgroup imports disclose the existing random moderator test in
+Differs from RevMan; subgroup estimates and the held discrepancy remain unchanged.
+
+`sheets-swap` verifies binary OR/RD and continuous MD before, after, and after
+swapping back, against direct metafor DL at 1e-6 (estimate, CI and p). Favours
+parameters must follow the arm order. Existing HR/IRR swap coverage remains.
+
+## XLSX import
+
+`xlsx-import` drives the shared mapping/preview page: visible worksheet selection, CSV payload and analysis-text equivalence, precision/date disclosure, hidden rows, formula caches and missing caches, error cells, merges, corrupt/old formats, and save/reopen. Native picker gestures, packaged execution and exhaustive mapping combinations remain unverified.
+
+### Slice 7 import evidence
+
+`xlsx-import` now exercises toolbar picker cancellation and immediate loaded-page
+entry, multi-sheet selection, hidden rows/columns, protected/corrupt/formula/merged
+workbook rejection, one-step import undo/redo and normalized project equality with
+CSV. It asserts Preview first, the Import data title, hidden CSV options for XLSX
+and no page vertical scrollbar at the default size. It captures each data-type
+and metric page in light/dark palettes and checks uniform icon presence at each
+level. `csv` opens the initially collapsed CSV options and retains its Unicode,
+covariate, analysis and reopen assertions. Welcome-page picker entry and native
+OS file-picker operation remain unexercised by these automated scenarios.
+
+Slice 8A: effect cells use a translucent neutral tint, normal font and inherited
+theme text. The xlsx-import drive captures the amino effect grid with light and
+dark palettes; review1-design checks composited text contrast and exercises the
+start-page import action with a controlled file-picker result.
+
+- **Study identity rendering.** `sheets` and `amino` assert Include/Study Name
+  header text, first-row label equality with the study model, a fully visible
+  name-cell rectangle and nonuniform interior viewport pixels. `xlsx-import`
+  repeats this rendering proof in light/dark palettes before grid capture.
+
+The `sheets` drive also proves inline rename and Escape/invalid-name recovery, adjacent add-button geometry, context Move left with undo, and full active-tab visibility across 20 long-named sheets. It captures the flat strip in light/dark palettes and overflow. A shared horizontal scrollbar in the strip follows the grid range and hides when the grid fits. The drive captures amino at 1024×700 with an expanded study-name column, drags the strip thumb in both directions, checks grid-to-strip scrolling, and asserts hidden-on-fit at 1600×828. The tab separators, content background and add button follow the light/dark palette.
+
+The overflow proof also narrows the window during inline rename and checks both tab/editor visibility and alignment. Arrow visibility is deferred out of the scroll-area range signal to avoid re-entering the active layout.
+
+
+`ui-crawl` deliberately captures each named surface once, in sections E, F, G, B, C, then retained shell section A. It uses selected real analysis drivers with their assertions intact for the specialized plots. Its index lists omissions and the scenario intentionally fails while D, H, I and J await the next run. This is a visual inventory, not full parameter or native-platform qualification.

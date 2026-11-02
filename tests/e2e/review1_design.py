@@ -88,7 +88,10 @@ def run(app, window, work, root, record, analyze):
                 wait(250)
             record('review1-start-wizard-' + expected, wizard)
             wizard.reject()
-        modal(app, main_wizard.MainWizard, cancel, lambda: mouse_click(button, QtCore.Qt.MouseButton.LeftButton))
+        import_file = work / "review-import.csv"
+        import_file.write_text("Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total\nStudy,2020,5,20,8,20\n")
+        with patch.object(QtWidgets.QFileDialog, 'getOpenFileName', return_value=(str(import_file), '')):
+            modal(app, main_wizard.MainWizard, cancel, lambda: mouse_click(button, QtCore.Qt.MouseButton.LeftButton))
         assert window.start_page.isVisible() and not window.workspace.is_dirty
     with patch.object(QtWidgets.QFileDialog, 'getOpenFileName', return_value=('', '')):
         mouse_click(window.start_page.open_button, QtCore.Qt.MouseButton.LeftButton)
@@ -99,24 +102,28 @@ def run(app, window, work, root, record, analyze):
     assert window.tableView.isVisible() and not window.start_page.isVisible()
     assert window.out_path == str(present)
     assert window.cl_label.text() == 'Confidence level: 95%'
-    assert window.navigation_dimension.currentData() == 'outcome'
-    window.navigation_dimension.setCurrentIndex(1)
-    assert window.current_dimension == 'follow-up'
-    window.navigation_dimension.setCurrentIndex(2)
-    assert window.current_dimension == 'group'
-    window.navigation_dimension.setCurrentIndex(0)
-    assert window.current_dimension == 'outcome'
+    assert window.sheet_tabs.count() == len(window.model.dataset.sheets)
+    for index, sheet in enumerate(window.model.dataset.sheets):
+        window.sheet_tabs.setCurrentIndex(index)
+        app.processEvents()
+        assert window.model.current_sheet.id == sheet.id
+    window.sheet_tabs.setCurrentIndex(0)
     def luminance(color):
         values = [value / 12.92 if value <= .04045 else ((value + .055) / 1.055) ** 2.4
                   for value in (color.redF(), color.greenF(), color.blueF())]
         return sum(value * coefficient for value, coefficient in zip(values, (.2126, .7152, .0722)))
     cell = window.model.index(0, window.model.OUTCOMES[0])
-    assert window.model.data(cell, QtCore.Qt.ItemDataRole.FontRole).italic()
+    font = window.model.data(cell, QtCore.Qt.ItemDataRole.FontRole)
+    assert font is None or not font.italic()
     assert window.model.data(cell, QtCore.Qt.ItemDataRole.AccessibleTextRole)
     assert window.model.data(cell, QtCore.Qt.ItemDataRole.AccessibleDescriptionRole)
     palette = window.tableView.palette()
-    pairs = [(window.model.data(cell, QtCore.Qt.ItemDataRole.ForegroundRole),
-              window.model.data(cell, QtCore.Qt.ItemDataRole.BackgroundRole)),
+    foreground = window.model.data(cell, QtCore.Qt.ItemDataRole.ForegroundRole) or palette.color(QtGui.QPalette.ColorRole.Text)
+    tint = window.model.data(cell, QtCore.Qt.ItemDataRole.BackgroundRole)
+    base = palette.color(QtGui.QPalette.ColorRole.Base)
+    alpha = tint.alphaF()
+    background = QtGui.QColor.fromRgbF(*(tint.getRgbF()[i] * alpha + base.getRgbF()[i] * (1 - alpha) for i in range(3)))
+    pairs = [(foreground, background),
              (palette.color(QtGui.QPalette.ColorRole.HighlightedText), palette.color(QtGui.QPalette.ColorRole.Highlight))]
     cues = []
     for foreground, background in pairs:
@@ -124,9 +131,9 @@ def run(app, window, work, root, record, analyze):
         ratio = (light + .05) / (dark + .05)
         assert ratio >= 4.5, (foreground.name(), background.name(), ratio)
         cues.append(dict(foreground=foreground.name(), background=background.name(), contrast=ratio))
-    record('round5-grid-cues', window, italic_effect_cells=True, colors=cues)
+    record('round5-grid-cues', window, italic_effect_cells=False, colors=cues)
     record('review1-workspace-navigation', window)
-    keyboard_traversal(app, window, [window.analysis_button, window.navigation_dimension, window.tableView], record, "workspace")
+    keyboard_traversal(app, window, [window.analysis_button, window.sheet_tabs, window.tableView], record, "workspace")
     window.tableView.setFocus()
     key_click(window.tableView, QtCore.Qt.Key.Key_Tab, QtCore.Qt.KeyboardModifier.ControlModifier)
     app.processEvents()
@@ -178,7 +185,7 @@ def run(app, window, work, root, record, analyze):
     assert 'Test for overall effect (H' not in report
     assert 'Normal approximation' in report
     record('review1-report-top', view, text=report)
-    config = next(item for item in view.nav_tree.findItems('Model configuration', QtCore.Qt.MatchFlag.MatchExactly))
+    config = next(item for item in view.nav_tree.findItems('Settings', QtCore.Qt.MatchFlag.MatchExactly))
     view.nav_tree.setCurrentItem(config)
     assert view.report_text.isVisible()
     record('review1-report-configuration', view)
@@ -186,11 +193,12 @@ def run(app, window, work, root, record, analyze):
     view.nav_tree.setCurrentItem(text_entry)
     view.copy_report_action.trigger()
     copied = app.clipboard().text()
-    assert copied.index('Pooled ') < copied.index('Model configuration')
-    output = work / 'review1-report.txt'
+    assert copied.index('Methods') < copied.index('Results')
+    assert view.manuscript.results in copied
+    output = work / 'review1-report.pdf'
     with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', return_value=(str(output), '')):
         view.export_report_action.trigger()
-    assert output.read_text(encoding="utf-8") == copied
+    assert output.read_bytes().startswith(b"%PDF")
     tables_entry = next(item for item in view.nav_tree.findItems('Tables', QtCore.Qt.MatchFlag.MatchExactly))
     view.tables_action.trigger()
     assert view.nav_tree.currentItem() is tables_entry

@@ -61,11 +61,11 @@ for (metric in c("OR","RD","RR","AS","YUQ","YUY","PR","PLN","PLO","PAS","PFT")) 
     check(data, method, p, ref, paste(metric,method))
   }
   if (metric %in% c("OR","RR","RD")) {
-    ref <- metafor::rma.mh(ai=a, bi=b, ci=c, di=d, measure=metric, add=c(.5,.5), to=c("only0","only0"), drop00=FALSE, level=95)
+    ref <- metafor::rma.mh(ai=a, bi=b, ci=c, di=d, measure=metric, drop00=FALSE, level=95)
     check(data,"binary.fixed.mh",p,ref,paste(metric,"MH"))
   }
   if (metric == "OR") {
-    ref <- metafor::rma.peto(ai=a, bi=b, ci=c, di=d, add=c(.5,.5), to=c("only0","only0"), drop00=FALSE, level=95)
+    ref <- metafor::rma.peto(ai=a, bi=b, ci=c, di=d, add=c(.5,0), to=c("only0","none"), drop00=FALSE, level=95)
     check(data,"binary.fixed.peto",p,ref,"OR Peto")
   }
 }
@@ -133,7 +133,7 @@ for (metric in c("Sens","Spec","PLR","NLR","DOR")) {
     check(data,"diagnostic.fixed.mh",p,ref,paste(metric,"diagnostic MH"))
   }
   if (metric=="DOR") {
-    ref <- metafor::rma.peto(ai=TP,bi=FN,ci=FP,di=TN,add=c(.5,.5),to=c("only0","only0"))
+    ref <- metafor::rma.peto(ai=TP,bi=FN,ci=FP,di=TN,add=c(.5,0),to=c("only0","none"))
     check(data,"diagnostic.fixed.peto",p,ref,"DOR diagnostic Peto")
   }
 }
@@ -148,6 +148,143 @@ for (heterogeneity in c("HE","DL","HS","HSk","SJ","ML","REML","EB","PM","PMM")) 
     check(data,"binary.random",p,ref,paste(heterogeneity,inference,"90% CI"))
   }
 }
+# Failure modes: subgroup tests must use displayed subgroup SEs, with separate
+# tau estimates for random subgroups, rather than a shared-tau moderator fit.
+group <- rep(c("A", "B"), each=6)
+effects <- metafor::escalc("OR", ai=a, bi=b, ci=c, di=d)
+for (method in c("binary.fixed.inv.var", "binary.fixed.mh", "binary.fixed.peto", "binary.random")) {
+  p <- params("OR"); p$cov_name <- "Group"
+  data <- methods::new("BinaryData", g1O1=a,g1O2=b,g2O1=c,g2O2=d,
+    y=effects$yi,SE=sqrt(effects$vi),study.names=names,
+    covariates=list(methods::new("CovariateValues", cov.name="Group", cov.vals=group, cov.type="factor")))
+  result <- RCMetaR:::subgroup.ma.binary(method, data, p)
+  e <- new.env(); load(paste0(result$plot_params_paths[[1]], ".plotdata"), envir=e)
+  actual <- e$plot.data$subgroups$difference_test
+  authority <- meta::metabin(a,a+b,c,c+d, subgroup=group, sm="OR",
+    method=switch(method, binary.fixed.mh="MH", binary.fixed.peto="Peto", "Inverse"),
+    method.tau="DL", tau.common=FALSE)
+  expected <- if(method=="binary.random") authority$Q.b.random else authority$Q.b.common
+  close(actual$QM,expected,paste(method,"subgroup Q"))
+  close(actual$QMp,pchisq(expected,1,lower.tail=FALSE),paste(method,"subgroup p"))
+  cat(method, "RCMS",actual$QM,"meta",expected,"difference",actual$QM-expected,"\n")
+  rows[[length(rows)+1L]] <- list(case=paste(method,"subgroup"), actual=actual$QM, expected=expected)
+}
+# BCG latitude split: DL/REML must agree with meta's separate-tau subgroup Q.
+bcg <- metadat::dat.bcg
+g <- ifelse(bcg$ablat >= 35, "High", "Low")
+ef <- metafor::escalc("RR", ai=tpos,bi=tneg,ci=cpos,di=cneg,data=bcg)
+for (estimator in c("DL","REML")) {
+  p <- params("RR"); p$rm.method <- estimator; p$cov_name <- "Latitude"
+  data <- methods::new("BinaryData",g1O1=bcg$tpos,g1O2=bcg$tneg,
+    g2O1=bcg$cpos,g2O2=bcg$cneg,y=ef$yi,SE=sqrt(ef$vi),
+    study.names=bcg$author,
+    covariates=list(methods::new("CovariateValues",cov.name="Latitude",cov.vals=g,cov.type="factor")))
+  result <- RCMetaR:::subgroup.ma.binary("binary.random",data,p)
+  e <- new.env(); load(paste0(result$plot_params_paths[[1]],".plotdata"),envir=e)
+  authority <- meta::metabin(bcg$tpos,bcg$tpos+bcg$tneg,bcg$cpos,bcg$cpos+bcg$cneg,
+    sm="RR",method="Inverse",subgroup=g,tau.common=FALSE,method.tau=estimator)
+  close(e$plot.data$subgroups$difference_test$QM,authority$Q.b.random,paste("BCG",estimator))
+  cat("BCG",estimator,"Q",sprintf("%.9f",authority$Q.b.random),"\n")
+}
+# Continuous subgroup, sequential and regression use independently entered effects.
+p <- params("MD"); p$cov_name <- "Group"
+y <- c(.2,.8,-.1,.4,1.2,.6); v <- c(.04,.08,.03,.1,.06,.05)
+g <- rep(c("A","B"),each=3)
+data <- methods::new("ContinuousData",y=y,SE=sqrt(v),study.names=names[1:6],
+  covariates=list(methods::new("CovariateValues",cov.name="Group",cov.vals=g,cov.type="factor",ref.var="A")))
+r <- RCMetaR:::subgroup.ma.continuous("continuous.fixed",data,p)
+e <- new.env(); load(paste0(r$plot_params_paths[[1]],".plotdata"), envir=e)
+ref <- metafor::rma.uni(y,vi=v,mods=~factor(g),method="FE")
+close(e$plot.data$subgroups$difference_test$QM,ref$QM,"continuous subgroup FE")
+p$rm.method <- "FE"
+r <- RCMetaR:::meta.regression(data,p,stop.at.rma=TRUE)
+close(r$QM,ref$QM,"regression FE QM"); close(r$b,ref$b,"regression FE coefficients")
+for (workflow in c("cum.ma.continuous","loo.ma.continuous")) {
+  r <- get(workflow,asNamespace("RCMetaR"))("continuous.fixed",data,p)
+  table <- r$res$summary.table
+  for (i in seq_along(y)) {
+    ix <- if(workflow=="cum.ma.continuous") seq_len(i) else setdiff(seq_along(y),i)
+    ref <- metafor::rma.uni(y[ix],vi=v[ix],method="FE")
+    row <- if(workflow=="cum.ma.continuous") i else i+1L
+    estimate <- table$estimate[row]
+    close(estimate,ref$b,paste(workflow,i,"estimate"))
+    close(table$se[row],ref$se,paste(workflow,i,"se"))
+  }
+}
+rows[[length(rows)+1L]] <- list(case="continuous fixed subgroup, sequential and regression",passed=TRUE)
+# Binary failure modes: wrong subset, estimator, moderator, or effect scale.
+for (method in c("binary.fixed.inv.var", "binary.random")) {
+  a <- c(4,6,3,62,33,180); b <- c(119,300,228,13536,5036,1361)
+  c <- c(11,29,11,248,47,372); d <- c(128,274,209,12619,5761,1079)
+  ef <- metafor::escalc("OR",ai=a,bi=b,ci=c,di=d)
+  g <- c(1,2,4,3,6,5)
+  data <- methods::new("BinaryData",g1O1=a,g1O2=b,g2O1=c,g2O2=d,
+    y=ef$yi,SE=sqrt(ef$vi),study.names=paste0("Binary",1:6),
+    covariates=list(methods::new("CovariateValues",cov.name="Moderator",cov.vals=g,cov.type="continuous")))
+  p <- params("OR"); p$cov_name <- "Moderator"
+  p$rm.method <- if(method=="binary.random") "DL" else "FE"
+  ref <- metafor::rma.uni(ef$yi,vi=ef$vi,mods=~g,method=p$rm.method)
+  r <- RCMetaR:::meta.regression(data,p,stop.at.rma=TRUE)
+  for (field in c("b","se","ci.lb","ci.ub","pval","QM","QMp","tau2")) close(r[[field]],ref[[field]],paste(method,"regression",field))
+  for (workflow in c("cum.ma.binary","loo.ma.binary")) {
+    r <- get(workflow,asNamespace("RCMetaR"))(method,data,p)
+    table <- r$res$summary.table
+    for(i in seq_along(a)) {
+      ix <- if(workflow=="cum.ma.binary") seq_len(i) else setdiff(seq_along(a),i)
+      ref <- metafor::rma.uni(ef$yi[ix],vi=ef$vi[ix],method=p$rm.method)
+      row <- if(workflow=="cum.ma.binary") i else i+1L
+      for(field in c("se","ci.lb","ci.ub","pval")) close(table[[field]][row],ref[[field]],paste(method,workflow,i,field))
+      close(table$estimate[row],ref$b,paste(method,workflow,i,"estimate"))
+    }
+  }
+  rows[[length(rows)+1L]] <- list(case=paste(method,"binary sequential and regression"),passed=TRUE)
+}
+# Zero-cell failure modes: corrected pooled counts, dropped double-zero rows,
+# and different counts reaching sequential/subgroup refits.
+a <- c(0,0,6,3,19); n1 <- c(20,30,27,59,164)
+c <- c(5,0,9,7,13); n2 <- c(20,30,27,64,152)
+for (metric in c("OR","RR")) {
+  ef <- metafor::escalc(metric,ai=a,bi=n1-a,ci=c,di=n2-c)
+  data <- methods::new("BinaryData",g1O1=a,g1O2=n1-a,g2O1=c,g2O2=n2-c,
+    y=ef$yi,SE=sqrt(ef$vi),study.names=paste0("Zero",1:5))
+  p <- params(metric)
+  ref <- metafor::rma.mh(ai=a,bi=n1-a,ci=c,di=n2-c,measure=metric)
+  m <- meta::metabin(a,n1,c,n2,sm=metric,method="MH",MH.exact=TRUE)
+  cat("ZERO MH",metric,"metafor",as.numeric(ref$b),ref$ci.lb,ref$ci.ub,"meta",m$TE.common,m$lower.common,m$upper.common,"\n")
+  stopifnot(abs(as.numeric(ref$b)-m$TE.common)<1e-6,
+    abs(ref$ci.lb-m$lower.common)<1e-6,abs(ref$ci.ub-m$upper.common)<1e-6)
+  # Pooled coefficients/intervals are the contract; metafor drops double-zero
+  # from its pooled k by default, while individual display rows remain retained.
+  result <- RCMetaR:::binary.fixed.mh(data,p)
+  actual <- RCMetaR:::binary.fixed.mh.overall(result)
+  for (field in c("b","se","ci.lb","ci.ub")) close(actual[[field]],ref[[field]],paste("zero MH",metric,field))
+}
+p1 <- metafor::rma.peto(ai=a,bi=n1-a,ci=c,di=n2-c,add=c(.5,0),to=c("only0","none"),drop00=FALSE)
+p0 <- metafor::rma.peto(ai=a,bi=n1-a,ci=c,di=n2-c,add=0)
+cat("PETO raw pooling with individual correction",as.numeric(p1$b),p1$ci.lb,p1$ci.ub,"add 0",as.numeric(p0$b),p0$ci.lb,p0$ci.ub,"\n")
+p <- params("OR")
+ef <- metafor::escalc("OR",ai=a,bi=n1-a,ci=c,di=n2-c,drop00=FALSE)
+data <- methods::new("BinaryData",g1O1=a,g1O2=n1-a,g2O1=c,g2O2=n2-c,
+  y=ef$yi,SE=sqrt(ef$vi),study.names=paste0("Zero",1:5))
+ref <- metafor::rma.peto(ai=a,bi=n1-a,ci=c,di=n2-c,add=c(.5,0),to=c("only0","none"),drop00=FALSE)
+m <- meta::metabin(a,n1,c,n2,method="Peto",allstudies=TRUE)
+hand <- sum(a-n1*(a+c)/(n1+n2))/sum(n1*n2*(a+c)*(n1+n2-a-c)/((n1+n2)^2*(n1+n2-1)))
+cat("PETO raw metafor",as.numeric(ref$b),ref$ci.lb,ref$ci.ub,"k",ref$k,"meta",m$TE.common,m$lower.common,m$upper.common,"hand",hand,"\n")
+close(ref$b,m$TE.common,"Peto meta"); close(ref$b,hand,"Peto hand")
+check(data,"binary.fixed.peto",p,ref,"zero Peto raw pooling")
+rows[[length(rows)+1L]] <- list(case="zero MH and Peto",passed=TRUE)
+# SMD convention authority: metafor escalc, separate DL fits, Q among summaries.
+x <- read.csv(text="label,group,n1,m1,s1,n2,m2,s2
+Carroll,early,60,94,22,60,92,20
+Grant,late,65,98,21,65,92,22
+Peck,early,40,98,28,40,88,26
+Donat,late,200,94,19,200,82,17
+Stewart,early,50,98,21,45,88,22
+Young,late,85,96,21,85,92,22")
+e <- metafor::escalc("SMD",m1i=m1,sd1i=s1,n1i=n1,m2i=m2,sd2i=s2,n2i=n2,data=x)
+f <- lapply(split(e,e$group),function(d) metafor::rma(yi,vi,data=d,method="DL"))
+q <- metafor::rma(yi=sapply(f,function(r)as.numeric(r$b)),sei=sapply(f,function(r)r$se),method="FE")
+stopifnot(abs(q$QE-.2926188)<1e-6,abs(q$QEp-.5885472)<1e-6)
 dir.create(dirname(report),recursive=TRUE,showWarnings=FALSE)
 jsonlite::write_json(list(passed=TRUE,case_count=length(rows),r=R.version.string,
   authorities=authorities, cases=rows),report,auto_unbox=TRUE,pretty=TRUE)

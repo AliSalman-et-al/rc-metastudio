@@ -16,10 +16,12 @@ def references(window, method, workflow, metric):
     values = ",".join(str(value) for row in rows for value in row)
     if method.startswith("binary"):
         fitter = "rma.peto" if method.endswith("peto") else "rma.mh"
+        pooling = 'add=c(.5,0), to=c("only0","none"), ' if fitter == "rma.peto" else ""
         fit = (
             f"metafor::{fitter}(ai=d[i,1], n1i=d[i,2], ci=d[i,3], n2i=d[i,4], "
-            'add=c(.5,.5), to=c("only0","only0"), drop00=FALSE, level=95)'
+            f"{pooling}drop00=FALSE, level=95)"
         )
+        pooled_fit = fit
         fit = (
             "if (length(i) > 1) "
             + fit
@@ -27,6 +29,8 @@ def references(window, method, workflow, metric):
             'add=.5, to="only0"); list(b=e$yi, se=sqrt(e$vi), '
             "ci.lb=e$yi-qnorm(.975)*sqrt(e$vi), ci.ub=e$yi+qnorm(.975)*sqrt(e$vi)) }"
         )
+        if fitter == "rma.peto":
+            fit = pooled_fit
         transform = "exp"
     else:
         if method.startswith("continuous"):
@@ -58,7 +62,7 @@ def references(window, method, workflow, metric):
     if workflow == "cumulative":
         subsets = [list(range(1, index + 2)) for index in range(n)]
         labels = [
-            study.name if index == 0 else "+ " + study.name
+            study.label if index == 0 else "+ " + study.label
             for index, study in enumerate(studies)
         ]
     elif workflow == "leave-one-out":
@@ -69,7 +73,7 @@ def references(window, method, workflow, metric):
                 for omitted in range(n)
             ],
         ]
-        labels = ["Overall", *["- " + study.name for study in studies]]
+        labels = ["Overall", *["- " + study.label for study in studies]]
     else:
         subsets = [
             [index + 1 for index in range(n) if index % 2 == parity]
@@ -94,7 +98,6 @@ def references(window, method, workflow, metric):
 
 
 def run(app, window, scenario, record):
-    from rc_metastudio.analysis_dataset import Covariate
     from tests.analysis_regression.golden.support.golden_analysis import (
         parsed_numeric_sections,
     )
@@ -110,10 +113,9 @@ def run(app, window, scenario, record):
     def prepare(target):
         if workflow == "subgroup":
             studies = target.model.get_studies(only_if_included=True)
-            target.model.dataset.add_covariate(
-                Covariate("Group", "factor"),
+            target.model.add_covariate("Group", "factor",
                 {
-                    study.name: "A" if index % 2 else "B"
+                    study.label: "A" if index % 2 else "B"
                     for index, study in enumerate(studies)
                 },
             )

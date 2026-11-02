@@ -4,7 +4,7 @@
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QCloseEvent, QColor, QHideEvent, QShowEvent
+from PyQt6.QtGui import QKeyEvent, QCloseEvent, QColor, QHideEvent, QShowEvent
 from PyQt6.QtWidgets import (
     QComboBox,
     QCheckBox,
@@ -207,6 +207,7 @@ class _DiagnosticMethodPanel(object):
         self._method_changed()
 
     def _method_changed(self, saved=None):
+        self.owner._forget_advanced_controls(self.widgets)
         for widget in self.widgets:
             self.param_box.layout().removeWidget(widget)
             widget.deleteLater()
@@ -218,14 +219,9 @@ class _DiagnosticMethodPanel(object):
         )
         if saved is not None:
             defaults.update(saved)
-        self.param_box.setTitle(str(self.combo.currentText()))
-        description = QLabel(
-            "Description: %s" % self.owner.analysis_service.method_description(method)
-        )
-        description.setWordWrap(True)
-        self.param_box.layout().addWidget(description, 0, 0, 1, 2)
-        self.widgets.append(description)
-        row = 1
+        self.param_box.setTitle("")
+        self.param_box.setFlat(True)
+        row = 0
         for name in order or definitions:
             spec = _normalize_parameter_definition(
                 name, definitions[name], defaults.get(name), metadata.get(name)
@@ -238,12 +234,26 @@ class _DiagnosticMethodPanel(object):
             label = self.owner._parameter_label(spec)
             control = self.owner._create_parameter_control(spec, self.params)
             self.owner._configure_parameter_accessibility(label, control)
-            self.param_box.layout().addWidget(label, row, 0)
-            self.param_box.layout().addWidget(control, row, 1)
+            row = self.owner._place_parameter(self.param_box.layout(), row, spec, label, control, self.params, defaults.get(name))
             self.widgets.extend((label, control))
-            row += 1
         self.owner._set_analysis_tab_order()
         self.owner._schedule_local_reflow()
+
+
+class _CompactDoubleSpinBox(QDoubleSpinBox):
+    def textFromValue(self, v: float) -> str:
+        return super().textFromValue(v).rstrip("0").rstrip(self.locale().decimalPoint())
+
+
+class _AdvancedButton(QtWidgets.QToolButton):
+    def keyPressEvent(self, e: QKeyEvent | None) -> None:
+        if e is None:
+            return
+        event = e
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            self.click()
+        else:
+            super().keyPressEvent(event)
 
 
 class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
@@ -283,6 +293,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
+        if initial_settings is None and analysis_type is None and model.current_sheet:
+            initial_settings = model.current_sheet.settings.get('analysis')
         if initial_settings is not None:
             self._restore_settings(initial_settings)
         for field in self.findChildren(QLineEdit):
@@ -294,23 +306,34 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                     field.setToolTip("Automatic: diagnostic counts")
 
     def _setup_result_context(self):
-        workflow_label = analysis_identity.workflow_label(self.analysis_type)
-        self.setWindowTitle(f"{workflow_label} — {self.model.current_outcome_name}")
+        self.setWindowTitle(f"{self.model.current_outcome_name} · {self._result_metric_label()}")
         required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button").setText("Run analysis")
-        self.context_label = QLabel(analysis_identity.dataset_identity(self.model, self._result_metric_label()), self)
-        self.context_label.setTextFormat(Qt.TextFormat.PlainText)
-        self.context_label.setWordWrap(True)
-        if self.analysis_type == "cumulative":
-            self.context_label.setText(self.context_label.text() + "\nOrder: current study order. Sort the study table before running to change the sequence.")
-        self.verticalLayout.insertWidget(0, self.context_label)
         self.analysis_error_label = QLabel(self)
         self.analysis_error_label.setWordWrap(True)
         self.analysis_error_label.setTextFormat(Qt.TextFormat.PlainText)
         self.analysis_error_label.setAccessibleName("Analysis error")
-        self.analysis_error_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse | Qt.TextInteractionFlag.TextSelectableByKeyboard)
-        self.analysis_error_label.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.analysis_error_label.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
+        self.analysis_error_label.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.analysis_error_label.hide()
-        self.verticalLayout.insertWidget(1, self.analysis_error_label)
+        self.analysis_error_panel = QtWidgets.QWidget(self)
+        error_layout = QtWidgets.QVBoxLayout(self.analysis_error_panel)
+        error_layout.setContentsMargins(0, 0, 0, 0)
+        error_layout.addWidget(self.analysis_error_label)
+        self.analysis_error_toggle = QtWidgets.QToolButton(self.analysis_error_panel)
+        self.analysis_error_toggle.setText("Details")
+        self.analysis_error_toggle.setCheckable(True)
+        self.analysis_error_toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.analysis_error_toggle.setArrowType(Qt.ArrowType.RightArrow)
+        error_layout.addWidget(self.analysis_error_toggle, 0, Qt.AlignmentFlag.AlignLeft)
+        self.analysis_error_details = QtWidgets.QPlainTextEdit(self.analysis_error_panel)
+        self.analysis_error_details.setReadOnly(True)
+        self.analysis_error_details.setAccessibleName("Technical analysis error details")
+        self.analysis_error_details.hide()
+        error_layout.addWidget(self.analysis_error_details)
+        self.analysis_error_toggle.toggled.connect(self.analysis_error_details.setVisible)
+        self.analysis_error_toggle.toggled.connect(lambda checked: self.analysis_error_toggle.setArrowType(Qt.ArrowType.DownArrow if checked else Qt.ArrowType.RightArrow))
+        self.analysis_error_panel.hide()
+        self.content_scroll_layout.insertWidget(0, self.analysis_error_panel)
         if (
             not self.is_meta_regression
             and self.model.current_effect == "TX Mean"
@@ -324,7 +347,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         else:
             self.col1_str_edit.setText("Study")
         if self.data_type in {"binary", "continuous", "time_to_event", "event_rates"}:
-            for field, name in zip((self.col3_str_edit, self.col4_str_edit), self.model.current_groups):
+            for field, name in zip((self.col3_str_edit, self.col4_str_edit), self.model.arm_names):
                 set_plot_text_value(field, name)
         for checkbox, label in zip((self.show_1, self.show_2, self.show_3, self.show_4), ("study", "estimate", "first group", "second group")):
             checkbox.setAccessibleName(f"Show {label} column")
@@ -344,7 +367,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.lr_dor_panel._method_changed(values)
         if self.is_meta_regression:
             for covariate, checkbox in self.covs_and_check_boxes:
-                checkbox.setChecked(covariate.name in saved["covariates"])
+                checkbox.setChecked(covariate['name'] in saved["covariates"])
             self.fixed_effects_radio.setChecked(saved["fixed_effects"])
             self.random_effects_radio.setChecked(not saved["fixed_effects"])
         self._restore_plot_settings(parameters)
@@ -375,7 +398,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         model.analysis_source_path = self.model.analysis_source_path
         saved_parameters = copy.deepcopy(self.current_param_vals)
         saved = dict(method=self.current_method, parameters=saved_parameters,
-                     covariates=[cov.name for cov in self._selected_covariates()] if self.is_meta_regression else [],
+                     covariates=[cov['name'] for cov in self._selected_covariates()] if self.is_meta_regression else [],
                      fixed_effects=self.fixed_effects_radio.isChecked())
         if self._combined_diagnostic:
             saved["lr_dor"] = (self.lr_dor_panel.method, copy.deepcopy(self.lr_dor_panel.params))
@@ -428,9 +451,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             QSizePolicy.Policy.Ignored,
             self.parameter_grp_box.sizePolicy().verticalPolicy(),
         )
+        self.gridLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.gridLayout.setColumnStretch(0, 0)
         self.gridLayout.setColumnStretch(1, 1)
         self._layout_reflow_pending = False
+        self._resize_on_reflow = False
         self._layout_reflow_timer = QtCore.QTimer(self)
         self._layout_reflow_timer.setSingleShot(True)
         self._layout_reflow_timer.timeout.connect(self._apply_local_reflow)
@@ -517,41 +542,52 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def sizeHint(self):
         """Include the scroll body's content width in first-use negotiation."""
         hint = super(AnalysisSetupDialog, self).sizeHint()
-        if hasattr(self, "specs_tab"):
-            content_hint = self.specs_tab.minimumSizeHint()
-            if content_hint.isValid():
-                root_layout = self.layout()
-                if root_layout is None:
-                    return hint
-                margins = root_layout.contentsMargins()
-                scrollbar = self.content_scroll_area.verticalScrollBar()
-                if scrollbar is None:
-                    return hint
-                scrollbar_width = scrollbar.sizeHint().width()
-                method_width = 0
-                if hasattr(self, "method_cbo_box"):
-                    method_width = self.method_cbo_box.sizeHint().width()
-                    if hasattr(self, "method_lbl"):
-                        method_width += self.method_lbl.sizeHint().width()
-                    if hasattr(self, "gridLayout"):
-                        method_width += self.gridLayout.horizontalSpacing()
-                hint.setWidth(
-                    max(
-                        hint.width(),
-                        max(content_hint.width(), method_width)
-                        + margins.left()
-                        + margins.right()
-                        + scrollbar_width,
-                    )
-                )
-                parameters = self.parameter_grp_box.layout()
-                if parameters is not None:
-                    label_width = max((label.sizeHint().width() for label in self.parameter_grp_box.findChildren(QLabel) if label.buddy() is not None), default=0)
-                    value_width = max((combo.sizeHint().width() for combo in self.parameter_grp_box.findChildren(QComboBox)), default=0)
-                    hint.setWidth(max(hint.width(), label_width + value_width + margins.left() + margins.right() + 80))
-                content_height = self.specs_tab.minimumSizeHint().height()
-                hint.setHeight(max(hint.height(), content_height + self.buttonBox.sizeHint().height() + 100))
+        if not hasattr(self, "specs_tab"):
+            return hint
+        content_hint = self.specs_tab.minimumSizeHint()
+        root_layout = self.layout()
+        scrollbar = self.content_scroll_area.verticalScrollBar()
+        if not content_hint.isValid() or root_layout is None or scrollbar is None:
+            return hint
+        margins = root_layout.contentsMargins()
+        horizontal_margins = margins.left() + margins.right()
+        width = max(content_hint.width(), self._method_width_hint())
+        hint.setWidth(max(hint.width(), width + horizontal_margins + scrollbar.sizeHint().width(),
+                          self._parameter_width_hint() + horizontal_margins + 80))
+        hint.setHeight(
+            self.content_scroll_area.minimumHeight() + self.buttonBox.sizeHint().height()
+            + margins.top() + margins.bottom() + root_layout.spacing()
+        )
         return hint
+
+    def _method_width_hint(self):
+        if not hasattr(self, "method_cbo_box"):
+            return 0
+        width = self.method_cbo_box.sizeHint().width()
+        if hasattr(self, "method_lbl"):
+            width += self.method_lbl.sizeHint().width()
+        if hasattr(self, "gridLayout"):
+            width += self.gridLayout.horizontalSpacing()
+        return width
+
+    def _parameter_width_hint(self):
+        if self.parameter_grp_box.layout() is None:
+            return -80
+        label_width = max((label.sizeHint().width() for label in self.parameter_grp_box.findChildren(QLabel)
+                           if label.buddy() is not None), default=0)
+        value_width = max((combo.sizeHint().width() for combo in self.parameter_grp_box.findChildren(QComboBox)), default=0)
+        return label_width + value_width
+
+    def _set_scroll_body_height(self, content_height):
+        layout = self.layout()
+        assert layout is not None
+        margins = layout.contentsMargins()
+        frame_height = max(0, self.frameGeometry().height() - self.height())
+        policy = adaptive_window.WINDOW_POLICIES[adaptive_window.WindowRole.TRANSACTIONAL]
+        available = int(adaptive_window.available_geometry_for_window(self).height() * policy.maximum_screen_fraction)
+        body_height = (available - frame_height - margins.top() - margins.bottom()
+                       - layout.spacing() - self.buttonBox.sizeHint().height())
+        self.content_scroll_area.setMinimumHeight(max(0, min(content_height + 2, 650, body_height)))
 
     def _fit_active_tab_contents(self, current):
         # Hidden plot controls must not force the method page to scroll.
@@ -561,6 +597,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 policy = QSizePolicy.Policy.Preferred if index == current else QSizePolicy.Policy.Ignored
                 page.setSizePolicy(policy, policy)
         self.specs_tab.updateGeometry()
+        active_page = self.specs_tab.currentWidget()
+        assert active_page is not None
+        content_height = active_page.minimumSizeHint().height() + 40
+        self._set_scroll_body_height(content_height)
+        position = self.pos()
+        self.adjustSize()
+        self.move(position)
 
     def showEvent(  # ty: ignore[invalid-method-override] -- PyQt6 multiple-inheritance stub mismatch
         self, event: QShowEvent | None
@@ -605,8 +648,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             return
 
         self.covs_and_check_boxes = []
-        for row, covariate in enumerate(self.model.dataset.covariates):
-            checkbox = QtWidgets.QCheckBox(covariate.name, self.covariate_group_box)
+        for row, covariate in enumerate(self.model.current_sheet.covariates):
+            checkbox = QtWidgets.QCheckBox(covariate['name'], self.covariate_group_box)
             checkbox.setChecked(row == 0)
             checkbox.toggled.connect(
                 app_error_handler.safe_slot(
@@ -641,7 +684,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if not self.is_meta_regression:
             return
         selected = self._selected_covariates()
-        bubble_available = len(selected) == 1 and selected[0].data_type == CONTINUOUS
+        bubble_available = len(selected) == 1 and selected[0]['data_type'] == CONTINUOUS
         self.plot_tab.setEnabled(bubble_available)
         self.plot_tab.setToolTip(
             ""
@@ -746,7 +789,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 fixed_effects,
                 self.confidence_level,
             ),
-            "Sorry, there was an error performing the regression.\n%s",
             string_result_is_failure=True,
         )
 
@@ -868,11 +910,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def run_ma(self):
         self._run_analysis(
             lambda: self.analysis_service.execute(self.model, self.analysis_requests()),
-            "Sorry, this analysis could not be completed:\n\n%s",
         )
 
-    def _run_analysis(self, operation, failure_message, string_result_is_failure=False):
+    def _run_analysis(self, operation, string_result_is_failure=False):
         self.analysis_error_label.hide()
+        self.analysis_error_panel.hide()
+        self.analysis_error_toggle.setChecked(False)
         bar = progress_dialog.AnalysisProgressDialog(self)
         bar.show()
         result = None
@@ -884,7 +927,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             succeeded = True
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
-            self.analysis_error_label.setText(failure_message % error)
+            self.analysis_error_label.setText(
+                "No studies are included. Tick Include for at least one study with complete data."
+                if not self.model.get_studies()
+                else "Check the selected method and study data, then try again."
+            )
+            self.analysis_error_details.setPlainText(str(error))
+            self.analysis_error_panel.show()
             self.analysis_error_label.show()
             self._reset_working_dir_safely()
         finally:
@@ -892,7 +941,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if not succeeded:
             self._schedule_local_reflow()
             self.activateWindow()
-            self.analysis_error_label.setFocus()
+            self.analysis_error_toggle.setFocus()
         if succeeded:
             try:
                 self._deliver_result(result)
@@ -938,22 +987,73 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if self.is_meta_regression and self.data_type != "diagnostic":
             model_label = "Fixed-effect meta-regression" if self.fixed_effects_radio.isChecked() else "Random-effects meta-regression"
         fits = self._diagnostic_fit_details()
+        applied_parameters = self._applied_parameters()
+        identity, details = analysis_identity.result_identity(
+            self.model, self.analysis_type, self._result_metric_label(),
+            model_label, applied_parameters, self.confidence_level,
+            [cov['name'] for cov in self._selected_covariates()] if self.is_meta_regression else [],
+            fits=fits,
+        )
+        from rc_metastudio import r_bridge
+        packages = r_bridge.execute_r_string('intersect(c("RCMetaR", "metafor", "meta", "mada"), loadedNamespaces())')
+        software = ", ".join(f"{name} {r_bridge.get_r_package_version(str(name))}" for name in packages)
+        context = self._result_context(applied_parameters)
+        from rc_metastudio.manuscript_report import methods_prose
+        metric = self._result_metric_label().lower()
+        model = "random-effects" if "random" in model_label.lower() else "fixed-effect" if "fixed" in model_label.lower() else model_label.lower()
+        title = f"{self.model.current_sheet.name}: {model} meta-analysis ({metric})"
+        methods = methods_prose(metric, model, applied_parameters, self.confidence_level,
+                                self.analysis_type, details, fits)
+        correction = context.partition(". ")[2]
+        if correction:
+            methods += " " + correction
+        return replace(result, identity=identity, details=details, software=software,
+                       manuscript_context=context.split(". ")[0].rstrip(".") + ".",
+                       manuscript_title=title, manuscript_methods=methods,
+                       manuscript_comparison="Comparison: " + " / ".join(self.model.arm_names))
+
+    def _applied_parameters(self):
         definitions, _, _, _ = self.analysis_service.parameters(self.current_method)
         applied_parameters = {key: value for key, value in self.current_param_vals.items()
                               if key in definitions or key == "cov_name"}
         if self.is_meta_regression and self.data_type != "diagnostic" and self.fixed_effects_radio.isChecked():
             applied_parameters.pop("rm.method", None)
-        identity, details = analysis_identity.result_identity(
-            self.model, self.analysis_type, self._result_metric_label(),
-            model_label, applied_parameters, self.confidence_level,
-            [cov.name for cov in self._selected_covariates()] if self.is_meta_regression else [],
-            fits=fits,
-        )
-        project_path = self._project_path
-        if project_path:
-            from pathlib import Path
-            details = "Project: " + Path(project_path).name + "\n" + details
-        return replace(result, identity=identity, details=details)
+        return applied_parameters
+
+    def _result_context(self, applied_parameters):
+        included = len(self.model.get_studies())
+        excluded = len(self.model.get_studies(only_if_included=False)) - included
+        context = f"{included} studies were included"
+        if excluded:
+            context += f" ({excluded} studies were excluded)"
+        if self.data_type == 'binary':
+            raw = self.model.get_current_raw_data()
+            if len(self.model.arm_names) == 2 and raw and all(len(row) == 4 and all(isinstance(v, (int, float)) for v in row) for row in raw):
+                totals = [sum(row[i] for row in raw) for i in (1, 3)]
+                context += f" ({totals[0]:g} participants in {self.model.arm_names[0]}, {totals[1]:g} in {self.model.arm_names[1]})"
+        context += "."
+        return context + self._correction_context(applied_parameters)
+
+    def _correction_context(self, applied_parameters):
+        if self.data_type not in ("binary", "diagnostic") or not applied_parameters.get("adjust"):
+            return ""
+        raw = self.model.get_current_raw_data()
+        policy = applied_parameters.get("correction.policy", applied_parameters.get("to", "only0"))
+        zero = self._has_zero_cell(raw)
+        if policy in ("none", "None") or not (zero or policy in ("all", "All studies")):
+            return ""
+        label = {"only0": "studies with any zero cell", "all": "all studies", "if0all": "all studies if any zero exists"}.get(policy, policy)
+        if self.data_type == "binary":
+            from rc_metastudio.manuscript_report import binary_correction_prose
+            double_zero = sum(len(row) == 4 and row[0] == 0 and row[2] == 0 for row in raw)
+            return " " + binary_correction_prose(self.current_method, applied_parameters['adjust'], label, double_zero)
+        return f" A continuity correction of {applied_parameters['adjust']} was applied to {label}."
+
+    def _has_zero_cell(self, raw):
+        if any(value == 0 for row in raw for value in row):
+            return True
+        return self.data_type == "binary" and any(
+            row[i] == row[i + 1] for row in raw for i in range(0, len(row) - 1, 2))
 
     def _diagnostic_fit_details(self):
         fits = []
@@ -1041,7 +1141,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._schedule_local_reflow()
 
     def _set_parameter_box_title(self, cbo_box, param_box):
-        param_box.setTitle(str(cbo_box.currentText()))
+        param_box.setTitle("")
+        param_box.setFlat(True)
 
     def populate_parameter_controls(self, cbo_box=None, param_box=None):
         if cbo_box is None:
@@ -1142,6 +1243,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def clear_param_ui(self):
         parameter_layout = self.parameter_grp_box.layout()
+        self._forget_advanced_controls(self.current_widgets)
         for widget in self.current_widgets:
             if parameter_layout is not None:
                 parameter_layout.removeWidget(widget)
@@ -1152,12 +1254,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def ui_for_params(self, adjust_root=True, excluded_names=()):
         self._configure_plot_option_groups()
         parameter_layout = self._parameter_layout()
-        method_description = self.analysis_service.method_description(
-            self.current_method
-        )
-        self.add_method_description(
-            parameter_layout, 0, "Description: %s" % method_description
-        )
         self._add_parameter_controls(
             parameter_layout, self._ordered_parameter_definitions(), excluded_names
         )
@@ -1173,6 +1269,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             controls.append(panel.combo)
             controls.extend(widget for widget in panel.widgets if widget.focusPolicy() & Qt.FocusPolicy.TabFocus)
         controls.extend(widget for widget in self._shared_diagnostic_widgets if widget.focusPolicy() & Qt.FocusPolicy.TabFocus)
+        controls.append(self.advanced_toggle)
+        controls.extend(control for _, control, _, _ in self._advanced_entries)
         controls.extend(button for button in (self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
                                               self.buttonBox.button(QDialogButtonBox.StandardButton.Cancel)) if button is not None)
         for before, after in zip(controls, controls[1:]):
@@ -1213,7 +1311,64 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             if spec.kind == kind
         ]
 
+    def _forget_advanced_controls(self, widgets):
+        self._advanced_entries = [entry for entry in getattr(self, "_advanced_entries", [])
+                                  if entry[1] not in widgets]
+
+    def _refresh_advanced_summary(self):
+        changes = []
+        for spec, control, target, default in self._advanced_entries:
+            value = target.get(spec.name)
+            if str(value) == str(default):
+                continue
+            if isinstance(control, QComboBox):
+                text = control.currentText()
+            elif isinstance(control, (QSpinBox, QDoubleSpinBox)):
+                text = f"{value:g}"
+            else:
+                text = str(value)
+            changes.append(f"{parameter_display_label(spec.name, spec.metadata)} {text}")
+        self.advanced_toggle.setText(("▾ Advanced" if self.advanced_toggle.isChecked() else "▸ Advanced") + (f" · {len(changes)} changed" if changes else ""))
+        self.advanced_toggle.setToolTip("\n".join(changes) or "Additional method options")
+
+    def _place_parameter(self, layout, row, spec, label, control, target, default):
+        if spec.name in {"measure", "rm.method", "estimator", "conf.level"}:
+            layout.addWidget(label, row, 0)
+            layout.addWidget(control, row, 1)
+            return row + 1
+        advanced = self.advanced_panel.layout()
+        assert isinstance(advanced, QGridLayout)
+        advanced_row = advanced.rowCount()
+        advanced.addWidget(label, advanced_row, 0)
+        advanced.addWidget(control, advanced_row, 1)
+        self._advanced_entries.append((spec, control, target, default))
+        if isinstance(control, QComboBox):
+            control.currentIndexChanged.connect(self._refresh_advanced_summary)
+        elif isinstance(control, (QSpinBox, QDoubleSpinBox)):
+            control.valueChanged.connect(self._refresh_advanced_summary)
+        elif isinstance(control, QCheckBox):
+            control.toggled.connect(self._refresh_advanced_summary)
+        else:
+            control.textChanged.connect(self._refresh_advanced_summary)
+        self._refresh_advanced_summary()
+        return row
+
     def _add_parameter_controls(self, layout, definitions, excluded_names):
+        if not hasattr(self, "advanced_toggle"):
+            self._advanced_entries = []
+            self.advanced_toggle = _AdvancedButton(self)
+            self.advanced_toggle.setAutoRaise(True)
+            self.advanced_toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
+            self.advanced_toggle.setSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
+            self.advanced_toggle.setCheckable(True)
+            self.advanced_panel = QtWidgets.QWidget()
+            QGridLayout(self.advanced_panel)
+            self.advanced_toggle.toggled.connect(self._expand_advanced)
+            expanded = QtCore.QSettings().value("analysis/advancedExpanded", False, type=bool)
+            self.advanced_toggle.setChecked(expanded)
+            self.advanced_panel.setVisible(expanded)
+        layout.addWidget(QLabel("Effect measure"), 0, 0)
+        layout.addWidget(QLabel(self._result_metric_label().capitalize()), 0, 1)
         row = 1
         for spec in definitions:
             if spec.name in excluded_names:
@@ -1223,9 +1378,18 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             control = self._create_parameter_control(spec, self.current_param_vals)
             self._configure_parameter_accessibility(label, control)
             self.current_widgets.extend((label, control))
-            layout.addWidget(label, row, 0)
-            layout.addWidget(control, row, 1)
-            row += 1
+            row = self._place_parameter(layout, row, spec, label, control,
+                                        self.current_param_vals, self._method_defaults.get(spec.name))
+        self.gridLayout.addWidget(self.advanced_toggle, 20, 0, 1, 4)
+        self.gridLayout.addWidget(self.advanced_panel, 21, 0, 1, 4)
+        self._refresh_advanced_summary()
+
+    def _expand_advanced(self, checked):
+        self.advanced_panel.setVisible(checked)
+        self._refresh_advanced_summary()
+        QtCore.QSettings().setValue("analysis/advancedExpanded", checked)
+        self._resize_on_reflow = True
+        self._schedule_local_reflow()
 
     def _parameter_label(self, spec):
         label = QLabel(parameter_display_label(spec.name, spec.metadata))
@@ -1254,81 +1418,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             control.toggled.connect(lambda checked: target.__setitem__(spec.name, "TRUE" if checked else "FALSE"))
             return control
         elif spec.kind == "enum":
-            control = adaptive_controls.AdaptiveComboBox()
-            for value in spec.values:
-                control.addItem(
-                    parameter_value_display_label(spec.name, value, spec.metadata),
-                    value,
-                )
-            if spec.default is not None:
-                index = self._find_enum_item_index(control, spec.default)
-                if index >= 0:
-                    control.setCurrentIndex(index)
-                target[spec.name] = self._enum_item_value(control.currentData())
-            combo = control
-            control.currentIndexChanged[int].connect(
-                app_error_handler.safe_slot(
-                    lambda index: target.__setitem__(
-                        spec.name, self._enum_item_value(combo.itemData(index))
-                    ),
-                    parent=self,
-                )
-            )
+            control = self._enum_parameter_control(spec, target)
         elif spec.kind == "int":
-            control = QSpinBox()
-            if spec.name == "digits":
-                control.setRange(ANALYSIS_DIGITS_MIN, ANALYSIS_DIGITS_MAX)
-            else:
-                control.setRange(-2147483648, 2147483647)
-            control.setCorrectionMode(
-                QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToPreviousValue
-            )
-            if spec.default is not None:
-                value = (
-                    validate_analysis_digits(spec.default)
-                    if spec.name == "digits"
-                    else (
-                        _coerce_integer_default(spec.name, spec.default)
-                    )
-                )
-                control.setValue(value)
-                target[spec.name] = value
-            control.valueChanged[int].connect(
-                app_error_handler.safe_slot(
-                    lambda value: target.__setitem__(spec.name, value), parent=self
-                )
-            )
+            control = self._integer_parameter_control(spec, target)
         elif spec.kind == "float":
-            control = QDoubleSpinBox()
-            control.setDecimals(1 if spec.name == "conf.level" else 6)
-            if spec.name == "conf.level":
-                control.setRange(50, CONFIDENCE_LEVEL_DISPLAY_MAX)
-                control.setSingleStep(0.1)
-                control.setSuffix("%")
-            elif spec.name in ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS:
-                control.setRange(0, ANALYSIS_NUMERIC_MAX)
-            else:
-                control.setRange(ANALYSIS_NUMERIC_MIN, ANALYSIS_NUMERIC_MAX)
-            control.setCorrectionMode(
-                QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToPreviousValue
-            )
-            if spec.default is not None:
-                value = (
-                    validate_confidence_level(spec.default)
-                    if spec.name == "conf.level"
-                    else (
-                        validate_correction_factor(spec.default)
-                        if spec.name in ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS
-                        else validate_analysis_float(spec.name, spec.default)
-                    )
-                )
-                control.setValue(value)
-                target[spec.name] = value
-            control.valueChanged[float].connect(
-                app_error_handler.safe_slot(
-                    lambda value: target.__setitem__(spec.name, value), parent=self
-                )
-            )
+            control = self._float_parameter_control(spec, target)
         else:
             control = QLineEdit()
             if spec.default is not None:
@@ -1348,6 +1442,88 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             adaptive_controls.configure_numeric_value_control(control)
         return control
 
+    def _enum_parameter_control(self, spec, target):
+        control = adaptive_controls.AdaptiveComboBox()
+        for value in spec.values:
+            control.addItem(
+                parameter_value_display_label(spec.name, value, spec.metadata),
+                value,
+            )
+        if spec.default is not None:
+            index = self._find_enum_item_index(control, spec.default)
+            if index >= 0:
+                control.setCurrentIndex(index)
+            target[spec.name] = self._enum_item_value(control.currentData())
+        combo = control
+        control.currentIndexChanged[int].connect(
+            app_error_handler.safe_slot(
+                lambda index: target.__setitem__(
+                    spec.name, self._enum_item_value(combo.itemData(index))
+                ),
+                parent=self,
+            )
+        )
+        return control
+
+    def _integer_parameter_control(self, spec, target):
+        control = QSpinBox()
+        if spec.name == "digits":
+            control.setRange(ANALYSIS_DIGITS_MIN, ANALYSIS_DIGITS_MAX)
+        else:
+            control.setRange(-2147483648, 2147483647)
+        control.setCorrectionMode(
+            QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToPreviousValue
+        )
+        if spec.default is not None:
+            value = (
+                validate_analysis_digits(spec.default)
+                if spec.name == "digits"
+                else (
+                    _coerce_integer_default(spec.name, spec.default)
+                )
+            )
+            control.setValue(value)
+            target[spec.name] = value
+        control.valueChanged[int].connect(
+            app_error_handler.safe_slot(
+                lambda value: target.__setitem__(spec.name, value), parent=self
+            )
+        )
+        return control
+
+    def _float_parameter_control(self, spec, target):
+        control = _CompactDoubleSpinBox()
+        control.setDecimals(1 if spec.name == "conf.level" else 6)
+        if spec.name == "conf.level":
+            control.setRange(50, CONFIDENCE_LEVEL_DISPLAY_MAX)
+            control.setSingleStep(0.1)
+            control.setSuffix("%")
+        elif spec.name in ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS:
+            control.setRange(0, ANALYSIS_NUMERIC_MAX)
+        else:
+            control.setRange(ANALYSIS_NUMERIC_MIN, ANALYSIS_NUMERIC_MAX)
+        control.setCorrectionMode(
+            QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToPreviousValue
+        )
+        if spec.default is not None:
+            value = (
+                validate_confidence_level(spec.default)
+                if spec.name == "conf.level"
+                else (
+                    validate_correction_factor(spec.default)
+                    if spec.name in ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS
+                    else validate_analysis_float(spec.name, spec.default)
+                )
+            )
+            control.setValue(value)
+            target[spec.name] = value
+        control.valueChanged[float].connect(
+            app_error_handler.safe_slot(
+                lambda value: target.__setitem__(spec.name, value), parent=self
+            )
+        )
+        return control
+
     def _find_enum_item_index(self, cbo_box, value):
         for index in range(cbo_box.count()):
             if self._enum_item_value(cbo_box.itemData(index)) == str(value):
@@ -1359,16 +1535,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             item_data = item_data.value()
         return qt_text.to_native_text(item_data)
 
-    def add_method_description(self, layout, current_grid_row, text):
-        lbl = QLabel(text, self.parameter_grp_box)
-        lbl.setWordWrap(True)
-        # layout-audit: allow=content-overflow-control; reason=required content may consume available layout width
-        lbl.setMinimumWidth(0)
-        # QLabel's preferred width is the unwrapped text width. Ignored keeps
-        # that width out of QGridLayout's minimum while retaining word-wrap.
-        lbl.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
-        self.current_widgets.append(lbl)
-        layout.addWidget(lbl, current_grid_row, 0, 1, 2)
 
     def _configure_value_control(self, widget):
         adaptive_controls.configure_choice_control(widget, visible_characters=42)
@@ -1388,7 +1554,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         )
 
     def _schedule_local_reflow(self):
-        """Coalesce dynamic content negotiation without resizing the root window."""
+        """Coalesce dynamic content negotiation."""
         if self._layout_reflow_pending:
             return
         self._layout_reflow_pending = True
@@ -1396,6 +1562,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _apply_local_reflow(self):
         self._layout_reflow_pending = False
+        resize_window = self._resize_on_reflow
+        self._resize_on_reflow = False
         for combo in self.content_scroll_area.findChildren(QComboBox):
             adaptive_controls.refresh_choice_popup_width(combo)
         for layout in (
@@ -1407,6 +1575,20 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 layout.invalidate()
         self.content_scroll_area_widget.updateGeometry()
         self.specs_tab.updateGeometry()
+        active_page = self.specs_tab.currentWidget()
+        assert active_page is not None
+        content_height = active_page.minimumSizeHint().height() + 40
+        # Method changes stay inside the scroll body. Explicit disclosure of
+        # Advanced controls may grow the dialog while preserving its placement.
+        if not self.isVisible() or resize_window:
+            position = self.pos()
+            previous_size = self.size()
+            self._set_scroll_body_height(content_height)
+            if self.isVisible():
+                self.resize(previous_size.width(), max(previous_size.height(), self.sizeHint().height()))
+            else:
+                self.adjustSize()
+            self.move(position)
         self._reveal_focused_control(None, QtWidgets.QApplication.focusWidget())
 
     def _reveal_focused_control(self, _old, focused):
@@ -1422,6 +1604,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.analysis_service.parameters(self.current_method)
         )
 
+        self._method_defaults = dict(self.current_defaults)
         for name, definition in self.current_params.items():
             if name not in self.current_param_vals:
                 continue
@@ -1474,6 +1657,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         layout = self.shared_diagnostic_params_box.layout()
         if not isinstance(layout, QGridLayout):
             raise RuntimeError("Shared diagnostic parameters require a grid layout")
+        self._forget_advanced_controls(self._shared_diagnostic_widgets)
         for widget in self._shared_diagnostic_widgets:
             layout.removeWidget(widget)
             widget.deleteLater()
@@ -1488,8 +1672,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             label = self._parameter_label(spec)
             control = self._create_parameter_control(spec, self.current_param_vals)
             self._configure_parameter_accessibility(label, control)
-            layout.addWidget(label, row, 0)
-            layout.addWidget(control, row, 1)
+            self._place_parameter(layout, row, spec, label, control, self.current_param_vals, self._shared_diagnostic_param_specs[name].default)
             self._shared_diagnostic_widgets.extend((label, control))
         self._set_analysis_tab_order()
 
@@ -1645,6 +1828,12 @@ def add_plot_params(specs_form):
         )
         return
 
+    if specs_form.data_type != "diagnostic" and specs_form.model.current_effect not in ONE_ARM_METRICS and len(specs_form.model.arm_names) == 2:
+        labels = specs_form.model.current_sheet.settings.get("favours_labels")
+        if labels is None:
+            labels = ["Favours " + name for name in specs_form.model.arm_names]
+        for side, label in zip(("left", "right"), labels):
+            specs_form.current_param_vals.setdefault("fp_favours_" + side, label)
     specs_form.current_param_vals["fp_study_order"] = specs_form.study_order.currentData() if specs_form.analysis_type != "cumulative" else "table"
     specs_form.current_param_vals["fp_style"] = PLOT_STYLE_VALUES.get(
         str(specs_form.style_cbo.currentText()), "default"

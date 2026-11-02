@@ -49,9 +49,9 @@ class StartPage(QtWidgets.QScrollArea):
         actions = QtWidgets.QHBoxLayout()
         actions.setSpacing(16)
         for attribute, action, caption, description in (
-            ('create_button', create_action, 'Create dataset…', 'Choose an outcome and effect measure, then enter study data.'),
-            ('import_button', import_action, 'Import CSV…', 'Map your spreadsheet columns and preview the data before importing.'),
-            ('open_button', open_action, 'Open project…', 'Continue working with a saved .rcms project.'),
+            ('create_button', create_action, 'Create dataset', 'Choose an outcome and effect measure, then enter study data.'),
+            ('import_button', import_action, 'Import data', 'Map your spreadsheet columns and preview the data before importing.'),
+            ('open_button', open_action, 'Open project', 'Continue working with a saved .rcms project.'),
         ):
             card = QtWidgets.QGroupBox(content)
             card_layout = QtWidgets.QVBoxLayout(card)
@@ -60,6 +60,7 @@ class StartPage(QtWidgets.QScrollArea):
             button = QtWidgets.QToolButton(card)
             button.setDefaultAction(action)
             button.setText(caption)
+            action.changed.connect(lambda b=button, text=caption: b.setText(text))
             button.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
             qt_layout.configure_primary_action_buttons((button,))
             button.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
@@ -86,15 +87,6 @@ class StartPage(QtWidgets.QScrollArea):
         self.recent_layout.setVerticalSpacing(8)
         self.recent_layout.setColumnStretch(1, 1)
         layout.addWidget(self.recent_projects)
-        heading = QtWidgets.QLabel('From data to results', content)
-        qt_layout.configure_heading(heading)
-        layout.addWidget(heading)
-        orientation = QtWidgets.QLabel(
-            '1. Prepare your studies — enter counts, means or reported effects; use row calculators when needed.\n\n'
-            '2. Run an analysis — choose the model and inspect estimates, heterogeneity and uncertainty.\n\n'
-            '3. Finish your output — edit the figure, compare settings, and export a figure, report or table.', content)
-        qt_layout.configure_context_label(orientation)
-        layout.addWidget(orientation)
         layout.addStretch()
         outer.addWidget(content, 1)
         outer.addStretch()

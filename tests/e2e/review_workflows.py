@@ -25,8 +25,8 @@ def run(app, window, root, record, analyze):
 
     assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
     view = analyze(app, window, "binary.random")
-    assert view.identity_label.text() == view.results.identity
-    assert len(view.identity_label.text().splitlines()) == 2
+    assert not hasattr(view, "identity_label")
+    assert view.windowTitle() == "clinical failure — Meta-analysis"
     report = view.report_text.toPlainText()
     assert report.index("Pooled ") < report.index("Model configuration\n")
     assert view.results.identity not in report
@@ -109,6 +109,6 @@ def run(app, window, root, record, analyze):
     app.processEvents()
     dialog = setup()
     assert not dialog.study_order.isEnabled()
-    assert "current study order" in dialog.context_label.text()
-    record("review-cumulative-order", dialog, explanation=dialog.context_label.text())
+    assert "current table order" in dialog.study_order.toolTip()
+    record("review-cumulative-order", dialog, explanation=dialog.study_order.toolTip())
     dialog.reject()

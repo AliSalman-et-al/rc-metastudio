@@ -52,7 +52,6 @@ TOP_LEVEL_FORM_INVENTORY = {
     "diagnostic_metrics_dialog.ui": (
         ("diagnostic_metrics_dialog.py", "DiagnosticMetricsDialog", "TRANSACTIONAL"),
     ),
-    "edit_dialog.ui": (("edit_dialog.py", "EditDialog", "EDIT_DATASET"),),
     "edit_plot_dialog.ui": (
         ("plot_editor_dialog.py", "EditPlotDialog", "TRANSACTIONAL"),
     ),
@@ -65,13 +64,6 @@ TOP_LEVEL_FORM_INVENTORY = {
     "main_window.ui": (("main_window.py", "MainWindow", "MAIN"),),
     "new_covariate_dialog.ui": (
         ("add_new_dialogs.py", "AddCovariateDialog", "TRANSACTIONAL"),
-    ),
-    "new_follow_up_dialog.ui": (
-        ("add_new_dialogs.py", "AddFollowUpDialog", "TRANSACTIONAL"),
-    ),
-    "new_group_dialog.ui": (("add_new_dialogs.py", "AddGroupDialog", "TRANSACTIONAL"),),
-    "new_outcome_dialog.ui": (
-        ("add_new_dialogs.py", "AddOutcomeDialog", "TRANSACTIONAL"),
     ),
     "new_study_dialog.ui": (("add_new_dialogs.py", "AddStudyDialog", "TRANSACTIONAL"),),
     "results_window.ui": (("results_window.py", "ResultsWindow", "RESULTS"),),

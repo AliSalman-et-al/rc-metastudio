@@ -116,6 +116,8 @@ def parameter_value_display_label(param_name, value, param_metadata=None):
 
 def parameter_display_label(param_name, param_metadata=None):
     text = str(param_name)
+    if text == "rm.method":
+        return "Heterogeneity (τ²) estimator"
     if param_metadata is not None:
         pretty_name = param_metadata.get("pretty.name")
         if pretty_name:

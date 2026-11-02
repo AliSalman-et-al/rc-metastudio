@@ -26,12 +26,64 @@ rcmetar.draw.forest.diamond <- function(center, lower, upper, row, height, alim,
     invisible(NULL)
 }
 
+rcmetar.forest.direction.lines <- function(label, width, cex, font=1, units="user") {
+    # Keep the direction keyword intact while wrapping long arm names.
+    width <- max(width, graphics::strwidth("Favours", units=units, cex=cex, font=font))
+    lines <- character()
+    current <- ""
+    for (word in strsplit(trimws(label), "\\s+")[[1]]) {
+        candidate <- paste0(current, if (nzchar(current)) " " else "", word)
+        if (nzchar(current) && graphics::strwidth(candidate, units=units, cex=cex, font=font) > width) {
+            lines <- c(lines, current)
+            current <- ""
+        }
+        current <- paste0(current, if (nzchar(current)) " " else "", word)
+    }
+    c(lines, current)[nzchar(c(lines, current))]
+}
+
+rcmetar.forest.direction.metrics <- function(bundle, plan) {
+    labels <- unlist(rcmetar.revman.direction.labels(bundle)[c("left", "right")])
+    rcmetar.forest.with.measurement.device({
+        # Account for the device width cap and graphics margins, rather than
+        # assuming the requested panel width survived a wide-font layout.
+        panel <- (plan$device$width - 2 * graphics::par("csi")) /
+            (1.08 * diff(plan$x$xlim)) * diff(plan$x$alim)
+        widths <- rep(panel * 0.44, 2)
+        if (!is.null(plan$footer$axis)) {
+            axis <- plan$footer$axis
+            widths <- c(axis$left.max.width, axis$right.max.width) / diff(plan$x$alim) * panel
+        }
+        font <- if (!is.null(plan$footer$axis) && plan$style$name == "bmj") 2 else 1
+        lines <- mapply(function(label, width) length(rcmetar.forest.direction.lines(
+            label, width, plan$typography$cex, font=font, units="inches")), labels, widths)
+        list(lines=max(lines), spacing=graphics::strheight("M", units="inches",
+            cex=plan$typography$cex, font=font) * 2.2)
+    })
+}
+
+rcmetar.draw.forest.direction.blocks <- function(bundle, footer, top, cex, font=1) {
+    labels <- rcmetar.revman.direction.labels(bundle)
+    spacing <- graphics::strheight("M", cex=cex, font=font) * 2.2
+    for (side in c("left", "right")) {
+        lines <- rcmetar.forest.direction.lines(labels[[side]], footer[[paste0(side, ".max.width")]], cex, font)
+        if (length(lines)) graphics::text(footer[[paste0(side, ".x")]],
+            top - (seq_along(lines) - 1) * spacing, lines, cex=cex, font=font, adj=c(0.5, 0))
+    }
+    invisible(NULL)
+}
+
 rcmetar.draw.forest.direction <- function(bundle, alim, cex) {
+    # mtext cex is absolute; measure with the same scale, independent of forest().
+    previous <- graphics::par(cex=1)
+    on.exit(graphics::par(previous), add=TRUE)
     labels <- rcmetar.revman.direction.labels(bundle)
     for (side in c("left", "right")) {
         if (nzchar(labels[[side]])) {
             at <- if (side == "left") mean(c(alim[[1]], mean(alim))) else mean(c(mean(alim), alim[[2]]))
-            graphics::mtext(rcmetar.revman.wrap.direction(labels[[side]]), side=1, line=4.5, at=at, cex=cex)
+            lines <- rcmetar.forest.direction.lines(labels[[side]], diff(alim) * 0.44, cex)
+            for (index in seq_along(lines)) graphics::mtext(lines[[index]], side=1,
+                line=4.5 + (index - 1) * 1.6, at=at, cex=cex, adj=0.5, padj=0)
         }
     }
     invisible(NULL)
@@ -176,10 +228,19 @@ rcmetar.forest.header.height <- function(bundle, cex) {
 rcmetar.forest.header.ylim <- function(plan, rule.y) {
     ylim <- plan$rows$ylim
     height <- plan$headers$height
-    if (is.null(height) || height <= 0) return(ylim)
-    fraction <- height / graphics::par("pin")[[2]]
+    fraction <- if (is.null(height)) 0 else height / graphics::par("pin")[[2]]
     if (fraction >= 1) stop("Device is too short for the measured forest headers.")
-    ylim[[2]] <- max(ylim[[2]], (rule.y - fraction * ylim[[1]]) / (1 - fraction))
+    span <- max(diff(ylim), (rule.y - ylim[[1]]) / (1 - fraction))
+    if (!is.null(plan$footer$axis) && plan$device$direction_lines > 0) {
+        font <- if (!is.null(plan$footer$axis) && plan$style$name == "bmj") 2 else 1
+        footer <- graphics::strheight("M", units="inches", cex=plan$typography$cex, font=font) *
+            (2.2 * (plan$device$direction_lines + 1) + 1) / graphics::par("pin")[[2]]
+        if (fraction + footer >= 1) stop("Device is too short for the measured forest footer.")
+        # Solve header and footer clearance together in the final device's units.
+        span <- max(span, (rule.y + 4.1) / (1 - fraction - footer))
+    }
+    ylim[[2]] <- max(ylim[[2]], rule.y + fraction * span)
+    ylim[[1]] <- min(ylim[[1]], ylim[[2]] - span)
     ylim
 }
 

@@ -13,28 +13,6 @@ else:
     from rc_metastudio.ui_main_window import Ui_MainWindow
 
 
-def test_issue_94_current_outcome_and_follow_up_labels_can_expand():
-    app = cast(
-        QtWidgets.QApplication,
-        required(
-            QtWidgets.QApplication.instance() or QtWidgets.QApplication([]),
-            "application",
-        ),
-    )
-    window = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(window)
-
-    for label in (ui.current_outcome_label, ui.current_follow_up_label):
-        assert label.maximumWidth() > 80
-        assert (
-            label.sizePolicy().horizontalPolicy() != QtWidgets.QSizePolicy.Policy.Fixed
-        )
-
-    window.deleteLater()
-    app.processEvents()
-
-
 def test_issue_190_main_window_does_not_expose_toolbar_toggle_popup():
     from rc_metastudio.main_window import MainWindow
 

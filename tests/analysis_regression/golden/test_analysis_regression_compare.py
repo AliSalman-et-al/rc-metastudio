@@ -426,7 +426,7 @@ def test_numeric_contract_covers_all_cases_and_rejects_shape_and_tolerance_drift
             for case in contract["cases"]
             for metrics in case["sections"].values()
         )
-        == 415
+        == 416
     )
     assert all(case["nonnumeric_omissions"] for case in contract["cases"])
 
@@ -1252,35 +1252,26 @@ def test_headless_analysis_dispatches_meta_regression_with_selected_covariates(
         calls = []
         backend_requests = []
 
-        class DataSet(object):
-            def get_covariate_values(self, covariate, ids_for_keys=False):
-                assert ids_for_keys is True
-                return {0: 1990}
-
-            def add_covariate(self, covariate, values):
-                calls.append(("covariate", covariate, values))
-
         class Study(object):
             id = 0
+            covariate_values = {"year": 1990}
 
         class Model(object):
             def __init__(self):
-                self.dataset = DataSet()
                 self.studies = (Study(),)
+                self.current_sheet = __import__("types").SimpleNamespace(rows=self.studies)
 
             def get_studies(self, only_if_included=True):
                 assert only_if_included is True
                 return list(self.studies)
 
+            def add_covariate(self, name, kind, values):
+                covariate = {"id": "year", "name": name, "data_type": 1}
+                calls.append(("covariate", covariate, values))
+                return covariate
+
             def set_current_metric(self, metric):
                 calls.append(("metric", metric))
-
-        class Covariate(object):
-            def __init__(self, name, data_type):
-                self.name = name
-                self.data_type = data_type
-
-        monkeypatch.setattr(headless_analysis.analysis_dataset, "Covariate", Covariate)
 
         covariates = [
             {"name": "golden_year", "type": "continuous", "values": {"Study A": 1990}}
@@ -1316,7 +1307,7 @@ def test_headless_analysis_dispatches_meta_regression_with_selected_covariates(
         data_call = next(call for call in calls if call[0] == "data")
         assert "include_raw_data" not in data_call[1]
         assert data_call[1]["studies"] == model.studies
-        assert data_call[1]["covs_to_include"][0].name == "golden_year"
+        assert data_call[1]["covs_to_include"][0]["name"] == "golden_year"
         added_covariate = next(call[1] for call in calls if call[0] == "covariate")
         assert data_call[1]["covs_to_include"][0] is added_covariate
         assert backend_requests[0]["method"] == "meta.regression"

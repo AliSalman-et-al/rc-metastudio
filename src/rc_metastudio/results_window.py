@@ -2,7 +2,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Render and export meta-analysis results."""
 
+import textwrap
 import gzip
+import math
 import csv
 import io
 import re
@@ -49,6 +51,7 @@ from PyQt6.QtWidgets import (
     QLabel,
     QSpinBox,
     QTextBrowser,
+    QHeaderView,
     QTableWidget,
     QTableWidgetItem,
     QWidget,
@@ -261,6 +264,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._raster_plot_items = []
         self._refitting_svg_plots = False
         self._viewport_refit_pending = False
+        self._closing = False
+        self._viewport_refit_timer = QTimer(self)
+        self._viewport_refit_timer.setSingleShot(True)
+        self._viewport_refit_timer.timeout.connect(self._run_scheduled_viewport_refit)
         self._viewport_width_override = None
         self._first_show_refit_pending = True
         self._layout_items = []
@@ -278,6 +285,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         viewport = self.graphics_view.viewport()
         if viewport is None:
             raise RuntimeError("Results graphics view has no viewport")
+        self._graphics_viewport = viewport
         viewport.installEventFilter(self)
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.RESULTS
@@ -300,7 +308,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             )
         )
 
-        self.nav_tree.setHeaderLabels(["Results"])
+        self.nav_tree.setHeaderHidden(True)
         self.nav_tree.setAccessibleName("Result sections")
         self.nav_tree.setAccessibleDescription("Choose a figure, the text report, numerical tables or model configuration.")
         self.graphics_view.setAccessibleName("Analysis figures")
@@ -352,22 +360,25 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _setup_report_controls(self):
         self._setup_identity()
+        self._setup_manuscript_page()
         self._setup_report_document()
         self._setup_result_tables()
         self._setup_results_actions()
         self._report_nav_anchors = {}
-        entries = [("Text report", ""), ("Tables", None)]
+        entries = [("Manuscript", "manuscript"), ("Text report", ""), ("Tables", None)]
         if self.results.details:
-            entries.append(("Model configuration", "model-configuration"))
+            entries.append(("Settings", "model-configuration"))
         for index, (title, anchor) in enumerate(entries):
             item = QTreeWidgetItem([title])
-            if title == "Model configuration":
+            if title == "Settings":
                 index = 2 + sum(section.kind == "text" and section.source_key != "Weights" and section.semantic_id != "text:references" for section in self.results.sections)
             self.nav_tree.insertTopLevelItem(index, item)
             item.setToolTip(0, "Read the report" if title == "Text report" else "Copy or export numerical tables" if title == "Tables" else "Inspect the executed model and settings")
             item.setDisabled(title == "Tables" and not self._report_tables)
             self._report_nav_anchors[id(item)] = anchor
         self.nav_tree.currentItemChanged.connect(lambda item, _previous: self.item_clicked(item, 0) if item is not None else None)
+        self.nav_tree.resizeColumnToContents(0)
+        self.nav_tree.setFixedWidth(self.nav_tree.sizeHintForColumn(0) + 12)
         self._show_initial_result()
 
     def _show_initial_result(self):
@@ -382,18 +393,36 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if self.report_action.isChecked():
             self._activate_report(True)
         self._set_restored_splitter_sizes()
+        if not self.report_action.isChecked():
+            self._fit_width()
 
     def _setup_identity(self):
         identity = self.results.identity or "Analysis results"
-        self.identity_label = QLabel(identity, self)
-        qt_layout.configure_context_label(self.identity_label)
-        self.identity_label.setTextFormat(Qt.TextFormat.PlainText)
-        self.identity_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        self.verticalLayout.insertWidget(0, self.identity_label)
-        self.setWindowTitle(identity.split("\n")[0] + " — RC MetaStudio")
+        parent = self.parent()
+        self._source_sheet = model.current_sheet if (model := getattr(parent, "model", None)) is not None else None
+        sheet_name = self._source_sheet.name if self._source_sheet else "Results"
+        self.setWindowTitle(sheet_name + " — " + identity.split(" — ")[0])
         self.verticalLayout.setContentsMargins(6, 6, 6, 6)
         self.verticalLayout.setSpacing(4)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+
+    def _setup_manuscript_page(self):
+        from rc_metastudio.manuscript_report import ManuscriptReport
+        self.manuscript = ManuscriptReport.from_result(self.results)
+        self.manuscript_page = QWidget(self.content_stack)
+        layout = QVBoxLayout(self.manuscript_page)
+        for name, text in (("Methods", self.manuscript.methods), ("Results", self.manuscript.results)):
+            layout.addWidget(QLabel(name))
+            browser = QTextBrowser()
+            browser.setPlainText(text)
+            browser.setAccessibleName(name)
+            setattr(self, 'manuscript_' + name.lower(), browser)
+            layout.addWidget(browser)
+            button = QToolButton()
+            button.setText('Copy ' + name)
+            button.clicked.connect(lambda checked=False, value=text: required(QApplication.clipboard(), "clipboard").setText(value))
+            layout.addWidget(button)
+        self.content_stack.addWidget(self.manuscript_page)
 
     def _setup_report_document(self):
         self.report_text = QTextBrowser(self.content_stack)
@@ -450,7 +479,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.result_table.setAccessibleDescription("Read-only result cells with column headers. Ctrl+C copies selected cells, or the entire table when no cells are selected. Tab moves to the next control.")
         required(self.result_table.verticalHeader(), "result table row header").hide()
         layout.addWidget(self.result_table)
-        controls = QToolBar("Table actions", self.tables_page)
+        controls = self.table_controls = QToolBar("Table actions", self.tables_page)
         controls.setMovable(False)
         controls.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
         self.copy_table_action = QAction("Copy table", self)
@@ -465,6 +494,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         for action in (self.copy_table_action, self.export_table_action):
             controls.addAction(action)
         layout.addWidget(controls)
+        layout.addStretch()
         self.table_selector.currentIndexChanged.connect(self._select_result_table)
         self.content_stack.addWidget(self.tables_page)
         self._select_result_table(0)
@@ -476,7 +506,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.result_table.clear()
         self.result_table.setColumnCount(len(table.headers))
         self.result_table.setRowCount(len(table.rows))
-        self.result_table.setHorizontalHeaderLabels(list(table.headers))
+        self.result_table.setHorizontalHeaderLabels([
+            "\n".join(textwrap.wrap(label, width=16, break_long_words=False, break_on_hyphens=False))
+            for label in table.headers
+        ])
         self.result_table.setAccessibleName(_report_heading(table.title))
         for row_index, row in enumerate(table.rows):
             for column_index, cell in enumerate(row):
@@ -484,10 +517,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 if _numeric_cell(cell):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
                 self.result_table.setItem(row_index, column_index, item)
-        self.result_table.resizeColumnsToContents()
-        for column in range(self.result_table.columnCount()):
-            self.result_table.setColumnWidth(column, min(360, self.result_table.columnWidth(column) + 12))
+        header = required(self.result_table.horizontalHeader(), "result table column header")
+        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        header.setStretchLastSection(True)
         self.result_table.resizeRowsToContents()
+        self.result_table.setMaximumHeight(
+            header.sizeHint().height() + sum(self.result_table.rowHeight(row)
+                                  for row in range(self.result_table.rowCount()))
+            + 2 * self.result_table.frameWidth()
+        )
 
     def _table_payload(self, delimiter, selected=False):
         table = self._report_tables[self.table_selector.currentIndex()]
@@ -540,12 +578,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_action.setShortcut("Ctrl+T")
         self.report_action.toggled.connect(self._show_report)
         self.report_action.triggered.connect(self._activate_report)
-        toolbar.addAction(self.report_action)
         self.tables_action = QAction("Tables", self)
         self.tables_action.setShortcut("Ctrl+Shift+T")
         self.tables_action.setEnabled(bool(self._report_tables))
         self.tables_action.triggered.connect(self._show_tables)
-        toolbar.addAction(self.tables_action)
         self.copy_report_action = QAction("Copy report", self)
         self.copy_report_action.setShortcut("Ctrl+Shift+C")
         self.copy_report_action.triggered.connect(self._copy_report)
@@ -612,9 +648,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         selected = self._selected_plot()
         width = selected[1].sceneBoundingRect().right() + padding if selected else self.scene.sceneRect().width()
         viewport = required(self.graphics_view.viewport(), "figure viewport")
-        scale = max(1, viewport.width() - 2) / max(1, width)
+        scale = min(1 / (selected[1].scale() if selected else 1),
+                    max(1, viewport.width() - 2) / max(1, width))
         self.graphics_view.setTransform(QTransform.fromScale(scale, scale))
-        self._figure_zoom_percent = round(scale * 100)
+        self._figure_zoom_percent = round(scale * (selected[1].scale() if selected else 1) * 100)
         if not self.report_action.isChecked():
             self._update_zoom_control(self._figure_zoom_percent)
         self._scroll_to_section(self.nav_tree.currentItem())
@@ -672,30 +709,28 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         for section in deferred:
             yield section.semantic_id, "Study weights" if section.source_key == "Weights" else section.title, section.paragraphs if section.tables else (section.value,), section.tables
 
-    def _plain_text_report(self):
-        blocks = [self.results.identity]
-        for _anchor, heading, paragraphs, tables in self._report_blocks():
-            blocks.append(_report_heading(heading))
-            blocks.extend(paragraph for paragraph in paragraphs if paragraph.startswith("Pooled "))
-            for index, table in enumerate(tables):
-                caption = _report_heading(table.title) + "\n" if table.title != heading and not (index == 0 and table.title.endswith("Model Results")) else ""
-                blocks.append(caption + "\n".join(
-                    "\t".join(row) for row in (table.headers, *table.rows)))
-            blocks.extend(paragraph for paragraph in paragraphs if not paragraph.startswith("Pooled "))
-        return "\n\n".join(block for block in blocks if block) + "\n"
-
     def _copy_report(self):
-        required(QApplication.clipboard(), "system clipboard").setText(self._plain_text_report())
+        from PyQt6.QtCore import QMimeData
+        from rc_metastudio.manuscript_report import ManuscriptReport
+        report = ManuscriptReport.from_result(self.results)
+        mime = QMimeData()
+        mime.setHtml(report.html())
+        mime.setText(report.plain_text())
+        required(QApplication.clipboard(), "system clipboard").setMimeData(mime)
         self.statusbar.showMessage("Report copied")
 
     def _export_report(self):
-        path, _filter = QFileDialog.getSaveFileName(self, "Export analysis report", self._export_name("report", "txt"), "Text report (*.txt)")
+        from rc_metastudio.manuscript_report import ManuscriptReport, write_docx, write_pdf
+        path, selected = QFileDialog.getSaveFileName(self, "Export manuscript report", self._export_name("report", "pdf"), "PDF (*.pdf);;Word document (*.docx)")
         if path:
-            Path(path).write_text(self._plain_text_report(), encoding="utf-8")
+            extension = "docx" if "docx" in selected else "pdf"
+            path = str(Path(path).with_suffix("." + extension))
+            report = ManuscriptReport.from_result(self.results)
+            (write_docx if extension == "docx" else write_pdf)(report, path)
             self.statusbar.showMessage(f"Saved report: {Path(path).resolve()}")
 
     def _export_name(self, title, extension):
-        context = (self.results.identity or self.identity_label.text()).split("\n")[0]
+        context = (self.results.identity or "Analysis results").split("\n")[0]
         name = re.sub(r'[<>:"/\\|?*\x00-\x1f]+', "-", context + " — " + title)
         return name.strip(" .")[:160] + "." + extension
 
@@ -868,7 +903,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def item_clicked(self, item, column):
         if id(item) in getattr(self, "_report_nav_anchors", {}):
             anchor = self._report_nav_anchors[id(item)]
-            if anchor is None:
+            if anchor == "manuscript":
+                self.content_stack.setCurrentWidget(self.manuscript_page)
+            elif anchor is None:
                 self._show_tables()
             else:
                 self.report_action.setChecked(True)
@@ -930,23 +967,20 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.scene.setSceneRect(0, 0, scene_width, scene_height)
 
     def _refit_viewport_items(self):
-        if hasattr(self, "identity_label"):
-            # layout-audit: allow=content-sized-label; reason=wrapped identity uses its measured text height
-            self.identity_label.setMaximumHeight(self.identity_label.heightForWidth(self.identity_label.width()))
         self._update_wrapped_text_widths()
         self._refit_svg_plot_items()
         self._refit_raster_plot_items()
         self._relayout_sections()
 
     def _schedule_viewport_refit(self):
-        if self._viewport_refit_pending:
+        if self._closing or self._viewport_refit_pending:
             return
         self._viewport_refit_pending = True
-        QTimer.singleShot(0, self._run_scheduled_viewport_refit)
+        self._viewport_refit_timer.start(0)
 
     def _run_scheduled_viewport_refit(self):
         self._viewport_refit_pending = False
-        if self.isVisible():
+        if not self._closing and self.isVisible():
             if self._first_show_refit_pending:
                 self._first_show_refit_pending = False
                 self._set_restored_splitter_sizes()
@@ -963,8 +997,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     ) -> bool:
         if (
             event is not None
-            and watched is self.graphics_view.viewport()
             and event.type() == QEvent.Type.Resize
+            and watched is self._graphics_viewport
         ):
             self._schedule_viewport_refit()
         return super(ResultsWindow, self).eventFilter(watched, event)
@@ -1001,7 +1035,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         next_y = float(self.add_offset)
         for item in self._layout_items:
             item.setPos(self.x_coord, next_y)
-            next_y += item.sceneBoundingRect().height()
+            next_y = math.ceil(item.sceneBoundingRect().bottom())
             if not isinstance(item, QGraphicsTextItem):
                 next_y += SECTION_SPACING
 
@@ -1054,6 +1088,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     ) -> None:
         save_results_window_state(self)
         super(ResultsWindow, self).closeEvent(event)
+        if event is not None and not event.isAccepted():
+            return
+        # A later modal loop may deliver deferred deletion. Stop rendering while
+        # the window, viewport and scene are still alive, before that boundary.
+        self._closing = True
+        self._viewport_refit_timer.stop()
+        self._viewport_refit_pending = False
+        self._graphics_viewport.removeEventFilter(self)
+        self.graphics_view.setScene(None)
         self.deleteLater()
 
     def create_pixmap_item(
@@ -1333,6 +1376,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             dialog.mark_commit_failed(error)
             raise
 
+        parent = self.parent()
+        model = getattr(parent, "model", None)
+        if self._source_sheet is not None and model is not None and self._source_sheet in model.dataset.sheets:
+            self._source_sheet.settings["favours_labels"] = [updated_params.get("fp_favours_left", ""), updated_params.get("fp_favours_right", "")]
+            getattr(parent, "data_dirtied")()
         self._refresh_plot_item(plot_item, artifact, outpath)
         dialog.mark_commit_succeeded()
 

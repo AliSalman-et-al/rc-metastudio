@@ -1065,7 +1065,7 @@ publication.bias.effects <- function(om.data, params) {
     plot.kind <- .small.study.plot.kind(kind)
     capability <- list(plot_kind=plot.kind, editable=TRUE, styleable=TRUE,
                        composition="single", regenerator="funnel")
-    base <- sub("\\.png$", "", path)
+    base <- sub("\\.(png|svg)$", "", path)
     .small.study.save(plot.data, fit, params, base)
     list(key=key, title=title, path=path, kind=plot.kind, capability=capability,
          params.path=base, failure=character())
@@ -1129,6 +1129,9 @@ publication.bias.effects <- function(om.data, params) {
     run.params$funnel.kind <- "trimfill"
     run.params$funnel.index <- 1L
     run.params$trimfill.scenario <- name
+    run.params$trimfill.imputed <- as.logical(scenario$fit$trimfill)
+    if (scenario$imputed.k0 == 0L)
+        run.params$plot_caption <- paste(c(params$plot_caption, "No studies imputed"), collapse="\n")
     run.params$trim.and.fill.estimator <- scenario$estimator
     run.params$trim.and.fill.side <- scenario$side
     run.params$trim.and.fill.model <- scenario$model
@@ -1141,7 +1144,7 @@ publication.bias.effects <- function(om.data, params) {
     run.params$funnel.ylab <- as.character(
         .small.study.plot.setting(params, "funnel.ylab", 1L, .small.study.standard.error.label(params)))
     key <- paste0("small-study.trim-and-fill.", tolower(name))
-    path <- tempfile(pattern="small-study-trimfill-", fileext=".png")
+    path <- tempfile(pattern="small-study-trimfill-", fileext=".svg")
     .small.study.plot.artifact(
         key, name, "trimfill", path, augmented, scenario$fit, run.params,
         paste0(name, " plot"))
@@ -1397,7 +1400,14 @@ rcmetar.run.small.study.effects <- function(om.data, params=list()) {
         label=identical(settings$label.policy, "all"))
     if (!is.null(settings$xlim)) args$xlim <- settings$xlim
     if (!is.null(settings$at)) args$at <- settings$at
+    if (ratio && is.null(settings$at)) args$xaxt <- "n"
     args
+}
+
+.small.study.draw.ratio.axis <- function(settings, ratio) {
+    if (!ratio || !is.null(settings$at)) return(invisible(NULL))
+    ticks <- rcmetar.forest.journal.ratio.ticks(graphics::par("usr")[1:2])
+    graphics::axis(1, at=ticks, labels=vapply(exp(ticks), format, character(1), trim=TRUE, scientific=FALSE))
 }
 
 .small.study.label.outside <- function(y, se, center, settings, labels) {
@@ -1428,7 +1438,13 @@ rcmetar.run.small.study.effects <- function(om.data, params=list()) {
     model <- .small.study.funnel.model(res, y, se, keep)
     center <- as.numeric(params$funnel.center %||% 0)
     ratio <- as.character(params$metric %||% "") %in% c("OR", "RR", "HR", "IRR")
-    do.call(metafor::funnel, c(list(model), .small.study.funnel.args(settings, center, ratio)))
+    args <- .small.study.funnel.args(settings, center, ratio)
+    if (identical(settings$kind, "trimfill")) {
+        # Draw the augmented data, retaining which studies were filled by meta.
+        args$pch <- ifelse(params$trimfill.imputed[keep], 1L, settings$point.symbol)
+    }
+    do.call(metafor::funnel, c(list(model), args))
+    .small.study.draw.ratio.axis(settings, ratio)
     .small.study.label.outside(y, se, center, settings, om.data@study.names)
 }
 
@@ -1448,11 +1464,16 @@ rcmetar.run.small.study.effects <- function(om.data, params=list()) {
     args$shade <- settings$region.color
     args$colci <- settings$reference.color
     do.call(metafor::funnel, c(list(model), args))
+    .small.study.draw.ratio.axis(settings, ratio)
     .small.study.label.outside(y, se, 0, settings, om.data@study.names)
     if (settings$show.pooled)
         abline(v=center, col=settings$reference.color, lwd=2, lty=2)
     legend("topright", legend=c(paste0(levels, "% null contours"),
-                                 if (settings$show.pooled) "Pooled display"), bty="n")
+                                 if (settings$show.pooled) "Pooled display"),
+           pch=c(rep(22, length(levels)), if (settings$show.pooled) NA),
+           pt.bg=c(rep(settings$region.color, length.out=length(levels)), if (settings$show.pooled) NA),
+           col=settings$reference.color,
+           lty=c(rep(NA, length(levels)), if (settings$show.pooled) 2), bty="n")
 }
 
 rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.path=NULL) {

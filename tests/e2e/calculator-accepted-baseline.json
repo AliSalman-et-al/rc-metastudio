@@ -1,0 +1,249 @@
+{
+  "source": "Accepted projects from clean a44c290b calculator drives (20261031T1556Z); calculator implementation unchanged through cb5fb684",
+  "rows": {
+    "binary": {
+      "covariates": {},
+      "entered_effects": [
+        {
+          "arms": [
+            "sheet:0:arm:1",
+            "sheet:0:arm:0"
+          ],
+          "metric": "OR",
+          "values": {
+            "display_est": 1.7499999999999998,
+            "display_lower": 0.5219934460996893,
+            "display_upper": 5.8669318990168495,
+            "est": 0.5596157879354225,
+            "lower": -0.6501002465428974,
+            "upper": 1.7693318224137426
+          }
+        },
+        {
+          "arms": [
+            "sheet:0:arm:0",
+            "sheet:0:arm:1"
+          ],
+          "metric": "OR",
+          "values": {
+            "SE": 0.6172133998483676,
+            "display_conf_level": 95.0,
+            "display_est": 0.5714285714285714,
+            "display_lower": 0.17044683954275572,
+            "display_se": 0.6172133998483676,
+            "display_upper": 1.9157328649850938,
+            "est": -0.5596157879354227,
+            "lower": -1.7693318224137426,
+            "upper": 0.6501002465428973
+          }
+        },
+        {
+          "arms": [
+            "sheet:0:arm:1",
+            "sheet:0:arm:0"
+          ],
+          "metric": "RR",
+          "values": {
+            "display_est": 1.5,
+            "display_lower": 0.6193181575409917,
+            "display_upper": 3.633027665349979,
+            "est": 0.4054651081081644,
+            "lower": -0.4791361520088754,
+            "upper": 1.290066368225204
+          }
+        },
+        {
+          "arms": [
+            "sheet:0:arm:0",
+            "sheet:0:arm:1"
+          ],
+          "metric": "RR",
+          "values": {
+            "display_est": 0.6666666666666666,
+            "display_lower": 0.275252514462663,
+            "display_upper": 1.6146789623777686,
+            "est": -0.4054651081081644,
+            "lower": -1.290066368225204,
+            "upper": 0.4791361520088754
+          }
+        }
+      ],
+      "id": "sheet:0:row:0",
+      "include": true,
+      "label": "Gonzalez",
+      "manually_excluded": false,
+      "notes": "",
+      "ratio_inputs": [],
+      "raw_data": {
+        "sheet:0:arm:0": [
+          7,
+          28
+        ],
+        "sheet:0:arm:1": [
+          9,
+          27
+        ]
+      },
+      "sample_size": null,
+      "year": 1993
+    },
+    "continuous": {
+      "covariates": {},
+      "entered_effects": [
+        {
+          "arms": [
+            "sheet:0:arm:0",
+            "sheet:0:arm:1"
+          ],
+          "metric": "MD",
+          "values": {
+            "display_est": 2.0,
+            "display_lower": -5.52313055127718,
+            "display_upper": 9.52313055127718,
+            "est": 2.0,
+            "lower": -5.52313055127718,
+            "upper": 9.52313055127718
+          }
+        },
+        {
+          "arms": [
+            "sheet:0:arm:0",
+            "sheet:0:arm:1"
+          ],
+          "metric": "SMD",
+          "values": {
+            "SE": 0.1826761115625136,
+            "display_conf_level": 95.0,
+            "display_est": 0.09452415852032972,
+            "display_lower": -0.2635144409780178,
+            "display_se": 0.1826761115625136,
+            "display_upper": 0.4525627580186772,
+            "est": 0.09452415852032972,
+            "lower": -0.2635144409780177,
+            "upper": 0.4525627580186772
+          }
+        }
+      ],
+      "id": "sheet:0:row:0",
+      "include": true,
+      "label": "Carroll",
+      "manually_excluded": false,
+      "notes": "",
+      "ratio_inputs": [],
+      "raw_data": {
+        "sheet:0:arm:0": [
+          60.0,
+          95.5,
+          22.0
+        ],
+        "sheet:0:arm:1": [
+          60.0,
+          92.0,
+          20.0
+        ]
+      },
+      "sample_size": null,
+      "year": 1997
+    },
+    "diagnostic": {
+      "covariates": {},
+      "entered_effects": [
+        {
+          "arms": [
+            "sheet:0:arm:0"
+          ],
+          "metric": "DOR",
+          "values": {
+            "SE": 1.0793411221480045,
+            "display_est": 153.89999999925612,
+            "display_lower": 18.55674462102468,
+            "display_upper": 1276.3666517872255,
+            "est": 5.0363030408448335,
+            "lower": 2.9208333144016976,
+            "upper": 7.151772767287969
+          }
+        },
+        {
+          "arms": [
+            "sheet:0:arm:0"
+          ],
+          "metric": "NLR",
+          "values": {
+            "SE": 1.0029724315131792,
+            "display_est": 0.34908471690102316,
+            "display_lower": 0.04888764916823662,
+            "display_upper": 2.492656972618075,
+            "est": -1.052440644400614,
+            "lower": -3.0182304876530113,
+            "upper": 0.913349198851783
+          }
+        },
+        {
+          "arms": [
+            "sheet:0:arm:0"
+          ],
+          "metric": "PLR",
+          "values": {
+            "SE": 1.0029724315131794,
+            "display_est": 53.7241379308078,
+            "display_lower": 7.523809206955249,
+            "display_upper": 383.61990808713637,
+            "est": 3.9838623964442195,
+            "lower": 2.018072553191822,
+            "upper": 5.949652239696617
+          }
+        },
+        {
+          "arms": [
+            "sheet:0:arm:0"
+          ],
+          "metric": "Sens",
+          "values": {
+            "SE": 0.3906809170504345,
+            "display_conf_level": 95.0,
+            "display_est": 0.6551724137931034,
+            "display_lower": 0.469072872485805,
+            "display_se": 0.3906809170504345,
+            "display_upper": 0.8033830829869842,
+            "est": 0.6418538861723947,
+            "lower": -0.12386664069353703,
+            "upper": 1.4075744130383265
+          }
+        },
+        {
+          "arms": [
+            "sheet:0:arm:0"
+          ],
+          "metric": "Spec",
+          "values": {
+            "SE": 1.0061539042374905,
+            "display_conf_level": 95.0,
+            "display_est": 0.9878048780487805,
+            "display_lower": 0.9185213210665681,
+            "display_se": 1.0061539042374905,
+            "display_upper": 0.998284741192233,
+            "est": 4.394449154672438,
+            "lower": 2.4224237394625945,
+            "upper": 6.366474569882282
+          }
+        }
+      ],
+      "id": "sheet:0:row:0",
+      "include": true,
+      "label": "Kinderman",
+      "manually_excluded": false,
+      "notes": "",
+      "ratio_inputs": [],
+      "raw_data": {
+        "sheet:0:arm:0": [
+          20.0,
+          10.0,
+          1.0,
+          81.0
+        ]
+      },
+      "sample_size": null,
+      "year": 1970
+    }
+  }
+}

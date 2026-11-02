@@ -380,19 +380,6 @@ rcmetar.bmj.wrap.direction <- function(label, width=22) {
     rcmetar.bmj.wrap.header(label, width=width)
 }
 
-rcmetar.bmj.constrained.direction.label <- function(label, cex, max.width, preferred.width) {
-    widths <- sort(unique(pmax(16, c(preferred.width, 24, 22, 20, 18, 16))), decreasing=TRUE)
-    for (width in widths) {
-        wrapped <- rcmetar.bmj.wrap.direction(label, width)
-        lines <- unlist(strsplit(wrapped, "\n", fixed=TRUE), use.names=FALSE)
-        if (length(lines) == 0 || length(lines) <= 3 ||
-                max(graphics::strwidth(lines, units="user", cex=cex), na.rm=TRUE) <= max.width) {
-            return(wrapped)
-        }
-    }
-    rcmetar.bmj.wrap.direction(label, 16)
-}
-
 rcmetar.bmj.line.count <- function(label) {
     if (is.null(label) || !nzchar(label)) {
         return(0)
@@ -579,10 +566,10 @@ rcmetar.forest.bmj.layout.preflight <- function(bundle, size.policy="export") {
     layout <- rcmetar.forest.bmj.layout.coordinates.from_size(bundle, size)
     k <- length(bundle$slab)
     top.padding <- 3.2
-    bottom.padding <- if (size$direction_lines > 2) 4.65 else 3.95
+    bottom.padding <- 4.5 + max(0, size$direction_lines - 1) * 0.8
     rows <- list(
         k=k,
-        study_rows=k:1,
+        study_rows=k:1 + 0.65,
         ylim=c(-bottom.padding, k + top.padding),
         top=k + top.padding,
         manual_sequential_labels=FALSE,
@@ -845,51 +832,13 @@ rcmetar.draw.bmj.bottom.blocks <- function(bundle, x, cex, layout=NULL, summary.
     prediction <- rcmetar.forest.prediction.label(bundle, summary.res)
     if (nzchar(prediction)) graphics::text(x, -3, prediction, pos=4, cex=cex)
     axis.footer <- rcmetar.bmj.axis.footer.layout(bundle, layout)
-    left.label <- ""
-    right.label <- ""
-    if (nzchar(bundle$style_blocks$favours_left)) {
-        left.label <- rcmetar.bmj.constrained.direction.label(
-            bundle$style_blocks$favours_left,
-            cex,
-            axis.footer$left.max.width,
-            axis.footer$direction.width
-        )
-    }
-    if (nzchar(bundle$style_blocks$favours_right)) {
-        right.label <- rcmetar.bmj.constrained.direction.label(
-            bundle$style_blocks$favours_right,
-            cex,
-            axis.footer$right.max.width,
-            axis.footer$direction.width
-        )
-    }
-    direction.y <- axis.footer$direction.y -
-        max(0, max(rcmetar.bmj.line.count(left.label), rcmetar.bmj.line.count(right.label)) - 2) * 0.32
-    label.wraps.deeply <- max(rcmetar.bmj.line.count(left.label), rcmetar.bmj.line.count(right.label)) > 2
-    left.x <- axis.footer$left.x
-    right.x <- axis.footer$right.x
-    left.adj <- 0.5
-    right.adj <- 0.5
-    if (label.wraps.deeply) {
-        label.gap <- max(axis.footer$span * 0.035, 0.08)
-        left.x <- axis.footer$split.x - label.gap
-        right.x <- axis.footer$split.x + label.gap
-        left.adj <- 1
-        right.adj <- 0
-    }
-    if (nzchar(left.label)) {
-        graphics::text(left.x, direction.y, left.label, cex=cex, font=2, adj=left.adj)
-    }
-    if (nzchar(right.label)) {
-        graphics::text(right.x, direction.y, right.label, cex=cex, font=2, adj=right.adj)
-    }
+    # Reserve separate physical lines for the title and each direction block.
+    spacing <- graphics::strheight("M", cex=cex) * 2.2
+    label.y <- min(axis.footer$axis.label.y, -2.18 - spacing)
     if (nzchar(bundle$style_blocks$axis_label)) {
-        # Row spacing varies with figure density; keep title clearance in physical points.
-        label.spacing.inches <- graphics::par("csi") * graphics::par("cex") * cex + 5 / 72
-        label.spacing <- abs(diff(graphics::grconvertY(c(0, label.spacing.inches), from="inches", to="user")))
-        label.y <- min(axis.footer$axis.label.y, -2.18 - label.spacing)
         graphics::text(axis.footer$axis.x, label.y, bundle$style_blocks$axis_label, cex=cex)
     }
+    rcmetar.draw.forest.direction.blocks(bundle, axis.footer, label.y - spacing, cex, font=2)
     invisible(NULL)
 }
 
