@@ -477,8 +477,6 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.file_path: str | None = None
         self.mapping_controls = []
         self._mapping_key = None
-        self.setSubTitle("Excel or CSV file")
-        self.instructions.hide()
         self.worksheet_combo = QComboBox(self)
         self.worksheet_combo.setAccessibleName("Worksheet")
         self.worksheet_combo.hide()
