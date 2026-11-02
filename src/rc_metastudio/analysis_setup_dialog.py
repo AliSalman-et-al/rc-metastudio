@@ -1358,6 +1358,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self._advanced_entries = []
             self.advanced_toggle = _AdvancedButton(self)
             self.advanced_toggle.setAutoRaise(True)
+            self.advanced_toggle.setStyleSheet("QToolButton { text-align: left; border: none; background: transparent; }")
             self.advanced_toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
             self.advanced_toggle.setSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
             self.advanced_toggle.setCheckable(True)
@@ -1633,7 +1634,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _finish_combined_diagnostic_ui(self):
         self.setWindowTitle("Method and parameters")
-        self.method_lbl.setText(diagnostic_metric_group_display_label("sens_spec"))
+        self.method_lbl.setText("Analysis method: " + diagnostic_metric_group_display_label("sens_spec"))
 
         self.shared_diagnostic_params_box.show()
         self.shared_diagnostic_params_box.setLayout(QGridLayout())
@@ -1768,7 +1769,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             method_label = "Method for %s" % metric_group_label
 
         self.setWindowTitle(QtCore.QCoreApplication.translate("Dialog", window_title))
-        self.method_lbl.setText(method_label)
+        self.method_lbl.setText("Analysis method: " + method_label)
         if self.data_type == "diagnostic" and not self._combined_diagnostic:
             # Keep the truthful diagnostic label visible without letting its
             # preferred width starve the method selector on narrow screens.
