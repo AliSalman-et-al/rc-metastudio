@@ -53,6 +53,10 @@ class _ZeroArgumentFactory(Protocol):
     def __call__(self) -> object: ...
 
 
+
+def _offscreen() -> bool:
+    return os.environ.get("RCMS_SMOKE_OFFSCREEN") == "1"
+
 def _is_zero_argument_factory(value: object) -> TypeGuard[_ZeroArgumentFactory]:
     return callable(value)
 
@@ -228,7 +232,7 @@ def validate_evidence(root: Path = DEFAULT_EVIDENCE_ROOT) -> list[dict[str, obje
         }:
             raise ValueError("remaining-surface evidence record fields drifted")
         qpa = record["qpa"]
-        if qpa not in {"windows", "cocoa"}:
+        if qpa not in ({"offscreen"} if _offscreen() else {"windows", "cocoa"}):
             raise ValueError("remaining-surface evidence is not native hosted Qt")
         if record["tab_focus_behavior"] != "TabFocusAllControls":
             raise ValueError(
@@ -1185,7 +1189,7 @@ def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None
     # Evidence failures must terminate the gate, never block behind the app's
     # interactive unexpected-error dialog.
     sys.excepthook = sys.__excepthook__
-    if app.platformName() not in {"windows", "cocoa"}:
+    if app.platformName() not in ({"offscreen"} if _offscreen() else {"windows", "cocoa"}):
         raise RuntimeError("remaining-surface smoke requires qwindows or cocoa")
     tab_focus_behavior = app.styleHints().tabFocusBehavior().name
     if tab_focus_behavior != "TabFocusAllControls":
@@ -1364,10 +1368,14 @@ def _native_dpr() -> float:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--evidence-root", type=Path, default=DEFAULT_EVIDENCE_ROOT)
+    parser.add_argument("--offscreen", action="store_true")
     parser.add_argument("--scale", type=float)
     parser.add_argument("--surface")
     parser.add_argument("--validate-only", action="store_true")
     args = parser.parse_args()
+    if args.offscreen:
+        os.environ["RCMS_SMOKE_OFFSCREEN"] = "1"
+        os.environ["QT_QPA_PLATFORM"] = "offscreen"
     if args.validate_only:
         validate_evidence(args.evidence_root)
         return 0
