@@ -415,7 +415,7 @@ def dialogs(driver, capture, missing):
         for field in form.findChildren(QtWidgets.QLineEdit):
             if detail in {"add-covariate", "add-study", "rename"}:
                 assert field.alignment() & QtCore.Qt.AlignmentFlag.AlignLeft
-        if detail == "confidence-level":
+        if isinstance(form, ConfidenceLevelDialog):
             assert form.confidence_level_label.text() == "Confidence level:"
         capture("D-" + detail, form)
         form.close()
@@ -462,10 +462,10 @@ def calculators(driver, capture, missing, prefix="D", families=None):
                 driver.app.processEvents()
                 mode = form.input_mode_combo.currentData()
                 if prefix == "D" and isinstance(form, ContinuousDataDialog) and mode == "pre-post":
-                    viewport = form.content_scroll.viewport()
+                    viewport = required(form.content_scroll.viewport())
                     for table in (form.g1_pre_post_table, form.g2_pre_post_table):
                         assert viewport.rect().contains(QtCore.QRect(table.mapTo(viewport, QtCore.QPoint()), table.size()))
-                    assert form.content_scroll.verticalScrollBar().maximum() == 0
+                    assert required(form.content_scroll.verticalScrollBar()).maximum() == 0
                 if prefix == "D" and mode == "estimate":
                     effect_group = form.groupBox if isinstance(form, BinaryDataDialog) else form.effect_group
                     assert effect_group.y() < form.input_mode_combo.geometry().bottom() + form.fontMetrics().lineSpacing() * 4
