@@ -243,17 +243,10 @@
       <string>Default Style Options</string>
      </property>
      <layout class="QGridLayout" name="default_layout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="raw_counts_label">
-        <property name="text">
-         <string>Show raw-count columns:</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
        <widget class="QCheckBox" name="show_raw_counts">
         <property name="text">
-         <string>Show raw data columns</string>
+         <string>Show raw-count columns</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -277,17 +270,10 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="annotation_label">
-        <property name="text">
-         <string>Show annotation:</string>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="1">
        <widget class="QCheckBox" name="show_annotation">
         <property name="text">
-         <string>Show</string>
+         <string>Show annotation</string>
         </property>
         <property name="checked">
          <bool>true</bool>
