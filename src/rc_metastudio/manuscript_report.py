@@ -194,11 +194,11 @@ def _pooled_statistics(values, overall, calculation):
 
 
 def _pooled_prose(result, values, effect, effect_metric, coefficient, statistic, test, p, level, lower, upper, summary):
-    lead = f"For {effect}, the coefficient" if coefficient else f"For {effect}, the pooled {effect_metric}" if 'Subgroups' in values or 'Term' in values else f"The pooled {effect_metric}"
+    lead = f"For {effect}, the coefficient" if coefficient else (f"Overall, the pooled {effect_metric}" if effect.lower() == "overall" else f"In {effect}, the pooled {effect_metric}") if 'Subgroups' in values or 'Term' in values else f"The pooled {effect_metric}"
     inference = (f", {statistic} = {test}" if test != '—' else '') + (', ' + _p_clause(p) if p != '—' else '')
     summary.append(f"{lead} was {values['Estimate']} ({level} [{values[lower]}, {values[upper]}]{inference}).")
     meaning = _interval_meaning(values[lower], values[upper], effect_metric, result.manuscript_arms, coefficient=coefficient)
-    if meaning:
+    if meaning and ('Subgroups' not in values or effect.lower() == 'overall'):
         summary.append(meaning)
 
 
@@ -244,7 +244,7 @@ def _fit_table(table, fit, summary):
         return True
     if table.title == 'Test of subgroup differences' and table.rows:
         values = dict(zip(table.headers, table.rows[0]))
-        summary.append(f"Between-group test: {values['Test']} = {values['Statistic']} (df = {values['df']}, {_p_clause(p_value(values['p-value']))}).")
+        summary.append(f"Test for subgroup differences: Q = {values['Statistic']}, df = {values['df']}, {_p_clause(p_value(values['p-value']))}.")
         fit.extend((label, p_value(values[key]) if key == 'p-value' else values[key])
                    for key, label in (("Test", "Between-group test"), ("Statistic", "Between-group statistic"), ("df", "Between-group degrees of freedom"), ("p-value", "Between-group p")))
         return True

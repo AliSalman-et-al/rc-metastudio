@@ -400,10 +400,10 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         assert_manuscript_tables(view)
         prose = view.manuscript.results
         if workflow == 'subgroup':
-            assert 'For Subgroup A, the pooled odds ratio was' in prose and 'For Subgroup B, the pooled odds ratio was' in prose
-            assert 'For Subgroup B, the pooled odds ratio was 0.623 (95% CI [0.271, 1.434], z = -1.113, p = .266).' in prose
-            assert 'For Subgroup A, the pooled odds ratio was 0.827 (95% CI [0.476, 1.438], z = -0.673, p = .501).' in prose
-            assert 'Between-group test: Subgroup differences (Q) = 0.307 (df = 1, p = .579).' in prose
+            assert 'In Subgroup A, the pooled odds ratio was' in prose and 'In Subgroup B, the pooled odds ratio was' in prose
+            assert 'In Subgroup B, the pooled odds ratio was 0.623 (95% CI [0.271, 1.434], z = -1.113, p = .266).' in prose
+            assert 'In Subgroup A, the pooled odds ratio was 0.827 (95% CI [0.476, 1.438], z = -0.673, p = .501).' in prose
+            assert 'Test for subgroup differences: Q = 0.307, df = 1, p = .579.' in prose
         else:
             assert 'coefficient' in prose and '95% CI' in prose and ', p = ' in prose, (prose, [(s.title, s.tables) for s in view.results.sections if s.kind == 'text'])
             assert 'For Intercept, the coefficient was -0.805 (95% CI [-1.701, 0.092], z = -1.759, p = .079).' in prose
