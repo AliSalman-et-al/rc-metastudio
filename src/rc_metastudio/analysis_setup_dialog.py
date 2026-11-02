@@ -451,6 +451,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             QSizePolicy.Policy.Ignored,
             self.parameter_grp_box.sizePolicy().verticalPolicy(),
         )
+        self.method_lbl.setSizePolicy(
+            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred
+        )
         self.gridLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.gridLayout.setColumnStretch(0, 0)
         self.gridLayout.setColumnStretch(1, 1)
@@ -568,6 +571,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             width += self.method_lbl.sizeHint().width()
         if hasattr(self, "gridLayout"):
             width += self.gridLayout.horizontalSpacing()
+        # The selector lives inside a tab page and its layout, not directly
+        # inside the scroll viewport. Include those in first-use sizing.
+        margins = self.horizontalLayout.contentsMargins()
+        width += margins.left() + margins.right()
+        width += self.specs_tab.sizeHint().width() - self.methods_tab.sizeHint().width()
         return width
 
     def _parameter_width_hint(self):
@@ -609,6 +617,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self, event: QShowEvent | None
     ) -> None:
         super(AnalysisSetupDialog, self).showEvent(event)
+        policy = adaptive_window.WINDOW_POLICIES[adaptive_window.WindowRole.TRANSACTIONAL]
+        available = adaptive_window.available_geometry_for_window(self)
+        frame_width = max(0, self.frameGeometry().width() - self.width())
+        width = min(self.sizeHint().width(),
+                    int(available.width() * policy.maximum_screen_fraction) - frame_width)
+        self.resize(max(self.width(), width), self.height())
         app = QtWidgets.QApplication.instance()
         if isinstance(app, QtWidgets.QApplication) and not self._focus_reveal_connected:
             app.focusChanged.connect(self._reveal_focused_control)
