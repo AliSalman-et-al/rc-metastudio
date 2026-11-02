@@ -155,6 +155,19 @@ def _report_methods(result):
     return methods
 
 
+def _table_html(table, table_number):
+    parts = []
+    parts.append(f'<p><b>Table {table_number}. {escape(table.title)}</b></p><table width="100%" border="0" cellspacing="0" cellpadding="5">')
+    for index, row in enumerate((table.headers, *table.rows)):
+        tag = 'th' if index == 0 else 'td'
+        border = 'border-top: 1px solid black;' if index == 0 else ''
+        if index == len(table.rows):
+            border += 'border-bottom: 1px solid black;'
+        parts.append('<tr>' + ''.join(f'<{tag} style="{border}">' + escape(c) + f'</{tag}>' for c in row) + '</tr>')
+    parts.append('</table>')
+    return ''.join(parts)
+
+
 @dataclass(frozen=True)
 class ManuscriptReport:
     title: str
@@ -214,14 +227,7 @@ class ManuscriptReport:
             parts.extend(f'<p>{escape(paragraph)}</p>' for paragraph in section.paragraphs)
             for table in section.tables:
                 table_number += 1
-                parts.append(f'<p><b>Table {table_number}. {escape(table.title)}</b></p><table width="100%" border="0" cellspacing="0" cellpadding="5">')
-                for index, row in enumerate((table.headers, *table.rows)):
-                    tag = 'th' if index == 0 else 'td'
-                    border = 'border-top: 1px solid black;' if index == 0 else ''
-                    if index == len(table.rows):
-                        border += 'border-bottom: 1px solid black;'
-                    parts.append('<tr>' + ''.join(f'<{tag} style="{border}">' + escape(c) + f'</{tag}>' for c in row) + '</tr>')
-                parts.append('</table>')
+                parts.append(_table_html(table, table_number))
         return ''.join(parts)
 
 
