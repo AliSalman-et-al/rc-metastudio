@@ -2,6 +2,7 @@
 from rc_metastudio.runtime_types import required
 from dataclasses import dataclass, replace
 from decimal import Decimal
+import re
 from rc_metastudio.analysis_results import ResultTable
 from html import escape
 import io
@@ -169,7 +170,7 @@ def _held_sections(result):
         if not tables and section.value:
             tables = (ResultTable(section.title + ' — Held output', ('Held output',),
                                   tuple((line,) for line in section.value.splitlines())),)
-        sections.append(replace(section, title='Supplementary details', value='', paragraphs=(), tables=tables))
+        sections.append(replace(section, title='Supplementary details', value='', paragraphs=('Held output at producer precision.',), tables=tables))
     return sections
 
 
@@ -310,13 +311,25 @@ def _section_statistics(section):
     return overall, calculation
 
 
+def _presentation_result(result):
+    def cell(value):
+        return re.sub(r"(?<![\w.])-?\d+\.\d+(?![\w.])",
+                      lambda match: f"{Decimal(match[0]):.{result.manuscript_digits}f}", value)
+    return replace(result, sections=tuple(
+        replace(section, tables=tuple(replace(table, rows=tuple(
+            tuple(cell(value) for value in row) for row in table.rows))
+            for table in section.tables)) for section in result.sections))
+
+
 def _report_sections(result, summary):
     text_sections = [section for section in result.sections if section.kind == 'text']
     if not text_sections:
         return [], []
     pooled, fit = [], list(result.manuscript_model_info)
     level, statistic = '95% CI', 'z'
-    for section in text_sections:
+    for section in _presentation_result(result).sections:
+        if section.kind != 'text':
+            continue
         overall, calculation = _section_statistics(section)
         for table in section.tables:
             level, statistic = _report_table(result, section, table, summary, pooled, fit, level, statistic, overall, calculation)
@@ -330,7 +343,7 @@ def _primary_sections(result, text_sections, pooled, fit, level, statistic):
                         tables=(ResultTable('Pooled effect', ('Effect', 'Estimate', level, 'SE', statistic, 'p'), tuple(pooled)),)),
                 replace(template, title='Model fit', paragraphs=(),
                         tables=(ResultTable('Model fit', ('Statistic', 'Value'), tuple(fit)),)),
-                _study_results(result, template, level)]
+                _study_results(_presentation_result(result), template, level)]
     if not any(section.tables for section in text_sections):
         comparisons = [s for s in text_sections if s.title in ('Pooled comparison', 'Extrapolation') or s.title.startswith('Trim-and-fill')]
         sections[0] = replace(template, title='Pooled effect', paragraphs=('Held model comparisons and sensitivity analyses.',),

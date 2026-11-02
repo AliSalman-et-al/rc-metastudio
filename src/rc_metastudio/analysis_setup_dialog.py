@@ -1010,6 +1010,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         model_info = self._manuscript_model_info()
         return replace(result, identity=identity, details=details, software=software,
                        manuscript_context=context.split(". ")[0].rstrip(".") + ".",
+                       manuscript_digits=int(applied_parameters.get("digits", 3)),
                        manuscript_title=title, manuscript_methods=methods,
                        manuscript_metric=metric, manuscript_arms=tuple(self.model.arm_names),
                        manuscript_favours=tuple(label.removeprefix("Favours ").strip() for label in

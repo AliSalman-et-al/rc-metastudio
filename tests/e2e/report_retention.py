@@ -223,6 +223,13 @@ def assert_exports(view, data):
         cursor = start + len(tokens)
 
 
+def presentation_rows(rows, digits):
+    from decimal import Decimal
+    return tuple(tuple(re.sub(r"(?<![\w.])-?\d+\.\d+(?![\w.])",
+                             lambda m: f"{Decimal(m[0]):.{digits}f}", cell)
+                       for cell in row) for row in rows)
+
+
 def assert_report(view):
     tables = [table for section in view.manuscript.sections for table in section.tables]
     assert [table.title for table in tables[:3]] == ['Pooled effect', 'Model fit', 'Study results']
@@ -232,7 +239,7 @@ def assert_report(view):
         assert pooled.headers[:2] == ('Effect', 'Estimate')
         assert pooled.headers[2].endswith('% CI')
         assert pooled.headers[3:] in (('SE', 'z', 'p'), ('SE', 't', 'p'))
-        assert pooled.rows == expected_pooled(view.results), (pooled.rows, expected_pooled(view.results))
+        assert pooled.rows == presentation_rows(expected_pooled(view.results), view.results.manuscript_digits), (pooled.rows, expected_pooled(view.results))
     else:
         assert pooled.headers == ('Analysis', 'Held output')
         assert pooled.rows == tuple((s.title, s.value) for s in view.results.sections
@@ -241,8 +248,8 @@ def assert_report(view):
     row_label = 'Fit' if any('leave-one-out' in s.title.casefold() for s in view.results.sections) else 'Study'
     assert studies.headers[:2] == ('Analysis', row_label)
     assert studies.headers[2:] == (('Weight',) if studies.rows and len(studies.rows[0]) == 3 else ('Effect', pooled.headers[2] if structured else '95% CI', 'Weight'))
-    assert fit.rows == expected_fit(view.results), (fit.rows, expected_fit(view.results))
-    assert studies.rows == expected_studies(view.results)
+    assert fit.rows == presentation_rows(expected_fit(view.results), view.results.manuscript_digits), (fit.rows, expected_fit(view.results))
+    assert studies.rows == presentation_rows(expected_studies(view.results), view.results.manuscript_digits)
     for section in view.results.sections:
         for source in section.tables:
             title = source.title if section.title == source.title else section.title + ' — ' + source.title
