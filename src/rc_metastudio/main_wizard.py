@@ -21,6 +21,7 @@ else:
 
 from PyQt6.QtCore import QEvent, QObject, QSize, Qt, QTimer, QStandardPaths
 from PyQt6.QtGui import (
+    QColor,
     QAction,
     QCloseEvent,
     QHideEvent,
@@ -73,6 +74,14 @@ class DatasetInfo(TypedDict, total=False):
 
 
 class MainWizardPage(QWizardPage):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        palette = self.palette()
+        if palette.color(QPalette.ColorRole.Window).lightness() < 128:
+            palette.setColor(QPalette.ColorRole.Link, QColor("#80bfff"))
+            self.setPalette(palette)
+        self.setStyleSheet('QFrame[frameShape="4"] { color: palette(mid); }')
+
     def wizard(self) -> "MainWizard":
         wizard = super().wizard()
         if not isinstance(wizard, MainWizard):
@@ -86,6 +95,12 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
     def __init__(self, parent=None, recent_datasets=None):
         super(WelcomePage, self).__init__(parent)
         self.setupUi(self)
+
+        for label in self.findChildren(QLabel):
+            if "<a " in label.text():
+                colour = self.palette().color(QPalette.ColorRole.Link).name()
+                label.setText(label.text().replace("<a ", f'<a style="color: {colour}" '))
+        self.setStyleSheet('QFrame[frameShape="4"] { color: palette(mid); }')
 
         self.recent_datasets = normalize_recent_files(recent_datasets)
         self.selected_dataset = None

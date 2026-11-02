@@ -318,6 +318,23 @@ def run(app, window, work, root, record, analyze):
         close_result(swapped)
         window.action_swap_arms.trigger()
 
+    original_palette = app.palette()
+    dark_palette = QtGui.QPalette(original_palette)
+    dark_palette.setColor(QtGui.QPalette.ColorRole.Window, QtGui.QColor("#202020"))
+    app.setPalette(dark_palette)
+    dark_wizard = main_wizard.MainWizard()
+    def luminance(colour):
+        channels = [colour.redF(), colour.greenF(), colour.blueF()]
+        linear = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in channels]
+        return sum(c * weight for c, weight in zip(linear, (0.2126, 0.7152, 0.0722)))
+    for page_id in dark_wizard.pageIds():
+        palette = required(dark_wizard.page(page_id)).palette()
+        link = luminance(palette.color(QtGui.QPalette.ColorRole.Link))
+        background = luminance(palette.color(QtGui.QPalette.ColorRole.Window))
+        assert (max(link, background) + 0.05) / (min(link, background) + 0.05) >= 4.5
+    dark_wizard.close()
+    app.setPalette(original_palette)
+
     wizard = main_wizard.MainWizard(path="csv_import")
     wizard.set_dataset_info({"arms": "two", "data_type": "binary", "sub_type": "proportions", "effect": "OR", "metric_choices": [], "name": "Mapped mortality"})
     name_page = wizard.page(main_wizard.Page_OutcomeName)
