@@ -89,16 +89,17 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
 
         self.recent_datasets = normalize_recent_files(recent_datasets)
         self.selected_dataset = None
+        self.import_rm5_btn = QPushButton("Import RevMan file (.rm5)…", self)
+        self.verticalLayout.insertWidget(2, self.import_rm5_btn)
         qt_layout.configure_primary_action_buttons(
             (
                 self.create_new_btn,
                 self.import_csv_btn,
+                self.import_rm5_btn,
                 self.open_recent_btn,
                 self.open_btn,
             )
         )
-        self.import_rm5_btn = QPushButton("Import RevMan file (.rm5)…", self)
-        required(self.layout(), "welcome layout").addWidget(self.import_rm5_btn)
         self.import_rm5_btn.clicked.connect(self.import_rm5)
         self._setup_connections()
 
