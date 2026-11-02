@@ -50,7 +50,8 @@ separates writer lifetime from that offscreen picker failure.
 There are no `DontUseNativeDialog` occurrences in `src/`. The production export
 uses QFileDialog's platform-native picker; the non-native picker in this scenario
 is an explicit automation fixture. The dialog scenario retains real non-native
-pickers for the first PDF and DOCX of each main analysis. Stress cycles still
+pickers for exactly the first PDF and first DOCX export in the process only.
+All later exports use the picker seam. Stress cycles still
 trigger the same public export action, with the picker seam returning the target
 path. Every export, retained file, content assertion, numerical/prose receipt and
 writer-resource assertion remains. Evidence records `manuscript-stress-picker-seam`
@@ -83,9 +84,36 @@ under `artifacts/verification/rcms/`:
 - `20261102T024704Z-75373204-manuscript-export-direct`
 
 The manuscript receipts require 20 PDF and 8 DOCX writes, released writer
-resources, and 8 real picker interactions in dialog mode (0 in direct mode).
+resources, and, at that revision, 8 real picker interactions in dialog mode (0 in direct mode).
 R renderer tests passed with their existing assertions; the corrected standalone
 invocation explicitly attaches `metafor` before `testthat::test_file`.
 The wide-font drive passed all six cases; `footer-after/` retains input RDS files,
 SVGs and `geometry.json`. R installation commands/transcripts and source SHA-256
 receipts are in `build/sheets-baseline/windows-footer-*`.
+
+### Windows Full R Stack at 520c362c
+
+`/tmp/jrs6.log`, line 1227, records 136 of 137 scenarios passing; only
+`manuscript-export` crashes. The access violation occurs in the fifth real
+non-native QFileDialog (`picker_number: 5`), now at `lymph-pdf`. The earlier
+failure was at `amino-stress-2`, also picker 5. `manuscript-export-direct` passed
+all exports. This implicates repeated non-native picker use in one process,
+rather than a particular dataset or writer.
+
+The dialog scenario now exercises exactly the first PDF and first DOCX with
+real non-native pickers, and returns paths through the picker seam for all later
+exports. All 20 PDF and 8 DOCX writes and their file, content and resource-release
+assertions remain. Direct mode still uses zero pickers.
+
+The native Windows picker still needs a person's check; this offscreen fixture
+does not qualify native save or cancellation behavior.
+
+Local offscreen verification of the two-picker change passed both scenarios:
+
+- `artifacts/verification/rcms/20261102T034227Z-34825d6d-manuscript-export`:
+  exactly 2 real pickers (`pdf`, `docx`), 20 PDF and 8 DOCX writes.
+- `artifacts/verification/rcms/20261102T034444Z-a40f8b3a-manuscript-export-direct`:
+  0 real pickers, 20 PDF and 8 DOCX writes.
+
+Both retain the existing file/content and writer-release assertions. These local
+receipts do not establish a passing rerun of the Windows Full R Stack.

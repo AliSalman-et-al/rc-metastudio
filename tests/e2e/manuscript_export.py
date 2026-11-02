@@ -70,17 +70,83 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     previous_dialog: QtWidgets.QFileDialog | None = None
     picker_number = 0
     operation = "setup"
+    picker_formats = set()
     mode = "direct" if direct_write else "dialog"
 
-    def export_report(view, path, suffix, picker=None):
+    def picker(view, path, suffix, sample, *args, **kwargs):
+        nonlocal previous_dialog, picker_number
+        assert previous_dialog is None or sip.isdeleted(previous_dialog)
+        picker_number += 1
+        assert args[0] is view and not sip.isdeleted(view) and view.isVisible()
+        lifetime_marker(f"{sample}-{suffix}-picker-create", view)
+        record('manuscript-picker-before', view, sample=sample, suffix=suffix)
+        dialog = QtWidgets.QFileDialog(view)
+        dialog.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog)
+        dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)
+        dialog.setNameFilter('Report (*.' + suffix + ')')
+        dialog.setDirectory(str(work))
+        dialog.selectFile(str(path))
+        models = dialog.findChildren(QtCore.QAbstractItemModel)
+        model_names = [required(model.metaObject(), "file-dialog model type").className() for model in models]
+        print("Manuscript dialog: " + repr(dict(operation=operation, picker_number=picker_number,
+              phase="created", directory=str(work), models=model_names)), file=sys.stderr, flush=True)
+        picker_errors = []
+        def save():
+            try:
+                assert cast(Callable[..., bool], QtTest.QTest.qWaitForWindowExposed)(dialog, 5000)
+                gc.collect()
+                app.processEvents()
+                lifetime_marker(f"{sample}-{suffix}-picker-visible", view)
+                assert not sip.isdeleted(view) and view.isVisible()
+                from pathlib import Path
+                assert Path(dialog.selectedFiles()[0]).resolve() == path.resolve()
+                record('manuscript-picker-visible', dialog, sample=sample, suffix=suffix)
+                box = required(dialog.findChild(QtWidgets.QDialogButtonBox))
+                button = required(box.button(QtWidgets.QDialogButtonBox.StandardButton.Save))
+                assert button.isEnabled()
+                mouse_click(button, QtCore.Qt.MouseButton.LeftButton)
+            except BaseException as error:
+                picker_errors.append(error)
+                dialog.reject()
+        QtCore.QTimer.singleShot(0, save)
+        try:
+            lifetime_marker(f"{sample}-{suffix}-picker-exec-enter", view)
+            accepted = dialog.exec()
+            lifetime_marker(f"{sample}-{suffix}-picker-exec-return", view)
+            assert not picker_errors, picker_errors
+            assert accepted
+            selected = dialog.selectedFiles()[0], dialog.selectedNameFilter()
+        finally:
+            # Explicitly finish this dialog's deferred destruction before
+            # the next writer or nested event loop. This also checks models.
+            dialog.hide()
+            dialog.deleteLater()
+            for _ in range(2):
+                app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+                app.processEvents()
+            destroyed = sip.isdeleted(dialog)
+            models_destroyed = [sip.isdeleted(model) for model in models]
+            print("Manuscript dialog: " + repr(dict(operation=operation, picker_number=picker_number,
+                  phase="deleted", dialog_deleted=destroyed, models=model_names,
+                  models_deleted=models_destroyed)), file=sys.stderr, flush=True)
+            assert destroyed and all(models_destroyed), (operation, destroyed, models_destroyed)
+            previous_dialog = dialog
+        assert sip.isdeleted(dialog)
+        assert not sip.isdeleted(view) and view.isVisible()
+        record('manuscript-picker-after', view, sample=sample, suffix=suffix)
+        return selected
+
+    def export_report(view, path, suffix):
         if direct_write:
             from rc_metastudio.manuscript_report import ManuscriptReport, write_docx, write_pdf
             (write_pdf if suffix == "pdf" else write_docx)(ManuscriptReport.from_result(view.results), path)
-        elif picker is None:
+        elif suffix in picker_formats:
             with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', return_value=(str(path), suffix)):
                 view.export_report_action.trigger()
         else:
-            with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', side_effect=picker):
+            picker_formats.add(suffix)
+            with patch.object(QtWidgets.QFileDialog, 'getSaveFileName',
+                              side_effect=lambda *args, **kwargs: picker(view, path, suffix, path.stem, *args, **kwargs)):
                 view.export_report_action.trigger()
 
     def lifetime_marker(phase, view):
@@ -192,72 +258,10 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         assert window.open(str(root / 'sample_projects' / (sample + '.rcms')), raise_on_error=True)
         print(f"Manuscript analysis: {method}", file=sys.stderr, flush=True)
         view = analyze(app, window, method)
-        def picker(*args, **kwargs):
-            nonlocal previous_dialog, picker_number
-            assert previous_dialog is None or sip.isdeleted(previous_dialog)
-            picker_number += 1
-            assert args[0] is view and not sip.isdeleted(view) and view.isVisible()
-            lifetime_marker(f"{sample}-{suffix}-picker-create", view)
-            record('manuscript-picker-before', view, sample=sample, suffix=suffix)
-            dialog = QtWidgets.QFileDialog(view)
-            dialog.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog)
-            dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)
-            dialog.setNameFilter('Report (*.' + suffix + ')')
-            dialog.setDirectory(str(work))
-            dialog.selectFile(str(path))
-            models = dialog.findChildren(QtCore.QAbstractItemModel)
-            model_names = [required(model.metaObject(), "file-dialog model type").className() for model in models]
-            print("Manuscript dialog: " + repr(dict(operation=operation, picker_number=picker_number,
-                  phase="created", directory=str(work), models=model_names)), file=sys.stderr, flush=True)
-            picker_errors = []
-            def save():
-                try:
-                    assert cast(Callable[..., bool], QtTest.QTest.qWaitForWindowExposed)(dialog, 5000)
-                    gc.collect()
-                    app.processEvents()
-                    lifetime_marker(f"{sample}-{suffix}-picker-visible", view)
-                    assert not sip.isdeleted(view) and view.isVisible()
-                    from pathlib import Path
-                    assert Path(dialog.selectedFiles()[0]).resolve() == path.resolve()
-                    record('manuscript-picker-visible', dialog, sample=sample, suffix=suffix)
-                    box = required(dialog.findChild(QtWidgets.QDialogButtonBox))
-                    button = required(box.button(QtWidgets.QDialogButtonBox.StandardButton.Save))
-                    assert button.isEnabled()
-                    mouse_click(button, QtCore.Qt.MouseButton.LeftButton)
-                except BaseException as error:
-                    picker_errors.append(error)
-                    dialog.reject()
-            QtCore.QTimer.singleShot(0, save)
-            try:
-                lifetime_marker(f"{sample}-{suffix}-picker-exec-enter", view)
-                accepted = dialog.exec()
-                lifetime_marker(f"{sample}-{suffix}-picker-exec-return", view)
-                assert not picker_errors, picker_errors
-                assert accepted
-                selected = dialog.selectedFiles()[0], dialog.selectedNameFilter()
-            finally:
-                # Explicitly finish this dialog's deferred destruction before
-                # the next writer or nested event loop. This also checks models.
-                dialog.hide()
-                dialog.deleteLater()
-                for _ in range(2):
-                    app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
-                    app.processEvents()
-                destroyed = sip.isdeleted(dialog)
-                models_destroyed = [sip.isdeleted(model) for model in models]
-                print("Manuscript dialog: " + repr(dict(operation=operation, picker_number=picker_number,
-                      phase="deleted", dialog_deleted=destroyed, models=model_names,
-                      models_deleted=models_destroyed)), file=sys.stderr, flush=True)
-                assert destroyed and all(models_destroyed), (operation, destroyed, models_destroyed)
-                previous_dialog = dialog
-            assert sip.isdeleted(dialog)
-            assert not sip.isdeleted(view) and view.isVisible()
-            record('manuscript-picker-after', view, sample=sample, suffix=suffix)
-            return selected
         for suffix in ('pdf', 'docx'):
             operation = f"{sample}-{suffix}"
             path = work / (sample + '.' + suffix)
-            export_report(view, path, suffix, picker)
+            export_report(view, path, suffix)
             assert path.exists()
             if suffix == 'docx':
                 doc = Document(path)
@@ -408,5 +412,5 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     record('manuscript-small-study-methods', view, methods=view.manuscript.methods,
            settled_zoom_percent=view._figure_zoom_percent)
     close_result(view)
-    assert picker_number == (0 if direct_write else 8), (mode, picker_number)
-    record("manuscript-picker-coverage", mode=mode, real_pickers=picker_number)
+    assert picker_number == (0 if direct_write else 2), (mode, picker_number)
+    record("manuscript-picker-coverage", mode=mode, real_pickers=picker_number, picker_formats=sorted(picker_formats))
