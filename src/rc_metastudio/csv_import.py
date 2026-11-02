@@ -301,6 +301,19 @@ def _xlsx_cells(sheet):
     return cells, row_numbers, columns
 
 
+def xlsx_worksheets(path):
+    """Discover selectable sheets without validating the first sheet's cells."""
+    from openpyxl import load_workbook
+    try:
+        book = load_workbook(path, read_only=True, data_only=False)
+    except Exception as exc:
+        raise CsvImportError("Could not read this workbook; use an unprotected .xlsx file.") from exc
+    try:
+        return _xlsx_select_sheet(book, None)
+    finally:
+        book.close()
+
+
 def read_xlsx(path, worksheet=None, *, year_column=None, numeric_columns=(), notices=None):
     """Read stored worksheet cells; preserve coordinates for actionable errors."""
     from openpyxl import load_workbook

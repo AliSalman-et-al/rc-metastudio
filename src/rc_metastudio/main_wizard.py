@@ -464,6 +464,8 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.file_path: str | None = None
         self.mapping_controls = []
         self._mapping_key = None
+        self.setSubTitle("Excel or CSV file")
+        self.instructions.hide()
         self.worksheet_combo = QComboBox(self)
         self.worksheet_combo.setAccessibleName("Worksheet")
         self.worksheet_combo.hide()
@@ -636,7 +638,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.worksheet_combo.hide()
         if Path(self.file_path).suffix.lower() == ".xlsx":
             try:
-                _, _, names, selected = csv_import.read_xlsx(self.file_path)
+                names, selected = csv_import.xlsx_worksheets(self.file_path)
                 self.worksheet_combo.addItems(names)
                 self.worksheet_label.setVisible(len(names) > 1)
                 self.worksheet_combo.setCurrentText(selected)
@@ -1041,7 +1043,7 @@ class MainWizard(QWizard):
         self.setButtonText(QWizard.WizardButton.FinishButton, "Import" if self.get_wizard_path() == "csv_import" else "Create")
         next_button = self.button(QWizard.WizardButton.NextButton)
         if next_button is not None:
-            next_button.setVisible(self.currentId() != Page_Welcome)
+            next_button.setVisible(self.currentId() not in (Page_Welcome, Page_CsvImport))
         forward_buttons = [
             self.button(QWizard.WizardButton.NextButton),
             self.button(QWizard.WizardButton.FinishButton),
