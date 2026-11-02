@@ -1375,26 +1375,57 @@ def _add_regression_reports(result, reports):
         return
     fit = result["res"]
     if _has_r_names(fit) and all(key in list(fit.names) for key in ("b", "ci.lb", "ci.ub", "pval")) and len(fit.rx2("b")) > 1:
-        fields = dict(zip(list(fit.names), list(fit)))
-        level = 100 * (1 - float(list(fields["level"])[0]))
-        statistic_label = "t" if str(list(fields.get("test", ["z"]))[0]) in ("t", "knha", "adhoc") else "z"
-        coefficients = fields["b"]
-        names = _r_dimnames(coefficients)[0]
-        rows = [["Intercept" if str(name) == "intrcpt" else str(name), *[_format_r_table_cell(list(fields[key])[i], field_name=header)
-                 for key, header in (("b", "Estimate"), ("ci.lb", "Lower bound"), ("ci.ub", "Upper bound"), ("se", "SE"), ("zval", statistic_label), ("pval", "p-value"))]]
-                for i, name in enumerate(names)]
-        tables = [{"title": "Regression coefficients", "headers": ["Term", "Estimate", f"Lower bound ({level:g}% CI)", f"Upper bound ({level:g}% CI)", "SE", statistic_label, "p-value"], "rows": rows}]
-        residual = [(key, label) for key, label in (("QE", "Q"), ("QEp", "p-value"), ("tau2", "τ²")) if key in fields]
-        if residual:
-            tables.append({"title": "Residual heterogeneity", "headers": [label for _, label in residual],
-                           "rows": [[_format_r_table_cell(list(fields[key])[0], field_name=label) for key, label in residual]]})
-        for table in reports.get("Summary", {}).get("tables", []):
-            if table["title"] in ("Model overview", "Model specification", "Model tests", "Residual heterogeneity"):
-                if table["title"] == "Residual heterogeneity":
-                    table = dict(table, title="Residual model fit")
-                tables.append(table)
-        reports["Summary"] = {"paragraphs": [], "tables": tables}
+        reports["Summary"] = _regression_summary(fit, reports)
 
+
+def _regression_summary(fit, reports):
+    fields = dict(zip(list(fit.names), list(fit)))
+    level = 100 * (1 - float(list(fields["level"])[0]))
+    statistic_label = "t" if str(list(fields.get("test", ["z"]))[0]) in ("t", "knha", "adhoc") else "z"
+    coefficients = fields["b"]
+    names = _r_dimnames(coefficients)[0]
+    rows = [["Intercept" if str(name) == "intrcpt" else str(name), *[_format_r_table_cell(list(fields[key])[i], field_name=header)
+             for key, header in (("b", "Estimate"), ("ci.lb", "Lower bound"), ("ci.ub", "Upper bound"), ("se", "SE"), ("zval", statistic_label), ("pval", "p-value"))]]
+            for i, name in enumerate(names)]
+    tables = [{"title": "Regression coefficients", "headers": ["Term", "Estimate", f"Lower bound ({level:g}% CI)", f"Upper bound ({level:g}% CI)", "SE", statistic_label, "p-value"], "rows": rows}]
+    residual = [(key, label) for key, label in (("QE", "Q"), ("QEp", "p-value"), ("tau2", "τ²")) if key in fields]
+    if residual:
+        tables.append({"title": "Residual heterogeneity", "headers": [label for _, label in residual],
+                       "rows": [[_format_r_table_cell(list(fields[key])[0], field_name=label) for key, label in residual]]})
+    for table in reports.get("Summary", {}).get("tables", []):
+        if table["title"] in ("Model overview", "Model specification", "Model tests", "Residual heterogeneity"):
+            if table["title"] == "Residual heterogeneity":
+                table = dict(table, title="Residual model fit")
+            tables.append(table)
+    return {"paragraphs": [], "tables": tables}
+
+
+
+def _insert_held_effects(fields, display, rows):
+    groups = fields.get("study_groups", ())
+    display_indices = []
+    offset = 0
+    for index in range(len(rows)):
+        if groups and index and groups[index] != groups[index - 1]:
+            offset += 1
+        display_indices.append(index + offset)
+    for index, row in zip(display_indices, rows):
+        row[1:1] = [_format_r_table_cell(list(display[key])[index], field_name="Estimate")
+                    for key in ("y.disp", "lb.disp", "ub.disp")]
+
+
+def _held_weight_rows(fields, weights):
+    names = list(fields.get("slab", ()))
+    if weights is None:
+        held_weights = fields.get("weights") or ()
+        if len(held_weights) != len(names):
+            return None
+        rows = [[str(name), _format_weight(weight)] for name, weight in zip(names, held_weights)]
+    else:
+        rows = weights["tables"][0]["rows"]
+    if len(names) != len(rows) or not all(str(name) == row[0] or str(name).startswith(row[0] + ", ") or str(name).startswith(row[0] + " ") for name, row in zip(names, rows)):
+        return None
+    return rows
 
 
 def _held_study_report(metadata, reports):
@@ -1416,26 +1447,10 @@ def _held_study_report(metadata, reports):
             continue
         if not all(key in display for key in ("y.disp", "lb.disp", "ub.disp")):
             continue
-        names = list(fields.get("slab", ()))
-        if weights is None:
-            held_weights = fields.get("weights") or ()
-            if len(held_weights) != len(names):
-                continue
-            rows = [[str(name), _format_weight(weight)] for name, weight in zip(names, held_weights)]
-        else:
-            rows = weights["tables"][0]["rows"]
-        if len(names) != len(rows) or not all(str(name) == row[0] or str(name).startswith(row[0] + ", ") or str(name).startswith(row[0] + " ") for name, row in zip(names, rows)):
+        rows = _held_weight_rows(fields, weights)
+        if rows is None:
             continue
-        groups = fields.get("study_groups", ())
-        display_indices = []
-        offset = 0
-        for index in range(len(rows)):
-            if groups and index and groups[index] != groups[index - 1]:
-                offset += 1
-            display_indices.append(index + offset)
-        for index, row in zip(display_indices, rows):
-            row[1:1] = [_format_r_table_cell(list(display[key])[index], field_name="Estimate")
-                        for key in ("y.disp", "lb.disp", "ub.disp")]
+        _insert_held_effects(fields, display, rows)
         headers = ["Study", "Effect", "Lower bound", "Upper bound", "Weight (%)"]
         if weights is None:
             target = reports.get("Summary", next(iter(reports.values())))

@@ -1,6 +1,7 @@
 """Manuscript content taken exclusively from an executed result."""
 from rc_metastudio.runtime_types import required
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from rc_metastudio.analysis_results import ResultTable
 from html import escape
 import io
 from PyQt6.QtCore import QRectF, Qt
@@ -70,7 +71,7 @@ def _interval_fields(headers):
 
 
 def _interval_meaning(lower, upper, metric, arms, *, coefficient=False):
-    if not lower or not upper or lower == "NA" or upper == "NA":
+    if lower in (None, "", "NA") or upper in (None, "", "NA"):
         return ""
     ratio = metric in ("odds ratio", "risk ratio", "hazard ratio", "incidence rate ratio") and not coefficient
     if not coefficient and not ratio and metric not in ("mean difference", "standardized mean difference", "risk difference"):
@@ -80,8 +81,7 @@ def _interval_meaning(lower, upper, metric, arms, *, coefficient=False):
     null = 1 if ratio else 0
     lo, hi = float(lower), float(upper)
     if lo <= null <= hi:
-        comparison = f" between {arms[0]} and {arms[1]}" if len(arms) == 2 and not coefficient else " from zero" if coefficient else ""
-        return f"The confidence interval includes {null}, so these data do not show a clear difference{comparison}."
+        return _included_interval(null, arms, coefficient)
     if coefficient:
         return f"The confidence interval is entirely {'above' if lo > 0 else 'below'} 0."
     quantity = {
@@ -95,6 +95,11 @@ def _interval_meaning(lower, upper, metric, arms, *, coefficient=False):
     }[metric]
     direction = "lower" if hi < null else "higher"
     return f"The confidence interval excludes {null}, with {direction} {quantity} in {arms[0]} than in {arms[1]}."
+
+
+def _included_interval(null, arms, coefficient):
+    comparison = f" between {arms[0]} and {arms[1]}" if len(arms) == 2 and not coefficient else " from zero" if coefficient else ""
+    return f"The confidence interval includes {null}, so these data do not show a clear difference{comparison}."
 
 
 def _heterogeneity_sentence(values, prefix=""):
@@ -121,9 +126,152 @@ def _heterogeneity_sentence(values, prefix=""):
     return parts
 
 
+
+def _study_results(section, table, level, supplementary):
+    rows = tuple((row[0], row[1], row[2] + ' to ' + row[3], row[4]) if len(row) == 5 else (row[0], '—', '—', row[1]) for row in table.rows)
+    supplementary.append(replace(section, title='Supplementary details',
+        paragraphs=(() if all(len(row) == 5 for row in table.rows) else ('Study estimates and intervals on the displayed metric scale were not held for this analysis; only study weights are available.',)),
+        tables=(ResultTable('Study results', ('Study', 'Effect', level, 'Weight'), rows),)))
+
+
+
+def _prediction_rows(table, lower, upper, ci_level, vertical, fit, summary):
+    for row in table.rows:
+        values = dict(zip(table.headers, row))
+        context = values.get('Subgroups', table.title if vertical else '')
+        interval = values[lower] + ' to ' + values[upper]
+        fit.append((ci_level.replace(' PI', '') + ' prediction interval' + (' (' + context + ')' if context else ''), interval))
+        summary.append((context + ': ' if context else '') + f"The {ci_level.replace(' PI', '')} prediction interval was {interval}.")
+
+
+
+def _pooled_statistics(values, overall, calculation):
+    stat = next((key for key in ('t', 'z', 'Z', 'z-value', 't-value') if key in values or key in overall), None)
+    statistic = 't' if stat in ('t', 't-value') else 'z'
+    se = next((v for h, v in {**calculation, **values}.items() if h.startswith('SE')), '—')
+    test = values.get(stat, overall.get(stat, '—')) if stat else '—'
+    p = p_value(values.get('p-value', overall.get('p-value', '')))
+    return statistic, se, test, p
+
+
+def _pooled_prose(result, values, effect, effect_metric, coefficient, statistic, test, p, level, lower, upper, summary):
+    lead = f"For {effect}, the coefficient" if coefficient else f"For {effect}, the pooled {effect_metric}" if 'Subgroups' in values or 'Term' in values else f"The pooled {effect_metric}"
+    inference = (f", {statistic} = {test}" if test != '—' else '') + (', ' + _p_clause(p) if p != '—' else '')
+    summary.append(f"{lead} was {values['Estimate']} ({level} [{values[lower]}, {values[upper]}]{inference}).")
+    meaning = _interval_meaning(values[lower], values[upper], effect_metric, result.manuscript_arms, coefficient=coefficient)
+    if meaning:
+        summary.append(meaning)
+
+
+def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overall, calculation, pooled, fit, summary):
+    metric = result.manuscript_metric or "effect"
+    statistic = "z"
+    level = ci_level
+    coefficient = table.title == 'Regression coefficients'
+    for row in table.rows:
+        values = dict(zip(table.headers, row))
+        if not values.get('Estimate'):
+            continue
+        if 'k' in values and 'Subgroups' in values:
+            fit.append(('Studies (k) (' + values['Subgroups'] + ')', values['k']))
+        effect_metric = table.title.lower() if vertical else section.title.removesuffix(' Summary').lower() if ',' in metric else metric
+        effect = values.get('Term', values.get('Subgroups', table.title if vertical else effect_metric))
+        statistic, se, test, p = _pooled_statistics(values, overall, calculation)
+        pooled.append((effect, values['Estimate'], values[lower] + ' to ' + values[upper], se, test, p))
+        _pooled_prose(result, values, effect, effect_metric, coefficient, statistic, test, p, level, lower, upper, summary)
+    return level, statistic
+
+
+
+def _heterogeneity_rows(table, fit, summary):
+    for row in table.rows:
+        values = dict(zip(table.headers, row))
+        prefix = values.get('Subgroups', '')
+        prefix = prefix + ': ' if prefix else 'Residual ' if table.title == 'Residual heterogeneity' else ''
+        summary.extend(_heterogeneity_sentence(values, prefix))
+        labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity p', 'I²': 'I²', 'τ²': 'Between-study variance (τ²)'}
+        fit.extend((labels[h] + (' (' + values['Subgroups'] + ')' if 'Subgroups' in values else ''), p_value(v) if h == 'p-value' else v) for h, v in values.items() if h in labels)
+
+
+def _fit_table(table, fit, summary, section, supplementary):
+    if table.title.endswith('Prediction interval') and len(table.rows) == 1:
+        row = table.rows[0]
+        pi_level = table.headers[0].partition('(')[2].removesuffix(')') or '95% PI'
+        fit.append((pi_level.replace(' PI', '') + ' prediction interval', row[0] + ' to ' + row[1]))
+        summary.append(f"The {pi_level.replace(' PI', '')} prediction interval was {row[0]} to {row[1]}.")
+        return True
+    if table.title == 'Test of subgroup differences' and table.rows:
+        values = dict(zip(table.headers, table.rows[0]))
+        summary.append(f"Between-group test: {values['Test']} = {values['Statistic']} (df = {values['df']}, {_p_clause(p_value(values['p-value']))}).")
+        fit.extend((label, p_value(values[key]) if key == 'p-value' else values[key])
+                   for key, label in (("Test", "Between-group test"), ("Statistic", "Between-group statistic"), ("df", "Between-group degrees of freedom"), ("p-value", "Between-group p")))
+        return True
+    return _model_fit_table(table, fit, summary, section, supplementary)
+
+
+def _model_fit_table(table, fit, summary, section, supplementary):
+    if table.title in ('Model overview', 'Residual model fit') and table.headers == ('Statistic', 'Value'):
+        fit.extend(table.rows)
+        values = {row[0]: row[1] for row in table.rows}
+        if 'Residual I²' in values:
+            summary.extend(_heterogeneity_sentence({'I²': values['Residual I²']}, 'Residual '))
+        return True
+    if table.title == 'Model tests':
+        for row in table.rows:
+            values = dict(zip(table.headers, row))
+            name = values['Test']
+            fit.extend((label + ' (' + name + ')', p_value(values[key]) if key == 'p-value' else values[key])
+                       for key, label in (('Statistic', 'Test statistic'), ('df', 'Test degrees of freedom'), ('p-value', 'Test p')))
+        return True
+    if table.title == 'Model specification':
+        supplementary.append(replace(section, title='Supplementary details', paragraphs=(), tables=(table,)))
+        return True
+    if table.rows and ('Z' in table.headers or 't' in table.headers) and 'Estimate' not in table.headers:
+        return True
+    return False
+
+
+def _horizontal_table(table):
+    vertical = table.headers == ('Statistic', 'Value') and 'Estimate' in {row[0]: row[1] for row in table.rows}
+    if vertical:
+        values = {row[0]: row[1] for row in table.rows}
+        table = ResultTable(table.title, tuple(values), (tuple(values.values()),))
+    return table, vertical
+
+
+def _report_table(result, section, table, summary, pooled, fit, supplementary, extra, level, statistic, overall, calculation):
+    table, vertical = _horizontal_table(table)
+    if table.title.startswith('Calculation scale'):
+        supplementary.append(replace(section, title='Supplementary details', paragraphs=(), tables=(table,)))
+        return level, statistic
+    if section.source_key == 'Weights' or table.title == 'Study weights':
+        _study_results(section, table, level, supplementary)
+        return level, statistic
+    lower, upper, ci_level = _interval_fields(table.headers)
+    if lower and upper and ci_level.endswith(' PI'):
+        _prediction_rows(table, lower, upper, ci_level, vertical, fit, summary)
+        return level, statistic
+    if 'Estimate' in table.headers and lower and upper:
+        level, statistic = _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overall, calculation, pooled, fit, summary)
+        return level, statistic
+    if table.title.endswith('Heterogeneity') or table.title == 'Residual heterogeneity':
+        _heterogeneity_rows(table, fit, summary)
+        return level, statistic
+    if _fit_table(table, fit, summary, section, supplementary):
+        return level, statistic
+    extra.append(replace(section, paragraphs=(), tables=(table,)))
+    return level, statistic
+
+
+def _section_statistics(section):
+    overall = next((dict(zip(t.headers, t.rows[0])) for t in section.tables
+                    if len(t.rows) == 1 and ('Z' in t.headers or 't' in t.headers)), {})
+    calculation = next((dict(zip(t.headers, t.rows[0])) for t in section.tables
+                        if t.title.startswith('Calculation scale') and t.rows), {})
+    return overall, calculation
+
+
 def _report_sections(result, summary):
-    from dataclasses import replace
-    from rc_metastudio.analysis_results import ResultTable
     text_sections = [section for section in result.sections if section.kind == 'text']
     if not text_sections:
         return [], []
@@ -131,98 +279,9 @@ def _report_sections(result, summary):
     metric = result.manuscript_metric or 'effect'
     level, statistic = '95% CI', 'z'
     for section in text_sections:
-        overall = next((dict(zip(t.headers, t.rows[0])) for t in section.tables
-                        if len(t.rows) == 1 and ('Z' in t.headers or 't' in t.headers)), {})
-        calculation = next((dict(zip(t.headers, t.rows[0])) for t in section.tables
-                            if t.title.startswith('Calculation scale') and t.rows), {})
-        for source in section.tables:
-            table = source
-            vertical = table.headers == ('Statistic', 'Value') and 'Estimate' in {row[0]: row[1] for row in table.rows}
-            if vertical:
-                values = {row[0]: row[1] for row in table.rows}
-                table = ResultTable(table.title, tuple(values), (tuple(values.values()),))
-            if table.title.startswith('Calculation scale'):
-                supplementary.append(replace(section, title='Supplementary details', paragraphs=(), tables=(table,)))
-                continue
-            if section.source_key == 'Weights' or table.title == 'Study weights':
-                rows = tuple((row[0], row[1], row[2] + ' to ' + row[3], row[4]) if len(row) == 5 else (row[0], '—', '—', row[1]) for row in table.rows)
-                supplementary.append(replace(section, title='Supplementary details',
-                    paragraphs=(() if all(len(row) == 5 for row in table.rows) else ('Study estimates and intervals on the displayed metric scale were not held for this analysis; only study weights are available.',)),
-                    tables=(ResultTable('Study results', ('Study', 'Effect', level, 'Weight'), rows),)))
-                continue
-            lower, upper, ci_level = _interval_fields(table.headers)
-            if lower and upper and ci_level.endswith(' PI'):
-                for row in table.rows:
-                    values = dict(zip(table.headers, row))
-                    context = values.get('Subgroups', table.title if vertical else '')
-                    interval = values[lower] + ' to ' + values[upper]
-                    fit.append((ci_level.replace(' PI', '') + ' prediction interval' + (' (' + context + ')' if context else ''), interval))
-                    summary.append((context + ': ' if context else '') + f"The {ci_level.replace(' PI', '')} prediction interval was {interval}.")
-                continue
-            if 'Estimate' in table.headers and lower and upper:
-                level = ci_level
-                coefficient = table.title == 'Regression coefficients'
-                for row in table.rows:
-                    values = dict(zip(table.headers, row))
-                    if not values.get('Estimate'):
-                        continue
-                    if 'k' in values and 'Subgroups' in values:
-                        fit.append(('Studies (k) (' + values['Subgroups'] + ')', values['k']))
-                    effect_metric = table.title.lower() if vertical else section.title.removesuffix(' Summary').lower() if ',' in metric else metric
-                    effect = values.get('Term', values.get('Subgroups', table.title if vertical else effect_metric))
-                    stat = next((key for key in ('t', 'z', 'Z', 'z-value', 't-value') if key in values or key in overall), None)
-                    statistic = 't' if stat in ('t', 't-value') else 'z'
-                    se = next((v for h, v in {**calculation, **values}.items() if h.startswith('SE')), '—')
-                    test = values.get(stat, overall.get(stat, '—')) if stat else '—'
-                    p = p_value(values.get('p-value', overall.get('p-value', '')))
-                    pooled.append((effect, values['Estimate'], values[lower] + ' to ' + values[upper], se, test, p))
-                    lead = f"For {effect}, the coefficient" if coefficient else f"For {effect}, the pooled {effect_metric}" if 'Subgroups' in values or 'Term' in values else f"The pooled {effect_metric}"
-                    inference = (f", {statistic} = {test}" if test != '—' else '') + (', ' + _p_clause(p) if p != '—' else '')
-                    summary.append(f"{lead} was {values['Estimate']} ({level} [{values[lower]}, {values[upper]}]{inference}).")
-                    meaning = _interval_meaning(values[lower], values[upper], effect_metric, result.manuscript_arms, coefficient=coefficient)
-                    if meaning:
-                        summary.append(meaning)
-                continue
-            if table.title.endswith('Heterogeneity') or table.title == 'Residual heterogeneity':
-                for row in table.rows:
-                    values = dict(zip(table.headers, row))
-                    prefix = values.get('Subgroups', '')
-                    prefix = prefix + ': ' if prefix else 'Residual ' if table.title == 'Residual heterogeneity' else ''
-                    summary.extend(_heterogeneity_sentence(values, prefix))
-                    labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity p', 'I²': 'I²', 'τ²': 'Between-study variance (τ²)'}
-                    fit.extend((labels[h] + (' (' + values['Subgroups'] + ')' if 'Subgroups' in values else ''), p_value(v) if h == 'p-value' else v) for h, v in values.items() if h in labels)
-                continue
-            if table.title.endswith('Prediction interval') and len(table.rows) == 1:
-                row = table.rows[0]
-                pi_level = table.headers[0].partition('(')[2].removesuffix(')') or '95% PI'
-                fit.append((pi_level.replace(' PI', '') + ' prediction interval', row[0] + ' to ' + row[1]))
-                summary.append(f"The {pi_level.replace(' PI', '')} prediction interval was {row[0]} to {row[1]}.")
-                continue
-            if table.title == 'Test of subgroup differences' and table.rows:
-                values = dict(zip(table.headers, table.rows[0]))
-                summary.append(f"Between-group test: {values['Test']} = {values['Statistic']} (df = {values['df']}, {_p_clause(p_value(values['p-value']))}).")
-                fit.extend((label, p_value(values[key]) if key == 'p-value' else values[key])
-                           for key, label in (("Test", "Between-group test"), ("Statistic", "Between-group statistic"), ("df", "Between-group degrees of freedom"), ("p-value", "Between-group p")))
-                continue
-            if table.title in ('Model overview', 'Residual model fit') and table.headers == ('Statistic', 'Value'):
-                fit.extend(table.rows)
-                values = {row[0]: row[1] for row in table.rows}
-                if 'Residual I²' in values:
-                    summary.extend(_heterogeneity_sentence({'I²': values['Residual I²']}, 'Residual '))
-                continue
-            if table.title == 'Model tests':
-                for row in table.rows:
-                    values = dict(zip(table.headers, row))
-                    name = values['Test']
-                    fit.extend((label + ' (' + name + ')', p_value(values[key]) if key == 'p-value' else values[key])
-                               for key, label in (('Statistic', 'Test statistic'), ('df', 'Test degrees of freedom'), ('p-value', 'Test p')))
-                continue
-            if table.title == 'Model specification':
-                supplementary.append(replace(section, title='Supplementary details', paragraphs=(), tables=(table,)))
-                continue
-            if table.rows and ('Z' in table.headers or 't' in table.headers) and 'Estimate' not in table.headers:
-                continue
-            extra.append(replace(section, paragraphs=(), tables=(table,)))
+        overall, calculation = _section_statistics(section)
+        for table in section.tables:
+            level, statistic = _report_table(result, section, table, summary, pooled, fit, supplementary, extra, level, statistic, overall, calculation)
     sections = []
     if pooled:
         sections.append(replace(text_sections[0], title='Pooled effect', paragraphs=(),
