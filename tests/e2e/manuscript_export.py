@@ -316,14 +316,14 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
             if sample == 'amino':
                 assert view.manuscript.title == 'clinical failure: random-effects meta-analysis (odds ratio)'
                 assert 'The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, p = .267).' in view.manuscript.results
-                assert view.manuscript.results == '19 studies were included (1097 participants in Intervention, 1080 in Control). The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, p = .267). The confidence interval includes 1, so these data do not show a clear difference between Intervention and Control. Heterogeneity: Q = 33.360, df = 18, p = .015. I² = 46.000%, which may represent moderate heterogeneity (Cochrane Handbook ranges). Between-study variance was τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.', view.manuscript.results
+                assert view.manuscript.results == '19 studies were included (1097 participants in Intervention, 1080 in Control). The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, p = .267). The confidence interval includes 1, so these data do not show a clear difference between Intervention and Control. Heterogeneity: Q = 33.360, df = 18, p = .015. I² = 46.0%, which may represent moderate heterogeneity (Cochrane Handbook ranges). Between-study variance was τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.', view.manuscript.results
                 assert view.manuscript.methods == f"Odds ratios were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance. Confidence intervals (95%) used the normal approximation. A continuity correction of 0.5 was applied to studies with any zero cell. 2 studies with no events in either arm were retained with this correction. Heterogeneity was assessed with Cochran's Q and I². Analyses were performed in RC MetaStudio {__version__}. R packages loaded for this analysis: metafor 5.0.1, meta 8.5-0."
                 assert '-0.262' in normalized
             if sample == 'continuous':
                 assert '500 participants in Intervention, 495 in Control' in view.manuscript.results
                 assert 'The pooled standardized mean difference was 0.358 (95% CI [0.152, 0.565], z = 3.400, p < .001).' in view.manuscript.results
                 assert 'The confidence interval excludes 0, with higher mean values in Intervention than in Control.' in view.manuscript.results
-                assert 'I² = 58.000%, which may represent moderate to substantial heterogeneity (Cochrane Handbook ranges).' in view.manuscript.results
+                assert 'I² = 58.0%, which may represent moderate to substantial heterogeneity (Cochrane Handbook ranges).' in view.manuscript.results
 
             record('manuscript-export-' + sample + '-' + suffix, view, exported=str(path))
         (work / (sample + '-prose.txt')).write_text('Methods\n' + view.manuscript.methods + '\n\nResults\n' + view.manuscript.results, encoding='utf-8')

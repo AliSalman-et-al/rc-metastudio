@@ -334,8 +334,8 @@ def _section_statistics(section):
 
 
 def _presentation_cell(value, digits):
-    return re.sub(r"(?<![\w.])-?\d+\.\d+(?![\w.])",
-                  lambda match: f"{Decimal(match[0]):.{digits}f}", value)
+    return re.sub(r"(?<![\w.])-?\d+\.\d+%?(?![\w.])",
+                  lambda match: f"{Decimal(match[0][:-1]):.1f}%" if match[0].endswith("%") else f"{Decimal(match[0]):.{digits}f}", value)
 
 
 def _presentation_rows(rows, digits):

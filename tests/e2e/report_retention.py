@@ -314,8 +314,8 @@ def assert_exports(view, data):
 
 def presentation_rows(rows, digits):
     from decimal import Decimal
-    return tuple(tuple(re.sub(r"(?<![\w.])-?\d+\.\d+(?![\w.])",
-                             lambda m: f"{Decimal(m[0]):.{digits}f}", cell)
+    return tuple(tuple(re.sub(r"(?<![\w.])-?\d+\.\d+%?(?![\w.])",
+                             lambda m: f"{Decimal(m[0][:-1]):.1f}%" if m[0].endswith("%") else f"{Decimal(m[0]):.{digits}f}", cell)
                        for cell in row) for row in rows)
 
 
