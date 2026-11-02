@@ -125,7 +125,7 @@ def _heterogeneity_sentence(values, prefix=""):
         for low, high, label in ((30, 60, "moderate"), (50, 90, "substantial"), (75, 100, "considerable")):
             if low <= number <= high:
                 descriptions.append(label + " heterogeneity")
-        parts.append(prefix + f"I² = {value}, which may represent " + " or ".join(descriptions) + " (Cochrane Handbook ranges).")
+        parts.append(prefix + f"I² = {value}, which may represent " + ("moderate to substantial heterogeneity" if descriptions == ["moderate heterogeneity", "substantial heterogeneity"] else " or ".join(descriptions)) + " (Cochrane Handbook ranges).")
     if 'τ²' in values:
         parts.append(prefix + f"Between-study variance was τ² = {values['τ²']}.")
     return parts
@@ -194,10 +194,14 @@ def _pooled_statistics(values, overall, calculation):
 
 
 def _pooled_prose(result, values, effect, effect_metric, coefficient, statistic, test, p, level, lower, upper, summary):
+    if coefficient and effect == 'Intercept':
+        return
     lead = f"For {effect}, the coefficient" if coefficient else (f"Overall, the pooled {effect_metric}" if effect.lower() == "overall" else f"In {effect}, the pooled {effect_metric}") if 'Subgroups' in values or 'Term' in values else f"The pooled {effect_metric}"
     inference = (f", {statistic} = {test}" if test != '—' else '') + (', ' + _p_clause(p) if p != '—' else '')
     summary.append(f"{lead} was {values['Estimate']} ({level} [{values[lower]}, {values[upper]}]{inference}).")
     meaning = _interval_meaning(values[lower], values[upper], effect_metric, result.manuscript_arms, coefficient=coefficient)
+    if coefficient and meaning and 'includes 0' in meaning:
+        meaning = f"The confidence interval includes 0, so these data do not show a clear association with {effect}."
     if meaning and ('Subgroups' not in values or effect.lower() == 'overall'):
         summary.append(meaning)
 
@@ -225,13 +229,20 @@ def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overa
 
 
 
-def _heterogeneity_rows(table, fit, summary):
+def _heterogeneity_rows(table, fit, summary, residual=None):
     for row in table.rows:
         values = dict(zip(table.headers, row))
         prefix = values.get('Subgroups', '')
         prefix = prefix + ': ' if prefix else 'Residual ' if table.title == 'Residual heterogeneity' else ''
-        summary.extend(_heterogeneity_sentence(values, prefix))
+        if table.title == 'Residual heterogeneity':
+            values = {**values, **(residual or {})}
+            summary.append("Residual heterogeneity: " + ", ".join(
+                _p_clause(p_value(values[h])) if h == 'p-value' else f"{h} = {values[h]}"
+                for h in ('Q', 'df', 'p-value', 'τ²', 'I²') if h in values) + ".")
+        else:
+            summary.extend(_heterogeneity_sentence(values, prefix))
         labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity p', 'I²': 'I²', 'τ²': 'Between-study variance (τ²)'}
+        values = dict(zip(table.headers, row))
         fit.extend((labels[h] + (' (' + values['Subgroups'] + ')' if 'Subgroups' in values else ''), p_value(v) if h == 'p-value' else v) for h, v in values.items() if h in labels)
 
 
@@ -255,8 +266,6 @@ def _model_fit_table(table, fit, summary):
     if table.title in ('Model overview', 'Residual model fit') and table.headers == ('Statistic', 'Value'):
         fit.extend(table.rows)
         values = {row[0]: row[1] for row in table.rows}
-        if 'Residual I²' in values:
-            summary.extend(_heterogeneity_sentence({'I²': values['Residual I²']}, 'Residual '))
         return True
     if table.title == 'Model tests':
         for row in table.rows:
@@ -280,6 +289,12 @@ def _horizontal_table(table):
     return table, vertical
 
 
+def _residual_statistics(section):
+    held = dict(row for source in section.tables if source.headers == ('Statistic', 'Value') for row in source.rows)
+    return {key: held[label] for key, label in
+            (('df', 'Residual degrees of freedom'), ('I²', 'Residual I²')) if label in held}
+
+
 def _report_table(result, section, table, summary, pooled, fit, level, statistic, overall, calculation):
     table, vertical = _horizontal_table(table)
     if table.title.startswith('Calculation scale'):
@@ -295,7 +310,7 @@ def _report_table(result, section, table, summary, pooled, fit, level, statistic
         return level, statistic
     if table.title.endswith('Heterogeneity') or table.title == 'Residual heterogeneity':
         start = len(fit)
-        _heterogeneity_rows(table, fit, summary)
+        _heterogeneity_rows(table, fit, summary, _residual_statistics(section))
         if ',' in result.manuscript_metric:
             fit[start:] = [(label + ' (' + section.title.removesuffix(' Summary') + ')', value) for label, value in fit[start:]]
         return level, statistic

@@ -323,6 +323,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 assert 'The pooled standardized mean difference was 0.358 (95% CI [0.152, 0.565], z = 3.400, p < .001).' in view.manuscript.results
                 assert 'The confidence interval excludes 0, with higher mean values in Intervention than in Control.' in view.manuscript.results
                 assert 'I² = 58.000%, which may represent moderate to substantial heterogeneity (Cochrane Handbook ranges).' in view.manuscript.results
+
             record('manuscript-export-' + sample + '-' + suffix, view, exported=str(path))
         (work / (sample + '-prose.txt')).write_text('Methods\n' + view.manuscript.methods + '\n\nResults\n' + view.manuscript.results, encoding='utf-8')
         item = view.nav_tree.findItems('Manuscript', __import__('PyQt6.QtCore', fromlist=['Qt']).Qt.MatchFlag.MatchExactly)[0]
@@ -406,9 +407,10 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
             assert 'Test for subgroup differences: Q = 0.307, df = 1, p = .579.' in prose
         else:
             assert 'coefficient' in prose and '95% CI' in prose and ', p = ' in prose, (prose, [(s.title, s.tables) for s in view.results.sections if s.kind == 'text'])
-            assert 'For Intercept, the coefficient was -0.805 (95% CI [-1.701, 0.092], z = -1.759, p = .079).' in prose
+            assert 'For Intercept' not in prose
             assert 'For Dose, the coefficient was 0.063 (95% CI [-0.026, 0.151], z = 1.384, p = .166).' in prose
-            assert 'Residual Heterogeneity:' in prose
+            assert 'Residual heterogeneity: Q = ' in prose
+            assert 'The confidence interval includes 0, so these data do not show a clear association with Dose.' in prose
             assert any(t.title == 'Pooled effect' for section in view.manuscript.sections for t in section.tables)
         exported = Document(work / (workflow + '.docx'))
         captions = [p.text for p in exported.paragraphs]
