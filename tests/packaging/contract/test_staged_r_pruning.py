@@ -1,4 +1,5 @@
 """Drive the packager's pruning command on a versioned framework layout."""
+from pathlib import Path
 import subprocess
 import sys
 
@@ -12,12 +13,12 @@ def test_pruning_removes_development_aliases_and_rejects_broken_links(tmp_path):
     (home / "include").mkdir()
     (home / "doc").mkdir()
     (home / "share").mkdir()
-    (version / "Headers").symlink_to("Resources/include", target_is_directory=True)
-    (version / "Documentation").symlink_to("Resources/doc", target_is_directory=True)
+    (version / "Headers").symlink_to(Path("Resources/include"), target_is_directory=True)
+    (version / "Documentation").symlink_to(Path("Resources/doc"), target_is_directory=True)
     (framework / "Versions/Current").symlink_to("4.6", target_is_directory=True)
-    (framework / "Resources").symlink_to("Versions/Current/Resources", target_is_directory=True)
-    (framework / "Headers").symlink_to("Versions/Current/Headers", target_is_directory=True)
-    (home / "share/runtime-link").symlink_to("../library/RCMetaR/DESCRIPTION")
+    (framework / "Resources").symlink_to(Path("Versions/Current/Resources"), target_is_directory=True)
+    (framework / "Headers").symlink_to(Path("Versions/Current/Headers"), target_is_directory=True)
+    (home / "share/runtime-link").symlink_to(Path("../library/RCMetaR/DESCRIPTION"))
     closure = tmp_path / "closure.txt"
     closure.write_text("RCMetaR\n")
     command = [sys.executable, "scripts/prune_staged_r.py", str(framework / "Resources"), str(closure)]
