@@ -170,22 +170,7 @@ cp -a "$app_root" "$archive_root/RCMetaStudio"
 cp -a "$r_home" "$archive_root/R"
 # Resolve the installed closure before pruning only the staged runtime.
 "$r_home/bin/Rscript" "$repo_root/scripts/r-bundle-closure.R" "$r_library" "$qualification_root/r-closure.txt"
-"$python_exe" - "$archive_root/R/library" "$qualification_root/r-closure.txt" <<'PYTHON'
-from pathlib import Path
-import shutil
-import sys
-library = Path(sys.argv[1])
-keep = set(Path(sys.argv[2]).read_text().splitlines())
-for package in library.iterdir():
-    if package.is_dir() and package.name not in keep:
-        print("Removing R package:", package.name)
-        shutil.rmtree(package)
-PYTHON
-# Remove documentation and build headers after the API bridge is compiled.
-# Keep share: R uses its encodings, fonts and other resources at runtime.
-find "$archive_root/R/library" -mindepth 2 -maxdepth 2 -type d \
-  \( -name tests -o -name demo -o -name testdata -o -name tinytest -o -name help -o -name html -o -name doc -o -name vignettes -o -name include \) -exec rm -rf -- {} +
-rm -rf -- "$archive_root/R/library/RCMetaR/qa" "$archive_root/R/doc" "$archive_root/R/include"
+"$python_exe" "$repo_root/scripts/prune_staged_r.py" "$archive_root/R" "$qualification_root/r-closure.txt"
 # Debug sections are unnecessary for execution; preserve symbols used by dlsym.
 "$python_exe" - "$archive_root/R" <<'PYTHON'
 from pathlib import Path

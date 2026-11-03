@@ -190,7 +190,7 @@ if [ "$mode" = "sign-and-submit" ]; then
   ditto "$app" "$dmg_root/RCMetaStudio.app"
   ln -s /Applications "$dmg_root/Applications"
   hdiutil create -volname "RC MetaStudio" -srcfolder "$dmg_root" \
-    -format UDZO -ov "$tmp_output"
+    -format ULFO -ov "$tmp_output"
   codesign --force --timestamp --sign "$signing_identity" \
     --identifier org.rcmetastudio.release "$tmp_output"
   codesign --verify --verbose=4 "$tmp_output"
