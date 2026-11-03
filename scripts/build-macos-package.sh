@@ -481,6 +481,16 @@ R_HOME="$r_home" PATH="$r_home/bin:$PATH" RPY2_CFFI_MODE=API uv pip install \
   --python "$python_exe" --reinstall --no-binary rpy2-rinterface \
   "rpy2-rinterface==3.6.6"
 
+# Resolve the official fontconfig aliases while all runtime resources are intact.
+# The pruning gate checks every remaining symlink, including these runtime links.
+"$python_exe" - "$r_framework" "$repo_root/scripts" <<'PYTHON'
+from pathlib import Path
+import sys
+sys.path.insert(0, sys.argv[2])
+from macos_embedded_r_adapter import normalize_fontconfig_links
+normalize_fontconfig_links(Path(sys.argv[1]))
+PYTHON
+
 step "Pruning build-only staged R payload"
 R_HOME="$r_home" "$rscript" "$repo_root/scripts/r-bundle-closure.R" "$r_lib" "$work_root/r-closure.txt"
 "$python_exe" "$repo_root/scripts/prune_staged_r.py" "$r_home" "$work_root/r-closure.txt"
