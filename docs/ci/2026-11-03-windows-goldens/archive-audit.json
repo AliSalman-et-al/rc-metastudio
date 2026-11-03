@@ -1,0 +1,42 @@
+{
+  "passed": true,
+  "changed_archive_members": [
+    "manifest.json",
+    "artifacts/amino-binary-cumulative/golden_amino_cumulative_forest.png",
+    "artifacts/amino-binary-leave-one-out/golden_amino_loo_forest.png",
+    "artifacts/amino-binary-random/golden_amino_forest.png",
+    "artifacts/amino-binary-subgroup/golden_amino_subgroup_forest.png",
+    "artifacts/continuous-cumulative/golden_continuous_cumulative_forest.png",
+    "artifacts/continuous-leave-one-out/golden_continuous_loo_forest.png",
+    "artifacts/continuous-meta-regression/reg.png",
+    "artifacts/continuous-random/golden_continuous_forest.png",
+    "artifacts/continuous-subgroup/golden_continuous_subgroup_forest.png",
+    "artifacts/lymph-diagnostic-random-dor/golden_lymph_forest_dor.png",
+    "captures/amino-binary-cumulative.json",
+    "captures/amino-binary-leave-one-out.json",
+    "captures/amino-binary-random.json",
+    "captures/amino-binary-subgroup.json",
+    "captures/continuous-cumulative.json",
+    "captures/continuous-leave-one-out.json",
+    "captures/continuous-meta-regression.json",
+    "captures/continuous-random.json",
+    "captures/continuous-subgroup.json",
+    "captures/lymph-diagnostic-random-dor.json"
+  ],
+  "changed_plot_bindings": [
+    "amino-binary-random",
+    "continuous-random",
+    "lymph-diagnostic-random-dor",
+    "amino-binary-cumulative",
+    "amino-binary-leave-one-out",
+    "continuous-cumulative",
+    "continuous-leave-one-out",
+    "continuous-meta-regression",
+    "amino-binary-subgroup",
+    "continuous-subgroup"
+  ],
+  "text_numeric_and_non_hash_case_metadata_unchanged": true,
+  "contracts_policy_unchanged": true,
+  "before_archive_sha256": "75fe5951883b8ae056452641d1d0313536c3a3a9046e02804bde7be0b3141e87",
+  "after_archive_sha256": "4782529d9771a1930aa7eefe7e88cc88d3e8819b3e595200c28132bf31c980b9"
+}
