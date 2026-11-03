@@ -309,6 +309,12 @@ def compose_application(
     splash = None
     previous_directory = os.getcwd()
     try:
+        if getattr(sys, "frozen", False):
+            from rc_metastudio import r_runtime
+
+            # Frozen bootstrap changes HOME, which Qt uses for AppDataLocation.
+            # Configure it before creating the shared Python/R working directory.
+            r_runtime.configure_bundled_r_environment()
         settings.setup_directories()
         meta = _finish_composition(app, main_window, splash=None)
         # Windows cannot remove an application base directory while it is cwd.
