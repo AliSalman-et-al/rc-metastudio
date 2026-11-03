@@ -643,7 +643,10 @@ rcmetar.draw.revman.axis <- function(bundle, layout, cex) {
     graphics::rect(layout$alim[[1]] - 0.04 * span, max(-5.4, graphics::grconvertY(0, from="ndc", to="user")), layout$alim[[2]] + 0.04 * span, -2.05, col="white", border=NA)
     graphics::segments(layout$alim[[1]], y.axis, layout$alim[[2]], y.axis, lwd=0.8)
     graphics::segments(ticks, y.axis, ticks, y.tick, lwd=0.8)
-    graphics::text(ticks, y.label, labels, cex=cex)
+    # Centre the row using one reference glyph; per-label vertical centring
+    # gives digits different baselines with Windows Arial metrics.
+    graphics::text(ticks, y.label - graphics::strheight("0", cex=cex) / 2,
+                   labels, cex=cex, adj=c(0.5, 0))
     invisible(NULL)
 }
 

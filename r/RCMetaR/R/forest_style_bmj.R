@@ -817,7 +817,9 @@ rcmetar.draw.bmj.axis <- function(bundle, layout, cex) {
     graphics::rect(layout$alim[[1]] - 0.04 * span, max(-6.05, graphics::grconvertY(0, from="ndc", to="user")), layout$alim[[2]] + 0.04 * span, -2.11, col="white", border=NA)
     graphics::segments(layout$alim[[1]], y.axis, layout$alim[[2]], y.axis, lwd=0.9, col="#a9a9a9")
     graphics::segments(ticks, y.axis, ticks, y.tick, lwd=0.8, col="#a9a9a9")
-    graphics::text(ticks, y.label, labels, cex=cex, col="#111111")
+    # Use a common baseline even when digit heights differ between glyphs.
+    graphics::text(ticks, y.label - graphics::strheight("0", cex=cex) / 2,
+                   labels, cex=cex, col="#111111", adj=c(0.5, 0))
     invisible(NULL)
 }
 
