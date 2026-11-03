@@ -352,8 +352,9 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
             "available_geometry_for_window",
             lambda _window: QtCore.QRect(0, 0, 800, 600),
         )
-        font = QtGui.QFont(dialog.font())
-        font.setPointSize(max(14, font.pointSize() + 5))
+        normal_font = QtGui.QFont(dialog.font())
+        font = QtGui.QFont(normal_font)
+        font.setPointSize(max(28, font.pointSize() + 5))
         font.setStretch(120)
         dialog.setFont(font)
         dialog.specs_tab.setCurrentWidget(dialog.methods_tab)
@@ -395,19 +396,13 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
                          if (item := dialog.gridLayout.itemAt(i)) is not None
                          if (widget := item.widget()) is not None],
         }
-        assert method_text_width <= dialog.method_cbo_box.width(), (
-            method_text_width,
-            dialog.method_cbo_box.width(),
-            dialog.method_cbo_box.sizeHint().width(),
-            dialog.width(),
-            dialog.method_lbl.width(),
-            dialog.methods_tab.width(),
-            required(
-                dialog.method_cbo_box.parentWidget(), "method combo parent"
-            ).width(),
-            dialog.parameter_grp_box.width(),
-            layout_details,
-        )
+        details = f"method_text_width={method_text_width}, combo={dialog.method_cbo_box.geometry()}, label={dialog.method_lbl.geometry()}, dialog={dialog.size()}, layout={layout_details!r}"
+        assert method_text_width <= dialog.method_cbo_box.width(), details
+        assert dialog.method_lbl.visibleRegion().boundingRect().contains(dialog.method_lbl.rect()), details
+        assert not dialog.method_lbl.geometry().intersects(dialog.method_cbo_box.geometry()), details
+        dialog.setFont(normal_font)
+        qapp.processEvents()
+        assert dialog.method_lbl.geometry().right() < dialog.method_cbo_box.geometry().left(), details
         estimator = next(
             combo
             for combo in dialog.parameter_grp_box.findChildren(QtWidgets.QComboBox)

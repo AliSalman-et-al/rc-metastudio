@@ -4,7 +4,7 @@
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QKeyEvent, QCloseEvent, QColor, QHideEvent, QShowEvent
+from PyQt6.QtGui import QResizeEvent, QKeyEvent, QCloseEvent, QColor, QHideEvent, QShowEvent
 from PyQt6.QtWidgets import (
     QComboBox,
     QCheckBox,
@@ -454,6 +454,15 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.method_lbl.setSizePolicy(
             QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred
         )
+        self.gridLayout.removeWidget(self.method_lbl)
+        self.gridLayout.removeWidget(self.method_cbo_box)
+        self._method_row = QtWidgets.QWidget(self.methods_tab)
+        self._method_layout = QtWidgets.QGridLayout(self._method_row)
+        self._method_layout.setContentsMargins(0, 0, 0, 0)
+        self._method_layout.setColumnStretch(1, 1)
+        self._method_layout.addWidget(self.method_lbl, 0, 0)
+        self._method_layout.addWidget(self.method_cbo_box, 0, 1)
+        self.gridLayout.addWidget(self._method_row, 0, 0, 1, 2)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.gridLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.gridLayout.setColumnStretch(0, 0)
@@ -1630,19 +1639,34 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._reveal_focused_control(None, QtWidgets.QApplication.focusWidget())
 
     def _fit_method_text(self):
-        # A readable selector may need the screen margin reserved by the usual
-        # transactional policy. Measure after font propagation and layout, not
-        # from the combo's character-count size hint.
-        self.gridLayout.activate()
-        needed = self.method_cbo_box.fontMetrics().horizontalAdvance(
-            self.method_cbo_box.currentText()
+        layout = self._method_layout
+        layout.activate()
+        option = QtWidgets.QStyleOptionComboBox()
+        self.method_cbo_box.initStyleOption(option)
+        style = self.method_cbo_box.style()
+        assert style is not None
+        field = style.subControlRect(
+            QtWidgets.QStyle.ComplexControl.CC_ComboBox, option,
+            QtWidgets.QStyle.SubControl.SC_ComboBoxEditField, self.method_cbo_box,
         )
-        deficit = max(0, needed - self.method_cbo_box.width())
-        available = adaptive_window.available_geometry_for_window(self)
-        frame_width = max(0, self.frameGeometry().width() - self.width())
-        width = self.width() + deficit
-        if self.width() < width <= available.width() - frame_width:
-            self.resize(width, self.height())
+        text_width = self.method_cbo_box.fontMetrics().horizontalAdvance(self.method_cbo_box.currentText())
+        needed = self.method_lbl.sizeHint().width() + text_width + self.method_cbo_box.width() - field.width()
+        stacked = needed + layout.horizontalSpacing() > layout.contentsRect().width()
+        combo_row = 1 if stacked else 0
+        if layout.getItemPosition(layout.indexOf(self.method_cbo_box))[0] == combo_row:
+            return
+        layout.removeWidget(self.method_lbl)
+        layout.removeWidget(self.method_cbo_box)
+        layout.addWidget(self.method_lbl, 0, 0, 1, 2 if stacked else 1)
+        layout.addWidget(self.method_cbo_box, combo_row, 0 if stacked else 1, 1, 2 if stacked else 1)
+        layout.activate()
+
+    def resizeEvent(  # ty: ignore[invalid-method-override] -- PyQt6 multiple-inheritance stub mismatch
+        self, event: QResizeEvent | None
+    ) -> None:
+        super().resizeEvent(event)
+        if hasattr(self, "_layout_reflow_timer"):
+            self._schedule_local_reflow()
 
     def changeEvent(  # ty: ignore[invalid-method-override] -- PyQt6 multiple-inheritance stub mismatch
         self, event: QtCore.QEvent | None
