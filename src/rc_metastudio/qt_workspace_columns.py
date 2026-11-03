@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Qt adapter for persisted workspace column widths."""
 
-from PyQt6.QtCore import QEvent, QObject, QTimer, Qt
+from PyQt6.QtCore import QObject, Qt
+from PyQt6.QtGui import QFont, QFontMetrics
 from PyQt6.QtWidgets import QTableView
 
 from rc_metastudio.workspace_column_identity import (
@@ -23,25 +24,10 @@ class WorkspaceColumnWidthController(QObject):
             if isinstance(saved_widths, WorkspaceColumnWidthState)
             else WorkspaceColumnWidthState(saved_widths)
         )
-        # Widths loaded from settings represent an explicit user choice. New
-        # columns start as automatic widths and can absorb spare viewport
-        # space without changing the user's choices.
+        # Widths loaded from settings represent an explicit user choice.
         self._user_widths = set(self._widths._widths) if saved_widths else set()
         self._applying = False
-        self._resize_pending = False
         table.horizontalHeader().sectionResized.connect(self._section_resized)
-        table.installEventFilter(self)
-
-    def eventFilter(
-        self, a0: QObject | None, a1: QEvent | None
-    ) -> bool:
-        if (
-            a0 is self.table
-            and a1 is not None
-            and a1.type() == QEvent.Type.Resize
-        ):
-            self._schedule_fit()
-        return super().eventFilter(a0, a1)
 
     def restore(self, widths):
         self._widths = (
@@ -89,22 +75,34 @@ class WorkspaceColumnWidthController(QObject):
                         width = max(width, self.table.fontMetrics().horizontalAdvance("2026") + 12)
                     elif key.kind == "covariate":
                         width = min(width, self.table.fontMetrics().horizontalAdvance("M" * 20))
+                    width = max(width, self._header_width(column))
                     self.table.setColumnWidth(column, width)
                     self._widths[key] = width
                 else:
+                    if key.kind == "raw":
+                        width = max(width, self._header_width(column))
+                        self._widths[key] = width
                     self.table.setColumnWidth(column, width)
         finally:
             self._applying = False
-        self.fit_available_width()
 
     def auto_fit_all(self):
         self._applying = True
         try:
             QTableView.resizeColumnsToContents(self.table)
+            for column in range(self.table.model().columnCount()):
+                if not self.table.isColumnHidden(column):
+                    self.table.setColumnWidth(column, max(self.table.columnWidth(column), self._header_width(column)))
         finally:
             self._applying = False
         self._capture_visible_widths(mark_user=True)
-        self.fit_available_width()
+
+    def _header_width(self, column):
+        header = self.table.horizontalHeader()
+        font = QFont(header.font())
+        font.setBold(True)
+        text = str(self.table.model().headerData(column, Qt.Orientation.Horizontal) or "")
+        return max(QFontMetrics(font).horizontalAdvance(line) for line in text.split("\n")) + 24
 
     def _capture_visible_widths(self, mark_user=False):
         for column, key in enumerate(self._schema_keys()):
@@ -121,45 +119,6 @@ class WorkspaceColumnWidthController(QObject):
         if 0 <= logical_index < len(keys):
             self._widths[keys[logical_index]] = int(new_size)
             self._user_widths.add(keys[logical_index])
-        self._schedule_fit()
-
-    def _schedule_fit(self):
-        if self._resize_pending:
-            return
-        self._resize_pending = True
-        QTimer.singleShot(0, self._fit_after_resize)
-
-    def _fit_after_resize(self):
-        self._resize_pending = False
-        self.fit_available_width()
-
-    def fit_available_width(self):
-        """Use spare viewport width without overriding user-owned sections."""
-        if self._applying:
-            return
-        keys = self._schema_keys()
-        if not keys:
-            return
-        available = self.table.viewport().width()
-        if available <= 0:
-            return
-        widths = [self._widths.get(key, self.table.columnWidth(i)) for i, key in enumerate(keys)]
-        extra = available - sum(width for i, width in enumerate(widths) if not self.table.isColumnHidden(i))
-        automatic = [i for i, key in enumerate(keys) if key not in self._user_widths and not self.table.isColumnHidden(i)]
-        names = [i for i in automatic if keys[i].kind == "fixed" and keys[i].components == ("study-name",)]
-        if names:
-            automatic = names
-        if extra <= 0 or not automatic:
-            return
-
-        self._applying = True
-        try:
-            share, remainder = divmod(extra, len(automatic))
-            for position, column in enumerate(automatic):
-                width = widths[column] + share + (1 if position < remainder else 0)
-                self.table.setColumnWidth(column, width)
-        finally:
-            self._applying = False
 
     def _schema_keys(self):
         model = QTableView.model(self.table)

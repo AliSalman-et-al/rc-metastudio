@@ -5,7 +5,6 @@ ENTITY_LABELS = {
     "study": "Study",
     "group": "Group",
     "outcome": "Outcome",
-    "follow-up": "Follow-up",
     "covariate": "Covariate",
 }
 

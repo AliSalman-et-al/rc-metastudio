@@ -41,7 +41,7 @@ def test_failed_install_preserves_document_history_and_path(tmp_path: Path) -> N
     project = session.project
     state = session.state
     assert project is not None and state is not None
-    dataset = project["dataset"]
+    dataset = project
     assert isinstance(dataset, dict)
     dataset["title"] = "Edited before failed install"
     session.commit(project, state)
@@ -72,7 +72,7 @@ def test_durability_failure_commits_the_installed_document(
     project = session.project
     state = session.state
     assert project is not None and state is not None
-    dataset = project["dataset"]
+    dataset = project
     assert isinstance(dataset, dict)
     dataset["title"] = "Installed despite uncertainty"
     runtime = session.runtime
@@ -100,7 +100,7 @@ def test_save_marks_only_successfully_written_snapshot_clean(tmp_path: Path) -> 
     project = session.project
     state = session.state
     assert project is not None and state is not None
-    dataset = project["dataset"]
+    dataset = project
     assert isinstance(dataset, dict)
     dataset["title"] = "Saved"
     session.commit(project, state)
@@ -109,5 +109,4 @@ def test_save_marks_only_successfully_written_snapshot_clean(tmp_path: Path) -> 
     assert session.save(destination) == destination
     assert not session.is_dirty
     saved = load_project(destination).project
-    assert isinstance(saved["dataset"], dict)
-    assert saved["dataset"]["title"] == "Saved"
+    assert saved["title"] == "Saved"

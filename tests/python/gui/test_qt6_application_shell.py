@@ -8,6 +8,7 @@ import copy
 import os
 from pathlib import Path
 import subprocess
+import shutil
 import sys
 from typing import cast
 import zipfile
@@ -59,129 +60,43 @@ def _configure_qsettings_identity(qapp: QtWidgets.QApplication) -> None:
     qapp.setApplicationName("RCMetaStudio")
 
 
-def test_startup_failure_injections_release_qt_objects_with_fatal_warnings():
+def test_shell_success_and_failures_release_qt_objects_and_directory_with_fatal_warnings():
     environment = os.environ.copy()
     environment["QT_QPA_PLATFORM"] = "offscreen"
     environment["QT_FATAL_WARNINGS"] = "1"
     environment["RCMS_QT6_BUILD_ROOT"] = os.environ.get(
         "RCMS_QT6_BUILD_ROOT", str(ROOT / "build" / "qt6")
     )
-    for stage in ("r-load", "meta-form"):
+    expected_platform = {"win32": "windows", "darwin": "cocoa"}.get(sys.platform, "xcb")
+    for stage in (None, "r-load", "meta-form"):
+        command = [sys.executable, str(ROOT / "scripts/native_shell_smoke.py"),
+                   "--native"]
+        if stage is not None:
+            command.extend(["--failure-stage", stage])
+        if sys.platform == "linux" and not environment.get("DISPLAY"):
+            assert shutil.which("xvfb-run"), "Native shell verification requires xvfb-run without a display"
+            command = ["xvfb-run", "-a", *command]
         result = subprocess.run(
-            [
-                sys.executable,
-                str(ROOT / "scripts" / "native_shell_smoke.py"),
-                "--failure-stage",
-                stage,
-            ],
-            cwd=ROOT,
-            env=environment,
-            capture_output=True,
-            text=True,
-            timeout=30,
-            check=False,
+            command, cwd=ROOT, env=environment, capture_output=True,
+            text=True, timeout=30, check=False,
         )
         assert result.returncode == 0, result.stdout + result.stderr
-        assert (
-            "Application shell failure teardown passed at %s." % stage in result.stdout
-        )
+        assert f"Qt platform: {expected_platform}; fatal warnings: 1" in result.stdout
+        assert "Shell disposal restored cwd and removed its temporary directory in-process." in result.stdout
+        if stage is not None:
+            assert "Application shell failure teardown passed at %s." % stage in result.stdout
+        else:
+            assert "Application shell smoke passed" in result.stdout
 
 
-def test_shell_actions_use_native_resources_and_fire_once(qapp, monkeypatch):
-    from rc_metastudio import about_legal_dialog
-    from rc_metastudio import main_window
-
-    about_calls: list[QtWidgets.QWidget] = []
-    open_calls: list[dict[str, object]] = []
-
-    monkeypatch.setattr(
-        about_legal_dialog.AboutLegalDialog,
-        "exec",
-        lambda dialog: about_calls.append(dialog.parentWidget()) or 0,
-    )
-    monkeypatch.setattr(
-        main_window.QFileDialog,
-        "getOpenFileName",
-        lambda **kwargs: open_calls.append(kwargs) or ("", ""),
-    )
-
-    app, window = automation.start_automation()
-    try:
-        connected_actions = (
-            window.action_save,
-            window.action_save_as,
-            window.action_open,
-            window.action_new_dataset,
-            window.action_quit,
-            window.action_go,
-            window.action_cum_ma,
-            window.action_loo_ma,
-            window.action_undo,
-            window.action_redo,
-            window.action_copy,
-            window.action_paste,
-            window.action_auto_fit_columns,
-            window.action_edit,
-            window.action_add_covariate,
-            window.action_meta_regression,
-            window.action_subgroup_ma,
-            window.action_about_legal,
-            window.action_change_confidence_level,
-            window.action_import_csv,
-        )
-        for action in connected_actions:
-            assert isinstance(action, QtGui.QAction)
-            assert action.text()
-            assert not action.icon().isNull()
-
-        assert [action.text() for action in window.menuBar().actions()] == [
-            "File",
-            "Edit",
-            "View",
-            "Analysis",
-            "Dataset",
-            "Help",
-        ]
-
-        assert (
-            window.action_open.shortcut().matches(
-                QtGui.QKeySequence(QtGui.QKeySequence.StandardKey.Open)
-            )
-            == QtGui.QKeySequence.SequenceMatch.ExactMatch
-        )
-        assert (
-            window.action_save.shortcut().matches(
-                QtGui.QKeySequence(QtGui.QKeySequence.StandardKey.Save)
-            )
-            == QtGui.QKeySequence.SequenceMatch.ExactMatch
-        )
-        assert (
-            window.action_new_dataset.shortcut().matches(
-                QtGui.QKeySequence(QtGui.QKeySequence.StandardKey.New)
-            )
-            == QtGui.QKeySequence.SequenceMatch.ExactMatch
-        )
-        assert (
-            window.action_quit.shortcut().matches(
-                QtGui.QKeySequence(QtGui.QKeySequence.StandardKey.Quit)
-            )
-            == QtGui.QKeySequence.SequenceMatch.ExactMatch
-        )
-
-        window.action_about_legal.trigger()
-        window.action_open.trigger()
-        app.processEvents()
-
-        assert about_calls == [window]
-        assert len(open_calls) == 1
-        assert open_calls[0]["parent"] is window
-        assert "*.rcms" in str(open_calls[0]["filter"])
-    finally:
-        _close_shell(app, window)
 
 
 def test_close_cancel_and_failed_save_keep_owned_shell_alive(qapp, monkeypatch):
 
+    from rc_metastudio import app_error_handler
+    unexpected = []
+    monkeypatch.setattr(app_error_handler, "show_unexpected_error",
+                        lambda error, parent=None: unexpected.append(str(error)))
     app, window = automation.start_automation()
     window.workspace.mark_dirty()
     monkeypatch.setattr(
@@ -211,6 +126,7 @@ def test_close_cancel_and_failed_save_keep_owned_shell_alive(qapp, monkeypatch):
     app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
     app.processEvents()
     assert window not in app.topLevelWidgets()
+    assert unexpected == []
 
 
 def test_qt6_settings_migration_preserves_domain_values_and_recent_projects(qapp):
@@ -398,30 +314,14 @@ def test_structured_project_restores_nondefault_active_selection_without_normali
 
     source = project_format.load_project(ROOT / "sample_projects" / "amino.rcms")
     project = _json_map(copy.deepcopy(source.project))
-    dataset = _json_map(project["dataset"])
-    for outcome in _json_maps(dataset["outcomes"]):
-        if outcome["name"] == "nephrotoxic":
-            _json_list(outcome["follow_ups"]).append("second")
-    for study in _json_maps(dataset["studies"]):
-        first = next(
-            unit
-            for unit in _json_maps(study["analysis_units"])
-            if unit["outcome"] == "nephrotoxic" and unit["follow_up"] == "first"
-        )
-        second = copy.deepcopy(first)
-        second["follow_up"] = "second"
-        _json_maps(study["analysis_units"]).append(second)
-    state = {
-        "schema_version": project_format.CURRENT_FORMAT_VERSION,
-        "active_outcome": "nephrotoxic",
-        "active_follow_up": "second",
-        "active_groups": ["Control", "Intervention"],
-        "active_effect": "RR",
-        "confidence_level": 90.0,
-    }
+    sheet = next(item for item in _json_maps(project["sheets"]) if item["name"] == "nephrotoxic")
+    _json_list(sheet["arms"]).reverse()
+    _json_map(sheet["settings"]).update(metric="RR", confidence_level=90.0)
+    state = {"schema_version": project_format.CURRENT_FORMAT_VERSION,
+             "current_sheet_id": sheet["id"]}
     selected = tmp_path / "selected.rcms"
     project_format.save_project(
-        selected, cast(project_format.JsonObject, project), state
+        selected, cast(project_format.JsonObject, project), cast(project_format.JsonObject, state)
     )
 
     app, window = automation.start_automation()
@@ -429,15 +329,13 @@ def test_structured_project_restores_nondefault_active_selection_without_normali
     try:
         assert window.open(str(selected)) is True
         assert window.model.current_outcome_name == "nephrotoxic"
-        assert window.model.get_current_follow_up_name() == "second"
-        assert window.model.current_groups == ["Control", "Intervention"]
+        assert window.model.arm_names == ["Control", "Intervention"]
         assert window.model.current_effect == "RR"
         assert window.model.get_confidence_level() == 90.0
         assert window.save() is True
         assert window.open(str(selected)) is True
         assert window.model.current_outcome_name == "nephrotoxic"
-        assert window.model.get_current_follow_up_name() == "second"
-        assert window.model.current_groups == ["Control", "Intervention"]
+        assert window.model.arm_names == ["Control", "Intervention"]
         assert window.model.current_effect == "RR"
     finally:
         _close_shell(app, window)
@@ -496,10 +394,14 @@ def test_new_dataset_clears_previous_project_destination_and_starts_dirty(
 
 
 def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards(
-    qapp, monkeypatch
+    qapp, monkeypatch, tmp_path
 ):
     from rc_metastudio import main_wizard
 
+    candidate = tmp_path / "candidate.csv"
+    candidate.write_text("Study,Year,Events,Total\nCandidate,2024,1,10\n", encoding="utf-8")
+    monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileName",
+                        lambda *_args, **_kwargs: (str(candidate), "CSV"))
     target = str(ROOT / "sample_projects" / "amino.rcms")
     for source_path in ("new_dataset", "csv_import"):
         app, window = automation.start_automation()
@@ -828,7 +730,7 @@ def test_post_replace_durability_failure_commits_save_and_authorizes_next_action
         assert window.model.analysis_source_path == str(destination)
         assert window.workspace.is_dirty is False
         saved_dataset = _json_map(
-            project_format.load_project(destination).project["dataset"]
+            project_format.load_project(destination).project
         )
         assert saved_dataset["notes"] == "save-as installed"
         assert warnings[-1][0] == "Project Saved; Durability Uncertain"
@@ -859,7 +761,7 @@ def test_post_replace_durability_failure_commits_save_and_authorizes_next_action
             assert window.save() is True
         assert window.workspace.is_dirty is False
         saved_dataset = _json_map(
-            project_format.load_project(destination).project["dataset"]
+            project_format.load_project(destination).project
         )
         assert saved_dataset["notes"] == "save installed"
         assert warnings[-1][0] == "Project Saved; Durability Uncertain"

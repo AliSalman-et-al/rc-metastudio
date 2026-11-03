@@ -99,8 +99,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     def __init__(
         self,
         analysis_unit,
-        current_groups,
-        group_comparison,
+        arm_names,
+        arm_key,
         current_effect,
         confidence_level=None,
         calculator: CalculatorService | None = None,
@@ -108,6 +108,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     ):
         super(ContinuousDataDialog, self).__init__(parent)
         self.setupUi(self)
+        self.dialog_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.simple_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self._configure_tables()
         self._configure_semantic_fields()
         self._configure_focus_revelation()
@@ -128,9 +131,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         )
 
         self.analysis_unit = analysis_unit
-        self.current_groups = current_groups
+        self.arm_names = arm_names
         self.current_effect = current_effect
-        self.group_comparison = group_comparison
+        self.arm_key = arm_key
         self.metric_parameter = None
         self.entry_widgets = [
             self.simple_table,
@@ -153,7 +156,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self._configure_readable_ci_label()
         self.current_item_data = {}
 
-        groups_names = [str(group_name) for group_name in self.current_groups]
+        groups_names = [str(group_name) for group_name in self.arm_names]
         self.simple_table.setVerticalHeaderLabels(groups_names)
 
         self.tables = [
@@ -161,9 +164,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.g1_pre_post_table,
             self.g2_pre_post_table,
         ]
-        self.group_one_label.setText(str(self.current_groups[0]))
-        self.group_two_label.setText(str(self.current_groups[1]))
-        for table, group in zip((self.g1_pre_post_table, self.g2_pre_post_table), self.current_groups):
+        self.group_one_label.setText(str(self.arm_names[0]))
+        self.group_two_label.setText(str(self.arm_names[1]))
+        for table, group in zip((self.g1_pre_post_table, self.g2_pre_post_table), self.arm_names):
             table.setAccessibleName(f"{group} pre/post summaries")
             table.setAccessibleDescription(f"Pre-treatment and post-treatment summary values for {group}.")
 
@@ -178,7 +181,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.update_effect_from_raw_data()
         self.update_back_calculation_button()
 
-        if self.analysis_unit.outcome.sub_type not in {"reg_coef", "generic_effect"}:
+        if self.analysis_unit.sheet.sub_type not in {"reg_coef", "generic_effect"}:
             self.input_mode_combo.addItem("Group summaries", "summary")
         self.input_mode_combo.addItem("Entered estimate", "estimate")
         self.input_mode_combo.setAccessibleName("Study input method")
@@ -193,7 +196,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
             "continuous calculator OK button",
         ).setDefault(True)
-        self._request_initial_content_refit()
+        self._request_content_refit()
 
     def _update_input_modes(self):
         index = self.input_mode_combo.findData("pre-post")
@@ -206,10 +209,12 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
     def _input_mode_changed(self):
         mode = self.input_mode_combo.currentData()
+        mode_changed = mode != getattr(self, "_active_input_mode", None)
+        self._active_input_mode = mode
         self.content_scroll.setVisible(mode != "estimate")
         self.simple_group.setVisible(mode == "summary")
         self.pre_post_group_box.setVisible(mode == "pre-post")
-        self._content_layout_changed()
+        self._content_layout_changed(mode_changed=mode_changed)
 
     def _configure_tables(self):
         """Give each data grid its own overflow and user-adjustable columns."""
@@ -226,7 +231,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
             header = table.horizontalHeader()
             header = required(header, "continuous table header")
-            header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+            header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
             header.setStretchLastSection(False)
             table.resizeColumnsToContents()
             table.resizeRowsToContents()
@@ -315,20 +320,30 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         except RuntimeError:
             pass
 
-    def _request_initial_content_refit(self):
+    def _request_content_refit(self, *, mode_changed=False):
         controller = self.__dict__.get("_layout_controller")
-        if controller is not None and not self.isVisible():
+        if controller is not None and (mode_changed or not self.isVisible()):
+            height = self.dialog_layout.sizeHint().height()
+            if not self.content_scroll.isHidden():
+                height += (
+                    self.content_layout.sizeHint().height()
+                    - self.content_scroll.sizeHint().height()
+                    + 2 * self.content_scroll.frameWidth()
+                )
+            adaptive_window.set_content_preferred_width(
+                self, 480, self.fontMetrics().horizontalAdvance("-9999.9999") * 8 + 140, height
+            )
             controller.request_content_refit()
 
-    def _content_layout_changed(self):
-        """Relayout dynamic content without taking visible root geometry ownership."""
+    def _content_layout_changed(self, *, mode_changed=False):
+        """Refit the active inputs within the screen bounds."""
         content_layout = self.__dict__.get("content_layout")
         content_widget = self.__dict__.get("content_widget")
         if content_layout is not None:
             content_layout.invalidate()
         if content_widget is not None:
             content_widget.updateGeometry()
-        self._request_initial_content_refit()
+        self._request_content_refit(mode_changed=mode_changed)
 
     def _update_effect_choice_accessibility(self):
         combo = self.effect_combo_box
@@ -382,7 +397,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         required_width = max(
             header.sectionSizeHint(column), table.sizeHintForColumn(column)
         )
-        if required_width > table.columnWidth(column):
+        if header.sectionResizeMode(column) != QHeaderView.ResizeMode.Stretch and required_width > table.columnWidth(column):
             header.resizeSection(column, required_width)
 
     def _fit_tables_to_contents(self):
@@ -522,7 +537,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self._update_effect_choice_accessibility()
         self._content_layout_changed()
 
-        self.group_comparison = self.get_current_group_comparison()
+        self.arm_key = self.get_current_arm_key()
 
         self.update_effect_from_raw_data()
         self.set_current_effect()
@@ -551,7 +566,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                     new_text=new_text,
                     analysis_unit=self.analysis_unit,
                     current_effect=self.current_effect,
-                    group_comparison=self.group_comparison,
+                    arm_key=self.arm_key,
                     conv_to_disp_scale=partial(
                         self.calculator.continuous_convert_scale,
                         metric_name=self.current_effect,
@@ -562,9 +577,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                     ci_param=ci_param,
                     source=calc_fncs.calculator_effect_source(
                         self.analysis_unit,
-                        self.current_groups,
+                        self.arm_names,
                         self.current_effect,
-                        self.group_comparison,
+                        self.arm_key,
                         self.confidence_multiplier,
                     ),
                     **options,
@@ -645,15 +660,15 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
         if val_str == "est":
             self.analysis_unit.set_effect(
-                self.current_effect, self.group_comparison, calculation_scale_value
+                self.current_effect, self.arm_key, calculation_scale_value
             )
         elif val_str == "lower":
             self.analysis_unit.set_lower(
-                self.current_effect, self.group_comparison, calculation_scale_value
+                self.current_effect, self.arm_key, calculation_scale_value
             )
         elif val_str == "upper":
             self.analysis_unit.set_upper(
-                self.current_effect, self.group_comparison, calculation_scale_value
+                self.current_effect, self.arm_key, calculation_scale_value
             )
         elif val_str == "correlation_pre_post":
             # Recompute the estimates
@@ -717,17 +732,18 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             analysis_unit=self.analysis_unit,
             txt_boxes=txt_boxes,
             current_effect=self.current_effect,
-            group_comparison=self.group_comparison,
+            arm_key=self.arm_key,
             data_type="continuous",
             confidence_multiplier=self.confidence_multiplier,
             source=calc_fncs.calculator_effect_source(
                 self.analysis_unit,
-                self.current_groups,
+                self.arm_names,
                 self.current_effect,
-                self.group_comparison,
+                self.arm_key,
                 self.confidence_multiplier,
             ),
         )
+        calc_fncs.update_calculator_readout(self, "continuous")
 
         self.change_row_color_according_to_metric()
 
@@ -739,8 +755,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     def update_raw_data(self):
         """Updates table widget with data from analysis_unit"""
         with QSignalBlocker(self.simple_table):
-            for row_index, group_name in enumerate(self.current_groups):
-                group_raw_data = self.analysis_unit.get_raw_data_for_group(group_name)
+            for row_index, group_name in enumerate(self.arm_names):
+                group_raw_data = self.analysis_unit.get_raw_data_for_arm(group_name)
                 for col in range(len(group_raw_data)):
                     self._set_val(
                         row_index, col, group_raw_data[col], self.simple_table, supplied=True
@@ -850,6 +866,13 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             table = self.simple_table
 
         row, col = row_index, var_index
+        header = table.horizontalHeaderItem(col)
+        if header is not None and self._imputation_field_name(header.text()) == "pval":
+            item = table.item(row, col)
+            if supplied is not True:
+                if item is not None and item.data(Qt.ItemDataRole.UserRole):
+                    return
+                val = None
         if is_nan(val):  # get out quick
             return
 
@@ -890,14 +913,14 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         return row_filled
 
     def _copy_raw_data_from_table_to_analysis_unit(self):
-        for row_index, group_name in enumerate(self.current_groups):
+        for row_index, group_name in enumerate(self.arm_names):
             current_values = [
                 self._get_float(row_index, col_index)
                 for col_index in range(
-                    len(self.analysis_unit.get_raw_data_for_group(group_name))
+                    len(self.analysis_unit.get_raw_data_for_arm(group_name))
                 )
             ]
-            self.analysis_unit.set_raw_data_for_group(group_name, current_values)
+            self.analysis_unit.set_raw_data_for_arm(group_name, current_values)
 
     def restore_analysis_unit(self, old_analysis_unit):
         """Restores the analysis_unit data and resets the form"""
@@ -972,7 +995,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     def impute_data(self):
         """Fill derivable study fields from the entered values."""
         var_names = self.get_column_header_strs()
-        for row_index, group_name in enumerate(self.current_groups):
+        for row_index, group_name in enumerate(self.arm_names):
             current_values = {}
             for var_index, var_name in enumerate(var_names):
                 var_value = self._get_float(row_index, var_index)
@@ -1190,8 +1213,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         return x is None or x == ""
 
     def update_effect_from_raw_data(self):
-        n1, m1, sd1, n2, m2, sd2 = self.analysis_unit.get_raw_data_for_groups(
-            self.current_groups
+        n1, m1, sd1, n2, m2, sd2 = self.analysis_unit.get_raw_data_for_arms(
+            self.arm_names
         )
         se1, se2 = self._get_float(0, 3), self._get_float(1, 3)
 
@@ -1220,7 +1243,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             est_and_ci_d, "calc_scale", metric=self.current_effect
         )
         self.analysis_unit.set_effect_and_ci(
-            self.current_effect, self.group_comparison, est, low, high,
+            self.current_effect, self.arm_key, est, low, high,
             confidence_multiplier=self.confidence_multiplier,
         )
         self.set_current_effect()
@@ -1361,7 +1384,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             tmp = self.analysis_unit.get_effect_and_ci_for_source(
                 "entered",
                 self.current_effect,
-                self.group_comparison,
+                self.arm_key,
                 self.confidence_multiplier,
             )
             effect_data = {
@@ -1464,12 +1487,12 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
         # Choose one of the values if multiple ones were returned in the output
         keys_to_names = {
-            "n1": f"{self.current_groups[0]} sample size",
-            "n2": f"{self.current_groups[1]} sample size",
-            "sd1": f"{self.current_groups[0]} standard deviation",
-            "sd2": f"{self.current_groups[1]} standard deviation",
-            "mean1": f"{self.current_groups[0]} mean",
-            "mean2": f"{self.current_groups[1]} mean",
+            "n1": f"{self.arm_names[0]} sample size",
+            "n2": f"{self.arm_names[1]} sample size",
+            "sd1": f"{self.arm_names[0]} standard deviation",
+            "sd2": f"{self.arm_names[1]} standard deviation",
+            "mean1": f"{self.arm_names[0]} mean",
+            "mean2": f"{self.arm_names[1]} mean",
         }
         for key, value in imputed.items():
             # The R imputation code can theoretically yield up to four values
@@ -1504,7 +1527,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             "sd": cast(float | int | None, imputed["sd2"]),
             "mean": cast(float | int | None, imputed["mean2"]),
         }
-        for row in range(len(self.current_groups)):
+        for row in range(len(self.arm_names)):
             for var_index, var_name in enumerate(var_names):
                 field_name = self._imputation_field_name(var_name)
                 if field_name not in ["n", "sd", "mean"]:
@@ -1549,7 +1572,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 signal_blockers.enter_context(QSignalBlocker(widget))
             # reset tables
             for table in self.tables:
-                for row_index in range(len(self.current_groups)):
+                for row_index in range(len(self.arm_names)):
                     for var_index in range(table.columnCount()):
                         self._set_val(row_index, var_index, "", table=table)
 
@@ -1564,7 +1587,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 and metric in CONTINUOUS_ONE_ARM_METRICS
             ):
                 self.analysis_unit.set_effect_for_source(
-                    "entered", metric, self.group_comparison, None, None, None
+                    "entered", metric, self.arm_key, None, None, None
                 )
         # clear line edits
         self.set_current_effect()
@@ -1596,7 +1619,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
     def _effect_display_label(self, effect):
         if effect == "TX Mean":
-            return {"reg_coef": "Coefficient", "generic_effect": "Entered effect"}.get(self.analysis_unit.outcome.sub_type, "Mean")
+            return {"reg_coef": "Coefficient", "generic_effect": "Entered effect"}.get(self.analysis_unit.sheet.sub_type, "Mean")
         return "%s (%s)" % (CONTINUOUS_METRIC_NAMES.get(effect, effect), effect)
 
     def _selected_effect(self):
@@ -1605,13 +1628,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             effect = self.effect_combo_box.currentText()
         return str(effect)
 
-    def get_current_group_comparison(self):
-
-        if self.current_effect in CONTINUOUS_ONE_ARM_METRICS:
-            group_comparison = self.current_groups[0]
-        else:
-            group_comparison = "-".join(self.current_groups)
-        return group_comparison
+    def get_current_arm_key(self):
+        names = self.arm_names[:1] if self.current_effect in CONTINUOUS_ONE_ARM_METRICS else self.arm_names
+        return tuple(self.analysis_unit.arms[name].stable_id for name in names)
 
     def undo(self):
         self._field_history.undo()

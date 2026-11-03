@@ -38,7 +38,7 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
     class Model:
         current_effect = "OR"
         current_outcome_name = "Outcome"
-        current_groups = ["A", "B"]
+        arm_names = ["A", "B"]
 
         def get_current_outcome_subtype(self):
             return None
@@ -46,9 +46,15 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
         def get_current_follow_up_name(self):
             return "first"
 
-        def get_studies(self):
+        def get_studies(self, only_if_included=True):
             return []
-        dataset = SimpleNamespace(covariates=[])
+
+        def get_current_raw_data(self):
+            return []
+
+        current_sheet = SimpleNamespace(id="sheet", name="Outcome", settings={}, covariates=[])
+        current_sheet_id = "sheet"
+        dataset = SimpleNamespace(sheets=[current_sheet])
 
         def get_current_outcome_type(self):
             return "binary"
@@ -200,7 +206,12 @@ def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(mo
         form.run_ma()
 
         assert not shown
-        assert "simulated R failure" in form.analysis_error_label.text()
+        assert "simulated R failure" in form.analysis_error_details.toPlainText()
+        assert form.analysis_error_label.text() == "No studies are included. Tick Include for at least one study with complete data."
+        assert "simulated R failure" not in form.analysis_error_label.text()
+        assert form.analysis_error_details.isHidden()
+        form.analysis_error_toggle.click()
+        assert not form.analysis_error_details.isHidden()
         assert not form.analysis_error_label.isHidden()
         assert results == []
     finally:
@@ -294,7 +305,12 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
         form.run_ma()
 
         assert not shown
-        assert "simulated recompute failure" in form.analysis_error_label.text()
+        assert "simulated recompute failure" in form.analysis_error_details.toPlainText()
+        assert form.analysis_error_label.text() == "No studies are included. Tick Include for at least one study with complete data."
+        assert "simulated recompute failure" not in form.analysis_error_label.text()
+        assert form.analysis_error_details.isHidden()
+        form.analysis_error_toggle.click()
+        assert not form.analysis_error_details.isHidden()
         assert not form.analysis_error_label.isHidden()
         assert results == []
     finally:
@@ -386,7 +402,12 @@ def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
         app.processEvents()
         assert sip.isdeleted(progress)
         assert not sip.isdeleted(form)
-        assert "simulated setup failure" in form.analysis_error_label.text()
+        assert "simulated setup failure" in form.analysis_error_details.toPlainText()
+        assert form.analysis_error_label.text() == "No studies are included. Tick Include for at least one study with complete data."
+        assert "simulated setup failure" not in form.analysis_error_label.text()
+        assert form.analysis_error_details.isHidden()
+        form.analysis_error_toggle.click()
+        assert not form.analysis_error_details.isHidden()
         form.close()
     finally:
         for name, value in saved.items():

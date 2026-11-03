@@ -29,8 +29,8 @@ def run(app, window, work, record):
     for case, (family, entered, expected) in enumerate(cases):
         window.workspace.mark_saved()
         view = matrix(app, window, "analysis-data-"+family, record, keep_results=True, group_names=entered)
-        assert tuple(window.model.current_groups) == expected, window.model.current_groups
-        assert set(window.model.dataset.get_group_names()) == set(expected), window.model.dataset.get_group_names()
+        assert tuple(window.model.arm_names) == expected, window.model.arm_names
+        assert set(window.model.arm_names) == set(expected), window.model.arm_names
         headers = [str(window.model.headerData(i, QtCore.Qt.Orientation.Horizontal)) for i in range(window.model.columnCount())]
         if family.startswith("twoarm"):
             suffix = "events" if family.endswith("proportion") else "mean"
@@ -48,7 +48,7 @@ def run(app, window, work, record):
             text = view.report_text.toPlainText()
             assert "TX Mean" not in text and "[default]" not in text, text
             if family.startswith("twoarm"):
-                assert comparison in view.identity_label.text(), view.identity_label.text()
+                assert comparison in view.results.identity, view.results.identity
                 assert comparison in app.clipboard().text(), app.clipboard().text()
                 if family.endswith("proportion"):
                     assert "equal odds in "+" and ".join(expected) in text, text
@@ -61,9 +61,9 @@ def run(app, window, work, record):
                     view.plot_service.export(regenerator="forest", params_path=view.params_paths[title], output_path=str(export))
                     assert all(name in export.read_text(encoding="utf-8") for name in expected)
             if expected[0] == "Group":
-                assert "Group: Group" not in view.identity_label.text(), view.identity_label.text()
+                assert "Group: Group" not in view.results.identity, view.results.identity
             else:
-                assert expected[0] in view.identity_label.text(), view.identity_label.text()
+                assert expected[0] in view.results.identity, view.results.identity
             (work/f"arms-{case}-{style}-report.txt").write_text(app.clipboard().text(), encoding="utf-8")
             record("round5-arm-report", view, case=case, style=style, groups=expected, plots=dict(view.results.display_images))
             view.close()
@@ -123,18 +123,16 @@ def run(app, window, work, record):
             wizard.reject()
     window.workspace.mark_saved()
     # Frozen legacy input remains intentional test data, separate from bundled examples.
-    import json
-    from rc_metastudio.project_format import CURRENT_FORMAT_VERSION, save_project
-    snapshot = json.loads((Path(__file__).resolve().parents[1] / "python/fixtures/project_snapshots/amino.rcms.json").read_text(encoding="utf-8"))
+    import subprocess
     legacy = work / "legacy-input-arm-names.rcms"
-    save_project(legacy, {"schema_version": CURRENT_FORMAT_VERSION, "dataset": snapshot["dataset"]},
-                 {"schema_version": CURRENT_FORMAT_VERSION, "active_outcome": None, "active_follow_up": None,
-                  "active_groups": [], "active_effect": None, "confidence_level": 95.0})
+    legacy.write_bytes(subprocess.check_output(
+        ["git", "show", "322ede26:sample_projects/amino.rcms"],
+        cwd=Path(__file__).resolve().parents[2]))
     original = legacy.read_bytes()
     assert window.open(str(legacy), raise_on_error=True)
-    assert window.model.current_groups == ["tx A", "tx B"], window.model.current_groups
+    assert window.model.arm_names == ["Intervention", "Control"], window.model.arm_names
     window.out_path=str(work / "legacy-arm-names.rcms")
     assert window.save() and window.open(window.out_path, raise_on_error=True)
-    assert window.model.current_groups == ["tx A", "tx B"]
+    assert window.model.arm_names == ["Intervention", "Control"]
     assert legacy.read_bytes() == original
-    record("round5-arm-legacy-reopened", window, groups=window.model.current_groups)
+    record("round5-arm-legacy-reopened", window, groups=window.model.arm_names)

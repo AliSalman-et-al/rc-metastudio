@@ -128,7 +128,8 @@ get.res.for.one.binary.study <- function(binary.data, params) {
     mult <- get.mult.from.conf.level(params$conf.level)
     ub <- y + mult*se
     lb <- y - mult*se
-    res <- list("b"=c(y), "ci.lb"=lb, "ci.ub"=ub, "se"=se)
+    res <- list("b"=c(y), "ci.lb"=lb, "ci.ub"=ub, "se"=se,
+                "pval"=2*pnorm(-abs(y/se)))
     res
 }
 
@@ -241,15 +242,12 @@ binary.fixed.mh <- function(binary.data, params){
         results <- list("Summary"=res,
                         "res"=res)
     } else {
-        counts <- rcmetar.corrected.binary.counts(binary.data, params)
-        res<-rma.mh(ai=counts$a, bi=counts$b,
-                    ci=counts$c, di=counts$d,
+        res<-rma.mh(ai=binary.data@g1O1, bi=binary.data@g1O2,
+                    ci=binary.data@g2O1, di=binary.data@g2O2,
                     slab=binary.data@study.names,
                     level=params$conf.level,
                     digits=params$digits,
-                    measure=params$measure,
-                    add=c(0, 0),
-                    to=c("none", "none"))
+                    measure=params$measure)
         pure.res <- res
         if (length(binary.data@y) == 0 || length(binary.data@SE) == 0) {
             binary.data <- compute.bin.point.estimates(binary.data, params)
@@ -365,18 +363,19 @@ binary.fixed.peto <- function(binary.data, params) {
 
     input.params <- params
 
-    if (length(binary.data@g1O1) == 1 || length(binary.data@y) == 1) {
+    if (length(binary.data@g1O1) == 0 && length(binary.data@y) == 1) {
         res <- get.res.for.one.binary.study(binary.data, params)
-        results <- list("Summary"=res,
-                        "res"=res)
-    } else {
+        return(list(Summary=res, res=res,
+                    References=rcmetar.method.references("rma.peto")))
+    }
+
            res <- rma.peto(ai=binary.data@g1O1, bi=binary.data@g1O2,
                         ci=binary.data@g2O1, di=binary.data@g2O2,
                         slab=binary.data@study.names,
                         level=params$conf.level,
                         digits=params$digits,
-                        add=c(params$adjust,params$adjust),
-                        to=c(as.character(params$to), as.character(params$to)),
+                        add=c(params$adjust,0),
+                        to=c(as.character(params$to), "none"),
                         drop00 = FALSE)
         pure.res <- res
         binary.data@y <- res$yi
@@ -416,7 +415,6 @@ binary.fixed.peto <- function(binary.data, params) {
                         "res"=pure.res,
                         "res.info"=binary.fixed.peto.value.info(),
                         "Weights"=weights(res))
-    }
 
     results[["References"]] <- rcmetar.method.references("rma.peto")
     results

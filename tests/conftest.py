@@ -30,6 +30,10 @@ def _get_qapplication():
     app = QtWidgets.QApplication.instance()
     if app is None:
         app = QtWidgets.QApplication([])
+    # Match desktop startup: install the application style before any widgets.
+    from rc_metastudio.qt_layout import configure_application_controls
+
+    configure_application_controls(app)
     _QAPPLICATION = app
     return app
 

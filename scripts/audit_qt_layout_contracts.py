@@ -127,7 +127,7 @@ SOURCE_EXCEPTION_RULES = {
         "methods": {"setGeometry"},
     },
     "style-metric-control": {
-        "paths": {"edit_dialog.py", "main_wizard.py", "qt_layout.py"},
+        "paths": {"main_wizard.py", "qt_layout.py"},
         "methods": {"setFixedSize", "setIconSize", "setMinimumSize"},
     },
     "semantic-icon-control": {

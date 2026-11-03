@@ -11,7 +11,7 @@ $remainingSurfaceTests = @(
     "tests/python/gui/test_adaptive_window_policy.py",
     "tests/python/gui/test_compact_transient_layout.py",
     "tests/python/gui/test_declarative_dialog_sizing.py",
-    "tests/python/gui/test_edit_dataset_workspace_layout.py",
+    "tests/python/gui/test_main_window_data_workflows.py",
     "tests/python/gui/test_main_wizard_workflow_layout.py"
 )
 

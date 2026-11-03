@@ -143,3 +143,12 @@ Use `verify_all.py --full --fresh` for an uncached qualification pass requiring
 current-source R package checks, bridge tests, independent statistical authorities
 and golden gates. The full lane continues to install RCMetaR into an isolated
 owned library on every invocation.
+
+### Required gate after R changes
+
+Every change under `r/RCMetaR`, including plot layout and rendering, requires
+`uv run --no-sync python scripts/verify_rcmetar_r_stack.py --rscript "$RCMS_R_HOME/bin/Rscript" --r-library-cache-root artifacts/r-library-cache --desktop-workers 1`
+after selecting the pinned R runtime. This runs R CMD check, bridge tests, desktop
+workflows and golden compatibility. Retain the command and transcript; targeted R
+tests alone do not replace this gate. Afterwards reinstall RCMetaR into the
+persistent development library selected by `RCMS_R_LIBS`.

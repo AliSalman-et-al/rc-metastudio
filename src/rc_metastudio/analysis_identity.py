@@ -41,11 +41,11 @@ def result_identity(model, workflow, metric, model_label, parameters, confidence
     effect = model.current_effect
     if effect in {"OR", "RR", "HR", "IRR"}:
         quantity = {"OR": "odds", "RR": "risks", "HR": "hazards", "IRR": "event rates"}[effect]
-        groups = " and ".join(model.current_groups)
+        groups = " and ".join(model.arm_names)
         details.append(f"{effect} = 1 means equal {quantity} in {groups}; estimates are fitted on the log scale.")
     elif effect in {"MD", "SMD"}:
         units = "SD units" if effect == "SMD" else "outcome units"
-        groups = " minus ".join(model.current_groups)
+        groups = " minus ".join(model.arm_names)
         details.append(f"{effect}: {groups}, in {units}; 0 indicates no difference.")
     if fits:
         for fitted_metric, fitted_method, fitted_parameters in fits:
@@ -76,15 +76,13 @@ def dataset_label(model):
 
 def dataset_identity(model, metric=None):
     comparison = model.current_effect in meta_globals.TWO_ARM_METRICS
-    groups = " / ".join(model.current_groups if comparison else model.current_groups[:1])
+    groups = " / ".join(model.arm_names if comparison else model.arm_names[:1])
     group_label = "Comparison" if comparison else "Group"
-    follow_up = model.get_current_follow_up_name()
-    labels = [model.current_outcome_name, dataset_label(model)]
+    labels = [model.current_sheet.name, dataset_label(model)]
     quantity = metric or metric_label(model)
     if quantity and model.current_effect != "TX Mean" and quantity.casefold() != labels[-1].casefold():
         labels.append(quantity)
     context = []
     if comparison or groups != "Group":
         context.append(f"{group_label}: {groups}")
-    context.append(f"Follow-up: {follow_up}")
     return " · ".join(labels) + "\n" + " · ".join(context)

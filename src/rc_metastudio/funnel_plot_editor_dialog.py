@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QFileDialog
 from rc_metastudio import adaptive_window, app_error_handler, qt_text
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
+    size_plot_text_editor,
     plot_text_value,
 )
 from rc_metastudio.publication_bias import (
@@ -60,14 +61,15 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self._params = dict(plot_params or {})
         self.figure_caption = QLineEdit(self)
         self.figure_caption.setAccessibleName("Figure caption")
-        self.figure_caption.setToolTip("Outcome, comparison and follow-up. Edit or clear to remove from standalone figures.")
+        self.figure_caption.setToolTip("Sheet and arm comparison. Edit or clear to remove from standalone figures.")
         self.figure_caption.setMaxLength(1000)
         self.figure_caption.setText(str(self._params.get("plot_caption", "") or "").replace("\n", " · "))
         caption_label = QLabel("Figure caption:", self)
         caption_label.setBuddy(self.figure_caption)
         caption_row = self.appearance_layout.rowCount()
-        self.appearance_layout.addWidget(caption_label, caption_row, 0)
-        self.appearance_layout.addWidget(self.figure_caption, caption_row, 1)
+        caption_columns = self.appearance_layout.columnCount()
+        self.appearance_layout.addWidget(caption_label, caption_row, 0, 1, caption_columns)
+        self.appearance_layout.addWidget(self.figure_caption, caption_row + 1, 0, 1, caption_columns)
         self._dirty = False
         self._pending_ok = False
         self._allow_close = True
@@ -80,7 +82,6 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self.plot_type = str(plot_type)
         self._validate_kind_descriptor()
         self.kind = self._kind_from_params()
-        self.kind_label.setText(f"Funnel kind: {self.kind}")
         self._load_params(image_path)
         self._configure_kind()
         self.setTabOrder(self.background_color_button, self.figure_caption)
@@ -120,6 +121,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         )
         self.button_box.clicked.connect(self._button_clicked)
         self._connect_dirty_signals()
+        size_plot_text_editor(self)
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
@@ -410,8 +412,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         )
         if trimfill:
             self.rerun_note.setText(
-                "Only augmented-funnel presentation can be edited here. The trim-and-fill "
-                "estimator, side, model, imputed studies, and eligible study set require a full rerun."
+                "Rerun the analysis to change statistical settings."
             )
 
     def _browse_image_path(self):

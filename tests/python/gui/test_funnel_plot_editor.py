@@ -97,8 +97,7 @@ def test_funnel_editor_disables_inapplicable_controls_by_kind(qapp):
         )
         assert not deeks.sampling_confidence_spin.isEnabled()
         assert deeks.regression_visible_check.isEnabled()
-        assert trimfill.kind_label.text() == "Funnel kind: trimfill"
-        assert "estimator" in trimfill.rerun_note.text()
+        assert trimfill.rerun_note.text() == "Rerun the analysis to change statistical settings."
     finally:
         for dialog in (contour, deeks, trimfill):
             dialog.close()

@@ -10,14 +10,13 @@ def run_coefficients(app, window, work, record):
     from rc_metastudio import r_bridge
     from rc_metastudio.plot_editor_dialog import EditPlotDialog
     from tests.e2e.axis_conventions import check_axis
-    from rc_metastudio.analysis_dataset import Covariate
     def prepare(target):
         for row in range(6):
             assert target.model.setData(target.model.index(row, target.model.RAW_DATA[2]), '1')
         raw = [list(row) for row in target.model.get_current_raw_data()]
         assert raw == [[19+i,10+i,1,81+i] for i in range(6)], raw
-        target.model.dataset.add_covariate(Covariate('Dose','continuous'),
-            {study.name:float(i+1) for i,study in enumerate(target.model.get_studies(only_if_included=True))})
+        target.model.add_covariate('Dose','continuous',
+            {study.label:float(i+1) for i,study in enumerate(target.model.get_studies(only_if_included=True))})
         target.model.reset_model()
         target.enable_menu_options_that_require_dataset()
         target.out_path = str(work / 'reitsma-six-dose.rcms')
@@ -95,8 +94,8 @@ def run_presentation(app, window, work, record):
             window.workspace.mark_saved()
             def prepare(target):
                 if workflow == 'subgroup':
-                    target.model.dataset.add_covariate(analysis_dataset.Covariate('Region','factor'),
-                        {s.name:'A' if i%2 else 'B' for i,s in enumerate(target.model.dataset.studies)})
+                    target.model.add_covariate('Region','factor',
+                        {s.label:'A' if i%2 else 'B' for i,s in enumerate(target.model.get_studies(False))})
                     target.model.reset_model()
                     target.enable_menu_options_that_require_dataset()
             view = matrix(app, window, 'analysis-data-onearm-proportion', record, keep_results=True,
@@ -120,19 +119,19 @@ def run_presentation(app, window, work, record):
     for family, sample in (('hr','Pignon2000-HR'),('irr','NielWeise2008-IRR')):
         window.workspace.mark_saved()
         assert window.open(str(root / 'sample_projects' / (sample+'.rcms')),raise_on_error=True)
-        window.model.dataset.add_covariate(analysis_dataset.Covariate('Dose','continuous'),
-            {s.name:float(i+1) for i,s in enumerate(window.model.get_studies(only_if_included=True))})
+        window.model.add_covariate('Dose','continuous',
+            {s.label:float(i+1) for i,s in enumerate(window.model.get_studies(only_if_included=True))})
         window.model.reset_model()
         window.enable_menu_options_that_require_dataset()
         def regress(dialog):
             for cov, checkbox in dialog.covs_and_check_boxes:
-                checkbox.setChecked(cov.name == 'Dose')
+                checkbox.setChecked(cov['name'] == 'Dose')
             set_parameter(app, dialog, 'digits', 6)
             set_parameter(app, dialog, 'rm.method', 'REML')
             click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
         modal(app, analysis_setup_dialog.AnalysisSetupDialog, regress, window.action_meta_regression.trigger)
         view = next(w for w in app.topLevelWidgets() if isinstance(w,results_window.ResultsWindow) and w.isVisible())
-        assert 'intrcpt' not in view._plain_text_report()
+        assert 'intrcpt' not in view.report_text.toPlainText()
         check_report(app, view, work, record)
         table = next(t for s in view.results.sections for t in s.tables if t.title.startswith('Exponentiated coefficients'))
         assert table.rows[0][0] == 'Intercept', table

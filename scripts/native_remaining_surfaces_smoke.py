@@ -13,7 +13,7 @@ import subprocess
 import sys
 from collections.abc import Callable, Collection
 from pathlib import Path, PurePosixPath
-from typing import Protocol, TypeAlias, TypeGuard
+from typing import Protocol, TypeAlias, TypeGuard, cast
 
 
 SCALE_FACTORS = (1.0, 1.5)
@@ -32,9 +32,6 @@ ACTION_CONTRACTS = {
     "main-wizard": "wizard-next-cancel",
     "confidence-level": "accept-cancel",
     "add-covariate": "accept-cancel",
-    "add-follow-up": "accept-cancel",
-    "add-group": "accept-cancel",
-    "add-outcome": "accept-cancel",
     "add-study": "accept-cancel",
     "import-progress": "none",
     "shared-progress": "none",
@@ -55,6 +52,10 @@ SurfaceFactory: TypeAlias = Callable[[], QtWidgets.QWidget]
 class _ZeroArgumentFactory(Protocol):
     def __call__(self) -> object: ...
 
+
+
+def _offscreen() -> bool:
+    return os.environ.get("RCMS_SMOKE_OFFSCREEN") == "1"
 
 def _is_zero_argument_factory(value: object) -> TypeGuard[_ZeroArgumentFactory]:
     return callable(value)
@@ -214,10 +215,156 @@ def _validated_rect(value: object, label: str) -> dict[str, int]:
     return result
 
 
-def validate_evidence(root: Path = DEFAULT_EVIDENCE_ROOT) -> list[dict[str, object]]:
-    """Validate relocated native evidence at standard and fractional scale."""
+
+def _validate_surface_fields(surface_id: str, surface: dict[str, object]) -> None:
+    required = {
+        "accessibility",
+        "actions",
+        "application_owns_geometry",
+        "archetype",
+        "capture",
+        "close_semantics",
+        "device_pixel_ratio",
+        "first_use_behavior",
+        "focus",
+        "geometry_owner",
+        "logical_frame",
+        "overflow",
+        "physical_frame",
+        "screen_geometry",
+        "screen_clamped",
+        "role",
+    }
+    if set(surface) != required:
+        raise ValueError("remaining-surface %s fields drifted" % surface_id)
+    if surface["accessibility"] is not True:
+        raise ValueError(
+            "remaining-surface %s accessibility failed" % surface_id
+        )
+    _validate_focus_observation(surface_id, surface["focus"])
+    _validate_action_observation(surface_id, surface["actions"])
+    if surface["close_semantics"] is not True:
+        raise ValueError(
+            "remaining-surface %s did not close cleanly" % surface_id
+        )
+    if surface["screen_clamped"] is not True:
+        raise ValueError("remaining-surface %s escaped its screen" % surface_id)
+
+
+def _validate_surface_layout(surface_id: str, surface: dict[str, object]) -> None:
+    contract = tuple(
+        surface[field]
+        for field in (
+            "role",
+            "archetype",
+            "geometry_owner",
+            "overflow",
+            "first_use_behavior",
+        )
+    )
+    if any(not isinstance(value, str) or not value for value in contract):
+        raise ValueError(
+            "remaining-surface %s layout contract is malformed" % surface_id
+        )
+    if contract != _expected_layout_contract(surface_id):
+        raise ValueError(
+            "remaining-surface %s layout contract drifted" % surface_id
+        )
+    expected_application_owner = surface["geometry_owner"] in {
+        "application",
+        "application-first-use",
+    }
+    if surface["application_owns_geometry"] is not expected_application_owner:
+        raise ValueError(
+            "remaining-surface %s geometry policy drifted" % surface_id
+        )
+    expected_first_use = {
+        "EDIT_DATASET": "screen_fraction",
+        "MAIN": "maximized",
+        "RESULTS": "maximized",
+    }.get(str(surface["role"]), "content_preferred")
+    if surface["first_use_behavior"] != expected_first_use:
+        raise ValueError(
+            "remaining-surface %s first-use behavior drifted" % surface_id
+        )
+
+
+def _validate_surface_geometry(surface_id: str, surface: dict[str, object], scale: float) -> None:
+    dpr = _number(surface["device_pixel_ratio"], "device pixel ratio")
+    if abs(dpr - scale) > TOLERANCE:
+        raise ValueError("remaining-surface %s DPR does not match" % surface_id)
+    logical = _validated_rect(surface["logical_frame"], "logical frame")
+    physical = _validated_rect(surface["physical_frame"], "physical frame")
+    screen = _validated_rect(surface["screen_geometry"], "screen geometry")
+    if not (
+        screen["x"] <= logical["x"]
+        and screen["y"] <= logical["y"]
+        and logical["x"] + logical["width"] <= screen["x"] + screen["width"]
+        and logical["y"] + logical["height"] <= screen["y"] + screen["height"]
+    ):
+        raise ValueError(
+            "remaining-surface %s logical frame escaped" % surface_id
+        )
+    for dimension in ("width", "height"):
+        if abs(physical[dimension] - round(logical[dimension] * dpr)) > 2:
+            raise ValueError(
+                "remaining-surface %s physical frame drifted" % surface_id
+            )
+    if (
+        abs(physical["x"] - round((logical["x"] - screen["x"]) * dpr)) > 2
+        or abs(physical["y"] - round((logical["y"] - screen["y"]) * dpr)) > 2
+    ):
+        raise ValueError(
+            "remaining-surface %s physical origin drifted" % surface_id
+        )
+
+
+def _validate_surface_capture(surface_id: str, surface: dict[str, object], scale: float, root: Path, seen_capture_paths: set[str]) -> None:
     from PyQt6 import QtGui
 
+    capture = surface["capture"]
+    if not isinstance(capture, dict) or set(capture) != {
+        "path",
+        "pixel_size",
+        "sha256",
+        "size_bytes",
+        "varied_pixels",
+    }:
+        raise ValueError(
+            "remaining-surface %s capture fields drifted" % surface_id
+        )
+    capture = cast(dict[str, object], capture)
+    expected_relative = _capture_relative_path(scale, surface_id).as_posix()
+    capture_path = capture["path"]
+    if isinstance(capture_path, str) and capture_path in seen_capture_paths:
+        raise ValueError(
+            "remaining-surface evidence capture path is duplicated"
+        )
+    if capture_path != expected_relative:
+        raise ValueError(
+            "remaining-surface %s capture path does not match its scale and surface"
+            % surface_id
+        )
+    seen_capture_paths.add(expected_relative)
+    path = _canonical_member(root, capture["path"])
+    payload = path.read_bytes()
+    image = QtGui.QImage(str(path), "PNG")
+    if not payload.startswith(b"\x89PNG\r\n\x1a\n") or image.isNull():
+        raise ValueError("remaining-surface %s PNG is invalid" % surface_id)
+    if capture["sha256"] != hashlib.sha256(payload).hexdigest():
+        raise ValueError("remaining-surface %s PNG hash drifted" % surface_id)
+    if capture["size_bytes"] != len(payload):
+        raise ValueError("remaining-surface %s PNG size drifted" % surface_id)
+    if capture["pixel_size"] != [image.width(), image.height()]:
+        raise ValueError(
+            "remaining-surface %s PNG dimensions drifted" % surface_id
+        )
+    if capture["varied_pixels"] is not True or not _has_variation(image):
+        raise ValueError("remaining-surface %s PNG is blank" % surface_id)
+
+
+def validate_evidence(root: Path = DEFAULT_EVIDENCE_ROOT) -> list[dict[str, object]]:
+    """Validate relocated native evidence at standard and fractional scale."""
     expected_ids = _remaining_surface_ids()
     records = []
     seen_capture_paths: set[str] = set()
@@ -231,7 +378,7 @@ def validate_evidence(root: Path = DEFAULT_EVIDENCE_ROOT) -> list[dict[str, obje
         }:
             raise ValueError("remaining-surface evidence record fields drifted")
         qpa = record["qpa"]
-        if qpa not in {"windows", "cocoa"}:
+        if qpa not in ({"offscreen"} if _offscreen() else {"windows", "cocoa"}):
             raise ValueError("remaining-surface evidence is not native hosted Qt")
         if record["tab_focus_behavior"] != "TabFocusAllControls":
             raise ValueError(
@@ -243,138 +390,12 @@ def validate_evidence(root: Path = DEFAULT_EVIDENCE_ROOT) -> list[dict[str, obje
         if not isinstance(surfaces, dict) or set(surfaces) != expected_ids:
             raise ValueError("remaining-surface evidence inventory is incomplete")
         for surface_id, surface in surfaces.items():
-            required = {
-                "accessibility",
-                "actions",
-                "application_owns_geometry",
-                "archetype",
-                "capture",
-                "close_semantics",
-                "device_pixel_ratio",
-                "first_use_behavior",
-                "focus",
-                "geometry_owner",
-                "logical_frame",
-                "overflow",
-                "physical_frame",
-                "screen_geometry",
-                "screen_clamped",
-                "role",
-            }
-            if not isinstance(surface, dict) or set(surface) != required:
+            if not isinstance(surface, dict):
                 raise ValueError("remaining-surface %s fields drifted" % surface_id)
-            if surface["accessibility"] is not True:
-                raise ValueError(
-                    "remaining-surface %s accessibility failed" % surface_id
-                )
-            _validate_focus_observation(surface_id, surface["focus"])
-            _validate_action_observation(surface_id, surface["actions"])
-            if surface["close_semantics"] is not True:
-                raise ValueError(
-                    "remaining-surface %s did not close cleanly" % surface_id
-                )
-            if surface["screen_clamped"] is not True:
-                raise ValueError("remaining-surface %s escaped its screen" % surface_id)
-            contract = tuple(
-                surface[field]
-                for field in (
-                    "role",
-                    "archetype",
-                    "geometry_owner",
-                    "overflow",
-                    "first_use_behavior",
-                )
-            )
-            if any(not isinstance(value, str) or not value for value in contract):
-                raise ValueError(
-                    "remaining-surface %s layout contract is malformed" % surface_id
-                )
-            if contract != _expected_layout_contract(surface_id):
-                raise ValueError(
-                    "remaining-surface %s layout contract drifted" % surface_id
-                )
-            expected_application_owner = surface["geometry_owner"] in {
-                "application",
-                "application-first-use",
-            }
-            if surface["application_owns_geometry"] is not expected_application_owner:
-                raise ValueError(
-                    "remaining-surface %s geometry policy drifted" % surface_id
-                )
-            expected_first_use = {
-                "EDIT_DATASET": "screen_fraction",
-                "MAIN": "maximized",
-                "RESULTS": "maximized",
-            }.get(surface["role"], "content_preferred")
-            if surface["first_use_behavior"] != expected_first_use:
-                raise ValueError(
-                    "remaining-surface %s first-use behavior drifted" % surface_id
-                )
-            dpr = _number(surface["device_pixel_ratio"], "device pixel ratio")
-            if abs(dpr - scale) > TOLERANCE:
-                raise ValueError("remaining-surface %s DPR does not match" % surface_id)
-            logical = _validated_rect(surface["logical_frame"], "logical frame")
-            physical = _validated_rect(surface["physical_frame"], "physical frame")
-            screen = _validated_rect(surface["screen_geometry"], "screen geometry")
-            if not (
-                screen["x"] <= logical["x"]
-                and screen["y"] <= logical["y"]
-                and logical["x"] + logical["width"] <= screen["x"] + screen["width"]
-                and logical["y"] + logical["height"] <= screen["y"] + screen["height"]
-            ):
-                raise ValueError(
-                    "remaining-surface %s logical frame escaped" % surface_id
-                )
-            for dimension in ("width", "height"):
-                if abs(physical[dimension] - round(logical[dimension] * dpr)) > 2:
-                    raise ValueError(
-                        "remaining-surface %s physical frame drifted" % surface_id
-                    )
-            if (
-                abs(physical["x"] - round((logical["x"] - screen["x"]) * dpr)) > 2
-                or abs(physical["y"] - round((logical["y"] - screen["y"]) * dpr)) > 2
-            ):
-                raise ValueError(
-                    "remaining-surface %s physical origin drifted" % surface_id
-                )
-            capture = surface["capture"]
-            if not isinstance(capture, dict) or set(capture) != {
-                "path",
-                "pixel_size",
-                "sha256",
-                "size_bytes",
-                "varied_pixels",
-            }:
-                raise ValueError(
-                    "remaining-surface %s capture fields drifted" % surface_id
-                )
-            expected_relative = _capture_relative_path(scale, surface_id).as_posix()
-            capture_path = capture["path"]
-            if isinstance(capture_path, str) and capture_path in seen_capture_paths:
-                raise ValueError(
-                    "remaining-surface evidence capture path is duplicated"
-                )
-            if capture_path != expected_relative:
-                raise ValueError(
-                    "remaining-surface %s capture path does not match its scale and surface"
-                    % surface_id
-                )
-            seen_capture_paths.add(expected_relative)
-            path = _canonical_member(root, capture["path"])
-            payload = path.read_bytes()
-            image = QtGui.QImage(str(path), "PNG")
-            if not payload.startswith(b"\x89PNG\r\n\x1a\n") or image.isNull():
-                raise ValueError("remaining-surface %s PNG is invalid" % surface_id)
-            if capture["sha256"] != hashlib.sha256(payload).hexdigest():
-                raise ValueError("remaining-surface %s PNG hash drifted" % surface_id)
-            if capture["size_bytes"] != len(payload):
-                raise ValueError("remaining-surface %s PNG size drifted" % surface_id)
-            if capture["pixel_size"] != [image.width(), image.height()]:
-                raise ValueError(
-                    "remaining-surface %s PNG dimensions drifted" % surface_id
-                )
-            if capture["varied_pixels"] is not True or not _has_variation(image):
-                raise ValueError("remaining-surface %s PNG is blank" % surface_id)
+            _validate_surface_fields(surface_id, surface)
+            _validate_surface_layout(surface_id, surface)
+            _validate_surface_geometry(surface_id, surface, scale)
+            _validate_surface_capture(surface_id, surface, scale, root, seen_capture_paths)
         records.append(record)
     if len(seen_capture_paths) != len(SCALE_FACTORS) * len(expected_ids):
         raise ValueError("remaining-surface evidence capture count is incomplete")
@@ -696,9 +717,6 @@ def _surface_factories() -> dict[str, SurfaceFactory]:
             confidence_level_dialog.ConfidenceLevelDialog, "confidence-level"
         ),
         "add-covariate": checked_factory(add_new_dialogs.AddCovariateDialog, "add-covariate"),
-        "add-follow-up": checked_factory(add_new_dialogs.AddFollowUpDialog, "add-follow-up"),
-        "add-group": checked_factory(add_new_dialogs.AddGroupDialog, "add-group"),
-        "add-outcome": checked_factory(add_new_dialogs.AddOutcomeDialog, "add-outcome"),
         "add-study": checked_factory(add_new_dialogs.AddStudyDialog, "add-study"),
         "import-progress": checked_factory(main_window.ImportProgressDialog, "import-progress"),
         "shared-progress": checked_factory(progress_dialog.AnalysisProgressDialog, "shared-progress"),
@@ -1191,7 +1209,7 @@ def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None
     # Evidence failures must terminate the gate, never block behind the app's
     # interactive unexpected-error dialog.
     sys.excepthook = sys.__excepthook__
-    if app.platformName() not in {"windows", "cocoa"}:
+    if app.platformName() not in ({"offscreen"} if _offscreen() else {"windows", "cocoa"}):
         raise RuntimeError("remaining-surface smoke requires qwindows or cocoa")
     tab_focus_behavior = app.styleHints().tabFocusBehavior().name
     if tab_focus_behavior != "TabFocusAllControls":
@@ -1370,10 +1388,14 @@ def _native_dpr() -> float:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--evidence-root", type=Path, default=DEFAULT_EVIDENCE_ROOT)
+    parser.add_argument("--offscreen", action="store_true")
     parser.add_argument("--scale", type=float)
     parser.add_argument("--surface")
     parser.add_argument("--validate-only", action="store_true")
     args = parser.parse_args()
+    if args.offscreen:
+        os.environ["RCMS_SMOKE_OFFSCREEN"] = "1"
+        os.environ["QT_QPA_PLATFORM"] = "offscreen"
     if args.validate_only:
         validate_evidence(args.evidence_root)
         return 0

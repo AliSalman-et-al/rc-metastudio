@@ -1,0 +1,68 @@
+[
+  {
+    "case": "continuous-subgroup",
+    "original": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/continuous-subgroup/golden_continuous_subgroup_forest.png",
+    "local": "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/windows-golden-bca2-reviewed/artifacts/continuous-subgroup/golden_continuous_subgroup_forest.png",
+    "sha256": "0cdc4df67e92627f29d76de2aaa77f1cba4b9719308f98b27ebba23c02071d0a"
+  },
+  {
+    "case": "continuous-meta-regression",
+    "original": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/continuous-meta-regression/reg.png",
+    "local": "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/windows-golden-bca2-reviewed/artifacts/continuous-meta-regression/reg.png",
+    "sha256": "c620811e4a6d7f3339558832229437a55b48004bb0bc1bfccda12460cbde0b8b"
+  },
+  {
+    "case": "amino-binary-meta-regression",
+    "original": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/amino-binary-meta-regression/reg.png",
+    "local": "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/windows-golden-bca2-reviewed/artifacts/amino-binary-meta-regression/reg.png",
+    "sha256": "5c1c8ef9f6dd7d29c9ed9743b9c3754fd9a077dd5b4236a1a6acd131cf10d132"
+  },
+  {
+    "case": "amino-binary-random",
+    "original": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/amino-binary-random/golden_amino_forest.png",
+    "local": "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/windows-golden-bca2-reviewed/artifacts/amino-binary-random/golden_amino_forest.png",
+    "sha256": "684fbe3ea5ac2928f472ae80d5db64a553ca35e36e8b920517ab9d4ac2d41e64"
+  },
+  {
+    "case": "lymph-diagnostic-random-dor",
+    "original": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/lymph-diagnostic-random-dor/golden_lymph_forest_dor.png",
+    "local": "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/windows-golden-bca2-reviewed/artifacts/lymph-diagnostic-random-dor/golden_lymph_forest_dor.png",
+    "sha256": "e30c64e7c3cb26c5fc398b6a32ed13881e178fca71b95d4a0164a87651d35f83"
+  },
+  {
+    "case": "amino-binary-subgroup",
+    "original": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/amino-binary-subgroup/golden_amino_subgroup_forest.png",
+    "local": "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/windows-golden-bca2-reviewed/artifacts/amino-binary-subgroup/golden_amino_subgroup_forest.png",
+    "sha256": "df281262fffa7f77ac6c88f08be591a76ed565fdd93df7c4e9c66df77c031a3c"
+  },
+  {
+    "case": "continuous-random",
+    "original": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/continuous-random/golden_continuous_forest.png",
+    "local": "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/windows-golden-bca2-reviewed/artifacts/continuous-random/golden_continuous_forest.png",
+    "sha256": "4f8c3029aa5f3aee7be1272a082cf850da0650239e186cb13d835a50d6f302c6"
+  },
+  {
+    "case": "amino-binary-cumulative",
+    "original": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/amino-binary-cumulative/golden_amino_cumulative_forest.png",
+    "local": "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/windows-golden-bca2-reviewed/artifacts/amino-binary-cumulative/golden_amino_cumulative_forest.png",
+    "sha256": "3afee6185ecf1b65002cecab4a0f38e13fa90dd8d5d5c5dde790d08dd3673c67"
+  },
+  {
+    "case": "continuous-cumulative",
+    "original": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/continuous-cumulative/golden_continuous_cumulative_forest.png",
+    "local": "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/windows-golden-bca2-reviewed/artifacts/continuous-cumulative/golden_continuous_cumulative_forest.png",
+    "sha256": "6e3f655140f6048b38d20a69f5729ea94eee078e251d6e2f2105f3621eccac05"
+  },
+  {
+    "case": "continuous-leave-one-out",
+    "original": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/continuous-leave-one-out/golden_continuous_loo_forest.png",
+    "local": "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/windows-golden-bca2-reviewed/artifacts/continuous-leave-one-out/golden_continuous_loo_forest.png",
+    "sha256": "78ebc0a143ec41d00dee964c13e89105521e5b9ec334af0445b33ad61adfcbbf"
+  },
+  {
+    "case": "amino-binary-leave-one-out",
+    "original": "D:/a/rc-metastudio/rc-metastudio/build/qt6-verification/golden-compatibility-r-stack-v2/artifacts/amino-binary-leave-one-out/golden_amino_loo_forest.png",
+    "local": "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/windows-golden-bca2-reviewed/artifacts/amino-binary-leave-one-out/golden_amino_loo_forest.png",
+    "sha256": "931753b3cacf5413766801bdb0d4b1f8444b8dad6353ad33d92ef194b6639575"
+  }
+]

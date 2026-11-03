@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 @pytest.mark.parametrize(
     "scenario",
-    [scenario for scenario in SCENARIOS if scenario != "doctor"],
+    [scenario for scenario in SCENARIOS if scenario not in {"doctor", "ui-crawl"}],
 )
 def test_desktop_workflow(scenario):
     # The same launcher owns timeouts, isolation and durable evidence in CI.

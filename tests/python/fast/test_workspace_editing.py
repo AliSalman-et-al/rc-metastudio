@@ -1,10 +1,12 @@
+from rc_metastudio.project_domain import RowId, SheetId
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 from dataclasses import dataclass
 
 from rc_metastudio.workspace_editing import WorkspaceEditingService
 from rc_metastudio.workspace_editing import WorkspaceEditingContext, WorkspaceEditTarget
-from rc_metastudio.analysis_dataset import Dataset, Study as DomainStudy
+from rc_metastudio.analysis_dataset import Dataset, Sheet, StudyRow
+from rc_metastudio.analysis_unit import AnalysisUnit
 
 
 class FakeBridge:
@@ -37,16 +39,16 @@ class Study:
 
 def test_study_rename_normalizes_and_rejects_blank_or_duplicate_names():
     dataset = Dataset()
-    dataset.add_study(DomainStudy(1, name="Alpha"))
-    dataset.add_study(DomainStudy(2, name="Beta"))
+    sheet = Sheet(SheetId("sheet"), "Outcome", 0)
+    dataset.sheets.append(sheet)
+    sheet.rows.extend(StudyRow(RowId(str(i)), name, AnalysisUnit(sheet)) for i, name in enumerate(("Alpha", "Beta")))
     context = WorkspaceEditingContext(
-        outcome_name=None,
-        follow_up_name=None,
-        current_groups=(),
+        sheet_id=SheetId("sheet"),
+        arm_names=(),
         current_effect=None,
         data_type=None,
         outcome_subtype=None,
-        group_comparison="",
+        arm_key="",
         raw_columns=(),
         outcome_columns=(),
         include_column=0,
@@ -68,21 +70,20 @@ def test_study_rename_normalizes_and_rejects_blank_or_duplicate_names():
     )
 
     assert normalized.applied is True
-    assert dataset.studies[0].name == "Renamed"
+    assert dataset.sheets[0].rows[0].label == "Renamed"
     assert duplicate.error == "Duplicate study names not allowed"
     assert blank.error == "Study names cannot be empty."
 
 
 def test_new_study_rejects_whitespace_name_without_mutating_dataset():
-    dataset = Dataset()
+    dataset = Dataset(sheets=[Sheet(SheetId("sheet"), "Outcome", 0)])
     context = WorkspaceEditingContext(
-        outcome_name=None,
-        follow_up_name=None,
-        current_groups=(),
+        sheet_id=SheetId("sheet"),
+        arm_names=(),
         current_effect=None,
         data_type=None,
         outcome_subtype=None,
-        group_comparison="",
+        arm_key="",
         raw_columns=(),
         outcome_columns=(),
         include_column=0,
@@ -97,4 +98,4 @@ def test_new_study_rejects_whitespace_name_without_mutating_dataset():
     )
 
     assert result.error == "Study names cannot be empty."
-    assert len(dataset.studies) == 0
+    assert len(dataset.sheets[0].rows) == 0

@@ -51,11 +51,11 @@ class CovariateDataset(Protocol):
 class CovariateSelectionModel(Protocol):
     """Model operations required by covariate-qualified study selection."""
 
-    dataset: CovariateDataset
+    current_sheet: analysis_dataset.Sheet
 
     def get_studies(
         self, only_if_included: bool = True
-    ) -> list[analysis_dataset.Study]: ...
+    ) -> list[analysis_dataset.StudyRow]: ...
 
 
 class MetaRegressionModel(Protocol):
@@ -133,7 +133,7 @@ class AnalysisRequest:
 class StudySelectionResult:
     """Included studies that have values for every selected covariate."""
 
-    studies: tuple[analysis_dataset.Study, ...]
+    studies: tuple[analysis_dataset.StudyRow, ...]
     has_missing_values: bool
     excluded_study_names: tuple[str, ...] = ()
 
@@ -191,7 +191,7 @@ class AnalysisService:
     def select_studies_for_covariates(
         self,
         model: CovariateSelectionModel,
-        selected_covariates: Sequence[analysis_dataset.Covariate],
+        selected_covariates: Sequence[dict],
     ) -> StudySelectionResult:
         return select_studies_for_covariates(model, selected_covariates)
 
@@ -216,15 +216,15 @@ class AnalysisService:
         self,
         model: object,
         requests: Sequence[AnalysisRequest],
-        selected_covariates: Sequence[analysis_dataset.Covariate] = (),
+        selected_covariates: Sequence[dict] = (),
     ) -> AnalysisResult:
         return execute_analysis_requests(model, requests, selected_covariates)
 
     def execute_meta_regression(
         self,
         model: MetaRegressionModel,
-        studies: Sequence[analysis_dataset.Study],
-        selected_covariates: Sequence[analysis_dataset.Covariate],
+        studies: Sequence[analysis_dataset.StudyRow],
+        selected_covariates: Sequence[dict],
         request: AnalysisRequest,
         fixed_effects: bool,
         default_confidence_level: AnalysisValue,
@@ -253,13 +253,11 @@ def _require_backend(operation):
 
 def select_studies_for_covariates(
     model: CovariateSelectionModel,
-    selected_covariates: Sequence[analysis_dataset.Covariate],
+    selected_covariates: Sequence[dict],
 ) -> StudySelectionResult:
     """Select included studies with complete values for selected covariates."""
     covariate_values = {
-        covariate.name: model.dataset.get_covariate_values(
-            covariate.name, ids_for_keys=True
-        )
+        covariate['name']: {row.id:row.covariate_values[covariate['id']] for row in model.current_sheet.rows if row.covariate_values.get(covariate['id']) is not None}
         for covariate in selected_covariates
     }
     studies = []
@@ -267,13 +265,13 @@ def select_studies_for_covariates(
     has_missing_values = False
     for study in model.get_studies(only_if_included=True):
         if all(
-            study.id in covariate_values[covariate.name]
+            study.id in covariate_values[covariate['name']]
             for covariate in selected_covariates
         ):
             studies.append(study)
         else:
             has_missing_values = True
-            excluded_study_names.append(str(study.name))
+            excluded_study_names.append(str(study.label))
     return StudySelectionResult(
         tuple(studies), has_missing_values, tuple(excluded_study_names)
     )
@@ -364,7 +362,7 @@ def _typed_result(value: object) -> AnalysisResult:
 def execute_analysis_requests(
     model: object,
     requests: Sequence[AnalysisRequest],
-    selected_covariates: Sequence[analysis_dataset.Covariate] = (),
+    selected_covariates: Sequence[dict] = (),
 ) -> AnalysisResult:
     """Execute a frozen set of analysis requests through the R backend."""
     if not requests:
@@ -388,7 +386,7 @@ def execute_analysis_requests(
 def _execute_binary_request(
     model: object,
     requests: Sequence[AnalysisRequest],
-    selected_covariates: Sequence[analysis_dataset.Covariate],
+    selected_covariates: Sequence[dict],
 ) -> AnalysisResult:
     if len(requests) != 1:
         raise ValueError("Binary execution requires exactly one request.")
@@ -401,7 +399,7 @@ def _execute_binary_request(
 def _execute_continuous_request(
     model: object,
     requests: Sequence[AnalysisRequest],
-    selected_covariates: Sequence[analysis_dataset.Covariate],
+    selected_covariates: Sequence[dict],
 ) -> AnalysisResult:
     if len(requests) != 1:
         raise ValueError("Continuous execution requires exactly one request.")
@@ -429,7 +427,7 @@ def execute_small_study_effects_request(model, request):
 
 
 def _conversion_kwargs(
-    selected_covariates: Sequence[analysis_dataset.Covariate],
+    selected_covariates: Sequence[dict],
 ) -> dict[str, object]:
     if not selected_covariates:
         return {}
@@ -438,8 +436,8 @@ def _conversion_kwargs(
 
 def execute_meta_regression_request(
     model: MetaRegressionModel,
-    studies: Sequence[analysis_dataset.Study],
-    selected_covariates: Sequence[analysis_dataset.Covariate],
+    studies: Sequence[analysis_dataset.StudyRow],
+    selected_covariates: Sequence[dict],
     request: AnalysisRequest,
     fixed_effects: bool,
     default_confidence_level: AnalysisValue,

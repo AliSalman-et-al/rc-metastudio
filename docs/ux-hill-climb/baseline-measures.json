@@ -1,0 +1,239 @@
+{
+  "T1": {
+    "clicks": 21,
+    "shortcuts": 1,
+    "typed_characters": 9,
+    "dialogs": 2,
+    "wall_seconds": 13.201492107000377,
+    "completable": true,
+    "numbers": {
+      "Summary": {
+        "estimate": 0.93,
+        "lower_bound": 0.72,
+        "upper_bound": 1.2,
+        "p_value": 0.567,
+        "q": 6.95,
+        "heterogeneity_df": 11.0,
+        "heterogeneity_p_value": 0.803,
+        "i_squared": 0.0,
+        "tau_squared": 0.0,
+        "calculation_scale.estimate": -0.08,
+        "calculation_scale.lower_bound": -0.33,
+        "calculation_scale.upper_bound": 0.18,
+        "calculation_scale.standard_error": 0.132
+      },
+      "Weights": {
+        "weight.trial_1": 5.3,
+        "weight.trial_2": 6.2,
+        "weight.trial_3": 6.9,
+        "weight.trial_4": 7.7,
+        "weight.trial_5": 8.4,
+        "weight.trial_6": 7.8,
+        "weight.trial_7": 8.5,
+        "weight.trial_8": 9.2,
+        "weight.trial_9": 9.9,
+        "weight.trial_10": 10.6,
+        "weight.trial_11": 9.3,
+        "weight.trial_12": 10.0
+      }
+    },
+    "texts": {
+      "Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.93                      0.72                  1.20    0.567\n\nHeterogeneity\n Q     df  p-value    I\u00b2    \u03c4\u00b2\n 6.95  11    0.803  0.0%  0.00\n\nTest for overall effect\n Z      p-value\n -0.57    0.567\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.72                                  1.20\n\nCalculation scale: log - estimate: -0.08, lower: -0.33, upper: 0.18, std. error: 0.132\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+      "Weights": "Study names  Weights\nTrial 1 :  5.3%\nTrial 2 :  6.2%\nTrial 3 :  6.9%\nTrial 4 :  7.7%\nTrial 5 :  8.4%\nTrial 6 :  7.8%\nTrial 7 :  8.5%\nTrial 8 :  9.2%\nTrial 9 :  9.9%\nTrial 10: 10.6%\nTrial 11:  9.3%\nTrial 12: 10.0%\n",
+      "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+    }
+  },
+  "T2": {
+    "clicks": 50,
+    "shortcuts": 74,
+    "typed_characters": 85,
+    "dialogs": 5,
+    "wall_seconds": 19.66491174800467,
+    "completable": true,
+    "numbers": {
+      "Summary": {
+        "model.intercept.coefficient": -0.77,
+        "model.intercept.lower_bound": -1.38,
+        "model.intercept.upper_bound": -0.16,
+        "model.intercept.standard_error": 0.31,
+        "model.intercept.p_value": 0.013,
+        "model.dose.coefficient": 0.1,
+        "model.dose.lower_bound": 0.02,
+        "model.dose.upper_bound": 0.18,
+        "model.dose.standard_error": 0.04,
+        "model.dose.p_value": 0.014,
+        "omnibus.p_value": 0.014
+      },
+      "Weights": {
+        "weight.trial_1": 5.3,
+        "weight.trial_2": 6.2,
+        "weight.trial_3": 6.9,
+        "weight.trial_4": 7.7,
+        "weight.trial_5": 8.4,
+        "weight.trial_6": 7.8,
+        "weight.trial_7": 8.5,
+        "weight.trial_8": 9.2,
+        "weight.trial_9": 9.9,
+        "weight.trial_10": 10.6,
+        "weight.trial_11": 9.3,
+        "weight.trial_12": 10.0
+      }
+    },
+    "texts": {
+      "Summary": "Meta-Regression\n\nMetric: Odds Ratio\n\nModel overview\n Statistic                    Value                        \n Studies analyzed             12                           \n Model coefficients           2                            \n Residual degrees of freedom  10                           \n Heterogeneity estimator      Restricted Maximum Likelihood\n Inference Method             Normal approximation         \n\nModel specification\n Term       Specification                                                                                                                         \n Intercept  Estimated effect at continuous moderator value zero and categorical reference levels; extrapolated beyond an observed continuous range\n Dose       Continuous; observed range 1.00 to 12.00                                                                                              \n\nCoefficient estimates (log scale)\n Covariate  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (log scale)       z  p-value\n Intercept     -0.77                 -1.38                 -0.16           0.310  -2.471    0.013\n Dose           0.10                  0.02                  0.18           0.040   2.461    0.014\n\nResidual heterogeneity\n Statistic                     Value\n Residual heterogeneity (\u03c4\u00b2)    0.00\n SE of \u03c4\u00b2                      0.092\n Residual heterogeneity (\u03c4)     0.00\n Residual I\u00b2                    0.0%\n Residual H\u00b2                    1.00\n Heterogeneity explained (R\u00b2)   0.0%\n\nModel tests\n Test                         Statistic  df  p-value\n Overall moderators (Q\u2098)           6.06   1    0.014\n Residual heterogeneity (Q\u2091)       0.90  10    1.000\n\nHeterogeneity explained (R\u00b2) is the proportional reduction in estimated between-study heterogeneity relative to the corresponding model without moderators.",
+      "Weights": "Study names  Weights\nTrial 1 :  5.3%\nTrial 2 :  6.2%\nTrial 3 :  6.9%\nTrial 4 :  7.7%\nTrial 5 :  8.4%\nTrial 6 :  7.8%\nTrial 7 :  8.5%\nTrial 8 :  9.2%\nTrial 9 :  9.9%\nTrial 10: 10.6%\nTrial 11:  9.3%\nTrial 12: 10.0%\n",
+      "References": "1. Random-effects meta-regression: Berkey, C. S., Hoaglin, D. C., Mosteller, F., & Colditz, G. A. (1995). A random-effects regression model for meta-analysis. Statistics in Medicine, 14(4), 395-411. doi:10.1002/sim.4780140406.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+    },
+    "subgroup_numbers": {
+      "Subgroup Summary": {
+        "model.subgroup_south.studies": 6.0,
+        "model.subgroup_south.estimate": 0.89,
+        "model.subgroup_south.lower_bound": 0.61,
+        "model.subgroup_south.upper_bound": 1.29,
+        "model.subgroup_south.standard_error": 0.19,
+        "model.subgroup_south.p_value": 0.541,
+        "model.subgroup_south.z_value": -0.61,
+        "model.subgroup_north.studies": 6.0,
+        "model.subgroup_north.estimate": 0.96,
+        "model.subgroup_north.lower_bound": 0.67,
+        "model.subgroup_north.upper_bound": 1.38,
+        "model.subgroup_north.standard_error": 0.184,
+        "model.subgroup_north.p_value": 0.838,
+        "model.subgroup_north.z_value": -0.2,
+        "model.overall.studies": 12.0,
+        "model.overall.estimate": 0.93,
+        "model.overall.lower_bound": 0.72,
+        "model.overall.upper_bound": 1.2,
+        "model.overall.standard_error": 0.132,
+        "model.overall.p_value": 0.567,
+        "model.overall.z_value": -0.57,
+        "heterogeneity.subgroup_south.q": 3.86,
+        "heterogeneity.subgroup_south.df": 5.0,
+        "heterogeneity.subgroup_south.p_value": 0.569,
+        "heterogeneity.subgroup_south.i_squared": 0.0,
+        "heterogeneity.subgroup_north.q": 3.0,
+        "heterogeneity.subgroup_north.df": 5.0,
+        "heterogeneity.subgroup_north.p_value": 0.7,
+        "heterogeneity.subgroup_north.i_squared": 0.0,
+        "heterogeneity.overall.q": 6.95,
+        "heterogeneity.overall.df": 11.0,
+        "heterogeneity.overall.p_value": 0.803,
+        "heterogeneity.overall.i_squared": 0.0
+      }
+    }
+  },
+  "T3": {
+    "clicks": 2,
+    "shortcuts": 0,
+    "typed_characters": 0,
+    "dialogs": 1,
+    "wall_seconds": 3.491574669002148,
+    "completable": true,
+    "numbers": {},
+    "texts": {
+      "small-study.warning": "Primary asymmetry test: Harbord test\nResult: evidence of small-study effects (p = 0.005)\nUsable studies: 12\nEstimate: -6.895 (95% CI -11.17 to -2.624)\n\nFunnel plot asymmetry can reflect publication bias, heterogeneity, study design, or chance.\n\nInterpret the plots and tests together. No single result proves or rules out publication bias.\n\nAnalysis warnings:\n- Observed standard-error range should be considered when interpreting asymmetry results; the exact range is reported in the analysis summary.",
+      "small-study.data-eligibility": "Effect measure: Odds ratio (OR)\nStudies analyzed: 12\nConfidence level: 95% confidence interval\nPrimary test: Harbord test\nObserved standard-error range: [0.40527537, 0.57081813]\nHeterogeneity (REML tau-squared): 0\nContinuity correction: Studies with any zero cell",
+      "small-study.tests": "Harbord test (primary)\n  Studies: 12\n  Result: Evidence of small-study effects (p = 0.005).\n  Test statistic: -3.597\n  Coefficient: -6.895 (SE 1.917; 95% CI -11.17 to -2.624)\n  Model: Harbord native metabin model\n\nR\u00fccker AS+RE test (additional)\n  Studies: 12\n  Result: Evidence of small-study effects (p = 0.033).\n  Test statistic: -2.465\n  Coefficient: -16.07 (SE 6.519; 95% CI -30.59 to -1.544)\n  Model: R\u00fccker AS+RE (ASD + Thompson)\n\nPeters test (additional)\n  Studies: 12\n  Result: Evidence of small-study effects (p = < 0.001).\n  Test statistic: -8.164\n  Coefficient: -755.5 (SE 92.55; 95% CI -961.8 to -549.3)\n  Model: Peters native metabin model",
+      "small-study.pooled-comparison": "Common effect\n  Estimate: 0.9272\n  95% confidence interval: 0.7159 to 1.201\n\nRandom effects (REML)\n  Estimate: 0.9272\n  95% confidence interval: 0.7159 to 1.201\n\nThese are model comparisons, not estimates corrected for publication bias.",
+      "small-study.references": "1. Harbord test: Harbord, R. M., Egger, M., & Sterne, J. A. C. (2006). A modified test for small-study effects in meta-analyses of controlled trials with binary endpoints. Statistics in Medicine, 25(20), 3443-3457. doi:10.1002/sim.2380.\n2. Arcsine asymmetry test: Rucker, G., Schwarzer, G., & Carpenter, J. R. (2008). Arcsine test for publication bias in meta-analyses with binary outcomes. Statistics in Medicine, 27(5), 746-763. doi:10.1002/sim.2971.\n3. Additive random-effects regression: Thompson, S. G., & Sharp, S. J. (1999). Explaining heterogeneity in meta-analysis: A comparison of methods. Statistics in Medicine, 18(20), 2693-2708.\n4. Peters test: Peters, J. L., Sutton, A. J., Jones, D. R., Abrams, K. R., & Rushton, L. (2006). Comparison of two methods to detect publication bias in meta-analysis. JAMA, 295(6), 676-680. doi:10.1001/jama.295.6.676.\n5. Funnel plot axis choice: Sterne, J. A. C., & Egger, M. (2001). Funnel plots for detecting bias in meta-analysis: Guidelines on choice of axis. Journal of Clinical Epidemiology, 54(10), 1046-1055. doi:10.1016/S0895-4356(01)00377-8.\n6. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n",
+      "small-study.method-details": "Harbord test\n  Package: meta 8.5-0\n  Predictor: Harbord Z/V on 1/sqrt(V), where V is the native score variance\n  Weighting: native Harbord score variance V\n  Inference: t-based meta::metabias test\n  Degrees of freedom: 10.00\n  Exact p-value: 0.0048716477\n  Call: meta::metabin(event.e, n.e, event.c, n.c, sm='OR', incr=0.5, method.incr='only0', common=TRUE, random=TRUE, method.tau='REML', level=0.95); meta::metabias(x=prepared.OR.model, method.bias='Harbord', k.min=10, level=0.95)\n\nR\u00fccker AS+RE test\n  Package: meta 8.5-0\n  Predictor: ASD effect on native ASD standard error\n  Weighting: native AS+RE additive REML weights\n  Inference: t-based meta::metabias test\n  Degrees of freedom: 10.00\n  Exact p-value: 0.033386308\n  Call: meta::metabin(event.e, n.e, event.c, n.c, sm='ASD', common=TRUE, random=TRUE, method.tau='REML', level=0.95); meta::metabias(x=prepared.ASD.model, method.bias='Thompson', k.min=10, level=0.95)\n\nPeters test\n  Package: meta 8.5-0\n  Predictor: 1/(n.e+n.c), with native Peters seTE=sqrt(1/(event.e+event.c)+1/(non-events.e+non-events.c))\n  Weighting: 1/Peters seTE^2\n  Inference: t-based meta::metabias test\n  Degrees of freedom: 10.00\n  Exact p-value: 0.0000098577722\n  Call: meta::metabin(event.e, n.e, event.c, n.c, sm='OR', incr=0.5, method.incr='only0', common=TRUE, random=TRUE, method.tau='REML', level=0.95); prepared.OR.model$TE <- prepared.effects; prepared.OR.model$seTE <- prepared.standard.errors; meta::metabias(x=prepared.OR.model, method.bias='Peters', k.min=10, level=0.95)",
+      "small-study.methods-not-applicable": "No additional methods were marked not applicable."
+    }
+  },
+  "T4": {
+    "clicks": 3,
+    "shortcuts": 0,
+    "typed_characters": 0,
+    "dialogs": 2,
+    "wall_seconds": 4.339908131994889,
+    "completable": true,
+    "numbers": {
+      "Summary operating point": {
+        "weight.estimate": 19.03,
+        "weight.lower_bound_95_ci": 13.51,
+        "weight.upper_bound_95_ci": 26.12
+      },
+      "Sampling-based summary ratios": {
+        "model.positive_likelihood_ratio.estimate": 3.52,
+        "model.positive_likelihood_ratio.lower_bound": 3.45,
+        "model.positive_likelihood_ratio.upper_bound": 2.45,
+        "model.positive_likelihood_ratio.standard_error": 4.96,
+        "model.negative_likelihood_ratio.estimate": 0.43,
+        "model.negative_likelihood_ratio.lower_bound": 0.42,
+        "model.negative_likelihood_ratio.upper_bound": 0.34,
+        "model.negative_likelihood_ratio.standard_error": 0.52,
+        "model.inverse_negative_likelihood_ratio.estimate": 2.38,
+        "model.inverse_negative_likelihood_ratio.lower_bound": 2.36,
+        "model.inverse_negative_likelihood_ratio.upper_bound": 1.92,
+        "model.inverse_negative_likelihood_ratio.standard_error": 2.93,
+        "model.diagnostic_odds_ratio.estimate": 8.47,
+        "model.diagnostic_odds_ratio.lower_bound": 8.18,
+        "model.diagnostic_odds_ratio.upper_bound": 4.85,
+        "model.diagnostic_odds_ratio.standard_error": 13.78
+      },
+      "Marginal prediction": {
+        "weight.estimate": 19.03,
+        "weight.lower_bound_95_pi": 5.09,
+        "weight.upper_bound_95_pi": 50.71
+      },
+      "Diagnostic I-squared": {
+        "weight.zhou_dendukuri": 10.15
+      }
+    },
+    "texts": {
+      "Clinical interpretation": "Across 17 studies, summary sensitivity was 65.76% (95% confidence interval 59.02% to 71.92%) and summary specificity was 80.97% (95% confidence interval 73.88% to 86.49%).\nThese are average operating characteristics across the included study thresholds. The Reitsma bivariate and HSROC formulations are equivalent parameterizations of this model; that equivalence does not assume a common threshold. Use the prediction intervals to assess how performance may vary in a new setting.",
+      "Summary operating point": "Sensitivity:\n  Estimate: 65.76%\n  Lower bound (95% CI ): 59.02%\n  Upper bound (95% CI ): 71.92%\nSpecificity:\n  Estimate: 80.97%\n  Lower bound (95% CI ): 73.88%\n  Upper bound (95% CI ): 86.49%\nFalse-positive rate:\n  Estimate: 19.03%\n  Lower bound (95% CI ): 13.51%\n  Upper bound (95% CI ): 26.12%",
+      "Sampling-based summary ratios": "                                   Mean  Median  Lower bound (95% interval)  Upper bound (95% interval)\n---------------------------------  ----  ------  --------------------------  --------------------------\nPositive likelihood ratio          3.52    3.45                        2.45                        4.96\nNegative likelihood ratio          0.43    0.42                        0.34                        0.52\nInverse negative likelihood ratio  2.38    2.36                        1.92                        2.93\nDiagnostic odds ratio              8.47    8.18                        4.85                       13.78",
+      "SROC AUC": "AUC: 0.7545\nNormalized partial AUC: 0.6687\nfull FPR bounds: 0.01, 0.99\nPartial FPR bounds: 0.0122, 0.5333\nnote: The Reitsma bivariate and HSROC models are equivalent parameterizations of the same threshold-aware diagnostic model; this does not imply a common threshold.\nAUC confidence interval: Not provided by mada::AUC(); no invented AUC CI.",
+      "Marginal prediction": "description: Underlying new-study operating characteristics\nintervals:\n  Sensitivity:\n    Estimate: 65.76%\n    Lower bound (95% PI ): 49.07%\n    Upper bound (95% PI ): 79.29%\n  Specificity:\n    Estimate: 80.97%\n    Lower bound (95% PI ): 49.29%\n    Upper bound (95% PI ): 94.91%\n  False-positive rate:\n    Estimate: 19.03%\n    Lower bound (95% PI ): 5.09%\n    Upper bound (95% PI ): 50.71%",
+      "Between-study heterogeneity": "Sensitivity logit SD: 0.3199\nFalse-positive rate logit SD: 0.7241\nSensitivity-specificity covariance: 0.0506\nSensitivity-specificity correlation: 0.2185\nInterpretation: SDs and covariance are on the model logit scale; correlation is unitless.",
+      "Diagnostic I-squared": "I\u00b2 summary:\n  Zhou-Dendukuri: 10.15%\n  Holling unadjusted range: 41.94% to 63.65%\n  Holling adjusted range: 4.95% to 5.49%\nI\u00b2 estimates:\n                            Measure  I\u00b2 (%)\n  -  ------------------------------  ------\n  1                  Zhou-Dendukuri  10.15%\n  2  Holling (unadjusted), method 1  62.19%\n  3  Holling (unadjusted), method 2  63.65%\n  4  Holling (unadjusted), method 3  41.94%\n  5    Holling (adjusted), method 1   5.46%\n  6    Holling (adjusted), method 2   5.49%\n  7    Holling (adjusted), method 3   4.95%\nInterpretation: I-squared is shown as percent unexplained heterogeneity; Zhou-Dendukuri and Holling are distinct estimators.",
+      "Model information": "Estimator: REML\nStudies used: 17\nContinuity correction: 0.5\nContinuity correction policy: All studies if any zero exists\nConverged: True\nLog likelihood: 22.45\nSummary seed: 380381\nSummary iterations: 1000000\nAIC: -34.91\nBIC: -27.27\nModel formula: Sensitivity and false-positive rate ~ 1\nPackage version: 0.5.12",
+      "References": "1. Bivariate diagnostic meta-analysis: Reitsma, J. B., Glas, A. S., Rutjes, A. W., Scholten, R. J., Bossuyt, P. M., & Zwinderman, A. H. (2005). Bivariate analysis of sensitivity and specificity produces informative summary measures in diagnostic reviews. Journal of Clinical Epidemiology, 58(10), 982-990.\n2. Diagnostic accuracy model unification: Harbord, R. M., Deeks, J. J., Egger, M., Whiting, P., & Sterne, J. A. (2006). A unification of models for meta-analysis of diagnostic accuracy studies. Biostatistics, 8(2), 239-251.\n3. Statistical implementation: Doebler, P. (2025). mada: Meta-Analysis of Diagnostic Accuracy, version 0.5.12.\n4. Equivalent SROC parameterization: Rutter, C. M., & Gatsonis, C. A. (2001). A hierarchical regression approach to meta-analysis of diagnostic accuracy evaluations. Statistics in Medicine, 20(19), 2865-2884.\n"
+    }
+  },
+  "T5": {
+    "clicks": 6,
+    "shortcuts": 0,
+    "typed_characters": 40,
+    "dialogs": 2,
+    "wall_seconds": 0.7431774560027407,
+    "completable": false,
+    "numbers": {
+      "Summary": {
+        "estimate": 0.927,
+        "lower_bound": 0.716,
+        "upper_bound": 1.201,
+        "p_value": 0.567,
+        "q": 6.953,
+        "heterogeneity_df": 11.0,
+        "heterogeneity_p_value": 0.803,
+        "i_squared": 0.0,
+        "tau_squared": 0.0,
+        "calculation_scale.estimate": -0.076,
+        "calculation_scale.lower_bound": -0.334,
+        "calculation_scale.upper_bound": 0.183,
+        "calculation_scale.standard_error": 0.132
+      },
+      "Weights": {
+        "weight.trial_1": 5.3,
+        "weight.trial_2": 6.2,
+        "weight.trial_3": 6.9,
+        "weight.trial_4": 7.7,
+        "weight.trial_5": 8.4,
+        "weight.trial_6": 7.8,
+        "weight.trial_7": 8.5,
+        "weight.trial_8": 9.2,
+        "weight.trial_9": 9.9,
+        "weight.trial_10": 10.6,
+        "weight.trial_11": 9.3,
+        "weight.trial_12": 10.0
+      }
+    },
+    "texts": {
+      "Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.927                    0.716                 1.201    0.567\n\nHeterogeneity\n Q      df  p-value    I\u00b2     \u03c4\u00b2\n 6.953  11    0.803  0.0%  0.000\n\nTest for overall effect\n Z       p-value\n -0.573    0.567\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.716                                1.201\n\nCalculation scale: log - estimate: -0.076, lower: -0.334, upper: 0.183, std. error: 0.132\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+      "Weights": "Study names  Weights\nTrial 1 :  5.3%\nTrial 2 :  6.2%\nTrial 3 :  6.9%\nTrial 4 :  7.7%\nTrial 5 :  8.4%\nTrial 6 :  7.8%\nTrial 7 :  8.5%\nTrial 8 :  9.2%\nTrial 9 :  9.9%\nTrial 10: 10.6%\nTrial 11:  9.3%\nTrial 12: 10.0%\n",
+      "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+    }
+  }
+}

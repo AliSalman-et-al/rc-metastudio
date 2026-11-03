@@ -62,9 +62,9 @@ class SubgroupAnalysisDialog(
     def _populate_combo_box(self):
         studies = self.model.get_studies(only_if_included=True)
 
-        for cov in self.model.dataset.covariates:
-            if cov.get_data_type() != FACTOR:
+        for cov in self.model.current_sheet.covariates:
+            if cov['data_type'] != FACTOR:
                 continue
-            covariate_values = [study.covariate_values[cov.name] for study in studies]
+            covariate_values = [study.covariate_values[cov['id']] for study in studies]
             if None not in covariate_values:
-                self.covariate_combo_box.addItem(cov.name)
+                self.covariate_combo_box.addItem(cov['name'])

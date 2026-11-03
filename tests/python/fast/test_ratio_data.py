@@ -37,17 +37,14 @@ def test_reverse_preserves_source_ci_and_log_se(scale):
 def test_ratio_inputs_survive_project_round_trip_renaming_and_reversal(tmp_path):
     project = _multi_arm_project("binary")
     project["schema_version"] = CURRENT_FORMAT_VERSION
-    dataset_doc = project["dataset"]
-    assert isinstance(dataset_doc, dict)
-    dataset_doc["analysis_family"] = "event_rates"
-    outcomes = dataset_doc["outcomes"]
-    assert isinstance(outcomes, list) and isinstance(outcomes[0], dict)
-    outcomes[0].update(data_type=6, sub_type="incidence_rate_ratio")
+    sheet_doc = project["sheets"][0]
+    sheet_doc.update(family="event_rates", data_type=6, sub_type="incidence_rate_ratio")
     dataset = project_adapter.project_to_dataset(project)
-    unit = dataset.studies[0].get_analysis_unit("Outcome", "first")
+    unit = dataset.sheets[0].rows[0].analysis_unit
     record = RatioInput(estimate=.8, lower=.6, upper=1.1, confidence=90, source="reported", unit="person-months")
     unit.set_ratio_input(["Tx 1", "Tx 2"], record)
-    unit.rename_group("Tx 1", "Active")
+    from rc_metastudio.dataset_table_model import DatasetTableModel
+    DatasetTableModel(dataset=dataset, add_blank_study=False).rename_group("Tx 1", "Active")
     assert unit.ratio_input(["Active", "Tx 2"]) == record
     assert unit.ratio_input(["Tx 2", "Active"]).estimate == 1 / .8
     assert len(unit.ratio_inputs) == 1
@@ -55,10 +52,10 @@ def test_ratio_inputs_survive_project_round_trip_renaming_and_reversal(tmp_path)
     document = project_adapter.runtime_project_to_document(project_adapter.RuntimeProject(dataset, {}, False))
     save_project(path, document.project, document.state)
     rebuilt = project_adapter.project_to_dataset(load_project(path).project)
-    reopened = rebuilt.studies[0].get_analysis_unit("Outcome", "first")
+    reopened = rebuilt.sheets[0].rows[0].analysis_unit
     assert reopened.ratio_input(["Active", "Tx 2"]) == record
-    assert reopened.get_raw_data_for_groups(["Active", "Tx 2"]) == [1, 10, 2, 20]
-    reopened.remove_group("Active")
+    assert reopened.get_raw_data_for_arms(["Active", "Tx 2"]) == [1, 10, 2, 20]
+    reopened.remove_arm("Active")
     assert not reopened.ratio_inputs
 
 

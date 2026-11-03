@@ -25,10 +25,12 @@ def run(app, window, root, record, analyze):
 
     assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
     view = analyze(app, window, "binary.random")
-    assert view.identity_label.text() == view.results.identity
-    assert len(view.identity_label.text().splitlines()) == 2
+    assert not hasattr(view, "identity_label")
+    assert view.windowTitle() == "clinical failure — Meta-analysis"
     report = view.report_text.toPlainText()
-    assert report.index("Pooled ") < report.index("Model configuration\n")
+    from tests.e2e.report_retention import assert_report
+    assert_report(view)
+    assert report.index("Pooled effect") < report.index("Model fit") < report.index("Study results") < report.index("Model configuration\n")
     assert view.results.identity not in report
     assert view.change_settings_action.isEnabled()
     view.change_settings_action.trigger()
@@ -49,8 +51,8 @@ def run(app, window, root, record, analyze):
     view.report_action.setChecked(True)
     report = view.report_text.toPlainText()
     assert "Q(df=" not in report and "Het. p-value" not in report
-    assert "95% CI" in report and "[0.485, 1.222]" in report
-    assert report.index("Model results") < report.index("Heterogeneity") < report.index("Test for overall effect") < report.index("Prediction interval")
+    assert_report(view)
+    assert report.index("Pooled effect") < report.index("Model fit") < report.index("Study results")
     record("review-report-top", view, text=report)
 
     # A result belongs to its original input even after the main window opens another project.
@@ -109,6 +111,6 @@ def run(app, window, root, record, analyze):
     app.processEvents()
     dialog = setup()
     assert not dialog.study_order.isEnabled()
-    assert "current study order" in dialog.context_label.text()
-    record("review-cumulative-order", dialog, explanation=dialog.context_label.text())
+    assert "current table order" in dialog.study_order.toolTip()
+    record("review-cumulative-order", dialog, explanation=dialog.study_order.toolTip())
     dialog.reject()

@@ -43,10 +43,9 @@ def load_dataset_model(dataset_path):
 def _add_case_covariates(model, covariates):
     added = []
     for covariate in covariates:
-        added_covariate = analysis_dataset.Covariate(
-            covariate["name"], covariate["type"]
+        added_covariate = model.add_covariate(
+            covariate["name"], covariate["type"], covariate["values"]
         )
-        model.dataset.add_covariate(added_covariate, covariate["values"])
         added.append(added_covariate)
     return tuple(added)
 

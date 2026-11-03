@@ -1,3 +1,4 @@
+from rc_metastudio.project_domain import ArmId, RowId, SheetId
 import os
 import sys
 import json
@@ -44,17 +45,16 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
             window.tableView.sizePolicy().verticalPolicy()
             == QtWidgets.QSizePolicy.Policy.Expanding
         )
-        for control in (
-            window.nav_left_btn,
-            window.nav_right_btn,
-            window.nav_add_btn,
-            window.navigation_label,
-        ):
-            assert window.navigationLayout.indexOf(control) >= 0
+        assert [button.text() for button in (getattr(window.start_page, name) for name in ("create_button", "import_button", "open_button"))] == [
+            "Create dataset", "Import data", "Open project"]
+        labels = [label.text() for label in window.start_page.findChildren(QtWidgets.QLabel)]
+        assert "Recent projects" in labels
+        assert "From data to results" not in labels
+        assert not window.sheet_strip.isVisible()
+        assert window.add_sheet_button.toolTip() == "Add sheet"
+        assert window.sheet_tabs.expanding() is False
+        assert window.sheet_tabs.isMovable()
         assert window.action_auto_fit_columns.text() == "Fit columns"
-        assert window.nav_left_btn.accessibleName() == "Previous outcome"
-        assert window.nav_right_btn.accessibleName() == "Next outcome"
-        assert window.nav_add_btn.accessibleName() == "Add outcome"
 
         assert window.menuMetric.title() == "Effect-size tools"
         assert "calculator" in window.menuMetric.toolTip().lower()
@@ -74,6 +74,13 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
                 "selected_dataset": None,
             }
         )
+        window.show()
+        qapp.processEvents()
+        assert window.sheet_tabs.count() == 1
+        assert window.sheet_tabs.isVisible()
+        assert window.sheet_tabs.tabText(0) == "Outcome"
+        assert not window.sheet_tabs.autoHide()
+        assert window.sheet_tabs.elideMode() == QtCore.Qt.TextElideMode.ElideRight
         assert [action.text() for action in window.menuMetric.actions()] == [
             "Two-arm metrics",
             "One-arm metrics",
@@ -84,94 +91,6 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
             assert submenu is not None
             assert all(action.toolTip() for action in submenu.actions())
 
-        window.navigation_dimension.setCurrentIndex((window.navigation_dimension.currentIndex() + 1) % 3)
-
-        assert window.navigation_dimension.currentData() == "follow-up"
-        assert window.nav_left_btn.accessibleName() == "Previous follow-up"
-        assert window.nav_right_btn.accessibleName() == "Next follow-up"
-        assert window.nav_add_btn.accessibleName() == "Add follow-up"
-    finally:
-        window.hide()
-        window.deleteLater()
-        qapp.processEvents()
-
-
-def test_navigation_arrows_reflect_available_items_and_active_dimension(qapp):
-    from rc_metastudio import main_window
-
-    window = main_window.MainWindow()
-    try:
-        window._handle_wizard_results(
-            {
-                "path": "new_dataset",
-                "outcome_info": {
-                    "arms": "two",
-                    "data_type": "binary",
-                    "sub_type": "proportions",
-                    "effect": "OR",
-                    "metric_choices": [],
-                    "name": "Outcome",
-                },
-                "csv_data": None,
-                "selected_dataset": None,
-            }
-        )
-
-        assert not window.nav_left_btn.isEnabled()
-        assert not window.nav_right_btn.isEnabled()
-        assert window.nav_left_btn.toolTip() == "No previous outcome available."
-        assert window.nav_right_btn.statusTip() == "No next outcome available."
-
-        window.model.add_new_outcome("Outcome 2", "binary", "proportions")
-        window.model_updated()
-        assert window.nav_left_btn.isEnabled()
-        assert window.nav_right_btn.isEnabled()
-
-        window.navigation_dimension.setCurrentIndex((window.navigation_dimension.currentIndex() + 1) % 3)
-        assert window.current_dimension == "follow-up"
-        assert not window.nav_left_btn.isEnabled()
-        assert not window.nav_right_btn.isEnabled()
-
-        window.model.add_follow_up_to_current_outcome("week 4")
-        window.model_updated()
-        assert window.nav_left_btn.isEnabled()
-        assert window.nav_right_btn.isEnabled()
-
-        window.display_outcome("Outcome 2")
-        assert not window.nav_left_btn.isEnabled()
-        assert not window.nav_right_btn.isEnabled()
-
-        window.navigation_dimension.setCurrentIndex((window.navigation_dimension.currentIndex() + 1) % 3)
-        assert window.current_dimension == "group"
-
-        window._handle_wizard_results(
-            {
-                "path": "new_dataset",
-                "outcome_info": {
-                    "arms": "two",
-                    "data_type": "diagnostic",
-                    "sub_type": None,
-                    "effect": "Sens",
-                    "metric_choices": [],
-                    "name": "Accuracy",
-                },
-                "csv_data": None,
-                "selected_dataset": None,
-            }
-        )
-        window.current_dimension = "group"
-        window.update_dimension()
-        assert not window.nav_left_btn.isEnabled()
-        assert not window.nav_right_btn.isEnabled()
-
-        window.model.add_new_group("test 2")
-        window.model_updated()
-        assert not window.nav_left_btn.isEnabled()
-        assert window.nav_right_btn.isEnabled()
-
-        window.next()
-        assert window.nav_left_btn.isEnabled()
-        assert window.nav_right_btn.isEnabled()
     finally:
         window.hide()
         window.deleteLater()
@@ -183,14 +102,13 @@ def test_direct_table_view_mutation_is_checkpointed_for_one_undo(qapp):
     from rc_metastudio import main_window, project_adapter, workspace_session
     from rc_metastudio.meta_globals import BINARY
 
-    dataset = analysis_dataset.Dataset()
-    dataset.add_outcome(analysis_dataset.Outcome("Outcome", BINARY))
-    dataset.add_study(analysis_dataset.Study(1, name="Beta"))
-    dataset.add_study(analysis_dataset.Study(2, name="Alpha"))
+    from rc_metastudio.analysis_unit import AnalysisUnit
+    sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", BINARY, arms=[
+        analysis_dataset.Arm(ArmId("a"), "Group A"), analysis_dataset.Arm(ArmId("b"), "Group B")])
+    sheet.rows = [analysis_dataset.StudyRow(RowId(str(i)), label, AnalysisUnit(sheet, arm_names=["Group A", "Group B"], arm_stable_ids=["a", "b"]))
+                  for i, label in enumerate(("Beta", "Alpha"), 1)]
+    dataset = analysis_dataset.Dataset(sheets=[sheet])
     model = dataset_table_model.DatasetTableModel(dataset=dataset, add_blank_study=False)
-    model.current_outcome_name = "Outcome"
-    model.update_column_indices()
-    model.current_groups = []
     initial = project_adapter.RuntimeProject(
         dataset=model.dataset,
         model_state=model.get_state(),
@@ -208,13 +126,13 @@ def test_direct_table_view_mutation_is_checkpointed_for_one_undo(qapp):
             pass
 
     owner = BoundaryOwner()
-    model.order_studies([2, 1])
+    model.order_studies(["2", "1"])
     main_window.MainWindow.data_dirtied(cast(main_window.MainWindow, owner))
-    assert [study.name for study in model.dataset.studies] == ["Alpha", "Beta"]
+    assert [study.label for study in model.current_sheet.rows] == ["Alpha", "Beta"]
     assert owner.workspace.undo() is True
     runtime = owner.workspace.runtime
     assert runtime is not None
-    assert [study.name for study in runtime.dataset.studies] == [
+    assert [study.label for study in runtime.dataset.sheets[0].rows] == [
         "Beta",
         "Alpha",
     ]
@@ -267,24 +185,12 @@ def test_main_inherits_fonts_and_navigation_icons_from_active_style(qapp):
             window,
             window.centralwidget,
             window.menu_file,
-            window.navigation_label,
+            window.sheet_tabs,
             window.dataset_file_lbl,
             window.cl_label,
         ):
             assert widget.font().family() == inherited_family
 
-        for button in (
-            window.nav_left_btn,
-            window.nav_right_btn,
-            window.nav_add_btn,
-        ):
-            expected = qt_layout.OUTCOME_NAVIGATION_ICON_EXTENT
-            assert button.iconSize() == QtCore.QSize(expected, expected)
-            assert button.minimumSize() == QtCore.QSize(
-                qt_layout.OUTCOME_NAVIGATION_CONTROL_EXTENT,
-                qt_layout.OUTCOME_NAVIGATION_CONTROL_EXTENT,
-            )
-            assert button.iconSize() != QtCore.QSize(64, 64)
         assert window.toolBar.iconSize() == QtCore.QSize(
             qt_layout.TOOLBAR_ICON_EXTENT, qt_layout.TOOLBAR_ICON_EXTENT
         )
@@ -329,6 +235,7 @@ def test_added_covariate_keeps_identity_and_width_through_undo_redo(qapp):
 
     window = main_window.MainWindow()
     try:
+        _create_sheet(window)
         command = window._make_add_covariate_command("Age", "continuous")
         window._commit_model_operation(command.redo)
         column = window.model.columnCount() - 1
@@ -358,6 +265,7 @@ def test_deleted_covariate_keeps_identity_and_width_through_undo_redo(qapp):
 
     window = main_window.MainWindow()
     try:
+        _create_sheet(window)
         covariate = window.model.add_covariate("Age", "continuous")
         window.tableView.synchronize_column_widths()
         column = window.model.columnCount() - 1
@@ -367,7 +275,7 @@ def test_deleted_covariate_keeps_identity_and_width_through_undo_redo(qapp):
         window.tableView.setColumnWidth(column, 263)
 
         window.delete_covariate(covariate)
-        assert window.model.dataset.get_covariate("Age") is None
+        assert not window.model.current_sheet.covariates
 
         window.undo()
         qapp.processEvents()
@@ -378,7 +286,7 @@ def test_deleted_covariate_keeps_identity_and_width_through_undo_redo(qapp):
         assert window.tableView.columnWidth(column) == 263
 
         window.redo()
-        assert window.model.dataset.get_covariate("Age") is None
+        assert not window.model.current_sheet.covariates
         window.undo()
         qapp.processEvents()
         assert (
@@ -395,16 +303,17 @@ def test_deleted_covariate_keeps_identity_and_width_through_undo_redo(qapp):
 
 
 @pytest.mark.skipif(
-    sys.platform not in ("win32", "darwin"),
-    reason="Native fractional-scale evidence is collected on qwindows and cocoa.",
+    sys.platform not in ("win32", "darwin") and not os.environ.get("DISPLAY"),
+    reason="Native fractional-scale evidence requires a window-system display.",
 )
 def test_workspace_table_uses_valid_logical_geometry_at_fractional_scale_factors():
     script = r"""
 import json
 from rc_metastudio import automation
 from scripts.local_r_test_backend import create
-from rc_metastudio import r_bridge
+from rc_metastudio import r_backend, r_bridge
 
+r_backend.install_r_backend = lambda: r_bridge
 for name, implementation in vars(create()).items():
     setattr(r_bridge, name, implementation)
 
@@ -437,7 +346,7 @@ finally:
     window.close()
     app.processEvents()
 """
-    expected_platform = "windows" if sys.platform == "win32" else "cocoa"
+    expected_platform = {"win32": "windows", "darwin": "cocoa"}.get(sys.platform, "xcb")
     evidence_by_factor = {}
     for factor in ("1", "1.5"):
         environment = os.environ.copy()
@@ -486,3 +395,11 @@ finally:
         )
         assert 0 < evidence["table"][0] <= evidence["window"][0]
         assert 0 < evidence["table"][1] <= evidence["window"][1]
+
+
+def _create_sheet(window):
+    window._handle_wizard_results({
+        "path": "new_dataset", "outcome_info": {
+            "arms": "two", "data_type": "binary", "sub_type": "proportions",
+            "effect": "OR", "metric_choices": [], "name": "Outcome"},
+        "csv_data": None, "selected_dataset": None})

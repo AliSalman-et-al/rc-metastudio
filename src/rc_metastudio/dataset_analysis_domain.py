@@ -8,7 +8,7 @@ from rc_metastudio.meta_globals import RATIO_DATA_TYPES
 from collections.abc import Callable, Mapping, Sequence
 from typing import Protocol, TypeAlias, runtime_checkable
 
-from rc_metastudio.analysis_dataset import Dataset, Study
+from rc_metastudio.analysis_dataset import Dataset, StudyRow
 from rc_metastudio.analysis_unit import AnalysisUnit
 from rc_metastudio.meta_globals import (
     BINARY,
@@ -42,35 +42,7 @@ def _checked_bridge(value: object) -> ScaleBridge:
     return value
 
 
-def ensure_analysis_unit(
-    dataset: Dataset,
-    study: Study,
-    outcome: str,
-    follow_up: str,
-    groups: Sequence[str],
-) -> AnalysisUnit:
-    """Return the selected unit, creating missing structure for new studies."""
-    try:
-        analysis_unit = study.get_analysis_unit(outcome, follow_up)
-    except KeyError:
-        study.add_outcome(
-            dataset.get_outcome_obj(outcome),
-            group_names=dataset.get_group_names(),
-            follow_up_id=dataset.get_follow_up_stable_id(outcome, follow_up),
-        )
-        try:
-            analysis_unit = study.get_analysis_unit(outcome, follow_up)
-        except KeyError:
-            study.add_outcome_at_follow_up(
-                dataset.get_outcome_obj(outcome),
-                follow_up,
-                follow_up_id=dataset.get_follow_up_stable_id(outcome, follow_up),
-            )
-            analysis_unit = study.get_analysis_unit(outcome, follow_up)
-    for group in groups:
-        if group not in analysis_unit.get_group_names():
-            analysis_unit.add_group(group)
-    return analysis_unit
+
 
 
 def make_display_scale_converter(
@@ -203,7 +175,7 @@ def raw_data_is_empty(raw_data: Sequence[object]) -> bool:
 def has_entered_data(analysis_unit: AnalysisUnit) -> bool:
     return any(
         value not in EMPTY_VALS
-        for group in analysis_unit.groups.values()
+        for group in analysis_unit.arms_by_id.values()
         for value in group.raw_data
     ) or any(
         value not in EMPTY_VALS
@@ -213,26 +185,16 @@ def has_entered_data(analysis_unit: AnalysisUnit) -> bool:
     )
 
 
-def has_study_entered_data(study: Study) -> bool:
-    if study.name.strip():
-        return True
-    if study.year not in EMPTY_VALS and study.year != 0:
-        return True
-    if any(value not in EMPTY_VALS for value in study.covariate_values.values()):
-        return True
-    return any(
-        has_entered_data(analysis_unit)
-        for follow_ups in study.analysis_units_by_outcome.values()
-        for analysis_unit in follow_ups.values()
-    )
+def has_study_entered_data(study):
+    return bool(study.label.strip() or study.year or any(v not in EMPTY_VALS for v in study.covariate_values.values()) or has_entered_data(study.analysis_unit))
 
 
 def included_studies_have_raw_data(
-    studies: Sequence[Study],
+    studies: Sequence[StudyRow],
     raw_data_for_study: Callable[[int, bool], Sequence[object]],
     one_arm: bool,
 ) -> bool:
-    for index, study in enumerate(studies[:-1]):
+    for index, study in enumerate(studies):
         if study.include and not raw_data_is_complete(
             raw_data_for_study(index, one_arm)
         ):
@@ -241,11 +203,11 @@ def included_studies_have_raw_data(
 
 
 def included_studies_have_effects(
-    studies: Sequence[Study],
+    studies: Sequence[StudyRow],
     effect_for_study: Callable[[int], Sequence[object]],
 ) -> bool:
     return all(
         all(value is not None for value in effect_for_study(index))
-        for index, study in enumerate(studies[:-1])
+        for index, study in enumerate(studies)
         if study.include
     )

@@ -507,7 +507,7 @@ rcmetar.build.subgroup.metafor.bundle <- function(om.data, params, subgroup.data
             header_rows = header.rows,
             polygon_rows = polygon.rows,
             overall_row = min(polygon.rows) - 5,
-            difference_test = rcmetar.metafor.subgroup.difference.test(flat.yi, flat.sei, subgroup.values, params),
+            difference_test = rcmetar.metafor.subgroup.difference.test(subgroup.results[seq_along(subgroup.list)]),
             ylim = c(min(polygon.rows) - 10, max(header.rows) + 2.5)
         )
     )
@@ -517,27 +517,12 @@ rcmetar.build.subgroup.metafor.bundle <- function(om.data, params, subgroup.data
     rcmetar.decorate.metafor.bundle(bundle)
 }
 
-rcmetar.metafor.subgroup.difference.test <- function(yi, sei, subgroup.values, params) {
-    if (length(unique(subgroup.values)) < 2 || length(yi) != length(subgroup.values)) {
-        return(NULL)
-    }
-    subgroup.factor <- stats::relevel(factor(subgroup.values), ref=as.character(subgroup.values[[1]]))
-    res <- tryCatch(
-        metafor::rma.uni(
-            yi=yi,
-            sei=sei,
-            mods=~ subgroup.factor,
-            method=params$rm.method,
-            test=rcmetar.inference.method(params),
-            level=params$conf.level,
-            digits=params$digits
-        ),
-        error=function(e) NULL
-    )
-    if (is.null(res) || is.null(res$QM) || display.value.is.missing(res$QM)) {
-        return(NULL)
-    }
-    list(QM=res$QM, QMp=res$QMp, df=res$QMdf[[1]], df2=res$QMdf[[2]], test=res$test)
+rcmetar.metafor.subgroup.difference.test <- function(results) {
+    if (length(results) < 2) return(NULL)
+    yi <- vapply(results, function(res) as.numeric(res$b[[1]]), numeric(1))
+    sei <- vapply(results, function(res) as.numeric(res$se[[1]]), numeric(1))
+    res <- metafor::rma.uni(yi=yi, sei=sei, method="FE")
+    list(QM=res$QE, QMp=res$QEp, df=length(results)-1, test="z")
 }
 
 rcmetar.build.binary.metafor.bundle <- function(binary.data, params, res) {
@@ -715,10 +700,11 @@ rcmetar.metafor.axis.ticks <- function(bundle, alim) {
         ticks <- to.calculation(values)
         return(ticks[is.finite(ticks) & ticks >= alim[[1]] & ticks <= alim[[2]]])
     }
-    pretty(alim, n=4)
+    pretty(alim, n=6)
 }
 
-rcmetar.forest.spaced.ticks <- function(bundle, ticks, cex) {
+rcmetar.forest.spaced.ticks <- function(bundle, ticks, cex, alim) {
+    ticks <- ticks[is.finite(ticks) & ticks >= alim[[1]] & ticks <= alim[[2]]]
     if (!rcmetar.is.plot.default.text(bundle$params$fp_xticks)) return(ticks)
     labels <- rcmetar.revman.axis.labels(bundle, ticks)
     valid <- is.finite(ticks) & !is.na(labels) & nzchar(labels)
@@ -733,6 +719,11 @@ rcmetar.forest.spaced.ticks <- function(bundle, ticks, cex) {
         if (!length(chosen) || all(abs(ticks[index] - ticks[chosen]) > half.width[index] + half.width[chosen] + gap)) {
             chosen <- c(chosen, index)
         }
+    }
+    # A central label can block both ends even when the two end labels fit.
+    if (length(chosen) < 2 && length(ticks) >= 2) {
+        ends <- c(which.min(ticks), which.max(ticks))
+        if (diff(range(ticks)) > sum(half.width[ends]) + gap) chosen <- ends
     }
     sort(ticks[chosen])
 }
@@ -900,7 +891,6 @@ rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, k, cex) {
         graphics::text(study.x, -0.5, rcmetar.forest.model.label(bundle$summary_res), pos=4, font=2, cex=cex)
         rcmetar.draw.forest.inference(bundle, study.x, -0.5, cex, bundle$summary_res)
     }
-    rcmetar.draw.forest.direction(bundle, layout$alim, cex)
     if (rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
         labels <- rcmetar.metafor.effect.labels(bundle)
         graphics::text(annotation.x, rows, labels, pos=2, cex=cex, col="black")

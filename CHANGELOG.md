@@ -2,6 +2,28 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
+## 0.5.1 - 2026-11-01
+
+### Corrected results
+
+- Corrected subgroup-difference tests to compare displayed subgroup estimates and standard errors instead of a shared residual-heterogeneity moderator fit.
+- Corrected Mantel–Haenszel and Peto pooling with zero cells to use original counts for pooling, separately from individual study continuity corrections. Subgroup, cumulative and leave-one-out refits follow the same rules.
+- Preserve the source confidence level of entered OR and MD intervals when sheet confidence changes, keeping their input standard errors unchanged.
+- Include the previously missing first cumulative p-value for a single-study estimate.
+- Corrected Methods wording for continuity corrections, retained double-zero studies and the pooling actually performed.
+- Rerun earlier subgroup-difference analyses; MH/Peto analyses with zero cells, including subgroup and sequential refits; and entered OR/MD analyses whose sheet confidence changed after entry. Re-export cumulative reports missing the first p-value and manuscripts with earlier Methods wording. Existing entries without source-confidence metadata retain their prior interpretation: check original interval levels before rerunning.
+
+### Added
+
+- Added dataset sheets, RevMan RM5 and Excel import, and manuscript export to DOCX and PDF.
+- Added structured Summary of findings with concise effect and certainty information.
+
+### Changed
+
+- Refined sheet editing, arm swapping, navigation, calculator workflows and full-precision interval input.
+- Polished results, plots, report layout and manuscript Methods text for review and export.
+- Improved responsiveness and reduced the Linux R bundle payload; corrected relocated Rscript argument forwarding and included import/export dependencies in frozen builds.
+
 ## 0.5.0 - 2026-10-15
 
 ### Added

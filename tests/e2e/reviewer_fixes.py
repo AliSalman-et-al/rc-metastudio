@@ -24,14 +24,23 @@ def check_table_surface(app, view, work, record, title, label):
     import csv
     import io
     from unittest.mock import patch
+    from tests.e2e.report_retention import assert_report, assert_retained_table
+    assert_report(view)
+    held = [(section, table) for section in view.results.sections for table in section.tables if table.title == title]
+    assert len(held) == 1, (title, [(s.title, t.title) for s, t in held])
+    section, original = held[0]
+    retained = assert_retained_table(view, section, original)
     view.tables_action.trigger()
-    index = next(i for i,table in enumerate(view._report_tables) if table.title == title)
+    index = next(i for i,table in enumerate(view._report_tables) if table is retained)
     view.table_selector.setCurrentIndex(index)
     app.processEvents()
     table = view._report_tables[index]
     headers = [view.result_table.horizontalHeaderItem(i).text() for i in range(view.result_table.columnCount())]
     rows = [[view.result_table.item(r,c).text() for c in range(view.result_table.columnCount())] for r in range(view.result_table.rowCount())]
-    assert headers == list(table.headers) and rows == [list(row) for row in table.rows]
+    assert [" ".join(h.split()) for h in headers] == [" ".join(h.split()) for h in retained.headers]
+    assert rows == [list(row) for row in retained.rows]
+    assert (table.headers, table.rows) == (retained.headers, retained.rows)
+    headers = list(retained.headers)
     view.result_table.clearSelection()
     view.copy_table_action.trigger()
     assert list(csv.reader(io.StringIO(app.clipboard().text()),delimiter='\t')) == [headers,*rows]
@@ -53,8 +62,8 @@ def run_predictions(app, window, work, record):
         for style in ('default', 'revman', 'bmj'):
             def prepare(target):
                 if workflow == 'subgroup':
-                    target.model.dataset.add_covariate(analysis_dataset.Covariate('Region', 'factor'),
-                        {s.name: 'A' if i % 2 else 'B' for i,s in enumerate(target.model.dataset.studies)})
+                    target.model.add_covariate('Region', 'factor',
+                        {s.label: 'A' if i % 2 else 'B' for i,s in enumerate(target.model.get_studies(False))})
                     target.model.reset_model()
                     target.enable_menu_options_that_require_dataset()
             window.workspace.mark_saved()
@@ -79,7 +88,7 @@ def run_predictions(app, window, work, record):
                          metafor=as.character(packageVersion("metafor")))
                 })
             }),digits=16)''')[0]))
-            text = view._plain_text_report()
+            text = view.report_text.toPlainText()
             figure = labels(artifact.display_path())
             record('reviewer-prediction-before' if baseline else 'reviewer-prediction-observed', view,
                    measure=measure, workflow=workflow, style=style, reference=reference,
@@ -186,19 +195,18 @@ def run_groups(app, window, work, record):
     app.processEvents()
     record('reviewer-legacy-default-reopened',old_view,internal_style=old_style,plots=dict(old_view.results.display_images))
     close(app,old_view)
-    assert __version__ == '0.5.0'
     assert str(r_bridge.execute_r_string('as.character(packageVersion("RCMetaR"))')[0]) == __version__
     def about(dialog):
-        assert 'RC MetaStudio 0.5.0' in dialog.content_scroll_area.toPlainText()
+        assert f'RC MetaStudio {__version__}' in dialog.content_scroll_area.toPlainText()
         record('reviewer-about-version', dialog, version=__version__)
         click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Close))
     modal(app, AboutLegalDialog, about, window.action_about_legal.trigger)
-    project = work / 'release-0.5.0.rcms'
+    project = work / f'release-{__version__}.rcms'
     window.out_path = str(project)
     assert window.save()
     with ZipFile(project) as archive:
         manifest = json.loads(archive.read('manifest.json'))
-    assert manifest['application']['version'] == '0.5.0', manifest
+    assert manifest['application']['version'] == __version__, manifest
     assert window.open(str(project), raise_on_error=True)
     record('reviewer-version-reopened', window, manifest=manifest, project=str(project))
 

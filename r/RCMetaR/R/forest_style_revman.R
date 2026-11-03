@@ -457,7 +457,9 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
     on.exit(graphics::par(op), add=TRUE)
     bottom.margin <- if (nzchar(plan$x$xlab)) 3.1 else 2.15
     directions <- rcmetar.revman.direction.labels(bundle)
-    if (nzchar(directions$left) || nzchar(directions$right)) bottom.margin <- 6
+    if (nzchar(directions$left) || nzchar(directions$right)) {
+        bottom.margin <- max(6, 4.5 + size$direction_lines * 1.6)
+    }
     graphics::par(
         bg="white",
         mar=c(bottom.margin, 0.8, 0.9, 0.8),
@@ -511,9 +513,10 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
         psize=rcmetar.metafor.psize(bundle),
         pch=compact.pch
     )
-    ticks <- rcmetar.forest.spaced.ticks(bundle, plan$x$at, size$cex)
+    ticks <- rcmetar.forest.spaced.ticks(bundle, plan$x$at, size$cex, plan$x$alim)
     graphics::axis(1, at=ticks, labels=rcmetar.revman.axis.labels(bundle, ticks), cex.axis=plan$typography$cex.axis)
     rcmetar.draw.metafor.sequential.text(bundle, rows, layout, k, plan$typography$cex)
+    rcmetar.draw.forest.direction(bundle, alim, plan$typography$cex)
     invisible(bundle$changed.params)
     }, display.path=display.path, caption=bundle$params$plot_caption)
 }
@@ -631,7 +634,7 @@ rcmetar.draw.revman.summary.diamond <- function(summary, row, color, alim) {
 
 rcmetar.draw.revman.axis <- function(bundle, layout, cex) {
     ticks <- rcmetar.revman.axis.ticks(bundle, layout$alim)
-    ticks <- rcmetar.forest.spaced.ticks(bundle, ticks, cex)
+    ticks <- rcmetar.forest.spaced.ticks(bundle, ticks, cex, layout$alim)
     labels <- rcmetar.revman.axis.labels(bundle, ticks)
     y.axis <- -2.3
     y.tick <- -2.12
@@ -640,7 +643,10 @@ rcmetar.draw.revman.axis <- function(bundle, layout, cex) {
     graphics::rect(layout$alim[[1]] - 0.04 * span, max(-5.4, graphics::grconvertY(0, from="ndc", to="user")), layout$alim[[2]] + 0.04 * span, -2.05, col="white", border=NA)
     graphics::segments(layout$alim[[1]], y.axis, layout$alim[[2]], y.axis, lwd=0.8)
     graphics::segments(ticks, y.axis, ticks, y.tick, lwd=0.8)
-    graphics::text(ticks, y.label, labels, cex=cex)
+    # Centre the row using one reference glyph; per-label vertical centring
+    # gives digits different baselines with Windows Arial metrics.
+    graphics::text(ticks, y.label - graphics::strheight("0", cex=cex) / 2,
+                   labels, cex=cex, adj=c(0.5, 0))
     invisible(NULL)
 }
 
@@ -658,24 +664,11 @@ rcmetar.revman.axis.labels <- function(bundle, ticks) {
         return(trimws(formatC(values, digits=3, format="fg")))
     }
     digits <- max(0, min(2, as.integer(bundle$params$digits)))
-    rcmetar.format.effect.number(values, digits, scale=max(abs(values)))
+    vapply(values, function(value) format(signif(value, 3), trim=TRUE, scientific=FALSE), character(1))
 }
 
 rcmetar.revman.axis.footer.layout <- function(bundle, layout) {
     rcmetar.forest.revman.axis.footer(bundle, layout)
-}
-
-rcmetar.revman.constrained.direction.label <- function(label, cex, max.width, preferred.width) {
-    widths <- sort(unique(pmax(18, c(preferred.width, 24, 22, 20, 18))), decreasing=TRUE)
-    for (width in widths) {
-        wrapped <- rcmetar.revman.wrap.direction(label, width)
-        lines <- unlist(strsplit(wrapped, "\n", fixed=TRUE), use.names=FALSE)
-        if (length(lines) == 0 || length(lines) <= 3 ||
-                max(graphics::strwidth(lines, units="user", cex=cex), na.rm=TRUE) <= max.width) {
-            return(wrapped)
-        }
-    }
-    rcmetar.revman.wrap.direction(label, 18)
 }
 
 rcmetar.revman.line.count <- function(label) {
@@ -712,60 +705,17 @@ rcmetar.draw.revman.bottom.blocks <- function(bundle, x, cex, layout=NULL) {
     }
     prediction <- rcmetar.forest.prediction.label(bundle)
     if (nzchar(prediction)) graphics::text(x, -5, prediction, pos=4, cex=cex)
+    rcmetar.draw.revman.axis.footer(bundle, layout, cex)
+    invisible(NULL)
+}
+
+rcmetar.draw.revman.axis.footer <- function(bundle, layout, cex) {
     axis.footer <- rcmetar.revman.axis.footer.layout(bundle, layout)
-    left.label <- ""
-    right.label <- ""
-    if (nzchar(bundle$style_blocks$favours_left)) {
-        left.label <- rcmetar.revman.constrained.direction.label(
-            bundle$style_blocks$favours_left,
-            cex,
-            axis.footer$left.max.width,
-            axis.footer$direction.width
-        )
-    }
-    if (nzchar(bundle$style_blocks$favours_right)) {
-        right.label <- rcmetar.revman.constrained.direction.label(
-            bundle$style_blocks$favours_right,
-            cex,
-            axis.footer$right.max.width,
-            axis.footer$direction.width
-        )
-    }
-    direction.y <- axis.footer$direction.y -
-        max(0, max(rcmetar.revman.line.count(left.label), rcmetar.revman.line.count(right.label)) - 2) * 0.36
-    label.wraps.deeply <- max(rcmetar.revman.line.count(left.label), rcmetar.revman.line.count(right.label)) > 2
-    left.x <- axis.footer$left.x
-    right.x <- axis.footer$right.x
-    left.adj <- 0.5
-    right.adj <- 0.5
-    if (label.wraps.deeply || (nzchar(left.label) && nzchar(right.label))) {
-        label.gap <- max(axis.footer$span * 0.035, 0.08)
-        left.x <- axis.footer$split.x - label.gap
-        right.x <- axis.footer$split.x + label.gap
-        left.adj <- 1
-        right.adj <- 0
-    }
-    if (nzchar(bundle$style_blocks$favours_left)) {
-        graphics::text(
-            left.x,
-            direction.y,
-            left.label,
-            cex=cex,
-            adj=left.adj
-        )
-    }
-    if (nzchar(bundle$style_blocks$favours_right)) {
-        graphics::text(
-            right.x,
-            direction.y,
-            right.label,
-            cex=cex,
-            adj=right.adj
-        )
-    }
     if (nzchar(bundle$style_blocks$axis_label)) {
         graphics::text(axis.footer$axis.x, axis.footer$axis.label.y, bundle$style_blocks$axis_label, cex=cex)
     }
+    spacing <- graphics::strheight("M", cex=cex) * 2.2
+    rcmetar.draw.forest.direction.blocks(bundle, axis.footer, axis.footer$axis.label.y - spacing, cex)
     invisible(NULL)
 }
 

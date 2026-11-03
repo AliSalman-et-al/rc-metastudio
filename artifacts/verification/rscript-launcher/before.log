@@ -1,0 +1,23 @@
+Runtime: /home/ali/Documents/Code/rc-metastudio/build/linux-package/work/qualification/extracted/RCMetaStudio-linux-x64/R
+ARGUMENT 'a' __ignored__
+
+ARGUMENT 'b' __ignored__
+
+
+Runtime: /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home
+a b
+/home/ali/Documents/Code/rc-metastudio/build/linux-package/work/qualification/extracted/RCMetaStudio-linux-x64/R/bin/Rscript: POSIX shell script, ASCII text executable
+#!/bin/sh
+r_script_dir=${0%/*}
+R_HOME="$(CDPATH= cd -- "$r_script_dir/.." && pwd)"
+export R_HOME
+export R_SHARE_DIR="$R_HOME/share"
+export R_INCLUDE_DIR="$R_HOME/include"
+export R_DOC_DIR="$R_HOME/doc"
+if [ "$#" -gt 0 ] && [ "${1#-}" = "$1" ]; then
+  script="$1"
+  shift
+  exec "$R_HOME/bin/R" --no-save --no-restore --no-echo "--file=$script" --args "$@"
+fi
+exec "$R_HOME/bin/R" --no-save --no-restore --no-echo "$@"
+a b

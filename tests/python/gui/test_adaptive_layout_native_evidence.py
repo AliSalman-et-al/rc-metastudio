@@ -394,5 +394,3 @@ def test_evidence_runner_captures_all_archetypes_and_runtime_contracts(
         "test-native-plugin",
         manifest["scale_factor_environment"],
     )
-
-

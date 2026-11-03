@@ -25,6 +25,15 @@ def start_automation(phase_callback=None):
     return compose_application(phase_callback=phase_callback)
 
 
+def _start_package_application(phase_callback=None):
+    app, window = start_automation(phase_callback=phase_callback)
+    app.processEvents()
+    from rc_metastudio import r_backend
+    if not r_backend.is_ready():
+        raise RuntimeError("Packaged application R startup failed")
+    return app, window
+
+
 def _close_automation_window(app, window) -> None:
     _mark_workspace_saved(window)
     window.close()
@@ -46,7 +55,7 @@ def start_package_open_report(output_path: str, project_path: str) -> int:
     try:
         record_phase(f"project:{Path(project_path).name}")
         record_phase("composition:start")
-        app, window = start_automation(phase_callback=record_phase)
+        app, window = _start_package_application(phase_callback=record_phase)
         try:
             record_phase("project-open:start")
             opened = window.open(os.path.abspath(project_path), raise_on_error=True)
@@ -80,7 +89,7 @@ def start_package_edit_save(
 ) -> int:
     """Edit one explicit cell and save to one explicit destination."""
     _configure_package_locale()
-    app, window = start_automation()
+    app, window = _start_package_application()
     try:
         opened = bool(window.open(os.path.abspath(project_path), raise_on_error=True))
         edited = saved = False
@@ -108,7 +117,7 @@ def start_package_edit_save(
 def start_package_analyze(output_path: str, project_path: str, analysis_method: str) -> int:
     """Open one explicit project and run one explicit analysis method."""
     _configure_package_locale()
-    app, window = start_automation()
+    app, window = _start_package_application()
     try:
         opened = bool(window.open(os.path.abspath(project_path), raise_on_error=True))
         if not opened:
@@ -129,6 +138,37 @@ def start_package_analyze(output_path: str, project_path: str, analysis_method: 
             "project": os.path.abspath(project_path), "analysis_method": analysis_method,
             "opened": True,
             "texts": dict(result.texts), "display_images": dict(result.display_images),
+        })
+        return 0
+    finally:
+        _close_automation_window(app, window)
+
+
+def start_package_import_export(output_path, project_path, xlsx_path, rm5_path):
+    """Exercise frozen import readers and manuscript output on explicit inputs."""
+    from rc_metastudio import csv_import, rm5_import, main_window
+    from rc_metastudio.manuscript_report import ManuscriptReport, write_docx
+    from docx import Document
+
+    headers, rows, names, selected = csv_import.read_xlsx(xlsx_path)
+    review = rm5_import.read_rm5(rm5_path)
+    app, window = _start_package_application()
+    try:
+        if not window.open(os.path.abspath(project_path), raise_on_error=True):
+            raise RuntimeError("project did not open")
+        result = _run_analysis(window, main_window, "binary.random")
+        report = ManuscriptReport.from_result(result)
+        destination = Path(output_path).with_suffix('.docx')
+        write_docx(report, destination)
+        paragraphs = [p.text for p in Document(str(destination)).paragraphs]
+        if report.methods not in paragraphs:
+            raise RuntimeError("DOCX Methods did not round-trip")
+        _write_json(output_path, {
+            "frozen": bool(getattr(sys, "frozen", False)),
+            "xlsx_headers": headers, "xlsx_rows": rows,
+            "xlsx_sheets": names, "xlsx_selected": selected,
+            "rm5_sheets": len(review.dataset.sheets),
+            "docx": str(destination), "methods": report.methods,
         })
         return 0
     finally:
@@ -185,6 +225,7 @@ def start_package_runtime_probe(output_path: str) -> int:
     if primary is None:
         raise SystemExit("Packaged runtime probe found no primary screen.")
 
+    r_bridge.initialize_r()
     runtime = r_bridge.packaged_runtime_observation()
     shared_path = Path(configured.get("R_HOME", "")) / "bin" / "x64" / "R.dll"
     if sys.platform == "darwin":
@@ -225,7 +266,7 @@ def start_package_surface_smoke(evidence_path: str, requested_scale: str) -> int
     from PyQt6 import QtCore, QtGui, QtNetwork, QtWidgets
 
     _configure_surface_locale(QtCore)
-    app, window = start_automation()
+    app, window = _start_package_application()
     close_attempted = False
     try:
         record = _surface_record(
@@ -340,4 +381,8 @@ def dispatch(startup_argv: list[str]) -> int:
         if len(startup_argv) != 4:
             raise SystemExit("--automation-package-surface-smoke requires an evidence path and scale.")
         return start_package_surface_smoke(startup_argv[2], startup_argv[3])
+    if len(startup_argv) > 1 and startup_argv[1] == "--automation-package-import-export":
+        if len(startup_argv) != 6:
+            raise SystemExit("--automation-package-import-export requires output, project, XLSX and RM5 paths.")
+        return start_package_import_export(*startup_argv[2:])
     raise SystemExit("Unknown packaged qualification command: %s" % startup_argv[1])

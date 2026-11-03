@@ -30,8 +30,10 @@ def main():
     print(f"Complete-run evidence: {evidence}", flush=True)
     commands = []
     if args.full:
-        r_home = Path(os.environ["RCMS_R_HOME"])
-        rscript = r_home / "bin" / ("Rscript.exe" if os.name == "nt" else "Rscript")
+        from scripts.r_verification_support import resolve_rscript
+        rscript = resolve_rscript("Rscript")
+        if rscript is None:
+            raise RuntimeError("Full verification requires Rscript on PATH or a configured R home")
         commands.extend(
             [
                 [

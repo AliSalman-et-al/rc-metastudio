@@ -229,3 +229,53 @@ spanners in three styles, installed 0.5.0, About and saved/reopened project iden
 `project-reviewer-colours` checks Default markers/intervals/caps/diamonds and four
 export formats across standard/sequential/subgroup, single-arm, diagnostic and
 HR/IRR families, including the unchanged persisted `default` key in Edit plot.
+
+## Compact Results navigation
+
+`results-window` measures amino study-label nominal font height from SVG text size
+and its effective viewport transform at 1280×800 (96 DPI equivalent), requiring
+at least 9 pt and 85% drawn-text width coverage. It rejects toolbar actions that
+duplicate sidebar navigation. Six light/dark forest, manuscript and table captures
+are retained. See `docs/ux-hill-climb/SLICE8B.md` for the measurements and limits.
+
+The shared `ux-improvements` / `results-window` drive waits for the visible
+`EditPlotDialog` before editing direction labels. It deliberately dispatches a
+timer turn before the editor opens: Windows embedded R may dispatch native events
+while loading saved parameters, so a one-shot callback can otherwise be consumed
+before there is a modal to operate. Both paths retain label persistence and
+arm-swap assertions; the 600-second bound is unchanged.
+
+## Results close/export lifetime
+
+`manuscript-export` retains eight real non-native save dialogs: the first PDF
+and DOCX of each main analysis. Its stress cycles trigger the same export action
+with the picker seam returning a path; every file/content check remains.
+`manuscript-export-direct` calls the real write functions without a save dialog.
+Both run the same 20 PDF/eight DOCX writes, file/content assertions and 12
+close/reopen stress cycles, including an old Results window pending deletion.
+They are separate cases in the ordinary CI E2E selection, so a fatal dialog
+process cannot prevent the direct case from retaining its result. Hillclimb
+also retains its two real save dialogs.
+
+Both cases weakly observe real QPdfWriter, QPainter and QTextDocument instances
+and assert release on normal writer return with cyclic GC disabled and no event
+processing.
+Writer markers identify format, path and write number. Dialog markers identify
+the operation, picker number, prior dialog deletion and child item-model
+teardown after deleteLater/deferred-event processing. This explicit cleanup is
+equivalent to the previous disposal helper; it is not by itself a Windows fix.
+
+Windows decision evidence cleared all 28 direct writes and their resources; a
+later small-study modal race is guarded by waiting for the visible dialog. The
+dialog case crashed in non-native QFileDialog exec during stress cycling despite
+released writers and deleted prior dialogs. See `docs/ux-hill-climb/WINDOWS.md`
+for the evidence and boundary. No production source forces DontUseNativeDialog.
+The native Windows picker remains untested by automation and needs a person
+to check it. Linux passes do not qualify Windows; both CI cases remain enabled.
+
+The font-stress footer drive in `r/RCMetaR/inst/qa/render_footer_metrics.R` uses
+16-point DejaVu Sans Mono in the production SVG renderer and retains all three
+styles with short/long arm names. `check_footer_metrics.py` reuses the existing
+footer bounds/non-overlap assertions and requires exact equal Favours baselines.
+Inputs, SVGs and geometry receipts remain in its chosen output directory; see
+the Windows notes for the install and run commands.

@@ -8,6 +8,22 @@ import sys
 import tempfile
 import threading
 
+class AnalysisBackendUnavailableError(RuntimeError):
+    """Raised when the configured R analysis backend cannot service requests."""
+
+
+_READY = False
+
+
+def is_ready() -> bool:
+    return _READY
+
+
+def mark_ready() -> None:
+    global _READY
+    _READY = True
+
+
 _DLL_DIRECTORY_HANDLES = []
 _RUNTIME_IDENTITY = None
 _BOOTSTRAP_THREAD_ID = None

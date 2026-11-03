@@ -18,6 +18,7 @@ Users edit a study's raw inputs, inspect the derived effect preview, accept or c
 
 Preconditions: doctor passes; the matching committed sample supplies compatible raw inputs.
 
+- **Default-size visibility.** `calculator-binary` requires the count grid, SE/Z/P readout and OR/RR/RD table to fit fully in the visible content viewport without vertical scrolling. `ui-crawl` also checks both continuous pre/post arm tables and compact entered-estimate placement. Large-font overflow remains covered by the transactional calculator layout tests.
 - **Binary.** Run `uv run python scripts/verify_rcms.py calculator-binary`. The row-header path opens `BinaryDataDialog`; `raw_data_table` accepts the first study's increased event count and corresponding total.
 - **Continuous.** Run `uv run python scripts/verify_rcms.py calculator-continuous`. `ContinuousDataDialog.simple_table` changes the first study mean by `1.5` using a comma decimal.
 - **Diagnostic.** Run `uv run python scripts/verify_rcms.py calculator-diagnostic`. `DiagnosticDataDialog.two_by_two_table` changes the first study TP count by one.
@@ -89,3 +90,33 @@ unchanged commits, clipboard, CSV import, undo/redo and project reopening.
 persistence with public effects. Domains remain constrained: counts are integers
 and proportions remain in range. This does not qualify every reconstruction input
 combination or a platform's native file picker.
+
+## Calculator readouts
+
+The three baseline drives assert compact estimate/CI text and bit-identical saved
+raw/entered values against the retained pre-change accepted-row fixture.
+`calculator-continuous` also requires no horizontal table scrollbar.
+`calculator-binary` cross-checks OR/RR/RD intervals and selected Wald SE/Z/P using
+independent `metafor::escalc` and `pnorm` calls, recording counts and full results.
+These are offscreen Qt proofs, not native DPI qualification. Continuous arm
+p-values remain reconstruction inputs; computed arm p-values are left blank.
+
+`calculator-ratio-precision` also accepts reported HR/IRR intervals at a 90%
+sheet confidence, verifies their SE by metafor::conv.wald and pooled weights
+by rma.uni DL, then changes sheet confidence to 95%. Original bounds and
+source confidence must remain unchanged, with the same analysis input SE.
+The source interval level is stored per study; output confidence is separate.
+
+`calculator-mode-entered-binary` and `calculator-mode-entered-continuous` also
+enter OR/MD intervals at 90%, switch sheet output confidence to 95%, save/reopen,
+and compare the actual study SE used in analysis to metafor::conv.wald and
+qnorm(.95) within 1e-6. Entered bounds retain their source multiplier.
+
+Slice 8A: continuous group SE/CI cells paint at estimate precision while retaining
+full item/editor text. Diagnostic prevalence uses a rounded unfocused readout and
+round-trip-safe text. Binary OR/RR/RD readouts fit their three rows and columns.
+The baseline acceptance fixtures and independent numerical comparisons remain
+unchanged. Refreshed offscreen screenshots are in docs/ux-hill-climb/screens/slice8a-*.
+
+- `calculator-binary` also checks that the OR/RR/RD readout's four visible
+  columns share width evenly (at most one pixel difference).

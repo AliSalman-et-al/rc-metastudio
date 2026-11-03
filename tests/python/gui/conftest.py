@@ -24,3 +24,22 @@ def inject_gui_boundary(inject_python_boundary, monkeypatch: pytest.MonkeyPatch)
         diagnostic_data_dialog,
     ):
         monkeypatch.setattr(dialog_module, "r_bridge", r_bridge, raising=False)
+
+
+@pytest.fixture(autouse=True)
+def dispose_test_windows(qapp, monkeypatch):
+    """Dispose each test's windows while its Python callbacks are still alive."""
+    import gc
+
+    from PyQt6 import sip
+
+    baseline = {id(widget) for widget in qapp.topLevelWidgets()}
+    yield
+    # close() only hides ordinary widgets. Leaving them to cyclic GC lets a
+    # later application-wide Qt notification destroy windows while iterating
+    # its native widget list (notably setWindowIcon during shell composition).
+    owned = [widget for widget in qapp.topLevelWidgets() if id(widget) not in baseline]
+    for widget in owned:
+        if not sip.isdeleted(widget):
+            sip.delete(widget)
+    gc.collect()

@@ -1,0 +1,12 @@
+Scratch: /tmp/rcms-rscript-proof.dPahXi
+a b
+/tmp/rcms-rscript-proof.dPahXi/R quoted arguments OK
+Loading required package: metabook
+Loading 'meta' package (version 8.5-0).
+Type 'help(meta)' for a brief overview.
+"outcome","estimate","lower","upper","I2"
+1,-0.108849304507015,-0.173741192560105,-0.0439574164539248,0.39674580455584
+2,-0.343445753457489,-0.606815161445856,-0.0800763454691217,0
+af84fd229f5cc460e1e30aaedde6739da34d337d9964e36931f600f1e23838d2  /home/ali/Documents/Code/rc-metastudio/build/linux-package/work/qualification/extracted/RCMetaStudio-linux-x64/R/bin/Rscript
+82252ae00428d95a498d18d5ae5e1debf32bd35691807fd28352bbe219950fa6  /home/ali/Documents/Code/rc-metastudio/build/linux-package/work/r-extract/opt/R/4.6.1/lib/R/bin/Rscript
+82252ae00428d95a498d18d5ae5e1debf32bd35691807fd28352bbe219950fa6  /tmp/rcms-rscript-proof.dPahXi/R/bin/Rscript.real

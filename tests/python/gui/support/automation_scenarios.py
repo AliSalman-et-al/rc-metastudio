@@ -4,6 +4,8 @@
 """Verification and automation workflows for RC MetaStudio."""
 
 from __future__ import annotations
+from rc_metastudio.runtime_types import required
+from rc_metastudio.automation import start_automation
 
 import faulthandler
 import hashlib
@@ -34,10 +36,8 @@ from rc_metastudio.cocoa_accessibility import (
 from rc_metastudio.launch import (
     _argument_value,
     _dispose_new_top_levels,
-    _emit_automation_phase,
     _import_main_window,
     _set_application_icon,
-    _show_main_window,
     _top_level_ids,
     compose_application,
     configure_application,
@@ -218,32 +218,6 @@ def dispatch(startup_argv: list[str]) -> int:
     raise SystemExit("Unknown automation command: %s" % startup_argv[1])
 
 
-def start_automation(phase_callback=None):
-    qt6_resources.ensure_application_resources()
-    app_error_handler.install_global_exception_handler()
-    main_window = _import_main_window()
-    app = app_error_handler.get_or_create_application(sys.argv)
-    configure_application(app)
-    _emit_automation_phase(phase_callback, "application:configured")
-    baseline_ids = _top_level_ids(app)
-    try:
-        settings.setup_directories()
-        _emit_automation_phase(phase_callback, "settings:ready")
-        if os.environ.get("RCMS_REQUIRE_IN_PROCESS_RPY2") == "1":
-            _emit_automation_phase(phase_callback, "r-libraries:start")
-            load_R_libraries(app, None, phase_callback=phase_callback)
-            _emit_automation_phase(phase_callback, "r-libraries:complete")
-        _emit_automation_phase(phase_callback, "meta-form:create:start")
-        meta = main_window.MainWindow()
-        _emit_automation_phase(phase_callback, "meta-form:create:complete")
-        _show_main_window(meta)
-        _emit_automation_phase(phase_callback, "main-window:shown")
-        return app, meta
-    except BaseException:
-        _dispose_new_top_levels(app, baseline_ids)
-        raise
-
-
 def start_automation_smoke(sample_path, require_native_window=False):
     _write_automation_smoke_log("packaged-workflow:start")
     hang_trace = _start_automation_hang_trace()
@@ -258,7 +232,7 @@ def start_automation_smoke(sample_path, require_native_window=False):
         _write_automation_smoke_log("packaged-workflow:shell-created")
         if require_native_window:
             platform_name = app.platformName().lower()
-            expected = "windows" if sys.platform == "win32" else "cocoa"
+            expected = {"win32": "windows", "darwin": "cocoa"}.get(sys.platform, "xcb")
             if platform_name != expected:
                 raise SystemExit(
                     "Native smoke loaded Qt platform %s, expected %s."
@@ -372,20 +346,21 @@ def _exercise_all_packaged_samples(meta, representative_sample):
         if raw_sha256 != metadata[name]["sha256"]:
             raise RuntimeError("packaged sample hash mismatch: %s" % name)
         document = project_format.load_project(path)
-        reconstructed = project_format.reconstruct_analysis_dataset(document)
-        if reconstructed.semantic_sha256 != metadata[name]["semantic_sha256"]:
+        semantic_payload = (json.dumps(document.project, sort_keys=True, ensure_ascii=False, allow_nan=False, separators=(",", ":")) + "\n").encode("utf-8")
+        semantic_sha256 = hashlib.sha256(semantic_payload).hexdigest()
+        if semantic_sha256 != metadata[name]["semantic_sha256"]:
             raise RuntimeError("packaged sample semantic mismatch: %s" % name)
         if not meta.open(str(path), raise_on_error=True):
             raise RuntimeError("packaged application could not open sample: %s" % name)
         observed = _dataset_record(
-            project_adapter.dataset_to_project(meta.model.dataset)["dataset"]
+            project_adapter.dataset_to_project(meta.model.dataset)
         )
         expected = _dataset_record(
             project_adapter.dataset_to_project(
                 project_adapter.project_to_dataset(document.project)
-            )["dataset"]
+            )
         )
-        for field in ("title", "analysis_family", "outcomes", "studies"):
+        for field in ("title", "notes", "sheets"):
             if observed[field] != expected[field]:
                 raise RuntimeError(
                     "packaged application loaded different %s semantics: %s"
@@ -395,7 +370,7 @@ def _exercise_all_packaged_samples(meta, representative_sample):
             {
                 "project": name,
                 "sha256": raw_sha256,
-                "semantic_sha256": reconstructed.semantic_sha256,
+                "semantic_sha256": semantic_sha256,
                 "opened_in_packaged_application": True,
             }
         )
@@ -1486,7 +1461,7 @@ def start_shell_smoke(require_native_window=False):
     try:
         if require_native_window:
             platform_name = app.platformName().lower()
-            expected = "windows" if sys.platform == "win32" else "cocoa"
+            expected = {"win32": "windows", "darwin": "cocoa"}.get(sys.platform, "xcb")
             if platform_name != expected:
                 raise SystemExit(
                     "Native shell smoke loaded Qt platform %s, expected %s."
@@ -1517,16 +1492,27 @@ class _InjectedStartupFailure(RuntimeError):
 
 
 def start_shell_failure_smoke(stage):
-    """Prove startup failures release every newly owned top-level object."""
+    """Observe failed startup and prove the owned shell can be disposed."""
     if stage not in {"r-load", "meta-form"}:
         raise SystemExit("Unknown shell failure stage: %s" % stage)
     app = app_error_handler.get_or_create_application(sys.argv)
     configure_application(app)
     baseline_ids = _top_level_ids(app)
+    errors = []
 
     def r_loader(_app, _splash):
-        if stage == "r-load":
-            raise _InjectedStartupFailure(stage)
+        raise _InjectedStartupFailure(stage)
+
+    from rc_metastudio.main_window import MainWindow
+
+    class FailureShell(MainWindow):
+        def toggle_menu_options_that_require_dataset(self, enable):
+            if enable:
+                raise AssertionError("Analysis enabled before R startup")
+            super().toggle_menu_options_that_require_dataset(enable)
+
+        def _show_analysis_backend_error(self, exception):
+            errors.append(exception)
 
     def meta_factory():
         if stage == "meta-form":
@@ -1535,31 +1521,27 @@ def start_shell_failure_smoke(stage):
             partial.show()
             app.processEvents()
             raise _InjectedStartupFailure(stage)
-        return QtWidgets.QMainWindow()
+        return FailureShell()
 
-    def main_window_loader():
-        return type("MainWindowModule", (), {"MainWindow": meta_factory})
-
+    module = type("MainWindowModule", (), {"MainWindow": meta_factory})
     try:
-        compose_application(
-            app=app,
-            interactive=True,
-            main_window_loader=main_window_loader(),
-            r_loader=r_loader,
-        )
+        _, window = compose_application(app=app, interactive=True,
+                                        main_window_loader=module, r_loader=r_loader)
     except _InjectedStartupFailure:
-        pass
+        if stage != "meta-form":
+            raise
     else:
-        raise SystemExit("Injected startup failure did not fire: %s" % stage)
+        app.processEvents()
+        if stage != "r-load" or len(errors) != 1 or not isinstance(errors[0], _InjectedStartupFailure):
+            raise SystemExit("Injected startup failure did not fire: %s" % stage)
+        if not window.isVisible() or window.statusBar().currentMessage() != "R failed to start":
+            raise SystemExit("R startup failure did not leave a visible failed shell")
+        dispose_qobjects(app, (window,))
 
-    leaked = [
-        widget for widget in app.topLevelWidgets() if id(widget) not in baseline_ids
-    ]
+    leaked = [widget for widget in app.topLevelWidgets() if id(widget) not in baseline_ids]
     if leaked:
-        raise SystemExit(
-            "Startup failure leaked top-level objects at %s: %s"
-            % (stage, [type(widget).__name__ for widget in leaked])
-        )
+        raise SystemExit("Startup failure leaked top-level objects at %s: %s"
+                         % (stage, [type(widget).__name__ for widget in leaked]))
     print("Application shell failure teardown passed at %s." % stage)
     return 0
 

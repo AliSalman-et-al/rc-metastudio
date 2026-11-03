@@ -1,3 +1,5 @@
+from rc_metastudio.analysis_unit import AnalysisUnit
+from rc_metastudio.project_domain import RowId, SheetId
 import json
 import os
 from pathlib import Path
@@ -26,20 +28,22 @@ else:
 
 
 class _AnalysisModel(object):
-    current_outcome_name = "Outcome"
-    current_groups = ["A", "B"]
+    @property
+    def current_outcome_name(self):
+        return self.current_sheet.name
+
+    arm_names = ["A", "B"]
 
     def get_current_outcome_subtype(self):
         return None
 
-    def get_current_follow_up_name(self):
-        return "first"
-
     def __init__(self, data_type, covariates=()):
         self._data_type = data_type
-        self.current_effect = "Sens" if data_type == "diagnostic" else "OR"
+        self.current_effect = "Sens" if data_type == "diagnostic" else "HR" if data_type == "hazard_ratio" else "OR"
         self.dataset = analysis_dataset.Dataset()
-        self.dataset.covariates = list(covariates)
+        self.current_sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", data_type, covariates=list(covariates))
+        self.dataset.sheets.append(self.current_sheet)
+        self.current_sheet_id = self.current_sheet.id
 
     def get_current_outcome_type(self):
         return self._data_type
@@ -52,7 +56,7 @@ class _AnalysisModel(object):
 
     def get_studies(
         self, only_if_included: bool = True
-    ) -> list[analysis_dataset.Study]:
+    ) -> list[analysis_dataset.StudyRow]:
         return []
 
 
@@ -170,7 +174,7 @@ def test_analysis_setup_plot_actions_expose_browse_metadata(qapp):
     ui = Ui_AnalysisSetupDialog()
     ui.setupUi(dialog)
     try:
-        assert ui.color_btn.text() == "Choose color..."
+        assert ui.color_btn.text() == "Choose color…"
         assert ui.color_btn.accessibleName() == "Choose plot accent color"
         assert ui.color_btn.accessibleDescription()
         assert ui.color_btn.toolTip()
@@ -195,7 +199,7 @@ def test_configuration_controls_have_accessible_label_associations(
     )
     try:
         dynamic_pairs = list(
-            zip(dialog.current_widgets[1::2], dialog.current_widgets[2::2])
+            zip(dialog.current_widgets[0::2], dialog.current_widgets[1::2])
         )
         assert dynamic_pairs
         for label, control in dynamic_pairs:
@@ -220,11 +224,12 @@ def test_configuration_controls_have_accessible_label_associations(
     (
         ("binary", None, "Method & Parameters", "Analysis method:"),
         ("continuous", None, "Method & Parameters", "Analysis method:"),
+        ("hazard_ratio", None, "Method & Parameters", "Analysis method:"),
         (
             "diagnostic",
             ["lr", "dor"],
             "Method & Parameters for Likelihood Ratios and Diagnostic Odds Ratio",
-            "Method for Likelihood Ratios and Diagnostic Odds Ratio",
+            "Analysis method:",
         ),
     ),
 )
@@ -245,8 +250,23 @@ def test_method_dialog_wording_is_scoped_to_its_analysis_family(
         confidence_level=95.0,
     )
     try:
-        assert dialog.windowTitle() == "Meta-analysis — Outcome"
+        assert dialog.windowTitle() == {
+            "binary": "Outcome · Odds Ratio",
+            "continuous": "Outcome · Odds Ratio",
+            "hazard_ratio": "Outcome · Hazard Ratio",
+            "diagnostic": "Outcome · Positive and negative likelihood ratios, Diagnostic odds ratio",
+        }[data_type]
+        dialog.show()
+        qapp.processEvents()
         assert dialog.method_lbl.text() == expected_method_label
+        assert not dialog.method_lbl.wordWrap()
+        assert dialog.method_lbl.fontMetrics().horizontalAdvance(expected_method_label) <= dialog.method_lbl.width()
+        page_margin = required(dialog.methods_tab.style(), "method page style").pixelMetric(
+            QtWidgets.QStyle.PixelMetric.PM_LayoutLeftMargin, None, dialog.methods_tab
+        )
+        assert page_margin > 0
+        assert dialog.method_lbl.mapTo(dialog.methods_tab, QtCore.QPoint()).x() >= page_margin
+        assert not dialog.lr_dor_method_lbl.isVisible()
     finally:
         dialog.close()
 
@@ -257,12 +277,12 @@ def test_method_dialog_wording_is_scoped_to_its_analysis_family(
         (
             "meta-regression",
             "Reitsma Meta-Regression",
-            "Reitsma bivariate model",
+            "Analysis method:",
         ),
         (
             None,
             "Method & Parameters for Sensitivity and Specificity",
-            "Method for Sensitivity and Specificity",
+            "Analysis method:",
         ),
     ),
     ids=["meta-regression", "standard"],
@@ -272,7 +292,7 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
 ):
     from rc_metastudio import adaptive_window, analysis_adapter, analysis_setup_dialog
 
-    covariate = SimpleNamespace(name="quality", data_type=4)
+    covariate = {'id': 'quality', 'name': 'quality', 'data_type': 4}
     model = _AnalysisModel("diagnostic", (covariate,))
     backend = analysis_adapter.r_bridge
     monkeypatch.setattr(
@@ -339,15 +359,26 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
             "available_geometry_for_window",
             lambda _window: QtCore.QRect(0, 0, 800, 600),
         )
-        font = QtGui.QFont(dialog.font())
+        normal_font = QtGui.QFont(dialog.font())
+        font = QtGui.QFont(normal_font)
         font.setPointSize(max(14, font.pointSize() + 5))
         dialog.setFont(font)
         dialog.specs_tab.setCurrentWidget(dialog.methods_tab)
         dialog.show()
         qapp.processEvents()
 
-        assert dialog.windowTitle() == ("Meta-regression — Outcome" if analysis_type == "meta-regression" else "Meta-analysis — Outcome")
+        assert dialog.windowTitle() == ("Outcome · Sensitivity and Specificity" if analysis_type == "meta-regression" else "Outcome · Sensitivity, Specificity")
+        dialog.show()
+        qapp.processEvents()
         assert dialog.method_lbl.text() == expected_method_label
+        assert not dialog.method_lbl.wordWrap()
+        assert dialog.method_lbl.fontMetrics().horizontalAdvance(expected_method_label) <= dialog.method_lbl.width()
+        page_margin = required(dialog.methods_tab.style(), "method page style").pixelMetric(
+            QtWidgets.QStyle.PixelMetric.PM_LayoutLeftMargin, None, dialog.methods_tab
+        )
+        assert page_margin > 0
+        assert dialog.method_lbl.mapTo(dialog.methods_tab, QtCore.QPoint()).x() >= page_margin
+        assert not dialog.lr_dor_method_lbl.isVisible()
         assert dialog.current_method == "diagnostic.reitsma"
         assert dialog.diagnostic_regression_group.isHidden() is (
             analysis_type == "meta-regression"
@@ -358,18 +389,31 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
         method_text_width = dialog.method_cbo_box.fontMetrics().horizontalAdvance(
             dialog.method_cbo_box.currentText()
         )
-        assert method_text_width <= dialog.method_cbo_box.width(), (
-            method_text_width,
-            dialog.method_cbo_box.width(),
-            dialog.method_cbo_box.sizeHint().width(),
-            dialog.width(),
-            dialog.method_lbl.width(),
-            dialog.methods_tab.width(),
-            required(
-                dialog.method_cbo_box.parentWidget(), "method combo parent"
-            ).width(),
-            dialog.parameter_grp_box.width(),
-        )
+        layout_details = {
+            "font": dialog.method_lbl.font().toString(),
+            "label_text_width": dialog.method_lbl.fontMetrics().horizontalAdvance(dialog.method_lbl.text()),
+            "label_hint": dialog.method_lbl.sizeHint(),
+            "label_minimum": dialog.method_lbl.minimumSize(),
+            "label_policy": (dialog.method_lbl.sizePolicy().horizontalPolicy(),
+                             dialog.method_lbl.sizePolicy().verticalPolicy(),
+                             dialog.method_lbl.sizePolicy().retainSizeWhenHidden()),
+            "layout": type(dialog.gridLayout).__name__,
+            "columns": [(dialog.gridLayout.columnStretch(i), dialog.gridLayout.columnMinimumWidth(i))
+                        for i in range(dialog.gridLayout.columnCount())],
+            "siblings": [(widget.objectName(),
+                          dialog.gridLayout.getItemPosition(i),
+                          widget.sizeHint())
+                         for i in range(dialog.gridLayout.count())
+                         if (item := dialog.gridLayout.itemAt(i)) is not None
+                         if (widget := item.widget()) is not None],
+        }
+        details = f"method_text_width={method_text_width}, combo={dialog.method_cbo_box.geometry()}, label={dialog.method_lbl.geometry()}, dialog={dialog.size()}, layout={layout_details!r}"
+        assert method_text_width <= dialog.method_cbo_box.width(), details
+        assert dialog.method_lbl.visibleRegion().boundingRect().contains(dialog.method_lbl.rect()), details
+        assert not dialog.method_lbl.geometry().intersects(dialog.method_cbo_box.geometry()), details
+        dialog.setFont(normal_font)
+        qapp.processEvents()
+        assert dialog.method_lbl.geometry().right() < dialog.method_cbo_box.geometry().left(), details
         estimator = next(
             combo
             for combo in dialog.parameter_grp_box.findChildren(QtWidgets.QComboBox)
@@ -416,8 +460,8 @@ def test_diagnostic_reitsma_meta_regression_hides_legacy_controls_for_factor_and
     """Joint Reitsma regression must not expose univariate model controls."""
     from rc_metastudio import analysis_setup_dialog
 
-    continuous = SimpleNamespace(name="threshold", data_type=0)
-    factor = SimpleNamespace(name="reader", data_type=1)
+    continuous = {'id': 'threshold', 'name': 'threshold', 'data_type': 0}
+    factor = {'id': 'reader', 'name': 'reader', 'data_type': 1}
     model = _AnalysisModel("diagnostic", (continuous, factor))
     backend = analysis_setup_dialog.analysis_adapter.r_bridge
     monkeypatch.setattr(
@@ -493,7 +537,7 @@ def test_meta_regression_missing_moderator_confirmation_names_excluded_studies(
 ):
     from rc_metastudio import analysis_adapter, analysis_setup_dialog
 
-    covariate = SimpleNamespace(name="quality", data_type=0)
+    covariate = {'id': 'quality', 'name': 'quality', 'data_type': 0}
     model = _AnalysisModel("continuous", (covariate,))
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)
     dialog = analysis_setup_dialog.AnalysisSetupDialog(
@@ -535,12 +579,15 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
         lambda _window: QtCore.QRect(0, 0, 800, 600),
     )
 
+    monkeypatch.setattr(
+        analysis_setup_dialog.adaptive_controls,
+        "available_geometry_for_choice_control",
+        lambda _combo: QtCore.QRect(0, 0, 800, 600),
+    )
+
     dialogs = []
     try:
-        long_covariate = SimpleNamespace(
-            name="A continuous moderator with a deliberately long complete name",
-            data_type=0,
-        )
+        long_covariate = {'id': 'A continuous moderator with a deliberately long complete name', 'name': 'A continuous moderator with a deliberately long complete name', 'data_type': 0}
         for data_type, diagnostic_metrics, workflow, covariates in (
             ("binary", None, None, ()),
             ("continuous", None, None, ()),
@@ -560,6 +607,7 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
             font = QtGui.QFont(dialog.font())
             font.setPointSize(max(14, font.pointSize() + 5))
             dialog.setFont(font)
+            dialog.specs_tab.setCurrentWidget(dialog.methods_tab)
             dialog.show()
             qapp.processEvents()
 
@@ -572,6 +620,10 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
             assert dialog.buttonBox.isVisible()
             assert dialog.contentsRect().contains(dialog.buttonBox.geometry().center())
 
+            toggle = dialog.advanced_toggle
+            assert toggle.toolButtonStyle() == QtCore.Qt.ToolButtonStyle.ToolButtonTextOnly
+            assert toggle.width() >= toggle.fontMetrics().horizontalAdvance(toggle.text()) + 12
+            assert "..." not in toggle.text() and "…" not in toggle.text()
             stable_geometry = QtCore.QRect(dialog.frameGeometry())
             plot_was_enabled = dialog.plot_tab.isEnabled()
             if dialog.method_cbo_box.count() > 1:
@@ -617,11 +669,12 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
                 editable_value = cast(
                     QtWidgets.QLineEdit,
                     required(
-                        dialog.parameter_grp_box.findChild(QtWidgets.QLineEdit),
+                        next(widget for widget in dialog.current_widgets if isinstance(widget, QtWidgets.QLineEdit)),
                         "editable value",
                     ),
                 )
                 assert editable_value.text() == "complete editable value"
+                dialog.advanced_toggle.setChecked(True)
                 required(
                     dialog.content_scroll_area.verticalScrollBar(), "vertical scrollbar"
                 ).setValue(0)
@@ -696,7 +749,7 @@ def test_method_parameters_opens_at_its_content_preferred_width(qapp, monkeypatc
         dialog.close()
 
 
-def test_meta_regression_method_description_reflows_without_outer_horizontal_overflow(
+def test_meta_regression_estimator_stays_inside_viewport(
     qapp, monkeypatch
 ):
     from rc_metastudio import analysis_setup_dialog
@@ -709,7 +762,7 @@ def test_meta_regression_method_description_reflows_without_outer_horizontal_ove
         lambda _self, _method: "A deliberately long method description that must reflow. "
         * 8,
     )
-    covariate = SimpleNamespace(name="latitude", data_type=0)
+    covariate = {'id': 'latitude', 'name': 'latitude', 'data_type': 0}
     dialog = analysis_setup_dialog.AnalysisSetupDialog(
         _AnalysisModel("continuous", (covariate,)),
         analysis_type="meta-regression",
@@ -729,22 +782,15 @@ def test_meta_regression_method_description_reflows_without_outer_horizontal_ove
             ).maximum()
             == 0
         )
-        description = next(
-            widget
-            for widget in dialog.current_widgets
-            if isinstance(widget, QtWidgets.QLabel)
-            and widget.text().startswith("Description:")
-        )
         estimator = next(
             widget
             for widget in dialog.current_widgets
             if isinstance(widget, QtWidgets.QLabel) and widget.text() == "Estimator"
         )
         estimator_control = required(estimator.buddy(), "REML estimator control")
-        assert description.isVisible()
         assert estimator.isVisible()
         assert estimator_control.isVisible()
-        for widget in (description, estimator, estimator_control):
+        for widget in (estimator, estimator_control):
             visible_rect = QtCore.QRect(
                 widget.mapTo(viewport, QtCore.QPoint(0, 0)), widget.size()
             )
@@ -772,21 +818,12 @@ def test_subgroup_and_covariate_selectors_use_transactional_layouts(qapp, monkey
         raising=False,
     )
 
-    class Covariate(object):
-        name = long_name
-        data_type = FACTOR
-
-        def get_data_type(self):
-            return FACTOR
-
     study = SimpleNamespace(covariate_values={long_name: "north"}, id=1)
 
     class Model(object):
         current_effect = "OR"
-        dataset = SimpleNamespace(
-            covariates=[Covariate()],
-            get_covariate_values=lambda *_args, **_kwargs: {1: "north"},
-        )
+        current_sheet = SimpleNamespace(covariates=[{'id': long_name, 'name': long_name, 'data_type': FACTOR}], rows=[study])
+
 
         def get_current_outcome_type(self):
             return "binary"
@@ -891,7 +928,12 @@ def test_choice_control_remeasures_font_and_style_before_bounded_popup(
                 return value + 30
             return value
 
-    style = WideChromeStyle()
+    native_style = required(qapp.style(), "application style")
+    while isinstance(native_style, QtWidgets.QProxyStyle):
+        native_style = required(native_style.baseStyle(), "native base style")
+    base_style = required(QtWidgets.QStyleFactory.create(native_style.objectName()), "independent base style")
+    style = WideChromeStyle(base_style)
+    style.setParent(combo)
     combo.setStyle(style)
     combo.showPopup()
     qapp.processEvents()
@@ -908,6 +950,9 @@ def test_choice_control_remeasures_font_and_style_before_bounded_popup(
     finally:
         combo.hidePopup()
         combo.close()
+        combo.setStyle(None)
+        combo.deleteLater()
+        qapp.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
 
 
 def test_choice_popup_show_burst_coalesces_measurement_tooltips_and_clamp(qapp):
@@ -1094,14 +1139,16 @@ from rc_metastudio import analysis_adapter
 from rc_metastudio import analysis_setup_dialog
 
 class Model:
-    current_effect = "OR"
     current_outcome_name = "Outcome"
-    current_groups = ["A", "B"]
+    current_effect = "OR"
+    arm_names = ["A", "B"]
     def get_current_outcome_subtype(self):
         return None
     def get_current_follow_up_name(self):
         return "first"
-    dataset = SimpleNamespace(covariates=[])
+    current_sheet = SimpleNamespace(name="Outcome", settings={}, covariates=[])
+    current_sheet_id = "sheet"
+    dataset = SimpleNamespace(sheets=[current_sheet])
     def get_current_outcome_type(self):
         return "binary"
     def included_studies_have_raw_data(self):
@@ -1277,8 +1324,8 @@ def test_meta_regression_backend_execution_uses_frozen_request(monkeypatch):
 
     analysis_adapter.execute_meta_regression_request(
         model,
-        (analysis_dataset.Study("Study"),),
-        (analysis_dataset.Covariate("Covariate", "continuous"),),
+        (analysis_dataset.StudyRow(RowId("study"), "Study", AnalysisUnit(analysis_dataset.Sheet(SheetId("unit-sheet"), "Outcome", 1))),),
+        ({"id": "covariate", "name": "Covariate", "data_type": 1},),
         request,
         True,
         95.0,
@@ -1288,8 +1335,8 @@ def test_meta_regression_backend_execution_uses_frozen_request(monkeypatch):
     assert "90.5" in rendered
     assert "1.0" not in rendered
     assert "SMD" in rendered
-    assert isinstance(calls[0][1]["studies"][0], analysis_dataset.Study)
-    assert isinstance(calls[0][1]["covs_to_include"][0], analysis_dataset.Covariate)
+    assert isinstance(calls[0][1]["studies"][0], analysis_dataset.StudyRow)
+    assert calls[0][1]["covs_to_include"][0] == {"id": "covariate", "name": "Covariate", "data_type": 1}
 
 
 @pytest.mark.parametrize(
@@ -1302,7 +1349,7 @@ def test_meta_regression_dialog_uses_shared_rcmetar_method(
 ):
     from rc_metastudio import analysis_setup_dialog
 
-    covariate = SimpleNamespace(name="latitude", data_type=0)
+    covariate = {'id': 'latitude', 'name': 'latitude', 'data_type': 0}
     model = _AnalysisModel(data_type, (covariate,))
     model.current_effect = metric
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)

@@ -1,12 +1,14 @@
+from rc_metastudio.project_domain import SheetId
 import os
 from pathlib import Path
 from typing import cast
+from types import SimpleNamespace
 
 import pytest
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 from rc_metastudio import adaptive_window, calculator_service
-from rc_metastudio.analysis_dataset import Outcome
+from rc_metastudio.analysis_dataset import Sheet
 from rc_metastudio.meta_globals import CONTINUOUS
 
 
@@ -23,23 +25,24 @@ prepare_generated_ui_imports()
 
 class FakeContinuousAnalysisUnit:
     def __init__(self, raw_data=None, effects=None):
-        self.outcome = Outcome("Measured outcome", CONTINUOUS, sub_type="means")
+        self.sheet = Sheet(SheetId("sheet"), "Measured outcome", CONTINUOUS, sub_type="means")
         self.raw_data = raw_data or {
             "Group 1": [10, 94, 2],
             "Group 2": [12, 90, 3],
         }
         self.effects = effects or {}
+        self.arms = {name: SimpleNamespace(stable_id=name) for name in self.raw_data}
 
     def get_effect_names(self):
         return ["MD", "SMD", "TX Mean"]
 
-    def get_raw_data_for_group(self, group):
+    def get_raw_data_for_arm(self, group):
         return self.raw_data[group]
 
-    def set_raw_data_for_group(self, group, values):
+    def set_raw_data_for_arm(self, group, values):
         self.raw_data[group] = list(values)
 
-    def get_raw_data_for_groups(self, groups):
+    def get_raw_data_for_arms(self, groups):
         return [value for group in groups for value in self.raw_data[group]]
 
     def get_se(self, *_args, **_kwargs):
@@ -50,15 +53,15 @@ class FakeContinuousAnalysisUnit:
         return self.effects.get(metric, (None, None, None))
 
     def get_effect_and_ci_for_source(
-        self, _source, effect, group_comparison, confidence_multiplier
+        self, _source, effect, arm_key, confidence_multiplier
     ):
-        return self.get_effect_and_ci(effect, group_comparison, confidence_multiplier)
+        return self.get_effect_and_ci(effect, arm_key, confidence_multiplier)
 
     def set_effect_for_source(
-        self, _source, metric, group_comparison, est, low=None, high=None, **kwargs
+        self, _source, metric, arm_key, est, low=None, high=None, **kwargs
     ):
         self.set_effect_and_ci(
-            metric, group_comparison, est, low, high, **kwargs
+            metric, arm_key, est, low, high, **kwargs
         )
 
     def set_effect_and_ci(self, metric, _group, est, low, high, **_kwargs):
@@ -184,7 +187,7 @@ def _open_continuous_dialog(
     dialog = continuous_data_dialog.ContinuousDataDialog(
         analysis_unit or FakeContinuousAnalysisUnit(),
         ["Group 1", "Group 2"],
-        "Group 1-Group 2",
+        ("Group 1", "Group 2"),
         metric,
         confidence_level=95.0,
     )
@@ -406,13 +409,13 @@ def test_continuous_sample_size_is_rejected_before_model_or_r(monkeypatch, inval
     )
     try:
         before_calls = len(recorder["impute"])
-        before_raw = list(unit.get_raw_data_for_group("Group 1"))
+        before_raw = list(unit.get_raw_data_for_arm("Group 1"))
         dialog.simple_table.setCurrentCell(0, 0)
         dialog.simple_table.item(0, 0).setText(invalid_n)
         app.processEvents()
 
         assert len(recorder["impute"]) == before_calls
-        assert unit.get_raw_data_for_group("Group 1") == before_raw
+        assert unit.get_raw_data_for_arm("Group 1") == before_raw
         assert dialog.simple_table.item(0, 0).text() == "10.0"
         assert warnings
         assert (
@@ -456,7 +459,7 @@ def test_continuous_variants_are_transactional_and_screen_bounded(monkeypatch, s
             )
             assert (
                 table.horizontalHeader().sectionResizeMode(0)
-                == QtWidgets.QHeaderView.ResizeMode.Interactive
+                == QtWidgets.QHeaderView.ResizeMode.Stretch
             )
     finally:
         _close(app, dialog)
@@ -533,9 +536,9 @@ def test_continuous_major_variant_behavior_matrix(monkeypatch, variant):
             app.processEvents()
             assert any(payload[0].get("mean") == 95 for payload in recorder["impute"])
 
-        assert dialog.effect_text_box.text() == "2.5"
-        assert dialog.lower_text_box.text() == "1.5"
-        assert dialog.upper_text_box.text() == "3.5"
+        assert dialog.effect_text_box.text() == "2.5000"
+        assert dialog.lower_text_box.text() == "1.5000"
+        assert dialog.upper_text_box.text() == "3.5000"
 
         assert dialog.frameGeometry() == settled
         assert available.contains(dialog.frameGeometry())
@@ -575,7 +578,11 @@ def test_continuous_long_values_and_large_font_overflow_inside_content(monkeypat
         app.processEvents()
 
         assert available.contains(dialog.frameGeometry())
-        assert dialog.simple_table.horizontalScrollBar().maximum() > 0
+        assert dialog.simple_table.horizontalScrollBar().maximum() == 0
+        dialog.simple_table.editItem(dialog.simple_table.item(0, 1))
+        editor = required(dialog.simple_table.findChild(QtWidgets.QLineEdit), "numeric editor")
+        assert editor.text() == long_value
+        key_click(editor, QtCore.Qt.Key.Key_Escape)
         assert dialog.simple_table.item(0, 1).text() == long_value
         assert dialog.effect_combo_box.maximumWidth() == QtWidgets.QWIDGETSIZE_MAX
         assert (
@@ -696,7 +703,7 @@ def test_successful_continuous_back_calculation_updates_data_without_root_growth
             dialog.effect_text_box.text(),
             dialog.lower_text_box.text(),
             dialog.upper_text_box.text(),
-        ] == ["5.0", "4.0", "6.0"]
+        ] == ["5.0000", "4.0000", "6.0000"]
         assert dialog.frameGeometry() == settled
         assert available.contains(dialog.frameGeometry())
     finally:

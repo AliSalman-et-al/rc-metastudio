@@ -189,9 +189,9 @@ def run_sequential(app, window, work, record):
     for workflow in ('cumulative', 'leave-one-out', 'subgroup'):
         def groups(window):
             if workflow == 'subgroup':
-                studies = window.model.dataset.studies
-                window.model.dataset.add_covariate(analysis_dataset.Covariate('Group', 'factor'),
-                    {s.name: 'A' if index % 2 else 'B' for index,s in enumerate(studies)})
+                studies = window.model.get_studies(False)
+                window.model.add_covariate('Group', 'factor',
+                    {s.label: 'A' if index % 2 else 'B' for index,s in enumerate(studies)})
                 window.model.reset_model()
                 window.enable_menu_options_that_require_dataset()
         window.workspace.mark_saved()

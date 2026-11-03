@@ -22,36 +22,30 @@ prepare_generated_ui_imports()
 AVAILABLE = QtCore.QRect(20, 30, 800, 600)
 
 
-class FakeDiagnosticGroup:
-    def __init__(self, raw_data):
-        self.raw_data = raw_data
-
-
 class FakeDiagnosticAnalysisUnit:
     def __init__(self, raw_data=None, effects=None):
         self.raw_data = list(raw_data or [12, 3, 4, 21])
         self.effects = dict(effects or {})
-        self.groups = {"Group 1-Group 2": FakeDiagnosticGroup(self.raw_data)}
 
-    def get_raw_data_for_group(self, _group):
+    def get_raw_data_for_arm(self, _group):
         return self.raw_data
 
-    def get_raw_data_for_groups(self, _groups):
+    def get_raw_data_for_arms(self, _groups):
         return list(self.raw_data)
 
     def get_effect_and_ci(self, metric, _group, _mult):
         return self.effects.get(metric, (None, None, None))
 
     def get_effect_and_ci_for_source(
-        self, _source, effect, group_comparison, confidence_multiplier
+        self, _source, effect, arm_key, confidence_multiplier
     ):
-        return self.get_effect_and_ci(effect, group_comparison, confidence_multiplier)
+        return self.get_effect_and_ci(effect, arm_key, confidence_multiplier)
 
     def set_effect_for_source(
-        self, _source, metric, group_comparison, est, low=None, high=None, **kwargs
+        self, _source, metric, arm_key, est, low=None, high=None, **kwargs
     ):
         self.set_effect_and_ci(
-            metric, group_comparison, est, low, high, **kwargs
+            metric, arm_key, est, low, high, **kwargs
         )
 
     def set_effect_and_ci(self, metric, _group, est, low, high, **_kwargs):
@@ -127,8 +121,8 @@ def _open_data_dialog(
     )
     dialog = diagnostic_data_dialog.DiagnosticDataDialog(
         FakeDiagnosticAnalysisUnit(raw_data=raw_data, effects=effects),
-        ["Group 1", "Group 2"],
-        "Group 1-Group 2",
+        ["Index test"],
+        ("test",),
         confidence_level=95.0,
     )
     return app, dialog
@@ -265,7 +259,7 @@ def test_entered_effect_switching_is_semantically_sized_and_geometry_stable(
             dialog.effect_text_box.text(),
             dialog.lower_text_box.text(),
             dialog.upper_text_box.text(),
-        ] == ["0.8", "0.7", "0.9"]
+        ] == ["0.8000", "0.7000", "0.9000"]
         for field in (
             dialog.prevalence_text_box,
             dialog.effect_text_box,
@@ -584,9 +578,8 @@ def test_diagnostic_metric_availability_preserves_workflow_and_explains_limits(
         assert dialog.availability_label.wordWrap()
         assert AVAILABLE.contains(dialog.frameGeometry())
         if model.raw_available:
-            assert "All diagnostic metrics are available" in (
-                dialog.availability_label.text()
-            )
+            assert dialog.availability_label.isHidden()
+            assert dialog.btn_cancel.text() == "Cancel"
             # The joint Sensitivity/Specificity path is the default, while
             # univariate DOR/LR remain explicit, available requests.
             assert dialog.chk_box_lr.isEnabled()

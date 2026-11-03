@@ -268,8 +268,8 @@ _HEADLESS_ADAPTER_DRIVER = textwrap.dedent(
     # cbind(tsens, tfpr) terms instead of RCMetaR's formula helper.
     model = headless_analysis.load_dataset_model(sample)
     studies = model.get_studies(only_if_included=True)
-    quality_values = {study.name: ("A" if index % 2 == 0 else "B") for index, study in enumerate(studies)}
-    threshold_values = {study.name: index + 1 for index, study in enumerate(studies)}
+    quality_values = {study.label: ("A" if index % 2 == 0 else "B") for index, study in enumerate(studies)}
+    threshold_values = {study.label: index + 1 for index, study in enumerate(studies)}
     regression_case = headless_analysis.HeadlessAnalysisCase(
         sample, "diagnostic.reitsma", parameters, metric="Sens",
         data_type=meta_globals.DIAGNOSTIC, analysis_type="meta_regression", covariates=[
@@ -285,10 +285,10 @@ _HEADLESS_ADAPTER_DRIVER = textwrap.dedent(
 
     with r_transaction():
         r_bridge.ro.globalenv["quality_values"] = r_bridge.ro.StrVector(
-            [quality_values[study.name] for study in studies]
+            [quality_values[study.label] for study in studies]
         )
         r_bridge.ro.globalenv["threshold_values"] = r_bridge.ro.FloatVector(
-            [threshold_values[study.name] for study in studies]
+            [threshold_values[study.label] for study in studies]
         )
         public_reg_data = r_bridge.ro.r(r'''
           data.frame(

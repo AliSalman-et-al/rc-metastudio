@@ -3,13 +3,18 @@
 """Shared calculator helpers for data-entry dialogs."""
 
 import sys
+import math
 from collections.abc import Callable
 from functools import partial
 from typing import Protocol, TypeAlias
 from weakref import WeakKeyDictionary
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPainter, QPaintEvent
 
-from PyQt6.QtWidgets import QMessageBox, QSizePolicy, QStyle, QStyledItemDelegate, QWIDGETSIZE_MAX
+from PyQt6.QtWidgets import (
+    QAbstractItemView, QHeaderView, QLabel, QLineEdit, QMessageBox, QSizePolicy, QStyle, QStyleOptionFrame,
+    QStyledItemDelegate, QTableWidget, QTableWidgetItem, QWIDGETSIZE_MAX,
+)
 
 from rc_metastudio.meta_globals import (
     BINARY_ONE_ARM_METRICS,
@@ -37,6 +42,35 @@ class NumericSummaryDelegate(QStyledItemDelegate):
     def displayText(self, value, locale):
         number, valid = qt_text.parse_decimal(value)
         return format(number, ".6g") if valid else str(value)
+
+    def initStyleOption(self, option, index):
+        super().initStyleOption(option, index)
+        header = index.model().headerData(index.column(), Qt.Orientation.Horizontal)
+        if header in {"SE", "Lower", "Upper"}:
+            number, valid = qt_text.parse_decimal(index.data())
+            if valid:
+                option.text = format_calculator_display_value(number)
+
+
+class PrevalenceEdit(QLineEdit):
+    """Round only the unfocused readout; editing and calculations use exact text."""
+
+    def paintEvent(self, a0: QPaintEvent | None) -> None:
+        event = a0
+        number, valid = qt_text.parse_decimal(self.text())
+        if self.hasFocus() or not valid:
+            return super().paintEvent(event)
+        option = QStyleOptionFrame()
+        self.initStyleOption(option)
+        painter = QPainter(self)
+        style = self.style()
+        assert style is not None
+        style.drawPrimitive(QStyle.PrimitiveElement.PE_PanelLineEdit, option, painter, self)
+        rect = style.subElementRect(QStyle.SubElement.SE_LineEditContents, option, self)
+        rect.adjust(2, 0, -2, 0)
+        painter.setPen(self.palette().text().color())
+        painter.drawText(rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+                         format_calculator_display_value(number))
 
 
 def cell_text_is_blank(value):
@@ -327,8 +361,10 @@ def fit_effect_ci_line_edits_to_contents(
 
 
 def format_calculator_display_value(value, digits=CALC_NUM_DIGITS):
-    """Editable numeric text must round-trip without changing the stored float."""
-    return str(value)
+    """Format presentation only; the analysis unit retains the exact value."""
+    if value and (abs(value) < 10 ** -digits or abs(value) >= 1e8):
+        return format(value, f".{digits}g")
+    return format(value, f".{digits}f")
 
 
 def binary_effect_display_samples(metric, digits=CALC_NUM_DIGITS):
@@ -382,7 +418,7 @@ def diagnostic_effect_display_samples(metric, digits=CALC_NUM_DIGITS):
 
 
 def calculator_effect_source(
-    analysis_unit, groups, effect, group_comparison, confidence_multiplier
+    analysis_unit, groups, effect, arm_key, confidence_multiplier
 ):
     """Return the active calculator effect authority.
 
@@ -390,14 +426,14 @@ def calculator_effect_source(
     entered effect in that state so back-calculation and direct editing remain
     usable; switch to the preview only after the active metric has one.
     """
-    raw_data = analysis_unit.get_raw_data_for_groups(groups)
+    raw_data = analysis_unit.get_raw_data_for_arms(groups)
     if not any(value not in EMPTY_VALS for value in raw_data):
         return "entered"
     required_data = _ONE_ARM_REQUIRED_DATA.get(effect, len(raw_data))
     if any(value in EMPTY_VALS for value in raw_data[:required_data]):
         return "entered"
     preview = analysis_unit.get_effect_and_ci_for_source(
-        "derived_preview", effect, group_comparison, confidence_multiplier
+        "derived_preview", effect, arm_key, confidence_multiplier
     )
     return "derived_preview" if any(value is not None for value in preview) else "entered"
 
@@ -406,7 +442,7 @@ def set_current_effect_from_value(
     analysis_unit,
     txt_boxes,
     current_effect,
-    group_comparison,
+    arm_key,
     data_type,
     confidence_multiplier=None,
     *,
@@ -433,7 +469,7 @@ def set_current_effect_from_value(
     ]
 
     (est, lower, upper) = analysis_unit.get_effect_and_ci_for_source(
-        source, current_effect, group_comparison, confidence_multiplier
+        source, current_effect, arm_key, confidence_multiplier
     )
     (display_estimate, display_lower, display_upper) = [
         conv_to_disp_scale(x) for x in (est, lower, upper)
@@ -458,6 +494,104 @@ def set_current_effect_from_value(
         [effect_tbox, lower_tbox, upper_tbox],
         semantic_samples=semantic_samples,
     )
+
+
+def _wald_summary(data_type, current_effect, est, lower, upper, confidence_multiplier) -> str:
+    summary = ""
+    if all(value is not None for value in (est, lower, upper)):
+        se = (upper - lower) / (2 * confidence_multiplier)
+        if se > 0:
+            z = est / se
+            p = math.erfc(abs(z) / math.sqrt(2))
+            log_scale = current_effect in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR", "PLN"}
+            scale = ""
+            if log_scale:
+                scale = " (log scale)"
+            elif current_effect in {"Sens", "Spec", "PLO"}:
+                scale = " (logit scale)"
+            summary = f"SE{scale}: {se:.4f}"
+            if data_type != "diagnostic":
+                p_text = "<0.001" if p < 0.001 else f"{p:.3f}"
+                summary += f"    Z: {z:.4f}    Two-sided P: {p_text}"
+    return summary
+
+
+def _update_binary_metric_table(dialog, raw) -> None:
+    if not hasattr(dialog, "metric_readout"):
+        table = QTableWidget(3, 4, dialog)
+        dialog.metric_readout = table
+        table.setObjectName("calculator_metrics")
+        table.setHorizontalHeaderLabels(["Metric", "Estimate", "Lower CI", "Upper CI"])
+        vertical_header = table.verticalHeader()
+        assert vertical_header is not None
+        vertical_header.hide()
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        horizontal_header = table.horizontalHeader()
+        assert horizontal_header is not None
+        horizontal_header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        dialog.content_layout.addWidget(table)
+        def select_metric(row, column):
+            index = dialog.effect_combo_box.findData(("OR", "RR", "RD")[row])
+            if index < 0:
+                index = dialog.effect_combo_box.findText(("OR", "RR", "RD")[row])
+            dialog.effect_combo_box.setCurrentIndex(index)
+        table.cellClicked.connect(select_metric)
+    for row, metric in enumerate(("OR", "RR", "RD")):
+        result = dialog.calculator.effect_for_study(
+            *raw, metric=metric, confidence_level=dialog.confidence_level
+        )
+        values = dialog.calculator.effect_triplet(result)
+        display = [r_bridge.binary_convert_scale(v, metric, convert_to="display.scale") for v in values]
+        for column, value in enumerate([metric] + display):
+            text = value if isinstance(value, str) else (
+                "" if value is None else format_calculator_display_value(value)
+            )
+            dialog.metric_readout.setItem(row, column, QTableWidgetItem(text))
+    table = dialog.metric_readout
+    table.resizeColumnsToContents()
+    table.resizeRowsToContents()
+    header = table.horizontalHeader()
+    assert header is not None
+    table.setFixedHeight(header.height()
+                         + sum(table.rowHeight(row) for row in range(table.rowCount()))
+                         + 2 * table.frameWidth())
+    table.setMinimumWidth(sum(table.columnWidth(col) for col in range(table.columnCount()))
+                          + 2 * table.frameWidth())
+
+
+def update_calculator_readout(dialog, data_type):
+    """Refresh read-only statistics without replacing the user's editable text."""
+    analysis_unit = dialog.analysis_unit
+    current_effect = dialog.current_effect
+    arm_key = dialog.arm_key
+    confidence_multiplier = dialog.confidence_multiplier
+    source = calculator_effect_source(
+        analysis_unit, dialog.arm_names, current_effect, arm_key, confidence_multiplier
+    )
+    est, lower, upper = analysis_unit.get_effect_and_ci_for_source(
+        source, current_effect, arm_key, confidence_multiplier
+    )
+    if not hasattr(dialog, "wald_readout"):
+        dialog.wald_readout = QLabel(dialog)
+        dialog.wald_readout.setObjectName("calculator_wald")
+        for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
+            field.editingFinished.connect(lambda: update_calculator_readout(dialog, data_type))
+        if data_type == "diagnostic":
+            dialog.effect_layout.addWidget(dialog.wald_readout, 2, 0, 1, 6)
+        else:
+            dialog.content_layout.addWidget(dialog.wald_readout)
+    summary = _wald_summary(data_type, current_effect, est, lower, upper, confidence_multiplier)
+    dialog.wald_readout.setText(summary)
+    raw = analysis_unit.get_raw_data_for_arms(dialog.arm_names)
+    complete_binary = (
+        data_type == "binary" and len(raw) == 4
+        and all(v not in EMPTY_VALS for v in raw)
+    )
+    if complete_binary:
+        _update_binary_metric_table(dialog, raw)
+    if hasattr(dialog, "metric_readout"):
+        dialog.metric_readout.setVisible(complete_binary)
 
 
 def save_table_data(table):
@@ -592,7 +726,7 @@ def block_signals(widgets, state):
 def get_raw_data(analysis_unit, groups):
     raw_data_dict = {}
     for group in groups:
-        raw_data = analysis_unit.get_raw_data_for_group(group)
+        raw_data = analysis_unit.get_raw_data_for_arm(group)
         raw_data_dict[group] = raw_data
     return raw_data_dict
 
@@ -631,7 +765,7 @@ def evaluate(
     new_text,
     analysis_unit,
     current_effect,
-    group_comparison,
+    arm_key,
     conv_to_disp_scale,
     ci_param=None,
     parent=None,
@@ -649,7 +783,7 @@ def evaluate(
         raise ValueError("confidence multiplier must be specified")
 
     est, lower, upper = analysis_unit.get_effect_and_ci_for_source(
-        source, current_effect, group_comparison, confidence_multiplier
+        source, current_effect, arm_key, confidence_multiplier
     )  # calc scale
     display_estimate, display_lower, display_upper = [
         conv_to_disp_scale(x) for x in (est, lower, upper)

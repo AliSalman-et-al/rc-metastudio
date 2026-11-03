@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Change Confidence Level</string>
+   <string>Confidence level</string>
   </property>
   <layout class="QVBoxLayout" name="dialog_layout">
    <item>
@@ -25,7 +25,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="confidence_level_label">
        <property name="text">
-        <string>Global Confidence Level:</string>
+        <string>Confidence level:</string>
        </property>
        <property name="wordWrap">
         <bool>true</bool>

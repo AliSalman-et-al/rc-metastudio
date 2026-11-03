@@ -118,7 +118,7 @@ def test_main_wizard_is_a_stable_workflow_window(qapp):
         metric_page = _page(
             wizard, main_wizard.Page_ChooseMetric, main_wizard.ChooseMetricPage
         )
-        metric_page.label_2.setText("A very long translated instruction. " * 80)
+        metric_page.label.setText("A very long translated instruction. " * 80)
         larger_font = QtGui.QFont(metric_page.font())
         larger_font.setPointSize(larger_font.pointSize() + 8)
         metric_page.setFont(larger_font)
@@ -189,7 +189,7 @@ def test_workflow_path_matrix_is_bounded_stable_and_scrollable(
         metric_page = _page(
             wizard, main_wizard.Page_ChooseMetric, main_wizard.ChooseMetricPage
         )
-        metric_page.label_2.setText("Long translated metric guidance. " * 80)
+        metric_page.label.setText("Long translated metric guidance. " * 80)
         wizard.next()
         qapp.processEvents()
 
@@ -540,4 +540,3 @@ def test_closing_csv_wizard_cancels_queued_entry_scroll_reset(qapp, monkeypatch)
     sip.delete(wizard)
     qapp.processEvents()
     assert not failures
-

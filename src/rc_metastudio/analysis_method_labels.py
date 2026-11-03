@@ -6,6 +6,8 @@ _KNOWN_METHOD_LABELS = {
     "binary.fixed.mh": "Binary Fixed-Effect Mantel-Haenszel",
     "binary.fixed.peto": "Binary Fixed-Effect Peto",
     "binary.random": "Binary Random-Effects",
+    "time_to_event.fixed": "Time-to-event Fixed-Effect Inverse Variance",
+    "time_to_event.random": "Time-to-event Random-Effects",
     "continuous.fixed": "Continuous Fixed-Effect Inverse Variance",
     "continuous.random": "Continuous Random-Effects",
     "diagnostic.fixed.inv.var": "Diagnostic Fixed-Effect Inverse Variance",
@@ -116,6 +118,8 @@ def parameter_value_display_label(param_name, value, param_metadata=None):
 
 def parameter_display_label(param_name, param_metadata=None):
     text = str(param_name)
+    if text == "rm.method":
+        return "Heterogeneity (τ²) estimator"
     if param_metadata is not None:
         pretty_name = param_metadata.get("pretty.name")
         if pretty_name:

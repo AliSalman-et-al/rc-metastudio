@@ -51,8 +51,8 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
     def __init__(
         self,
         analysis_unit,
-        current_groups,
-        group_comparison,
+        arm_names,
+        arm_key,
         confidence_level=None,
         calculator: CalculatorService | None = None,
         parent=None,
@@ -78,8 +78,8 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         self.setup_signals_and_slots()
 
         self.analysis_unit = analysis_unit
-        self.current_groups = current_groups
-        self.group_comparison = group_comparison
+        self.arm_names = arm_names
+        self.arm_key = arm_key
         self.current_effect = "Sens"
         self.entry_widgets = [
             self.two_by_two_table,
@@ -171,14 +171,12 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             + 2 * self.content_scroll.frameWidth()
             + scrollbar.sizeHint().width()
         )
+        # Content actions live inside the scroll area; only the persistent
+        # footer constrains the outer dialog at large native font metrics.
         minimum_width = (
-            self.clear_button.sizeHint().width()
-            + self.back_calculate_button.sizeHint().width()
-            + 40
+            self.buttonBox.minimumSizeHint().width()
             + margins.left()
             + margins.right()
-            + 2 * self.content_scroll.frameWidth()
-            + scrollbar.sizeHint().width()
         )
         adaptive_window.set_content_preferred_width(
             self, minimum_width, preferred_width
@@ -615,7 +613,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             )
             self.analysis_unit.set_effect_and_ci(
                 metric,
-                self.group_comparison,
+                self.arm_key,
                 est,
                 lower,
                 upper,
@@ -644,7 +642,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                 raw_data_index = DIAG_FIELDS_TO_RAW_INDICES[field]
 
                 # Preserve blanks while storing the imputed count.
-                self.analysis_unit.groups[self.group_comparison].raw_data[
+                self.analysis_unit.get_raw_data_for_arm(self.arm_names[0])[
                     raw_data_index
                 ] = (
                     None
@@ -657,7 +655,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         raw_dict = self.get_raw_diagnostic_data()  # values are floats or None
         for field in raw_dict.keys():
             i = DIAG_FIELDS_TO_RAW_INDICES[field]
-            self.analysis_unit.groups[self.group_comparison].raw_data[i] = raw_dict[
+            self.analysis_unit.get_raw_data_for_arm(self.arm_names[0])[i] = raw_dict[
                 field
             ]
 
@@ -705,7 +703,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                     new_text=new_text,
                     analysis_unit=self.analysis_unit,
                     current_effect=self.current_effect,
-                    group_comparison=self.group_comparison,
+                    arm_key=self.arm_key,
                     conv_to_disp_scale=partial(
                         self.calculator.diagnostic_convert_scale,
                         metric_name=self.current_effect,
@@ -716,9 +714,9 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                     ci_param=ci_param,
                     source=calc_fncs.calculator_effect_source(
                         self.analysis_unit,
-                        self.current_groups,
+                        self.arm_names,
                         self.current_effect,
-                        self.group_comparison,
+                        self.arm_key,
                         self.confidence_multiplier,
                     ),
                     **options,
@@ -801,15 +799,15 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
         if val_str == "est":
             self.analysis_unit.set_effect(
-                self.current_effect, self.group_comparison, calculation_scale_value
+                self.current_effect, self.arm_key, calculation_scale_value
             )
         elif val_str == "lower":
             self.analysis_unit.set_lower(
-                self.current_effect, self.group_comparison, calculation_scale_value
+                self.current_effect, self.arm_key, calculation_scale_value
             )
         elif val_str == "upper":
             self.analysis_unit.set_upper(
-                self.current_effect, self.group_comparison, calculation_scale_value
+                self.current_effect, self.arm_key, calculation_scale_value
             )
         elif val_str == "prevalence":
             pass
@@ -869,20 +867,17 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
     def _update_raw_data(self):
         """Populates the 2x2 table with whatever parametric data was provided"""
         with QSignalBlocker(self.two_by_two_table):
-            field_index = 0
-            for col in (0, 1):
-                for row in (0, 1):
-                    val = self.analysis_unit.get_raw_data_for_group(
-                        self.group_comparison
-                    )[field_index]
-                    if val is not None:
-                        try:
-                            val = str(int(val))
-                        except (TypeError, ValueError, OverflowError):
-                            val = str(val)
-                        item = QTableWidgetItem(val)
-                        self.two_by_two_table.setItem(row, col, item)
-                    field_index += 1
+            raw = self.analysis_unit.get_raw_data_for_arm(self.arm_names[0])
+            for field_index in range(4):
+                val = raw[field_index]
+                if val is None:
+                    continue
+                try:
+                    val = str(int(val))
+                except (TypeError, ValueError, OverflowError):
+                    val = str(val)
+                item = QTableWidgetItem(val)
+                self.two_by_two_table.setItem(field_index % 2, field_index // 2, item)
 
     def _populate_effect_cmbo_box(self):
         # Back-calculation is currently supported for sensitivity/specificity.
@@ -904,17 +899,18 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             analysis_unit=self.analysis_unit,
             txt_boxes=txt_boxes,
             current_effect=self.current_effect,
-            group_comparison=self.group_comparison,
+            arm_key=self.arm_key,
             data_type="diagnostic",
             confidence_multiplier=self.confidence_multiplier,
             source=calc_fncs.calculator_effect_source(
                 self.analysis_unit,
-                self.current_groups,
+                self.arm_names,
                 self.current_effect,
-                self.group_comparison,
+                self.arm_key,
                 self.confidence_multiplier,
             ),
         )
+        calc_fncs.update_calculator_readout(self, "diagnostic")
 
     def _update_data_table(self):
         """Try to calculate rest of 2x2 table from existing cells"""
@@ -933,7 +929,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                 prevalence = float(computed_params["c1sum"]) / float(
                     computed_params["total"]
                 )
-                prev_str = str(prevalence)[:7]
+                prev_str = repr(prevalence)
                 self.prevalence_text_box.setText("%s" % prev_str)
         self._grow_all_raw_data_columns_to_contents()
 
@@ -962,7 +958,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
         for metric in DIAGNOSTIC_METRICS:
             self.analysis_unit.set_effect_for_source(
-                "entered", metric, self.group_comparison, None, None, None
+                "entered", metric, self.arm_key, None, None, None
             )
 
         # clear line edits
@@ -1003,7 +999,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
             for effect in BACK_CALCULATABLE_DIAGNOSTIC_EFFECTS:
                 est, lower, upper = self.analysis_unit.get_effect_and_ci_for_source(
-                    "entered", effect, self.group_comparison, self.confidence_multiplier
+                    "entered", effect, self.arm_key, self.confidence_multiplier
                 )
 
                 def conv_to_disp_scale(x):

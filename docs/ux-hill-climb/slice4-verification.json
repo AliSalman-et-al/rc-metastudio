@@ -1,0 +1,383 @@
+{
+  "serial": {
+    "calculator-binary": {
+      "evidence": "artifacts/verification/rcms/20261031T174032Z-54937804-calculator-binary",
+      "exit_code": 0,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "120",
+        "--label",
+        "RCMS calculator-binary",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/tests/e2e/desktop_driver.py",
+        "calculator-binary",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/verification/rcms/desktop-s3oudzw2"
+      ]
+    },
+    "calculator-continuous": {
+      "evidence": "artifacts/verification/rcms/20261031T174052Z-43f69e6d-calculator-continuous",
+      "exit_code": 0,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "120",
+        "--label",
+        "RCMS calculator-continuous",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/tests/e2e/desktop_driver.py",
+        "calculator-continuous",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/verification/rcms/desktop-c73hdvlf"
+      ]
+    },
+    "calculator-diagnostic": {
+      "evidence": "artifacts/verification/rcms/20261031T174107Z-5e718927-calculator-diagnostic",
+      "exit_code": 0,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "120",
+        "--label",
+        "RCMS calculator-diagnostic",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/tests/e2e/desktop_driver.py",
+        "calculator-diagnostic",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/verification/rcms/desktop-wzcf51h3"
+      ]
+    },
+    "calculator-mode-binary-metrics": {
+      "evidence": "artifacts/verification/rcms/20261031T174133Z-31455fd3-calculator-mode-binary-metrics",
+      "exit_code": 0,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "120",
+        "--label",
+        "RCMS calculator-mode-binary-metrics",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/tests/e2e/desktop_driver.py",
+        "calculator-mode-binary-metrics",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/verification/rcms/desktop-zluyb96l"
+      ]
+    },
+    "calculator-mode-continuous-metrics": {
+      "evidence": "artifacts/verification/rcms/20261031T174149Z-31200297-calculator-mode-continuous-metrics",
+      "exit_code": 0,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "120",
+        "--label",
+        "RCMS calculator-mode-continuous-metrics",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/tests/e2e/desktop_driver.py",
+        "calculator-mode-continuous-metrics",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/verification/rcms/desktop-sxlmcxvd"
+      ]
+    },
+    "calculator-mode-diagnostic-metrics": {
+      "evidence": "artifacts/verification/rcms/20261031T174202Z-4df0af0a-calculator-mode-diagnostic-metrics",
+      "exit_code": 0,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "120",
+        "--label",
+        "RCMS calculator-mode-diagnostic-metrics",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/tests/e2e/desktop_driver.py",
+        "calculator-mode-diagnostic-metrics",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/verification/rcms/desktop-bu0qp86k"
+      ]
+    },
+    "calculator-mode-onearm-proportion": {
+      "evidence": "artifacts/verification/rcms/20261031T174218Z-7b534294-calculator-mode-onearm-proportion",
+      "exit_code": 0,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "120",
+        "--label",
+        "RCMS calculator-mode-onearm-proportion",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/tests/e2e/desktop_driver.py",
+        "calculator-mode-onearm-proportion",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/verification/rcms/desktop-vgb64cbq"
+      ]
+    },
+    "calculator-mode-onearm-mean": {
+      "evidence": "artifacts/verification/rcms/20261031T174238Z-efc2cb6a-calculator-mode-onearm-mean",
+      "exit_code": 0,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "120",
+        "--label",
+        "RCMS calculator-mode-onearm-mean",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/tests/e2e/desktop_driver.py",
+        "calculator-mode-onearm-mean",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/verification/rcms/desktop-utpk5sk_"
+      ]
+    },
+    "calculator-mode-entered-binary": {
+      "evidence": "artifacts/verification/rcms/20261031T174301Z-14c5e514-calculator-mode-entered-binary",
+      "exit_code": 0,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "120",
+        "--label",
+        "RCMS calculator-mode-entered-binary",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/tests/e2e/desktop_driver.py",
+        "calculator-mode-entered-binary",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/verification/rcms/desktop-makbugqr"
+      ]
+    },
+    "calculator-mode-entered-continuous": {
+      "evidence": "artifacts/verification/rcms/20261031T174316Z-5fd301e2-calculator-mode-entered-continuous",
+      "exit_code": 0,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "120",
+        "--label",
+        "RCMS calculator-mode-entered-continuous",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/tests/e2e/desktop_driver.py",
+        "calculator-mode-entered-continuous",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/verification/rcms/desktop-bivn0tg8"
+      ]
+    },
+    "calculator-mode-entered-diagnostic": {
+      "evidence": "artifacts/verification/rcms/20261031T174327Z-b6ba67d3-calculator-mode-entered-diagnostic",
+      "exit_code": 0,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "120",
+        "--label",
+        "RCMS calculator-mode-entered-diagnostic",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/tests/e2e/desktop_driver.py",
+        "calculator-mode-entered-diagnostic",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/verification/rcms/desktop-csfiurc5"
+      ]
+    },
+    "calculator-mode-pre-post": {
+      "evidence": "artifacts/verification/rcms/20261031T174351Z-9a84e533-calculator-mode-pre-post",
+      "exit_code": 0,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "120",
+        "--label",
+        "RCMS calculator-mode-pre-post",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/tests/e2e/desktop_driver.py",
+        "calculator-mode-pre-post",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/verification/rcms/desktop-f37wndj8"
+      ]
+    },
+    "calculator-mode-back-binary": {
+      "evidence": "artifacts/verification/rcms/20261031T174406Z-07d88b3c-calculator-mode-back-binary",
+      "exit_code": 0,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "120",
+        "--label",
+        "RCMS calculator-mode-back-binary",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/tests/e2e/desktop_driver.py",
+        "calculator-mode-back-binary",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/verification/rcms/desktop-5dhm3nq8"
+      ]
+    },
+    "calculator-mode-back-continuous": {
+      "evidence": "artifacts/verification/rcms/20261031T174424Z-7c01f304-calculator-mode-back-continuous",
+      "exit_code": 0,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "120",
+        "--label",
+        "RCMS calculator-mode-back-continuous",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/tests/e2e/desktop_driver.py",
+        "calculator-mode-back-continuous",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/verification/rcms/desktop-t8mj7e9g"
+      ]
+    },
+    "calculator-mode-back-diagnostic": {
+      "evidence": "artifacts/verification/rcms/20261031T174439Z-2fdf10d4-calculator-mode-back-diagnostic",
+      "exit_code": 0,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "120",
+        "--label",
+        "RCMS calculator-mode-back-diagnostic",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/tests/e2e/desktop_driver.py",
+        "calculator-mode-back-diagnostic",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/verification/rcms/desktop-polmp6qr"
+      ]
+    },
+    "calculator-ratio-precision": {
+      "evidence": "artifacts/verification/rcms/20261031T174456Z-5cfe9ae8-calculator-ratio-precision",
+      "exit_code": 0,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "600",
+        "--label",
+        "RCMS calculator-ratio-precision",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/tests/e2e/desktop_driver.py",
+        "calculator-ratio-precision",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/verification/rcms/desktop-k6pmo5a7"
+      ]
+    }
+  },
+  "pytest": {
+    "command": "uv run --no-sync python -m pytest tests/e2e -n 2 -q -k calculator",
+    "passed": 17,
+    "seconds": 234.69,
+    "evidence": {
+      "calculator-ratio-precision": {
+        "evidence": "artifacts/verification/rcms/20261031T174712Z-84203abc-calculator-ratio-precision",
+        "exit_code": 0
+      },
+      "calculator-grid-precision": {
+        "evidence": "artifacts/verification/rcms/20261031T174710Z-d718aaf4-calculator-grid-precision",
+        "exit_code": 0
+      },
+      "calculator-binary": {
+        "evidence": "artifacts/verification/rcms/20261031T174633Z-6da05fe3-calculator-binary",
+        "exit_code": 0
+      },
+      "calculator-diagnostic": {
+        "evidence": "artifacts/verification/rcms/20261031T174633Z-206867ff-calculator-diagnostic",
+        "exit_code": 0
+      },
+      "calculator-continuous": {
+        "evidence": "artifacts/verification/rcms/20261031T174657Z-a7d27937-calculator-continuous",
+        "exit_code": 0
+      },
+      "calculator-mode-continuous-metrics": {
+        "evidence": "artifacts/verification/rcms/20261031T174740Z-41aa336e-calculator-mode-continuous-metrics",
+        "exit_code": 0
+      },
+      "calculator-mode-diagnostic-metrics": {
+        "evidence": "artifacts/verification/rcms/20261031T174757Z-f8da93d2-calculator-mode-diagnostic-metrics",
+        "exit_code": 0
+      },
+      "calculator-mode-onearm-proportion": {
+        "evidence": "artifacts/verification/rcms/20261031T174818Z-576fc9f8-calculator-mode-onearm-proportion",
+        "exit_code": 0
+      },
+      "calculator-mode-onearm-mean": {
+        "evidence": "artifacts/verification/rcms/20261031T174853Z-5ac84538-calculator-mode-onearm-mean",
+        "exit_code": 0
+      },
+      "calculator-mode-binary-metrics": {
+        "evidence": "artifacts/verification/rcms/20261031T174859Z-50669175-calculator-mode-binary-metrics",
+        "exit_code": 0
+      },
+      "calculator-mode-entered-binary": {
+        "evidence": "artifacts/verification/rcms/20261031T174910Z-ffe21cd7-calculator-mode-entered-binary",
+        "exit_code": 0
+      },
+      "calculator-mode-entered-continuous": {
+        "evidence": "artifacts/verification/rcms/20261031T174916Z-ed194412-calculator-mode-entered-continuous",
+        "exit_code": 0
+      },
+      "calculator-mode-entered-diagnostic": {
+        "evidence": "artifacts/verification/rcms/20261031T174927Z-5d6d032b-calculator-mode-entered-diagnostic",
+        "exit_code": 0
+      },
+      "calculator-mode-pre-post": {
+        "evidence": "artifacts/verification/rcms/20261031T174930Z-84482849-calculator-mode-pre-post",
+        "exit_code": 0
+      },
+      "calculator-mode-back-continuous": {
+        "evidence": "artifacts/verification/rcms/20261031T174946Z-973b4984-calculator-mode-back-continuous",
+        "exit_code": 0
+      },
+      "calculator-mode-back-binary": {
+        "evidence": "artifacts/verification/rcms/20261031T174947Z-8e62e56c-calculator-mode-back-binary",
+        "exit_code": 0
+      },
+      "calculator-mode-back-diagnostic": {
+        "evidence": "artifacts/verification/rcms/20261031T175001Z-8135db47-calculator-mode-back-diagnostic",
+        "exit_code": 0
+      }
+    }
+  }
+}

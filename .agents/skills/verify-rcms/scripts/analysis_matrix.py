@@ -182,7 +182,7 @@ def run(
             report = view.report_text.toPlainText()
             first_section = min(view.results.sections, key=lambda section: section.order)
             assert first_section.source_key == "Clinical interpretation", first_section
-            assert report.startswith(first_section.title + "\n"), report
+            assert report.startswith("Pooled effect\n"), report
             assert report.index(first_section.value.splitlines()[0]) < report.index("Model configuration"), report
         assert view.content_stack.currentWidget() is (view.report_text if clinical else view.figure_page)
         if clinical:
@@ -202,12 +202,15 @@ def run(
             QTest.qWait(25)
         plot_bounds = view.graphics_view.mapFromScene(selected[1].sceneBoundingRect()).boundingRect()
         assert 0 <= plot_bounds.left() and plot_bounds.right() < viewport.width(), plot_bounds
-        if plot_bounds.right() < viewport.width() - 100:
+        native_width = selected[1].boundingRect().width()
+        fitted = (plot_bounds.right() >= viewport.width() - 100 if native_width >= viewport.width() - 100
+                  else abs(plot_bounds.width() - native_width) <= 2)
+        if not fitted:
             record("matrix-incomplete-initial-fit", view, plot_bounds=str(plot_bounds), viewport=str(viewport.size()),
                    fit_active=view._fit_width_active, transform=view.graphics_view.transform().m11(),
                    item_scale=selected[1].scale(), item_bounds=str(selected[1].boundingRect()),
                    visible=view.isVisible(), plots=dict(view.results.display_images))
-        assert plot_bounds.right() >= viewport.width() - 100, (plot_bounds, viewport.size())
+        assert fitted, (plot_bounds, viewport.size(), native_width)
         assert view.scene.items()
         rendered = "\n".join(
             w.toPlainText()
@@ -219,18 +222,19 @@ def run(
         for section in view.results.sections:
             if section.kind == "text" and section.source_key == "Weights":
                 assert section.value.strip() not in rendered
-        report = view._plain_text_report()
-        for section in view.results.sections:
-            for table in section.tables:
-                assert "\t".join(table.headers) in report
-                assert all("\t".join(row) in report for row in table.rows)
+        view.copy_report_action.trigger()
+        report = app.clipboard().text()
+        from tests.e2e.report_retention import assert_report
+        assert_report(view)
         if scenario.startswith("analysis-diagnostic-regression"):
             assert "Image Order" not in view.texts
             assert "diagnostic.reitsma.sensitivity.coefficients" not in view.report_text.toPlainText()
             assert "diagnostic.reitsma.specificity.coefficients" not in view.report_text.toPlainText()
             if scenario == "analysis-diagnostic-regression-multiple":
-                assert view.report_text.toPlainText().count("Overall ML likelihood-ratio test") == 1
-                assert view._plain_text_report().count("Overall ML likelihood-ratio test") == 1
+                from tests.e2e.report_retention import assert_retained_table
+                held = [(section, table) for section in view.results.sections for table in section.tables if table.title == "Overall ML likelihood-ratio test"]
+                assert len(held) == 1, held
+                assert_retained_table(view, *held[0])
         assert view.results.images, dict(view.texts)
         if scenario == "analysis-data-twoarm-mean" and workflow == "standard":
             from rc_metastudio import r_bridge
@@ -298,9 +302,7 @@ def run(
         )
 
     def covariate(name, kind, values):
-        window.model.dataset.add_covariate(
-            analysis_dataset.Covariate(name, kind), values
-        )
+        window.model.add_covariate(name, kind, values)
         window.model.reset_model()
         window.enable_menu_options_that_require_dataset()
 
@@ -311,8 +313,10 @@ def run(
         button, family, subtype, metric, raw = DATA_TYPES[name]
         metric = metric_override or metric
         callback_errors = []
+        deferred_name = None
 
         def create():
+            nonlocal deferred_name
             wizard = app.activeModalWidget()
             if not isinstance(wizard, main_wizard.MainWizard):
                 QtCore.QTimer.singleShot(10, create)
@@ -338,17 +342,21 @@ def run(
                 page = wizard.currentPage()
                 record("data-outcome-naming", wizard, data_type=name)
                 if group_names is not None:
-                    assert page.first_group_name.isVisible()
-                    if len(group_names) == 2:
-                        page.first_group_name.setText(" Same ")
-                        page.second_group_name.setText("Same")
-                        assert not page.isComplete() and page.validation_label.text()
-                        record("round5-arm-duplicate", wizard)
-                    page.first_group_name.setText(group_names[0])
-                    if len(group_names) == 2:
-                        page.second_group_name.setText(group_names[1])
-                    assert page.isComplete(), page.validation_label.text()
-                    record("round5-arm-wizard", wizard, names=group_names)
+                    if page.first_group_name.isVisible():
+                        if len(group_names) == 2:
+                            page.first_group_name.setText(" Same ")
+                            page.second_group_name.setText("Same")
+                            assert not page.isComplete() and page.validation_label.text()
+                            record("round5-arm-duplicate", wizard)
+                        page.first_group_name.setText(group_names[0])
+                        if len(group_names) == 2:
+                            page.second_group_name.setText(group_names[1])
+                        assert page.isComplete(), page.validation_label.text()
+                        record("round5-arm-wizard", wizard, names=group_names)
+                    else:
+                        assert name.startswith('onearm-') and not page.second_group_name.isVisible()
+                        deferred_name = group_names[0].strip()
+                        record('single-arm-default-naming', wizard, rename_after_create=deferred_name)
                 click(wizard.button(QtWidgets.QWizard.WizardButton.FinishButton))
             except Exception as error:  # noqa: BLE001 - propagate modal callback failures after exec.
                 callback_errors.append(error)
@@ -361,6 +369,18 @@ def run(
         assert window.model.get_current_outcome_subtype() == subtype
         assert window.model.current_effect == metric
         model = window.model
+        if deferred_name and deferred_name != model.arm_names[0]:
+            from advanced_workflows import modal
+            from rc_metastudio.edit_name_dialogs import EditGroupNameDialog
+
+            def rename(dialog):
+                dialog.group_name_le.setText(group_names[0])
+                record('single-arm-rename-editor', dialog, name=deferred_name)
+                click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+
+            modal(app, EditGroupNameDialog, rename, lambda: window.edit_group_name(model.arm_names[0]))
+            model = window.model
+            assert model.arm_names[0] == deferred_name
         for row in range(6):
             assert model.setData(model.index(row, model.NAME), f"Fixture {row + 1}")
             if raw is not None:
@@ -391,7 +411,7 @@ def run(
             window,
             data_type=name,
             metric=metric,
-            included=sum(s.include for s in model.dataset.studies),
+            included=sum(s.include for s in model.current_sheet.rows),
         )
         window.out_path = str(work / "typed.rcms")
         columns = [model.NAME, *model.RAW_DATA, *model.OUTCOMES]
@@ -404,7 +424,7 @@ def run(
         assert window.model.current_effect == metric
         assert window.model.get_current_outcome_type() == family
         assert window.model.get_current_outcome_subtype() == subtype
-        assert sum(s.include for s in window.model.dataset.studies) == 6
+        assert sum(s.include for s in window.model.current_sheet.rows) == 6
         after = [
             [
                 str(window.model.data(window.model.index(row, column)))
@@ -432,11 +452,11 @@ def run(
         if sample == "continuous":
             import copy
 
-            for study in list(window.model.dataset.studies):
+            for study in list(window.model.current_sheet.rows):
                 duplicate = copy.deepcopy(study)
-                duplicate.id = window.model.dataset.max_study_id() + 1
-                duplicate.name += " replicate"
-                window.model.dataset.add_study(duplicate)
+                duplicate.id = __import__("uuid").uuid4().hex
+                duplicate.label += " replicate"
+                window.model.current_sheet.rows.append(duplicate)
             window.model.set_state(window.model.get_state())
         callback_errors = []
 
@@ -484,6 +504,9 @@ def run(
             assert any("contour" in key for key in view.results.images)
             assert any("trim-and-fill" in key for key in view.texts)
             assert "small-study.extrapolation" in view.texts
+        if sample == "amino":
+            from tests.e2e.trimfill_geometry import check_trimfill
+            check_trimfill(view, record)
         if keep_results:
             return view
         view.close()
@@ -540,7 +563,7 @@ def run(
                     covariate(
                         "Group",
                         "factor",
-                        {s.name: "A" if i % 2 else "B" for i, s in enumerate(studies)},
+                        {s.label: "A" if i % 2 else "B" for i, s in enumerate(studies)},
                     )
                 if workflow == "meta-regression" and case.endswith(
                     ("continuous", "multiple")
@@ -548,7 +571,7 @@ def run(
                     covariate(
                         "Dose",
                         "continuous",
-                        {s.name: float(i + 1) for i, s in enumerate(studies)},
+                        {s.label: float(i + 1) for i, s in enumerate(studies)},
                     )
 
     if workflow_override:
@@ -655,7 +678,7 @@ def run(
         assert properties.lr_dor_panel.method == lr_dor_method
         assert properties.lr_dor_panel.params == lr_dor_parameters
     if properties.is_meta_regression:
-        assert [cov.name for cov in properties._selected_covariates()] == [cov.name for cov in window.model.dataset.covariates]
+        assert [cov["name"] for cov in properties._selected_covariates()] == [cov["name"] for cov in window.model.current_sheet.covariates]
     record("properties-prefilled", properties, workflow=properties.analysis_type,
            method=properties.current_method, parameters=dict(properties.current_param_vals))
     properties.reject()
@@ -666,10 +689,12 @@ def run(
         assert view.results.details.count("Estimator: DerSimonian-Laird") == 2, view.results.details
         assert view.results.details.count("Estimator: Restricted Maximum Likelihood") == 3, view.results.details
         report = view.report_text.toPlainText()
-        assert report.startswith("Sensitivity results\n"), report
-        assert "Sensitivity — Heterogeneity\n" in report, report
-        assert view.table_selector.findText("Sensitivity — Heterogeneity") >= 0
-        assert report.index("Sensitivity results") < report.index("Model configuration"), report
+        assert report.startswith("Pooled effect\n"), report
+        sensitivity = next(s for s in view.results.sections if s.title == "Sensitivity Summary")
+        heterogeneity = next(t for t in sensitivity.tables if t.title.endswith('Heterogeneity'))
+        from tests.e2e.report_retention import assert_retained_table
+        assert_retained_table(view, sensitivity, heterogeneity)
+        assert report.index("Pooled effect") < report.index("Model fit") < report.index("Study results") < report.index("Model configuration"), report
     if scenario == "analysis-diagnostic-joint":
         point = view.texts["Summary operating point"]
         assert all(

@@ -28,7 +28,7 @@ class ConfidenceLevelDialog(
     def __init__(self, previous_value=DEFAULT_CONFIDENCE_LEVEL, parent=None):
         super(ConfidenceLevelDialog, self).__init__(parent)
         self.setupUi(self)
-        scope = QLabel("Changes calculated intervals in the study table and the default confidence level for future analyses. Existing result windows and entered source intervals keep their original confidence levels.", self)
+        scope = QLabel("Sets the study-table and future-analysis confidence level, preserving existing results and entered source intervals.", self)
         scope.setWordWrap(True)
         self.dialog_layout.insertWidget(0, scope)
         self.confidence_level_spinbox.setRange(50, CONFIDENCE_LEVEL_DISPLAY_MAX)

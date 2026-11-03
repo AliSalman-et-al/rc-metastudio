@@ -39,7 +39,7 @@ linux_cran_repo="https://packagemanager.posit.co/cran/__linux__/noble/2026-07-16
 r_home="$work_root/r-home"
 r_library="$r_home/library"
 ppm_archives="$qualification_root/ppm-archives"
-runtime_probe="$archive_root/qualification/runtime-probe.json"
+runtime_probe="$qualification_root/runtime-probe.json"
 smoke_evidence="$qualification_root/packaged-smoke.json"
 smoke_log="$qualification_root/packaged-smoke.log"
 runtime_probe_stdout="$qualification_root/runtime-probe.stdout.log"
@@ -103,54 +103,7 @@ cp -a "$work_root/r-extract/opt/R/4.6.1/lib/R" "$r_home"
 [ -x "$r_home/bin/exec/R" ] || die "Pinned R archive does not contain the expected R 4.6.1 runtime."
 
 step "Making Posit R launchers relocatable"
-"$python_exe" - "$r_home" <<'PY'
-from pathlib import Path
-import sys
-
-home = Path(sys.argv[1]).resolve()
-launcher = home / "bin" / "R"
-text = launcher.read_text(encoding="utf-8")
-marker = "R_HOME_DIR=\"/opt/R/4.6.1/lib/R\""
-if marker not in text:
-    raise SystemExit("unexpected Posit R launcher; cannot make it relocatable")
-tail = text[text.index("usage=\"") :]
-header = '''#!/bin/bash
-# Relocatable wrapper for the private R runtime.
-r_script_dir=${0%/*}
-R_HOME_DIR="$(CDPATH= cd -- "$r_script_dir/.." && pwd)"
-if test -n "${R_HOME}" && test "${R_HOME}" != "${R_HOME_DIR}"; then
-  echo "WARNING: ignoring environment value of R_HOME" >&2
-fi
-R_HOME="${R_HOME_DIR}"
-export R_HOME
-R_SHARE_DIR="${R_HOME}/share"
-export R_SHARE_DIR
-R_INCLUDE_DIR="${R_HOME}/include"
-export R_INCLUDE_DIR
-R_DOC_DIR="${R_HOME}/doc"
-export R_DOC_DIR
-
-'''
-launcher.write_text(header + tail, encoding="utf-8")
-launcher.chmod(0o755)
-
-rscript = home / "bin" / "Rscript"
-rscript.write_text('''#!/bin/sh
-r_script_dir=${0%/*}
-R_HOME="$(CDPATH= cd -- "$r_script_dir/.." && pwd)"
-export R_HOME
-export R_SHARE_DIR="$R_HOME/share"
-export R_INCLUDE_DIR="$R_HOME/include"
-export R_DOC_DIR="$R_HOME/doc"
-if [ "$#" -gt 0 ] && [ "${1#-}" = "$1" ]; then
-  script="$1"
-  shift
-  exec "$R_HOME/bin/R" --no-save --no-restore --no-echo "--file=$script" --args "$@"
-fi
-exec "$R_HOME/bin/R" --no-save --no-restore --no-echo "$@"
-''', encoding="utf-8")
-rscript.chmod(0o755)
-PY
+"$python_exe" "$repo_root/scripts/configure_linux_r_launchers.py" "$r_home"
 
 step "Checking the relocated private R runtime"
 R_HOME="$r_home" LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
@@ -212,9 +165,39 @@ export RCMS_PYQT_ROOT="$($python_exe -c 'from pathlib import Path; import PyQt6;
 
 app_root="$dist_root/RCMetaStudio"
 [ -x "$app_root/RCMetaStudio" ] || die "PyInstaller did not create the Linux application executable."
-mkdir -p "$archive_root/qualification"
+mkdir -p "$archive_root"
 cp -a "$app_root" "$archive_root/RCMetaStudio"
 cp -a "$r_home" "$archive_root/R"
+# Resolve the installed closure before pruning only the staged runtime.
+"$r_home/bin/Rscript" "$repo_root/scripts/r-bundle-closure.R" "$r_library" "$qualification_root/r-closure.txt"
+"$python_exe" - "$archive_root/R/library" "$qualification_root/r-closure.txt" <<'PYTHON'
+from pathlib import Path
+import shutil
+import sys
+library = Path(sys.argv[1])
+keep = set(Path(sys.argv[2]).read_text().splitlines())
+for package in library.iterdir():
+    if package.is_dir() and package.name not in keep:
+        print("Removing R package:", package.name)
+        shutil.rmtree(package)
+PYTHON
+# Remove documentation and build headers after the API bridge is compiled.
+# Keep share: R uses its encodings, fonts and other resources at runtime.
+find "$archive_root/R/library" -mindepth 2 -maxdepth 2 -type d \
+  \( -name tests -o -name demo -o -name testdata -o -name tinytest -o -name help -o -name html -o -name doc -o -name vignettes -o -name include \) -exec rm -rf -- {} +
+rm -rf -- "$archive_root/R/library/RCMetaR/qa" "$archive_root/R/doc" "$archive_root/R/include"
+# Debug sections are unnecessary for execution; preserve symbols used by dlsym.
+"$python_exe" - "$archive_root/R" <<'PYTHON'
+from pathlib import Path
+import subprocess
+import sys
+for path in Path(sys.argv[1]).rglob("*"):
+    if path.is_file() and not path.is_symlink():
+        with path.open("rb") as stream:
+            is_elf = stream.read(4) == b"\x7fELF"
+        if is_elf:
+            subprocess.run(["strip", "--strip-debug", str(path)], check=True)
+PYTHON
 cp -a "$repo_root/sample_projects" "$archive_root/sample_projects"
 cp "$repo_root/LICENSE" "$repo_root/NOTICE.md" "$archive_root/"
 
@@ -245,7 +228,7 @@ cp "$cursor_notice" "$archive_root/third-party-notices/linux-runtime/libxcb-curs
 
 step "Bundling Noble R runtime shared libraries"
 runtime_notice_root="$archive_root/third-party-notices/linux-runtime"
-runtime_libraries=(libblas.so.3 liblapack.so.3 libgfortran.so.5 libgomp.so.1 libtk8.6.so)
+runtime_libraries=(libblas.so.3 liblapack.so.3 libgfortran.so.5 libgomp.so.1)
 {
   printf '# Bundled Linux runtime libraries\n\n'
   printf 'These Noble shared libraries are included for the private R runtime:\n\n'
@@ -279,7 +262,6 @@ check_bundled_dependency() {
 for soname in libblas.so.3 liblapack.so.3 libgfortran.so.5 libgomp.so.1; do
   check_bundled_dependency "$matrix_library" "$soname"
 done
-check_bundled_dependency "$archive_root/R/library/tcltk/libs/tcltk.so" libtk8.6.so
 
 cat > "$archive_root/LaunchRCMetaStudio.sh" <<'SH'
 #!/bin/bash
@@ -310,7 +292,7 @@ step "Creating the portable tar.gz"
 mkdir -p "$work_root/archive-staging"
 mv "$archive_root" "$work_root/archive-staging/$artifact_name"
 tar --sort=name --mtime='UTC 2020-01-01' --owner=0 --group=0 --numeric-owner \
-  -czf "$artifact_path.tmp" -C "$work_root/archive-staging" "$artifact_name"
+  -I 'gzip -9' -cf "$artifact_path.tmp" -C "$work_root/archive-staging" "$artifact_name"
 mv "$artifact_path.tmp" "$artifact_path"
 
 step "Extracting the archive and running native package qualification"

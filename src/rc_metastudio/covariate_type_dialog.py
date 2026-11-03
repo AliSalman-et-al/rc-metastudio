@@ -1,14 +1,14 @@
 import string
-from functools import cmp_to_key
+import uuid
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSignal
 from PyQt6.QtWidgets import QDialog, QMessageBox
 
-from rc_metastudio.meta_globals import CONTINUOUS, COV_INTS_TO_STRS, FACTOR
+from rc_metastudio.meta_globals import CONTINUOUS, FACTOR
 from rc_metastudio import app_error_handler
 from rc_metastudio import adaptive_window
-from rc_metastudio.analysis_dataset import Covariate
+
 from rc_metastudio import qt_layout
 from rc_metastudio import qt_text
 
@@ -34,7 +34,7 @@ def _to_double(value):
 
 
 def _new_covariate_value(covariate, value):
-    if covariate.data_type == FACTOR:
+    if covariate["data_type"] == FACTOR:
         return _to_native_text(value), True
     if _to_native_text(value).strip() == "":
         return None, True
@@ -73,12 +73,7 @@ class CovariateTypeModel(QAbstractTableModel):
         self.covariate = covariate
 
         # now we add a covariate with the new type
-        self.new_data_type = CONTINUOUS if covariate.data_type == FACTOR else FACTOR
-
-        # first sort the studies by the cov. of interest
-        self.dataset.studies.sort(
-            key=cmp_to_key(self.dataset.cmp_studies(compare_by=self.covariate.name))
-        )
+        self.new_data_type = CONTINUOUS if covariate["data_type"] == FACTOR else FACTOR
 
         self.update_included_studies()
         self.add_covariate_with_new_type()
@@ -96,37 +91,48 @@ class CovariateTypeModel(QAbstractTableModel):
         return False
 
     def add_covariate_with_new_type(self):
-        new_name = self.covariate.name
+        new_name = self.covariate["name"]
         if self.new_data_type == CONTINUOUS:
             new_name += " (numeric)"
         else:
             new_name += " (category)"
 
+        existing = {cov["name"] for cov in self.dataset.covariates}
+        base_name = new_name
+        suffix = 2
+        while new_name in existing:
+            new_name = f"{base_name} {suffix}"
+            suffix += 1
         guessed_vals = self.guess_at_values()  # try and infer sensible values
-        self.new_covariate = Covariate(new_name, COV_INTS_TO_STRS[self.new_data_type])
+        self.new_covariate = dict(id=uuid.uuid4().hex, name=new_name, data_type=self.new_data_type)
 
-        self.dataset.add_covariate(self.new_covariate, covariate_values=guessed_vals)
+        self.dataset.covariates.append(self.new_covariate)
+        for row in self.dataset.rows:
+            row.covariate_values[self.new_covariate["id"]] = guessed_vals.get(row.label)
         self.reset_model()
 
+    def covariate_values(self, covariate):
+        return {row.label: row.covariate_values.get(covariate["id"]) for row in self.dataset.rows}
+
     def guess_at_values(self):
-        covariate_values = self.dataset.get_covariate_values(
+        covariate_values = self.covariate_values(
             self.covariate
         )  # original values
         guessed_vals_d = self.vals_to_new_vals(covariate_values)
 
         studies_to_guessed_vals = {}
         for study in self.included_studies:
-            if study.name in covariate_values:
-                orig_val = covariate_values[study.name]
-                studies_to_guessed_vals[study.name] = guessed_vals_d[orig_val]
+            if study.label in covariate_values:
+                orig_val = covariate_values[study.label]
+                studies_to_guessed_vals[study.label] = guessed_vals_d.get(orig_val)
             else:
-                studies_to_guessed_vals[study.name] = None
+                studies_to_guessed_vals[study.label] = None
 
         return studies_to_guessed_vals
 
     def vals_to_new_vals(self, covariate_values):
         unique_values = list(dict.fromkeys(covariate_values.values()))
-        unique_values.sort()
+        unique_values = sorted((v for v in unique_values if v is not None), key=str)
         mapping = {}
         for i, val in enumerate(unique_values):
             if self.new_data_type == FACTOR:
@@ -152,19 +158,15 @@ class CovariateTypeModel(QAbstractTableModel):
         return alpha_str
 
     def refresh_covariate_values(self):
-        self.dataset.studies.sort(
-            key=cmp_to_key(self.dataset.cmp_studies(compare_by=self.covariate.name))
-        )
-
         self.update_included_studies()
-        covariate_values = self.dataset.get_covariate_values(self.covariate)
-        new_cov_d = self.dataset.get_covariate_values(self.new_covariate)
+        covariate_values = self.covariate_values(self.covariate)
+        new_cov_d = self.covariate_values(self.new_covariate)
 
         self.orig_cov_list, self.new_cov_list = [], []
         for study in self.included_studies:
-            if study.name in covariate_values:
-                self.orig_cov_list.append(covariate_values[study.name])
-                self.new_cov_list.append(new_cov_d[study.name])
+            if study.label in covariate_values:
+                self.orig_cov_list.append(covariate_values[study.label])
+                self.new_cov_list.append(new_cov_d[study.label])
             else:
                 self.orig_cov_list.append(None)
                 self.new_cov_list.append(None)
@@ -174,7 +176,7 @@ class CovariateTypeModel(QAbstractTableModel):
 
     def update_included_studies(self):
         study_list = []
-        for study in self.dataset.studies:
+        for study in self.dataset.rows:
             if study.include:
                 study_list.append(study)
         self.included_studies = study_list
@@ -187,13 +189,13 @@ class CovariateTypeModel(QAbstractTableModel):
         if role == Qt.ItemDataRole.DisplayRole:
             row, column = index.row(), index.column()
             if column == self.STUDY_COL:
-                return self.included_studies[row].name
+                return self.included_studies[row].label
             elif column == self.ORIG_VAL:
-                if self.covariate.data_type == FACTOR:
+                if self.covariate["data_type"] == FACTOR:
                     return _to_native_text(self.orig_cov_list[row])
                 return self.orig_cov_list[row]
             elif column == self.NEW_VAL:
-                if self.new_covariate.data_type == FACTOR:
+                if self.new_covariate["data_type"] == FACTOR:
                     return _to_native_text(self.new_cov_list[row])
                 return self.new_cov_list[row]
         elif role == Qt.ItemDataRole.TextAlignmentRole:
@@ -211,7 +213,7 @@ class CovariateTypeModel(QAbstractTableModel):
     def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
         # don't allow users to mess with the original
         # covariate.
-        if index.isValid() and 0 <= index.row() < len(self.dataset):
+        if index.isValid() and 0 <= index.row() < len(self.included_studies):
             column = index.column()
 
             if column == self.NEW_VAL:
@@ -224,7 +226,7 @@ class CovariateTypeModel(QAbstractTableModel):
                     return self.reject_edit(
                         "Numeric covariates require numbers."
                     )
-                study.set_covariate_value(self.new_covariate, new_value)
+                study.covariate_values[self.new_covariate["id"]] = new_value
                 self.refresh_covariate_values()
                 return True
         return self.reject_edit("Cannot edit that cell.")
@@ -243,8 +245,8 @@ class CovariateTypeModel(QAbstractTableModel):
             return None
         if orientation == Qt.Orientation.Horizontal:
             if section == self.STUDY_COL:
-                return "study"
+                return "Study"
             elif section == self.ORIG_VAL:
-                return self.covariate.name
+                return self.covariate["name"]
             elif section == self.NEW_VAL:
-                return self.new_covariate.name
+                return self.new_covariate["name"]

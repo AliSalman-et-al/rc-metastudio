@@ -17,6 +17,9 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, size.
     if (length(bundle$display_order) == length(plan$rows$study_rows)) {
         plan$rows$study_rows[bundle$display_order] <- sort(plan$rows$study_rows, decreasing=TRUE)
     }
+    direction <- rcmetar.forest.direction.metrics(bundle, plan)
+    plan$device$direction_lines <- direction$lines
+    plan$device$height <- plan$device$height + max(0, direction$lines - 2) * direction$spacing
     plan$headers$height <- rcmetar.forest.header.height(bundle, plan$typography$cex)
     plan$device$height <- plan$device$height + max(0, plan$headers$height - 0.5)
     plan
@@ -98,7 +101,7 @@ rcmetar.forest.layout.cap.warnings <- function(size, min.cex=0.78, max.width=18,
 
 rcmetar.forest.with.measurement.device <- function(expr) {
     scratch <- rcmetar.scratch.path("INTER")
-    grDevices::png(filename=scratch, width=1200, height=800, res=144)
+    rcmetar.open.svg_device(scratch, list(width=1200 / 144, height=800 / 144))
     on.exit(grDevices::dev.off(), add=TRUE)
     force(expr)
 }
@@ -521,7 +524,11 @@ rcmetar.forest.revman.axis.footer <- function(bundle, layout) {
         layout <- list(alim=graphics::par("usr")[1:2])
     }
     alim <- as.numeric(layout$alim)
-    split.x <- rcmetar.metafor.refline(bundle, alim)
+    labels <- rcmetar.revman.direction.labels(bundle)
+    if (nzchar(labels$left) || nzchar(labels$right)) alim <- alim + c(-.1, .1) * diff(alim)
+    widths <- rcmetar.forest.with.measurement.device(graphics::strwidth(c(labels$left, labels$right), units="inches"))
+    share <- if (sum(widths) > 0) widths[[1]] / sum(widths) else .5
+    split.x <- if (sum(widths) > 0) alim[[1]] + diff(alim) * max(.25, min(.75, share)) else rcmetar.metafor.refline(bundle, alim)
     if (!is.finite(split.x) || split.x <= alim[[1]] || split.x >= alim[[2]]) {
         split.x <- mean(alim)
     }

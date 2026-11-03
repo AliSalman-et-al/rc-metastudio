@@ -24,6 +24,10 @@ NUMERIC_TOLERANCE = 0.01
 MAX_CAPTURE_ATTEMPTS = 5
 
 
+
+def _offscreen() -> bool:
+    return os.environ.get("RCMS_SMOKE_OFFSCREEN") == "1"
+
 def _scale_slug(scale: float) -> str:
     return str(scale).replace(".", "_")
 
@@ -246,7 +250,7 @@ def validate_evidence(root: Path) -> list[dict[str, object]]:
             record.get("scale_factor"), "scale factor", minimum=0.01
         )
         _require_close(scale_factor, expected_dpr, "scale factor")
-        if record.get("qpa") != "windows":
+        if record.get("qpa") != ("offscreen" if _offscreen() else "windows"):
             raise ValueError("native Results evidence was not captured with qwindows")
         device_pixel_ratio = _strict_number(
             record.get("device_pixel_ratio"),
@@ -255,6 +259,7 @@ def validate_evidence(root: Path) -> list[dict[str, object]]:
         )
         _require_close(device_pixel_ratio, expected_dpr, "top-level device pixel ratio")
         if record.get("navigation") != [
+            "Manuscript",
             "Text report",
             "Tables",
             "Forest Plot",
@@ -488,7 +493,7 @@ def _run_scale(scale: float, repo_root: Path, evidence_root: Path) -> None:
         encoding="utf-8",
     )
     app = app_error_handler.get_or_create_application([])
-    if app.platformName() != "windows":
+    if app.platformName() != ("offscreen" if _offscreen() else "windows"):
         raise RuntimeError("native Results smoke requires qwindows")
     QtCore.QSettings.setPath(
         QtCore.QSettings.Format.IniFormat,
@@ -612,9 +617,13 @@ def _run_scale(scale: float, repo_root: Path, evidence_root: Path) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--offscreen", action="store_true")
     parser.add_argument("--scale", type=float)
     parser.add_argument("--validate-only", action="store_true")
     args = parser.parse_args()
+    if args.offscreen:
+        os.environ["RCMS_SMOKE_OFFSCREEN"] = "1"
+        os.environ["QT_QPA_PLATFORM"] = "offscreen"
     repo_root = Path(__file__).resolve().parents[1]
     evidence_root = repo_root / "build/qt6-verification/native-results"
     if args.validate_only:
