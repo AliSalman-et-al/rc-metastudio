@@ -490,7 +490,8 @@ step "Finalizing the embedded R product profile after package installation"
   --resources "$r_home" --evidence "$r_runtime_profile_path" \
   --dependency-manifest "$repo_root/config/r-dependencies.json" \
   --r-version "$r_version" --architecture "$expected_machine" \
-  --quarantine-evidence "$quarantine_profile_path"
+  --quarantine-evidence "$quarantine_profile_path" \
+  --runtime-closure "$work_root/r-closure.txt"
 
 step "Relocating completed bundled R runtime dependencies"
 bash "$repo_root/scripts/relocate_macos_r_runtime.sh" --resources "$r_home" --architecture "$expected_machine" \
