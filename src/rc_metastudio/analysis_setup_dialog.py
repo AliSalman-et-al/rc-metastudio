@@ -463,7 +463,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._method_layout.addWidget(self.method_lbl, 0, 0)
         self._method_layout.addWidget(self.method_cbo_box, 0, 1)
         self.gridLayout.addWidget(self._method_row, 0, 0, 1, 2)
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.gridLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.gridLayout.setColumnStretch(0, 0)
         self.gridLayout.setColumnStretch(1, 1)

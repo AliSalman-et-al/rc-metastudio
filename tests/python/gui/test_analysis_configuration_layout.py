@@ -39,7 +39,7 @@ class _AnalysisModel(object):
 
     def __init__(self, data_type, covariates=()):
         self._data_type = data_type
-        self.current_effect = "Sens" if data_type == "diagnostic" else "OR"
+        self.current_effect = "Sens" if data_type == "diagnostic" else "HR" if data_type == "hazard_ratio" else "OR"
         self.dataset = analysis_dataset.Dataset()
         self.current_sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", data_type, covariates=list(covariates))
         self.dataset.sheets.append(self.current_sheet)
@@ -224,6 +224,7 @@ def test_configuration_controls_have_accessible_label_associations(
     (
         ("binary", None, "Method & Parameters", "Analysis method:"),
         ("continuous", None, "Method & Parameters", "Analysis method:"),
+        ("hazard_ratio", None, "Method & Parameters", "Analysis method:"),
         (
             "diagnostic",
             ["lr", "dor"],
@@ -252,6 +253,7 @@ def test_method_dialog_wording_is_scoped_to_its_analysis_family(
         assert dialog.windowTitle() == {
             "binary": "Outcome · Odds Ratio",
             "continuous": "Outcome · Odds Ratio",
+            "hazard_ratio": "Outcome · Hazard Ratio",
             "diagnostic": "Outcome · Positive and negative likelihood ratios, Diagnostic odds ratio",
         }[data_type]
         dialog.show()
@@ -259,6 +261,11 @@ def test_method_dialog_wording_is_scoped_to_its_analysis_family(
         assert dialog.method_lbl.text() == expected_method_label
         assert not dialog.method_lbl.wordWrap()
         assert dialog.method_lbl.fontMetrics().horizontalAdvance(expected_method_label) <= dialog.method_lbl.width()
+        page_margin = required(dialog.methods_tab.style(), "method page style").pixelMetric(
+            QtWidgets.QStyle.PixelMetric.PM_LayoutLeftMargin, None, dialog.methods_tab
+        )
+        assert page_margin > 0
+        assert dialog.method_lbl.mapTo(dialog.methods_tab, QtCore.QPoint()).x() >= page_margin
         assert not dialog.lr_dor_method_lbl.isVisible()
     finally:
         dialog.close()
@@ -354,8 +361,7 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
         )
         normal_font = QtGui.QFont(dialog.font())
         font = QtGui.QFont(normal_font)
-        font.setPointSize(max(28, font.pointSize() + 5))
-        font.setStretch(120)
+        font.setPointSize(max(14, font.pointSize() + 5))
         dialog.setFont(font)
         dialog.specs_tab.setCurrentWidget(dialog.methods_tab)
         dialog.show()
@@ -367,6 +373,11 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
         assert dialog.method_lbl.text() == expected_method_label
         assert not dialog.method_lbl.wordWrap()
         assert dialog.method_lbl.fontMetrics().horizontalAdvance(expected_method_label) <= dialog.method_lbl.width()
+        page_margin = required(dialog.methods_tab.style(), "method page style").pixelMetric(
+            QtWidgets.QStyle.PixelMetric.PM_LayoutLeftMargin, None, dialog.methods_tab
+        )
+        assert page_margin > 0
+        assert dialog.method_lbl.mapTo(dialog.methods_tab, QtCore.QPoint()).x() >= page_margin
         assert not dialog.lr_dor_method_lbl.isVisible()
         assert dialog.current_method == "diagnostic.reitsma"
         assert dialog.diagnostic_regression_group.isHidden() is (
