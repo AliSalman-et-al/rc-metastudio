@@ -330,30 +330,20 @@ def test_main_data_grid_leaves_spare_width_outside_data_columns(
         os.chdir(REPO_ROOT)
 
 
-def test_frozen_startup_argv_falls_back_to_native_windows_command_line():
-    from rc_metastudio import launch
-
-    sample_project = _sample_project_path("amino.rcms")
-
-    argv = launch._resolve_startup_argv(
-        argv=["RCMetaStudio.exe"],
-        native_argv=["RCMetaStudio.exe", sample_project],
-        frozen=True,
-    )
-
-    assert argv == ["RCMetaStudio.exe", sample_project]
-    assert launch._startup_project_path(argv) == sample_project
-
-
-def test_frozen_startup_argv_keeps_existing_project_argument():
+@pytest.mark.parametrize(
+    "has_project_argument", [False, True], ids=["native-fallback", "existing-project"]
+)
+def test_frozen_startup_argv_resolves_project_argument(has_project_argument):
     from rc_metastudio import launch
 
     sample_project = _sample_project_path("amino.rcms")
     other_project = _sample_project_path("continuous.rcms")
-
     argv = launch._resolve_startup_argv(
-        argv=["RCMetaStudio.exe", sample_project],
-        native_argv=["RCMetaStudio.exe", other_project],
+        argv=["RCMetaStudio.exe", sample_project]
+        if has_project_argument else ["RCMetaStudio.exe"],
+        native_argv=[
+            "RCMetaStudio.exe", other_project if has_project_argument else sample_project
+        ],
         frozen=True,
     )
 
@@ -1695,9 +1685,13 @@ def test_results_window_save_handler_regenerates_cumulative_forest_as_single_pan
         app.processEvents()
 
 
-@pytest.mark.parametrize("extension", ["pdf", "png", "tiff", "svg"])
+@pytest.mark.parametrize(
+    ("extension", "filename"),
+    [(extension, f"saved.{extension}") for extension in ("pdf", "png", "tiff", "svg")]
+    + [("svg", "saved")],
+)
 def test_results_window_save_handler_accepts_backend_export_formats(
-    tmp_path, monkeypatch, extension
+    tmp_path, monkeypatch, extension, filename
 ):
     from rc_metastudio import r_backend
 
@@ -1736,7 +1730,7 @@ def test_results_window_save_handler_accepts_backend_export_formats(
     monkeypatch.setattr(
         results_window.QFileDialog,
         "getSaveFileName",
-        lambda *args, **kwargs: (str(tmp_path / ("saved.%s" % extension)), ""),
+        lambda *args, **kwargs: (str(tmp_path / filename), ""),
     )
 
     try:
@@ -1745,61 +1739,6 @@ def test_results_window_save_handler_accepts_backend_export_formats(
         assert calls == [
             ("load", "%s.plotdata" % artifact.params_path),
             ("forest", str(tmp_path / ("saved.%s" % extension))),
-        ]
-    finally:
-        window.close()
-        app.processEvents()
-
-
-def test_results_window_save_handler_preserves_requested_format_when_extension_is_omitted(
-    tmp_path, monkeypatch
-):
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio import results_window
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    calls = []
-    window = results_window.ResultsWindow(
-        _analysis_result(
-            {
-                "texts": {},
-                "images": {},
-            }
-        )
-    )
-    artifact = results_window.PlotArtifact(
-        "Forest Plot",
-        str(tmp_path / "forest.png"),
-        _plot_capability_model(),
-        params_path=str(tmp_path / "forest_params"),
-    )
-
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "load_in_r",
-        lambda path: calls.append(("load", path)),
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "generate_forest_plot",
-        lambda path: calls.append(("forest", path)),
-        raising=False,
-    )
-    monkeypatch.setattr(
-        results_window.QFileDialog,
-        "getSaveFileName",
-        lambda *args, **kwargs: (str(tmp_path / "saved"), ""),
-    )
-
-    try:
-        window.save_image_as(artifact, format="svg")
-
-        assert calls == [
-            ("load", "%s.plotdata" % artifact.params_path),
-            ("forest", str(tmp_path / "saved.svg")),
         ]
     finally:
         window.close()
@@ -3025,53 +2964,16 @@ def test_add_covariate_dialog_fields_and_buttons_fill_fitted_width():
         os.chdir(REPO_ROOT)
 
 
-def test_csv_import_wizard_reports_empty_file_as_no_data(tmp_path, monkeypatch):
+@pytest.mark.parametrize(
+    "preview_failure", [False, True], ids=["empty-file", "parse-error"]
+)
+def test_csv_import_wizard_reports_preview_errors(tmp_path, monkeypatch, preview_failure):
     from rc_metastudio import main_wizard
 
     csv_path = tmp_path / "empty.csv"
-    csv_path.write_text("")
-    shown = []
-    wizard = main_wizard.MainWizard(path="csv_import")
-    wizard.set_dataset_info(
-        {
-            "arms": "two",
-            "data_type": "binary",
-            "sub_type": "proportions",
-            "effect": "OR",
-            "metric_choices": [],
-        }
-    )
-    page = cast(
-        main_wizard.CsvImportPage,
-        required(wizard.page(main_wizard.Page_CsvImport), "CSV import page"),
-    )
-    page.initializePage()
-    monkeypatch.setattr(
-        main_wizard.QFileDialog,
-        "getOpenFileName",
-        lambda **kwargs: (str(csv_path), "csv files (*.csv)"),
-    )
-    monkeypatch.setattr(
-        main_wizard.QMessageBox,
-        "warning",
-        lambda *args, **kwargs: shown.append(args),
-    )
-
-    page._select_file()
-
-    assert not shown
-    assert "No study rows found" in page.import_status.text()
-    assert "StopIteration" not in page.import_status.text()
-    assert not page.isComplete()
-
-
-def test_csv_import_preview_failure_preserves_error_details(tmp_path, monkeypatch):
-    from rc_metastudio import main_wizard
-
-    csv_path = tmp_path / "studies.csv"
     csv_path.write_text(
         "Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total,OR,Lower,Upper\n"
-        "Alpha,2020,1,10,2,12,,,\n"
+        "Alpha,2020,1,10,2,12,,,\n" if preview_failure else ""
     )
     shown = []
     wizard = main_wizard.MainWizard(path="csv_import")
@@ -3095,23 +2997,29 @@ def test_csv_import_preview_failure_preserves_error_details(tmp_path, monkeypatc
         lambda **kwargs: (str(csv_path), "csv files (*.csv)"),
     )
     monkeypatch.setattr(
-        main_wizard.csv_import,
-        "parse_csv",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(
-            ValueError("Year column is missing")
-        ),
-    )
-    monkeypatch.setattr(
         main_wizard.QMessageBox,
         "warning",
         lambda *args, **kwargs: shown.append(args),
     )
 
+    if preview_failure:
+        monkeypatch.setattr(
+            main_wizard.csv_import,
+            "parse_csv",
+            lambda *_args, **_kwargs: (_ for _ in ()).throw(
+                ValueError("Year column is missing")
+            ),
+        )
+
     page._select_file()
 
     assert not shown
-    assert "Year column is missing" in page.import_status.text()
-    assert "Try again" not in page.import_status.text()
+    if preview_failure:
+        assert "Year column is missing" in page.import_status.text()
+        assert "Try again" not in page.import_status.text()
+    else:
+        assert "No study rows found" in page.import_status.text()
+        assert "StopIteration" not in page.import_status.text()
     assert not page.isComplete()
 
 
