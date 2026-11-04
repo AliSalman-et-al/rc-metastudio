@@ -165,7 +165,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
 
     def _configure_accessibility(self):
         """Name static controls and expose an inline commit error region."""
-        self._commit_error = QLabel(self.content_scroll_contents)
+        self._commit_error = QLabel(self)
         self._commit_error.setObjectName("plot_commit_error")
         self._commit_error.setWordWrap(True)
         self._commit_error.setStyleSheet("color: #b00020;")
@@ -174,7 +174,9 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "A plot edit could not be rendered. The last successful plot remains active."
         )
         self._commit_error.hide()
-        self.content_layout.addWidget(self._commit_error)
+        self.verticalLayout.insertWidget(
+            self.verticalLayout.indexOf(self.buttonBox), self._commit_error
+        )
         controls = {
             self.style_cbo: ("Plot style", "Choose the visual style used to draw the plot."),
             self.color_btn: ("Choose plot accent color", "Open a color picker for the plot accent color."),

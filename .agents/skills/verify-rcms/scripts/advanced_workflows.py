@@ -21,7 +21,7 @@ SCENARIOS = (
     *("options-" + family for family in ("binary", "continuous", "diagnostic")),
     "options-confidence-inclusion",
     "options-zero-cells",
-    "options-mh-rd",
+    "plot-workflow-mh-rd",
     "project-structure",
     "project-table-covariates",
     "project-shell",
@@ -330,6 +330,8 @@ def mh_rd(app, window, record):
         dialog.plot_lb_le.setText("abc")
         click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
         assert "number" in dialog._commit_error.text().lower(), dialog._commit_error.text()
+        assert dialog._commit_error.isVisible()
+        assert dialog.rect().contains(dialog._commit_error.geometry())
         assert Path(artifact.display_path()).read_bytes() == before
         record("invalid-axis-bound-rejected", dialog, message=dialog._commit_error.text())
         dialog.plot_lb_le.clear()
@@ -1912,7 +1914,7 @@ def run(app, window, scenario, record):
         sequential(app, window, scenario, record)
     elif scenario == "options-confidence-inclusion":
         confidence_inclusion(app, window, record)
-    elif scenario == "options-mh-rd":
+    elif scenario == "plot-workflow-mh-rd":
         mh_rd(app, window, record)
     elif scenario == "options-zero-cells":
         zero_cells(app, window, record)
