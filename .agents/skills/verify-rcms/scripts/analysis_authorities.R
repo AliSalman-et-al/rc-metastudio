@@ -179,7 +179,7 @@ for (method in c("binary.fixed.inv.var", "binary.fixed.mh", "binary.fixed.peto",
   close(actual$QM,expected,paste(method,"subgroup Q"))
   close(actual$QMp,pchisq(expected,1,lower.tail=FALSE),paste(method,"subgroup p"))
   cat(method, "RCMS",actual$QM,"meta",expected,"difference",actual$QM-expected,"\n")
-  rows[[length(rows)+1L]] <- list(case=paste(method,"subgroup"), actual=actual$QM, expected=expected)
+  rows[[length(rows)+1L]] <- list(case=paste(method,"subgroup"), passed=TRUE, actual=actual$QM, expected=expected)
 }
 # BCG latitude split: DL/REML must agree with meta's separate-tau subgroup Q.
 bcg <- metadat::dat.bcg
