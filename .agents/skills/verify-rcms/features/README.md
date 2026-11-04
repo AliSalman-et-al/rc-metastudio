@@ -28,6 +28,12 @@ source section/table identity in the compact Supplementary Full-precision result
 References are retained as a numbered prose section rather than a table.
 The manuscript export drive checks every prose paragraph in clipboard, PDF and DOCX
 and rejects developer-facing “Held” labels.
+Both manuscript scenarios set a dark text palette and a +6 pt UI font, and check exported PDF body,
+figure-caption and supplementary-heading colours through Poppler XML. Sample
+PDF/DOCX filenames include spaces and Unicode. Amino PDF page/word geometry
+must match a default-UI-font export exactly; DOCX document/style XML must also
+match across UI fonts. Native file-picker overwrite and exhaustive export-format/theme combinations still need a
+targeted drive; these colour checks do not establish that coverage.
 Unstructured small-study output is
 retained line by line; its model comparisons remain distinct from individual study
 results. Copy HTML/plain text, DOCX tables and ordered PDF table contents are checked
