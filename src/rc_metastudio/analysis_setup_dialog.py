@@ -1655,7 +1655,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 QtWidgets.QStyle.SubControl.SC_ComboBoxEditField, combo,
             )
             text_width = combo.fontMetrics().horizontalAdvance(combo.currentText())
-            needed = label.sizeHint().width() + text_width + combo.width() - field.width()
+            needed = max(
+                label.sizeHint().width() + text_width + combo.width() - field.width(),
+                label.minimumSizeHint().width() + combo.minimumSizeHint().width(),
+            )
             # The scroll body may already have expanded to this row's unwrapped
             # minimum. Fit against the viewport rather than that expanded width.
             viewport = required(self.content_scroll_area.viewport(), "analysis viewport")
