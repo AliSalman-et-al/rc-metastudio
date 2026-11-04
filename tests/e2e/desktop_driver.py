@@ -1161,6 +1161,7 @@ def xlsx_import(app, window):
     rows = [["Alpha", 2020, 1, 10, 2, 12, None, None, None], ["Beta", 2021, 3, 11, 4, 13, None, None, None]]
     for row in rows:
         sheet.append(row)
+    sheet.append([" "] * 9)
     hidden = book.create_sheet("Hidden")
     hidden.sheet_state = "hidden"
     sheet.row_dimensions[2].hidden = True
@@ -1226,6 +1227,7 @@ def xlsx_import(app, window):
         writer.writerows(rows)
     from rc_metastudio.csv_import import parse_csv
     equivalent = parse_csv(csv_path, expected_headers=page.required_header_labels, has_headers=True, from_excel=True, header_aliases=page._legacy_header_aliases())
+    assert len(payload["data"]) == 2
     assert payload == equivalent.to_payload()
     from rc_metastudio.project_adapter import dataset_to_project
     before = dataset_to_project(window.model.dataset)
@@ -1344,7 +1346,7 @@ def csv_import(app, window):
 
     csv = WORK / "studies.csv"
     csv.write_text(
-        'Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total,OR,Lower,Upper,Dose,Region\n"Alpha, München",2020,1,10,2,12,,,,5.5,North\nBeta,2021,3,11,4,13,,,,7,South\nGamma,2022,2,20,5,20,,,,8,West\n',
+        'Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total,Dose,Region\n"Alpha, München",2020,1,10,2,12,5.5,North\n , , , , , , , \nBeta,2021,3,11,4,13,7,South\nGamma,2022,2,20,5,20,8,West\n',
         encoding="utf-8-sig",
     )
     wizard = main_wizard.MainWizard(path="csv_import")
@@ -1379,8 +1381,16 @@ def csv_import(app, window):
     mouse_click(page.csv_options_btn, QtCore.Qt.MouseButton.LeftButton)
     assert page.delimter_le.isVisible()
     assert page.has_headers_chkbx.isVisible()
+    page.mapping_controls[2].setCurrentIndex(0)
+    assert not page.isComplete()
+    assert page.preview_table.rowCount() > 0
+    record_step("csv-unmapped-preview", wizard, message=page.import_status.text())
+    page.mapping_controls[2].setCurrentIndex(page.mapping_controls[2].findData(2))
+    assert page.isComplete(), page.import_status.text()
+    assert len(page.csv_data()["data"]) == 3
     record_step("csv-preview", wizard, rows=3, file=str(csv))
     window._handle_wizard_results(wizard.get_results())
+    assert window.sheet_tabs.tabText(window.sheet_tabs.currentIndex()).strip()
     wizard.close()
     assert (
         str(window.model.data(window.model.index(0, window.model.NAME)))

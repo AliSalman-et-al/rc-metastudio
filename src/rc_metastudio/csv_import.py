@@ -62,7 +62,7 @@ def parse_csv(
     worksheet: str | None = None,
     notices: list[str] | None = None,
 ) -> CsvImportResult:
-    """Read, normalize, and validate one CSV file."""
+    """Read and validate rows; mapping index -1 leaves an optional field empty."""
     suffix = Path(path).suffix.lower()
     if suffix == ".xls":
         raise CsvImportError("Save this workbook as .xlsx before importing it.")
@@ -78,18 +78,20 @@ def parse_csv(
             )
             headers = next(reader, []) if has_headers else []
             rows = list(reader)
+    rows = [row for row in rows if any(cell.strip() for cell in row)]
     if header_aliases:
         headers = [header_aliases.get(header.casefold(), header) for header in headers]
 
     if column_mapping is not None:
         if not has_headers:
             raise CsvImportError("Column mapping requires a header row.")
-        if len(column_mapping) != len(expected_headers) or len(set(column_mapping)) != len(column_mapping):
+        mapped = [index for index in column_mapping if index >= 0]
+        if len(column_mapping) != len(expected_headers) or len(set(mapped)) != len(mapped):
             raise CsvImportError("Map each required field to a different CSV column.")
-        if any(index < 0 or index >= len(headers) for index in column_mapping):
+        if any(index < -1 or index >= len(headers) for index in column_mapping):
             raise CsvImportError("Select a CSV column for every required field.")
         indices = list(column_mapping) + [index for index in range(len(headers)) if index not in column_mapping]
-        rows = [[row[index] if index < len(row) else "" for index in indices] for row in rows]
+        rows = [[row[index] if 0 <= index < len(row) else "" for index in indices] for row in rows]
         headers = list(expected_headers) + [headers[index] for index in indices[len(expected_headers):]]
 
     if has_headers:
