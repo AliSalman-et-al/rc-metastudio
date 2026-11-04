@@ -1,3 +1,7 @@
+> Windows follow-up: this earlier proof covers the approved text-only update.
+> The final two Windows PNG replacements, exact R data-coordinate proof and
+> post-update audit are in [windows-plot-proof](windows-plot-proof/README.md).
+
 # Final reduced-scope golden proof for PR #556
 
 The later scope decision supersedes the earlier F14 notation approval. Master notation and selected decimal places are restored. The only updated golden fields are:

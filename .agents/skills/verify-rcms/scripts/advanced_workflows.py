@@ -480,7 +480,7 @@ def plots(app, window, family, record, *, view=None):
     if family in {"funnel", "contour", "trimfill"}:
         from xml.etree import ElementTree as ET
         labels = {"".join(node.itertext()) for node in ET.parse(initial_svg).iter("{http://www.w3.org/2000/svg}text")}
-        assert "Standard error (log scale)" in labels, labels
+        assert "Standard error of log " + metric_label(window.model).casefold() in labels, labels
         assert metric_label(window.model).casefold() in {label.casefold() for label in labels}, labels
 
     section = next(section for section in view.results.sections if section.source_key == artifact.title)
@@ -550,11 +550,16 @@ def plots(app, window, family, record, *, view=None):
                 for style in ("Default (metafor)", "RevMan", "BMJ"):
                     dialog.style_cbo.setCurrentText(style)
                     click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
-                    if family in {"cumulative", "leave-one-out"}:
-                        from xml.etree import ElementTree as ET
-                        labels = ["".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text")]
-                        assert sum(text.startswith("Favours") for text in labels) == 2, labels
-                    measurements = check_forest_footer(path, expected_directions=tuple("Favours " + name for name in names))
+                    from rc_metastudio import r_bridge
+                    r_bridge.ro.globalenv["verified_footer_path"] = str(artifact.params_path) + ".plotdata"
+                    null_inside = bool(r_bridge.ro.r(
+                        "local({ state <- new.env(); load(verified_footer_path, envir=state); "
+                        "limits <- RCMetaR:::rcmetar.forest.layout.preflight(state$plot.data)$x$alim; "
+                        "null <- RCMetaR:::rcmetar.metafor.refline(state$plot.data, limits); "
+                        "is.finite(null) && null > limits[[1]] && null < limits[[2]] })"
+                    )[0])
+                    expected = tuple("Favours " + name for name in names) if null_inside else ()
+                    measurements = check_forest_footer(path, expected_directions=expected)
                     retained = Path(sys.argv[2]) / f"{family}-{style.split()[0]}-arms-{len(names[0])}.svg"
                     retained.write_bytes(path.read_bytes())
                     record("forest-footer-geometry", dialog, family=family, style=style,
@@ -703,6 +708,21 @@ def plots(app, window, family, record, *, view=None):
     def context(action_text):
         view.graphics_view.ensureVisible(item)
         app.processEvents()
+        class ResizeProbe(QtCore.QObject):
+            count = 0
+            def eventFilter(self, watched, event):
+                if event.type() == QtCore.QEvent.Type.Resize:
+                    self.count += 1
+                return False
+        viewport = view.graphics_view.viewport()
+        QTest.qWait(50)
+        probe = ResizeProbe(viewport)
+        viewport.installEventFilter(probe)
+        QTest.qWait(100)
+        viewport.removeEventFilter(probe)
+        assert probe.count <= 2, ('figure fit keeps resizing its viewport', probe.count)
+        record('figure-viewport-settled', view, resize_events=probe.count,
+               viewport=(viewport.width(), viewport.height()))
         point = view.graphics_view.mapFromScene(item.sceneBoundingRect().center())
         chosen = []
         errors = []

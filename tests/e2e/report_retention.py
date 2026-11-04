@@ -338,27 +338,36 @@ def assert_retained_table(view, section, source):
 
 def assert_report(view):
     tables = [table for section in view.manuscript.sections for table in section.tables]
-    pooled, fit = tables[:2]
+    pooled = next((table for table in tables if table.title == 'Pooled effect'), None)
+    fit = next((table for table in tables if table.title == 'Model fit'), None)
     studies = next((t for t in tables if t.title == 'Study results'), None)
     structured = any(s.tables for s in view.results.sections)
-    if structured:
-        assert pooled.headers[:2] == ('Effect', 'Estimate')
-        assert pooled.headers[2].endswith('% CI')
-        expected_rows = expected_pooled(view.results)
+    expected_rows = expected_pooled(view.results) if structured else tuple(
+        (s.title, s.value) for s in view.results.sections
+        if s.kind == 'text' and (s.title in ('Pooled comparison', 'Extrapolation') or s.title.startswith('Trim-and-fill')))
+    assert (pooled is not None) == bool(expected_rows), (pooled, expected_rows)
+    level = '95% CI'
+    if structured and expected_rows:
+        assert pooled is not None
+        level = next(header for header in pooled.headers if header.endswith('% CI'))
         indexes = [i for i in range(6) if any(row[i] not in ('', '—', 'NA') for row in expected_rows)]
-        full_headers = [('Effect', 'Estimate', pooled.headers[2], 'SE', statistic, 'p') for statistic in ('z', 't')]
+        full_headers = [('Effect', 'Estimate', level, 'SE', statistic, 'p') for statistic in ('z', 't')]
         assert pooled.headers in [tuple(headers[i] for i in indexes) for headers in full_headers]
         expected_rows = presentation_rows(expected_rows, view.results.manuscript_digits)
         assert pooled.rows == tuple(tuple(row[i] for i in indexes) for row in expected_rows), (pooled.rows, expected_rows, indexes)
         assert all(any(row[i] not in ('', '—', 'NA') for row in pooled.rows) for i in range(len(pooled.headers)))
-    else:
+    elif expected_rows:
+        assert pooled is not None
         assert pooled.headers == ('Analysis', 'Output')
-        assert pooled.rows == tuple((s.title, s.value) for s in view.results.sections
-                                    if s.kind == 'text' and (s.title in ('Pooled comparison', 'Extrapolation') or s.title.startswith('Trim-and-fill')))
-    assert fit.headers == ('Statistic', 'Value')
+        assert pooled.rows == expected_rows
+    expected_model_fit = presentation_rows(expected_fit(view.results), view.results.manuscript_digits)
+    assert (fit is not None) == bool(expected_model_fit), (fit, expected_model_fit)
+    if fit is not None:
+        assert fit.headers == ('Statistic', 'Value')
+        assert fit.rows == expected_model_fit, (fit.rows, expected_model_fit)
     row_label = 'Fit' if any('leave-one-out' in s.title.casefold() for s in view.results.sections) else 'Study'
     expected = expected_studies(view.results)
-    headers = ('Analysis', row_label, 'Effect', pooled.headers[2] if structured else '95% CI', 'Weight')
+    headers = ('Analysis', row_label, 'Effect', level, 'Weight')
     if expected and len(expected[0]) == 3:
         headers = ('Analysis', row_label, 'Weight')
     if len({row[0] for row in expected}) == 1:
@@ -367,7 +376,6 @@ def assert_report(view):
     assert (studies is not None) == bool(expected)
     if studies is not None:
         assert studies.headers == headers
-    assert fit.rows == presentation_rows(expected_fit(view.results), view.results.manuscript_digits), (fit.rows, expected_fit(view.results))
     if studies is not None:
         assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
     for section in view.results.sections:

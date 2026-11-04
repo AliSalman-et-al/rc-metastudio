@@ -912,7 +912,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             viewport_width = self.graphics_view.width()
         if viewport_width <= horizontal_padding:
             viewport_width = max(self.results_nav_splitter.width(), self.width())
-        return viewport_width
+        # A fit must not gain width when its vertical scrollbar disappears:
+        # that can make the taller refitted plot need the scrollbar again.
+        scrollbar = required(self.graphics_view.verticalScrollBar(), "figure scrollbar")
+        stable_width = self.graphics_view.maximumViewportSize().width() - scrollbar.sizeHint().width()
+        return max(1, min(viewport_width, stable_width))
 
     def add_title(self, title):
         text = QGraphicsTextItem(str(title))

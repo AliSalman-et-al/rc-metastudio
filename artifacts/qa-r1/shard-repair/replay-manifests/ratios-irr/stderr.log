@@ -1,0 +1,292 @@
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+R callback write-console: In addition:   
+R callback write-console: Warning message:
+  
+R callback write-console: Some yi/vi values are NA. 
+  
+R callback write-console: In addition:   
+R callback write-console: Warning message:
+  
+R callback write-console: Some yi/vi values are NA. 
+  
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+R callback write-console: In addition:   
+R callback write-console: Warning messages:
+  
+R callback write-console: 1: Some yi/vi values are NA. 
+  
+R callback write-console: 2: Some yi/vi values are NA. 
+  
+R callback write-console: 3: Some yi/vi values are NA. 
+  
+R callback write-console: 4: Some yi/vi values are NA. 
+  
+R callback write-console: 5: Some yi/vi values are NA. 
+  
+R callback write-console: 6: Some yi/vi values are NA. 
+  
+R callback write-console: 7: Some yi/vi values are NA. 
+  
+R callback write-console: 8: Some yi/vi values are NA. 
+  
+R callback write-console: 9: Some yi/vi values are NA. 
+  
+R callback write-console: 10: Some yi/vi values are NA. 
+  
+R callback write-console: In addition:   
+R callback write-console: Warning messages:
+  
+R callback write-console: 1: Some yi/vi values are NA. 
+  
+R callback write-console: 2: Some yi/vi values are NA. 
+  
+R callback write-console: 3: Some yi/vi values are NA. 
+  
+R callback write-console: 4: Some yi/vi values are NA. 
+  
+R callback write-console: 5: Some yi/vi values are NA. 
+  
+R callback write-console: 6: Some yi/vi values are NA. 
+  
+R callback write-console: 7: Some yi/vi values are NA. 
+  
+R callback write-console: 8: Some yi/vi values are NA. 
+  
+R callback write-console: 9: Some yi/vi values are NA. 
+  
+R callback write-console: 10: Some yi/vi values are NA. 
+  
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+R callback write-console: In addition:   
+R callback write-console: There were 11 warnings (use warnings() to see them)  
+R callback write-console: 
+  
+R callback write-console: In addition:   
+R callback write-console: There were 11 warnings (use warnings() to see them)  
+R callback write-console: 
+  
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+R callback write-console: In addition:   
+R callback write-console: Warning messages:
+  
+R callback write-console: 1: Some yi/vi values are NA. 
+  
+R callback write-console: 2: Some yi/vi values are NA. 
+  
+Qt QtWarningMsg: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+R callback write-console: In addition:   
+R callback write-console: Warning messages:
+  
+R callback write-console: 1: Some yi/vi values are NA. 
+  
+R callback write-console: 2: Some yi/vi values are NA. 
+  

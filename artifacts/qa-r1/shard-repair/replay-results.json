@@ -1,0 +1,255 @@
+[
+  {
+    "scenario": "analysis-diagnostic-regression-continuous",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "analysis-diagnostic-regression-continuous"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/analysis-diagnostic-regression-continuous.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T143923Z-7862c826-analysis-diagnostic-regression-continuous"
+  },
+  {
+    "scenario": "plot-workflow-coefficient",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "plot-workflow-coefficient"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/plot-workflow-coefficient.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T143946Z-5a2c5453-plot-workflow-coefficient"
+  },
+  {
+    "scenario": "plot-workflow-deeks",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "plot-workflow-deeks"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/plot-workflow-deeks.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T144006Z-36c77607-plot-workflow-deeks"
+  },
+  {
+    "scenario": "plot-workflow-leave-one-out",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "plot-workflow-leave-one-out"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/plot-workflow-leave-one-out.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T144032Z-9099fa6b-plot-workflow-leave-one-out"
+  },
+  {
+    "scenario": "plot-workflow-trimfill",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "plot-workflow-trimfill"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/plot-workflow-trimfill.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T144141Z-7c06fc4e-plot-workflow-trimfill"
+  },
+  {
+    "scenario": "project-release-coefficients",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "project-release-coefficients"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/project-release-coefficients.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T144204Z-59213d7e-project-release-coefficients"
+  },
+  {
+    "scenario": "small-study-diagnostic",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "small-study-diagnostic"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/small-study-diagnostic.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T144222Z-2041d10b-small-study-diagnostic"
+  },
+  {
+    "scenario": "ux-improvements",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "ux-improvements"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/ux-improvements.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T144241Z-de7fc005-ux-improvements"
+  },
+  {
+    "scenario": "analysis-diagnostic-regression-factor",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "analysis-diagnostic-regression-factor"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/analysis-diagnostic-regression-factor.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T144416Z-f97b098f-analysis-diagnostic-regression-factor"
+  },
+  {
+    "scenario": "plot-workflow-contour",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "plot-workflow-contour"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/plot-workflow-contour.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T144442Z-937af7e7-plot-workflow-contour"
+  },
+  {
+    "scenario": "plot-workflow-forest",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "plot-workflow-forest"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/plot-workflow-forest.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T145504Z-cb409a97-plot-workflow-forest"
+  },
+  {
+    "scenario": "results-window",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "results-window"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/results-window.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T145626Z-d63cecfe-results-window"
+  },
+  {
+    "scenario": "analysis-diagnostic-regression-multiple",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "analysis-diagnostic-regression-multiple"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/analysis-diagnostic-regression-multiple.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T145800Z-0b82fb12-analysis-diagnostic-regression-multiple"
+  },
+  {
+    "scenario": "plot-workflow-cumulative",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "plot-workflow-cumulative"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/plot-workflow-cumulative.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T145822Z-056ac2ae-plot-workflow-cumulative"
+  },
+  {
+    "scenario": "plot-workflow-funnel",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "plot-workflow-funnel"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/plot-workflow-funnel.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T145935Z-09a31edb-plot-workflow-funnel"
+  },
+  {
+    "scenario": "plot-workflow-subgroup",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "plot-workflow-subgroup"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/plot-workflow-subgroup.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T150005Z-a194bfe7-plot-workflow-subgroup"
+  },
+  {
+    "scenario": "project-round6-polish",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "project-round6-polish"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/project-round6-polish.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T150218Z-fa0a8514-project-round6-polish"
+  },
+  {
+    "scenario": "manuscript-export",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "manuscript-export"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/manuscript-export.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T150700Z-0723fa28-manuscript-export"
+  },
+  {
+    "scenario": "manuscript-export-direct",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "manuscript-export-direct"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/manuscript-export-direct.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T150924Z-3de81681-manuscript-export-direct"
+  },
+  {
+    "scenario": "analysis-binary.fixed.peto",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "analysis-binary.fixed.peto"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/analysis-binary.fixed.peto.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T151149Z-47f9913f-analysis-binary.fixed.peto"
+  },
+  {
+    "scenario": "plot-workflow-mh-rd",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "plot-workflow-mh-rd"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/plot-workflow-mh-rd.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T151212Z-34532f8e-plot-workflow-mh-rd"
+  },
+  {
+    "scenario": "ratios-hr",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "ratios-hr"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/ratios-hr.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T151300Z-52cdea5c-ratios-hr"
+  },
+  {
+    "scenario": "ratios-irr",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/shard-repair/run_scenario.py",
+      "ratios-irr"
+    ],
+    "exit_code": 0,
+    "log": "artifacts/qa-r1/shard-repair/ratios-irr.log",
+    "evidence": "Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/verification/rcms/20261104T152851Z-bf05890f-ratios-irr"
+  }
+]

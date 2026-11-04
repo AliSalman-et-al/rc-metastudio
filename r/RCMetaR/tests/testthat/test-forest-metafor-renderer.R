@@ -942,7 +942,7 @@ test_that("BMJ raw-column layouts measure long labels and wrapped headers", {
   expect_gt(long.plan$device$width, short.plan$device$width)
   expect_gt(long.plan$device$height, short.plan$device$height)
   expect_gte(long.plan$device$header_lines, 3)
-  expect_gte(long.plan$device$direction_lines, 3)
+  expect_equal(long.plan$device$direction_lines, 1L)
   expect_lt(max(as.numeric(long.plan$columns$ilab.xpos[1:2])), long.plan$x$alim[[1]])
   expect_gt(long.plan$columns$annotation.xpos, long.plan$x$alim[[2]])
   expect_gt(long.plan$footer$axis$left.max.width, 0)
