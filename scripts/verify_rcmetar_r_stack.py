@@ -477,7 +477,7 @@ def verify(args: argparse.Namespace) -> None:
             env=env,
         )
         tarball = built_RCMetaR_tarball(work_dir)
-        if args.desktop_shard is None:
+        if args.desktop_shard is None and not args.desktop_only:
             run(
                 [
                     r_exe,
@@ -498,7 +498,7 @@ def verify(args: argparse.Namespace) -> None:
         )
 
         env["RCMS_R_STACK_REQUIRED"] = "1"
-        if args.desktop_shard is None:
+        if args.desktop_shard is None and not args.desktop_only:
             verify_analysis_authorities(root, rscript, env)
             verify_manifest_versions(root, python, rscript, env)
             verify_reitsma_visual_evidence(root, rscript, env, work_dir)
@@ -521,7 +521,7 @@ def verify(args: argparse.Namespace) -> None:
             ]
         if not args.skip_desktop:
             run(desktop_command, cwd=root, env=env)
-        if args.desktop_shard is None:
+        if args.desktop_shard is None and not args.desktop_only:
             run(
                 [
                     python,
@@ -547,6 +547,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--desktop-workers", default="auto")
     selection = parser.add_mutually_exclusive_group()
     selection.add_argument("--skip-desktop", action="store_true")
+    selection.add_argument("--desktop-only", action="store_true")
     selection.add_argument("--desktop-shard", type=int, choices=(1, 2, 3))
     parser.add_argument("--fresh", action="store_true", help="Do not reuse passed desktop evidence")
     parser.add_argument("--work-dir", type=Path, default=None)

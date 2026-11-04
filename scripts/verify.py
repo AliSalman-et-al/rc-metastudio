@@ -204,6 +204,8 @@ def run_full_r_stack(args: argparse.Namespace) -> None:
         "--r-library-cache-root",
         str(args.r_library_cache_root or FULL_R_LIBRARY_CACHE),
     ]
+    if args.desktop_only:
+        command.append("--desktop-only")
     if args.skip_desktop:
         command.append("--skip-desktop")
     if args.desktop_shard is not None:
@@ -218,7 +220,7 @@ STABLE_BASELINE = "8b7796bcc840c3505c5fb0a1328cdd7682880e48"
 def run_gate(args: argparse.Namespace, env: dict[str, str]) -> None:
     if args.lane == "typing":
         build = Path(env["RCMS_QT6_BUILD_ROOT"])
-        command = [sys.executable, "-m", "ty", "check", "--python-platform", "win32"]
+        command = [sys.executable, "-m", "ty", "check", "--python", sys.executable, "--python-platform", "win32"]
         for path in (str(build / "generated/rc_metastudio"),
                      str(build / "generated/rc_metastudio/forms"), ".",
                      "src/rc_metastudio", "src", "scripts", "tests/python/gui"):
@@ -242,11 +244,11 @@ def run_gate(args: argparse.Namespace, env: dict[str, str]) -> None:
 
 def run_pre_push(args: argparse.Namespace) -> None:
     """Fail fast, retaining an honest result for every planned lane."""
-    steps = ["prepare", "typing", "code-health", "python", "contracts", "r-stack"]
+    steps = ["prepare", "typing", "code-health", "python", "contracts", "r-stack", "desktop", "native"]
     rows = [{"step": name, "seconds": 0.0, "status": "not run"} for name in steps]
     rows += [{"step": name, "seconds": 0.0, "status": "CI only"} for name in (
         "Windows native Qt Core and RemainingSurfaces", "Windows package qualification",
-        "macOS native smoke, R bridge and packaging", "Linux native xcb smoke")]
+        "macOS native smoke, R bridge and packaging")]
     env = dict(os.environ)
     try:
         for row in rows[:len(steps)]:
@@ -254,7 +256,19 @@ def run_pre_push(args: argparse.Namespace) -> None:
             try:
                 if row["step"] == "prepare":
                     env = prepare_qt_environment(args.build_root.resolve())
-                elif row["step"] == "r-stack":
+                elif row["step"] == "native":
+                    if sys.platform == "linux":
+                        run(["xvfb-run", "-a", sys.executable, "scripts/build_qt6.py",
+                             "native-smoke", "--build-root", str(args.build_root)], env=env)
+                    elif sys.platform == "win32":
+                        for section in ("Core", "RemainingSurfaces"):
+                            run(["powershell", "-File", "scripts/verify-qt6.ps1",
+                                 "-Section", section], env=env)
+                    else:
+                        run([sys.executable, "scripts/build_qt6.py", "native-smoke"], env=env)
+                elif row["step"] in {"r-stack", "desktop"}:
+                    args.skip_desktop = row["step"] == "r-stack"
+                    args.desktop_only = row["step"] == "desktop"
                     run_full_r_stack(args)
                 else:
                     args.lane = row["step"]
@@ -317,6 +331,7 @@ def parser() -> argparse.ArgumentParser:
     selection.add_argument("--skip-desktop", action="store_true")
     selection.add_argument("--desktop-shard", type=int, choices=(1, 2, 3))
     r_stack.add_argument("--sync", action="store_true")
+    r_stack.add_argument("--desktop-only", action="store_true")
     add_rscript_options(r_stack)
     r_stack.add_argument("--build-root", default=DEFAULT_BUILD_ROOT, type=Path)
     for name in ("pre-push", "typing", "code-health", "python", "contracts"):
@@ -326,7 +341,7 @@ def parser() -> argparse.ArgumentParser:
                           default=Path(os.environ.get("RCMS_QT6_BUILD_ROOT", str(DEFAULT_BUILD_ROOT))))
         gate.add_argument("--base", default="origin/master")
         gate.add_argument("--head", default="HEAD")
-        gate.set_defaults(sync=False, skip_desktop=False, desktop_shard=None)
+        gate.set_defaults(sync=False, skip_desktop=False, desktop_only=False, desktop_shard=None)
     return cli
 
 
