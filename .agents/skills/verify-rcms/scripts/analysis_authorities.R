@@ -2,9 +2,15 @@
 # Run from the repository root with the manifest-pinned R library selected.
 options(warn=1)
 args <- commandArgs(trailingOnly=TRUE)
-stopifnot(length(args) == 1L)
+stopifnot(length(args) %in% c(1L, 2L))
 report <- args[[1L]]
-suppressPackageStartupMessages(pkgload::load_all("r/RCMetaR", quiet=TRUE))
+if (length(args) == 2L) {
+  stopifnot(args[[2L]] == "--installed")
+  suppressPackageStartupMessages(library(RCMetaR))
+  cat("Installed RCMetaR:", find.package("RCMetaR"), "\n")
+} else {
+  suppressPackageStartupMessages(pkgload::load_all("r/RCMetaR", quiet=TRUE))
+}
 policy <- jsonlite::fromJSON("config/r-dependencies.json", simplifyVector=FALSE)
 authorities <- list()
 for (dependency in policy$direct_RCMetaR_dependencies) {
@@ -108,6 +114,12 @@ for (metric in c("MD","SMD","TXMean","entered-estimates")) {
     check(data,method,p,ref,paste(metric,method))
   }
 }
+# Small k distinguishes t-based fixed continuous inference from z.
+for (inference in c("t", "knha", "adhoc")) {
+  p <- params("TXMean"); p$inference.method <- inference
+  ref <- metafor::rma.uni(effects$yi, vi=effects$vi, method="FE", test=inference, level=95)
+  check(data, "continuous.fixed", p, ref, paste("entered continuous fixed", inference))
+}
 # Independently construct diagnostic effects on the correct calculation scales.
 TP <- a; FN <- b; FP <- c; TN <- d
 for (metric in c("Sens","Spec","PLR","NLR","DOR")) {
@@ -167,7 +179,7 @@ for (method in c("binary.fixed.inv.var", "binary.fixed.mh", "binary.fixed.peto",
   close(actual$QM,expected,paste(method,"subgroup Q"))
   close(actual$QMp,pchisq(expected,1,lower.tail=FALSE),paste(method,"subgroup p"))
   cat(method, "RCMS",actual$QM,"meta",expected,"difference",actual$QM-expected,"\n")
-  rows[[length(rows)+1L]] <- list(case=paste(method,"subgroup"), actual=actual$QM, expected=expected)
+  rows[[length(rows)+1L]] <- list(case=paste(method,"subgroup"), passed=TRUE, actual=actual$QM, expected=expected)
 }
 # BCG latitude split: DL/REML must agree with meta's separate-tau subgroup Q.
 bcg <- metadat::dat.bcg

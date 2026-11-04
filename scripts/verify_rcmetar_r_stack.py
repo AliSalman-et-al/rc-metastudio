@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from importlib import metadata
 from pathlib import Path
 
@@ -395,6 +396,24 @@ def verify_reitsma_visual_evidence(
     step("Reitsma visual release evidence verified: 21 cases, deterministic hashes and normalized PDF/descriptor contracts")
 
 
+def verify_analysis_authorities(root: Path, rscript: Path, env: dict[str, str]) -> None:
+    report = root / "artifacts/verification/rcms/authorities.json"
+    report.parent.mkdir(parents=True, exist_ok=True)
+    report.unlink(missing_ok=True)
+    started = time.monotonic()
+    run(
+        [rscript, root / ".agents/skills/verify-rcms/scripts/analysis_authorities.R",
+         report, "--installed"],
+        cwd=root, env=env,
+    )
+    result = json.loads(report.read_text(encoding="utf-8"))
+    cases = result["cases"]
+    if not cases or not all(case["passed"] for case in cases):
+        raise VerificationError("Statistical authority matrix contains failed or missing cases")
+    step(f"Statistical authorities verified: {len(cases)} cases passed "
+         f"in {time.monotonic() - started:.2f}s")
+
+
 def bridge_test_command(python: str, pytest_runner: str) -> list[str | Path]:
     # Always invoke the exact interpreter selected by --python.  In
     # particular, `uv run` can resolve a different project interpreter and
@@ -456,31 +475,34 @@ def verify(args: argparse.Namespace) -> None:
             env=env,
         )
         tarball = built_RCMetaR_tarball(work_dir)
-        run(
-            [
-                r_exe,
-                "CMD",
-                "check",
-                "--no-manual",
-                "--no-build-vignettes",
-                f"--library={r_library}",
-                tarball,
-            ],
-            cwd=work_dir,
-            env=env,
-        )
+        if args.desktop_shard is None:
+            run(
+                [
+                    r_exe,
+                    "CMD",
+                    "check",
+                    "--no-manual",
+                    "--no-build-vignettes",
+                    f"--library={r_library}",
+                    tarball,
+                ],
+                cwd=work_dir,
+                env=env,
+            )
         run(
             [r_exe, "CMD", "INSTALL", f"--library={r_library}", tarball],
             cwd=root,
             env=env,
         )
 
-        verify_manifest_versions(root, python, rscript, env)
-        verify_reitsma_visual_evidence(root, rscript, env, work_dir)
-
         env["RCMS_R_STACK_REQUIRED"] = "1"
-        pytest_command = bridge_test_command(python, args.pytest_runner)
-        run(pytest_command, cwd=root, env=env)
+        if args.desktop_shard is None:
+            verify_analysis_authorities(root, rscript, env)
+            verify_manifest_versions(root, python, rscript, env)
+            verify_reitsma_visual_evidence(root, rscript, env, work_dir)
+
+            pytest_command = bridge_test_command(python, args.pytest_runner)
+            run(pytest_command, cwd=root, env=env)
         # Fresh offscreen children can overlap within the measured memory budget.
         # The E2E hook reserves host capacity; native drives remain separate/serial.
         desktop_command = [
@@ -489,19 +511,27 @@ def verify(args: argparse.Namespace) -> None:
         ]
         if args.fresh:
             desktop_command.append("--fresh")
-        run(desktop_command, cwd=root, env=env)
-        run(
-            [
-                python,
-                "scripts/verify_golden_compatibility.py",
-                "--root",
-                root,
-                "--output-root",
-                "build/qt6-verification/golden-compatibility-r-stack-v2",
-            ],
-            cwd=root,
-            env=env,
-        )
+        if args.desktop_shard is not None:
+            desktop_command += [
+                "--desktop-shard", str(args.desktop_shard),
+                "--shard-report", "artifacts/verification/desktop-partition.json",
+                "--junitxml=artifacts/verification/desktop-results.xml",
+            ]
+        if not args.skip_desktop:
+            run(desktop_command, cwd=root, env=env)
+        if args.desktop_shard is None:
+            run(
+                [
+                    python,
+                    "scripts/verify_golden_compatibility.py",
+                    "--root",
+                    root,
+                    "--output-root",
+                    "build/qt6-verification/golden-compatibility-r-stack-v2",
+                ],
+                cwd=root,
+                env=env,
+            )
 
     step("RCMetaR R Stack Slice verification complete")
 
@@ -513,6 +543,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--rscript", default="Rscript")
     parser.add_argument("--pytest-runner", default="uv", choices=("uv", "pytest"))
     parser.add_argument("--desktop-workers", default="auto")
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument("--skip-desktop", action="store_true")
+    selection.add_argument("--desktop-shard", type=int, choices=(1, 2, 3))
     parser.add_argument("--fresh", action="store_true", help="Do not reuse passed desktop evidence")
     parser.add_argument("--work-dir", type=Path, default=None)
     parser.add_argument("--r-library-cache-root", type=Path, default=None)

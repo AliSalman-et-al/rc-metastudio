@@ -1,0 +1,11 @@
+--- a/src/rc_metastudio/csv_import.py
++++ b/src/rc_metastudio/csv_import.py
+@@ -67,7 +67,7 @@
+     if suffix == ".xls":
+         raise CsvImportError("Save this workbook as .xlsx before importing it.")
+     if suffix == ".xlsx":
+-        headers, rows, _names, _selected = read_xlsx(path, worksheet, year_column=(column_mapping[year_column] if column_mapping else year_column), numeric_columns=set(column_mapping[1:] if column_mapping else range(1, len(expected_headers))), notices=notices)
++        headers, rows, _names, _selected = read_xlsx(path, worksheet, year_column=(column_mapping[year_column] if column_mapping else 0), numeric_columns=set(column_mapping[1:] if column_mapping else range(1, len(expected_headers))), notices=notices)
+         has_headers = True
+     else:
+         with Path(path).open(encoding="utf-8-sig", newline="") as stream:

@@ -709,6 +709,15 @@ def sheets_legacy(app, window):
 
 
 def sheets(app, window):
+    from rc_metastudio import r_bridge
+    # Non-unit sampling variance exposes variance/SE confusion in raw IRR previews.
+    code = 'local({e <- metafor::escalc("IRR", x1i=4, t1i=100, x2i=9, t2i=120, add=.5, to="only0", drop00=TRUE); c(e$yi, e$yi-qnorm(.975)*sqrt(e$vi), e$yi+qnorm(.975)*sqrt(e$vi))})'
+    expected = [float(x) for x in r_bridge.execute_r_string(code)]
+    actual = r_bridge.incidence_rate_effect_preview([4, 100, 9, 120], 95)
+    assert all(a is not None and abs(a-e) < 1e-10 for a, e in zip(actual, expected)), (actual, expected)
+    record_step("irr-preview-authority", window, raw=[4,100,9,120], confidence=95,
+                r_code=code, expected=expected, actual=actual)
+
     for sample in ("NielWeise2008-IRR", "amino"):
         assert window.open(str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
         table = window.tableView
@@ -1570,6 +1579,17 @@ def calculator(app, window, family):
             if accept:
                 dialog.effect_text_box.setFocus()
                 app.processEvents()
+            label = dialog.ci_label
+            metrics = label.fontMetrics()
+            text_width = metrics.horizontalAdvance(label.text())
+            text_height = metrics.height()
+            contents = label.contentsRect()
+            sizes = dict(text=label.text(), font_points=label.font().pointSize(),
+                         text_width=text_width, text_height=text_height,
+                         contents_width=contents.width(), contents_height=contents.height())
+            record_step("calculator-ci-label-fit", dialog, family=family, **sizes)
+            assert text_width <= contents.width() and text_height <= contents.height(), sizes
+            if accept:
                 from rc_metastudio.meta_globals import CALC_NUM_DIGITS
                 for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
                     assert len(field.text().partition(".")[2]) <= CALC_NUM_DIGITS, field.text()
@@ -1642,8 +1662,16 @@ def calculator(app, window, family):
     assert not callback_errors, callback_errors
     assert raw() == expected, (raw(), expected)
     assert window.workspace.is_dirty
-    QtCore.QTimer.singleShot(0, lambda: edit(False))
-    mouse_click(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=first_row)
+    original_font = QtGui.QFont(app.font())
+    large_font = QtGui.QFont(original_font)
+    large_font.setPointSize(large_font.pointSize() + 6)
+    app.setFont(large_font)
+    try:
+        QtCore.QTimer.singleShot(0, lambda: edit(False))
+        mouse_click(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=first_row)
+    finally:
+        app.setFont(original_font)
+        app.processEvents()
     assert not callback_errors, callback_errors
     assert raw() == expected
     window.action_undo.trigger()

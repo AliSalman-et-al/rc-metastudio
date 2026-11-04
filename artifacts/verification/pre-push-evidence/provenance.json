@@ -1,0 +1,8 @@
+{
+  "head": "e6c0f522cc999649a9a80ab1432ea2f05a265c0e",
+  "target": "win32",
+  "host": "Linux, 4 cores, shared with concurrent mutant runner",
+  "command": "bash artifacts/verification/pre-push-evidence/run.sh",
+  "transcript_sha256": "e484298798387143164a803aa6ee7babcecdb4ba8da5aec7b437087db23e4872",
+  "gui_selection": "gui-ci-selection.json"
+}

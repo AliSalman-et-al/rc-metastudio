@@ -1,0 +1,2 @@
+calculator-mode-entered-binary exit=0
+calculator-binary exit=0

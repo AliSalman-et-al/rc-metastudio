@@ -1,0 +1,11 @@
+--- a/src/rc_metastudio/binary_data_dialog.py
++++ b/src/rc_metastudio/binary_data_dialog.py
+@@ -174,7 +174,7 @@
+         """Keep the confidence heading on one line at normal scaling."""
+         self.ci_label.setWordWrap(False)
+         # layout-audit: allow=content-overflow-control; reason=confidence heading remains readable inside the scrollable dialog content
+-        self.ci_label.setMinimumWidth(self.ci_label.sizeHint().width())
++        self.ci_label.setFixedWidth(40)
+ 
+     def _set_content_preferred_width(self):
+         """Give dense content room before the outer policy applies its cap."""

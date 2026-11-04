@@ -181,3 +181,6 @@ both metafor and meta MH.exact. Sequential/subgroup workflows reuse this fitter;
 zero-cell sequential/subgroup combinations still need a targeted drive.
 `manuscript-export` asserts actual MH/Peto correction prose and retained
 IV/DL double-zero counts (2 in amino, 3 after adding a double-zero row).
+
+Continuous fixed entered-estimate authority cases also compare t, Knapp–Hartung
+and ad hoc inference directly with metafor, including p-values and CI bounds.

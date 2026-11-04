@@ -136,9 +136,14 @@ def test_audit_flags_technical_sections_before_headline_summary():
     }
 
 
-def test_cli_reads_json_and_emits_structured_output(tmp_path):
-    source = tmp_path / "capture.json"
-    source.write_text(json.dumps(_result()), encoding="utf-8")
+@pytest.mark.parametrize("suffix", ["json", "zip"])
+def test_cli_reads_capture_and_emits_structured_output(tmp_path, suffix):
+    source = tmp_path / f"capture.{suffix}"
+    if suffix == "zip":
+        with zipfile.ZipFile(source, "w") as bundle:
+            bundle.writestr("captures/one.json", json.dumps(_result()))
+    else:
+        source.write_text(json.dumps(_result()), encoding="utf-8")
 
     completed = subprocess.run(
         [sys.executable, str(SCRIPT), str(source)],
@@ -156,23 +161,6 @@ def test_cli_reads_json_and_emits_structured_output(tmp_path):
         "failures",
         "publication-bias",
     ]
-
-
-def test_cli_reads_capture_bundle(tmp_path):
-    source = tmp_path / "captures.zip"
-    with zipfile.ZipFile(source, "w") as bundle:
-        bundle.writestr("captures/one.json", json.dumps(_result()))
-
-    completed = subprocess.run(
-        [sys.executable, str(SCRIPT), str(source)],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
-    assert completed.returncode == 0, completed.stderr
-    assert json.loads(completed.stdout)["summary"]["sources"] == 1
 
 
 def test_frozen_regression_bundle_is_a_clean_multi_analysis_inventory():
