@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import argparse
 import os
+import json
+import time
 import subprocess
 import sys
 from datetime import datetime
@@ -210,6 +212,70 @@ def run_full_r_stack(args: argparse.Namespace) -> None:
     run(command, env=env)
 
 
+STABLE_BASELINE = "8b7796bcc840c3505c5fb0a1328cdd7682880e48"
+
+
+def run_gate(args: argparse.Namespace, env: dict[str, str]) -> None:
+    if args.lane == "typing":
+        build = Path(env["RCMS_QT6_BUILD_ROOT"])
+        command = [sys.executable, "-m", "ty", "check", "--python-platform", "win32"]
+        for path in (str(build / "generated/rc_metastudio"),
+                     str(build / "generated/rc_metastudio/forms"), ".",
+                     "src/rc_metastudio", "src", "scripts", "tests/python/gui"):
+            command += ["--extra-search-path", path]
+        run(command + ["src/rc_metastudio", "scripts", "tests", "r/RCMetaR/inst/qa"], env=env)
+    elif args.lane == "code-health":
+        run([sys.executable, "scripts/code_health.py", "--base", STABLE_BASELINE,
+             "--head", STABLE_BASELINE, "--allow-fail",
+             "--output", "artifacts/code-health/baseline.json",
+             "--report", "artifacts/code-health/baseline.txt"], env=env)
+        run([sys.executable, "scripts/code_health.py", "--base", args.base,
+             "--head", args.head, "--baseline", "artifacts/code-health/baseline.json",
+             "--output", "artifacts/code-health/final.json",
+             "--report", "artifacts/code-health/final.txt"], env=env)
+    elif args.lane == "contracts":
+        run([sys.executable, "-m", "pytest", "-q", "tests/packaging/contract"], env=env)
+    else:
+        run_pytest(["tests/python/fast", "tests/python/gui",
+                    "tests/analysis_regression/golden"], env=env)
+
+
+def run_pre_push(args: argparse.Namespace) -> None:
+    """Fail fast, retaining an honest result for every planned lane."""
+    steps = ["prepare", "typing", "code-health", "python", "contracts", "r-stack"]
+    rows = [{"step": name, "seconds": 0.0, "status": "not run"} for name in steps]
+    rows += [{"step": name, "seconds": 0.0, "status": "CI only"} for name in (
+        "Windows native Qt Core and RemainingSurfaces", "Windows package qualification",
+        "macOS native smoke, R bridge and packaging", "Linux native xcb smoke")]
+    env = dict(os.environ)
+    try:
+        for row in rows[:len(steps)]:
+            started = time.monotonic()
+            try:
+                if row["step"] == "prepare":
+                    env = prepare_qt_environment(args.build_root.resolve())
+                elif row["step"] == "r-stack":
+                    run_full_r_stack(args)
+                else:
+                    args.lane = row["step"]
+                    run_gate(args, env)
+            except (VerificationError, KeyboardInterrupt):
+                row["status"] = "fail"
+                raise
+            else:
+                row["status"] = "pass"
+            finally:
+                row["seconds"] = round(time.monotonic() - started, 2)
+    finally:
+        output = REPO_ROOT / "artifacts/verification/pre-push.json"
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps({"command": sys.argv, "platform": sys.platform,
+                                      "typing_target": "win32", "steps": rows}, indent=2) + "\n")
+        print("\n| Step | Seconds | Result |\n| --- | ---: | --- |")
+        for row in rows:
+            print(f"| {row['step']} | {row['seconds']} | {row['status']} |")
+
+
 def parser() -> argparse.ArgumentParser:
     cli = argparse.ArgumentParser(description=__doc__)
     subparsers = cli.add_subparsers(dest="lane", required=True)
@@ -253,6 +319,14 @@ def parser() -> argparse.ArgumentParser:
     r_stack.add_argument("--sync", action="store_true")
     add_rscript_options(r_stack)
     r_stack.add_argument("--build-root", default=DEFAULT_BUILD_ROOT, type=Path)
+    for name in ("pre-push", "typing", "code-health", "python", "contracts"):
+        gate = subparsers.add_parser(name)
+        add_rscript_options(gate)
+        gate.add_argument("--build-root", type=Path,
+                          default=Path(os.environ.get("RCMS_QT6_BUILD_ROOT", str(DEFAULT_BUILD_ROOT))))
+        gate.add_argument("--base", default="origin/master")
+        gate.add_argument("--head", default="HEAD")
+        gate.set_defaults(sync=False, skip_desktop=False, desktop_shard=None)
     return cli
 
 
@@ -263,8 +337,14 @@ def main(argv: list[str] | None = None) -> int:
             run_source_lane(args, smoke=True)
         elif args.lane == "fast":
             run_source_lane(args, smoke=False)
-        else:
+        elif args.lane == "r-stack":
             run_full_r_stack(args)
+        elif args.lane == "pre-push":
+            run_pre_push(args)
+        else:
+            env = dict(os.environ)
+            env["RCMS_QT6_BUILD_ROOT"] = str(args.build_root.resolve())
+            run_gate(args, env)
     except VerificationError as exc:
         print(f"verification failed: {exc}", file=sys.stderr)
         return 1

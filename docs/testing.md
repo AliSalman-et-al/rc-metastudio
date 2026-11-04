@@ -152,3 +152,5 @@ after selecting the pinned R runtime. This runs R CMD check, bridge tests, deskt
 workflows and golden compatibility. Retain the command and transcript; targeted R
 tests alone do not replace this gate. Afterwards reinstall RCMetaR into the
 persistent development library selected by `RCMS_R_LIBS`.
+
+Before pushing, run `python scripts/verify.py pre-push` in the locked development environment with the configured R runtime and generated Qt build root. It fails fast through Windows-target strict typing, the CI code-health gate (commit HEAD against origin/master), all Python/GUI/golden and packaging contracts, then the current-source R stack and full desktop matrix (`-n auto`). Commit changes before running so code health measures them. The final timing table is saved to `artifacts/verification/pre-push.json`; native platform qualification still requiring CI is explicitly labelled “CI only”. No dependency sync or reference regeneration is performed.

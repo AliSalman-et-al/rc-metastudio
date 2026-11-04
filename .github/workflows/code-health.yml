@@ -47,22 +47,10 @@ jobs:
           fi
           git cat-file -e "$base^{commit}"
           echo "sha=$base" >> "$GITHUB_OUTPUT"
-      - name: Emit stable baseline evidence
+      - name: Enforce shared code-health gates
         run: >-
-          uv run --no-sync python scripts/code_health.py
-          --base "$STABLE_BASELINE"
-          --head "$STABLE_BASELINE"
-          --allow-fail
-          --output artifacts/code-health/baseline.json
-          --report artifacts/code-health/baseline.txt
-      - name: Enforce changed-code gates
-        run: >-
-          uv run --no-sync python scripts/code_health.py
-          --base "${{ steps.base.outputs.sha }}"
-          --head "$GITHUB_SHA"
-          --baseline artifacts/code-health/baseline.json
-          --output artifacts/code-health/final.json
-          --report artifacts/code-health/final.txt
+          uv run --no-sync python scripts/verify.py code-health
+          --base "${{ steps.base.outputs.sha }}" --head "$GITHUB_SHA"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
