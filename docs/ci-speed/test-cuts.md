@@ -56,3 +56,23 @@ Transcripts are retained in `test-cuts-evidence/`.
 Python fast/gui collected cases: 741 before, 739 after (two duplicate cases
 removed; parametrization preserves four merged cases). Fast Python source lines:
 9,782 before, 9,730 after. GUI Python source lines including support: 16,063 both.
+
+Post-cut fast lane: passed in 110.87 seconds. This overlapped GUI and
+collection work, so these wall times do not establish a speedup. GUI: 364 passed,
+1 skipped in 87.80 seconds. Strict collection: 1,008 tests.
+
+## Mutation CI
+
+All five branches contain the cut commit `99dba41f3e83787933155f77aed361669472b44d`
+plus exactly one original mutation patch. Temporary Git indexes preserve the
+main working tree; patches were applied with `git apply --cached`. No local
+mutant execution or reference regeneration occurred.
+
+- [mutant-cut/csv-column-order](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/41781937859): queued at dispatch handoff; required-job failure not yet verified.
+- [mutant-cut/calculator-clipped-table](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/41781929534): in_progress at dispatch handoff; required-job failure not yet verified.
+- [mutant-cut/project-drops-year](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/41781921448): in_progress at dispatch handoff; required-job failure not yet verified.
+- [mutant-cut/ratio-reciprocal](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/41781829024): in_progress at dispatch handoff; required-job failure not yet verified.
+- [mutant-cut/large-font-about](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/41781816762): in_progress at dispatch handoff; required-job failure not yet verified.
+
+CI is pending; this PR is draft and is not qualified for merge. The broad
+semantic overlap audit and final required-job mutation outcomes remain unchecked.
