@@ -426,7 +426,6 @@ def bridge_test_command(python: str, pytest_runner: str) -> list[str | Path]:
 
 def verify(args: argparse.Namespace) -> None:
     root = args.root.resolve()
-    non_desktop = args.desktop_shard is None and not args.desktop_only
     python = (
         str(Path(args.python).absolute()) if Path(args.python).exists() else args.python
     )
@@ -447,6 +446,7 @@ def verify(args: argparse.Namespace) -> None:
 
     run([python, R_MANIFEST_VALIDATOR, "--root", root], cwd=root, env=base_env)
 
+    non_desktop = args.desktop_shard is None and not args.desktop_only
     work_dir_parent = args.work_dir.resolve() if args.work_dir else None
     if work_dir_parent is not None:
         work_dir_parent.mkdir(parents=True, exist_ok=True)
