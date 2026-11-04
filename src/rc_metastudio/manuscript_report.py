@@ -226,6 +226,16 @@ def _pooled_prose(result, values, effect, effect_metric, coefficient, statistic,
         summary.append(meaning)
 
 
+def _effect_metric(metric, section, table, vertical, coefficient):
+    if vertical:
+        metric = table.title.lower()
+    elif ',' in metric:
+        metric = section.title.removesuffix(' Summary').lower()
+    if not coefficient and metric.endswith('transformed proportion'):
+        return 'proportion'
+    return metric
+
+
 def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overall, calculation, pooled, fit, summary):
     metric = result.manuscript_metric or "effect"
     statistic = "z"
@@ -237,9 +247,7 @@ def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overa
             continue
         if 'k' in values and 'Subgroups' in values:
             fit.append(('Studies (k) (' + values['Subgroups'] + ')', values['k']))
-        effect_metric = table.title.lower() if vertical else section.title.removesuffix(' Summary').lower() if ',' in metric else metric
-        if not coefficient and effect_metric.endswith('transformed proportion'):
-            effect_metric = 'proportion'
+        effect_metric = _effect_metric(metric, section, table, vertical, coefficient)
         context = next((values[h] for h in table.headers if h.startswith(('Study added', 'Study omitted'))), table.title if vertical else effect_metric)
         effect = values.get('Term', values.get('Subgroups', context))
         if ',' in metric and effect != effect_metric:
@@ -363,8 +371,8 @@ def _presentation_cell(value, digits):
     return re.sub(r"(?<![\w.])-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)%?(?![\w.])|(?<![\w.])-?\d+\.\d+%?(?![\w.])", number, value)
 
 
-def _presentation_rows(rows, digits):
-    return tuple(tuple(value if i == 1 and row[0].endswith(" p") else _presentation_cell(value, min(3, digits)) for i, value in enumerate(row)) for row in rows)
+def _presentation_rows(rows, digits, p_column=None):
+    return tuple(tuple(value if i == p_column or (i == 1 and row[0].endswith(" p")) else _presentation_cell(value, min(3, digits)) for i, value in enumerate(row)) for row in rows)
 
 
 def _presentation_result(result):
@@ -394,7 +402,7 @@ def _primary_sections(result, text_sections, pooled, fit, level, statistic):
     template = text_sections[0]
     sections = [replace(template, title='Pooled effect', paragraphs=(() if pooled else
                          ('No structured pooled estimates are available for this workflow; the complete output is in Supplementary details.',)),
-                        tables=(ResultTable('Pooled effect', ('Effect', 'Estimate', level, 'SE', statistic, 'p'), tuple(tuple(value if i == 5 else _presentation_cell(value, min(3, result.manuscript_digits)) for i, value in enumerate(row)) for row in pooled)),)),
+                        tables=(ResultTable('Pooled effect', ('Effect', 'Estimate', level, 'SE', statistic, 'p'), _presentation_rows(pooled, result.manuscript_digits, p_column=5)),)),
                 replace(template, title='Model fit', paragraphs=(),
                         tables=(ResultTable('Model fit', ('Statistic', 'Value'), _presentation_rows(fit, result.manuscript_digits)),)),
                 _study_results(_presentation_result(result), template, level)]

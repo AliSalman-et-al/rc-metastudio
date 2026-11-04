@@ -276,10 +276,10 @@ def expected_fit_table(result, section, source):
         labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity p', 'I²': 'I²', 'τ²': 'Between-study variance (τ²)'}
         for row in data:
             context = ''
-            if 'Subgroups' in row:
-                rows.append(('Subgroup', row['Subgroups']))
             if ',' in result.manuscript_metric:
                 context += ' (' + section.title.removesuffix(' Summary') + ')'
+            if 'Subgroups' in row:
+                rows.append(('Subgroup' + context, row['Subgroups']))
             rows.extend((labels[h] + context, expected_p(v) if h == 'p-value' else v) for h, v in row.items() if h in labels)
     elif source.title == 'Test of subgroup differences' and data:
         rows.extend((label, expected_p(data[0][key]) if key == 'p-value' else data[0][key]) for key, label in (

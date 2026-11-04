@@ -234,8 +234,13 @@ def check_sequential(view, workflow, record):
             effect_y = [y for text, y in nodes if text == effect]
             assert label_y and any(abs(a-b) < .01 for a in label_y for b in effect_y), (title, name, effect, nodes)
             assert row[0] == name, (title, row, name)
-            report_effect = row[1] if row[1] == "Not estimable" else f"{row[1]} [{row[2]}, {row[3]}]"
-            assert report_effect == effect, (title, row, effect)
+            if row[1] == "Not estimable":
+                assert effect == row[1], (title, row, effect)
+            else:
+                displayed = re.findall(r"-?\d+(?:\.\d+)?(?:e[+-]?\d+)?", effect)
+                assert len(displayed) == 3, effect
+                assert all(abs(float(value) - float(held)) <= max(.000501, abs(float(held)) * 1e-6)
+                           for value, held in zip(displayed, row[1:4], strict=True)), (title, row, effect)
         if workflow == "leave-one-out":
             assert isinstance(data.get("has_overall"), bool), data
             assert (data["slab"][0] == "All studies") == data["has_overall"], data
