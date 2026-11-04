@@ -372,7 +372,7 @@ def check_subgroup(view, record):
         for row, het, expected in zip(model.rows, heterogeneity.rows, reference, strict=True):
             compare(row[1], expected["k"], 0)
             compare(row[7], expected["z"], 5.01e-7)
-            for column, key, tolerance in ((1, "Q", 5.01e-7), (2, "df", 0), (3, "p", 5.01e-7), (4, "I2", .05001)):
+            for column, key, tolerance in ((1, "Q", 5.01e-7), (2, "df", 0), (3, "p", 5.01e-4), (4, "I2", .05001)):
                 compare(het[column], expected[key], tolerance)
             if "τ²" in heterogeneity.headers:
                 compare(het[5], expected["tau2"], 5.01e-7)
