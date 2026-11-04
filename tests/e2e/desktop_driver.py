@@ -768,6 +768,8 @@ def sheets(app, window):
     original = copy.deepcopy(window.model.dataset)
     window.resize(1600, 828)
     app.processEvents()
+    original_size = window.size()
+    original_tab = tabs.currentIndex()
     window.resize(1024, 700)
     app.processEvents()
     for index in range(tabs.count()):
@@ -781,6 +783,9 @@ def sheets(app, window):
         assert viewport.rect().intersected(visible).width() > 24 and viewport.rect().intersected(visible).height() >= rect.height(), (visible, viewport.rect())
         mouse_click(tabs, QtCore.Qt.MouseButton.LeftButton, rect.center())
         assert window.model.current_sheet_id == tabs.tabData(index)
+    window.resize(original_size)
+    tabs.setCurrentIndex(original_tab)
+    app.processEvents()
     record_step("sheets-initial", window)
     screens = WORK / "sheets-screens"
     screens.mkdir(exist_ok=True)
