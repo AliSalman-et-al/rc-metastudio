@@ -496,7 +496,7 @@ def verify(args: argparse.Namespace) -> None:
             env=env,
         )
 
-        # PR #543's desktop shards skip this non-desktop qualification.
+        # Desktop shards skip this non-desktop qualification.
         if getattr(args, "desktop_shard", None) is None:
             verify_analysis_authorities(root, rscript, env)
         verify_manifest_versions(root, python, rscript, env)
