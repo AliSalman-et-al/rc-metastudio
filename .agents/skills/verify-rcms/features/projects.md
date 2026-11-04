@@ -10,6 +10,8 @@ Users open an `.rcms` project, edit studies, undo or redo changes, save/reopen t
 
 These add to `editing`, `csv`, and the eight original New Dataset workflows plus the HR/IRR metric variants. They do not establish structural deletion, every navigation state, all dirty-close responses, shortcuts, native picker interaction, earlier import pages, or Excel import. Use the targeted recipes below when those paths change.
 
+`project-shell` verifies Escape dismisses Quick start and cancels Create dataset; `sheets` verifies Escape discards an inline sheet rename.
+
 ## Sub-features
 
 - `project-edit`: Unicode study rename, Return advances, dirty state, undo/redo.

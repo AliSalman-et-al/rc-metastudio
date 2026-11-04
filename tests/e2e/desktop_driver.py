@@ -786,6 +786,14 @@ def sheets(app, window):
     window.resize(original_size)
     tabs.setCurrentIndex(original_tab)
     app.processEvents()
+    original_name = window.model.current_sheet.name
+    window._rename_sheet(tabs.currentIndex())
+    edit = required(window.sheet_name_edit)
+    edit.setText("Discard this rename")
+    key_click(edit, QtCore.Qt.Key.Key_Escape)
+    assert window.sheet_name_edit is None
+    assert window.model.current_sheet.name == original_name
+    record_step("sheets-rename-escape-cancelled", window, name=original_name)
     record_step("sheets-initial", window)
     screens = WORK / "sheets-screens"
     screens.mkdir(exist_ok=True)
