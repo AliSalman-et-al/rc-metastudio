@@ -46,7 +46,7 @@ class NumericSummaryDelegate(QStyledItemDelegate):
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)
         header = index.model().headerData(index.column(), Qt.Orientation.Horizontal)
-        if header in {"SE", "Lower", "Upper"}:
+        if header in {"SE", "Variance", "Lower", "Upper"}:
             number, valid = qt_text.parse_decimal(index.data())
             if valid:
                 option.text = format_calculator_display_value(number)
@@ -569,6 +569,8 @@ def update_calculator_readout(dialog, data_type):
     source = calculator_effect_source(
         analysis_unit, dialog.arm_names, current_effect, arm_key, confidence_multiplier
     )
+    if data_type == "continuous" and getattr(dialog, "_active_input_mode", "estimate") != "estimate":
+        source = "derived_preview"
     est, lower, upper = analysis_unit.get_effect_and_ci_for_source(
         source, current_effect, arm_key, confidence_multiplier
     )

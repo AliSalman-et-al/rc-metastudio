@@ -358,6 +358,8 @@ class DatasetTableModel(QAbstractTableModel):
         formatted = f"{float_var:.{precision}f}"
         if ratio and float_var > 0 and float(formatted) == 0:
             return "<" + f"{10 ** -precision:.{precision}f}"
+        if float_var != 0 and float(formatted) == 0:
+            return format(float_var, ".6g")
         return formatted
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):

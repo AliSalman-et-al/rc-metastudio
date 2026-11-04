@@ -210,11 +210,35 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     def _input_mode_changed(self):
         mode = self.input_mode_combo.currentData()
         mode_changed = mode != getattr(self, "_active_input_mode", None)
+        previous_mode = getattr(self, "_active_input_mode", None)
         self._active_input_mode = mode
         self.content_scroll.setVisible(mode != "estimate")
         self.simple_group.setVisible(mode == "summary")
         self.pre_post_group_box.setVisible(mode == "pre-post")
+        if mode_changed and previous_mode is not None:
+            self._refresh_active_inputs()
         self._content_layout_changed(mode_changed=mode_changed)
+
+    def _refresh_active_inputs(self):
+        mode = self.input_mode_combo.currentData()
+        if mode == "estimate":
+            return
+        self.analysis_unit.set_effect_and_ci(
+            self.current_effect, self.arm_key, None, None, None,
+            confidence_multiplier=self.confidence_multiplier,
+        )
+        if mode == "pre-post":
+            # Summary rows are derived from the visible pre/post tables in this mode.
+            for row in range(self.simple_table.rowCount()):
+                for column in range(self.simple_table.columnCount()):
+                    self._set_val(row, column, None, supplied=False)
+            self._copy_raw_data_from_table_to_analysis_unit()
+            self.impute_pre_post_data(self.g1_pre_post_table, 0)
+            self.impute_pre_post_data(self.g2_pre_post_table, 1)
+        else:
+            self._copy_raw_data_from_table_to_analysis_unit()
+            self.update_effect_from_raw_data()
+        self.set_current_effect()
 
     def _configure_tables(self):
         """Give each data grid its own overflow and user-adjustable columns."""
@@ -231,7 +255,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
             header = table.horizontalHeader()
             header = required(header, "continuous table header")
-            header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+            header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
             header.setStretchLastSection(False)
             table.resizeColumnsToContents()
             table.resizeRowsToContents()
@@ -601,6 +625,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
     def accept(self):
         if not getattr(self, "_validation_failed", False):
+            self._refresh_active_inputs()
             super().accept()
 
     def val_changed(self, val_str):
@@ -735,7 +760,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             arm_key=self.arm_key,
             data_type="continuous",
             confidence_multiplier=self.confidence_multiplier,
-            source=calc_fncs.calculator_effect_source(
+            source="derived_preview" if getattr(self, "_active_input_mode", "estimate") != "estimate" else calc_fncs.calculator_effect_source(
                 self.analysis_unit,
                 self.arm_names,
                 self.current_effect,
