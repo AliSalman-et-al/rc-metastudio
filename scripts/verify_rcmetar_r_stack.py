@@ -426,6 +426,7 @@ def bridge_test_command(python: str, pytest_runner: str) -> list[str | Path]:
 
 def verify(args: argparse.Namespace) -> None:
     root = args.root.resolve()
+    non_desktop = args.desktop_shard is None and not args.desktop_only
     python = (
         str(Path(args.python).absolute()) if Path(args.python).exists() else args.python
     )
@@ -477,7 +478,7 @@ def verify(args: argparse.Namespace) -> None:
             env=env,
         )
         tarball = built_RCMetaR_tarball(work_dir)
-        if args.desktop_shard is None and not args.desktop_only:
+        if non_desktop:
             run(
                 [
                     r_exe,
@@ -498,7 +499,7 @@ def verify(args: argparse.Namespace) -> None:
         )
 
         env["RCMS_R_STACK_REQUIRED"] = "1"
-        if args.desktop_shard is None and not args.desktop_only:
+        if non_desktop:
             verify_analysis_authorities(root, rscript, env)
             verify_manifest_versions(root, python, rscript, env)
             verify_reitsma_visual_evidence(root, rscript, env, work_dir)
@@ -521,7 +522,7 @@ def verify(args: argparse.Namespace) -> None:
             ]
         if not args.skip_desktop:
             run(desktop_command, cwd=root, env=env)
-        if args.desktop_shard is None and not args.desktop_only:
+        if non_desktop:
             run(
                 [
                     python,
