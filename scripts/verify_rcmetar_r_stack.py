@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from importlib import metadata
 from pathlib import Path
 
@@ -395,6 +396,26 @@ def verify_reitsma_visual_evidence(
     step("Reitsma visual release evidence verified: 21 cases, deterministic hashes and normalized PDF/descriptor contracts")
 
 
+def verify_analysis_authorities(root: Path, rscript: Path, env: dict[str, str]) -> None:
+    report = root / "artifacts/verification/rcms/authorities.json"
+    report.parent.mkdir(parents=True, exist_ok=True)
+    report.unlink(missing_ok=True)
+    started = time.monotonic()
+    run(
+        [rscript, root / ".agents/skills/verify-rcms/scripts/analysis_authorities.R",
+         report, "--installed"],
+        cwd=root, env=env,
+    )
+    result = json.loads(report.read_text(encoding="utf-8"))
+    cases = result["cases"]
+    if (result.get("passed") is not True or not cases
+            or result.get("case_count") != len(cases)
+            or any(case.get("passed") is not True for case in cases)):
+        raise VerificationError("Statistical authority matrix contains failed or missing cases")
+    step(f"Statistical authorities verified: {len(cases)} cases passed "
+         f"in {time.monotonic() - started:.2f}s")
+
+
 def bridge_test_command(python: str, pytest_runner: str) -> list[str | Path]:
     # Always invoke the exact interpreter selected by --python.  In
     # particular, `uv run` can resolve a different project interpreter and
@@ -475,6 +496,9 @@ def verify(args: argparse.Namespace) -> None:
             env=env,
         )
 
+        # PR #543's desktop shards skip this non-desktop qualification.
+        if getattr(args, "desktop_shard", None) is None:
+            verify_analysis_authorities(root, rscript, env)
         verify_manifest_versions(root, python, rscript, env)
         verify_reitsma_visual_evidence(root, rscript, env, work_dir)
 

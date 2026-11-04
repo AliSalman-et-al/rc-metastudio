@@ -2,9 +2,15 @@
 # Run from the repository root with the manifest-pinned R library selected.
 options(warn=1)
 args <- commandArgs(trailingOnly=TRUE)
-stopifnot(length(args) == 1L)
+stopifnot(length(args) %in% c(1L, 2L))
 report <- args[[1L]]
-suppressPackageStartupMessages(pkgload::load_all("r/RCMetaR", quiet=TRUE))
+if (length(args) == 2L) {
+  stopifnot(args[[2L]] == "--installed")
+  suppressPackageStartupMessages(library(RCMetaR))
+  cat("Installed RCMetaR:", find.package("RCMetaR"), "\n")
+} else {
+  suppressPackageStartupMessages(pkgload::load_all("r/RCMetaR", quiet=TRUE))
+}
 policy <- jsonlite::fromJSON("config/r-dependencies.json", simplifyVector=FALSE)
 authorities <- list()
 for (dependency in policy$direct_RCMetaR_dependencies) {
