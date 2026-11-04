@@ -184,3 +184,5 @@ IV/DL double-zero counts (2 in amino, 3 after adding a double-zero row).
 
 Continuous fixed entered-estimate authority cases also compare t, Knapp–Hartung
 and ad hoc inference directly with metafor, including p-values and CI bounds.
+
+The sample diagnostic drive checks that visible method-page labels and value controls stay within the horizontal scroll viewport after deferred form replacements are disposed.

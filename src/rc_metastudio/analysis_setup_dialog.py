@@ -435,22 +435,18 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.content_scroll_area.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
-        # Keep nested content from exporting its unwrapped preferred width to
-        # the outer scroll area. The controls still expand to the viewport.
-        for widget in (
-            self.content_scroll_area_widget,
-            self.specs_tab,
-            self.methods_tab,
-            self.parameter_grp_box,
-        ):
-            # layout-audit: allow=content-overflow-control; reason=nested scroll content must negotiate down to its viewport
+        # Preserve natural row heights, but let wrapping forms negotiate their
+        # width down to the viewport instead of exporting unwrapped text widths.
+        for widget in (self.content_scroll_area_widget, self.specs_tab,
+                       self.methods_tab, self.parameter_grp_box):
+            # layout-audit: allow=content-overflow-control; reason=scroll content retains vertical minima while fitting the viewport width
             widget.setMinimumWidth(0)
-        # The parameter group contains the dynamic, wrapping content. Keep its
-        # unwrapped size hint from widening the whole tab, while leaving the
-        # method selector's own preferred width available to the outer grid.
         self.parameter_grp_box.setSizePolicy(
             QSizePolicy.Policy.Ignored,
             self.parameter_grp_box.sizePolicy().verticalPolicy(),
+        )
+        self.content_scroll_layout.setSizeConstraint(
+            QtWidgets.QLayout.SizeConstraint.SetDefaultConstraint
         )
         self.method_lbl.setSizePolicy(
             QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred
@@ -1721,10 +1717,22 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.setWindowTitle("Method and parameters")
         self.method_lbl.setText("Analysis method: " + diagnostic_metric_group_display_label("sens_spec"))
 
+        # Stack the method panels while keeping labels beside their selectors.
+        for widget in (self.lr_dor_method_lbl, self.lr_dor_method_cbo_box,
+                       self.lr_dor_parameter_grp_box, self.shared_diagnostic_params_box):
+            self.gridLayout.removeWidget(widget)
+        self.gridLayout.addWidget(self.lr_dor_method_lbl, 2, 0)
+        self.gridLayout.addWidget(self.lr_dor_method_cbo_box, 2, 1)
+        self.gridLayout.addWidget(self.lr_dor_parameter_grp_box, 3, 0, 1, 2)
+        self.gridLayout.addWidget(self.shared_diagnostic_params_box, 4, 0, 1, 2)
+        self.lr_dor_method_lbl.setAlignment(
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+        )
         self.shared_diagnostic_params_box.show()
         self.shared_diagnostic_params_box.setLayout(QGridLayout())
 
         lr_label = diagnostic_metric_group_display_label("lr_dor")
+        self.lr_dor_method_lbl.setWordWrap(True)
         self.lr_dor_method_lbl.show()
         self.lr_dor_method_cbo_box.show()
         self.lr_dor_parameter_grp_box.show()

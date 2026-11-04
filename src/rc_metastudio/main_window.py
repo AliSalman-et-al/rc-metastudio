@@ -1575,7 +1575,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._sheet_strip_timer.start(0)
 
     def _update_sheet_strip(self):
+        self.sheet_tabs.setMinimumSize(self.sheet_tabs.sizeHint())
+        self.sheet_tab_content.resize(self.sheet_tab_content.sizeHint())
+        self.sheet_tab_scroll.setFixedHeight(self.sheet_tab_content.sizeHint().height())
         self.sheet_tab_scroll.setMaximumWidth(self.sheet_tab_content.sizeHint().width() + 2)
+        required(self.sheet_strip.layout(), "sheet strip layout").activate()
         overflow = self.sheet_tab_scrollbar.maximum() > 0
         self.sheet_scroll_left.setVisible(overflow)
         self.sheet_scroll_right.setVisible(overflow)
@@ -1605,10 +1609,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             if sheet.id == self.model.current_sheet_id:
                 self.sheet_tabs.setCurrentIndex(index)
         self.sheet_tabs.blockSignals(False)
+        self.sheet_tabs.setMinimumSize(self.sheet_tabs.sizeHint())
         content = self.sheet_tab_content
-        content.adjustSize()
+        required(content.layout(), "sheet tab content layout").activate()
+        content.resize(content.sizeHint())
         self.sheet_tab_scroll.setFixedHeight(content.sizeHint().height())
         self.sheet_strip.setVisible(self.sheet_tabs.count() > 0)
+        self._schedule_sheet_strip_update()
         QtCore.QTimer.singleShot(0, self._scroll_to_sheet_tab)
         self._update_swap_arms_enabled()
 

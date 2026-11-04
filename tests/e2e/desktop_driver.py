@@ -300,6 +300,15 @@ def analyze(app, window, method):
     precision = precision_label.buddy()
     assert isinstance(precision, QtWidgets.QSpinBox)
     precision.setValue(3)
+    QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+    app.processEvents()
+    record_step("analysis-layout", dialog)
+    if dialog.data_type == "diagnostic":
+        viewport = dialog.content_scroll_area.viewport()
+        for control in dialog.methods_tab.findChildren(QtWidgets.QWidget):
+            if control.isVisible() and isinstance(control, (QtWidgets.QLabel, QtWidgets.QComboBox, QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
+                left = control.mapTo(viewport, QtCore.QPoint()).x()
+                assert left >= 0 and left + control.width() <= viewport.width(), (control.objectName(), left, control.width(), viewport.width(), control.text() if isinstance(control, QtWidgets.QLabel) else "")
     record_step("analysis-configured", dialog, method=method, digits=3)
     button = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
     assert button.isEnabled()
@@ -763,6 +772,24 @@ def sheets(app, window):
     assert not tabs._updating_palette
     original = copy.deepcopy(window.model.dataset)
     window.resize(1600, 828)
+    app.processEvents()
+    original_size = window.size()
+    original_tab = tabs.currentIndex()
+    window.resize(1024, 700)
+    app.processEvents()
+    for index in range(tabs.count()):
+        tabs.setCurrentIndex(index)
+        app.processEvents()
+        rect = tabs.tabRect(index)
+        viewport = window.sheet_tab_scroll.viewport()
+        visible = QtCore.QRect(tabs.mapTo(viewport, rect.topLeft()), rect.size())
+        assert tabs.fontMetrics().horizontalAdvance(tabs.tabText(index)) > 0
+        assert rect.width() > 24
+        assert viewport.rect().intersected(visible).width() > 24 and viewport.rect().intersected(visible).height() >= rect.height(), (visible, viewport.rect())
+        mouse_click(tabs, QtCore.Qt.MouseButton.LeftButton, rect.center())
+        assert window.model.current_sheet_id == tabs.tabData(index)
+    window.resize(original_size)
+    tabs.setCurrentIndex(original_tab)
     app.processEvents()
     record_step("sheets-initial", window)
     screens = WORK / "sheets-screens"

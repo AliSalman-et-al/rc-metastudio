@@ -476,6 +476,10 @@ def run(
                     dialog.contour_funnel_check.setChecked(True)
                     dialog.trim_fill_check.setChecked(True)
                     dialog.extrapolation_check.setChecked(True)
+                app.processEvents()
+                controls = [dialog.sampling_confidence_combo, dialog.include_tau2_check, dialog.contour_levels_edit]
+                rects = [QtCore.QRect(control.mapTo(dialog, QtCore.QPoint()), control.size()) for control in controls]
+                assert all(not first.intersects(second) for i, first in enumerate(rects) for second in rects[i + 1:]), rects
                 record(
                     "small-study-matrix-configured",
                     dialog,

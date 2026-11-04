@@ -66,3 +66,5 @@ Invalid contour levels must keep the modal recoverable, show `failure_label`, re
 See [ratios.md](ratios.md) for the compact input, original-source persistence, analysis, plot and small-study workflows. Run `ratios-hr` and `ratios-irr` after changes affecting these families; the broader shared-change lane remains required.
 
 The native nine-study IRR sample drive also exercises invalid contour levels (`95,100`), the explicit error, enabled OK after dismissal, correction to `85,95,99`, and successful ordinary/contour results. The current error presentation uses the generic unexpected-error dialog and leaves the busy indicator visible until retry; record this presentation limitation separately from successful recovery. This native evidence does not turn that recipe into an automated test.
+
+The extended small-study drives assert that the confidence selector, pseudo-confidence-region checkbox and contour-level editor do not overlap.
