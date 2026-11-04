@@ -888,7 +888,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def show_quick_start(self):
         dialog = QDialog(self)
-        dialog.setWindowTitle("RC MetaStudio quick start")
+        dialog.setWindowTitle("Quick start")
         layout = QtWidgets.QVBoxLayout(dialog)
         text = QtWidgets.QTextBrowser(dialog)
         text.setPlainText(
