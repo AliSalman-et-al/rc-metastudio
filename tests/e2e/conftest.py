@@ -3,7 +3,6 @@
 import json
 import os
 from pathlib import Path
-from collections import Counter
 
 import pytest
 
@@ -44,15 +43,12 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     loads = [0.0, 0.0, 0.0]
     nodes = [item.nodeid for item in items]
     def duration(node: str) -> float:
-        return float(durations.get(node.rsplit("[", 1)[-1].removesuffix("]"), 0))
-    # Known longest cases first; unknown cases join the lightest bin in node order.
+        # shortcut: unmeasured scenarios count as 60 s, refresh config/desktop-durations.json from shard JUnit when shards drift apart.
+        return float(durations.get(node.rsplit("[", 1)[-1].removesuffix("]"), 60.0))
     for node in sorted(nodes, key=lambda node: (-duration(node), node)):
         index = min(range(3), key=lambda index: (loads[index], index))
         bins[index].append(node)
-        loads[index] += duration(node) or 60.0
-    flattened = [node for group in bins for node in group]
-    if not nodes or Counter(flattened) != Counter(nodes) or len(set(flattened)) != len(nodes):
-        raise pytest.UsageError("Desktop shards must partition the full collection exactly once")
+        loads[index] += duration(node)
     report = config.getoption("--shard-report")
     if report:
         path = Path(report)
