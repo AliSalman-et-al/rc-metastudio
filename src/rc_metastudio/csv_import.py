@@ -47,6 +47,37 @@ class CsvImportResult:
         }
 
 
+def read_rows(
+    path: str | Path,
+    *,
+    has_headers: bool,
+    from_excel: bool,
+    delimiter: str = ",",
+    quotechar: str = '"',
+    worksheet: str | None = None,
+    year_column: int | None = None,
+    numeric_columns: Iterable[int] = (),
+    notices: list[str] | None = None,
+) -> tuple[list[str], list[list[str]]]:
+    """Read file cells, omitting fully blank rows from import and preview."""
+    suffix = Path(path).suffix.lower()
+    if suffix == ".xls":
+        raise CsvImportError("Save this workbook as .xlsx before importing it.")
+    if suffix == ".xlsx":
+        headers, rows, _names, _selected = read_xlsx(path, worksheet, year_column=year_column, numeric_columns=numeric_columns, notices=notices)
+    else:
+        with Path(path).open(encoding="utf-8-sig", newline="") as stream:
+            reader = (
+                csv.reader(stream, dialect="excel")
+                if from_excel
+                else csv.reader(stream, delimiter=delimiter, quotechar=quotechar)
+            )
+            headers = next(reader, []) if has_headers else []
+            rows = list(reader)
+    rows = [row for row in rows if any(cell.strip() for cell in row)]
+    return headers, rows
+
+
 def parse_csv(
     path: str | Path,
     *,
@@ -63,22 +94,15 @@ def parse_csv(
     notices: list[str] | None = None,
 ) -> CsvImportResult:
     """Read and validate rows; mapping index -1 leaves an optional field empty."""
-    suffix = Path(path).suffix.lower()
-    if suffix == ".xls":
-        raise CsvImportError("Save this workbook as .xlsx before importing it.")
-    if suffix == ".xlsx":
-        headers, rows, _names, _selected = read_xlsx(path, worksheet, year_column=(column_mapping[year_column] if column_mapping else year_column), numeric_columns=set(column_mapping[1:] if column_mapping else range(1, len(expected_headers))), notices=notices)
+    headers, rows = read_rows(
+        path, has_headers=has_headers, from_excel=from_excel,
+        delimiter=delimiter, quotechar=quotechar, worksheet=worksheet,
+        year_column=column_mapping[year_column] if column_mapping else year_column,
+        numeric_columns=column_mapping[1:] if column_mapping else range(1, len(expected_headers)),
+        notices=notices,
+    )
+    if Path(path).suffix.lower() == ".xlsx":
         has_headers = True
-    else:
-        with Path(path).open(encoding="utf-8-sig", newline="") as stream:
-            reader = (
-                csv.reader(stream, dialect="excel")
-                if from_excel
-                else csv.reader(stream, delimiter=delimiter, quotechar=quotechar)
-            )
-            headers = next(reader, []) if has_headers else []
-            rows = list(reader)
-    rows = [row for row in rows if any(cell.strip() for cell in row)]
     if header_aliases:
         headers = [header_aliases.get(header.casefold(), header) for header in headers]
 

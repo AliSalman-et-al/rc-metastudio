@@ -1369,7 +1369,6 @@ def csv_import(app, window):
     app.processEvents()
     page = wizard.currentPage()
     assert isinstance(page, main_wizard.CsvImportPage)
-    assert isinstance(page, main_wizard.CsvImportPage)
     with patch.object(
         QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(csv), "")
     ):
@@ -1418,6 +1417,31 @@ def csv_import(app, window):
         dose=reopened.covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == "Dose")],
         region=reopened.covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == "Region")],
     )
+
+    effects_path = WORK / "reported-effects.csv"
+    effects_path.write_text(
+        "Study,Year,OR,Lower,Upper\nReported A,2020,0.5,0.2,1.25\nReported B,2021,0.8,0.4,1.6\n",
+        encoding="utf-8",
+    )
+    effects_wizard = main_wizard.MainWizard(path="csv_import")
+    effects_wizard.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions", effect="OR", metric_choices=[], name=""))
+    effects_wizard.setStartId(main_wizard.Page_CsvImport)
+    effects_wizard.restart()
+    effects_wizard.show()
+    app.processEvents()
+    effects_page = effects_wizard.currentPage()
+    assert isinstance(effects_page, main_wizard.CsvImportPage)
+    effects_page.load_file(str(effects_path))
+    assert all(control.currentData() is None for control in effects_page.mapping_controls[2:6])
+    assert effects_page.isComplete(), effects_page.import_status.text()
+    assert effects_page.csv_data()["data"][0][2:9] == ["", "", "", "", "0.5", "0.2", "1.25"]
+    record_step("csv-effects-only-preview", effects_wizard, file=str(effects_path))
+    window._handle_wizard_results(effects_wizard.get_results())
+    effects_wizard.close()
+    assert window.sheet_tabs.tabText(window.sheet_tabs.currentIndex()) == "reported-effects"
+    assert [study.label for study in window.model.get_studies(False)] == ["Reported A", "Reported B"]
+    assert float(window.model.data(window.model.index(0, window.model.OUTCOMES[0]))) == 0.5
+    record_step("csv-effects-only-imported", window, rows=2)
 
 
 def plot_edit(app, window):
@@ -2085,7 +2109,7 @@ errors = []
 
 def dismiss_unexpected_messages():
     for widget in app.topLevelWidgets():
-        if isinstance(widget, QtWidgets.QMessageBox) and widget.isVisible() and not widget.property("verificationExpectedMessage"):
+        if isinstance(widget, QtWidgets.QMessageBox) and widget.isVisible() and not widget.property("verificationExpectedMessage") and not app.property("verificationExpectingMessageBox"):
             errors.append(widget.text())
             widget.setProperty("verificationExpectedMessage", True)
             record_step("unexpected-dialog", widget, message=widget.text())
