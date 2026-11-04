@@ -334,6 +334,14 @@ def _materialize_retained_evidence(evidence: dict, root: Path) -> None:
     )
 
 
+def _write_inventory(path: Path, record: dict, inventory: dict) -> None:
+    inventory["file_count"] = len(inventory["files"])
+    inventory["total_bytes"] = sum(item["size"] for item in inventory["files"])
+    path.write_text(json.dumps(inventory, sort_keys=True), encoding="utf-8")
+    record["size"] = path.stat().st_size
+    record["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 @pytest.mark.parametrize("target", ["macos-arm64"])
 def test_native_macos_evidence_accepts_the_complete_locked_contract(target):
     validate_evidence(_valid_evidence(target), target)
@@ -900,13 +908,7 @@ def test_deployment_inventory_rejects_incoherent_qt_payloads_and_aliases(
         inventory_path = root / record["retained_path"]
         inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
         mutation(inventory["files"])
-        inventory["file_count"] = len(inventory["files"])
-        inventory["total_bytes"] = sum(item["size"] for item in inventory["files"])
-        inventory_path.write_text(
-            json.dumps(inventory, sort_keys=True), encoding="utf-8"
-        )
-        record["size"] = inventory_path.stat().st_size
-        record["sha256"] = hashlib.sha256(inventory_path.read_bytes()).hexdigest()
+        _write_inventory(inventory_path, record, inventory)
 
         with pytest.raises(EvidenceError):
             validate_evidence(evidence, "macos-arm64", evidence_dir=root)
@@ -996,13 +998,7 @@ def test_deployment_inventory_requires_exact_qt_directory_aliases(
         inventory_path = root / record["retained_path"]
         inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
         mutation(inventory["files"])
-        inventory["file_count"] = len(inventory["files"])
-        inventory["total_bytes"] = sum(item["size"] for item in inventory["files"])
-        inventory_path.write_text(
-            json.dumps(inventory, sort_keys=True), encoding="utf-8"
-        )
-        record["size"] = inventory_path.stat().st_size
-        record["sha256"] = hashlib.sha256(inventory_path.read_bytes()).hexdigest()
+        _write_inventory(inventory_path, record, inventory)
 
         with pytest.raises(EvidenceError, match=expected_error):
             validate_evidence(evidence, "macos-arm64", evidence_dir=root)
@@ -1042,13 +1038,7 @@ def test_deployment_inventory_rejects_displaced_runtime_symlinks(tmp_path, monke
                 "resolved_path": "Contents/Resources/QtCore",
             }
         )
-        inventory["file_count"] = len(inventory["files"])
-        inventory["total_bytes"] = sum(item["size"] for item in inventory["files"])
-        inventory_path.write_text(
-            json.dumps(inventory, sort_keys=True), encoding="utf-8"
-        )
-        record["size"] = inventory_path.stat().st_size
-        record["sha256"] = hashlib.sha256(inventory_path.read_bytes()).hexdigest()
+        _write_inventory(inventory_path, record, inventory)
 
         with pytest.raises(EvidenceError, match="unrecognized Qt deployment symlink"):
             validate_evidence(evidence, "macos-arm64", evidence_dir=root)
@@ -1079,11 +1069,7 @@ def test_deployment_inventory_allows_unrelated_shiboken_prose_and_data(
                 "architectures": [],
             }
         )
-    inventory["file_count"] = len(inventory["files"])
-    inventory["total_bytes"] = sum(item["size"] for item in inventory["files"])
-    inventory_path.write_text(json.dumps(inventory, sort_keys=True), encoding="utf-8")
-    record["size"] = inventory_path.stat().st_size
-    record["sha256"] = hashlib.sha256(inventory_path.read_bytes()).hexdigest()
+    _write_inventory(inventory_path, record, inventory)
 
     validate_evidence(evidence, "macos-arm64", evidence_dir=tmp_path)
 
@@ -1181,11 +1167,7 @@ def test_deployment_inventory_resolves_a_long_symlink_chain_iteratively(
                 "resolved_path": target,
             }
         )
-    inventory["file_count"] = len(inventory["files"])
-    inventory["total_bytes"] = sum(item["size"] for item in inventory["files"])
-    inventory_path.write_text(json.dumps(inventory, sort_keys=True), encoding="utf-8")
-    record["size"] = inventory_path.stat().st_size
-    record["sha256"] = hashlib.sha256(inventory_path.read_bytes()).hexdigest()
+    _write_inventory(inventory_path, record, inventory)
 
     validate_evidence(evidence, "macos-arm64", evidence_dir=tmp_path)
 
@@ -1290,13 +1272,7 @@ def test_deployment_inventory_resolves_symlink_graph_and_rejects_forgery(
         inventory_path = root / record["retained_path"]
         inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
         mutation(inventory["files"])
-        inventory["file_count"] = len(inventory["files"])
-        inventory["total_bytes"] = sum(item["size"] for item in inventory["files"])
-        inventory_path.write_text(
-            json.dumps(inventory, sort_keys=True), encoding="utf-8"
-        )
-        record["size"] = inventory_path.stat().st_size
-        record["sha256"] = hashlib.sha256(inventory_path.read_bytes()).hexdigest()
+        _write_inventory(inventory_path, record, inventory)
 
         with pytest.raises(EvidenceError, match=expected_error):
             validate_evidence(evidence, "macos-arm64", evidence_dir=root)
