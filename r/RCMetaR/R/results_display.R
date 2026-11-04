@@ -546,7 +546,7 @@ rcmetar.sequential.labels <- function(study.names, workflow, has.overall) {
   if (identical(workflow, "cumulative")) {
     return(sprintf("%s (k = %d)", study.names, seq_along(study.names)))
   }
-  c(if (has.overall) "All studies", paste0("Study omitted: ", study.names))
+  c(if (has.overall) "All studies", study.names)
 }
 
 create.overall.display <- function(res, study.names, params, model.title, data.type, workflow, sample.sizes=NULL) {

@@ -36,6 +36,7 @@ rcmetar.truncate.plot.display.text <- function(value, limit=72L) {
 }
 
 rcmetar.normalize.plot.text.params <- function(params) {
+    params$digits <- min(3L, display.digits(params))
     for (name in c("fp_xlabel", "bp_xlabel")) {
         if (name %in% names(params) && rcmetar.is.plot.default.text(params[[name]])) {
             params[[name]] <- NULL

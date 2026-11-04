@@ -211,7 +211,10 @@ def expected_effect_rows(result, section, overall, calculation):
         metric = table.title.lower() if vertical else section.title.removesuffix(' Summary').lower() if ',' in result.manuscript_metric else result.manuscript_metric or 'effect'
         if table.title != 'Regression coefficients' and metric.endswith('transformed proportion'):
             metric = 'proportion'
-        rows.extend(expected_effect_values(values, headers, low, high, metric, vertical, table.title, overall, calculation))
+        effects = expected_effect_values(values, headers, low, high, metric, vertical, table.title, overall, calculation)
+        if ',' in result.manuscript_metric:
+            effects = tuple((metric.capitalize() + ': ' + row[0], *row[1:]) if row[0].lower() != metric else row for row in effects)
+        rows.extend(effects)
     return rows
 
 
@@ -272,7 +275,9 @@ def expected_fit_table(result, section, source):
     elif source.title.endswith('Heterogeneity') or source.title == 'Residual heterogeneity':
         labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity p', 'I²': 'I²', 'τ²': 'Between-study variance (τ²)'}
         for row in data:
-            context = (' (' + row['Subgroups'] + ')' if 'Subgroups' in row else '')
+            context = ''
+            if 'Subgroups' in row:
+                rows.append(('Subgroup', row['Subgroups']))
             if ',' in result.manuscript_metric:
                 context += ' (' + section.title.removesuffix(' Summary') + ')'
             rows.extend((labels[h] + context, expected_p(v) if h == 'p-value' else v) for h, v in row.items() if h in labels)
@@ -314,9 +319,10 @@ def assert_exports(view, data):
 
 def presentation_rows(rows, digits):
     from decimal import Decimal
-    return tuple(tuple(re.sub(r"(?<![\w.])-?\d+\.\d+%?(?![\w.])",
-                             lambda m: f"{Decimal(m[0][:-1]):.1f}%" if m[0].endswith("%") else f"{Decimal(m[0]):.{digits}f}", cell)
-                       for cell in row) for row in rows)
+    digits = min(3, digits)
+    return tuple(tuple(cell if i == 1 and row[0].endswith(" p") else re.sub(r"(?<![\w.])-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)%?(?![\w.])|(?<![\w.])-?\d+\.\d+%?(?![\w.])",
+                             lambda m: f"{Decimal(m[0][:-1]):.1f}%" if m[0].endswith("%") else f"{Decimal(m[0]):.2e}" if Decimal(m[0]) and abs(Decimal(m[0])) < Decimal(10) ** -digits else f"{Decimal(m[0]):.{digits}f}", cell)
+                       for i, cell in enumerate(row)) for row in rows)
 
 
 def assert_retained_table(view, section, source):
@@ -331,14 +337,17 @@ def assert_retained_table(view, section, source):
 
 def assert_report(view):
     tables = [table for section in view.manuscript.sections for table in section.tables]
-    assert [table.title for table in tables[:3]] == ['Pooled effect', 'Model fit', 'Study results']
-    pooled, fit, studies = tables[:3]
+    pooled, fit = tables[:2]
+    studies = next((t for t in tables if t.title == 'Study results'), None)
     structured = any(s.tables for s in view.results.sections)
     if structured:
         assert pooled.headers[:2] == ('Effect', 'Estimate')
         assert pooled.headers[2].endswith('% CI')
-        assert pooled.headers[3:] in (('SE', 'z', 'p'), ('SE', 't', 'p'))
-        assert pooled.rows == presentation_rows(expected_pooled(view.results), view.results.manuscript_digits), (pooled.rows, expected_pooled(view.results))
+        expected_rows = expected_pooled(view.results)
+        indexes = [i for i in range(6) if any(row[i] not in ('', '—', 'NA') for row in expected_rows)]
+        expected_rows = tuple(tuple(cell if i == 5 else presentation_rows(((cell,),), min(3, view.results.manuscript_digits))[0][0] for i, cell in enumerate(row)) for row in expected_rows)
+        assert pooled.rows == tuple(tuple(row[i] for i in indexes) for row in expected_rows)
+        assert all(any(row[i] not in ('', '—', 'NA') for row in pooled.rows) for i in range(len(pooled.headers)))
     else:
         assert pooled.headers == ('Analysis', 'Output')
         assert pooled.rows == tuple((s.title, s.value) for s in view.results.sections
@@ -352,13 +361,16 @@ def assert_report(view):
     if len({row[0] for row in expected}) == 1:
         headers = headers[1:]
         expected = tuple(row[1:] for row in expected)
-    assert studies.headers == headers
+    assert (studies is not None) == bool(expected)
+    if studies is not None:
+        assert studies.headers == headers
     assert fit.rows == presentation_rows(expected_fit(view.results), view.results.manuscript_digits), (fit.rows, expected_fit(view.results))
-    assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+    if studies is not None:
+        assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
     for section in view.results.sections:
         for source in section.tables:
             title = source.title if section.title == source.title else section.title + ' — ' + source.title
-            retained = next(t for t in tables[3:] if t.title == 'Full-precision results')
+            retained = next(t for t in tables if t.title == 'Full-precision results')
             expected = tuple((title, '\n'.join(f'{h}: {v}' for h, v in zip(source.headers, row))) for row in source.rows)
             assert tuple(row for row in retained.rows if row[0] == title) == expected, title
         if section.tables and section.paragraphs:
@@ -374,13 +386,14 @@ def assert_report(view):
                                  for n, line in enumerate(filter(None, section.value.splitlines()), 1))
                 assert references[0].paragraphs == expected
             else:
-                retained = next(t for t in tables[3:] if t.title == 'Full-precision results')
-                assert tuple(row for row in retained.rows if row[0] == section.title + ' — Output') == tuple((section.title + ' — Output', 'Output: ' + line) for line in section.value.splitlines())
+                retained = next(t for t in tables if t.title == 'Full-precision results')
+                assert tuple(row for row in retained.rows if row[0] == section.title) == tuple((section.title, line) for line in section.value.splitlines())
     data = capture(view, Path(sys.argv[2]) / 'report-retention')
     assert_exports(view, data)
     document = QTextDocument()
     document.setHtml(required(required(QApplication.clipboard(), 'clipboard').mimeData(), 'copied report').html())
-    assert document_tables(document) == [[list(t.headers), *[list(row) for row in t.rows]] for t in tables]
+    observed_tables = [[[cell.replace("\u00a0", " ") for cell in row] for row in table] for table in document_tables(document)]
+    assert observed_tables == [[list(t.headers), *[list(row) for row in t.rows]] for t in tables]
     prose_surfaces = [
         (Path(data['directory']) / 'copy.txt').read_text(encoding='utf-8'),
         (Path(data['directory']) / 'pdf.txt').read_text(encoding='utf-8'),

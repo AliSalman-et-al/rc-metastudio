@@ -43,6 +43,7 @@ rcmetar.forest.direction.lines <- function(label, width, cex, font=1, units="use
 }
 
 rcmetar.forest.direction.metrics <- function(bundle, plan) {
+    if (!is.null(plan$footer$axis) && !is.finite(plan$footer$axis$split.x)) return(list(lines=0, spacing=0))
     labels <- unlist(rcmetar.revman.direction.labels(bundle)[c("left", "right")])
     rcmetar.forest.with.measurement.device({
         # Account for the device width cap and graphics margins, rather than
@@ -63,12 +64,13 @@ rcmetar.forest.direction.metrics <- function(bundle, plan) {
 }
 
 rcmetar.draw.forest.direction.blocks <- function(bundle, footer, top, cex, font=1) {
+    if (!is.finite(footer$split.x) || abs(footer$split.x - footer$axis.x) >= footer$span / 2) return(invisible(NULL))
     labels <- rcmetar.revman.direction.labels(bundle)
     spacing <- graphics::strheight("M", cex=cex, font=font) * 2.2
     for (side in c("left", "right")) {
         lines <- rcmetar.forest.direction.lines(labels[[side]], footer[[paste0(side, ".max.width")]], cex, font)
         if (length(lines)) graphics::text(footer[[paste0(side, ".x")]],
-            top - (seq_along(lines) - 1) * spacing, lines, cex=cex, font=font, adj=c(0.5, 0))
+            top - (seq_along(lines) - 1) * spacing, lines, cex=cex, font=font, adj=c(if (side == "left") 1 else 0, 0))
     }
     invisible(NULL)
 }
@@ -79,12 +81,13 @@ rcmetar.draw.forest.direction <- function(bundle, alim, cex) {
     on.exit(graphics::par(previous), add=TRUE)
     labels <- rcmetar.revman.direction.labels(bundle)
     footer <- rcmetar.forest.revman.axis.footer(bundle, list(alim=alim))
+    if (!is.finite(footer$split.x) || footer$split.x <= alim[[1]] || footer$split.x >= alim[[2]]) return(invisible(NULL))
     for (side in c("left", "right")) {
         if (nzchar(labels[[side]])) {
             at <- footer[[paste0(side, ".x")]]
             lines <- rcmetar.forest.direction.lines(labels[[side]], footer[[paste0(side, ".max.width")]], cex)
             for (index in seq_along(lines)) graphics::mtext(lines[[index]], side=1,
-                line=4.5 + (index - 1) * 1.6, at=at, cex=cex, adj=0.5, padj=0)
+                line=4.5 + (index - 1) * 1.6, at=at, cex=cex, adj=if (side == "left") 1 else 0, padj=0)
         }
     }
     invisible(NULL)
@@ -141,8 +144,8 @@ rcmetar.forest.prediction.label <- function(bundle, res=bundle$res) {
     measure <- as.character(bundle$params$measure)
     display <- rcmetar.prediction.display(bounds, bundle$params,
         rcmetar.bundle.transform(bundle), bundle$sample_sizes)
-    paste0(display.confidence.level(bundle$params), "% prediction interval: [",
-           paste(rcmetar.format.effect.number(display$bounds, display.digits(bundle$params)), collapse=", "), "]",
+    paste0(display.confidence.level(bundle$params), "% prediction interval: ",
+           paste(rcmetar.format.effect.number(display$bounds, display.digits(bundle$params)), collapse=" to "),
            if (measure == "PFT" && isTRUE(display$transformed))
                " (Freeman-Tukey scale; proportion inverse undefined)" else "")
 }

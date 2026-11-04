@@ -826,11 +826,11 @@ rcmetar.metafor.effect.labels <- function(bundle) {
     scale <- if (metric.is.log.scale(bundle$params$measure)) 0 else pmax(abs(y), abs(lb), abs(ub))
     labels <- paste0(
         rcmetar.format.effect.number(y, digits, scale=scale),
-        " [",
+        " (",
         rcmetar.format.effect.number(lb, digits, scale=scale),
-        ", ",
+        " to ",
         rcmetar.format.effect.number(ub, digits, scale=scale),
-        "]"
+        ")"
     )
     labels[!is.finite(y) | !is.finite(lb) | !is.finite(ub)] <- "Not estimable"
     labels

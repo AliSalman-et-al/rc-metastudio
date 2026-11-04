@@ -1051,7 +1051,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             model_info.extend((f"Participants in {name}", f"{sum(row[index] for row in raw):g}")
                               for name, index in zip(self.model.arm_names, (1, 3) if self.data_type == "binary" else (0, 3)))
         if len(model_info) == 1:
-            model_info.append(("Participants", "Not available in held results"))
+            model_info.append(("Participants", "Not available"))
         return model_info
 
     def _applied_parameters(self):
