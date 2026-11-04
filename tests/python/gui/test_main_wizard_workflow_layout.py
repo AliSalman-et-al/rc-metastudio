@@ -504,7 +504,6 @@ finally:
                 str(root / "build" / "qt6-verification" / "generated"),
             ]
         )
-        environment["RCMS_QT6_BUILD_ROOT"] = str(root / "build" / "qt6-verification")
         completed = subprocess.run(
             [sys.executable, "-c", script],
             cwd=root,

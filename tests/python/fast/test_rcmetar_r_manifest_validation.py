@@ -49,23 +49,6 @@ def test_shared_r_verification_support_resolves_home_and_normalizes_windows_loca
     assert support.verification_base_env(source, platform_name="posix") == source
 
 
-def test_full_r_verifier_drops_unsupported_posix_locale_on_windows():
-    source = {
-        "LC_ALL": "C.UTF-8",
-        "LC_CTYPE": "C.utf8",
-        "LANG": "C.UTF-8",
-        "RCMS_SENTINEL": "preserved",
-    }
-
-    assert r_verification_support.verification_base_env(source, platform_name="nt") == {
-        "RCMS_SENTINEL": "preserved"
-    }
-    assert (
-        r_verification_support.verification_base_env(source, platform_name="posix")
-        == source
-    )
-
-
 def test_full_r_stack_orchestration_prepares_and_propagates_qt_environment(
     monkeypatch, tmp_path
 ):
@@ -94,6 +77,8 @@ def test_full_r_stack_orchestration_prepares_and_propagates_qt_environment(
         rscript=None,
         r_runtime_root=None,
         r_library_cache_root=None,
+        skip_desktop=False,
+        desktop_shard=None,
     )
     verifier.run_full_r_stack(args)
 
@@ -161,21 +146,11 @@ def test_r_verifiers_preserve_symlinked_python_identity(monkeypatch, tmp_path):
         assert captured["env"]["RCMS_POLICY_PYTHON"] == expected_python
 
 
-def test_full_r_stack_explicit_pytest_runner_uses_supplied_python():
+@pytest.mark.parametrize("runner", ["pytest", "uv"])
+def test_full_r_stack_runner_uses_supplied_python_not_ambient_uv(runner):
     python = str(REPO_ROOT / ".venv" / "Scripts" / "python.exe")
 
-    assert stack_verifier.bridge_test_command(python, "pytest") == [
-        python,
-        "-m",
-        "pytest",
-        str(Path("tests") / "r_stack"),
-    ]
-
-
-def test_full_r_stack_default_runner_uses_supplied_python_not_ambient_uv():
-    python = str(REPO_ROOT / ".venv" / "Scripts" / "python.exe")
-
-    assert stack_verifier.bridge_test_command(python, "uv") == [
+    assert stack_verifier.bridge_test_command(python, runner) == [
         python,
         "-m",
         "pytest",
@@ -375,19 +350,6 @@ def test_default_r_dependency_install_uses_script_file_and_archive_triples(
     assert "r_binary_policy.R" in source
     assert "install_rcms_binary_packages" in source
     assert "install_rcms_source_exception" not in source
-
-
-def test_default_r_verifier_resolves_rscript_from_r_home(tmp_path):
-    r_home = tmp_path / "R"
-    rscript = r_home / "bin" / r_verification_support.candidate_rscript_names()[0]
-    rscript.parent.mkdir(parents=True)
-    rscript.write_text("", encoding="utf-8")
-
-    resolved = r_verification_support.resolve_rscript(
-        "Rscript", env={"RCMS_R_HOME": str(r_home), "PATH": ""}
-    )
-
-    assert resolved == rscript.resolve()
 
 
 def test_default_r_verifier_resolves_rscript_from_r_command(monkeypatch, tmp_path):

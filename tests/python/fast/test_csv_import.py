@@ -116,3 +116,19 @@ def test_parse_csv_rejects_headerless_rows_below_required_width(
             from_excel=False,
             year_column=1,
         )
+
+
+def test_xlsx_unmapped_date_year(tmp_path: Path) -> None:
+    from datetime import datetime
+    from openpyxl import Workbook
+
+    path = tmp_path / "date-year.xlsx"
+    workbook = Workbook()
+    sheet = workbook.active
+    assert sheet is not None
+    sheet.append(["Study", "Year"])
+    sheet.append(["Alpha", datetime(2022, 1, 1)])
+    workbook.save(path)
+    result = parse_csv(path, expected_headers=["Study", "Year"],
+                       has_headers=True, from_excel=True)
+    assert result.rows == (("Alpha", "2022"),)

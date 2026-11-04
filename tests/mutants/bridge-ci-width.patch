@@ -1,0 +1,11 @@
+--- a/src/rc_metastudio/r_bridge.py
++++ b/src/rc_metastudio/r_bridge.py
+@@ -2653,7 +2653,7 @@
+     variance = float(cast(float, _first_dynamic(_call_dynamic(column, "vi"))))
+     if not math.isfinite(estimate) or not math.isfinite(variance) or variance <= 0:
+         return (None, None, None)
+-    width = get_confidence_multiplier_from_r(confidence_level) * math.sqrt(variance)
++    width = get_confidence_multiplier_from_r(confidence_level) * variance
+     return estimate, estimate-width, estimate+width
+ 
+ 

@@ -1,0 +1,5 @@
+baseline exit=0
+large-font exit=1
+restored-large-font exit=0
+clipped exit=1
+restored-clipped exit=0

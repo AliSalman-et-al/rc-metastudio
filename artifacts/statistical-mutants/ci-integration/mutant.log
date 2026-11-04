@@ -1,0 +1,52 @@
++ python /home/ali/.t3/worktrees/rc-metastudio/t3-09679444/artifacts/statistical-mutants/ci-integration/prove.py
+[RCMetaR-r-stack] /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript /home/ali/.t3/worktrees/rc-metastudio/t3-09679444/.agents/skills/verify-rcms/scripts/analysis_authorities.R /home/ali/.t3/worktrees/rc-metastudio/t3-09679444/artifacts/verification/rcms/authorities.json --installed
+Installed RCMetaR: /home/ali/.t3/worktrees/rc-metastudio/t3-09679444/artifacts/statistical-mutants/ci-integration/mutant-library/RCMetaR 
+PASS OR binary.fixed.inv.var 
+PASS OR binary.random 
+PASS OR MH 
+PASS OR Peto 
+PASS RD binary.fixed.inv.var 
+PASS RD binary.random 
+PASS RD MH 
+PASS RR binary.fixed.inv.var 
+PASS RR binary.random 
+PASS RR MH 
+PASS AS binary.fixed.inv.var 
+PASS AS binary.random 
+PASS YUQ binary.fixed.inv.var 
+PASS YUQ binary.random 
+PASS YUY binary.fixed.inv.var 
+PASS YUY binary.random 
+PASS PR binary.fixed.inv.var 
+PASS PR binary.random 
+PASS PLN binary.fixed.inv.var 
+PASS PLN binary.random 
+PASS PLO binary.fixed.inv.var 
+PASS PLO binary.random 
+PASS PAS binary.fixed.inv.var 
+PASS PAS binary.random 
+PASS PFT binary.fixed.inv.var 
+PASS PFT binary.random 
+PASS zero-cell only0 
+PASS zero-cell all 
+PASS zero-cell if0all 
+PASS MD continuous.fixed 
+PASS MD continuous.random 
+PASS SMD continuous.fixed 
+PASS SMD continuous.random 
+PASS TXMean continuous.fixed 
+PASS TXMean continuous.random 
+PASS entered-estimates continuous.fixed 
+PASS entered-estimates continuous.random 
+Error in close(actual[[field]], reference[[field]], paste(id, field)) : 
+  entered continuous fixed t pval
+Calls: check -> close
+Execution halted
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-09679444/artifacts/statistical-mutants/ci-integration/prove.py", line 5, in <module>
+    verify_analysis_authorities(Path.cwd(), Path(os.environ["RCMS_R_HOME"]) / "bin/Rscript", dict(os.environ))
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-09679444/scripts/verify_rcmetar_r_stack.py", line 404, in verify_analysis_authorities
+    run(
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-09679444/scripts/verify_rcmetar_r_stack.py", line 81, in run
+    raise VerificationError(
+scripts.verify_rcmetar_r_stack.VerificationError: command failed with exit code 1: /home/ali/Documents/Code/rc-metastudio/build/ux-round3/r-home/bin/Rscript /home/ali/.t3/worktrees/rc-metastudio/t3-09679444/.agents/skills/verify-rcms/scripts/analysis_authorities.R /home/ali/.t3/worktrees/rc-metastudio/t3-09679444/artifacts/verification/rcms/authorities.json --installed
