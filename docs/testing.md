@@ -152,3 +152,5 @@ after selecting the pinned R runtime. This runs R CMD check, bridge tests, deskt
 workflows and golden compatibility. Retain the command and transcript; targeted R
 tests alone do not replace this gate. Afterwards reinstall RCMetaR into the
 persistent development library selected by `RCMS_R_LIBS`.
+
+Before pushing, run `python scripts/verify.py pre-push` in the locked development environment; it takes about 4 minutes and fails fast through generated Qt preparation, Windows-target strict typing, code health, Python fast/golden tests, GUI tests and packaging contracts. Commit changes first so code health measures HEAD against origin/master. The timing table is printed and saved to `artifacts/verification/pre-push.json`. R stack, authorities, desktop E2E and native platform qualification are listed as “CI only”; run `python scripts/verify.py r-stack` to exercise the full R/desktop lane locally when needed. No dependency sync or reference regeneration is performed.

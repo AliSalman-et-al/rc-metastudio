@@ -84,15 +84,7 @@ try {
 
     # Ty resolves generated modules from their flat build search paths while
     # runtime imports remain package-qualified through rc_metastudio.forms.
-    uv run ty check `
-        --extra-search-path "$BuildRoot/generated/rc_metastudio" `
-        --extra-search-path "$BuildRoot/generated/rc_metastudio/forms" `
-        --extra-search-path . `
-        --extra-search-path src/rc_metastudio `
-        --extra-search-path src `
-        --extra-search-path scripts `
-        --extra-search-path tests/python/gui `
-        src/rc_metastudio scripts tests r/RCMetaR/inst/qa
+    uv run python -c "from scripts.verify import run_typing; from pathlib import Path; run_typing(Path(r'$BuildRoot'))"
     if ($LASTEXITCODE -ne 0) { throw "Repository-wide strict type verification failed." }
 
     # Core owns every GUI module except the five deliberately isolated

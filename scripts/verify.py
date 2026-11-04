@@ -6,9 +6,11 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -40,6 +42,7 @@ REPO_ROOT = discover_repo_root(SCRIPT_DIR)
 DEFAULT_BUILD_ROOT = REPO_ROOT / "build" / "qt6-verification"
 DEFAULT_R_LIBRARY_CACHE = REPO_ROOT / "artifacts" / "r-default-library-cache"
 FULL_R_LIBRARY_CACHE = REPO_ROOT / "artifacts" / "r-library-cache"
+STABLE_BASELINE = "8b7796bcc840c3505c5fb0a1328cdd7682880e48"
 SMOKE_TESTS = (
     "tests/analysis_regression/golden/test_analysis_regression_compare.py::"
     "test_golden_summary_parser_reads_current_RCMetaR_summary_display",
@@ -210,6 +213,127 @@ def run_full_r_stack(args: argparse.Namespace) -> None:
     run(command, env=env)
 
 
+def run_typing(build_root: Path) -> None:
+    command = [
+        sys.executable,
+        "-m",
+        "ty",
+        "check",
+        "--python",
+        sys.executable,
+        "--python-platform",
+        "win32",
+    ]
+    for path in (
+        str(build_root / "generated/rc_metastudio"),
+        str(build_root / "generated/rc_metastudio/forms"),
+        ".",
+        "src/rc_metastudio",
+        "src",
+        "scripts",
+        "tests/python/gui",
+    ):
+        command += ["--extra-search-path", path]
+    run(command + ["src/rc_metastudio", "scripts", "tests", "r/RCMetaR/inst/qa"])
+
+
+def run_code_health(base: str = "origin/master", head: str = "HEAD") -> None:
+    run(
+        [
+            sys.executable,
+            "scripts/code_health.py",
+            "--base",
+            STABLE_BASELINE,
+            "--head",
+            STABLE_BASELINE,
+            "--allow-fail",
+            "--output",
+            "artifacts/code-health/baseline.json",
+            "--report",
+            "artifacts/code-health/baseline.txt",
+        ]
+    )
+    # shortcut: local code health measures committed HEAD, upgrade if dirty-tree qualification is needed.
+    run(
+        [
+            sys.executable,
+            "scripts/code_health.py",
+            "--base",
+            base,
+            "--head",
+            head,
+            "--baseline",
+            "artifacts/code-health/baseline.json",
+            "--output",
+            "artifacts/code-health/final.json",
+            "--report",
+            "artifacts/code-health/final.txt",
+        ]
+    )
+
+
+def run_packaging_contracts() -> None:
+    run([sys.executable, "-m", "pytest", "-q", "tests/packaging/contract"])
+
+
+def run_pre_push() -> None:
+    build = Path(
+        os.environ.get("RCMS_QT6_BUILD_ROOT", str(DEFAULT_BUILD_ROOT))
+    ).resolve()
+    os.environ["RCMS_QT6_BUILD_ROOT"] = str(build)
+    fast = parser().parse_args(
+        ["fast", "--skip-r-evidence", "--build-root", str(build)]
+    )
+    steps = [
+        ("prepare", lambda: prepare_qt_environment(build)),
+        ("typing (win32)", lambda: run_typing(build)),
+        ("code health", run_code_health),
+        ("Python fast and golden", lambda: run_source_lane(fast, smoke=False)),
+        (
+            "GUI",
+            lambda: run(
+                [
+                    sys.executable,
+                    "-m",
+                    "pytest",
+                    "-W",
+                    "error",
+                    "--strict-markers",
+                    "tests/python/gui",
+                ]
+            ),
+        ),
+        ("packaging contracts", run_packaging_contracts),
+    ]
+    rows = [{"step": name, "seconds": 0.0, "status": "not run"} for name, _ in steps]
+    # shortcut: native platform qualification stays in CI, upgrade when local native setup is owned here.
+    rows += [
+        {"step": name, "seconds": 0.0, "status": "CI only"}
+        for name in (
+            "R stack, authorities and desktop E2E (local: python scripts/verify.py r-stack)",
+            "Windows native Qt and package qualification",
+            "macOS native smoke and packaging",
+            "Linux native xcb smoke",
+        )
+    ]
+    try:
+        for row, (_, action) in zip(rows, steps):
+            started = time.monotonic()
+            row["status"] = "fail"
+            try:
+                action()
+                row["status"] = "pass"
+            finally:
+                row["seconds"] = round(time.monotonic() - started, 2)
+    finally:
+        output = REPO_ROOT / "artifacts/verification/pre-push.json"
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(rows, indent=2) + "\n", encoding="utf-8")
+        print("\n| Step | Seconds | Result |\n| --- | ---: | --- |")
+        for row in rows:
+            print(f"| {row['step']} | {row['seconds']} | {row['status']} |")
+
+
 def parser() -> argparse.ArgumentParser:
     cli = argparse.ArgumentParser(description=__doc__)
     subparsers = cli.add_subparsers(dest="lane", required=True)
@@ -253,6 +377,7 @@ def parser() -> argparse.ArgumentParser:
     r_stack.add_argument("--sync", action="store_true")
     add_rscript_options(r_stack)
     r_stack.add_argument("--build-root", default=DEFAULT_BUILD_ROOT, type=Path)
+    subparsers.add_parser("pre-push", help="run required local CI checks, failing fast")
     return cli
 
 
@@ -263,6 +388,8 @@ def main(argv: list[str] | None = None) -> int:
             run_source_lane(args, smoke=True)
         elif args.lane == "fast":
             run_source_lane(args, smoke=False)
+        elif args.lane == "pre-push":
+            run_pre_push()
         else:
             run_full_r_stack(args)
     except VerificationError as exc:
