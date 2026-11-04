@@ -186,18 +186,6 @@ def run_source_lane(args: argparse.Namespace, *, smoke: bool) -> None:
             env=env,
             workers=args.fast_workers,
         )
-        run(
-            [
-                sys.executable,
-                "-m",
-                "pytest",
-                "--strict-markers",
-                "-W",
-                "error",
-                "tests/python/gui",
-            ],
-            env=env,
-        )
         if not args.skip_r_evidence:
             run_default_r_evidence(args)
 
@@ -296,20 +284,33 @@ def run_pre_push() -> None:
     fast = parser().parse_args(
         ["fast", "--skip-r-evidence", "--build-root", str(build)]
     )
-    stack = parser().parse_args(["r-stack", "--build-root", str(build)])
     steps = [
         ("prepare", lambda: prepare_qt_environment(build)),
         ("typing (win32)", lambda: run_typing(build)),
         ("code health", run_code_health),
-        ("Python, GUI and golden", lambda: run_source_lane(fast, smoke=False)),
+        ("Python fast and golden", lambda: run_source_lane(fast, smoke=False)),
+        (
+            "GUI",
+            lambda: run(
+                [
+                    sys.executable,
+                    "-m",
+                    "pytest",
+                    "-W",
+                    "error",
+                    "--strict-markers",
+                    "tests/python/gui",
+                ]
+            ),
+        ),
         ("packaging contracts", run_packaging_contracts),
-        ("R stack and full desktop E2E (-n auto)", lambda: run_full_r_stack(stack)),
     ]
     rows = [{"step": name, "seconds": 0.0, "status": "not run"} for name, _ in steps]
     # shortcut: native platform qualification stays in CI, upgrade when local native setup is owned here.
     rows += [
         {"step": name, "seconds": 0.0, "status": "CI only"}
         for name in (
+            "R stack, authorities and desktop E2E (local: python scripts/verify.py r-stack)",
             "Windows native Qt and package qualification",
             "macOS native smoke and packaging",
             "Linux native xcb smoke",
