@@ -24,3 +24,28 @@ each owns a freshly built/installed RCMetaR with manifest-validated dependencies
 Removed full-history checkout only from the R-stack job and its desktop copies:
 their Git calls read HEAD, status, diff HEAD and tracked/untracked file inventory,
 not ancestor commits. Other jobs retain their existing checkout settings.
+
+Local verification on Linux, targeting win32 for Ty (2026-11-04):
+
+```bash
+source /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/build/sheets-baseline/ENV.sh
+export UV_PROJECT_ENVIRONMENT=/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv
+export PYTHONPATH="$PWD/src:$PWD"
+uv run --no-sync python scripts/build_qt6.py generate
+export RCMS_QT6_BUILD_ROOT="$PWD/build/qt6"
+uv run --no-sync ty check --python-platform win32 \
+  --extra-search-path build/qt6/generated/rc_metastudio \
+  --extra-search-path build/qt6/generated/rc_metastudio/forms \
+  --extra-search-path . --extra-search-path src/rc_metastudio \
+  --extra-search-path src --extra-search-path scripts \
+  --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa
+uv run --no-sync python -m pytest --strict-markers tests/e2e --collect-only -q \
+  --desktop-shard 1 --shard-report build/ci-sharding/partition.json
+uv run --no-sync python -m pytest --strict-markers tests --collect-only -q
+```
+
+Results: strict typing passed; 46/137 cases selected with complete exact-once
+partition; full strict-marker collection passed (1010 tests). Initial attempts
+used the ENV.sh generated-root path before generating forms here and failed
+because that directory did not exist; the commands above use this worktree's
+actual generated tree. These are collection/type proofs, not Windows execution.
