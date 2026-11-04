@@ -296,17 +296,7 @@ rcmetar.revman.not_estimable <- function(bundle) {
     missing <- if (length(yi) == n && length(vi) == n) {
         !is.finite(yi) | !is.finite(vi)
     } else rep(FALSE, n)
-    if (!identical(bundle$data_type, "binary")) {
-        return(missing)
-    }
-    experimental.total <- rcmetar.revman.column.index(bundle, "experimental_total")
-    control.total <- rcmetar.revman.column.index(bundle, "control_total")
-    if (length(experimental.total) != 1 || length(control.total) != 1) {
-        return(missing)
-    }
-    exp.total <- suppressWarnings(as.numeric(bundle$ilab$matrix[, experimental.total]))
-    ctrl.total <- suppressWarnings(as.numeric(bundle$ilab$matrix[, control.total]))
-    missing | ifelse(is.na(exp.total) | is.na(ctrl.total), FALSE, exp.total + ctrl.total == 0)
+    missing
 }
 
 rcmetar.revman.xlab <- function(bundle) {

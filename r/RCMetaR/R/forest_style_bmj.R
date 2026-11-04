@@ -177,21 +177,7 @@ rcmetar.bmj.total.values <- function(bundle) {
 }
 
 rcmetar.bmj.not_estimable <- function(bundle) {
-    if (!identical(bundle$data_type, "binary")) {
-        return(rep(FALSE, nrow(bundle$ilab$matrix)))
-    }
-    experimental <- rcmetar.bmj.column.index(bundle, "experimental_events_total")
-    control <- rcmetar.bmj.column.index(bundle, "control_events_total")
-    if (length(experimental) != 1 || length(control) != 1) {
-        return(rep(FALSE, nrow(bundle$ilab$matrix)))
-    }
-    total.from.label <- function(values) {
-        parts <- strsplit(values, "/", fixed=TRUE)
-        suppressWarnings(as.numeric(trimws(vapply(parts, function(value) value[[2]], character(1)))))
-    }
-    exp.total <- total.from.label(bundle$ilab$matrix[, experimental])
-    ctrl.total <- total.from.label(bundle$ilab$matrix[, control])
-    ifelse(is.na(exp.total) | is.na(ctrl.total), FALSE, exp.total + ctrl.total == 0)
+    rcmetar.revman.not_estimable(bundle)
 }
 
 rcmetar.bmj.direction.labels <- function(bundle) rcmetar.revman.direction.labels(bundle)

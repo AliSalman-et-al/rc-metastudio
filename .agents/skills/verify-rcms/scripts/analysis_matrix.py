@@ -679,6 +679,14 @@ def run(
         rows = [row for section in view.results.sections for table in section.tables
                 if table.title == "Study weights" for row in table.rows]
         omitted = [row for row in rows if row[1] == "Not estimable"]
+        weight_nodes = [node for path in view.results.display_images.values()
+                        for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text")
+                        if re.fullmatch(r"[\d.]+%", "".join(node.itertext()))]
+        plotted_weights = [float("".join(node.itertext()).removesuffix("%"))
+                           for node in sorted(weight_nodes, key=lambda node: float(node.attrib["y"]))]
+        plotted_weights.remove(100.0)
+        assert plotted_weights == [float(row[-1].removesuffix("%")) for row in rows], (plotted_weights, rows)
+        assert all(float(row[-1].removesuffix("%")) == 0 for row in omitted), omitted
         if method == "binary.fixed.mh":
             assert len(omitted) == 2 and figure.count("Not estimable") == 2, (rows, figure)
         else:
