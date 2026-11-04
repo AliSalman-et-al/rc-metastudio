@@ -19,3 +19,5 @@ Real-display attempt: `RCMS_QA_APP_SRC=$PWD /home/ali/.t3/qa-env/tools/venv/bin/
 ## Remaining qualification
 
 Full before/after light/dark × default/large-font native screenshot matrix, final sheet sizing rerun, and old-layout red runs remain incomplete. CI owns `scripts/verify.py pre-push` per the user's machine-load instruction. No numerical golden files changed; no golden presentation cases are expected to change because these edits affect widget configuration geometry only.
+
+Final strict typing passed. Final serial GUI run: 33 passed, one skipped; locale subprocess timed out at its unchanged 30-second bound. Focused retry `python -m pytest -n 1 -q tests/python/gui/test_analysis_configuration_layout.py::test_dot_and_comma_decimal_locales_produce_equivalent_analysis_requests` passed (1 passed in 2.07s), transcript `gui-locale-retry.log`.
