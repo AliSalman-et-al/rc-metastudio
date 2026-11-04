@@ -1,0 +1,9 @@
+ci-z-instead-of-t base exit=0
+ci-z-instead-of-t mutant exit=1
+ci-z-instead-of-t restored exit=0
+bridge-ci-width base exit=0
+bridge-ci-width mutant exit=1
+bridge-ci-width restored exit=0
+xlsx-year-column base exit=0
+xlsx-year-column mutant exit=1
+xlsx-year-column restored exit=0

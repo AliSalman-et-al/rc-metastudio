@@ -120,3 +120,7 @@ unchanged. Refreshed offscreen screenshots are in docs/ux-hill-climb/screens/sli
 
 - `calculator-binary` also checks that the OR/RR/RD readout's four visible
   columns share width evenly (at most one pixel difference).
+
+The baseline calculator scenario records the CI heading's text metrics and contents
+rectangle after computation, asserting width and height fit at the default application
+font and at +6 points on the existing reopen/Cancel pass.

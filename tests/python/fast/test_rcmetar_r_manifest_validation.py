@@ -77,6 +77,8 @@ def test_full_r_stack_orchestration_prepares_and_propagates_qt_environment(
         rscript=None,
         r_runtime_root=None,
         r_library_cache_root=None,
+        skip_desktop=False,
+        desktop_shard=None,
     )
     verifier.run_full_r_stack(args)
 
