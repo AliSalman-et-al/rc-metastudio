@@ -1027,9 +1027,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 self._set_restored_splitter_sizes()
                 self._viewport_width_override = self._layout_viewport_width()
             try:
-                self._refit_viewport_items()
                 if getattr(self, "_fit_width_active", False):
                     self._apply_fit_width()
+                else:
+                    self._refit_viewport_items()
             finally:
                 self._viewport_width_override = None
 
@@ -1042,6 +1043,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             and watched is self._graphics_viewport
         ):
             if self.isVisible() and not self._refitting_svg_plots:
+                self._viewport_refit_timer.stop()
                 self._run_scheduled_viewport_refit()
             else:
                 self._schedule_viewport_refit()
