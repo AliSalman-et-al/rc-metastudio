@@ -14,6 +14,7 @@ from PIL import Image
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtWidgets import (
     QDialog,
+    QHeaderView,
     QLabel,
     QLineEdit,
     QSizePolicy,
@@ -1042,6 +1043,42 @@ def test_continuous_effect_fields_fit_metric_domain_samples(
         assert field.maximumWidth() >= required
 
 
+def test_binary_calculator_grid_columns_fill_expanded_table_width(qapp, monkeypatch):
+    from rc_metastudio import binary_data_dialog
+
+    monkeypatch.setattr(
+        calculator_service.r_bridge,
+        "get_confidence_multiplier_from_r",
+        lambda conf: 1.96,
+    )
+    monkeypatch.setattr(
+        calculator_service.r_bridge,
+        "binary_convert_scale",
+        lambda x, *args, **kwargs: x,
+    )
+    monkeypatch.setattr(
+        calculator_service.r_bridge,
+        "impute_binary_data",
+        lambda data: {"FAIL": True},
+    )
+
+    form = binary_data_dialog.BinaryDataDialog(
+        FakeAnalysisUnit(),
+        ["Group 1", "Group 2"],
+        "Group 1-Group 2",
+        "OR",
+        confidence_level=95.0,
+    )
+
+    form.show()
+    qapp.processEvents()
+    header = _required(_required(form.raw_data_table).horizontalHeader())
+    assert header.sectionResizeMode(0) == QHeaderView.ResizeMode.Interactive
+    assert not header.stretchLastSection()
+    for column in range(form.raw_data_table.columnCount()):
+        assert header.sectionSize(column) >= header.sectionSizeHint(column)
+
+
 def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
     from rc_metastudio import calculator_routines
 
@@ -1155,6 +1192,44 @@ class FakeDiagnosticAnalysisUnit:
 class FakeDiagnosticGroup:
     def __init__(self, raw_data):
         self.raw_data = raw_data
+
+
+def test_diagnostic_calculator_grid_columns_fill_expanded_table_width(
+    qapp, monkeypatch
+):
+    from rc_metastudio import diagnostic_data_dialog
+
+    monkeypatch.setattr(
+        calculator_service.r_bridge,
+        "get_confidence_multiplier_from_r",
+        lambda conf: 1.96,
+    )
+    monkeypatch.setattr(
+        calculator_service.r_bridge,
+        "diagnostic_convert_scale",
+        lambda x, *args, **kwargs: x,
+    )
+    monkeypatch.setattr(
+        calculator_service.r_bridge,
+        "impute_diagnostic_data",
+        lambda data: {"TP": None, "FP": None, "FN": None, "TN": None},
+    )
+
+    form = diagnostic_data_dialog.DiagnosticDataDialog(
+        FakeDiagnosticAnalysisUnit(),
+        ["Group 1", "Group 2"],
+        "Group 1-Group 2",
+        confidence_level=95.0,
+    )
+
+    form.show()
+    qapp.processEvents()
+    table = _required(form.two_by_two_table)
+    header = _required(table.horizontalHeader())
+    assert header.sectionResizeMode(0) == QHeaderView.ResizeMode.Interactive
+    assert not header.stretchLastSection()
+    for column in range(table.columnCount()):
+        assert header.sectionSize(column) >= header.sectionSizeHint(column)
 
 
 class FakeContinuousAnalysisUnit:
