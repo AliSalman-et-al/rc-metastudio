@@ -1,0 +1,20 @@
+OR binary.fixed.mh : all fitted fields and weights exactly identical
+Gamma weight: 0 ; plotted before/after: NA 0 ; label: IV, random -> M–H, Fixed 
+OR binary.fixed.peto : all fitted fields and weights exactly identical
+Gamma weight: 0 ; plotted before/after: 0 0 ; label: IV, random -> Peto, Fixed 
+OR binary.fixed.inv.var : all fitted fields and weights exactly identical
+Gamma weight: 1.516006 ; plotted before/after: 1.516006 1.516006 ; label: IV, random -> IV, Fixed 
+OR binary.random : all fitted fields and weights exactly identical
+Gamma weight: 1.516006 ; plotted before/after: 1.516006 1.516006 ; label: IV, random -> IV, Random 
+RR binary.fixed.mh : all fitted fields and weights exactly identical
+Gamma weight: 0 ; plotted before/after: NA 0 ; label: IV, random -> M–H, Fixed 
+RR binary.fixed.inv.var : all fitted fields and weights exactly identical
+Gamma weight: 0.8313375 ; plotted before/after: 0.8313375 0.8313375 ; label: IV, random -> IV, Fixed 
+RR binary.random : all fitted fields and weights exactly identical
+Gamma weight: 0.8313375 ; plotted before/after: 0.8313375 0.8313375 ; label: IV, random -> IV, Random 
+RD binary.fixed.mh : all fitted fields and weights exactly identical
+Gamma weight: 9.829528 ; plotted before/after: NA 9.829528 ; label: IV, random -> M–H, Fixed 
+RD binary.fixed.inv.var : all fitted fields and weights exactly identical
+Gamma weight: 43.00792 ; plotted before/after: 43.00792 43.00792 ; label: IV, random -> IV, Fixed 
+RD binary.random : all fitted fields and weights exactly identical
+Gamma weight: 43.00792 ; plotted before/after: 43.00792 43.00792 ; label: IV, random -> IV, Random 

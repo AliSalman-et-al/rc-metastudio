@@ -232,8 +232,7 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
         wizard.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions", effect="OR", metric_choices=[], name="Imported data"))
         wizard.setStartId(Page_CsvImport)
         wizard.restart()
-        page = wizard.page(Page_CsvImport)
-        assert isinstance(page, CsvImportPage)
+        page = cast(CsvImportPage, required(wizard.page(Page_CsvImport), "CSV import page"))
         page.load_file(path)
 
     def new_dataset(self):
@@ -574,8 +573,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self._update_dialect_controls()
 
     def _change_data_type(self, index):
-        page = self.wizard().page(Page_DataType)
-        assert isinstance(page, DataTypePage)
+        page = cast(DataTypePage, required(self.wizard().page(Page_DataType), "data type page"))
         old = dict(self.wizard().require_dataset_info())
         page._button_selected(page._data_type_buttons()[min(index, 8)])
         if index == 9:
@@ -705,13 +703,20 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             if not isinstance(file_path, str) or not file_path:
                 return False
             self._update_column_mapping()
+            self._show_raw_preview()
             mapping = tuple(control.currentData() for control in self.mapping_controls)
             column_mapping = None
-            if mapping and any(index is None for index in mapping):
-                missing = self.required_header_labels[mapping.index(None)]
-                raise csv_import.CsvImportError(f'Select a column for required field "{missing}".')
             if mapping:
-                column_mapping = mapping
+                info = self.wizard().require_dataset_info()
+                raw, _ = DatasetTableModel.get_column_indices(info["data_type"], info["sub_type"])
+                raw_end = 2 + len(raw)
+                # The model retains both arms' slots even for a one-arm dataset.
+                raw_count = len(raw) // 2 if info["arms"] == "one" else len(raw)
+                raw_complete = bool(raw_count) and all(index is not None for index in mapping[2:2 + raw_count])
+                effects_complete = all(index is not None for index in mapping[raw_end:])
+                if any(index is None for index in mapping[:2]) or not (raw_complete or effects_complete):
+                    raise csv_import.CsvImportError("Map Study Name and Year, and either all raw data fields or all effect fields.")
+                column_mapping = tuple(-1 if index is None else index for index in mapping)
             notices = []
             self._import_result = csv_import.parse_csv(
                 file_path,
@@ -796,7 +801,31 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             self.imported_data_ok = False
             return False
 
+    def _read_rows(self):
+        return csv_import.read_rows(
+            required(self.file_path, "selected import path"),
+            has_headers=self._has_headers(), from_excel=self._is_from_excel(),
+            delimiter=self._get_delimter(), quotechar=self._get_quotechar(),
+            worksheet=self.worksheet_combo.currentText(),
+        )
+
+    def _show_raw_preview(self):
+        headers, rows = self._read_rows()
+        width = max([len(headers)] + [len(row) for row in rows])
+        self.preview_table.setColumnCount(width)
+        self.preview_table.setRowCount(len(rows))
+        self.preview_table.setHorizontalHeaderLabels(headers)
+        for column in range(width):
+            self.preview_table.setColumnHidden(column, False)
+        for number, row in enumerate(rows):
+            for column, value in enumerate(row):
+                item = QTableWidgetItem(value)
+                item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+                self.preview_table.setItem(number, column, item)
+        self.preview_table.resizeColumnsToContents()
+
     def _update_column_mapping(self):
+        self.mapping_table.setHorizontalHeaderLabels(["Field", "File column"])
         key = (self.worksheet_combo.currentText(), self.file_path, self._has_headers(), self._is_from_excel(), self._get_delimter(), self._get_quotechar())
         if key == self._mapping_key:
             return
@@ -806,16 +835,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.import_tabs.setTabEnabled(1, self._has_headers())
         if not self._has_headers():
             return
-        assert self.file_path is not None
-        suffix = Path(self.file_path).suffix.lower()
-        if suffix == ".xls":
-            raise csv_import.CsvImportError("Save this workbook as .xlsx before importing it.")
-        if suffix == ".xlsx":
-            headers, _, _, _ = csv_import.read_xlsx(self.file_path, self.worksheet_combo.currentText())
-        else:
-            with Path(required(self.file_path, "selected CSV path")).open(encoding="utf-8-sig", newline="") as stream:
-                reader = csv.reader(stream, dialect="excel") if self._is_from_excel() else csv.reader(stream, delimiter=self._get_delimter(), quotechar=self._get_quotechar())
-                headers = next(reader, [])
+        headers, _ = self._read_rows()
         if not headers:
             return
         aliases = self._legacy_header_aliases()
@@ -1195,8 +1215,7 @@ class MainWizard(QWizard):
         path = self.get_wizard_path()
         outcome_info = self.get_dataset_info()
         if outcome_info is not None and outcome_info["effect"] in ("HR", "IRR"):
-            effect = outcome_info["effect"]
-            assert effect is not None
+            effect = required(outcome_info["effect"], "ratio effect")
             outcome_info = outcome_info.copy()
             outcome_info["metric_choices"] = [effect]
         if path in {"new_dataset", "csv_import"} and outcome_info is None:
@@ -1209,9 +1228,10 @@ class MainWizard(QWizard):
         information["outcome_info"] = outcome_info
         # set outcome name
         if outcome_info is not None:
-            outcome_info["name"] = name_validation.normalize_name(
-                self.field("outcomeName")
-            )
+            outcome_info["name"] = name_validation.normalize_name(self.field("outcomeName"))
+            if path == "csv_import" and not outcome_info["name"]:
+                page = cast(CsvImportPage, required(self.page(Page_CsvImport), "CSV import page"))
+                outcome_info["name"] = Path(required(page.file_path, "import path")).stem
         information["selected_dataset"] = self.get_selected_dataset()
         information["csv_data"] = self.get_csv_data()
 

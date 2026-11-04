@@ -393,7 +393,8 @@ def run(app, window, work, root, record, analyze):
     assert page.isComplete()
     page.mapping_controls[1].setCurrentIndex(0)
     assert not page.isComplete()
-    assert page.preview_table.rowCount() == 0
+    assert page.preview_table.rowCount() == 1
+    assert required(page.preview_table.item(0, 0)).text() == "Exact headers"
     assert page.csv_data() is None
     assert "Year" in page.import_status.text()
     record("ux-csv-cleared-exact-headers", wizard, message=page.import_status.text())

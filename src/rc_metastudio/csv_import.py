@@ -47,6 +47,37 @@ class CsvImportResult:
         }
 
 
+def read_rows(
+    path: str | Path,
+    *,
+    has_headers: bool,
+    from_excel: bool,
+    delimiter: str = ",",
+    quotechar: str = '"',
+    worksheet: str | None = None,
+    year_column: int | None = None,
+    numeric_columns: Iterable[int] = (),
+    notices: list[str] | None = None,
+) -> tuple[list[str], list[list[str]]]:
+    """Read file cells, omitting fully blank rows from import and preview."""
+    suffix = Path(path).suffix.lower()
+    if suffix == ".xls":
+        raise CsvImportError("Save this workbook as .xlsx before importing it.")
+    if suffix == ".xlsx":
+        headers, rows, _names, _selected = read_xlsx(path, worksheet, year_column=year_column, numeric_columns=numeric_columns, notices=notices)
+    else:
+        with Path(path).open(encoding="utf-8-sig", newline="") as stream:
+            reader = (
+                csv.reader(stream, dialect="excel")
+                if from_excel
+                else csv.reader(stream, delimiter=delimiter, quotechar=quotechar)
+            )
+            headers = next(reader, []) if has_headers else []
+            rows = list(reader)
+    rows = [row for row in rows if any(cell.strip() for cell in row)]
+    return headers, rows
+
+
 def parse_csv(
     path: str | Path,
     *,
@@ -62,34 +93,29 @@ def parse_csv(
     worksheet: str | None = None,
     notices: list[str] | None = None,
 ) -> CsvImportResult:
-    """Read, normalize, and validate one CSV file."""
-    suffix = Path(path).suffix.lower()
-    if suffix == ".xls":
-        raise CsvImportError("Save this workbook as .xlsx before importing it.")
-    if suffix == ".xlsx":
-        headers, rows, _names, _selected = read_xlsx(path, worksheet, year_column=(column_mapping[year_column] if column_mapping else year_column), numeric_columns=set(column_mapping[1:] if column_mapping else range(1, len(expected_headers))), notices=notices)
+    """Read and validate rows; mapping index -1 leaves an optional field empty."""
+    headers, rows = read_rows(
+        path, has_headers=has_headers, from_excel=from_excel,
+        delimiter=delimiter, quotechar=quotechar, worksheet=worksheet,
+        year_column=column_mapping[year_column] if column_mapping else year_column,
+        numeric_columns=column_mapping[1:] if column_mapping else range(1, len(expected_headers)),
+        notices=notices,
+    )
+    if Path(path).suffix.lower() == ".xlsx":
         has_headers = True
-    else:
-        with Path(path).open(encoding="utf-8-sig", newline="") as stream:
-            reader = (
-                csv.reader(stream, dialect="excel")
-                if from_excel
-                else csv.reader(stream, delimiter=delimiter, quotechar=quotechar)
-            )
-            headers = next(reader, []) if has_headers else []
-            rows = list(reader)
     if header_aliases:
         headers = [header_aliases.get(header.casefold(), header) for header in headers]
 
     if column_mapping is not None:
         if not has_headers:
             raise CsvImportError("Column mapping requires a header row.")
-        if len(column_mapping) != len(expected_headers) or len(set(column_mapping)) != len(column_mapping):
+        mapped = [index for index in column_mapping if index >= 0]
+        if len(column_mapping) != len(expected_headers) or len(set(mapped)) != len(mapped):
             raise CsvImportError("Map each required field to a different CSV column.")
-        if any(index < 0 or index >= len(headers) for index in column_mapping):
+        if any(index < -1 or index >= len(headers) for index in column_mapping):
             raise CsvImportError("Select a CSV column for every required field.")
         indices = list(column_mapping) + [index for index in range(len(headers)) if index not in column_mapping]
-        rows = [[row[index] if index < len(row) else "" for index in indices] for row in rows]
+        rows = [[row[index] if 0 <= index < len(row) else "" for index in indices] for row in rows]
         headers = list(expected_headers) + [headers[index] for index in indices[len(expected_headers):]]
 
     if has_headers:

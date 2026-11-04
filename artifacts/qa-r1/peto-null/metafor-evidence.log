@@ -1,0 +1,138 @@
+Loading required package: Matrix
+Loading required package: metadat
+Loading required package: numDeriv
+
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+$method
+[1] "FE"
+
+$measure
+[1] "OR"
+
+$drop00
+[1] TRUE
+
+$yi.f
+[1]         NA -0.8109302  0.3483067
+attr(,"ni")
+[1] 40 40 40
+attr(,"measure")
+[1] "OR"
+
+$vi.f
+[1]        NA 0.8680556 0.7046569
+
+$weights
+ 1  2  3 
+ 0 60 40 
+
+$b
+   intrcpt 
+-0.1823216 
+
+$method
+[1] "FE"
+
+$measure
+[1] "OR"
+
+$drop00
+[1] FALSE
+
+$yi.f
+[1]  0.0000000 -0.8109302  0.3483067
+attr(,"ni")
+[1] 40 40 40
+attr(,"measure")
+[1] "OR"
+
+$vi.f
+[1] 4.0975610 0.8680556 0.7046569
+
+$weights
+ 1  2  3 
+ 0 60 40 
+
+$b
+   intrcpt 
+-0.1823216 
+
+$method
+[1] "FE"
+
+$measure
+[1] "PETO"
+
+$drop00
+[1] TRUE
+
+$yi.f
+[1]         NA -0.7647059  0.3376623
+attr(,"ni")
+[1] 40 40 40
+attr(,"measure")
+[1] "PETO"
+
+$vi.f
+[1]        NA 0.7647059 0.6753247
+
+$weights
+       1        2        3 
+ 0.00000 46.89655 53.10345 
+
+$b
+   intrcpt 
+-0.1793103 
+
+$method
+[1] "FE"
+
+$measure
+[1] "PETO"
+
+$drop00
+[1] FALSE
+
+$yi.f
+[1]  0.0000000 -0.7647059  0.3376623
+attr(,"ni")
+[1] 40 40 40
+attr(,"measure")
+[1] "PETO"
+
+$vi.f
+[1] 4.0000000 0.7647059 0.6753247
+
+$weights
+       1        2        3 
+ 0.00000 46.89655 53.10345 
+
+$b
+   intrcpt 
+-0.1793103 
+
+Warning messages:
+1: Some yi/vi values are NA. 
+2: Some yi/vi values are NA. 
+
+       yi     vi 
+1  0.0000 4.0976 
+2 -0.8109 0.8681 
+3  0.3483 0.7047 
+
+
+       yi     vi 
+1  0.0000 4.0976 
+2 -0.7022 0.7369 
+3  0.3102 0.6257 
+
+
+       yi     vi 
+1      NA     NA 
+2 -0.8109 0.8681 
+3  0.3483 0.7047 
+
+Warning message:
+Some 'yi' and/or 'vi' values equal to +-Inf. Recoded to NAs. 

@@ -110,7 +110,7 @@ test_that("MH forest retains dropped study rows and the original pooled fit", {
         summary <- rcmetar.revman.summary.effect(bundle)
         expect_identical(summary$res, fit)
         expect_length(summary$weights, 5L)
-        expect_true(is.na(summary$weights[5]))
+        expect_identical(summary$weights, as.numeric(weights(fit)))
         path <- tempfile(fileext=".png")
         rcmetar.draw.forest.plot(bundle, path)
         expect_gt(file.info(path)$size, 5000)

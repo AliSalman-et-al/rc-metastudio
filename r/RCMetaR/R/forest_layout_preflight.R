@@ -395,7 +395,7 @@ rcmetar.forest.journal.effect.intervals <- function(bundle) {
     yi <- as.numeric(bundle$effect$yi)
     ci.lb <- as.numeric(bundle$effect$ci.lb)
     ci.ub <- as.numeric(bundle$effect$ci.ub)
-    if (inherits(bundle$res, "rma")) {
+    if (inherits(bundle$res, "rma") && is.null(bundle$effect)) {
         yi <- as.numeric(bundle$res$yi)
         vi <- as.numeric(bundle$res$vi)
         if (length(yi) == length(vi)) {

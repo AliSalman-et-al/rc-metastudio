@@ -177,21 +177,7 @@ rcmetar.bmj.total.values <- function(bundle) {
 }
 
 rcmetar.bmj.not_estimable <- function(bundle) {
-    if (!identical(bundle$data_type, "binary")) {
-        return(rep(FALSE, nrow(bundle$ilab$matrix)))
-    }
-    experimental <- rcmetar.bmj.column.index(bundle, "experimental_events_total")
-    control <- rcmetar.bmj.column.index(bundle, "control_events_total")
-    if (length(experimental) != 1 || length(control) != 1) {
-        return(rep(FALSE, nrow(bundle$ilab$matrix)))
-    }
-    total.from.label <- function(values) {
-        parts <- strsplit(values, "/", fixed=TRUE)
-        suppressWarnings(as.numeric(trimws(vapply(parts, function(value) value[[2]], character(1)))))
-    }
-    exp.total <- total.from.label(bundle$ilab$matrix[, experimental])
-    ctrl.total <- total.from.label(bundle$ilab$matrix[, control])
-    ifelse(is.na(exp.total) | is.na(ctrl.total), FALSE, exp.total + ctrl.total == 0)
+    rcmetar.revman.not_estimable(bundle)
 }
 
 rcmetar.bmj.direction.labels <- function(bundle) rcmetar.revman.direction.labels(bundle)
@@ -229,10 +215,9 @@ rcmetar.bmj.metric.label <- function(bundle) {
 }
 
 rcmetar.bmj.method.label <- function(bundle) {
-    if (!is.null(bundle$params$rm.method) && bundle$params$rm.method != "FE") {
-        return("IV, random")
-    }
-    "IV, fixed"
+    if (!is.null(bundle$summary_res)) bundle$res <- bundle$summary_res
+    if (identical(bundle$forest_variant, "subgroup")) bundle$res <- bundle$subgroups$overall
+    rcmetar.revman.method.label(bundle)
 }
 
 rcmetar.bmj.layout <- function(bundle) {
@@ -289,14 +274,14 @@ rcmetar.measure.bmj.forest.device <- function(bundle) {
 
 rcmetar.bmj.effect.values <- function(bundle) {
     effect <- NULL
-    if (inherits(bundle$res, "rma") && !identical(bundle$forest_variant, "subgroup")) {
+    if (!is.null(bundle$effect)) {
+        effect <- bundle$effect
+    } else if (inherits(bundle$res, "rma") && !identical(bundle$forest_variant, "subgroup")) {
         effect <- list(
             yi=as.numeric(bundle$res$yi),
             ci.lb=as.numeric(bundle$res$ci.lb),
             ci.ub=as.numeric(bundle$res$ci.ub)
         )
-    } else if (!is.null(bundle$effect)) {
-        effect <- bundle$effect
     }
     if (is.null(effect)) {
         return(character(0))
@@ -432,8 +417,8 @@ rcmetar.forest.bmj.device.metrics <- function(bundle) {
             left.table.width <- group.header.width
         }
         metric.header <- paste0(
-            rcmetar.bmj.metric.label(bundle), ", IV,\n",
-            sub("^IV, ", "", rcmetar.bmj.method.label(bundle)),
+            rcmetar.bmj.metric.label(bundle), ",\n",
+            rcmetar.bmj.method.label(bundle),
             " (", bundle$params$conf.level, "% CI)"
         )
         effect.width <- rcmetar.bmj.text.width(
@@ -753,7 +738,7 @@ rcmetar.draw.bmj.headers <- function(bundle, layout, ilab, k, metric, method, sh
     }
     graphics::text(rcmetar.forest.study.x(layout), k + 2.35, "Study or\nsubgroup", pos=4)
     rcmetar.draw.forest.column.headers(bundle, layout, k + 1.55)
-    header <- paste0(metric, ", IV,\n", sub("^IV, ", "", method), " (", bundle$params$conf.level, "% CI)")
+    header <- paste0(metric, ",\n", method, " (", bundle$params$conf.level, "% CI)")
     rcmetar.draw.forest.effect.header(layout$plot.header.xpos, k + 1.55, header)
     rcmetar.draw.forest.effect.header(layout$annotation.header.xpos, k + 1.55, header)
     invisible(NULL)

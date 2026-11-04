@@ -279,3 +279,5 @@ styles with short/long arm names. `check_footer_metrics.py` reuses the existing
 footer bounds/non-overlap assertions and requires exact equal Favours baselines.
 Inputs, SVGs and geometry receipts remain in its chosen output directory; see
 the Windows notes for the install and run commands.
+
+`plot-workflow-mh-rd` exercises invalid lower-axis input: Apply displays a plain validation message before rendering and preserves the figure bytes; a recovered BMJ edit proves the fit-derived method header.
