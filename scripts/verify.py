@@ -245,6 +245,7 @@ def run_packaging_contracts() -> None:
 
 def run_pre_push() -> None:
     build = Path(os.environ.get("RCMS_QT6_BUILD_ROOT", str(DEFAULT_BUILD_ROOT))).resolve()
+    os.environ["RCMS_QT6_BUILD_ROOT"] = str(build)
     fast = parser().parse_args(["fast", "--skip-r-evidence", "--build-root", str(build)])
     stack = parser().parse_args(["r-stack", "--build-root", str(build)])
     steps = [
