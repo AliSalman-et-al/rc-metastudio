@@ -772,6 +772,13 @@ Copy-RRuntime -Root $resolvedRRuntimeRoot -DestinationRoot $appDir
 Remove-BundledRInstallerResidue -Root $appDir
 Install-BundledRPackages -Root $appDir
 
+Write-Step "Pruning build-only payload from the completed staged R runtime"
+$rClosurePath = Join-Path $workRoot "r-closure.txt"
+& (Join-Path $appDir "R\bin\Rscript.exe") (Join-Path $repoRoot "scripts\r-bundle-closure.R") (Join-Path $appDir "R\library") $rClosurePath
+if ($LASTEXITCODE -ne 0) { throw "Could not compute staged R package closure." }
+& $PythonExe (Join-Path $repoRoot "scripts\prune_staged_r.py") (Join-Path $appDir "R") $rClosurePath --windows
+if ($LASTEXITCODE -ne 0) { throw "Staged R pruning failed." }
+
 Write-Step "Verifying the direct target-native R and rpy2 API closure"
 $rpy2ApiBridge = Get-ChildItem -LiteralPath $appDir -Recurse -File -Filter "_rinterface_cffi_api*.pyd" | Select-Object -First 1
 if ($null -eq $rpy2ApiBridge) { throw "The required rpy2 API bridge was not collected." }

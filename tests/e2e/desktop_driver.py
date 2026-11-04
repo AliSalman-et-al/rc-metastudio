@@ -709,6 +709,15 @@ def sheets_legacy(app, window):
 
 
 def sheets(app, window):
+    from rc_metastudio import r_bridge
+    # Non-unit sampling variance exposes variance/SE confusion in raw IRR previews.
+    code = 'local({e <- metafor::escalc("IRR", x1i=4, t1i=100, x2i=9, t2i=120, add=.5, to="only0", drop00=TRUE); c(e$yi, e$yi-qnorm(.975)*sqrt(e$vi), e$yi+qnorm(.975)*sqrt(e$vi))})'
+    expected = [float(x) for x in r_bridge.execute_r_string(code)]
+    actual = r_bridge.incidence_rate_effect_preview([4, 100, 9, 120], 95)
+    assert all(a is not None and abs(a-e) < 1e-10 for a, e in zip(actual, expected)), (actual, expected)
+    record_step("irr-preview-authority", window, raw=[4,100,9,120], confidence=95,
+                r_code=code, expected=expected, actual=actual)
+
     for sample in ("NielWeise2008-IRR", "amino"):
         assert window.open(str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
         table = window.tableView

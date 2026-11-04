@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-09679444/tests/e2e/desktop_driver.py", line 2101, in <module>
+    sheets(app, window)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-09679444/tests/e2e/desktop_driver.py", line 717, in sheets
+    assert all(a is not None and abs(a-e) < 1e-10 for a, e in zip(actual, expected)), (actual, expected)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ((-0.6286086594223739, -1.3363734316173932, 0.07915611277264545), [-0.6286086594223739, -1.8064004334760193, 0.5491831146312716])

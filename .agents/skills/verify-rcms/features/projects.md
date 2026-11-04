@@ -169,3 +169,8 @@ The overflow proof also narrows the window during inline rename and checks both 
 
 
 `ui-crawl` deliberately captures each named surface once, in sections E, F, G, B, C, then retained shell section A. It uses selected real analysis drivers with their assertions intact for the specialized plots. Its index lists omissions and the scenario intentionally fails while D, H, I and J await the next run. This is a visual inventory, not full parameter or native-platform qualification.
+
+The `sheets` drive compares the raw IRR bridge preview against direct metafor
+intervals with non-unit variance. This supplements pooled numerical comparisons.
+The unmapped XLSX date-year fallback is covered in the existing parser tests:
+the import wizard always supplies a column mapping and cannot reach that fallback.

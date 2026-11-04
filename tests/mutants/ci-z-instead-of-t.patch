@@ -1,0 +1,11 @@
+--- a/r/RCMetaR/R/continuous_methods.R
++++ b/r/RCMetaR/R/continuous_methods.R
+@@ -66,7 +66,7 @@
+       sei=cont.data@SE,
+       slab=cont.data@study.names,
+       method="FE",
+-      test=inference.method,
++      test="z",
+       level=params$conf.level,
+       digits=params$digits)
+     pure.res <- res

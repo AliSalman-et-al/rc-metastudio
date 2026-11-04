@@ -476,22 +476,37 @@ if ! test_bundled_r_packages "$r_lib"; then
   exit 1
 fi
 
+step "Building the target-native rpy2 API bridge against completed staged R"
+R_HOME="$r_home" PATH="$r_home/bin:$PATH" RPY2_CFFI_MODE=API uv pip install \
+  --python "$python_exe" --reinstall --no-binary rpy2-rinterface \
+  "rpy2-rinterface==3.6.6"
+
+# Resolve the official fontconfig aliases while all runtime resources are intact.
+# The pruning gate checks every remaining symlink, including these runtime links.
+"$python_exe" - "$r_framework" "$repo_root/scripts" <<'PYTHON'
+from pathlib import Path
+import sys
+sys.path.insert(0, sys.argv[2])
+from macos_embedded_r_adapter import normalize_fontconfig_links
+normalize_fontconfig_links(Path(sys.argv[1]))
+PYTHON
+
+step "Pruning build-only staged R payload"
+R_HOME="$r_home" "$rscript" "$repo_root/scripts/r-bundle-closure.R" "$r_lib" "$work_root/r-closure.txt"
+"$python_exe" "$repo_root/scripts/prune_staged_r.py" "$r_home" "$work_root/r-closure.txt"
+
 step "Finalizing the embedded R product profile after package installation"
 "$python_exe" "$repo_root/scripts/profile_macos_embedded_r_runtime.py" finalize \
   --resources "$r_home" --evidence "$r_runtime_profile_path" \
   --dependency-manifest "$repo_root/config/r-dependencies.json" \
   --r-version "$r_version" --architecture "$expected_machine" \
-  --quarantine-evidence "$quarantine_profile_path"
+  --quarantine-evidence "$quarantine_profile_path" \
+  --runtime-closure "$work_root/r-closure.txt"
 
 step "Relocating completed bundled R runtime dependencies"
 bash "$repo_root/scripts/relocate_macos_r_runtime.sh" --resources "$r_home" --architecture "$expected_machine" \
   --python "$python_exe" --allowed-root "$repo_root/build/macos-package/$architecture" \
   --normalizer "$repo_root/scripts/normalize_macos_macho.py"
-
-step "Building the target-native rpy2 API bridge against completed staged R"
-R_HOME="$r_home" PATH="$r_home/bin:$PATH" RPY2_CFFI_MODE=API uv pip install \
-  --python "$python_exe" --reinstall --no-binary rpy2-rinterface \
-  "rpy2-rinterface==3.6.6"
 
 step "Proving and relocating the rpy2 API bridge against staged R"
 rpy2_api_bridge="$($python_exe - <<'PY'

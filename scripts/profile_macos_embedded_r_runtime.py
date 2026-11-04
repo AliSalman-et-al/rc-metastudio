@@ -432,7 +432,8 @@ def quarantine(
 
 
 def finalize(
-    resources: Path, evidence: Path, manifest_path: Path, quarantine_evidence: Path
+    resources: Path, evidence: Path, manifest_path: Path, quarantine_evidence: Path,
+    runtime_closure: Path | None = None,
 ) -> None:
     resources = resources.resolve(strict=True)
     try:
@@ -447,6 +448,12 @@ def finalize(
         if (resources / relative).exists():
             raise ProfileError(f"optional R surface was reintroduced: {relative}")
     roots, builtin, manifest_sha256 = manifest_roots(manifest_path)
+    if runtime_closure is not None:
+        # Installation policy includes build/test tools that are not shipped.
+        # Use the same installed-metadata closure that governed staged pruning.
+        roots = runtime_closure.read_text(encoding="utf-8").splitlines()
+        if "RCMetaR" not in roots:
+            raise ProfileError("runtime closure does not contain RCMetaR")
     closure = hard_dependency_closure(resources / "library", roots, builtin)
     evidence.parent.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -494,6 +501,7 @@ def main() -> int:
     parser.add_argument("--source-resources", type=Path)
     parser.add_argument("--official-framework-layout", action="store_true")
     parser.add_argument("--quarantine-evidence", type=Path)
+    parser.add_argument("--runtime-closure", type=Path)
     args = parser.parse_args()
     try:
         if args.phase == "quarantine":
@@ -513,6 +521,7 @@ def main() -> int:
                 args.evidence,
                 args.dependency_manifest,
                 args.quarantine_evidence,
+                args.runtime_closure,
             )
     except (OSError, ProfileError) as exc:
         print(f"Embedded R product profile failed: {exc}", file=sys.stderr)
