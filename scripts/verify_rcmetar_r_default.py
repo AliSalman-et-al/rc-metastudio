@@ -151,22 +151,6 @@ def binary_dependency_policy(root: Path) -> dict:
         raise DefaultREvidenceError(str(exc)) from exc
 
 
-def direct_dependency_policy(root: Path) -> tuple[list[str], dict[str, str]]:
-    manifest = json.loads(
-        (root / "config/r-dependencies.json").read_text(encoding="utf-8")
-    )
-    cran_packages = []
-    archive_packages = {}
-    for dependency in manifest["direct_RCMetaR_dependencies"]:
-        source = dependency.get("source")
-        name = dependency["name"]
-        if source == "cran":
-            cran_packages.append(name)
-        elif source == "cran-archive":
-            archive_packages[name] = dependency["installed_version"]
-    return sorted(cran_packages), archive_packages
-
-
 def install_direct_dependencies(
     root: Path, rscript: Path, library: Path, cran_repo: str, env: dict[str, str]
 ) -> None:
@@ -314,20 +298,6 @@ def verify(args: argparse.Namespace) -> None:
             "; ".join(message_parts)
             + "; Default R Evidence limited to manifest validation"
         )
-        if args.install_missing and args.r_library_cache_root:
-            report = installed_version_report(root, python, rscript, base_env)
-            missing = sorted(
-                name for name, version in report["packages"].items() if version is None
-            )
-            wrong_versions = {
-                name: {"expected": expected, "actual": report["packages"].get(name)}
-                for name, expected in direct_archive_versions(root).items()
-                if report["packages"].get(name) != expected
-            }
-            if not missing and not wrong_versions:
-                install_and_load_RCMetaR(root, rscript, base_env)
-                step("Default R Evidence complete")
-                return
         if args.require_installed_packages:
             raise DefaultREvidenceError(message)
         step(message)
