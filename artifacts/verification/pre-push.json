@@ -1,0 +1,47 @@
+[
+  {
+    "step": "prepare",
+    "seconds": 3.42,
+    "status": "pass"
+  },
+  {
+    "step": "typing (win32)",
+    "seconds": 3.65,
+    "status": "pass"
+  },
+  {
+    "step": "code health",
+    "seconds": 65.97,
+    "status": "pass"
+  },
+  {
+    "step": "Python, GUI and golden",
+    "seconds": 132.1,
+    "status": "pass"
+  },
+  {
+    "step": "packaging contracts",
+    "seconds": 3.49,
+    "status": "pass"
+  },
+  {
+    "step": "R stack and full desktop E2E (-n auto)",
+    "seconds": 4356.6,
+    "status": "pass"
+  },
+  {
+    "step": "Windows native Qt and package qualification",
+    "seconds": 0.0,
+    "status": "CI only"
+  },
+  {
+    "step": "macOS native smoke and packaging",
+    "seconds": 0.0,
+    "status": "CI only"
+  },
+  {
+    "step": "Linux native xcb smoke",
+    "seconds": 0.0,
+    "status": "CI only"
+  }
+]
