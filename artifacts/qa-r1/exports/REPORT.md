@@ -90,3 +90,36 @@ exported PDF and DOCX using the actual GTK save dialog. See
 first page inspected and readable black on white. Native session stopped.
 This adds dark/large-font final export proof, but does not fill the remaining
 light-theme, four-format plot, overwrite, and table/CSV audit gaps above.
+
+## UI-font independence follow-up
+
+The light CI export embeds Arial; Poppler XML reports its body at 14 pixels
+(at Poppler's 1.5 scale), corresponding to the default 9 pt Qt font.
+PDF text documents now explicitly use `QFont('Arial', 9)` for both body and
+captions. The OS may substitute Arial if unavailable, but application font
+preferences no longer select the export font.
+
+The extended existing E2E scenario runs with a +6 pt UI font and exports amino
+again with the original UI font. It compares every PDF page and word bounding
+box (excluding metadata timestamps), and DOCX `word/document.xml` and
+`word/styles.xml`. Retained PDFs, DOCX files and `.layout.html` files make the
+comparison repeatable.
+
+Before fix: run `20261104T094954Z-b1ba874e-manuscript-export-direct` failed with
+`PDF layout inherited the UI font`. Retained amino exports had 7 pages at the
+large UI font and 6 at the default font. First-word vertical bounds were
+12.952501–53.812501 versus 12.948470–37.464470. This establishes a real layout
+difference independent of PDF timestamp metadata.
+
+DOCX construction uses python-docx styles, not QApplication/QFont; the
+cross-font document/style XML comparison verifies this through the real
+report writer. No DOCX production change is needed for UI-font independence.
+
+After fix: run `20261104T095125Z-a89571b0-manuscript-export-direct`
+records `manuscript-ui-font-independent` for both PDF and DOCX.
+`font-independent-final.png` is the 60-DPI first page of the large-UI-font
+export: title/body sizing matches the light CI default export. On this Linux
+host Arial resolves to Liberation Sans; the font request remains Arial 9 pt.
+Final font-fix run completed with `WORKFLOW PASSED`; strict Windows-target
+typing passed (`typing-font-final.log`). Both evidence runs retain complete
+commands, runtime identity, layouts and exported documents in their manifests.

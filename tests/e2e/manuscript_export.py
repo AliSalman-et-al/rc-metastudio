@@ -24,6 +24,10 @@ def run(app, window, work, root, record, analyze, *, direct_write=False):
     from PyQt6.QtGui import QColor, QPalette
 
     original_palette = app.palette()
+    original_font = app.font()
+    large_font = app.font()
+    large_font.setPointSizeF(large_font.pointSizeF() + 6)
+    app.setFont(large_font)
     dark_palette = QPalette(original_palette)
     dark_palette.setColor(QPalette.ColorRole.Text, QColor('#eeeeee'))
     dark_palette.setColor(QPalette.ColorRole.Base, QColor('#151515'))
@@ -53,6 +57,29 @@ def run(app, window, work, root, record, analyze, *, direct_write=False):
                         factory = getattr(manuscript_report, name)
                         stack.enter_context(patch.object(manuscript_report, name, new=observed(factory)))
                     writer(report, path)
+                if pathlib.Path(path).name.startswith('amino report'):
+                    baseline = pathlib.Path(path).with_stem(pathlib.Path(path).stem + '-default-font')
+                    app.setFont(original_font)
+                    try:
+                        writer(report, baseline)
+                    finally:
+                        app.setFont(large_font)
+                    if extension == 'pdf':
+                        layouts = [subprocess.check_output(['pdftotext', '-bbox', str(export), '-'])
+                                   for export in (path, baseline)]
+                        for export, layout in zip((path, baseline), layouts):
+                            pathlib.Path(export).with_suffix('.layout.html').write_bytes(layout)
+                        from xml.etree import ElementTree as ET
+                        pages = [ET.fromstring(layout).findall('.//{*}page') for layout in layouts]
+                        page_layouts = [[ET.tostring(page) for page in export] for export in pages]
+                        assert page_layouts[0] == page_layouts[1], 'PDF layout inherited the UI font'
+                    else:
+                        from zipfile import ZipFile
+                        with ZipFile(path) as large_doc, ZipFile(baseline) as default_doc:
+                            for part in ('word/document.xml', 'word/styles.xml'):
+                                assert large_doc.read(part) == default_doc.read(part), part
+                    record('manuscript-ui-font-independent', format=extension,
+                           large=str(path), default=str(baseline))
                 # Reference-counted Qt resources must go away on return, without
                 # cyclic collection concealing a retained writer or paint device.
                 alive = [name for name, reference in resources if reference() is not None]
@@ -74,6 +101,7 @@ def run(app, window, work, root, record, analyze, *, direct_write=False):
     assert writes == {"pdf": 21, "docx": 9}, (mode, writes)
     record("manuscript-export-mode-complete", mode=mode, writes=dict(writes))
     app.setPalette(original_palette)
+    app.setFont(original_font)
 
 
 def _run(app, window, work, root, record, analyze, *, direct_write):
