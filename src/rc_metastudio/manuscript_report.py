@@ -218,7 +218,7 @@ def _pooled_prose(result, values, effect, effect_metric, coefficient, statistic,
         return
     lead = f"For {effect}, the coefficient" if coefficient else (f"Overall, the pooled {effect_metric}" if effect.lower() == "overall" else f"In {effect}, the pooled {effect_metric}") if 'Subgroups' in values or 'Term' in values else f"The pooled {effect_metric}"
     inference = (f", {statistic} = {test}" if test != '—' else '') + (', ' + _p_clause(p) if p != '—' else '')
-    summary.append(f"{lead} was {values['Estimate']} ({level} {values[lower]} to {values[upper]}{inference}).")
+    summary.append(f"{lead} was {values['Estimate']} ({level} [{values[lower]}, {values[upper]}]{inference}).")
     meaning = _interval_meaning(values[lower], values[upper], effect_metric, result.manuscript_arms, coefficient=coefficient)
     if coefficient and meaning and 'includes 0' in meaning:
         meaning = f"The confidence interval includes 0, so these data do not show a clear association with {effect}."
@@ -273,9 +273,7 @@ def _heterogeneity_rows(table, fit, summary, residual=None):
             summary.extend(_heterogeneity_sentence(values, prefix))
         labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity p', 'I²': 'I²', 'τ²': 'Between-study variance (τ²)'}
         values = dict(zip(table.headers, row))
-        if 'Subgroups' in values:
-            fit.append(('Subgroup', values['Subgroups']))
-        fit.extend((labels[h], p_value(v) if h == 'p-value' else v) for h, v in values.items() if h in labels)
+        fit.extend((labels[h] + (' (' + values['Subgroups'] + ')' if 'Subgroups' in values else ''), p_value(v) if h == 'p-value' else v) for h, v in values.items() if h in labels)
 
 
 def _fit_table(table, fit, summary):
@@ -359,26 +357,18 @@ def _section_statistics(section):
 
 
 def _presentation_cell(value, digits):
-    digits = min(3, digits)
-    def number(match):
-        raw = match[0]
-        value = Decimal(raw.rstrip('%'))
-        if raw.endswith('%'):
-            return f"{value:.1f}%"
-        if value and abs(value) < Decimal(10) ** -digits:
-            return f"{value:.2e}"
-        return f"{value:.{digits}f}"
-    return re.sub(r"(?<![\w.])-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)%?(?![\w.])|(?<![\w.])-?\d+\.\d+%?(?![\w.])", number, value)
+    return re.sub(r"(?<![\w.])-?\d+\.\d+%?(?![\w.])",
+                  lambda match: f"{Decimal(match[0][:-1]):.1f}%" if match[0].endswith("%") else f"{Decimal(match[0]):.{digits}f}", value)
 
 
-def _presentation_rows(rows, digits, p_column=None):
-    return tuple(tuple(value if i == p_column or (i == 1 and row[0].endswith(" p")) else _presentation_cell(value, min(3, digits)) for i, value in enumerate(row)) for row in rows)
+def _presentation_rows(rows, digits):
+    return tuple(tuple(_presentation_cell(value, digits) for value in row) for row in rows)
 
 
 def _presentation_result(result):
     return replace(result, sections=tuple(
         replace(section, tables=tuple(replace(table, rows=tuple(
-            tuple(value if header == 'p-value' or (table.headers == ('Statistic', 'Value') and row[0] == 'p-value') else _presentation_cell(value, min(3, result.manuscript_digits))
+            tuple(value if header == 'p-value' or (table.headers == ('Statistic', 'Value') and row[0] == 'p-value') else _presentation_cell(value, result.manuscript_digits)
                   for header, value in zip(table.headers, row)) for row in table.rows))
             for table in section.tables)) for section in result.sections))
 
@@ -402,7 +392,7 @@ def _primary_sections(result, text_sections, pooled, fit, level, statistic):
     template = text_sections[0]
     sections = [replace(template, title='Pooled effect', paragraphs=(() if pooled else
                          ('No structured pooled estimates are available for this workflow; the complete output is in Supplementary details.',)),
-                        tables=(ResultTable('Pooled effect', ('Effect', 'Estimate', level, 'SE', statistic, 'p'), _presentation_rows(pooled, result.manuscript_digits, p_column=5)),)),
+                        tables=(ResultTable('Pooled effect', ('Effect', 'Estimate', level, 'SE', statistic, 'p'), _presentation_rows(pooled, result.manuscript_digits)),)),
                 replace(template, title='Model fit', paragraphs=(),
                         tables=(ResultTable('Model fit', ('Statistic', 'Value'), _presentation_rows(fit, result.manuscript_digits)),)),
                 _study_results(_presentation_result(result), template, level)]

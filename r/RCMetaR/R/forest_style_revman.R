@@ -223,11 +223,11 @@ rcmetar.revman.wrap.direction <- function(label, width=22) {
 
 rcmetar.revman.p.value.label <- function(p.value, digits=RCMETAR_DEFAULT_DISPLAY_DIGITS) {
     if (display.value.is.missing(p.value)) {
-        return("p = NA")
+        return("P = NA")
     }
     value <- format.p.value.display(p.value, digits)
-    if (startsWith(value, "<")) return(paste("p", value))
-    paste("p =", value)
+    if (startsWith(value, "<")) return(paste("P", value))
+    paste("P =", value)
 }
 
 rcmetar.revman.decorate.bundle <- function(bundle) {
@@ -592,11 +592,11 @@ rcmetar.revman.summary.effect <- function(bundle) {
         psize=psize,
         label=paste0(
             rcmetar.revman.format.effect.number(pred[[1]], bundle$params$digits, max(abs(pred))),
-            " (",
+            " [",
             rcmetar.revman.format.effect.number(pred[[2]], bundle$params$digits, max(abs(pred))),
-            " to ",
+            ", ",
             rcmetar.revman.format.effect.number(pred[[3]], bundle$params$digits, max(abs(pred))),
-            ")"
+            "]"
         )
     )
 }
@@ -621,8 +621,8 @@ rcmetar.draw.revman.study.effect.labels <- function(bundle, effect, layout, rows
         scale <- if (metric.is.log.scale(bundle$params$measure)) 0 else pmax(abs(y), abs(lower), abs(upper))
         labels[finite] <- paste0(
             rcmetar.revman.format.effect.number(y, bundle$params$digits, scale),
-            " (", rcmetar.revman.format.effect.number(lower, bundle$params$digits, scale),
-            " to ", rcmetar.revman.format.effect.number(upper, bundle$params$digits, scale), ")"
+            " [", rcmetar.revman.format.effect.number(lower, bundle$params$digits, scale),
+            ", ", rcmetar.revman.format.effect.number(upper, bundle$params$digits, scale), "]"
         )
     }
     graphics::text(layout$annotation.xpos, rows, labels, pos=2, cex=cex)

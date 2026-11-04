@@ -1034,7 +1034,6 @@ def _matches_baseline_environment(baseline_environment):
 
 
 def _parse_summary(text):
-    text = re.sub(r"(?<![\w.])\.(?=\d)", "0.", text)
     structured = _parse_structured_summary_display(text)
     if structured:
         return structured
@@ -1103,7 +1102,6 @@ def _parse_summary(text):
 
 
 def _parse_result_table(text):
-    text = re.sub(r"(?<![\w.])\.(?=\d)", "0.", text)
     omitted = "Study omitted" in text
     values = {}
     lines = text.splitlines()

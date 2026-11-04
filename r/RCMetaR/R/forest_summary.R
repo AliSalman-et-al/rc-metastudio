@@ -144,8 +144,8 @@ rcmetar.forest.prediction.label <- function(bundle, res=bundle$res) {
     measure <- as.character(bundle$params$measure)
     display <- rcmetar.prediction.display(bounds, bundle$params,
         rcmetar.bundle.transform(bundle), bundle$sample_sizes)
-    paste0(display.confidence.level(bundle$params), "% prediction interval: ",
-           paste(rcmetar.format.effect.number(display$bounds, display.digits(bundle$params)), collapse=" to "),
+    paste0(display.confidence.level(bundle$params), "% prediction interval: [",
+           paste(rcmetar.format.effect.number(display$bounds, display.digits(bundle$params)), collapse=", "), "]",
            if (measure == "PFT" && isTRUE(display$transformed))
                " (Freeman-Tukey scale; proportion inverse undefined)" else "")
 }

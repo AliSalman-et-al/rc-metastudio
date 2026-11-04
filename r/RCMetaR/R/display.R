@@ -75,10 +75,11 @@ format.p.value.display <- function(value, digits) {
   if (display.value.is.missing(value)) {
     return("")
   }
-  threshold <- 0.001
-  formatted <- sub("^0", "", round.display(value, 3L))
+  digits <- p.value.display.digits(digits)
+  threshold <- 10^(-digits)
+  formatted <- round.display(value, digits)
   small.nonnegative <- is.finite(value) & value >= 0 & value < threshold
-  formatted[small.nonnegative] <- "< .001"
+  formatted[small.nonnegative] <- paste("< ", threshold, sep="")
   formatted
 }
 

@@ -6,8 +6,10 @@ forest.plot.p.value.label <- function(p.value, digits, missing.label="") {
         return(missing.label)
     }
     formatted <- format.p.value.display(p.value, digits)
-    if (startsWith(formatted, "<")) return(paste("p", formatted))
-    paste("p =", formatted)
+    if (p.value < 10^(-digits)) {
+        return(paste("P", formatted, sep=""))
+    }
+    paste("P=", formatted, sep="")
 }
 
 forest.plot.heterogeneity.suffix <- function(I2, QEp) {

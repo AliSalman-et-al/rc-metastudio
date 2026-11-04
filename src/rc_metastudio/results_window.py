@@ -1627,9 +1627,9 @@ def _report_interval_columns(headers, rows):
         if header.startswith("Lower bound (") and index + 1 < len(headers) and headers[index + 1].startswith("Upper bound ("):
             level = header.removeprefix("Lower bound (").removesuffix(")")
             start = index - 1 if index > 0 and headers[index - 1] == "Estimate" else index
-            headers[start:index + 2] = [f"Estimate ({level})" if start < index else level]
+            headers[start:index + 2] = [f"Estimate [{level}]" if start < index else level]
             for row in rows:
-                interval = f"{row[index]} to {row[index + 1]}"
+                interval = f"[{row[index]},\u00a0{row[index + 1]}]"
                 row[start:index + 2] = [f"{row[start]} {interval}" if start < index else interval]
             break
 

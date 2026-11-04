@@ -275,11 +275,9 @@ def expected_fit_table(result, section, source):
     elif source.title.endswith('Heterogeneity') or source.title == 'Residual heterogeneity':
         labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity p', 'I²': 'I²', 'τ²': 'Between-study variance (τ²)'}
         for row in data:
-            context = ''
+            context = (' (' + row['Subgroups'] + ')' if 'Subgroups' in row else '')
             if ',' in result.manuscript_metric:
                 context += ' (' + section.title.removesuffix(' Summary') + ')'
-            if 'Subgroups' in row:
-                rows.append(('Subgroup' + context, row['Subgroups']))
             rows.extend((labels[h] + context, expected_p(v) if h == 'p-value' else v) for h, v in row.items() if h in labels)
     elif source.title == 'Test of subgroup differences' and data:
         rows.extend((label, expected_p(data[0][key]) if key == 'p-value' else data[0][key]) for key, label in (
@@ -319,10 +317,9 @@ def assert_exports(view, data):
 
 def presentation_rows(rows, digits):
     from decimal import Decimal
-    digits = min(3, digits)
-    return tuple(tuple(cell if i == 1 and row[0].endswith(" p") else re.sub(r"(?<![\w.])-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)%?(?![\w.])|(?<![\w.])-?\d+\.\d+%?(?![\w.])",
-                             lambda m: f"{Decimal(m[0][:-1]):.1f}%" if m[0].endswith("%") else f"{Decimal(m[0]):.2e}" if Decimal(m[0]) and abs(Decimal(m[0])) < Decimal(10) ** -digits else f"{Decimal(m[0]):.{digits}f}", cell)
-                       for i, cell in enumerate(row)) for row in rows)
+    return tuple(tuple(re.sub(r"(?<![\w.])-?\d+\.\d+%?(?![\w.])",
+                             lambda m: f"{Decimal(m[0][:-1]):.1f}%" if m[0].endswith("%") else f"{Decimal(m[0]):.{digits}f}", cell)
+                       for cell in row) for row in rows)
 
 
 def assert_retained_table(view, section, source):
@@ -345,7 +342,7 @@ def assert_report(view):
         assert pooled.headers[2].endswith('% CI')
         expected_rows = expected_pooled(view.results)
         indexes = [i for i in range(6) if any(row[i] not in ('', '—', 'NA') for row in expected_rows)]
-        expected_rows = tuple(tuple(cell if i == 5 else presentation_rows(((cell,),), min(3, view.results.manuscript_digits))[0][0] for i, cell in enumerate(row)) for row in expected_rows)
+        expected_rows = presentation_rows(expected_rows, view.results.manuscript_digits)
         assert pooled.rows == tuple(tuple(row[i] for i in indexes) for row in expected_rows)
         assert all(any(row[i] not in ('', '—', 'NA') for row in pooled.rows) for i in range(len(pooled.headers)))
     else:
