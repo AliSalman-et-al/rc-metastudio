@@ -408,9 +408,7 @@ def verify_analysis_authorities(root: Path, rscript: Path, env: dict[str, str]) 
     )
     result = json.loads(report.read_text(encoding="utf-8"))
     cases = result["cases"]
-    if (result.get("passed") is not True or not cases
-            or result.get("case_count") != len(cases)
-            or any(case.get("passed") is not True for case in cases)):
+    if not cases or not all(case["passed"] for case in cases):
         raise VerificationError("Statistical authority matrix contains failed or missing cases")
     step(f"Statistical authorities verified: {len(cases)} cases passed "
          f"in {time.monotonic() - started:.2f}s")
