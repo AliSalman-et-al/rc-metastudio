@@ -1576,8 +1576,9 @@ def calculator(app, window, family):
                     ".", ","
                 )
             )
-            dialog.effect_text_box.setFocus()
-            app.processEvents()
+            if accept:
+                dialog.effect_text_box.setFocus()
+                app.processEvents()
             label = dialog.ci_label
             metrics = label.fontMetrics()
             text_width = metrics.horizontalAdvance(label.text())
