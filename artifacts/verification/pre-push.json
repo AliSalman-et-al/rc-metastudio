@@ -1,33 +1,38 @@
 [
   {
     "step": "prepare",
-    "seconds": 3.42,
+    "seconds": 2.9,
     "status": "pass"
   },
   {
     "step": "typing (win32)",
-    "seconds": 3.65,
+    "seconds": 3.36,
     "status": "pass"
   },
   {
     "step": "code health",
-    "seconds": 65.97,
+    "seconds": 68.1,
     "status": "pass"
   },
   {
-    "step": "Python, GUI and golden",
-    "seconds": 132.1,
+    "step": "Python fast and golden",
+    "seconds": 56.57,
+    "status": "pass"
+  },
+  {
+    "step": "GUI",
+    "seconds": 75.44,
     "status": "pass"
   },
   {
     "step": "packaging contracts",
-    "seconds": 3.49,
+    "seconds": 3.44,
     "status": "pass"
   },
   {
-    "step": "R stack and full desktop E2E (-n auto)",
-    "seconds": 4356.6,
-    "status": "pass"
+    "step": "R stack, authorities and desktop E2E (local: python scripts/verify.py r-stack)",
+    "seconds": 0.0,
+    "status": "CI only"
   },
   {
     "step": "Windows native Qt and package qualification",
