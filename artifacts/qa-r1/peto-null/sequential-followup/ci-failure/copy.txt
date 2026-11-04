@@ -1,0 +1,389 @@
+clinical failure: fixed-effect meta-analysis (odds ratio)
+
+Comparison: Intervention / Control
+
+Methods
+
+Odds ratios were pooled using a fixed-effect model. Leave-one-out analyses were performed by omitting each study in turn. A continuity correction of 0.5 was applied to individual study estimates only; the pooled Mantel-Haenszel estimate uses the original counts. Analyses were performed in RC MetaStudio 0.5.1. R packages loaded for this analysis: metafor 5.0.1, meta 8.5-0.
+
+Results
+
+19 studies were included (1097 participants in Intervention, 1080 in Control). The pooled odds ratio was 0.711969 (95% CI [0.542864, 0.933750], p = .014). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. The pooled odds ratio was 0.720330 (95% CI [0.545347, 0.951458], p = .021). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. The pooled odds ratio was 0.726827 (95% CI [0.551112, 0.958566], p = .024). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. The pooled odds ratio was 0.741717 (95% CI [0.564134, 0.975201], p = .032). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. The pooled odds ratio was 0.639045 (95% CI [0.476256, 0.857477], p = .003). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. The pooled odds ratio was 0.723577 (95% CI [0.551186, 0.949885], p = .020). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. The pooled odds ratio was 0.873886 (95% CI [0.637149, 1.198584], p = .403). The confidence interval includes 1, so these data do not show a clear difference between Intervention and Control. The pooled odds ratio was 0.679859 (95% CI [0.514133, 0.899006], p = .007). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. The pooled odds ratio was 0.704170 (95% CI [0.536464, 0.924303], p = .012). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. The pooled odds ratio was 0.760212 (95% CI [0.576016, 1.003308], p = .053). The confidence interval includes 1, so these data do not show a clear difference between Intervention and Control. The pooled odds ratio was 0.682507 (95% CI [0.517072, 0.900874], p = .007). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. The pooled odds ratio was 0.747763 (95% CI [0.568477, 0.983593], p = .038). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. The pooled odds ratio was 0.713458 (95% CI [0.541835, 0.939443], p = .016). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. The pooled odds ratio was 0.678426 (95% CI [0.507935, 0.906144], p = .009). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. The pooled odds ratio was 0.675423 (95% CI [0.509053, 0.896166], p = .007). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. The pooled odds ratio was 0.711969 (95% CI [0.542864, 0.933750], p = .014). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. The pooled odds ratio was 0.723577 (95% CI [0.551185, 0.949887], p = .020). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. The pooled odds ratio was 0.642986 (95% CI [0.485741, 0.851135], p = .002). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. The pooled odds ratio was 0.711969 (95% CI [0.542864, 0.933750], p = .014). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. The pooled odds ratio was 0.717828 (95% CI [0.547068, 0.941889], p = .017). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control.
+
+Table 1. Pooled effect
+
+Effect	Estimate	95% CI	SE	z	p
+
+All studies	0.711969	0.542864 to 0.933750	0.138357	—	.014
+
+Study omitted: Gonzalez, 1993	0.720330	0.545347 to 0.951458	0.141985	—	.021
+
+Study omitted: Prins, 1993	0.726827	0.551112 to 0.958566	0.141201	—	.024
+
+Study omitted: Giamarellou, 1991	0.741717	0.564134 to 0.975201	0.139633	—	.032
+
+Study omitted: Maller, 1993	0.639045	0.476256 to 0.857477	0.150013	—	.003
+
+Study omitted: Sturm, 1989	0.723577	0.551186 to 0.949885	0.138847	—	.020
+
+Study omitted: Marik, 1991	0.873886	0.637149 to 1.198584	0.161200	—	.403
+
+Study omitted: Muijsken, 1988	0.679859	0.514133 to 0.899006	0.142556	—	.007
+
+Study omitted: Vigano, 1992	0.704170	0.536464 to 0.924303	0.138788	—	.012
+
+Study omitted: Hansen, 1988	0.760212	0.576016 to 1.003308	0.141564	—	.053
+
+Study omitted: De Vries, 1990	0.682507	0.517072 to 0.900874	0.141631	—	.007
+
+Study omitted: Mauracher, 1989	0.747763	0.568477 to 0.983593	0.139863	—	.038
+
+Study omitted: Nordstrom, 1990	0.713458	0.541835 to 0.939443	0.140392	—	.016
+
+Study omitted: Rozdzinski, 1993	0.678426	0.507935 to 0.906144	0.147667	—	.009
+
+Study omitted: Ter Braak, 1990	0.675423	0.509053 to 0.896166	0.144282	—	.007
+
+Study omitted: Tulkens, 1988	0.711969	0.542864 to 0.933750	0.138357	—	.014
+
+Study omitted: Van der Auwera, 1991	0.723577	0.551185 to 0.949887	0.138848	—	.020
+
+Study omitted: Klastersky, 1977	0.642986	0.485741 to 0.851135	0.143088	—	.002
+
+Study omitted: Vanhaeverbeek, 1993	0.711969	0.542864 to 0.933750	0.138357	—	.014
+
+Study omitted: Hollender, 1989	0.717828	0.547068 to 0.941889	0.138603	—	.017
+
+Table 2. Model fit
+
+Statistic	Value
+
+Studies (k)	19
+
+Participants in Intervention	1097
+
+Participants in Control	1080
+
+Table 3. Study results
+
+Fit	Effect	95% CI	Weight
+
+All studies	0.712000	0.542900 to 0.933800	NA
+
+Study omitted: Gonzalez, 1993	0.720300	0.545300 to 0.951500	5.6%
+
+Study omitted: Prins, 1993	0.726800	0.551100 to 0.958600	5.1%
+
+Study omitted: Giamarellou, 1991	0.741700	0.564100 to 0.975200	4.0%
+
+Study omitted: Maller, 1993	0.639000	0.476300 to 0.857500	9.6%
+
+Study omitted: Sturm, 1989	0.723600	0.551200 to 0.949900	1.6%
+
+Study omitted: Marik, 1991	0.873900	0.637100 to 1.199000	33.8%
+
+Study omitted: Muijsken, 1988	0.679900	0.514100 to 0.899000	3.4%
+
+Study omitted: Vigano, 1992	0.704200	0.536500 to 0.924300	0.0%
+
+Study omitted: Hansen, 1988	0.760200	0.576000 to 1.003000	7.8%
+
+Study omitted: De Vries, 1990	0.682500	0.517100 to 0.900900	2.3%
+
+Study omitted: Mauracher, 1989	0.747800	0.568500 to 0.983600	4.8%
+
+Study omitted: Nordstrom, 1990	0.713500	0.541800 to 0.939400	3.0%
+
+Study omitted: Rozdzinski, 1993	0.678400	0.507900 to 0.906100	9.9%
+
+Study omitted: Ter Braak, 1990	0.675400	0.509100 to 0.896200	5.4%
+
+Study omitted: Tulkens, 1988	0.712000	0.542900 to 0.933800	0.0%
+
+Study omitted: Van der Auwera, 1991	0.723600	0.551200 to 0.949900	1.6%
+
+Study omitted: Klastersky, 1977	0.643000	0.485700 to 0.851100	1.3%
+
+Study omitted: Vanhaeverbeek, 1993	0.712000	0.542900 to 0.933800	0.0%
+
+Study omitted: Hollender, 1989	0.717800	0.547100 to 0.941900	0.8%
+
+Table 4. Full-precision results
+
+Source	Results
+
+Leave-one-out Summary — Model Results	Study omitted: All studies
+Estimate: 0.711969
+Lower bound (95% CI): 0.542864
+Upper bound (95% CI): 0.933750
+SE (log scale): 0.138357
+p-value: 0.014073
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Gonzalez, 1993
+Estimate: 0.720330
+Lower bound (95% CI): 0.545347
+Upper bound (95% CI): 0.951458
+SE (log scale): 0.141985
+p-value: 0.020865
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Prins, 1993
+Estimate: 0.726827
+Lower bound (95% CI): 0.551112
+Upper bound (95% CI): 0.958566
+SE (log scale): 0.141201
+p-value: 0.023843
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Giamarellou, 1991
+Estimate: 0.741717
+Lower bound (95% CI): 0.564134
+Upper bound (95% CI): 0.975201
+SE (log scale): 0.139633
+p-value: 0.032370
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Maller, 1993
+Estimate: 0.639045
+Lower bound (95% CI): 0.476256
+Upper bound (95% CI): 0.857477
+SE (log scale): 0.150013
+p-value: 0.002836
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Sturm, 1989
+Estimate: 0.723577
+Lower bound (95% CI): 0.551186
+Upper bound (95% CI): 0.949885
+SE (log scale): 0.138847
+p-value: 0.019793
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Marik, 1991
+Estimate: 0.873886
+Lower bound (95% CI): 0.637149
+Upper bound (95% CI): 1.198584
+SE (log scale): 0.161200
+p-value: 0.403007
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Muijsken, 1988
+Estimate: 0.679859
+Lower bound (95% CI): 0.514133
+Upper bound (95% CI): 0.899006
+SE (log scale): 0.142556
+p-value: 0.006794
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Vigano, 1992
+Estimate: 0.704170
+Lower bound (95% CI): 0.536464
+Upper bound (95% CI): 0.924303
+SE (log scale): 0.138788
+p-value: 0.011500
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Hansen, 1988
+Estimate: 0.760212
+Lower bound (95% CI): 0.576016
+Upper bound (95% CI): 1.003308
+SE (log scale): 0.141564
+p-value: 0.052790
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: De Vries, 1990
+Estimate: 0.682507
+Lower bound (95% CI): 0.517072
+Upper bound (95% CI): 0.900874
+SE (log scale): 0.141631
+p-value: 0.006996
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Mauracher, 1989
+Estimate: 0.747763
+Lower bound (95% CI): 0.568477
+Upper bound (95% CI): 0.983593
+SE (log scale): 0.139863
+p-value: 0.037687
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Nordstrom, 1990
+Estimate: 0.713458
+Lower bound (95% CI): 0.541835
+Upper bound (95% CI): 0.939443
+SE (log scale): 0.140392
+p-value: 0.016176
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Rozdzinski, 1993
+Estimate: 0.678426
+Lower bound (95% CI): 0.507935
+Upper bound (95% CI): 0.906144
+SE (log scale): 0.147667
+p-value: 0.008604
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Ter Braak, 1990
+Estimate: 0.675423
+Lower bound (95% CI): 0.509053
+Upper bound (95% CI): 0.896166
+SE (log scale): 0.144282
+p-value: 0.006532
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Tulkens, 1988
+Estimate: 0.711969
+Lower bound (95% CI): 0.542864
+Upper bound (95% CI): 0.933750
+SE (log scale): 0.138357
+p-value: 0.014073
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Van der Auwera, 1991
+Estimate: 0.723577
+Lower bound (95% CI): 0.551185
+Upper bound (95% CI): 0.949887
+SE (log scale): 0.138848
+p-value: 0.019793
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Klastersky, 1977
+Estimate: 0.642986
+Lower bound (95% CI): 0.485741
+Upper bound (95% CI): 0.851135
+SE (log scale): 0.143088
+p-value: 0.002026
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Vanhaeverbeek, 1993
+Estimate: 0.711969
+Lower bound (95% CI): 0.542864
+Upper bound (95% CI): 0.933750
+SE (log scale): 0.138357
+p-value: 0.014073
+
+Leave-one-out Summary — Model Results	Study omitted: Study omitted: Hollender, 1989
+Estimate: 0.717828
+Lower bound (95% CI): 0.547068
+Upper bound (95% CI): 0.941889
+SE (log scale): 0.138603
+p-value: 0.016761
+
+Leave-one-out Summary — Study weights	Study: All studies
+Effect: 0.712
+Lower bound: 0.5429
+Upper bound: 0.9338
+Weight (%): NA
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Gonzalez, 1993
+Effect: 0.7203
+Lower bound: 0.5453
+Upper bound: 0.9515
+Weight (%): 5.6%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Prins, 1993
+Effect: 0.7268
+Lower bound: 0.5511
+Upper bound: 0.9586
+Weight (%): 5.1%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Giamarellou, 1991
+Effect: 0.7417
+Lower bound: 0.5641
+Upper bound: 0.9752
+Weight (%): 4.0%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Maller, 1993
+Effect: 0.639
+Lower bound: 0.4763
+Upper bound: 0.8575
+Weight (%): 9.6%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Sturm, 1989
+Effect: 0.7236
+Lower bound: 0.5512
+Upper bound: 0.9499
+Weight (%): 1.6%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Marik, 1991
+Effect: 0.8739
+Lower bound: 0.6371
+Upper bound: 1.199
+Weight (%): 33.8%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Muijsken, 1988
+Effect: 0.6799
+Lower bound: 0.5141
+Upper bound: 0.899
+Weight (%): 3.4%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Vigano, 1992
+Effect: 0.7042
+Lower bound: 0.5365
+Upper bound: 0.9243
+Weight (%): 0.0%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Hansen, 1988
+Effect: 0.7602
+Lower bound: 0.576
+Upper bound: 1.003
+Weight (%): 7.8%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: De Vries, 1990
+Effect: 0.6825
+Lower bound: 0.5171
+Upper bound: 0.9009
+Weight (%): 2.3%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Mauracher, 1989
+Effect: 0.7478
+Lower bound: 0.5685
+Upper bound: 0.9836
+Weight (%): 4.8%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Nordstrom, 1990
+Effect: 0.7135
+Lower bound: 0.5418
+Upper bound: 0.9394
+Weight (%): 3.0%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Rozdzinski, 1993
+Effect: 0.6784
+Lower bound: 0.5079
+Upper bound: 0.9061
+Weight (%): 9.9%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Ter Braak, 1990
+Effect: 0.6754
+Lower bound: 0.5091
+Upper bound: 0.8962
+Weight (%): 5.4%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Tulkens, 1988
+Effect: 0.712
+Lower bound: 0.5429
+Upper bound: 0.9338
+Weight (%): 0.0%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Van der Auwera, 1991
+Effect: 0.7236
+Lower bound: 0.5512
+Upper bound: 0.9499
+Weight (%): 1.6%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Klastersky, 1977
+Effect: 0.643
+Lower bound: 0.4857
+Upper bound: 0.8511
+Weight (%): 1.3%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Vanhaeverbeek, 1993
+Effect: 0.712
+Lower bound: 0.5429
+Upper bound: 0.9338
+Weight (%): 0.0%
+
+Leave-one-out Summary — Study weights	Study: Study omitted: Hollender, 1989
+Effect: 0.7178
+Lower bound: 0.5471
+Upper bound: 0.9419
+Weight (%): 0.8%
+
+Binary Fixed-Effect Model - Mantel-Haenszel
+
+Metric: Odds Ratio
+
+References
+
+1. Mantel-Haenszel meta-analysis: Mantel, N., & Haenszel, W. (1959). Statistical aspects of the analysis of data from retrospective studies of disease. Journal of the National Cancer Institute, 22(4), 719-748. doi:10.1093/jnci/22.4.719.
+
+2. Common-effect sparse-data estimation: Greenland, S., & Robins, J. M. (1985). Estimation of a common effect parameter from sparse follow-up data. Biometrics, 41(1), 55-68. doi:10.2307/2530643.
+
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.
+
+4. Leave-one-out Meta-Analysis: estimates are recomputed after omitting each study in turn to assess influence on the selected base meta-analysis method.
+
+Each row omits the named study; compare with the all-studies estimate.

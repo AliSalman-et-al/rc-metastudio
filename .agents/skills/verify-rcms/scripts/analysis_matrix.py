@@ -667,7 +667,7 @@ def run(
     )
     click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     view = observe()
-    if method in ("binary.fixed.mh", "binary.fixed.peto"):
+    if workflow == "standard" and method in ("binary.fixed.mh", "binary.fixed.peto"):
         from xml.etree import ElementTree as ET
         figure = " ".join("".join(node.itertext())
                           for path in view.results.display_images.values()
