@@ -30,12 +30,13 @@ def run(app, window, work, root, record, analyze):
     def read_guide():
         dialog = app.activeModalWidget()
         try:
-            assert isinstance(dialog, QtWidgets.QMessageBox)
-            dialog.setProperty("verificationExpectedMessage", True)
-            guide = dialog.text()
-            assert all(name in guide for name in ("Intervention / Control", "Index test", "UTF-8 CSV")), guide
-            assert "template" in guide.casefold() and "mapping" in guide.casefold(), guide
-            record("ux-quick-start", dialog, text=dialog.text())
+            assert isinstance(dialog, QtWidgets.QDialog)
+            browser = dialog.findChild(QtWidgets.QTextBrowser)
+            assert browser is not None
+            guide = browser.toPlainText()
+            assert "Ctrl+Shift+S" in guide and "F1" in guide
+            assert dialog.screen().availableGeometry().contains(dialog.frameGeometry())
+            record("ux-quick-start", dialog, text=guide)
         except Exception as error:
             guide_errors.append(str(error))
         finally:
@@ -62,7 +63,8 @@ def run(app, window, work, root, record, analyze):
     assert setup.isVisible()
     assert setup.analysis_error_label.isVisible()
     assert setup.analysis_error_toggle.hasFocus()
-    assert setup.analysis_error_label.text() == "Check the selected method and study data, then try again."
+    assert "Unknown 'method' specified" in setup.analysis_error_label.text()
+    assert "Change the method" in setup.analysis_error_label.text()
     assert setup.analysis_error_details.isHidden()
     mouse_click(setup.analysis_error_toggle, QtCore.Qt.MouseButton.LeftButton)
     assert setup.analysis_error_details.isVisible()

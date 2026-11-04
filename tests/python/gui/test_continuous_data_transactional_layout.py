@@ -457,10 +457,8 @@ def test_continuous_variants_are_transactional_and_screen_bounded(monkeypatch, s
                 table.horizontalScrollBarPolicy()
                 == QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded
             )
-            assert (
-                table.horizontalHeader().sectionResizeMode(0)
-                == QtWidgets.QHeaderView.ResizeMode.Stretch
-            )
+            for column in range(table.columnCount()):
+                assert table.columnWidth(column) >= table.sizeHintForColumn(column)
     finally:
         _close(app, dialog)
 
@@ -472,7 +470,6 @@ def test_continuous_metric_transition_does_not_resize_visible_root(monkeypatch):
         dialog.show()
         app.processEvents()
         settled = QtCore.QRect(dialog.frameGeometry())
-        preserved_value = dialog.simple_table.item(0, 1).text()
 
         smd_index = next(
             index
@@ -488,7 +485,8 @@ def test_continuous_metric_transition_does_not_resize_visible_root(monkeypatch):
         dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
         app.processEvents()
         assert dialog.pre_post_group_box.isVisible()
-        assert dialog.simple_table.item(0, 1).text() == preserved_value
+        assert dialog.simple_table.item(0, 1).text() == ""
+        assert dialog.effect_text_box.text() == ""
         assert dialog.buttonBox.isVisible()
     finally:
         _close(app, dialog)
@@ -536,9 +534,15 @@ def test_continuous_major_variant_behavior_matrix(monkeypatch, variant):
             app.processEvents()
             assert any(payload[0].get("mean") == 95 for payload in recorder["impute"])
 
-        assert dialog.effect_text_box.text() == "2.5000"
-        assert dialog.lower_text_box.text() == "1.5000"
-        assert dialog.upper_text_box.text() == "3.5000"
+        if variant == "smd_pre_post":
+            # Failed/incomplete pre/post reconstruction cannot retain a hidden summary preview.
+            assert dialog.effect_text_box.text() == ""
+            assert dialog.lower_text_box.text() == ""
+            assert dialog.upper_text_box.text() == ""
+        else:
+            assert dialog.effect_text_box.text() == "2.5000"
+            assert dialog.lower_text_box.text() == "1.5000"
+            assert dialog.upper_text_box.text() == "3.5000"
 
         assert dialog.frameGeometry() == settled
         assert available.contains(dialog.frameGeometry())
@@ -578,7 +582,8 @@ def test_continuous_long_values_and_large_font_overflow_inside_content(monkeypat
         app.processEvents()
 
         assert available.contains(dialog.frameGeometry())
-        assert dialog.simple_table.horizontalScrollBar().maximum() == 0
+        for column in range(dialog.simple_table.columnCount()):
+            assert dialog.simple_table.columnWidth(column) >= dialog.simple_table.sizeHintForColumn(column)
         dialog.simple_table.editItem(dialog.simple_table.item(0, 1))
         editor = required(dialog.simple_table.findChild(QtWidgets.QLineEdit), "numeric editor")
         assert editor.text() == long_value

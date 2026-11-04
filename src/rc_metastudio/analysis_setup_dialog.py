@@ -22,6 +22,7 @@ from PyQt6.QtWidgets import (
 
 import copy
 import hashlib
+import re
 import os
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Literal
@@ -954,7 +955,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.analysis_error_label.setText(
                 "No studies are included. Tick Include for at least one study with complete data."
                 if not self.model.get_studies()
-                else "Check the selected method and study data, then try again."
+                else re.sub(r"^Error in .*?:\s*", "", str(error).strip(), count=1, flags=re.DOTALL)
+                + "\nChange the method or study values identified above."
             )
             self.analysis_error_details.setPlainText(str(error))
             self.analysis_error_panel.show()
