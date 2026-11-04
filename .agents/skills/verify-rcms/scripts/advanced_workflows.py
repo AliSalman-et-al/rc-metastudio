@@ -1237,6 +1237,10 @@ def calculators(app, window, mode, record):
                 assert math.isclose(actual, expected, rel_tol=1e-12, abs_tol=1e-15), (mode, name, actual, expected)
             if mode == "pre-post":
                 dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
+                actual = dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)
+                assert all(math.isclose(a, b, abs_tol=1e-12) for a, b in zip(actual, observed["raw"])), (actual, observed["raw"])
+                assert math.isclose(float(dialog.effect_text_box.text()), 3.0, abs_tol=0.0001)
+                record("calculator-pre-post-mode-restored", dialog, raw=list(actual), expected=observed["raw"])
         observed["accepted_raw"] = list(
             dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)
         )
