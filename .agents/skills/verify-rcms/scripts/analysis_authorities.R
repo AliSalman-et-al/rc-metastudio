@@ -108,6 +108,12 @@ for (metric in c("MD","SMD","TXMean","entered-estimates")) {
     check(data,method,p,ref,paste(metric,method))
   }
 }
+# Small k distinguishes t-based fixed continuous inference from z.
+for (inference in c("t", "knha", "adhoc")) {
+  p <- params("TXMean"); p$inference.method <- inference
+  ref <- metafor::rma.uni(effects$yi, vi=effects$vi, method="FE", test=inference, level=95)
+  check(data, "continuous.fixed", p, ref, paste("entered continuous fixed", inference))
+}
 # Independently construct diagnostic effects on the correct calculation scales.
 TP <- a; FN <- b; FP <- c; TN <- d
 for (metric in c("Sens","Spec","PLR","NLR","DOR")) {
