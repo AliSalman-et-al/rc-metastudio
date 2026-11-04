@@ -295,7 +295,7 @@ jobs:
       - name: Run Platform-Neutral Python Verification
         if: ${{ matrix.platform == 'windows' }}
         shell: powershell
-        run: uv run --locked python scripts\verify.py python
+        run: uv run --locked python scripts\verify.py fast --skip-r-evidence
 
       - name: Run Native Platform Smoke and R Evidence
         if: ${{ matrix.platform == 'macos' }}
@@ -505,7 +505,7 @@ jobs:
           "RCMS_QT6_BUILD_ROOT=$((Resolve-Path $buildRoot).Path)" >> $env:GITHUB_ENV
 
       - name: Run packaging contract tests
-        run: uv run python scripts/verify.py contracts
+        run: uv run python -c "from scripts.verify import run_packaging_contracts; run_packaging_contracts()"
 
       - name: Prune uv cache
         if: ${{ always() }}

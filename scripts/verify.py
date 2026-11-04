@@ -185,6 +185,8 @@ def run_source_lane(args: argparse.Namespace, *, smoke: bool) -> None:
             env=env,
             workers=args.fast_workers,
         )
+        run([sys.executable, "-m", "pytest", "--strict-markers", "-W", "error",
+             "tests/python/gui"], env=env)
         if not args.skip_r_evidence:
             run_default_r_evidence(args)
 
@@ -204,8 +206,6 @@ def run_full_r_stack(args: argparse.Namespace) -> None:
         "--r-library-cache-root",
         str(args.r_library_cache_root or FULL_R_LIBRARY_CACHE),
     ]
-    if args.desktop_only:
-        command.append("--desktop-only")
     if args.skip_desktop:
         command.append("--skip-desktop")
     if args.desktop_shard is not None:
@@ -217,79 +217,62 @@ def run_full_r_stack(args: argparse.Namespace) -> None:
 STABLE_BASELINE = "8b7796bcc840c3505c5fb0a1328cdd7682880e48"
 
 
-def run_gate(args: argparse.Namespace, env: dict[str, str]) -> None:
-    if args.lane == "typing":
-        build = Path(env["RCMS_QT6_BUILD_ROOT"])
-        command = [sys.executable, "-m", "ty", "check", "--python", sys.executable, "--python-platform", "win32"]
-        for path in (str(build / "generated/rc_metastudio"),
-                     str(build / "generated/rc_metastudio/forms"), ".",
-                     "src/rc_metastudio", "src", "scripts", "tests/python/gui"):
-            command += ["--extra-search-path", path]
-        run(command + ["src/rc_metastudio", "scripts", "tests", "r/RCMetaR/inst/qa"], env=env)
-    elif args.lane == "code-health":
-        run([sys.executable, "scripts/code_health.py", "--base", STABLE_BASELINE,
-             "--head", STABLE_BASELINE, "--allow-fail",
-             "--output", "artifacts/code-health/baseline.json",
-             "--report", "artifacts/code-health/baseline.txt"], env=env)
-        run([sys.executable, "scripts/code_health.py", "--base", args.base,
-             "--head", args.head, "--baseline", "artifacts/code-health/baseline.json",
-             "--output", "artifacts/code-health/final.json",
-             "--report", "artifacts/code-health/final.txt"], env=env)
-    elif args.lane == "contracts":
-        run([sys.executable, "-m", "pytest", "-q", "tests/packaging/contract"], env=env)
-    else:
-        run_pytest(["tests/python/fast", "tests/analysis_regression/golden"], env=env)
-        run([sys.executable, "-m", "pytest", "--strict-markers", "-W", "error",
-             "tests/python/gui"], env=env)
+def run_typing(build_root: Path) -> None:
+    command = [sys.executable, "-m", "ty", "check", "--python", sys.executable,
+               "--python-platform", "win32"]
+    for path in (str(build_root / "generated/rc_metastudio"),
+                 str(build_root / "generated/rc_metastudio/forms"), ".",
+                 "src/rc_metastudio", "src", "scripts", "tests/python/gui"):
+        command += ["--extra-search-path", path]
+    run(command + ["src/rc_metastudio", "scripts", "tests", "r/RCMetaR/inst/qa"])
 
 
-def run_native(env: dict[str, str], build_root: Path) -> None:
-    if sys.platform == "linux":
-        run(["xvfb-run", "-a", sys.executable, "scripts/build_qt6.py",
-             "native-smoke", "--build-root", str(build_root)], env=env)
-    elif sys.platform == "win32":
-        for section in ("Core", "RemainingSurfaces"):
-            run(["powershell", "-File", "scripts/verify-qt6.ps1",
-                 "-Section", section], env=env)
-    else:
-        run([sys.executable, "scripts/build_qt6.py", "native-smoke"], env=env)
+def run_code_health(base: str = "origin/master", head: str = "HEAD") -> None:
+    run([sys.executable, "scripts/code_health.py", "--base", STABLE_BASELINE,
+         "--head", STABLE_BASELINE, "--allow-fail",
+         "--output", "artifacts/code-health/baseline.json",
+         "--report", "artifacts/code-health/baseline.txt"])
+    # shortcut: code health measures committed HEAD, commit changes before qualification.
+    run([sys.executable, "scripts/code_health.py", "--base", base,
+         "--head", head, "--baseline", "artifacts/code-health/baseline.json",
+         "--output", "artifacts/code-health/final.json",
+         "--report", "artifacts/code-health/final.txt"])
 
 
-def run_pre_push(args: argparse.Namespace) -> None:
-    """Fail fast, retaining an honest result for every planned lane."""
-    steps = ["prepare", "typing", "code-health", "python", "contracts", "r-stack", "desktop", "native"]
-    rows = [{"step": name, "seconds": 0.0, "status": "not run"} for name in steps]
+def run_packaging_contracts() -> None:
+    run([sys.executable, "-m", "pytest", "-q", "tests/packaging/contract"])
+
+
+def run_pre_push() -> None:
+    build = Path(os.environ.get("RCMS_QT6_BUILD_ROOT", str(DEFAULT_BUILD_ROOT))).resolve()
+    fast = parser().parse_args(["fast", "--skip-r-evidence", "--build-root", str(build)])
+    stack = parser().parse_args(["r-stack", "--build-root", str(build)])
+    steps = [
+        ("prepare", lambda: prepare_qt_environment(build)),
+        ("typing (win32)", lambda: run_typing(build)),
+        ("code health", run_code_health),
+        ("Python, GUI and golden", lambda: run_source_lane(fast, smoke=False)),
+        ("packaging contracts", run_packaging_contracts),
+        ("R stack and full desktop E2E (-n auto)", lambda: run_full_r_stack(stack)),
+    ]
+    rows = [{"step": name, "seconds": 0.0, "status": "not run"} for name, _ in steps]
+    # shortcut: native platform qualification stays in CI, upgrade when local native setup is owned here.
     rows += [{"step": name, "seconds": 0.0, "status": "CI only"} for name in (
-        "Windows native Qt Core and RemainingSurfaces", "Windows package qualification",
-        "macOS native smoke, R bridge and packaging")]
-    env = dict(os.environ)
+        "Windows native Qt and package qualification", "macOS native smoke and packaging",
+        "Linux native xcb smoke")]
     try:
-        for row in rows[:len(steps)]:
+        for row, (_, action) in zip(rows, steps):
             started = time.monotonic()
+            row["status"] = "fail"
             try:
-                if row["step"] == "prepare":
-                    env = prepare_qt_environment(args.build_root.resolve())
-                elif row["step"] == "native":
-                    run_native(env, args.build_root)
-                elif row["step"] in {"r-stack", "desktop"}:
-                    args.skip_desktop = row["step"] == "r-stack"
-                    args.desktop_only = row["step"] == "desktop"
-                    run_full_r_stack(args)
-                else:
-                    args.lane = row["step"]
-                    run_gate(args, env)
-            except (VerificationError, KeyboardInterrupt):
-                row["status"] = "fail"
-                raise
-            else:
+                action()
                 row["status"] = "pass"
             finally:
                 row["seconds"] = round(time.monotonic() - started, 2)
     finally:
         output = REPO_ROOT / "artifacts/verification/pre-push.json"
         output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text(json.dumps({"command": sys.argv, "platform": sys.platform,
-                                      "typing_target": "win32", "steps": rows}, indent=2) + "\n")
+        output.write_text(json.dumps(rows, indent=2) + "\n", encoding="utf-8")
         print("\n| Step | Seconds | Result |\n| --- | ---: | --- |")
         for row in rows:
             print(f"| {row['step']} | {row['seconds']} | {row['status']} |")
@@ -336,17 +319,9 @@ def parser() -> argparse.ArgumentParser:
     selection.add_argument("--skip-desktop", action="store_true")
     selection.add_argument("--desktop-shard", type=int, choices=(1, 2, 3))
     r_stack.add_argument("--sync", action="store_true")
-    r_stack.add_argument("--desktop-only", action="store_true")
     add_rscript_options(r_stack)
     r_stack.add_argument("--build-root", default=DEFAULT_BUILD_ROOT, type=Path)
-    for name in ("pre-push", "typing", "code-health", "python", "contracts"):
-        gate = subparsers.add_parser(name)
-        add_rscript_options(gate)
-        gate.add_argument("--build-root", type=Path,
-                          default=Path(os.environ.get("RCMS_QT6_BUILD_ROOT", str(DEFAULT_BUILD_ROOT))))
-        gate.add_argument("--base", default="origin/master")
-        gate.add_argument("--head", default="HEAD")
-        gate.set_defaults(sync=False, skip_desktop=False, desktop_only=False, desktop_shard=None)
+    subparsers.add_parser("pre-push", help="run required local CI checks, failing fast")
     return cli
 
 
@@ -357,14 +332,10 @@ def main(argv: list[str] | None = None) -> int:
             run_source_lane(args, smoke=True)
         elif args.lane == "fast":
             run_source_lane(args, smoke=False)
-        elif args.lane == "r-stack":
-            run_full_r_stack(args)
         elif args.lane == "pre-push":
-            run_pre_push(args)
+            run_pre_push()
         else:
-            env = prepare_qt_environment(args.build_root.resolve()) if args.lane == "python" else dict(os.environ)
-            env["RCMS_QT6_BUILD_ROOT"] = str(args.build_root.resolve())
-            run_gate(args, env)
+            run_full_r_stack(args)
     except VerificationError as exc:
         print(f"verification failed: {exc}", file=sys.stderr)
         return 1

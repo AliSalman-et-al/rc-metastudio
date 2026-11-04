@@ -88,7 +88,15 @@ def test_full_r_stack_orchestration_prepares_and_propagates_qt_environment(
     monkeypatch.setattr(verifier, "selected_rscript", selected_rscript)
     monkeypatch.setattr(verifier, "run", run)
 
-    args = verifier.parser().parse_args(["r-stack", "--build-root", str(tmp_path)])
+    args = argparse.Namespace(
+        sync=False,
+        build_root=tmp_path,
+        rscript=None,
+        r_runtime_root=None,
+        r_library_cache_root=None,
+        skip_desktop=False,
+        desktop_shard=None,
+    )
     verifier.run_full_r_stack(args)
 
     assert captured["build_root"] == tmp_path.resolve()

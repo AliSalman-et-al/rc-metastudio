@@ -48,9 +48,12 @@ jobs:
           git cat-file -e "$base^{commit}"
           echo "sha=$base" >> "$GITHUB_OUTPUT"
       - name: Enforce shared code-health gates
+        env:
+          COMPARISON_BASE: ${{ steps.base.outputs.sha }}
         run: >-
-          uv run --no-sync python scripts/verify.py code-health
-          --base "${{ steps.base.outputs.sha }}" --head "$GITHUB_SHA"
+          uv run --no-sync python -c
+          "from scripts.verify import run_code_health; import os;
+          run_code_health(os.environ['COMPARISON_BASE'], os.environ['GITHUB_SHA'])"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
