@@ -99,13 +99,22 @@ def modal(app, kind, drive, launch):
         finally:
             completed.append(True)
 
-    QtCore.QTimer.singleShot(0, ready)
-    launch()
-    deadline = QtCore.QDeadlineTimer(5000)
-    while not completed and not deadline.hasExpired():
-        QTest.qWait(10)
-    assert completed, ("modal did not open", kind)
-    assert not errors, errors
+    # Register before launch: the watchdog may run before ready sees the warning.
+    expecting_message = kind is QtWidgets.QMessageBox
+    previous_expectation = app.property("verificationExpectingMessageBox")
+    if expecting_message:
+        app.setProperty("verificationExpectingMessageBox", True)
+    try:
+        QtCore.QTimer.singleShot(0, ready)
+        launch()
+        deadline = QtCore.QDeadlineTimer(5000)
+        while not completed and not deadline.hasExpired():
+            QTest.qWait(10)
+        assert completed, ("modal did not open", kind)
+        assert not errors, errors
+    finally:
+        if expecting_message:
+            app.setProperty("verificationExpectingMessageBox", previous_expectation)
 
 
 def raw_rows(window):
@@ -1186,8 +1195,12 @@ def calculators(app, window, mode, record):
             preview(dialog, metrics[-1])
         if entered:
             before_invalid = list(dialog.analysis_unit.get_entered_effect_and_ci(dialog.current_effect, dialog.arm_key))
-            modal(app, QtWidgets.QMessageBox,
-                  lambda message: click(app, message.button(QtWidgets.QMessageBox.StandardButton.Ok)),
+            def invalid_ci_warning(message):
+                assert "higher CI must be greater than the point estimate" in message.text()
+                record("calculator-invalid-ci-warning", message, mode=mode, message=message.text())
+                click(app, message.button(QtWidgets.QMessageBox.StandardButton.Ok))
+
+            modal(app, QtWidgets.QMessageBox, invalid_ci_warning,
                   lambda: text(dialog.upper_text_box, "-1"))
             click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
             assert dialog.isVisible(), "invalid CI was accepted"
