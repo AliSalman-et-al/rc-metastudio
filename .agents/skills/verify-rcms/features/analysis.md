@@ -188,3 +188,5 @@ and ad hoc inference directly with metafor, including p-values and CI bounds.
 The sample diagnostic drive checks that visible method-page labels and value controls stay within the horizontal scroll viewport after deferred form replacements are disposed.
 
 The standard binary MH/Peto fixed-estimator scenarios also assert the rendered SVG overall-effect heading has no zero odds-ratio null. On amino's two double-zero studies, MH report/figure rows agree on Not estimable; Peto retains finite corrected effects and zero weight, matching its explicit `drop00=FALSE` fit policy. Sequential rows show pooled subset fits, so omitting a double-zero study still shows the estimable pooled result; the study-level omission assertion does not apply.
+
+`options-mh-rd` proves MH risk-difference double-zero rows remain estimable, all forest weights equal the report at plotted precision and sum to 100% within rounding, and switching to BMJ retains the fit's M–H, Fixed header. It also rejects a nonnumeric axis bound in the editor before rendering, retaining the current figure.

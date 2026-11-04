@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Edit the presentation and output path of a generated plot."""
 
+import math
+from typing import TYPE_CHECKING
+
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
@@ -17,7 +20,6 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QWidget,
 )
-from typing import TYPE_CHECKING
 
 from rc_metastudio import adaptive_window, app_error_handler, plot_capabilities, qt_text
 from rc_metastudio.plot_defaults import FOREST_ARM_LABELS
@@ -211,6 +213,22 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._commit_error.show()
 
     def _commit(self):
+        for widget, label in (
+            (self.plot_lb_le, "Lower axis bound"),
+            (self.plot_ub_le, "Upper axis bound"),
+        ):
+            value = widget.text().strip()
+            if value and value != "[default]":
+                try:
+                    valid = math.isfinite(float(value))
+                except ValueError:
+                    valid = False
+                if not valid:
+                    self.mark_commit_failed(
+                        f"{label} must be a finite number, or leave it blank for automatic limits."
+                    )
+                    widget.setFocus()
+                    return
         self._commit_outcome = None
         self.applied.emit()
         # Preserve the signal-only API for callers that use the dialog without

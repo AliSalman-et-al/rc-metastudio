@@ -327,7 +327,8 @@ rcmetar.metafor.standard.plot.fields <- function(om.data, params, res) {
     study.bounds <- calc.ci.bounds(om.data, params, ni=sample.sizes)
     study.y <- om.data@y
     # Use the fit's eligibility for presentation, as the forest renderer does.
-    if (length(res$yi.f) == length(study.y)) {
+    if (length(res$yi.f) == length(study.y) &&
+            !(inherits(res, "rma.mh") && identical(as.character(params$measure), "RD"))) {
         omitted <- !is.finite(res$yi.f)
         study.y[omitted] <- NA_real_
         study.bounds$lb[omitted] <- NA_real_
@@ -547,6 +548,15 @@ rcmetar.build.binary.metafor.bundle <- function(binary.data, params, res) {
             ci.ub = as.numeric(res$ci.ub),
             slab = rcmetar.study.labels(binary.data)
         )
+    }
+    # MH RD pooling retains double-zero tables, even when metafor's separate
+    # individual-effect calculation defaults to drop00=TRUE. Keep the corrected
+    # study display without changing the fit or its weights.
+    if (inherits(res, "rma.mh") && identical(as.character(params$measure), "RD")) {
+        bounds <- calc.ci.bounds(binary.data, params)
+        effect <- list(yi=as.numeric(binary.data@y), vi=as.numeric(binary.data@SE)^2,
+                       sei=as.numeric(binary.data@SE), ci.lb=bounds$lb, ci.ub=bounds$ub,
+                       slab=rcmetar.study.labels(binary.data))
     }
 
     bundle <- list(

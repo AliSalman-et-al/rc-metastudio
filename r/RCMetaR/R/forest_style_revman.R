@@ -237,10 +237,6 @@ rcmetar.revman.decorate.bundle <- function(bundle) {
         bundle$effect$slab <- gsub(", ([0-9]{4})$", " \\1", bundle$effect$slab)
     }
     not.estimable <- rcmetar.revman.not_estimable(bundle)
-    weight.index <- rcmetar.revman.column.index(bundle, "weight")
-    if (any(not.estimable) && length(weight.index) == 1) {
-        bundle$ilab$matrix[not.estimable, weight.index] <- ""
-    }
     bundle$style_blocks <- list(
         heterogeneity = rcmetar.revman.heterogeneity.label(bundle),
         test_overall = rcmetar.revman.test.overall.label(bundle),
@@ -290,8 +286,13 @@ rcmetar.revman.total.events <- function(bundle) {
 
 rcmetar.revman.not_estimable <- function(bundle) {
     n <- length(bundle$slab)
-    yi <- if (length(bundle$res$yi.f) == n) bundle$res$yi.f else bundle$res$yi
-    vi <- if (length(bundle$res$vi.f) == n) bundle$res$vi.f else bundle$res$vi
+    if (!is.null(bundle$effect)) {
+        yi <- bundle$effect$yi
+        vi <- bundle$effect$vi %||% bundle$effect$sei^2
+    } else {
+        yi <- if (length(bundle$res$yi.f) == n) bundle$res$yi.f else bundle$res$yi
+        vi <- if (length(bundle$res$vi.f) == n) bundle$res$vi.f else bundle$res$vi
+    }
     missing <- if (length(yi) == n && length(vi) == n) {
         !is.finite(yi) | !is.finite(vi)
     } else rep(FALSE, n)
@@ -550,6 +551,7 @@ rcmetar.revman.layout <- function(bundle) {
 }
 
 rcmetar.revman.study.effects <- function(bundle) {
+    if (!is.null(bundle$effect)) return(bundle$effect)
     n <- length(bundle$slab)
     yi <- as.numeric(if (length(bundle$res$yi.f) == n) bundle$res$yi.f else bundle$res$yi)
     vi <- as.numeric(if (length(bundle$res$vi.f) == n) bundle$res$vi.f else bundle$res$vi)
@@ -575,7 +577,6 @@ rcmetar.revman.summary.effect <- function(bundle) {
     old.options <- options(na.action="na.pass")
     on.exit(options(old.options), add=TRUE)
     weights <- as.numeric(weights(res))
-    weights[rcmetar.revman.not_estimable(bundle)] <- NA_real_
     transform <- rcmetar.bundle.transform(bundle)
     pred <- c(transform$display.scale(res$b, ni=bundle$sample_sizes), transform$display.scale(res$ci.lb, ni=bundle$sample_sizes), transform$display.scale(res$ci.ub, ni=bundle$sample_sizes))
     psize <- rep(NA_real_, length(weights))
