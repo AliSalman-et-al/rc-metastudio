@@ -238,8 +238,21 @@ def run_gate(args: argparse.Namespace, env: dict[str, str]) -> None:
     elif args.lane == "contracts":
         run([sys.executable, "-m", "pytest", "-q", "tests/packaging/contract"], env=env)
     else:
-        run_pytest(["tests/python/fast", "tests/python/gui",
-                    "tests/analysis_regression/golden"], env=env)
+        run_pytest(["tests/python/fast", "tests/analysis_regression/golden"], env=env)
+        run([sys.executable, "-m", "pytest", "--strict-markers", "-W", "error",
+             "tests/python/gui"], env=env)
+
+
+def run_native(env: dict[str, str], build_root: Path) -> None:
+    if sys.platform == "linux":
+        run(["xvfb-run", "-a", sys.executable, "scripts/build_qt6.py",
+             "native-smoke", "--build-root", str(build_root)], env=env)
+    elif sys.platform == "win32":
+        for section in ("Core", "RemainingSurfaces"):
+            run(["powershell", "-File", "scripts/verify-qt6.ps1",
+                 "-Section", section], env=env)
+    else:
+        run([sys.executable, "scripts/build_qt6.py", "native-smoke"], env=env)
 
 
 def run_pre_push(args: argparse.Namespace) -> None:
@@ -257,15 +270,7 @@ def run_pre_push(args: argparse.Namespace) -> None:
                 if row["step"] == "prepare":
                     env = prepare_qt_environment(args.build_root.resolve())
                 elif row["step"] == "native":
-                    if sys.platform == "linux":
-                        run(["xvfb-run", "-a", sys.executable, "scripts/build_qt6.py",
-                             "native-smoke", "--build-root", str(args.build_root)], env=env)
-                    elif sys.platform == "win32":
-                        for section in ("Core", "RemainingSurfaces"):
-                            run(["powershell", "-File", "scripts/verify-qt6.ps1",
-                                 "-Section", section], env=env)
-                    else:
-                        run([sys.executable, "scripts/build_qt6.py", "native-smoke"], env=env)
+                    run_native(env, args.build_root)
                 elif row["step"] in {"r-stack", "desktop"}:
                     args.skip_desktop = row["step"] == "r-stack"
                     args.desktop_only = row["step"] == "desktop"
@@ -357,7 +362,7 @@ def main(argv: list[str] | None = None) -> int:
         elif args.lane == "pre-push":
             run_pre_push(args)
         else:
-            env = dict(os.environ)
+            env = prepare_qt_environment(args.build_root.resolve()) if args.lane == "python" else dict(os.environ)
             env["RCMS_QT6_BUILD_ROOT"] = str(args.build_root.resolve())
             run_gate(args, env)
     except VerificationError as exc:

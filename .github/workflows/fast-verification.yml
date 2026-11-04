@@ -295,7 +295,7 @@ jobs:
       - name: Run Platform-Neutral Python Verification
         if: ${{ matrix.platform == 'windows' }}
         shell: powershell
-        run: uv run --locked python scripts\verify.py fast --skip-r-evidence
+        run: uv run --locked python scripts\verify.py python
 
       - name: Run Native Platform Smoke and R Evidence
         if: ${{ matrix.platform == 'macos' }}
