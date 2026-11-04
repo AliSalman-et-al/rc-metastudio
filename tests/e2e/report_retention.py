@@ -212,7 +212,7 @@ def expected_effect_rows(result, section, overall, calculation):
         if table.title != 'Regression coefficients' and metric.endswith('transformed proportion'):
             metric = 'proportion'
         effects = expected_effect_values(values, headers, low, high, metric, vertical, table.title, overall, calculation)
-        if ',' in result.manuscript_metric:
+        if ',' in result.manuscript_metric and table.title != 'Regression coefficients':
             effects = tuple((metric.capitalize() + ': ' + row[0], *row[1:]) if row[0].lower() != metric else row for row in effects)
         rows.extend(effects)
     return rows
@@ -275,11 +275,15 @@ def expected_fit_table(result, section, source):
     elif source.title.endswith('Heterogeneity') or source.title == 'Residual heterogeneity':
         labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity p', 'I²': 'I²', 'τ²': 'Between-study variance (τ²)'}
         for row in data:
+            if row.get('Q') not in (None, '', 'NA') and 0 < abs(float(row['Q'])) < 1e-10:
+                row['Q'] = f'{0:.{result.manuscript_digits}f}'
             context = (' (' + row['Subgroups'] + ')' if 'Subgroups' in row else '')
             if ',' in result.manuscript_metric:
                 context += ' (' + section.title.removesuffix(' Summary') + ')'
             rows.extend((labels[h] + context, expected_p(v) if h == 'p-value' else v) for h, v in row.items() if h in labels)
     elif source.title == 'Test of subgroup differences' and data:
+        if data[0]['Test'].endswith('(Q)') and 0 < abs(float(data[0]['Statistic'])) < 1e-10:
+            data[0]['Statistic'] = f'{0:.{result.manuscript_digits}f}'
         rows.extend((label, expected_p(data[0][key]) if key == 'p-value' else data[0][key]) for key, label in (
             ('Test', 'Between-group test'), ('Statistic', 'Between-group statistic'), ('df', 'Between-group degrees of freedom'), ('p-value', 'Between-group p')))
     elif source.title in ('Model overview', 'Residual model fit') and source.headers == ('Statistic', 'Value'):
@@ -342,8 +346,10 @@ def assert_report(view):
         assert pooled.headers[2].endswith('% CI')
         expected_rows = expected_pooled(view.results)
         indexes = [i for i in range(6) if any(row[i] not in ('', '—', 'NA') for row in expected_rows)]
+        full_headers = [('Effect', 'Estimate', pooled.headers[2], 'SE', statistic, 'p') for statistic in ('z', 't')]
+        assert pooled.headers in [tuple(headers[i] for i in indexes) for headers in full_headers]
         expected_rows = presentation_rows(expected_rows, view.results.manuscript_digits)
-        assert pooled.rows == tuple(tuple(row[i] for i in indexes) for row in expected_rows)
+        assert pooled.rows == tuple(tuple(row[i] for i in indexes) for row in expected_rows), (pooled.rows, expected_rows, indexes)
         assert all(any(row[i] not in ('', '—', 'NA') for row in pooled.rows) for i in range(len(pooled.headers)))
     else:
         assert pooled.headers == ('Analysis', 'Output')

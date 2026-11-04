@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Semantic sizing policies for values and choices in adaptive forms."""
 
-from PyQt6.QtCore import QEvent, QObject, QPoint, QRect, QTimer, Qt
+from PyQt6.QtCore import QEvent, QObject, QPoint, QRect, QSize, QTimer, Qt
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtWidgets import (
     QAbstractItemView,
@@ -38,6 +38,12 @@ class ChoiceListView(QListView):
 
 class AdaptiveComboBox(QComboBox):
     """Choice control with one native-safe popup measurement/clamp path."""
+
+    def minimumSizeHint(self) -> QSize:
+        # Keep complete choices in the preferred hint and popup, but let forms shrink.
+        size = super().minimumSizeHint()
+        size.setWidth(0)
+        return size
 
     def showPopup(self):
         controller = getattr(self, "_adaptive_choice_controller", None)

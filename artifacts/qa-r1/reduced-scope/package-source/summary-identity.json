@@ -1,0 +1,6 @@
+{
+  "passed": true,
+  "expected": "61ea84ba73eab657282ceabdf3ee1f29ab0ed55a1be574023017bc490d279ab5",
+  "observed": "61ea84ba73eab657282ceabdf3ee1f29ab0ed55a1be574023017bc490d279ab5",
+  "scope": "real source application through the package automation entry, Linux offscreen, private R library; not Windows package qualification"
+}

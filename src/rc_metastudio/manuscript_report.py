@@ -250,7 +250,7 @@ def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overa
         effect_metric = _effect_metric(metric, section, table, vertical, coefficient)
         context = next((values[h] for h in table.headers if h.startswith(('Study added', 'Study omitted'))), table.title if vertical else effect_metric)
         effect = values.get('Term', values.get('Subgroups', context))
-        if ',' in metric and effect != effect_metric:
+        if not coefficient and ',' in metric and effect.casefold() != effect_metric.casefold():
             effect = effect_metric.capitalize() + ': ' + effect
         statistic, se, test, p = _pooled_statistics(values, overall, calculation)
         pooled.append((effect[:1].upper() + effect[1:], values['Estimate'], values[lower] + ' to ' + values[upper], se, test, p))
@@ -356,7 +356,9 @@ def _section_statistics(section):
     return overall, calculation
 
 
-def _presentation_cell(value, digits):
+def _presentation_cell(value, digits, *, zero_noise=False):
+    if zero_noise and re.fullmatch(r"[+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?", value) and 0 < abs(Decimal(value)) < Decimal("1e-10"):
+        return f"{0:.{digits}f}"
     return re.sub(r"(?<![\w.])-?\d+\.\d+%?(?![\w.])",
                   lambda match: f"{Decimal(match[0][:-1]):.1f}%" if match[0].endswith("%") else f"{Decimal(match[0]):.{digits}f}", value)
 
@@ -368,7 +370,7 @@ def _presentation_rows(rows, digits):
 def _presentation_result(result):
     return replace(result, sections=tuple(
         replace(section, tables=tuple(replace(table, rows=tuple(
-            tuple(value if header == 'p-value' or (table.headers == ('Statistic', 'Value') and row[0] == 'p-value') else _presentation_cell(value, result.manuscript_digits)
+            tuple(value if header == 'p-value' or (table.headers == ('Statistic', 'Value') and row[0] == 'p-value') else _presentation_cell(value, result.manuscript_digits, zero_noise=header == 'Q' or (header == 'Statistic' and row[0].endswith('(Q)')))
                   for header, value in zip(table.headers, row)) for row in table.rows))
             for table in section.tables)) for section in result.sections))
 

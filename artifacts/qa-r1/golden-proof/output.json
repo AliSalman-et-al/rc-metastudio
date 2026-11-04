@@ -1,0 +1,1412 @@
+{
+  "passed": true,
+  "changed_fields": [
+    {
+      "case": "amino-binary-leave-one-out",
+      "field": "texts.Leave-one-out Summary",
+      "before": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Study omitted                        Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (log scale)  p-value\n All studies                             0.770                 0.485                 1.222           0.236    0.267\n Study omitted: Gonzalez, 1993           0.783                 0.477                 1.285           0.253    0.332\n Study omitted: Prins, 1993              0.796                 0.489                 1.296           0.249    0.359\n Study omitted: Giamarellou, 1991        0.811                 0.513                 1.281           0.233    0.369\n Study omitted: Maller, 1993             0.715                 0.437                 1.172           0.252    0.184\n Study omitted: Sturm, 1989              0.791                 0.494                 1.265           0.240    0.327\n Study omitted: Marik, 1991              0.864                 0.543                 1.375           0.237    0.538\n Study omitted: Muijsken, 1988           0.724                 0.446                 1.175           0.247    0.191\n Study omitted: Vigano, 1992             0.750                 0.468                 1.200           0.240    0.230\n Study omitted: Hansen, 1988             0.851                 0.542                 1.336           0.230    0.484\n Study omitted: De Vries, 1990           0.724                 0.449                 1.166           0.243    0.184\n Study omitted: Mauracher, 1989          0.813                 0.515                 1.283           0.233    0.375\n Study omitted: Nordstrom, 1990          0.772                 0.474                 1.257           0.249    0.298\n Study omitted: Rozdzinski, 1993         0.738                 0.442                 1.231           0.261    0.244\n Study omitted: Ter Braak, 1990          0.726                 0.443                 1.189           0.252    0.204\n Study omitted: Tulkens, 1988            0.764                 0.476                 1.227           0.242    0.266\n Study omitted: Van der Auwera, 1991     0.791                 0.494                 1.265           0.240    0.327\n Study omitted: Klastersky, 1977         0.696                 0.458                 1.059           0.214    0.091\n Study omitted: Vanhaeverbeek, 1993      0.764                 0.476                 1.226           0.242    0.265\n Study omitted: Hollender, 1989          0.780                 0.486                 1.253           0.241    0.304",
+      "after": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Study omitted         Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (log scale)  p-value\n All studies              0.770                 0.485                 1.222           0.236    0.267\n Gonzalez, 1993           0.783                 0.477                 1.285           0.253    0.332\n Prins, 1993              0.796                 0.489                 1.296           0.249    0.359\n Giamarellou, 1991        0.811                 0.513                 1.281           0.233    0.369\n Maller, 1993             0.715                 0.437                 1.172           0.252    0.184\n Sturm, 1989              0.791                 0.494                 1.265           0.240    0.327\n Marik, 1991              0.864                 0.543                 1.375           0.237    0.538\n Muijsken, 1988           0.724                 0.446                 1.175           0.247    0.191\n Vigano, 1992             0.750                 0.468                 1.200           0.240    0.230\n Hansen, 1988             0.851                 0.542                 1.336           0.230    0.484\n De Vries, 1990           0.724                 0.449                 1.166           0.243    0.184\n Mauracher, 1989          0.813                 0.515                 1.283           0.233    0.375\n Nordstrom, 1990          0.772                 0.474                 1.257           0.249    0.298\n Rozdzinski, 1993         0.738                 0.442                 1.231           0.261    0.244\n Ter Braak, 1990          0.726                 0.443                 1.189           0.252    0.204\n Tulkens, 1988            0.764                 0.476                 1.227           0.242    0.266\n Van der Auwera, 1991     0.791                 0.494                 1.265           0.240    0.327\n Klastersky, 1977         0.696                 0.458                 1.059           0.214    0.091\n Vanhaeverbeek, 1993      0.764                 0.476                 1.226           0.242    0.265\n Hollender, 1989          0.780                 0.486                 1.253           0.241    0.304",
+      "numbers": [
+        {
+          "index": 0,
+          "old": "95",
+          "new": "95",
+          "quantum": "1",
+          "rounded": "95",
+          "passed": true
+        },
+        {
+          "index": 1,
+          "old": "95",
+          "new": "95",
+          "quantum": "1",
+          "rounded": "95",
+          "passed": true
+        },
+        {
+          "index": 2,
+          "old": "0.770",
+          "new": "0.770",
+          "quantum": "0.001",
+          "rounded": "0.770",
+          "passed": true
+        },
+        {
+          "index": 3,
+          "old": "0.485",
+          "new": "0.485",
+          "quantum": "0.001",
+          "rounded": "0.485",
+          "passed": true
+        },
+        {
+          "index": 4,
+          "old": "1.222",
+          "new": "1.222",
+          "quantum": "0.001",
+          "rounded": "1.222",
+          "passed": true
+        },
+        {
+          "index": 5,
+          "old": "0.236",
+          "new": "0.236",
+          "quantum": "0.001",
+          "rounded": "0.236",
+          "passed": true
+        },
+        {
+          "index": 6,
+          "old": "0.267",
+          "new": "0.267",
+          "quantum": "0.001",
+          "rounded": "0.267",
+          "passed": true
+        },
+        {
+          "index": 7,
+          "old": "1993",
+          "new": "1993",
+          "quantum": "1",
+          "rounded": "1993",
+          "passed": true
+        },
+        {
+          "index": 8,
+          "old": "0.783",
+          "new": "0.783",
+          "quantum": "0.001",
+          "rounded": "0.783",
+          "passed": true
+        },
+        {
+          "index": 9,
+          "old": "0.477",
+          "new": "0.477",
+          "quantum": "0.001",
+          "rounded": "0.477",
+          "passed": true
+        },
+        {
+          "index": 10,
+          "old": "1.285",
+          "new": "1.285",
+          "quantum": "0.001",
+          "rounded": "1.285",
+          "passed": true
+        },
+        {
+          "index": 11,
+          "old": "0.253",
+          "new": "0.253",
+          "quantum": "0.001",
+          "rounded": "0.253",
+          "passed": true
+        },
+        {
+          "index": 12,
+          "old": "0.332",
+          "new": "0.332",
+          "quantum": "0.001",
+          "rounded": "0.332",
+          "passed": true
+        },
+        {
+          "index": 13,
+          "old": "1993",
+          "new": "1993",
+          "quantum": "1",
+          "rounded": "1993",
+          "passed": true
+        },
+        {
+          "index": 14,
+          "old": "0.796",
+          "new": "0.796",
+          "quantum": "0.001",
+          "rounded": "0.796",
+          "passed": true
+        },
+        {
+          "index": 15,
+          "old": "0.489",
+          "new": "0.489",
+          "quantum": "0.001",
+          "rounded": "0.489",
+          "passed": true
+        },
+        {
+          "index": 16,
+          "old": "1.296",
+          "new": "1.296",
+          "quantum": "0.001",
+          "rounded": "1.296",
+          "passed": true
+        },
+        {
+          "index": 17,
+          "old": "0.249",
+          "new": "0.249",
+          "quantum": "0.001",
+          "rounded": "0.249",
+          "passed": true
+        },
+        {
+          "index": 18,
+          "old": "0.359",
+          "new": "0.359",
+          "quantum": "0.001",
+          "rounded": "0.359",
+          "passed": true
+        },
+        {
+          "index": 19,
+          "old": "1991",
+          "new": "1991",
+          "quantum": "1",
+          "rounded": "1991",
+          "passed": true
+        },
+        {
+          "index": 20,
+          "old": "0.811",
+          "new": "0.811",
+          "quantum": "0.001",
+          "rounded": "0.811",
+          "passed": true
+        },
+        {
+          "index": 21,
+          "old": "0.513",
+          "new": "0.513",
+          "quantum": "0.001",
+          "rounded": "0.513",
+          "passed": true
+        },
+        {
+          "index": 22,
+          "old": "1.281",
+          "new": "1.281",
+          "quantum": "0.001",
+          "rounded": "1.281",
+          "passed": true
+        },
+        {
+          "index": 23,
+          "old": "0.233",
+          "new": "0.233",
+          "quantum": "0.001",
+          "rounded": "0.233",
+          "passed": true
+        },
+        {
+          "index": 24,
+          "old": "0.369",
+          "new": "0.369",
+          "quantum": "0.001",
+          "rounded": "0.369",
+          "passed": true
+        },
+        {
+          "index": 25,
+          "old": "1993",
+          "new": "1993",
+          "quantum": "1",
+          "rounded": "1993",
+          "passed": true
+        },
+        {
+          "index": 26,
+          "old": "0.715",
+          "new": "0.715",
+          "quantum": "0.001",
+          "rounded": "0.715",
+          "passed": true
+        },
+        {
+          "index": 27,
+          "old": "0.437",
+          "new": "0.437",
+          "quantum": "0.001",
+          "rounded": "0.437",
+          "passed": true
+        },
+        {
+          "index": 28,
+          "old": "1.172",
+          "new": "1.172",
+          "quantum": "0.001",
+          "rounded": "1.172",
+          "passed": true
+        },
+        {
+          "index": 29,
+          "old": "0.252",
+          "new": "0.252",
+          "quantum": "0.001",
+          "rounded": "0.252",
+          "passed": true
+        },
+        {
+          "index": 30,
+          "old": "0.184",
+          "new": "0.184",
+          "quantum": "0.001",
+          "rounded": "0.184",
+          "passed": true
+        },
+        {
+          "index": 31,
+          "old": "1989",
+          "new": "1989",
+          "quantum": "1",
+          "rounded": "1989",
+          "passed": true
+        },
+        {
+          "index": 32,
+          "old": "0.791",
+          "new": "0.791",
+          "quantum": "0.001",
+          "rounded": "0.791",
+          "passed": true
+        },
+        {
+          "index": 33,
+          "old": "0.494",
+          "new": "0.494",
+          "quantum": "0.001",
+          "rounded": "0.494",
+          "passed": true
+        },
+        {
+          "index": 34,
+          "old": "1.265",
+          "new": "1.265",
+          "quantum": "0.001",
+          "rounded": "1.265",
+          "passed": true
+        },
+        {
+          "index": 35,
+          "old": "0.240",
+          "new": "0.240",
+          "quantum": "0.001",
+          "rounded": "0.240",
+          "passed": true
+        },
+        {
+          "index": 36,
+          "old": "0.327",
+          "new": "0.327",
+          "quantum": "0.001",
+          "rounded": "0.327",
+          "passed": true
+        },
+        {
+          "index": 37,
+          "old": "1991",
+          "new": "1991",
+          "quantum": "1",
+          "rounded": "1991",
+          "passed": true
+        },
+        {
+          "index": 38,
+          "old": "0.864",
+          "new": "0.864",
+          "quantum": "0.001",
+          "rounded": "0.864",
+          "passed": true
+        },
+        {
+          "index": 39,
+          "old": "0.543",
+          "new": "0.543",
+          "quantum": "0.001",
+          "rounded": "0.543",
+          "passed": true
+        },
+        {
+          "index": 40,
+          "old": "1.375",
+          "new": "1.375",
+          "quantum": "0.001",
+          "rounded": "1.375",
+          "passed": true
+        },
+        {
+          "index": 41,
+          "old": "0.237",
+          "new": "0.237",
+          "quantum": "0.001",
+          "rounded": "0.237",
+          "passed": true
+        },
+        {
+          "index": 42,
+          "old": "0.538",
+          "new": "0.538",
+          "quantum": "0.001",
+          "rounded": "0.538",
+          "passed": true
+        },
+        {
+          "index": 43,
+          "old": "1988",
+          "new": "1988",
+          "quantum": "1",
+          "rounded": "1988",
+          "passed": true
+        },
+        {
+          "index": 44,
+          "old": "0.724",
+          "new": "0.724",
+          "quantum": "0.001",
+          "rounded": "0.724",
+          "passed": true
+        },
+        {
+          "index": 45,
+          "old": "0.446",
+          "new": "0.446",
+          "quantum": "0.001",
+          "rounded": "0.446",
+          "passed": true
+        },
+        {
+          "index": 46,
+          "old": "1.175",
+          "new": "1.175",
+          "quantum": "0.001",
+          "rounded": "1.175",
+          "passed": true
+        },
+        {
+          "index": 47,
+          "old": "0.247",
+          "new": "0.247",
+          "quantum": "0.001",
+          "rounded": "0.247",
+          "passed": true
+        },
+        {
+          "index": 48,
+          "old": "0.191",
+          "new": "0.191",
+          "quantum": "0.001",
+          "rounded": "0.191",
+          "passed": true
+        },
+        {
+          "index": 49,
+          "old": "1992",
+          "new": "1992",
+          "quantum": "1",
+          "rounded": "1992",
+          "passed": true
+        },
+        {
+          "index": 50,
+          "old": "0.750",
+          "new": "0.750",
+          "quantum": "0.001",
+          "rounded": "0.750",
+          "passed": true
+        },
+        {
+          "index": 51,
+          "old": "0.468",
+          "new": "0.468",
+          "quantum": "0.001",
+          "rounded": "0.468",
+          "passed": true
+        },
+        {
+          "index": 52,
+          "old": "1.200",
+          "new": "1.200",
+          "quantum": "0.001",
+          "rounded": "1.200",
+          "passed": true
+        },
+        {
+          "index": 53,
+          "old": "0.240",
+          "new": "0.240",
+          "quantum": "0.001",
+          "rounded": "0.240",
+          "passed": true
+        },
+        {
+          "index": 54,
+          "old": "0.230",
+          "new": "0.230",
+          "quantum": "0.001",
+          "rounded": "0.230",
+          "passed": true
+        },
+        {
+          "index": 55,
+          "old": "1988",
+          "new": "1988",
+          "quantum": "1",
+          "rounded": "1988",
+          "passed": true
+        },
+        {
+          "index": 56,
+          "old": "0.851",
+          "new": "0.851",
+          "quantum": "0.001",
+          "rounded": "0.851",
+          "passed": true
+        },
+        {
+          "index": 57,
+          "old": "0.542",
+          "new": "0.542",
+          "quantum": "0.001",
+          "rounded": "0.542",
+          "passed": true
+        },
+        {
+          "index": 58,
+          "old": "1.336",
+          "new": "1.336",
+          "quantum": "0.001",
+          "rounded": "1.336",
+          "passed": true
+        },
+        {
+          "index": 59,
+          "old": "0.230",
+          "new": "0.230",
+          "quantum": "0.001",
+          "rounded": "0.230",
+          "passed": true
+        },
+        {
+          "index": 60,
+          "old": "0.484",
+          "new": "0.484",
+          "quantum": "0.001",
+          "rounded": "0.484",
+          "passed": true
+        },
+        {
+          "index": 61,
+          "old": "1990",
+          "new": "1990",
+          "quantum": "1",
+          "rounded": "1990",
+          "passed": true
+        },
+        {
+          "index": 62,
+          "old": "0.724",
+          "new": "0.724",
+          "quantum": "0.001",
+          "rounded": "0.724",
+          "passed": true
+        },
+        {
+          "index": 63,
+          "old": "0.449",
+          "new": "0.449",
+          "quantum": "0.001",
+          "rounded": "0.449",
+          "passed": true
+        },
+        {
+          "index": 64,
+          "old": "1.166",
+          "new": "1.166",
+          "quantum": "0.001",
+          "rounded": "1.166",
+          "passed": true
+        },
+        {
+          "index": 65,
+          "old": "0.243",
+          "new": "0.243",
+          "quantum": "0.001",
+          "rounded": "0.243",
+          "passed": true
+        },
+        {
+          "index": 66,
+          "old": "0.184",
+          "new": "0.184",
+          "quantum": "0.001",
+          "rounded": "0.184",
+          "passed": true
+        },
+        {
+          "index": 67,
+          "old": "1989",
+          "new": "1989",
+          "quantum": "1",
+          "rounded": "1989",
+          "passed": true
+        },
+        {
+          "index": 68,
+          "old": "0.813",
+          "new": "0.813",
+          "quantum": "0.001",
+          "rounded": "0.813",
+          "passed": true
+        },
+        {
+          "index": 69,
+          "old": "0.515",
+          "new": "0.515",
+          "quantum": "0.001",
+          "rounded": "0.515",
+          "passed": true
+        },
+        {
+          "index": 70,
+          "old": "1.283",
+          "new": "1.283",
+          "quantum": "0.001",
+          "rounded": "1.283",
+          "passed": true
+        },
+        {
+          "index": 71,
+          "old": "0.233",
+          "new": "0.233",
+          "quantum": "0.001",
+          "rounded": "0.233",
+          "passed": true
+        },
+        {
+          "index": 72,
+          "old": "0.375",
+          "new": "0.375",
+          "quantum": "0.001",
+          "rounded": "0.375",
+          "passed": true
+        },
+        {
+          "index": 73,
+          "old": "1990",
+          "new": "1990",
+          "quantum": "1",
+          "rounded": "1990",
+          "passed": true
+        },
+        {
+          "index": 74,
+          "old": "0.772",
+          "new": "0.772",
+          "quantum": "0.001",
+          "rounded": "0.772",
+          "passed": true
+        },
+        {
+          "index": 75,
+          "old": "0.474",
+          "new": "0.474",
+          "quantum": "0.001",
+          "rounded": "0.474",
+          "passed": true
+        },
+        {
+          "index": 76,
+          "old": "1.257",
+          "new": "1.257",
+          "quantum": "0.001",
+          "rounded": "1.257",
+          "passed": true
+        },
+        {
+          "index": 77,
+          "old": "0.249",
+          "new": "0.249",
+          "quantum": "0.001",
+          "rounded": "0.249",
+          "passed": true
+        },
+        {
+          "index": 78,
+          "old": "0.298",
+          "new": "0.298",
+          "quantum": "0.001",
+          "rounded": "0.298",
+          "passed": true
+        },
+        {
+          "index": 79,
+          "old": "1993",
+          "new": "1993",
+          "quantum": "1",
+          "rounded": "1993",
+          "passed": true
+        },
+        {
+          "index": 80,
+          "old": "0.738",
+          "new": "0.738",
+          "quantum": "0.001",
+          "rounded": "0.738",
+          "passed": true
+        },
+        {
+          "index": 81,
+          "old": "0.442",
+          "new": "0.442",
+          "quantum": "0.001",
+          "rounded": "0.442",
+          "passed": true
+        },
+        {
+          "index": 82,
+          "old": "1.231",
+          "new": "1.231",
+          "quantum": "0.001",
+          "rounded": "1.231",
+          "passed": true
+        },
+        {
+          "index": 83,
+          "old": "0.261",
+          "new": "0.261",
+          "quantum": "0.001",
+          "rounded": "0.261",
+          "passed": true
+        },
+        {
+          "index": 84,
+          "old": "0.244",
+          "new": "0.244",
+          "quantum": "0.001",
+          "rounded": "0.244",
+          "passed": true
+        },
+        {
+          "index": 85,
+          "old": "1990",
+          "new": "1990",
+          "quantum": "1",
+          "rounded": "1990",
+          "passed": true
+        },
+        {
+          "index": 86,
+          "old": "0.726",
+          "new": "0.726",
+          "quantum": "0.001",
+          "rounded": "0.726",
+          "passed": true
+        },
+        {
+          "index": 87,
+          "old": "0.443",
+          "new": "0.443",
+          "quantum": "0.001",
+          "rounded": "0.443",
+          "passed": true
+        },
+        {
+          "index": 88,
+          "old": "1.189",
+          "new": "1.189",
+          "quantum": "0.001",
+          "rounded": "1.189",
+          "passed": true
+        },
+        {
+          "index": 89,
+          "old": "0.252",
+          "new": "0.252",
+          "quantum": "0.001",
+          "rounded": "0.252",
+          "passed": true
+        },
+        {
+          "index": 90,
+          "old": "0.204",
+          "new": "0.204",
+          "quantum": "0.001",
+          "rounded": "0.204",
+          "passed": true
+        },
+        {
+          "index": 91,
+          "old": "1988",
+          "new": "1988",
+          "quantum": "1",
+          "rounded": "1988",
+          "passed": true
+        },
+        {
+          "index": 92,
+          "old": "0.764",
+          "new": "0.764",
+          "quantum": "0.001",
+          "rounded": "0.764",
+          "passed": true
+        },
+        {
+          "index": 93,
+          "old": "0.476",
+          "new": "0.476",
+          "quantum": "0.001",
+          "rounded": "0.476",
+          "passed": true
+        },
+        {
+          "index": 94,
+          "old": "1.227",
+          "new": "1.227",
+          "quantum": "0.001",
+          "rounded": "1.227",
+          "passed": true
+        },
+        {
+          "index": 95,
+          "old": "0.242",
+          "new": "0.242",
+          "quantum": "0.001",
+          "rounded": "0.242",
+          "passed": true
+        },
+        {
+          "index": 96,
+          "old": "0.266",
+          "new": "0.266",
+          "quantum": "0.001",
+          "rounded": "0.266",
+          "passed": true
+        },
+        {
+          "index": 97,
+          "old": "1991",
+          "new": "1991",
+          "quantum": "1",
+          "rounded": "1991",
+          "passed": true
+        },
+        {
+          "index": 98,
+          "old": "0.791",
+          "new": "0.791",
+          "quantum": "0.001",
+          "rounded": "0.791",
+          "passed": true
+        },
+        {
+          "index": 99,
+          "old": "0.494",
+          "new": "0.494",
+          "quantum": "0.001",
+          "rounded": "0.494",
+          "passed": true
+        },
+        {
+          "index": 100,
+          "old": "1.265",
+          "new": "1.265",
+          "quantum": "0.001",
+          "rounded": "1.265",
+          "passed": true
+        },
+        {
+          "index": 101,
+          "old": "0.240",
+          "new": "0.240",
+          "quantum": "0.001",
+          "rounded": "0.240",
+          "passed": true
+        },
+        {
+          "index": 102,
+          "old": "0.327",
+          "new": "0.327",
+          "quantum": "0.001",
+          "rounded": "0.327",
+          "passed": true
+        },
+        {
+          "index": 103,
+          "old": "1977",
+          "new": "1977",
+          "quantum": "1",
+          "rounded": "1977",
+          "passed": true
+        },
+        {
+          "index": 104,
+          "old": "0.696",
+          "new": "0.696",
+          "quantum": "0.001",
+          "rounded": "0.696",
+          "passed": true
+        },
+        {
+          "index": 105,
+          "old": "0.458",
+          "new": "0.458",
+          "quantum": "0.001",
+          "rounded": "0.458",
+          "passed": true
+        },
+        {
+          "index": 106,
+          "old": "1.059",
+          "new": "1.059",
+          "quantum": "0.001",
+          "rounded": "1.059",
+          "passed": true
+        },
+        {
+          "index": 107,
+          "old": "0.214",
+          "new": "0.214",
+          "quantum": "0.001",
+          "rounded": "0.214",
+          "passed": true
+        },
+        {
+          "index": 108,
+          "old": "0.091",
+          "new": "0.091",
+          "quantum": "0.001",
+          "rounded": "0.091",
+          "passed": true
+        },
+        {
+          "index": 109,
+          "old": "1993",
+          "new": "1993",
+          "quantum": "1",
+          "rounded": "1993",
+          "passed": true
+        },
+        {
+          "index": 110,
+          "old": "0.764",
+          "new": "0.764",
+          "quantum": "0.001",
+          "rounded": "0.764",
+          "passed": true
+        },
+        {
+          "index": 111,
+          "old": "0.476",
+          "new": "0.476",
+          "quantum": "0.001",
+          "rounded": "0.476",
+          "passed": true
+        },
+        {
+          "index": 112,
+          "old": "1.226",
+          "new": "1.226",
+          "quantum": "0.001",
+          "rounded": "1.226",
+          "passed": true
+        },
+        {
+          "index": 113,
+          "old": "0.242",
+          "new": "0.242",
+          "quantum": "0.001",
+          "rounded": "0.242",
+          "passed": true
+        },
+        {
+          "index": 114,
+          "old": "0.265",
+          "new": "0.265",
+          "quantum": "0.001",
+          "rounded": "0.265",
+          "passed": true
+        },
+        {
+          "index": 115,
+          "old": "1989",
+          "new": "1989",
+          "quantum": "1",
+          "rounded": "1989",
+          "passed": true
+        },
+        {
+          "index": 116,
+          "old": "0.780",
+          "new": "0.780",
+          "quantum": "0.001",
+          "rounded": "0.780",
+          "passed": true
+        },
+        {
+          "index": 117,
+          "old": "0.486",
+          "new": "0.486",
+          "quantum": "0.001",
+          "rounded": "0.486",
+          "passed": true
+        },
+        {
+          "index": 118,
+          "old": "1.253",
+          "new": "1.253",
+          "quantum": "0.001",
+          "rounded": "1.253",
+          "passed": true
+        },
+        {
+          "index": 119,
+          "old": "0.241",
+          "new": "0.241",
+          "quantum": "0.001",
+          "rounded": "0.241",
+          "passed": true
+        },
+        {
+          "index": 120,
+          "old": "0.304",
+          "new": "0.304",
+          "quantum": "0.001",
+          "rounded": "0.304",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "field": "texts.Leave-one-out Summary",
+      "before": "Continuous Random-Effects Model\n\nMetric: Standardized Mean Difference\n\nModel Results\n Study omitted                 Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value\n All studies                      0.358                 0.152                 0.565                    0.105  < 0.001\n Study omitted: Carroll, 1997     0.411                 0.202                 0.621                    0.107  < 0.001\n Study omitted: Grant, 1981       0.370                 0.126                 0.615                    0.125    0.003\n Study omitted: Peck, 1987        0.353                 0.113                 0.593                    0.122    0.004\n Study omitted: Donat, 2003       0.254                 0.093                 0.416                    0.082    0.002\n Study omitted: Stewart, 1990     0.337                 0.094                 0.580                    0.124    0.007\n Study omitted: Young, 1995       0.397                 0.169                 0.626                    0.116  < 0.001",
+      "after": "Continuous Random-Effects Model\n\nMetric: Standardized Mean Difference\n\nModel Results\n Study omitted  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value\n All studies       0.358                 0.152                 0.565                    0.105  < 0.001\n Carroll, 1997     0.411                 0.202                 0.621                    0.107  < 0.001\n Grant, 1981       0.370                 0.126                 0.615                    0.125    0.003\n Peck, 1987        0.353                 0.113                 0.593                    0.122    0.004\n Donat, 2003       0.254                 0.093                 0.416                    0.082    0.002\n Stewart, 1990     0.337                 0.094                 0.580                    0.124    0.007\n Young, 1995       0.397                 0.169                 0.626                    0.116  < 0.001",
+      "numbers": [
+        {
+          "index": 0,
+          "old": "95",
+          "new": "95",
+          "quantum": "1",
+          "rounded": "95",
+          "passed": true
+        },
+        {
+          "index": 1,
+          "old": "95",
+          "new": "95",
+          "quantum": "1",
+          "rounded": "95",
+          "passed": true
+        },
+        {
+          "index": 2,
+          "old": "0.358",
+          "new": "0.358",
+          "quantum": "0.001",
+          "rounded": "0.358",
+          "passed": true
+        },
+        {
+          "index": 3,
+          "old": "0.152",
+          "new": "0.152",
+          "quantum": "0.001",
+          "rounded": "0.152",
+          "passed": true
+        },
+        {
+          "index": 4,
+          "old": "0.565",
+          "new": "0.565",
+          "quantum": "0.001",
+          "rounded": "0.565",
+          "passed": true
+        },
+        {
+          "index": 5,
+          "old": "0.105",
+          "new": "0.105",
+          "quantum": "0.001",
+          "rounded": "0.105",
+          "passed": true
+        },
+        {
+          "index": 6,
+          "old": "0.001",
+          "new": "0.001",
+          "quantum": "0.001",
+          "rounded": "0.001",
+          "passed": true
+        },
+        {
+          "index": 7,
+          "old": "1997",
+          "new": "1997",
+          "quantum": "1",
+          "rounded": "1997",
+          "passed": true
+        },
+        {
+          "index": 8,
+          "old": "0.411",
+          "new": "0.411",
+          "quantum": "0.001",
+          "rounded": "0.411",
+          "passed": true
+        },
+        {
+          "index": 9,
+          "old": "0.202",
+          "new": "0.202",
+          "quantum": "0.001",
+          "rounded": "0.202",
+          "passed": true
+        },
+        {
+          "index": 10,
+          "old": "0.621",
+          "new": "0.621",
+          "quantum": "0.001",
+          "rounded": "0.621",
+          "passed": true
+        },
+        {
+          "index": 11,
+          "old": "0.107",
+          "new": "0.107",
+          "quantum": "0.001",
+          "rounded": "0.107",
+          "passed": true
+        },
+        {
+          "index": 12,
+          "old": "0.001",
+          "new": "0.001",
+          "quantum": "0.001",
+          "rounded": "0.001",
+          "passed": true
+        },
+        {
+          "index": 13,
+          "old": "1981",
+          "new": "1981",
+          "quantum": "1",
+          "rounded": "1981",
+          "passed": true
+        },
+        {
+          "index": 14,
+          "old": "0.370",
+          "new": "0.370",
+          "quantum": "0.001",
+          "rounded": "0.370",
+          "passed": true
+        },
+        {
+          "index": 15,
+          "old": "0.126",
+          "new": "0.126",
+          "quantum": "0.001",
+          "rounded": "0.126",
+          "passed": true
+        },
+        {
+          "index": 16,
+          "old": "0.615",
+          "new": "0.615",
+          "quantum": "0.001",
+          "rounded": "0.615",
+          "passed": true
+        },
+        {
+          "index": 17,
+          "old": "0.125",
+          "new": "0.125",
+          "quantum": "0.001",
+          "rounded": "0.125",
+          "passed": true
+        },
+        {
+          "index": 18,
+          "old": "0.003",
+          "new": "0.003",
+          "quantum": "0.001",
+          "rounded": "0.003",
+          "passed": true
+        },
+        {
+          "index": 19,
+          "old": "1987",
+          "new": "1987",
+          "quantum": "1",
+          "rounded": "1987",
+          "passed": true
+        },
+        {
+          "index": 20,
+          "old": "0.353",
+          "new": "0.353",
+          "quantum": "0.001",
+          "rounded": "0.353",
+          "passed": true
+        },
+        {
+          "index": 21,
+          "old": "0.113",
+          "new": "0.113",
+          "quantum": "0.001",
+          "rounded": "0.113",
+          "passed": true
+        },
+        {
+          "index": 22,
+          "old": "0.593",
+          "new": "0.593",
+          "quantum": "0.001",
+          "rounded": "0.593",
+          "passed": true
+        },
+        {
+          "index": 23,
+          "old": "0.122",
+          "new": "0.122",
+          "quantum": "0.001",
+          "rounded": "0.122",
+          "passed": true
+        },
+        {
+          "index": 24,
+          "old": "0.004",
+          "new": "0.004",
+          "quantum": "0.001",
+          "rounded": "0.004",
+          "passed": true
+        },
+        {
+          "index": 25,
+          "old": "2003",
+          "new": "2003",
+          "quantum": "1",
+          "rounded": "2003",
+          "passed": true
+        },
+        {
+          "index": 26,
+          "old": "0.254",
+          "new": "0.254",
+          "quantum": "0.001",
+          "rounded": "0.254",
+          "passed": true
+        },
+        {
+          "index": 27,
+          "old": "0.093",
+          "new": "0.093",
+          "quantum": "0.001",
+          "rounded": "0.093",
+          "passed": true
+        },
+        {
+          "index": 28,
+          "old": "0.416",
+          "new": "0.416",
+          "quantum": "0.001",
+          "rounded": "0.416",
+          "passed": true
+        },
+        {
+          "index": 29,
+          "old": "0.082",
+          "new": "0.082",
+          "quantum": "0.001",
+          "rounded": "0.082",
+          "passed": true
+        },
+        {
+          "index": 30,
+          "old": "0.002",
+          "new": "0.002",
+          "quantum": "0.001",
+          "rounded": "0.002",
+          "passed": true
+        },
+        {
+          "index": 31,
+          "old": "1990",
+          "new": "1990",
+          "quantum": "1",
+          "rounded": "1990",
+          "passed": true
+        },
+        {
+          "index": 32,
+          "old": "0.337",
+          "new": "0.337",
+          "quantum": "0.001",
+          "rounded": "0.337",
+          "passed": true
+        },
+        {
+          "index": 33,
+          "old": "0.094",
+          "new": "0.094",
+          "quantum": "0.001",
+          "rounded": "0.094",
+          "passed": true
+        },
+        {
+          "index": 34,
+          "old": "0.580",
+          "new": "0.580",
+          "quantum": "0.001",
+          "rounded": "0.580",
+          "passed": true
+        },
+        {
+          "index": 35,
+          "old": "0.124",
+          "new": "0.124",
+          "quantum": "0.001",
+          "rounded": "0.124",
+          "passed": true
+        },
+        {
+          "index": 36,
+          "old": "0.007",
+          "new": "0.007",
+          "quantum": "0.001",
+          "rounded": "0.007",
+          "passed": true
+        },
+        {
+          "index": 37,
+          "old": "1995",
+          "new": "1995",
+          "quantum": "1",
+          "rounded": "1995",
+          "passed": true
+        },
+        {
+          "index": 38,
+          "old": "0.397",
+          "new": "0.397",
+          "quantum": "0.001",
+          "rounded": "0.397",
+          "passed": true
+        },
+        {
+          "index": 39,
+          "old": "0.169",
+          "new": "0.169",
+          "quantum": "0.001",
+          "rounded": "0.169",
+          "passed": true
+        },
+        {
+          "index": 40,
+          "old": "0.626",
+          "new": "0.626",
+          "quantum": "0.001",
+          "rounded": "0.626",
+          "passed": true
+        },
+        {
+          "index": 41,
+          "old": "0.116",
+          "new": "0.116",
+          "quantum": "0.001",
+          "rounded": "0.116",
+          "passed": true
+        },
+        {
+          "index": 42,
+          "old": "0.001",
+          "new": "0.001",
+          "quantum": "0.001",
+          "rounded": "0.001",
+          "passed": true
+        }
+      ]
+    }
+  ],
+  "mismatches": [],
+  "reference_hashes": {
+    "capture-manifest.json": "c9e8e26e7a847ed02041c1dd281af2f0f86b071c0b0c1ed7e7d0aea2ecaa9fc8",
+    "exceptions.json": "9db851142fe3c73c8a37507a89eb63083c96d26cada8bfeac7dc7be05494ea05",
+    "manifest.json": "39dc8c3d0c312ecb70662d5cbd2ddfd015323f63ad2fd4f85fe11466910124cd",
+    "numeric-contract.json": "5c9146ab63d5abbe63a184caebdb4791892164ca1200cc72bfa4f6bcec6e5463",
+    "observed-golden-baseline.zip": "4782529d9771a1930aa7eefe7e88cc88d3e8819b3e595200c28132bf31c980b9",
+    "plot-descriptors.json": "fb9ce5a2477a53c49b289f659d6662c6eddb559b4f44fd8b3b463fe40c5fb19d"
+  },
+  "excluded_current_only_fields": [
+    {
+      "case": "amino-binary-random",
+      "field": "Inference Method",
+      "reason": "not a proposed frozen-field update; existing compatibility exception retained"
+    },
+    {
+      "case": "continuous-random",
+      "field": "Inference Method",
+      "reason": "not a proposed frozen-field update; existing compatibility exception retained"
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "field": "Inference Method",
+      "reason": "not a proposed frozen-field update; existing compatibility exception retained"
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "field": "Inference Method",
+      "reason": "not a proposed frozen-field update; existing compatibility exception retained"
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "field": "Inference Method",
+      "reason": "not a proposed frozen-field update; existing compatibility exception retained"
+    },
+    {
+      "case": "continuous-cumulative",
+      "field": "Inference Method",
+      "reason": "not a proposed frozen-field update; existing compatibility exception retained"
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "field": "Inference Method",
+      "reason": "not a proposed frozen-field update; existing compatibility exception retained"
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "field": "Inference Method",
+      "reason": "not a proposed frozen-field update; existing compatibility exception retained"
+    },
+    {
+      "case": "continuous-meta-regression",
+      "field": "Inference Method",
+      "reason": "not a proposed frozen-field update; existing compatibility exception retained"
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "field": "Inference Method",
+      "reason": "not a proposed frozen-field update; existing compatibility exception retained"
+    },
+    {
+      "case": "continuous-subgroup",
+      "field": "Inference Method",
+      "reason": "not a proposed frozen-field update; existing compatibility exception retained"
+    }
+  ],
+  "excluded_preexisting_master_drift": [
+    {
+      "case": "amino-binary-meta-regression",
+      "field": "Summary",
+      "reason": "regression text producer identical to master; existing exception retained"
+    },
+    {
+      "case": "continuous-meta-regression",
+      "field": "Summary",
+      "reason": "regression text producer identical to master; existing exception retained"
+    }
+  ],
+  "prefix_and_whitespace_only": true
+}
