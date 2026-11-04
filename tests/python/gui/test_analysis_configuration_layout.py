@@ -1062,7 +1062,6 @@ app.processEvents()
 """
     environment = os.environ.copy()
     environment.pop("QT_QPA_PLATFORM", None)
-    environment["RCMS_QT6_BUILD_ROOT"] = str(ROOT / "build" / "qt6-verification")
     environment["PYTHONPATH"] = os.pathsep.join(
         [
             str(ROOT / "src"),
@@ -1199,7 +1198,6 @@ print("LOCALE_ANALYSIS_REQUESTS=" + json.dumps({
 """
     environment = os.environ.copy()
     environment["QT_QPA_PLATFORM"] = "offscreen"
-    environment["RCMS_QT6_BUILD_ROOT"] = str(ROOT / "build" / "qt6-verification")
     environment["PYTHONPATH"] = os.pathsep.join([str(ROOT / "src")])
     completed = subprocess.run(
         [sys.executable, "-c", script],
