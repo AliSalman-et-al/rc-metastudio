@@ -1,0 +1,45 @@
+OR binary.fixed.mh : all fitted fields and weights exactly unchanged; all six display rows satisfy contribution rule
+OR binary.fixed.peto : all fitted fields and weights exactly unchanged; all six display rows satisfy contribution rule
+OR binary.fixed.inv.var : all fitted fields and weights exactly unchanged; all six display rows satisfy contribution rule
+OR binary.random : all fitted fields and weights exactly unchanged; all six display rows satisfy contribution rule
+RR binary.fixed.mh : all fitted fields and weights exactly unchanged; all six display rows satisfy contribution rule
+RR binary.fixed.inv.var : all fitted fields and weights exactly unchanged; all six display rows satisfy contribution rule
+RR binary.random : all fitted fields and weights exactly unchanged; all six display rows satisfy contribution rule
+RD binary.fixed.mh : all fitted fields and weights exactly unchanged; all six display rows satisfy contribution rule
+RD binary.fixed.inv.var : all fitted fields and weights exactly unchanged; all six display rows satisfy contribution rule
+RD binary.random : all fitted fields and weights exactly unchanged; all six display rows satisfy contribution rule
+
+Double-zero Gamma:
+                     fit study                     row_before
+      OR binary.fixed.mh Gamma                  Not estimable
+    OR binary.fixed.peto Gamma 1.000000 [0.019843, 50.396815]
+ OR binary.fixed.inv.var Gamma 1.000000 [0.018922, 52.849274]
+        OR binary.random Gamma 1.000000 [0.018922, 52.849274]
+      RR binary.fixed.mh Gamma                  Not estimable
+ RR binary.fixed.inv.var Gamma 1.000000 [0.020796, 48.085517]
+        RR binary.random Gamma 1.000000 [0.020796, 48.085517]
+      RD binary.fixed.mh Gamma 0.000000 [-0.092214, 0.092214]
+ RD binary.fixed.inv.var Gamma 0.000000 [-0.092214, 0.092214]
+        RD binary.random Gamma 0.000000 [-0.092214, 0.092214]
+                      row_after weight_before weight_after not_estimable_before
+                  Not estimable     0.0000000    0.0000000                 TRUE
+ 1.000000 [0.019843, 50.396815]     0.0000000    0.0000000                FALSE
+ 1.000000 [0.018922, 52.849274]     1.5160064    1.5160064                FALSE
+ 1.000000 [0.018922, 52.849274]     1.5160064    1.5160064                FALSE
+                  Not estimable     0.0000000    0.0000000                 TRUE
+ 1.000000 [0.020796, 48.085517]     0.8313375    0.8313375                FALSE
+ 1.000000 [0.020796, 48.085517]     0.8313375    0.8313375                FALSE
+ 0.000000 [-0.092214, 0.092214]     9.8295281    9.8295281                FALSE
+ 0.000000 [-0.092214, 0.092214]    43.0079202   43.0079202                FALSE
+ 0.000000 [-0.092214, 0.092214]    43.0079202   43.0079202                FALSE
+ not_estimable_after plotted_weight report_weight
+                TRUE           0.0%          0.0%
+               FALSE           0.0%          0.0%
+               FALSE           1.5%          1.5%
+               FALSE           1.5%          1.5%
+                TRUE           0.0%          0.0%
+               FALSE           0.8%          0.8%
+               FALSE           0.8%          0.8%
+               FALSE           9.8%          9.8%
+               FALSE          43.0%         43.0%
+               FALSE          43.0%         43.0%

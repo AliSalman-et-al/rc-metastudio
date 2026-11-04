@@ -21,6 +21,7 @@ SCENARIOS = (
     *("options-" + family for family in ("binary", "continuous", "diagnostic")),
     "options-confidence-inclusion",
     "options-zero-cells",
+    "plot-workflow-mh-rd",
     "project-structure",
     "project-table-covariates",
     "project-shell",
@@ -306,6 +307,52 @@ def confidence_inclusion(app, window, record):
         included=[s.label for s in window.model.get_studies(only_if_included=True)],
     )
     view.close()
+
+
+def mh_rd(app, window, record):
+    from xml.etree import ElementTree as ET
+    import re
+    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+    def prepare_rd(target):
+        model = target.model
+        for column in (model.RAW_DATA[0], model.RAW_DATA[2]):
+            assert model.setData(model.index(0, column), "0")
+        target.tableView.set_metric_in_ui("RD")
+    view = matrix(app, window, "analysis-binary.fixed.mh", record, keep_results=True,
+                  prepare=prepare_rd, parameters={"digits": 6})
+    artifact = next(iter(view._nav_plot_artifacts.values()))
+    figure = " ".join("".join(n.itertext()) for n in ET.parse(artifact.display_path()).iter("{http://www.w3.org/2000/svg}text"))
+    weight_nodes = [n for n in ET.parse(artifact.display_path()).iter("{http://www.w3.org/2000/svg}text")
+                    if re.fullmatch(r"[\d.]+%", "".join(n.itertext()))]
+    plotted = [float("".join(n.itertext()).removesuffix("%"))
+               for n in sorted(weight_nodes, key=lambda node: float(node.attrib["y"]))]
+    plotted.remove(100.0)
+    rows = [row for section in view.results.sections for table in section.tables
+            if table.title == "Study weights" for row in table.rows]
+    reported = [float(row[-1].removesuffix("%")) for row in rows]
+    assert plotted == [round(value, 1) for value in reported], (plotted, rows)
+    assert abs(sum(plotted) - 100) <= len(plotted) * .05, plotted
+    assert "Not estimable" not in figure and all(row[1] != "Not estimable" for row in rows), (figure, rows)
+    record("mh-rd-double-zero-weights", view, plotted=plotted, rows=rows, plots={"RD":artifact.display_path()})
+    def edit_rd(dialog):
+        before = Path(artifact.display_path()).read_bytes()
+        dialog.plot_lb_le.setText("abc")
+        click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+        assert "number" in dialog._commit_error.text().lower(), dialog._commit_error.text()
+        assert dialog._commit_error.isVisible()
+        assert dialog.rect().contains(dialog._commit_error.geometry())
+        assert Path(artifact.display_path()).read_bytes() == before
+        record("invalid-axis-bound-rejected", dialog, message=dialog._commit_error.text())
+        dialog.plot_lb_le.clear()
+        dialog.style_cbo.setCurrentText("BMJ")
+        click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+    modal(app, EditPlotDialog, edit_rd, view.edit_plot_action.trigger)
+    figure = " ".join("".join(n.itertext()) for n in ET.parse(artifact.display_path()).iter("{http://www.w3.org/2000/svg}text"))
+    assert "M–H, Fixed" in figure and "IV, random" not in figure, figure
+    record("mh-rd-bmj-method", view, figure=figure, plots={"RD":artifact.display_path()})
+    view.close()
+    window.workspace.mark_saved()
+
 
 
 def zero_cells(app, window, record):
@@ -1880,6 +1927,8 @@ def run(app, window, scenario, record):
         sequential(app, window, scenario, record)
     elif scenario == "options-confidence-inclusion":
         confidence_inclusion(app, window, record)
+    elif scenario == "plot-workflow-mh-rd":
+        mh_rd(app, window, record)
     elif scenario == "options-zero-cells":
         zero_cells(app, window, record)
     elif scenario == "project-table-covariates":

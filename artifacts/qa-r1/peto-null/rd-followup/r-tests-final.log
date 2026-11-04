@@ -1,0 +1,514 @@
+✔ | F W  S  OK | Context
+
+⠏ |          0 | analysis-smoke                                                 
+⠋ |          1 | analysis-smoke                                                 
+⠼ |          5 | analysis-smoke                                                 
+⠏ |         10 | analysis-smoke                                                 
+⠸ |         14 | analysis-smoke                                                 
+⠼ |         15 | analysis-smoke                                                 
+⠦ |         17 | analysis-smoke                                                 
+⠙ |         22 | analysis-smoke                                                 
+✔ |         22 | analysis-smoke [18.2s]
+
+⠏ |          0 | bubble-metafor-renderer                                        
+⠋ |          1 | bubble-metafor-renderer                                        
+⠙ |          2 | bubble-metafor-renderer                                        
+⠸ |          4 | bubble-metafor-renderer                                        
+⠧ |          8 | bubble-metafor-renderer                                        
+⠏ |         10 | bubble-metafor-renderer                                        
+⠴ |         16 | bubble-metafor-renderer                                        
+✔ |         27 | bubble-metafor-renderer [3.4s]
+
+⠏ |          0 | forest-metafor-renderer                                        
+⠋ |          1 | forest-metafor-renderer                                        
+⠴ |          6 | forest-metafor-renderer                                        
+⠋ |         11 | forest-metafor-renderer                                        
+⠧ |         18 | forest-metafor-renderer                                        
+⠧ |         28 | forest-metafor-renderer                                        
+⠹ |         33 | forest-metafor-renderer                                        
+⠧ |         38 | forest-metafor-renderer                                        
+⠙ |         42 | forest-metafor-renderer                                        
+⠸ |         44 | forest-metafor-renderer                                        
+⠴ |         46 | forest-metafor-renderer                                        
+⠦ |         47 | forest-metafor-renderer                                        
+⠧ |         48 | forest-metafor-renderer                                        
+⠋ |         51 | forest-metafor-renderer                                        
+⠙ |         52 | forest-metafor-renderer                                        
+⠸ |         54 | forest-metafor-renderer                                        
+⠹ |         63 | forest-metafor-renderer                                        
+⠦ |         67 | forest-metafor-renderer                                        
+⠇ |         69 | forest-metafor-renderer                                        
+⠴ |         76 | forest-metafor-renderer                                        
+⠋ |         81 | forest-metafor-renderer                                        
+⠹ |         83 | forest-metafor-renderer                                        
+⠇ |         89 | forest-metafor-renderer                                        
+⠴ |         96 | forest-metafor-renderer                                        
+⠧ |         98 | forest-metafor-renderer                                        
+⠼ |        105 | forest-metafor-renderer                                        
+⠙ |        112 | forest-metafor-renderer                                        
+⠸ |        114 | forest-metafor-renderer                                        
+⠧ |        118 | forest-metafor-renderer                                        
+⠇ |        119 | forest-metafor-renderer                                        
+⠋ |        121 | forest-metafor-renderer                                        
+⠙ |        122 | forest-metafor-renderer                                        
+⠹ |        123 | forest-metafor-renderer                                        
+⠸ |        124 | forest-metafor-renderer                                        
+⠼ |        125 | forest-metafor-renderer                                        
+⠏ |        130 | forest-metafor-renderer                                        
+⠹ |        133 | forest-metafor-renderer                                        
+⠦ |        137 | forest-metafor-renderer                                        
+⠹ |        143 | forest-metafor-renderer                                        
+⠙ |        152 | forest-metafor-renderer                                        
+⠸ |        154 | forest-metafor-renderer                                        
+⠇ |        159 | forest-metafor-renderer                                        
+⠦ |        167 | forest-metafor-renderer                                        
+⠙ |        172 | forest-metafor-renderer                                        
+⠸ |        174 | forest-metafor-renderer                                        
+⠧ |        178 | forest-metafor-renderer                                        
+⠼ |        185 | forest-metafor-renderer                                        
+⠦ |        187 | forest-metafor-renderer                                        
+⠋ |        191 | forest-metafor-renderer                                        
+⠸ |        194 | forest-metafor-renderer                                        
+⠦ |        197 | forest-metafor-renderer                                        
+⠧ |        198 | forest-metafor-renderer                                        
+⠇ |        199 | forest-metafor-renderer                                        
+⠼ |        205 | forest-metafor-renderer                                        
+⠦ |        207 | forest-metafor-renderer                                        
+⠼ |        215 | forest-metafor-renderer                                        
+⠦ |        217 | forest-metafor-renderer                                        
+⠙ |        222 | forest-metafor-renderer                                        
+⠹ |        223 | forest-metafor-renderer                                        
+⠦ |        227 | forest-metafor-renderer                                        
+⠸ |        234 | forest-metafor-renderer                                        
+⠼ |        235 | forest-metafor-renderer                                        
+⠦ |        247 | forest-metafor-renderer                                        
+⠧ |        248 | forest-metafor-renderer                                        
+⠏ |        250 | forest-metafor-renderer                                        
+⠙ |        252 | forest-metafor-renderer                                        
+⠹ |        253 | forest-metafor-renderer                                        
+⠸ |        254 | forest-metafor-renderer                                        
+⠼ |        255 | forest-metafor-renderer                                        
+⠦ |        257 | forest-metafor-renderer                                        
+⠏ |        260 | forest-metafor-renderer                                        
+⠙ |        262 | forest-metafor-renderer                                        
+⠙ |        272 | forest-metafor-renderer                                        
+⠼ |        275 | forest-metafor-renderer                                        
+⠏ |        280 | forest-metafor-renderer                                        
+⠹ |        283 | forest-metafor-renderer                                        
+⠸ |        284 | forest-metafor-renderer                                        
+⠦ |        287 | forest-metafor-renderer                                        
+⠇ |        289 | forest-metafor-renderer                                        
+⠙ |        292 | forest-metafor-renderer                                        
+⠦ |        297 | forest-metafor-renderer                                        
+⠇ |        299 | forest-metafor-renderer                                        
+⠋ |        301 | forest-metafor-renderer                                        
+⠙ |        302 | forest-metafor-renderer                                        
+⠸ |        304 | forest-metafor-renderer                                        
+⠇ |        309 | forest-metafor-renderer                                        
+⠏ |        310 | forest-metafor-renderer                                        
+⠙ |        312 | forest-metafor-renderer                                        
+⠼ |        315 | forest-metafor-renderer                                        
+⠦ |        317 | forest-metafor-renderer                                        
+⠧ |        318 | forest-metafor-renderer                                        
+⠏ |        320 | forest-metafor-renderer                                        
+⠼ |        325 | forest-metafor-renderer                                        
+⠴ |        326 | forest-metafor-renderer                                        
+⠧ |        328 | forest-metafor-renderer                                        
+⠏ |        330 | forest-metafor-renderer                                        
+⠙ |        332 | forest-metafor-renderer                                        
+⠹ |        333 | forest-metafor-renderer                                        
+⠼ |        335 | forest-metafor-renderer                                        
+⠏ |        340 | forest-metafor-renderer                                        
+⠙ |        342 | forest-metafor-renderer                                        
+⠦ |        347 | forest-metafor-renderer                                        
+⠇ |        349 | forest-metafor-renderer                                        
+⠋ |        351 | forest-metafor-renderer                                        
+⠸ |        354 | forest-metafor-renderer                                        
+⠴ |        356 | forest-metafor-renderer                                        
+⠋ |        361 | forest-metafor-renderer                                        
+⠹ |        363 | forest-metafor-renderer                                        
+⠧ |        368 | forest-metafor-renderer                                        
+⠏ |        370 | forest-metafor-renderer                                        
+⠹ |        373 | forest-metafor-renderer                                        
+⠸ |        374 | forest-metafor-renderer                                        
+⠴ |        376 | forest-metafor-renderer                                        
+⠦ |        377 | forest-metafor-renderer                                        
+⠧ |        378 | forest-metafor-renderer                                        
+⠏ |        380 | forest-metafor-renderer                                        
+⠋ |        381 | forest-metafor-renderer                                        
+⠹ |        383 | forest-metafor-renderer                                        
+⠇ |        389 | forest-metafor-renderer                                        
+⠙ |        392 | forest-metafor-renderer                                        
+⠹ |        393 | forest-metafor-renderer                                        
+⠼ |        395 | forest-metafor-renderer                                        
+⠇ |        399 | forest-metafor-renderer                                        
+⠏ |        400 | forest-metafor-renderer                                        
+⠹ |        403 | forest-metafor-renderer                                        
+⠴ |        406 | forest-metafor-renderer                                        
+⠧ |        408 | forest-metafor-renderer                                        
+⠹ |        413 | forest-metafor-renderer                                        
+⠙ |        422 | forest-metafor-renderer                                        
+⠸ |        424 | forest-metafor-renderer                                        
+⠹ |        433 | forest-metafor-renderer                                        
+⠼ |        435 | forest-metafor-renderer                                        
+⠹ |        443 | forest-metafor-renderer                                        
+⠸ |        444 | forest-metafor-renderer                                        
+⠦ |        447 | forest-metafor-renderer                                        
+⠼ |        455 | forest-metafor-renderer                                        
+⠧ |        458 | forest-metafor-renderer                                        
+⠴ |        466 | forest-metafor-renderer                                        
+⠧ |        468 | forest-metafor-renderer                                        
+⠴ |        476 | forest-metafor-renderer                                        
+⠋ |        481 | forest-metafor-renderer                                        
+⠼ |        485 | forest-metafor-renderer                                        
+⠦ |        487 | forest-metafor-renderer                                        
+⠹ |        493 | forest-metafor-renderer                                        
+⠦ |        497 | forest-metafor-renderer                                        
+⠙ |        502 | forest-metafor-renderer                                        
+⠇ |        509 | forest-metafor-renderer                                        
+⠴ |        516 | forest-metafor-renderer                                        
+⠼ |        525 | forest-metafor-renderer                                        
+⠹ |        533 | forest-metafor-renderer                                        
+⠦ |        557 | forest-metafor-renderer                                        
+⠇ |        559 | forest-metafor-renderer                                        
+⠼ |        565 | forest-metafor-renderer                                        
+⠧ |        568 | forest-metafor-renderer                                        
+⠹ |        573 | forest-metafor-renderer                                        
+⠦ |        577 | forest-metafor-renderer                                        
+⠇ |        579 | forest-metafor-renderer                                        
+⠼ |        585 | forest-metafor-renderer                                        
+⠇ |        589 | forest-metafor-renderer                                        
+⠴ |        596 | forest-metafor-renderer                                        
+⠧ |        598 | forest-metafor-renderer                                        
+⠹ |        603 | forest-metafor-renderer                                        
+⠼ |        605 | forest-metafor-renderer                                        
+⠧ |        608 | forest-metafor-renderer                                        
+⠏ |        610 | forest-metafor-renderer                                        
+⠙ |        612 | forest-metafor-renderer                                        
+⠹ |        613 | forest-metafor-renderer                                        
+⠼ |        615 | forest-metafor-renderer                                        
+⠧ |        618 | forest-metafor-renderer                                        
+⠏ |        620 | forest-metafor-renderer                                        
+⠙ |        622 | forest-metafor-renderer                                        
+⠼ |        625 | forest-metafor-renderer                                        
+⠏ |        630 | forest-metafor-renderer                                        
+⠼ |        635 | forest-metafor-renderer                                        
+⠏ |        640 | forest-metafor-renderer                                        
+⠼ |        645 | forest-metafor-renderer                                        
+⠏ |        650 | forest-metafor-renderer                                        
+⠼ |        655 | forest-metafor-renderer                                        
+⠏ |        660 | forest-metafor-renderer                                        
+⠹ |        663 | forest-metafor-renderer                                        
+⠼ |        665 | forest-metafor-renderer                                        
+⠙ |        672 | forest-metafor-renderer                                        
+⠧ |        678 | forest-metafor-renderer                                        
+⠸ |        684 | forest-metafor-renderer                                        
+⠏ |        690 | forest-metafor-renderer                                        
+⠴ |        696 | forest-metafor-renderer                                        
+⠙ |        702 | forest-metafor-renderer                                        
+⠴ |        706 | forest-metafor-renderer                                        
+⠧ |        708 | forest-metafor-renderer                                        
+⠋ |        711 | forest-metafor-renderer                                        
+⠸ |        714 | forest-metafor-renderer                                        
+⠏ |        720 | forest-metafor-renderer                                        
+⠹ |        723 | forest-metafor-renderer                                        
+⠴ |        726 | forest-metafor-renderer                                        
+⠧ |        728 | forest-metafor-renderer                                        
+⠹ |        733 | forest-metafor-renderer                                        
+⠧ |        738 | forest-metafor-renderer                                        
+⠇ |        739 | forest-metafor-renderer                                        
+⠙ |        742 | forest-metafor-renderer                                        
+⠼ |        745 | forest-metafor-renderer                                        
+⠋ |        751 | forest-metafor-renderer                                        
+⠹ |        753 | forest-metafor-renderer                                        
+⠸ |        754 | forest-metafor-renderer                                        
+⠼ |        755 | forest-metafor-renderer                                        
+✔ |        763 | forest-metafor-renderer [1066.7s]
+
+⠏ |          0 | forest-subgroup-range                                          
+⠋ |          1 | forest-subgroup-range                                          
+✔ |          4 | forest-subgroup-range [6.6s]
+
+⠏ |          0 | forest-visual-qa                                               
+✔ |      1   0 | forest-visual-qa
+
+⠏ |          0 | plot-devices                                                   
+⠙ |          2 | plot-devices                                                   
+⠴ |          6 | plot-devices                                                   
+⠧ |          8 | plot-devices                                                   
+⠙ |         12 | plot-devices                                                   
+⠸ |         14 | plot-devices                                                   
+⠦ |         17 | plot-devices                                                   
+⠇ |         19 | plot-devices                                                   
+⠋ |         21 | plot-devices                                                   
+⠦ |         27 | plot-devices                                                   
+⠋ |         31 | plot-devices                                                   
+⠹ |         33 | plot-devices                                                   
+⠴ |         36 | plot-devices                                                   
+⠧ |         38 | plot-devices                                                   
+⠏ |         40 | plot-devices                                                   
+⠙ |         42 | plot-devices                                                   
+⠼ |         45 | plot-devices                                                   
+✔ |         47 | plot-devices [2.7s]
+
+⠏ |          0 | plot-visual-qa-inventory                                       
+⠋ |          1 | plot-visual-qa-inventory                                       
+⠙ |          2 | plot-visual-qa-inventory                                       
+✔ |          3 | plot-visual-qa-inventory
+
+⠏ |          0 | prepared-analysis-effects                                      
+⠴ |          6 | prepared-analysis-effects                                      
+⠦ |          7 | prepared-analysis-effects                                      
+⠇ |          9 | prepared-analysis-effects                                      
+⠋ |         11 | prepared-analysis-effects                                      
+⠸ |         14 | prepared-analysis-effects                                      
+⠦ |         17 | prepared-analysis-effects                                      
+✔ |         23 | prepared-analysis-effects [17.3s]
+
+⠏ |          0 | publication-bias                                               
+⠦ |          7 | publication-bias                                               
+⠇ |         19 | publication-bias                                               
+⠸ |         24 | publication-bias                                               
+⠦ |         37 | publication-bias                                               
+⠹ |         43 | publication-bias                                               
+⠇ |         49 | publication-bias                                               
+⠸ |         54 | publication-bias                                               
+⠴ |         56 | publication-bias                                               
+⠧ |         58 | publication-bias                                               
+⠙ |         62 | publication-bias                                               
+⠴ |         66 | publication-bias                                               
+⠏ |         70 | publication-bias                                               
+⠸ |         74 | publication-bias                                               
+⠦ |         77 | publication-bias                                               
+⠇ |         79 | publication-bias                                               
+⠹ |         83 | publication-bias                                               
+⠦ |         87 | publication-bias                                               
+⠋ |         91 | publication-bias                                               
+⠹ |         93 | publication-bias                                               
+⠼ |         95 | publication-bias                                               
+⠦ |         97 | publication-bias                                               
+⠇ |         99 | publication-bias                                               
+⠋ |        101 | publication-bias                                               
+⠙ |        112 | publication-bias                                               
+⠸ |        114 | publication-bias                                               
+⠦ |        117 | publication-bias                                               
+⠏ |        120 | publication-bias                                               
+⠹ |        123 | publication-bias                                               
+⠧ |        148 | publication-bias                                               
+⠹ |        153 | publication-bias                                               
+⠼ |        165 | publication-bias                                               
+⠦ |        167 | publication-bias                                               
+⠇ |        169 | publication-bias                                               
+⠦ |        187 | publication-bias                                               
+⠙ |        192 | publication-bias                                               
+⠼ |        205 | publication-bias                                               
+⠙ |        212 | publication-bias                                               
+⠇ |        219 | publication-bias                                               
+⠴ |        226 | publication-bias                                               
+⠧ |        228 | publication-bias                                               
+⠇ |        229 | publication-bias                                               
+⠋ |        231 | publication-bias                                               
+⠧ |        238 | publication-bias                                               
+⠋ |        241 | publication-bias                                               
+⠴ |        246 | publication-bias                                               
+⠇ |        249 | publication-bias                                               
+⠙ |        252 | publication-bias                                               
+⠼ |        255 | publication-bias                                               
+⠙ |        262 | publication-bias                                               
+⠧ |        268 | publication-bias                                               
+⠋ |        271 | publication-bias                                               
+⠸ |        274 | publication-bias                                               
+⠏ |        280 | publication-bias                                               
+⠋ |        281 | publication-bias                                               
+⠏ |        290 | publication-bias                                               
+⠴ |        296 | publication-bias                                               
+⠦ |        297 | publication-bias                                               
+⠏ |        300 | publication-bias                                               
+⠙ |        302 | publication-bias                                               
+⠸ |        304 | publication-bias                                               
+⠴ |        306 | publication-bias                                               
+⠦ |        307 | publication-bias                                               
+⠇ |        309 | publication-bias                                               
+⠏ |        310 | publication-bias                                               
+⠸ |        314 | publication-bias                                               
+⠴ |        316 | publication-bias                                               
+✔ |        323 | publication-bias [65.8s]
+
+⠏ |          0 | ratios                                                         
+⠋ |          1 | ratios                                                         
+⠹ |          3 | ratios                                                         
+⠸ |          4 | ratios                                                         
+⠼ |          5 | ratios                                                         
+⠦ |          7 | ratios                                                         
+⠧ |          8 | ratios                                                         
+⠇ |          9 | ratios                                                         
+⠴ |         16 | ratios                                                         
+⠇ |         19 | ratios                                                         
+⠇ |         29 | ratios                                                         
+⠦ |         37 | ratios                                                         
+⠇ |         39 | ratios                                                         
+⠴ |         46 | ratios                                                         
+⠇ |         49 | ratios                                                         
+⠦ |         57 | ratios                                                         
+⠇ |         59 | ratios                                                         
+⠦ |         67 | ratios                                                         
+⠇ |         69 | ratios                                                         
+⠧ |         78 | ratios                                                         
+⠇ |         79 | ratios                                                         
+⠇ |         89 | ratios                                                         
+⠦ |         97 | ratios                                                         
+⠇ |         99 | ratios                                                         
+⠦ |        107 | ratios                                                         
+⠇ |        109 | ratios                                                         
+⠸ |        114 | ratios                                                         
+⠇ |        119 | ratios                                                         
+⠇ |        129 | ratios                                                         
+⠸ |        134 | ratios                                                         
+⠧ |        138 | ratios                                                         
+⠇ |        139 | ratios                                                         
+⠼ |        145 | ratios                                                         
+⠇ |        149 | ratios                                                         
+⠼ |        155 | ratios                                                         
+⠇ |        159 | ratios                                                         
+⠇ |        169 | ratios                                                         
+⠇ |        179 | ratios                                                         
+⠇ |        189 | ratios                                                         
+⠇ |        199 | ratios                                                         
+⠹ |        203 | ratios                                                         
+⠇ |        209 | ratios                                                         
+⠇ |        219 | ratios                                                         
+⠴ |        226 | ratios                                                         
+⠇ |        229 | ratios                                                         
+⠦ |        237 | ratios                                                         
+⠇ |        239 | ratios                                                         
+⠇ |        249 | ratios                                                         
+⠇ |        259 | ratios                                                         
+⠦ |        267 | ratios                                                         
+⠇ |        269 | ratios                                                         
+⠙ |        272 | ratios                                                         
+⠇ |        279 | ratios                                                         
+⠦ |        287 | ratios                                                         
+⠇ |        289 | ratios                                                         
+⠦ |        297 | ratios                                                         
+⠇ |        299 | ratios                                                         
+⠇ |        309 | ratios                                                         
+⠇ |        319 | ratios                                                         
+⠇ |        329 | ratios                                                         
+⠙ |        332 | ratios                                                         
+⠧ |        338 | ratios                                                         
+⠸ |        344 | ratios                                                         
+⠏ |        350 | ratios                                                         
+⠹ |        353 | ratios                                                         
+⠇ | 1      358 | ratios                                                         
+⠏ | 1      359 | ratios                                                         
+⠼ | 1      364 | ratios                                                         
+⠧ | 2      366 | ratios                                                         
+⠼ | 3      372 | ratios                                                         
+⠴ | 3      373 | ratios                                                         
+⠦ | 3      374 | ratios                                                         
+⠏ | 3      377 | ratios                                                         
+⠼ | 3      382 | ratios                                                         
+⠦ | 3      384 | ratios                                                         
+⠇ | 3      386 | ratios                                                         
+✖ | 3      387 | ratios [56.3s]
+────────────────────────────────────────────────────────────────────────────────
+Failure ('test-ratios.R:113:9'): MH forest retains dropped study rows and the original pooled fit
+Expected `is.na(summary$weights[5])` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+Failure ('test-ratios.R:113:9'): MH forest retains dropped study rows and the original pooled fit
+Expected `is.na(summary$weights[5])` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+Failure ('test-ratios.R:113:9'): MH forest retains dropped study rows and the original pooled fit
+Expected `is.na(summary$weights[5])` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+────────────────────────────────────────────────────────────────────────────────
+
+⠏ |          0 | refactor-regressions                                           
+✔ |          2 | refactor-regressions
+
+⠏ |          0 | reitsma                                                        
+⠼ |          5 | reitsma                                                        
+⠴ |          6 | reitsma                                                        
+⠸ |         14 | reitsma                                                        
+⠏ |         30 | reitsma                                                        
+⠦ |         37 | reitsma                                                        
+⠧ |         38 | reitsma                                                        
+⠴ |         46 | reitsma                                                        
+⠧ |         48 | reitsma                                                        
+⠇ |         49 | reitsma                                                        
+⠸ |         54 | reitsma                                                        
+⠧ |         58 | reitsma                                                        
+⠇ |         69 | reitsma                                                        
+⠸ |         74 | reitsma                                                        
+⠧ |         78 | reitsma                                                        
+⠹ |         93 | reitsma                                                        
+⠙ |        102 | reitsma                                                        
+⠋ |        111 | reitsma                                                        
+⠸ |        114 | reitsma                                                        
+⠇ |        119 | reitsma                                                        
+⠏ |        120 | reitsma                                                        
+✔ |        121 | reitsma [13.1s]
+
+⠏ |          0 | summary-display                                                
+⠋ |          1 | summary-display                                                
+⠸ |          4 | summary-display                                                
+⠧ |          8 | summary-display                                                
+⠋ |         11 | summary-display                                                
+⠴ |         16 | summary-display                                                
+⠋ |         21 | summary-display                                                
+⠇ |         29 | summary-display                                                
+⠧ |         38 | summary-display                                                
+⠙ |         52 | summary-display                                                
+⠧ |         58 | summary-display                                                
+⠙ |         62 | summary-display                                                
+⠧ |         68 | summary-display                                                
+⠙ |         72 | summary-display                                                
+⠧ |         78 | summary-display                                                
+⠙ |         92 | summary-display                                                
+⠴ |         96 | summary-display                                                
+✔ |        105 | summary-display [2.7s]
+
+══ Results ═════════════════════════════════════════════════════════════════════
+Duration: 1253.5 s
+
+── Skipped tests (1) ───────────────────────────────────────────────────────────
+• identical(Sys.getenv("RCMETAR_RUN_VISUAL_QA"), "true") is not TRUE (1):
+  'test-forest-visual-qa.R:2:3'
+
+── Failed tests ────────────────────────────────────────────────────────────────
+Failure ('test-ratios.R:113:9'): MH forest retains dropped study rows and the original pooled fit
+Expected `is.na(summary$weights[5])` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+Failure ('test-ratios.R:113:9'): MH forest retains dropped study rows and the original pooled fit
+Expected `is.na(summary$weights[5])` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+Failure ('test-ratios.R:113:9'): MH forest retains dropped study rows and the original pooled fit
+Expected `is.na(summary$weights[5])` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+
+[ FAIL 3 | WARN 0 | SKIP 1 | PASS 1827 ]
+Error:
+! Test failures.
+Execution halted

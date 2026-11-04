@@ -322,17 +322,44 @@ rcmetar.metafor.plot.fields <- function(om.data, params, y, lb, ub, sample.sizes
     )
 }
 
+rcmetar.metafor.standard.study.effects <- function(om.data, params, res) {
+    display.data <- om.data
+    n <- length(om.data@y)
+    if (length(res$yi.f) == n && length(res$vi.f) == n) {
+        finite <- is.finite(res$yi.f) & is.finite(res$vi.f)
+        old.options <- options(na.action="na.pass")
+        on.exit(options(old.options), add=TRUE)
+        weights <- rcmetar.metafor.weights(res)
+        contributes <- is.finite(weights) & weights > 0
+        # Pooling and individual-effect eligibility can differ. Use the fitted
+        # effect where available, otherwise the prepared display effect only
+        # for studies that contribute to the fit.
+        display.data@y[finite] <- res$yi.f[finite]
+        display.data@SE[finite] <- sqrt(res$vi.f[finite])
+        omitted <- !finite & !contributes
+        display.data@y[omitted] <- NA_real_
+        display.data@SE[omitted] <- NA_real_
+    }
+    bounds <- calc.ci.bounds(display.data, params,
+                            ni=rcmetar.metafor.plot.sample.sizes(om.data, params))
+    list(yi=as.numeric(display.data@y), vi=as.numeric(display.data@SE)^2,
+         sei=as.numeric(display.data@SE), ci.lb=bounds$lb, ci.ub=bounds$ub,
+         slab=rcmetar.study.labels(om.data))
+}
+
 rcmetar.metafor.standard.plot.fields <- function(om.data, params, res) {
     sample.sizes <- rcmetar.metafor.plot.sample.sizes(om.data, params)
-    study.bounds <- calc.ci.bounds(om.data, params, ni=sample.sizes)
-    rcmetar.metafor.plot.fields(
+    effect <- rcmetar.metafor.standard.study.effects(om.data, params, res)
+    fields <- rcmetar.metafor.plot.fields(
         om.data,
         params,
-        c(om.data@y, res$b[[1]]),
-        c(study.bounds$lb, res$ci.lb[[1]]),
-        c(study.bounds$ub, res$ci.ub[[1]]),
+        c(effect$yi, res$b[[1]]),
+        c(effect$ci.lb, res$ci.lb[[1]]),
+        c(effect$ci.ub, res$ci.ub[[1]]),
         sample.sizes=sample.sizes
     )
+    fields$effect <- effect
+    fields
 }
 
 rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, variant, labels, has.overall) {
@@ -530,7 +557,7 @@ rcmetar.build.binary.metafor.bundle <- function(binary.data, params, res) {
     fields <- rcmetar.metafor.standard.plot.fields(binary.data, params, res)
 
     single.study <- !inherits(res, "rma")
-    effect <- NULL
+    effect <- fields$effect
     if (single.study) {
         effect <- list(
             yi = as.numeric(binary.data@y),

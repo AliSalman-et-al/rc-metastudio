@@ -160,6 +160,7 @@ rcmetar.draw.forest.inference <- function(bundle, x, row, cex, res=bundle$res, d
 
 rcmetar.overall.null.label <- function(res, params) {
     measure <- as.character(res$measure %||% params$measure)
+    if (identical(measure, "PETO")) measure <- "OR"
     if (!length(measure) || measure == "GEN") measure <- as.character(params$measure)
     if (measure %in% c("OR", "RR", "RD", "HR", "IRR", "MD", "SMD", "AS", "YUQ", "YUY")) return("")
     label <- rcmetar.display.metric.name(params)

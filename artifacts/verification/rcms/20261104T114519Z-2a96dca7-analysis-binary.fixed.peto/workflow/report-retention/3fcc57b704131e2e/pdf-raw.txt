@@ -1,0 +1,315 @@
+clinical failure: fixed-effect meta-analysis (odds ratio)
+Comparison: Intervention / Control
+Methods
+Odds ratios were pooled using a fixed-effect model. A continuity correction of 0.5 was applied to individual study estimates only; the pooled
+Peto estimate uses the original counts. Heterogeneity was assessed with Cochran's Q and I². Analyses were performed in RC MetaStudio
+0.5.1. R packages loaded for this analysis: metafor 5.0.1, meta 8.5-0.
+Results
+19 studies were included (1097 participants in Intervention, 1080 in Control). The pooled odds ratio was 0.710 (95% CI [0.541, 0.930], z =
+-2.482, p = .013). The confidence interval excludes 1, with lower odds of the outcome in Intervention than in Control. Heterogeneity: Q =
+41.000, df = 18, p = .002. I² = 56.1%, which may represent moderate to substantial heterogeneity (Cochrane Handbook ranges).
+Table 1. Pooled effect
+Effect Estimate 95% CI SE z p
+Odds ratio 0.710 0.541 to 0.930 0.138 -2.482 .013
+Table 2. Model fit
+Statistic Value
+Studies (k) 19
+Participants in Intervention 1097
+Participants in Control 1080
+Cochran’s Q 41.000
+Heterogeneity degrees of freedom 18
+Heterogeneity p .002
+I² 56.1%
+Table 3. Study results
+Study Effect 95% CI Weight
+Gonzalez 0.581 0.178 to 1.889 5.3%
+Prins 0.460 0.127 to 1.668 4.4%
+Giamarellou 0.163 0.031 to 0.865 2.2%
+Maller 1.394 0.672 to 2.894 13.8%
+Sturm 0.254 0.026 to 2.519 0.9%
+Marik 0.405 0.240 to 0.682 26.9%
+Muijsken 1.597 0.496 to 5.148 5.4%
+Vigano 2.592 0.160 to 41.886 0.5%
+Hansen 0.198 0.058 to 0.671 4.9%
+De Vries 1.914 0.500 to 7.326 4.1%
+Mauracher 0.172 0.038 to 0.775 2.8%
+Nordstrom 0.669 0.139 to 3.220 3.0%
+Rozdzinski 1.018 0.465 to 2.229 12.0%
+Ter Braak 1.352 0.504 to 3.624 7.6%
+Tulkens 1.000 0.020 to 50.397 0.0%
+Van der Auwera 0.252 0.025 to 2.516 0.9%
+Klastersky 4.738 1.396 to 16.084 4.9%
+Vanhaeverbeek 1.050 0.021 to 52.979 0.0%
+Hollender 0.352 0.022 to 5.700 0.5%
+0
+0
+11
+0
+0
+10
+16
+3
+0
+6
+2
+1
+8
+26
+0
+19
+0
+3
+6
+58
+19
+25
+30
+19
+69
+71
+29
+92
+80
+28
+74
+32
+155
+36
+164
+30
+59
+27
+1
+0
+3
+2
+0
+8
+16
+4
+6
+3
+11
+0
+6
+49
+2
+13
+5
+7
+9
+56
+20
+25
+30
+19
+72
+72
+27
+93
+76
+31
+70
+35
+145
+36
+152
+30
+64
+27
+0.5%
+0.0%
+4.9%
+0.9%
+0.0%
+7.6%
+12.0%
+3.0%
+2.8%
+4.1%
+4.9%
+0.5%
+5.4%
+26.9%
+0.9%
+13.8%
+2.2%
+4.4%
+5.3%
+Study
+Events Total Events Total Weight
+Intervention Control
+Odds ratio
+Peto, Fixed,
+95% CI
+Odds ratio
+Peto, Fixed,
+95% CI
+0.710 [0.541, 0.930]
+0.01 0.1 1 10 100
+Gonzalez 1993
+Prins 1993
+Giamarellou 1991
+Maller 1993
+Sturm 1989
+Marik 1991
+Muijsken 1988
+Vigano 1992
+Hansen 1988
+De Vries 1990
+Mauracher 1989
+Nordstrom 1990
+Rozdzinski 1993
+Ter Braak 1990
+Tulkens 1988
+Van der Auwera 1991
+Klastersky 1977
+Vanhaeverbeek 1993
+Hollender 1989
+0.581 [0.178, 1.889]
+0.460 [0.127, 1.668]
+0.163 [0.031, 0.865]
+1.394 [0.672, 2.894]
+0.254 [0.026, 2.519]
+0.405 [0.240, 0.682]
+1.597 [0.496, 5.148]
+2.592 [0.160, 41.886]
+0.198 [0.058, 0.671]
+1.914 [0.500, 7.326]
+0.172 [0.038, 0.775]
+0.669 [0.139, 3.220]
+1.018 [0.465, 2.229]
+1.352 [0.504, 3.624]
+1.000 [0.020, 50.397]
+0.252 [0.025, 2.516]
+4.738 [1.396, 16.084]
+1.050 [0.021, 52.979]
+0.352 [0.022, 5.700]
+Fixed-eﬀect model (Peto) 1097 1080 100.0%
+Total events: 111 145
+Heterogeneity: Q = 41.000, df = 18 (P = 0.002); I² = 56.1%
+Test for overall eﬀect: Z = -2.482 (P = 0.013) Odds ratio
+Favours Intervention Favours Control
+clinical failure · Binary · Odds Ratio · Comparison: Intervention / Control
+Figure 1. Forest Plot
+Supplementary details
+Table 4. Full-precision results
+Source Results
+Summary — Model Results Estimate: 0.710
+Lower bound (95% CI): 0.541
+Upper bound (95% CI): 0.930
+p-value: 0.013
+Summary — Heterogeneity Q: 41.000
+df: 18
+p-value: 0.002
+I²: 56.1%
+Summary — Test for overall effect Z: -2.482
+p-value: 0.013
+Summary — Calculation scale (log) Estimate: -0.343
+Lower bound (95% CI): -0.614
+Upper bound (95% CI): -0.072
+SE (log scale): 0.138
+Weights — Study weights Study: Gonzalez
+Effect: 0.581
+Lower bound: 0.178
+Upper bound: 1.889
+Weight (%): 5.3%
+Weights — Study weights Study: Prins
+Effect: 0.460
+Lower bound: 0.127
+Upper bound: 1.668
+Weight (%): 4.4%
+Weights — Study weights Study: Giamarellou
+Effect: 0.163
+Lower bound: 0.031
+Upper bound: 0.865
+Weight (%): 2.2%
+Weights — Study weights Study: Maller
+Effect: 1.394
+Lower bound: 0.672
+Upper bound: 2.894
+Weight (%): 13.8%
+Weights — Study weights Study: Sturm
+Effect: 0.254
+Lower bound: 0.026
+Upper bound: 2.519
+Weight (%): 0.9%
+Weights — Study weights Study: Marik
+Effect: 0.405
+Lower bound: 0.240
+Upper bound: 0.682
+Weight (%): 26.9%
+Weights — Study weights Study: Muijsken
+Effect: 1.597
+Lower bound: 0.496
+Upper bound: 5.148
+Weight (%): 5.4%
+Weights — Study weights Study: Vigano
+Effect: 2.592
+Lower bound: 0.160
+Upper bound: 41.886
+Weight (%): 0.5%
+Weights — Study weights Study: Hansen
+Effect: 0.198
+Lower bound: 0.058
+Upper bound: 0.671
+Weight (%): 4.9%
+Weights — Study weights Study: De Vries
+Effect: 1.914
+Lower bound: 0.500
+Upper bound: 7.326
+Weight (%): 4.1%
+Weights — Study weights Study: Mauracher
+Effect: 0.172
+Lower bound: 0.038
+Upper bound: 0.775
+Weight (%): 2.8%
+Weights — Study weights Study: Nordstrom
+Effect: 0.669
+Lower bound: 0.139
+Upper bound: 3.220
+Weight (%): 3.0%
+Weights — Study weights Study: Rozdzinski
+Effect: 1.018
+Lower bound: 0.465
+Upper bound: 2.229
+Weight (%): 12.0%
+Weights — Study weights Study: Ter Braak
+Effect: 1.352
+Lower bound: 0.504
+Upper bound: 3.624
+Weight (%): 7.6%
+Weights — Study weights Study: Tulkens
+Effect: 1.000
+Lower bound: 0.020
+Upper bound: 50.397
+Weight (%): 0.0%
+Weights — Study weights Study: Van der Auwera
+Effect: 0.252
+Lower bound: 0.025
+Upper bound: 2.516
+Weight (%): 0.9%
+Weights — Study weights Study: Klastersky
+Effect: 4.738
+Lower bound: 1.396
+Upper bound: 16.084
+Weight (%): 4.9%
+Weights — Study weights Study: Vanhaeverbeek
+Effect: 1.050
+Lower bound: 0.021
+Upper bound: 52.979
+Weight (%): 0.0%
+Weights — Study weights Study: Hollender
+Effect: 0.352
+Lower bound: 0.022
+Upper bound: 5.700
+Weight (%): 0.5%
+Pooled Odds Ratio: 0.710 (95% CI 0.541 to 0.930).
+References
+1. Peto one-step odds-ratio method: Yusuf, S., Peto, R., Lewis, J., Collins, R., & Sleight, P. (1985). Beta blockade during and after myocardial
+infarction: An overview of the randomized trials. Progress in Cardiovascular Disease, 27(5), 335-371. doi:10.1016/S0033-0620(85)80003-7.
+2. Sparse-data comparison: Bradburn, M. J., Deeks, J. J., Berlin, J. A., & Localio, A. R. (2007). Much ado about nothing: A comparison of the
+performance of meta-analytical methods with rare events. Statistics in Medicine, 26(1), 53-77. doi:10.1002/sim.2528.
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software,
+36(3), 1-48. doi:10.18637/jss.v036.i03.
+

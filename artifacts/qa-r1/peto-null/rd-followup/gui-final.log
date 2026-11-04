@@ -1,0 +1,37 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/ali/.t3/worktrees/rc-metastudio/t3-525b3022
+configfile: pyproject.toml
+plugins: xdist-3.8.0
+collected 365 items
+
+tests/python/gui/test_adaptive_layout_native_evidence.py .........       [  2%]
+tests/python/gui/test_adaptive_window_policy.py .............            [  6%]
+tests/python/gui/test_analysis_configuration_layout.py ................. [ 10%]
+.s......                                                                 [ 12%]
+tests/python/gui/test_analysis_failure_safety.py ....................    [ 18%]
+tests/python/gui/test_binary_data_transactional_layout.py .............. [ 22%]
+                                                                         [ 22%]
+tests/python/gui/test_compact_transient_layout.py .....                  [ 23%]
+tests/python/gui/test_continuous_data_transactional_layout.py .......... [ 26%]
+....................                                                     [ 31%]
+tests/python/gui/test_continuous_signal_blocker_contract.py ...          [ 32%]
+tests/python/gui/test_csv_import_wizard.py ......                        [ 34%]
+tests/python/gui/test_declarative_dialog_sizing.py ..                    [ 34%]
+tests/python/gui/test_diagnostic_analysis_workflow.py .........          [ 37%]
+tests/python/gui/test_diagnostic_transactional_layout.py ............... [ 41%]
+..                                                                       [ 41%]
+tests/python/gui/test_funnel_plot_editor.py ............                 [ 45%]
+tests/python/gui/test_main_window_automation_launch.py ................. [ 49%]
+...............................................                          [ 62%]
+tests/python/gui/test_main_window_data_workflows.py .................... [ 68%]
+.                                                                        [ 68%]
+tests/python/gui/test_main_wizard_workflow_layout.py ..............      [ 72%]
+tests/python/gui/test_main_workspace_window.py .......                   [ 74%]
+tests/python/gui/test_publication_bias_dialog.py ..........              [ 76%]
+tests/python/gui/test_qt6_application_shell.py .................         [ 81%]
+tests/python/gui/test_results_workspace_layout.py ...................... [ 87%]
+...........................................                              [ 99%]
+tests/python/gui/test_user_facing_text_regressions.py ..                 [100%]
+
+================== 364 passed, 1 skipped in 198.12s (0:03:18) ==================
