@@ -323,6 +323,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         for action in (self.action_go, self.action_cum_ma, self.action_loo_ma, self.action_subgroup_ma,
                        self.action_meta_regression, self.action_publication_bias, self.action_change_confidence_level):
             self.toolBar.removeAction(action)
+        self.menu_bar.setStyleSheet("QMenuBar { color: palette(window-text); }")
+        self.toolBar.setStyleSheet("QToolButton { color: palette(window-text); }")
         qt_layout.configure_main_toolbar(self.toolBar)
         dataset_file_label = ElidingStatusLabel(
             self.dataset_file_lbl.text(), self.centralwidget
@@ -345,7 +347,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.menu_file.addSeparator()
         self.menu_file.addAction(self.action_quit)
         self.action_publication_bias.setText("Small-study effects…")
+        self.action_save_as.setShortcut(QKeySequence.StandardKey.SaveAs)
         help_action = QAction("Quick start and shortcuts…", self)
+        help_action.setShortcut(QKeySequence.StandardKey.HelpContents)
         help_action.triggered.connect(app_error_handler.safe_slot(self.show_quick_start, parent=self))
         self.menuHelp.insertAction(self.action_about_legal, help_action)
         adaptive_window.register_adaptive_window(self, adaptive_window.WindowRole.MAIN)
@@ -686,6 +690,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         path, _ = QFileDialog.getOpenFileName(self, "Import data", "", "Data files (*.csv *.xlsx *.xls)")
         if not path:
             return
+        if os.path.splitext(path)[1].lower() not in (".csv", ".xlsx", ".xls"):
+            QMessageBox.information(self, "Import data", "Choose a CSV or Excel file. For .rm5 files, use File > Import RevMan file.")
+            return
         if not self._authorize_destructive_project_action():
             return
         wizard = main_wizard.MainWizard(parent=self, path="csv_import")
@@ -880,14 +887,27 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         return about_legal_dialog.AboutLegalDialog(self).exec()
 
     def show_quick_start(self):
-        QMessageBox.information(self, "RC MetaStudio quick start",
-            "1. Create a dataset and name its outcome and arms. Intervention / Control are the comparative defaults; use the actual treatment names when available. Single-arm data use Group, and diagnostic data use Index test. Existing projects retain their names; rename groups from a column header. Import a UTF-8 CSV using the template and mapping on the import page, or open a sample project.\n\n"
-            "2. Enter studies in the table. Click the row calculator to edit study data. Calculated effects use complete raw data where available.\n\n"
-            "3. Choose an effect metric matching your data. Add a Numeric or Category covariate for meta-regression; subgroup analysis needs a Category.\n\n"
-            "4. Run an analysis, then use the result navigation to select a section or plot. Text report exposes selectable output. Tables provides selectable cells: copy a selection or export the table as CSV. Copy report and Export report keep the analysis identity and table rows. Select a plot to edit or export it.\n\n"
-            "5. Change settings… reopens the executed setup; Run creates another result for comparison. The original stays open.\n\n"
-            "Cumulative analysis follows the input table sequence: sort the table before running. Plot study order changes display only; it cannot change the cumulative sequence. Small-study effects do not establish publication bias.\n\n"
-            "Shortcuts: Ctrl+N New, Ctrl+O Open, Ctrl+S Save. Results: Ctrl+T text/figure view, Ctrl+Shift+C copy report, Ctrl+Shift+E export selected plot.")
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Quick start")
+        layout = QtWidgets.QVBoxLayout(dialog)
+        text = QtWidgets.QTextBrowser(dialog)
+        text.setPlainText(
+            "Create a dataset, import CSV/Excel data, or open a project.\n"
+            "Enter studies in the table; use the row calculator for study data.\n"
+            "Choose Analyses to run an analysis. Select a result to copy or export.\n\n"
+            "Shortcuts\nCtrl+N  Create dataset\nCtrl+O  Open\nCtrl+S  Save\n"
+            "Ctrl+Shift+S  Save As\nF1  Quick start\n\n"
+            "Results\nCtrl+T  Text/figure view\n"
+            "Ctrl+Shift+C  Copy report\nCtrl+Shift+E  Export selected plot"
+        )
+        layout.addWidget(text)
+        buttons = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok, dialog)
+        buttons.accepted.connect(dialog.accept)
+        layout.addWidget(buttons)
+        available = required(self.screen(), "main window screen").availableGeometry()
+        dialog.resize(min(640, available.width()), min(520, available.height()))
+        dialog.setMaximumSize(available.size())
+        dialog.exec()
 
     def meta_subgroup(self, selected_covariate):
         form = None

@@ -652,6 +652,9 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.load_file(selected_path)
 
     def load_file(self, selected_path):
+        if Path(selected_path).suffix.lower() not in (".csv", ".xlsx", ".xls"):
+            QMessageBox.information(self, "Import data", "Choose a CSV or Excel file. For .rm5 files, use File > Import RevMan file.")
+            return
         self.file_path = qt_text.to_native_text(selected_path)
         self._mapping_key = None
 
@@ -780,7 +783,8 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             self.imported_data_ok = True
             self.import_tabs.setCurrentWidget(self.preview_grp_box)
             self.import_status.setStyleSheet("")
-            self.import_status.setText(f"Ready to import {num_rows} studies." + (" " + " ".join(notices) if notices else ""))
+            noun = "study" if num_rows == 1 else "studies"
+            self.import_status.setText(f"Ready to import {num_rows} {noun}." + (" " + " ".join(notices) if notices else ""))
             self.completeChanged.emit()
         except csv_import.CsvImportError as error:
             self.import_status.setText(str(error))

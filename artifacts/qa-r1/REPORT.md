@@ -1,23 +1,30 @@
-# F1–F3 layout implementation evidence
+# Calculator round-one fixes
 
-Branch: fix/qa-r1-layouts. Source-only Linux Qt verification, strict typing target win32. No statistics, numerical references, or forms changed.
+Branch: fix/qa-r1-calculator. Native display: Linux/X11, real Qt/R, ui.py session calc-fix. No R/form/model numerical algorithms changed.
+
+## Reproduction before edits
+
+Opened sample_projects/continuous.rcms with the real file picker; clicked Carroll row header. Switched Group summaries -> Entered estimate, entered SMD 0.3, returned to summaries. Estimate stayed 0.3 while summaries stayed N60/mean94/SD22 and N60/mean92/SD20 (SMD approximately .0945). OK closed; reopening reconstructed the raw preview .0945. Thus this particular entered-effect mismatch did not survive reopening.
+
+Populated pre/post through actual grid editors: intervention N20, pre mean10 SD2, post mean15 SD2; control N20, pre mean10 SD2, post mean12 SD2; correlation0. In summaries changed intervention mean change5 to1, then returned to pre/post. Visible changes remained5 and2 but SMD was -.3465. OK closed successfully. This is a settled mode mismatch, not a mid-edit delay. F25/before-prepost.png retains it. The existing E2E drive independently demonstrated accepted hidden summaries before this fix; the tightened assertion now requires restored MD3 and original pre/post-derived raws.
 
 ## Commands
 
-Source `/home/ali/.t3/qa-env/ENV.sh`, then `export PYTHONPATH=$PWD/src:$PWD`.
+Environment: source /home/ali/.t3/qa-env/ENV.sh; export PYTHONPATH=$PWD/src:$PWD. Generated forms: /home/ali/.t3/qa-env/qt6. Each typing transcript retains the full exact strict Ty command and win32 target.
 
-- Strict typing: `python -c 'from pathlib import Path; from scripts.verify import run_typing; run_typing(Path("/home/ali/.t3/qa-env/qt6"))'`; transcript `typing-final.log`.
-- `python -m pytest -n 1 -q tests/python/gui/test_analysis_configuration_layout.py tests/python/gui/test_publication_bias_dialog.py`; transcript `gui-final.log`.
-- `python scripts/verify_rcms.py lymph`: passed, evidence `artifacts/verification/rcms/20261104T083514Z-e55b7dbd-lymph`.
-- `python scripts/verify_rcms.py small-study-binary-extended`: passed, evidence `artifacts/verification/rcms/20261104T083611Z-a13fedb2-small-study-binary-extended`.
-- `python scripts/verify_rcms.py rm5-import`: tab assertions passed and captured `14-0-rm5-visible-tabs.png`, but complete scenario timed out at 240 seconds under machine overload; evidence `artifacts/verification/rcms/20261104T090437Z-8b291f15-rm5-import`. The final tab minimum-size adjustment followed this capture and still needs a targeted rerun.
+- python -c 'from scripts.verify import run_typing; from pathlib import Path; run_typing(Path("/home/ali/.t3/qa-env/qt6"))'
+- QT_QPA_PLATFORM=offscreen python -m pytest tests/python/gui/test_continuous_data_transactional_layout.py tests/python/gui/test_continuous_signal_blocker_contract.py -n 1 -q
+- python scripts/verify_rcms.py calculator-mode-pre-post
+- python scripts/verify_rcms.py calculator-mode-back-continuous
+- RCMS_QA_APP_SRC=$PWD /home/ali/.t3/qa-env/tools/venv/bin/python /home/ali/.t3/qa-env/tools/ui.py --session calc-fix start [--dark --large-font]
+- Same ui.py prefix: key ctrl+o; key ctrl+l; type /home/ali/.t3/qa-env/src/sample_projects/continuous.rcms; key Return; click first row header. Screenshots use shot <path>; stop after session.
 
-Original before images were inspected at `/home/ali/.t3/qa-round1/user-j5/shots/10-imported.png`, contour `20261104T070325Z-8124ebae-plot-workflow-contour/02`, and lymph `20261104T070023Z-8b41d774-lymph/04` under the round-one CI evidence tree.
+## Observations and limitations
 
-Real-display attempt: `RCMS_QA_APP_SRC=$PWD /home/ali/.t3/qa-env/tools/venv/bin/python /home/ali/.t3/qa-env/tools/ui.py --session layouts start --size 1024x700`, File → Import RevMan → this worktree's `tests/fixtures/rm5/Fleiss1993.rm5`. Captures in `F1/` contain named tabs but extra input created another empty sheet: these are incomplete proof, not the exact two-sheet acceptance artifact. Session stopped with `ui.py --session layouts stop`.
+Strict typing passed; 33 targeted GUI tests passed. Earlier layout failures asserted intentionally removed Stretch and stale preview behavior; updated tests assert readable widths and empty failed pre/post preview. E2E evidence lives under artifacts/verification/rcms and includes exact commands, runtime, saved/reopened data and numerical comparisons.
 
-## Remaining qualification
+Light/default: entered SD .00001 in the main grid, committed Tab: F7/after-light-default.png shows 1e-05. Opened calculator: F12/after-light-default.png shows SE1.291e-06, complete Variance header and readable cells. Switched to empty pre/post: F25/after-empty-prepost-light.png shows cleared effect/CI/readout.
 
-Full before/after light/dark × default/large-font native screenshot matrix, final sheet sizing rerun, and old-layout red runs remain incomplete. CI owns `scripts/verify.py pre-push` per the user's machine-load instruction. No numerical golden files changed; no golden presentation cases are expected to change because these edits affect widget configuration geometry only.
+Dark/large: F27/after-dark-large.png shows compact SE1.291e-06 and variance1e-10 after leaving the editor; F12/after-dark-large.png deliberately retains the full precision active editor (not a rounded stored value). These sizing captures precede the final tiny change restricting fixed-decimal formatting to computed columns; raw N/mean are more compact in final source. F7/after-dark-large.png was captured before the modal closed and is NOT grid proof.
 
-Final strict typing passed. Final serial GUI run: 33 passed, one skipped; locale subprocess timed out at its unchanged 30-second bound. Focused retry `python -m pytest -n 1 -q tests/python/gui/test_analysis_configuration_layout.py::test_dot_and_comma_decimal_locales_produce_equivalent_analysis_requests` passed (1 passed in 2.07s), transcript `gui-locale-retry.log`.
+Not a complete light/dark x default/large before/after matrix: only light/default before reproduction and light/default plus dark/large after sizing were captured. Existing full-size QA frames remain original before evidence. No package/native Windows/macOS qualification or full authority/golden/pre-push run locally; user explicitly reserved pre-push for CI due host overload. No golden numeric/presentation references regenerated. SE compact painting existed already; the long SE string is the exact editor text, intentionally retained. Content column sizing fixes elision of the compact readout.
