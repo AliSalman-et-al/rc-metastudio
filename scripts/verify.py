@@ -202,6 +202,10 @@ def run_full_r_stack(args: argparse.Namespace) -> None:
         "--r-library-cache-root",
         str(args.r_library_cache_root or FULL_R_LIBRARY_CACHE),
     ]
+    if args.skip_desktop:
+        command.append("--skip-desktop")
+    if args.desktop_shard is not None:
+        command += ["--desktop-shard", str(args.desktop_shard)]
     write_step("Delegating Full R Stack Evidence")
     run(command, env=env)
 
@@ -243,6 +247,9 @@ def parser() -> argparse.ArgumentParser:
     fast.add_argument("--build-root", default=DEFAULT_BUILD_ROOT, type=Path)
 
     r_stack = subparsers.add_parser("r-stack", help="run Full R Stack Evidence")
+    selection = r_stack.add_mutually_exclusive_group()
+    selection.add_argument("--skip-desktop", action="store_true")
+    selection.add_argument("--desktop-shard", type=int, choices=(1, 2, 3))
     r_stack.add_argument("--sync", action="store_true")
     add_rscript_options(r_stack)
     r_stack.add_argument("--build-root", default=DEFAULT_BUILD_ROOT, type=Path)
