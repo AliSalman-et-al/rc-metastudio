@@ -434,22 +434,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.content_scroll_area.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
-        # Keep nested content from exporting its unwrapped preferred width to
-        # the outer scroll area. The controls still expand to the viewport.
-        for widget in (
-            self.content_scroll_area_widget,
-            self.specs_tab,
-            self.methods_tab,
-            self.parameter_grp_box,
-        ):
-            # layout-audit: allow=content-overflow-control; reason=nested scroll content must negotiate down to its viewport
-            widget.setMinimumWidth(0)
-        # The parameter group contains the dynamic, wrapping content. Keep its
-        # unwrapped size hint from widening the whole tab, while leaving the
-        # method selector's own preferred width available to the outer grid.
-        self.parameter_grp_box.setSizePolicy(
-            QSizePolicy.Policy.Ignored,
-            self.parameter_grp_box.sizePolicy().verticalPolicy(),
+        # The scroll body owns overflow; nested forms retain their natural minima.
+        self.content_scroll_layout.setSizeConstraint(
+            QtWidgets.QLayout.SizeConstraint.SetMinimumSize
         )
         self.method_lbl.setSizePolicy(
             QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred
@@ -1719,10 +1706,18 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.setWindowTitle("Method and parameters")
         self.method_lbl.setText("Analysis method: " + diagnostic_metric_group_display_label("sens_spec"))
 
+        # Each method gets the full viewport width, including its parameter form.
+        for widget, row in ((self.lr_dor_method_lbl, 2),
+                            (self.lr_dor_method_cbo_box, 3),
+                            (self.lr_dor_parameter_grp_box, 4),
+                            (self.shared_diagnostic_params_box, 5)):
+            self.gridLayout.removeWidget(widget)
+            self.gridLayout.addWidget(widget, row, 0, 1, 2)
         self.shared_diagnostic_params_box.show()
         self.shared_diagnostic_params_box.setLayout(QGridLayout())
 
         lr_label = diagnostic_metric_group_display_label("lr_dor")
+        self.lr_dor_method_lbl.setWordWrap(True)
         self.lr_dor_method_lbl.show()
         self.lr_dor_method_cbo_box.show()
         self.lr_dor_parameter_grp_box.show()

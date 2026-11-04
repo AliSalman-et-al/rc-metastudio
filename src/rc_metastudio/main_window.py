@@ -1478,7 +1478,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.sheet_tabs.setExpanding(False)
         self.sheet_tabs.setMovable(True)
         self.sheet_tabs.setUsesScrollButtons(False)
-        self.sheet_tabs.setElideMode(Qt.TextElideMode.ElideRight)
+        self.sheet_tabs.setElideMode(Qt.TextElideMode.ElideNone)
         self.sheet_tabs.setAutoHide(False)
         self.sheet_tabs.setDrawBase(False)
         self.sheet_tabs.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
@@ -1509,6 +1509,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.sheet_tab_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.sheet_tab_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.sheet_tab_scroll.setWidget(content)
+        self.sheet_tab_scroll.setWidgetResizable(True)
+        row.setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetMinimumSize)
         self.sheet_tab_scrollbar = required(self.sheet_tab_scroll.horizontalScrollBar(), "sheet scrollbar")
         self.sheet_tab_scroll.setMinimumWidth(100)
         self.sheet_strip = QtWidgets.QWidget(self)
@@ -1555,6 +1557,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._sheet_strip_timer.start(0)
 
     def _update_sheet_strip(self):
+        self.sheet_tabs.setMinimumSize(self.sheet_tabs.sizeHint())
+        self.sheet_tab_scroll.setFixedHeight(self.sheet_tab_content.minimumSizeHint().height())
         self.sheet_tab_scroll.setMaximumWidth(self.sheet_tab_content.sizeHint().width() + 2)
         overflow = self.sheet_tab_scrollbar.maximum() > 0
         self.sheet_scroll_left.setVisible(overflow)
