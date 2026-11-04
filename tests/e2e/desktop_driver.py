@@ -1579,6 +1579,17 @@ def calculator(app, window, family):
             if accept:
                 dialog.effect_text_box.setFocus()
                 app.processEvents()
+            label = dialog.ci_label
+            metrics = label.fontMetrics()
+            text_width = metrics.horizontalAdvance(label.text())
+            text_height = metrics.height()
+            contents = label.contentsRect()
+            sizes = dict(text=label.text(), font_points=label.font().pointSize(),
+                         text_width=text_width, text_height=text_height,
+                         contents_width=contents.width(), contents_height=contents.height())
+            record_step("calculator-ci-label-fit", dialog, family=family, **sizes)
+            assert text_width <= contents.width() and text_height <= contents.height(), sizes
+            if accept:
                 from rc_metastudio.meta_globals import CALC_NUM_DIGITS
                 for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
                     assert len(field.text().partition(".")[2]) <= CALC_NUM_DIGITS, field.text()
@@ -1651,8 +1662,16 @@ def calculator(app, window, family):
     assert not callback_errors, callback_errors
     assert raw() == expected, (raw(), expected)
     assert window.workspace.is_dirty
-    QtCore.QTimer.singleShot(0, lambda: edit(False))
-    mouse_click(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=first_row)
+    original_font = QtGui.QFont(app.font())
+    large_font = QtGui.QFont(original_font)
+    large_font.setPointSize(large_font.pointSize() + 6)
+    app.setFont(large_font)
+    try:
+        QtCore.QTimer.singleShot(0, lambda: edit(False))
+        mouse_click(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=first_row)
+    finally:
+        app.setFont(original_font)
+        app.processEvents()
     assert not callback_errors, callback_errors
     assert raw() == expected
     window.action_undo.trigger()
