@@ -1410,8 +1410,9 @@ def _insert_held_effects(fields, display, rows):
             offset += 1
         display_indices.append(index + offset)
     for index, row in zip(display_indices, rows):
-        row[1:1] = [_format_r_table_cell(list(display[key])[index], field_name="Estimate")
-                    for key in ("y.disp", "lb.disp", "ub.disp")]
+        effects = [_format_r_table_cell(list(display[key])[index], field_name="Estimate")
+                   for key in ("y.disp", "lb.disp", "ub.disp")]
+        row[1:1] = ["Not estimable", "—", "—"] if effects[0] == "NA" else effects
 
 
 def _held_weight_rows(fields, weights):

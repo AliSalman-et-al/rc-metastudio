@@ -667,6 +667,23 @@ def run(
     )
     click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     view = observe()
+    if method in ("binary.fixed.mh", "binary.fixed.peto"):
+        from xml.etree import ElementTree as ET
+        figure = " ".join("".join(node.itertext())
+                          for path in view.results.display_images.values()
+                          for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
+        assert "Test for overall effect" in figure, figure
+        footer = figure.split("Test for overall effect", 1)[1].split("Z =", 1)[0]
+        assert "= 0" not in footer, footer
+        rows = [row for section in view.results.sections for table in section.tables
+                if table.title == "Study weights" for row in table.rows]
+        omitted = [row for row in rows if row[1] == "Not estimable"]
+        if method == "binary.fixed.mh":
+            assert len(omitted) == 2 and figure.count("Not estimable") == 2, (rows, figure)
+        else:
+            assert not omitted and "Not estimable" not in figure, (rows, figure)
+            assert sum(float(row[-1].rstrip("%")) == 0 for row in rows) >= 2, rows
+        record("binary-zero-display", view, method=method, rows=rows, figure=figure)
     view.change_settings_action.trigger()
     app.processEvents()
     properties = visible(analysis_setup_dialog.AnalysisSetupDialog)

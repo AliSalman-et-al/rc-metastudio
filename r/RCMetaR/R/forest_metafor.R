@@ -325,10 +325,18 @@ rcmetar.metafor.plot.fields <- function(om.data, params, y, lb, ub, sample.sizes
 rcmetar.metafor.standard.plot.fields <- function(om.data, params, res) {
     sample.sizes <- rcmetar.metafor.plot.sample.sizes(om.data, params)
     study.bounds <- calc.ci.bounds(om.data, params, ni=sample.sizes)
+    study.y <- om.data@y
+    # Use the fit's eligibility for presentation, as the forest renderer does.
+    if (length(res$yi.f) == length(study.y)) {
+        omitted <- !is.finite(res$yi.f)
+        study.y[omitted] <- NA_real_
+        study.bounds$lb[omitted] <- NA_real_
+        study.bounds$ub[omitted] <- NA_real_
+    }
     rcmetar.metafor.plot.fields(
         om.data,
         params,
-        c(om.data@y, res$b[[1]]),
+        c(study.y, res$b[[1]]),
         c(study.bounds$lb, res$ci.lb[[1]]),
         c(study.bounds$ub, res$ci.ub[[1]]),
         sample.sizes=sample.sizes
