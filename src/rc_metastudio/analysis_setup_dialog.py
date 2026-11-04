@@ -1410,7 +1410,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.advanced_toggle.setChecked(expanded)
             self.advanced_panel.setVisible(expanded)
         layout.addWidget(QLabel("Effect measure"), 0, 0)
-        layout.addWidget(QLabel(self._result_metric_label().capitalize()), 0, 1)
+        metric_label = QLabel(self._result_metric_label().capitalize())
+        metric_label.setWordWrap(True)
+        metric_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        layout.addWidget(metric_label, 0, 1)
         row = 1
         for spec in definitions:
             if spec.name in excluded_names:
@@ -1435,6 +1438,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _parameter_label(self, spec):
         label = QLabel(parameter_display_label(spec.name, spec.metadata))
+        label.setWordWrap(True)
         description = parameter_description(spec.name, spec.metadata)
         if spec.name == "estimator" and description == "No description provided.":
             description = "REML: restricted maximum likelihood; ML: maximum likelihood."
@@ -1636,27 +1640,39 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._reveal_focused_control(None, QtWidgets.QApplication.focusWidget())
 
     def _fit_method_text(self):
-        layout = self._method_layout
-        layout.activate()
-        option = QtWidgets.QStyleOptionComboBox()
-        self.method_cbo_box.initStyleOption(option)
-        style = self.method_cbo_box.style()
-        assert style is not None
-        field = style.subControlRect(
-            QtWidgets.QStyle.ComplexControl.CC_ComboBox, option,
-            QtWidgets.QStyle.SubControl.SC_ComboBoxEditField, self.method_cbo_box,
-        )
-        text_width = self.method_cbo_box.fontMetrics().horizontalAdvance(self.method_cbo_box.currentText())
-        needed = self.method_lbl.sizeHint().width() + text_width + self.method_cbo_box.width() - field.width()
-        stacked = needed + layout.horizontalSpacing() > layout.contentsRect().width()
-        combo_row = 1 if stacked else 0
-        if layout.getItemPosition(layout.indexOf(self.method_cbo_box))[0] == combo_row:
-            return
-        layout.removeWidget(self.method_lbl)
-        layout.removeWidget(self.method_cbo_box)
-        layout.addWidget(self.method_lbl, 0, 0, 1, 2 if stacked else 1)
-        layout.addWidget(self.method_cbo_box, combo_row, 0 if stacked else 1, 1, 2 if stacked else 1)
-        layout.activate()
+        rows = [(self._method_row, self._method_layout, self.method_lbl, self.method_cbo_box)]
+        if hasattr(self, "_lr_dor_method_row"):
+            rows.append((self._lr_dor_method_row, self._lr_dor_method_layout,
+                         self.lr_dor_method_lbl, self.lr_dor_method_cbo_box))
+        for row_widget, layout, label, combo in rows:
+            layout.activate()
+            option = QtWidgets.QStyleOptionComboBox()
+            combo.initStyleOption(option)
+            style = combo.style()
+            assert style is not None
+            field = style.subControlRect(
+                QtWidgets.QStyle.ComplexControl.CC_ComboBox, option,
+                QtWidgets.QStyle.SubControl.SC_ComboBoxEditField, combo,
+            )
+            text_width = combo.fontMetrics().horizontalAdvance(combo.currentText())
+            needed = max(
+                label.sizeHint().width() + text_width + combo.width() - field.width(),
+                label.minimumSizeHint().width() + combo.minimumSizeHint().width(),
+            )
+            # The scroll body may already have expanded to this row's unwrapped
+            # minimum. Fit against the viewport rather than that expanded width.
+            viewport = required(self.content_scroll_area.viewport(), "analysis viewport")
+            page_margins = self.content_scroll_area_widget.width() - row_widget.width()
+            available_width = min(layout.contentsRect().width(), viewport.width() - page_margins)
+            stacked = needed + layout.horizontalSpacing() > available_width
+            combo_row = 1 if stacked else 0
+            if layout.getItemPosition(layout.indexOf(combo))[0] == combo_row:
+                continue
+            layout.removeWidget(label)
+            layout.removeWidget(combo)
+            layout.addWidget(label, 0, 0, 1, 2 if stacked else 1)
+            layout.addWidget(combo, combo_row, 0 if stacked else 1, 1, 2 if stacked else 1)
+            layout.activate()
 
     def resizeEvent(  # ty: ignore[invalid-method-override] -- PyQt6 multiple-inheritance stub mismatch
         self, event: QResizeEvent | None
@@ -1721,8 +1737,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         for widget in (self.lr_dor_method_lbl, self.lr_dor_method_cbo_box,
                        self.lr_dor_parameter_grp_box, self.shared_diagnostic_params_box):
             self.gridLayout.removeWidget(widget)
-        self.gridLayout.addWidget(self.lr_dor_method_lbl, 2, 0)
-        self.gridLayout.addWidget(self.lr_dor_method_cbo_box, 2, 1)
+        self._lr_dor_method_row = QtWidgets.QWidget(self.methods_tab)
+        self._lr_dor_method_layout = QGridLayout(self._lr_dor_method_row)
+        self._lr_dor_method_layout.setContentsMargins(0, 0, 0, 0)
+        self._lr_dor_method_layout.setColumnStretch(1, 1)
+        self._lr_dor_method_layout.addWidget(self.lr_dor_method_lbl, 0, 0)
+        self._lr_dor_method_layout.addWidget(self.lr_dor_method_cbo_box, 0, 1)
+        self.gridLayout.addWidget(self._lr_dor_method_row, 2, 0, 1, 2)
         self.gridLayout.addWidget(self.lr_dor_parameter_grp_box, 3, 0, 1, 2)
         self.gridLayout.addWidget(self.shared_diagnostic_params_box, 4, 0, 1, 2)
         self.lr_dor_method_lbl.setAlignment(
@@ -1745,6 +1766,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.lr_dor_parameter_grp_box,
         )
         self.lr_dor_panel.populate()
+        for widget in (self.lr_dor_parameter_grp_box, self.shared_diagnostic_params_box):
+            widget.setSizePolicy(QSizePolicy.Policy.Ignored, widget.sizePolicy().verticalPolicy())
         self._rebuild_shared_diagnostic_params()
 
     def _rebuild_shared_diagnostic_params(self):
