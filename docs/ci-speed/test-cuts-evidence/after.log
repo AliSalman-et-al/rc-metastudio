@@ -1,5 +1,0 @@
-usage: verify.py [-h] {smoke,fast,r-stack} ...
-verify.py: error: argument lane: invalid choice: 'pre-push' (choose from 'smoke', 'fast', 'r-stack')
-real 0.06
-user 0.05
-sys 0.00
