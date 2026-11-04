@@ -264,6 +264,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._svg_plot_items = []
         self._raster_plot_items = []
         self._refitting_svg_plots = False
+        self._refitting_viewport_items = False
         self._viewport_refit_pending = False
         self._closing = False
         self._viewport_refit_timer = QTimer(self)
@@ -726,6 +727,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             scrollbar.setValue(round(fraction * scrollbar.maximum()))
         else:
             self._fit_width_active = False
+            self.graphics_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+            self.graphics_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
             self._figure_zoom_percent = percent
             self.graphics_view.setTransform(QTransform.fromScale(percent / 100, percent / 100))
             self._relayout_sections()
@@ -912,11 +915,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             viewport_width = self.graphics_view.width()
         if viewport_width <= horizontal_padding:
             viewport_width = max(self.results_nav_splitter.width(), self.width())
-        # A fit must not gain width when its vertical scrollbar disappears:
-        # that can make the taller refitted plot need the scrollbar again.
-        scrollbar = required(self.graphics_view.verticalScrollBar(), "figure scrollbar")
-        stable_width = self.graphics_view.maximumViewportSize().width() - scrollbar.sizeHint().width()
-        return max(1, min(viewport_width, stable_width))
+        return viewport_width
 
     def add_title(self, title):
         text = QGraphicsTextItem(str(title))
@@ -1012,10 +1011,37 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.scene.setSceneRect(0, 0, scene_width, scene_height)
 
     def _refit_viewport_items(self):
-        self._update_wrapped_text_widths()
-        self._refit_svg_plot_items()
-        self._refit_raster_plot_items()
-        self._relayout_sections()
+        if self._refitting_viewport_items:
+            return
+        self._refitting_viewport_items = True
+        previous_width = self._viewport_width_override
+        try:
+            if self._fit_width_active:
+                # Decide whether scrolling is needed at full width first. Keep
+                # that decision when narrowing the plot makes it shorter again.
+                self.graphics_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+                full_width = self.graphics_view.maximumViewportSize().width()
+                if self.graphics_view.verticalScrollBarPolicy() == Qt.ScrollBarPolicy.ScrollBarAlwaysOn:
+                    full_width += required(self.graphics_view.verticalScrollBar(), "figure scrollbar").sizeHint().width()
+                self._viewport_width_override = full_width
+            self._update_wrapped_text_widths()
+            self._refit_svg_plot_items()
+            self._refit_raster_plot_items()
+            self._relayout_sections()
+            if self._fit_width_active:
+                needs_scrollbar = self.scene.height() > self.graphics_view.maximumViewportSize().height()
+                self.graphics_view.setVerticalScrollBarPolicy(
+                    Qt.ScrollBarPolicy.ScrollBarAlwaysOn if needs_scrollbar else Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+                )
+                if needs_scrollbar:
+                    self._viewport_width_override = self.graphics_view.maximumViewportSize().width()
+                    self._update_wrapped_text_widths()
+                    self._refit_svg_plot_items()
+                    self._refit_raster_plot_items()
+                    self._relayout_sections()
+        finally:
+            self._viewport_width_override = previous_width
+            self._refitting_viewport_items = False
 
     def _schedule_viewport_refit(self):
         if self._closing or self._viewport_refit_pending:
@@ -1045,6 +1071,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             event is not None
             and event.type() == QEvent.Type.Resize
             and watched is self._graphics_viewport
+            and not self._refitting_viewport_items
         ):
             if self.isVisible() and not self._refitting_svg_plots:
                 self._viewport_refit_timer.stop()
@@ -1105,7 +1132,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.scene.setSceneRect(
             0,
             0,
-            max(self._viewport_width(), scene_bounds.right() + padding),
+            max(self._layout_viewport_width(), scene_bounds.right() + padding),
             max(1, scene_bounds.bottom() + padding),
         )
 
