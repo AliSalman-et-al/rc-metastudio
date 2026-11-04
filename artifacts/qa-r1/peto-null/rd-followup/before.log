@@ -1,0 +1,315 @@
+The following objects are masked from package:RCMetaR:
+
+    rcmetar.analysis.methods, rcmetar.analysis.plot.capabilities,
+    rcmetar.available.methods, rcmetar.back.calculate.continuous,
+    rcmetar.binary.study.effect, rcmetar.continuous.study.effect,
+    rcmetar.convert.scale, rcmetar.create.binary.data,
+    rcmetar.create.continuous.data, rcmetar.create.covariate.values,
+    rcmetar.create.diagnostic.data, rcmetar.create.ratio.data,
+    rcmetar.diagnostic.study.effects, rcmetar.draw.forest.plot,
+    rcmetar.draw.regression.plot, rcmetar.draw.sroc.plot,
+    rcmetar.get.mult.from.conf.level, rcmetar.graphics.off,
+    rcmetar.impute.binary, rcmetar.impute.continuous.prepost,
+    rcmetar.impute.continuous.study, rcmetar.impute.diagnostic,
+    rcmetar.method.description, rcmetar.method.parameters,
+    rcmetar.method.references, rcmetar.prepare.analysis.data,
+    rcmetar.regenerate.plot.data,
+    rcmetar.regenerate.regression.plot.data,
+    rcmetar.regenerate.small.study.funnel, rcmetar.run.analysis,
+    rcmetar.run.diagnostic.analyses, rcmetar.run.permutation,
+    rcmetar.run.small.study.effects, rcmetar.save.plot.data,
+    rcmetar.set.global.conf.level, rcmetar.validate.analysis.request
+
+The following object is masked from package:base:
+
+    %||%
+
+
+ OR binary.fixed.mh 
+$weights
+    Alpha      Beta     Gamma     Delta   Epsilon      Zeta 
+15.631151  8.932086  0.000000 24.508774 20.380253 30.547735 
+
+$display
+$display$y.disp
+[1] 0.57142857 0.09653916 1.00000000 0.60000000 0.59259259 0.56140351 0.52864144
+
+$display$lb.disp
+[1] 0.170446840 0.004963981 0.018921736 0.231063549 0.207356600 0.235502375
+[7] 0.323979913
+
+$display$ub.disp
+[1]  1.9157329  1.8774871 52.8492744  1.5580129  1.6935366  1.3383046  0.8625898
+
+
+$not_estimable
+[1] FALSE FALSE  TRUE FALSE FALSE FALSE
+
+$plotted_weights
+[1] 15.631151  8.932086        NA 24.508774 20.380253 30.547735
+
+$method_label
+[1] "IV, random"
+
+Direct public metafor coefficient identical; weights match within 1e-12
+
+ OR binary.fixed.peto 
+$weights
+    Alpha      Beta     Gamma     Delta   Epsilon      Zeta 
+16.185044  5.567111  0.000000 25.781329 21.362391 31.104125 
+
+$display
+$display$y.disp
+[1] 0.57142857 0.09653916 1.00000000 0.60000000 0.59259259 0.56140351 0.53845831
+
+$display$lb.disp
+[1] 0.170446840 0.004963981 0.018921736 0.231063549 0.207356600 0.235502375
+[7] 0.334968511
+
+$display$ub.disp
+[1]  1.915733  1.877487 52.849274  1.558013  1.693537  1.338305  0.865566
+
+
+$not_estimable
+[1] FALSE FALSE FALSE FALSE FALSE FALSE
+
+$plotted_weights
+[1] 16.185044  5.567111  0.000000 25.781329 21.362391 31.104125
+
+$method_label
+[1] "IV, random"
+
+Direct public metafor coefficient identical; weights match within 1e-12
+
+ OR binary.fixed.inv.var 
+$weights
+    Alpha      Beta     Gamma     Delta   Epsilon      Zeta 
+16.306313  2.709385  1.516006 26.206575 21.641558 31.620162 
+
+$display
+$display$y.disp
+[1] 0.57142857 0.09653916 1.00000000 0.60000000 0.59259259 0.56140351 0.55752391
+
+$display$lb.disp
+[1] 0.170446840 0.004963981 0.018921736 0.231063549 0.207356600 0.235502375
+[7] 0.342067825
+
+$display$ub.disp
+[1]  1.9157329  1.8774871 52.8492744  1.5580129  1.6935366  1.3383046  0.9086879
+
+
+$not_estimable
+[1] FALSE FALSE FALSE FALSE FALSE FALSE
+
+$plotted_weights
+[1] 16.306313  2.709385  1.516006 26.206575 21.641558 31.620162
+
+$method_label
+[1] "IV, random"
+
+Direct public metafor coefficient identical; weights match within 1e-12
+
+ OR binary.random 
+$weights
+    Alpha      Beta     Gamma     Delta   Epsilon      Zeta 
+16.306313  2.709385  1.516006 26.206575 21.641558 31.620162 
+
+$display
+$display$y.disp
+[1] 0.57142857 0.09653916 1.00000000 0.60000000 0.59259259 0.56140351 0.55752391
+
+$display$lb.disp
+[1] 0.170446840 0.004963981 0.018921736 0.231063549 0.207356600 0.235502375
+[7] 0.342067825
+
+$display$ub.disp
+[1]  1.9157329  1.8774871 52.8492744  1.5580129  1.6935366  1.3383046  0.9086879
+
+
+$not_estimable
+[1] FALSE FALSE FALSE FALSE FALSE FALSE
+
+$plotted_weights
+[1] 16.306313  2.709385  1.516006 26.206575 21.641558 31.620162
+
+$method_label
+[1] "IV, random"
+
+Direct public metafor coefficient identical; weights match within 1e-12
+
+ RR binary.fixed.mh 
+$weights
+    Alpha      Beta     Gamma     Delta   Epsilon      Zeta 
+15.661671  6.960743  0.000000 25.466132 20.588112 31.323342 
+
+$display
+$display$y.disp
+[1] 0.6666667 0.1111111 1.0000000 0.7000000 0.6857143 0.6666667 0.6326720
+
+$display$lb.disp
+[1] 0.27525251 0.00624333 0.02079628 0.35717229 0.31937511 0.35994386 0.44352662
+
+$display$ub.disp
+[1]  1.6146790  1.9774190 48.0855170  1.3718869  1.4722628  1.2347605  0.9024798
+
+
+$not_estimable
+[1] FALSE FALSE  TRUE FALSE FALSE FALSE
+
+$plotted_weights
+[1] 15.661671  6.960743        NA 25.466132 20.588112 31.323342
+
+$method_label
+[1] "IV, random"
+
+Direct public metafor coefficient identical; weights match within 1e-12
+
+ RR binary.fixed.inv.var 
+$weights
+     Alpha       Beta      Gamma      Delta    Epsilon       Zeta 
+15.9357684  1.5044565  0.8313375 27.5433033 21.3586451 32.8264891 
+
+$display
+$display$y.disp
+[1] 0.6666667 0.1111111 1.0000000 0.7000000 0.6857143 0.6666667 0.6639189
+
+$display$lb.disp
+[1] 0.27525251 0.00624333 0.02079628 0.35717229 0.31937511 0.35994386 0.46639388
+
+$display$ub.disp
+[1]  1.6146790  1.9774190 48.0855170  1.3718869  1.4722628  1.2347605  0.9450989
+
+
+$not_estimable
+[1] FALSE FALSE FALSE FALSE FALSE FALSE
+
+$plotted_weights
+[1] 15.9357684  1.5044565  0.8313375 27.5433033 21.3586451 32.8264891
+
+$method_label
+[1] "IV, random"
+
+Direct public metafor coefficient identical; weights match within 1e-12
+
+ RR binary.random 
+$weights
+     Alpha       Beta      Gamma      Delta    Epsilon       Zeta 
+15.9357684  1.5044565  0.8313375 27.5433033 21.3586451 32.8264891 
+
+$display
+$display$y.disp
+[1] 0.6666667 0.1111111 1.0000000 0.7000000 0.6857143 0.6666667 0.6639189
+
+$display$lb.disp
+[1] 0.27525251 0.00624333 0.02079628 0.35717229 0.31937511 0.35994386 0.46639388
+
+$display$ub.disp
+[1]  1.6146790  1.9774190 48.0855170  1.3718869  1.4722628  1.2347605  0.9450989
+
+
+$not_estimable
+[1] FALSE FALSE FALSE FALSE FALSE FALSE
+
+$plotted_weights
+[1] 15.9357684  1.5044565  0.8313375 27.5433033 21.3586451 32.8264891
+
+$method_label
+[1] "IV, random"
+
+Direct public metafor coefficient identical; weights match within 1e-12
+
+ RD binary.fixed.mh 
+$weights
+    Alpha      Beta     Gamma     Delta   Epsilon      Zeta 
+13.269863 14.744292  9.829528 20.138545 17.443951 24.573820 
+
+$display
+$display$y.disp
+[1] -0.1111111 -0.1290323  0.0000000 -0.1071429 -0.1047619 -0.1200000 -0.1037436
+
+$display$lb.disp
+[1] -0.34819317 -0.26072647 -0.09221383 -0.30464239 -0.31228443 -0.29808729
+[7] -0.18212065
+
+$display$ub.disp
+[1]  0.125970947  0.002661955  0.092213834  0.090356678  0.102760618
+[6]  0.058087293 -0.025366472
+
+
+$not_estimable
+[1] FALSE FALSE  TRUE FALSE FALSE FALSE
+
+$plotted_weights
+[1] 13.26986 14.74429       NA 20.13855 17.44395 24.57382
+
+$method_label
+[1] "IV, random"
+
+Direct public metafor coefficient identical; weights match within 1e-12
+
+ RD binary.fixed.inv.var 
+$weights
+    Alpha      Beta     Gamma     Delta   Epsilon      Zeta 
+ 6.506437 21.086632 43.007920  9.375802  8.492003 11.531206 
+
+$display
+$display$y.disp
+[1] -0.11111111 -0.12903226  0.00000000 -0.10714286 -0.10476190 -0.12000000
+[7] -0.06721727
+
+$display$lb.disp
+[1] -0.34819317 -0.26072647 -0.09221383 -0.30464239 -0.31228443 -0.29808729
+[7] -0.12769149
+
+$display$ub.disp
+[1]  0.125970947  0.002661955  0.092213834  0.090356678  0.102760618
+[6]  0.058087293 -0.006743042
+
+
+$not_estimable
+[1] FALSE FALSE FALSE FALSE FALSE FALSE
+
+$plotted_weights
+[1]  6.506437 21.086632 43.007920  9.375802  8.492003 11.531206
+
+$method_label
+[1] "IV, random"
+
+Direct public metafor coefficient identical; weights match within 1e-12
+
+ RD binary.random 
+$weights
+    Alpha      Beta     Gamma     Delta   Epsilon      Zeta 
+ 6.506437 21.086632 43.007920  9.375802  8.492003 11.531206 
+
+$display
+$display$y.disp
+[1] -0.11111111 -0.12903226  0.00000000 -0.10714286 -0.10476190 -0.12000000
+[7] -0.06721727
+
+$display$lb.disp
+[1] -0.34819317 -0.26072647 -0.09221383 -0.30464239 -0.31228443 -0.29808729
+[7] -0.12769149
+
+$display$ub.disp
+[1]  0.125970947  0.002661955  0.092213834  0.090356678  0.102760618
+[6]  0.058087293 -0.006743042
+
+
+$not_estimable
+[1] FALSE FALSE FALSE FALSE FALSE FALSE
+
+$plotted_weights
+[1]  6.506437 21.086632 43.007920  9.375802  8.492003 11.531206
+
+$method_label
+[1] "IV, random"
+
+Direct public metafor coefficient identical; weights match within 1e-12
+Warning messages:
+1: Some yi/vi values are NA. 
+2: Some yi/vi values are NA. 
+3: Some yi/vi values are NA. 
+4: Some yi/vi values are NA. 
+5: Some yi/vi values are NA. 
+6: Some yi/vi values are NA. 
