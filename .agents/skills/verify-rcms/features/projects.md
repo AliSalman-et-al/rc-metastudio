@@ -174,3 +174,5 @@ The `sheets` drive compares the raw IRR bridge preview against direct metafor
 intervals with non-unit variance. This supplements pooled numerical comparisons.
 The unmapped XLSX date-year fallback is covered in the existing parser tests:
 the import wizard always supplies a column mapping and cannot reach that fallback.
+
+The `rm5-import` drive checks visible sheet-tab text and mouse selection after importing both Fleiss1993 outcomes at 1024×700. The `sheets` drive also checks tab visibility at that size.

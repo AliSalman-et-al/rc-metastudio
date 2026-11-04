@@ -5,6 +5,7 @@ import csv
 import subprocess
 from unittest.mock import patch
 from PyQt6 import QtCore, QtWidgets
+from tests.python.gui.test_types import mouse_click
 
 from rc_metastudio.project_adapter import dataset_to_project
 from rc_metastudio.runtime_types import required
@@ -218,6 +219,21 @@ def run(app, window, ROOT, WORK, record_step):
         with patch.object(window, 'prompt_to_save_unsaved_data', return_value=QtWidgets.QMessageBox.StandardButton.No) as prompt:
             action.trigger()
             prompt.assert_called_once()
+    window.resize(1024, 700)
+    app.processEvents()
+    tabs = window.sheet_tabs
+    for index in range(tabs.count()):
+        tabs.setCurrentIndex(index)
+        app.processEvents()
+        rect = tabs.tabRect(index)
+        viewport = window.sheet_tab_scroll.viewport()
+        visible = QtCore.QRect(tabs.mapTo(viewport, rect.topLeft()), rect.size())
+        assert tabs.fontMetrics().horizontalAdvance(tabs.tabText(index)) > 0
+        assert rect.width() > 24
+        assert viewport.rect().intersected(visible).width() > 24 and viewport.rect().intersected(visible).height() >= rect.height(), (visible, viewport.rect())
+        mouse_click(tabs, QtCore.Qt.MouseButton.LeftButton, rect.center())
+        assert window.model.current_sheet_id == tabs.tabData(index)
+    record_step('rm5-visible-tabs', window)
     assert len(window.model.dataset.sheets) == 2
     assert [len(s.rows) for s in window.model.dataset.sheets] == [7, 5]
     assert [a.name for a in window.model.dataset.sheets[0].arms] == ['Aspirin', 'Control']

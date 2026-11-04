@@ -7,10 +7,11 @@ from typing import TYPE_CHECKING
 from dataclasses import replace
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QSizePolicy
+from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLayout, QSizePolicy
 
 from rc_metastudio import adaptive_window, app_error_handler
 from rc_metastudio.meta_globals import ONE_ARM_METRICS
+from rc_metastudio.runtime_types import required
 from rc_metastudio.publication_bias import (
     CorrectionPolicy,
     FunnelKind,
@@ -247,6 +248,8 @@ class PublicationBiasDialog(
                 Qt.ScrollBarPolicy.ScrollBarAsNeeded
             )
             scroll_area.setWidgetResizable(True)
+            layout = required(content.layout(), "small-study scroll content layout")
+            layout.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
             content.setSizePolicy(
                 QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
             )
