@@ -1,0 +1,2 @@
+[14:51:21] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -m ty check --python /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python --python-platform win32 --extra-search-path /home/ali/.t3/qa-env/qt6/generated/rc_metastudio --extra-search-path /home/ali/.t3/qa-env/qt6/generated/rc_metastudio/forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa
+All checks passed!

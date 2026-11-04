@@ -7,10 +7,10 @@ from rc_metastudio.analysis_results import ResultTable
 from html import escape
 import io
 from PyQt6.QtCore import QRectF, Qt
-from PyQt6.QtGui import QImage, QPainter, QPdfWriter, QTextDocument, QPageSize
+from PyQt6.QtGui import QFont, QImage, QPainter, QPdfWriter, QTextDocument, QPageSize
 from PyQt6.QtSvg import QSvgRenderer
 from docx import Document
-from docx.shared import Mm
+from docx.shared import Mm, RGBColor
 from rc_metastudio import __version__
 
 
@@ -579,6 +579,8 @@ def _docx_sections(document, report, supplementary, table_number):
 
 def write_docx(report, path):
     document = Document()
+    for name in ('Normal', 'Title', 'Heading 1', 'Caption'):
+        document.styles[name].font.color.rgb = RGBColor(0, 0, 0)
     section = document.sections[0]
     section.page_width = Mm(210)
     section.left_margin = section.right_margin = Mm(15)
@@ -614,11 +616,20 @@ def write_docx(report, path):
     document.save(path)
 
 
+def _print_document():
+    document = QTextDocument()
+    document.setDefaultFont(QFont('Arial', 9))
+    # Qt's default print palette inherits the application's text colour.
+    # Exported pages are white even when the application uses a dark palette.
+    document.setDefaultStyleSheet('* { color: #000000; background-color: #ffffff; }')
+    return document
+
+
 def write_pdf(report, path):
     writer = QPdfWriter(str(path))
     writer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
     writer.setResolution(600)
-    document = QTextDocument()
+    document = _print_document()
     document.setHtml(report.html())
     # QTextDocument prints paginated real tables; figures get their own pages so
     # long reports cannot overwrite a figure or split its caption.
@@ -648,7 +659,7 @@ def write_pdf(report, path):
         mm = 180 if ratio > 1.4 or 'forest' in title.lower() else 85
         w = mm / 25.4 * writer.resolution()
         h = w / ratio
-        caption = QTextDocument()
+        caption = _print_document()
         caption.setTextWidth(width)
         caption.setHtml(f'<b>Figure {number}. {escape(title)} (continued)</b>')
         # Lay out captions in the same 96-DPI coordinates as table captions.

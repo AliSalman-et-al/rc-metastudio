@@ -21,6 +21,17 @@ def run(app, window, work, root, record, analyze, *, direct_write=False):
     from contextlib import ExitStack
     import weakref
     from rc_metastudio import manuscript_report
+    from PyQt6.QtGui import QColor, QPalette
+
+    original_palette = app.palette()
+    original_font = app.font()
+    large_font = app.font()
+    large_font.setPointSizeF(large_font.pointSizeF() + 6)
+    app.setFont(large_font)
+    dark_palette = QPalette(original_palette)
+    dark_palette.setColor(QPalette.ColorRole.Text, QColor('#eeeeee'))
+    dark_palette.setColor(QPalette.ColorRole.Base, QColor('#151515'))
+    app.setPalette(dark_palette)
 
     mode = "direct" if direct_write else "dialog"
     writes = Counter()
@@ -46,6 +57,29 @@ def run(app, window, work, root, record, analyze, *, direct_write=False):
                         factory = getattr(manuscript_report, name)
                         stack.enter_context(patch.object(manuscript_report, name, new=observed(factory)))
                     writer(report, path)
+                if pathlib.Path(path).name.startswith('amino report'):
+                    baseline = pathlib.Path(path).with_stem(pathlib.Path(path).stem + '-default-font')
+                    app.setFont(original_font)
+                    try:
+                        writer(report, baseline)
+                    finally:
+                        app.setFont(large_font)
+                    if extension == 'pdf':
+                        layouts = [subprocess.check_output(['pdftotext', '-bbox', str(export), '-'])
+                                   for export in (path, baseline)]
+                        for export, layout in zip((path, baseline), layouts):
+                            pathlib.Path(export).with_suffix('.layout.html').write_bytes(layout)
+                        from xml.etree import ElementTree as ET
+                        pages = [ET.fromstring(layout).findall('.//{*}page') for layout in layouts]
+                        page_layouts = [[ET.tostring(page) for page in export] for export in pages]
+                        assert page_layouts[0] == page_layouts[1], 'PDF layout inherited the UI font'
+                    else:
+                        from zipfile import ZipFile
+                        with ZipFile(path) as large_doc, ZipFile(baseline) as default_doc:
+                            for part in ('word/document.xml', 'word/styles.xml'):
+                                assert large_doc.read(part) == default_doc.read(part), part
+                    record('manuscript-ui-font-independent', format=extension,
+                           large=str(path), default=str(baseline))
                 # Reference-counted Qt resources must go away on return, without
                 # cyclic collection concealing a retained writer or paint device.
                 alive = [name for name, reference in resources if reference() is not None]
@@ -66,6 +100,8 @@ def run(app, window, work, root, record, analyze, *, direct_write=False):
         _run(app, window, work, root, record, analyze, direct_write=direct_write)
     assert writes == {"pdf": 21, "docx": 9}, (mode, writes)
     record("manuscript-export-mode-complete", mode=mode, writes=dict(writes))
+    app.setPalette(original_palette)
+    app.setFont(original_font)
 
 
 def _run(app, window, work, root, record, analyze, *, direct_write):
@@ -264,7 +300,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         assert_manuscript_tables(view)
         for suffix in ('pdf', 'docx'):
             operation = f"{sample}-{suffix}"
-            path = work / (sample + '.' + suffix)
+            path = work / (sample + ' report – α.' + suffix)
             export_report(view, path, suffix)
             assert path.exists()
             if suffix == 'docx':
@@ -284,6 +320,19 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 text = '\n'.join(p.text for p in doc.paragraphs) + '\n' + '\n'.join(c.text for t in doc.tables for r in t.rows for c in r.cells)
             else:
                 text = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', '-layout', str(path), '-'], text=True, encoding='utf-8')
+                from xml.etree import ElementTree as ET
+                pdf_xml = subprocess.check_output(['pdftohtml', '-xml', '-stdout', str(path)])
+                (work / (sample + '-colours.xml')).write_bytes(pdf_xml)
+                pdf_pages = ET.fromstring(pdf_xml).findall('page')
+                colours = {font.attrib['id']: font.attrib['color'] for page in pdf_pages for font in page.findall('fontspec')}
+                checked = []
+                for page in pdf_pages:
+                    for line in page.findall('text'):
+                        content = ''.join(line.itertext())
+                        if content == 'Methods' or content.startswith(('Figure ', 'Supplementary details')):
+                            checked.append(content)
+                            assert colours[line.attrib['font']] == '#000000', (content, colours)
+                assert 'Methods' in checked and any(line.startswith('Figure ') for line in checked), checked
                 import re
                 numbers = re.findall(r'Table (\d+)\.', text)
                 assert numbers and len(numbers) == len(set(numbers)), numbers
