@@ -243,6 +243,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
     def _validate_ticks(self):
         ticks = self.x_ticks_le.text().strip()
         if ticks and ticks != "[default]":
+            values = []
             try:
                 values = [float(token.strip()) for token in ticks.split(",")]
                 valid = all(math.isfinite(value) for value in values)
