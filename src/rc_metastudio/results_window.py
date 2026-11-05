@@ -15,6 +15,7 @@ from dataclasses import replace
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Callable
 from PyQt6.QtCore import (
+    QSize,
     QByteArray,
     QEvent,
     QObject,
@@ -29,6 +30,7 @@ from PyQt6.QtGui import (
     QFont,
     QFontMetrics,
     QImage,
+    QImageReader,
     QPainter,
     QPixmap,
     QResizeEvent,
@@ -112,8 +114,8 @@ PLOT_EXPORT_EXTENSION_ALIASES = {
 PLOT_EXPORT_GUIDANCE = {
     "pdf": "Recommended vector format for journal submission and print workflows.",
     "svg": "Scalable vector format; ideal for editing and lossless resizing.",
-    "tiff": "Publication-grade 600 dpi raster export with lossless compression.",
-    "png": "Publication-grade 600 dpi raster export for compatible submission systems.",
+    "tiff": "Up to 600 dpi raster export with lossless compression; large figures use a lower resolution.",
+    "png": "Up to 600 dpi raster export; large figures use a lower resolution.",
 }
 NO_RESULTS_MESSAGE = "No results could be computed for this analysis."
 ROW_HEIGHT = 15  # by trial-and-error; seems to work very well
@@ -186,12 +188,6 @@ class PlotArtifact(object):
 
     def has_vector_display(self):
         return self.display_path().lower().endswith((".svg", ".svgz"))
-
-    def can_display(self):
-        if self.has_vector_display():
-            item = _svg_item_class()(self.display_path())
-            return item.renderer().isValid()
-        return not QPixmap(self.image_path).isNull()
 
     def export_formats(self):
         if self.params_path:
@@ -826,11 +822,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             params_path = self.params_paths[title]
 
         artifact = self.create_plot_artifact(title, image, params_path=params_path)
-        if not artifact.can_display():
-            return
-
         qt_item = self.add_title(display_title)
-        img_shape, pos, plot_item = self.create_plot_item(artifact, self.position())
+        try:
+            img_shape, pos, plot_item = self.create_plot_item(artifact, self.position())
+        except Exception as error:
+            app_error_handler.log_exception(type(error), error, error.__traceback__)
+            self.add_title("Could not load plot. Text results are still available.")
+            return
 
         self.items_to_coords[id(qt_item)] = pos
         self._nav_items_to_sections[id(qt_item)] = plot_item
@@ -846,8 +844,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         )
 
     def generate_pixmap(self, image):
-        # now the image
-        pixmap = QPixmap(image)
+        reader = QImageReader(image)
+        size = reader.size()
+        if size.isValid():
+            width, height = self._fit_size_to_viewport(size.width(), size.height())
+            reader.setScaledSize(QSize(max(1, int(width)), max(1, int(height))))
+        pixmap = QPixmap.fromImage(reader.read())
         if pixmap.isNull():
             return pixmap
 
@@ -1187,7 +1189,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self, pixmap, position, title, image_path, params_path=None, matrix=QTransform()
     ):
         artifact = self.create_plot_artifact(title, image_path, params_path=params_path)
-        item = ResponsivePixmapItem(QPixmap(image_path))
+        item = ResponsivePixmapItem(pixmap)
         item.setPixmap(pixmap)
         item.setToolTip(
             'To save the image:\nright-click on the image and choose "save image as".'
@@ -1225,6 +1227,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 return svg_item
 
         pixmap = self.generate_pixmap(artifact.image_path)
+        if pixmap.isNull():
+            raise ValueError("Plot image could not be decoded")
         return self.create_pixmap_item(
             pixmap,
             position,
@@ -1266,8 +1270,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         return (item.boundingRect().size(), position, item)
 
     def _make_context_menu(self, artifact, plot_item):
-        plot_img = QImage(artifact.image_path)
-
         def _graphics_item_context_menu(event):
             def add_save_as_menu_action(menu, export_format):
                 action = QAction("Export %s…" % export_format.label, self)
@@ -1283,7 +1285,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     self.save_image_as(
                         artifact,
                         unscaled_image=(
-                            plot_img
+                            QImage(artifact.image_path)
                             if selected_format.qt_format is not None
                             and not artifact.params_path
                             else None

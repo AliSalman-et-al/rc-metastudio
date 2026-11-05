@@ -66,17 +66,16 @@ rcmetar.plot.display_path_for_bundle <- function(bundle, outpath, prefix) {
 }
 
 rcmetar.plot.export.dpi <- function(size) {
-    if (!is.null(size$dpi) && is.finite(size$dpi) && size$dpi > 0) {
-        return(size$dpi)
-    }
-    600
+    dpi <- if (!is.null(size$dpi) && is.finite(size$dpi) && size$dpi > 0) size$dpi else 600
+    # Bound decoded RGBA memory to 128 MiB, below Qt's 256 MiB reader limit.
+    min(dpi, sqrt(32 * 1024^2 / (size$width * size$height)))
 }
 
 rcmetar.plot.pixel.size <- function(size) {
     dpi <- rcmetar.plot.export.dpi(size)
     c(
-        width=max(1, ceiling(size$width * dpi)),
-        height=max(1, ceiling(size$height * dpi))
+        width=max(1, floor(size$width * dpi)),
+        height=max(1, floor(size$height * dpi))
     )
 }
 
@@ -295,6 +294,8 @@ rcmetar.render.plot_file <- function(outpath, size, draw, display.path=NULL, cap
         on.exit(unlink(svg.path), add=TRUE)
     }
     result <- rcmetar.render.plot_svg(svg.path, size, draw)
-    rcmetar.export.svg_render(svg.path, outpath, size)
+    raster.size <- size
+    if (keep.display) raster.size$dpi <- min(rcmetar.plot.export.dpi(size), 120)
+    rcmetar.export.svg_render(svg.path, outpath, raster.size)
     invisible(result)
 }

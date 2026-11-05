@@ -30,6 +30,8 @@ SCENARIOS = (
     *("audit-round3-" + family for family in ("onearm-proportion", "onearm-mean", "reg-coef", "generic-effect", "twoarm-proportion", "twoarm-mean", "twoarm-smd", "diagnostic", "hr", "irr", "references", "precision", "round5", "bubble-metrics", "irr-context", "arm-names", *("presentation-" + family for family in ("diagnostic", "onearm-proportion", "twoarm-proportion", "twoarm-mean", "twoarm-smd", "reg-coef", "generic-effect", "sequential", "transforms")))),
     "review1-design",
     "review-workflows",
+    "subgroup-image",
+    "subgroup-image-dark-large",
     "doctor",
     "hillclimb",
     "analysis-dialog",

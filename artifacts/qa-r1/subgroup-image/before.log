@@ -1,0 +1,43 @@
+Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-a7bf4ec3/artifacts/verification/rcms/20261105T015717Z-599d2125-subgroup-image
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+UNEXPECTED DIALOG: The analysis completed, but RC MetaStudio could not display the results.
+
+Details: OSError: forced plot-load failure
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-a7bf4ec3/tests/e2e/desktop_driver.py", line 2211, in <module>
+    failed = visible_result(results_window.ResultsWindow)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-a7bf4ec3/tests/e2e/desktop_driver.py", line 2190, in visible_result
+    return next(w for w in app.topLevelWidgets() if isinstance(w, kind) and w.isVisible())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+StopIteration
+
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-a7bf4ec3/tests/e2e/desktop_driver.py", line 2211, in <module>
+    failed = visible_result(results_window.ResultsWindow)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-a7bf4ec3/tests/e2e/desktop_driver.py", line 2190, in visible_result
+    return next(w for w in app.topLevelWidgets() if isinstance(w, kind) and w.isVisible())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+StopIteration
+

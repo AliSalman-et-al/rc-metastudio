@@ -2,6 +2,8 @@
 
 Users inspect analysis summaries and plots, apply plot edits, discard subsequent drafts, and export rendered figures.
 
+The `subgroup-image` and `subgroup-image-dark-large` drives run meantime by treatment group, verify the SVG forest and bounded raster export, and force a plot-load exception while retaining text results and a plot-pane message.
+
 ## Sub-features
 
 - `results-render`: actual summary text and valid rendered analysis plots.
