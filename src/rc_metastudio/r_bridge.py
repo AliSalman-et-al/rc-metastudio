@@ -1770,7 +1770,10 @@ def _section_display_fields(title, supplied, child_index):
         # semantic title, but point at the first rendered child value so the
         # validated result still has exactly one section per value.
         return supplied["title"], title
-    return title, title
+    display_title = {"Leave-one-out Summary": "Leave-one-out summary",
+                     "Cumulative Summary": "Cumulative summary",
+                     "Subgroup Summary": "Subgroup summary"}.get(title, title)
+    return display_title, title
 
 
 def _image_section_metadata(

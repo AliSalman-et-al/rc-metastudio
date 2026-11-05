@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import re
 from collections.abc import Iterable, Mapping
 
@@ -103,7 +104,9 @@ def _reference_key(reference: str) -> str:
 
 
 def format_effect_number(value: float, digits: int) -> str:
-    formatted = f"{value:.{digits}f}"
-    if value != 0 and float(formatted) == 0:
-        return f"{value:.{max(1, digits)}g}"
-    return formatted.rstrip("0").rstrip(".") if "." in formatted else formatted
+    if value != 0 and abs(value) < 10 ** (-digits):
+        required = math.ceil(-math.log10(abs(value))) + 1
+        formatted = f"{value:.{required}f}" if required <= 6 else f"{value:.{max(1, digits)}e}"
+        mantissa, separator, exponent = formatted.partition("e")
+        return mantissa.rstrip("0").rstrip(".") + separator + exponent
+    return f"{value:.{digits}f}"

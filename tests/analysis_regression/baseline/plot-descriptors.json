@@ -1,6 +1,6 @@
 {
   "contract": "golden-plot-descriptors",
-  "oracle_sha256": "89e0ee5f869ae9120789af7b1f142c7dcea63a599c36254cf7256a7cd32e9a15",
+  "oracle_sha256": "c1363f435f5687c1184dcfe372f7a2f046f21e79dffa069a8269fbeb61e26cd8",
   "rows": [
     {
       "artifact_label": "Forest Plot",
@@ -50,7 +50,7 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Diagnostic Odds Ratio Forest plot",
+        "identity": "Diagnostic odds ratio forest plot",
         "name": "golden_lymph_forest_dor.display.svg",
         "type": "svg"
       },
@@ -68,7 +68,7 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Cumulative Forest plot",
+        "identity": "Cumulative forest plot",
         "name": "golden_amino_cumulative_forest.display.svg",
         "type": "svg"
       },
@@ -86,7 +86,7 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Leave-one-out Forest plot",
+        "identity": "Leave-one-out forest plot",
         "name": "golden_amino_loo_forest.display.svg",
         "type": "svg"
       },
@@ -104,7 +104,7 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Cumulative Forest plot",
+        "identity": "Cumulative forest plot",
         "name": "golden_continuous_cumulative_forest.display.svg",
         "type": "svg"
       },
@@ -122,7 +122,7 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Leave-one-out Forest plot",
+        "identity": "Leave-one-out forest plot",
         "name": "golden_continuous_loo_forest.display.svg",
         "type": "svg"
       },
@@ -176,7 +176,7 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Subgroup Forest plot",
+        "identity": "Subgroup forest plot",
         "name": "golden_amino_subgroup_forest.display.svg",
         "type": "svg"
       },
@@ -194,7 +194,7 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Subgroups Forest plot",
+        "identity": "Subgroup forest plot",
         "name": "golden_continuous_subgroup_forest.display.svg",
         "type": "svg"
       },

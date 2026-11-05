@@ -189,7 +189,7 @@ ratio.subgroup <- function(data, request, suppressed) {
     test <- rcmetar.metafor.subgroup.difference.test(fits[seq_along(groups)])
     disp <- rcmetar.add.subgroup.test(disp, list(subgroups=list(difference_test=test)), params)
     result[["Subgroup Summary"]] <- disp
-    title <- "Subgroup Forest plot"
+    title <- "Subgroup forest plot"
     plot.name <- "subgroup_forest_plot"
     list(result=result, fits=fits, labels=labels, title=title, plot.name=plot.name, plot=plot)
 }
@@ -210,7 +210,7 @@ ratio.sequential <- function(data, request, suppressed) {
     if (!isTRUE(params$supress.output)) plot <- rcmetar.build.sequential.metafor.bundle(data, params, fits, request$workflow, labels, has.overall=FALSE)
     result <- list("Sequential Summary"=disp,
         res=construct.sequential.res.output(fits, cumul.rma.uni.value.info(), replacements=list(estimate="b")))
-    title <- if (loo) "Leave-one-out Forest plot" else "Cumulative Forest plot"
+    title <- if (loo) "Leave-one-out forest plot" else "Cumulative forest plot"
     plot.name <- if (loo) "leave_one_out_forest_plot" else "cumulative_forest_plot"
     list(result=result, fits=fits, labels=labels, title=title, plot.name=plot.name, plot=plot)
 }

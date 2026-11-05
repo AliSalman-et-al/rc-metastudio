@@ -650,31 +650,31 @@ rcmetar.display.metric.name <- function(params) {
 pretty.metric.name <- function(metric, label=NULL) {
   if (!is.null(label) && length(label) == 1L && nzchar(label)) return(as.character(label))
   metric.names <- list(
-    HR = "Hazard Ratio", IRR = "Incidence Rate Ratio",
+    HR = "Hazard ratio", IRR = "Incidence rate ratio",
     OR = "Odds ratio",
-    RD = "Risk Difference",
-    MD = "Mean Difference",
+    RD = "Risk difference",
+    MD = "Mean difference",
     SMD = "Standardized mean difference",
-    RR = "Risk Ratio",
-    AS = "Arcsine Difference",
+    RR = "Risk ratio",
+    AS = "Arcsine difference",
     PR = "Proportion",
-    PLN = "Natural Logarithm transformed Proportion",
-    PLO = "Logit Proportion",
-    PAS = "Arcsine transformed Proportion",
-    PFT  = "Freeman-Tukey transformed Proportion",
+    PLN = "Natural logarithm transformed proportion",
+    PLO = "Logit proportion",
+    PAS = "Arcsine transformed proportion",
+    PFT  = "Freeman-Tukey transformed proportion",
     PETO = "Peto",
     YUQ = "Yule's Q",
     YUY = "Yule's Y",
     Sens = "Sensitivity",
     Spec = "Specificity",
-    PPV =  "Positive Predictive Value",
-    NPV =  "Negative Predictive Value",
+    PPV =  "Positive predictive value",
+    NPV =  "Negative predictive value",
     Acc = "Accuracy",
-    PLR = "Positive Likelihood Ratio",
-    NLR = "Negative Likelihood Ratio",
-    DOR = "Diagnostic Odds Ratio",
+    PLR = "Positive likelihood ratio",
+    NLR = "Negative likelihood ratio",
+    DOR = "Diagnostic odds ratio",
     TXMean = "Mean",
-    GEN = "Generic Effect")
+    GEN = "Generic effect")
 
   metric.key <- gsub("[[:space:].]+", "", trimws(metric))
   metric.name <- metric.names[[metric.key]]

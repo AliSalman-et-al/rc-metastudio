@@ -41,23 +41,23 @@ BINARY_TWO_ARM_METRICS = ["OR", "RD", "RR", "AS", "YUQ", "YUY"]
 BINARY_ONE_ARM_METRICS = ["PR", "PLN", "PLO", "PAS", "PFT"]
 BINARY_METRIC_NAMES = {
     "OR": "Odds ratio",
-    "RD": "Risk Difference",
-    "RR": "Risk Ratio",
-    "AS": "Arcsine Difference",
+    "RD": "Risk difference",
+    "RR": "Risk ratio",
+    "AS": "Arcsine difference",
     "YUQ": "Yule's Q",
     "YUY": "Yule's Y",
-    "PR": "Untransformed Proportion",
-    "PLN": "Natural Logarithm transformed Proportion",
-    "PLO": "Logit transformed Proportion",
-    "PAS": "Arcsine transformed Proportion",
-    "PFT": "Freeman-Tukey transformed Proportion",
+    "PR": "Untransformed proportion",
+    "PLN": "Natural logarithm transformed proportion",
+    "PLO": "Logit transformed proportion",
+    "PAS": "Arcsine transformed proportion",
+    "PFT": "Freeman-Tukey transformed proportion",
 }
 
 # Continuous metrics
 CONTINUOUS_TWO_ARM_METRICS = ["MD", "SMD"]
 CONTINUOUS_ONE_ARM_METRICS = ["TX Mean"]
 CONTINUOUS_METRIC_NAMES = {
-    "MD": "Mean Difference",
+    "MD": "Mean difference",
     "SMD": "Standardized mean difference",
     "TX Mean": "Mean",
 }
@@ -79,16 +79,16 @@ DIAGNOSTIC_LOG_METRICS = ["PLR", "NLR", "DOR"]
 DIAGNOSTIC_METRIC_LABELS = {
     "Sens": "Sensitivity",
     "Spec": "Specificity",
-    "PLR": "Positive Likelihood Ratio",
-    "NLR": "Negative Likelihood Ratio",
-    "DOR": "Diagnostic Odds Ratio",
+    "PLR": "Positive likelihood ratio",
+    "NLR": "Negative likelihood ratio",
+    "DOR": "Diagnostic odds ratio",
 }
 
 ALL_METRIC_NAMES = {}
 ALL_METRIC_NAMES.update(BINARY_METRIC_NAMES)
 ALL_METRIC_NAMES.update(CONTINUOUS_METRIC_NAMES)
 ALL_METRIC_NAMES.update(DIAGNOSTIC_METRIC_LABELS)
-RATIO_METRIC_NAMES = {"HR": "Hazard Ratio", "IRR": "Incidence Rate Ratio"}
+RATIO_METRIC_NAMES = {"HR": "Hazard ratio", "IRR": "Incidence rate ratio"}
 ALL_METRIC_NAMES.update(RATIO_METRIC_NAMES)
 TWO_ARM_METRICS += ["HR", "IRR"]
 

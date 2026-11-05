@@ -319,9 +319,9 @@ g.meta.regression <- function(
 
 	if (make.coeff.forest.plot && !disable.plots) {
 		forest.plot.of.regression.coefficients(as.vector(res$b), res$ci.lb, res$ci.ub, labels=rownames(res$b), exclude.intercept=exclude.intercept, filepath=coeff.forest.plot.path)
-		images <- c(images, "Forest plot of Coefficients"=paste(coeff.forest.plot.path,".png",sep=""))
+		images <- c(images, "Forest plot of coefficients"=paste(coeff.forest.plot.path,".png",sep=""))
 		plot.names <- c(plot.names, "coeff.forest.plot"="coeff.forest.plot")
-		plot.params.paths <- c("Forest plot of Coefficients"=coeff.forest.plot.path)
+		plot.params.paths <- c("Forest plot of coefficients"=coeff.forest.plot.path)
 	}
 
 	if (length(images)>0)

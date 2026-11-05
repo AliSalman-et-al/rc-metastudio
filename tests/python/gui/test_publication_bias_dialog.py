@@ -261,7 +261,7 @@ def test_context_is_compact_and_distinguishes_included_and_eligible_counts(
     dialog = publication_bias_dialog.PublicationBiasDialog(model)
     try:
         assert dialog.context_label.text() == (
-            "Continuous  ·  Mean Difference  ·  1 included  ·  10 eligible"
+            "Continuous  ·  Mean difference  ·  1 included  ·  10 eligible"
         )
     finally:
         dialog.close()

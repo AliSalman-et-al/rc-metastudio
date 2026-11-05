@@ -11,7 +11,6 @@
     "plot-similarity-metadata",
     "omissions"
   ],
-  "captured_at": "2026-06-23T00:00:00Z",
   "capture_metadata": {
     "authoritative_capture_mode": "authoritative",
     "authoritative_requires_baseline_environment_match": true,
@@ -45,6 +44,7 @@
       "authority"
     ]
   },
+  "captured_at": "2026-06-23T00:00:00Z",
   "curated_golden_set": [
     "amino-binary-random",
     "continuous-random",

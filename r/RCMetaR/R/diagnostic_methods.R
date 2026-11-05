@@ -160,7 +160,7 @@ rcmetar.diagnostic.extract <- function(fit, params) {
     metric <- as.character(params$measure %||% "")
     display.prefix <- diagnostic.summary.metric.name(metric)
     summary.title <- paste(display.prefix, "Summary", sep=" ")
-    plot.title <- paste(display.prefix, "Forest plot", sep=" ")
+    plot.title <- paste(pretty.metric.name(metric), "forest plot", sep=" ")
     summary.key <- paste0("diagnostic.", metric, ".summary")
     plot.key <- paste0("diagnostic.", metric, ".forest")
     summary <- if (!is.null(fit$Summary)) stats::setNames(list(fit$Summary), summary.key) else list()

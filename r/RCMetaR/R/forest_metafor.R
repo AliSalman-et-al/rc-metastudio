@@ -134,7 +134,7 @@ rcmetar.format.metafor.numeric <- function(values, digits) {
     ifelse(is.na(values), "", round.display(values, digits))
 }
 
-rcmetar.format.effect.number <- function(values, digits, scale=abs(values)) {
+rcmetar.format.effect.number <- function(values, digits, max.decimals=6L, scale=abs(values)) {
     values <- as.numeric(values)
     # Eight machine epsilons of the row's effect/interval scale hide arithmetic
     # residue. Scaling by the row, rather than one, preserves genuinely tiny rows.
@@ -143,10 +143,31 @@ rcmetar.format.effect.number <- function(values, digits, scale=abs(values)) {
     labels <- rep("", length(values))
     finite <- is.finite(values)
     labels[finite] <- formatC(values[finite], digits=digits, format="f")
-    small <- finite & values != 0 & suppressWarnings(as.numeric(labels)) == 0
-    labels[small] <- formatC(values[small], digits=max(1L, digits), format="g", flag="#")
-    labels <- sub("(\\.[0-9]*?)0+($|e)", "\\1\\2", labels)
-    labels <- sub("\\.($|e)", "\\1", labels)
+    small <- finite & values != 0 & abs(values) < 10^(-digits)
+    if (any(small)) {
+        required <- ceiling(-log10(abs(values[small]))) + 1L
+        use.scientific <- required > max.decimals
+        indexes <- which(small)
+        if (any(!use.scientific)) {
+            fixed.indexes <- indexes[!use.scientific]
+            fixed.digits <- required[!use.scientific]
+            labels[fixed.indexes] <- vapply(
+                seq_along(fixed.indexes),
+                function(i) formatC(
+                    values[fixed.indexes[[i]]], digits=fixed.digits[[i]], format="f"
+                ),
+                character(1)
+            )
+        }
+        if (any(use.scientific)) {
+            scientific.indexes <- indexes[use.scientific]
+            labels[scientific.indexes] <- formatC(
+                values[scientific.indexes], digits=max(1L, digits), format="e"
+            )
+        }
+    }
+    labels[small] <- sub("(\\.[0-9]*?)0+($|e)", "\\1\\2", labels[small])
+    labels[small] <- sub("\\.($|e)", "\\1", labels[small])
     labels[is.na(values)] <- ""
     rcmetar.compact.numeric.labels(labels)
 }

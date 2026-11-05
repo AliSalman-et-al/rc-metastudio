@@ -297,7 +297,7 @@ test_that("effect estimates and confidence limits never use probability threshol
 
   expect_equal(
     labels,
-    c("0", "0.07", "0.01", "4e-05", "4e-07", "-0.01", "")
+    c("0.00", "0.07", "0.006", "0.00004", "4e-07", "-0.006", "")
   )
   expect_false(any(grepl("<", labels, fixed=TRUE)))
   expect_equal(rcmetar.revman.format.effect.number(values, 2), labels)
@@ -853,7 +853,7 @@ test_that("BMJ Forest Style builds faithful family columns and renders smoke cas
       fixture = metafor_continuous_fixture(),
       expected_headers = c("Total", "Mean", "SD", "Total", "Mean", "SD", "Weight (%)"),
       expected_groups = c("Treatment", "Control"),
-      axis_label = "Mean Difference",
+      axis_label = "Mean difference",
       favours_left = "",
       favours_right = ""
     ),
@@ -1577,7 +1577,7 @@ test_that("diagnostic extraction keeps image order aligned with semantic forest 
   expect_identical(names(extracted$images), "diagnostic.Sens.forest")
   expect_identical(names(extracted$plot.paths), "diagnostic.Sens.forest")
   expect_identical(extracted$image.order, "diagnostic.Sens.forest")
-  expect_identical(extracted$sections[[2]]$title, "Sensitivity Forest plot")
+  expect_identical(extracted$sections[[2]]$title, "Sensitivity forest plot")
 })
 
 test_that("diagnostic multi-metric workflows save independent metafor forest plots", {
@@ -1596,7 +1596,7 @@ test_that("diagnostic multi-metric workflows save independent metafor forest plo
     )
     expected_titles <- paste(
       vapply(measures, pretty.metric.name, character(1)),
-      "Forest plot"
+      "forest plot"
     )
     expected_keys <- paste0("diagnostic.", measures, ".forest")
 
@@ -1666,7 +1666,7 @@ test_that("repeated diagnostic workflows keep metric forest plots independent", 
     )
     expected_names <- paste(
       vapply(measures, pretty.metric.name, character(1)),
-      "Forest plot"
+      "forest plot"
     )
 
     expect_setequal(names(result$images), expected_names)
