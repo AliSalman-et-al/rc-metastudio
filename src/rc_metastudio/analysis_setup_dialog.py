@@ -1924,9 +1924,9 @@ def _display_svg_path(output_path):
 
 
 def add_plot_params(specs_form):
-    specs_form.current_param_vals.setdefault("plot_caption", analysis_identity.dataset_identity(specs_form.model))
-    if specs_form.analysis_type == "cumulative" and "Order: dataset row order" not in specs_form.current_param_vals["plot_caption"]:
-        specs_form.current_param_vals["plot_caption"] += " · Order: dataset row order"
+    specs_form.current_param_vals["plot_caption"] = analysis_identity.plot_caption(
+        specs_form.model, specs_form.analysis_type, specs_form.current_param_vals.get("plot_caption")
+    )
     if getattr(specs_form, "analysis_type", None) == "meta-regression":
         bubble_outpath = _text_value(specs_form.image_path)
         specs_form.current_param_vals.update(

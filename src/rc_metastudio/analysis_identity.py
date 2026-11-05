@@ -86,3 +86,10 @@ def dataset_identity(model, metric=None):
     if comparison or groups != "Group":
         context.append(f"{group_label}: {groups}")
     return " · ".join(labels) + "\n" + " · ".join(context)
+
+
+def plot_caption(model, workflow, caption=None):
+    caption = caption or dataset_identity(model)
+    if workflow == "cumulative" and "Order: dataset row order" not in caption:
+        caption += " · Order: dataset row order"
+    return caption
