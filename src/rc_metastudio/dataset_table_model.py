@@ -560,7 +560,7 @@ class DatasetTableModel(QAbstractTableModel):
             if tooltip is not None:
                 return tooltip
         if role == Qt.ItemDataRole.TextAlignmentRole:
-            return _item_data(int(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter))
+            return _item_data(int((Qt.AlignmentFlag.AlignRight if index.column() in (self.YEAR, *self.RAW_DATA, *self.OUTCOMES) else Qt.AlignmentFlag.AlignLeft) | Qt.AlignmentFlag.AlignVCenter))
         if role == Qt.ItemDataRole.CheckStateRole:
             return self._check_state_data(index, study)
         if role == Qt.ItemDataRole.BackgroundRole:

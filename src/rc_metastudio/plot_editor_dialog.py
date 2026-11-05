@@ -516,7 +516,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
     def _set_accent_color(self, color):
         text = str(color or FOREST_STYLE_DEFAULT_COLORS["default"])
         self.accent_color.setText(text)
-        self.color_btn.setStyleSheet("background-color: %s;" % text)
+        self.color_btn.setStyleSheet("background-color: %s; color: %s;" % (text, "white" if QColor(text).lightness() < 128 else "black"))
 
     def _set_text(self, widget, value):
         value = self._scalar(value)

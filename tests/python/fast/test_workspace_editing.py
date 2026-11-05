@@ -71,7 +71,7 @@ def test_study_rename_normalizes_and_rejects_blank_or_duplicate_names():
 
     assert normalized.applied is True
     assert dataset.sheets[0].rows[0].label == "Renamed"
-    assert duplicate.error == "Duplicate study names not allowed"
+    assert duplicate.error == "Study name ‘Beta’ already exists. Use a unique name before pasting."
     assert blank.error == "Study names cannot be empty."
 
 

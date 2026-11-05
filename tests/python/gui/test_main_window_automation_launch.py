@@ -2609,7 +2609,7 @@ def test_modal_dialogs_center_over_parent_window():
         app.processEvents()
 
 
-def test_data_type_page_multiline_buttons_fit_icon_and_caption():
+def test_data_type_page_buttons_fit_icon_and_caption():
     from PyQt6 import QtWidgets
     from rc_metastudio import main_wizard
 
@@ -2624,13 +2624,12 @@ def test_data_type_page_multiline_buttons_fit_icon_and_caption():
             main_wizard.DataTypePage,
             required(wizard.page(main_wizard.Page_DataType), "data type page"),
         )
-        multiline_buttons = [
+        buttons = [
             data_type_page.onearm_single_reg_coef_Button,
             data_type_page.onearm_generic_effect_size_Button,
         ]
 
-        for button in multiline_buttons:
-            assert "\n" in button.text()
+        for button in buttons:
             assert button.height() >= button.sizeHint().height()
     finally:
         wizard.close()
@@ -2907,7 +2906,7 @@ def test_about_legal_and_welcome_links_show_current_project_information():
         assert "GPL-3.0-or-later" in about_text
         assert "without warranty" in about_text.lower()
         assert "original OpenMeta[Analyst] project" in about_text
-        assert "View provenance and third-party notices" in about_text
+        assert "Provenance and third-party notices" in about_text
         about_dialogs[0].close()
 
         wizard = main_wizard.MainWizard()

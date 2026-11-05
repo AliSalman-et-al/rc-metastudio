@@ -123,8 +123,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Regression
-Coefficient</string>
+        <string>Regression coefficient</string>
        </property>
        <property name="icon">
         <iconset resource="../images/icons.qrc">
@@ -157,8 +156,7 @@ Coefficient</string>
         </size>
        </property>
        <property name="text">
-        <string>Generic
-Effect Size</string>
+        <string>Generic effect size</string>
        </property>
        <property name="icon">
         <iconset resource="../images/icons.qrc">
