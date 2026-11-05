@@ -1574,6 +1574,11 @@ def plot_edit(app, window):
                 dialog._commit()
                 assert "comma-separated finite numbers" in dialog._commit_error.text()
                 assert path.read_bytes() == applied
+            for invalid in ("0, 1", "-1, 1"):
+                dialog.x_ticks_le.setText(invalid)
+                dialog._commit()
+                assert "positive" in dialog._commit_error.text()
+                assert path.read_bytes() == applied
             record_step("plot-invalid-ticks", dialog)
             dialog.style_cbo.setCurrentText("BMJ")
             dialog.x_ticks_le.setText("0.1, 1, 10")

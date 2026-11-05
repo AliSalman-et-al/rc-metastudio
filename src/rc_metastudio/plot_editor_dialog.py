@@ -254,6 +254,11 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                 )
                 self.x_ticks_le.setFocus()
                 return False
+            measure = str(self._scalar(self._params.get("measure", "")))
+            if measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"} and self.axis_scale.currentData() != "natural" and any(value <= 0 for value in values):
+                self.mark_commit_failed("X-axis ticks must be positive for a logarithmic effect axis.")
+                self.x_ticks_le.setFocus()
+                return False
         return True
 
     def _button_clicked(self, button):
