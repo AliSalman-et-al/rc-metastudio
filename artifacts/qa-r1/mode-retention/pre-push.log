@@ -1,0 +1,689 @@
+[10:53:13] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python scripts/build_qt6.py generate --build-root /home/ali/.t3/qa-env/qt6
+{"form": "/home/ali/.t3/qa-env/qt6/generated/rc_metastudio/forms/ui_about_legal.py", "resource": "/home/ali/.t3/qa-env/qt6/resources/icons.rcc"}
+[10:53:17] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -m ty check --python /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python --python-platform win32 --extra-search-path /home/ali/.t3/qa-env/qt6/generated/rc_metastudio --extra-search-path /home/ali/.t3/qa-env/qt6/generated/rc_metastudio/forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa
+All checks passed!
+[10:53:24] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python scripts/code_health.py --base 8b7796bcc840c3505c5fb0a1328cdd7682880e48 --head 8b7796bcc840c3505c5fb0a1328cdd7682880e48 --allow-fail --output artifacts/code-health/baseline.json --report artifacts/code-health/baseline.txt
+Code health (8b7796bcc840c3505c5fb0a1328cdd7682880e48..8b7796bcc840c3505c5fb0a1328cdd7682880e48)
+Scope: 156 files; as of 2026-09-04T02:06:13+05:00
+Coupling: 125 modules, 379 edges
+Cycles: 3; cognitive complexity total/max: 13207/150
+Typing: 1450/4674 parameters (31.0%), 871/2474 returns (35.2%), 113 Any annotations, 4 type: ignores, 26 casts to Any (8b7796bcc840c3505c5fb0a1328cdd7682880e48)
+Defect history: 51 matching commits across 35 files
+Gate: PASS
+Hotspots (180-day normalized churn × complexity density):
+  src/rc_metastudio/two_way_dict.py: 4.6216
+  src/rc_metastudio/launch.py: 2.6151
+  src/rc_metastudio/qt_layout.py: 1.7906
+  r/RCMetaR/R/plotting.R: 1.0539
+  r/RCMetaR/R/diagnostic_methods.R: 0.9653
+[10:55:05] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python scripts/code_health.py --base origin/master --head HEAD --baseline artifacts/code-health/baseline.json --output artifacts/code-health/final.json --report artifacts/code-health/final.txt
+Code health (65116b80a5a2a353438d8075dbf03ddaaad9959a..514b5c3934898d65b024075874999e99c7b5ff71)
+Scope: 187 files; as of 2026-11-05T10:53:13+05:00
+Coupling: 147 modules, 434 edges
+Cycles: 2; cognitive complexity total/max: 15205/95
+Typing: 3233/6948 parameters (46.5%), 1663/3339 returns (49.8%), 0 Any annotations, 3 type: ignores, 0 casts to Any (514b5c3934898d65b024075874999e99c7b5ff71)
+Defect history: 182 matching commits across 74 files
+Baseline comparison: artifacts/code-health/baseline.json (recorded head 8b7796bcc840c3505c5fb0a1328cdd7682880e48)
+Gate: PASS
+Hotspots (180-day normalized churn × complexity density):
+  src/rc_metastudio/project_adapter.py: 8.4481
+  src/rc_metastudio/two_way_dict.py: 4.6216
+  src/rc_metastudio/analysis_dataset.py: 3.6667
+  src/rc_metastudio/automation.py: 2.5943
+  src/rc_metastudio/result_sections.py: 2.3748
+[10:56:17] Skipping dependency sync for warm local verification
+[10:56:17] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python scripts/build_qt6.py generate --build-root /home/ali/.t3/qa-env/qt6
+{"form": "/home/ali/.t3/qa-env/qt6/generated/rc_metastudio/forms/ui_about_legal.py", "resource": "/home/ali/.t3/qa-env/qt6/resources/icons.rcc"}
+[10:56:20] Collecting pytest nodes with strict marker validation
+[10:56:20] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -m pytest --strict-markers tests --collect-only -qq
+tests/analysis_regression/golden/test_analysis_regression_compare.py: 43
+tests/e2e/test_desktop_workflows.py: 142
+tests/packaging/contract/test_adaptive_layout_native_evidence_contract.py: 10
+tests/packaging/contract/test_clean_slate_delivery_contract.py: 2
+tests/packaging/contract/test_linux_distributable_contract.py: 2
+tests/packaging/contract/test_macos_embedded_r_adapter_behavior.py: 10
+tests/packaging/contract/test_macos_embedded_r_profile.py: 14
+tests/packaging/contract/test_macos_native_pipeline_contract.py: 3
+tests/packaging/contract/test_r_integration_kit.py: 23
+tests/packaging/contract/test_release_readiness_contract.py: 1
+tests/packaging/contract/test_staged_r_pruning.py: 1
+tests/packaging/contract/test_windows_distributable_contract.py: 15
+tests/python/fast/test_analysis_adapter.py: 8
+tests/python/fast/test_analysis_result_sections.py: 5
+tests/python/fast/test_artifact_cleanup_policy.py: 2
+tests/python/fast/test_calculator_qt6.py: 28
+tests/python/fast/test_code_health.py: 21
+tests/python/fast/test_confidence_level_validation.py: 7
+tests/python/fast/test_csv_import.py: 8
+tests/python/fast/test_dataset_contracts.py: 2
+tests/python/fast/test_dataset_model_edit_values.py: 22
+tests/python/fast/test_dataset_ordering.py: 4
+tests/python/fast/test_desktop_verification_output.py: 2
+tests/python/fast/test_domain_identity.py: 5
+tests/python/fast/test_main_workspace_policy.py: 8
+tests/python/fast/test_native_remaining_surfaces_evidence.py: 17
+tests/python/fast/test_native_results_evidence.py: 20
+tests/python/fast/test_packaged_automation_dispatch.py: 9
+tests/python/fast/test_plot_capabilities.py: 5
+tests/python/fast/test_plot_service.py: 7
+tests/python/fast/test_project_adapter.py: 6
+tests/python/fast/test_project_format.py: 53
+tests/python/fast/test_project_round_trip_property.py: 1
+tests/python/fast/test_publication_bias_contract.py: 16
+tests/python/fast/test_qt6_build_slice.py: 20
+tests/python/fast/test_qt6_macos_feasibility.py: 32
+tests/python/fast/test_qt_layout_contract_audit.py: 2
+tests/python/fast/test_r_bridge.py: 3
+tests/python/fast/test_r_call_serialization.py: 4
+tests/python/fast/test_r_runtime.py: 5
+tests/python/fast/test_ratio_data.py: 11
+tests/python/fast/test_rcmetar_r_manifest_validation.py: 15
+tests/python/fast/test_recent_file_settings.py: 1
+tests/python/fast/test_reitsma_meta_regression.py: 3
+tests/python/fast/test_result_formatting_audit.py: 15
+tests/python/fast/test_result_text_identity.py: 2
+tests/python/fast/test_two_way_dict.py: 1
+tests/python/fast/test_workspace_editing.py: 2
+tests/python/fast/test_workspace_session.py: 4
+tests/python/gui/test_adaptive_layout_native_evidence.py: 9
+tests/python/gui/test_adaptive_window_policy.py: 13
+tests/python/gui/test_analysis_configuration_layout.py: 25
+tests/python/gui/test_analysis_failure_safety.py: 20
+tests/python/gui/test_binary_data_transactional_layout.py: 14
+tests/python/gui/test_compact_transient_layout.py: 5
+tests/python/gui/test_continuous_data_transactional_layout.py: 30
+tests/python/gui/test_continuous_signal_blocker_contract.py: 3
+tests/python/gui/test_csv_import_wizard.py: 6
+tests/python/gui/test_declarative_dialog_sizing.py: 2
+tests/python/gui/test_diagnostic_analysis_workflow.py: 9
+tests/python/gui/test_diagnostic_transactional_layout.py: 17
+tests/python/gui/test_funnel_plot_editor.py: 12
+tests/python/gui/test_main_window_automation_launch.py: 64
+tests/python/gui/test_main_window_data_workflows.py: 21
+tests/python/gui/test_main_wizard_workflow_layout.py: 14
+tests/python/gui/test_main_workspace_window.py: 7
+tests/python/gui/test_publication_bias_dialog.py: 10
+tests/python/gui/test_qt6_application_shell.py: 17
+tests/python/gui/test_results_workspace_layout.py: 65
+tests/python/gui/test_user_facing_text_regressions.py: 2
+tests/r_stack/test_inprocess_rpy2_backend.py: 4
+tests/r_stack/test_r_metric_labels.py: 1
+tests/r_stack/test_reitsma_golden.py: 2
+tests/r_stack/test_reitsma_meta_regression_contract.py: 1
+tests/r_stack/test_reitsma_result_formatting.py: 1
+
+[10:56:24] Running fast and golden pytest lanes
+[10:56:24] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -m pytest --strict-markers tests/python/fast tests/analysis_regression/golden --dist loadfile -n 4
+============================= test session starts ==============================
+platform linux -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/ali/.t3/worktrees/rc-metastudio/t3-d599febd
+configfile: pyproject.toml
+plugins: xdist-3.8.0
+created: 4/4 workers
+4 workers [419 items]
+
+.................................................................F.F.... [ 17%]
+F......F...................F.....................................sss.... [ 34%]
+........................................................................ [ 51%]
+........................................s........s...................... [ 68%]
+........s............................................................... [ 85%]
+...........................................................              [100%]
+=================================== FAILURES ===================================
+_ test_binary_calculator_table_layout_uses_real_headers_and_visible_total_row __
+[gw3] linux -- Python 3.11.9 /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python
+
+qapp = <PyQt6.QtWidgets.QApplication object at 0x7d805728eb90>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7d8046606190>
+
+    def test_binary_calculator_table_layout_uses_real_headers_and_visible_total_row(
+        qapp, monkeypatch
+    ):
+        from rc_metastudio import binary_data_dialog
+    
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "get_confidence_multiplier_from_r",
+            lambda conf: 1.96,
+        )
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "binary_convert_scale",
+            lambda x, *args, **kwargs: x,
+        )
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "impute_binary_data",
+            lambda data: {"FAIL": True},
+        )
+    
+>       form = binary_data_dialog.BinaryDataDialog(
+            FakeAnalysisUnit(),
+            ["Group 1", "Group 2"],
+            "Group 1-Group 2",
+            "OR",
+            confidence_level=95.0,
+        )
+
+tests/python/fast/test_calculator_qt6.py:889: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <rc_metastudio.binary_data_dialog.BinaryDataDialog object at 0x7d8046850550>
+analysis_unit = <test_calculator_qt6.FakeAnalysisUnit object at 0x7d8046606e90>
+arm_names = ['Group 1', 'Group 2'], arm_key = 'Group 1-Group 2'
+current_effect = 'OR', confidence_level = 95.0, calculator = None, parent = None
+
+    def __init__(
+        self,
+        analysis_unit,
+        arm_names,
+        arm_key,
+        current_effect,
+        confidence_level=None,
+        calculator: CalculatorService | None = None,
+        parent=None,
+    ):
+        super(BinaryDataDialog, self).__init__(parent)
+        self.setupUi(self)
+        self.dialog_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self._configure_raw_data_table()
+        self._configure_focus_revelation()
+        self._layout_controller = adaptive_window.register_adaptive_window(
+            self, adaptive_window.WindowRole.TRANSACTIONAL
+        )
+    
+        if confidence_level is None:
+            raise ValueError("Confidence level must be specified")
+        self.confidence_level = confidence_level
+        self.calculator = calculator or CalculatorService()
+        self.confidence_multiplier = self.calculator.get_confidence_multiplier(
+            self.confidence_level
+        )
+        self.current_item_data: int | None = None
+    
+        self._setup_signals_and_slots()
+    
+        self.analysis_unit = analysis_unit
+        self.arm_names = arm_names
+        self.arm_key = arm_key
+        self.current_effect = current_effect
+        self.entry_widgets = [
+            self.raw_data_table,
+            self.lower_text_box,
+            self.upper_text_box,
+            self.effect_text_box,
+        ]
+        self.text_boxes = [
+            self.lower_text_box,
+            self.upper_text_box,
+            self.effect_text_box,
+        ]
+    
+        self.ci_label.setText(
+            f"{self.confidence_level:g}% confidence interval"
+        )
+        self._configure_readable_ci_label()
+        self.initialize_form()  # initialize all cell to empty items
+        self.setup_back_calculation_feedback()
+        self._field_history = calc_fncs.TransientEditHistory()
+    
+        self.raw_data_table.setVerticalHeaderLabels([str(name) for name in self.arm_names] + ["Total"])
+        self.raw_data_table.setAccessibleDescription("Whole-number study counts for " + " and ".join(self.arm_names) + ".")
+        self.input_mode_combo.addItem("Study counts", "counts")
+        self.input_mode_combo.addItem("Entered estimate", "estimate")
+        self.input_mode_combo.setAccessibleName("Study input method")
+        self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: group data or an entered effect estimate.")
+>       self._active_input_mode = "estimate" if (self.analysis_unit.calculator_source(self.current_effect, self.arm_key) or calc_fncs.calculator_effect_source(self.analysis_unit, self.arm_names, self.current_effect, self.arm_key, self.confidence_multiplier)) == "entered" else "counts"
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'FakeAnalysisUnit' object has no attribute 'calculator_source'
+
+src/rc_metastudio/binary_data_dialog.py:122: AttributeError
+__________ test_calculator_effect_ci_fields_fit_valid_domain_samples ___________
+[gw3] linux -- Python 3.11.9 /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python
+
+qapp = <PyQt6.QtWidgets.QApplication object at 0x7d805728eb90>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7d804676b7d0>
+
+    def test_calculator_effect_ci_fields_fit_valid_domain_samples(qapp, monkeypatch):
+        from rc_metastudio import binary_data_dialog
+        from rc_metastudio import continuous_data_dialog
+        from rc_metastudio import diagnostic_data_dialog
+    
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "get_confidence_multiplier_from_r",
+            lambda conf: 1.96,
+        )
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "binary_convert_scale",
+            lambda x, *args, **kwargs: x,
+        )
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "impute_binary_data",
+            lambda data: {"FAIL": True},
+        )
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "get_confidence_multiplier_from_r",
+            lambda conf: 1.96,
+        )
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "continuous_convert_scale",
+            lambda x, *args, **kwargs: x,
+        )
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "impute_continuous_data",
+            lambda data, alpha: {"succeeded": False, "comment": "stub"},
+        )
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "get_confidence_multiplier_from_r",
+            lambda conf: 1.96,
+        )
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "diagnostic_convert_scale",
+            lambda x, *args, **kwargs: x,
+        )
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "impute_diagnostic_data",
+            lambda data: {"TP": None, "FP": None, "FN": None, "TN": None},
+        )
+    
+        forms_and_representatives = [
+            (
+>               binary_data_dialog.BinaryDataDialog(
+                    FakeAnalysisUnit(),
+                    ["Group 1", "Group 2"],
+                    "Group 1-Group 2",
+                    "OR",
+                    confidence_level=95.0,
+                ),
+                "-0.8888",
+            ),
+            (
+                continuous_data_dialog.ContinuousDataDialog(
+                    FakeContinuousAnalysisUnit(),
+                    ["Group 1", "Group 2"],
+                    "Group 1-Group 2",
+                    "ROM",
+                    confidence_level=95.0,
+                ),
+                "-0.8888",
+            ),
+            (
+                diagnostic_data_dialog.DiagnosticDataDialog(
+                    FakeDiagnosticAnalysisUnit(),
+                    ["Group 1", "Group 2"],
+                    "Group 1-Group 2",
+                    confidence_level=95.0,
+                ),
+                "1.0000",
+            ),
+        ]
+
+tests/python/fast/test_calculator_qt6.py:964: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <rc_metastudio.binary_data_dialog.BinaryDataDialog object at 0x7d80483fbb50>
+analysis_unit = <test_calculator_qt6.FakeAnalysisUnit object at 0x7d804676bad0>
+arm_names = ['Group 1', 'Group 2'], arm_key = 'Group 1-Group 2'
+current_effect = 'OR', confidence_level = 95.0, calculator = None, parent = None
+
+    def __init__(
+        self,
+        analysis_unit,
+        arm_names,
+        arm_key,
+        current_effect,
+        confidence_level=None,
+        calculator: CalculatorService | None = None,
+        parent=None,
+    ):
+        super(BinaryDataDialog, self).__init__(parent)
+        self.setupUi(self)
+        self.dialog_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self._configure_raw_data_table()
+        self._configure_focus_revelation()
+        self._layout_controller = adaptive_window.register_adaptive_window(
+            self, adaptive_window.WindowRole.TRANSACTIONAL
+        )
+    
+        if confidence_level is None:
+            raise ValueError("Confidence level must be specified")
+        self.confidence_level = confidence_level
+        self.calculator = calculator or CalculatorService()
+        self.confidence_multiplier = self.calculator.get_confidence_multiplier(
+            self.confidence_level
+        )
+        self.current_item_data: int | None = None
+    
+        self._setup_signals_and_slots()
+    
+        self.analysis_unit = analysis_unit
+        self.arm_names = arm_names
+        self.arm_key = arm_key
+        self.current_effect = current_effect
+        self.entry_widgets = [
+            self.raw_data_table,
+            self.lower_text_box,
+            self.upper_text_box,
+            self.effect_text_box,
+        ]
+        self.text_boxes = [
+            self.lower_text_box,
+            self.upper_text_box,
+            self.effect_text_box,
+        ]
+    
+        self.ci_label.setText(
+            f"{self.confidence_level:g}% confidence interval"
+        )
+        self._configure_readable_ci_label()
+        self.initialize_form()  # initialize all cell to empty items
+        self.setup_back_calculation_feedback()
+        self._field_history = calc_fncs.TransientEditHistory()
+    
+        self.raw_data_table.setVerticalHeaderLabels([str(name) for name in self.arm_names] + ["Total"])
+        self.raw_data_table.setAccessibleDescription("Whole-number study counts for " + " and ".join(self.arm_names) + ".")
+        self.input_mode_combo.addItem("Study counts", "counts")
+        self.input_mode_combo.addItem("Entered estimate", "estimate")
+        self.input_mode_combo.setAccessibleName("Study input method")
+        self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: group data or an entered effect estimate.")
+>       self._active_input_mode = "estimate" if (self.analysis_unit.calculator_source(self.current_effect, self.arm_key) or calc_fncs.calculator_effect_source(self.analysis_unit, self.arm_names, self.current_effect, self.arm_key, self.confidence_multiplier)) == "entered" else "counts"
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'FakeAnalysisUnit' object has no attribute 'calculator_source'
+
+src/rc_metastudio/binary_data_dialog.py:122: AttributeError
+________ test_binary_calculator_grid_columns_fill_expanded_table_width _________
+[gw3] linux -- Python 3.11.9 /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python
+
+qapp = <PyQt6.QtWidgets.QApplication object at 0x7d805728eb90>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7d80464f70d0>
+
+    def test_binary_calculator_grid_columns_fill_expanded_table_width(qapp, monkeypatch):
+        from rc_metastudio import binary_data_dialog
+    
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "get_confidence_multiplier_from_r",
+            lambda conf: 1.96,
+        )
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "binary_convert_scale",
+            lambda x, *args, **kwargs: x,
+        )
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "impute_binary_data",
+            lambda data: {"FAIL": True},
+        )
+    
+>       form = binary_data_dialog.BinaryDataDialog(
+            FakeAnalysisUnit(),
+            ["Group 1", "Group 2"],
+            "Group 1-Group 2",
+            "OR",
+            confidence_level=95.0,
+        )
+
+tests/python/fast/test_calculator_qt6.py:1065: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <rc_metastudio.binary_data_dialog.BinaryDataDialog object at 0x7d804733b1c0>
+analysis_unit = <test_calculator_qt6.FakeAnalysisUnit object at 0x7d80464f7710>
+arm_names = ['Group 1', 'Group 2'], arm_key = 'Group 1-Group 2'
+current_effect = 'OR', confidence_level = 95.0, calculator = None, parent = None
+
+    def __init__(
+        self,
+        analysis_unit,
+        arm_names,
+        arm_key,
+        current_effect,
+        confidence_level=None,
+        calculator: CalculatorService | None = None,
+        parent=None,
+    ):
+        super(BinaryDataDialog, self).__init__(parent)
+        self.setupUi(self)
+        self.dialog_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self._configure_raw_data_table()
+        self._configure_focus_revelation()
+        self._layout_controller = adaptive_window.register_adaptive_window(
+            self, adaptive_window.WindowRole.TRANSACTIONAL
+        )
+    
+        if confidence_level is None:
+            raise ValueError("Confidence level must be specified")
+        self.confidence_level = confidence_level
+        self.calculator = calculator or CalculatorService()
+        self.confidence_multiplier = self.calculator.get_confidence_multiplier(
+            self.confidence_level
+        )
+        self.current_item_data: int | None = None
+    
+        self._setup_signals_and_slots()
+    
+        self.analysis_unit = analysis_unit
+        self.arm_names = arm_names
+        self.arm_key = arm_key
+        self.current_effect = current_effect
+        self.entry_widgets = [
+            self.raw_data_table,
+            self.lower_text_box,
+            self.upper_text_box,
+            self.effect_text_box,
+        ]
+        self.text_boxes = [
+            self.lower_text_box,
+            self.upper_text_box,
+            self.effect_text_box,
+        ]
+    
+        self.ci_label.setText(
+            f"{self.confidence_level:g}% confidence interval"
+        )
+        self._configure_readable_ci_label()
+        self.initialize_form()  # initialize all cell to empty items
+        self.setup_back_calculation_feedback()
+        self._field_history = calc_fncs.TransientEditHistory()
+    
+        self.raw_data_table.setVerticalHeaderLabels([str(name) for name in self.arm_names] + ["Total"])
+        self.raw_data_table.setAccessibleDescription("Whole-number study counts for " + " and ".join(self.arm_names) + ".")
+        self.input_mode_combo.addItem("Study counts", "counts")
+        self.input_mode_combo.addItem("Entered estimate", "estimate")
+        self.input_mode_combo.setAccessibleName("Study input method")
+        self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: group data or an entered effect estimate.")
+>       self._active_input_mode = "estimate" if (self.analysis_unit.calculator_source(self.current_effect, self.arm_key) or calc_fncs.calculator_effect_source(self.analysis_unit, self.arm_names, self.current_effect, self.arm_key, self.confidence_multiplier)) == "entered" else "counts"
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'FakeAnalysisUnit' object has no attribute 'calculator_source'
+
+src/rc_metastudio/binary_data_dialog.py:122: AttributeError
+___________ test_binary_effect_fields_follow_metric_display_domains ____________
+[gw3] linux -- Python 3.11.9 /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python
+
+qapp = <PyQt6.QtWidgets.QApplication object at 0x7d805728eb90>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7d80467da710>
+
+    def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
+        from rc_metastudio import calculator_routines
+    
+        monkeypatch.setattr(
+            calculator_routines.r_bridge,
+            "binary_convert_scale",
+            lambda value, *args, **kwargs: value,
+        )
+    
+        widths = {}
+        for metric in ("OR", "RD", "PR", "PLO", "AS"):
+            fields = {name: QLineEdit() for name in ("effect", "lower", "upper")}
+>           calculator_routines.set_current_effect_from_value(
+                FakeAnalysisUnit(),
+                fields,
+                metric,
+                "Group 1-Group 2",
+                "binary",
+                confidence_multiplier=1.96,
+            )
+
+tests/python/fast/test_calculator_qt6.py:1094: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+analysis_unit = <test_calculator_qt6.FakeAnalysisUnit object at 0x7d80467dae50>
+txt_boxes = {'effect': <PyQt6.QtWidgets.QLineEdit object at 0x7d8046851e10>, 'lower': <PyQt6.QtWidgets.QLineEdit object at 0x7d804681d480>, 'upper': <PyQt6.QtWidgets.QLineEdit object at 0x7d804681d360>}
+current_effect = 'OR', arm_key = 'Group 1-Group 2', data_type = 'binary'
+confidence_multiplier = 1.96, source = 'entered'
+
+    def set_current_effect_from_value(
+        analysis_unit,
+        txt_boxes,
+        current_effect,
+        arm_key,
+        data_type,
+        confidence_multiplier=None,
+        *,
+        source="entered",
+    ):
+        """Populate calculator fields from an analysis unit."""
+        if confidence_multiplier is None:
+            raise ValueError("confidence multiplier must be specified")
+    
+        converters = {
+            "binary": r_bridge.binary_convert_scale,
+            "continuous": r_bridge.continuous_convert_scale,
+            "diagnostic": r_bridge.diagnostic_convert_scale,
+        }
+        try:
+            converter = converters[data_type]
+        except KeyError as exc:
+            raise ValueError("data_type unrecognized") from exc
+        conv_to_disp_scale = lambda value: converter(
+            value, current_effect, convert_to="display.scale"
+        )
+        effect_tbox, lower_tbox, upper_tbox = [
+            txt_boxes[box_name] for box_name in ("effect", "lower", "upper")
+        ]
+    
+        (est, lower, upper) = analysis_unit.get_effect_and_ci_for_source(
+            source, current_effect, arm_key, confidence_multiplier
+        )
+        if source == "entered":
+>           est, lower, upper = analysis_unit.get_entered_effect_and_ci(current_effect, arm_key)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'FakeAnalysisUnit' object has no attribute 'get_entered_effect_and_ci'
+
+src/rc_metastudio/calculator_routines.py:483: AttributeError
+______ test_diagnostic_calculator_grid_columns_fill_expanded_table_width _______
+[gw3] linux -- Python 3.11.9 /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python
+
+qapp = <PyQt6.QtWidgets.QApplication object at 0x7d805728eb90>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7d8046653c10>
+
+    def test_diagnostic_calculator_grid_columns_fill_expanded_table_width(
+        qapp, monkeypatch
+    ):
+        from rc_metastudio import diagnostic_data_dialog
+    
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "get_confidence_multiplier_from_r",
+            lambda conf: 1.96,
+        )
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "diagnostic_convert_scale",
+            lambda x, *args, **kwargs: x,
+        )
+        monkeypatch.setattr(
+            calculator_service.r_bridge,
+            "impute_diagnostic_data",
+            lambda data: {"TP": None, "FP": None, "FN": None, "TN": None},
+        )
+    
+>       form = diagnostic_data_dialog.DiagnosticDataDialog(
+            FakeDiagnosticAnalysisUnit(),
+            ["Group 1", "Group 2"],
+            "Group 1-Group 2",
+            confidence_level=95.0,
+        )
+
+tests/python/fast/test_calculator_qt6.py:1218: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/rc_metastudio/diagnostic_data_dialog.py:110: in __init__
+    self.set_current_effect()  # fill in current effect data in line edits
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+src/rc_metastudio/diagnostic_data_dialog.py:898: in set_current_effect
+    calc_fncs.set_current_effect_from_value(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+analysis_unit = <test_calculator_qt6.FakeDiagnosticAnalysisUnit object at 0x7d8046653190>
+txt_boxes = {'effect': <PyQt6.QtWidgets.QLineEdit object at 0x7d804681d990>, 'lower': <PyQt6.QtWidgets.QLineEdit object at 0x7d804681dab0>, 'upper': <PyQt6.QtWidgets.QLineEdit object at 0x7d804681db40>}
+current_effect = 'Sens', arm_key = 'Group 1-Group 2', data_type = 'diagnostic'
+confidence_multiplier = 1.96, source = 'entered'
+
+    def set_current_effect_from_value(
+        analysis_unit,
+        txt_boxes,
+        current_effect,
+        arm_key,
+        data_type,
+        confidence_multiplier=None,
+        *,
+        source="entered",
+    ):
+        """Populate calculator fields from an analysis unit."""
+        if confidence_multiplier is None:
+            raise ValueError("confidence multiplier must be specified")
+    
+        converters = {
+            "binary": r_bridge.binary_convert_scale,
+            "continuous": r_bridge.continuous_convert_scale,
+            "diagnostic": r_bridge.diagnostic_convert_scale,
+        }
+        try:
+            converter = converters[data_type]
+        except KeyError as exc:
+            raise ValueError("data_type unrecognized") from exc
+        conv_to_disp_scale = lambda value: converter(
+            value, current_effect, convert_to="display.scale"
+        )
+        effect_tbox, lower_tbox, upper_tbox = [
+            txt_boxes[box_name] for box_name in ("effect", "lower", "upper")
+        ]
+    
+        (est, lower, upper) = analysis_unit.get_effect_and_ci_for_source(
+            source, current_effect, arm_key, confidence_multiplier
+        )
+        if source == "entered":
+>           est, lower, upper = analysis_unit.get_entered_effect_and_ci(current_effect, arm_key)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'FakeDiagnosticAnalysisUnit' object has no attribute 'get_entered_effect_and_ci'
+
+src/rc_metastudio/calculator_routines.py:483: AttributeError
+=========================== short test summary info ============================
+FAILED tests/python/fast/test_calculator_qt6.py::test_binary_calculator_table_layout_uses_real_headers_and_visible_total_row
+FAILED tests/python/fast/test_calculator_qt6.py::test_calculator_effect_ci_fields_fit_valid_domain_samples
+FAILED tests/python/fast/test_calculator_qt6.py::test_binary_calculator_grid_columns_fill_expanded_table_width
+FAILED tests/python/fast/test_calculator_qt6.py::test_binary_effect_fields_follow_metric_display_domains
+FAILED tests/python/fast/test_calculator_qt6.py::test_diagnostic_calculator_grid_columns_fill_expanded_table_width
+============= 5 failed, 408 passed, 6 skipped in 68.95s (0:01:08) ==============
+verification failed: command failed with exit code 1: /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -m pytest --strict-markers tests/python/fast tests/analysis_regression/golden --dist loadfile -n 4
+
+| Step | Seconds | Result |
+| --- | ---: | --- |
+| prepare | 3.87 | pass |
+| typing (win32) | 7.31 | pass |
+| code health | 172.25 | pass |
+| Python fast and golden | 76.7 | fail |
+| GUI | 0.0 | not run |
+| packaging contracts | 0.0 | not run |
+| R stack, authorities and desktop E2E (local: python scripts/verify.py r-stack) | 0.0 | CI only |
+| Windows native Qt and package qualification | 0.0 | CI only |
+| macOS native smoke and packaging | 0.0 | CI only |
+| Linux native xcb smoke | 0.0 | CI only |
