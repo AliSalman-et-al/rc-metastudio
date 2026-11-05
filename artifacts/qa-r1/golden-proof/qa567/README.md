@@ -50,3 +50,9 @@ python scripts/verify_rcms.py ux-improvements
 ```
 
 The updater requires original references in `old/` (retained locally but not duplicated as a ZIP in Git); reconstruct those files from the parent of the reference-update commit. Download the source artifact again to reproduce the raw-capture proofs. E2E manifests retain commands, input files, screenshots, runtime and action/results under artifacts/verification/rcms; replay-results.json indexes final exit status and transcripts.
+
+Final targeted replay: all seven requested scenarios pass against the installed merged R source; analysis-dialog uses its separately retained final rerun after removing the obsolete uniform-decimal assumption only for small nonzero limits. All 43 golden comparator tests pass. See replay-results.json and golden-tests.log.
+
+The fresh Linux SVG is retained as golden_lymph_forest_dor.display.svg and its SHA matches descriptor-proof.json. It is evidence only, not a replacement Windows oracle. The descriptor command used R_HOME=$RCMS_R_HOME and RCMS_ANALYSIS_SCRATCH_DIR=$PWD/build/qa567-descriptor-scratch.
+
+Final pre-push qualification passes on committed code/reference head 3fdb7a38: strict Ty win32 target; fresh origin/master 8d3609d2 code health; 413 fast/golden tests; 364 GUI tests; 73 packaging contracts (existing skips retained). Subsequent commit contains evidence only. Exact commands, timing and stage outcomes are in pre-push.log/json. No merge of #567 is performed.
