@@ -1825,6 +1825,9 @@ def calculator(app, window, family):
                 app.processEvents()
                 assert table.item(0, column).text() == "abc"
                 assert dialog.inconsistencyLabel.isVisible()
+                dialog.effect_text_box.setFocus()
+                dialog.lower_text_box.setFocus()
+                app.processEvents()
                 assert not dialog.metric_readout.isVisible()
                 assert not dialog.wald_readout.isVisible()
                 assert all(not field.text() for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box))

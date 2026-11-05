@@ -471,6 +471,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self._request_content_refit()
 
     def _mark_table_consistent(self):
+        self._raw_data_invalid = False
         self.inconsistencyLabel.setVisible(False)
         required(
             self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
@@ -479,6 +480,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self._request_content_refit()
 
     def _mark_table_invalid(self, message):
+        self._raw_data_invalid = True
         with QSignalBlocker(self.raw_data_table):
             for row, col in product(range(self.raw_data_table.rowCount()), range(self.raw_data_table.columnCount())):
                 if self._raw_count_cell_is_editable(row, col):
@@ -630,6 +632,8 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
     def set_current_effect(self):
         """Populate fields from a meta-analysis unit."""
+        if getattr(self, "_raw_data_invalid", False):
+            return
         txt_boxes = dict(
             effect=self.effect_text_box,
             lower=self.lower_text_box,

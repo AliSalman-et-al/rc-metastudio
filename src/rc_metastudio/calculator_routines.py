@@ -575,6 +575,8 @@ def _update_binary_metric_table(dialog, raw) -> None:
 
 def update_calculator_readout(dialog, data_type):
     """Refresh read-only statistics without replacing the user's editable text."""
+    if getattr(dialog, "_raw_data_invalid", False):
+        return
     analysis_unit = dialog.analysis_unit
     current_effect = dialog.current_effect
     arm_key = dialog.arm_key
