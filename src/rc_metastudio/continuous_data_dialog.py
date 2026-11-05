@@ -18,6 +18,7 @@ from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QHeaderView,
+    QLabel,
     QMessageBox,
     QSizePolicy,
     QStyle,
@@ -250,13 +251,16 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
     def _configure_tables(self):
         """Give each data grid its own overflow and user-adjustable columns."""
+        self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.simple_group.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         for table in (
             self.simple_table,
             self.g1_pre_post_table,
             self.g2_pre_post_table,
         ):
             # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
-            table.setItemDelegate(calc_fncs.NumericSummaryDelegate(table))
+            if not isinstance(table.itemDelegate(), calc_fncs.NumericSummaryDelegate):
+                table.setItemDelegate(calc_fncs.NumericSummaryDelegate(table))
             table.setMinimumWidth(0)
             table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -269,7 +273,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             table.resizeRowsToContents()
             height = (
                 header.sizeHint().height()
-                + sum(table.rowHeight(row) for row in range(table.rowCount()))
+                + sum(table.rowHeight(row) for row in range(table.rowCount()) if not table.isRowHidden(row))
                 + 2 * table.frameWidth()
                 + required(table.horizontalScrollBar(), "continuous table scrollbar")
                 .sizeHint()
@@ -354,7 +358,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
     def _request_content_refit(self, *, mode_changed=False):
         controller = self.__dict__.get("_layout_controller")
-        if controller is not None and (mode_changed or not self.isVisible()):
+        if controller is not None and not self.isVisible():
             height = self.dialog_layout.sizeHint().height()
             if not self.content_scroll.isHidden():
                 height += (
@@ -375,6 +379,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             content_layout.invalidate()
         if content_widget is not None:
             content_widget.updateGeometry()
+            self.content_scroll.setMaximumHeight(content_widget.sizeHint().height() + 2 * self.content_scroll.frameWidth())
         self._request_content_refit(mode_changed=mode_changed)
 
     def _update_effect_choice_accessibility(self):
@@ -773,6 +778,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         """Expose only the data rows that participate in the selected metric."""
         current_effect_is_one_arm = self.current_effect in CONTINUOUS_ONE_ARM_METRICS
         self.simple_table.setRowHidden(1, current_effect_is_one_arm)
+        self._configure_tables()
 
     def update_raw_data(self):
         """Updates table widget with data from analysis_unit"""
@@ -811,6 +817,38 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     def _get_correlation_str(self):
         return str(self.correlation_pre_post.text())
 
+    def _summary_table_error(self, table):
+        headers = self.get_column_header_strs(table)
+        for row in range(table.rowCount()):
+            if table.isRowHidden(row):
+                continue
+            for col in range(table.columnCount()):
+                item = table.item(row, col)
+                if item is None:
+                    continue
+                message = self._cell_data_not_valid(item.text(), headers[col])
+                if message:
+                    return message
+        return None
+
+    def _validate_summary_tables(self):
+        warning_msg = None
+        for table in self.tables:
+            if table.isHidden():
+                continue
+            warning_msg = self._summary_table_error(table)
+            if warning_msg:
+                break
+        self._validation_failed = bool(warning_msg)
+        if not hasattr(self, "summary_error"):
+            self.summary_error = QLabel(self)
+            self.summary_error.setWordWrap(True)
+            self.content_layout.insertWidget(1, self.summary_error)
+        self.summary_error.setText(warning_msg or "")
+        self.summary_error.setVisible(bool(warning_msg))
+        required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "calculator OK").setEnabled(not warning_msg)
+        return not warning_msg
+
     def _cell_changed(self, row, col):
 
         old_analysis_unit, old_tables_data = self._save_analysis_unit_and_table_states(
@@ -824,24 +862,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         )
         old_correlation = self._get_correlation_str()
 
-        # The simple table owns these column headers.
-        column_headers = self.get_column_header_strs()
         try:
-            warning_msg = self._cell_data_not_valid(
-                required(
-                    self.simple_table.item(row, col),
-                    f"continuous table cell ({row}, {col})",
-                ).text(),
-                column_headers[col],
-            )
-            if warning_msg:
-                QMessageBox.warning(self, "Warning", warning_msg)
-                self._set_val(
-                    row,
-                    col,
-                    self.current_item_data[self.simple_table],
-                    self.simple_table,
-                )
+            if not self._validate_summary_tables():
                 return
             with QSignalBlocker(self.simple_table):
                 required(self.simple_table.item(row, col), "edited summary cell").setData(Qt.ItemDataRole.UserRole, True)
@@ -1064,18 +1086,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             )
             old_correlation = self._get_correlation_str()
 
-            column_headers = self.get_column_header_strs(table)
-            warning_msg = self._cell_data_not_valid(
-                required(
-                    table.item(row, col), f"continuous pre/post cell ({row}, {col})"
-                ).text(),
-                column_headers[col],
-            )
-            if warning_msg:
-                QMessageBox.warning(self, "Warning", warning_msg)
-                self.restore_analysis_unit_and_tables(
-                    old_analysis_unit, old_tables_data, old_correlation
-                )
+            if not self._validate_summary_tables():
                 return False
 
         if row is not None and col is not None:

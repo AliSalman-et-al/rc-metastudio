@@ -1,0 +1,25 @@
+pressed ctrl+o
+typed 56 characters
+pressed Return Return
+clicked 20 184
+/tmp/b5.png 1600x1000 at 0,0
+typed 3 characters
+pressed Tab Tab
+/home/ali/.t3/worktrees/rc-metastudio/t3-c453622a/artifacts/qa-r1/batch5/dark-invalid.png 1600x1000 at 0,0
+clicked 488 380
+pressed ctrl+a
+typed 2 characters
+pressed Tab Tab
+/home/ali/.t3/worktrees/rc-metastudio/t3-c453622a/artifacts/qa-r1/batch5/dark-negative.png 1600x1000 at 0,0
+clicked 488 380
+pressed ctrl+a
+typed 2 characters
+pressed Tab
+/home/ali/.t3/worktrees/rc-metastudio/t3-c453622a/artifacts/qa-r1/batch5/dark-corrected.png 1600x1000 at 0,0
+pressed Escape
+clicked 215 58
+/tmp/menu.png 1600x1000 at 0,0
+clicked 1155 714
+clicked 213 58
+clicked 300 133
+/home/ali/.t3/worktrees/rc-metastudio/t3-c453622a/artifacts/qa-r1/batch5/dark-analysis.png 1600x1000 at 0,0

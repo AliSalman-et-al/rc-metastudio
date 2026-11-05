@@ -892,17 +892,19 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             use_old_value=True,
         )
 
-        try:
-            # Test if entered data is valid (a number)
-            warning_msg = self._cell_data_not_valid(
-                required(
-                    self.raw_data_table.item(row, col),
-                    f"binary table cell ({row}, {col})",
-                ).text()
-            )
-            if warning_msg:
-                raise ValueError(warning_msg)
+        for check_row in range(self.raw_data_table.rowCount()):
+            if self.raw_data_table.isRowHidden(check_row):
+                continue
+            for check_col in range(self.raw_data_table.columnCount()):
+                if not self._raw_count_cell_is_editable(check_row, check_col):
+                    continue
+                item = self.raw_data_table.item(check_row, check_col)
+                message = self._cell_data_not_valid(item.text()) if item is not None else None
+                if message:
+                    self._mark_table_invalid(message)
+                    return
 
+        try:
             self._update_data_table()  # calculate derived margins from raw counts
             self._mark_table_consistent()
         except Exception as e:

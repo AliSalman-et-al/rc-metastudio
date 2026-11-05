@@ -108,7 +108,7 @@ def test_parse_csv_rejects_headerless_rows_below_required_width(
     path = tmp_path / "narrow.csv"
     path.write_text("A,2024\n", encoding="utf-8")
 
-    with pytest.raises(CsvImportError, match="row 1 must contain at least 3 columns"):
+    with pytest.raises(CsvImportError, match="row 1 needs Study and Year columns"):
         parse_csv(
             path,
             expected_headers=["Study", "Year", "Outcome"],

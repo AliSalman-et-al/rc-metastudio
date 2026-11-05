@@ -1,0 +1,47 @@
+[12:26:01] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python scripts/build_qt6.py generate --build-root /home/ali/.t3/qa-env/qt6
+{"form": "/home/ali/.t3/qa-env/qt6/generated/rc_metastudio/forms/ui_about_legal.py", "resource": "/home/ali/.t3/qa-env/qt6/resources/icons.rcc"}
+[12:26:04] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -m ty check --python /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python --python-platform win32 --extra-search-path /home/ali/.t3/qa-env/qt6/generated/rc_metastudio --extra-search-path /home/ali/.t3/qa-env/qt6/generated/rc_metastudio/forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa
+All checks passed!
+[12:26:07] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python scripts/code_health.py --base 8b7796bcc840c3505c5fb0a1328cdd7682880e48 --head 8b7796bcc840c3505c5fb0a1328cdd7682880e48 --allow-fail --output artifacts/code-health/baseline.json --report artifacts/code-health/baseline.txt
+Code health (8b7796bcc840c3505c5fb0a1328cdd7682880e48..8b7796bcc840c3505c5fb0a1328cdd7682880e48)
+Scope: 156 files; as of 2026-09-04T02:06:13+05:00
+Coupling: 125 modules, 379 edges
+Cycles: 3; cognitive complexity total/max: 13207/150
+Typing: 1450/4674 parameters (31.0%), 871/2474 returns (35.2%), 113 Any annotations, 4 type: ignores, 26 casts to Any (8b7796bcc840c3505c5fb0a1328cdd7682880e48)
+Defect history: 51 matching commits across 35 files
+Gate: PASS
+Hotspots (180-day normalized churn × complexity density):
+  src/rc_metastudio/two_way_dict.py: 4.6216
+  src/rc_metastudio/launch.py: 2.6151
+  src/rc_metastudio/qt_layout.py: 1.7906
+  r/RCMetaR/R/plotting.R: 1.0539
+  r/RCMetaR/R/diagnostic_methods.R: 0.9653
+[12:26:38] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python scripts/code_health.py --base origin/master --head HEAD --baseline artifacts/code-health/baseline.json --output artifacts/code-health/final.json --report artifacts/code-health/final.txt
+Code health (37fe08a87e2adf324246bc4c5264b1d8cdd281e4..d7698db29f14d3f4582123b11b0390406d77b07d)
+Scope: 187 files; as of 2026-11-05T12:26:01+05:00
+Coupling: 147 modules, 434 edges
+Cycles: 2; cognitive complexity total/max: 15273/95
+Typing: 3233/6956 parameters (46.5%), 1665/3344 returns (49.8%), 0 Any annotations, 3 type: ignores, 0 casts to Any (d7698db29f14d3f4582123b11b0390406d77b07d)
+Defect history: 188 matching commits across 74 files
+Baseline comparison: artifacts/code-health/baseline.json (recorded head 8b7796bcc840c3505c5fb0a1328cdd7682880e48)
+Gate: FAIL (changed-code complexity)
+Hotspots (180-day normalized churn × complexity density):
+  src/rc_metastudio/project_adapter.py: 8.4481
+  src/rc_metastudio/two_way_dict.py: 4.6216
+  src/rc_metastudio/analysis_dataset.py: 3.6667
+  src/rc_metastudio/automation.py: 2.5943
+  src/rc_metastudio/result_sections.py: 2.3748
+verification failed: command failed with exit code 1: /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python scripts/code_health.py --base origin/master --head HEAD --baseline artifacts/code-health/baseline.json --output artifacts/code-health/final.json --report artifacts/code-health/final.txt
+
+| Step | Seconds | Result |
+| --- | ---: | --- |
+| prepare | 2.98 | pass |
+| typing (win32) | 3.51 | pass |
+| code health | 77.47 | fail |
+| Python fast and golden | 0.0 | not run |
+| GUI | 0.0 | not run |
+| packaging contracts | 0.0 | not run |
+| R stack, authorities and desktop E2E (local: python scripts/verify.py r-stack) | 0.0 | CI only |
+| Windows native Qt and package qualification | 0.0 | CI only |
+| macOS native smoke and packaging | 0.0 | CI only |
+| Linux native xcb smoke | 0.0 | CI only |
