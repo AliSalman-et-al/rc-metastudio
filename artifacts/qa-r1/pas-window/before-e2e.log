@@ -1,0 +1,34 @@
+Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-12f16733/artifacts/verification/rcms/20261105T003859Z-b86d9ffc-amino
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-12f16733/tests/e2e/desktop_driver.py", line 2198, in <module>
+    sample_analysis(app, window, scenario)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-12f16733/tests/e2e/desktop_driver.py", line 446, in sample_analysis
+    assert window.minimumWidth() >= 600 and window.minimumHeight() >= 350
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-12f16733/tests/e2e/desktop_driver.py", line 2198, in <module>
+    sample_analysis(app, window, scenario)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-12f16733/tests/e2e/desktop_driver.py", line 446, in sample_analysis
+    assert window.minimumWidth() >= 600 and window.minimumHeight() >= 350
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+

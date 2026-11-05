@@ -94,7 +94,7 @@ logit <- function(x) {
 }
 
 invlogit <- function(x) {
-  exp(x) / (1 + exp(x))
+  metafor::transf.ilogit(x)
 }
 
 arcsine.sqrt <- function(x) {
@@ -102,7 +102,7 @@ arcsine.sqrt <- function(x) {
 }
 
 invarcsine.sqrt <- function(x) {
-  (sin(x))^2
+  metafor::transf.iarcsin(x)
 }
 
 freeman_tukey <- function(x,n) {
