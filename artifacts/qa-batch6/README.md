@@ -9,7 +9,7 @@ Source `/home/ali/.t3/qa-env/ENV.sh`; override `PYTHONPATH=$PWD/src:$PWD`, `UV_P
 - Generate: `uv run --no-sync python scripts/build_qt6.py generate --build-root $PWD/build/qt6-verification`.
 - Install current R: `$RCMS_R_HOME/bin/R CMD INSTALL -l $PWD/build/rcmetar-lib r/RCMetaR`; prepend this library to RCMS_R_LIBS and R_LIBS.
 - Typing: `uv run --no-sync python -c 'from scripts.verify import run_typing; from pathlib import Path; run_typing(Path("build/qt6-verification"))'`. Transcript includes full source selection, generated paths and win32 target.
-- Qualification: `git fetch origin master`, then `uv run --no-sync python scripts/verify.py pre-push` (pre-push-head.log).
+- Qualification: `git fetch origin master`, then `uv run --no-sync python scripts/verify.py pre-push` (pre-push-pr-head.log).
 - Desktop: `uv run --no-sync python scripts/verify_rcms.py SCENARIO`, for calculator-binary, plot-edit, analysis-diagnostic-joint and results-window. Each log identifies the full durable evidence directory with commands, inputs, runtime identity, screenshots and assertions.
 - Independent participant proof: `python3 artifacts/qa-batch6/prove-participants.py`. Reads the sample ZIP/JSON directly, sums all four cells for 17 included studies, and compares complete baseline/current clinical reports and model-result text. See participants-proof.txt. Original run manifests retained. No numerical references changed.
 
@@ -30,3 +30,5 @@ Before evidence supplied with task: `/home/ali/.t3/qa-round4/council/shots/{09-i
 Error foreground contrast (WCAG sRGB relative luminance): #b00020 on white 7.325:1, on #efefef 6.370:1; #ff9ca8 on #202020 8.203:1, on #2b2b2b 7.129:1. All exceed 4.5:1.
 
 This proves Linux source behavior, not Windows/macOS native or installed-package qualification. Full R-stack/authority CI remains required. Existing frozen numerical references and tolerances are untouched.
+
+Final qualification: pre-push-pr-head.log completed successfully. code-health-head.txt separately confirms the final product-source head against fresh origin/master. Artifact-only commits after qualification retain transcripts without changing executable source. Four final E2E receipts are committed under receipts/; their full hashed screenshot/export payloads remain in the original local evidence directories recorded in each manifest.
