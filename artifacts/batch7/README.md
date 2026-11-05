@@ -1,5 +1,8 @@
 # Batch 7 qualification
 
+**Formatting policy superseded by [the reviewed correction](../batch7-review/README.md).**
+Normal values retain fixed decimals; only adaptive small values trim trailing zeros.
+
 Base: origin/master a1ae1b49709c6b329c024e53a9f176a043816b24. Linux x86_64,
 PyQt6 and real embedded R. No statistical implementation or tolerance changed.
 Out of scope: subgroup first-view at 1024x700/large font and hyphen/minus.

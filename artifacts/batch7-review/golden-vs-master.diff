@@ -1,0 +1,105 @@
+--- amino-binary-random before
++++ amino-binary-random after
+@@ -1,7 +1,7 @@
+ Summary
+ Binary Random-Effects Model
+ 
+-Metric: Odds Ratio
++Metric: Odds ratio
+ 
+ Model Results
+  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value
+--- continuous-random before
++++ continuous-random after
+@@ -1,7 +1,7 @@
+ Summary
+ Continuous Random-Effects Model
+ 
+-Metric: Standardized Mean Difference
++Metric: Standardized mean difference
+ 
+ Model Results
+  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value
+--- lymph-diagnostic-random-dor before
++++ lymph-diagnostic-random-dor after
+@@ -9,7 +9,7 @@
+  Q       df  p-value     I²     τ²
+  42.259  16  < 0.001  62.1%  0.704
+ 
+-Diagnostic Odds Ratio -Test for overall effect (H₀: diagnostic Odds Ratio = 1)
++Diagnostic Odds Ratio -Test for overall effect (H₀: diagnostic odds ratio = 1)
+  Z      p-value
+  7.980  < 0.001
+ 
+--- amino-binary-cumulative before
++++ amino-binary-cumulative after
+@@ -1,7 +1,7 @@
+-Cumulative Summary
++Cumulative summary
+ Binary Random-Effects Model
+ 
+-Metric: Odds Ratio
++Metric: Odds ratio
+ 
+ Model Results
+  Study added (k)                Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (log scale)  p-value
+--- amino-binary-leave-one-out before
++++ amino-binary-leave-one-out after
+@@ -1,7 +1,7 @@
+-Leave-one-out Summary
++Leave-one-out summary
+ Binary Random-Effects Model
+ 
+-Metric: Odds Ratio
++Metric: Odds ratio
+ 
+ Model Results
+  Study omitted         Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (log scale)  p-value
+--- continuous-cumulative before
++++ continuous-cumulative after
+@@ -1,7 +1,7 @@
+-Cumulative Summary
++Cumulative summary
+ Continuous Random-Effects Model
+ 
+-Metric: Standardized Mean Difference
++Metric: Standardized mean difference
+ 
+ Model Results
+  Study added (k)        Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value
+--- continuous-leave-one-out before
++++ continuous-leave-one-out after
+@@ -1,7 +1,7 @@
+-Leave-one-out Summary
++Leave-one-out summary
+ Continuous Random-Effects Model
+ 
+-Metric: Standardized Mean Difference
++Metric: Standardized mean difference
+ 
+ Model Results
+  Study omitted  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value
+--- amino-binary-subgroup before
++++ amino-binary-subgroup after
+@@ -1,7 +1,7 @@
+-Subgroup Summary
++Subgroup summary
+ Binary Random-Effects Model
+ 
+-Metric: Odds Ratio
++Metric: Odds ratio
+ 
+ Model Results
+  Subgroups        k  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (log scale)  p-value  z-value
+--- continuous-subgroup before
++++ continuous-subgroup after
+@@ -1,7 +1,7 @@
+-Subgroup Summary
++Subgroup summary
+ Continuous Random-Effects Model
+ 
+-Metric: Standardized Mean Difference
++Metric: Standardized mean difference
+ 
+ Model Results
+  Subgroups       k  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value  z-value
