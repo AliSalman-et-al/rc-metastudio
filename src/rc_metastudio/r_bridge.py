@@ -1410,9 +1410,10 @@ def _insert_held_effects(fields, display, rows):
             offset += 1
         display_indices.append(index + offset)
     for index, row in zip(display_indices, rows):
-        effects = [_format_r_table_cell(list(display[key])[index], field_name="Estimate")
+        digits = _RESULT_DISPLAY_DIGITS.get()
+        effects = [result_sections.format_effect_number(float(list(display[key])[index]), digits if digits is not None else 4)
                    for key in ("y.disp", "lb.disp", "ub.disp")]
-        row[1:1] = ["Not estimable", "—", "—"] if effects[0] == "NA" else effects
+        row[1:1] = ["Not estimable", "—", "—"] if not math.isfinite(float(list(display["y.disp"])[index])) else effects
 
 
 def _held_weight_rows(fields, weights):
@@ -1769,11 +1770,8 @@ def _section_display_fields(title, supplied, child_index):
         # ``Summary``) that renders into several text values.  Keep its
         # semantic title, but point at the first rendered child value so the
         # validated result still has exactly one section per value.
-        return supplied["title"], title
-    display_title = {"Leave-one-out Summary": "Leave-one-out summary",
-                     "Cumulative Summary": "Cumulative summary",
-                     "Subgroup Summary": "Subgroup summary"}.get(title, title)
-    return display_title, title
+        return _sentence_case_title(supplied["title"]), title
+    return _sentence_case_title(title), title
 
 
 def _image_section_metadata(
@@ -1823,7 +1821,7 @@ def _image_section_id(supplied, semantic_key, used_ids):
 
 
 def _image_section_title(supplied, image_key):
-    return supplied["title"] if supplied is not None else image_key
+    return _sentence_case_title(supplied["title"] if supplied is not None else image_key)
 
 
 def _unique_result_section_id(kind, source_key, used_ids):
@@ -2215,6 +2213,11 @@ def _summary_section_name(parent_name, child_name):
 
 def _display_section_name(name):
     return method_display_label(str(name))
+
+
+def _sentence_case_title(title):
+    return " ".join(word if index == 0 or word.isupper() else word.lower()
+                    for index, word in enumerate(str(title).split()))
 
 
 def _is_r_string_vector(r_object):

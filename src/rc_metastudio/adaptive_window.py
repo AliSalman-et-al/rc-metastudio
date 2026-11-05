@@ -324,6 +324,9 @@ class AdaptiveWindowController(QObject):
             and not window.isFullScreen()
         ):
             self._normal_frame_geometry = QRect(window.frameGeometry())
+        if (watched is window and self.role == WindowRole.MAIN and window.isMaximized()
+                and event.type() in (QEvent.Type.Move, QEvent.Type.Resize)):
+            self.request_runtime_clamp()
         if watched is window and event.type() == QEvent.Type.Show:
             if self._first_show_pending:
                 self.apply_first_use_geometry()
@@ -446,7 +449,7 @@ class AdaptiveWindowController(QObject):
 
     def restore_frame_geometry(self, frame_geometry):
         """Restore a validated outer-frame rectangle for a workspace window."""
-        target = QRect(frame_geometry)
+        target = clamp_frame_geometry(frame_geometry, self._available_geometry())
         self._first_show_pending = False
         self._set_outer_frame_geometry(target)
         self._normal_frame_geometry = target
@@ -506,6 +509,10 @@ class AdaptiveWindowController(QObject):
     def _apply_runtime_clamp(self):
         available = self._available_geometry()
         if available.isValid():
+            if self.role == WindowRole.MAIN:
+                # The client minimum must leave room for native frame decorations.
+                self.window.setMinimumSize(self.window.minimumSize().boundedTo(
+                    client_size_for_frame_size(available.size(), self._frame_margins())))
             current = self.window.frameGeometry()
             target = clamp_frame_geometry(current, available)
             if target != current:
