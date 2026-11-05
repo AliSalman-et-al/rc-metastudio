@@ -17,3 +17,5 @@ Notes deferred: storage supports notes, but the workspace editing service has no
 Presentation: the report re-rounding now preserves the existing R formatter’s nonzero value when rounding would produce zero. Amino two-decimal Giamarellou lower limit changes 0.00 -> 0.004; fitted values do not change. No R golden text or numerical references updated. Python manuscript/report presentation changes are outside the R golden reference files; CI must confirm the unchanged R authority/golden gates.
 
 Final local qualification: python scripts/verify.py pre-push passed; full transcript in proof/pre-push.log. Final source E2E also passed in artifacts/verification/rcms/20261105T012714Z-c4b3f98f-amino.
+
+Follow-up: the requested native light/dark evidence gap is closed in artifacts/qa-r3/batch1/README.md. Its captures supersede the incomplete visual coverage described above.
