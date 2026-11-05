@@ -15,3 +15,5 @@ Before evidence is the supplied reports and their screenshots in /home/ali/.t3/q
 Notes deferred: storage supports notes, but the workspace editing service has no note target/undo command. A direct row mutation in a context-menu callback would bypass the existing transaction and history model. No unsafe edit shortcut added.
 
 Presentation: the report re-rounding now preserves the existing R formatter’s nonzero value when rounding would produce zero. Amino two-decimal Giamarellou lower limit changes 0.00 -> 0.004; fitted values do not change. No R golden text or numerical references updated. Python manuscript/report presentation changes are outside the R golden reference files; CI must confirm the unchanged R authority/golden gates.
+
+Final local qualification: python scripts/verify.py pre-push passed; full transcript in proof/pre-push.log. Final source E2E also passed in artifacts/verification/rcms/20261105T012714Z-c4b3f98f-amino.
