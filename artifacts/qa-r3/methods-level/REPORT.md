@@ -82,3 +82,15 @@ Native light/default: ui.py session methods-e; amino → meta-analysis → Chang
 Numerical proof: numbers.R/numbers.log compare master and changed summary producers on nine saved real-app fits with R identical(): full serialized fitted objects unchanged, all summary values identical except added df column. No numerical references/tolerances regenerated.
 Full pre-push/authority/golden/package matrix deferred to CI per task instruction. This is source-app Linux evidence, not release qualification.
 Native dark/+6pt: session methods-e-dark, fresh amino run with 90% KH. [Methods/results](shots/20-dark-methods.png) show 90%, t(df=18), readable wrapped text. This dark pass tests initial settings, not Change settings (that trigger is covered by light native and automated reruns). Both owned native sessions stopped. Before evidence remains in original screenshots 51/52/54/55/57/58; no new before dark run was performed.
+
+## PR review follow-up
+
+Removed the separate Methods table-header/single-row scan. The pooled-statistics
+path now returns the same df selected by values.get('df', overall.get('df'));
+pooled overall rows build the Methods sentence from that value, alongside the
+Results prose. No new parser or result schema.
+
+Validation: unchanged review-workflows E2E assertions PASS (90%, 99%, KH df=18
+from saved metafor fit); typing PASS with win32 target. Exact command/transcript
+in typing-review.log and e2e-review.log; full fresh evidence in
+e2e-review-proof.tar.gz (20261105T022651Z-ce6568e6-review-workflows).
