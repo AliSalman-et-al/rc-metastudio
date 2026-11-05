@@ -199,7 +199,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
 
     def mark_commit_succeeded(self):
         """Allow an OK commit to close only after rendering succeeds."""
-        self._params = self.plot_params()
+        self._params.update(self.plot_params())
         self._allow_close = True
         self._commit_outcome = True
         self._commit_error.clear()
