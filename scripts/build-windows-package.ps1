@@ -736,7 +736,11 @@ if ($LASTEXITCODE -ne 0 -or -not (Test-Path $pyQtRoot)) { throw "Could not resol
 Push-Location $repoRoot
 $previousPyQtRoot = $env:RCMS_PYQT_ROOT
 $previousQt6BuildRoot = $env:RCMS_QT6_BUILD_ROOT
+$previousAnalysisRHome = $env:R_HOME
+$previousAnalysisPath = $env:PATH
 try {
+    $env:R_HOME = $resolvedRRuntimeRoot
+    $env:PATH = "$(Join-Path $resolvedRRuntimeRoot 'bin\x64');$(Join-Path $resolvedRRuntimeRoot 'bin');$previousAnalysisPath"
     # packaging/pyinstaller/rc-metastudio.spec is the sole authoritative
     # PyInstaller collection definition. This wrapper only supplies build roots.
     $env:RPY2_CFFI_MODE = "API"
@@ -763,6 +767,9 @@ finally {
     else { $env:RCMS_PYQT_ROOT = $previousPyQtRoot }
     if ($null -eq $previousQt6BuildRoot) { Remove-Item Env:\RCMS_QT6_BUILD_ROOT -ErrorAction SilentlyContinue }
     else { $env:RCMS_QT6_BUILD_ROOT = $previousQt6BuildRoot }
+    if ($null -eq $previousAnalysisRHome) { Remove-Item Env:\R_HOME -ErrorAction SilentlyContinue }
+    else { $env:R_HOME = $previousAnalysisRHome }
+    $env:PATH = $previousAnalysisPath
     Pop-Location
 }
 
