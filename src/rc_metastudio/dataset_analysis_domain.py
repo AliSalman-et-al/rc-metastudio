@@ -181,7 +181,8 @@ def has_entered_data(analysis_unit: AnalysisUnit) -> bool:
         value not in EMPTY_VALS
         for effect_groups in analysis_unit.entered_effects.values()
         for effect_data in effect_groups.values()
-        for value in effect_data.values()
+        for key, value in effect_data.items()
+        if key != "calculator_source"
     )
 
 

@@ -174,7 +174,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.initialize_form()  # initialize cells to empty items
         self._field_history = calc_fncs.TransientEditHistory()
 
-        self._active_input_mode = "estimate" if self.analysis_unit.sheet.sub_type in {"reg_coef", "generic_effect"} else "summary"
+        self._active_input_mode = "estimate" if self.analysis_unit.sheet.sub_type in {"reg_coef", "generic_effect"} or self.analysis_unit.calculator_source(self.current_effect, self.arm_key) == "entered" else "summary"
         self.update_raw_data()
         self._populate_effect_data()
         self.set_current_effect()
@@ -187,6 +187,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.input_mode_combo.addItem("Entered estimate", "estimate")
         self.input_mode_combo.setAccessibleName("Study input method")
         self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: group data or an entered effect estimate.")
+        self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(self._active_input_mode))
         self.input_mode_combo.currentIndexChanged.connect(self._input_mode_changed)
         self._update_input_modes()
 
@@ -212,6 +213,11 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         mode = self.input_mode_combo.currentData()
         mode_changed = mode != getattr(self, "_active_input_mode", None)
         previous_mode = getattr(self, "_active_input_mode", None)
+        if mode_changed and previous_mode is not None:
+            if not calc_fncs.commit_calculator_edits(self):
+                with QSignalBlocker(self.input_mode_combo):
+                    self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(previous_mode))
+                return
         self._active_input_mode = mode
         self.content_scroll.setVisible(mode != "estimate")
         self.simple_group.setVisible(mode == "summary")
@@ -620,7 +626,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         return None  # Unknown value key.
 
     def accept(self):
-        if not getattr(self, "_validation_failed", False):
+        if not getattr(self, "_validation_failed", False) and calc_fncs.commit_calculator_edits(self):
+            self.analysis_unit.set_calculator_source(self.current_effect, self.arm_key, "entered" if self._active_input_mode == "estimate" else "derived_preview")
             self._refresh_active_inputs()
             super().accept()
 

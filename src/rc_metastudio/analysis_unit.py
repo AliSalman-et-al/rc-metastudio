@@ -289,12 +289,22 @@ class AnalysisUnit:
                 return (high - low) / divisor
         return None
 
+    def set_calculator_source(self, effect, arm_comparison, source: EffectSource):
+        self._entry("entered", effect, arm_comparison)["calculator_source"] = source
+
+    def calculator_source(self, effect, arm_comparison):
+        return self._entry("entered", effect, arm_comparison).get("calculator_source")
+
     def set_effect(self, effect, arm_comparison, value):
         self.entered_effects[effect][arm_comparison]["est"] = value
+        self.entered_effects[effect][arm_comparison]["SE"] = None
+        self.entered_effects[effect][arm_comparison]["display_conf_level"] = None
 
     def set_lower(self, effect, arm_comparison, lower):
         self.entered_effects[effect][arm_comparison]["lower"] = lower
         entry = self.entered_effects[effect][arm_comparison]
+        entry["SE"] = None
+        entry["display_conf_level"] = None
         entry["source_multiplier"] = NormalDist().inv_cdf(
             .5 + float(self.sheet.settings.get("confidence_level", 95)) / 200
         )
@@ -302,6 +312,8 @@ class AnalysisUnit:
     def set_upper(self, effect, arm_comparison, upper):
         self.entered_effects[effect][arm_comparison]["upper"] = upper
         entry = self.entered_effects[effect][arm_comparison]
+        entry["SE"] = None
+        entry["display_conf_level"] = None
         entry["source_multiplier"] = NormalDist().inv_cdf(
             .5 + float(self.sheet.settings.get("confidence_level", 95)) / 200
         )

@@ -124,3 +124,5 @@ unchanged. Refreshed offscreen screenshots are in docs/ux-hill-climb/screens/sli
 The baseline calculator scenario records the CI heading's text metrics and contents
 rectangle after computation, asserting width and height fit at the default application
 font and at +6 points on the existing reopen/Cancel pass.
+
+Entered continuous and binary mode drives retain the sample group data, exercise a pending continuous draft across a mode shortcut, switch back, and check the accepted grid/model source, undo/redo, reopen and independent R fit. Calculator source is persisted per metric/comparison; inactive group inputs remain available. These drives do not qualify native mouse-wheel behavior or every invalid draft.
