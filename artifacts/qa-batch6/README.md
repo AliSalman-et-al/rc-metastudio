@@ -1,5 +1,7 @@
 # Batch 6 evidence (Linux xcb, Qt/R)
 
+**Read [body-fit/README.md](body-fit/README.md) for the corrected forest rule and current native evidence.** The screen-width exception described in the initial evidence below was rejected by CI and removed. The corrected rule preserves the 9pt study/body floor on all screens and fixes the annotation-size overshoot.
+
 Base: origin/master 7ce97279b711232f01839acecbb0b4db513abb4c.
 
 ## Inputs and commands
