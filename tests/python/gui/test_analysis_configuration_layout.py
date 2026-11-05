@@ -367,7 +367,7 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
         dialog.show()
         qapp.processEvents()
 
-        assert dialog.windowTitle() == ("Outcome · Sensitivity and Specificity" if analysis_type == "meta-regression" else "Outcome · Sensitivity, Specificity")
+        assert dialog.windowTitle() == ("Meta-regression · Outcome · Sensitivity and Specificity" if analysis_type == "meta-regression" else "Outcome · Sensitivity, Specificity")
         dialog.show()
         qapp.processEvents()
         assert dialog.method_lbl.text() == expected_method_label

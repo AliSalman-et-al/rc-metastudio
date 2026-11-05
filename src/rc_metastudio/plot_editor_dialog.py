@@ -5,6 +5,7 @@
 import math
 from typing import TYPE_CHECKING
 
+from rc_metastudio.qt_layout import style_inline_error
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
@@ -170,7 +171,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._commit_error = QLabel(self)
         self._commit_error.setObjectName("plot_commit_error")
         self._commit_error.setWordWrap(True)
-        self._commit_error.setStyleSheet("color: #b00020;")
+        style_inline_error(self._commit_error)
         self._commit_error.setAccessibleName("Plot edit error")
         self._commit_error.setAccessibleDescription(
             "A plot edit could not be rendered. The last successful plot remains active."

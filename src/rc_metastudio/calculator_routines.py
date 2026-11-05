@@ -533,6 +533,7 @@ def _update_binary_metric_table(dialog, raw) -> None:
         table = QTableWidget(3, 4, dialog)
         dialog.metric_readout = table
         table.setObjectName("calculator_metrics")
+        table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         table.setHorizontalHeaderLabels(["Metric", "Estimate", "Lower CI", "Upper CI"])
         vertical_header = table.verticalHeader()
         assert vertical_header is not None
@@ -574,6 +575,8 @@ def _update_binary_metric_table(dialog, raw) -> None:
 
 def update_calculator_readout(dialog, data_type):
     """Refresh read-only statistics without replacing the user's editable text."""
+    if getattr(dialog, "_raw_data_invalid", False):
+        return
     analysis_unit = dialog.analysis_unit
     current_effect = dialog.current_effect
     arm_key = dialog.arm_key
@@ -598,6 +601,7 @@ def update_calculator_readout(dialog, data_type):
             dialog.content_layout.addWidget(dialog.wald_readout)
     summary = _wald_summary(data_type, current_effect, est, lower, upper, confidence_multiplier)
     dialog.wald_readout.setText(summary)
+    dialog.wald_readout.show()
     raw = analysis_unit.get_raw_data_for_arms(dialog.arm_names)
     complete_binary = (
         data_type == "binary" and len(raw) == 4

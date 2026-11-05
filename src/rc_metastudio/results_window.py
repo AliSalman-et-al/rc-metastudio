@@ -10,7 +10,7 @@ import io
 import re
 from html import escape
 from pathlib import Path
-from collections import namedtuple
+from collections import Counter, namedtuple
 from dataclasses import replace
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Callable
@@ -239,7 +239,10 @@ def _opaque_svg_renderer(path, parent):
     renderer = _svg_renderer_class()(QByteArray(svg), parent)
     font_sizes = [float(size) * (96 / 72 if unit == b"pt" else 1)
                   for size, unit in re.findall(rb"font-size:\s*([\d.]+)(px|pt)", svg)]
-    renderer.setProperty("minimum_text_size", min(font_sizes, default=0))
+    # R repeats the body size for study labels and data cells. Small fitted
+    # annotations (for example Favours labels) must not set the body-text floor.
+    body_size = Counter(font_sizes).most_common(1)
+    renderer.setProperty("body_text_size", body_size[0][0] if body_size else 0)
     return renderer
 
 
@@ -911,10 +914,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         target_scale = float(scaled_width) / float(item_width)
         renderer = svg_item.renderer()
-        text_size = renderer.property("minimum_text_size")
+        text_size = renderer.property("body_text_size")
         text_pixels = text_size * item_width / renderer.viewBoxF().width() if text_size else 0
         if not self._explicit_fit_width and text_pixels:
-            # Automatic sizing preserves 9 pt text; explicit Fit width may shrink it.
+            # Automatic sizing preserves 9 pt body text; explicit Fit width may shrink it.
             target_scale = max(target_scale, math.nextafter(9 * 96 / 72 / text_pixels, math.inf))
             scaled_width, scaled_height = item_width * target_scale, item_height * target_scale
         if target_scale != svg_item.scale():
@@ -1036,37 +1039,40 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             return
         self._refitting_viewport_items = True
         previous_width = self._viewport_width_override
-        readable_fit = self._fit_width_active and not self._explicit_fit_width and any(
-            item.renderer().property("minimum_text_size") for item in self._svg_plot_items
-        )
-        width_only_fit = self._fit_width_active and not readable_fit
+        horizontal = required(self.graphics_view.horizontalScrollBar(), "figure horizontal scrollbar")
+        vertical = required(self.graphics_view.verticalScrollBar(), "figure vertical scrollbar")
+        full_width = self.graphics_view.maximumViewportSize().width()
+        full_height = self.graphics_view.maximumViewportSize().height()
+        if self.graphics_view.verticalScrollBarPolicy() == Qt.ScrollBarPolicy.ScrollBarAlwaysOn:
+            full_width += vertical.sizeHint().width()
+        if self.graphics_view.horizontalScrollBarPolicy() == Qt.ScrollBarPolicy.ScrollBarAlwaysOn:
+            full_height += horizontal.sizeHint().height()
         try:
-            if readable_fit:
-                self.graphics_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-                self.graphics_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-            if width_only_fit:
-                # Decide whether scrolling is needed at full width first. Keep
-                # that decision when narrowing the plot makes it shorter again.
-                self.graphics_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-                full_width = self.graphics_view.maximumViewportSize().width()
-                if self.graphics_view.verticalScrollBarPolicy() == Qt.ScrollBarPolicy.ScrollBarAlwaysOn:
-                    full_width += required(self.graphics_view.verticalScrollBar(), "figure scrollbar").sizeHint().width()
+            if self._fit_width_active:
                 self._viewport_width_override = full_width
             self._update_wrapped_text_widths()
             self._refit_svg_plot_items()
             self._refit_raster_plot_items()
             self._relayout_sections()
-            if width_only_fit:
-                needs_scrollbar = self.scene.height() > self.graphics_view.maximumViewportSize().height()
-                self.graphics_view.setVerticalScrollBarPolicy(
-                    Qt.ScrollBarPolicy.ScrollBarAlwaysOn if needs_scrollbar else Qt.ScrollBarPolicy.ScrollBarAlwaysOff
-                )
-                if needs_scrollbar:
-                    self._viewport_width_override = self.graphics_view.maximumViewportSize().width()
+            if self._fit_width_active:
+                # Decide from the full viewport, then reserve any required bars.
+                # Reconsidering vertical overflow after narrowing can oscillate.
+                needs_horizontal = self.scene.width() > full_width
+                available_height = full_height - (horizontal.sizeHint().height() if needs_horizontal else 0)
+                needs_vertical = self.scene.height() > available_height
+                if needs_vertical:
+                    self._viewport_width_override = full_width - vertical.sizeHint().width()
                     self._update_wrapped_text_widths()
                     self._refit_svg_plot_items()
                     self._refit_raster_plot_items()
                     self._relayout_sections()
+                    needs_horizontal = self.scene.width() > self._viewport_width_override
+                self.graphics_view.setHorizontalScrollBarPolicy(
+                    Qt.ScrollBarPolicy.ScrollBarAlwaysOn if needs_horizontal else Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+                )
+                self.graphics_view.setVerticalScrollBarPolicy(
+                    Qt.ScrollBarPolicy.ScrollBarAlwaysOn if needs_vertical else Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+                )
         finally:
             self._viewport_width_override = previous_width
             self._refitting_viewport_items = False

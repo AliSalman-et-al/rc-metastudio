@@ -5,8 +5,10 @@
 import copy
 from contextlib import ExitStack
 from functools import partial
+from itertools import product
 from typing import TYPE_CHECKING, cast
 
+from rc_metastudio.qt_layout import style_inline_error
 from PyQt6.QtCore import QEvent, QObject, QSignalBlocker, QTimer, Qt
 from PyQt6.QtGui import QAction, QBrush, QColor, QKeySequence, QPalette
 from PyQt6.QtWidgets import (
@@ -468,6 +470,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self._request_content_refit()
 
     def _mark_table_consistent(self):
+        self._raw_data_invalid = False
         self.inconsistencyLabel.setVisible(False)
         required(
             self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
@@ -476,7 +479,22 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self._request_content_refit()
 
     def _mark_table_invalid(self, message):
+        self._raw_data_invalid = True
+        with QSignalBlocker(self.raw_data_table):
+            for row, col in product(range(self.raw_data_table.rowCount()), range(self.raw_data_table.columnCount())):
+                if self._raw_count_cell_is_editable(row, col):
+                    continue
+                item = self.raw_data_table.item(row, col)
+                if item is not None:
+                    item.setText("")
+        for field in (self.effect_text_box, self.lower_text_box, self.upper_text_box):
+            field.clear()
+        for name in ("calculator_metrics", "calculator_wald"):
+            widget = self.findChild(QWidget, name)
+            if widget is not None:
+                widget.hide()
         self.inconsistencyLabel.setText(str(message))
+        style_inline_error(self.inconsistencyLabel)
         self.inconsistencyLabel.setVisible(True)
         required(
             self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
@@ -613,6 +631,8 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
     def set_current_effect(self):
         """Populate fields from a meta-analysis unit."""
+        if getattr(self, "_raw_data_invalid", False):
+            return
         txt_boxes = dict(
             effect=self.effect_text_box,
             lower=self.lower_text_box,
@@ -709,6 +729,8 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             super().accept()
 
     def val_changed(self, val_str):
+        if getattr(self, "_raw_data_invalid", False):
+            return
         fields = {"est": self.effect_text_box, "lower": self.lower_text_box, "upper": self.upper_text_box}
         field = fields.get(val_str)
         if field is not None and field.text() == field.property("calculatorValue") and not getattr(self, "_validation_failed", False):
