@@ -1,0 +1,16 @@
+dist/RCMetaStudio/qualification
+pinned summary: True
+scales: [True, True, True]
+log markers: True
+locale identity: False
+en_US f84b1bb281cf3d1aeee9100cd1ad35a76dea179ec67984f231576b600a9e69a2 {'analysis.standard.forest_plot.1': '870b333793943365520d2aa72b884b24daf6d0b93cdb1d659a1997066c5c4992'}
+de_DE f84b1bb281cf3d1aeee9100cd1ad35a76dea179ec67984f231576b600a9e69a2 {'analysis.standard.forest_plot.1': '29a295fe258c859eb86c3adea226504c4b632a3c8f8132d8dc7f743b19424735'}
+FAIL: packaged smoke evidence is incomplete: locale SVG byte hashes differ: [{'canonical_value': 6.0, 'decimal_point': '.', 'input': '6.0', 'locale': 'en_US', 'normalized_summary_sha256': '61ea84ba73eab657282ceabdf3ee1f29ab0ed55a1be574023017bc490d279ab5', 'operation': 'analysis', 'raw_summary_sha256': 'f84b1bb281cf3d1aeee9100cd1ad35a76dea179ec67984f231576b600a9e69a2', 'svg_sha256': {'analysis.standard.forest_plot.1': '870b333793943365520d2aa72b884b24daf6d0b93cdb1d659a1997066c5c4992'}}, {'canonical_value': 6.0, 'decimal_point': ',', 'input': '6,0', 'locale': 'de_DE', 'normalized_summary_sha256': '61ea84ba73eab657282ceabdf3ee1f29ab0ed55a1be574023017bc490d279ab5', 'operation': 'locale', 'raw_summary_sha256': 'f84b1bb281cf3d1aeee9100cd1ad35a76dea179ec67984f231576b600a9e69a2', 'svg_sha256': {'analysis.standard.forest_plot.1': '29a295fe258c859eb86c3adea226504c4b632a3c8f8132d8dc7f743b19424735'}}]
+work/archive-qualification/RCMetaStudio-0.5.1-windows-x64/qualification
+pinned summary: True
+scales: [True, True, True]
+log markers: True
+locale identity: True
+en_US f84b1bb281cf3d1aeee9100cd1ad35a76dea179ec67984f231576b600a9e69a2 {'analysis.standard.forest_plot.1': '29a295fe258c859eb86c3adea226504c4b632a3c8f8132d8dc7f743b19424735'}
+de_DE f84b1bb281cf3d1aeee9100cd1ad35a76dea179ec67984f231576b600a9e69a2 {'analysis.standard.forest_plot.1': '29a295fe258c859eb86c3adea226504c4b632a3c8f8132d8dc7f743b19424735'}
+PASS

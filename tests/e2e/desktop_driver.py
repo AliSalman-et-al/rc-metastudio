@@ -2239,6 +2239,69 @@ try:
         run(app, window, record_step, analyze)
     elif scenario == "grid-entry":
         grid_entry(app, window)
+    elif scenario in {"subgroup-image", "subgroup-image-dark-large"}:
+        if scenario.endswith("dark-large"):
+            app.setStyle("Fusion")
+            palette = QtGui.QPalette()
+            for role in (QtGui.QPalette.ColorRole.Window, QtGui.QPalette.ColorRole.Base, QtGui.QPalette.ColorRole.Button):
+                palette.setColor(role, QtGui.QColor("#202020"))
+            for role in (QtGui.QPalette.ColorRole.WindowText, QtGui.QPalette.ColorRole.Text, QtGui.QPalette.ColorRole.ButtonText):
+                palette.setColor(role, QtGui.QColor("#eeeeee"))
+            app.setPalette(palette)
+            font = app.font()
+            font.setPointSize(font.pointSize() + 6)
+            app.setFont(font)
+        from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
+        from unittest.mock import patch
+        assert window.open(str(ROOT / "sample_projects/meantime.rcms"), raise_on_error=True)
+        def visible_result(kind):
+            return next(w for w in app.topLevelWidgets() if isinstance(w, kind) and w.isVisible())
+        window.action_subgroup_ma.trigger()
+        app.processEvents()
+        group = visible_result(SubgroupAnalysisDialog)
+        index = group.covariate_combo_box.findText("treatment group")
+        assert index >= 0
+        group.covariate_combo_box.setCurrentIndex(index)
+        group.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+        app.processEvents()
+        setup = visible_result(analysis_setup_dialog.AnalysisSetupDialog)
+        setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+        app.processEvents()
+        view = visible_result(results_window.ResultsWindow)
+        assert view._svg_plot_items
+        assert view.report_text.toPlainText()
+        record_step("meantime-subgroup-loaded", view, plots=dict(view.results.display_images))
+        artifact = next(iter(view._nav_plot_artifacts.values()))
+        preview = QtGui.QImage(artifact.image_path)
+        assert not preview.isNull(), artifact.image_path
+        assert preview.width() * preview.height() * 4 <= 256 * 1024**2
+        record_step("meantime-preview-raster", view, path=artifact.image_path,
+                    width=preview.width(), height=preview.height())
+        export_path = WORK / "meantime-export.png"
+        view.plot_service.export(regenerator="forest", params_path=required(artifact.params_path),
+                                 output_path=str(export_path))
+        import struct
+        with export_path.open("rb") as exported:
+            header = exported.read(24)
+        assert header[:8] == b"\x89PNG\r\n\x1a\n"
+        width, height = struct.unpack(">II", header[16:24])
+        # The user export retains 600 dpi; it must not be decoded by Qt.
+        # Windows font metrics produce a slightly taller physical figure.
+        expected_height = 19694 if sys.platform == "win32" else 19679
+        assert (width, height) == (9712, expected_height), (width, height)
+        assert all(str(path).endswith(".svg") for _, path in view.manuscript.figures)
+        record_step("meantime-raster-export", view, width=width, height=height)
+        results = view.results
+        view.close()
+        app.processEvents()
+        with patch.object(results_window.ResultsWindow, "create_plot_item", side_effect=OSError("forced plot-load failure")):
+            window.analysis(results)
+        failed = visible_result(results_window.ResultsWindow)
+        assert failed.report_text.toPlainText()
+        assert any("Could not load plot" in item.toPlainText()
+                   for item in failed.scene.items() if hasattr(item, "toPlainText"))
+        record_step("meantime-subgroup-load-failure", failed)
+        failed.close()
     elif scenario == "hillclimb":
         hillclimb(app, window)
     elif scenario.startswith("audit-round3-"):

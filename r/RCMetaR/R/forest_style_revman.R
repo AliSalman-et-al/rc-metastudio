@@ -174,7 +174,7 @@ rcmetar.revman.test.overall.label <- function(bundle) {
     }
     paste0(
         rcmetar.overall.test.heading(res, bundle$params), ": ",
-        if (!is.null(res$test) && res$test %in% c("t", "knha", "adhoc")) "t" else "Z",
+        if (!is.null(res$test) && res$test %in% c("t", "knha", "adhoc")) paste0("t (df = ", res$dfs, ")") else "Z",
         " = ", rcmetar.format.test.statistic(res$zval, display.digits(bundle$params)),
         " (", rcmetar.revman.p.value.label(res$pval, display.digits(bundle$params)), ")"
     )
