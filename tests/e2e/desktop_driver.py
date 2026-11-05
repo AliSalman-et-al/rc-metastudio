@@ -602,8 +602,27 @@ def sample_analysis(app, window, sample):
 
 
 def add_named_sheet(app, window, name):
+    from rc_metastudio import main_wizard, meta_globals
+    def finish():
+        wizard = app.activeModalWidget()
+        assert isinstance(wizard, main_wizard.MainWizard)
+        page = wizard.currentPage()
+        assert isinstance(page, main_wizard.DataTypePage)
+        record_step("add-sheet-data-type", wizard)
+        mouse_click(page.twoarm_means_Button, QtCore.Qt.MouseButton.LeftButton)
+        wizard.next()
+        wizard.next()
+        page = wizard.currentPage()
+        assert isinstance(page, main_wizard.OutcomeNamePage)
+        page.outcome_name_LineEdit.setText(window.model.current_sheet.name)
+        assert not page.isComplete()
+        page.outcome_name_LineEdit.setText(name)
+        mouse_click(wizard.button(QtWidgets.QWizard.WizardButton.FinishButton), QtCore.Qt.MouseButton.LeftButton)
+    QtCore.QTimer.singleShot(0, finish)
     mouse_click(window.add_sheet_button, QtCore.Qt.MouseButton.LeftButton)
-    rename_sheet_inline(app, window, name)
+    assert window.model.current_sheet.name == name
+    assert window.model.current_sheet.data_type == meta_globals.CONTINUOUS
+    record_step("added-continuous-sheet", window)
 
 
 def rename_sheet_inline(app, window, name, invalid=False):
@@ -897,6 +916,14 @@ def sheets(app, window):
     app.processEvents()
     dialog.grab().save(str(screens / "sheets-after-analysis.png"))
     dialog.close()
+
+    before_cancel = project(window.model.dataset)
+    undo_before = window.action_undo.isEnabled()
+    QtCore.QTimer.singleShot(0, lambda: app.activeModalWidget().reject())
+    mouse_click(window.add_sheet_button, QtCore.Qt.MouseButton.LeftButton)
+    assert project(window.model.dataset) == before_cancel
+    assert window.action_undo.isEnabled() == undo_before
+    record_step("add-sheet-cancelled", window)
 
     for name in ("Outcome 2", "Outcome 3"):
         add_named_sheet(app, window, name)

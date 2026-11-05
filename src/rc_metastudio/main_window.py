@@ -1501,7 +1501,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _setup_sheet_strip(self):
         self._sheet_dragging = False
-        self._adding_sheet = False
         self.sheet_name_edit = None
         self.sheet_tabs: SheetTabBar = SheetTabBar(self)
         required(QtWidgets.QApplication.instance(), "application").installEventFilter(self.sheet_tabs)
@@ -1670,28 +1669,26 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             sheet = self.model.dataset.sheet(sheet_id)
             if name != sheet.name:
                 self._sheet_change(sheet.id, lambda: setattr(sheet, "name", name))
-        if self._adding_sheet:
-            self._adding_sheet = False
-            self.workspace.end_change()
 
     def _add_sheet(self):
-        import uuid
         if not self.model.current_sheet:
             return
-        number = 2
-        while any(sheet.name == f"Outcome {number}" for sheet in self.model.dataset.sheets):
-            number += 1
         self._finish_sheet_rename()
-        self.workspace.begin_change()
-        self._adding_sheet = True
-        name = f"Outcome {number}"
-        sheet = copy.deepcopy(self.model.current_sheet)
-        sheet.id, sheet.name, sheet.rows = uuid.uuid4().hex, name, []
+        number = 2
+        names = [sheet.name for sheet in self.model.dataset.sheets]
+        while f"Outcome {number}" in names:
+            number += 1
+        wizard = main_wizard.MainWizard(
+            parent=self, path="new_dataset", existing_outcome_names=names
+        )
+        wizard.setField("outcomeName", f"Outcome {number}")
+        if not wizard.exec():
+            return
+        sheet = self._sheet_from_dataset_info(wizard.get_results()["outcome_info"])
         def add():
             self.model.dataset.sheets.append(sheet)
             self.model.set_current_sheet(sheet.id)
         self._sheet_change(self.model.current_sheet_id, add)
-        self._rename_sheet(self.sheet_tabs.currentIndex())
 
     def _rename_sheet(self, index):
         if index < 0:
@@ -1825,12 +1822,17 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._update_recent_project_nonfatal(destination, "saved")
         return True
 
-    def _make_new_dataset_and_setup_spreadsheet(self, dataset_info):
+    @staticmethod
+    def _sheet_from_dataset_info(dataset_info):
         import uuid
         from rc_metastudio.analysis_dataset import Sheet, Arm
         data_type = meta_globals.STR_TO_TYPE_DICT[dataset_info['data_type']]
         groups = dataset_info.get('groups') or meta_globals.default_group_names(data_type, dataset_info.get('sub_type'))
         sheet = Sheet(SheetId(uuid.uuid4().hex), dataset_info['name'], data_type, dataset_info.get('sub_type'), dataset_info['data_type'], [Arm(ArmId(uuid.uuid4().hex), name) for name in groups], settings={'metric': dataset_info.get('effect')})
+        return sheet
+
+    def _make_new_dataset_and_setup_spreadsheet(self, dataset_info):
+        sheet = self._sheet_from_dataset_info(dataset_info)
         self.set_model(analysis_dataset.Dataset(sheets=[sheet]))
         self.model.current_effect = dataset_info.get('effect')
         self.populate_metrics_menu(metric_to_check=self.model.current_effect)

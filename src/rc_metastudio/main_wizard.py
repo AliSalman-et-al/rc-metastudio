@@ -1015,6 +1015,9 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         if not self.outcome_name_LineEdit.text().strip():
             self.validation_label.setText("Enter an outcome name." if self._name_attempted else "")
             return False
+        if self.outcome_name_LineEdit.text().strip() in self.wizard().existing_outcome_names:
+            self.validation_label.setText("Choose a unique outcome name.")
+            return False
         names = self.group_names()
         if self._comparative and names[0].casefold() == names[1].casefold():
             self.validation_label.setText("The two arms need different names.")
@@ -1040,7 +1043,7 @@ Page_Welcome, Page_DataType, Page_ChooseMetric, Page_OutcomeName, Page_CsvImport
 
 class MainWizard(QWizard):
     rm5_dataset: object
-    def __init__(self, parent=None, path=None, recent_datasets=None):
+    def __init__(self, parent=None, path=None, recent_datasets=None, existing_outcome_names=()):
         super(MainWizard, self).__init__(parent)
         self.setWizardStyle(QWizard.WizardStyle.ModernStyle)
         self.setSizeGripEnabled(True)
@@ -1056,6 +1059,7 @@ class MainWizard(QWizard):
             ]
         )
 
+        self.existing_outcome_names = existing_outcome_names
         self.info_d: dict[str, object] = {}
         self._outcome_info: DatasetInfo | None = None
         self.info_d["path"] = path
