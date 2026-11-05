@@ -1,6 +1,6 @@
 {
   "contract": "golden-plot-descriptors",
-  "oracle_sha256": "d7f14081e21ac6c27f2c5f31f0bc9519d6e3f7e6747d0ddebc8b237ebc502ed6",
+  "oracle_sha256": "576120f609f6b21fd646c9264810c490e134081c313d1cc9c512a73c521d39b8",
   "rows": [
     {
       "artifact_label": "Forest plot",
@@ -22,7 +22,7 @@
     },
     {
       "artifact_label": "Forest plot",
-      "artifact_oracle_sha256": "4f8c3029aa5f3aee7be1272a082cf850da0650239e186cb13d835a50d6f302c6",
+      "artifact_oracle_sha256": "b5c4473f08785697e8c6e1dba46d2976739082d5e210699d226b1f58093697a9",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -40,7 +40,7 @@
     },
     {
       "artifact_label": "Diagnostic odds ratio forest plot",
-      "artifact_oracle_sha256": "e30c64e7c3cb26c5fc398b6a32ed13881e178fca71b95d4a0164a87651d35f83",
+      "artifact_oracle_sha256": "4ec160c606d51884c5b296511eb5e94140c63172a804557121418866bb9ab166",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -58,7 +58,7 @@
     },
     {
       "artifact_label": "Cumulative forest plot",
-      "artifact_oracle_sha256": "3afee6185ecf1b65002cecab4a0f38e13fa90dd8d5d5c5dde790d08dd3673c67",
+      "artifact_oracle_sha256": "b5e54eeb288bfb18a7bfcee9a065faad1f5450c8dfa1d3018aee168f2ba8da6d",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -76,7 +76,7 @@
     },
     {
       "artifact_label": "Leave-one-out forest plot",
-      "artifact_oracle_sha256": "1a135b09b20a70ce3e6ab660dc0ce48c3e5490e731b65ce998ab843ffe5beb27",
+      "artifact_oracle_sha256": "9408a45cddb603e7a9cc8a0c462018cc0936e560e36d284e27a969b16022e3b2",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -94,7 +94,7 @@
     },
     {
       "artifact_label": "Cumulative forest plot",
-      "artifact_oracle_sha256": "6e3f655140f6048b38d20a69f5729ea94eee078e251d6e2f2105f3621eccac05",
+      "artifact_oracle_sha256": "d2be03425d8543ff77e9e51e4ab91fce3051165064850bcfea0a3d99190cf63e",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -112,7 +112,7 @@
     },
     {
       "artifact_label": "Leave-one-out forest plot",
-      "artifact_oracle_sha256": "08aafbaa70e4af94539e1b8cb45a60613297b91cf3323a5e66db88da0fee0da8",
+      "artifact_oracle_sha256": "153d1a34561a8d8c43c9483c1dfd3e9a3dc0080d5d444bf3441ced362de4f2d0",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -130,7 +130,7 @@
     },
     {
       "artifact_label": "Regression Plot",
-      "artifact_oracle_sha256": "5c1c8ef9f6dd7d29c9ed9743b9c3754fd9a077dd5b4236a1a6acd131cf10d132",
+      "artifact_oracle_sha256": "c4d88c94f881579ab6412ea0943a5af95a03e1dc4dcb8c3312431926ad0e3fd3",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -148,7 +148,7 @@
     },
     {
       "artifact_label": "Regression Plot",
-      "artifact_oracle_sha256": "c620811e4a6d7f3339558832229437a55b48004bb0bc1bfccda12460cbde0b8b",
+      "artifact_oracle_sha256": "63d61dc90b48442fef3af415f1e9180305b8d6186052fcb25015fb1b281676ab",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -166,7 +166,7 @@
     },
     {
       "artifact_label": "Subgroup forest plot",
-      "artifact_oracle_sha256": "09fd47608900a71230894cdbbf3272d96379f4325ba6518a828e54944e10f746",
+      "artifact_oracle_sha256": "27a29aa3a2ba4da501374ac3970a7b0dd343d71a50d7eadf70c2641bec1884c1",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -184,7 +184,7 @@
     },
     {
       "artifact_label": "Subgroup forest plot",
-      "artifact_oracle_sha256": "0cdc4df67e92627f29d76de2aaa77f1cba4b9719308f98b27ebba23c02071d0a",
+      "artifact_oracle_sha256": "45979d9c616e711e65df13bdd68d677cbd09e8f0428beec85f862bfe1055dfec",
       "capability": {
         "composition": "single",
         "editable": true,

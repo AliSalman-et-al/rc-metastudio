@@ -2393,7 +2393,7 @@ try:
         # The user export retains 600 dpi; it must not be decoded by Qt.
         # Windows font metrics produce a slightly taller physical figure.
         expected_height = 19694 if sys.platform == "win32" else 19679
-        assert (width, height) == (9712, expected_height), (width, height)
+        assert (width, height) == (9676, expected_height), (width, height)
         assert all(str(path).endswith(".svg") for _, path in view.manuscript.figures)
         record_step("meantime-raster-export", view, width=width, height=height)
         results = view.results

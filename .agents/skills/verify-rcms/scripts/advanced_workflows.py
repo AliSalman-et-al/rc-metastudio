@@ -1791,7 +1791,7 @@ def table_covariates(app, window, record):
                 expected = float(r_bridge.execute_r_string(expression)[0])
                 assert (
                     abs(
-                        actual["Subgroup Summary"][
+                        actual["Subgroup summary"][
                             "model.subgroup_" + region.lower() + ".estimate"
                         ]
                         - expected
