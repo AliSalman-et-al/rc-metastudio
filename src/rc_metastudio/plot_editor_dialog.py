@@ -231,6 +231,16 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                     )
                     widget.setFocus()
                     return
+        if not self._validate_ticks():
+            return
+        self._commit_outcome = None
+        self.applied.emit()
+        # Preserve the signal-only API for callers that use the dialog without
+        # ResultsWindow. The real integration explicitly marks success/failure.
+        if self._commit_outcome is None:
+            self.mark_commit_succeeded()
+
+    def _validate_ticks(self):
         ticks = self.x_ticks_le.text().strip()
         if ticks and ticks != "[default]":
             try:
@@ -243,13 +253,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                     "X-axis ticks must be comma-separated finite numbers, or leave blank for automatic ticks."
                 )
                 self.x_ticks_le.setFocus()
-                return
-        self._commit_outcome = None
-        self.applied.emit()
-        # Preserve the signal-only API for callers that use the dialog without
-        # ResultsWindow. The real integration explicitly marks success/failure.
-        if self._commit_outcome is None:
-            self.mark_commit_succeeded()
+                return False
+        return True
 
     def _button_clicked(self, button):
         button_type = self.buttonBox.standardButton(button)
