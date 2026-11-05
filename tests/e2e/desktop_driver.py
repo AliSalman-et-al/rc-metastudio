@@ -2249,6 +2249,11 @@ try:
         assert view.report_text.toPlainText()
         record_step("meantime-subgroup-loaded", view, plots=dict(view.results.display_images))
         artifact = next(iter(view._nav_plot_artifacts.values()))
+        preview = QtGui.QImage(artifact.image_path)
+        assert not preview.isNull(), artifact.image_path
+        assert preview.width() * preview.height() * 4 <= 256 * 1024**2
+        record_step("meantime-preview-raster", view, path=artifact.image_path,
+                    width=preview.width(), height=preview.height())
         export_path = WORK / "meantime-export.png"
         view.plot_service.export(regenerator="forest", params_path=required(artifact.params_path),
                                  output_path=str(export_path))
@@ -2258,7 +2263,9 @@ try:
         assert header[:8] == b"\x89PNG\r\n\x1a\n"
         width, height = struct.unpack(">II", header[16:24])
         # The user export retains 600 dpi; it must not be decoded by Qt.
-        assert (width, height) == (9712, 19679), (width, height)
+        # Windows font metrics produce a slightly taller physical figure.
+        expected_height = 19694 if sys.platform == "win32" else 19679
+        assert (width, height) == (9712, expected_height), (width, height)
         assert all(str(path).endswith(".svg") for _, path in view.manuscript.figures)
         record_step("meantime-raster-export", view, width=width, height=height)
         results = view.results

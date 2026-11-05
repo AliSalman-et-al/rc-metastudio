@@ -134,7 +134,7 @@ def _scenario_timeout(scenario: str) -> int:
         timeout_seconds = 600
     elif scenario.startswith("audit-round3-"):
         timeout_seconds = 600
-    elif scenario == "rm5-import" or scenario.startswith("plot-workflow-"):
+    elif scenario in {"rm5-import", "subgroup-image", "subgroup-image-dark-large"} or scenario.startswith("plot-workflow-"):
         timeout_seconds = 240
     return timeout_seconds
 
