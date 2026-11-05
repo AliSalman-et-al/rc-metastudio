@@ -979,7 +979,7 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         self._naming_defaults = meta_globals.default_group_names(data_type, info["sub_type"])
         metric = "Mean" if info["effect"] == "TX Mean" else meta_globals.ALL_METRIC_NAMES.get(info["effect"], info["effect"] or "")
         metric = {"PR": "Proportion", "SMD": "Standardized mean difference (SMD)"}.get(info["effect"], metric[:1] + metric[1:].lower())
-        task = "Import data" if self.wizard().get_wizard_path() == "csv_import" else "Create dataset"
+        task = "Import data" if self.wizard().get_wizard_path() == "csv_import" else "Add outcome" if self.wizard().existing_outcome_names else "Create dataset"
         kind = {"binary": "Two-arm binary" if self._comparative else "Single-arm proportion",
                 "continuous": "Two-arm continuous" if self._comparative else "Single-arm continuous",
                 "diagnostic": "Diagnostic accuracy", "time_to_event": "Time-to-event", "event_rates": "Event rates"}[info["data_type"]]
@@ -1001,6 +1001,14 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         for field in (self.first_group_name, self.second_group_name):
             field.setAccessibleDescription("Optional. Leave blank to use " + field.placeholderText() + ".")
         self.completeChanged.emit()
+
+    def showEvent(self, a0: QShowEvent | None) -> None:
+        super().showEvent(a0)
+        QTimer.singleShot(0, self._focus_outcome_name)
+
+    def _focus_outcome_name(self) -> None:
+        self.outcome_name_LineEdit.setFocus()
+        self.outcome_name_LineEdit.selectAll()
 
     def group_names(self):
         names = list(self._naming_defaults)
@@ -1081,7 +1089,7 @@ class MainWizard(QWizard):
             self.setWindowTitle("Import a CSV")
         elif path == "new_dataset":
             self.setStartId(Page_DataType)
-            self.setWindowTitle("Create a New Dataset")
+            self.setWindowTitle("Add Outcome" if existing_outcome_names else "Create a New Dataset")
 
         self._layout_controller = adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.WORKFLOW
@@ -1120,7 +1128,7 @@ class MainWizard(QWizard):
         QTimer.singleShot(0, self._synchronize_default_action)
 
     def _synchronize_default_action(self):
-        self.setButtonText(QWizard.WizardButton.FinishButton, "Import" if self.get_wizard_path() == "csv_import" else "Create")
+        self.setButtonText(QWizard.WizardButton.FinishButton, "Import" if self.get_wizard_path() == "csv_import" else "Add outcome" if self.existing_outcome_names else "Create")
         next_button = self.button(QWizard.WizardButton.NextButton)
         if next_button is not None:
             next_button.setVisible(self.currentId() not in (Page_Welcome, Page_CsvImport))

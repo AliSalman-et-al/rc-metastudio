@@ -608,19 +608,30 @@ def add_named_sheet(app, window, name, diagnostic=False):
         assert isinstance(wizard, main_wizard.MainWizard)
         page = wizard.currentPage()
         assert isinstance(page, main_wizard.DataTypePage)
+        assert wizard.windowTitle() == "Add Outcome"
         record_step("add-sheet-data-type", wizard)
         mouse_click(page.diagnostic_Button if diagnostic else page.twoarm_means_Button, QtCore.Qt.MouseButton.LeftButton)
         wizard.next()
         wizard.next()
         page = wizard.currentPage()
         assert isinstance(page, main_wizard.OutcomeNamePage)
-        page.outcome_name_LineEdit.setText(window.model.current_sheet.name)
+        app.processEvents()
+        edit = page.outcome_name_LineEdit
+        assert edit.hasFocus()
+        assert edit.selectedText() == edit.text()
+        assert edit.text().startswith("Outcome ")
+        key_clicks(edit, name)
+        assert edit.text() == name
+        key_click(edit, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
+        key_clicks(edit, window.model.current_sheet.name)
         assert not page.isComplete()
-        page.outcome_name_LineEdit.setText(name)
+        key_click(edit, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
+        key_clicks(edit, name)
         mouse_click(wizard.button(QtWidgets.QWizard.WizardButton.FinishButton), QtCore.Qt.MouseButton.LeftButton)
     QtCore.QTimer.singleShot(0, finish)
     mouse_click(window.add_sheet_button, QtCore.Qt.MouseButton.LeftButton)
     assert window.model.current_sheet.name == name
+    assert window.sheet_tabs.tabText(window.sheet_tabs.currentIndex()) == name
     assert window.model.current_sheet.data_type == (meta_globals.DIAGNOSTIC if diagnostic else meta_globals.CONTINUOUS)
     record_step("added-continuous-sheet", window)
 
