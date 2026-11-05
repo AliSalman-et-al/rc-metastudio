@@ -4,7 +4,7 @@ Users inspect analysis summaries and plots, apply plot edits, discard subsequent
 
 ## Sub-features
 
-- `results-render`: actual summary text and valid rendered analysis plots.
+- `results-render`: actual summary text and valid rendered analysis plots. The sample analysis driver also asserts that Run analysis activates Results before screenshot capture, manual zoom restores the horizontal origin, and the text report has no duplicate Supplementary details or References headings.
 - `plot-apply`: changed axis label regenerates the real R plot and saved parameters.
 - `plot-cancel`: Cancel discards the draft after an applied change.
 - `plot-pdf`: PDF export from the sample-analysis workflows.

@@ -57,3 +57,5 @@ reason, writes manuscript DOCX/PDF, checks extracted output and saves/reopens
 reviewer judgements. Evidence retains the derived project. Independent Run and
 metafor cell equality, data-edit refresh, diagnostic patient totals and Copy/export
 picker gestures remain unexercised; see `docs/ux-hill-climb/SLICE9.md`.
+
+Every desktop driver checks the visibly disabled shell, wait cursor and explicit waiting status before the GUI-thread R startup timer runs, then enabled controls after real R is ready. This proves blocking-startup feedback, not responsive or asynchronous R initialization.
