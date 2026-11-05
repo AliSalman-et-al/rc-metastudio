@@ -1,0 +1,58 @@
+Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-d599febd/artifacts/verification/rcms/20261105T054114Z-fa1483ec-calculator-mode-entered-continuous
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+R callback write-console: In addition:   
+R callback write-console: Warning message:
+  
+R callback write-console: Ratio of largest to smallest sampling variance extremely large. May not be able to obtain stable results. 
+  
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-d599febd/tests/e2e/desktop_driver.py", line 2420, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-d599febd/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 2012, in run
+    calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-d599febd/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1518, in calculators
+    compare_authority(view, expected, family, record, metric=metric)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-d599febd/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 205, in compare_authority
+    assert abs(actual[observed_key] - value) <= 1e-6 + 1e-12, (
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('estimate', 0.364182, 0.41552789899203807)
+
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-d599febd/tests/e2e/desktop_driver.py", line 2420, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-d599febd/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 2012, in run
+    calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-d599febd/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1518, in calculators
+    compare_authority(view, expected, family, record, metric=metric)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-d599febd/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 205, in compare_authority
+    assert abs(actual[observed_key] - value) <= 1e-6 + 1e-12, (
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('estimate', 0.364182, 0.41552789899203807)
+

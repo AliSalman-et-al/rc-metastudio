@@ -1161,13 +1161,20 @@ def calculators(app, window, mode, record):
         elif entered:
             if family in {"binary", "continuous"}:
                 dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("estimate"))
-            click(app, dialog.clear_button)
-            assert all(
-                v is None
-                for v in dialog.analysis_unit.get_raw_data_for_arms(
-                    dialog.arm_names
-                )
-            )
+            if family == "continuous":
+                text(dialog.upper_text_box, 1)
+                text(dialog.lower_text_box, -1)
+                dialog.effect_text_box.setFocus()
+                QTest.keyClick(dialog.effect_text_box, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
+                QTest.keyClicks(dialog.effect_text_box, "0.5")
+                QTest.keyClick(dialog.input_mode_combo, QtCore.Qt.Key.Key_Home)
+                app.processEvents()
+                QTest.keyClick(dialog.input_mode_combo, QtCore.Qt.Key.Key_End)
+                app.processEvents()
+                record("pending-estimate-roundtrip", dialog, estimate=dialog.effect_text_box.text())
+                assert float(dialog.effect_text_box.text()) == .5
+            if family == "diagnostic":
+                click(app, dialog.clear_button)
             values = (
                 (0.12345678901234566, 1.2345678901234567e-8, 1e12)
                 if family == "binary"
@@ -1175,21 +1182,26 @@ def calculators(app, window, mode, record):
                 if family == "diagnostic"
                 else (0.12345678901234566, -1.2345678901234567e-8, 1e12)
             )
-            for field, value in zip(
-                (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box),
-                values,
-            ):
+            for field, value in ((dialog.lower_text_box, values[1]),
+                                 (dialog.upper_text_box, values[2]),
+                                 (dialog.effect_text_box, values[0])):
                 text(field, value)
             for field, value in zip(
                 (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box),
                 values,
             ):
                 assert math.isclose(float(field.text()), value, abs_tol=0.0001)
-            if family == "continuous":
-                for mode_name in ("summary", "pre-post"):
-                    dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData(mode_name))
+            if family in {"binary", "continuous"}:
+                for mode_name in (("summary", "pre-post") if family == "continuous" else ("counts",)):
+                    # A mode shortcut can arrive while the last editor still has focus.
+                    dialog.effect_text_box.setFocus()
+                    QTest.keyClick(dialog.effect_text_box, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
+                    QTest.keyClicks(dialog.effect_text_box, str(values[0]))
+                    QTest.keyClick(dialog.input_mode_combo, QtCore.Qt.Key.Key_Home)
+                    if mode_name == "pre-post":
+                        QTest.keyClick(dialog.input_mode_combo, QtCore.Qt.Key.Key_Down)
                     app.processEvents()
-                    dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("estimate"))
+                    QTest.keyClick(dialog.input_mode_combo, QtCore.Qt.Key.Key_End)
                     app.processEvents()
                     actual = [float(field.text()) for field in
                               (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box)]
@@ -1388,6 +1400,15 @@ def calculators(app, window, mode, record):
         sum(study.include for study in window.model.get_studies(False)) == included_before
     )
     accepted_entered = entered_values()
+    if entered and family in {"binary", "continuous"}:
+        unit = window.model.get_current_analysis_unit_for_study(0)
+        assert window.model._display_effect_source(unit) == "entered"
+        displayed = window.model.data(window.model.index(0, window.model.OUTCOMES[0]))
+        record("calculator-entered-grid-and-model", window, grid=str(displayed), entered=list(accepted_entered), source=unit.calculator_source(window.model.current_effect, window.model.get_current_arm_key()))
+        for column, expected_value in zip(window.model.OUTCOMES[:3], observed["entered"]):
+            actual = window.model.data(window.model.index(0, column))
+            assert str(actual) == str(window.model.format_float(expected_value)), (column, actual, expected_value)
+
     assert window.workspace.is_dirty
     assert (
         list(
@@ -1399,6 +1420,9 @@ def calculators(app, window, mode, record):
     )
 
     def cancel(dialog):
+        if entered and family in {"binary", "continuous"}:
+            assert dialog.input_mode_combo.currentData() == "estimate"
+            assert not dialog.content_scroll.isVisible()
         click(app, dialog.clear_button)
         assert all(
             v is None

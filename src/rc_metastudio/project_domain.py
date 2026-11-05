@@ -117,6 +117,10 @@ def _validate_continuous_raw(numbers: list[float | None], location: str) -> None
 
 def _validate_effect(effect: dict[str, object], location: str) -> None:
     for key, value in effect.items():
+        if key == "calculator_source":
+            if value not in ("entered", "derived_preview"):
+                raise ProjectSemanticError(f"{location}: invalid calculator source")
+            continue
         number = _finite(value, f"{location}/{key}")
         if key in {"SE", "display_se"} and number < 0:
             raise ProjectSemanticError(

@@ -289,12 +289,26 @@ class AnalysisUnit:
                 return (high - low) / divisor
         return None
 
+    def set_calculator_source(self, effect, arm_comparison, source: EffectSource):
+        entry = self._entry("entered", effect, arm_comparison)
+        if source == "entered":
+            entry["calculator_source"] = source
+        else:
+            entry.pop("calculator_source", None)
+
+    def calculator_source(self, effect, arm_comparison):
+        return self.entered_effects.get(effect, {}).get(arm_comparison, {}).get("calculator_source")
+
     def set_effect(self, effect, arm_comparison, value):
         self.entered_effects[effect][arm_comparison]["est"] = value
+        self.entered_effects[effect][arm_comparison]["SE"] = None
+        self.entered_effects[effect][arm_comparison]["display_conf_level"] = None
 
     def set_lower(self, effect, arm_comparison, lower):
         self.entered_effects[effect][arm_comparison]["lower"] = lower
         entry = self.entered_effects[effect][arm_comparison]
+        entry["SE"] = None
+        entry["display_conf_level"] = None
         entry["source_multiplier"] = NormalDist().inv_cdf(
             .5 + float(self.sheet.settings.get("confidence_level", 95)) / 200
         )
@@ -302,6 +316,8 @@ class AnalysisUnit:
     def set_upper(self, effect, arm_comparison, upper):
         self.entered_effects[effect][arm_comparison]["upper"] = upper
         entry = self.entered_effects[effect][arm_comparison]
+        entry["SE"] = None
+        entry["display_conf_level"] = None
         entry["source_multiplier"] = NormalDist().inv_cdf(
             .5 + float(self.sheet.settings.get("confidence_level", 95)) / 200
         )
@@ -468,6 +484,11 @@ class AnalysisUnit:
         if boundary not in ["upper", "lower"]:
             raise Exception("Boundary must be one of 'upper' or 'lower'")
 
+        entry = self._entry(source, effect, arm_comparison)
+        if (source == "entered" and entry.get("SE") is None
+                and entry.get(boundary) is not None
+                and abs(entry.get("source_multiplier", 0) - confidence_multiplier) < 1e-12):
+            return entry[boundary]
         if self.get_se(source, effect, arm_comparison, confidence_multiplier) is None:
             return self._entry(source, effect, arm_comparison)[boundary]
         est = self.get_estimate_for_source(source, effect, arm_comparison)

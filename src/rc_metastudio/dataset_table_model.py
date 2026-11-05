@@ -616,6 +616,9 @@ class DatasetTableModel(QAbstractTableModel):
         )
 
     def _display_effect_source(self, analysis_unit):
+        selected = analysis_unit.calculator_source(self.current_effect, self.get_current_arm_key())
+        if selected is not None:
+            return selected
         raw_data = analysis_unit.get_raw_data_for_arms(self.arm_names)
         return "derived_preview" if any(value not in (None, "") for value in raw_data) else "entered"
 
@@ -1349,6 +1352,8 @@ class DatasetTableModel(QAbstractTableModel):
 
         For a one-arm metric, the active arm alone determines completeness.
         """
+        if any(study.analysis_unit.calculator_source(self.current_effect, self.get_current_arm_key()) == "entered" for study in self.get_studies()):
+            return False
         return included_studies_have_raw_data(
             self.current_sheet.rows,
             self._get_raw_data_according_to_arms,

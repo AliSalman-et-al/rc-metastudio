@@ -417,8 +417,16 @@ def diagnostic_effect_display_samples(metric, digits=CALC_NUM_DIGITS):
     return (precision, "9999." + ("9" * digits))
 
 
+def commit_calculator_edits(dialog):
+    """Commit drafts before a mode change replaces the shared effect editors."""
+    for name, field in (("est", dialog.effect_text_box), ("lower", dialog.lower_text_box), ("upper", dialog.upper_text_box)):
+        if field.text() != field.property("calculatorValue"):
+            dialog.val_changed(name)
+    return not getattr(dialog, "_validation_failed", False)
+
+
 def calculator_effect_source(
-    analysis_unit, groups, effect, arm_key, confidence_multiplier
+    analysis_unit, groups, effect, arm_key, confidence_multiplier, *, input_mode=None
 ):
     """Return the active calculator effect authority.
 
@@ -426,6 +434,8 @@ def calculator_effect_source(
     entered effect in that state so back-calculation and direct editing remain
     usable; switch to the preview only after the active metric has one.
     """
+    if input_mode == "estimate":
+        return "entered"
     raw_data = analysis_unit.get_raw_data_for_arms(groups)
     if not any(value not in EMPTY_VALS for value in raw_data):
         return "entered"
@@ -471,7 +481,7 @@ def set_current_effect_from_value(
     (est, lower, upper) = analysis_unit.get_effect_and_ci_for_source(
         source, current_effect, arm_key, confidence_multiplier
     )
-    if data_type == "continuous" and source == "entered":
+    if data_type in {"binary", "continuous"} and source == "entered":
         est, lower, upper = analysis_unit.get_entered_effect_and_ci(current_effect, arm_key)
     (display_estimate, display_lower, display_upper) = [
         conv_to_disp_scale(x) for x in (est, lower, upper)
@@ -569,7 +579,8 @@ def update_calculator_readout(dialog, data_type):
     arm_key = dialog.arm_key
     confidence_multiplier = dialog.confidence_multiplier
     source = calculator_effect_source(
-        analysis_unit, dialog.arm_names, current_effect, arm_key, confidence_multiplier
+        analysis_unit, dialog.arm_names, current_effect, arm_key, confidence_multiplier,
+        input_mode=getattr(dialog, "_active_input_mode", None) if data_type == "binary" else None,
     )
     if data_type == "continuous":
         source = "entered" if getattr(dialog, "_active_input_mode", "estimate") == "estimate" else "derived_preview"

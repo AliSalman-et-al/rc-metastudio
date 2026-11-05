@@ -119,11 +119,14 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self.input_mode_combo.addItem("Entered estimate", "estimate")
         self.input_mode_combo.setAccessibleName("Study input method")
         self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: group data or an entered effect estimate.")
+        self._active_input_mode = "estimate" if self.analysis_unit.calculator_source(self.current_effect, self.arm_key) == "entered" else "counts"
+        self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(self._active_input_mode))
         self.input_mode_combo.currentIndexChanged.connect(self._input_mode_changed)
         self._update_raw_data()  # analysis_unit --> table
         self._populate_effect_data()  # make combo boxes for effects
         self.set_current_effect()  # fill in current effect data in line edits
         self._update_data_table()  # fill in 2x2
+        self._input_mode_changed()
         self._fit_raw_data_columns_for_first_display()
         self.update_back_calculation_button()
         self._set_content_preferred_width()
@@ -136,9 +139,16 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self._request_content_refit()
 
     def _input_mode_changed(self):
+        previous = getattr(self, "_active_input_mode", "counts")
+        if not calc_fncs.commit_calculator_edits(self):
+            with QSignalBlocker(self.input_mode_combo):
+                self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(previous))
+            return
+        self._active_input_mode = self.input_mode_combo.currentData()
         counts = self.input_mode_combo.currentData() == "counts"
         self.content_scroll.setVisible(counts)
         self.counts_group.setVisible(counts)
+        self.set_current_effect()
         self._request_content_refit()
 
     def _configure_raw_data_table(self):
@@ -616,11 +626,8 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             data_type="binary",
             confidence_multiplier=self.confidence_multiplier,
             source=calc_fncs.calculator_effect_source(
-                self.analysis_unit,
-                self.arm_names,
-                self.current_effect,
-                self.arm_key,
-                self.confidence_multiplier,
+                self.analysis_unit, self.arm_names, self.current_effect, self.arm_key,
+                self.confidence_multiplier, input_mode=self._active_input_mode,
             ),
         )
         calc_fncs.update_calculator_readout(self, "binary")
@@ -679,12 +686,9 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                     confidence_multiplier=self.confidence_multiplier,
                     ci_param=ci_param,
                     source=calc_fncs.calculator_effect_source(
-                        self.analysis_unit,
-                        self.arm_names,
-                        self.current_effect,
-                        self.arm_key,
-                        self.confidence_multiplier,
-                    ),
+                self.analysis_unit, self.arm_names, self.current_effect, self.arm_key,
+                self.confidence_multiplier, input_mode=self._active_input_mode,
+            ),
                 )
         except Exception:
             return False, False
@@ -700,7 +704,8 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         return None  # Unknown value key.
 
     def accept(self):
-        if not getattr(self, "_validation_failed", False):
+        if not getattr(self, "_validation_failed", False) and calc_fncs.commit_calculator_edits(self):
+            self.analysis_unit.set_calculator_source(self.current_effect, self.arm_key, "entered" if self.input_mode_combo.currentData() == "estimate" else "derived_preview")
             super().accept()
 
     def val_changed(self, val_str):
