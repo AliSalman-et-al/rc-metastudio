@@ -1,0 +1,30 @@
+[
+  {
+    "scenario": "results-window",
+    "exit": 0
+  },
+  {
+    "scenario": "lymph",
+    "exit": 0
+  },
+  {
+    "scenario": "options-diagnostic",
+    "exit": 0
+  },
+  {
+    "scenario": "analysis-dialog",
+    "exit": 1
+  },
+  {
+    "scenario": "calculator-mode-onearm-mean",
+    "exit": 0
+  },
+  {
+    "scenario": "sheets-legacy",
+    "exit": 0
+  },
+  {
+    "scenario": "ux-improvements",
+    "exit": 0
+  }
+]

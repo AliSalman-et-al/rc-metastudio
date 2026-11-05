@@ -523,10 +523,10 @@ fillin.cont.AminusB <- function(
 
 
 	if (isnt.na(fillin.A$output["n"]) & is.na(fillin.B$output["n"])) {
-		fillin.B$output["n"] <- fillin.A$output["n"];
+		fillin.B <- fillin.cont.1spell(fillin.A$output["n"], mean.B, sd.B, se.B, var.B, low.B, high.B, pval.B, alpha=alpha)
 	}
 	else if (isnt.na(fillin.B$output["n"]) & is.na(fillin.A$output["n"])) {
-		fillin.A$output["n"] <- fillin.B$output["n"];
+		fillin.A <- fillin.cont.1spell(fillin.B$output["n"], mean.A, sd.A, se.A, var.A, low.A, high.A, pval.A, alpha=alpha)
 	}
 
 	nA.eq.nB <- identical(fillin.A$output["n"], fillin.B$output["n"])

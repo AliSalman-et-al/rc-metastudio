@@ -2771,10 +2771,7 @@ def _format_numeric_table_cell(value, field_name):
             return f"< {10**(-precision):g}" if value < 10**(-precision) else f"{value:.{precision}f}"
         if compact_name in {"df", "studies", "studiesused", "k", "summaryseed", "summaryiterations"} and float(value).is_integer():
             return str(int(value))
-        formatted = f"{value:.{digits}f}"
-        if value != 0 and float(formatted) == 0:
-            return f"{value:.{max(1, digits)}g}"
-        return formatted
+        return result_sections.format_effect_number(value, digits)
     if compact_name in {"p", "pvalue", "pval", "prz", "qmp", "qep"}:
         if value < 0.001:
             return "< 0.001"

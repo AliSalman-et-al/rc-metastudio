@@ -174,6 +174,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.initialize_form()  # initialize cells to empty items
         self._field_history = calc_fncs.TransientEditHistory()
 
+        self._active_input_mode = "estimate" if self.analysis_unit.sheet.sub_type in {"reg_coef", "generic_effect"} else "summary"
         self.update_raw_data()
         self._populate_effect_data()
         self.set_current_effect()
@@ -222,6 +223,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     def _refresh_active_inputs(self):
         mode = self.input_mode_combo.currentData()
         if mode == "estimate":
+            self.set_current_effect()
             return
         self.analysis_unit.set_effect_and_ci(
             self.current_effect, self.arm_key, None, None, None,
@@ -599,13 +601,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                     parent=self,
                     confidence_multiplier=self.confidence_multiplier,
                     ci_param=ci_param,
-                    source=calc_fncs.calculator_effect_source(
-                        self.analysis_unit,
-                        self.arm_names,
-                        self.current_effect,
-                        self.arm_key,
-                        self.confidence_multiplier,
-                    ),
+                    source="entered" if getattr(self, "_active_input_mode", "estimate") == "estimate" else "derived_preview",
                     **options,
                 )
         except Exception:
@@ -760,13 +756,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             arm_key=self.arm_key,
             data_type="continuous",
             confidence_multiplier=self.confidence_multiplier,
-            source="derived_preview" if getattr(self, "_active_input_mode", "estimate") != "estimate" else calc_fncs.calculator_effect_source(
-                self.analysis_unit,
-                self.arm_names,
-                self.current_effect,
-                self.arm_key,
-                self.confidence_multiplier,
-            ),
+            source="derived_preview" if getattr(self, "_active_input_mode", "estimate") != "estimate" else "entered",
         )
         calc_fncs.update_calculator_readout(self, "continuous")
 

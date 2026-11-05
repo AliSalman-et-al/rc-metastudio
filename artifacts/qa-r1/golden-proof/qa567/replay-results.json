@@ -1,0 +1,79 @@
+[
+  {
+    "scenario": "analysis-dialog",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "scripts/verify_rcms.py",
+      "analysis-dialog"
+    ],
+    "exit": 0,
+    "transcript": "artifacts/qa-r1/golden-proof/qa567/analysis-dialog-final.log",
+    "evidence": "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/artifacts/verification/rcms/20261105T035653Z-b9bf482a-analysis-dialog"
+  },
+  {
+    "scenario": "calculator-mode-onearm-mean",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "scripts/verify_rcms.py",
+      "calculator-mode-onearm-mean"
+    ],
+    "exit": 0,
+    "transcript": "artifacts/qa-r1/golden-proof/qa567/calculator-mode-onearm-mean.log",
+    "evidence": "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/artifacts/verification/rcms/20261105T035506Z-82435091-calculator-mode-onearm-mean"
+  },
+  {
+    "scenario": "sheets-legacy",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "scripts/verify_rcms.py",
+      "sheets-legacy"
+    ],
+    "exit": 0,
+    "transcript": "artifacts/qa-r1/golden-proof/qa567/sheets-legacy.log",
+    "evidence": "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/artifacts/verification/rcms/20261105T035543Z-ac131c9f-sheets-legacy"
+  },
+  {
+    "scenario": "results-window",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "scripts/verify_rcms.py",
+      "results-window"
+    ],
+    "exit": 0,
+    "transcript": "artifacts/qa-r1/golden-proof/qa567/results-window.log",
+    "evidence": "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/artifacts/verification/rcms/20261105T035716Z-8a2af31f-results-window"
+  },
+  {
+    "scenario": "lymph",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "scripts/verify_rcms.py",
+      "lymph"
+    ],
+    "exit": 0,
+    "transcript": "artifacts/qa-r1/golden-proof/qa567/lymph.log",
+    "evidence": "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/artifacts/verification/rcms/20261105T035834Z-88bceb7b-lymph"
+  },
+  {
+    "scenario": "options-diagnostic",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "scripts/verify_rcms.py",
+      "options-diagnostic"
+    ],
+    "exit": 0,
+    "transcript": "artifacts/qa-r1/golden-proof/qa567/options-diagnostic.log",
+    "evidence": "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/artifacts/verification/rcms/20261105T035924Z-ff99b9d2-options-diagnostic"
+  },
+  {
+    "scenario": "ux-improvements",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "scripts/verify_rcms.py",
+      "ux-improvements"
+    ],
+    "exit": 0,
+    "transcript": "artifacts/qa-r1/golden-proof/qa567/ux-improvements.log",
+    "evidence": "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/artifacts/verification/rcms/20261105T040043Z-64dc2a98-ux-improvements"
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "installed_R_source_tree": "5379c5fed2b135040491bb9460302e180ca050f8",
+  "uncommitted_R_source_diff": "",
+  "R_library": "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/build/rcmetar-lib",
+  "merged_master": "8d3609d2",
+  "artifact_download_command": "gh run download 41960942547 -n full-r-stack-windows-golden-capture -D build/qa567-windows-capture"
+}

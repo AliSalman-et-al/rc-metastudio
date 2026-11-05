@@ -348,7 +348,9 @@ def analysis_dialog(app, window):
         assert window.open(str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
         for row in range(window.model.rowCount()):
             texts = [str(window.model.data(window.model.index(row, column))) for column in window.model.OUTCOMES[:3]]
-            decimals = [len(text.split(".")[1]) for text in texts if "." in text and text.replace(".", "", 1).replace("-", "", 1).isdigit()]
+            decimals = [len(text.split(".")[1]) for text in texts if "." in text and text.replace(".", "", 1).replace("-", "", 1).isdigit() and (float(text) == 0 or abs(float(text)) >= .01)]
+            if sample == "amino" and "Giamarellou" in str(window.model.data(window.model.index(row, window.model.NAME))):
+                assert texts == ["0.08", "0.004", "1.44"], texts
             assert len(set(decimals)) <= 1, texts
         kwargs = {"diagnostic_metrics": ["dor"]} if sample == "lymph" else {}
         form = analysis_setup_dialog.AnalysisSetupDialog(
@@ -366,8 +368,8 @@ def analysis_dialog(app, window):
                 <= form.method_cbo_box.mapTo(form, QtCore.QPoint(0, 0)).x()), (sample, form.method_lbl.geometry(), form.method_cbo_box.geometry())
         if sample == "amino":
             giamarellou = next(row for row in range(window.model.rowCount()) if "Giamarellou" in str(window.model.data(window.model.index(row, window.model.NAME))))
-            assert str(window.model.data(window.model.index(giamarellou, window.model.OUTCOMES[1]))) == "<0.01"
-            assert window.model.format_float(0.000401, 3, ratio=True) == "<0.001"
+            assert str(window.model.data(window.model.index(giamarellou, window.model.OUTCOMES[1]))) == "0.004"
+            assert window.model.format_float(0.000401, 3) == "0.000401"
             assert window.tableView.columnWidth(window.model.columnCount() - 1) < 250
             record_step("slice2c-main", window)
             record_step("slice2c-analysis-collapsed", form)
@@ -521,7 +523,7 @@ def sample_analysis(app, window, sample):
     contract = json.loads(
         (ROOT / "tests/analysis_regression/baseline/numeric-contract.json").read_text()
     )
-    section = "Odds Ratio Summary" if sample == "lymph" else "Summary"
+    section = "Diagnostic Odds Ratio Summary" if sample == "lymph" else "Summary"
     expected_sections = next(c for c in contract["cases"] if c["id"] == case)[
         "sections"
     ]
@@ -1468,6 +1470,16 @@ def csv_import(app, window):
     page.mapping_controls[2].setCurrentIndex(page.mapping_controls[2].findData(2))
     assert page.isComplete(), page.import_status.text()
     assert len(page.csv_data()["data"]) == 3
+    headerless = WORK / "headerless-counts.csv"
+    headerless.write_text("Alpha,2020,1,10,2,12\nBeta,2021,3,11,4,13\n")
+    page.file_path = str(headerless)
+    page.has_headers_chkbx.setChecked(False)
+    assert page.isComplete(), page.import_status.text()
+    assert len(page.csv_data()["data"]) == 2
+    record_step("csv-headerless-counts", wizard, data=page.csv_data())
+    page.file_path = str(csv)
+    page.has_headers_chkbx.setChecked(True)
+    assert page.isComplete(), page.import_status.text()
     record_step("csv-preview", wizard, rows=3, file=str(csv))
     window._handle_wizard_results(wizard.get_results())
     assert window.sheet_tabs.tabText(window.sheet_tabs.currentIndex()).strip()

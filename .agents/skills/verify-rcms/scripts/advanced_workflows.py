@@ -190,7 +190,7 @@ def compare_authority(view, expected, family, record, metric=None):
 
     sections = parsed_numeric_sections(view.results)
     actual = sections[
-        ("Sensitivity Summary" if metric == "Sens" else "Odds Ratio Summary")
+        ("Sensitivity Summary" if metric == "Sens" else "Diagnostic Odds Ratio Summary")
         if family == "diagnostic"
         else "Summary"
     ]
@@ -1185,6 +1185,16 @@ def calculators(app, window, mode, record):
                 values,
             ):
                 assert math.isclose(float(field.text()), value, abs_tol=0.0001)
+            if family == "continuous":
+                for mode_name in ("summary", "pre-post"):
+                    dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData(mode_name))
+                    app.processEvents()
+                    dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("estimate"))
+                    app.processEvents()
+                    actual = [float(field.text()) for field in
+                              (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box)]
+                    assert all(math.isclose(a, b, abs_tol=.0001) for a, b in zip(actual, values)), actual
+                    record("entered-estimate-mode-roundtrip", dialog, via=mode_name, values=actual)
             observed["entered"] = list(values)
             transform = (
                 math.log

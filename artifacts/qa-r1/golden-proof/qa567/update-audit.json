@@ -1,0 +1,19 @@
+{
+  "all_other_cases_and_artifacts_byte_identical": true,
+  "changed_archive_members": [
+    "manifest.json",
+    "captures/lymph-diagnostic-random-dor.json"
+  ],
+  "descriptor_changes": [
+    "lymph-diagnostic-random-dor/display/identity: Odds Ratio Forest Plot -> Diagnostic Odds Ratio Forest Plot",
+    "oracle_sha256"
+  ],
+  "metadata_capabilities_and_content_requirements_unchanged": true,
+  "numeric_contract_changes": [
+    "lymph-diagnostic-random-dor/sections and coverage/Odds Ratio Summary -> Diagnostic Odds Ratio Summary",
+    "oracle_sha256"
+  ],
+  "numeric_fields_and_tolerances_identical": true,
+  "outer_manifest_changes": "archive/contract SHA256 and size bindings only",
+  "passed": true
+}

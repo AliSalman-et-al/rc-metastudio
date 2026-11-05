@@ -775,7 +775,9 @@ extract.cov.data <- function(reg.data, dont.make.array = FALSE) {
       levels.minus.ref.var <- setdiff(levels.minus.NA, ref.var)
 
 
-      cov.cols <- array(dim=c(length(reg.data@y), length(levels.minus.ref.var)))
+      cov.cols <- array(dim=c(length(reg.data@y), length(levels.minus.ref.var)),
+                        dimnames=list(NULL, paste0(cov.name, ": ", levels.minus.ref.var,
+                                                  " vs ", ref.var, " (reference)")))
       studies.col <- c(sum(cov.vals==ref.var))
       for (col.index in 1:length(levels.minus.ref.var)) {
            level <- levels.minus.ref.var[col.index]

@@ -1,0 +1,58 @@
+Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/artifacts/verification/rcms/20261105T034038Z-37c93079-calculator-mode-onearm-mean
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 95, in ready
+    drive(dialog)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1262, in drive
+    preview(dialog, metric)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 976, in preview
+    value = float(dialog.effect_text_box.text().replace(",", "."))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: could not convert string to float: ''
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/tests/e2e/desktop_driver.py", line 2356, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 2014, in run
+    calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1385, in calculators
+    modal(app, kind, drive, launch)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 115, in modal
+    assert not errors, errors
+           ^^^^^^^^^^
+AssertionError: [ValueError("could not convert string to float: ''")]
+
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/tests/e2e/desktop_driver.py", line 2356, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 2014, in run
+    calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1385, in calculators
+    modal(app, kind, drive, launch)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-8e97889d/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 115, in modal
+    assert not errors, errors
+           ^^^^^^^^^^
+AssertionError: [ValueError("could not convert string to float: ''")]
+
