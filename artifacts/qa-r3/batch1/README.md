@@ -48,3 +48,9 @@ Wait for R startup to finish before driving menus. Subsequent calls use the same
 - Focused Analysis and wizard GUI checks: 38 passed, one skipped (`gui.log`). The first simplification exposed the direct wizard path's absent metric; that failure is retained compressed in `gui-initial.log.gz`, and the empty-string fallback fixes it.
 - Real Qt/R `python scripts/verify_rcms.py amino`: passed, including Return advancement, nonzero report limit, and unchanged frozen numerical contract. Full evidence: `artifacts/verification/rcms/20261105T014131Z-92b22351-amino`.
 - No fitted-statistics, R source or golden-number changes.
+
+## CI import-mapping follow-up
+
+The fixtures' literal `Tx A #evts` header correctly appears as `3: Tx A #evts`. The vocabulary scanner now validates every choice against the selected file's exact headers before treating it as file data; the arm-name scenario also compares choices against its literal generated source headers. Product field labels still use arm-specific readable names.
+
+Local real Qt/R reruns all passed: `python scripts/verify_rcms.py audit-round3-arm-names`, `python scripts/verify_rcms.py csv`, and `python scripts/verify_rcms.py xlsx-import`. Their manifests/runtime/transcripts and compressed steps are retained under e2e/. Complete inputs/exports/captures remain in the matching artifacts/verification/rcms/20261105T015158Z-* directories. Full local pre-push passed again (pre-push.log). No R source, fitted values, numerical references, code-health baseline or exception configuration changed.

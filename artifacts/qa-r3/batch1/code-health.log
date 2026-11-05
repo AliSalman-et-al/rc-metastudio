@@ -1,8 +1,8 @@
-Code health (ffa8c4aa3a396fba14a1b728986ecffee8c661d6..e8617aeeea2019b93062d93bedf9ebdf5f5b0ae7)
-Scope: 187 files; as of 2026-11-05T06:46:17+05:00
+Code health (ffa8c4aa3a396fba14a1b728986ecffee8c661d6..b85ce7c21c595012676f20c76246102f6cf644a5)
+Scope: 187 files; as of 2026-11-05T06:52:51+05:00
 Coupling: 147 modules, 433 edges
 Cycles: 2; cognitive complexity total/max: 15121/95
-Typing: 3229/6930 parameters (46.6%), 1662/3333 returns (49.9%), 0 Any annotations, 3 type: ignores, 0 casts to Any (e8617aeeea2019b93062d93bedf9ebdf5f5b0ae7)
+Typing: 3229/6930 parameters (46.6%), 1662/3333 returns (49.9%), 0 Any annotations, 3 type: ignores, 0 casts to Any (b85ce7c21c595012676f20c76246102f6cf644a5)
 Defect history: 169 matching commits across 72 files
 Gate: PASS
 Hotspots (180-day normalized churn × complexity density):

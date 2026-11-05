@@ -45823,8 +45823,8 @@
     "new_forbidden_imports": [],
     "passed": true
   },
-  "generated_at": "2026-11-05T06:46:17+05:00",
-  "head": "e8617aeeea2019b93062d93bedf9ebdf5f5b0ae7",
+  "generated_at": "2026-11-05T06:52:51+05:00",
+  "head": "b85ce7c21c595012676f20c76246102f6cf644a5",
   "maintainability": {
     "mean_function_lines": 15.682747148288973,
     "note": "trend indicator; not a merge gate"
@@ -46029,7 +46029,7 @@
     "files": 147,
     "parameter_coverage": 0.46594516594516594,
     "return_coverage": 0.49864986498649866,
-    "revision": "e8617aeeea2019b93062d93bedf9ebdf5f5b0ae7",
+    "revision": "b85ce7c21c595012676f20c76246102f6cf644a5",
     "tool": "ast",
     "total_functions": 3333,
     "total_parameters": 6930,
