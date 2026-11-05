@@ -15,7 +15,6 @@ from dataclasses import replace
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Callable
 from PyQt6.QtCore import (
-    QSize,
     QByteArray,
     QEvent,
     QObject,
@@ -30,7 +29,6 @@ from PyQt6.QtGui import (
     QFont,
     QFontMetrics,
     QImage,
-    QImageReader,
     QPainter,
     QPixmap,
     QResizeEvent,
@@ -78,6 +76,7 @@ from rc_metastudio.analysis_results import (
 from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
 from rc_metastudio.plot_editor_dialog import EditPlotDialog
 from rc_metastudio.plot_service import PlotService
+from rc_metastudio.qt_geometry import logical_extent_to_physical_pixels
 from rc_metastudio.runtime_types import required
 from rc_metastudio.settings import (
     load_plot_export_format,
@@ -844,13 +843,31 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         )
 
     def generate_pixmap(self, image):
-        reader = QImageReader(image)
-        size = reader.size()
-        # Only oversized sources need decoder scaling. Normal sources retain
-        # their original pixels so a later, larger viewport can refit them.
-        if size.width() * size.height() * 4 > 128 * 1024**2:
-            reader.setScaledSize(size.scaled(QSize(4096, 4096), Qt.AspectRatioMode.KeepAspectRatio))
-        return QPixmap.fromImage(reader.read())
+        # now the image
+        pixmap = QPixmap(image)
+        if pixmap.isNull():
+            return pixmap
+
+        logical_width, logical_height = _pixmap_device_independent_size(pixmap)
+        scaled_width, scaled_height = self._fit_size_to_viewport(
+            logical_width, logical_height
+        )
+
+        if scaled_width > self.scene.width():
+            # layout-audit: allow=intrinsic-ratio; reason=scene follows its intrinsic-ratio visual artifact
+            self.scene.setSceneRect(
+                0, 0, scaled_width + horizontal_padding, self.scene.height()
+            )
+
+        dpr = max(1.0, float(pixmap.devicePixelRatioF()))
+        pixmap = pixmap.scaled(
+            max(1, logical_extent_to_physical_pixels(scaled_width, dpr)),
+            max(1, logical_extent_to_physical_pixels(scaled_height, dpr)),
+            transformMode=Qt.TransformationMode.SmoothTransformation,
+        )
+        pixmap.setDevicePixelRatio(dpr)
+
+        return pixmap
 
     def _fit_size_to_viewport(self, width, height, max_scale=1.0):
         if width <= 0 or height <= 0:
@@ -1082,7 +1099,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _refit_raster_plot_items(self):
         for item in self._raster_plot_items:
-            source = self.generate_pixmap(item.source_path) if item.source_path else item.source_pixmap
+            source = QPixmap(item.source_path) if item.source_path else item.source_pixmap
             if source.isNull():
                 continue
             logical_width, logical_height = _pixmap_device_independent_size(source)
@@ -1167,7 +1184,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self, pixmap, position, title, image_path, params_path=None, matrix=QTransform()
     ):
         artifact = self.create_plot_artifact(title, image_path, params_path=params_path)
-        item = ResponsivePixmapItem(pixmap)
+        item = ResponsivePixmapItem(QPixmap(image_path))
         item.source_path = image_path
         item.setPixmap(pixmap)
         item.setToolTip(
