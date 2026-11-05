@@ -1065,7 +1065,6 @@ class MainWizard(QWizard):
         )
 
         self.existing_outcome_names = existing_outcome_names
-        self.task_label = "Add outcome" if existing_outcome_names else {"csv_import": "Import data"}.get(path, "Create dataset")
         self.info_d: dict[str, object] = {}
         self._outcome_info: DatasetInfo | None = None
         self.info_d["path"] = path
@@ -1190,6 +1189,12 @@ class MainWizard(QWizard):
 
     def set_wizard_path(self, path):
         self.info_d["path"] = path
+
+    @property
+    def task_label(self) -> str:
+        if self.existing_outcome_names:
+            return "Add outcome"
+        return "Import data" if self.get_wizard_path() == "csv_import" else "Create dataset"
 
     def get_wizard_path(self):
         if "path" in self.info_d:
