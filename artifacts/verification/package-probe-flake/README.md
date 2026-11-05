@@ -64,3 +64,18 @@ Strict typing passed; packaging contracts: 73 passed, 8 skipped (platform gates)
 Initial typing lacked the Windows inspection dependency pefile; installed it
 and repeated the gate. Initial contract invocation lacked the generated UI root;
 repeated with RCMS_QT6_BUILD_ROOT as shown. No GUI qualification claimed locally.
+
+## CI results
+
+1. https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/41956186577
+   — entire workflow green, including required Windows package qualification.
+   Head 9d1b1fccfd8ecc07e29f90480a4288bee0acf598.
+2. https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/41958102505
+   — entire workflow green, including required Windows package qualification.
+   Same executable source; intervening commit contains investigation evidence only.
+
+`ci1-probe.json` comes from the first fixed package ZIP. It reports R 4.6.1.
+Its ZIP has only `R/bin/x64/{R.dll,Rblas.dll,Rlapack.dll}` and no `_internal`
+copies. `ci1-result.json` and `ci2-result.json` retain job conclusions and links.
+The third manual dispatch and its result will be linked in the PR, avoiding
+another documentation-only head change after qualification.
