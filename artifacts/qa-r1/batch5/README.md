@@ -21,10 +21,15 @@ source /home/ali/.t3/qa-env/ENV.sh
 export UV_PROJECT_ENVIRONMENT=/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv PYTHONPATH=$PWD/src:$PWD
 uv run --no-sync python scripts/verify.py pre-push
 
-pre-push-pass.log retains exact strict Ty win32 command and gate transcripts. Earlier failed runs retained separately (old modal assertions; typing tabBar optional narrowing). calculator-e2e.log points to the real-R persistence/analysis evidence manifest.
+qualification-final.log retains the final exact strict Ty win32 command and all gate transcripts. Earlier failed runs retained separately (old modal assertions; typing tabBar optional narrowing). calculator-e2e.log points to the real-R persistence/analysis evidence manifest.
 No numerical references or R code changed. Local pre-push leaves authority/R-stack and native release platform qualification to CI. Targeted native proof does not cover all calculator metrics or logarithmic-axis zero tick validation.
 
-Later qualification: bounded-screen test initially caught a cached Qt minimum after font reflow; root layout now activates before resize. /tmp/b5-analysis-test4.log: 24 passed, 1 skipped, unchanged screen bounds. Final all-gates transcript is pre-push-complete.log.
+Later qualification: bounded-screen test initially caught a cached Qt minimum after font reflow; root layout now activates before resize. /tmp/b5-analysis-test4.log: 24 passed, 1 skipped, unchanged screen bounds. The earlier pre-push-complete.log run also caught calculator pre/post window growth; the existing geometry assertion is unchanged and now passes. Final all-gates transcript: qualification-final.log.
 Real R evidence:
 - artifacts/verification/rcms/20261105T071438Z-b36005c6-calculator-continuous/manifest.json: passed true, exit 0 (raw edit, accept/cancel, undo/redo, save/reopen, analysis).
 - artifacts/verification/rcms/20261105T071543Z-f78628f2-plot-edit/manifest.json: passed true, exit 0 (real generated plot, applied editor, cancel).
+
+Final source calculator E2E: artifacts/verification/rcms/20261105T072644Z-ad7039d5-calculator-continuous/manifest.json (passed true, exit 0). Binary E2E: artifacts/verification/rcms/20261105T072225Z-40e94405-calculator-binary/manifest.json (passed true, exit 0). A later behavior-preserving scan split addresses the code-health nesting gate; no thresholds were changed.
+
+Final qualification on committed source 88c3a337: PASS, `qualification-final.log`.
+Strict Ty win32, changed-code health, 413 fast/golden passed (6 skipped), 364 GUI passed (1 skipped), 73 packaging contracts passed (8 skipped). R-stack/authority and target-native release qualifications are CI-only in this local lane.

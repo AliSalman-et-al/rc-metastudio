@@ -1,0 +1,42 @@
+[12:11:36] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python scripts/build_qt6.py generate --build-root /home/ali/.t3/qa-env/qt6
+{"form": "/home/ali/.t3/qa-env/qt6/generated/rc_metastudio/forms/ui_about_legal.py", "resource": "/home/ali/.t3/qa-env/qt6/resources/icons.rcc"}
+[12:11:39] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -m ty check --python /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python --python-platform win32 --extra-search-path /home/ali/.t3/qa-env/qt6/generated/rc_metastudio --extra-search-path /home/ali/.t3/qa-env/qt6/generated/rc_metastudio/forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa
+error[unresolved-attribute]: Attribute `sizeHint` is not defined on `None` in union `Unknown | QTabBar | None`
+   --> src/rc_metastudio/analysis_setup_dialog.py:623:36
+    |
+621 |         if page_layout is not None and page_layout.hasHeightForWidth():
+622 |             content_height = max(content_height, page_layout.totalHeightForWidth(active_page.width())
+623 |                                  + self.specs_tab.tabBar().sizeHint().height() + 2 * self.content_scroll_area.frameWidth())
+    |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+624 |         self._set_scroll_body_height(content_height)
+625 |         position = self.pos()
+    |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+error[unresolved-attribute]: Attribute `sizeHint` is not defined on `None` in union `Unknown | QTabBar | None`
+    --> src/rc_metastudio/analysis_setup_dialog.py:1646:36
+     |
+1644 |         if page_layout is not None and page_layout.hasHeightForWidth():
+1645 |             content_height = max(content_height, page_layout.totalHeightForWidth(active_page.width())
+1646 |                                  + self.specs_tab.tabBar().sizeHint().height() + 2 * self.content_scroll_area.frameWidth())
+     |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1647 |         # Method changes stay inside the scroll body. Explicit disclosure of
+1648 |         # Advanced controls may grow the dialog while preserving its placement.
+     |
+info: rule `unresolved-attribute` was selected in the configuration file
+
+Found 2 diagnostics
+verification failed: command failed with exit code 1: /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -m ty check --python /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python --python-platform win32 --extra-search-path /home/ali/.t3/qa-env/qt6/generated/rc_metastudio --extra-search-path /home/ali/.t3/qa-env/qt6/generated/rc_metastudio/forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa
+
+| Step | Seconds | Result |
+| --- | ---: | --- |
+| prepare | 2.8 | pass |
+| typing (win32) | 4.21 | fail |
+| code health | 0.0 | not run |
+| Python fast and golden | 0.0 | not run |
+| GUI | 0.0 | not run |
+| packaging contracts | 0.0 | not run |
+| R stack, authorities and desktop E2E (local: python scripts/verify.py r-stack) | 0.0 | CI only |
+| Windows native Qt and package qualification | 0.0 | CI only |
+| macOS native smoke and packaging | 0.0 | CI only |
+| Linux native xcb smoke | 0.0 | CI only |
