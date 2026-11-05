@@ -979,7 +979,7 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         self._naming_defaults = meta_globals.default_group_names(data_type, info["sub_type"])
         metric = "Mean" if info["effect"] == "TX Mean" else meta_globals.ALL_METRIC_NAMES.get(info["effect"], info["effect"] or "")
         metric = {"PR": "Proportion", "SMD": "Standardized mean difference (SMD)"}.get(info["effect"], metric[:1] + metric[1:].lower())
-        task = "Import data" if self.wizard().get_wizard_path() == "csv_import" else "Create dataset"
+        task = self.wizard().task_label
         kind = {"binary": "Two-arm binary" if self._comparative else "Single-arm proportion",
                 "continuous": "Two-arm continuous" if self._comparative else "Single-arm continuous",
                 "diagnostic": "Diagnostic accuracy", "time_to_event": "Time-to-event", "event_rates": "Event rates"}[info["data_type"]]
@@ -1001,6 +1001,11 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         for field in (self.first_group_name, self.second_group_name):
             field.setAccessibleDescription("Optional. Leave blank to use " + field.placeholderText() + ".")
         self.completeChanged.emit()
+        QTimer.singleShot(0, self._focus_outcome_name)
+
+    def _focus_outcome_name(self) -> None:
+        self.outcome_name_LineEdit.setFocus()
+        self.outcome_name_LineEdit.selectAll()
 
     def group_names(self):
         names = list(self._naming_defaults)
@@ -1014,6 +1019,9 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
     def isComplete(self):
         if not self.outcome_name_LineEdit.text().strip():
             self.validation_label.setText("Enter an outcome name." if self._name_attempted else "")
+            return False
+        if self.outcome_name_LineEdit.text().strip() in self.wizard().existing_outcome_names:
+            self.validation_label.setText("Choose a unique outcome name.")
             return False
         names = self.group_names()
         if self._comparative and names[0].casefold() == names[1].casefold():
@@ -1040,7 +1048,7 @@ Page_Welcome, Page_DataType, Page_ChooseMetric, Page_OutcomeName, Page_CsvImport
 
 class MainWizard(QWizard):
     rm5_dataset: object
-    def __init__(self, parent=None, path=None, recent_datasets=None):
+    def __init__(self, parent=None, path=None, recent_datasets=None, existing_outcome_names=()):
         super(MainWizard, self).__init__(parent)
         self.setWizardStyle(QWizard.WizardStyle.ModernStyle)
         self.setSizeGripEnabled(True)
@@ -1056,6 +1064,7 @@ class MainWizard(QWizard):
             ]
         )
 
+        self.existing_outcome_names = existing_outcome_names
         self.info_d: dict[str, object] = {}
         self._outcome_info: DatasetInfo | None = None
         self.info_d["path"] = path
@@ -1077,7 +1086,7 @@ class MainWizard(QWizard):
             self.setWindowTitle("Import a CSV")
         elif path == "new_dataset":
             self.setStartId(Page_DataType)
-            self.setWindowTitle("Create a New Dataset")
+            self.setWindowTitle("Add Outcome" if existing_outcome_names else "Create a New Dataset")
 
         self._layout_controller = adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.WORKFLOW
@@ -1116,7 +1125,7 @@ class MainWizard(QWizard):
         QTimer.singleShot(0, self._synchronize_default_action)
 
     def _synchronize_default_action(self):
-        self.setButtonText(QWizard.WizardButton.FinishButton, "Import" if self.get_wizard_path() == "csv_import" else "Create")
+        self.setButtonText(QWizard.WizardButton.FinishButton, "Import" if self.get_wizard_path() == "csv_import" else "Add outcome" if self.existing_outcome_names else "Create")
         next_button = self.button(QWizard.WizardButton.NextButton)
         if next_button is not None:
             next_button.setVisible(self.currentId() not in (Page_Welcome, Page_CsvImport))
@@ -1180,6 +1189,12 @@ class MainWizard(QWizard):
 
     def set_wizard_path(self, path):
         self.info_d["path"] = path
+
+    @property
+    def task_label(self) -> str:
+        if self.existing_outcome_names:
+            return "Add outcome"
+        return "Import data" if self.get_wizard_path() == "csv_import" else "Create dataset"
 
     def get_wizard_path(self):
         if "path" in self.info_d:

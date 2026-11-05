@@ -178,3 +178,5 @@ The unmapped XLSX date-year fallback is covered in the existing parser tests:
 the import wizard always supplies a column mapping and cannot reach that fallback.
 
 The `rm5-import` drive checks visible sheet-tab text and mouse selection after importing both Fleiss1993 outcomes at 1024×700. The `sheets` drive also checks tab visibility at that size.
+
+The sheet-add helpers drive the existing dataset wizard from “+”, selecting two-arm continuous Means and rejecting duplicate outcome names before Finish. `sheets` also cancels the wizard without a project or undo-availability change, checks one-step add undo/redo, and retains the original sheet-state comparison. The shared helper covers `sheets-edges`, `sheets-swap`, and `project-structure` too.
