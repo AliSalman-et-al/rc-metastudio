@@ -1,0 +1,8 @@
+/tmp/564-ci2/shard1/rcms/20261105T024337Z-b04a1f4a-subgroup-image/workflow/analysis/forest.png 1943 3939 30613908 29.195697784423828 2ab1d3c217c7bfa217d1db8f494641848abe824d6e7f4d8fce12b0794e27adbd
+Qt preview decode PASS
+/tmp/564-ci2/shard1/rcms/20261105T024337Z-b04a1f4a-subgroup-image/workflow/meantime-export.png 9712 19694 765072512 729.6300048828125 070dce5aa377dbf39edfacdb97cbf3490c3f97783e6cf5fe6bf12f8472281eab
+Amino updated golden byte-identical: 09fd47608900a71230894cdbbf3272d96379f4325ba6518a828e54944e10f746
+Windows golden report: no drift
+Dark: /tmp/564-ci2/shard2/rcms/20261105T024429Z-4d40f65b-subgroup-image-dark-large/workflow/analysis/forest.png 1943 3939 30613908
+Qt dark preview decode PASS
+Dark: /tmp/564-ci2/shard2/rcms/20261105T024429Z-4d40f65b-subgroup-image-dark-large/workflow/meantime-export.png 9712 19694 765072512
