@@ -1793,6 +1793,47 @@ def table_covariates(app, window, record):
 
 
 def shell(app, window, record):
+    from rc_metastudio import main_wizard
+
+    guide_errors = []
+    def read_guide():
+        dialog = app.activeModalWidget()
+        try:
+            assert isinstance(dialog, QtWidgets.QDialog)
+            browser = dialog.findChild(QtWidgets.QTextBrowser)
+            assert browser is not None
+            guide = browser.toPlainText()
+            assert "Ctrl+Shift+S" in guide and "F1" in guide
+            assert dialog.screen().availableGeometry().contains(dialog.frameGeometry())
+            record("ux-quick-start", dialog, text=guide)
+            QTest.keyClick(dialog, QtCore.Qt.Key.Key_Escape)
+            assert not dialog.isVisible(), "Escape must close Quick start"
+            record("ux-quick-start-escape", window, closed=True)
+        except Exception as error:
+            guide_errors.append(str(error))
+        finally:
+            if dialog is not None:
+                dialog.reject()
+    QtCore.QTimer.singleShot(0, read_guide)
+    next(action for action in window.menuHelp.actions() if "Quick start" in action.text()).trigger()
+    assert not guide_errors, guide_errors
+
+    def cancel_wizard():
+        dialog = app.activeModalWidget()
+        try:
+            assert isinstance(dialog, main_wizard.MainWizard)
+            record("ux-create-dataset-before-escape", dialog)
+            QTest.keyClick(dialog, QtCore.Qt.Key.Key_Escape)
+            assert not dialog.isVisible(), "Escape must cancel Create dataset"
+            record("ux-create-dataset-escape", window, closed=True)
+        except Exception as error:
+            guide_errors.append(str(error))
+        finally:
+            if dialog is not None:
+                dialog.reject()
+    QtCore.QTimer.singleShot(0, cancel_wizard)
+    window.action_new_dataset.trigger()
+    assert not guide_errors, guide_errors
     from rc_metastudio.about_legal_dialog import AboutLegalDialog
     from rc_metastudio.launch import _show_main_window
     from rc_metastudio.settings import save_main_window_placement

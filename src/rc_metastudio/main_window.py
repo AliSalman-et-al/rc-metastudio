@@ -257,7 +257,13 @@ class SheetTabBar(QtWidgets.QTabBar):
             self.changeEvent(a1)
         window = self.window()
         event = a1
-        if isinstance(window, MainWindow) and isinstance(event, QKeyEvent) and event.key() == Qt.Key.Key_Escape:
+        if (
+            isinstance(window, MainWindow)
+            and window.sheet_name_edit is not None
+            and a0 is window.sheet_name_edit
+            and isinstance(event, QKeyEvent)
+            and event.key() == Qt.Key.Key_Escape
+        ):
             window._finish_sheet_rename(cancel=True)
             return True
         return super().eventFilter(a0, event)
