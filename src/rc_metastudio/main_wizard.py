@@ -979,7 +979,7 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         self._naming_defaults = meta_globals.default_group_names(data_type, info["sub_type"])
         metric = "Mean" if info["effect"] == "TX Mean" else meta_globals.ALL_METRIC_NAMES.get(info["effect"], info["effect"] or "")
         metric = {"PR": "Proportion", "SMD": "Standardized mean difference (SMD)"}.get(info["effect"], metric[:1] + metric[1:].lower())
-        task = "Import data" if self.wizard().get_wizard_path() == "csv_import" else "Add outcome" if self.wizard().existing_outcome_names else "Create dataset"
+        task = self.wizard().task_label
         kind = {"binary": "Two-arm binary" if self._comparative else "Single-arm proportion",
                 "continuous": "Two-arm continuous" if self._comparative else "Single-arm continuous",
                 "diagnostic": "Diagnostic accuracy", "time_to_event": "Time-to-event", "event_rates": "Event rates"}[info["data_type"]]
@@ -1001,9 +1001,6 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         for field in (self.first_group_name, self.second_group_name):
             field.setAccessibleDescription("Optional. Leave blank to use " + field.placeholderText() + ".")
         self.completeChanged.emit()
-
-    def showEvent(self, a0: QShowEvent | None) -> None:
-        super().showEvent(a0)
         QTimer.singleShot(0, self._focus_outcome_name)
 
     def _focus_outcome_name(self) -> None:
@@ -1068,6 +1065,7 @@ class MainWizard(QWizard):
         )
 
         self.existing_outcome_names = existing_outcome_names
+        self.task_label = "Add outcome" if existing_outcome_names else {"csv_import": "Import data"}.get(path, "Create dataset")
         self.info_d: dict[str, object] = {}
         self._outcome_info: DatasetInfo | None = None
         self.info_d["path"] = path

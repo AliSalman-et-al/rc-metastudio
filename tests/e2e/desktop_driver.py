@@ -620,7 +620,9 @@ def add_named_sheet(app, window, name, diagnostic=False):
         assert edit.hasFocus()
         assert edit.selectedText() == edit.text()
         assert edit.text().startswith("Outcome ")
-        key_clicks(edit, name)
+        for character in name:
+            key_clicks(edit, character)
+            app.processEvents()
         assert edit.text() == name
         key_click(edit, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
         key_clicks(edit, window.model.current_sheet.name)
