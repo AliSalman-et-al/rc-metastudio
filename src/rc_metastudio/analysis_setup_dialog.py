@@ -1074,12 +1074,17 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             model_info.extend((f"Participants in {name}", f"{sum(row[index] for row in raw):g}")
                               for name, index in zip(self.model.arm_names, (1, 3) if self.data_type == "binary" else (0, 3)))
         if self.data_type == "diagnostic":
-            complete = [row for row in raw if len(row) == 4 and all(isinstance(v, (int, float)) and math.isfinite(v) for v in row)]
-            if complete:
-                model_info.append(("Participants", f"{sum(sum(row) for row in complete):g}"))
+            model_info.extend(self._diagnostic_participants(raw))
         if len(model_info) == 1:
             model_info.append(("Participants", "Not available"))
         return model_info
+
+    @staticmethod
+    def _diagnostic_participants(raw):
+        complete = [row for row in raw if len(row) == 4 and all(
+            isinstance(v, (int, float)) and math.isfinite(v) for v in row
+        )]
+        return [("Participants", f"{sum(sum(row) for row in complete):g}")] if complete else []
 
     def _applied_parameters(self):
         definitions, _, _, _ = self.analysis_service.parameters(self.current_method)

@@ -5,6 +5,7 @@
 import copy
 from contextlib import ExitStack
 from functools import partial
+from itertools import product
 from typing import TYPE_CHECKING, cast
 
 from rc_metastudio.qt_layout import style_inline_error
@@ -479,12 +480,12 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
     def _mark_table_invalid(self, message):
         with QSignalBlocker(self.raw_data_table):
-            for row in range(self.raw_data_table.rowCount()):
-                for col in range(self.raw_data_table.columnCount()):
-                    if not self._raw_count_cell_is_editable(row, col):
-                        item = self.raw_data_table.item(row, col)
-                        if item is not None:
-                            item.setText("")
+            for row, col in product(range(self.raw_data_table.rowCount()), range(self.raw_data_table.columnCount())):
+                if self._raw_count_cell_is_editable(row, col):
+                    continue
+                item = self.raw_data_table.item(row, col)
+                if item is not None:
+                    item.setText("")
         for field in (self.effect_text_box, self.lower_text_box, self.upper_text_box):
             field.clear()
         for name in ("calculator_metrics", "calculator_wald"):
