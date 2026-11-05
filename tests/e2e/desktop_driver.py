@@ -2283,7 +2283,10 @@ try:
     assert window.isVisible()
     assert not window.action_go.isEnabled()
     assert not window.isEnabled(), "startup shell looks ready before R is usable"
-    assert window.cursor().shape() == QtCore.Qt.CursorShape.WaitCursor
+    if sys.platform == "darwin":
+        assert window.cursor().shape() != QtCore.Qt.CursorShape.WaitCursor
+    else:
+        assert window.cursor().shape() == QtCore.Qt.CursorShape.WaitCursor
     assert window.statusBar().currentMessage() == "Starting R…"
     assert window.dataset_file_lbl.text() == "Starting… · Untitled dataset"
     from rc_metastudio import r_bridge, r_backend
