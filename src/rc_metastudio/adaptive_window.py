@@ -298,6 +298,15 @@ class AdaptiveWindowController(QObject):
                 else QLayout.SizeConstraint.SetNoConstraint
             )
             window.layout().setSizeConstraint(constraint)
+        if self.role == WindowRole.MAIN:
+            # Reserve a usable grid viewport in addition to the native chrome.
+            em = window.fontMetrics().height()
+            minimum = QSize(max(640, 40 * em), max(400, 24 * em))
+            available = self._available_geometry()
+            if available.isValid():
+                minimum = minimum.boundedTo(available.size())
+            # layout-audit: allow=adaptive-window-policy; reason=main workspace retains a usable grid and chrome at its current font size
+            window.setMinimumSize(minimum)
         window.installEventFilter(self)
 
     def eventFilter(  # ty: ignore[invalid-method-override] -- PyQt6's QObject stub rejects this runtime-supported filter override.

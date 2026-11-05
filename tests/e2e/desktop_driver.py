@@ -448,6 +448,40 @@ def sample_analysis(app, window, sample):
     assert (
         str(window.model.data(window.model.index(0, window.model.NAME))) == first_study
     )
+    assert window.minimumWidth() >= 600 and window.minimumHeight() >= 350
+    if sample == "amino":
+        for menu_action in window.menuMetric.actions():
+            menu = menu_action.menu()
+            if menu is not None:
+                for action in menu.actions():
+                    if action.data() == "PAS":
+                        action.trigger()
+        app.processEvents()
+        model = window.model
+        assert model.current_effect == "PAS"
+        checked = []
+        for row, study in enumerate(model.get_studies(False)):
+            raw = study.analysis_unit.get_raw_data_for_arms(model.arm_names)
+            if tuple(raw[:2]) not in ((0, 30), (1, 74), (0, 19)):
+                continue
+            values = [float(model.data(model.index(row, col), QtCore.Qt.ItemDataRole.EditRole))
+                      for col in model.OUTCOMES[:3]]
+            from rc_metastudio import r_bridge
+            events, total = raw[:2]
+            expected = list(r_bridge.execute_r_string(
+                f"metafor::transf.iarcsin(asin(sqrt({events}/{total})) + "
+                f"c(0, -1, 1) * qnorm(.975) / (2 * sqrt({total})))"))
+            assert values[1] <= values[0] <= values[2], (raw, values)
+            assert all(abs(a - b) < 1e-12 for a, b in zip(values, expected)), (raw, values, expected)
+            checked.append(dict(raw=raw, values=values, expected=expected))
+        assert len(checked) >= 3, checked
+        record_step("pas-boundary-intervals", window, rows=checked)
+        for menu_action in window.menuMetric.actions():
+            menu = menu_action.menu()
+            if menu is not None:
+                for action in menu.actions():
+                    if action.data() == "OR":
+                        action.trigger()
     assert_study_grid(app, window)
     assert sum(study.include for study in window.model.get_studies(False)) == study_count
     method, case = {
