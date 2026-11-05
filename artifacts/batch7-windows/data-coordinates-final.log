@@ -1,0 +1,11 @@
+amino-binary-random PASS
+continuous-random PASS
+lymph-diagnostic-random-dor PASS
+amino-binary-cumulative PASS
+amino-binary-leave-one-out PASS
+continuous-cumulative PASS
+continuous-leave-one-out PASS
+amino-binary-meta-regression PASS
+continuous-meta-regression PASS
+amino-binary-subgroup PASS
+continuous-subgroup PASS

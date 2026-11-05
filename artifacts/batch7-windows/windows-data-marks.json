@@ -1,0 +1,197 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "id": "continuous-random",
+      "roi": [
+        0.66,
+        0.93,
+        0.23,
+        0.71
+      ],
+      "old_data_ink_pixels": 121173,
+      "new_data_ink_pixels": 122635,
+      "horizontal_layout_translation_px": -8,
+      "unmatched_data_mark_fraction": 0.0,
+      "raster_quantization_limit_px": 2
+    },
+    {
+      "id": "lymph-diagnostic-random-dor",
+      "roi": [
+        0.72,
+        0.94,
+        0.13,
+        0.82
+      ],
+      "old_data_ink_pixels": 164542,
+      "new_data_ink_pixels": 160956,
+      "horizontal_layout_translation_px": -55,
+      "unmatched_data_mark_fraction": 0.0,
+      "raster_quantization_limit_px": 2
+    },
+    {
+      "id": "amino-binary-cumulative",
+      "roi": [
+        0.4,
+        0.69,
+        0.06,
+        0.76
+      ],
+      "old_data_ink_pixels": 179978,
+      "new_data_ink_pixels": 179943,
+      "horizontal_layout_translation_px": -2,
+      "unmatched_data_mark_fraction": 0.0,
+      "raster_quantization_limit_px": 2
+    },
+    {
+      "id": "amino-binary-leave-one-out",
+      "roi": [
+        0.32,
+        0.68,
+        0.06,
+        0.76
+      ],
+      "old_data_ink_pixels": 228302,
+      "new_data_ink_pixels": 228992,
+      "horizontal_layout_translation_px": -1,
+      "unmatched_data_mark_fraction": 0.0,
+      "raster_quantization_limit_px": 2
+    },
+    {
+      "id": "continuous-cumulative",
+      "roi": [
+        0.27,
+        0.58,
+        0.1,
+        0.55
+      ],
+      "old_data_ink_pixels": 77071,
+      "new_data_ink_pixels": 77157,
+      "horizontal_layout_translation_px": -1,
+      "unmatched_data_mark_fraction": 0.0,
+      "raster_quantization_limit_px": 2
+    },
+    {
+      "id": "continuous-leave-one-out",
+      "roi": [
+        0.28,
+        0.61,
+        0.09,
+        0.58
+      ],
+      "old_data_ink_pixels": 117788,
+      "new_data_ink_pixels": 117829,
+      "horizontal_layout_translation_px": -1,
+      "unmatched_data_mark_fraction": 0.0,
+      "raster_quantization_limit_px": 2
+    },
+    {
+      "id": "amino-binary-meta-regression",
+      "roi": [
+        0.15,
+        0.94,
+        0.04,
+        0.81
+      ],
+      "old_data_ink_pixels": 25979,
+      "new_data_ink_pixels": 25979,
+      "horizontal_layout_translation_px": -2,
+      "unmatched_data_mark_fraction": 0.0,
+      "raster_quantization_limit_px": 2
+    },
+    {
+      "id": "continuous-meta-regression",
+      "circle_fill_components_old": [
+        [
+          345.81026785714283,
+          1440.3900669642858
+        ],
+        [
+          437.0,
+          1195.5
+        ],
+        [
+          535.452380952381,
+          1732.6238095238095
+        ],
+        [
+          624.5,
+          1148.0
+        ],
+        [
+          708.031887755102,
+          855.5637755102041
+        ],
+        [
+          794.383761276891,
+          2025.1089521165857
+        ],
+        [
+          879.1829457364341,
+          563.2077519379845
+        ]
+      ],
+      "circle_fill_components_new": [
+        [
+          345.80875383328686,
+          1437.536660161695
+        ],
+        [
+          437.0,
+          1194.5
+        ],
+        [
+          535.4423076923077,
+          1729.3076923076924
+        ],
+        [
+          624.5,
+          1145.8620689655172
+        ],
+        [
+          708.0190597204574,
+          854.1207115628971
+        ],
+        [
+          794.3723034098817,
+          2020.8406402226863
+        ],
+        [
+          879.1090342679128,
+          562.5
+        ]
+      ],
+      "all_fill_component_centres_axis_normalized_within_two_pixels": true,
+      "curve_edge_unmatched_fraction": 0.0005435691587222236,
+      "note": "Canvas width changes four pixels with sentence-case ylabel; full-precision regression data and predictions checked separately with R identical()."
+    },
+    {
+      "id": "amino-binary-subgroup",
+      "roi": [
+        0.62,
+        0.84,
+        0.08,
+        0.85
+      ],
+      "old_data_ink_pixels": 10121,
+      "new_data_ink_pixels": 10121,
+      "horizontal_layout_translation_px": -2,
+      "unmatched_data_mark_fraction": 0.0,
+      "raster_quantization_limit_px": 2
+    },
+    {
+      "id": "continuous-subgroup",
+      "roi": [
+        0.44,
+        0.72,
+        0.12,
+        0.76
+      ],
+      "old_data_ink_pixels": 311599,
+      "new_data_ink_pixels": 311651,
+      "horizontal_layout_translation_px": -1,
+      "unmatched_data_mark_fraction": 0.0,
+      "raster_quantization_limit_px": 2
+    }
+  ]
+}
