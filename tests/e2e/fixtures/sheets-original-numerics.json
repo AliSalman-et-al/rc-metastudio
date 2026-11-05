@@ -317,7 +317,7 @@
     "method": "diagnostic.random",
     "metric": null,
     "sections": {
-      "Sensitivity Summary": {
+      "Sensitivity summary": {
         "estimate": 0.666,
         "lower_bound": 0.594,
         "upper_bound": 0.732,
@@ -333,7 +333,7 @@
         "calculation_scale.standard_error": 0.159,
         "study_count": 17.0
       },
-      "Specificity Summary": {
+      "Specificity summary": {
         "estimate": 0.802,
         "lower_bound": 0.744,
         "upper_bound": 0.849,
@@ -349,7 +349,7 @@
         "calculation_scale.standard_error": 0.169,
         "study_count": 17.0
       },
-      "Diagnostic Odds Ratio Summary": {
+      "Diagnostic odds ratio summary": {
         "estimate": 9.648,
         "lower_bound": 5.529,
         "upper_bound": 16.835,

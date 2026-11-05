@@ -1,0 +1,39 @@
+tests/r_stack/test_inprocess_rpy2_backend.py:576:        "list(images=c('Ordinary Funnel Plot'='plot.png'), "
+tests/r_stack/test_inprocess_rpy2_backend.py:577:        "plot_names=c('Ordinary Funnel Plot'='funnel'), "
+tests/r_stack/test_inprocess_rpy2_backend.py:578:        "plot_params_paths=c('Ordinary Funnel Plot'='params'), "
+tests/r_stack/test_inprocess_rpy2_backend.py:579:        "plot_capabilities=list('Ordinary Funnel Plot'=list(plot_kind='funnel', "
+tests/r_stack/test_inprocess_rpy2_backend.py:581:        "image_order='Ordinary Funnel Plot', sections=list(list(id='small-study.funnel.1', "
+tests/r_stack/test_inprocess_rpy2_backend.py:582:        "kind='image', order=0L, title='Ordinary Funnel Plot', "
+tests/r_stack/test_inprocess_rpy2_backend.py:583:        "source_key='small-study.funnel.1', value_key='Ordinary Funnel Plot')))"
+tests/python/gui/test_funnel_plot_editor.py:237:        "Ordinary Funnel Plot",
+tests/python/gui/test_funnel_plot_editor.py:290:        "Ordinary Funnel Plot",
+tests/python/gui/test_results_workspace_layout.py:709:        "Contour Funnel Plot",
+r/RCMetaR/tests/testthat/test-publication-bias.R:110:  expect_identical(names(result$images), "Ordinary Funnel Plot")
+r/RCMetaR/tests/testthat/test-publication-bias.R:113:  expect_identical(names(result$plot_capabilities), "Ordinary Funnel Plot")
+r/RCMetaR/tests/testthat/test-publication-bias.R:114:  expect_identical(names(result$plot_params_paths), "Ordinary Funnel Plot")
+r/RCMetaR/tests/testthat/test-publication-bias.R:115:  expect_identical(result$plot_source_keys[["Ordinary Funnel Plot"]], "small-study.funnel.1")
+r/RCMetaR/tests/testthat/test-publication-bias.R:126:  expect_identical(image.sections[[1]]$title, "Ordinary Funnel Plot")
+r/RCMetaR/tests/testthat/test-publication-bias.R:128:  expect_identical(image.sections[[1]]$value_key, "Ordinary Funnel Plot")
+r/RCMetaR/tests/testthat/test-publication-bias.R:172:  expect_identical(names(result$images), "Ordinary Funnel Plot")
+r/RCMetaR/tests/testthat/test-publication-bias.R:173:  expect_match(result$Failures, "Contour Funnel Plot")
+r/RCMetaR/tests/testthat/test-publication-bias.R:209:  expect_identical(result$plot_capabilities[["Ordinary Funnel Plot"]]$plot_kind, "funnel")
+r/RCMetaR/tests/testthat/test-publication-bias.R:210:  expect_identical(result$plot_capabilities[["Contour Funnel Plot"]]$plot_kind, "contour_funnel")
+r/RCMetaR/tests/testthat/test-publication-bias.R:211:  params.path <- result$plot_params_paths[["Contour Funnel Plot"]]
+r/RCMetaR/tests/testthat/test-publication-bias.R:228:  for (title in c("Ordinary Funnel Plot", "Contour Funnel Plot")) {
+r/RCMetaR/tests/testthat/test-publication-bias.R:242:  path <- result$plot_params_paths[["Ordinary Funnel Plot"]]
+r/RCMetaR/tests/testthat/test-publication-bias.R:340:  visible.path <- visible$plot_params_paths[["Ordinary Funnel Plot"]]
+r/RCMetaR/tests/testthat/test-publication-bias.R:341:  hidden.path <- hidden$plot_params_paths[["Ordinary Funnel Plot"]]
+r/RCMetaR/tests/testthat/test-publication-bias.R:352:    unname(tools::md5sum(hidden$images[["Ordinary Funnel Plot"]]))
+r/RCMetaR/tests/testthat/test-publication-bias.R:369:  path <- result$plot_params_paths[["Contour Funnel Plot"]]
+r/RCMetaR/tests/testthat/test-publication-bias.R:380:    unname(tools::md5sum(result$images[["Contour Funnel Plot"]]))
+r/RCMetaR/tests/testthat/test-publication-bias.R:753:  expect_true("Deeks Effective-Sample-Size Funnel Plot" %in% names(result$images))
+r/RCMetaR/tests/testthat/test-publication-bias.R:754:  path <- result$plot_params_paths[["Deeks Effective-Sample-Size Funnel Plot"]]
+r/RCMetaR/tests/testthat/test-publication-bias.R:766:    unname(tools::md5sum(result$images[["Deeks Effective-Sample-Size Funnel Plot"]]))
+r/RCMetaR/tests/testthat/test-publication-bias.R:778:  custom.path <- custom$plot_params_paths[["Deeks Effective-Sample-Size Funnel Plot"]]
+r/RCMetaR/R/publication_bias.R:314:    if (any(grepl("Ordinary Funnel Plot|Trim-and-fill", displayed.plots)))
+r/RCMetaR/R/publication_bias.R:316:    if ("Contour Funnel Plot" %in% displayed.plots)
+r/RCMetaR/R/publication_bias.R:318:    if ("Deeks Effective-Sample-Size Funnel Plot" %in% displayed.plots)
+r/RCMetaR/R/publication_bias.R:1103:    title <- if (kind == "ordinary") "Ordinary Funnel Plot" else if (kind == "deeks")
+r/RCMetaR/R/publication_bias.R:1104:        "Deeks Effective-Sample-Size Funnel Plot" else "Contour Funnel Plot"
+tests/python/fast/test_result_formatting_audit.py:26:        "images": {"Ordinary Funnel Plot": "ordinary.png"},
+tests/python/fast/test_publication_bias_contract.py:146:    ("Ordinary Funnel Plot", "Ordinary funnel plot"),

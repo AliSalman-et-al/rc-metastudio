@@ -1,0 +1,48 @@
+bringing up nodes...
+bringing up nodes...
+
+.s.......F                                                               [100%]
+=================================== FAILURES ===================================
+_______________ test_desktop_workflow[project-reviewer-colours] ________________
+[gw0] linux -- Python 3.11.9 /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python
+
+scenario = 'project-reviewer-colours'
+
+    @pytest.mark.parametrize(
+        "scenario",
+        [scenario for scenario in SCENARIOS if scenario not in {"doctor", "ui-crawl"}],
+    )
+    def test_desktop_workflow(scenario):
+        # The same launcher owns timeouts, isolation and durable evidence in CI.
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/verify_rcms.py"),
+                scenario,
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        evidence_lines = [line.removeprefix("Evidence: ") for line in result.stdout.splitlines() if line.startswith("Evidence: ")]
+        assert len(evidence_lines) == 1, result.stdout + result.stderr
+        evidence = Path(evidence_lines[0])
+        manifest = json.loads((evidence / "manifest.json").read_text(encoding="utf-8"))
+>       assert result.returncode == 0, result.stdout + result.stderr
+E       AssertionError: Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/artifacts/verification/rcms/20261105T151258Z-3c74e0af-project-reviewer-colours
+E         Traceback (most recent call last):
+E           File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/scripts/verify_rcms.py", line 288, in <module>
+E             raise SystemExit(main())
+E                              ^^^^^^
+E           File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/scripts/verify_rcms.py", line 281, in main
+E             raise RuntimeError("Verification inputs changed during desktop driving; restart the run")
+E         RuntimeError: Verification inputs changed during desktop driving; restart the run
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python', '/home/ali/.t3/worktrees/...sktop driving; restart the run")\nRuntimeError: Verification inputs changed during desktop driving; restart the run\n').returncode
+
+tests/e2e/test_desktop_workflows.py:38: AssertionError
+=========================== short test summary info ============================
+FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[project-reviewer-colours]
+1 failed, 8 passed, 1 skipped in 412.10s (0:06:52)

@@ -1,0 +1,55 @@
+Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/artifacts/verification/rcms/20261105T150601Z-3d3d4c08-manuscript-export-direct
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Manuscript analysis: double-zero binary.random
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Manuscript lifetime: {'phase': 'close-before', 'view': '0x762d057fe680', 'deleted': False, 'mode': 'direct', 'operation': 'setup', 'picker_number': 0, 'previous_dialog_deleted': None, 'visible': True, 'refit_pending': False, 'scene_deleted': False, 'viewport_deleted': False}
+Manuscript lifetime: {'phase': 'close-after', 'view': '0x762d057fe680', 'deleted': True, 'mode': 'direct', 'operation': 'setup', 'picker_number': 0, 'previous_dialog_deleted': None}
+Manuscript analysis: binary.fixed.mh
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/tests/e2e/desktop_driver.py", line 2437, in <module>
+    run(app, window, WORK, ROOT, record_step, analyze,
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/tests/e2e/manuscript_export.py", line 100, in run
+    _run(app, window, work, root, record, analyze, direct_write=direct_write)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/tests/e2e/manuscript_export.py", line 278, in _run
+    view = analyze(app, window, method)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/tests/e2e/desktop_driver.py", line 322, in analyze
+    assert len(views) == 1, "analysis did not display results"
+           ^^^^^^^^^^^^^^^
+AssertionError: analysis did not display results
+
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/tests/e2e/desktop_driver.py", line 2437, in <module>
+    run(app, window, WORK, ROOT, record_step, analyze,
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/tests/e2e/manuscript_export.py", line 100, in run
+    _run(app, window, work, root, record, analyze, direct_write=direct_write)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/tests/e2e/manuscript_export.py", line 278, in _run
+    view = analyze(app, window, method)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/tests/e2e/desktop_driver.py", line 322, in analyze
+    assert len(views) == 1, "analysis did not display results"
+           ^^^^^^^^^^^^^^^
+AssertionError: analysis did not display results
+R callback write-console: Warning message:
+  
+R callback write-console: Some yi/vi values are NA. 
+  
+

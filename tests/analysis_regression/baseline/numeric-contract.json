@@ -90,7 +90,7 @@
         }
       ],
       "sections": {
-        "Diagnostic Odds Ratio Summary": {
+        "Diagnostic odds ratio summary": {
           "calculation_scale.estimate": 2.267,
           "calculation_scale.lower_bound": 1.71,
           "calculation_scale.standard_error": 0.284,
@@ -1037,7 +1037,7 @@
       ]
     },
     "lymph-diagnostic-random-dor": {
-      "Diagnostic Odds Ratio Summary": [
+      "Diagnostic odds ratio summary": [
         "calculation_scale.estimate",
         "calculation_scale.lower_bound",
         "calculation_scale.standard_error",

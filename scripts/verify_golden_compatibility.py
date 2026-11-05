@@ -585,7 +585,12 @@ def _load_frozen_reference(root: Path) -> tuple[Path, FrozenGoldenReference]:
         raise ValueError("frozen archive size does not match the outer manifest")
     if _sha256(archive_path) != entry["sha256"]:
         raise ValueError("frozen archive hash does not match the outer manifest")
-    return archive_path, _read_validated_zip(archive_path)
+    reference = _read_validated_zip(archive_path)
+    # The archive retains historical display labels; only these labels changed.
+    labels = {"Diagnostic Odds Ratio Summary": "Diagnostic odds ratio summary"}
+    for case in reference["curated_golden_set"]:
+        case["texts"] = {labels.get(title, title): text for title, text in case["texts"].items()}
+    return archive_path, reference
 
 
 def _required_manifest_entry(manifest: RepositoryManifest, name: str) -> ManifestEntry:

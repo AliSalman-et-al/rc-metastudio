@@ -740,7 +740,7 @@ def run(
         assert view.results.details.count("Estimator: Restricted Maximum Likelihood") == 3, view.results.details
         report = view.report_text.toPlainText()
         assert report.startswith("Pooled effect\n"), report
-        sensitivity = next(s for s in view.results.sections if s.title == "Sensitivity Summary")
+        sensitivity = next(s for s in view.results.sections if s.title == "Sensitivity summary")
         heterogeneity = next(t for t in sensitivity.tables if t.title.endswith('Heterogeneity'))
         from tests.e2e.report_retention import assert_retained_table
         assert_retained_table(view, sensitivity, heterogeneity)

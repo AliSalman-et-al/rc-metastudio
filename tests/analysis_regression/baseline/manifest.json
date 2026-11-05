@@ -1,7 +1,7 @@
 {
   "golden_numeric_contract": {
     "path": "tests/analysis_regression/baseline/numeric-contract.json",
-    "sha256": "2f351d4f0eb474f56478a63548957c88a553bb446125af3280ead0731e5e5096",
+    "sha256": "88d0f6327ee876e99f476e2684956fa3b0f2d4523601426fda3892ff850b926e",
     "size": 42173
   },
   "golden_plot_descriptor_contract": {

@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+from rc_metastudio.result_sections import sentence_case_title
+
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
@@ -209,7 +211,7 @@ def _section_fields(
 ) -> tuple[str, Literal["text", "image"], int, str, str]:
     semantic_id = _required_section_text(item, "id")
     source_key = _required_section_text(item, "source_key")
-    title = _required_section_text(item, "title")
+    title = sentence_case_title(_required_section_text(item, "title"))
     kind = item.get("kind")
     if kind == "text":
         typed_kind: Literal["text", "image"] = "text"

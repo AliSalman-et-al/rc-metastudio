@@ -22,6 +22,7 @@ from rc_metastudio.analysis_method_labels import (
     normalize_available_method_labels,
 )
 from rc_metastudio import result_sections
+from rc_metastudio.result_sections import sentence_case_title as _sentence_case_title
 from rc_metastudio.analysis_errors import DiagnosticExecutionError
 from rc_metastudio.analysis_results import AnalysisResult, parse_analysis_result
 from rc_metastudio.study_effect_shapes import (
@@ -1157,7 +1158,7 @@ def _execute_versioned_request(
         _to_r_params(normalized),
     )
     ro.globalenv[_r_symbol(res_name)] = result
-    return parse_out_results(result)
+    return parse_out_results(result, study_digits=params.get("digits"))
 
 
 @serialized_r_call
@@ -1219,7 +1220,7 @@ def _execute_versioned_requests(
     except RRuntimeError as error:
         raise DiagnosticExecutionError(str(error)) from error
     ro.globalenv[_r_symbol(res_name)] = result
-    return parse_out_results(result)
+    return parse_out_results(result, study_digits=_request_params(requests[0]).get("digits"))
 
 
 @serialized_r_call
@@ -1355,7 +1356,7 @@ _RESULT_DISPLAY_DIGITS: ContextVar[int | None] = ContextVar("result_display_digi
 
 
 @serialized_r_call
-def parse_out_results(result):
+def parse_out_results(result, *, study_digits=None):
     if _r_inherits(result, "try-error"):
         raise RuntimeError(_r_error_message(result))
     result = dict(_result_items_for_display(result))
@@ -1365,7 +1366,7 @@ def parse_out_results(result):
         digits = digits[0] if digits else None
     token = _RESULT_DISPLAY_DIGITS.set(int(digits) if digits is not None else None)
     try:
-        return _parse_display_results(result)
+        return _parse_display_results(result, study_digits=study_digits)
     finally:
         _RESULT_DISPLAY_DIGITS.reset(token)
 
@@ -1401,7 +1402,7 @@ def _regression_summary(fit, reports):
 
 
 
-def _insert_held_effects(fields, display, rows):
+def _insert_held_effects(fields, display, rows, *, digits=None):
     groups = fields.get("study_groups", ())
     display_indices = []
     offset = 0
@@ -1409,11 +1410,16 @@ def _insert_held_effects(fields, display, rows):
         if groups and index and groups[index] != groups[index - 1]:
             offset += 1
         display_indices.append(index + offset)
-    for index, row in zip(display_indices, rows):
+    if digits is None:
         digits = _RESULT_DISPLAY_DIGITS.get()
-        effects = [result_sections.format_effect_number(float(list(display[key])[index]), digits if digits is not None else 4)
-                   for key in ("y.disp", "lb.disp", "ub.disp")]
-        row[1:1] = ["Not estimable", "—", "—"] if not math.isfinite(float(list(display["y.disp"])[index])) else effects
+    digits = int(digits) if digits is not None else 4
+    for index, row in zip(display_indices, rows):
+        values = [list(display[key])[index] for key in ("y.disp", "lb.disp", "ub.disp")]
+        effects = [result_sections.format_effect_number(value, digits)
+                   if isinstance(value, (float, int)) and math.isfinite(value)
+                   else _format_r_table_cell(value)
+                   for value in values]
+        row[1:1] = ["Not estimable", "—", "—"] if effects[0] == "NA" else effects
 
 
 def _held_weight_rows(fields, weights):
@@ -1430,7 +1436,7 @@ def _held_weight_rows(fields, weights):
     return rows
 
 
-def _held_study_report(metadata, reports):
+def _held_study_report(metadata, reports, *, digits=None):
     """Read already-rendered forest values; do not refit or reconstruct intervals."""
     weights = reports.get("Weights")
     if not reports:
@@ -1452,7 +1458,7 @@ def _held_study_report(metadata, reports):
         rows = _held_weight_rows(fields, weights)
         if rows is None:
             continue
-        _insert_held_effects(fields, display, rows)
+        _insert_held_effects(fields, display, rows, digits=digits)
         headers = ["Study", "Effect", "Lower bound", "Upper bound", "Weight (%)"]
         if weights is None:
             target = reports.get("Summary", next(iter(reports.values())))
@@ -1462,7 +1468,7 @@ def _held_study_report(metadata, reports):
         break
 
 
-def _parse_display_results(result):
+def _parse_display_results(result, *, study_digits=None):
     study_names = _study_names_from_result(result)
     metadata = _result_metadata(result)
     text_d = {}
@@ -1485,7 +1491,7 @@ def _parse_display_results(result):
             text_sources[key] = (text_n, index)
 
     _add_regression_reports(result, reports)
-    _held_study_report(metadata, reports)
+    _held_study_report(metadata, reports, digits=study_digits)
 
     text_d, text_sources = _apply_text_value_keys(
         text_d, text_sources, metadata["sections"]
@@ -1770,8 +1776,8 @@ def _section_display_fields(title, supplied, child_index):
         # ``Summary``) that renders into several text values.  Keep its
         # semantic title, but point at the first rendered child value so the
         # validated result still has exactly one section per value.
-        return _sentence_case_title(supplied["title"]), title
-    return _sentence_case_title(title), title
+        return supplied["title"], title
+    return title, title
 
 
 def _image_section_metadata(
@@ -1821,7 +1827,7 @@ def _image_section_id(supplied, semantic_key, used_ids):
 
 
 def _image_section_title(supplied, image_key):
-    return _sentence_case_title(supplied["title"] if supplied is not None else image_key)
+    return supplied["title"] if supplied is not None else image_key
 
 
 def _unique_result_section_id(kind, source_key, used_ids):
@@ -2215,21 +2221,6 @@ def _display_section_name(name):
     return method_display_label(str(name))
 
 
-_TITLE_PROPER_NAMES = frozenset((
-    "Baujat", "Begg", "Bayesian", "DerSimonian-Laird", "Egger", "Galbraith", "Hartung-Knapp",
-    "Knapp-Hartung", "Mantel-Haenszel", "Peto", "Reitsma",
-))
-
-
-def _sentence_case_title(title):
-    def keep(word):
-        core = word.strip("()[],:;'’")
-        head = core.split("-")[0]
-        return (core.removesuffix("'s").removesuffix("’s") in _TITLE_PROPER_NAMES
-                or any(c.isupper() for c in core[1:])  # acronyms, DerSimonian, ML
-                or (len(head) == 1 and head.isupper()))  # I-squared, H-squared
-    return " ".join(word if index == 0 or keep(word) else word.lower()
-                    for index, word in enumerate(str(title).split()))
 
 
 def _is_r_string_vector(r_object):

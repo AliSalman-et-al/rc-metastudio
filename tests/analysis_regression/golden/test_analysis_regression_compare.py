@@ -652,7 +652,7 @@ def test_golden_capture_uses_public_title_for_semantic_image_descriptor(tmp_path
     )[0]
 
     assert descriptor["artifact_label"] == "Odds Ratio Forest Plot"
-    assert descriptor["display"]["identity"] == "Odds Ratio Forest Plot"
+    assert descriptor["display"]["identity"] == "Odds ratio forest plot"
     assert descriptor["display"]["name"] == "forest.display.svg"
     assert descriptor["capability"]["kind"] == "forest"
 
@@ -692,7 +692,7 @@ def test_golden_capture_maps_case_only_artifact_title_drift_to_typed_metadata(
         {"artifacts": {"Leave-one-out Forest plot": str(image_path)}}, result
     )[0]
 
-    assert descriptor["display"]["identity"] == "Leave-one-out Forest Plot"
+    assert descriptor["display"]["identity"] == "Leave-one-out forest plot"
     assert descriptor["display"]["name"] == "loo.display.svg"
     assert descriptor["capability"]["kind"] == "leave_one_out_forest"
 
@@ -712,10 +712,10 @@ def test_golden_comparison_uses_public_text_title_for_stable_source_key():
     )
 
     assert verify_golden_compatibility.golden_analysis._public_texts(result) == {
-        "Odds Ratio Summary": "Estimate Lower bound Upper bound\n 1.0 0.5 1.5"
+        "Odds ratio summary": "Estimate Lower bound Upper bound\n 1.0 0.5 1.5"
     }
     comparisons = verify_golden_compatibility.golden_analysis.compare_bundle(
-        {"expected": {"Odds Ratio Summary": {}}, "artifacts": {}, "tolerances": {}},
+        {"expected": {"Odds ratio summary": {}}, "artifacts": {}, "tolerances": {}},
         result,
     )
     assert comparisons[0]["passed"] is True

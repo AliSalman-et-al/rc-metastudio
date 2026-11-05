@@ -1,0 +1,2028 @@
+﻿2026-11-05T14:48:45.5549505Z Current runner version: '2.338.2'
+2026-11-05T14:48:45.5569978Z ##[group]Runner Image Provisioner
+2026-11-05T14:48:45.5570605Z Hosted Compute Agent
+2026-11-05T14:48:45.5571029Z Version: 20261021.618
+2026-11-05T14:48:45.5571537Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-11-05T14:48:45.5572079Z Build Date: 2026-10-21T00:45:21Z
+2026-11-05T14:48:45.5572590Z Worker ID: {3fba240f-f5d8-497d-909b-a2ee518473b9}
+2026-11-05T14:48:45.5573115Z Region: westus2
+2026-11-05T14:48:45.5573506Z Cloud: Azure
+2026-11-05T14:48:45.5573927Z ##[endgroup]
+2026-11-05T14:48:45.5574879Z ##[group]Operating System
+2026-11-05T14:48:45.5575341Z Microsoft Windows Server 2025
+2026-11-05T14:48:45.5575801Z 10.0.26100
+2026-11-05T14:48:45.5576184Z Datacenter
+2026-11-05T14:48:45.5576660Z ##[endgroup]
+2026-11-05T14:48:45.5577083Z ##[group]Runner Image
+2026-11-05T14:48:45.5577536Z Image: windows-2025-vs2026
+2026-11-05T14:48:45.5577988Z Version: 20261030.294.1
+2026-11-05T14:48:45.5579624Z Included Software: https://github.com/actions/runner-images/blob/win25-vs2026/20261030.294/images/windows/Windows2025-VS2026-Readme.md
+2026-11-05T14:48:45.5580959Z Image Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20261030.294
+2026-11-05T14:48:45.5581700Z ##[endgroup]
+2026-11-05T14:48:45.5582646Z ##[group]GITHUB_TOKEN Permissions
+2026-11-05T14:48:45.5584087Z Contents: read
+2026-11-05T14:48:45.5584527Z Metadata: read
+2026-11-05T14:48:45.5584931Z PullRequests: read
+2026-11-05T14:48:45.5585345Z ##[endgroup]
+2026-11-05T14:48:45.5586931Z Secret source: Actions
+2026-11-05T14:48:45.5587638Z Cache mode: write
+2026-11-05T14:48:45.5588148Z Prepare workflow directory
+2026-11-05T14:48:45.5904785Z Prepare all required actions
+2026-11-05T14:48:45.5943877Z Getting action download info
+2026-11-05T14:48:45.9366861Z Download action repository 'actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10' (SHA:df4cb1c069e1874edd31b4311f1884172cec0e10)
+2026-11-05T14:48:46.0937490Z Download action repository 'astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b' (SHA:08807647e7069bb48b6ef5acd8ec9567f424441b)
+2026-11-05T14:48:46.3700413Z Download action repository 'r-lib/actions@d3c5be51b12e724e68f33216ca3c148b66d5f0b6' (SHA:d3c5be51b12e724e68f33216ca3c148b66d5f0b6)
+2026-11-05T14:48:47.1478911Z Download action repository 'actions/cache@caa296126883cff596d87d8935842f9db880ef25' (SHA:caa296126883cff596d87d8935842f9db880ef25)
+2026-11-05T14:48:47.4973279Z Download action repository 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-05T14:48:47.8357438Z Complete job name: Required Windows Full R Stack Evidence (2)
+2026-11-05T14:48:47.9592189Z ##[group]Run actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+2026-11-05T14:48:47.9592967Z with:
+2026-11-05T14:48:47.9593199Z   fetch-depth: 0
+2026-11-05T14:48:47.9593454Z   repository: AliSalman-et-al/rc-metastudio
+2026-11-05T14:48:47.9595606Z   token: ***
+2026-11-05T14:48:47.9595825Z   ssh-strict: true
+2026-11-05T14:48:47.9596069Z   ssh-user: git
+2026-11-05T14:48:47.9596294Z   persist-credentials: true
+2026-11-05T14:48:47.9596535Z   clean: true
+2026-11-05T14:48:47.9596778Z   sparse-checkout-cone-mode: true
+2026-11-05T14:48:47.9597041Z   fetch-tags: false
+2026-11-05T14:48:47.9597274Z   show-progress: true
+2026-11-05T14:48:47.9597506Z   lfs: false
+2026-11-05T14:48:47.9597713Z   submodules: false
+2026-11-05T14:48:47.9597936Z   set-safe-directory: true
+2026-11-05T14:48:47.9598318Z env:
+2026-11-05T14:48:47.9598609Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T14:48:47.9598940Z ##[endgroup]
+2026-11-05T14:48:48.0907740Z Syncing repository: AliSalman-et-al/rc-metastudio
+2026-11-05T14:48:48.0908917Z ##[group]Getting Git version info
+2026-11-05T14:48:48.0909288Z Working directory is 'D:\a\rc-metastudio\rc-metastudio'
+2026-11-05T14:48:48.1470545Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-05T14:48:48.4102466Z git version 2.56.0.windows.4
+2026-11-05T14:48:48.4159690Z ##[endgroup]
+2026-11-05T14:48:48.4192490Z Temporarily overriding HOME='D:\a\_temp\9273f1dc-f4de-408d-8ac9-2e083a2205d9' before making global git config changes
+2026-11-05T14:48:48.4209523Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-05T14:48:48.4210814Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\rc-metastudio\rc-metastudio
+2026-11-05T14:48:48.4805462Z Deleting the contents of 'D:\a\rc-metastudio\rc-metastudio'
+2026-11-05T14:48:48.4810135Z ##[group]Determining repository object format
+2026-11-05T14:48:48.4812363Z ##[endgroup]
+2026-11-05T14:48:48.4812842Z ##[group]Initializing the repository
+2026-11-05T14:48:48.4819630Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\rc-metastudio\rc-metastudio
+2026-11-05T14:48:48.5592497Z Initialized empty Git repository in D:/a/rc-metastudio/rc-metastudio/.git/
+2026-11-05T14:48:48.5636182Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/AliSalman-et-al/rc-metastudio
+2026-11-05T14:48:48.6168393Z ##[endgroup]
+2026-11-05T14:48:48.6169049Z ##[group]Disabling automatic garbage collection
+2026-11-05T14:48:48.6176185Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-11-05T14:48:48.6494993Z ##[endgroup]
+2026-11-05T14:48:48.6495566Z ##[group]Setting up auth
+2026-11-05T14:48:48.6497189Z Removing SSH command configuration
+2026-11-05T14:48:48.6507133Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-05T14:48:48.6830706Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-05T14:48:49.9468450Z Removing HTTP extra header
+2026-11-05T14:48:49.9477327Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-05T14:48:49.9768725Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-05T14:48:50.4673914Z Removing includeIf entries pointing to credentials config files
+2026-11-05T14:48:50.4684299Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-05T14:48:50.4977429Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-05T14:48:50.9112889Z [command]"C:\Program Files\Git\bin\git.exe" config --file D:\a\_temp\git-credentials-38a17fec-96bc-4767-862b-ca60e33e2a19.config http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-11-05T14:48:50.9421159Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:D:/a/rc-metastudio/rc-metastudio/.git.path D:\a\_temp\git-credentials-38a17fec-96bc-4767-862b-ca60e33e2a19.config
+2026-11-05T14:48:50.9713511Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:D:/a/rc-metastudio/rc-metastudio/.git/worktrees/*.path D:\a\_temp\git-credentials-38a17fec-96bc-4767-862b-ca60e33e2a19.config
+2026-11-05T14:48:51.0052041Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-38a17fec-96bc-4767-862b-ca60e33e2a19.config
+2026-11-05T14:48:51.0344488Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-38a17fec-96bc-4767-862b-ca60e33e2a19.config
+2026-11-05T14:48:51.0643003Z ##[endgroup]
+2026-11-05T14:48:51.0643505Z ##[group]Fetching the repository
+2026-11-05T14:48:51.0655587Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +da2dade24cc7e0a821dc0b61e82f47f18fc3bb6d:refs/remotes/pull/576/merge
+2026-11-05T14:49:09.5643746Z From https://github.com/AliSalman-et-al/rc-metastudio
+2026-11-05T14:49:09.5644692Z  * [new branch]        chore/verification-skills                -> origin/chore/verification-skills
+2026-11-05T14:49:09.5646062Z  * [new branch]        ci/baseline-history                      -> origin/ci/baseline-history
+2026-11-05T14:49:09.5646906Z  * [new branch]        ci/baseline-tests                        -> origin/ci/baseline-tests
+2026-11-05T14:49:09.5647732Z  * [new branch]        ci/planted-bugs                          -> origin/ci/planted-bugs
+2026-11-05T14:49:09.5648476Z  * [new branch]        fix/report-format-geometry-ui            -> origin/fix/report-format-geometry-ui
+2026-11-05T14:49:09.5649109Z  * [new branch]        master                                   -> origin/master
+2026-11-05T14:49:09.5649625Z  * [new branch]        ux/sheets                                -> origin/ux/sheets
+2026-11-05T14:49:09.5650455Z  * [new tag]           pre-qt6-baseline                         -> pre-qt6-baseline
+2026-11-05T14:49:09.5650964Z  * [new tag]           v0.1.0                                   -> v0.1.0
+2026-11-05T14:49:09.5651381Z  * [new tag]           v0.1.1                                   -> v0.1.1
+2026-11-05T14:49:09.5651806Z  * [new tag]           v0.1.2                                   -> v0.1.2
+2026-11-05T14:49:09.5652256Z  * [new tag]           v0.1.2-rc.1                              -> v0.1.2-rc.1
+2026-11-05T14:49:09.5652710Z  * [new tag]           v0.2.0                                   -> v0.2.0
+2026-11-05T14:49:09.5653143Z  * [new tag]           v0.2.0-rc.1                              -> v0.2.0-rc.1
+2026-11-05T14:49:09.5653636Z  * [new tag]           v0.2.0-rc.2                              -> v0.2.0-rc.2
+2026-11-05T14:49:09.5654199Z  * [new tag]           v0.2.1                                   -> v0.2.1
+2026-11-05T14:49:09.5654665Z  * [new tag]           v0.2.1-rc.1                              -> v0.2.1-rc.1
+2026-11-05T14:49:09.5655431Z  * [new tag]           v0.2.1-rc.2                              -> v0.2.1-rc.2
+2026-11-05T14:49:09.5656033Z  * [new tag]           v0.2.2                                   -> v0.2.2
+2026-11-05T14:49:09.5656534Z  * [new tag]           v0.2.2-rc.1                              -> v0.2.2-rc.1
+2026-11-05T14:49:09.5656996Z  * [new tag]           v0.2.3                                   -> v0.2.3
+2026-11-05T14:49:09.5657393Z  * [new tag]           v0.2.3-rc.1                              -> v0.2.3-rc.1
+2026-11-05T14:49:09.5658716Z  * [new tag]           v0.2.3-rc.2                              -> v0.2.3-rc.2
+2026-11-05T14:49:09.5659212Z  * [new tag]           v0.3.0                                   -> v0.3.0
+2026-11-05T14:49:09.5659676Z  * [new tag]           v0.3.0-rc.1                              -> v0.3.0-rc.1
+2026-11-05T14:49:09.5660121Z  * [new tag]           v0.3.1                                   -> v0.3.1
+2026-11-05T14:49:09.5660584Z  * [new tag]           v0.3.1-rc.1                              -> v0.3.1-rc.1
+2026-11-05T14:49:09.5661010Z  * [new tag]           v0.4.0                                   -> v0.4.0
+2026-11-05T14:49:09.5661436Z  * [new tag]           v0.4.0-rc.1                              -> v0.4.0-rc.1
+2026-11-05T14:49:09.5661842Z  * [new tag]           v0.4.1                                   -> v0.4.1
+2026-11-05T14:49:09.5662332Z  * [new tag]           v0.4.1-rc.1                              -> v0.4.1-rc.1
+2026-11-05T14:49:09.5662839Z  * [new tag]           v0.4.2                                   -> v0.4.2
+2026-11-05T14:49:09.5663404Z  * [new tag]           v0.4.2-rc.2                              -> v0.4.2-rc.2
+2026-11-05T14:49:09.5663882Z  * [new tag]           v0.5.0                                   -> v0.5.0
+2026-11-05T14:49:09.5664313Z  * [new tag]           v0.5.0-rc.1                              -> v0.5.0-rc.1
+2026-11-05T14:49:09.5664944Z  * [new tag]           v0.5.0-rc.2                              -> v0.5.0-rc.2
+2026-11-05T14:49:09.5665413Z  * [new tag]           v0.5.1                                   -> v0.5.1
+2026-11-05T14:49:09.5665875Z  * [new tag]           v0.5.1-rc.1                              -> v0.5.1-rc.1
+2026-11-05T14:49:09.5666405Z  * [new ref]           da2dade24cc7e0a821dc0b61e82f47f18fc3bb6d -> pull/576/merge
+2026-11-05T14:49:09.5689291Z ##[endgroup]
+2026-11-05T14:49:09.5690039Z ##[group]Determining the checkout info
+2026-11-05T14:49:09.5690689Z ##[endgroup]
+2026-11-05T14:49:09.5699634Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-11-05T14:49:09.6149042Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-11-05T14:49:09.6432011Z ##[group]Checking out the ref
+2026-11-05T14:49:09.6439479Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force refs/remotes/pull/576/merge
+2026-11-05T14:49:10.7000255Z Updating files:  21% (1844/8519)
+2026-11-05T14:49:10.7473046Z Updating files:  22% (1875/8519)
+2026-11-05T14:49:10.7994098Z Updating files:  23% (1960/8519)
+2026-11-05T14:49:10.8280982Z Updating files:  24% (2045/8519)
+2026-11-05T14:49:10.8892119Z Updating files:  25% (2130/8519)
+2026-11-05T14:49:11.0477608Z Updating files:  26% (2215/8519)
+2026-11-05T14:49:11.0754890Z Updating files:  27% (2301/8519)
+2026-11-05T14:49:11.1216106Z Updating files:  28% (2386/8519)
+2026-11-05T14:49:11.1708532Z Updating files:  29% (2471/8519)
+2026-11-05T14:49:11.2094262Z Updating files:  30% (2556/8519)
+2026-11-05T14:49:11.3156379Z Updating files:  31% (2641/8519)
+2026-11-05T14:49:11.3743674Z Updating files:  32% (2727/8519)
+2026-11-05T14:49:11.4557942Z Updating files:  33% (2812/8519)
+2026-11-05T14:49:11.5301460Z Updating files:  34% (2897/8519)
+2026-11-05T14:49:11.5743906Z Updating files:  35% (2982/8519)
+2026-11-05T14:49:11.6045133Z Updating files:  36% (3067/8519)
+2026-11-05T14:49:11.6287931Z Updating files:  37% (3153/8519)
+2026-11-05T14:49:11.6962401Z Updating files:  38% (3238/8519)
+2026-11-05T14:49:11.6984204Z Updating files:  39% (3323/8519)
+2026-11-05T14:49:11.7713325Z Updating files:  39% (3326/8519)
+2026-11-05T14:49:11.8456297Z Updating files:  40% (3408/8519)
+2026-11-05T14:49:11.9140465Z Updating files:  41% (3493/8519)
+2026-11-05T14:49:11.9829331Z Updating files:  42% (3578/8519)
+2026-11-05T14:49:12.0507980Z Updating files:  43% (3664/8519)
+2026-11-05T14:49:12.1148997Z Updating files:  44% (3749/8519)
+2026-11-05T14:49:12.1775483Z Updating files:  45% (3834/8519)
+2026-11-05T14:49:12.2076548Z Updating files:  46% (3919/8519)
+2026-11-05T14:49:12.2522290Z Updating files:  47% (4004/8519)
+2026-11-05T14:49:12.3257272Z Updating files:  48% (4090/8519)
+2026-11-05T14:49:12.3821262Z Updating files:  49% (4175/8519)
+2026-11-05T14:49:12.5036527Z Updating files:  50% (4260/8519)
+2026-11-05T14:49:12.5568771Z Updating files:  51% (4345/8519)
+2026-11-05T14:49:12.7049813Z Updating files:  52% (4430/8519)
+2026-11-05T14:49:12.7117771Z Updating files:  53% (4516/8519)
+2026-11-05T14:49:12.7782309Z Updating files:  53% (4527/8519)
+2026-11-05T14:49:12.8331193Z Updating files:  54% (4601/8519)
+2026-11-05T14:49:12.8529123Z Updating files:  55% (4686/8519)
+2026-11-05T14:49:12.8706563Z Updating files:  56% (4771/8519)
+2026-11-05T14:49:12.9262885Z Updating files:  57% (4856/8519)
+2026-11-05T14:49:13.0024066Z Updating files:  58% (4942/8519)
+2026-11-05T14:49:13.0596279Z Updating files:  59% (5027/8519)
+2026-11-05T14:49:13.1173460Z Updating files:  60% (5112/8519)
+2026-11-05T14:49:13.1753565Z Updating files:  61% (5197/8519)
+2026-11-05T14:49:13.2757771Z Updating files:  62% (5282/8519)
+2026-11-05T14:49:13.3622648Z Updating files:  63% (5367/8519)
+2026-11-05T14:49:13.4447447Z Updating files:  64% (5453/8519)
+2026-11-05T14:49:13.5220377Z Updating files:  65% (5538/8519)
+2026-11-05T14:49:13.5975138Z Updating files:  66% (5623/8519)
+2026-11-05T14:49:13.6218449Z Updating files:  67% (5708/8519)
+2026-11-05T14:49:13.6428296Z Updating files:  68% (5793/8519)
+2026-11-05T14:49:13.6793477Z Updating files:  69% (5879/8519)
+2026-11-05T14:49:13.7118933Z Updating files:  70% (5964/8519)
+2026-11-05T14:49:13.7263210Z Updating files:  70% (6018/8519)
+2026-11-05T14:49:13.7798294Z Updating files:  71% (6049/8519)
+2026-11-05T14:49:13.8216062Z Updating files:  72% (6134/8519)
+2026-11-05T14:49:13.8557892Z Updating files:  73% (6219/8519)
+2026-11-05T14:49:13.8883104Z Updating files:  74% (6305/8519)
+2026-11-05T14:49:13.9173674Z Updating files:  75% (6390/8519)
+2026-11-05T14:49:13.9494616Z Updating files:  76% (6475/8519)
+2026-11-05T14:49:14.0654064Z Updating files:  77% (6560/8519)
+2026-11-05T14:49:14.1028065Z Updating files:  78% (6645/8519)
+2026-11-05T14:49:14.1418616Z Updating files:  79% (6731/8519)
+2026-11-05T14:49:14.1862982Z Updating files:  80% (6816/8519)
+2026-11-05T14:49:14.2229554Z Updating files:  81% (6901/8519)
+2026-11-05T14:49:14.2476855Z Updating files:  82% (6986/8519)
+2026-11-05T14:49:14.2668919Z Updating files:  83% (7071/8519)
+2026-11-05T14:49:14.2873568Z Updating files:  84% (7156/8519)
+2026-11-05T14:49:14.3194450Z Updating files:  85% (7242/8519)
+2026-11-05T14:49:14.3484628Z Updating files:  86% (7327/8519)
+2026-11-05T14:49:14.3770551Z Updating files:  87% (7412/8519)
+2026-11-05T14:49:14.4090354Z Updating files:  88% (7497/8519)
+2026-11-05T14:49:14.5418819Z Updating files:  89% (7582/8519)
+2026-11-05T14:49:14.6190532Z Updating files:  90% (7668/8519)
+2026-11-05T14:49:14.7233420Z Updating files:  91% (7753/8519)
+2026-11-05T14:49:14.7708819Z Updating files:  91% (7763/8519)
+2026-11-05T14:49:14.8150308Z Updating files:  92% (7838/8519)
+2026-11-05T14:49:14.8510320Z Updating files:  93% (7923/8519)
+2026-11-05T14:49:14.8703257Z Updating files:  94% (8008/8519)
+2026-11-05T14:49:14.8902884Z Updating files:  95% (8094/8519)
+2026-11-05T14:49:14.9100584Z Updating files:  96% (8179/8519)
+2026-11-05T14:49:14.9266323Z Updating files:  97% (8264/8519)
+2026-11-05T14:49:14.9781301Z Updating files:  98% (8349/8519)
+2026-11-05T14:49:14.9992826Z Updating files:  99% (8434/8519)
+2026-11-05T14:49:14.9993176Z Updating files: 100% (8519/8519)
+2026-11-05T14:49:14.9993473Z Updating files: 100% (8519/8519), done.
+2026-11-05T14:49:15.0147696Z Note: switching to 'refs/remotes/pull/576/merge'.
+2026-11-05T14:49:15.0147992Z 
+2026-11-05T14:49:15.0148227Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-11-05T14:49:15.0148764Z changes and commit them, and you can discard any commits you make in this
+2026-11-05T14:49:15.0149125Z state without impacting any branches by switching back to a branch.
+2026-11-05T14:49:15.0149330Z 
+2026-11-05T14:49:15.0149706Z If you want to create a new branch to retain commits you create, you may
+2026-11-05T14:49:15.0150048Z do so (now or later) by using -c with the switch command. Example:
+2026-11-05T14:49:15.0150252Z 
+2026-11-05T14:49:15.0150361Z   git switch -c <new-branch-name>
+2026-11-05T14:49:15.0150505Z 
+2026-11-05T14:49:15.0150577Z Or undo this operation with:
+2026-11-05T14:49:15.0150716Z 
+2026-11-05T14:49:15.0150775Z   git switch -
+2026-11-05T14:49:15.0150874Z 
+2026-11-05T14:49:15.0151038Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-11-05T14:49:15.0151261Z 
+2026-11-05T14:49:15.0151528Z HEAD is now at da2dade2 Merge ed534400b96cebf98093666c6ba52e89c2054fda into 36650a5744e4fdf74051a4300eecf9472948b186
+2026-11-05T14:49:15.0733802Z ##[endgroup]
+2026-11-05T14:49:15.1056690Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-11-05T14:49:15.1328196Z da2dade24cc7e0a821dc0b61e82f47f18fc3bb6d
+2026-11-05T14:49:15.1711779Z ##[group]Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+2026-11-05T14:49:15.1712122Z with:
+2026-11-05T14:49:15.1712276Z   enable-cache: true
+2026-11-05T14:49:15.1712458Z   activate-environment: false
+2026-11-05T14:49:15.1712638Z   no-project: false
+2026-11-05T14:49:15.1712835Z   working-directory: D:\a\rc-metastudio\rc-metastudio
+2026-11-05T14:49:15.1714852Z   github-token: ***
+2026-11-05T14:49:15.1715825Z   cache-dependency-glob: **/*requirements*.txt
+**/*requirements*.in
+**/*constraints*.txt
+**/*constraints*.in
+**/pyproject.toml
+**/uv.lock
+**/*.py.lock
+
+2026-11-05T14:49:15.1716278Z   restore-cache: true
+2026-11-05T14:49:15.1716436Z   save-cache: true
+2026-11-05T14:49:15.1716582Z   prune-cache: true
+2026-11-05T14:49:15.1716734Z   cache-python: false
+2026-11-05T14:49:15.1716894Z   ignore-nothing-to-cache: false
+2026-11-05T14:49:15.1717085Z   ignore-empty-workdir: false
+2026-11-05T14:49:15.1717270Z   add-problem-matchers: true
+2026-11-05T14:49:15.1717480Z   resolution-strategy: highest
+2026-11-05T14:49:15.1717651Z env:
+2026-11-05T14:49:15.1717858Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T14:49:15.1718118Z ##[endgroup]
+2026-11-05T14:49:15.3215638Z Trying to find version for uv in: D:\a\rc-metastudio\rc-metastudio\uv.toml
+2026-11-05T14:49:15.3216211Z Could not find file: D:\a\rc-metastudio\rc-metastudio\uv.toml
+2026-11-05T14:49:15.3216644Z Trying to find version for uv in: D:\a\rc-metastudio\rc-metastudio\pyproject.toml
+2026-11-05T14:49:15.3221219Z Could not determine uv version from uv.toml or pyproject.toml. Falling back to latest.
+2026-11-05T14:49:15.3224161Z Fetching manifest data from https://raw.githubusercontent.com/astral-sh/versions/main/v1/uv.ndjson ...
+2026-11-05T14:49:15.3979356Z Downloading uv from "https://releases.astral.sh/github/uv/releases/download/0.13.7/uv-x86_64-pc-windows-msvc.zip" ...
+2026-11-05T14:49:15.8522379Z [command]C:\Windows\system32\tar.exe x -C D:\a\_temp\3a75c628-698f-4549-b569-20c514cf2937 -f D:\a\_temp\39d9ce9c-f323-43e8-bc45-a50dfeabb3ee
+2026-11-05T14:49:16.0999147Z Set UV_TOOL_BIN_DIR to D:\a\_temp\uv-tool-bin-dir
+2026-11-05T14:49:16.1001975Z Added D:\a\_temp\uv-tool-bin-dir to the path
+2026-11-05T14:49:16.1009652Z Added C:\hostedtoolcache\windows\uv\0.13.7\x86_64 to the path
+2026-11-05T14:49:16.1011743Z Set UV_TOOL_DIR to D:\a\_temp\uv-tool-dir
+2026-11-05T14:49:16.1013825Z Set UV_PYTHON_INSTALL_DIR to D:\a\_temp\uv-python-dir
+2026-11-05T14:49:16.1016040Z Added D:\a\_temp\uv-python-dir to the path
+2026-11-05T14:49:16.1036577Z Set UV_CACHE_DIR to D:\a\_temp\setup-uv-cache
+2026-11-05T14:49:16.1036862Z Successfully installed uv version 0.13.7
+2026-11-05T14:49:19.3471882Z Searching files using cache dependency glob: D:\a\rc-metastudio\rc-metastudio\**\*requirements*.txt,D:\a\rc-metastudio\rc-metastudio\**\*requirements*.in,D:\a\rc-metastudio\rc-metastudio\**\*constraints*.txt,D:\a\rc-metastudio\rc-metastudio\**\*constraints*.in,D:\a\rc-metastudio\rc-metastudio\**\pyproject.toml,D:\a\rc-metastudio\rc-metastudio\**\uv.lock,D:\a\rc-metastudio\rc-metastudio\**\*.py.lock
+2026-11-05T14:49:20.4630100Z D:\a\rc-metastudio\rc-metastudio\pyproject.toml
+2026-11-05T14:49:20.5363259Z D:\a\rc-metastudio\rc-metastudio\uv.lock
+2026-11-05T14:49:20.5374332Z Found 2 files to hash.
+2026-11-05T14:49:20.5381768Z Trying to restore cache from GitHub Actions cache with key: setup-uv-2-x86_64-pc-windows-msvc-windows-2025-3.11.9-pruned-87b0589369691bf181305e1f24a3f514800cb0266e95a749247ddfbc464536be
+2026-11-05T14:49:21.0342790Z Cache hit for: setup-uv-2-x86_64-pc-windows-msvc-windows-2025-3.11.9-pruned-87b0589369691bf181305e1f24a3f514800cb0266e95a749247ddfbc464536be
+2026-11-05T14:49:21.8122231Z Received 190353 of 190353 (100.0%), 0.4 MBs/sec
+2026-11-05T14:49:21.8123465Z Cache Size: ~0 MB (190353 B)
+2026-11-05T14:49:21.8144401Z [command]"C:\Program Files\Git\usr\bin\tar.exe" -xf D:/a/_temp/672c8531-e6b0-4d2d-b1e6-5820848141e4/cache.tzst -P -C D:/a/rc-metastudio/rc-metastudio --force-local --use-compress-program "zstd -d"
+2026-11-05T14:49:21.9324462Z Cache restored successfully
+2026-11-05T14:49:21.9331641Z cache restored from GitHub Actions cache with key: setup-uv-2-x86_64-pc-windows-msvc-windows-2025-3.11.9-pruned-87b0589369691bf181305e1f24a3f514800cb0266e95a749247ddfbc464536be
+2026-11-05T14:49:22.0217598Z ##[group]Run uv python install 3.11.9
+2026-11-05T14:49:22.0217913Z [36;1muv python install 3.11.9[0m
+2026-11-05T14:49:22.0317320Z shell: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.EXE -command ". '{0}'"
+2026-11-05T14:49:22.0317666Z env:
+2026-11-05T14:49:22.0317910Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T14:49:22.0318226Z   UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+2026-11-05T14:49:22.0318464Z   UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+2026-11-05T14:49:22.0318693Z   UV_PYTHON_INSTALL_DIR: D:\a\_temp\uv-python-dir
+2026-11-05T14:49:22.0318929Z   UV_CACHE_DIR: D:\a\_temp\setup-uv-cache
+2026-11-05T14:49:22.0319136Z ##[endgroup]
+2026-11-05T14:49:23.7985749Z Downloading cpython-3.11.9-windows-x86_64-none (download) (23.9MiB)
+2026-11-05T14:49:24.6423087Z  Downloaded cpython-3.11.9-windows-x86_64-none (download)
+2026-11-05T14:49:24.6473079Z Installed Python 3.11.9 in 976ms
+2026-11-05T14:49:24.6474574Z  + cpython-3.11.9-windows-x86_64-none (python3.11.exe)
+2026-11-05T14:49:24.6499445Z warning: `C:\Users\runneradmin\.local\bin` is not on your PATH. To use installed Python executables, run `$env:PATH = "C:\Users\runneradmin\.local\bin;$env:PATH"` or `uv python update-shell`.
+2026-11-05T14:49:24.9908040Z ##[group]Run r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6
+2026-11-05T14:49:24.9908406Z with:
+2026-11-05T14:49:24.9908568Z   r-version: 4.6.1
+2026-11-05T14:49:24.9908740Z   use-public-rspm: true
+2026-11-05T14:49:24.9908978Z   Ncpus: 1
+2026-11-05T14:49:24.9909226Z   remove-openmp-macos: true
+2026-11-05T14:49:24.9909465Z   http-user-agent: default
+2026-11-05T14:49:24.9909635Z   install-r: true
+2026-11-05T14:49:24.9909813Z   windows-path-include-rtools: true
+2026-11-05T14:49:24.9910042Z   windows-path-include-mingw: true
+2026-11-05T14:49:24.9910259Z   update-rtools: false
+2026-11-05T14:49:24.9910435Z   working-directory: .
+2026-11-05T14:49:24.9910591Z env:
+2026-11-05T14:49:24.9910817Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T14:49:24.9911119Z   UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+2026-11-05T14:49:24.9911379Z   UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+2026-11-05T14:49:24.9911641Z   UV_PYTHON_INSTALL_DIR: D:\a\_temp\uv-python-dir
+2026-11-05T14:49:24.9911880Z   UV_CACHE_DIR: D:\a\_temp\setup-uv-cache
+2026-11-05T14:49:24.9912080Z ##[endgroup]
+2026-11-05T14:49:25.8910733Z [command]D:\a\_temp\R-4.6.1-win.exe /VERYSILENT /SUPPRESSMSGBOXES /DIR=C:\R
+2026-11-05T14:49:49.2295009Z ##[group]Downloading and installing Ghostscript
+2026-11-05T14:49:50.4278057Z [command]"C:\Program Files\PowerShell\7\pwsh.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command "$ErrorActionPreference = 'Stop' ; try { Add-Type -AssemblyName System.IO.Compression.ZipFile } catch { } ; try { [System.IO.Compression.ZipFile]::ExtractToDirectory('D:\a\_temp\cfb5ccf1-3d3f-4e87-a186-6963c0b95913', 'D:\a\_temp\86fe1ef7-15c7-41d1-8231-792a766b8d0c', $true) } catch { if (($_.Exception.GetType().FullName -eq 'System.Management.Automation.MethodException') -or ($_.Exception.GetType().FullName -eq 'System.Management.Automation.RuntimeException') ){ Expand-Archive -LiteralPath 'D:\a\_temp\cfb5ccf1-3d3f-4e87-a186-6963c0b95913' -DestinationPath 'D:\a\_temp\86fe1ef7-15c7-41d1-8231-792a766b8d0c' -Force } else { throw $_ } } ;"
+2026-11-05T14:49:52.1471876Z ##[endgroup]
+2026-11-05T14:49:52.1753684Z ##[group]Run choco install poppler --version=26.9.0 --yes --no-progress
+2026-11-05T14:49:52.1754207Z [36;1mchoco install poppler --version=26.9.0 --yes --no-progress[0m
+2026-11-05T14:49:52.1754601Z [36;1mif ($LASTEXITCODE -ne 0) { throw "Poppler installation failed." }[0m
+2026-11-05T14:49:52.1755154Z [36;1m$pdfTool = Get-ChildItem "$env:ChocolateyInstall/lib/poppler/tools" -Filter pdftotext.exe -Recurse | Select-Object -First 1[0m
+2026-11-05T14:49:52.1755694Z [36;1mif ($null -eq $pdfTool) { throw "Poppler pdftotext was not installed." }[0m
+2026-11-05T14:49:52.1756119Z [36;1m$pdfTool.DirectoryName | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append[0m
+2026-11-05T14:49:52.1756496Z [36;1m$env:Path = "$($pdfTool.DirectoryName);$env:Path"[0m
+2026-11-05T14:49:52.1756961Z [36;1mGet-Command pdftotext -ErrorAction Stop[0m
+2026-11-05T14:49:52.9082518Z shell: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.EXE -command ". '{0}'"
+2026-11-05T14:49:52.9083123Z env:
+2026-11-05T14:49:52.9083373Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T14:49:52.9083667Z   UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+2026-11-05T14:49:52.9083893Z   UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+2026-11-05T14:49:52.9084122Z   UV_PYTHON_INSTALL_DIR: D:\a\_temp\uv-python-dir
+2026-11-05T14:49:52.9084362Z   UV_CACHE_DIR: D:\a\_temp\setup-uv-cache
+2026-11-05T14:49:52.9084567Z   _R_INSTALL_TIME_PATCHES_: no
+2026-11-05T14:49:52.9084762Z   R_LIBS_USER: D:\a\_temp\Library
+2026-11-05T14:49:52.9084943Z   TZ: UTC
+2026-11-05T14:49:52.9085087Z   _R_CHECK_SYSTEM_CLOCK_: FALSE
+2026-11-05T14:49:52.9085263Z   NOT_CRAN: true
+2026-11-05T14:49:52.9085468Z   RSPM: https://packagemanager.posit.co/cran/latest
+2026-11-05T14:49:52.9085825Z   RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/latest
+2026-11-05T14:49:52.9086125Z ##[endgroup]
+2026-11-05T14:49:58.0077315Z Chocolatey v2.7.5
+2026-11-05T14:49:58.5441195Z Installing the following packages:
+2026-11-05T14:49:58.5446632Z poppler
+2026-11-05T14:49:58.5450171Z By installing, you accept licenses for the packages.
+2026-11-05T14:50:07.1905309Z Downloading package from source 'https://community.chocolatey.org/api/v2/'
+2026-11-05T14:50:08.7626137Z 
+2026-11-05T14:50:08.7626601Z poppler v26.9.0 [Approved]
+2026-11-05T14:50:08.7797297Z poppler package files install completed. Performing other installation steps.
+2026-11-05T14:50:12.0734801Z Extracting 64-bit C:\ProgramData\chocolatey\lib\poppler\tools\Release-26.09.0-0.zip to C:\ProgramData\chocolatey\lib\poppler\tools...
+2026-11-05T14:50:15.1122369Z C:\ProgramData\chocolatey\lib\poppler\tools
+2026-11-05T14:50:18.1496019Z  ShimGen has successfully created a shim for pdfattach.exe
+2026-11-05T14:50:18.3192359Z  ShimGen has successfully created a shim for pdfdetach.exe
+2026-11-05T14:50:18.4906624Z  ShimGen has successfully created a shim for pdffonts.exe
+2026-11-05T14:50:18.6620706Z  ShimGen has successfully created a shim for pdfimages.exe
+2026-11-05T14:50:18.8345771Z  ShimGen has successfully created a shim for pdfinfo.exe
+2026-11-05T14:50:19.0044490Z  ShimGen has successfully created a shim for pdfseparate.exe
+2026-11-05T14:50:19.2129167Z  ShimGen has successfully created a shim for pdftocairo.exe
+2026-11-05T14:50:19.3857448Z  ShimGen has successfully created a shim for pdftohtml.exe
+2026-11-05T14:50:19.5513904Z  ShimGen has successfully created a shim for pdftoppm.exe
+2026-11-05T14:50:19.7229242Z  ShimGen has successfully created a shim for pdftops.exe
+2026-11-05T14:50:19.8957153Z  ShimGen has successfully created a shim for pdftotext.exe
+2026-11-05T14:50:20.0693629Z  ShimGen has successfully created a shim for pdfunite.exe
+2026-11-05T14:50:20.2096272Z  The install of poppler was successful.
+2026-11-05T14:50:20.2098064Z   Deployed to 'C:\ProgramData\chocolatey\lib\poppler\tools'
+2026-11-05T14:50:20.2386659Z 
+2026-11-05T14:50:20.2387139Z Chocolatey installed 1/1 packages. 
+2026-11-05T14:50:20.2389896Z  See the log for details (C:\ProgramData\chocolatey\logs\chocolatey.log).
+2026-11-05T14:50:20.2398473Z 
+2026-11-05T14:50:20.2398972Z Did you know the proceeds of Pro (and some proceeds from other
+2026-11-05T14:50:20.2399468Z  licensed editions) go into bettering the community infrastructure?
+2026-11-05T14:50:20.2399892Z  Your support ensures an active community, keeps Chocolatey tip-top,
+2026-11-05T14:50:20.2400226Z  plus it nets you some awesome features!
+2026-11-05T14:50:20.2400487Z  https://chocolatey.org/compare
+2026-11-05T14:50:20.5306638Z 
+2026-11-05T14:50:20.5321012Z CommandType     Name                                               Version    Source                                   
+2026-11-05T14:50:20.5324569Z -----------     ----                                               -------    ------                                   
+2026-11-05T14:50:20.5335661Z Application     pdftotext.exe                                      0.0.0.0    C:\ProgramData\chocolatey\lib\poppler\...
+2026-11-05T14:50:20.5358038Z 
+2026-11-05T14:50:20.5358159Z 
+2026-11-05T14:50:20.6609726Z ##[group]Run actions/cache@caa296126883cff596d87d8935842f9db880ef25
+2026-11-05T14:50:20.6610142Z with:
+2026-11-05T14:50:20.6610312Z   path: artifacts/r-library-cache
+2026-11-05T14:50:20.6610782Z   key: r-full-stack-v1-windows-r-4.6.1-public-ppm-2026-07-16-ea303f75d84ba67373b205fd434342f2be6047d1611c44016711c3b5f947ad1d
+2026-11-05T14:50:20.6611341Z   restore-keys: r-full-stack-v1-windows-r-4.6.1-public-ppm-2026-07-16-
+2026-11-05T14:50:20.6611641Z   enableCrossOsArchive: false
+2026-11-05T14:50:20.6611832Z   fail-on-cache-miss: false
+2026-11-05T14:50:20.6612006Z   lookup-only: false
+2026-11-05T14:50:20.6612167Z   save-always: false
+2026-11-05T14:50:20.6612305Z env:
+2026-11-05T14:50:20.6612525Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T14:50:20.6612822Z   UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+2026-11-05T14:50:20.6613041Z   UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+2026-11-05T14:50:20.6613290Z   UV_PYTHON_INSTALL_DIR: D:\a\_temp\uv-python-dir
+2026-11-05T14:50:20.6613515Z   UV_CACHE_DIR: D:\a\_temp\setup-uv-cache
+2026-11-05T14:50:20.6613719Z   _R_INSTALL_TIME_PATCHES_: no
+2026-11-05T14:50:20.6614216Z   R_LIBS_USER: D:\a\_temp\Library
+2026-11-05T14:50:20.6614405Z   TZ: UTC
+2026-11-05T14:50:20.6614543Z   _R_CHECK_SYSTEM_CLOCK_: FALSE
+2026-11-05T14:50:20.6614711Z   NOT_CRAN: true
+2026-11-05T14:50:20.6614903Z   RSPM: https://packagemanager.posit.co/cran/latest
+2026-11-05T14:50:20.6615220Z   RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/latest
+2026-11-05T14:50:20.6615496Z ##[endgroup]
+2026-11-05T14:50:23.6394020Z Cache hit for: r-full-stack-v1-windows-r-4.6.1-public-ppm-2026-07-16-ea303f75d84ba67373b205fd434342f2be6047d1611c44016711c3b5f947ad1d
+2026-11-05T14:50:24.9159672Z Received 50331648 of 152113818 (33.1%), 47.8 MBs/sec
+2026-11-05T14:50:26.0020477Z Received 134217728 of 152113818 (88.2%), 61.2 MBs/sec
+2026-11-05T14:50:26.4714002Z Received 152113818 of 152113818 (100.0%), 56.7 MBs/sec
+2026-11-05T14:50:26.4717843Z Cache Size: ~145 MB (152113818 B)
+2026-11-05T14:50:26.4781323Z [command]"C:\Program Files\Git\usr\bin\tar.exe" -xf D:/a/_temp/1ac41770-0e70-4ffa-a168-2de50ff5c45f/cache.tzst -P -C D:/a/rc-metastudio/rc-metastudio --force-local --use-compress-program "zstd -d"
+2026-11-05T14:51:22.6110726Z Cache restored successfully
+2026-11-05T14:51:22.6272921Z Cache restored from key: r-full-stack-v1-windows-r-4.6.1-public-ppm-2026-07-16-ea303f75d84ba67373b205fd434342f2be6047d1611c44016711c3b5f947ad1d
+2026-11-05T14:51:22.6667292Z ##[group]Run uv run --locked python scripts\verify.py r-stack --desktop-shard 2
+2026-11-05T14:51:22.6667820Z [36;1muv run --locked python scripts\verify.py r-stack --desktop-shard 2[0m
+2026-11-05T14:51:22.6727116Z shell: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.EXE -command ". '{0}'"
+2026-11-05T14:51:22.6727469Z env:
+2026-11-05T14:51:22.6727723Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T14:51:22.6728031Z   UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+2026-11-05T14:51:22.6728260Z   UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+2026-11-05T14:51:22.6728502Z   UV_PYTHON_INSTALL_DIR: D:\a\_temp\uv-python-dir
+2026-11-05T14:51:22.6728744Z   UV_CACHE_DIR: D:\a\_temp\setup-uv-cache
+2026-11-05T14:51:22.6728970Z   _R_INSTALL_TIME_PATCHES_: no
+2026-11-05T14:51:22.6729164Z   R_LIBS_USER: D:\a\_temp\Library
+2026-11-05T14:51:22.6729352Z   TZ: UTC
+2026-11-05T14:51:22.6729509Z   _R_CHECK_SYSTEM_CLOCK_: FALSE
+2026-11-05T14:51:22.6729731Z   NOT_CRAN: true
+2026-11-05T14:51:22.6729931Z   RSPM: https://packagemanager.posit.co/cran/latest
+2026-11-05T14:51:22.6730258Z   RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/latest
+2026-11-05T14:51:22.6730544Z ##[endgroup]
+2026-11-05T14:51:22.9836958Z Using CPython 3.11.9
+2026-11-05T14:51:22.9838333Z Creating virtual environment at: .venv
+2026-11-05T14:51:23.0139169Z    Building rc-metastudio @ file:///D:/a/rc-metastudio/rc-metastudio
+2026-11-05T14:51:23.1088591Z Downloading pygments (1.2MiB)
+2026-11-05T14:51:23.1092627Z Downloading numpy (12.0MiB)
+2026-11-05T14:51:23.1102287Z Downloading pycryptodomex (1.7MiB)
+2026-11-05T14:51:23.1107813Z Downloading fonttools (2.2MiB)
+2026-11-05T14:51:23.1111654Z Downloading matplotlib (8.9MiB)
+2026-11-05T14:51:23.1141936Z Downloading complexipy (2.2MiB)
+2026-11-05T14:51:23.1144937Z Downloading ty (10.1MiB)
+2026-11-05T14:51:23.1149917Z Downloading libcst (2.0MiB)
+2026-11-05T14:51:23.1171644Z Downloading pyqt6-qt6 (74.8MiB)
+2026-11-05T14:51:23.1191008Z Downloading pyqt6 (6.5MiB)
+2026-11-05T14:51:23.1191825Z Downloading grimp (1.9MiB)
+2026-11-05T14:51:23.1192184Z Downloading pyinstaller (1.3MiB)
+2026-11-05T14:51:23.1193503Z Downloading lxml (3.8MiB)
+2026-11-05T14:51:23.1194062Z Downloading pillow (6.9MiB)
+2026-11-05T14:51:26.0292529Z  Downloaded grimp
+2026-11-05T14:51:26.0476656Z  Downloaded complexipy
+2026-11-05T14:51:26.1248636Z  Downloaded pycryptodomex
+2026-11-05T14:51:26.1715837Z  Downloaded pygments
+2026-11-05T14:51:26.1862109Z  Downloaded lxml
+2026-11-05T14:51:26.2449912Z  Downloaded fonttools
+2026-11-05T14:51:26.2673406Z  Downloaded libcst
+2026-11-05T14:51:26.2731577Z  Downloaded pillow
+2026-11-05T14:51:26.3460637Z  Downloaded pyinstaller
+2026-11-05T14:51:26.3701045Z  Downloaded ty
+2026-11-05T14:51:26.4145604Z  Downloaded matplotlib
+2026-11-05T14:51:26.4696402Z  Downloaded pyqt6
+2026-11-05T14:51:26.5157195Z  Downloaded numpy
+2026-11-05T14:51:27.3594201Z  Downloaded pyqt6-qt6
+2026-11-05T14:51:27.8957567Z       Built rc-metastudio @ file:///D:/a/rc-metastudio/rc-metastudio
+2026-11-05T14:51:30.0461051Z Installed 85 packages in 2.14s
+2026-11-05T14:51:30.1205996Z [14:51:30] Skipping dependency sync for warm local R verification
+2026-11-05T14:51:30.1208341Z [14:51:30] $ D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe scripts/build_qt6.py generate --build-root D:\a\rc-metastudio\rc-metastudio\build\qt6-verification
+2026-11-05T14:51:37.5200927Z {"form": "D:\\a\\rc-metastudio\\rc-metastudio\\build\\qt6-verification\\generated\\rc_metastudio\\forms\\ui_about_legal.py", "resource": "D:\\a\\rc-metastudio\\rc-metastudio\\build\\qt6-verification\\resources\\icons.rcc"}
+2026-11-05T14:51:37.5817923Z [14:51:37] Delegating Full R Stack Evidence
+2026-11-05T14:51:37.5819196Z [14:51:37] $ D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe scripts/verify_rcmetar_r_stack.py --rscript C:\R\bin\Rscript.exe --r-library-cache-root D:\a\rc-metastudio\rc-metastudio\artifacts\r-library-cache --desktop-shard 2
+2026-11-05T14:51:37.6629400Z [RCMetaR-r-stack] Locked rpy2 identities verified: {"rpy2": "3.6.7", "rpy2-rinterface": "3.6.6", "rpy2-robjects": "3.6.5"}
+2026-11-05T14:51:37.6630387Z [RCMetaR-r-stack] D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe scripts\validate_rcmetar_r_manifests.py --root D:\a\rc-metastudio\rc-metastudio
+2026-11-05T14:51:37.7147478Z validated RCMetaR R dependency and drift manifests
+2026-11-05T14:51:38.3033857Z [RCMetaR-r-stack] D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe scripts\validate_rcmetar_r_manifests.py --root D:\a\rc-metastudio\rc-metastudio --report-installed-versions --rscript C:\R\bin\Rscript.exe
+2026-11-05T14:51:38.5841719Z [RCMetaR-r-stack] Manifest dependency versions are installed: {"packages": {"R": "4.6.1", "boot": "1.3-32", "grDevices": "4.6.1", "graphics": "4.6.1", "mada": "0.5.12", "meta": "8.5-0", "metafor": "5.0-1", "methods": "4.6.1", "png": "0.1-9", "roxygen2": "8.0.0", "rsvg": "2.7.0", "stats": "4.6.1", "svglite": "2.2.2", "testthat": "3.3.2", "tiff": "0.1-12", "utils": "4.6.1"}, "r_version": "4.6.1"}
+2026-11-05T14:51:38.5848187Z [RCMetaR-r-stack] C:\R\bin\Rscript.exe -e missing <- commandArgs(trailingOnly=TRUE)[!vapply(commandArgs(trailingOnly=TRUE), requireNamespace, logical(1), quietly=TRUE)]; if (length(missing)) stop(paste(missing, collapse=', ')) CompQuadForm Formula Hmisc MatrixModels RColorBrewer Rcpp RcppEigen S7 SparseM acepack ape cli colorspace data.table ellipse farver ggplot2 glue gridExtra gtable htmlTable htmltools htmlwidgets irlba isoband knitr labeling latticeExtra lifecycle mada magrittr meta metabook metafor mice minqa mixmeta mvmeta mvtnorm nloptr png quantreg rlang rmarkdown roxygen2 rsvg scales stringi stringr svglite testthat tiff vctrs viridis viridisLite withr xml2
+2026-11-05T14:51:40.2822849Z Registered S3 method overwritten by 'ape':
+2026-11-05T14:51:40.2823179Z   method    from   
+2026-11-05T14:51:40.2823379Z   print.ace acepack
+2026-11-05T14:51:41.1223336Z [RCMetaR-r-stack] Using cached R dependency library at D:\a\rc-metastudio\rc-metastudio\artifacts\r-library-cache\R-4.6.1-x86_64-win.binary-rdeps-9d78dc177e16\library
+2026-11-05T14:51:54.0408952Z [RCMetaR-r-stack] Using isolated R verification library at C:\Users\RUNNER~1\AppData\Local\Temp\RCMetaR-r-stack-alijp5x8\library
+2026-11-05T14:51:54.0409769Z [RCMetaR-r-stack] C:\R\bin\x64\R.exe CMD build --no-build-vignettes D:\a\rc-metastudio\rc-metastudio\r\RCMetaR
+2026-11-05T14:51:54.2205702Z * checking for file 'D:\a\rc-metastudio\rc-metastudio\r\RCMetaR/DESCRIPTION' ... OK
+2026-11-05T14:51:54.2799461Z * preparing 'RCMetaR':
+2026-11-05T14:51:54.2864710Z * checking DESCRIPTION meta-information ... OK
+2026-11-05T14:51:54.4717763Z * checking for LF line-endings in source and make files and shell scripts
+2026-11-05T14:51:54.4745913Z * checking for empty or unneeded directories
+2026-11-05T14:51:54.4805226Z * building 'RCMetaR_0.5.1.tar.gz'
+2026-11-05T14:51:54.8548885Z 
+2026-11-05T14:51:54.8898821Z [RCMetaR-r-stack] C:\R\bin\x64\R.exe CMD INSTALL --library=C:\Users\RUNNER~1\AppData\Local\Temp\RCMetaR-r-stack-alijp5x8\library C:\Users\RUNNER~1\AppData\Local\Temp\RCMetaR-r-stack-alijp5x8\RCMetaR_0.5.1.tar.gz
+2026-11-05T14:51:55.1544945Z * installing *source* package 'RCMetaR' ...
+2026-11-05T14:51:55.1545708Z ** this is package 'RCMetaR' version '0.5.1'
+2026-11-05T14:51:55.1550415Z ** using staged installation
+2026-11-05T14:51:55.1752673Z ** R
+2026-11-05T14:51:55.2745894Z ** inst
+2026-11-05T14:51:55.2831706Z ** byte-compile and prepare package for lazy loading
+2026-11-05T14:52:03.5109759Z ** help
+2026-11-05T14:52:03.5896792Z *** installing help indices
+2026-11-05T14:52:03.6257048Z ** building package indices
+2026-11-05T14:52:03.8468650Z ** testing if installed package can be loaded from temporary location
+2026-11-05T14:52:05.7183521Z ** testing if installed package can be loaded from final location
+2026-11-05T14:52:07.7049252Z ** testing if installed package keeps a record of temporary installation path
+2026-11-05T14:52:07.7137431Z * DONE (RCMetaR)
+2026-11-05T14:52:07.7374231Z [RCMetaR-r-stack] D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe -m pytest tests/e2e -n auto -q --durations=10 --desktop-shard 2 --shard-report artifacts/verification/desktop-partition.json --junitxml=artifacts/verification/desktop-results.xml
+2026-11-05T14:52:43.2419407Z bringing up nodes...
+2026-11-05T14:52:43.2420061Z bringing up nodes...
+2026-11-05T14:52:43.2420421Z 
+2026-11-05T14:59:29.6348689Z ........F........FF.FF..............F..........                          [100%]
+2026-11-05T14:59:29.6349565Z ================================== FAILURES ===================================
+2026-11-05T14:59:29.6350302Z ____________________ test_desktop_workflow[sheets-legacy] _____________________
+2026-11-05T14:59:29.6351401Z [gw1] win32 -- Python 3.11.9 D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe
+2026-11-05T14:59:29.6351891Z 
+2026-11-05T14:59:29.6352080Z scenario = 'sheets-legacy'
+2026-11-05T14:59:29.6352345Z 
+2026-11-05T14:59:29.6352580Z     @pytest.mark.parametrize(
+2026-11-05T14:59:29.6353115Z         "scenario",
+2026-11-05T14:59:29.6353824Z         [scenario for scenario in SCENARIOS if scenario not in {"doctor", "ui-crawl"}],
+2026-11-05T14:59:29.6354419Z     )
+2026-11-05T14:59:29.6354800Z     def test_desktop_workflow(scenario):
+2026-11-05T14:59:29.6355860Z         # The same launcher owns timeouts, isolation and durable evidence in CI.
+2026-11-05T14:59:29.6356481Z         result = subprocess.run(
+2026-11-05T14:59:29.6356918Z             [
+2026-11-05T14:59:29.6357284Z                 sys.executable,
+2026-11-05T14:59:29.6357763Z                 str(ROOT / "scripts/verify_rcms.py"),
+2026-11-05T14:59:29.6358286Z                 scenario,
+2026-11-05T14:59:29.6358654Z             ],
+2026-11-05T14:59:29.6359032Z             cwd=ROOT,
+2026-11-05T14:59:29.6359418Z             capture_output=True,
+2026-11-05T14:59:29.6359827Z             check=False,
+2026-11-05T14:59:29.6360235Z             text=True,
+2026-11-05T14:59:29.6360575Z         )
+2026-11-05T14:59:29.6361431Z         evidence_lines = [line.removeprefix("Evidence: ") for line in result.stdout.splitlines() if line.startswith("Evidence: ")]
+2026-11-05T14:59:29.6362453Z         assert len(evidence_lines) == 1, result.stdout + result.stderr
+2026-11-05T14:59:29.6363054Z         evidence = Path(evidence_lines[0])
+2026-11-05T14:59:29.6363801Z         manifest = json.loads((evidence / "manifest.json").read_text(encoding="utf-8"))
+2026-11-05T14:59:29.6364611Z >       assert result.returncode == 0, result.stdout + result.stderr
+2026-11-05T14:59:29.6366019Z E       AssertionError: Evidence: D:\a\rc-metastudio\rc-metastudio\artifacts\verification\rcms\20261105T145358Z-f82d64c2-sheets-legacy
+2026-11-05T14:59:29.6366939Z E         stdout.log (last 20000 characters):
+2026-11-05T14:59:29.6367385Z E         
+2026-11-05T14:59:29.6367929Z E         stderr.log (last 20000 characters):
+2026-11-05T14:59:29.6368541Z E         R callback write-console: Loading required package: Matrix
+2026-11-05T14:59:29.6369092Z E         
+2026-11-05T14:59:29.6369413Z E           
+2026-11-05T14:59:29.6369740Z E         
+2026-11-05T14:59:29.6370303Z E         R callback write-console: Loading required package: metadat
+2026-11-05T14:59:29.6370838Z E         
+2026-11-05T14:59:29.6371220Z E           
+2026-11-05T14:59:29.6371754Z E         
+2026-11-05T14:59:29.6372295Z E         R callback write-console: Loading required package: numDeriv
+2026-11-05T14:59:29.6372887Z E         
+2026-11-05T14:59:29.6373210Z E           
+2026-11-05T14:59:29.6373556Z E         
+2026-11-05T14:59:29.6373924Z E         R callback write-console: 
+2026-11-05T14:59:29.6374329Z E         
+2026-11-05T14:59:29.6374824Z E         Loading the 'metafor' package (version 5.0-1). For an
+2026-11-05T14:59:29.6375334Z E         
+2026-11-05T14:59:29.6375812Z E         introduction to the package please type: help(metafor)
+2026-11-05T14:59:29.6376354Z E         
+2026-11-05T14:59:29.6376665Z E         
+2026-11-05T14:59:29.6377005Z E         
+2026-11-05T14:59:29.6377714Z E         An updated version of the package (version 5.2-1) is available!
+2026-11-05T14:59:29.6378250Z E         
+2026-11-05T14:59:29.6378782Z E         To update to this version type: install.packages("metafor")
+2026-11-05T14:59:29.6379302Z E         
+2026-11-05T14:59:29.6379649Z E         
+2026-11-05T14:59:29.6379956Z E         
+2026-11-05T14:59:29.6380264Z E           
+2026-11-05T14:59:29.6380617Z E         
+2026-11-05T14:59:29.6381165Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6381737Z E         
+2026-11-05T14:59:29.6382253Z E         Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6382750Z E         
+2026-11-05T14:59:29.6383319Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6383882Z E         
+2026-11-05T14:59:29.6384496Z E         Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6385256Z E         
+2026-11-05T14:59:29.6385828Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6386393Z E         
+2026-11-05T14:59:29.6386854Z E         Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6387379Z E         
+2026-11-05T14:59:29.6388047Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6388604Z E         
+2026-11-05T14:59:29.6389107Z E         Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6389599Z E         
+2026-11-05T14:59:29.6390169Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6390773Z E         
+2026-11-05T14:59:29.6391229Z E         Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6391939Z E         
+2026-11-05T14:59:29.6392477Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6393070Z E         
+2026-11-05T14:59:29.6393529Z E         Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6394025Z E         
+2026-11-05T14:59:29.6394600Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6395171Z E         
+2026-11-05T14:59:29.6395739Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6396304Z E         
+2026-11-05T14:59:29.6396838Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6397429Z E         
+2026-11-05T14:59:29.6397904Z E         Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6398435Z E         
+2026-11-05T14:59:29.6398826Z E         Traceback (most recent call last):
+2026-11-05T14:59:29.6399327Z E         
+2026-11-05T14:59:29.6400062Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2451, in <module>
+2026-11-05T14:59:29.6400796Z E         
+2026-11-05T14:59:29.6401186Z E             sheets_legacy(app, window)
+2026-11-05T14:59:29.6401611Z E         
+2026-11-05T14:59:29.6402379Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 838, in sheets_legacy
+2026-11-05T14:59:29.6403076Z E         
+2026-11-05T14:59:29.6403694Z E             assert actual == row["sections"], (filename, actual, row["sections"])
+2026-11-05T14:59:29.6404275Z E         
+2026-11-05T14:59:29.6404720Z E                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6435576Z E         
+2026-11-05T14:59:29.6451016Z E         AssertionError: ('lymph.rcms', {'Sensitivity summary': {'estimate': 0.666, 'lower_bound': 0.594, 'upper_bound': 0.732, 'p_value': 0.001, 'q': 24.747, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.074, 'i_squared': 35.3, 'tau_squared': 0.131, 'calculation_scale.estimate': 0.69, 'calculation_scale.lower_bound': 0.379, 'calculation_scale.upper_bound': 1.002, 'calculation_scale.standard_error': 0.159, 'study_count': 17.0}, 'Specificity summary': {'estimate': 0.802, 'lower_bound': 0.744, 'upper_bound': 0.849, 'p_value': 0.001, 'q': 51.543, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.001, 'i_squared': 69.0, 'tau_squared': 0.274, 'calculation_scale.estimate': 1.398, 'calculation_scale.lower_bound': 1.066, 'calculation_scale.upper_bound': 1.731, 'calculation_scale.standard_error': 0.169, 'study_count': 17.0}, 'Diagnostic odds ratio summary': {'estimate': 9.648, 'lower_bound': 5.529, 'upper_bound': 16.835, 'p_value': 0.001, 'q': 42.259, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.001, 'i_squared': 62.1, 'tau_squared': 0.704, 'calculation_scale.estimate': 2.267, 'calculation_scale.lower_bound': 1.71, 'calculation_scale.upper_bound': 2.823, 'calculation_scale.standard_error': 0.284, 'study_count': 17.0}}, {'Sensitivity Summary': {'estimate': 0.666, 'lower_bound': 0.594, 'upper_bound': 0.732, 'p_value': 0.001, 'q': 24.747, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.074, 'i_squared': 35.3, 'tau_squared': 0.131, 'calculation_scale.estimate': 0.69, 'calculation_scale.lower_bound': 0.379, 'calculation_scale.upper_bound': 1.002, 'calculation_scale.standard_error': 0.159, 'study_count': 17.0}, 'Specificity Summary': {'estimate': 0.802, 'lower_bound': 0.744, 'upper_bound': 0.849, 'p_value': 0.001, 'q': 51.543, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.001, 'i_squared': 69.0, 'tau_squared': 0.274, 'calculation_scale.estimate': 1.398, 'calculation_scale.lower_bound': 1.066, 'calculation_scale.upper_bound': 1.731, 'calculation_scale.standard_error': 0.169, 'study_count': 17.0}, 'Diagnostic Odds Ratio Summary': {'estimate': 9.648, 'lower_bound': 5.529, 'upper_bound': 16.835, 'p_value': 0.001, 'q': 42.259, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.001, 'i_squared': 62.1, 'tau_squared': 0.704, 'calculation_scale.estimate': 2.267, 'calculation_scale.lower_bound': 1.71, 'calculation_scale.upper_bound': 2.823, 'calculation_scale.standard_error': 0.284, 'study_count': 17.0}})
+2026-11-05T14:59:29.6461333Z E         
+2026-11-05T14:59:29.6461646Z E         
+2026-11-05T14:59:29.6461985Z E         
+2026-11-05T14:59:29.6462375Z E         Traceback (most recent call last):
+2026-11-05T14:59:29.6462818Z E         
+2026-11-05T14:59:29.6463527Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2451, in <module>
+2026-11-05T14:59:29.6464198Z E         
+2026-11-05T14:59:29.6464556Z E             sheets_legacy(app, window)
+2026-11-05T14:59:29.6465018Z E         
+2026-11-05T14:59:29.6465670Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 838, in sheets_legacy
+2026-11-05T14:59:29.6466368Z E         
+2026-11-05T14:59:29.6466888Z E             assert actual == row["sections"], (filename, actual, row["sections"])
+2026-11-05T14:59:29.6467416Z E         
+2026-11-05T14:59:29.6467812Z E                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6468224Z E         
+2026-11-05T14:59:29.6481980Z E         AssertionError: ('lymph.rcms', {'Sensitivity summary': {'estimate': 0.666, 'lower_bound': 0.594, 'upper_bound': 0.732, 'p_value': 0.001, 'q': 24.747, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.074, 'i_squared': 35.3, 'tau_squared': 0.131, 'calculation_scale.estimate': 0.69, 'calculation_scale.lower_bound': 0.379, 'calculation_scale.upper_bound': 1.002, 'calculation_scale.standard_error': 0.159, 'study_count': 17.0}, 'Specificity summary': {'estimate': 0.802, 'lower_bound': 0.744, 'upper_bound': 0.849, 'p_value': 0.001, 'q': 51.543, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.001, 'i_squared': 69.0, 'tau_squared': 0.274, 'calculation_scale.estimate': 1.398, 'calculation_scale.lower_bound': 1.066, 'calculation_scale.upper_bound': 1.731, 'calculation_scale.standard_error': 0.169, 'study_count': 17.0}, 'Diagnostic odds ratio summary': {'estimate': 9.648, 'lower_bound': 5.529, 'upper_bound': 16.835, 'p_value': 0.001, 'q': 42.259, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.001, 'i_squared': 62.1, 'tau_squared': 0.704, 'calculation_scale.estimate': 2.267, 'calculation_scale.lower_bound': 1.71, 'calculation_scale.upper_bound': 2.823, 'calculation_scale.standard_error': 0.284, 'study_count': 17.0}}, {'Sensitivity Summary': {'estimate': 0.666, 'lower_bound': 0.594, 'upper_bound': 0.732, 'p_value': 0.001, 'q': 24.747, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.074, 'i_squared': 35.3, 'tau_squared': 0.131, 'calculation_scale.estimate': 0.69, 'calculation_scale.lower_bound': 0.379, 'calculation_scale.upper_bound': 1.002, 'calculation_scale.standard_error': 0.159, 'study_count': 17.0}, 'Specificity Summary': {'estimate': 0.802, 'lower_bound': 0.744, 'upper_bound': 0.849, 'p_value': 0.001, 'q': 51.543, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.001, 'i_squared': 69.0, 'tau_squared': 0.274, 'calculation_scale.estimate': 1.398, 'calculation_scale.lower_bound': 1.066, 'calculation_scale.upper_bound': 1.731, 'calculation_scale.standard_error': 0.169, 'study_count': 17.0}, 'Diagnostic Odds Ratio Summary': {'estimate': 9.648, 'lower_bound': 5.529, 'upper_bound': 16.835, 'p_value': 0.001, 'q': 42.259, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.001, 'i_squared': 62.1, 'tau_squared': 0.704, 'calculation_scale.estimate': 2.267, 'calculation_scale.lower_bound': 1.71, 'calculation_scale.upper_bound': 2.823, 'calculation_scale.standard_error': 0.284, 'study_count': 17.0}})
+2026-11-05T14:59:29.6492502Z E         
+2026-11-05T14:59:29.6492815Z E         
+2026-11-05T14:59:29.6493136Z E         
+2026-11-05T14:59:29.6493458Z E       assert 1 == 0
+2026-11-05T14:59:29.6495043Z E        +  where 1 = CompletedProcess(args=['D:\\a\\rc-metastudio\\rc-metastudio\\.venv\\Scripts\\python.exe', 'D:\\a\\rc-metastudio\\rc-me...on_scale.upper_bound\': 2.823, \'calculation_scale.standard_error\': 0.284, \'study_count\': 17.0}})\n\n\n', stderr='').returncode
+2026-11-05T14:59:29.6496434Z 
+2026-11-05T14:59:29.6496747Z tests\e2e\test_desktop_workflows.py:38: AssertionError
+2026-11-05T14:59:29.6497491Z ____________ test_desktop_workflow[analysis-amino-binary-subgroup] ____________
+2026-11-05T14:59:29.6498349Z [gw2] win32 -- Python 3.11.9 D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe
+2026-11-05T14:59:29.6498823Z 
+2026-11-05T14:59:29.6499087Z scenario = 'analysis-amino-binary-subgroup'
+2026-11-05T14:59:29.6499379Z 
+2026-11-05T14:59:29.6499595Z     @pytest.mark.parametrize(
+2026-11-05T14:59:29.6500006Z         "scenario",
+2026-11-05T14:59:29.6500647Z         [scenario for scenario in SCENARIOS if scenario not in {"doctor", "ui-crawl"}],
+2026-11-05T14:59:29.6501233Z     )
+2026-11-05T14:59:29.6501622Z     def test_desktop_workflow(scenario):
+2026-11-05T14:59:29.6502268Z         # The same launcher owns timeouts, isolation and durable evidence in CI.
+2026-11-05T14:59:29.6502897Z         result = subprocess.run(
+2026-11-05T14:59:29.6503284Z             [
+2026-11-05T14:59:29.6503634Z                 sys.executable,
+2026-11-05T14:59:29.6504139Z                 str(ROOT / "scripts/verify_rcms.py"),
+2026-11-05T14:59:29.6504596Z                 scenario,
+2026-11-05T14:59:29.6504991Z             ],
+2026-11-05T14:59:29.6505315Z             cwd=ROOT,
+2026-11-05T14:59:29.6506167Z             capture_output=True,
+2026-11-05T14:59:29.6506615Z             check=False,
+2026-11-05T14:59:29.6506993Z             text=True,
+2026-11-05T14:59:29.6507328Z         )
+2026-11-05T14:59:29.6508207Z         evidence_lines = [line.removeprefix("Evidence: ") for line in result.stdout.splitlines() if line.startswith("Evidence: ")]
+2026-11-05T14:59:29.6509189Z         assert len(evidence_lines) == 1, result.stdout + result.stderr
+2026-11-05T14:59:29.6509987Z         evidence = Path(evidence_lines[0])
+2026-11-05T14:59:29.6510689Z         manifest = json.loads((evidence / "manifest.json").read_text(encoding="utf-8"))
+2026-11-05T14:59:29.6511493Z >       assert result.returncode == 0, result.stdout + result.stderr
+2026-11-05T14:59:29.6512696Z E       AssertionError: Evidence: D:\a\rc-metastudio\rc-metastudio\artifacts\verification\rcms\20261105T145507Z-fbd62605-analysis-amino-binary-subgroup
+2026-11-05T14:59:29.6513843Z E         stdout.log (last 20000 characters):
+2026-11-05T14:59:29.6514313Z E         
+2026-11-05T14:59:29.6514679Z E         stderr.log (last 20000 characters):
+2026-11-05T14:59:29.6515337Z E         R callback write-console: Loading required package: Matrix
+2026-11-05T14:59:29.6515839Z E         
+2026-11-05T14:59:29.6516124Z E           
+2026-11-05T14:59:29.6516439Z E         
+2026-11-05T14:59:29.6516929Z E         R callback write-console: Loading required package: metadat
+2026-11-05T14:59:29.6517455Z E         
+2026-11-05T14:59:29.6517722Z E           
+2026-11-05T14:59:29.6518004Z E         
+2026-11-05T14:59:29.6518525Z E         R callback write-console: Loading required package: numDeriv
+2026-11-05T14:59:29.6519044Z E         
+2026-11-05T14:59:29.6519344Z E           
+2026-11-05T14:59:29.6519679Z E         
+2026-11-05T14:59:29.6520028Z E         R callback write-console: 
+2026-11-05T14:59:29.6520450Z E         
+2026-11-05T14:59:29.6520907Z E         Loading the 'metafor' package (version 5.0-1). For an
+2026-11-05T14:59:29.6521383Z E         
+2026-11-05T14:59:29.6521857Z E         introduction to the package please type: help(metafor)
+2026-11-05T14:59:29.6522342Z E         
+2026-11-05T14:59:29.6522677Z E         
+2026-11-05T14:59:29.6522973Z E         
+2026-11-05T14:59:29.6523553Z E         An updated version of the package (version 5.2-1) is available!
+2026-11-05T14:59:29.6524047Z E         
+2026-11-05T14:59:29.6524564Z E         To update to this version type: install.packages("metafor")
+2026-11-05T14:59:29.6525111Z E         
+2026-11-05T14:59:29.6525406Z E         
+2026-11-05T14:59:29.6525699Z E         
+2026-11-05T14:59:29.6526027Z E           
+2026-11-05T14:59:29.6526341Z E         
+2026-11-05T14:59:29.6526861Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6527442Z E         
+2026-11-05T14:59:29.6527970Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6528506Z E         
+2026-11-05T14:59:29.6528940Z E         Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6529421Z E         
+2026-11-05T14:59:29.6529831Z E         Traceback (most recent call last):
+2026-11-05T14:59:29.6530451Z E         
+2026-11-05T14:59:29.6531135Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2490, in <module>
+2026-11-05T14:59:29.6531791Z E         
+2026-11-05T14:59:29.6532240Z E             run(app, window, scenario, record_step)
+2026-11-05T14:59:29.6532643Z E         
+2026-11-05T14:59:29.6533346Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 685, in run
+2026-11-05T14:59:29.6534087Z E         
+2026-11-05T14:59:29.6534416Z E             view = observe()
+2026-11-05T14:59:29.6534790Z E         
+2026-11-05T14:59:29.6535108Z E                    ^^^^^^^^^
+2026-11-05T14:59:29.6535431Z E         
+2026-11-05T14:59:29.6536189Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 240, in observe
+2026-11-05T14:59:29.6536889Z E         
+2026-11-05T14:59:29.6537251Z E             assert_report(view)
+2026-11-05T14:59:29.6537632Z E         
+2026-11-05T14:59:29.6538349Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\report_retention.py", line 388, in assert_report
+2026-11-05T14:59:29.6539036Z E         
+2026-11-05T14:59:29.6539666Z E             assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+2026-11-05T14:59:29.6540290Z E         
+2026-11-05T14:59:29.6540699Z E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6541188Z E         
+2026-11-05T14:59:29.6541483Z E         AssertionError
+2026-11-05T14:59:29.6541842Z E         
+2026-11-05T14:59:29.6542147Z E         
+2026-11-05T14:59:29.6542449Z E         
+2026-11-05T14:59:29.6542843Z E         Traceback (most recent call last):
+2026-11-05T14:59:29.6543449Z E         
+2026-11-05T14:59:29.6544109Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2490, in <module>
+2026-11-05T14:59:29.6544793Z E         
+2026-11-05T14:59:29.6545193Z E             run(app, window, scenario, record_step)
+2026-11-05T14:59:29.6545648Z E         
+2026-11-05T14:59:29.6546462Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 685, in run
+2026-11-05T14:59:29.6547203Z E         
+2026-11-05T14:59:29.6547593Z E             view = observe()
+2026-11-05T14:59:29.6547974Z E         
+2026-11-05T14:59:29.6548314Z E                    ^^^^^^^^^
+2026-11-05T14:59:29.6548733Z E         
+2026-11-05T14:59:29.6549548Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 240, in observe
+2026-11-05T14:59:29.6550504Z E         
+2026-11-05T14:59:29.6550903Z E             assert_report(view)
+2026-11-05T14:59:29.6551294Z E         
+2026-11-05T14:59:29.6552032Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\report_retention.py", line 388, in assert_report
+2026-11-05T14:59:29.6552711Z E         
+2026-11-05T14:59:29.6553340Z E             assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+2026-11-05T14:59:29.6554130Z E         
+2026-11-05T14:59:29.6554602Z E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6555131Z E         
+2026-11-05T14:59:29.6555469Z E         AssertionError
+2026-11-05T14:59:29.6555823Z E         
+2026-11-05T14:59:29.6556160Z E         
+2026-11-05T14:59:29.6556466Z E         
+2026-11-05T14:59:29.6556829Z E       assert 1 == 0
+2026-11-05T14:59:29.6558239Z E        +  where 1 = CompletedProcess(args=['D:\\a\\rc-metastudio\\rc-metastudio\\.venv\\Scripts\\python.exe', 'D:\\a\\rc-metastudio\\rc-me...       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nAssertionError\n\n\n', stderr='').returncode
+2026-11-05T14:59:29.6559277Z 
+2026-11-05T14:59:29.6559583Z tests\e2e\test_desktop_workflows.py:38: AssertionError
+2026-11-05T14:59:29.6560310Z _______________ test_desktop_workflow[manuscript-export-direct] _______________
+2026-11-05T14:59:29.6561154Z [gw0] win32 -- Python 3.11.9 D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe
+2026-11-05T14:59:29.6561622Z 
+2026-11-05T14:59:29.6561865Z scenario = 'manuscript-export-direct'
+2026-11-05T14:59:29.6562164Z 
+2026-11-05T14:59:29.6562344Z     @pytest.mark.parametrize(
+2026-11-05T14:59:29.6562782Z         "scenario",
+2026-11-05T14:59:29.6563386Z         [scenario for scenario in SCENARIOS if scenario not in {"doctor", "ui-crawl"}],
+2026-11-05T14:59:29.6564001Z     )
+2026-11-05T14:59:29.6564380Z     def test_desktop_workflow(scenario):
+2026-11-05T14:59:29.6565047Z         # The same launcher owns timeouts, isolation and durable evidence in CI.
+2026-11-05T14:59:29.6565690Z         result = subprocess.run(
+2026-11-05T14:59:29.6566089Z             [
+2026-11-05T14:59:29.6566443Z                 sys.executable,
+2026-11-05T14:59:29.6566945Z                 str(ROOT / "scripts/verify_rcms.py"),
+2026-11-05T14:59:29.6567398Z                 scenario,
+2026-11-05T14:59:29.6567805Z             ],
+2026-11-05T14:59:29.6568151Z             cwd=ROOT,
+2026-11-05T14:59:29.6568493Z             capture_output=True,
+2026-11-05T14:59:29.6568922Z             check=False,
+2026-11-05T14:59:29.6569295Z             text=True,
+2026-11-05T14:59:29.6569683Z         )
+2026-11-05T14:59:29.6570769Z         evidence_lines = [line.removeprefix("Evidence: ") for line in result.stdout.splitlines() if line.startswith("Evidence: ")]
+2026-11-05T14:59:29.6571758Z         assert len(evidence_lines) == 1, result.stdout + result.stderr
+2026-11-05T14:59:29.6572386Z         evidence = Path(evidence_lines[0])
+2026-11-05T14:59:29.6573088Z         manifest = json.loads((evidence / "manifest.json").read_text(encoding="utf-8"))
+2026-11-05T14:59:29.6574042Z >       assert result.returncode == 0, result.stdout + result.stderr
+2026-11-05T14:59:29.6575215Z E       AssertionError: Evidence: D:\a\rc-metastudio\rc-metastudio\artifacts\verification\rcms\20261105T145503Z-3d1c5ecc-manuscript-export-direct
+2026-11-05T14:59:29.6576232Z E         stdout.log (last 20000 characters):
+2026-11-05T14:59:29.6576653Z E         
+2026-11-05T14:59:29.6577044Z E         stderr.log (last 20000 characters):
+2026-11-05T14:59:29.6577679Z E         R callback write-console: Loading required package: Matrix
+2026-11-05T14:59:29.6578196Z E         
+2026-11-05T14:59:29.6578506Z E           
+2026-11-05T14:59:29.6578862Z E         
+2026-11-05T14:59:29.6579360Z E         R callback write-console: Loading required package: metadat
+2026-11-05T14:59:29.6579906Z E         
+2026-11-05T14:59:29.6580211Z E           
+2026-11-05T14:59:29.6580484Z E         
+2026-11-05T14:59:29.6581009Z E         R callback write-console: Loading required package: numDeriv
+2026-11-05T14:59:29.6581536Z E         
+2026-11-05T14:59:29.6581880Z E           
+2026-11-05T14:59:29.6582192Z E         
+2026-11-05T14:59:29.6582560Z E         R callback write-console: 
+2026-11-05T14:59:29.6582990Z E         
+2026-11-05T14:59:29.6583455Z E         Loading the 'metafor' package (version 5.0-1). For an
+2026-11-05T14:59:29.6584866Z E         
+2026-11-05T14:59:29.6585379Z E         introduction to the package please type: help(metafor)
+2026-11-05T14:59:29.6585887Z E         
+2026-11-05T14:59:29.6586230Z E         
+2026-11-05T14:59:29.6586536Z E         
+2026-11-05T14:59:29.6588883Z E         An updated version of the package (version 5.2-1) is available!
+2026-11-05T14:59:29.6589656Z E         
+2026-11-05T14:59:29.6590019Z E         To update to this version type: install.packages("metafor")
+2026-11-05T14:59:29.6590411Z E         
+2026-11-05T14:59:29.6590619Z E         
+2026-11-05T14:59:29.6590810Z E         
+2026-11-05T14:59:29.6591038Z E           
+2026-11-05T14:59:29.6591262Z E         
+2026-11-05T14:59:29.6591586Z E         Manuscript analysis: double-zero binary.random
+2026-11-05T14:59:29.6591942Z E         
+2026-11-05T14:59:29.6592297Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6592680Z E         
+2026-11-05T14:59:29.6592992Z E         Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6593316Z E         
+2026-11-05T14:59:29.6594289Z E         Manuscript lifetime: {'phase': 'close-before', 'view': '0x25a4d375a20', 'deleted': False, 'mode': 'direct', 'operation': 'setup', 'picker_number': 0, 'previous_dialog_deleted': None, 'visible': True, 'refit_pending': False, 'scene_deleted': False, 'viewport_deleted': False}
+2026-11-05T14:59:29.6595073Z E         
+2026-11-05T14:59:29.6595729Z E         Manuscript lifetime: {'phase': 'close-after', 'view': '0x25a4d375a20', 'deleted': True, 'mode': 'direct', 'operation': 'setup', 'picker_number': 0, 'previous_dialog_deleted': None}
+2026-11-05T14:59:29.6596303Z E         
+2026-11-05T14:59:29.6596590Z E         Manuscript analysis: binary.fixed.mh
+2026-11-05T14:59:29.6596867Z E         
+2026-11-05T14:59:29.6597215Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6597563Z E         
+2026-11-05T14:59:29.6597825Z E         Traceback (most recent call last):
+2026-11-05T14:59:29.6598107Z E         
+2026-11-05T14:59:29.6598518Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2437, in <module>
+2026-11-05T14:59:29.6598919Z E         
+2026-11-05T14:59:29.6599231Z E             run(app, window, WORK, ROOT, record_step, analyze,
+2026-11-05T14:59:29.6599522Z E         
+2026-11-05T14:59:29.6599928Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\manuscript_export.py", line 100, in run
+2026-11-05T14:59:29.6600296Z E         
+2026-11-05T14:59:29.6600633Z E             _run(app, window, work, root, record, analyze, direct_write=direct_write)
+2026-11-05T14:59:29.6601002Z E         
+2026-11-05T14:59:29.6602025Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\manuscript_export.py", line 278, in _run
+2026-11-05T14:59:29.6602452Z E         
+2026-11-05T14:59:29.6602703Z E             view = analyze(app, window, method)
+2026-11-05T14:59:29.6602973Z E         
+2026-11-05T14:59:29.6603246Z E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6603502Z E         
+2026-11-05T14:59:29.6603905Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 322, in analyze
+2026-11-05T14:59:29.6604274Z E         
+2026-11-05T14:59:29.6604521Z E             assert len(views) == 1, "analysis did not display results"
+2026-11-05T14:59:29.6604855Z E         
+2026-11-05T14:59:29.6605081Z E                    ^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6605364Z E         
+2026-11-05T14:59:29.6605643Z E         AssertionError: analysis did not display results
+2026-11-05T14:59:29.6605940Z E         
+2026-11-05T14:59:29.6606168Z E         
+2026-11-05T14:59:29.6606364Z E         
+2026-11-05T14:59:29.6606719Z E         Traceback (most recent call last):
+2026-11-05T14:59:29.6607036Z E         
+2026-11-05T14:59:29.6607615Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2437, in <module>
+2026-11-05T14:59:29.6608098Z E         
+2026-11-05T14:59:29.6608388Z E             run(app, window, WORK, ROOT, record_step, analyze,
+2026-11-05T14:59:29.6608670Z E         
+2026-11-05T14:59:29.6609045Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\manuscript_export.py", line 100, in run
+2026-11-05T14:59:29.6609455Z E         
+2026-11-05T14:59:29.6609796Z E             _run(app, window, work, root, record, analyze, direct_write=direct_write)
+2026-11-05T14:59:29.6610165Z E         
+2026-11-05T14:59:29.6610556Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\manuscript_export.py", line 278, in _run
+2026-11-05T14:59:29.6610940Z E         
+2026-11-05T14:59:29.6611214Z E             view = analyze(app, window, method)
+2026-11-05T14:59:29.6611494Z E         
+2026-11-05T14:59:29.6611755Z E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6612015Z E         
+2026-11-05T14:59:29.6612386Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 322, in analyze
+2026-11-05T14:59:29.6612792Z E         
+2026-11-05T14:59:29.6613088Z E             assert len(views) == 1, "analysis did not display results"
+2026-11-05T14:59:29.6613411Z E         
+2026-11-05T14:59:29.6613628Z E                    ^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6613864Z E         
+2026-11-05T14:59:29.6614158Z E         AssertionError: analysis did not display results
+2026-11-05T14:59:29.6614457Z E         
+2026-11-05T14:59:29.6614716Z E         R callback write-console: Warning message:
+2026-11-05T14:59:29.6614996Z E         
+2026-11-05T14:59:29.6615197Z E           
+2026-11-05T14:59:29.6615425Z E         
+2026-11-05T14:59:29.6615706Z E         R callback write-console: Some yi/vi values are NA. 
+2026-11-05T14:59:29.6616003Z E         
+2026-11-05T14:59:29.6616223Z E           
+2026-11-05T14:59:29.6616421Z E         
+2026-11-05T14:59:29.6616618Z E         
+2026-11-05T14:59:29.6616810Z E         
+2026-11-05T14:59:29.6617008Z E       assert 1 == 0
+2026-11-05T14:59:29.6617894Z E        +  where 1 = CompletedProcess(args=['D:\\a\\rc-metastudio\\rc-metastudio\\.venv\\Scripts\\python.exe', 'D:\\a\\rc-metastudio\\rc-me... write-console: Warning message:\n\n  \n\nR callback write-console: Some yi/vi values are NA. \n\n  \n\n\n', stderr='').returncode
+2026-11-05T14:59:29.6618567Z 
+2026-11-05T14:59:29.6618718Z tests\e2e\test_desktop_workflows.py:38: AssertionError
+2026-11-05T14:59:29.6619104Z _____________ test_desktop_workflow[analysis-continuous-subgroup] _____________
+2026-11-05T14:59:29.6619557Z [gw2] win32 -- Python 3.11.9 D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe
+2026-11-05T14:59:29.6619801Z 
+2026-11-05T14:59:29.6619924Z scenario = 'analysis-continuous-subgroup'
+2026-11-05T14:59:29.6620174Z 
+2026-11-05T14:59:29.6620283Z     @pytest.mark.parametrize(
+2026-11-05T14:59:29.6620492Z         "scenario",
+2026-11-05T14:59:29.6620807Z         [scenario for scenario in SCENARIOS if scenario not in {"doctor", "ui-crawl"}],
+2026-11-05T14:59:29.6621102Z     )
+2026-11-05T14:59:29.6621290Z     def test_desktop_workflow(scenario):
+2026-11-05T14:59:29.6621632Z         # The same launcher owns timeouts, isolation and durable evidence in CI.
+2026-11-05T14:59:29.6621955Z         result = subprocess.run(
+2026-11-05T14:59:29.6622147Z             [
+2026-11-05T14:59:29.6622316Z                 sys.executable,
+2026-11-05T14:59:29.6622559Z                 str(ROOT / "scripts/verify_rcms.py"),
+2026-11-05T14:59:29.6622790Z                 scenario,
+2026-11-05T14:59:29.6622958Z             ],
+2026-11-05T14:59:29.6623124Z             cwd=ROOT,
+2026-11-05T14:59:29.6623306Z             capture_output=True,
+2026-11-05T14:59:29.6623511Z             check=False,
+2026-11-05T14:59:29.6623695Z             text=True,
+2026-11-05T14:59:29.6623851Z         )
+2026-11-05T14:59:29.6624295Z         evidence_lines = [line.removeprefix("Evidence: ") for line in result.stdout.splitlines() if line.startswith("Evidence: ")]
+2026-11-05T14:59:29.6624812Z         assert len(evidence_lines) == 1, result.stdout + result.stderr
+2026-11-05T14:59:29.6625212Z         evidence = Path(evidence_lines[0])
+2026-11-05T14:59:29.6625573Z         manifest = json.loads((evidence / "manifest.json").read_text(encoding="utf-8"))
+2026-11-05T14:59:29.6625979Z >       assert result.returncode == 0, result.stdout + result.stderr
+2026-11-05T14:59:29.6626618Z E       AssertionError: Evidence: D:\a\rc-metastudio\rc-metastudio\artifacts\verification\rcms\20261105T145514Z-a315db25-analysis-continuous-subgroup
+2026-11-05T14:59:29.6627314Z E         stdout.log (last 20000 characters):
+2026-11-05T14:59:29.6627664Z E         
+2026-11-05T14:59:29.6627854Z E         stderr.log (last 20000 characters):
+2026-11-05T14:59:29.6628171Z E         R callback write-console: Loading required package: Matrix
+2026-11-05T14:59:29.6628432Z E         
+2026-11-05T14:59:29.6628573Z E           
+2026-11-05T14:59:29.6628799Z E         
+2026-11-05T14:59:29.6629098Z E         R callback write-console: Loading required package: metadat
+2026-11-05T14:59:29.6629358Z E         
+2026-11-05T14:59:29.6629501Z E           
+2026-11-05T14:59:29.6629642Z E         
+2026-11-05T14:59:29.6629889Z E         R callback write-console: Loading required package: numDeriv
+2026-11-05T14:59:29.6630146Z E         
+2026-11-05T14:59:29.6630281Z E           
+2026-11-05T14:59:29.6630427Z E         
+2026-11-05T14:59:29.6630600Z E         R callback write-console: 
+2026-11-05T14:59:29.6630799Z E         
+2026-11-05T14:59:29.6631028Z E         Loading the 'metafor' package (version 5.0-1). For an
+2026-11-05T14:59:29.6631276Z E         
+2026-11-05T14:59:29.6631514Z E         introduction to the package please type: help(metafor)
+2026-11-05T14:59:29.6631757Z E         
+2026-11-05T14:59:29.6631893Z E         
+2026-11-05T14:59:29.6632034Z E         
+2026-11-05T14:59:29.6632288Z E         An updated version of the package (version 5.2-1) is available!
+2026-11-05T14:59:29.6632577Z E         
+2026-11-05T14:59:29.6632825Z E         To update to this version type: install.packages("metafor")
+2026-11-05T14:59:29.6633079Z E         
+2026-11-05T14:59:29.6633219Z E         
+2026-11-05T14:59:29.6633350Z E         
+2026-11-05T14:59:29.6633489Z E           
+2026-11-05T14:59:29.6633629Z E         
+2026-11-05T14:59:29.6633901Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6634189Z E         
+2026-11-05T14:59:29.6634438Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6634708Z E         
+2026-11-05T14:59:29.6634936Z E         Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6635174Z E         
+2026-11-05T14:59:29.6635359Z E         Traceback (most recent call last):
+2026-11-05T14:59:29.6635646Z E         
+2026-11-05T14:59:29.6635992Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2490, in <module>
+2026-11-05T14:59:29.6636331Z E         
+2026-11-05T14:59:29.6636528Z E             run(app, window, scenario, record_step)
+2026-11-05T14:59:29.6636759Z E         
+2026-11-05T14:59:29.6637298Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 685, in run
+2026-11-05T14:59:29.6637686Z E         
+2026-11-05T14:59:29.6637875Z E             view = observe()
+2026-11-05T14:59:29.6638057Z E         
+2026-11-05T14:59:29.6638216Z E                    ^^^^^^^^^
+2026-11-05T14:59:29.6638396Z E         
+2026-11-05T14:59:29.6638817Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 240, in observe
+2026-11-05T14:59:29.6639213Z E         
+2026-11-05T14:59:29.6639377Z E             assert_report(view)
+2026-11-05T14:59:29.6639570Z E         
+2026-11-05T14:59:29.6639919Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\report_retention.py", line 388, in assert_report
+2026-11-05T14:59:29.6640264Z E         
+2026-11-05T14:59:29.6640595Z E             assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+2026-11-05T14:59:29.6641000Z E         
+2026-11-05T14:59:29.6641253Z E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6641500Z E         
+2026-11-05T14:59:29.6641662Z E         AssertionError
+2026-11-05T14:59:29.6641837Z E         
+2026-11-05T14:59:29.6641970Z E         
+2026-11-05T14:59:29.6642108Z E         
+2026-11-05T14:59:29.6642289Z E         Traceback (most recent call last):
+2026-11-05T14:59:29.6642495Z E         
+2026-11-05T14:59:29.6642831Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2490, in <module>
+2026-11-05T14:59:29.6643156Z E         
+2026-11-05T14:59:29.6643360Z E             run(app, window, scenario, record_step)
+2026-11-05T14:59:29.6643577Z E         
+2026-11-05T14:59:29.6643966Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 685, in run
+2026-11-05T14:59:29.6644354Z E         
+2026-11-05T14:59:29.6644514Z E             view = observe()
+2026-11-05T14:59:29.6644697Z E         
+2026-11-05T14:59:29.6644850Z E                    ^^^^^^^^^
+2026-11-05T14:59:29.6645017Z E         
+2026-11-05T14:59:29.6645428Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 240, in observe
+2026-11-05T14:59:29.6645814Z E         
+2026-11-05T14:59:29.6645982Z E             assert_report(view)
+2026-11-05T14:59:29.6646164Z E         
+2026-11-05T14:59:29.6646513Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\report_retention.py", line 388, in assert_report
+2026-11-05T14:59:29.6646937Z E         
+2026-11-05T14:59:29.6647359Z E             assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+2026-11-05T14:59:29.6647829Z E         
+2026-11-05T14:59:29.6648075Z E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6648325Z E         
+2026-11-05T14:59:29.6648488Z E         AssertionError
+2026-11-05T14:59:29.6648660Z E         
+2026-11-05T14:59:29.6648794Z E         
+2026-11-05T14:59:29.6648937Z E         
+2026-11-05T14:59:29.6649087Z E       assert 1 == 0
+2026-11-05T14:59:29.6649836Z E        +  where 1 = CompletedProcess(args=['D:\\a\\rc-metastudio\\rc-metastudio\\.venv\\Scripts\\python.exe', 'D:\\a\\rc-metastudio\\rc-me...       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nAssertionError\n\n\n', stderr='').returncode
+2026-11-05T14:59:29.6650383Z 
+2026-11-05T14:59:29.6650534Z tests\e2e\test_desktop_workflows.py:38: AssertionError
+2026-11-05T14:59:29.6651021Z __________ test_desktop_workflow[analysis-diagnostic.fixed.inv.var] ___________
+2026-11-05T14:59:29.6651488Z [gw1] win32 -- Python 3.11.9 D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe
+2026-11-05T14:59:29.6651730Z 
+2026-11-05T14:59:29.6651863Z scenario = 'analysis-diagnostic.fixed.inv.var'
+2026-11-05T14:59:29.6652029Z 
+2026-11-05T14:59:29.6652131Z     @pytest.mark.parametrize(
+2026-11-05T14:59:29.6652328Z         "scenario",
+2026-11-05T14:59:29.6652648Z         [scenario for scenario in SCENARIOS if scenario not in {"doctor", "ui-crawl"}],
+2026-11-05T14:59:29.6652944Z     )
+2026-11-05T14:59:29.6653131Z     def test_desktop_workflow(scenario):
+2026-11-05T14:59:29.6653475Z         # The same launcher owns timeouts, isolation and durable evidence in CI.
+2026-11-05T14:59:29.6653788Z         result = subprocess.run(
+2026-11-05T14:59:29.6653983Z             [
+2026-11-05T14:59:29.6654154Z                 sys.executable,
+2026-11-05T14:59:29.6654396Z                 str(ROOT / "scripts/verify_rcms.py"),
+2026-11-05T14:59:29.6654631Z                 scenario,
+2026-11-05T14:59:29.6654802Z             ],
+2026-11-05T14:59:29.6654965Z             cwd=ROOT,
+2026-11-05T14:59:29.6655142Z             capture_output=True,
+2026-11-05T14:59:29.6655336Z             check=False,
+2026-11-05T14:59:29.6655522Z             text=True,
+2026-11-05T14:59:29.6655752Z         )
+2026-11-05T14:59:29.6656194Z         evidence_lines = [line.removeprefix("Evidence: ") for line in result.stdout.splitlines() if line.startswith("Evidence: ")]
+2026-11-05T14:59:29.6656716Z         assert len(evidence_lines) == 1, result.stdout + result.stderr
+2026-11-05T14:59:29.6657022Z         evidence = Path(evidence_lines[0])
+2026-11-05T14:59:29.6657380Z         manifest = json.loads((evidence / "manifest.json").read_text(encoding="utf-8"))
+2026-11-05T14:59:29.6657776Z >       assert result.returncode == 0, result.stdout + result.stderr
+2026-11-05T14:59:29.6658431Z E       AssertionError: Evidence: D:\a\rc-metastudio\rc-metastudio\artifacts\verification\rcms\20261105T145523Z-c59eb46e-analysis-diagnostic.fixed.inv.var
+2026-11-05T14:59:29.6658965Z E         stdout.log (last 20000 characters):
+2026-11-05T14:59:29.6659176Z E         
+2026-11-05T14:59:29.6659402Z E         stderr.log (last 20000 characters):
+2026-11-05T14:59:29.6659763Z E         R callback write-console: Loading required package: Matrix
+2026-11-05T14:59:29.6660112Z E         
+2026-11-05T14:59:29.6660310Z E           
+2026-11-05T14:59:29.6660546Z E         
+2026-11-05T14:59:29.6660845Z E         R callback write-console: Loading required package: metadat
+2026-11-05T14:59:29.6661152Z E         
+2026-11-05T14:59:29.6661376Z E           
+2026-11-05T14:59:29.6661582Z E         
+2026-11-05T14:59:29.6661890Z E         R callback write-console: Loading required package: numDeriv
+2026-11-05T14:59:29.6662237Z E         
+2026-11-05T14:59:29.6662429Z E           
+2026-11-05T14:59:29.6662643Z E         
+2026-11-05T14:59:29.6662878Z E         R callback write-console: 
+2026-11-05T14:59:29.6663129Z E         
+2026-11-05T14:59:29.6663446Z E         Loading the 'metafor' package (version 5.0-1). For an
+2026-11-05T14:59:29.6663742Z E         
+2026-11-05T14:59:29.6664045Z E         introduction to the package please type: help(metafor)
+2026-11-05T14:59:29.6664346Z E         
+2026-11-05T14:59:29.6664543Z E         
+2026-11-05T14:59:29.6664756Z E         
+2026-11-05T14:59:29.6665070Z E         An updated version of the package (version 5.2-1) is available!
+2026-11-05T14:59:29.6665386Z E         
+2026-11-05T14:59:29.6665687Z E         To update to this version type: install.packages("metafor")
+2026-11-05T14:59:29.6665992Z E         
+2026-11-05T14:59:29.6666204Z E         
+2026-11-05T14:59:29.6666400Z E         
+2026-11-05T14:59:29.6666597Z E           
+2026-11-05T14:59:29.6666830Z E         
+2026-11-05T14:59:29.6667305Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6667887Z E         
+2026-11-05T14:59:29.6668308Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6668651Z E         
+2026-11-05T14:59:29.6668969Z E         Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6669273Z E         
+2026-11-05T14:59:29.6669542Z E         Traceback (most recent call last):
+2026-11-05T14:59:29.6669807Z E         
+2026-11-05T14:59:29.6670209Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2490, in <module>
+2026-11-05T14:59:29.6670633Z E         
+2026-11-05T14:59:29.6670898Z E             run(app, window, scenario, record_step)
+2026-11-05T14:59:29.6671201Z E         
+2026-11-05T14:59:29.6671659Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 685, in run
+2026-11-05T14:59:29.6672098Z E         
+2026-11-05T14:59:29.6672345Z E             view = observe()
+2026-11-05T14:59:29.6672584Z E         
+2026-11-05T14:59:29.6672825Z E                    ^^^^^^^^^
+2026-11-05T14:59:29.6673054Z E         
+2026-11-05T14:59:29.6673520Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 240, in observe
+2026-11-05T14:59:29.6673994Z E         
+2026-11-05T14:59:29.6674221Z E             assert_report(view)
+2026-11-05T14:59:29.6674556Z E         
+2026-11-05T14:59:29.6674999Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\report_retention.py", line 388, in assert_report
+2026-11-05T14:59:29.6675414Z E         
+2026-11-05T14:59:29.6675830Z E             assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+2026-11-05T14:59:29.6676207Z E         
+2026-11-05T14:59:29.6676523Z E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6676816Z E         
+2026-11-05T14:59:29.6677027Z E         AssertionError
+2026-11-05T14:59:29.6677269Z E         
+2026-11-05T14:59:29.6677463Z E         
+2026-11-05T14:59:29.6677661Z E         
+2026-11-05T14:59:29.6677934Z E         Traceback (most recent call last):
+2026-11-05T14:59:29.6678193Z E         
+2026-11-05T14:59:29.6678612Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2490, in <module>
+2026-11-05T14:59:29.6678992Z E         
+2026-11-05T14:59:29.6679245Z E             run(app, window, scenario, record_step)
+2026-11-05T14:59:29.6679548Z E         
+2026-11-05T14:59:29.6680010Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 685, in run
+2026-11-05T14:59:29.6680468Z E         
+2026-11-05T14:59:29.6680689Z E             view = observe()
+2026-11-05T14:59:29.6680920Z E         
+2026-11-05T14:59:29.6681159Z E                    ^^^^^^^^^
+2026-11-05T14:59:29.6681387Z E         
+2026-11-05T14:59:29.6681872Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 240, in observe
+2026-11-05T14:59:29.6682353Z E         
+2026-11-05T14:59:29.6682580Z E             assert_report(view)
+2026-11-05T14:59:29.6682856Z E         
+2026-11-05T14:59:29.6683241Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\report_retention.py", line 388, in assert_report
+2026-11-05T14:59:29.6683672Z E         
+2026-11-05T14:59:29.6684056Z E             assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+2026-11-05T14:59:29.6684435Z E         
+2026-11-05T14:59:29.6684755Z E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6685054Z E         
+2026-11-05T14:59:29.6685292Z E         AssertionError
+2026-11-05T14:59:29.6685520Z E         
+2026-11-05T14:59:29.6685715Z E         
+2026-11-05T14:59:29.6685939Z E         
+2026-11-05T14:59:29.6686147Z E       assert 1 == 0
+2026-11-05T14:59:29.6687032Z E        +  where 1 = CompletedProcess(args=['D:\\a\\rc-metastudio\\rc-metastudio\\.venv\\Scripts\\python.exe', 'D:\\a\\rc-metastudio\\rc-me...       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nAssertionError\n\n\n', stderr='').returncode
+2026-11-05T14:59:29.6687899Z 
+2026-11-05T14:59:29.6688102Z tests\e2e\test_desktop_workflows.py:38: AssertionError
+2026-11-05T14:59:29.6688549Z _______________ test_desktop_workflow[project-reviewer-colours] _______________
+2026-11-05T14:59:29.6689086Z [gw2] win32 -- Python 3.11.9 D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe
+2026-11-05T14:59:29.6689369Z 
+2026-11-05T14:59:29.6689494Z scenario = 'project-reviewer-colours'
+2026-11-05T14:59:29.6689677Z 
+2026-11-05T14:59:29.6689818Z     @pytest.mark.parametrize(
+2026-11-05T14:59:29.6690071Z         "scenario",
+2026-11-05T14:59:29.6690467Z         [scenario for scenario in SCENARIOS if scenario not in {"doctor", "ui-crawl"}],
+2026-11-05T14:59:29.6690814Z     )
+2026-11-05T14:59:29.6691049Z     def test_desktop_workflow(scenario):
+2026-11-05T14:59:29.6691484Z         # The same launcher owns timeouts, isolation and durable evidence in CI.
+2026-11-05T14:59:29.6691858Z         result = subprocess.run(
+2026-11-05T14:59:29.6692138Z             [
+2026-11-05T14:59:29.6692353Z                 sys.executable,
+2026-11-05T14:59:29.6692643Z                 str(ROOT / "scripts/verify_rcms.py"),
+2026-11-05T14:59:29.6692967Z                 scenario,
+2026-11-05T14:59:29.6693259Z             ],
+2026-11-05T14:59:29.6693499Z             cwd=ROOT,
+2026-11-05T14:59:29.6693742Z             capture_output=True,
+2026-11-05T14:59:29.6694005Z             check=False,
+2026-11-05T14:59:29.6694261Z             text=True,
+2026-11-05T14:59:29.6694458Z         )
+2026-11-05T14:59:29.6694949Z         evidence_lines = [line.removeprefix("Evidence: ") for line in result.stdout.splitlines() if line.startswith("Evidence: ")]
+2026-11-05T14:59:29.6695553Z         assert len(evidence_lines) == 1, result.stdout + result.stderr
+2026-11-05T14:59:29.6695910Z         evidence = Path(evidence_lines[0])
+2026-11-05T14:59:29.6696361Z         manifest = json.loads((evidence / "manifest.json").read_text(encoding="utf-8"))
+2026-11-05T14:59:29.6696825Z >       assert result.returncode == 0, result.stdout + result.stderr
+2026-11-05T14:59:29.6697531Z E       AssertionError: Evidence: D:\a\rc-metastudio\rc-metastudio\artifacts\verification\rcms\20261105T145624Z-1245f040-project-reviewer-colours
+2026-11-05T14:59:29.6698093Z E         stdout.log (last 20000 characters):
+2026-11-05T14:59:29.6698363Z E         
+2026-11-05T14:59:29.6698643Z E         stderr.log (last 20000 characters):
+2026-11-05T14:59:29.6699008Z E         R callback write-console: Loading required package: Matrix
+2026-11-05T14:59:29.6699347Z E         
+2026-11-05T14:59:29.6699550Z E           
+2026-11-05T14:59:29.6699750Z E         
+2026-11-05T14:59:29.6700077Z E         R callback write-console: Loading required package: metadat
+2026-11-05T14:59:29.6700388Z E         
+2026-11-05T14:59:29.6700607Z E           
+2026-11-05T14:59:29.6700803Z E         
+2026-11-05T14:59:29.6701106Z E         R callback write-console: Loading required package: numDeriv
+2026-11-05T14:59:29.6701442Z E         
+2026-11-05T14:59:29.6701630Z E           
+2026-11-05T14:59:29.6701819Z E         
+2026-11-05T14:59:29.6702052Z E         R callback write-console: 
+2026-11-05T14:59:29.6702293Z E         
+2026-11-05T14:59:29.6702583Z E         Loading the 'metafor' package (version 5.0-1). For an
+2026-11-05T14:59:29.6702877Z E         
+2026-11-05T14:59:29.6703165Z E         introduction to the package please type: help(metafor)
+2026-11-05T14:59:29.6703498Z E         
+2026-11-05T14:59:29.6703691Z E         
+2026-11-05T14:59:29.6703888Z E         
+2026-11-05T14:59:29.6704203Z E         An updated version of the package (version 5.2-1) is available!
+2026-11-05T14:59:29.6704529Z E         
+2026-11-05T14:59:29.6704850Z E         To update to this version type: install.packages("metafor")
+2026-11-05T14:59:29.6705154Z E         
+2026-11-05T14:59:29.6705318Z E         
+2026-11-05T14:59:29.6705466Z E         
+2026-11-05T14:59:29.6705611Z E           
+2026-11-05T14:59:29.6705863Z E         
+2026-11-05T14:59:29.6706141Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6706426Z E         
+2026-11-05T14:59:29.6706661Z E         Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6706905Z E         
+2026-11-05T14:59:29.6707180Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6707598Z E         
+2026-11-05T14:59:29.6707975Z E         Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6708254Z E         
+2026-11-05T14:59:29.6708469Z E         Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6708710Z E         
+2026-11-05T14:59:29.6708889Z E         Traceback (most recent call last):
+2026-11-05T14:59:29.6709091Z E         
+2026-11-05T14:59:29.6709437Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2474, in <module>
+2026-11-05T14:59:29.6709772Z E         
+2026-11-05T14:59:29.6710069Z E             run(app, window, scenario, record_step)
+2026-11-05T14:59:29.6710415Z E         
+2026-11-05T14:59:29.6710916Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\advanced_workflows.py", line 2005, in run
+2026-11-05T14:59:29.6711479Z E         
+2026-11-05T14:59:29.6711810Z E             driver(app, window, Path(sys.argv[2]), record)
+2026-11-05T14:59:29.6712117Z E         
+2026-11-05T14:59:29.6712571Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\reviewer_fixes.py", line 270, in run_colours
+2026-11-05T14:59:29.6712985Z E         
+2026-11-05T14:59:29.6713544Z E             view = matrix(app,window,scenario,record,keep_results=True,metric_override=metric,parameters={'fp_style':'default'})
+2026-11-05T14:59:29.6714044Z E         
+2026-11-05T14:59:29.6714414Z E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6728842Z E         
+2026-11-05T14:59:29.6729625Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 685, in run
+2026-11-05T14:59:29.6730296Z E         
+2026-11-05T14:59:29.6730553Z E             view = observe()
+2026-11-05T14:59:29.6730804Z E         
+2026-11-05T14:59:29.6731028Z E                    ^^^^^^^^^
+2026-11-05T14:59:29.6731262Z E         
+2026-11-05T14:59:29.6731681Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 240, in observe
+2026-11-05T14:59:29.6732084Z E         
+2026-11-05T14:59:29.6732255Z E             assert_report(view)
+2026-11-05T14:59:29.6732446Z E         
+2026-11-05T14:59:29.6732821Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\report_retention.py", line 388, in assert_report
+2026-11-05T14:59:29.6733192Z E         
+2026-11-05T14:59:29.6733559Z E             assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+2026-11-05T14:59:29.6733910Z E         
+2026-11-05T14:59:29.6734165Z E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6734416Z E         
+2026-11-05T14:59:29.6734578Z E         AssertionError
+2026-11-05T14:59:29.6734760Z E         
+2026-11-05T14:59:29.6734895Z E         
+2026-11-05T14:59:29.6735029Z E         
+2026-11-05T14:59:29.6735229Z E         Traceback (most recent call last):
+2026-11-05T14:59:29.6735459Z E         
+2026-11-05T14:59:29.6735816Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2474, in <module>
+2026-11-05T14:59:29.6736163Z E         
+2026-11-05T14:59:29.6736368Z E             run(app, window, scenario, record_step)
+2026-11-05T14:59:29.6736602Z E         
+2026-11-05T14:59:29.6737017Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\advanced_workflows.py", line 2005, in run
+2026-11-05T14:59:29.6737419Z E         
+2026-11-05T14:59:29.6737800Z E             driver(app, window, Path(sys.argv[2]), record)
+2026-11-05T14:59:29.6738042Z E         
+2026-11-05T14:59:29.6738405Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\reviewer_fixes.py", line 270, in run_colours
+2026-11-05T14:59:29.6738745Z E         
+2026-11-05T14:59:29.6739198Z E             view = matrix(app,window,scenario,record,keep_results=True,metric_override=metric,parameters={'fp_style':'default'})
+2026-11-05T14:59:29.6739628Z E         
+2026-11-05T14:59:29.6739933Z E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6740211Z E         
+2026-11-05T14:59:29.6740629Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 685, in run
+2026-11-05T14:59:29.6741020Z E         
+2026-11-05T14:59:29.6741185Z E             view = observe()
+2026-11-05T14:59:29.6741374Z E         
+2026-11-05T14:59:29.6741535Z E                    ^^^^^^^^^
+2026-11-05T14:59:29.6741710Z E         
+2026-11-05T14:59:29.6742120Z E           File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 240, in observe
+2026-11-05T14:59:29.6742607Z E         
+2026-11-05T14:59:29.6742780Z E             assert_report(view)
+2026-11-05T14:59:29.6742967Z E         
+2026-11-05T14:59:29.6743325Z E           File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\report_retention.py", line 388, in assert_report
+2026-11-05T14:59:29.6743679Z E         
+2026-11-05T14:59:29.6744005Z E             assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+2026-11-05T14:59:29.6744330Z E         
+2026-11-05T14:59:29.6744564Z E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6744803Z E         
+2026-11-05T14:59:29.6744959Z E         AssertionError
+2026-11-05T14:59:29.6745238Z E         
+2026-11-05T14:59:29.6747407Z E         
+2026-11-05T14:59:29.6747638Z E         
+2026-11-05T14:59:29.6747866Z E       assert 1 == 0
+2026-11-05T14:59:29.6749093Z E        +  where 1 = CompletedProcess(args=['D:\\a\\rc-metastudio\\rc-metastudio\\.venv\\Scripts\\python.exe', 'D:\\a\\rc-metastudio\\rc-me...       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nAssertionError\n\n\n', stderr='').returncode
+2026-11-05T14:59:29.6750014Z 
+2026-11-05T14:59:29.6750235Z tests\e2e\test_desktop_workflows.py:38: AssertionError
+2026-11-05T14:59:29.6750748Z ============================ slowest 10 durations =============================
+2026-11-05T14:59:29.6751496Z 129.81s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[ratios-hr]
+2026-11-05T14:59:29.6752388Z 99.16s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-presentation-twoarm-smd]
+2026-11-05T14:59:29.6753417Z 97.67s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[project-axis-proportions]
+2026-11-05T14:59:29.6754252Z 69.99s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-hr]
+2026-11-05T14:59:29.6755164Z 53.87s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-presentation-sequential]
+2026-11-05T14:59:29.6756028Z 53.14s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-irr]
+2026-11-05T14:59:29.6756767Z 39.00s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[sheets-legacy]
+2026-11-05T14:59:29.6757543Z 35.35s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[plot-workflow-forest]
+2026-11-05T14:59:29.6758385Z 34.40s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[audit-round3-twoarm-proportion]
+2026-11-05T14:59:29.6759145Z 32.93s call     tests/e2e/test_desktop_workflows.py::test_desktop_workflow[sheets]
+2026-11-05T14:59:29.6759725Z =========================== short test summary info ===========================
+2026-11-05T14:59:29.6762180Z FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[sheets-legacy] - AssertionError: Evidence: D:\a\rc-metastudio\rc-metastudio\artifacts\verification\rcms\20261105T145358Z-f82d64c2-sheets-legacy
+2026-11-05T14:59:29.6763295Z   stdout.log (last 20000 characters):
+2026-11-05T14:59:29.6763708Z   
+2026-11-05T14:59:29.6763997Z   stderr.log (last 20000 characters):
+2026-11-05T14:59:29.6764472Z   R callback write-console: Loading required package: Matrix
+2026-11-05T14:59:29.6764881Z   
+2026-11-05T14:59:29.6765072Z     
+2026-11-05T14:59:29.6765549Z   
+2026-11-05T14:59:29.6765916Z   R callback write-console: Loading required package: metadat
+2026-11-05T14:59:29.6766304Z   
+2026-11-05T14:59:29.6766501Z     
+2026-11-05T14:59:29.6766697Z   
+2026-11-05T14:59:29.6767078Z   R callback write-console: Loading required package: numDeriv
+2026-11-05T14:59:29.6767478Z   
+2026-11-05T14:59:29.6767674Z     
+2026-11-05T14:59:29.6767884Z   
+2026-11-05T14:59:29.6768150Z   R callback write-console: 
+2026-11-05T14:59:29.6768430Z   
+2026-11-05T14:59:29.6768768Z   Loading the 'metafor' package (version 5.0-1). For an
+2026-11-05T14:59:29.6769123Z   
+2026-11-05T14:59:29.6769481Z   introduction to the package please type: help(metafor)
+2026-11-05T14:59:29.6770001Z   
+2026-11-05T14:59:29.6770195Z   
+2026-11-05T14:59:29.6770391Z   
+2026-11-05T14:59:29.6770761Z   An updated version of the package (version 5.2-1) is available!
+2026-11-05T14:59:29.6771165Z   
+2026-11-05T14:59:29.6771528Z   To update to this version type: install.packages("metafor")
+2026-11-05T14:59:29.6771915Z   
+2026-11-05T14:59:29.6772110Z   
+2026-11-05T14:59:29.6772294Z   
+2026-11-05T14:59:29.6772476Z     
+2026-11-05T14:59:29.6772670Z   
+2026-11-05T14:59:29.6773080Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6773535Z   
+2026-11-05T14:59:29.6773894Z   Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6774279Z   
+2026-11-05T14:59:29.6774731Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6775194Z   
+2026-11-05T14:59:29.6775554Z   Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6775909Z   
+2026-11-05T14:59:29.6776293Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6776744Z   
+2026-11-05T14:59:29.6777102Z   Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6777464Z   
+2026-11-05T14:59:29.6777889Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6778319Z   
+2026-11-05T14:59:29.6778636Z   Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6778993Z   
+2026-11-05T14:59:29.6779377Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6779792Z   
+2026-11-05T14:59:29.6780109Z   Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6780446Z   
+2026-11-05T14:59:29.6780859Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6781277Z   
+2026-11-05T14:59:29.6781621Z   Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6781975Z   
+2026-11-05T14:59:29.6782440Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6782862Z   
+2026-11-05T14:59:29.6783261Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6783677Z   
+2026-11-05T14:59:29.6784069Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6784476Z   
+2026-11-05T14:59:29.6784816Z   Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6785166Z   
+2026-11-05T14:59:29.6785693Z   Traceback (most recent call last):
+2026-11-05T14:59:29.6785988Z   
+2026-11-05T14:59:29.6794025Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2451, in <module>
+2026-11-05T14:59:29.6794688Z   
+2026-11-05T14:59:29.6795138Z       sheets_legacy(app, window)
+2026-11-05T14:59:29.6795421Z   
+2026-11-05T14:59:29.6795987Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 838, in sheets_legacy
+2026-11-05T14:59:29.6796511Z   
+2026-11-05T14:59:29.6796904Z       assert actual == row["sections"], (filename, actual, row["sections"])
+2026-11-05T14:59:29.6797303Z   
+2026-11-05T14:59:29.6797532Z              ^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6797791Z   
+2026-11-05T14:59:29.6809236Z   AssertionError: ('lymph.rcms', {'Sensitivity summary': {'estimate': 0.666, 'lower_bound': 0.594, 'upper_bound': 0.732, 'p_value': 0.001, 'q': 24.747, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.074, 'i_squared': 35.3, 'tau_squared': 0.131, 'calculation_scale.estimate': 0.69, 'calculation_scale.lower_bound': 0.379, 'calculation_scale.upper_bound': 1.002, 'calculation_scale.standard_error': 0.159, 'study_count': 17.0}, 'Specificity summary': {'estimate': 0.802, 'lower_bound': 0.744, 'upper_bound': 0.849, 'p_value': 0.001, 'q': 51.543, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.001, 'i_squared': 69.0, 'tau_squared': 0.274, 'calculation_scale.estimate': 1.398, 'calculation_scale.lower_bound': 1.066, 'calculation_scale.upper_bound': 1.731, 'calculation_scale.standard_error': 0.169, 'study_count': 17.0}, 'Diagnostic odds ratio summary': {'estimate': 9.648, 'lower_bound': 5.529, 'upper_bound': 16.835, 'p_value': 0.001, 'q': 42.259, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.001, 'i_squared': 62.1, 'tau_squared': 0.704, 'calculation_scale.estimate': 2.267, 'calculation_scale.lower_bound': 1.71, 'calculation_scale.upper_bound': 2.823, 'calculation_scale.standard_error': 0.284, 'study_count': 17.0}}, {'Sensitivity Summary': {'estimate': 0.666, 'lower_bound': 0.594, 'upper_bound': 0.732, 'p_value': 0.001, 'q': 24.747, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.074, 'i_squared': 35.3, 'tau_squared': 0.131, 'calculation_scale.estimate': 0.69, 'calculation_scale.lower_bound': 0.379, 'calculation_scale.upper_bound': 1.002, 'calculation_scale.standard_error': 0.159, 'study_count': 17.0}, 'Specificity Summary': {'estimate': 0.802, 'lower_bound': 0.744, 'upper_bound': 0.849, 'p_value': 0.001, 'q': 51.543, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.001, 'i_squared': 69.0, 'tau_squared': 0.274, 'calculation_scale.estimate': 1.398, 'calculation_scale.lower_bound': 1.066, 'calculation_scale.upper_bound': 1.731, 'calculation_scale.standard_error': 0.169, 'study_count': 17.0}, 'Diagnostic Odds Ratio Summary': {'estimate': 9.648, 'lower_bound': 5.529, 'upper_bound': 16.835, 'p_value': 0.001, 'q': 42.259, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.001, 'i_squared': 62.1, 'tau_squared': 0.704, 'calculation_scale.estimate': 2.267, 'calculation_scale.lower_bound': 1.71, 'calculation_scale.upper_bound': 2.823, 'calculation_scale.standard_error': 0.284, 'study_count': 17.0}})
+2026-11-05T14:59:29.6817866Z   
+2026-11-05T14:59:29.6818009Z   
+2026-11-05T14:59:29.6818140Z   
+2026-11-05T14:59:29.6818331Z   Traceback (most recent call last):
+2026-11-05T14:59:29.6818535Z   
+2026-11-05T14:59:29.6818945Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2451, in <module>
+2026-11-05T14:59:29.6819279Z   
+2026-11-05T14:59:29.6819457Z       sheets_legacy(app, window)
+2026-11-05T14:59:29.6819646Z   
+2026-11-05T14:59:29.6820006Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 838, in sheets_legacy
+2026-11-05T14:59:29.6820335Z   
+2026-11-05T14:59:29.6820598Z       assert actual == row["sections"], (filename, actual, row["sections"])
+2026-11-05T14:59:29.6820864Z   
+2026-11-05T14:59:29.6821021Z              ^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6821201Z   
+2026-11-05T14:59:29.6828457Z   AssertionError: ('lymph.rcms', {'Sensitivity summary': {'estimate': 0.666, 'lower_bound': 0.594, 'upper_bound': 0.732, 'p_value': 0.001, 'q': 24.747, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.074, 'i_squared': 35.3, 'tau_squared': 0.131, 'calculation_scale.estimate': 0.69, 'calculation_scale.lower_bound': 0.379, 'calculation_scale.upper_bound': 1.002, 'calculation_scale.standard_error': 0.159, 'study_count': 17.0}, 'Specificity summary': {'estimate': 0.802, 'lower_bound': 0.744, 'upper_bound': 0.849, 'p_value': 0.001, 'q': 51.543, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.001, 'i_squared': 69.0, 'tau_squared': 0.274, 'calculation_scale.estimate': 1.398, 'calculation_scale.lower_bound': 1.066, 'calculation_scale.upper_bound': 1.731, 'calculation_scale.standard_error': 0.169, 'study_count': 17.0}, 'Diagnostic odds ratio summary': {'estimate': 9.648, 'lower_bound': 5.529, 'upper_bound': 16.835, 'p_value': 0.001, 'q': 42.259, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.001, 'i_squared': 62.1, 'tau_squared': 0.704, 'calculation_scale.estimate': 2.267, 'calculation_scale.lower_bound': 1.71, 'calculation_scale.upper_bound': 2.823, 'calculation_scale.standard_error': 0.284, 'study_count': 17.0}}, {'Sensitivity Summary': {'estimate': 0.666, 'lower_bound': 0.594, 'upper_bound': 0.732, 'p_value': 0.001, 'q': 24.747, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.074, 'i_squared': 35.3, 'tau_squared': 0.131, 'calculation_scale.estimate': 0.69, 'calculation_scale.lower_bound': 0.379, 'calculation_scale.upper_bound': 1.002, 'calculation_scale.standard_error': 0.159, 'study_count': 17.0}, 'Specificity Summary': {'estimate': 0.802, 'lower_bound': 0.744, 'upper_bound': 0.849, 'p_value': 0.001, 'q': 51.543, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.001, 'i_squared': 69.0, 'tau_squared': 0.274, 'calculation_scale.estimate': 1.398, 'calculation_scale.lower_bound': 1.066, 'calculation_scale.upper_bound': 1.731, 'calculation_scale.standard_error': 0.169, 'study_count': 17.0}, 'Diagnostic Odds Ratio Summary': {'estimate': 9.648, 'lower_bound': 5.529, 'upper_bound': 16.835, 'p_value': 0.001, 'q': 42.259, 'heterogeneity_df': 16.0, 'heterogeneity_p_value': 0.001, 'i_squared': 62.1, 'tau_squared': 0.704, 'calculation_scale.estimate': 2.267, 'calculation_scale.lower_bound': 1.71, 'calculation_scale.upper_bound': 2.823, 'calculation_scale.standard_error': 0.284, 'study_count': 17.0}})
+2026-11-05T14:59:29.6834066Z   
+2026-11-05T14:59:29.6834201Z   
+2026-11-05T14:59:29.6834330Z   
+2026-11-05T14:59:29.6834481Z assert 1 == 0
+2026-11-05T14:59:29.6835343Z  +  where 1 = CompletedProcess(args=['D:\\a\\rc-metastudio\\rc-metastudio\\.venv\\Scripts\\python.exe', 'D:\\a\\rc-metastudio\\rc-me...on_scale.upper_bound\': 2.823, \'calculation_scale.standard_error\': 0.284, \'study_count\': 17.0}})\n\n\n', stderr='').returncode
+2026-11-05T14:59:29.6836779Z FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[analysis-amino-binary-subgroup] - AssertionError: Evidence: D:\a\rc-metastudio\rc-metastudio\artifacts\verification\rcms\20261105T145507Z-fbd62605-analysis-amino-binary-subgroup
+2026-11-05T14:59:29.6837560Z   stdout.log (last 20000 characters):
+2026-11-05T14:59:29.6837756Z   
+2026-11-05T14:59:29.6837928Z   stderr.log (last 20000 characters):
+2026-11-05T14:59:29.6838232Z   R callback write-console: Loading required package: Matrix
+2026-11-05T14:59:29.6838479Z   
+2026-11-05T14:59:29.6838609Z     
+2026-11-05T14:59:29.6838733Z   
+2026-11-05T14:59:29.6838961Z   R callback write-console: Loading required package: metadat
+2026-11-05T14:59:29.6839205Z   
+2026-11-05T14:59:29.6839328Z     
+2026-11-05T14:59:29.6839452Z   
+2026-11-05T14:59:29.6839684Z   R callback write-console: Loading required package: numDeriv
+2026-11-05T14:59:29.6839919Z   
+2026-11-05T14:59:29.6840052Z     
+2026-11-05T14:59:29.6840172Z   
+2026-11-05T14:59:29.6840333Z   R callback write-console: 
+2026-11-05T14:59:29.6840505Z   
+2026-11-05T14:59:29.6840712Z   Loading the 'metafor' package (version 5.0-1). For an
+2026-11-05T14:59:29.6840929Z   
+2026-11-05T14:59:29.6841158Z   introduction to the package please type: help(metafor)
+2026-11-05T14:59:29.6841388Z   
+2026-11-05T14:59:29.6841517Z   
+2026-11-05T14:59:29.6841636Z   
+2026-11-05T14:59:29.6841953Z   An updated version of the package (version 5.2-1) is available!
+2026-11-05T14:59:29.6842214Z   
+2026-11-05T14:59:29.6842442Z   To update to this version type: install.packages("metafor")
+2026-11-05T14:59:29.6842679Z   
+2026-11-05T14:59:29.6842802Z   
+2026-11-05T14:59:29.6842921Z   
+2026-11-05T14:59:29.6843048Z     
+2026-11-05T14:59:29.6843169Z   
+2026-11-05T14:59:29.6843425Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6843693Z   
+2026-11-05T14:59:29.6843932Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6844186Z   
+2026-11-05T14:59:29.6844392Z   Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6844615Z   
+2026-11-05T14:59:29.6844787Z   Traceback (most recent call last):
+2026-11-05T14:59:29.6844970Z   
+2026-11-05T14:59:29.6845326Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2490, in <module>
+2026-11-05T14:59:29.6845651Z   
+2026-11-05T14:59:29.6845839Z       run(app, window, scenario, record_step)
+2026-11-05T14:59:29.6846311Z   
+2026-11-05T14:59:29.6846732Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 685, in run
+2026-11-05T14:59:29.6847116Z   
+2026-11-05T14:59:29.6847264Z       view = observe()
+2026-11-05T14:59:29.6847508Z   
+2026-11-05T14:59:29.6847659Z              ^^^^^^^^^
+2026-11-05T14:59:29.6847801Z   
+2026-11-05T14:59:29.6848222Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 240, in observe
+2026-11-05T14:59:29.6848601Z   
+2026-11-05T14:59:29.6848762Z       assert_report(view)
+2026-11-05T14:59:29.6849002Z   
+2026-11-05T14:59:29.6849621Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\report_retention.py", line 388, in assert_report
+2026-11-05T14:59:29.6849969Z   
+2026-11-05T14:59:29.6850276Z       assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+2026-11-05T14:59:29.6850592Z   
+2026-11-05T14:59:29.6850819Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6851044Z   
+2026-11-05T14:59:29.6851196Z   AssertionError
+2026-11-05T14:59:29.6851346Z   
+2026-11-05T14:59:29.6851470Z   
+2026-11-05T14:59:29.6851589Z   
+2026-11-05T14:59:29.6851759Z   Traceback (most recent call last):
+2026-11-05T14:59:29.6851951Z   
+2026-11-05T14:59:29.6852293Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2490, in <module>
+2026-11-05T14:59:29.6852616Z   
+2026-11-05T14:59:29.6852798Z       run(app, window, scenario, record_step)
+2026-11-05T14:59:29.6853005Z   
+2026-11-05T14:59:29.6853405Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 685, in run
+2026-11-05T14:59:29.6853772Z   
+2026-11-05T14:59:29.6853926Z       view = observe()
+2026-11-05T14:59:29.6854083Z   
+2026-11-05T14:59:29.6854222Z              ^^^^^^^^^
+2026-11-05T14:59:29.6854369Z   
+2026-11-05T14:59:29.6854773Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 240, in observe
+2026-11-05T14:59:29.6855285Z   
+2026-11-05T14:59:29.6855441Z       assert_report(view)
+2026-11-05T14:59:29.6855604Z   
+2026-11-05T14:59:29.6856102Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\report_retention.py", line 388, in assert_report
+2026-11-05T14:59:29.6856440Z   
+2026-11-05T14:59:29.6856803Z       assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+2026-11-05T14:59:29.6857158Z   
+2026-11-05T14:59:29.6857499Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6858082Z   
+2026-11-05T14:59:29.6858237Z   AssertionError
+2026-11-05T14:59:29.6858396Z   
+2026-11-05T14:59:29.6858519Z   
+2026-11-05T14:59:29.6858641Z   
+2026-11-05T14:59:29.6858790Z assert 1 == 0
+2026-11-05T14:59:29.6859657Z  +  where 1 = CompletedProcess(args=['D:\\a\\rc-metastudio\\rc-metastudio\\.venv\\Scripts\\python.exe', 'D:\\a\\rc-metastudio\\rc-me...       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nAssertionError\n\n\n', stderr='').returncode
+2026-11-05T14:59:29.6860950Z FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[manuscript-export-direct] - AssertionError: Evidence: D:\a\rc-metastudio\rc-metastudio\artifacts\verification\rcms\20261105T145503Z-3d1c5ecc-manuscript-export-direct
+2026-11-05T14:59:29.6861689Z   stdout.log (last 20000 characters):
+2026-11-05T14:59:29.6861884Z   
+2026-11-05T14:59:29.6862093Z   stderr.log (last 20000 characters):
+2026-11-05T14:59:29.6862383Z   R callback write-console: Loading required package: Matrix
+2026-11-05T14:59:29.6862746Z   
+2026-11-05T14:59:29.6862886Z     
+2026-11-05T14:59:29.6863019Z   
+2026-11-05T14:59:29.6863256Z   R callback write-console: Loading required package: metadat
+2026-11-05T14:59:29.6863497Z   
+2026-11-05T14:59:29.6863632Z     
+2026-11-05T14:59:29.6863757Z   
+2026-11-05T14:59:29.6863998Z   R callback write-console: Loading required package: numDeriv
+2026-11-05T14:59:29.6864238Z   
+2026-11-05T14:59:29.6864356Z     
+2026-11-05T14:59:29.6864485Z   
+2026-11-05T14:59:29.6864645Z   R callback write-console: 
+2026-11-05T14:59:29.6864813Z   
+2026-11-05T14:59:29.6865030Z   Loading the 'metafor' package (version 5.0-1). For an
+2026-11-05T14:59:29.6865343Z   
+2026-11-05T14:59:29.6865570Z   introduction to the package please type: help(metafor)
+2026-11-05T14:59:29.6865799Z   
+2026-11-05T14:59:29.6865916Z   
+2026-11-05T14:59:29.6866043Z   
+2026-11-05T14:59:29.6866534Z   An updated version of the package (version 5.2-1) is available!
+2026-11-05T14:59:29.6866788Z   
+2026-11-05T14:59:29.6867022Z   To update to this version type: install.packages("metafor")
+2026-11-05T14:59:29.6867254Z   
+2026-11-05T14:59:29.6867383Z   
+2026-11-05T14:59:29.6867507Z   
+2026-11-05T14:59:29.6867625Z     
+2026-11-05T14:59:29.6867760Z   
+2026-11-05T14:59:29.6867967Z   Manuscript analysis: double-zero binary.random
+2026-11-05T14:59:29.6868193Z   
+2026-11-05T14:59:29.6868454Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6868712Z   
+2026-11-05T14:59:29.6868927Z   Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6869145Z   
+2026-11-05T14:59:29.6869999Z   Manuscript lifetime: {'phase': 'close-before', 'view': '0x25a4d375a20', 'deleted': False, 'mode': 'direct', 'operation': 'setup', 'picker_number': 0, 'previous_dialog_deleted': None, 'visible': True, 'refit_pending': False, 'scene_deleted': False, 'viewport_deleted': False}
+2026-11-05T14:59:29.6870726Z   
+2026-11-05T14:59:29.6871346Z   Manuscript lifetime: {'phase': 'close-after', 'view': '0x25a4d375a20', 'deleted': True, 'mode': 'direct', 'operation': 'setup', 'picker_number': 0, 'previous_dialog_deleted': None}
+2026-11-05T14:59:29.6871939Z   
+2026-11-05T14:59:29.6872116Z   Manuscript analysis: binary.fixed.mh
+2026-11-05T14:59:29.6872319Z   
+2026-11-05T14:59:29.6872581Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6872842Z   
+2026-11-05T14:59:29.6873021Z   Traceback (most recent call last):
+2026-11-05T14:59:29.6873207Z   
+2026-11-05T14:59:29.6873579Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2437, in <module>
+2026-11-05T14:59:29.6873903Z   
+2026-11-05T14:59:29.6874114Z       run(app, window, WORK, ROOT, record_step, analyze,
+2026-11-05T14:59:29.6874336Z   
+2026-11-05T14:59:29.6874657Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\manuscript_export.py", line 100, in run
+2026-11-05T14:59:29.6874967Z   
+2026-11-05T14:59:29.6875232Z       _run(app, window, work, root, record, analyze, direct_write=direct_write)
+2026-11-05T14:59:29.6875509Z   
+2026-11-05T14:59:29.6875826Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\manuscript_export.py", line 278, in _run
+2026-11-05T14:59:29.6876131Z   
+2026-11-05T14:59:29.6876314Z       view = analyze(app, window, method)
+2026-11-05T14:59:29.6876506Z   
+2026-11-05T14:59:29.6876761Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6876942Z   
+2026-11-05T14:59:29.6877258Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 322, in analyze
+2026-11-05T14:59:29.6877566Z   
+2026-11-05T14:59:29.6877794Z       assert len(views) == 1, "analysis did not display results"
+2026-11-05T14:59:29.6878157Z   
+2026-11-05T14:59:29.6878316Z              ^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6878377Z   
+2026-11-05T14:59:29.6878520Z   AssertionError: analysis did not display results
+2026-11-05T14:59:29.6878579Z   
+2026-11-05T14:59:29.6878638Z   
+2026-11-05T14:59:29.6878697Z   
+2026-11-05T14:59:29.6878797Z   Traceback (most recent call last):
+2026-11-05T14:59:29.6878857Z   
+2026-11-05T14:59:29.6879151Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2437, in <module>
+2026-11-05T14:59:29.6879211Z   
+2026-11-05T14:59:29.6879350Z       run(app, window, WORK, ROOT, record_step, analyze,
+2026-11-05T14:59:29.6879408Z   
+2026-11-05T14:59:29.6879686Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\manuscript_export.py", line 100, in run
+2026-11-05T14:59:29.6879747Z   
+2026-11-05T14:59:29.6879950Z       _run(app, window, work, root, record, analyze, direct_write=direct_write)
+2026-11-05T14:59:29.6880086Z   
+2026-11-05T14:59:29.6880348Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\manuscript_export.py", line 278, in _run
+2026-11-05T14:59:29.6880409Z   
+2026-11-05T14:59:29.6880514Z       view = analyze(app, window, method)
+2026-11-05T14:59:29.6880576Z   
+2026-11-05T14:59:29.6880669Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6880723Z   
+2026-11-05T14:59:29.6881096Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 322, in analyze
+2026-11-05T14:59:29.6881155Z   
+2026-11-05T14:59:29.6881320Z       assert len(views) == 1, "analysis did not display results"
+2026-11-05T14:59:29.6881372Z   
+2026-11-05T14:59:29.6881458Z              ^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6881519Z   
+2026-11-05T14:59:29.6881649Z   AssertionError: analysis did not display results
+2026-11-05T14:59:29.6881708Z   
+2026-11-05T14:59:29.6881829Z   R callback write-console: Warning message:
+2026-11-05T14:59:29.6881885Z   
+2026-11-05T14:59:29.6881936Z     
+2026-11-05T14:59:29.6882001Z   
+2026-11-05T14:59:29.6882170Z   R callback write-console: Some yi/vi values are NA. 
+2026-11-05T14:59:29.6882223Z   
+2026-11-05T14:59:29.6882283Z     
+2026-11-05T14:59:29.6882345Z   
+2026-11-05T14:59:29.6882403Z   
+2026-11-05T14:59:29.6882454Z   
+2026-11-05T14:59:29.6882576Z assert 1 == 0
+2026-11-05T14:59:29.6883430Z  +  where 1 = CompletedProcess(args=['D:\\a\\rc-metastudio\\rc-metastudio\\.venv\\Scripts\\python.exe', 'D:\\a\\rc-metastudio\\rc-me... write-console: Warning message:\n\n  \n\nR callback write-console: Some yi/vi values are NA. \n\n  \n\n\n', stderr='').returncode
+2026-11-05T14:59:29.6884219Z FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[analysis-continuous-subgroup] - AssertionError: Evidence: D:\a\rc-metastudio\rc-metastudio\artifacts\verification\rcms\20261105T145514Z-a315db25-analysis-continuous-subgroup
+2026-11-05T14:59:29.6884370Z   stdout.log (last 20000 characters):
+2026-11-05T14:59:29.6884469Z   
+2026-11-05T14:59:29.6884587Z   stderr.log (last 20000 characters):
+2026-11-05T14:59:29.6884753Z   R callback write-console: Loading required package: Matrix
+2026-11-05T14:59:29.6884811Z   
+2026-11-05T14:59:29.6884865Z     
+2026-11-05T14:59:29.6884921Z   
+2026-11-05T14:59:29.6885079Z   R callback write-console: Loading required package: metadat
+2026-11-05T14:59:29.6885139Z   
+2026-11-05T14:59:29.6885200Z     
+2026-11-05T14:59:29.6885253Z   
+2026-11-05T14:59:29.6885421Z   R callback write-console: Loading required package: numDeriv
+2026-11-05T14:59:29.6885478Z   
+2026-11-05T14:59:29.6885536Z     
+2026-11-05T14:59:29.6885589Z   
+2026-11-05T14:59:29.6885687Z   R callback write-console: 
+2026-11-05T14:59:29.6885750Z   
+2026-11-05T14:59:29.6886025Z   Loading the 'metafor' package (version 5.0-1). For an
+2026-11-05T14:59:29.6886121Z   
+2026-11-05T14:59:29.6886524Z   introduction to the package please type: help(metafor)
+2026-11-05T14:59:29.6886610Z   
+2026-11-05T14:59:29.6886662Z   
+2026-11-05T14:59:29.6886721Z   
+2026-11-05T14:59:29.6886907Z   An updated version of the package (version 5.2-1) is available!
+2026-11-05T14:59:29.6886959Z   
+2026-11-05T14:59:29.6887118Z   To update to this version type: install.packages("metafor")
+2026-11-05T14:59:29.6887175Z   
+2026-11-05T14:59:29.6887231Z   
+2026-11-05T14:59:29.6887285Z   
+2026-11-05T14:59:29.6887345Z     
+2026-11-05T14:59:29.6887402Z   
+2026-11-05T14:59:29.6887591Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6887649Z   
+2026-11-05T14:59:29.6887830Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6887916Z   
+2026-11-05T14:59:29.6888138Z   Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6888206Z   
+2026-11-05T14:59:29.6888313Z   Traceback (most recent call last):
+2026-11-05T14:59:29.6888366Z   
+2026-11-05T14:59:29.6888650Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2490, in <module>
+2026-11-05T14:59:29.6888712Z   
+2026-11-05T14:59:29.6888915Z       run(app, window, scenario, record_step)
+2026-11-05T14:59:29.6888969Z   
+2026-11-05T14:59:29.6889420Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 685, in run
+2026-11-05T14:59:29.6889670Z   
+2026-11-05T14:59:29.6889830Z       view = observe()
+2026-11-05T14:59:29.6889910Z   
+2026-11-05T14:59:29.6890029Z              ^^^^^^^^^
+2026-11-05T14:59:29.6890116Z   
+2026-11-05T14:59:29.6890712Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 240, in observe
+2026-11-05T14:59:29.6890801Z   
+2026-11-05T14:59:29.6890958Z       assert_report(view)
+2026-11-05T14:59:29.6891056Z   
+2026-11-05T14:59:29.6891637Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\report_retention.py", line 388, in assert_report
+2026-11-05T14:59:29.6891726Z   
+2026-11-05T14:59:29.6892344Z       assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+2026-11-05T14:59:29.6892449Z   
+2026-11-05T14:59:29.6892709Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6892806Z   
+2026-11-05T14:59:29.6892944Z   AssertionError
+2026-11-05T14:59:29.6893040Z   
+2026-11-05T14:59:29.6893127Z   
+2026-11-05T14:59:29.6893224Z   
+2026-11-05T14:59:29.6893399Z   Traceback (most recent call last):
+2026-11-05T14:59:29.6893483Z   
+2026-11-05T14:59:29.6894093Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2490, in <module>
+2026-11-05T14:59:29.6894203Z   
+2026-11-05T14:59:29.6894403Z       run(app, window, scenario, record_step)
+2026-11-05T14:59:29.6894488Z   
+2026-11-05T14:59:29.6895067Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 685, in run
+2026-11-05T14:59:29.6895167Z   
+2026-11-05T14:59:29.6895443Z       view = observe()
+2026-11-05T14:59:29.6895537Z   
+2026-11-05T14:59:29.6895671Z              ^^^^^^^^^
+2026-11-05T14:59:29.6895772Z   
+2026-11-05T14:59:29.6896375Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 240, in observe
+2026-11-05T14:59:29.6896463Z   
+2026-11-05T14:59:29.6896610Z       assert_report(view)
+2026-11-05T14:59:29.6896706Z   
+2026-11-05T14:59:29.6897359Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\report_retention.py", line 388, in assert_report
+2026-11-05T14:59:29.6897449Z   
+2026-11-05T14:59:29.6897867Z       assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+2026-11-05T14:59:29.6897962Z   
+2026-11-05T14:59:29.6898209Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6898291Z   
+2026-11-05T14:59:29.6898576Z   AssertionError
+2026-11-05T14:59:29.6898675Z   
+2026-11-05T14:59:29.6898762Z   
+2026-11-05T14:59:29.6898858Z   
+2026-11-05T14:59:29.6898979Z assert 1 == 0
+2026-11-05T14:59:29.6900137Z  +  where 1 = CompletedProcess(args=['D:\\a\\rc-metastudio\\rc-metastudio\\.venv\\Scripts\\python.exe', 'D:\\a\\rc-metastudio\\rc-me...       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nAssertionError\n\n\n', stderr='').returncode
+2026-11-05T14:59:29.6901738Z FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[analysis-diagnostic.fixed.inv.var] - AssertionError: Evidence: D:\a\rc-metastudio\rc-metastudio\artifacts\verification\rcms\20261105T145523Z-c59eb46e-analysis-diagnostic.fixed.inv.var
+2026-11-05T14:59:29.6901919Z   stdout.log (last 20000 characters):
+2026-11-05T14:59:29.6902014Z   
+2026-11-05T14:59:29.6902184Z   stderr.log (last 20000 characters):
+2026-11-05T14:59:29.6902460Z   R callback write-console: Loading required package: Matrix
+2026-11-05T14:59:29.6902707Z   
+2026-11-05T14:59:29.6902803Z     
+2026-11-05T14:59:29.6902891Z   
+2026-11-05T14:59:29.6903175Z   R callback write-console: Loading required package: metadat
+2026-11-05T14:59:29.6903269Z   
+2026-11-05T14:59:29.6903363Z     
+2026-11-05T14:59:29.6905267Z   
+2026-11-05T14:59:29.6905484Z   R callback write-console: Loading required package: numDeriv
+2026-11-05T14:59:29.6905546Z   
+2026-11-05T14:59:29.6905602Z     
+2026-11-05T14:59:29.6905663Z   
+2026-11-05T14:59:29.6905775Z   R callback write-console: 
+2026-11-05T14:59:29.6905833Z   
+2026-11-05T14:59:29.6905990Z   Loading the 'metafor' package (version 5.0-1). For an
+2026-11-05T14:59:29.6906059Z   
+2026-11-05T14:59:29.6906348Z   introduction to the package please type: help(metafor)
+2026-11-05T14:59:29.6906404Z   
+2026-11-05T14:59:29.6906462Z   
+2026-11-05T14:59:29.6906521Z   
+2026-11-05T14:59:29.6906696Z   An updated version of the package (version 5.2-1) is available!
+2026-11-05T14:59:29.6906758Z   
+2026-11-05T14:59:29.6906933Z   To update to this version type: install.packages("metafor")
+2026-11-05T14:59:29.6906994Z   
+2026-11-05T14:59:29.6907048Z   
+2026-11-05T14:59:29.6907106Z   
+2026-11-05T14:59:29.6907164Z     
+2026-11-05T14:59:29.6907215Z   
+2026-11-05T14:59:29.6907416Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6907476Z   
+2026-11-05T14:59:29.6907678Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6907729Z   
+2026-11-05T14:59:29.6907887Z   Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6907954Z   
+2026-11-05T14:59:29.6908137Z   Traceback (most recent call last):
+2026-11-05T14:59:29.6908210Z   
+2026-11-05T14:59:29.6908534Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2490, in <module>
+2026-11-05T14:59:29.6908598Z   
+2026-11-05T14:59:29.6908717Z       run(app, window, scenario, record_step)
+2026-11-05T14:59:29.6908778Z   
+2026-11-05T14:59:29.6909580Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 685, in run
+2026-11-05T14:59:29.6909643Z   
+2026-11-05T14:59:29.6909724Z       view = observe()
+2026-11-05T14:59:29.6909783Z   
+2026-11-05T14:59:29.6909863Z              ^^^^^^^^^
+2026-11-05T14:59:29.6909924Z   
+2026-11-05T14:59:29.6910289Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 240, in observe
+2026-11-05T14:59:29.6910366Z   
+2026-11-05T14:59:29.6910505Z       assert_report(view)
+2026-11-05T14:59:29.6910597Z   
+2026-11-05T14:59:29.6910927Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\report_retention.py", line 388, in assert_report
+2026-11-05T14:59:29.6910986Z   
+2026-11-05T14:59:29.6911229Z       assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+2026-11-05T14:59:29.6911285Z   
+2026-11-05T14:59:29.6911543Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6911609Z   
+2026-11-05T14:59:29.6911692Z   AssertionError
+2026-11-05T14:59:29.6911746Z   
+2026-11-05T14:59:29.6911806Z   
+2026-11-05T14:59:29.6911866Z   
+2026-11-05T14:59:29.6911977Z   Traceback (most recent call last):
+2026-11-05T14:59:29.6912041Z   
+2026-11-05T14:59:29.6912417Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2490, in <module>
+2026-11-05T14:59:29.6912479Z   
+2026-11-05T14:59:29.6912604Z       run(app, window, scenario, record_step)
+2026-11-05T14:59:29.6912657Z   
+2026-11-05T14:59:29.6912993Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 685, in run
+2026-11-05T14:59:29.6913054Z   
+2026-11-05T14:59:29.6913134Z       view = observe()
+2026-11-05T14:59:29.6913191Z   
+2026-11-05T14:59:29.6913268Z              ^^^^^^^^^
+2026-11-05T14:59:29.6913325Z   
+2026-11-05T14:59:29.6913693Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 240, in observe
+2026-11-05T14:59:29.6913798Z   
+2026-11-05T14:59:29.6913917Z       assert_report(view)
+2026-11-05T14:59:29.6913976Z   
+2026-11-05T14:59:29.6914259Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\report_retention.py", line 388, in assert_report
+2026-11-05T14:59:29.6914398Z   
+2026-11-05T14:59:29.6914645Z       assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+2026-11-05T14:59:29.6914705Z   
+2026-11-05T14:59:29.6914854Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6914915Z   
+2026-11-05T14:59:29.6914994Z   AssertionError
+2026-11-05T14:59:29.6915048Z   
+2026-11-05T14:59:29.6915106Z   
+2026-11-05T14:59:29.6915166Z   
+2026-11-05T14:59:29.6915242Z assert 1 == 0
+2026-11-05T14:59:29.6916015Z  +  where 1 = CompletedProcess(args=['D:\\a\\rc-metastudio\\rc-metastudio\\.venv\\Scripts\\python.exe', 'D:\\a\\rc-metastudio\\rc-me...       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nAssertionError\n\n\n', stderr='').returncode
+2026-11-05T14:59:29.6916776Z FAILED tests/e2e/test_desktop_workflows.py::test_desktop_workflow[project-reviewer-colours] - AssertionError: Evidence: D:\a\rc-metastudio\rc-metastudio\artifacts\verification\rcms\20261105T145624Z-1245f040-project-reviewer-colours
+2026-11-05T14:59:29.6916894Z   stdout.log (last 20000 characters):
+2026-11-05T14:59:29.6916956Z   
+2026-11-05T14:59:29.6917090Z   stderr.log (last 20000 characters):
+2026-11-05T14:59:29.6917338Z   R callback write-console: Loading required package: Matrix
+2026-11-05T14:59:29.6917398Z   
+2026-11-05T14:59:29.6917462Z     
+2026-11-05T14:59:29.6917516Z   
+2026-11-05T14:59:29.6917689Z   R callback write-console: Loading required package: metadat
+2026-11-05T14:59:29.6917748Z   
+2026-11-05T14:59:29.6917801Z     
+2026-11-05T14:59:29.6917864Z   
+2026-11-05T14:59:29.6918036Z   R callback write-console: Loading required package: numDeriv
+2026-11-05T14:59:29.6918093Z   
+2026-11-05T14:59:29.6918152Z     
+2026-11-05T14:59:29.6918214Z   
+2026-11-05T14:59:29.6918313Z   R callback write-console: 
+2026-11-05T14:59:29.6918367Z   
+2026-11-05T14:59:29.6918518Z   Loading the 'metafor' package (version 5.0-1). For an
+2026-11-05T14:59:29.6918589Z   
+2026-11-05T14:59:29.6918834Z   introduction to the package please type: help(metafor)
+2026-11-05T14:59:29.6918897Z   
+2026-11-05T14:59:29.6918954Z   
+2026-11-05T14:59:29.6919012Z   
+2026-11-05T14:59:29.6919185Z   An updated version of the package (version 5.2-1) is available!
+2026-11-05T14:59:29.6919243Z   
+2026-11-05T14:59:29.6919414Z   To update to this version type: install.packages("metafor")
+2026-11-05T14:59:29.6919466Z   
+2026-11-05T14:59:29.6919524Z   
+2026-11-05T14:59:29.6919581Z   
+2026-11-05T14:59:29.6919639Z     
+2026-11-05T14:59:29.6919691Z   
+2026-11-05T14:59:29.6919947Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6920041Z   
+2026-11-05T14:59:29.6920261Z   Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6920321Z   
+2026-11-05T14:59:29.6920502Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6920559Z   
+2026-11-05T14:59:29.6920732Z   Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+2026-11-05T14:59:29.6920796Z   
+2026-11-05T14:59:29.6920938Z   Qt QtWarningMsg: This plugin does not support raise()
+2026-11-05T14:59:29.6920994Z   
+2026-11-05T14:59:29.6921104Z   Traceback (most recent call last):
+2026-11-05T14:59:29.6921171Z   
+2026-11-05T14:59:29.6921465Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2474, in <module>
+2026-11-05T14:59:29.6921521Z   
+2026-11-05T14:59:29.6921651Z       run(app, window, scenario, record_step)
+2026-11-05T14:59:29.6921760Z   
+2026-11-05T14:59:29.6922164Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\advanced_workflows.py", line 2005, in run
+2026-11-05T14:59:29.6922222Z   
+2026-11-05T14:59:29.6922357Z       driver(app, window, Path(sys.argv[2]), record)
+2026-11-05T14:59:29.6922415Z   
+2026-11-05T14:59:29.6922687Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\reviewer_fixes.py", line 270, in run_colours
+2026-11-05T14:59:29.6922741Z   
+2026-11-05T14:59:29.6923183Z       view = matrix(app,window,scenario,record,keep_results=True,metric_override=metric,parameters={'fp_style':'default'})
+2026-11-05T14:59:29.6923242Z   
+2026-11-05T14:59:29.6923517Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6923608Z   
+2026-11-05T14:59:29.6923944Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 685, in run
+2026-11-05T14:59:29.6924005Z   
+2026-11-05T14:59:29.6924141Z       view = observe()
+2026-11-05T14:59:29.6924233Z   
+2026-11-05T14:59:29.6924340Z              ^^^^^^^^^
+2026-11-05T14:59:29.6924399Z   
+2026-11-05T14:59:29.6924752Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 240, in observe
+2026-11-05T14:59:29.6924811Z   
+2026-11-05T14:59:29.6924905Z       assert_report(view)
+2026-11-05T14:59:29.6924963Z   
+2026-11-05T14:59:29.6925245Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\report_retention.py", line 388, in assert_report
+2026-11-05T14:59:29.6925306Z   
+2026-11-05T14:59:29.6925550Z       assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+2026-11-05T14:59:29.6925607Z   
+2026-11-05T14:59:29.6925757Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6925816Z   
+2026-11-05T14:59:29.6925895Z   AssertionError
+2026-11-05T14:59:29.6925957Z   
+2026-11-05T14:59:29.6926012Z   
+2026-11-05T14:59:29.6926074Z   
+2026-11-05T14:59:29.6926228Z   Traceback (most recent call last):
+2026-11-05T14:59:29.6926319Z   
+2026-11-05T14:59:29.6926612Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\desktop_driver.py", line 2474, in <module>
+2026-11-05T14:59:29.6926675Z   
+2026-11-05T14:59:29.6926799Z       run(app, window, scenario, record_step)
+2026-11-05T14:59:29.6926854Z   
+2026-11-05T14:59:29.6927194Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\advanced_workflows.py", line 2005, in run
+2026-11-05T14:59:29.6927261Z   
+2026-11-05T14:59:29.6927395Z       driver(app, window, Path(sys.argv[2]), record)
+2026-11-05T14:59:29.6927446Z   
+2026-11-05T14:59:29.6927724Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\reviewer_fixes.py", line 270, in run_colours
+2026-11-05T14:59:29.6927791Z   
+2026-11-05T14:59:29.6928257Z       view = matrix(app,window,scenario,record,keep_results=True,metric_override=metric,parameters={'fp_style':'default'})
+2026-11-05T14:59:29.6928314Z   
+2026-11-05T14:59:29.6928521Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6928664Z   
+2026-11-05T14:59:29.6928997Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 685, in run
+2026-11-05T14:59:29.6929053Z   
+2026-11-05T14:59:29.6929280Z       view = observe()
+2026-11-05T14:59:29.6929347Z   
+2026-11-05T14:59:29.6929428Z              ^^^^^^^^^
+2026-11-05T14:59:29.6929480Z   
+2026-11-05T14:59:29.6929959Z     File "D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_matrix.py", line 240, in observe
+2026-11-05T14:59:29.6930021Z   
+2026-11-05T14:59:29.6930113Z       assert_report(view)
+2026-11-05T14:59:29.6930168Z   
+2026-11-05T14:59:29.6930465Z     File "D:\a\rc-metastudio\rc-metastudio\tests\e2e\report_retention.py", line 388, in assert_report
+2026-11-05T14:59:29.6930526Z   
+2026-11-05T14:59:29.6930780Z       assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+2026-11-05T14:59:29.6930882Z   
+2026-11-05T14:59:29.6931085Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T14:59:29.6931143Z   
+2026-11-05T14:59:29.6931218Z   AssertionError
+2026-11-05T14:59:29.6931277Z   
+2026-11-05T14:59:29.6931338Z   
+2026-11-05T14:59:29.6931394Z   
+2026-11-05T14:59:29.6931466Z assert 1 == 0
+2026-11-05T14:59:29.6932203Z  +  where 1 = CompletedProcess(args=['D:\\a\\rc-metastudio\\rc-metastudio\\.venv\\Scripts\\python.exe', 'D:\\a\\rc-metastudio\\rc-me...       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nAssertionError\n\n\n', stderr='').returncode
+2026-11-05T14:59:29.6932322Z 6 failed, 41 passed in 441.32s (0:07:21)
+2026-11-05T14:59:57.0907972Z error: command failed with exit code 1: D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe -m pytest tests/e2e -n auto -q --durations=10 --desktop-shard 2 --shard-report artifacts/verification/desktop-partition.json --junitxml=artifacts/verification/desktop-results.xml
+2026-11-05T14:59:57.1043537Z verification failed: command failed with exit code 1: D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe scripts/verify_rcmetar_r_stack.py --rscript C:\R\bin\Rscript.exe --r-library-cache-root D:\a\rc-metastudio\rc-metastudio\artifacts\r-library-cache --desktop-shard 2
+2026-11-05T14:59:57.2684084Z ##[error]Process completed with exit code 1.
+2026-11-05T14:59:57.2878462Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+2026-11-05T14:59:57.2878853Z with:
+2026-11-05T14:59:57.2879036Z   name: full-r-stack-windows-2-evidence
+2026-11-05T14:59:57.2879265Z   path: artifacts/verification
+2026-11-05T14:59:57.2879473Z   if-no-files-found: warn
+2026-11-05T14:59:57.2879657Z   retention-days: 14
+2026-11-05T14:59:57.2879835Z   compression-level: 6
+2026-11-05T14:59:57.2880008Z   overwrite: false
+2026-11-05T14:59:57.2880175Z   include-hidden-files: false
+2026-11-05T14:59:57.2880360Z env:
+2026-11-05T14:59:57.2880588Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T14:59:57.2880912Z   UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+2026-11-05T14:59:57.2881150Z   UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+2026-11-05T14:59:57.2881371Z   UV_PYTHON_INSTALL_DIR: D:\a\_temp\uv-python-dir
+2026-11-05T14:59:57.2881922Z   UV_CACHE_DIR: D:\a\_temp\setup-uv-cache
+2026-11-05T14:59:57.2882194Z   _R_INSTALL_TIME_PATCHES_: no
+2026-11-05T14:59:57.2882388Z   R_LIBS_USER: D:\a\_temp\Library
+2026-11-05T14:59:57.2882574Z   TZ: UTC
+2026-11-05T14:59:57.2882718Z   _R_CHECK_SYSTEM_CLOCK_: FALSE
+2026-11-05T14:59:57.2882890Z   NOT_CRAN: true
+2026-11-05T14:59:57.2883095Z   RSPM: https://packagemanager.posit.co/cran/latest
+2026-11-05T14:59:57.2883422Z   RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/latest
+2026-11-05T14:59:57.2883708Z ##[endgroup]
+2026-11-05T14:59:57.4752593Z (node:6896) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-05T14:59:57.4753805Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-05T14:59:58.8587828Z With the provided path, there will be 4164 files uploaded
+2026-11-05T14:59:58.8592695Z Artifact name is valid!
+2026-11-05T14:59:58.8594062Z Root directory input is valid!
+2026-11-05T14:59:59.3213015Z Beginning upload of artifact content to blob storage
+2026-11-05T14:59:59.7387753Z (node:6896) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-05T15:00:01.0415006Z Uploaded bytes 8388608
+2026-11-05T15:00:01.5128889Z Uploaded bytes 16777216
+2026-11-05T15:00:01.6195387Z Uploaded bytes 25165824
+2026-11-05T15:00:01.8066794Z Uploaded bytes 33554432
+2026-11-05T15:00:01.9320219Z Uploaded bytes 41943040
+2026-11-05T15:00:02.0384299Z Uploaded bytes 50331648
+2026-11-05T15:00:02.2673170Z Uploaded bytes 58720256
+2026-11-05T15:00:02.5105299Z Uploaded bytes 67108864
+2026-11-05T15:00:02.8938170Z Uploaded bytes 75497472
+2026-11-05T15:00:03.2429602Z Uploaded bytes 83886080
+2026-11-05T15:00:03.7040085Z Uploaded bytes 92274688
+2026-11-05T15:00:03.8688529Z Uploaded bytes 100663296
+2026-11-05T15:00:04.2357822Z Uploaded bytes 109051904
+2026-11-05T15:00:04.4260235Z Uploaded bytes 117440512
+2026-11-05T15:00:04.8020566Z Uploaded bytes 125829120
+2026-11-05T15:00:05.1898407Z Uploaded bytes 134217728
+2026-11-05T15:00:05.4518518Z Uploaded bytes 142606336
+2026-11-05T15:00:05.9902188Z Uploaded bytes 150994944
+2026-11-05T15:00:06.3215906Z Uploaded bytes 159383552
+2026-11-05T15:00:06.7232829Z Uploaded bytes 167772160
+2026-11-05T15:00:07.0852538Z Uploaded bytes 176160768
+2026-11-05T15:00:07.5176298Z Uploaded bytes 184549376
+2026-11-05T15:00:07.7813810Z Uploaded bytes 192937984
+2026-11-05T15:00:08.2382736Z Uploaded bytes 201326592
+2026-11-05T15:00:08.6409442Z Uploaded bytes 209715200
+2026-11-05T15:00:08.8538285Z Uploaded bytes 218103808
+2026-11-05T15:00:09.1403215Z Uploaded bytes 226492416
+2026-11-05T15:00:09.6493327Z Uploaded bytes 234881024
+2026-11-05T15:00:09.8302345Z Uploaded bytes 243269632
+2026-11-05T15:00:09.9635852Z Uploaded bytes 245638643
+2026-11-05T15:00:10.0460052Z Finished uploading artifact content to blob storage!
+2026-11-05T15:00:10.0466001Z SHA256 digest of uploaded artifact zip is e252686e27a37c9b7c91731102d6ce62520bab6b5ecf2eb13851be56f8516d04
+2026-11-05T15:00:10.0466655Z Finalizing artifact upload
+2026-11-05T15:00:10.7256046Z Artifact full-r-stack-windows-2-evidence.zip successfully finalized. Artifact ID 13425927716
+2026-11-05T15:00:10.7257008Z Artifact full-r-stack-windows-2-evidence has been successfully uploaded! Final size is 245638643 bytes. Artifact ID is 13425927716
+2026-11-05T15:00:10.7268971Z Artifact download URL: https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/42048349263/artifacts/13425927716
+2026-11-05T15:00:10.7636723Z ##[group]Run uv cache prune --ci
+2026-11-05T15:00:10.7637308Z [36;1muv cache prune --ci[0m
+2026-11-05T15:00:10.7701960Z shell: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.EXE -command ". '{0}'"
+2026-11-05T15:00:10.7702297Z env:
+2026-11-05T15:00:10.7702541Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T15:00:10.7702849Z   UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+2026-11-05T15:00:10.7703087Z   UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+2026-11-05T15:00:10.7703320Z   UV_PYTHON_INSTALL_DIR: D:\a\_temp\uv-python-dir
+2026-11-05T15:00:10.7703560Z   UV_CACHE_DIR: D:\a\_temp\setup-uv-cache
+2026-11-05T15:00:10.7703779Z   _R_INSTALL_TIME_PATCHES_: no
+2026-11-05T15:00:10.7703975Z   R_LIBS_USER: D:\a\_temp\Library
+2026-11-05T15:00:10.7704165Z   TZ: UTC
+2026-11-05T15:00:10.7704308Z   _R_CHECK_SYSTEM_CLOCK_: FALSE
+2026-11-05T15:00:10.7704498Z   NOT_CRAN: true
+2026-11-05T15:00:10.7704704Z   RSPM: https://packagemanager.posit.co/cran/latest
+2026-11-05T15:00:10.7705066Z   RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/latest
+2026-11-05T15:00:10.7705358Z ##[endgroup]
+2026-11-05T15:00:10.9386836Z Pruning cache at: D:\a\_temp\setup-uv-cache
+2026-11-05T15:00:11.6909294Z Removed 11757 files (383.0MiB)
+2026-11-05T15:00:11.8183317Z Post job cleanup.
+2026-11-05T15:00:11.9552981Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-05T15:00:11.9847287Z git version 2.56.0.windows.4
+2026-11-05T15:00:11.9908348Z Temporarily overriding HOME='D:\a\_temp\2df54494-6810-4ecb-a704-974a2fae131f' before making global git config changes
+2026-11-05T15:00:11.9909346Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-05T15:00:11.9918051Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\rc-metastudio\rc-metastudio
+2026-11-05T15:00:12.0252740Z Removing SSH command configuration
+2026-11-05T15:00:12.0263480Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-05T15:00:12.0600332Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-05T15:00:14.3043695Z Removing HTTP extra header
+2026-11-05T15:00:14.3052542Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-05T15:00:14.3388219Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-05T15:00:15.5765699Z Removing includeIf entries pointing to credentials config files
+2026-11-05T15:00:15.5778147Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-05T15:00:15.6086054Z includeif.gitdir:D:/a/rc-metastudio/rc-metastudio/.git.path
+2026-11-05T15:00:15.6087204Z includeif.gitdir:D:/a/rc-metastudio/rc-metastudio/.git/worktrees/*.path
+2026-11-05T15:00:15.6088694Z includeif.gitdir:/github/workspace/.git.path
+2026-11-05T15:00:15.6089235Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-05T15:00:15.6131517Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:D:/a/rc-metastudio/rc-metastudio/.git.path
+2026-11-05T15:00:15.6440561Z D:\a\_temp\git-credentials-38a17fec-96bc-4767-862b-ca60e33e2a19.config
+2026-11-05T15:00:15.6483985Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:D:/a/rc-metastudio/rc-metastudio/.git.path D:\a\_temp\git-credentials-38a17fec-96bc-4767-862b-ca60e33e2a19.config
+2026-11-05T15:00:15.6836299Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:D:/a/rc-metastudio/rc-metastudio/.git/worktrees/*.path
+2026-11-05T15:00:15.7165469Z D:\a\_temp\git-credentials-38a17fec-96bc-4767-862b-ca60e33e2a19.config
+2026-11-05T15:00:15.7208539Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:D:/a/rc-metastudio/rc-metastudio/.git/worktrees/*.path D:\a\_temp\git-credentials-38a17fec-96bc-4767-862b-ca60e33e2a19.config
+2026-11-05T15:00:15.7534095Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-11-05T15:00:15.7824591Z /github/runner_temp/git-credentials-38a17fec-96bc-4767-862b-ca60e33e2a19.config
+2026-11-05T15:00:15.7862373Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-38a17fec-96bc-4767-862b-ca60e33e2a19.config
+2026-11-05T15:00:15.8180847Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-05T15:00:15.8454805Z /github/runner_temp/git-credentials-38a17fec-96bc-4767-862b-ca60e33e2a19.config
+2026-11-05T15:00:15.8491540Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-38a17fec-96bc-4767-862b-ca60e33e2a19.config
+2026-11-05T15:00:15.8818182Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-05T15:00:17.3290115Z Removing credentials config 'D:\a\_temp\git-credentials-38a17fec-96bc-4767-862b-ca60e33e2a19.config'
+2026-11-05T15:00:17.3475576Z Cleaning up orphan processes
+2026-11-05T15:00:17.4474097Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

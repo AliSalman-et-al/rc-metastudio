@@ -488,7 +488,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.table_selector.setAccessibleName("Result table")
         for section in self.manuscript.sections:
             for table in section.tables:
-                self.table_selector.addItem(_report_heading(table.title if table.title == section.title or section.title.endswith("Summary") else section.title + " — " + table.title))
+                self.table_selector.addItem(_report_heading(table.title if table.title == section.title or section.title.endswith(("Summary", "summary")) else section.title + " — " + table.title))
         layout.addWidget(self.table_selector)
         self.result_table = QTableWidget(self.tables_page)
         self.result_table.setTabKeyNavigation(False)
@@ -1714,8 +1714,8 @@ def _report_section_block(section):
         tables = tuple(ordered)
     paragraphs = section.paragraphs if section.tables else (section.value,)
     heading = section.title
-    if tables and section.title.endswith("Summary"):
-        heading = tables[0].title if section.title == "Summary" else section.title.removesuffix("Summary") + "results"
+    if tables and section.title.endswith(("Summary", "summary")):
+        heading = tables[0].title if section.title == "Summary" else section.title.removesuffix("summary") + "results"
     return section.semantic_id, heading, paragraphs, tables
 
 

@@ -540,7 +540,7 @@ def sample_analysis(app, window, sample):
     contract = json.loads(
         (ROOT / "tests/analysis_regression/baseline/numeric-contract.json").read_text()
     )
-    section = "Diagnostic Odds Ratio Summary" if sample == "lymph" else "Summary"
+    section = "Diagnostic odds ratio summary" if sample == "lymph" else "Summary"
     expected_sections = next(c for c in contract["cases"] if c["id"] == case)[
         "sections"
     ]
