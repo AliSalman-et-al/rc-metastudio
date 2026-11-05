@@ -687,6 +687,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             )
             self.covariates_layout.addWidget(checkbox, row, 0)
             self.covs_and_check_boxes.append((covariate, checkbox))
+        self.moderator_values_note = QLabel(self.covariate_group_box)
+        self.moderator_values_note.setWordWrap(True)
+        self.covariates_layout.addWidget(self.moderator_values_note, len(self.covs_and_check_boxes), 0)
         self.diagnostic_regression_group.setVisible(self.data_type == "diagnostic")
         self.image_path.setText(analysis_output_path("reg.png"))
         self._update_meta_regression_ok()
@@ -700,9 +703,15 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         ]
 
     def _update_meta_regression_ok(self):
+        selected = self._selected_covariates()
         button = self.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
         if button is not None:
-            button.setEnabled(bool(self._selected_covariates()))
+            button.setEnabled(bool(selected))
+        selection = self.analysis_service.select_studies_for_covariates(self.model, selected)
+        self.moderator_values_note.setText(
+            "Missing moderator values: " + ", ".join(selection.excluded_study_names)
+            if selection.has_missing_values else "" if selected else "Select at least one covariate."
+        )
 
     def _update_meta_regression_plot_availability(self):
         if not self.is_meta_regression:
@@ -1915,7 +1924,9 @@ def _display_svg_path(output_path):
 
 
 def add_plot_params(specs_form):
-    specs_form.current_param_vals.setdefault("plot_caption", analysis_identity.dataset_identity(specs_form.model))
+    specs_form.current_param_vals["plot_caption"] = analysis_identity.plot_caption(
+        specs_form.model, specs_form.analysis_type, specs_form.current_param_vals.get("plot_caption")
+    )
     if getattr(specs_form, "analysis_type", None) == "meta-regression":
         bubble_outpath = _text_value(specs_form.image_path)
         specs_form.current_param_vals.update(

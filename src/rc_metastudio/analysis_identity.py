@@ -26,7 +26,7 @@ def result_identity(model, workflow, metric, model_label, parameters, confidence
     header = workflow_label(workflow) + " — " + dataset_identity(model, metric)
     details = [f"Confidence level: {float(parameters.get('conf.level', confidence)):g}%"]
     if workflow == "cumulative":
-        details.append("Order: current study order; each row adds a study to the preceding studies.")
+        details.append("Order: dataset row order; each row adds a study to the preceding studies.")
     elif workflow == "leave-one-out":
         if model.get_current_outcome_type() in {"time_to_event", "event_rates"}:
             details.append("Omission-only fits: each row omits the named study. No all-studies fit is included.")
@@ -86,3 +86,10 @@ def dataset_identity(model, metric=None):
     if comparison or groups != "Group":
         context.append(f"{group_label}: {groups}")
     return " · ".join(labels) + "\n" + " · ".join(context)
+
+
+def plot_caption(model, workflow, caption=None):
+    caption = caption or dataset_identity(model)
+    if workflow == "cumulative" and "Order: dataset row order" not in caption:
+        caption += " · Order: dataset row order"
+    return caption
