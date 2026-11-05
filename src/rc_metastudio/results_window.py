@@ -740,8 +740,17 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.zoom_control.blockSignals(False)
 
     def _report_blocks(self):
+        supplementary_paragraphs = []
+        supplementary_tables = []
         for index, section in enumerate(self.manuscript.sections):
+            if section.title == "Supplementary details":
+                if section.source_key != "References":
+                    supplementary_paragraphs.extend(section.paragraphs)
+                    supplementary_tables.extend(section.tables)
+                continue
             yield f"manuscript:{index}", section.title, section.paragraphs, section.tables
+        if supplementary_paragraphs or supplementary_tables:
+            yield "supplementary", "Supplementary details", tuple(supplementary_paragraphs), tuple(supplementary_tables)
         if self.results.details:
             yield "model-configuration", "Model configuration", (self.results.details,), ()
         for section in self.results.sections:

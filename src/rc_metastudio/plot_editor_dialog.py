@@ -231,6 +231,19 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                     )
                     widget.setFocus()
                     return
+        ticks = self.x_ticks_le.text().strip()
+        if ticks and ticks != "[default]":
+            try:
+                values = [float(token.strip()) for token in ticks.split(",")]
+                valid = all(math.isfinite(value) for value in values)
+            except ValueError:
+                valid = False
+            if not valid:
+                self.mark_commit_failed(
+                    "X-axis ticks must be comma-separated finite numbers, or leave blank for automatic ticks."
+                )
+                self.x_ticks_le.setFocus()
+                return
         self._commit_outcome = None
         self.applied.emit()
         # Preserve the signal-only API for callers that use the dialog without

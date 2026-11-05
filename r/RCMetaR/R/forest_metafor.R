@@ -699,7 +699,7 @@ rcmetar.metafor.axis.ticks <- function(bundle, alim) {
     params <- bundle$params
     measure <- as.character(params$measure)
     if (rcmetar.forest.natural.axis(bundle) || rcmetar.forest.proportion(bundle)) {
-        if (!rcmetar.is.plot.default.text(params$fp_xticks)) return(as.numeric(params$fp_xticks))
+        if (!rcmetar.is.plot.default.text(params$fp_xticks)) return(rcmetar.numeric.values(params$fp_xticks))
         ticks <- pretty(alim, n=5)
         return(ticks[ticks >= alim[[1]] & ticks <= alim[[2]]])
     }
@@ -711,7 +711,7 @@ rcmetar.metafor.axis.ticks <- function(bundle, alim) {
         rcmetar.bundle.transform(bundle)$calc.scale(values)
     }
     if (!rcmetar.is.plot.default.text(params$fp_xticks)) {
-        return(to.calculation(as.numeric(params$fp_xticks)))
+        return(to.calculation(rcmetar.numeric.values(params$fp_xticks)))
     }
     if (metric.is.log.scale(measure)) {
         ticks <- rcmetar.forest.journal.ratio.ticks(alim)

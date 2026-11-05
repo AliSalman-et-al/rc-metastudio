@@ -673,13 +673,15 @@ rcmetar.draw.bmj.forest <- function(bundle, outpath) {
     graphics::par(cex=plot.info$cex, font=2, col="#111111")
     rcmetar.draw.bmj.headers(bundle, layout, ilab, k, metric, method, plan$headers$show)
 
-    graphics::text(layout$annotation.xpos, -0.65, summary$label, pos=4, font=2)
+    if (rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE))
+        graphics::text(layout$annotation.xpos, -0.65, summary$label, pos=4, font=2)
     rcmetar.draw.revman.summary.diamond(rcmetar.forest.axis.effect(bundle, summary), -0.65, accent, layout$alim)
     graphics::par(cex=1)
     rcmetar.draw.bmj.axis(bundle, layout, plot.info$cex)
 
     graphics::par(cex=1, font=1, col="#111111")
-    graphics::text(rcmetar.forest.study.x(layout), rows, bundle$slab, pos=4, cex=plot.info$cex, col="#111111")
+    if (rcmetar.param.is.true(bundle$params, "fp_show_col1", TRUE))
+        graphics::text(rcmetar.forest.study.x(layout), rows, bundle$slab, pos=4, cex=plot.info$cex, col="#111111")
     rcmetar.draw.bmj.study.effect.labels(bundle, effect, layout, rows, plot.info$cex)
     rcmetar.draw.bmj.bottom.blocks(bundle, rcmetar.forest.study.x(layout), plot.info$cex, layout, summary$res)
 
@@ -736,11 +738,13 @@ rcmetar.draw.bmj.headers <- function(bundle, layout, ilab, k, metric, method, sh
     if (!show.headers) {
         return(invisible(NULL))
     }
-    graphics::text(rcmetar.forest.study.x(layout), k + 2.35, "Study or\nsubgroup", pos=4)
+    if (rcmetar.param.is.true(bundle$params, "fp_show_col1", TRUE))
+        graphics::text(rcmetar.forest.study.x(layout), k + 2.35, "Study or\nsubgroup", pos=4)
     rcmetar.draw.forest.column.headers(bundle, layout, k + 1.55)
     header <- paste0(metric, ",\n", method, " (", bundle$params$conf.level, "% CI)")
     rcmetar.draw.forest.effect.header(layout$plot.header.xpos, k + 1.55, header)
-    rcmetar.draw.forest.effect.header(layout$annotation.header.xpos, k + 1.55, header)
+    if (rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE))
+        rcmetar.draw.forest.effect.header(layout$annotation.header.xpos, k + 1.55, header)
     invisible(NULL)
 }
 
@@ -761,6 +765,7 @@ rcmetar.bmj.effect.label <- function(center, lower, upper, digits, ratio=FALSE) 
 }
 
 rcmetar.draw.bmj.study.effect.labels <- function(bundle, effect, layout, rows, cex) {
+    if (!rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE)) return(invisible(NULL))
     transform <- rcmetar.bundle.transform(bundle)
     labels <- rep("Not estimable", length(effect$yi))
     finite <- is.finite(effect$yi) & is.finite(effect$ci.lb) & is.finite(effect$ci.ub)
