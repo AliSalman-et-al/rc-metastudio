@@ -1,0 +1,15 @@
+{
+  "driver:entry": 1793848055.281474,
+  "composition:start": 1793848055.6694083,
+  "application:configured": 1793848055.8377154,
+  "window:visible": 1793848056.1989813,
+  "r-library-paths:start": 1793848057.7251658,
+  "r-library-paths:complete": 1793848057.7268035,
+  "r-library:metafor:start": 1793848057.7587357,
+  "r-library:metafor:complete": 1793848060.6485136,
+  "r-library:RCMetaR:start": 1793848060.6495965,
+  "r-library:RCMetaR:complete": 1793848063.1822433,
+  "r-library:grid:start": 1793848063.182388,
+  "r-library:grid:complete": 1793848063.1968296,
+  "r:ready": 1793848063.2625563
+}

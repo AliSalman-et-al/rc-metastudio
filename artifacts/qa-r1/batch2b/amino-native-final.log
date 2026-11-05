@@ -1,0 +1,20 @@
+Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-2505e52b/artifacts/verification/rcms/20261105T030103Z-e37d7a31-amino
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+RCMS amino timed out after 120 seconds: /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -X faulthandler /home/ali/.t3/worktrees/rc-metastudio/t3-2505e52b/tests/e2e/desktop_driver.py amino /home/ali/.t3/worktrees/rc-metastudio/t3-2505e52b/build/verification/rcms/desktop-h6isgr94
+
