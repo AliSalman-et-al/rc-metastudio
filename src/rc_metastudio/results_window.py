@@ -10,7 +10,7 @@ import io
 import re
 from html import escape
 from pathlib import Path
-from collections import namedtuple
+from collections import Counter, namedtuple
 from dataclasses import replace
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Callable
@@ -239,7 +239,10 @@ def _opaque_svg_renderer(path, parent):
     renderer = _svg_renderer_class()(QByteArray(svg), parent)
     font_sizes = [float(size) * (96 / 72 if unit == b"pt" else 1)
                   for size, unit in re.findall(rb"font-size:\s*([\d.]+)(px|pt)", svg)]
-    renderer.setProperty("minimum_text_size", min(font_sizes, default=0))
+    # R repeats the body size for study labels and data cells. Small fitted
+    # annotations (for example Favours labels) must not set the body-text floor.
+    body_size = Counter(font_sizes).most_common(1)
+    renderer.setProperty("body_text_size", body_size[0][0] if body_size else 0)
     return renderer
 
 
@@ -911,11 +914,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         target_scale = float(scaled_width) / float(item_width)
         renderer = svg_item.renderer()
-        text_size = renderer.property("minimum_text_size")
+        text_size = renderer.property("body_text_size")
         text_pixels = text_size * item_width / renderer.viewBoxF().width() if text_size else 0
-        screen = self.screen()
-        if not self._explicit_fit_width and text_pixels and screen is not None and screen.availableGeometry().width() >= 1280:
-            # Compact screens need the complete forest columns; larger screens retain the 9 pt floor.
+        if not self._explicit_fit_width and text_pixels:
+            # Automatic sizing preserves 9 pt body text; explicit Fit width may shrink it.
             target_scale = max(target_scale, math.nextafter(9 * 96 / 72 / text_pixels, math.inf))
             scaled_width, scaled_height = item_width * target_scale, item_height * target_scale
         if target_scale != svg_item.scale():
@@ -1038,7 +1040,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._refitting_viewport_items = True
         previous_width = self._viewport_width_override
         readable_fit = self._fit_width_active and not self._explicit_fit_width and any(
-            item.renderer().property("minimum_text_size") for item in self._svg_plot_items
+            item.renderer().property("body_text_size") for item in self._svg_plot_items
         )
         width_only_fit = self._fit_width_active and not readable_fit
         try:
