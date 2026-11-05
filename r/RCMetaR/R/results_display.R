@@ -523,7 +523,9 @@ adjusted_means_display <- function(res, params, display.data) {
   if (length(levels.display.col) < level.end || length(studies.display.col) < level.end) {
     stop("display data does not contain factor levels")
   }
-  adj.array[2:(n.levels + 1), "Level"] <- levels.display.col[level.start:level.end]
+  adj.array[2:(n.levels + 1), "Level"] <- paste0(
+    display.data$factor.cov.names[[1]], ": ", levels.display.col[level.start:level.end],
+    " (reference: ", display.data$factor.ref.levels[[1]], ")")
   adj.array[2:(n.levels + 1), "Studies"] <- studies.display.col[level.start:level.end]
   adj.array[2:(n.levels + 1), "Estimate"] <- sprintf(digits.str, estimates.disp)
   adj.array[2:(n.levels + 1), ci.labels[[1]]] <- sprintf(digits.str, ci.lb.disp)

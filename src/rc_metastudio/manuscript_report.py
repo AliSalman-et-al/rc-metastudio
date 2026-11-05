@@ -216,7 +216,7 @@ def _pooled_statistics(values, overall, calculation):
 def _pooled_prose(result, values, effect, effect_metric, coefficient, statistic, test, p, level, lower, upper, summary):
     if coefficient and effect == 'Intercept':
         return
-    lead = f"For {effect}, the coefficient" if coefficient else (f"Overall, the pooled {effect_metric}" if effect.lower() == "overall" else f"In {effect}, the pooled {effect_metric}") if 'Subgroups' in values or 'Term' in values else f"The pooled {effect_metric}"
+    lead = f"For {effect}, the coefficient" if coefficient else (f"Overall, the pooled {effect_metric}" if effect.lower() == "overall" else f"In {effect}, the pooled {effect_metric}") if 'Subgroups' in values or 'Term' in values or 'Level' in values else f"The pooled {effect_metric}"
     inference = (f", {statistic} = {test}" if test != '—' else '') + (', ' + _p_clause(p) if p != '—' else '')
     summary.append(f"{lead} was {values['Estimate']} ({level} [{values[lower]}, {values[upper]}]{inference}).")
     meaning = _interval_meaning(values[lower], values[upper], effect_metric, result.manuscript_arms, coefficient=coefficient)
@@ -249,7 +249,7 @@ def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overa
             fit.append(('Studies (k) (' + values['Subgroups'] + ')', values['k']))
         effect_metric = _effect_metric(metric, section, table, vertical, coefficient)
         context = next((values[h] for h in table.headers if h.startswith(('Study added', 'Study omitted'))), table.title if vertical else effect_metric)
-        effect = values.get('Term', values.get('Subgroups', context))
+        effect = values.get('Term', values.get('Subgroups', values.get('Level', context)))
         if not coefficient and ',' in metric and effect.casefold() != effect_metric.casefold():
             effect = effect_metric.capitalize() + ': ' + effect
         statistic, se, test, p = _pooled_statistics(values, overall, calculation)

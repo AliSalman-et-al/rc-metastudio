@@ -713,18 +713,24 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 return False
             self._update_column_mapping()
             self._show_raw_preview()
+            info = self.wizard().require_dataset_info()
+            raw, _ = DatasetTableModel.get_column_indices(info["data_type"], info["sub_type"])
             mapping = tuple(control.currentData() for control in self.mapping_controls)
             column_mapping = None
             if mapping:
-                info = self.wizard().require_dataset_info()
-                raw, _ = DatasetTableModel.get_column_indices(info["data_type"], info["sub_type"])
                 raw_end = 2 + len(raw)
                 # The model retains both arms' slots even for a one-arm dataset.
                 raw_count = len(raw) // 2 if info["arms"] == "one" else len(raw)
                 raw_complete = bool(raw_count) and all(index is not None for index in mapping[2:2 + raw_count])
                 effects_complete = all(index is not None for index in mapping[raw_end:])
                 if any(index is None for index in mapping[:2]) or not (raw_complete or effects_complete):
-                    raise csv_import.CsvImportError("Map Study Name and Year, then map all raw data columns or all effect estimate columns.")
+                    def missing(indices):
+                        return ", ".join(self.required_header_labels[i] for i in indices if mapping[i] is None)
+                    raise csv_import.CsvImportError(
+                        "Missing columns: " + missing(range(2)) +
+                        "; raw data: " + missing(range(2, 2 + raw_count)) +
+                        "; or effects: " + missing(range(raw_end, len(mapping))) + "."
+                    )
                 column_mapping = tuple(-1 if index is None else index for index in mapping)
             notices = []
             self._import_result = csv_import.parse_csv(
@@ -737,6 +743,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 year_column=DatasetTableModel.YEAR - 1,
                 optional_headers=self._optional_ratio_headers(),
                 column_mapping=column_mapping,
+                positional_width=2 + len(raw) if raw else None,
                 header_aliases=self._legacy_header_aliases(),
                 worksheet=self.worksheet_combo.currentText(),
                 notices=notices,

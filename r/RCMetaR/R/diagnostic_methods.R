@@ -7,7 +7,7 @@ bivariate.methods <- c("diagnostic.reitsma")
 
 diagnostic.summary.metric.name <- function(metric) {
     if (trimws(as.character(metric)) == "DOR") {
-        return("Odds Ratio")
+        return("Diagnostic Odds Ratio")
     }
     pretty.metric.name(metric)
 }
@@ -363,7 +363,7 @@ diagnostic.fixed.inv.var.pretty.names <- function() {
                          "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any study has zero events", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
                                    is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
                                    is added to all two-by-two tables if at least one table contains a zero."),
-                         "measure"=list("Sens"="Sensitivity", "Spec"="Specificity", "DOR"="Odds Ratio", "PLR"="Positive Likelihood Ratio",
+                         "measure"=list("Sens"="Sensitivity", "Spec"="Specificity", "DOR"="Diagnostic Odds Ratio", "PLR"="Positive Likelihood Ratio",
                                         "NLR"="Negative Likelihood Ratio")
                           )
 }
@@ -470,7 +470,7 @@ diagnostic.fixed.mh.pretty.names <- function() {
                          "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any study has zero events", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
                                    is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
                                    is added to all two-by-two tables if at least one table contains a zero."),
-                          "measure"=list("Sens"="Sensitivity", "Spec"="Specificity", "DOR"="Odds Ratio", "PLR"="Positive Likelihood Ratio",
+                          "measure"=list("Sens"="Sensitivity", "Spec"="Specificity", "DOR"="Diagnostic Odds Ratio", "PLR"="Positive Likelihood Ratio",
                                         "NLR"="Negative Likelihood Ratio")
                           )
 }
@@ -527,7 +527,7 @@ diagnostic.fixed.peto <- function(diagnostic.data, params){
       }
       if (is.null(params$create.plot) || params$create.plot == TRUE) {
         metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-        model.title <- "Diagnostic Fixed-Effect Model - Peto\n\nMetric: Odds Ratio"
+        model.title <- "Diagnostic Fixed-Effect Model - Peto\n\nMetric: Diagnostic Odds Ratio"
         summary.disp <- create.summary.disp(diagnostic.data, params, res, model.title)
         forest.path <- paste(params$fp_outpath, sep="")
         plot.data <- create.plot.data.diagnostic(diagnostic.data, params, res)
@@ -679,7 +679,7 @@ diagnostic.random.pretty.names <- function() {
                          "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any study has zero events", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
                                    is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
                                    is added to all two-by-two tables if at least one table contains a zero."),
-                         "measure"=list("Sens"="Sensitivity", "Spec"="Specificity", "DOR"="Odds Ratio", "PLR"="Positive Likelihood Ratio",
+                         "measure"=list("Sens"="Sensitivity", "Spec"="Specificity", "DOR"="Diagnostic Odds Ratio", "PLR"="Positive Likelihood Ratio",
                                         "NLR"="Negative Likelihood Ratio")
                          )
 }

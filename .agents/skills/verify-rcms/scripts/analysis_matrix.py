@@ -74,6 +74,8 @@ DATA_TYPES = {
 SCENARIOS = (
     *("analysis-" + case for case in GOLDEN),
     *("analysis-" + method for method in FIXED),
+    "analysis-category-factor",
+    "analysis-category-multiple",
     "analysis-diagnostic-joint",
     "analysis-diagnostic-combined",
     "analysis-diagnostic-cumulative",
@@ -175,6 +177,16 @@ def run(
         view = visible(results_window.ResultsWindow)
         app.processEvents()
         app.processEvents()
+        if scenario.startswith("analysis-category-"):
+            report = view.report_text.toPlainText()
+            table = next(t for section in view.results.sections for t in section.tables if t.title == "Regression coefficients")
+            terms = [row[0] for row in table.rows if "vs" in row[0]]
+            assert len(terms) == 3 and all("treatment group" in term and "reference" in term for term in terms), terms
+            assert all(term in report for term in terms), report
+            if scenario.endswith("category-factor"):
+                assert all(f"treatment group: {level} (reference: 1)" in report for level in ("1", "2", "3", "4")), report
+            record("category-coefficients-labelled", view, terms=terms, report=report)
+            return view
         clinical = any(section.plot_kind == "sroc" for section in view.results.sections)
         if clinical:
             assert any(section.semantic_id.startswith("diagnostic.reitsma.summary")
@@ -540,7 +552,7 @@ def run(
                 if c["id"] == case
             )["sections"]
         else:
-            family = case.split(".")[0] if case in FIXED else "diagnostic"
+            family = "binary" if case.startswith("category-") else case.split(".")[0] if case in FIXED else "diagnostic"
             sample = {
                 "binary": "amino",
                 "continuous": "continuous",
@@ -551,6 +563,10 @@ def run(
             )
             workflow = "standard"
             method = case if case in FIXED else "diagnostic.random"
+            if case.startswith("category-"):
+                assert window.open(str(root / "sample_projects/meantime.rcms"), raise_on_error=True)
+                workflow = "meta-regression"
+                method = "binary.random"
             if case == "diagnostic-joint":
                 method, metrics = "diagnostic.reitsma", ("sens", "spec")
             elif case == "diagnostic-combined":
@@ -562,13 +578,13 @@ def run(
                 workflow = case.removeprefix("diagnostic-")
             if workflow in ("subgroup", "meta-regression"):
                 studies = window.model.get_studies(only_if_included=True)
-                if workflow == "subgroup" or case.endswith(("factor", "multiple")):
+                if not case.startswith("category-") and (workflow == "subgroup" or case.endswith(("factor", "multiple"))):
                     covariate(
                         "Group",
                         "factor",
                         {s.label: "A" if i % 2 else "B" for i, s in enumerate(studies)},
                     )
-                if workflow == "meta-regression" and case.endswith(
+                if not case.startswith("category-") and workflow == "meta-regression" and case.endswith(
                     ("continuous", "multiple")
                 ):
                     covariate(
@@ -641,8 +657,8 @@ def run(
         assert not dialog.buttonBox.button(
             QtWidgets.QDialogButtonBox.StandardButton.Ok
         ).isEnabled()
-        for _, checkbox in dialog.covs_and_check_boxes:
-            checkbox.setChecked(True)
+        for cov, checkbox in dialog.covs_and_check_boxes:
+            checkbox.setChecked(not scenario.endswith("category-factor") or cov["name"] == "treatment group")
     set_parameter(
         app,
         dialog,
@@ -666,6 +682,9 @@ def run(
     )
     click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     view = observe()
+    if scenario.startswith("analysis-category-"):
+        view.close()
+        return
     if (workflow == "standard" and window.model.current_effect == "OR"
             and method in ("binary.fixed.mh", "binary.fixed.peto")):
         from xml.etree import ElementTree as ET
@@ -715,6 +734,7 @@ def run(
     if scenario == "analysis-diagnostic-regression-multiple":
         assert "Group = A vs B" in view.report_text.toPlainText(), view.report_text.toPlainText()
     if scenario == "analysis-diagnostic-combined":
+        assert "Diagnostic odds ratio" in view.report_text.toPlainText(), view.report_text.toPlainText()
         assert view.results.details.count("Estimator: DerSimonian-Laird") == 2, view.results.details
         assert view.results.details.count("Estimator: Restricted Maximum Likelihood") == 3, view.results.details
         report = view.report_text.toPlainText()

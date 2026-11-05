@@ -471,6 +471,8 @@ def set_current_effect_from_value(
     (est, lower, upper) = analysis_unit.get_effect_and_ci_for_source(
         source, current_effect, arm_key, confidence_multiplier
     )
+    if data_type == "continuous" and source == "entered":
+        est, lower, upper = analysis_unit.get_entered_effect_and_ci(current_effect, arm_key)
     (display_estimate, display_lower, display_upper) = [
         conv_to_disp_scale(x) for x in (est, lower, upper)
     ]
@@ -569,8 +571,8 @@ def update_calculator_readout(dialog, data_type):
     source = calculator_effect_source(
         analysis_unit, dialog.arm_names, current_effect, arm_key, confidence_multiplier
     )
-    if data_type == "continuous" and getattr(dialog, "_active_input_mode", "estimate") != "estimate":
-        source = "derived_preview"
+    if data_type == "continuous":
+        source = "entered" if getattr(dialog, "_active_input_mode", "estimate") == "estimate" else "derived_preview"
     est, lower, upper = analysis_unit.get_effect_and_ci_for_source(
         source, current_effect, arm_key, confidence_multiplier
     )

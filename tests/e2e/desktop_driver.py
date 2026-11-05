@@ -367,7 +367,7 @@ def analysis_dialog(app, window):
         if sample == "amino":
             giamarellou = next(row for row in range(window.model.rowCount()) if "Giamarellou" in str(window.model.data(window.model.index(row, window.model.NAME))))
             assert str(window.model.data(window.model.index(giamarellou, window.model.OUTCOMES[1]))) == "<0.01"
-            assert window.model.format_float(0.000401, 3, ratio=True) == "<0.001"
+            assert window.model.format_float(0.000401, 3) == "0.000401"
             assert window.tableView.columnWidth(window.model.columnCount() - 1) < 250
             record_step("slice2c-main", window)
             record_step("slice2c-analysis-collapsed", form)
@@ -1468,6 +1468,16 @@ def csv_import(app, window):
     page.mapping_controls[2].setCurrentIndex(page.mapping_controls[2].findData(2))
     assert page.isComplete(), page.import_status.text()
     assert len(page.csv_data()["data"]) == 3
+    headerless = WORK / "headerless-counts.csv"
+    headerless.write_text("Alpha,2020,1,10,2,12\nBeta,2021,3,11,4,13\n")
+    page.file_path = str(headerless)
+    page.has_headers_chkbx.setChecked(False)
+    assert page.isComplete(), page.import_status.text()
+    assert len(page.csv_data()["data"]) == 2
+    record_step("csv-headerless-counts", wizard, data=page.csv_data())
+    page.file_path = str(csv)
+    page.has_headers_chkbx.setChecked(True)
+    assert page.isComplete(), page.import_status.text()
     record_step("csv-preview", wizard, rows=3, file=str(csv))
     window._handle_wizard_results(wizard.get_results())
     assert window.sheet_tabs.tabText(window.sheet_tabs.currentIndex()).strip()
