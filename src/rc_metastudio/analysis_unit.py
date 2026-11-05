@@ -297,7 +297,7 @@ class AnalysisUnit:
             entry.pop("calculator_source", None)
 
     def calculator_source(self, effect, arm_comparison):
-        return self._entry("entered", effect, arm_comparison).get("calculator_source")
+        return self.entered_effects.get(effect, {}).get(arm_comparison, {}).get("calculator_source")
 
     def set_effect(self, effect, arm_comparison, value):
         self.entered_effects[effect][arm_comparison]["est"] = value
