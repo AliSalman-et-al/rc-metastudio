@@ -259,7 +259,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.g2_pre_post_table,
         ):
             # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
-            table.setItemDelegate(calc_fncs.NumericSummaryDelegate(table))
+            if not isinstance(table.itemDelegate(), calc_fncs.NumericSummaryDelegate):
+                table.setItemDelegate(calc_fncs.NumericSummaryDelegate(table))
             table.setMinimumWidth(0)
             table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
