@@ -1420,6 +1420,9 @@ def calculators(app, window, mode, record):
     )
 
     def cancel(dialog):
+        if entered and family in {"binary", "continuous"}:
+            assert dialog.input_mode_combo.currentData() == "estimate"
+            assert not dialog.content_scroll.isVisible()
         click(app, dialog.clear_button)
         assert all(
             v is None

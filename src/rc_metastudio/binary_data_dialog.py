@@ -126,6 +126,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self._populate_effect_data()  # make combo boxes for effects
         self.set_current_effect()  # fill in current effect data in line edits
         self._update_data_table()  # fill in 2x2
+        self._input_mode_changed()
         self._fit_raw_data_columns_for_first_display()
         self.update_back_calculation_button()
         self._set_content_preferred_width()
