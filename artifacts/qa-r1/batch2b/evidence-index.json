@@ -1,5 +1,5 @@
 {
-  "artifacts/qa-r1/batch2b/REPORT.md": "6472ac112f81726acd9011942b55a277a6723a2bf019024475eee78fcf96e032",
+  "artifacts/qa-r1/batch2b/REPORT.md": "392e80649547bcfba0acbb7fe8d314aee9d1c9a0d55ea5368190ed46f66b283e",
   "artifacts/qa-r1/batch2b/after-dark-grid.png": "6cc02907ede7901e60092448d8cfef17ac6de9a4e963765b86b8e8bb9092d047",
   "artifacts/qa-r1/batch2b/after-dark-large-grid-real.png": "c488b5f11dc7a888a31178d16b62face7eda24b817adb672f45058bb7c1430ad",
   "artifacts/qa-r1/batch2b/after-dark-large-result.png": "e97aa802e3de19873a0ae60187409c612404e81fc54480a4628ed821aaa087a2",
@@ -43,5 +43,17 @@
   "artifacts/qa-r1/batch2b/pre-push-passed.log": "30ab692329ed096a6b44cc10178323c55cb0cd9ec7209f030e3b1367d9f353a5",
   "artifacts/qa-r1/batch2b/startup-after.json": "533bc243e2876c61b37a493f455c137e778781bec35c75379e1b74b6b465750e",
   "artifacts/qa-r1/batch2b/startup-before.json": "1e1b98dd66861d26f80e31c856ae58481dce7208a655fd6310987ec701e622b8",
-  "artifacts/qa-r1/batch2b/typing-final.log": "17dcc1f360dde4d9d0aab87d358ea84e7c91242bd28e3cbd2400bacd90a53060"
+  "artifacts/qa-r1/batch2b/typing-final.log": "17dcc1f360dde4d9d0aab87d358ea84e7c91242bd28e3cbd2400bacd90a53060",
+  "artifacts/qa-r1/batch2b/startup-copy/e2e-manifest.json": "f46a76991c334b6a7b8d50b7c59176a5ed018b00bbf0fe7d220fb08c62297500",
+  "artifacts/qa-r1/batch2b/startup-copy/typing.log": "58dc14225a19d771fe2b53e25c4ee13e0be0a6d0bc013d72f82a89ef742f77ba",
+  "artifacts/qa-r1/batch2b/startup-copy/REPORT.md": "955bc04ff78a9c2f89f3a9ed15bbea3ee4d3a76fd2815c4c0b30698decfd3960",
+  "artifacts/qa-r1/batch2b/startup-copy/dark-start.png": "fd03c102cd70540a8f3c8014484c2459c32079723d753107321adbcc6c6d63bb",
+  "artifacts/qa-r1/batch2b/startup-copy/dark-ready.png": "ff9f39efd48790701b6955ba6768681df535b29bad51c4015b90c7c7f72818aa",
+  "artifacts/qa-r1/batch2b/startup-copy/code-health.txt": "19be9bf0563765e6a9673ea0ddae69cce84be7a702da1dd84fc9a1bab97dfb8b",
+  "artifacts/qa-r1/batch2b/startup-copy/pre-push.log": "7bc08439779c69af053ca628c545c6b2388759418a104eee59bbcc9283b5af97",
+  "artifacts/qa-r1/batch2b/startup-copy/light-large-ready.png": "f24993f9ec6affd90fa9994aea85bd52aad84bfe9dab15e06d789dba20c61861",
+  "artifacts/qa-r1/batch2b/startup-copy/doctor.log": "f8159914044b90c7354741c544ec3fd3b3010b4172d8d060344e08a81595001a",
+  "artifacts/qa-r1/batch2b/startup-copy/e2e-stdout.log": "8a46711a4fdcaadf9bed4dcaeff58c6dc4688d3b5a2043b25199790e5b7d588f",
+  "artifacts/qa-r1/batch2b/startup-copy/light-large-start.png": "ff1e95c1946d6b89919ed7a1f515ad43c1c86e1679aaad8090ee132100344f90",
+  "artifacts/qa-r1/batch2b/startup-copy/e2e-runtime.json": "9c1f99bb5ed7a73c23358cc717ebe0468c3dff27f4cb2f331f60aaea7b327da2"
 }

@@ -44,3 +44,7 @@ Final successful native run: artifacts/verification/rcms/20261105T030735Z-3daa90
 Before/after evidence also includes light-large startup (disabled controls and waiting text), grid and setup; see after-light-large-*.png. Raw report model and exports remain unchanged; only the interactive text-report document removes duplicate headings/references.
 
 Final display matrix: default light, default dark, large light, large dark. Corresponding after-*-grid/setup/result captures retain each rendered surface. Startup feedback was captured during real startup in after-light-large-start.png and after-dark-start.png. The original before captures do not constitute an exhaustive four-way startup screenshot matrix; the E2E disabled/cursor/readiness checks establish the state transition independently of theme.
+
+## Review follow-up: startup copy
+
+The [startup-copy proof](startup-copy/REPORT.md) supersedes startup text in the original captures: the primary line is `Starting… · Untitled dataset` until R is usable, and the temporary message is exactly `Starting R…`. The existing E2E now checks both strings and the transition to Ready. Fresh dark and light/large-font startup/ready captures and qualification transcripts are in that directory.
