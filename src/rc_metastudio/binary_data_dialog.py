@@ -7,6 +7,7 @@ from contextlib import ExitStack
 from functools import partial
 from typing import TYPE_CHECKING, cast
 
+from rc_metastudio.qt_layout import style_inline_error
 from PyQt6.QtCore import QEvent, QObject, QSignalBlocker, QTimer, Qt
 from PyQt6.QtGui import QAction, QBrush, QColor, QKeySequence, QPalette
 from PyQt6.QtWidgets import (
@@ -17,6 +18,7 @@ from PyQt6.QtWidgets import (
     QSizePolicy,
     QStyle,
     QTableWidgetItem,
+    QWidget,
     QWidget,
     QWIDGETSIZE_MAX,
 )
@@ -476,7 +478,21 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self._request_content_refit()
 
     def _mark_table_invalid(self, message):
+        with QSignalBlocker(self.raw_data_table):
+            for row in range(self.raw_data_table.rowCount()):
+                for col in range(self.raw_data_table.columnCount()):
+                    if not self._raw_count_cell_is_editable(row, col):
+                        item = self.raw_data_table.item(row, col)
+                        if item is not None:
+                            item.setText("")
+        for field in (self.effect_text_box, self.lower_text_box, self.upper_text_box):
+            field.clear()
+        for name in ("calculator_metrics", "calculator_wald"):
+            widget = self.findChild(QWidget, name)
+            if widget is not None:
+                widget.hide()
         self.inconsistencyLabel.setText(str(message))
+        style_inline_error(self.inconsistencyLabel)
         self.inconsistencyLabel.setVisible(True)
         required(
             self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),

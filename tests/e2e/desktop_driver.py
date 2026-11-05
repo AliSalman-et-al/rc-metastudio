@@ -1819,6 +1819,16 @@ def calculator(app, window, family):
             for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
                 width = field.fontMetrics().horizontalAdvance(field.text())
                 assert field.width() >= width + field.textMargins().left() + field.textMargins().right() + 12
+            if family == "binary":
+                table.setCurrentCell(0, column)
+                table.item(0, column).setText("abc")
+                app.processEvents()
+                assert table.item(0, column).text() == "abc"
+                assert dialog.inconsistencyLabel.isVisible()
+                assert not dialog.metric_readout.isVisible()
+                assert not dialog.wald_readout.isVisible()
+                assert all(not field.text() for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box))
+                record_step("calculator-invalid-previews-hidden", dialog)
             table.setCurrentCell(0, column)
             table.item(0, column).setText(
                 str(expected[column] if accept else expected[column] + 1).replace(

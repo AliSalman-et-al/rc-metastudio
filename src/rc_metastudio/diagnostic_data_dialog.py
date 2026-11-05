@@ -7,6 +7,7 @@ from contextlib import ExitStack
 from functools import partial
 from typing import TYPE_CHECKING
 
+from rc_metastudio.qt_layout import style_inline_error
 from PyQt6.QtCore import QEvent, QObject, QSignalBlocker, QTimer, Qt
 from PyQt6.QtGui import QAction, QKeySequence, QPalette
 from PyQt6.QtWidgets import (
@@ -345,6 +346,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
     def _mark_table_invalid(self, message):
         self.inconsistencyLabel.setText(str(message))
+        style_inline_error(self.inconsistencyLabel)
         self.inconsistencyLabel.setVisible(True)
         # The rejected edit has already been rolled back to a valid state, so
         # acceptance must remain available while the inline guidance is shown.

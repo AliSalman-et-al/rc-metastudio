@@ -563,7 +563,7 @@ set.plot.options <- function(params) {
       plot.options$show.col2 <- FALSE
     }
     if (params$fp_col2_str == "[default]") {
-        col2.str <- paste("Estimate (", params$conf.level, "% C.I.)", sep="")
+        col2.str <- paste("Estimate (", params$conf.level, "% CI)", sep="")
         plot.options$col2.str <- col2.str
         changed.params$fp_col2_str <- col2.str
     } else {

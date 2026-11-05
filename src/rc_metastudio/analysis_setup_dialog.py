@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Method-selection dialog and analysis specification builder."""
 
+from rc_metastudio.qt_layout import style_inline_error
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QResizeEvent, QKeyEvent, QCloseEvent, QColor, QHideEvent, QShowEvent
@@ -21,6 +22,7 @@ from PyQt6.QtWidgets import (
 )
 
 import copy
+import math
 import hashlib
 import re
 import os
@@ -308,12 +310,15 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                     field.setToolTip("Automatic: diagnostic counts")
 
     def _setup_result_context(self):
-        self.setWindowTitle(f"{self.model.current_outcome_name} · {self._result_metric_label()}")
+        workflow = {"cumulative": "Cumulative meta-analysis", "leave-one-out": "Leave-one-out analysis", "subgroup": "Subgroup analysis", "meta-regression": "Meta-regression"}.get(self.analysis_type, "")
+        prefix = f"{workflow} · " if workflow else ""
+        self.setWindowTitle(f"{prefix}{self.model.current_outcome_name} · {self._result_metric_label()}")
         run_button = required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button")
         run_button.setText("Run analysis")
         run_button.setStyleSheet("QPushButton:focus { border: 2px solid palette(highlight); }")
         self.analysis_error_label = QLabel(self)
         self.analysis_error_label.setWordWrap(True)
+        style_inline_error(self.analysis_error_label)
         self.analysis_error_label.setTextFormat(Qt.TextFormat.PlainText)
         self.analysis_error_label.setAccessibleName("Analysis error")
         self.analysis_error_label.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
@@ -1068,6 +1073,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         ):
             model_info.extend((f"Participants in {name}", f"{sum(row[index] for row in raw):g}")
                               for name, index in zip(self.model.arm_names, (1, 3) if self.data_type == "binary" else (0, 3)))
+        if self.data_type == "diagnostic":
+            complete = [row for row in raw if len(row) == 4 and all(isinstance(v, (int, float)) and math.isfinite(v) for v in row)]
+            if complete:
+                model_info.append(("Participants", f"{sum(sum(row) for row in complete):g}"))
         if len(model_info) == 1:
             model_info.append(("Participants", "Not available"))
         return model_info

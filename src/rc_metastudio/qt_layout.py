@@ -204,3 +204,9 @@ def configure_heading(label, scale=1.15):
     font.setBold(True)
     font.setPointSizeF(max(10, font.pointSizeF()) * scale)
     label.setFont(font)
+
+
+def style_inline_error(label):
+    """Use a contrasting error foreground against the current window palette."""
+    dark = label.palette().color(QPalette.ColorRole.Window).lightness() < 128
+    label.setStyleSheet("color: " + ("#ff9ca8" if dark else "#b00020") + ";")

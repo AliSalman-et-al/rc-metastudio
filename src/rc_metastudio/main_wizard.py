@@ -19,6 +19,7 @@ else:
     from rc_metastudio.forms import ui_outcome_name_page as _ui_outcome_name_page
     from rc_metastudio.forms import ui_welcome_page as _ui_welcome_page
 
+from rc_metastudio.qt_layout import style_inline_error
 from PyQt6.QtCore import QEvent, QObject, QSize, Qt, QTimer, QStandardPaths
 from PyQt6.QtGui import (
     QColor,
@@ -685,7 +686,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 self.has_headers_chkbx.setChecked(True)
             except csv_import.CsvImportError as error:
                 self._reset_data()
-                self.import_status.setStyleSheet("color: palette(text);")
+                style_inline_error(self.import_status)
                 self.import_status.setText(str(error))
                 self.worksheet_combo.blockSignals(False)
                 return
@@ -706,7 +707,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
     def _rebuild_display(self):
         self._reset_data()
         self.import_status.clear()
-        self.import_status.setStyleSheet("color: palette(text);")
+        style_inline_error(self.import_status)
         try:
             file_path = self.file_path
             if not isinstance(file_path, str) or not file_path:
@@ -1018,6 +1019,7 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         return names
 
     def isComplete(self):
+        style_inline_error(self.validation_label)
         if not self.outcome_name_LineEdit.text().strip():
             self.validation_label.setText("Enter an outcome name." if self._name_attempted else "")
             return False
@@ -1084,7 +1086,7 @@ class MainWizard(QWizard):
             self.setWindowTitle("RCMetaStudio")
         elif path == "csv_import":
             self.setStartId(Page_DataType)
-            self.setWindowTitle("Import a CSV")
+            self.setWindowTitle("Import data")
         elif path == "new_dataset":
             self.setStartId(Page_DataType)
             self.setWindowTitle("Add Outcome" if existing_outcome_names else "Create a New Dataset")

@@ -913,8 +913,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         renderer = svg_item.renderer()
         text_size = renderer.property("minimum_text_size")
         text_pixels = text_size * item_width / renderer.viewBoxF().width() if text_size else 0
-        if not self._explicit_fit_width and text_pixels:
-            # Automatic sizing preserves 9 pt text; explicit Fit width may shrink it.
+        screen = self.screen()
+        if not self._explicit_fit_width and text_pixels and screen is not None and screen.availableGeometry().width() >= 1280:
+            # Compact screens need the complete forest columns; larger screens retain the 9 pt floor.
             target_scale = max(target_scale, math.nextafter(9 * 96 / 72 / text_pixels, math.inf))
             scaled_width, scaled_height = item_width * target_scale, item_height * target_scale
         if target_scale != svg_item.scale():
