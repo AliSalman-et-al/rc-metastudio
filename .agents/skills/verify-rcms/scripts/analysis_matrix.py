@@ -203,6 +203,7 @@ def run(
             app.processEvents()
         selected = view._selected_plot()
         assert selected is not None
+        view.fit_width_action.trigger()
         viewport = view.graphics_view.viewport()
         # Native resize delivery can finish a loop turn before its queued refit.
         # Observe the settled result, with a bound that still fails a missing fit.
@@ -217,7 +218,7 @@ def run(
         native_width = selected[1].boundingRect().width()
         fitted = plot_bounds.width() >= viewport.width() * .9
         if not fitted:
-            record("matrix-incomplete-initial-fit", view, plot_bounds=str(plot_bounds), viewport=str(viewport.size()),
+            record("matrix-incomplete-fit-width", view, plot_bounds=str(plot_bounds), viewport=str(viewport.size()),
                    fit_active=view._fit_width_active, transform=view.graphics_view.transform().m11(),
                    item_scale=selected[1].scale(), item_bounds=str(selected[1].boundingRect()),
                    visible=view.isVisible(), plots=dict(view.results.display_images))

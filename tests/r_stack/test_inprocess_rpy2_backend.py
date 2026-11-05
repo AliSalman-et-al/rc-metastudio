@@ -284,6 +284,29 @@ _DRIVER = textwrap.dedent(
     assert initial_plot_width >= initial_available_width * 0.9
 
     result_window.report_action.setChecked(False)
+    result_window.resize(initial_window_width - 200, result_window.height())
+    for _ in range(3):
+        app.processEvents()
+    from xml.etree import ElementTree
+    import re
+    svg_root = ElementTree.parse(forest_display_path).getroot()
+    study_label = next(node for node in svg_root.iter("{http://www.w3.org/2000/svg}text")
+                       if "Plain study" in "".join(node.itertext()))
+    font_match = re.search(r"font-size:\\s*([\\d.]+)px", study_label.attrib["style"])
+    assert font_match is not None
+    coordinate_scale = plot_item.boundingRect().width() / float(svg_root.attrib["viewBox"].split()[2])
+    effective_scale = plot_item.deviceTransform(result_window.graphics_view.viewportTransform()).m11()
+    label_pt = float(font_match[1]) * coordinate_scale * effective_scale * 72 / 96
+    assert label_pt >= 9, label_pt
+    viewport = result_window.graphics_view.viewport()
+    assert result_window.graphics_view.viewportTransform().mapRect(plot_item.sceneBoundingRect()).width() > viewport.width()
+    assert result_window.graphics_view.horizontalScrollBar().maximum() > 0
+
+    result_window.resize(initial_window_width, result_window.height())
+    result_window.fit_width_action.trigger()
+    for _ in range(3):
+        app.processEvents()
+    initial_plot_width = result_window.graphics_view.viewportTransform().mapRect(plot_item.sceneBoundingRect()).width()
     result_window.resize(
         initial_window_width - 200,
         result_window.height(),

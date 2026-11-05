@@ -1,0 +1,206 @@
+{
+  "scenario": "results-window",
+  "started_utc": "2026-11-05T03:41:40.856170+00:00",
+  "head": "5baea1afb8ec6720093a25e1d731cd7349fbca90",
+  "worktree_status": "",
+  "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "driver_sha256": "e2494d7ea442205e164b556929dd6adad6699a95889b09cc02ec8304e826f2fa",
+  "workflow_files_sha256": {
+    "tests/e2e/arm_names.py": "ea63ac87d0796cd139b773cfbabb1cf4ede271105502eec882f0d75e92efd669",
+    "tests/e2e/audit_round3.py": "e87ec9d3356a12d252a14b6122f114e107dd272332ecf9eefc485eff082c699b",
+    "tests/e2e/axis_conventions.py": "829139119988742146481d487fe8b4b9c16541c8391951a6f7f2f2222f72de3c",
+    "tests/e2e/calculator-accepted-baseline.json": "856926f9f5466646880f956d9ea0d4af4bed6c5de9c94ecde71bde461c3fb49d",
+    "tests/e2e/conftest.py": "280fb46cb0e546f177a96847fb9b51796f5430d856ce36b629c0ee739e497738",
+    "tests/e2e/desktop_driver.py": "e2494d7ea442205e164b556929dd6adad6699a95889b09cc02ec8304e826f2fa",
+    "tests/e2e/display_labels.py": "51045b5f1d3355117d7a1ae8eec4087d6e434f70e394f54864b1bb32219b11a4",
+    "tests/e2e/entered_ci.py": "c2cedf793245505173a5b2cf664305d4f26b825bdc8d66c579a7fdec3bfad271",
+    "tests/e2e/header_geometry.py": "3871c759d738845f254c752ab6eeb1ad6621c811002cff9c1e91d199855a0a9a",
+    "tests/e2e/manuscript_export.py": "fb14bb766e479293a5a77c36b992a9b3adc63dd3f7b51015f36df8b21aaa8cc7",
+    "tests/e2e/precision_inputs.py": "4d1001fccbc4d555d45a589cac49a239b4a05757a81524627fed8d8ef302b228",
+    "tests/e2e/ratio_precision.py": "ad0bd8cec88d193d19c9bb8e3fdc50149bfa589e7c54a8ed0e9dbe441e97070c",
+    "tests/e2e/release_fixes.py": "6e770ddf031deca3f5b93b61f3a3a40c4f90b2a869c79564491443f3e5762549",
+    "tests/e2e/report_retention.py": "6a950b007b94152c1cc499f96c41612abf69cbeb849adf872308a43aa2beae71",
+    "tests/e2e/review1_design.py": "698c161a3d20c84df9ec31255f21377d6648da5d41430594c9e9de7a02f67ee5",
+    "tests/e2e/review_workflows.py": "26d4a3c76a41cd8e3d07e596cfc0ba521551185d1a54262730e5eaf2d6ce95b9",
+    "tests/e2e/reviewer_fixes.py": "bf4b9d74918904692fc3dafd5668a3a14740a1b5eda8154d3afd45a8da0ba2ab",
+    "tests/e2e/rm5_giv.py": "bee504e4a8090cf70337ac8f759a4c614a66a9935acfb8e3f47f2a5e31da4280",
+    "tests/e2e/rm5_import.py": "02a1ac57546c8324849e6197b8d75816615eb1f846fe74e93b05949287ed0b98",
+    "tests/e2e/round6_polish.py": "bffc90f14de68f54a3acb61b8b4465fa74980337be26f1f20dd33e28c10b3b38",
+    "tests/e2e/sheets_baseline.py": "928169a00159170ec4ddf26ad5ca26dc02e36cf9569aa38e5b4ffce86d9a4faf",
+    "tests/e2e/summary_of_findings.py": "e999ac82d73d271b8980671f210c4e81345671db37765b0705a02440ff546397",
+    "tests/e2e/test_desktop_workflows.py": "7fb242ac09a1e57e0e258a9aa372917a243d414d394da132e4001e1bf9265952",
+    "tests/e2e/trimfill_geometry.py": "1fd4927dfe2e18fda61cb6d55f6842b22eaa77f8a1b763da2816de00fdba96aa",
+    "tests/e2e/ui_crawl.py": "8087423f5b6bc649a6a2cfd588d11c927a478c23b31ed0df62fa8a39950207bf",
+    "tests/e2e/ux_workflows.py": "6814b2dc4a5efdd1ee8d2aaaac1e9512d0e708785ffdb9d56dee2d56b8ffbf9a"
+  },
+  "skill_files_sha256": {
+    ".agents/skills/verify-rcms/SKILL.md": "307dcaeeb94eb816fd89ebd9a06fa08fb6ece9406d0e1763b978aab61b3f1195",
+    ".agents/skills/verify-rcms/agents/openai.yaml": "364908df5bf385a1a8752de3c7c0c7c3025ca9740c6dd098ae1ce917cffb3d90",
+    ".agents/skills/verify-rcms/features/README.md": "fc19d0e2152751119e2428682dd3220426fa3a63b8339777c582c25b29988aed",
+    ".agents/skills/verify-rcms/features/analysis.md": "ae78098d702a975d50ba87477726252d4d6af1508ce4df2b9f3ad268ef225829",
+    ".agents/skills/verify-rcms/features/calculators.md": "c1ce6f48465473ddda676d8b90c69de12ba7bcda7d754de00d0db5729ece327a",
+    ".agents/skills/verify-rcms/features/plots.md": "a64a9f617df296f12c69da8a82845b9db86cb9ba941180316318a4634e540f3b",
+    ".agents/skills/verify-rcms/features/projects.md": "1c6cc6d318843b437e4b34bc9571a7e202746e9ac96f7deda2c371e6afa2155c",
+    ".agents/skills/verify-rcms/features/ratios.md": "6d03c60485b4672933eb61b63f5502956c1bbc089ab8965ce4e17ecbfc80f646",
+    ".agents/skills/verify-rcms/features/small-study-effects.md": "bf2a7450ba00fe94bf9ad92f33d4027027964fbbb51bf49ce4b1c7475476dd4d",
+    ".agents/skills/verify-rcms/references/coverage.md": "e9233a32d475cdd0533a63412dd5f42dc66ca7f6f4ab2a709f52f78339e1501e",
+    ".agents/skills/verify-rcms/references/lanes.md": "c125021f5a33a9e1fe87dcd8b44f82bca66c1bde4f08dfb08841316aa3a8e9c0",
+    ".agents/skills/verify-rcms/scripts/advanced_workflows.py": "eb56c0c1567b8b511bdf5105fb5bbdc747d89b033c548abb44241438d9e1785a",
+    ".agents/skills/verify-rcms/scripts/analysis_authorities.R": "bcf10a753d07d4c63c1544833030baccb99ef6e2013c3668e82960675d2489d3",
+    ".agents/skills/verify-rcms/scripts/analysis_matrix.py": "f965f9d2fa005e80428ed653fa9ae15b024013202031291da1ec04e26307cd75",
+    ".agents/skills/verify-rcms/scripts/ratio_workflows.py": "54856971dbee63e441989009b87677f75f206f7fd521dda7076add64fee53e07",
+    ".agents/skills/verify-rcms/scripts/sequential_workflows.py": "f651a25dea1e08cf8ffa0010b20b32bceddccf5ec846b264d3cd5452f624615c",
+    ".agents/skills/verify-rcms/scripts/verify_all.py": "2e3d07d199d35906f0a16b02c939e08cdea21cb380480112fcd7a7244f488f39"
+  },
+  "python": "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+  "native_requested": false,
+  "passed": false,
+  "command": [
+    "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+    "/home/ali/.t3/worktrees/rc-metastudio/t3-2505e52b/scripts/run_with_timeout.py",
+    "--timeout-seconds",
+    "600",
+    "--label",
+    "RCMS results-window",
+    "--",
+    "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+    "-X",
+    "faulthandler",
+    "/home/ali/.t3/worktrees/rc-metastudio/t3-2505e52b/tests/e2e/desktop_driver.py",
+    "results-window",
+    "/home/ali/.t3/worktrees/rc-metastudio/t3-2505e52b/build/verification/rcms/desktop-1ofzpjtj"
+  ],
+  "exit_code": 1,
+  "finished_utc": "2026-11-05T03:42:07.115928+00:00",
+  "worktree_status_after": "",
+  "files": [
+    {
+      "path": "01-0-ready.png",
+      "sha256": "4dad9b3fca6b30e20f86dcb4868928fd5546a167d54403cf9b1148f4c242be08"
+    },
+    {
+      "path": "02-0-ux-empty-workspace.png",
+      "sha256": "4dad9b3fca6b30e20f86dcb4868928fd5546a167d54403cf9b1148f4c242be08"
+    },
+    {
+      "path": "03-0-ux-quick-start.png",
+      "sha256": "9e328580f50ea8585a5f4b96fca8200aa273f860b508f8aab9a6601910f32a4e"
+    },
+    {
+      "path": "04-0-ux-inline-analysis-error.png",
+      "sha256": "99ac7ee5e8e64d4778b5902fa0c73a2ecf16019f54a917a8644ac8879dfcf9eb"
+    },
+    {
+      "path": "05-0-forest-633dacbaa0db.display.svg",
+      "sha256": "70faa94232f79b5d9b16e274a5ab850759a72531232558a2fa87f8710506dd20"
+    },
+    {
+      "path": "05-0-ux-analysis-recovered.png",
+      "sha256": "e941c52f5a323492ad1e544593a479312931db1d58bacaa888e16d4bb67bc83c"
+    },
+    {
+      "path": "06-0-analysis-action.png",
+      "sha256": "5b5b383ca8d48895d52b93b8b704b340172ee378afa55e112bc53904b95137c3"
+    },
+    {
+      "path": "07-0-analysis-layout.png",
+      "sha256": "fd8593e6fd61b07ca9bb0ed4471a0896aca6d0d04f4764fe2d6cb9ef9e5704e5"
+    },
+    {
+      "path": "08-0-analysis-configured.png",
+      "sha256": "fd8593e6fd61b07ca9bb0ed4471a0896aca6d0d04f4764fe2d6cb9ef9e5704e5"
+    },
+    {
+      "path": "09-0-analysis-results.png",
+      "sha256": "cb907d3467fa7ccfbacadf9f678b015f197c7c7630e37819e3d39f2e598aeec6"
+    },
+    {
+      "path": "09-0-forest-633dacbaa0db.display.svg",
+      "sha256": "741631912dd512bf7385b3541bcb23163a8d27a17a32247983aef83e588934b4"
+    },
+    {
+      "path": "10-0-slice8b-readability.png",
+      "sha256": "da51e5f0c3375a5f7f118597518472a3554b5765f5e81657deb3eeaa64e72500"
+    },
+    {
+      "path": "failure.txt",
+      "sha256": "e94cc8c713a50c7398669a537f1822fab67133ccd5b5822f61da8bce563274b3"
+    },
+    {
+      "path": "qt-messages.log",
+      "sha256": "59086794f2c8e1d450e0027b7c5c1d30ddfcf5e9f4d782cb6ac644f1b8653047"
+    },
+    {
+      "path": "runtime.json",
+      "sha256": "e4bf0b4a1d9aac57045e477383b163bcf7c34abcd465fa1c47dcdb7b9f9f1307"
+    },
+    {
+      "path": "startup.json",
+      "sha256": "70f36b6709ff73dd3845243bcb4a26faae3e3ea4ba6cba0f0b0366f247b63c29"
+    },
+    {
+      "path": "stderr.log",
+      "sha256": "aa7c9320259f2e0a1959f5493219c217097b3dd12bf5bb03e6e9eb3dd83df762"
+    },
+    {
+      "path": "stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "steps.jsonl",
+      "sha256": "5151d351852a83507db694f00852ef47872803f68dbf8f2cfcde180a4029d625"
+    },
+    {
+      "path": "workflow/Research Consultancy/RCMetaStudio.ini",
+      "sha256": "db8ab08164499fd8ecccb0977b111988012c6ba9f8f4e6d4d180c06d35956228"
+    },
+    {
+      "path": "workflow/analysis/1793850117.60889.data",
+      "sha256": "98a2697c4a581691b539ba9d52fbef14a8395346bc639f6f81b1aa2f0744be1e"
+    },
+    {
+      "path": "workflow/analysis/1793850117.60889.params",
+      "sha256": "77648fcd44e100cef86c7731272882dcec8a3ce049f076baf142b559de61d4ba"
+    },
+    {
+      "path": "workflow/analysis/1793850117.60889.plotdata",
+      "sha256": "3e867ba985a24775d42a776036517e4c3bf04466bc98355735d837fb9f6e621f"
+    },
+    {
+      "path": "workflow/analysis/1793850117.60889.res",
+      "sha256": "1fc828730ba66493db9da34c8536871ded704a6bbf947747d56f255f08888048"
+    },
+    {
+      "path": "workflow/analysis/1793850124.83075.data",
+      "sha256": "98a2697c4a581691b539ba9d52fbef14a8395346bc639f6f81b1aa2f0744be1e"
+    },
+    {
+      "path": "workflow/analysis/1793850124.83075.params",
+      "sha256": "2c54cc5ee1a6fee31a355e6365614fc0c9362e5890e6c83e6038f46c7b176f4d"
+    },
+    {
+      "path": "workflow/analysis/1793850124.83075.plotdata",
+      "sha256": "f5100cf12443e6a689f2fe9106768c4de4ef5bd1e5f4ca3d86a67baa53606397"
+    },
+    {
+      "path": "workflow/analysis/1793850124.83075.res",
+      "sha256": "fced63fd5d6e6311c68a6b83f487bfcb1c9c52ed701e24ca26ebeeed1b986894"
+    },
+    {
+      "path": "workflow/analysis/INTER",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "workflow/analysis/forest-633dacbaa0db.display.svg",
+      "sha256": "741631912dd512bf7385b3541bcb23163a8d27a17a32247983aef83e588934b4"
+    },
+    {
+      "path": "workflow/analysis/forest.png",
+      "sha256": "a872db8a46161769643b3fae58af6f2a40a601ce24789e2c600025685456b98d"
+    },
+    {
+      "path": "workflow/rc-metastudio-error.log",
+      "sha256": "8084d3e7f922420d6efdfc50215c4be09693bf12ba73e3a7729240772bf07e22"
+    }
+  ]
+}

@@ -977,10 +977,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.activateWindow()
             self.analysis_error_toggle.setFocus()
         if succeeded:
-            try:
-                self._deliver_result(result)
-            finally:
-                self.done(QDialog.DialogCode.Accepted.value)
+            self.done(QDialog.DialogCode.Accepted.value)
+            self._deliver_result(result)
 
     def done(  # ty: ignore[invalid-method-override] -- PyQt6 generated-form multiple inheritance
         self, result: int

@@ -321,11 +321,28 @@ def analyze(app, window, method, *, digits=3):
     ]
     assert len(views) == 1, "analysis did not display results"
     view = views[0]
+    app.processEvents()
+    cast(Callable[[int], None], QTest.qWait)(400)
+    assert app.activeWindow() is view, "Run analysis did not activate results"
     selected = view._selected_plot()
     if selected is not None and not view.report_action.isChecked():
         viewport = required(view.graphics_view.viewport(), "figure viewport")
         plot_width = selected[1].sceneBoundingRect().width() * view.graphics_view.transform().m11()
         assert plot_width >= viewport.width() * .9, (plot_width, viewport.width(), view.zoom_control.value())
+    if selected is not None and not view.report_action.isChecked():
+        original_zoom = view.zoom_control.value()
+        view.zoom_control.setValue(original_zoom + 50)
+        horizontal = required(view.graphics_view.horizontalScrollBar(), "figure scrollbar")
+        horizontal.setValue(horizontal.maximum())
+        view.zoom_control.setValue(original_zoom)
+        assert horizontal.value() == 0, "zooming back out clipped study names"
+        effective_zoom = selected[1].deviceTransform(view.graphics_view.viewportTransform()).m11() * 100
+        assert abs(effective_zoom - original_zoom) < 1, (effective_zoom, original_zoom)
+        view._fit_width_active = True
+        view._apply_fit_width()
+    report_text = view.report_text.toPlainText().splitlines()
+    assert report_text.count("Supplementary details") <= 1
+    assert report_text.count("References") <= 1
     assert view.scene.items(), "results scene is empty"
     assert any(
         isinstance(item, QtWidgets.QGraphicsTextItem) and item.toPlainText().strip()
@@ -2211,6 +2228,10 @@ try:
     assert "rpy2.robjects" not in sys.modules, "R imported before the window appeared"
     assert window.isVisible()
     assert not window.action_go.isEnabled()
+    assert not window.isEnabled(), "startup shell looks ready before R is usable"
+    assert window.cursor().shape() == QtCore.Qt.CursorShape.WaitCursor
+    assert window.statusBar().currentMessage() == "Starting R…"
+    assert window.dataset_file_lbl.text() == "Starting… · Untitled dataset"
     from rc_metastudio import r_bridge, r_backend
     try:
         r_bridge.execute_r_string("1 + 1")
@@ -2220,6 +2241,9 @@ try:
         raise AssertionError("pre-ready R request succeeded")
     app.processEvents()
     assert r_backend.is_ready()
+    assert window.isEnabled()
+    assert window.cursor().shape() != QtCore.Qt.CursorShape.WaitCursor
+    assert window.dataset_file_lbl.text() == "Ready to create or open a dataset · Untitled dataset"
     if EVIDENCE is not None and os.environ.get("RCMS_DRIVE_STARTED"):
         import time
         app.processEvents()

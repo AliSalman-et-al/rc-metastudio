@@ -192,7 +192,10 @@ def configure_application_controls(app):
         for border_role in (role.Mid, role.Dark, role.Light):
             palette.setColor(border_role, QColor("#999999"))
         app.setPalette(palette)
+    font = app.font()
     app.setStyle(_ControlStyle(app.style().objectName()))
+    # Style polish installs class-specific system fonts unless the app font is reapplied.
+    app.setFont(font)
     app.setProperty("rcms_controls_configured", True)
 
 

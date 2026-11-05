@@ -126,6 +126,20 @@ def run(app, window, work, root, record, analyze):
     assert not duplicates, duplicates
     assert label_pt >= 9, label_pt
     assert coverage >= .85, coverage
+    original_font = app.font()
+    larger_font = QtGui.QFont(original_font)
+    larger_font.setPointSizeF(original_font.pointSizeF() + 6)
+    app.setFont(larger_font)
+    app.processEvents()
+    app.processEvents()
+    large_scale = selected_item.deviceTransform(view.graphics_view.viewportTransform()).m11()
+    large_label_pt = box(study).height() * coordinate_scale * large_scale * 72 / 96
+    assert large_label_pt >= 9, large_label_pt
+    record("large-font-study-readability", view, application_font_pt=app.font().pointSizeF(),
+           study_label_pt=large_label_pt, horizontal_scroll_max=view.graphics_view.horizontalScrollBar().maximum())
+    app.setFont(original_font)
+    app.processEvents()
+    app.processEvents()
     original_palette = app.palette()
     for theme, background, text, base in (("light", "#efefef", "#202020", "#ffffff"), ("dark", "#303238", "#f0f0f0", "#25272b")):
         palette = QtGui.QPalette(original_palette)
@@ -243,6 +257,8 @@ def run(app, window, work, root, record, analyze):
     artifact = view._selected_plot()[0]
     saved_params = view.plot_service.load_params(artifact.params_path)
     assert saved_params["fp_col1_str"] == "Study", saved_params
+    view.fit_width_action.trigger()
+    app.processEvents()
     assert plot_item.sceneBoundingRect().width() <= view.graphics_view.viewport().width()
     plot_path = work / "toolbar-forest.pdf"
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(plot_path), "PDF")):

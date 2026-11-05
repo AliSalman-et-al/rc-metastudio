@@ -6,7 +6,7 @@ The `subgroup-image` and `subgroup-image-dark-large` drives run meantime by trea
 
 ## Sub-features
 
-- `results-render`: actual summary text and valid rendered analysis plots.
+- `results-render`: actual summary text and valid rendered analysis plots. The sample analysis driver also asserts that Run analysis activates Results before screenshot capture, manual zoom restores the horizontal origin, and the text report has no duplicate Supplementary details or References headings.
 - `plot-apply`: changed axis label regenerates the real R plot and saved parameters.
 - `plot-cancel`: Cancel discards the draft after an applied change.
 - `plot-pdf`: PDF export from the sample-analysis workflows.
@@ -289,9 +289,13 @@ The review-workflows drive also reruns amino through Change settings at 90% and
 and overall t degrees of freedom against the saved metafor res$dfs in Methods,
 results and the forest SVG.
 
+Automatic SVG sizing keeps declared plot text at least 9 pt and allows horizontal scrolling when needed. Explicit **Fit width** may shrink below that floor. Manual zoom percentages apply once to native plot dimensions. The UX/results drive retains the 9 pt study-label assertion and repeats it after a +6 pt application-font change; matrix width checks explicitly request Fit width.
+
 `plot-edit` also rejects malformed/nonfinite comma-separated ticks inline without
 changing the last plot, applies a numeric list in BMJ, checks both column switches
 against SVG text and saved parameters,
 and compares every numeric fit field exactly before/after presentation edits.
 `project-axis-sequential` checks the cumulative dataset-row ordering note once in
 the rendered plot and in report details, alongside its existing public-fit checks.
+
+The in-process R bridge contract first checks the automatic 9 pt SVG text floor and horizontal overflow at a narrow window, then explicitly requests Fit width before asserting shrink/grow resizing.

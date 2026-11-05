@@ -235,9 +235,12 @@ def _svg_bytes_with_white_background(path):
 
 
 def _opaque_svg_renderer(path, parent):
-    return _svg_renderer_class()(
-        QByteArray(_svg_bytes_with_white_background(path)), parent
-    )
+    svg = _svg_bytes_with_white_background(path)
+    renderer = _svg_renderer_class()(QByteArray(svg), parent)
+    font_sizes = [float(size) * (96 / 72 if unit == b"pt" else 1)
+                  for size, unit in re.findall(rb"font-size:\s*([\d.]+)(px|pt)", svg)]
+    renderer.setProperty("minimum_text_size", min(font_sizes, default=0))
+    return renderer
 
 
 def _pixmap_device_independent_size(pixmap):
@@ -256,6 +259,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     ):
 
         super(ResultsWindow, self).__init__(parent)
+        self._explicit_fit_width = False
         self._svg_plot_items = []
         self._raster_plot_items = []
         self._refitting_svg_plots = False
@@ -396,7 +400,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self._activate_report(True)
         self._set_restored_splitter_sizes()
         if not self.report_action.isChecked():
-            self._fit_width()
+            self._apply_fit_width()
 
     def _setup_identity(self):
         identity = self.results.identity or "Analysis results"
@@ -438,7 +442,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         required(self.report_text.document(), "report document").setDocumentMargin(20)
         body = []
         for anchor, heading, paragraphs, tables in self._report_blocks():
-            body.append(f'<a name="{escape(anchor)}"></a><h2>{escape(_report_heading(heading))}</h2>')
+            body.append(f'<a name="{escape(anchor)}"></a>')
+            if heading:
+                body.append(f'<h2>{escape(_report_heading(heading))}</h2>')
             if anchor == "text:references":
                 body.append(_reference_html("\n".join(paragraphs)))
                 continue
@@ -689,6 +695,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _fit_width(self):
         if self.report_action.isChecked():
             return
+        self._explicit_fit_width = True
         self._fit_width_active = True
         self._apply_fit_width()
 
@@ -725,8 +732,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self.graphics_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
             self.graphics_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
             self._figure_zoom_percent = percent
+            self._refit_svg_plot_items()
+            self._refit_raster_plot_items()
             self.graphics_view.setTransform(QTransform.fromScale(percent / 100, percent / 100))
             self._relayout_sections()
+            required(self.graphics_view.horizontalScrollBar(), "horizontal scrollbar").setValue(0)
 
     def _show_report(self, checked):
         self.content_stack.setCurrentWidget(self.report_text if checked else self.figure_page)
@@ -740,13 +750,20 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.zoom_control.blockSignals(False)
 
     def _report_blocks(self):
+        supplementary_started = False
         for index, section in enumerate(self.manuscript.sections):
-            yield f"manuscript:{index}", section.title, section.paragraphs, section.tables
+            if not section.paragraphs and not section.tables:
+                continue
+            heading = section.title
+            if section.source_key == "References":
+                yield "text:references", "References", (section.value or "\n".join(section.paragraphs),), ()
+                continue
+            elif heading == "Supplementary details":
+                heading = "" if supplementary_started else heading
+                supplementary_started = True
+            yield f"manuscript:{index}", heading, section.paragraphs, section.tables
         if self.results.details:
             yield "model-configuration", "Model configuration", (self.results.details,), ()
-        for section in self.results.sections:
-            if section.semantic_id == "text:references":
-                yield section.semantic_id, section.title, (section.value,), ()
 
     def _copy_report(self):
         from PyQt6.QtCore import QMimeData
@@ -893,7 +910,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             return scaled_width, scaled_height
 
         target_scale = float(scaled_width) / float(item_width)
-        if abs(target_scale - svg_item.scale()) >= 0.001:
+        renderer = svg_item.renderer()
+        text_size = renderer.property("minimum_text_size")
+        text_pixels = text_size * item_width / renderer.viewBoxF().width() if text_size else 0
+        if not self._explicit_fit_width and text_pixels:
+            # Automatic sizing preserves 9 pt text; explicit Fit width may shrink it.
+            target_scale = max(target_scale, math.nextafter(9 * 96 / 72 / text_pixels, math.inf))
+            scaled_width, scaled_height = item_width * target_scale, item_height * target_scale
+        if target_scale != svg_item.scale():
             svg_item.setScale(target_scale)
         return scaled_width, scaled_height
 
@@ -959,7 +983,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             return
         self._scroll_to_section(item)
         if getattr(self, "_fit_width_active", False):
-            self._fit_width()
+            self._apply_fit_width()
         if hasattr(self, "report_action"):
             selected = self._selected_plot()
             if selected is not None:
@@ -1012,8 +1036,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             return
         self._refitting_viewport_items = True
         previous_width = self._viewport_width_override
+        readable_fit = self._fit_width_active and not self._explicit_fit_width and any(
+            item.renderer().property("minimum_text_size") for item in self._svg_plot_items
+        )
+        width_only_fit = self._fit_width_active and not readable_fit
         try:
-            if self._fit_width_active:
+            if readable_fit:
+                self.graphics_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+                self.graphics_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+            if width_only_fit:
                 # Decide whether scrolling is needed at full width first. Keep
                 # that decision when narrowing the plot makes it shorter again.
                 self.graphics_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -1025,7 +1056,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self._refit_svg_plot_items()
             self._refit_raster_plot_items()
             self._relayout_sections()
-            if self._fit_width_active:
+            if width_only_fit:
                 needs_scrollbar = self.scene.height() > self.graphics_view.maximumViewportSize().height()
                 self.graphics_view.setVerticalScrollBarPolicy(
                     Qt.ScrollBarPolicy.ScrollBarAlwaysOn if needs_scrollbar else Qt.ScrollBarPolicy.ScrollBarAlwaysOff
@@ -1093,7 +1124,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 if item_width <= 0:
                     continue
 
-                self._fit_vector_plot_to_viewport(item)
+                if self._fit_width_active:
+                    self._fit_vector_plot_to_viewport(item)
+                else:
+                    item.setScale(1)
         finally:
             self._refitting_svg_plots = False
 
@@ -1107,7 +1141,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 logical_width, logical_height
             )
             item.setPixmap(source)
-            item.setScale(float(scaled_width) / float(logical_width))
+            item.setScale(float(scaled_width) / float(logical_width) if self._fit_width_active else 1)
 
     def _relayout_sections(self):
         """Place every result item from its current measured size and stored order."""

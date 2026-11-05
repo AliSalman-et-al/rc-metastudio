@@ -1163,6 +1163,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             )
             return
         form.show()
+        form.raise_()
+        form.activateWindow()
 
     def edit_group_name(self, cur_group_name):
         orig_group_name = copy.copy(cur_group_name)
