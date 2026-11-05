@@ -90,7 +90,7 @@
         }
       ],
       "sections": {
-        "Odds Ratio Summary": {
+        "Diagnostic Odds Ratio Summary": {
           "calculation_scale.estimate": 2.267,
           "calculation_scale.lower_bound": 1.71,
           "calculation_scale.standard_error": 0.284,
@@ -1037,7 +1037,7 @@
       ]
     },
     "lymph-diagnostic-random-dor": {
-      "Odds Ratio Summary": [
+      "Diagnostic Odds Ratio Summary": [
         "calculation_scale.estimate",
         "calculation_scale.lower_bound",
         "calculation_scale.standard_error",
@@ -1055,7 +1055,7 @@
       ]
     }
   },
-  "oracle_sha256": "a9eb40195d40a0258aec8d309037a9ad2951b8d841bc30d614986d8b37917732",
+  "oracle_sha256": "bfb24b3017c60e4fea4c04bc46123f63b5782491352e1f8d68da068a76fa6e60",
   "schema_version": 1,
   "tolerance_policy": {
     "absolute": 0.001,

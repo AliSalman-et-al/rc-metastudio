@@ -1,6 +1,6 @@
 {
   "contract": "golden-plot-descriptors",
-  "oracle_sha256": "a9eb40195d40a0258aec8d309037a9ad2951b8d841bc30d614986d8b37917732",
+  "oracle_sha256": "bfb24b3017c60e4fea4c04bc46123f63b5782491352e1f8d68da068a76fa6e60",
   "rows": [
     {
       "artifact_label": "Forest Plot",
@@ -50,7 +50,7 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Odds Ratio Forest Plot",
+        "identity": "Diagnostic Odds Ratio Forest Plot",
         "name": "golden_lymph_forest_dor.display.svg",
         "type": "svg"
       },
