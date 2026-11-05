@@ -112,6 +112,8 @@ def _resolve_open_file_path(file_path):
 
 
 def _format_open_project_error(file_path, exception):
+    if isinstance(exception, project_format.ProjectFormatError) and str(exception) == "project is not a valid ZIP container":
+        return "This file is not a valid RC MetaStudio project. Open another .rcms file or restore a backup."
     if isinstance(
         exception,
         (
