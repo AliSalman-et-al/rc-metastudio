@@ -52,3 +52,7 @@ The [startup-copy proof](startup-copy/REPORT.md) supersedes startup text in the 
 ## Review follow-up: SVG readability
 
 The [font regression proof](font-regression/REPORT.md) supersedes the old zoom/initial-size implementation: manual zoom is applied once; automatic SVG sizing keeps a 9 pt text floor with horizontal scrolling; explicit Fit width may shrink below the floor. The unchanged ≥9 pt study-label assertion and added +6 pt check passed in both requested scenarios. Master including #568 was merged before qualification.
+
+## Integration with current master
+
+[Merge qualification](merge-master/REPORT.md) covers current master 8ba18fc6 (#567/#568/#569) merged through ordinary merge commits, retaining both sides and the plot-text-size fix. Its current/ evidence supersedes the earlier branch-only qualification for the combined tree.
