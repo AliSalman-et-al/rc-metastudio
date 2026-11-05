@@ -297,3 +297,5 @@ against SVG text and saved parameters,
 and compares every numeric fit field exactly before/after presentation edits.
 `project-axis-sequential` checks the cumulative dataset-row ordering note once in
 the rendered plot and in report details, alongside its existing public-fit checks.
+
+The in-process R bridge contract first checks the automatic 9 pt SVG text floor and horizontal overflow at a narrow window, then explicitly requests Fit width before asserting shrink/grow resizing.
