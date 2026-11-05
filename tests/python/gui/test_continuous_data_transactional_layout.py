@@ -57,6 +57,9 @@ class FakeContinuousAnalysisUnit:
     ):
         return self.get_effect_and_ci(effect, arm_key, confidence_multiplier)
 
+    def get_entered_effect_and_ci(self, effect, arm_key):
+        return self.get_effect_and_ci(effect, arm_key)
+
     def set_effect_for_source(
         self, _source, metric, arm_key, est, low=None, high=None, **kwargs
     ):
