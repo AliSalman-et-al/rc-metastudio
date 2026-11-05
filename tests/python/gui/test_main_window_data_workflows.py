@@ -345,7 +345,7 @@ def test_diagnostic_complete_paste_recomputes_sens_spec_confidence_intervals(
 
         analysis_unit = model.get_current_analysis_unit_for_study(0)
         arm_key = model.get_current_arm_key()
-        assert _cell_text(model, 0, model.OUTCOMES[0]) == "0.750"
+        assert _cell_text(model, 0, model.OUTCOMES[0]) == "0.75"
         assert all(_cell_text(model, 0, col) != "" for col in model.OUTCOMES)
         assert _derived_effect_and_ci(analysis_unit, "Sens", arm_key) == (
             0.750,

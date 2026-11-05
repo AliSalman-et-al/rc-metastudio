@@ -251,8 +251,8 @@ def test_method_dialog_wording_is_scoped_to_its_analysis_family(
     )
     try:
         assert dialog.windowTitle() == {
-            "binary": "Outcome · Odds Ratio",
-            "continuous": "Outcome · Odds Ratio",
+            "binary": "Outcome · Odds ratio",
+            "continuous": "Outcome · Odds ratio",
             "hazard_ratio": "Outcome · Hazard Ratio",
             "diagnostic": "Outcome · Positive and negative likelihood ratios, Diagnostic odds ratio",
         }[data_type]

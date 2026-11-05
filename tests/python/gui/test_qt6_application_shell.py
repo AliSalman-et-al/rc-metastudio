@@ -556,8 +556,8 @@ def test_failed_open_and_save_preserve_current_project_dirty_state_and_recents(
         )
 
         for rejected, expected_message in (
-            (malformed, "valid ZIP container"),
-            (pickle_file, "valid ZIP container"),
+            (malformed, "This file is not a valid RC MetaStudio project"),
+            (pickle_file, "This file is not a valid RC MetaStudio project"),
             (unknown_version, "unsupported project format version"),
             (schema_invalid, "confidence_level"),
         ):

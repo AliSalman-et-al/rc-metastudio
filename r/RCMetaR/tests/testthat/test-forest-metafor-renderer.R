@@ -297,7 +297,7 @@ test_that("effect estimates and confidence limits never use probability threshol
 
   expect_equal(
     labels,
-    c("0.00", "0.07", "0.0060", "0.000040", "4.00e-07", "-0.0060", "")
+    c("0", "0.07", "0.01", "4e-05", "4e-07", "-0.01", "")
   )
   expect_false(any(grepl("<", labels, fixed=TRUE)))
   expect_equal(rcmetar.revman.format.effect.number(values, 2), labels)
@@ -440,7 +440,7 @@ test_that("RevMan SVG uses inline study CI strokes for QtSvg compatibility", {
   expect_true(all(grepl("stroke=\"#000000\"", study.intervals, fixed = TRUE)))
 })
 
-test_that("journal ratio axes adapt to observed effects across Forest Plot Styles", {
+test_that("journal ratio axes adapt to observed effects across Forest plot Styles", {
   fixture <- metafor_binary_fixture()
   res <- rma.uni(
     yi = fixture$data@y,
@@ -468,7 +468,7 @@ test_that("journal ratio axes adapt to observed effects across Forest Plot Style
   }
 })
 
-test_that("explicit Forest Plot axis ticks override adaptive defaults for every style", {
+test_that("explicit Forest plot axis ticks override adaptive defaults for every style", {
   fixture <- metafor_binary_fixture()
   fixture$params$fp_xticks <- c(0.1, 0.5, 1, 2)
   fixture$params$fp_plot_lb <- "0.25"
@@ -830,7 +830,7 @@ test_that("plot axis default placeholders resolve to the metric label", {
       params$fp_xlabel <- placeholder
     }
     bundle <- rcmetar.regenerate.plot.data(fixture$data, res, params)
-    expect_identical(rcmetar.metafor.xlab(bundle), "Odds Ratio")
+    expect_identical(rcmetar.metafor.xlab(bundle), "Odds ratio")
   }
 
   params <- fixture$params
@@ -1568,8 +1568,8 @@ test_that("diagnostic extraction keeps image order aligned with semantic forest 
   fit <- list(
     Summary = list(),
     images = c("forest.png" = "forest.png"),
-    plot_params_paths = c("Forest Plot" = "forest.rds"),
-    image_order = "Forest Plot"
+    plot_params_paths = c("Forest plot" = "forest.rds"),
+    image_order = "Forest plot"
   )
 
   extracted <- rcmetar.diagnostic.extract(fit, list(measure = "Sens"))
@@ -1577,7 +1577,7 @@ test_that("diagnostic extraction keeps image order aligned with semantic forest 
   expect_identical(names(extracted$images), "diagnostic.Sens.forest")
   expect_identical(names(extracted$plot.paths), "diagnostic.Sens.forest")
   expect_identical(extracted$image.order, "diagnostic.Sens.forest")
-  expect_identical(extracted$sections[[2]]$title, "Sensitivity Forest Plot")
+  expect_identical(extracted$sections[[2]]$title, "Sensitivity Forest plot")
 })
 
 test_that("diagnostic multi-metric workflows save independent metafor forest plots", {
@@ -1596,7 +1596,7 @@ test_that("diagnostic multi-metric workflows save independent metafor forest plo
     )
     expected_titles <- paste(
       vapply(measures, pretty.metric.name, character(1)),
-      "Forest Plot"
+      "Forest plot"
     )
     expected_keys <- paste0("diagnostic.", measures, ".forest")
 
@@ -1666,7 +1666,7 @@ test_that("repeated diagnostic workflows keep metric forest plots independent", 
     )
     expected_names <- paste(
       vapply(measures, pretty.metric.name, character(1)),
-      "Forest Plot"
+      "Forest plot"
     )
 
     expect_setequal(names(result$images), expected_names)

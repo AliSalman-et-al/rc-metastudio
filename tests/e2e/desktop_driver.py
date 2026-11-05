@@ -1223,6 +1223,7 @@ def editing(app, window):
     ) as error:
         assert not window.open(str(broken))
     assert error.called
+    assert error.call_args.args[2] == "This file is not a valid RC MetaStudio project. Open another .rcms file or restore a backup."
     assert (
         str(window.model.data(window.model.index(0, window.model.NAME)))
         == "München – edited"

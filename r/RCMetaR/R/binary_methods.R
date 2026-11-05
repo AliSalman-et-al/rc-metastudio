@@ -386,7 +386,7 @@ binary.fixed.peto <- function(binary.data, params) {
         }
 
         metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-        model.title <- "Binary Fixed-Effect Model - Peto\n\nMetric: Odds Ratio"
+        model.title <- "Binary Fixed-Effect Model - Peto\n\nMetric: Odds ratio"
         summary.disp <- create.summary.disp(binary.data, params, res, model.title)
         forest.path <- paste(params$fp_outpath, sep="")
         plot.data <- create.plot.data.binary(binary.data, params, res)
