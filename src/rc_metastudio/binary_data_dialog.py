@@ -119,7 +119,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self.input_mode_combo.addItem("Entered estimate", "estimate")
         self.input_mode_combo.setAccessibleName("Study input method")
         self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: group data or an entered effect estimate.")
-        self._active_input_mode = "estimate" if (self.analysis_unit.calculator_source(self.current_effect, self.arm_key) or calc_fncs.calculator_effect_source(self.analysis_unit, self.arm_names, self.current_effect, self.arm_key, self.confidence_multiplier)) == "entered" else "counts"
+        self._active_input_mode = "estimate" if self.analysis_unit.calculator_source(self.current_effect, self.arm_key) == "entered" else "counts"
         self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(self._active_input_mode))
         self.input_mode_combo.currentIndexChanged.connect(self._input_mode_changed)
         self._update_raw_data()  # analysis_unit --> table
@@ -625,7 +625,10 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             arm_key=self.arm_key,
             data_type="binary",
             confidence_multiplier=self.confidence_multiplier,
-            source="entered" if getattr(self, "_active_input_mode", "counts") == "estimate" else "derived_preview",
+            source=calc_fncs.calculator_effect_source(
+                self.analysis_unit, self.arm_names, self.current_effect, self.arm_key,
+                self.confidence_multiplier, input_mode=self._active_input_mode,
+            ),
         )
         calc_fncs.update_calculator_readout(self, "binary")
 
@@ -682,7 +685,10 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                     parent=self,
                     confidence_multiplier=self.confidence_multiplier,
                     ci_param=ci_param,
-                    source="entered" if getattr(self, "_active_input_mode", "counts") == "estimate" else "derived_preview",
+                    source=calc_fncs.calculator_effect_source(
+                self.analysis_unit, self.arm_names, self.current_effect, self.arm_key,
+                self.confidence_multiplier, input_mode=self._active_input_mode,
+            ),
                 )
         except Exception:
             return False, False

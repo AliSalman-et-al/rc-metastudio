@@ -426,7 +426,7 @@ def commit_calculator_edits(dialog):
 
 
 def calculator_effect_source(
-    analysis_unit, groups, effect, arm_key, confidence_multiplier
+    analysis_unit, groups, effect, arm_key, confidence_multiplier, *, input_mode=None
 ):
     """Return the active calculator effect authority.
 
@@ -434,6 +434,8 @@ def calculator_effect_source(
     entered effect in that state so back-calculation and direct editing remain
     usable; switch to the preview only after the active metric has one.
     """
+    if input_mode == "estimate":
+        return "entered"
     raw_data = analysis_unit.get_raw_data_for_arms(groups)
     if not any(value not in EMPTY_VALS for value in raw_data):
         return "entered"
@@ -577,9 +579,10 @@ def update_calculator_readout(dialog, data_type):
     arm_key = dialog.arm_key
     confidence_multiplier = dialog.confidence_multiplier
     source = calculator_effect_source(
-        analysis_unit, dialog.arm_names, current_effect, arm_key, confidence_multiplier
+        analysis_unit, dialog.arm_names, current_effect, arm_key, confidence_multiplier,
+        input_mode=getattr(dialog, "_active_input_mode", None) if data_type == "binary" else None,
     )
-    if data_type in {"continuous", "binary"}:
+    if data_type == "continuous":
         source = "entered" if getattr(dialog, "_active_input_mode", "estimate") == "estimate" else "derived_preview"
     est, lower, upper = analysis_unit.get_effect_and_ci_for_source(
         source, current_effect, arm_key, confidence_multiplier
