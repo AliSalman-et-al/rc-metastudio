@@ -509,6 +509,14 @@ class AdaptiveWindowController(QObject):
     def _apply_runtime_clamp(self):
         available = self._available_geometry()
         if available.isValid():
+            # Maximized native frames can extend beyond the work area (Windows
+            # hides their resize borders). Only the client must fit in that state.
+            visible = self.window.geometry() if self.window.isMaximized() else self.window.frameGeometry()
+            if available.contains(visible):
+                self.runtimeClampApplied.emit()
+                return
+            if self.window.isMaximized():
+                self.window.showNormal()
             if self.role == WindowRole.MAIN:
                 # The client minimum must leave room for native frame decorations.
                 self.window.setMinimumSize(self.window.minimumSize().boundedTo(
@@ -578,17 +586,18 @@ class AdaptiveWindowController(QObject):
 
     def _set_outer_frame_geometry(self, target):
         target = QRect(target)
-        # layout-audit: allow=adaptive-window-policy; reason=central adaptive policy owns screen-safe outer geometry
-        self.window.resize(
-            client_size_for_frame_size(target.size(), self._frame_margins())
-        )
-        # layout-audit: allow=adaptive-window-policy; reason=central adaptive policy owns screen-safe outer geometry
-        self.window.move(target.topLeft())
-        actual_top_left = self.window.frameGeometry().topLeft()
-        if actual_top_left != target.topLeft():
-            correction = target.topLeft() - actual_top_left
+        client_size = client_size_for_frame_size(target.size(), self._frame_margins())
+        if self.window.size() != client_size:
             # layout-audit: allow=adaptive-window-policy; reason=central adaptive policy owns screen-safe outer geometry
-            self.window.move(self.window.pos() + correction)
+            self.window.resize(client_size)
+        if self.window.frameGeometry().topLeft() != target.topLeft():
+            # layout-audit: allow=adaptive-window-policy; reason=central adaptive policy owns screen-safe outer geometry
+            self.window.move(target.topLeft())
+            actual_top_left = self.window.frameGeometry().topLeft()
+            if actual_top_left != target.topLeft():
+                correction = target.topLeft() - actual_top_left
+                # layout-audit: allow=adaptive-window-policy; reason=central adaptive policy owns screen-safe outer geometry
+                self.window.move(self.window.pos() + correction)
 
     def _connect_window_handle(self):
         handle = self.window.windowHandle()

@@ -30,3 +30,13 @@ Original council screenshots copied to before/; implementation screenshots retai
 This is source qualification on Linux, not Windows/macOS package qualification. Full R-stack/authority matrix and Windows exact-package qualification are CI-only in pre-push. Native screenshots cover light/default and dark/large, not every cross-product of theme/font. No native small-study funnel screenshot was taken after the title-only change. Original numeric golden data is untouched.
 
 Final qualification: all local pre-push stages passed (win32 typing, code health, Python fast/golden, GUI 364 passed/1 skipped, packaging contracts 73 passed/8 skipped). Focused normal-resize geometry suite: 64 passed. Fresh `git fetch origin master` before push still resolves to 36650a57. No tests or numerical oracles were loosened.
+
+## Windows clamp follow-up
+
+Fetched the user's ed534400 title correction unchanged. CI run 42048349263 / job 127318316724 rejected a 1024×689 client resize on an already maximized Windows window. Maximized native frames include hidden resize borders outside availableGeometry: clamping that outer frame subtracts decoration space from a client rectangle Windows already manages. Runtime clamping now checks the client geometry for maximized windows and does nothing if it fits; an actually off-screen maximized client returns to normal state before applying the existing outer-frame/client-size conversion. Normal frames retain the outer-frame check. The frame setter skips unchanged client sizes and positions.
+
+The fatal-warning test and warning handling are unchanged. `windows-clamp-pre-push.log` retains the complete `uv run --no-sync python scripts/verify.py pre-push` command and win32 typing transcript. Native Linux dark/large 1024×700 restart retained in shots/19-client-clamp.png and 20-client-clamp-ready.png, using the same RCMS_QA_APP_SRC and ui.py session fix6 command above. Session stopped afterward. Windows native proof must come from CI, not this Linux host.
+
+The initial follow-up pre-push attempt (`windows-clamp-pre-push.log`) was terminated by SIGTERM (exit 143) during fast tests, without an assertion failure or completed summary. It is not a passing qualification. The clean retry is retained separately in `windows-clamp-qualification.log`.
+
+Follow-up clean retry passed all local stages: win32 typing, code health, Python fast/golden, GUI (including the unchanged fatal-warning shell test), and packaging contracts. No test changes or warning suppression. This establishes Linux native behavior and Windows-target typing, not execution on Windows.
