@@ -291,7 +291,7 @@ results and the forest SVG.
 
 `plot-edit` also rejects malformed/nonfinite comma-separated ticks inline without
 changing the last plot, applies a numeric list in BMJ, checks both column switches
-against SVG text and saved parameters, checks Settings section/reference uniqueness,
+against SVG text and saved parameters,
 and compares every numeric fit field exactly before/after presentation edits.
 `project-axis-sequential` checks the cumulative dataset-row ordering note once in
 the rendered plot and in report details, alongside its existing public-fit checks.

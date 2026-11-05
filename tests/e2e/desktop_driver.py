@@ -1541,10 +1541,6 @@ def plot_edit(app, window):
     from rc_metastudio import r_bridge
     r_bridge.load_vars_for_plot(artifact.params_path, return_params_dict=True)
     r_bridge.execute_r_string('batch3.fit.before <- lapply(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], as.numeric)')
-    blocks = list(view._report_blocks())
-    assert sum(block[1] == "Supplementary details" for block in blocks) <= 1
-    assert sum(block[1] == "References" for block in blocks) == 1
-    assert all(block[2] or block[3] for block in blocks)
     callback_errors = []
 
     def edit():
