@@ -1,0 +1,51 @@
+Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-c453622a/artifacts/verification/rcms/20261105T075337Z-0ce6e546-calculator-mode-pre-post
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: edit: editing failed
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-c453622a/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 95, in ready
+    drive(dialog)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-c453622a/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1323, in drive
+    assert actual == expected, ("raw precision lost", mode, value, actual)
+           ^^^^^^^^^^^^^^^^^^
+AssertionError: ('raw precision lost', 'pre-post', '1e12', 1e-05)
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-c453622a/tests/e2e/desktop_driver.py", line 2460, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-c453622a/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 2038, in run
+    calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-c453622a/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1397, in calculators
+    modal(app, kind, drive, launch)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-c453622a/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 115, in modal
+    assert not errors, errors
+           ^^^^^^^^^^
+AssertionError: [AssertionError(('raw precision lost', 'pre-post', '1e12', 1e-05))]
+
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-c453622a/tests/e2e/desktop_driver.py", line 2460, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-c453622a/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 2038, in run
+    calculators(app, window, scenario.removeprefix("calculator-mode-"), record)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-c453622a/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 1397, in calculators
+    modal(app, kind, drive, launch)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-c453622a/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 115, in modal
+    assert not errors, errors
+           ^^^^^^^^^^
+AssertionError: [AssertionError(('raw precision lost', 'pre-post', '1e12', 1e-05))]
+
