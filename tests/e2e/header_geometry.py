@@ -1,5 +1,6 @@
 """Full device, caption and arm identity checks for actual forest SVGs."""
 import re
+import math
 from xml.etree import ElementTree as ET
 from tests.python.gui.test_types import required
 
@@ -66,19 +67,48 @@ def check_headers(source, names):
 
 
 def check_direction_text(texts, directions, expected):
-    ordered = sorted(directions, key=lambda node: float(node.attrib['x']))
-    assert len(ordered) == len(expected), ('direction labels missing', expected, [''.join(n.itertext()) for n in ordered])
-    for start, label in zip(ordered, expected, strict=True):
-        lines = sorted((node for node in texts
-                        if abs(float(node.attrib['x']) - float(start.attrib['x'])) < .01
-                        and float(node.attrib['y']) >= float(start.attrib['y'])),
-                       key=lambda node: float(node.attrib['y']))
-        observed = ' '.join(''.join(node.itertext()) for node in lines)
-        assert observed == label, ('direction text changed', observed, label)
+    ordered = sorted(directions, key=lambda node: (float(node.attrib['x']), node.attrib.get('text-anchor') != 'end'))
+    observed = tuple(''.join(node.itertext()) for node in ordered)
+    assert observed == expected, ('direction text changed', observed, expected)
+    if len(ordered) == 2:
+        assert ordered[0].attrib.get('text-anchor') == 'end', ('left direction anchor', observed)
+        assert ordered[1].attrib.get('text-anchor', 'start') == 'start', ('right direction anchor', observed)
+        gap = float(ordered[1].attrib['x']) - float(ordered[0].attrib['x'])
+        size = float(required(re.search(r'font-size:\s*([\d.]+)', ordered[0].attrib['style']))[1])
+        assert 0 < gap < 2 * size, ('direction null gutter', gap, size)
+
+
+def check_direction_ink_gap(source, directions, width, height):
+    """Check painted glyphs: Qt trims outer whitespace that SVG boxes retain."""
+    from PyQt6.QtCore import QRectF
+    from PyQt6.QtGui import QColor, QImage, QPainter
+    from PyQt6.QtSvg import QSvgRenderer
+    size = float(required(re.search(r'font-size:\s*([\d.]+)', directions[0].attrib['style']))[1])
+    baseline = float(directions[0].attrib['y'])
+    null = sum(float(node.attrib['x']) for node in directions) / 2
+    # Resolve tiny fitted text without allocating a full high-resolution page.
+    scale = max(4, math.ceil(16 / size))
+    top = baseline - size * .8
+    left_edge = null - size * 2
+    image = QImage(math.ceil(size * 4 * scale) + 1, math.ceil(size * 1.1 * scale) + 1, QImage.Format.Format_RGB32)
+    image.fill(QColor('white'))
+    painter = QPainter(image)
+    painter.scale(scale, scale)
+    painter.translate(-left_edge, -top)
+    QSvgRenderer(str(source)).render(painter, QRectF(0, 0, width, height))
+    painter.end()
+    center = round((null - left_edge) * scale)
+    ink = [column for column in range(image.width())
+           if any(image.pixelColor(column, row).lightness() < 100 for row in range(image.height()))]
+    left = max(column for column in ink if column < center)
+    right = min(column for column in ink if column >= center)
+    gap = (right - left - 1) / scale
+    assert gap >= size * .25, ('direction glyphs run together', source, gap, size)
+    return gap
 
 
 def check_forest_footer(source, expected_directions=None):
-    """Measure rendered direction lines and the axis title, including wrapped arms."""
+    """Measure rendered direction lines and the axis title, with each direction on one line."""
     texts = list(ET.parse(source).iter('{http://www.w3.org/2000/svg}text'))
     directions = [node for node in texts if ''.join(node.itertext()).startswith('Favours')]
     if expected_directions is not None:
@@ -89,6 +119,7 @@ def check_forest_footer(source, expected_directions=None):
     measurements = []
     root = ET.parse(source).getroot()
     _, _, device_width, device_height = map(float, root.attrib['viewBox'].split())
+    ink_gap = check_direction_ink_gap(source, directions, device_width, device_height) if len(directions) == 2 else None
     first = min(float(node.attrib['y']) for node in directions)
     for node in texts:
         text = ''.join(node.itertext())
@@ -104,7 +135,7 @@ def check_forest_footer(source, expected_directions=None):
         width = float(node.attrib.get('textLength', '0').removesuffix('px'))
         anchor = node.attrib.get('text-anchor')
         left = x - width if anchor == 'end' else x - width / 2 if anchor == 'middle' else x
-        measurements.append(dict(text=text, box=(left, y - size * .8, left + width, y + size * .2)))
+        measurements.append(dict(text=text, box=(left, y - size * .8, left + width, y + size * .2), direction_ink_gap=ink_gap if text.strip().startswith('Favours') else None))
     for measurement in measurements:
         left, top, right, bottom = measurement['box']
         assert 0 <= left < right <= device_width and 0 <= top < bottom <= device_height, ('forest footer outside device', source, measurement)

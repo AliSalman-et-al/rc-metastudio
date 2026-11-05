@@ -264,6 +264,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._svg_plot_items = []
         self._raster_plot_items = []
         self._refitting_svg_plots = False
+        self._refitting_viewport_items = False
         self._viewport_refit_pending = False
         self._closing = False
         self._viewport_refit_timer = QTimer(self)
@@ -427,7 +428,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.manuscript_text = QTextBrowser(self.manuscript_page)
         self.manuscript_text.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.manuscript_text.setAccessibleName("Manuscript")
-        self.manuscript_text.setHtml(self.manuscript.html() + self.manuscript.html(supplementary=True))
+        manuscript_document = required(self.manuscript_text.document(), "manuscript document")
+        option = manuscript_document.defaultTextOption()
+        option.setWrapMode(QTextOption.WrapMode.WordWrap)
+        manuscript_document.setDefaultTextOption(option)
+        self.manuscript_text.setHtml((self.manuscript.html() + self.manuscript.html(supplementary=True)).replace(' to ', '\u00a0to\u00a0'))
         layout.addWidget(self.manuscript_text)
         self.content_stack.addWidget(self.manuscript_page)
 
@@ -459,6 +464,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _apply_report_typography(self, font):
         self.report_text.setFont(font)
+        option = required(self.report_text.document(), "report document").defaultTextOption()
+        option.setWrapMode(QTextOption.WrapMode.WordWrap)
+        required(self.report_text.document(), "report document").setDefaultTextOption(option)
         size = font.pointSizeF()
         required(self.report_text.document(), "report document").setDefaultStyleSheet(
             f"h2 {{ font-size: {size * 1.18:g}pt; margin-top: 14px; margin-bottom: 6px; }} "
@@ -687,19 +695,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if self.report_action.isChecked():
             return
         self._fit_width_active = True
-        self.graphics_view.resetTransform()
-        self._refit_viewport_items()
         self._apply_fit_width()
 
     def _apply_fit_width(self):
+        self.graphics_view.resetTransform()
+        self._refit_viewport_items()
         selected = self._selected_plot()
-        width = selected[1].sceneBoundingRect().right() + padding if selected else self.scene.sceneRect().width()
-        viewport = required(self.graphics_view.viewport(), "figure viewport")
-        scale = min(1 / (selected[1].scale() if selected else 1),
-                    max(1, viewport.width() - 2) / max(1, width))
-        self.graphics_view.setTransform(QTransform.fromScale(scale, scale))
-        self._relayout_sections()
-        self._figure_zoom_percent = round(scale * (selected[1].scale() if selected else 1) * 100)
+        self._figure_zoom_percent = round((selected[1].scale() if selected else 1) * 100)
         if not self.report_action.isChecked():
             self._update_zoom_control(self._figure_zoom_percent)
         self._scroll_to_section(self.nav_tree.currentItem())
@@ -725,6 +727,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             scrollbar.setValue(round(fraction * scrollbar.maximum()))
         else:
             self._fit_width_active = False
+            self.graphics_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+            self.graphics_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
             self._figure_zoom_percent = percent
             self.graphics_view.setTransform(QTransform.fromScale(percent / 100, percent / 100))
             self._relayout_sections()
@@ -1007,10 +1011,37 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.scene.setSceneRect(0, 0, scene_width, scene_height)
 
     def _refit_viewport_items(self):
-        self._update_wrapped_text_widths()
-        self._refit_svg_plot_items()
-        self._refit_raster_plot_items()
-        self._relayout_sections()
+        if self._refitting_viewport_items:
+            return
+        self._refitting_viewport_items = True
+        previous_width = self._viewport_width_override
+        try:
+            if self._fit_width_active:
+                # Decide whether scrolling is needed at full width first. Keep
+                # that decision when narrowing the plot makes it shorter again.
+                self.graphics_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+                full_width = self.graphics_view.maximumViewportSize().width()
+                if self.graphics_view.verticalScrollBarPolicy() == Qt.ScrollBarPolicy.ScrollBarAlwaysOn:
+                    full_width += required(self.graphics_view.verticalScrollBar(), "figure scrollbar").sizeHint().width()
+                self._viewport_width_override = full_width
+            self._update_wrapped_text_widths()
+            self._refit_svg_plot_items()
+            self._refit_raster_plot_items()
+            self._relayout_sections()
+            if self._fit_width_active:
+                needs_scrollbar = self.scene.height() > self.graphics_view.maximumViewportSize().height()
+                self.graphics_view.setVerticalScrollBarPolicy(
+                    Qt.ScrollBarPolicy.ScrollBarAlwaysOn if needs_scrollbar else Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+                )
+                if needs_scrollbar:
+                    self._viewport_width_override = self.graphics_view.maximumViewportSize().width()
+                    self._update_wrapped_text_widths()
+                    self._refit_svg_plot_items()
+                    self._refit_raster_plot_items()
+                    self._relayout_sections()
+        finally:
+            self._viewport_width_override = previous_width
+            self._refitting_viewport_items = False
 
     def _schedule_viewport_refit(self):
         if self._closing or self._viewport_refit_pending:
@@ -1026,9 +1057,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 self._set_restored_splitter_sizes()
                 self._viewport_width_override = self._layout_viewport_width()
             try:
-                self._refit_viewport_items()
                 if getattr(self, "_fit_width_active", False):
                     self._apply_fit_width()
+                else:
+                    self._refit_viewport_items()
             finally:
                 self._viewport_width_override = None
 
@@ -1039,8 +1071,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             event is not None
             and event.type() == QEvent.Type.Resize
             and watched is self._graphics_viewport
+            and not self._refitting_viewport_items
         ):
-            self._schedule_viewport_refit()
+            if self.isVisible() and not self._refitting_svg_plots:
+                self._viewport_refit_timer.stop()
+                self._run_scheduled_viewport_refit()
+            else:
+                self._schedule_viewport_refit()
         table = getattr(self, "result_table", None)
         if table is not None and event is not None and event.type() in (
             QEvent.Type.Resize, QEvent.Type.FontChange, QEvent.Type.StyleChange,
@@ -1095,7 +1132,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.scene.setSceneRect(
             0,
             0,
-            max(self._viewport_width(), scene_bounds.right() + padding),
+            max(self._layout_viewport_width(), scene_bounds.right() + padding),
             max(1, scene_bounds.bottom() + padding),
         )
 
@@ -1550,7 +1587,7 @@ def _report_table_html(table, section_heading: str, suppress_title=False) -> str
     body = [] if suppress_title or table.title == section_heading else [f"<h3>{escape(_report_heading(table.title))}</h3>"]
     body.append("<table cellpadding='7' cellspacing='0'>")
     body.append("<tr>" + "".join(f"<th align='{align[index]}'>{escape(header)}</th>" for index, header in enumerate(headers)) + "</tr>")
-    body.extend("<tr>" + "".join(f"<td align='{align[index]}' style='white-space:pre-wrap;'>" + escape(cell).replace('\n', '<br>') + "</td>" for index, cell in enumerate(row)) + "</tr>" for row in rows)
+    body.extend("<tr>" + "".join(f"<td align='{align[index]}' style='white-space:pre-wrap;'>" + escape(cell).replace(' to ', '\u00a0to\u00a0').replace('\n', '<br>') + "</td>" for index, cell in enumerate(row)) + "</tr>" for row in rows)
     body.append("</table>")
     return "".join(body)
 
@@ -1623,7 +1660,7 @@ def _report_interval_columns(headers, rows):
             start = index - 1 if index > 0 and headers[index - 1] == "Estimate" else index
             headers[start:index + 2] = [f"Estimate [{level}]" if start < index else level]
             for row in rows:
-                interval = f"[{row[index]}, {row[index + 1]}]"
+                interval = f"[{row[index]},\u00a0{row[index + 1]}]"
                 row[start:index + 2] = [f"{row[start]} {interval}" if start < index else interval]
             break
 

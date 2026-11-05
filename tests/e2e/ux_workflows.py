@@ -462,16 +462,8 @@ def run(app, window, work, root, record, analyze):
     assert len(direction_nodes) == 2
     direction_lines = []
     for node, arm in zip(direction_nodes, window.model.arm_names, strict=True):
-        expected = ('Favours ' + arm).split()
-        lines = sorted((n for n in continuous_nodes
-                        if n.attrib['x'] == node.attrib['x']
-                        and float(n.attrib['y']) >= float(node.attrib['y'])),
-                       key=lambda n: float(n.attrib['y']))
-        observed = []
-        for line in lines:
-            observed.extend(''.join(line.itertext()).split())
-            if len(observed) >= len(expected):
-                break
+        expected = 'Favours ' + arm
+        observed = ''.join(node.itertext())
         assert observed == expected, (observed, expected)
         direction_lines.append(observed)
     record('continuous-favours-whole-words', continuous, directions=direction_lines)

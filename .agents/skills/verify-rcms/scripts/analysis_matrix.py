@@ -203,8 +203,7 @@ def run(
         plot_bounds = view.graphics_view.mapFromScene(selected[1].sceneBoundingRect()).boundingRect()
         assert 0 <= plot_bounds.left() and plot_bounds.right() < viewport.width(), plot_bounds
         native_width = selected[1].boundingRect().width()
-        fitted = (plot_bounds.right() >= viewport.width() - 100 if native_width >= viewport.width() - 100
-                  else abs(plot_bounds.width() - native_width) <= 2)
+        fitted = plot_bounds.width() >= viewport.width() * .9
         if not fitted:
             record("matrix-incomplete-initial-fit", view, plot_bounds=str(plot_bounds), viewport=str(viewport.size()),
                    fit_active=view._fit_width_active, transform=view.graphics_view.transform().m11(),

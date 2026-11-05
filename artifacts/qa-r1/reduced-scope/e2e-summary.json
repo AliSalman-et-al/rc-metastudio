@@ -1,0 +1,165 @@
+{
+  "passed": true,
+  "scenarios": [
+    {
+      "evidence": "artifacts/verification/rcms/20261104T103305Z-eed88f55-analysis-continuous-leave-one-out",
+      "passed": true,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "600",
+        "--label",
+        "RCMS analysis-continuous-leave-one-out",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/tests/e2e/desktop_driver.py",
+        "analysis-continuous-leave-one-out",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/build/verification/rcms/desktop-ibc3kt66"
+      ],
+      "recorded_revision": null
+    },
+    {
+      "evidence": "artifacts/verification/rcms/20261104T103331Z-a74feeca-analysis-sequential-fixed-cumulative",
+      "passed": true,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "600",
+        "--label",
+        "RCMS analysis-sequential-fixed-cumulative",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/tests/e2e/desktop_driver.py",
+        "analysis-sequential-fixed-cumulative",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/build/verification/rcms/desktop-ovytivgu"
+      ],
+      "recorded_revision": null
+    },
+    {
+      "evidence": "artifacts/verification/rcms/20261104T103412Z-c0db73cf-audit-round3-diagnostic",
+      "passed": true,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "600",
+        "--label",
+        "RCMS audit-round3-diagnostic",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/tests/e2e/desktop_driver.py",
+        "audit-round3-diagnostic",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/build/verification/rcms/desktop-3pkud091"
+      ],
+      "recorded_revision": null
+    },
+    {
+      "evidence": "artifacts/verification/rcms/20261104T103512Z-f82f2e6b-audit-round3-onearm-proportion",
+      "passed": true,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "600",
+        "--label",
+        "RCMS audit-round3-onearm-proportion",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/tests/e2e/desktop_driver.py",
+        "audit-round3-onearm-proportion",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/build/verification/rcms/desktop-rmtvw0t5"
+      ],
+      "recorded_revision": null
+    },
+    {
+      "evidence": "artifacts/verification/rcms/20261104T104131Z-a6875bca-audit-round3-twoarm-mean",
+      "passed": true,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "600",
+        "--label",
+        "RCMS audit-round3-twoarm-mean",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/tests/e2e/desktop_driver.py",
+        "audit-round3-twoarm-mean",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/build/verification/rcms/desktop-91bf6sja"
+      ],
+      "recorded_revision": null
+    },
+    {
+      "evidence": "artifacts/verification/rcms/20261104T110942Z-3aa59f3b-small-study-effects",
+      "passed": true,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "600",
+        "--label",
+        "RCMS small-study-effects",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/tests/e2e/desktop_driver.py",
+        "small-study-effects",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/build/verification/rcms/desktop-fkbi9q3c"
+      ],
+      "recorded_revision": null
+    },
+    {
+      "evidence": "artifacts/verification/rcms/20261104T110959Z-43f88a99-analysis-diagnostic-joint",
+      "passed": true,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "600",
+        "--label",
+        "RCMS analysis-diagnostic-joint",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/tests/e2e/desktop_driver.py",
+        "analysis-diagnostic-joint",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/build/verification/rcms/desktop-fctv6xcz"
+      ],
+      "recorded_revision": null
+    },
+    {
+      "evidence": "artifacts/verification/rcms/20261104T111016Z-24164c92-manuscript-export",
+      "passed": true,
+      "command": [
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/scripts/run_with_timeout.py",
+        "--timeout-seconds",
+        "600",
+        "--label",
+        "RCMS manuscript-export",
+        "--",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+        "-X",
+        "faulthandler",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/tests/e2e/desktop_driver.py",
+        "manuscript-export",
+        "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/build/verification/rcms/desktop-cu22hnv7"
+      ],
+      "recorded_revision": null
+    }
+  ]
+}

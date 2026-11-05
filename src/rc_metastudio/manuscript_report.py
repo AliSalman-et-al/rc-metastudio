@@ -163,7 +163,7 @@ def _study_results(result, template, level):
         rows = [row[1:] for row in rows]
     paragraphs = () if rows else ('No study-level estimates or weights are available for this workflow.',)
     return replace(template, title='Study results', paragraphs=paragraphs,
-                   tables=(ResultTable('Study results', headers, tuple(rows)),))
+                   tables=(ResultTable('Study results', headers, tuple(rows)),) if rows else ())
 
 
 def _held_section_content(section):
@@ -174,7 +174,7 @@ def _held_section_content(section):
         paragraphs = tuple(f"{number}. {line}" if not re.match(r"^\d+[.)]\s", line) else line
                            for number, line in enumerate(filter(None, section.value.splitlines()), 1))
     elif not tables and section.value:
-        tables = (ResultTable(section.title + ' — Output', ('Output',),
+        tables = (ResultTable(section.title, ('',),
                               tuple((line,) for line in section.value.splitlines())),)
     return tables, paragraphs
 
@@ -187,7 +187,7 @@ def _held_sections(result):
             continue
         tables, paragraphs = _held_section_content(section)
         for table in tables:
-            full_rows.extend((table.title, '\n'.join(f'{h}: {v}' for h, v in zip(table.headers, row))) for row in table.rows)
+            full_rows.extend((table.title, '\n'.join((f'{h}: {v}' if h else v) for h, v in zip(table.headers, row))) for row in table.rows)
         sections.append(replace(section, title='Supplementary details', value='', paragraphs=paragraphs, tables=()))
     if full_rows:
         sections.insert(0, replace(sections[0], source_key='', paragraphs=(), tables=(ResultTable('Full-precision results', ('Source', 'Results'), tuple(full_rows)),)))
@@ -226,6 +226,16 @@ def _pooled_prose(result, values, effect, effect_metric, coefficient, statistic,
         summary.append(meaning)
 
 
+def _effect_metric(metric, section, table, vertical, coefficient):
+    if vertical:
+        metric = table.title.lower()
+    elif ',' in metric:
+        metric = section.title.removesuffix(' Summary').lower()
+    if not coefficient and metric.endswith('transformed proportion'):
+        return 'proportion'
+    return metric
+
+
 def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overall, calculation, pooled, fit, summary):
     metric = result.manuscript_metric or "effect"
     statistic = "z"
@@ -237,11 +247,11 @@ def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overa
             continue
         if 'k' in values and 'Subgroups' in values:
             fit.append(('Studies (k) (' + values['Subgroups'] + ')', values['k']))
-        effect_metric = table.title.lower() if vertical else section.title.removesuffix(' Summary').lower() if ',' in metric else metric
-        if not coefficient and effect_metric.endswith('transformed proportion'):
-            effect_metric = 'proportion'
+        effect_metric = _effect_metric(metric, section, table, vertical, coefficient)
         context = next((values[h] for h in table.headers if h.startswith(('Study added', 'Study omitted'))), table.title if vertical else effect_metric)
         effect = values.get('Term', values.get('Subgroups', context))
+        if not coefficient and ',' in metric and effect.casefold() != effect_metric.casefold():
+            effect = effect_metric.capitalize() + ': ' + effect
         statistic, se, test, p = _pooled_statistics(values, overall, calculation)
         pooled.append((effect[:1].upper() + effect[1:], values['Estimate'], values[lower] + ' to ' + values[upper], se, test, p))
         _pooled_prose(result, values, effect, effect_metric, coefficient, statistic, test, p, level, lower, upper, summary)
@@ -346,7 +356,9 @@ def _section_statistics(section):
     return overall, calculation
 
 
-def _presentation_cell(value, digits):
+def _presentation_cell(value, digits, *, zero_noise=False):
+    if zero_noise and re.fullmatch(r"[+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?", value) and 0 < abs(Decimal(value)) < Decimal("1e-10"):
+        return f"{0:.{digits}f}"
     return re.sub(r"(?<![\w.])-?\d+\.\d+%?(?![\w.])",
                   lambda match: f"{Decimal(match[0][:-1]):.1f}%" if match[0].endswith("%") else f"{Decimal(match[0]):.{digits}f}", value)
 
@@ -358,7 +370,7 @@ def _presentation_rows(rows, digits):
 def _presentation_result(result):
     return replace(result, sections=tuple(
         replace(section, tables=tuple(replace(table, rows=tuple(
-            tuple(value if header == 'p-value' or (table.headers == ('Statistic', 'Value') and row[0] == 'p-value') else _presentation_cell(value, result.manuscript_digits)
+            tuple(value if header == 'p-value' or (table.headers == ('Statistic', 'Value') and row[0] == 'p-value') else _presentation_cell(value, result.manuscript_digits, zero_noise=header == 'Q' or (header == 'Statistic' and row[0].endswith('(Q)')))
                   for header, value in zip(table.headers, row)) for row in table.rows))
             for table in section.tables)) for section in result.sections))
 
@@ -392,7 +404,13 @@ def _primary_sections(result, text_sections, pooled, fit, level, statistic):
                               tables=(ResultTable('Pooled effect', ('Analysis', 'Output'), tuple((s.title, s.value) for s in comparisons)),))
         sections[1] = replace(template, title='Model fit', paragraphs=(),
                               tables=(ResultTable('Model fit', ('Statistic', 'Value'), tuple((s.title, _presentation_cell(s.value, result.manuscript_digits)) for s in text_sections if s.title in ('Data and eligibility', 'Tests'))),))
-    return sections
+    return [replace(section, tables=tuple(_available_columns(table) for table in section.tables if table.rows)) for section in sections]
+
+
+def _available_columns(table):
+    indexes = [i for i in range(len(table.headers)) if any(row[i] not in ('', '—', 'NA') for row in table.rows)]
+    return replace(table, headers=tuple(table.headers[i] for i in indexes),
+                   rows=tuple(tuple(row[i] for i in indexes) for row in table.rows))
 
 
 def _report_methods(result):

@@ -1,0 +1,1 @@
+PASS: master/current label producers give R-identical full-precision effects, CIs, SEs, display coordinates, weights and fitted statistics for every row of both actual golden cases.

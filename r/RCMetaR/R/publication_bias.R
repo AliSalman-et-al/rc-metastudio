@@ -1092,6 +1092,9 @@ publication.bias.effects <- function(om.data, params) {
 .small.study.standard.error.label <- function(params) {
     params$measure <- as.character(params$measure %||%
         .small.study.plot.setting(params, "metric", .small.study.funnel.index(params), "TXMean"))
+    metric <- as.character(params$measure)
+    metric.names <- c(OR="odds ratio", RR="risk ratio", HR="hazard ratio", IRR="incidence rate ratio")
+    if (metric %in% names(metric.names)) return(paste("Standard error of log", metric.names[[metric]]))
     sub("^SE", "Standard error", display.standard.error.label(params))
 }
 
@@ -1390,7 +1393,7 @@ rcmetar.run.small.study.effects <- function(om.data, params=list()) {
 .small.study.funnel.args <- function(settings, center, ratio=FALSE) {
     args <- list(
         refline=if (settings$show.reference && settings$show.pooled) center else NULL,
-        yaxis="sei", level=settings$sampling.level, addtau2=settings$include.tau2,
+        yaxis="sei", digits=2, level=settings$sampling.level, addtau2=settings$include.tau2,
         xlab=settings$xlab, ylab=settings$ylab, atransf=if (ratio) exp else NULL,
         pch=settings$point.symbol, cex=settings$point.size, col=settings$point.color,
         bg=settings$point.color, back=settings$background.color,

@@ -1,6 +1,6 @@
 {
   "contract": "golden-plot-descriptors",
-  "oracle_sha256": "4782529d9771a1930aa7eefe7e88cc88d3e8819b3e595200c28132bf31c980b9",
+  "oracle_sha256": "983ca7e57d6643163af56c5b63471972b82c5a63a8aa34826469011662556991",
   "rows": [
     {
       "artifact_label": "Forest Plot",
@@ -76,7 +76,7 @@
     },
     {
       "artifact_label": "Leave-one-out Forest plot",
-      "artifact_oracle_sha256": "931753b3cacf5413766801bdb0d4b1f8444b8dad6353ad33d92ef194b6639575",
+      "artifact_oracle_sha256": "1a135b09b20a70ce3e6ab660dc0ce48c3e5490e731b65ce998ab843ffe5beb27",
       "capability": {
         "composition": "single",
         "editable": true,
@@ -112,7 +112,7 @@
     },
     {
       "artifact_label": "Leave-one-out Forest plot",
-      "artifact_oracle_sha256": "78ebc0a143ec41d00dee964c13e89105521e5b9ec334af0445b33ad61adfcbbf",
+      "artifact_oracle_sha256": "08aafbaa70e4af94539e1b8cb45a60613297b91cf3323a5e66db88da0fee0da8",
       "capability": {
         "composition": "single",
         "editable": true,

@@ -1,0 +1,18 @@
+source /home/ali/.t3/qa-env/ENV.sh
+RCMS_QA_APP_SRC=$PWD RCMS_QA_BUILD_ROOT=$RCMS_QT6_BUILD_ROOT RCMS_QA_R_LIB=$PWD/build/rcmetar-lib /home/ali/.t3/qa-env/tools/venv/bin/python /home/ali/.t3/qa-env/tools/ui.py --session qa556-f6 start --dark --large-font "$PWD/sample_projects/amino.rcms"
+# UI below means /home/ali/.t3/qa-env/tools/venv/bin/python /home/ali/.t3/qa-env/tools/ui.py --session qa556-f6
+UI shot 11-final-open.png
+UI --wait 4 click 478 87
+UI shot 12-final-menu.png
+UI click 530 144
+UI shot 13-final-setup.png
+UI --wait 8 click 1130 675
+UI key alt+F6
+UI shot 14-final-results.png
+UI windows
+UI key alt+F6
+UI shot 15-final-results.png
+UI scroll 1380 810 down 4
+UI shot 16-final-favours.png
+UI stop
+# Observed: initial fit 123%, both complete labels on one baseline with clear gap at null. Session stopped.

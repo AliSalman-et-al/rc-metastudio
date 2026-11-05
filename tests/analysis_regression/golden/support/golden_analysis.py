@@ -1102,6 +1102,7 @@ def _parse_summary(text):
 
 
 def _parse_result_table(text):
+    omitted = "Study omitted" in text
     values = {}
     lines = text.splitlines()
     regression_header = next(
@@ -1129,7 +1130,7 @@ def _parse_result_table(text):
                 line,
             )
             if match:
-                prefix = "heterogeneity.%s" % _result_row_key(match.group(1))
+                prefix = "heterogeneity.%s" % _result_row_key(("Study omitted: " if omitted and match.group(1).strip() != "All studies" else "") + match.group(1))
                 values.update(
                     {
                         "%s.q" % prefix: _to_float(match.group(2)),
@@ -1148,7 +1149,7 @@ def _parse_result_table(text):
                 line,
             )
             if match:
-                prefix = "model.%s" % _result_row_key(match.group(1))
+                prefix = "model.%s" % _result_row_key(("Study omitted: " if omitted and match.group(1).strip() != "All studies" else "") + match.group(1))
                 names = (
                     "studies",
                     "estimate",
@@ -1178,7 +1179,7 @@ def _parse_result_table(text):
                 line,
             )
         if match:
-            prefix = "model.%s" % _result_row_key(match.group(1))
+            prefix = "model.%s" % _result_row_key(("Study omitted: " if omitted and match.group(1).strip() != "All studies" else "") + match.group(1))
             first_metric = "coefficient" if is_regression else "estimate"
             names = (
                 first_metric,

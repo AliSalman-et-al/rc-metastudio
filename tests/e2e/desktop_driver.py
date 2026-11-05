@@ -321,6 +321,11 @@ def analyze(app, window, method):
     ]
     assert len(views) == 1, "analysis did not display results"
     view = views[0]
+    selected = view._selected_plot()
+    if selected is not None and not view.report_action.isChecked():
+        viewport = required(view.graphics_view.viewport(), "figure viewport")
+        plot_width = selected[1].sceneBoundingRect().width() * view.graphics_view.transform().m11()
+        assert plot_width >= viewport.width() * .9, (plot_width, viewport.width(), view.zoom_control.value())
     assert view.scene.items(), "results scene is empty"
     assert any(
         isinstance(item, QtWidgets.QGraphicsTextItem) and item.toPlainText().strip()

@@ -524,24 +524,17 @@ rcmetar.forest.revman.axis.footer <- function(bundle, layout) {
         layout <- list(alim=graphics::par("usr")[1:2])
     }
     alim <- as.numeric(layout$alim)
-    labels <- rcmetar.revman.direction.labels(bundle)
-    if (nzchar(labels$left) || nzchar(labels$right)) alim <- alim + c(-.1, .1) * diff(alim)
-    widths <- rcmetar.forest.with.measurement.device(graphics::strwidth(c(labels$left, labels$right), units="inches"))
-    share <- if (sum(widths) > 0) widths[[1]] / sum(widths) else .5
-    split.x <- if (sum(widths) > 0) alim[[1]] + diff(alim) * max(.25, min(.75, share)) else rcmetar.metafor.refline(bundle, alim)
-    if (!is.finite(split.x) || split.x <= alim[[1]] || split.x >= alim[[2]]) {
-        split.x <- mean(alim)
-    }
+    split.x <- rcmetar.metafor.refline(bundle, alim)
     direction.width <- if (!is.null(layout) && ncol(bundle$ilab$matrix) <= 1) 18 else 22
     direction.y <- -5.1
     list(
-        left.x=mean(c(alim[[1]], split.x)),
-        right.x=mean(c(split.x, alim[[2]])),
+        left.x=split.x,
+        right.x=split.x,
         split.x=split.x,
         span=diff(alim),
         axis.x=mean(alim),
-        left.max.width=(split.x - alim[[1]]) * 0.92,
-        right.max.width=(alim[[2]] - split.x) * 0.92,
+        left.max.width=if (is.finite(split.x)) (split.x - alim[[1]]) * 0.92 else 0,
+        right.max.width=if (is.finite(split.x)) (alim[[2]] - split.x) * 0.92 else 0,
         direction.y=direction.y,
         axis.label.y=-4.1,
         direction.width=direction.width

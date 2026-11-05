@@ -1,0 +1,9 @@
+refit 1 608 706 916.0 1037.0
+refit 2 604 702 608.0 695.627539503386
+refit 3 604 702 604.0 691.1941309255079
+width proof {"plot_width": 574.0, "available_width": 574.0, "vertical_scrollbar_visible": true, "vertical_policy": "ScrollBarAlwaysOn"}
+context 292 348
+This plugin does not support raise()
+This plugin does not support grabbing the keyboard
+context returned
+refits total 3

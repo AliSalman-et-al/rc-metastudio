@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "master_identical_files": [
+    "r/RCMetaR/R/display.R",
+    "r/RCMetaR/R/forest_metafor.R",
+    "r/RCMetaR/R/forest_style_revman.R",
+    "r/RCMetaR/R/plot_text.R",
+    "r/RCMetaR/R/plotting.R",
+    "r/RCMetaR/tests/testthat/test-summary-display.R",
+    "scripts/inspect_windows_deployment.py",
+    "scripts/assemble_packaged_smoke_evidence.py"
+  ],
+  "exports_preserved": [
+    "_docx_table",
+    "_docx_sections",
+    "write_docx",
+    "_print_document",
+    "write_pdf"
+  ],
+  "zero_noise_scope": "Only Q columns and explicitly identified (Q) statistics in report projection; selected precision retained; estimates/raw fits unchanged",
+  "master_revision": "2f84c2b6dd19502c97f315273c3c245b4d9b719a",
+  "layout_merges_preserved": true
+}
