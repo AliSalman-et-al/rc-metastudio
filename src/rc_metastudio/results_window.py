@@ -732,6 +732,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self.graphics_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
             self.graphics_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
             self._figure_zoom_percent = percent
+            self._refit_svg_plot_items()
+            self._refit_raster_plot_items()
             self.graphics_view.setTransform(QTransform.fromScale(percent / 100, percent / 100))
             self._relayout_sections()
             required(self.graphics_view.horizontalScrollBar(), "horizontal scrollbar").setValue(0)
@@ -1106,7 +1108,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 if item_width <= 0:
                     continue
 
-                self._fit_vector_plot_to_viewport(item)
+                if self._fit_width_active:
+                    self._fit_vector_plot_to_viewport(item)
+                else:
+                    item.setScale(1)
         finally:
             self._refitting_svg_plots = False
 
@@ -1120,7 +1125,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 logical_width, logical_height
             )
             item.setPixmap(source)
-            item.setScale(float(scaled_width) / float(logical_width))
+            item.setScale(float(scaled_width) / float(logical_width) if self._fit_width_active else 1)
 
     def _relayout_sections(self):
         """Place every result item from its current measured size and stored order."""
