@@ -1,0 +1,14 @@
+{
+  "analysis_method": "binary.random",
+  "display_images": {
+    "analysis.standard.forest_plot.1": "/home/ali/.local/share/Research Consultancy/RCMetaStudio/r_tmp/process-2801098/forest-03b20a8c136f.display.svg"
+  },
+  "opened": true,
+  "project": "/home/ali/.t3/qa-round3/E/package-run41956137300/dist/RCMetaStudio/qualification/workflow-observation.operations/locale-en.rcms",
+  "texts": {
+    "Inference Method": "Normal approximation",
+    "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n",
+    "Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value\n 0.77                      0.48                  1.22    0.267\n\nHeterogeneity\n Q      df  p-value     I\u00b2    \u03c4\u00b2\n 33.36  18    0.015  46.0%  0.38\n\nTest for overall effect\n Z      p-value\n -1.11    0.267\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n 0.21                                  2.80\n\nCalculation scale: log - estimate: -0.26, lower: -0.72, upper: 0.20, std. error: 0.236\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+    "Weights": "Study names     Weights\nGonzalez      :  7.3%\nPrins         :  6.2%\nGiamarellou   :  2.1%\nMaller        : 10.7%\nSturm         :  2.0%\nMarik         : 12.2%\nMuijsken      :  7.5%\nVigano        :  1.8%\nHansen        :  5.3%\nDe Vries      :  6.1%\nMauracher     :  2.2%\nNordstrom     :  5.3%\nRozdzinski    : 10.3%\nTer Braak     :  8.7%\nTulkens       :  1.2%\nVan der Auwera:  2.0%\nKlastersky    :  6.0%\nVanhaeverbeek :  1.2%\nHollender     :  1.8%\n"
+  }
+}

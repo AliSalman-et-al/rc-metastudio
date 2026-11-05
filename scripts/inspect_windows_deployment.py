@@ -968,6 +968,11 @@ def _validate_windows_extracted_deployment(
 def _validate_windows_smoke(smoke: dict, log_text: str) -> None:
     workflows = smoke.get("workflows", {})
     scales = smoke.get("scales", [])
+    variants = workflows.get("locale_variants", [])
+    if len(variants) == 2 and variants[0].get("svg_sha256") != variants[1].get("svg_sha256"):
+        raise DeploymentInspectionError(
+            f"packaged smoke evidence is incomplete: locale SVG byte hashes differ: {variants}"
+        )
     expected_summary = EXPECTED_SUMMARY_SHA256_BY_SAMPLE.get(
         workflows.get("converted_sample")
     )

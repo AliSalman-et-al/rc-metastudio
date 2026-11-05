@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import shutil
 import os
 import subprocess
 from pathlib import Path
@@ -242,6 +243,12 @@ def assemble(
     surfaces = _load_surfaces(surface_records)
     samples = json.loads(sample_observations.read_text(encoding="utf-8"))
     _validate_workflow_observation(observation)
+    plot_directory = output.with_suffix(".plots")
+    plot_directory.mkdir(parents=True, exist_ok=True)
+    for index, record in enumerate((observation, *observation["locale_inputs"])):
+        for path in record["svg_paths"].values():
+            source = Path(path)
+            shutil.copyfile(source, plot_directory / f"{index}-{source.name}")
     workflows = _workflow_payload(observation, sample, samples)
     evidence = {"schema_version": 1, "passed": True, "workflows": workflows,
                 "scales": surfaces}

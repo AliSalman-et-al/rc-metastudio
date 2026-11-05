@@ -207,10 +207,15 @@ def _prediction_rows(table, lower, upper, ci_level, vertical, fit, summary):
 def _pooled_statistics(values, overall, calculation):
     stat = next((key for key in ('t', 'z', 'Z', 'z-value', 't-value') if key in values or key in overall), None)
     statistic = 't' if stat in ('t', 't-value') else 'z'
+    df = values.get('df', overall.get('df'))
+    method = ''
+    if statistic == 't' and df:
+        statistic += f' (df = {df})'
+        method = f'The overall effect was tested using t with {df} degrees of freedom.'
     se = next((v for h, v in {**calculation, **values}.items() if h.startswith('SE')), '—')
     test = values.get(stat, overall.get(stat, '—')) if stat else '—'
     p = p_value(values.get('p-value', overall.get('p-value', '')))
-    return statistic, se, test, p
+    return statistic, se, test, p, method
 
 
 def _pooled_prose(result, values, effect, effect_metric, coefficient, statistic, test, p, level, lower, upper, summary):
@@ -236,7 +241,7 @@ def _effect_metric(metric, section, table, vertical, coefficient):
     return metric
 
 
-def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overall, calculation, pooled, fit, summary):
+def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overall, calculation, pooled, fit, summary, methods):
     metric = result.manuscript_metric or "effect"
     statistic = "z"
     level = ci_level
@@ -252,7 +257,9 @@ def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overa
         effect = values.get('Term', values.get('Subgroups', context))
         if not coefficient and ',' in metric and effect.casefold() != effect_metric.casefold():
             effect = effect_metric.capitalize() + ': ' + effect
-        statistic, se, test, p = _pooled_statistics(values, overall, calculation)
+        statistic, se, test, p, method = _pooled_statistics(values, overall, calculation)
+        if not coefficient and not vertical and values.get("Subgroups", "Overall").casefold() == "overall":
+            methods.append(method)
         pooled.append((effect[:1].upper() + effect[1:], values['Estimate'], values[lower] + ' to ' + values[upper], se, test, p))
         _pooled_prose(result, values, effect, effect_metric, coefficient, statistic, test, p, level, lower, upper, summary)
     return level, statistic
@@ -325,7 +332,7 @@ def _residual_statistics(section):
             (('df', 'Residual degrees of freedom'), ('I²', 'Residual I²')) if label in held}
 
 
-def _report_table(result, section, table, summary, pooled, fit, level, statistic, overall, calculation):
+def _report_table(result, section, table, summary, pooled, fit, level, statistic, overall, calculation, methods):
     table, vertical = _horizontal_table(table)
     if table.title.startswith('Calculation scale'):
         return level, statistic
@@ -336,7 +343,7 @@ def _report_table(result, section, table, summary, pooled, fit, level, statistic
         _prediction_rows(table, lower, upper, ci_level, vertical, fit, summary)
         return level, statistic
     if 'Estimate' in table.headers and lower and upper and section.title != 'Marginal prediction':
-        level, statistic = _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overall, calculation, pooled, fit, summary)
+        level, statistic = _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overall, calculation, pooled, fit, summary, methods)
         return level, statistic
     if table.title.endswith('Heterogeneity') or table.title == 'Residual heterogeneity':
         start = len(fit)
@@ -383,7 +390,7 @@ def _presentation_result(result):
             for table in section.tables)) for section in result.sections))
 
 
-def _report_sections(result, summary):
+def _report_sections(result, summary, methods):
     text_sections = [section for section in result.sections if section.kind == 'text']
     if not text_sections:
         return [], []
@@ -394,7 +401,7 @@ def _report_sections(result, summary):
             continue
         overall, calculation = _section_statistics(section)
         for table in section.tables:
-            level, statistic = _report_table(result, section, table, summary, pooled, fit, level, statistic, overall, calculation)
+            level, statistic = _report_table(result, section, table, summary, pooled, fit, level, statistic, overall, calculation, methods)
     return _primary_sections(result, text_sections, pooled, fit, level, statistic), _held_sections(result)
 
 
@@ -421,8 +428,8 @@ def _available_columns(table):
                    rows=tuple(tuple(row[i] for i in indexes) for row in table.rows))
 
 
-def _report_methods(result):
-    methods = result.manuscript_methods
+def _report_methods(result, pooled_methods):
+    methods = " ".join(filter(None, (result.manuscript_methods, *dict.fromkeys(pooled_methods))))
     if any(t.headers[0] == 'Q' for s in result.sections for t in s.tables) and 'Reitsma' not in methods:
         methods += " Heterogeneity was assessed with Cochran's Q and I²."
     methods += f' Analyses were performed in RC MetaStudio {__version__}.'
@@ -463,8 +470,9 @@ class ManuscriptReport:
         from dataclasses import replace
         from rc_metastudio.analysis_results import ResultTable
         summary = [result.manuscript_context] if result.manuscript_context else []
-        sections, supplementary = _report_sections(result, summary)
-        methods = _report_methods(result)
+        pooled_methods = []
+        sections, supplementary = _report_sections(result, summary, pooled_methods)
+        methods = _report_methods(result, pooled_methods)
         details = tuple(line for line in result.details.splitlines()
                         if line.startswith(('Order:', 'Each row', 'Subgroups by', 'Moderators:', 'Omission-only fits:')))
         if details:

@@ -74,6 +74,7 @@ create.summary.disp <- function(om.data, params, res, model.title) {
     use.t <- !is.null(res$test) && res$test %in% c("t", "knha", "adhoc")
     overall <- rbind(c(if (use.t) "t" else "Z", "p-value"),
                      c(rcmetar.format.test.statistic(res$zval, result.digits), pVal))
+    if (use.t) overall <- cbind(overall, c("df", as.character(res$dfs)))
     arrays <- c(arrays, list(overall))
     table.titles <- c(table.titles, rcmetar.overall.test.heading(res, params))
   }
