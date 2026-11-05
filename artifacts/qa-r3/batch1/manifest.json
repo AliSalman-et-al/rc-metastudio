@@ -1,0 +1,28 @@
+{
+  "source_head": "e8617aeeea2019b93062d93bedf9ebdf5f5b0ae7",
+  "app_src": "/home/ali/.t3/worktrees/rc-metastudio/t3-c2fe3e97",
+  "qt_build_root": "/home/ali/.t3/worktrees/rc-metastudio/t3-c2fe3e97/build/qt6-verification",
+  "platform": "Linux xcb, Xvfb 1600x1000, Metacity; default font",
+  "sessions": [
+    "batch1-light",
+    "batch1-dark"
+  ],
+  "screenshots": {
+    "dark/about.png": "ac58562e5df38d94fb45e26cd0083249f107ce9fe008bb21ee72f15d8c1bfcda",
+    "dark/analysis-tab-advanced.png": "042675a6e1da002a7111c7471a12bd0bac5bf569636dbe113dd38d7070d8eb5d",
+    "dark/analysis-tab-run.png": "6f97a58407d1b42db26266b5e41de241f9d90771f38ba8f36d184e2a920580ef",
+    "dark/disabled-menu.png": "9b7c312fd7cc38546cbc839907d599daae52547e8a96d5314f0325b71d7d5138",
+    "dark/import-mapping-error.png": "269f3be9a40d03ba11fea1ea278d0ffa17f2eb7f151d0062cb4393362afa56c9",
+    "dark/include-unticked.png": "6d3db1be7aac21559132a60cd567a6131c3db250e38fcf464bfc68f8e0acfb78",
+    "dark/text-report.png": "34fe84f629b121887d3eebea03f0df3665b8a0e445ae02f4f329a11c895f92c7",
+    "dark/tiles-disabled-next.png": "494d0ee4d31dab4478ce7fa15af1555e30d50b729eb83562bec68dadc31762f4",
+    "light/about.png": "fd42538c0e74b4051c2a7e046241d5caf1d3a0fb4221aac753cad590ea11f89b",
+    "light/analysis-tab-advanced.png": "7db359de0b3e406d71a4359beeeec05e675c0b3278181d0a12b8807b4ecf174f",
+    "light/analysis-tab-run.png": "4d96edb44e6e252163ee44ce5794f5710158d1d492cacb7ba6c4009b5c63815a",
+    "light/disabled-menu.png": "89709ede7fd712e1c198c1bcda02f74287dc94e0342430d8ec7285ec62006537",
+    "light/import-mapping-error.png": "1fd0aae18d2061589655926a133ad7ad3c6814ad9e2b8cfb1d09f0aab2c1c6d7",
+    "light/include-unticked.png": "a30d8d4f4371793a82ba7274bd026926a1239f87558a496494737fae30554ee8",
+    "light/text-report.png": "89ec26e4e9bd68973ecbffc50953bd76d89eaad91e2dc4a7f892d8d6c0e5db48",
+    "light/tiles-disabled-next.png": "3c7c71ba94a4e06eede8770d75966ec1c4dc799b3a984a272f616c107d83f8d6"
+  }
+}

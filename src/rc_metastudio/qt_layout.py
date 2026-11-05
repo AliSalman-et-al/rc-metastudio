@@ -6,7 +6,7 @@ no root-fitting, coordinate inference, or descendant-repair surface.
 """
 
 from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtGui import QIcon, QFont
+from PyQt6.QtGui import QIcon, QFont, QPalette, QColor
 from PyQt6.QtWidgets import QHeaderView, QProxyStyle, QSizePolicy, QStyle, QToolButton, QStyleOption, QWidget
 
 
@@ -183,6 +183,15 @@ class _ControlStyle(QProxyStyle):
 def configure_application_controls(app):
     if app.property("rcms_controls_configured"):
         return
+    palette = app.palette()
+    role = QPalette.ColorRole
+    if palette.color(role.Window).lightness() < 128:
+        for text_role in (role.WindowText, role.Text, role.ButtonText):
+            palette.setColor(QPalette.ColorGroup.Disabled, text_role, QColor("#999999"))
+        palette.setColor(QPalette.ColorGroup.Disabled, role.Button, palette.color(role.Window))
+        for border_role in (role.Mid, role.Dark, role.Light):
+            palette.setColor(border_role, QColor("#999999"))
+        app.setPalette(palette)
     app.setStyle(_ControlStyle(app.style().objectName()))
     app.setProperty("rcms_controls_configured", True)
 

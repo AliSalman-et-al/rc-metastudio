@@ -263,7 +263,7 @@ def doctor(app, window):
     record_step("ready", window, runtime=identity)
 
 
-def analyze(app, window, method):
+def analyze(app, window, method, *, digits=3):
     from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
 
     assert window.action_go.isEnabled()
@@ -299,7 +299,7 @@ def analyze(app, window, method):
     )
     precision = precision_label.buddy()
     assert isinstance(precision, QtWidgets.QSpinBox)
-    precision.setValue(3)
+    precision.setValue(digits)
     QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
     app.processEvents()
     record_step("analysis-layout", dialog)
@@ -437,6 +437,26 @@ def assert_study_grid(app, window):
 
 
 def sample_analysis(app, window, sample):
+    from rc_metastudio import main_wizard
+    if sample == "amino":
+        wizard = main_wizard.MainWizard(parent=window)
+        wizard.show()
+        app.processEvents()
+        page_widget = wizard.currentPage()
+        if isinstance(page_widget, main_wizard.WelcomePage):
+            page_widget.create_new_btn.click()
+            app.processEvents()
+        page_widget = wizard.currentPage()
+        assert isinstance(page_widget, main_wizard.DataTypePage)
+        tile = page_widget.twoarm_proportions_Button
+        tile.setFocus()
+        key_click(tile, QtCore.Qt.Key.Key_Return)
+        page = wizard.currentId()
+        key_click(tile, QtCore.Qt.Key.Key_Return)
+        app.processEvents()
+        assert wizard.currentId() != page, "Return on selected tile did not advance"
+        record_step("wizard-return-advances", wizard)
+        wizard.reject()
     assert window.open(
         str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True
     )
@@ -489,6 +509,14 @@ def sample_analysis(app, window, sample):
         "continuous": ("continuous.random", "continuous-random"),
         "lymph": ("diagnostic.random", "lymph-diagnostic-random-dor"),
     }[sample]
+    if sample == "amino":
+        small_view = analyze(app, window, method, digits=2)
+        small_view.report_action.setChecked(True)
+        app.processEvents()
+        small_text = small_view.report_text.toPlainText()
+        assert "0.004 to 1.44" in small_text and "0.00 to 1.44" not in small_text, small_text
+        record_step("nonzero-report-limit", small_view, lower="0.004", digits=2)
+        small_view.close()
     view = analyze(app, window, method)
     contract = json.loads(
         (ROOT / "tests/analysis_regression/baseline/numeric-contract.json").read_text()
@@ -518,6 +546,12 @@ def sample_analysis(app, window, sample):
     app.processEvents()
     assert view.report_text.isVisible()
     rendered_text = view.report_text.toPlainText()
+    if sample == "amino":
+        study_line = next(line for line in rendered_text.splitlines() if "Giamarellou" in line)
+        import re
+        study_values = rendered_text[rendered_text.index("Giamarellou"):].splitlines()[:8]
+        assert any(re.search(r"0\.004\d*", value) for value in study_values), study_values
+        assert "0.00 to 1.44" not in rendered_text, study_values
     from tests.e2e.report_retention import assert_report
     assert_report(view)
     record_step(

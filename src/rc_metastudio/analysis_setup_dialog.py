@@ -288,6 +288,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.populate_parameter_controls()
         if self._combined_diagnostic:
             self._finish_combined_diagnostic_ui()
+        self.content_scroll_area.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self._setup_result_context()
         self.specs_tab.currentChanged.connect(self._fit_active_tab_contents)
         self._fit_active_tab_contents(self.specs_tab.currentIndex())
@@ -308,7 +309,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _setup_result_context(self):
         self.setWindowTitle(f"{self.model.current_outcome_name} · {self._result_metric_label()}")
-        required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button").setText("Run analysis")
+        run_button = required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button")
+        run_button.setText("Run analysis")
+        run_button.setStyleSheet("QPushButton:focus { border: 2px solid palette(highlight); }")
         self.analysis_error_label = QLabel(self)
         self.analysis_error_label.setWordWrap(True)
         self.analysis_error_label.setTextFormat(Qt.TextFormat.PlainText)
@@ -926,7 +929,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _set_plot_accent_color(self, color):
         text = str(color or PLOT_STYLE_DEFAULT_COLORS["default"])
         self.accent_color.setText(text)
-        self.color_btn.setStyleSheet("background-color: %s;" % text)
+        self.color_btn.setStyleSheet("background-color: %s; color: %s;" % (text, "white" if QColor(text).lightness() < 128 else "black"))
 
     def run_ma(self):
         self._run_analysis(
@@ -1399,7 +1402,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self._advanced_entries = []
             self.advanced_toggle = _AdvancedButton(self)
             self.advanced_toggle.setAutoRaise(True)
-            self.advanced_toggle.setStyleSheet("QToolButton { text-align: left; border: none; background: transparent; }")
+            self.advanced_toggle.setStyleSheet("QToolButton { text-align: left; border: none; background: transparent; } QToolButton:focus { border: 1px solid palette(highlight); }")
             self.advanced_toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
             self.advanced_toggle.setSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
             self.advanced_toggle.setCheckable(True)

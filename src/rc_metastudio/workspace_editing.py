@@ -415,7 +415,7 @@ class WorkspaceEditingService:
             if existing is not study
         ]
         if name in existing_names:
-            return AppliedWorkspaceEdit(error="Duplicate study names not allowed")
+            return AppliedWorkspaceEdit(error=f"Study name ‘{name}’ already exists. Use a unique name before pasting.")
         added_study_id = None
         study.label = name
         return AppliedWorkspaceEdit(added_study_id=added_study_id)
@@ -509,7 +509,7 @@ class WorkspaceEditingService:
         if position in (0, 3):
             return "Count cannot be zero or negative"
         if position in (2, 5):
-            return "Standard Deviation cannot be zero or negative"
+            return "Standard deviation must be greater than zero."
         return None
 
     @staticmethod
@@ -588,7 +588,7 @@ class WorkspaceEditingService:
         if context.outcome_subtype == "generic_effect":
             generic_index = context.outcome_columns.index(target.column) % 2
             if context.data_type == CONTINUOUS and generic_index == 1 and number < 0:
-                return "Standard Error cannot be negative"
+                return "Standard error cannot be negative."
             return None
         candidate = list(previous_display)
         candidate[outcome_index] = number

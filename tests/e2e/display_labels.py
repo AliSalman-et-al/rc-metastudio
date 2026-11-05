@@ -30,8 +30,26 @@ def plot_label_inventory(paths, user_names=()):
     return inventory
 
 
+def file_column_controls(widget):
+    from rc_metastudio.main_wizard import CsvImportPage
+
+    pages = [widget] if isinstance(widget, CsvImportPage) else widget.findChildren(CsvImportPage)
+    controls = set()
+    for page in pages:
+        if not page.mapping_controls:
+            continue
+        headers, _rows = page._read_rows()
+        expected = ["Select column…", *(f"{index + 1}: {header}" for index, header in enumerate(headers))]
+        for control in page.mapping_controls:
+            actual = [control.itemText(index) for index in range(control.count())]
+            assert actual == expected, ("file column choices", actual, expected)
+            controls.add(control)
+    return controls
+
+
 def visible_label_inventory(widget, user_names=()):
     inventory = []
+    file_controls = file_column_controls(widget)
     def check(text, surface):
         item = check_label(text, surface, user_names)
         if item is not None:
@@ -44,7 +62,10 @@ def visible_label_inventory(widget, user_names=()):
         check(child.toolTip(), child.objectName() + ':tooltip')
         if isinstance(child, QtWidgets.QComboBox):
             for index in range(child.count()):
-                check(child.itemText(index), child.objectName() + ':choice')
+                if child in file_controls:
+                    inventory.append(dict(surface=child.objectName() + ':file-column', text=child.itemText(index)))
+                else:
+                    check(child.itemText(index), child.objectName() + ':choice')
         if isinstance(child, (QtWidgets.QTextEdit, QtWidgets.QPlainTextEdit)):
             check(child.toPlainText(), child.objectName())
     return inventory

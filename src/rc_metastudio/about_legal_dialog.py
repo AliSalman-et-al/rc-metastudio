@@ -27,7 +27,7 @@ github.com/AliSalman-et-al/rc-metastudio/issues</a></p>
 warranty of merchantability or fitness for a particular purpose.</p>
 <p>RC MetaStudio is derived from the original OpenMeta[Analyst] project and is
 independently maintained.
-<a href="https://github.com/AliSalman-et-al/rc-metastudio/blob/master/NOTICE.md">View provenance and third-party notices</a>.</p>
+<a href="https://github.com/AliSalman-et-al/rc-metastudio/blob/master/NOTICE.md">Provenance and third-party notices</a>.</p>
 """
 
 
