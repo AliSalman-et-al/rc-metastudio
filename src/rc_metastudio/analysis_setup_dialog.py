@@ -309,7 +309,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _setup_result_context(self):
         self.setWindowTitle(f"{self.model.current_outcome_name} · {self._result_metric_label()}")
-        required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button").setText("Run analysis")
+        run_button = required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button")
+        run_button.setText("Run analysis")
+        run_button.setStyleSheet("QPushButton:focus { border: 2px solid palette(highlight); }")
         self.analysis_error_label = QLabel(self)
         self.analysis_error_label.setWordWrap(True)
         self.analysis_error_label.setTextFormat(Qt.TextFormat.PlainText)
