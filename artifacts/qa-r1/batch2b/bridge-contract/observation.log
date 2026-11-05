@@ -1,0 +1,6 @@
+PLOT_RESIZE {'window_initial': 796, 'window_shrunken': 596, 'plot_initial': 1125.7592592592594, 'plot_shrunken': 1125.7592592592594, 'viewport': 473, 'item_scale': 0.926550830666057, 'font_size': 12.96, 'view_box': 1215.82, 'native_width': 1215.0}
+
+Traceback (most recent call last):
+  File "<string>", line 280, in <module>
+AssertionError
+

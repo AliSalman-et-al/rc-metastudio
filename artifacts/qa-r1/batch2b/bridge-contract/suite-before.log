@@ -1,0 +1,59 @@
+F..s.s...                                                                [100%]
+=================================== FAILURES ===================================
+_____________________ test_inprocess_rpy2_backend_contract _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-745/test_inprocess_rpy2_backend_co0')
+
+    def test_inprocess_rpy2_backend_contract(tmp_path):
+        # Require the real in-process rpy2 path in this integration driver.
+        env = dict(os.environ)
+        env["RCMS_R_TEST_SETTINGS_DIR"] = str(tmp_path / "settings")
+        env["RCMS_REQUIRE_IN_PROCESS_RPY2"] = "1"
+>       result = run_python_driver(_DRIVER, env=env)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/r_stack/test_inprocess_rpy2_backend.py:842: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+driver = '\nimport locale, os, sys, tempfile\nos.environ.setdefault("QT_QPA_PLATFORM", "offscreen")\nos.environ["RCMS_REQUIRE_I...ch would turn a passing\n# check into a spurious non-zero exit.\nsys.stdout.flush()\nsys.stderr.flush()\nos._exit(0)\n'
+env = {'SHELL': '/bin/bash', 'SESSION_MANAGER': 'local/alayna-ThinkPad-T440s:@/tmp/.ICE-unix/3188,unix/alayna-ThinkPad-T440s...ED_PACKAGE_ROOT': '/home/ali/.nvm/versions/node/v24.21.0/lib/node_modules/@openai/codex', 'QT_ACCESSIBILITY': '1', ...}
+
+    def run_python_driver(
+        driver: str, *, env: dict[str, str]
+    ) -> subprocess.CompletedProcess:
+        """Run an embedded-Python driver with the same required-lane policy."""
+    
+        result = subprocess.run(
+            [sys.executable, "-c", driver],
+            cwd=REPO_ROOT,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            env=env,
+        )
+        if result.returncode == 42:
+            message = (
+                result.stdout.strip() or "Python/R bridge prerequisites are unavailable"
+            )
+            if _REQUIRED:
+                pytest.fail(message)
+            pytest.skip(message)
+    
+>       assert result.returncode == 0, "driver failed (rc=%s)\nSTDOUT:\n%s\nSTDERR:\n%s" % (
+               ^^^^^^^^^^^^^^^^^^^^^^
+            result.returncode,
+            result.stdout[-2000:],
+            result.stderr[-2000:],
+        )
+E       AssertionError: driver failed (rc=1)
+E       STDOUT:
+E       
+E       STDERR:
+E       Traceback (most recent call last):
+E         File "<string>", line 279, in <module>
+E       AssertionError
+
+tests/r_stack/_r_driver_support.py:95: AssertionError
+=========================== short test summary info ============================
+FAILED tests/r_stack/test_inprocess_rpy2_backend.py::test_inprocess_rpy2_backend_contract
+1 failed, 6 passed, 2 skipped in 23.97s

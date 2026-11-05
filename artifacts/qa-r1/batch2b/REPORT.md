@@ -56,3 +56,7 @@ The [font regression proof](font-regression/REPORT.md) supersedes the old zoom/i
 ## Integration with current master
 
 [Merge qualification](merge-master/REPORT.md) covers current master 8ba18fc6 (#567/#568/#569) merged through ordinary merge commits, retaining both sides and the plot-text-size fix. Its current/ evidence supersedes the earlier branch-only qualification for the combined tree.
+
+## Bridge resize contract
+
+[Bridge contract evidence](bridge-contract/REPORT.md) covers automatic ≥9 pt text/horizontal overflow and then the unchanged shrink/grow contract after explicitly selecting Fit width. All 9 R-stack tests and pre-push passed.
