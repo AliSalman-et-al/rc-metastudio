@@ -1,0 +1,147 @@
+{
+  "additional_outputs": {
+    "Subgroup Summary": {
+      "heterogeneity.overall.df": 5.0,
+      "heterogeneity.overall.i_squared": 58.0,
+      "heterogeneity.overall.p_value": 0.036,
+      "heterogeneity.overall.q": 11.914,
+      "heterogeneity.subgroup_early.df": 2.0,
+      "heterogeneity.subgroup_early.i_squared": 0.0,
+      "heterogeneity.subgroup_early.p_value": 0.379,
+      "heterogeneity.subgroup_early.q": 1.939,
+      "heterogeneity.subgroup_late.df": 2.0,
+      "heterogeneity.subgroup_late.i_squared": 75.6,
+      "heterogeneity.subgroup_late.p_value": 0.016,
+      "heterogeneity.subgroup_late.q": 8.209,
+      "model.overall.studies": 6.0,
+      "model.overall.z_value": 3.4,
+      "model.subgroup_early.studies": 3.0,
+      "model.subgroup_early.z_value": 2.427,
+      "model.subgroup_late.studies": 3.0,
+      "model.subgroup_late.z_value": 2.37
+    }
+  },
+  "artifacts": [
+    {
+      "bundle_path": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/qt6-verification/golden-compatibility-batch7/artifacts/continuous-subgroup/golden_continuous_subgroup_forest.png",
+      "label": "Subgroups Forest Plot",
+      "path": "/home/ali/.local/share/r_tmp/process-3425559/golden_continuous_subgroup_forest.png",
+      "sha256": "8403dff01d620e30256f8aace01a7b974dbaea8877ffd387180808f29a57bcff"
+    }
+  ],
+  "authoritative": false,
+  "authority": "local-debug",
+  "baseline_environment": {
+    "expected": {
+      "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+      "os": "Windows",
+      "package": "RCMetaR",
+      "pyqt": "5.15.11",
+      "python": "3.11",
+      "r": "R version 4.6.0",
+      "rpy2": "3.6.7"
+    },
+    "id": "local-debug",
+    "matches_expected": false,
+    "os": "Linux",
+    "package": "RCMetaR",
+    "pyqt": "6.11.0",
+    "python": "3.11.9",
+    "r": "R version 4.6.1 (2026-06-24)",
+    "rpy2": "3.6.7"
+  },
+  "capture_command": "scripts/verify_golden_compatibility.py --root . --output-root build/qt6-verification/golden-compatibility-batch7",
+  "capture_mode": "local-debug",
+  "captured_at": "2026-11-05T10:48:36Z",
+  "commit_sha": "5abc27bb1f35df654853af1be4cd9d86ad2b364c",
+  "data_family": "continuous",
+  "dataset": "continuous.rcms",
+  "id": "continuous-subgroup",
+  "method": "continuous.random",
+  "metric": "SMD",
+  "outputs": {
+    "Subgroup Summary": {
+      "model.overall.estimate": 0.358,
+      "model.overall.lower_bound": 0.152,
+      "model.overall.p_value": 0.001,
+      "model.overall.standard_error": 0.105,
+      "model.overall.upper_bound": 0.565,
+      "model.subgroup_early.estimate": 0.285,
+      "model.subgroup_early.lower_bound": 0.055,
+      "model.subgroup_early.p_value": 0.015,
+      "model.subgroup_early.standard_error": 0.117,
+      "model.subgroup_early.upper_bound": 0.515,
+      "model.subgroup_late.estimate": 0.395,
+      "model.subgroup_late.lower_bound": 0.068,
+      "model.subgroup_late.p_value": 0.018,
+      "model.subgroup_late.standard_error": 0.167,
+      "model.subgroup_late.upper_bound": 0.721
+    }
+  },
+  "package_versions": {
+    "RCMetaR": "0.5.1",
+    "pyqt": "6.11.0",
+    "r": "R version 4.6.1 (2026-06-24)",
+    "rc_metastudio": "0.5.1",
+    "rpy2": "3.6.7",
+    "rpy2-rinterface": "3.6.6",
+    "rpy2-robjects": "3.6.5"
+  },
+  "parameters": {
+    "conf.level": 95.0,
+    "cov_name": "golden_group",
+    "digits": 3.0,
+    "fp_col1_str": "Study or Subgroup",
+    "fp_col2_str": "[default]",
+    "fp_col3_str": "Intervention",
+    "fp_col4_str": "Control",
+    "fp_display_path": "/home/ali/.local/share/r_tmp/process-3425559/golden_continuous_subgroup_forest.display.svg",
+    "fp_outpath": "/home/ali/.local/share/r_tmp/process-3425559/golden_continuous_subgroup_forest.png",
+    "fp_plot_lb": "[default]",
+    "fp_plot_ub": "[default]",
+    "fp_show_col1": true,
+    "fp_show_col2": true,
+    "fp_show_col3": false,
+    "fp_show_col4": false,
+    "fp_show_summary_line": true,
+    "fp_xlabel": "[default]",
+    "fp_xticks": "[default]",
+    "measure": "SMD",
+    "rm.method": "DL"
+  },
+  "plot_descriptors": [
+    {
+      "artifact_label": "Subgroups Forest Plot",
+      "capability": {
+        "composition": "single",
+        "editable": true,
+        "kind": "subgroup_forest",
+        "regeneration": "forest",
+        "styleable": true
+      },
+      "display": {
+        "identity": "Subgroups Forest plot",
+        "name": "golden_continuous_subgroup_forest.display.svg",
+        "sha256": "f1f668358142578642dc6dab40f2ae9175a6031716de8ec6c1242ee33672a59a",
+        "type": "svg"
+      }
+    }
+  ],
+  "status": "success",
+  "texts": {
+    "Inference Method": "Normal approximation",
+    "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Subgroup Meta-Analysis: estimates are recomputed within covariate-defined study groups using the selected base meta-analysis method.\n",
+    "Subgroup Summary": "Continuous Random-Effects Model\n\nMetric: Standardized mean difference\n\nModel Results\n Subgroups       k  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value  z-value\n Subgroup early  3     0.285                 0.055                 0.515                    0.117    0.015    2.427\n Subgroup late   3     0.395                 0.068                 0.721                    0.167    0.018    2.370\n Overall         6     0.358                 0.152                 0.565                    0.105  < 0.001    3.400\n\nHeterogeneity\n Subgroups            Q  df  p-value     I\u00b2     \u03c4\u00b2\n Subgroup early   1.939   2    0.379   0.0%  0.000\n Subgroup late    8.209   2    0.016  75.6%  0.062\n Overall         11.914   5    0.036  58.0%  0.037\n\nPrediction interval\n Subgroups       Lower bound (95% PI)  Upper bound (95% PI)\n Subgroup early                 0.055                 0.515\n Subgroup late                 -0.194                 0.983\n Overall                       -0.072                 0.789\n\nTest of subgroup differences\n Test                      Statistic  df  p-value\n Subgroup differences (Q)      0.293   1    0.589\n\nSubgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups."
+  },
+  "tool_versions": {
+    "os": "Linux",
+    "platform": "Linux-7.0.0-42-generic-x86_64-with-glibc2.39",
+    "pyqt": "6.11.0",
+    "python": "3.11.9",
+    "r": "R version 4.6.1 (2026-06-24)",
+    "rc_metastudio": "0.5.1",
+    "rpy2": "3.6.7",
+    "rpy2-rinterface": "3.6.6",
+    "rpy2-robjects": "3.6.5"
+  }
+}

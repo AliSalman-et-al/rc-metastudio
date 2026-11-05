@@ -1,0 +1,20 @@
+[
+  {
+    "scenario": "after-continuous",
+    "direction_px": [
+      12.96,
+      12.96
+    ],
+    "tick_px": 12.96,
+    "svg": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/artifacts/batch7/receipts/after-continuous/06-0-forest-6c3da6123a4f.display.svg"
+  },
+  {
+    "scenario": "after-amino",
+    "direction_px": [
+      12.96,
+      12.96
+    ],
+    "tick_px": 12.96,
+    "svg": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/artifacts/batch7/receipts/after-amino/08-0-forest-b907a38f6dd2.display.svg"
+  }
+]

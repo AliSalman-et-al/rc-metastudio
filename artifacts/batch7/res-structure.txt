@@ -1,0 +1,95 @@
+[1] "res"
+List of 1
+ $ res:List of 77
+  ..$ b           : num [1, 1] 0.358
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ beta        : num [1, 1] 0.358
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ se          : num 0.105
+  ..$ zval        : num 3.4
+  ..$ pval        : num 0.000675
+  ..$ ci.lb       : num 0.152
+  ..$ ci.ub       : num 0.565
+  ..$ vb          : num [1, 1] 0.0111
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ tau2        : num 0.0372
+  ..$ se.tau2     : num 0.0421
+  ..$ tau2.fix    : logi FALSE
+  ..$ tau2.f      : num 0.0372
+  ..$ I2          : num 58
+  ..$ H2          : num 2.38
+  ..$ R2          : NULL
+  ..$ vt          : num 0.0269
+  ..$ QE          : num 11.9
+  ..$ QEp         : num 0.036
+  ..$ QM          : num 11.6
+  ..$ QMdf        : int [1:2] 1 NA
+  ..$ QMp         : num 0.000675
+  ..$ k           : int 6
+  ..$ k.f         : int 6
+  ..$ k.eff       : int 6
+  ..$ k.all       : int 6
+  ..$ p           : int 1
+  ..$ p.eff       : int 1
+  ..$ parms       : num 2
+  ..$ int.only    : logi TRUE
+  ..$ int.incl    : logi TRUE
+  ..$ intercept   : logi TRUE
+  ..$ allvipos    : logi TRUE
+  ..$ coef.na     : Named logi FALSE
+  .. ..- attr(*, "names")= chr "X"
+  ..$ yi          : num [1:6] 0.0945 0.2774 0.3665 0.6644 0.4618 ...
+  .. ..- attr(*, "ni")= num [1:6] 120 130 80 400 95 170
+  .. ..- attr(*, "measure")= chr "SMD"
+  .. ..- attr(*, "slab")= chr [1:6] "Carroll" "Grant" "Peck" "Donat" ...
+  ..$ vi          : num [1:6] 0.0334 0.0311 0.0508 0.0106 0.0433 ...
+  ..$ X           : num [1:6, 1] 1 1 1 1 1 1
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ weights     : Named num [1:6] 15.8 16.3 12.6 23.3 13.8 ...
+  .. ..- attr(*, "names")= chr [1:6] "Carroll" "Grant" "Peck" "Donat" ...
+  ..$ yi.f        : num [1:6] 0.0945 0.2774 0.3665 0.6644 0.4618 ...
+  .. ..- attr(*, "ni")= num [1:6] 120 130 80 400 95 170
+  .. ..- attr(*, "measure")= chr "SMD"
+  .. ..- attr(*, "slab")= chr [1:6] "Carroll" "Grant" "Peck" "Donat" ...
+  ..$ vi.f        : num [1:6] 0.0334 0.0311 0.0508 0.0106 0.0433 ...
+  ..$ X.f         : num [1:6, 1] 1 1 1 1 1 1
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ weights.f   : NULL
+  ..$ M           : num [1:6, 1:6] 0.0706 0 0 0 0 ...
+  ..$ chksumyi    : chr "fe9ed44f00c4246c2e58348941f1edf7"
+  ..$ chksumvi    : chr "1d3b6a792f7b730b8a2016b1208a5956"
+  ..$ chksumX     : chr "6d43c1febee6494a18ad1372ac2e0012"
+  ..$ outdat.f    :List of 8
+  ..$ ni          : num [1:6] 120 130 80 400 95 170
+  ..$ ni.f        : num [1:6] 120 130 80 400 95 170
+  ..$ ids         : int [1:6] 1 2 3 4 5 6
+  ..$ not.na      : logi [1:6] TRUE TRUE TRUE TRUE TRUE TRUE
+  ..$ subset      : NULL
+  ..$ slab        : chr [1:6] "Carroll" "Grant" "Peck" "Donat" ...
+  ..$ slab.null   : logi FALSE
+  ..$ measure     : chr "SMD"
+  ..$ method      : chr "DL"
+  ..$ model       : chr "rma.uni"
+  ..$ weighted    : logi TRUE
+  ..$ test        : chr "z"
+  ..$ dfs         : int NA
+  ..$ ddf         : int NA
+  ..$ s2w         : num 1
+  ..$ btt         : int 1
+  ..$ m           : int 1
+  ..$ digits      : Named int [1:9] 3 3 3 3 3 3 3 3 3
+  .. ..- attr(*, "names")= chr [1:9] "est" "se" "test" "pval" ...
+  ..$ level       : num 0.05
+  ..$ control     : list()
+  ..$ verbose     : logi FALSE
+  ..$ add         : num 0.5
+  ..$ to          : chr "only0"
+  ..$ drop00      : logi FALSE
+  ..$ fit.stats   :'data.frame':	5 obs. of  2 variables:
+  ..$ data        :<environment: 0x653c96872e18> 
+  ..$ formula.yi  : NULL
+  ..$ formula.mods: NULL
+  ..$ version     :Classes 'package_version', 'numeric_version'  hidden list of 1
+  ..$ call        : language rma.uni(yi = cont.data@y, sei = cont.data@SE, slab = cont.data@study.names,      method = params$rm.method, test | __truncated__ ...
+  ..$ time        : num 0.014
+  ..- attr(*, "class")= chr [1:2] "rma.uni" "rma"

@@ -1,0 +1,447 @@
+{
+  "step": 6,
+  "action": "analysis-results",
+  "utc": "2026-11-05T10:34:43.985799+00:00",
+  "captures": [
+    "06-0-analysis-results.png"
+  ],
+  "artifacts": {
+    "analysis.standard.forest_plot.1": "06-0-forest-c8fe26812936.display.svg"
+  },
+  "texts": {
+    "Summary": "Continuous Random-Effects Model\n\nMetric: Standardized Mean Difference\n\nModel Results\n Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value\n 0.358                    0.152                 0.565                    0.105  < 0.001\n\nHeterogeneity\n Q       df  p-value     I\u00b2     \u03c4\u00b2\n 11.914   5    0.036  58.0%  0.037\n\nTest for overall effect\n Z      p-value\n 3.400  < 0.001\n\nPrediction interval\n Lower bound (95% PI)  Upper bound (95% PI)\n -0.072                               0.789\n\n95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
+    "Weights": "Study names  Weights\nCarroll: 15.8%\nGrant  : 16.3%\nPeck   : 12.6%\nDonat  : 23.3%\nStewart: 13.8%\nYoung  : 18.3%\n",
+    "References": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+  },
+  "plots": {
+    "analysis.standard.forest_plot.1": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg"
+  },
+  "visible_labels": [
+    {
+      "surface": "",
+      "text": "Copy report"
+    },
+    {
+      "surface": ":tooltip",
+      "text": "Copy report"
+    },
+    {
+      "surface": "",
+      "text": "Export report"
+    },
+    {
+      "surface": ":tooltip",
+      "text": "Export report"
+    },
+    {
+      "surface": "",
+      "text": "Export plot"
+    },
+    {
+      "surface": ":tooltip",
+      "text": "Export plot"
+    },
+    {
+      "surface": ":tooltip",
+      "text": "Export format; remembered for your next plot and analysis."
+    },
+    {
+      "surface": ":choice",
+      "text": "PDF"
+    },
+    {
+      "surface": ":choice",
+      "text": "PNG"
+    },
+    {
+      "surface": ":choice",
+      "text": "TIFF"
+    },
+    {
+      "surface": ":choice",
+      "text": "SVG"
+    },
+    {
+      "surface": "",
+      "text": "Edit plot"
+    },
+    {
+      "surface": ":tooltip",
+      "text": "Edit plot"
+    },
+    {
+      "surface": "",
+      "text": "Change settings"
+    },
+    {
+      "surface": ":tooltip",
+      "text": "Re-run this analysis with its original dataset and changed settings."
+    },
+    {
+      "surface": "",
+      "text": "Zoom:"
+    },
+    {
+      "surface": "",
+      "text": "Fit width"
+    },
+    {
+      "surface": ":tooltip",
+      "text": "Fit width"
+    }
+  ],
+  "visible_plot_labels": [
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "96.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "98.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "94.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "98.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "98.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "94.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "21.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "21.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "19.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "28.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "21.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "22.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "85"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "50"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "200"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "40"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "65"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "60"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "92.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "88.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "82.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "88.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "92.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "92.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "22.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "22.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "17.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "26.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "22.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "20.000"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "85"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "45"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "200"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "40"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "65"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "60"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "18.3%"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "13.8%"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "23.3%"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "12.6%"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "16.3%"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "15.8%"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "Study"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "Mean"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "SD"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "Total"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "Mean"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "SD"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "Total"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "Weight"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "Intervention"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "Control"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "Standardized Mean Difference"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "IV, Random,"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "95% CI"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "Standardized Mean Difference"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "IV, Random,"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "95% CI"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "0.358 [0.152, 0.565]"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "-0.2"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "0"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "0.2"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "0.4"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "0.6"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "0.8"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": " 1997"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": " 1981"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": " 1987"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": " 2003"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": " 1990"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": " 1995"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "0.095 [-0.264, 0.453]"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "0.277 [-0.068, 0.623]"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "0.367 [-0.075, 0.808]"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "0.664 [0.463, 0.866]"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "0.462 [0.054, 0.870]"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "0.185 [-0.116, 0.486]"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "Random-effects model (DerSimonian\u2013Laird)"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "500"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "495"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "100.0%"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "Heterogeneity: \u03c4\u00b2 = 0.037; Q = 11.914, df = 5 (P = 0.036); I\u00b2 = 58.0%"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "Test for overall effect: Z = 3.400 (P < 0.001)"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "95% prediction interval: [-0.072, 0.789]"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "Standardized Mean Difference"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "Favours Intervention"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": "Favours Control"
+    },
+    {
+      "surface": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-yce6he6n/analysis/forest-c8fe26812936.display.svg",
+      "text": " \u00b7 Continuous \u00b7 Standardized Mean Difference \u00b7 Comparison: Intervention / Control"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+ERROR: failed to lock directory ‘/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/rcmetar-lib’ for modifying
+Try removing ‘/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/rcme** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (RCMetaR)

@@ -299,3 +299,9 @@ and compares every numeric fit field exactly before/after presentation edits.
 the rendered plot and in report details, alongside its existing public-fit checks.
 
 The in-process R bridge contract first checks the automatic 9 pt SVG text floor and horizontal overflow at a narrow window, then explicitly requests Fit width before asserting shrink/grow resizing.
+
+Batch 7 direction labels retain the axis tick font size and extend outward from
+its null; preflight reserves extra device space for long labels. HR/IRR drives
+retain the existing footer bounds, gap and overlap assertions. Native continuous
+SMD (dark) and amino OR (light, large font) captures are in
+`artifacts/batch7/`; the 9 pt body floor and forest fit settling remain unchanged.

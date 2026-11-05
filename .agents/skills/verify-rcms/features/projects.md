@@ -180,3 +180,11 @@ the import wizard always supplies a column mapping and cannot reach that fallbac
 The `rm5-import` drive checks visible sheet-tab text and mouse selection after importing both Fleiss1993 outcomes at 1024×700. The `sheets` drive also checks tab visibility at that size.
 
 The sheet-add helpers drive the existing dataset wizard from “+”, selecting two-arm continuous Means and rejecting duplicate outcome names before Finish. `sheets` also cancels the wizard without a project or undo-availability change, checks one-step add undo/redo, and retains the original sheet-state comparison. The shared helper covers `sheets-edges`, `sheets-swap`, and `project-structure` too.
+
+Batch 7 native startup captures open a project before R is ready and show blank
+effect/CI cells, followed by populated ready-state captures. The `project-shell`
+unsaved prompt drive checks Save/Discard/Cancel, Save default and Escape cancel;
+`editing` checks the exact invalid-project guidance and preservation of the open
+project. Native dark/default and light/large prompt evidence is in
+`artifacts/batch7/`. Native Save/Discard through every destructive entry point
+still requires a targeted drive; shared authorization behavior has GUI coverage.

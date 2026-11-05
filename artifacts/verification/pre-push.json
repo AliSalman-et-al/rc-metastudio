@@ -1,32 +1,32 @@
 [
   {
     "step": "prepare",
-    "seconds": 5.54,
+    "seconds": 4.13,
     "status": "pass"
   },
   {
     "step": "typing (win32)",
-    "seconds": 7.59,
+    "seconds": 5.87,
     "status": "pass"
   },
   {
     "step": "code health",
-    "seconds": 132.17,
+    "seconds": 95.95,
     "status": "pass"
   },
   {
     "step": "Python fast and golden",
-    "seconds": 89.25,
+    "seconds": 106.86,
     "status": "pass"
   },
   {
     "step": "GUI",
-    "seconds": 92.71,
+    "seconds": 77.63,
     "status": "pass"
   },
   {
     "step": "packaging contracts",
-    "seconds": 4.09,
+    "seconds": 3.84,
     "status": "pass"
   },
   {
