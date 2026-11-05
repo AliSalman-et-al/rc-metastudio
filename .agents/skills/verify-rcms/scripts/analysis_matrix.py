@@ -184,7 +184,7 @@ def run(
             assert len(terms) == 3 and all("treatment group" in term and "reference" in term for term in terms), terms
             assert all(term in report for term in terms), report
             if scenario.endswith("category-factor"):
-                assert all(f"treatment group: {level} (reference: 1)" in report for level in ("1", "2", "3", "4")), report
+                assert all(f"treatment group: {level} (reference: 2)" in report for level in ("1", "2", "3", "4")), report
             record("category-coefficients-labelled", view, terms=terms, report=report)
             return view
         clinical = any(section.plot_kind == "sroc" for section in view.results.sections)
