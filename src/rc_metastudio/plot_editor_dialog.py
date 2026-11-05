@@ -118,6 +118,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             self._build_sroc_controls()
             configure_plot_text_inputs(self)
 
+        self.x_ticks_le.textChanged.connect(self._ticks_changed)
+
         self.color_btn.clicked.connect(
             app_error_handler.safe_slot(self._choose_color, parent=self)
         )
@@ -240,7 +242,12 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         if self._commit_outcome is None:
             self.mark_commit_succeeded()
 
-    def _validate_ticks(self):
+    def _ticks_changed(self):
+        if self._validate_ticks(focus=False):
+            self._commit_error.clear()
+            self._commit_error.hide()
+
+    def _validate_ticks(self, *, focus=True):
         ticks = self.x_ticks_le.text().strip()
         if ticks and ticks != "[default]":
             values = []
@@ -253,12 +260,14 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                 self.mark_commit_failed(
                     "X-axis ticks must be comma-separated finite numbers, or leave blank for automatic ticks."
                 )
-                self.x_ticks_le.setFocus()
+                if focus:
+                    self.x_ticks_le.setFocus()
                 return False
             measure = str(self._scalar(self._params.get("measure", "")))
             if measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"} and self.axis_scale.currentData() != "natural" and any(value <= 0 for value in values):
                 self.mark_commit_failed("X-axis ticks must be positive for a logarithmic effect axis.")
-                self.x_ticks_le.setFocus()
+                if focus:
+                    self.x_ticks_le.setFocus()
                 return False
         return True
 

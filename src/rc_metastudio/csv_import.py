@@ -188,7 +188,8 @@ def _validate_minimum_width(rows: list[list[str]], minimum_width: int) -> None:
     for row_number, row in enumerate(rows, start=1):
         if len(row) < minimum_width:
             raise CsvImportError(
-                f"CSV row {row_number} must contain at least {minimum_width} columns."
+                f"CSV row {row_number} needs Study and Year columns before the data columns "
+                f"({minimum_width} columns in total). Use the CSV template."
             )
 
 

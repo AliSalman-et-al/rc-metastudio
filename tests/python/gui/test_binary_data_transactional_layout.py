@@ -561,7 +561,7 @@ def test_binary_validation_message_wraps_and_is_revealed(monkeypatch):
         dialog.raw_data_table.item(0, 0).setText("1.5")
         app.processEvents()
 
-        assert warnings
+        assert not warnings
         assert dialog.inconsistencyLabel.isVisible()
         assert dialog.inconsistencyLabel.wordWrap()
         assert "whole number" in dialog.inconsistencyLabel.text()

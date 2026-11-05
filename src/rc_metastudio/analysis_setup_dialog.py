@@ -598,13 +598,15 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _set_scroll_body_height(self, content_height):
         layout = self.layout()
         assert layout is not None
-        margins = layout.contentsMargins()
         frame_height = max(0, self.frameGeometry().height() - self.height())
         policy = adaptive_window.WINDOW_POLICIES[adaptive_window.WindowRole.TRANSACTIONAL]
         available = int(adaptive_window.available_geometry_for_window(self).height() * policy.maximum_screen_fraction)
-        body_height = (available - frame_height - margins.top() - margins.bottom()
-                       - layout.spacing() - self.buttonBox.sizeHint().height())
-        self.content_scroll_area.setMinimumHeight(max(0, min(content_height + 2, 650, body_height)))
+        self.content_scroll_area.setMinimumHeight(0)
+        layout.invalidate()
+        overhead = layout.minimumSize().height() - self.content_scroll_area.minimumSizeHint().height()
+        body_height = available - frame_height - overhead
+        self.content_scroll_area.setMinimumHeight(max(0, min(content_height + 2, body_height)))
+        layout.activate()
 
     def _fit_active_tab_contents(self, current):
         # Hidden plot controls must not force the method page to scroll.
@@ -616,7 +618,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.specs_tab.updateGeometry()
         active_page = self.specs_tab.currentWidget()
         assert active_page is not None
-        content_height = active_page.minimumSizeHint().height() + 40
+        content_height = self.content_scroll_area_widget.sizeHint().height()
+        page_layout = active_page.layout()
+        tab_bar = self.specs_tab.tabBar()
+        assert tab_bar is not None
+        if page_layout is not None and page_layout.hasHeightForWidth():
+            content_height = max(content_height, page_layout.totalHeightForWidth(active_page.width())
+                                 + tab_bar.sizeHint().height() + 2 * self.content_scroll_area.frameWidth())
         self._set_scroll_body_height(content_height)
         position = self.pos()
         self.adjustSize()
@@ -632,6 +640,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         width = min(self.sizeHint().width(),
                     int(available.width() * policy.maximum_screen_fraction) - frame_width)
         self.resize(max(self.width(), width), self.height())
+        self._resize_on_reflow = True
         self._schedule_local_reflow()
         app = QtWidgets.QApplication.instance()
         if isinstance(app, QtWidgets.QApplication) and not self._focus_reveal_connected:
@@ -1634,7 +1643,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.specs_tab.updateGeometry()
         active_page = self.specs_tab.currentWidget()
         assert active_page is not None
-        content_height = active_page.minimumSizeHint().height() + 40
+        content_height = self.content_scroll_area_widget.sizeHint().height()
+        page_layout = active_page.layout()
+        tab_bar = self.specs_tab.tabBar()
+        assert tab_bar is not None
+        if page_layout is not None and page_layout.hasHeightForWidth():
+            content_height = max(content_height, page_layout.totalHeightForWidth(active_page.width())
+                                 + tab_bar.sizeHint().height() + 2 * self.content_scroll_area.frameWidth())
         # Method changes stay inside the scroll body. Explicit disclosure of
         # Advanced controls may grow the dialog while preserving its placement.
         if not self.isVisible() or resize_window:
@@ -1642,7 +1657,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             previous_size = self.size()
             self._set_scroll_body_height(content_height)
             if self.isVisible():
-                self.resize(previous_size.width(), max(previous_size.height(), self.sizeHint().height()))
+                policy = adaptive_window.WINDOW_POLICIES[adaptive_window.WindowRole.TRANSACTIONAL]
+                available_height = int(adaptive_window.available_geometry_for_window(self).height() * policy.maximum_screen_fraction)
+                frame_height = max(0, self.frameGeometry().height() - self.height())
+                self.resize(previous_size.width(), min(available_height - frame_height,
+                            max(previous_size.height(), self.sizeHint().height())))
             else:
                 self.adjustSize()
             self.move(position)

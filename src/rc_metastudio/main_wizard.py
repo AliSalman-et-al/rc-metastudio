@@ -726,11 +726,12 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 if any(index is None for index in mapping[:2]) or not (raw_complete or effects_complete):
                     def missing(indices):
                         return ", ".join(self.required_header_labels[i] for i in indices if mapping[i] is None)
-                    raise csv_import.CsvImportError(
-                        "Missing columns: " + missing(range(2)) +
-                        "; raw data: " + missing(range(2, 2 + raw_count)) +
-                        "; or effects: " + missing(range(raw_end, len(mapping))) + "."
-                    )
+                    clauses = [text for text in (
+                        missing(range(2)),
+                        "raw data: " + missing(range(2, 2 + raw_count)) if missing(range(2, 2 + raw_count)) else "",
+                        "or effects: " + missing(range(raw_end, len(mapping))) if missing(range(raw_end, len(mapping))) else "",
+                    ) if text]
+                    raise csv_import.CsvImportError("Missing columns: " + "; ".join(clauses) + ".")
                 column_mapping = tuple(-1 if index is None else index for index in mapping)
             notices = []
             self._import_result = csv_import.parse_csv(

@@ -425,11 +425,15 @@ def test_continuous_sample_size_is_rejected_before_model_or_r(monkeypatch, inval
 
         assert len(recorder["impute"]) == before_calls
         assert unit.get_raw_data_for_arm("Group 1") == before_raw
-        assert dialog.simple_table.item(0, 0).text() == "10.0"
-        assert warnings
-        assert (
-            "numeric" in warnings[-1].lower() or "whole number" in warnings[-1].lower()
-        )
+        assert dialog.simple_table.item(0, 0).text() == invalid_n
+        assert not warnings
+        assert not dialog.summary_error.isHidden()
+        assert "numeric" in dialog.summary_error.text().lower() or "whole number" in dialog.summary_error.text().lower()
+        assert not dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
+        dialog.simple_table.item(0, 0).setText("10")
+        app.processEvents()
+        assert dialog.summary_error.isHidden()
+        assert dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
     finally:
         _close(app, dialog)
 
