@@ -20,7 +20,6 @@ from PyQt6.QtWidgets import (
     QStyle,
     QTableWidgetItem,
     QWidget,
-    QWidget,
     QWIDGETSIZE_MAX,
 )
 
