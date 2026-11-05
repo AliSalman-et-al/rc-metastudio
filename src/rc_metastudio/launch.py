@@ -322,7 +322,8 @@ def compose_application(
         meta.toggle_menu_options_that_require_dataset(False)
         meta.setEnabled(False)
         meta.setCursor(QtCore.Qt.CursorShape.WaitCursor)
-        meta.statusBar().showMessage("Starting R… Please wait; controls will be available when startup finishes.")
+        meta._update_project_identity("Starting…")
+        meta.statusBar().showMessage("Starting R…")
         app.processEvents()
         _emit_automation_phase(phase_callback, "window:visible")
 
@@ -337,10 +338,12 @@ def compose_application(
                 meta.toggle_menu_options_that_require_dataset(meta.model.current_sheet is not None)
                 meta.setEnabled(True)
                 meta.unsetCursor()
+                meta._update_project_identity()
                 meta.statusBar().clearMessage()
             except Exception as error:
                 meta.setEnabled(True)
                 meta.unsetCursor()
+                meta._update_project_identity("R failed to start")
                 meta.statusBar().showMessage("R failed to start")
                 meta._show_analysis_backend_error(error)
 

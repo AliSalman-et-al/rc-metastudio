@@ -2176,7 +2176,8 @@ try:
     assert not window.action_go.isEnabled()
     assert not window.isEnabled(), "startup shell looks ready before R is usable"
     assert window.cursor().shape() == QtCore.Qt.CursorShape.WaitCursor
-    assert "Please wait" in window.statusBar().currentMessage()
+    assert window.statusBar().currentMessage() == "Starting R…"
+    assert window.dataset_file_lbl.text() == "Starting… · Untitled dataset"
     from rc_metastudio import r_bridge, r_backend
     try:
         r_bridge.execute_r_string("1 + 1")
@@ -2188,6 +2189,7 @@ try:
     assert r_backend.is_ready()
     assert window.isEnabled()
     assert window.cursor().shape() != QtCore.Qt.CursorShape.WaitCursor
+    assert window.dataset_file_lbl.text() == "Ready to create or open a dataset · Untitled dataset"
     if EVIDENCE is not None and os.environ.get("RCMS_DRIVE_STARTED"):
         import time
         app.processEvents()
