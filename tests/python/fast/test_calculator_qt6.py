@@ -555,6 +555,12 @@ def test_row_header_signals_are_restored_when_calculator_opening_raises(
 
 
 class FakeAnalysisUnit:
+    def calculator_source(self, effect, arm_key):
+        return getattr(self, "selected_source", None)
+
+    def set_calculator_source(self, effect, arm_key, source):
+        self.selected_source = source
+
     def __init__(self):
         from rc_metastudio.meta_globals import (
             BINARY_ONE_ARM_METRICS,
@@ -592,6 +598,9 @@ class FakeAnalysisUnit:
         self, source, effect, arm_key, confidence_multiplier
     ):
         return self.get_effect_and_ci(effect, arm_key, confidence_multiplier)
+
+    def get_entered_effect_and_ci(self, effect, arm_key):
+        return self.get_effect_and_ci(effect, arm_key, None)
 
     def set_effect_and_ci(self, *args, **kwargs):
         pass
@@ -1233,6 +1242,12 @@ def test_diagnostic_calculator_grid_columns_fill_expanded_table_width(
 
 
 class FakeContinuousAnalysisUnit:
+    def calculator_source(self, effect, arm_key):
+        return getattr(self, "selected_source", None)
+
+    def set_calculator_source(self, effect, arm_key, source):
+        self.selected_source = source
+
     def __init__(self):
         from types import SimpleNamespace
         self.sheet = SimpleNamespace(sub_type="means")

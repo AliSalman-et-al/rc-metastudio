@@ -290,7 +290,11 @@ class AnalysisUnit:
         return None
 
     def set_calculator_source(self, effect, arm_comparison, source: EffectSource):
-        self._entry("entered", effect, arm_comparison)["calculator_source"] = source
+        entry = self._entry("entered", effect, arm_comparison)
+        if source == "entered":
+            entry["calculator_source"] = source
+        else:
+            entry.pop("calculator_source", None)
 
     def calculator_source(self, effect, arm_comparison):
         return self._entry("entered", effect, arm_comparison).get("calculator_source")
@@ -480,6 +484,11 @@ class AnalysisUnit:
         if boundary not in ["upper", "lower"]:
             raise Exception("Boundary must be one of 'upper' or 'lower'")
 
+        entry = self._entry(source, effect, arm_comparison)
+        if (source == "entered" and entry.get("SE") is None
+                and entry.get(boundary) is not None
+                and abs(entry.get("source_multiplier", 0) - confidence_multiplier) < 1e-12):
+            return entry[boundary]
         if self.get_se(source, effect, arm_comparison, confidence_multiplier) is None:
             return self._entry(source, effect, arm_comparison)[boundary]
         est = self.get_estimate_for_source(source, effect, arm_comparison)

@@ -479,7 +479,7 @@ def set_current_effect_from_value(
     (est, lower, upper) = analysis_unit.get_effect_and_ci_for_source(
         source, current_effect, arm_key, confidence_multiplier
     )
-    if source == "entered":
+    if data_type in {"binary", "continuous"} and source == "entered":
         est, lower, upper = analysis_unit.get_entered_effect_and_ci(current_effect, arm_key)
     (display_estimate, display_lower, display_upper) = [
         conv_to_disp_scale(x) for x in (est, lower, upper)

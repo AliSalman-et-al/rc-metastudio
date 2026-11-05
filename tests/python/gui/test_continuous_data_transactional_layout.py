@@ -24,6 +24,12 @@ prepare_generated_ui_imports()
 
 
 class FakeContinuousAnalysisUnit:
+    def calculator_source(self, effect, arm_key):
+        return getattr(self, "selected_source", None)
+
+    def set_calculator_source(self, effect, arm_key, source):
+        self.selected_source = source
+
     def __init__(self, raw_data=None, effects=None):
         self.sheet = Sheet(SheetId("sheet"), "Measured outcome", CONTINUOUS, sub_type="means")
         self.raw_data = raw_data or {

@@ -1405,7 +1405,9 @@ def calculators(app, window, mode, record):
         assert window.model._display_effect_source(unit) == "entered"
         displayed = window.model.data(window.model.index(0, window.model.OUTCOMES[0]))
         record("calculator-entered-grid-and-model", window, grid=str(displayed), entered=list(accepted_entered), source=unit.calculator_source(window.model.current_effect, window.model.get_current_arm_key()))
-        assert str(displayed) == str(window.model.format_float(observed["entered"][0])), displayed
+        for column, expected_value in zip(window.model.OUTCOMES[:3], observed["entered"]):
+            actual = window.model.data(window.model.index(0, column))
+            assert str(actual) == str(window.model.format_float(expected_value)), (column, actual, expected_value)
 
     assert window.workspace.is_dirty
     assert (
