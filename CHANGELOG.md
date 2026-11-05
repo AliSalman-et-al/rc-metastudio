@@ -2,6 +2,21 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
+## 0.5.2 - 2026-11-05
+
+### Changed
+
+- Improved dataset-sheet setup, navigation, editing, and retention of entered calculator values.
+- Refined analysis and calculator layouts, validation feedback, plot sizing, labels, and displayed precision.
+- Improved startup feedback, window focus, keyboard behavior, and readability at different font sizes.
+- Made report precision and wording follow the fitted analysis, and improved PDF and DOCX presentation.
+
+### Corrected
+
+- Corrected plot and report labels, calculator feedback, CSV import handling, and project prompts.
+- Kept oversized plot previews within Qt's rendering limits while preserving text results when a plot cannot load.
+- Ensured packaged Windows analysis uses the bundled R runtime and excludes build-host R DLLs.
+
 ## 0.5.1 - 2026-11-01
 
 ### Corrected results
