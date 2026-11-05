@@ -66,7 +66,6 @@
   "artifacts/qa-r1/batch2b/font-regression/pre-push-final.log": "36b137a9763721b5b81c101d26ce207449f2f6af6e365349c6867cefda0b9ac9",
   "artifacts/qa-r1/batch2b/font-regression/r-install.log": "7ffd2ed7f1892cac7585f156fb2604122a3b6342a5502eb601ab04814b233333",
   "artifacts/qa-r1/batch2b/font-regression/code-health.txt": "a2b86575d34bcebecee9d883498338a722eb6b020e722c30f6036dcb1ea290e9",
-  "artifacts/qa-r1/batch2b/font-regression/fresh-health.json": "abe038fff81b7e730115f665ed518e781df617c9c32076f8e0a4b6132a272a3e",
   "artifacts/qa-r1/batch2b/font-regression/fresh-health.txt": "3117c08bff870609ed9b5820353e90efe9c6b8506949df56d9bd0f268d0ae41f",
   "artifacts/qa-r1/batch2b/font-regression/fresh-health.log": "3117c08bff870609ed9b5820353e90efe9c6b8506949df56d9bd0f268d0ae41f",
   "artifacts/qa-r1/batch2b/font-regression/final-ux.log": "8a6e78362d24a65a34a3e95f7fca81585d3d322b7f9104595d3f39e38e615271",
