@@ -443,7 +443,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         required(self.report_text.document(), "report document").setDocumentMargin(20)
         body = []
         for anchor, heading, paragraphs, tables in self._report_blocks():
-            body.append(f'<a name="{escape(anchor)}"></a><h2>{escape(_report_heading(heading))}</h2>')
+            body.append(f'<a name="{escape(anchor)}"></a>')
+            if heading:
+                body.append(f'<h2>{escape(_report_heading(heading))}</h2>')
             if anchor == "text:references":
                 body.append(_reference_html("\n".join(paragraphs)))
                 continue
@@ -732,6 +734,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self._figure_zoom_percent = percent
             self.graphics_view.setTransform(QTransform.fromScale(percent / 100, percent / 100))
             self._relayout_sections()
+            required(self.graphics_view.horizontalScrollBar(), "horizontal scrollbar").setValue(0)
 
     def _show_report(self, checked):
         self.content_stack.setCurrentWidget(self.report_text if checked else self.figure_page)
@@ -745,13 +748,20 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.zoom_control.blockSignals(False)
 
     def _report_blocks(self):
+        supplementary_started = False
         for index, section in enumerate(self.manuscript.sections):
-            yield f"manuscript:{index}", section.title, section.paragraphs, section.tables
+            if not section.paragraphs and not section.tables:
+                continue
+            heading = section.title
+            if section.source_key == "References":
+                yield "text:references", "References", (section.value or "\n".join(section.paragraphs),), ()
+                continue
+            elif heading == "Supplementary details":
+                heading = "" if supplementary_started else heading
+                supplementary_started = True
+            yield f"manuscript:{index}", heading, section.paragraphs, section.tables
         if self.results.details:
             yield "model-configuration", "Model configuration", (self.results.details,), ()
-        for section in self.results.sections:
-            if section.semantic_id == "text:references":
-                yield section.semantic_id, section.title, (section.value,), ()
 
     def _copy_report(self):
         from PyQt6.QtCore import QMimeData

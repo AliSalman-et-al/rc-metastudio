@@ -1157,6 +1157,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             )
             return
         form.show()
+        # The setup dialog closes after delivering results and restores parent focus.
+        def activate_results():
+            form.raise_()
+            form.activateWindow()
+        QtCore.QTimer.singleShot(0, activate_results)
 
     def edit_group_name(self, cur_group_name):
         orig_group_name = copy.copy(cur_group_name)
