@@ -970,7 +970,7 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         self._comparative = info["effect"] in meta_globals.TWO_ARM_METRICS
         data_type = meta_globals.STR_TO_TYPE_DICT[info["data_type"]]
         self._naming_defaults = meta_globals.default_group_names(data_type, info["sub_type"])
-        metric = "Mean" if info["effect"] == "TX Mean" else meta_globals.ALL_METRIC_NAMES.get(info["effect"], info["effect"])
+        metric = "Mean" if info["effect"] == "TX Mean" else meta_globals.ALL_METRIC_NAMES.get(info["effect"], info["effect"] or "")
         metric = {"PR": "Proportion", "SMD": "Standardized mean difference (SMD)"}.get(info["effect"], metric[:1] + metric[1:].lower())
         task = "Import data" if self.wizard().get_wizard_path() == "csv_import" else "Create dataset"
         kind = {"binary": "Two-arm binary" if self._comparative else "Single-arm proportion",
