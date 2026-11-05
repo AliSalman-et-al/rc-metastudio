@@ -100,3 +100,10 @@ def normalize_identifier_label(value: object) -> str:
 
 def _reference_key(reference: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", reference.lower()).strip()
+
+
+def format_effect_number(value: float, digits: int) -> str:
+    formatted = f"{value:.{digits}f}"
+    if value != 0 and float(formatted) == 0:
+        return f"{value:.{max(1, digits)}g}"
+    return formatted

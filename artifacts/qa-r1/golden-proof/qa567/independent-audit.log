@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "changed_archive_members": [
+    "manifest.json",
+    "captures/lymph-diagnostic-random-dor.json"
+  ],
+  "all_numeric_values_and_tolerances_identical": true,
+  "all_other_cases_and_png_bytes_identical": true,
+  "only_metadata_change": "lymph display identity label",
+  "only_numeric_contract_changes": "lymph section/coverage keys and oracle SHA binding",
+  "outer_manifest": "SHA/size bindings only"
+}

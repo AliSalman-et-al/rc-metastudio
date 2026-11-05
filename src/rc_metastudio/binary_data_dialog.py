@@ -902,6 +902,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             self._mark_table_consistent()
         except Exception as e:
             msg = e.args[0]
+            self._mark_table_invalid(msg)
             QMessageBox.warning(self, "Warning", msg)  # popup warning
             self.restore_analysis_unit_and_table(
                 old_analysis_unit, old_table

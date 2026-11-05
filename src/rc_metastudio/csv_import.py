@@ -89,6 +89,7 @@ def parse_csv(
     year_column: int = 1,
     optional_headers: Mapping[str, str] | None = None,
     column_mapping: tuple[int, ...] | None = None,
+    positional_width: int | None = None,
     header_aliases: Mapping[str, str] | None = None,
     worksheet: str | None = None,
     notices: list[str] | None = None,
@@ -124,7 +125,8 @@ def parse_csv(
         elif rows:
             raise CsvImportError("CSV file is missing the required header row.")
     else:
-        _validate_minimum_width(rows, len(expected_headers))
+        _validate_minimum_width(rows, positional_width or len(expected_headers))
+        rows = normalize_import_rows(rows, minimum_width=len(expected_headers))
     normalized_rows = normalize_import_rows(rows, minimum_width=len(headers))
     if headers:
         width = len(normalized_rows[0]) if normalized_rows else len(headers)

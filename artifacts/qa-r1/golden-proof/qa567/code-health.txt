@@ -1,0 +1,14 @@
+Code health (8d3609d2a7b8731cd9e252213cefabdf0892448f..3fdb7a382f05b7c0a3c66a23791edb0460568e30)
+Scope: 187 files; as of 2026-11-05T09:02:31+05:00
+Coupling: 147 modules, 434 edges
+Cycles: 2; cognitive complexity total/max: 15132/95
+Typing: 3232/6936 parameters (46.6%), 1663/3334 returns (49.9%), 0 Any annotations, 3 type: ignores, 0 casts to Any (3fdb7a382f05b7c0a3c66a23791edb0460568e30)
+Defect history: 182 matching commits across 74 files
+Baseline comparison: artifacts/code-health/baseline.json (recorded head 8b7796bcc840c3505c5fb0a1328cdd7682880e48)
+Gate: PASS
+Hotspots (180-day normalized churn × complexity density):
+  src/rc_metastudio/project_adapter.py: 8.4481
+  src/rc_metastudio/two_way_dict.py: 4.6216
+  src/rc_metastudio/analysis_dataset.py: 3.6667
+  src/rc_metastudio/automation.py: 2.5943
+  src/rc_metastudio/result_sections.py: 2.3748

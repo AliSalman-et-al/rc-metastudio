@@ -436,7 +436,7 @@ def run(app, window, work, root, record, analyze):
     for column, value in ((window.model.RAW_DATA[1], 10000), (window.model.RAW_DATA[3], 10000), (window.model.RAW_DATA[0], 1), (window.model.RAW_DATA[2], 5000)):
         assert window.model.setData(window.model.index(0, column), value)
     estimate = str(window.model.data(window.model.index(0, window.model.OUTCOMES[0])))
-    assert estimate == "<0.01"
+    assert estimate == "0.0001"
     stored_estimate = float(window.model.data(window.model.index(0, window.model.OUTCOMES[0]), QtCore.Qt.ItemDataRole.EditRole))
     assert 0 < stored_estimate < .001
     assert abs(stored_estimate - 1 / 9999) < 1e-6

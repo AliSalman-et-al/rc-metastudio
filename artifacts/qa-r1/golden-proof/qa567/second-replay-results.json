@@ -1,0 +1,65 @@
+[
+  {
+    "scenario": "analysis-dialog",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "scripts/verify_rcms.py",
+      "analysis-dialog"
+    ],
+    "exit": 1
+  },
+  {
+    "scenario": "calculator-mode-onearm-mean",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "scripts/verify_rcms.py",
+      "calculator-mode-onearm-mean"
+    ],
+    "exit": 0
+  },
+  {
+    "scenario": "sheets-legacy",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "scripts/verify_rcms.py",
+      "sheets-legacy"
+    ],
+    "exit": 0
+  },
+  {
+    "scenario": "results-window",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "scripts/verify_rcms.py",
+      "results-window"
+    ],
+    "exit": 0
+  },
+  {
+    "scenario": "lymph",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "scripts/verify_rcms.py",
+      "lymph"
+    ],
+    "exit": 0
+  },
+  {
+    "scenario": "options-diagnostic",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "scripts/verify_rcms.py",
+      "options-diagnostic"
+    ],
+    "exit": 0
+  },
+  {
+    "scenario": "ux-improvements",
+    "command": [
+      "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+      "scripts/verify_rcms.py",
+      "ux-improvements"
+    ],
+    "exit": 0
+  }
+]

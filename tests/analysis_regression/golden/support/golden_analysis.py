@@ -321,7 +321,7 @@ def curated_golden_bundles(root_dir=None):
             "parameters": [diagnostic_params],
             "tolerances": DEFAULT_TOLERANCES,
             "expected": {
-                "Odds Ratio Summary": {
+                "Diagnostic Odds Ratio Summary": {
                     "estimate": 9.648,
                     "lower_bound": 5.529,
                     "upper_bound": 16.835,
@@ -609,7 +609,7 @@ def _matching_key(mapping, expected):
     return None
 
 
-def _artifact_source_key(result: AnalysisResult, label, images):
+def _artifact_source_key(result: AnalysisResult, label, images, path):
     for section in result.sections:
         if (
             section.kind == "image"
@@ -617,6 +617,9 @@ def _artifact_source_key(result: AnalysisResult, label, images):
             and section.source_key in images
         ):
             return section.source_key
+    for key, image_path in images.items():
+        if os.path.basename(image_path) == os.path.basename(path):
+            return key
     return _matching_key(images, label)
 
 
@@ -812,7 +815,7 @@ def _capture_plot_descriptors(bundle, result: AnalysisResult):
     capabilities = result.plot_capabilities
     descriptors = []
     for label in sorted(bundle.get("artifacts", {})):
-        image_key = _artifact_source_key(result, label, result.images)
+        image_key = _artifact_source_key(result, label, result.images, bundle["artifacts"][label])
         display_label = (
             image_key if image_key in displays else _matching_key(displays, label)
         )
