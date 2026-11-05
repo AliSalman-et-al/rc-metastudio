@@ -140,3 +140,16 @@ def test_request_rejects_unknown_asymmetry_method():
         SmallStudyEffectsRequest.create(
             data_type="binary", metric="OR", selected_tests=("not-a-test",)
         )
+
+
+@pytest.mark.parametrize(("title", "expected"), [
+    ("Ordinary Funnel Plot", "Ordinary funnel plot"),
+    ("Cumulative Summary", "Cumulative summary"),
+    ("Diagnostic I-squared", "Diagnostic I-squared"),
+    ("Overall ML likelihood-ratio test", "Overall ML likelihood-ratio test"),
+    ("Bivariate Reitsma Summary", "Bivariate Reitsma summary"),
+    ("Egger's Regression Test", "Egger's regression test"),
+    ("SROC", "SROC"),
+])
+def test_result_section_titles_use_sentence_case_without_breaking_names(title, expected):
+    assert r_bridge._sentence_case_title(title) == expected

@@ -2215,8 +2215,20 @@ def _display_section_name(name):
     return method_display_label(str(name))
 
 
+_TITLE_PROPER_NAMES = frozenset((
+    "Baujat", "Begg", "Bayesian", "DerSimonian-Laird", "Egger", "Galbraith", "Hartung-Knapp",
+    "Knapp-Hartung", "Mantel-Haenszel", "Peto", "Reitsma",
+))
+
+
 def _sentence_case_title(title):
-    return " ".join(word if index == 0 or word.isupper() else word.lower()
+    def keep(word):
+        core = word.strip("()[],:;'’")
+        head = core.split("-")[0]
+        return (core.removesuffix("'s").removesuffix("’s") in _TITLE_PROPER_NAMES
+                or any(c.isupper() for c in core[1:])  # acronyms, DerSimonian, ML
+                or (len(head) == 1 and head.isupper()))  # I-squared, H-squared
+    return " ".join(word if index == 0 or keep(word) else word.lower()
                     for index, word in enumerate(str(title).split()))
 
 
