@@ -118,7 +118,9 @@ def run(app, window, work, record):
                     assert [required(page.preview_table.item(0, i)).text() for i in range(2, 6)] == ["4", "20", "6", "22"]
                 record("round5-arm-csv-preview", wizard, case=case, spelling=spelling, headers=displayed, exports={"template":str(template),"input":str(source)})
                 page.import_tabs.setCurrentWidget(page.mapping_table)
-                assert not any("tx " in control.itemText(i).casefold() for control in page.mapping_controls for i in range(control.count()))
+                expected_choices = ["Select column…", *(f"{i + 1}: {header}" for i, header in enumerate(source_headers))]
+                for control in page.mapping_controls:
+                    assert [control.itemText(i) for i in range(control.count())] == expected_choices
                 record("round5-arm-csv-mapping", wizard, case=case, spelling=spelling)
             wizard.reject()
     window.workspace.mark_saved()
