@@ -548,6 +548,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._enable_action_meta_regression(enable)
         self._enable_action_subgroup_ma(enable)
         self.action_publication_bias.setEnabled(enable)
+        for action, label in ((self.action_go, "Meta-analysis"), (self.action_cum_ma, "Cumulative meta-analysis"),
+                              (self.action_loo_ma, "Leave-one-out meta-analysis")):
+            action.setText(label + ("…" if enable else " (requires at least 2 included studies)"))
         self._update_workspace_guidance()
 
     def _update_workspace_guidance(self):
