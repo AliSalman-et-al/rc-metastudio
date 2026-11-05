@@ -2,6 +2,8 @@
 
 Users inspect analysis summaries and plots, apply plot edits, discard subsequent drafts, and export rendered figures.
 
+The `subgroup-image` and `subgroup-image-dark-large` drives run meantime by treatment group, verify the SVG forest and full-resolution raster export (PNG header, without Qt decoding), and force a plot-load exception while retaining text results and a plot-pane message.
+
 ## Sub-features
 
 - `results-render`: actual summary text and valid rendered analysis plots.
@@ -281,3 +283,8 @@ Inputs, SVGs and geometry receipts remain in its chosen output directory; see
 the Windows notes for the install and run commands.
 
 `plot-workflow-mh-rd` exercises invalid lower-axis input: Apply displays a plain validation message before rendering and preserves the figure bytes; a recovered BMJ edit proves the fit-derived method header.
+
+The review-workflows drive also reruns amino through Change settings at 90% and
+99% with Knapp–Hartung. It checks Methods against the executed confidence level
+and overall t degrees of freedom against the saved metafor res$dfs in Methods,
+results and the forest SVG.

@@ -1,5 +1,7 @@
 """Drive result properties and presentation-only ordering with real Qt and R."""
 
+from pathlib import Path
+
 from PyQt6 import QtCore, QtWidgets
 from collections.abc import Iterable
 from typing import cast
@@ -105,6 +107,43 @@ def run(app, window, root, record, analyze):
     assert "REML" in changed.report_text.toPlainText() or "Restricted" in changed.report_text.toPlainText()
     record("review-settings-rerun", changed, plots=dict(changed.results.display_images), text=changed.report_text.toPlainText())
     changed.close()
+    view.close()
+
+    assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
+    view = analyze(app, window, "binary.random")
+    for confidence in (90, 99):
+        view.change_settings_action.trigger()
+        app.processEvents()
+        dialog = setup()
+        for key, value in (("conf.level", confidence), ("inference.method", "knha")):
+            label = next(w for w in dialog.findChildren(QtWidgets.QLabel)
+                         if w.buddy() is not None and w.text().rstrip(":").casefold() ==
+                         ("confidence level" if key == "conf.level" else "inference method"))
+            control = label.buddy()
+            if key == "conf.level":
+                control.setValue(value)
+            else:
+                control.setCurrentIndex(control.findData(value))
+        assert dialog.current_param_vals["conf.level"] == confidence
+        assert dialog.current_param_vals["inference.method"] == "knha"
+        changed = submit(dialog)
+        assert f"Confidence intervals ({confidence}%)" in changed.manuscript.methods
+        path = next(iter(changed.params_paths.values()))
+        r_bridge.load_vars_for_plot(path)
+        df = int(r_bridge.ro.r("res$dfs")[0])
+        assert df == len(window.model.get_studies()) - 1
+        assert f"{df} degrees of freedom" in changed.manuscript.methods
+        assert f"df = {df}" in changed.manuscript.results
+        assert any("df" in table.headers and table.rows[0][table.headers.index("df")] == str(df)
+                   for section in changed.results.sections for table in section.tables
+                   if table.rows)
+        svg_text = Path(next(iter(changed.results.display_images.values()))).read_text()
+        assert f"t (df = {df})" in svg_text
+        record(f"review-confidence-{confidence}-kh", changed,
+               methods=changed.manuscript.methods, df=df,
+               plots=dict(changed.results.display_images))
+        view.close()
+        view = changed
     view.close()
 
     window.cum_ma()

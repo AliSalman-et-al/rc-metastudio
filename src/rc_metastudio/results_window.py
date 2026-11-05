@@ -76,8 +76,8 @@ from rc_metastudio.analysis_results import (
 from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
 from rc_metastudio.plot_editor_dialog import EditPlotDialog
 from rc_metastudio.plot_service import PlotService
-from rc_metastudio.runtime_types import required
 from rc_metastudio.qt_geometry import logical_extent_to_physical_pixels
+from rc_metastudio.runtime_types import required
 from rc_metastudio.settings import (
     load_plot_export_format,
     save_plot_export_format,
@@ -187,12 +187,6 @@ class PlotArtifact(object):
     def has_vector_display(self):
         return self.display_path().lower().endswith((".svg", ".svgz"))
 
-    def can_display(self):
-        if self.has_vector_display():
-            item = _svg_item_class()(self.display_path())
-            return item.renderer().isValid()
-        return not QPixmap(self.image_path).isNull()
-
     def export_formats(self):
         if self.params_path:
             return PLOT_EXPORT_FORMATS
@@ -203,6 +197,7 @@ class ResponsivePixmapItem(QGraphicsPixmapItem):
     def __init__(self, source_pixmap):
         super(ResponsivePixmapItem, self).__init__()
         self.source_pixmap = QPixmap(source_pixmap)
+        self.source_path = None
         self.setTransformationMode(Qt.TransformationMode.SmoothTransformation)
 
     def replace_source(self, source_pixmap):
@@ -826,11 +821,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             params_path = self.params_paths[title]
 
         artifact = self.create_plot_artifact(title, image, params_path=params_path)
-        if not artifact.can_display():
-            return
-
         qt_item = self.add_title(display_title)
-        img_shape, pos, plot_item = self.create_plot_item(artifact, self.position())
+        try:
+            img_shape, pos, plot_item = self.create_plot_item(artifact, self.position())
+        except Exception as error:
+            app_error_handler.log_exception(type(error), error, error.__traceback__)
+            self.add_title("Could not load plot. Text results are still available.")
+            return
 
         self.items_to_coords[id(qt_item)] = pos
         self._nav_items_to_sections[id(qt_item)] = plot_item
@@ -1102,7 +1099,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _refit_raster_plot_items(self):
         for item in self._raster_plot_items:
-            source = item.source_pixmap
+            source = QPixmap(item.source_path) if item.source_path else item.source_pixmap
             if source.isNull():
                 continue
             logical_width, logical_height = _pixmap_device_independent_size(source)
@@ -1188,6 +1185,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     ):
         artifact = self.create_plot_artifact(title, image_path, params_path=params_path)
         item = ResponsivePixmapItem(QPixmap(image_path))
+        item.source_path = image_path
         item.setPixmap(pixmap)
         item.setToolTip(
             'To save the image:\nright-click on the image and choose "save image as".'
@@ -1225,6 +1223,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 return svg_item
 
         pixmap = self.generate_pixmap(artifact.image_path)
+        if pixmap.isNull():
+            raise ValueError("Plot image could not be decoded")
         return self.create_pixmap_item(
             pixmap,
             position,
@@ -1266,8 +1266,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         return (item.boundingRect().size(), position, item)
 
     def _make_context_menu(self, artifact, plot_item):
-        plot_img = QImage(artifact.image_path)
-
         def _graphics_item_context_menu(event):
             def add_save_as_menu_action(menu, export_format):
                 action = QAction("Export %s…" % export_format.label, self)
@@ -1283,7 +1281,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     self.save_image_as(
                         artifact,
                         unscaled_image=(
-                            plot_img
+                            QImage(artifact.image_path)
                             if selected_format.qt_format is not None
                             and not artifact.params_path
                             else None
@@ -1495,6 +1493,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 source_pixmap = QPixmap(outpath)
                 if not source_pixmap.isNull():
                     plot_item.replace_source(source_pixmap)
+                    plot_item.source_path = outpath
                     self._schedule_viewport_refit()
 
     def save_image_as(self, artifact, unscaled_image=None, format=None):

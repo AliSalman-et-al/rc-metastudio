@@ -80,6 +80,15 @@ rcmetar.plot.pixel.size <- function(size) {
     )
 }
 
+rcmetar.plot.preview.size <- function(size) {
+    pixels <- rcmetar.plot.pixel.size(size)
+    # Qt rejects decoded images above 256 MiB. Leave ordinary rasters unchanged.
+    if (prod(pixels) * 4 > 256 * 1024^2) {
+        size$dpi <- min(120, sqrt(32 * 1024^2 / (size$width * size$height)))
+    }
+    size
+}
+
 rcmetar.open.svg_device <- function(outpath, size) {
     bg <- if (!is.null(size$bg)) size$bg else "white"
     svglite::svglite(
@@ -290,6 +299,7 @@ rcmetar.render.plot_file <- function(outpath, size, draw, display.path=NULL, cap
     )
     if (keep.display) {
         dir.create(dirname(svg.path), recursive=TRUE, showWarnings=FALSE)
+        size <- rcmetar.plot.preview.size(size)
     }
     if (!keep.display) {
         on.exit(unlink(svg.path), add=TRUE)

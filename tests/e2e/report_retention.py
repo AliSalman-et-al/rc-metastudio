@@ -351,7 +351,15 @@ def assert_report(view):
         assert pooled is not None
         level = next(header for header in pooled.headers if header.endswith('% CI'))
         indexes = [i for i in range(6) if any(row[i] not in ('', '—', 'NA') for row in expected_rows)]
-        full_headers = [('Effect', 'Estimate', level, 'SE', statistic, 'p') for statistic in ('z', 't')]
+        statistic = 'z'
+        for section in view.results.sections:
+            for source in section.tables:
+                if not {'t', 't-value'}.intersection(source.headers):
+                    continue
+                statistic = 't'
+                if 'df' in source.headers:
+                    statistic = f"t (df = {source.rows[-1][source.headers.index('df')]})"
+        full_headers = [('Effect', 'Estimate', level, 'SE', statistic, 'p')]
         assert pooled.headers in [tuple(headers[i] for i in indexes) for headers in full_headers]
         expected_rows = presentation_rows(expected_rows, view.results.manuscript_digits)
         assert pooled.rows == tuple(tuple(row[i] for i in indexes) for row in expected_rows), (pooled.rows, expected_rows, indexes)

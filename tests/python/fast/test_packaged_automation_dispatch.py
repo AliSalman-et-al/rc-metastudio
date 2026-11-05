@@ -99,6 +99,9 @@ def test_developer_assembly_emits_evidence_accepted_by_both_inspectors(
     samples_path.write_text(json.dumps({"passed": True, "manifest_sha256": digest, "projects": [{"project": "BCG.rcms", "sha256": digest, "semantic_sha256": digest, "opened_in_packaged_application": True}]}), encoding="utf-8")
     output = tmp_path / "evidence.json"
     evidence = assembler.assemble(workflow_observation=workflow_path, surface_records=surfaces_path, sample_observations=samples_path, sample="BCG.rcms", output=output)
+    assert (output.with_suffix(".plots") / "0-forest.svg").read_bytes() == (tmp_path / "forest.svg").read_bytes()
+    assert (output.with_suffix(".plots") / "1-locale-forest.svg").read_bytes() == locale_svg.read_bytes()
+    assert (output.with_suffix(".plots") / "2-locale-forest.svg").read_bytes() == locale_svg.read_bytes()
     expected = evidence["workflows"]["normalized_summary_sha256"]
     monkeypatch.setitem(inspect_macos_deployment.EXPECTED_SUMMARY_SHA256_BY_SAMPLE, "BCG.rcms", expected)
     inspect_macos_deployment.validate_packaged_workflow_evidence(evidence)

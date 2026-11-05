@@ -1027,7 +1027,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         metric = self._result_metric_label().lower()
         model = "random-effects" if "random" in model_label.lower() else "fixed-effect" if "fixed" in model_label.lower() else model_label.lower()
         title = f"{self.model.current_sheet.name}: {model} meta-analysis ({metric})"
-        methods = methods_prose(metric, model, applied_parameters, self.confidence_level,
+        methods = methods_prose(metric, model, applied_parameters,
+                                applied_parameters.get("conf.level", self.confidence_level),
                                 self.analysis_type, details, fits)
         correction = context.partition(". ")[2]
         if correction:
