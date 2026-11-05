@@ -866,6 +866,33 @@ PY
             -exec cp {} "$crash_destination/" \; || true
         fi
       done
+      surface_lldb_log="$qualification_root/packaged-surface-${scale/./}.lldb.log"
+      if command -v lldb >/dev/null 2>&1; then
+        surface_record="$surface_records_path/surface-$scale.json"
+        if [ -f "$surface_record" ]; then
+          cp "$surface_record" "$qualification_root/packaged-surface-${scale/./}.original.json"
+        fi
+        if [ -f "$smoke_log_path" ]; then
+          cp "$smoke_log_path" "$qualification_root/packaged-surface-${scale/./}.original-smoke.log"
+        fi
+        # A debugger run retains the native stack without accepting a failed qualification.
+        if QT_SCALE_FACTOR="$scale" \
+          RCMS_PACKAGE_BASELINE_DPR="$baseline_dpr" \
+          RCMS_AUTOMATION_SMOKE_LOG="$smoke_log_path" \
+          RCMS_PACKAGED_PROCESS_TIMEOUT_SECONDS=75 \
+          RCMS_PACKAGED_STDOUT_PATH="$surface_lldb_log" \
+          RCMS_PACKAGED_STDERR_PATH="$surface_lldb_log" \
+          run_packaged_process lldb --batch --one-line run \
+            --one-line-on-crash 'thread backtrace all' -- "$app_root/RCMetaStudio" \
+            --automation-package-surface-smoke "$surface_record" "$scale"; then
+          surface_lldb_status=0
+        else
+          surface_lldb_status=$?
+        fi
+        echo "$surface_lldb_status" > "$qualification_root/packaged-surface-${scale/./}.lldb-exit-status"
+      else
+        echo "LLDB is unavailable; no native backtrace was captured." > "$surface_lldb_log"
+      fi
       exit "$surface_status"
     fi
   done
