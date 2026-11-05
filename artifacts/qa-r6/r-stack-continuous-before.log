@@ -1,0 +1,47 @@
+Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/artifacts/verification/rcms/20261105T150452Z-8d3003f8-analysis-continuous-subgroup
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/tests/e2e/desktop_driver.py", line 2490, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 685, in run
+    view = observe()
+           ^^^^^^^^^
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 240, in observe
+    assert_report(view)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/tests/e2e/report_retention.py", line 388, in assert_report
+    assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/tests/e2e/desktop_driver.py", line 2490, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 685, in run
+    view = observe()
+           ^^^^^^^^^
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/.agents/skills/verify-rcms/scripts/analysis_matrix.py", line 240, in observe
+    assert_report(view)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/tests/e2e/report_retention.py", line 388, in assert_report
+    assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+

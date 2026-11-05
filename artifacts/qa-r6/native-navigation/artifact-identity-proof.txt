@@ -1,0 +1,1 @@
+All 11 artifact oracle hashes, source labels and capabilities unchanged; only two display identities lowercased.

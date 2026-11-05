@@ -585,7 +585,7 @@ _NULL_RESULT_DRIVER = textwrap.dedent(
     parsed_semantic_image = r_bridge.parse_out_results(semantic_image_result)
     assert parsed_semantic_image.images["small-study.funnel.1"] == "plot.png"
     assert parsed_semantic_image.image_order == ("small-study.funnel.1",)
-    assert parsed_semantic_image.sections[0].title == "Ordinary Funnel Plot"
+    assert parsed_semantic_image.sections[0].title == "Ordinary funnel plot"
     sys.stdout.write("OK\\n")
     sys.stdout.flush()
     sys.stderr.flush()

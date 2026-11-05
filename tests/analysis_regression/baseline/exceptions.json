@@ -40,7 +40,7 @@
       "after_behavior": "Result output includes a dedicated Inference Method section.",
       "follow_up": "Retain as a permanent, reviewed post-port analysis-output addition.",
       "accepted_classifications": ["text_artifact_drift"],
-      "accepted_details": ["Unexpected text section Inference Method was produced."]
+      "accepted_details": ["Unexpected text section Inference method was produced."]
     },
     {
       "id": "meta-regression-output-improvements",

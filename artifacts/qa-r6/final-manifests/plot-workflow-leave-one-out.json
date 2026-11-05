@@ -1,0 +1,743 @@
+{
+  "scenario": "plot-workflow-leave-one-out",
+  "started_utc": "2026-11-05T15:43:24.356671+00:00",
+  "head": "a17d1a42647a2a3a1329ec540813a0f63ad7ce27",
+  "worktree_status": "M .agents/skills/verify-rcms/scripts/advanced_workflows.py\n M .agents/skills/verify-rcms/scripts/analysis_matrix.py\n M artifacts/qa-r6/council/EVIDENCE.md\n M scripts/verify_golden_compatibility.py\n M src/rc_metastudio/analysis_results.py\n M src/rc_metastudio/manuscript_report.py\n M src/rc_metastudio/r_bridge.py\n M src/rc_metastudio/result_sections.py\n M src/rc_metastudio/results_window.py\n M tests/analysis_regression/baseline/manifest.json\n M tests/analysis_regression/baseline/numeric-contract.json\n M tests/analysis_regression/golden/support/golden_analysis.py\n M tests/analysis_regression/golden/test_analysis_regression_compare.py\n M tests/e2e/desktop_driver.py\n M tests/e2e/fixtures/sheets-original-numerics.json\n M tests/e2e/report_retention.py\n M tests/python/gui/test_main_window_automation_launch.py\n M tests/r_stack/test_inprocess_rpy2_backend.py",
+  "tracked_diff_sha256": "321e4325929b53e9695e8712559f4a62c886cd2862b00249c5628a7e52882b84",
+  "driver_sha256": "1d4b0b6da82bf2fa13a8c710b5b62407f3e57c873538da3e71d79566ad603234",
+  "workflow_files_sha256": {
+    "tests/e2e/arm_names.py": "ea63ac87d0796cd139b773cfbabb1cf4ede271105502eec882f0d75e92efd669",
+    "tests/e2e/audit_round3.py": "e87ec9d3356a12d252a14b6122f114e107dd272332ecf9eefc485eff082c699b",
+    "tests/e2e/axis_conventions.py": "a80d46a57a64a6b4a4282c4b12448c5f8bce9df7ee51d611781f057eda52900d",
+    "tests/e2e/calculator-accepted-baseline.json": "856926f9f5466646880f956d9ea0d4af4bed6c5de9c94ecde71bde461c3fb49d",
+    "tests/e2e/conftest.py": "280fb46cb0e546f177a96847fb9b51796f5430d856ce36b629c0ee739e497738",
+    "tests/e2e/desktop_driver.py": "1d4b0b6da82bf2fa13a8c710b5b62407f3e57c873538da3e71d79566ad603234",
+    "tests/e2e/display_labels.py": "51045b5f1d3355117d7a1ae8eec4087d6e434f70e394f54864b1bb32219b11a4",
+    "tests/e2e/entered_ci.py": "c2cedf793245505173a5b2cf664305d4f26b825bdc8d66c579a7fdec3bfad271",
+    "tests/e2e/header_geometry.py": "3871c759d738845f254c752ab6eeb1ad6621c811002cff9c1e91d199855a0a9a",
+    "tests/e2e/manuscript_export.py": "fb14bb766e479293a5a77c36b992a9b3adc63dd3f7b51015f36df8b21aaa8cc7",
+    "tests/e2e/precision_inputs.py": "4d1001fccbc4d555d45a589cac49a239b4a05757a81524627fed8d8ef302b228",
+    "tests/e2e/ratio_precision.py": "ad0bd8cec88d193d19c9bb8e3fdc50149bfa589e7c54a8ed0e9dbe441e97070c",
+    "tests/e2e/release_fixes.py": "6e770ddf031deca3f5b93b61f3a3a40c4f90b2a869c79564491443f3e5762549",
+    "tests/e2e/report_retention.py": "31abffbc085dc92f67cb9bda198bb103f767b05181ba7a31bc09133f9d99ad4b",
+    "tests/e2e/review1_design.py": "28942ffb5d9201327632f86b74f4fe9501eb49b96f0ea412bf6da18b838f3cb3",
+    "tests/e2e/review_workflows.py": "35384cfec2e3664589ab96d1e21aeef27cecfebb2ca55456cee32b400c863347",
+    "tests/e2e/reviewer_fixes.py": "bf4b9d74918904692fc3dafd5668a3a14740a1b5eda8154d3afd45a8da0ba2ab",
+    "tests/e2e/rm5_giv.py": "bee504e4a8090cf70337ac8f759a4c614a66a9935acfb8e3f47f2a5e31da4280",
+    "tests/e2e/rm5_import.py": "e5e1070b53d4c2cf17296f546343ce083fc80c5dbf116c37524659610e288c62",
+    "tests/e2e/round6_polish.py": "bffc90f14de68f54a3acb61b8b4465fa74980337be26f1f20dd33e28c10b3b38",
+    "tests/e2e/sheets_baseline.py": "928169a00159170ec4ddf26ad5ca26dc02e36cf9569aa38e5b4ffce86d9a4faf",
+    "tests/e2e/summary_of_findings.py": "e999ac82d73d271b8980671f210c4e81345671db37765b0705a02440ff546397",
+    "tests/e2e/test_desktop_workflows.py": "7fb242ac09a1e57e0e258a9aa372917a243d414d394da132e4001e1bf9265952",
+    "tests/e2e/trimfill_geometry.py": "1fd4927dfe2e18fda61cb6d55f6842b22eaa77f8a1b763da2816de00fdba96aa",
+    "tests/e2e/ui_crawl.py": "8087423f5b6bc649a6a2cfd588d11c927a478c23b31ed0df62fa8a39950207bf",
+    "tests/e2e/ux_workflows.py": "fbc152136b817328872a94920ea8adf08ff293526a1314a5a2e8a196d9e88906"
+  },
+  "skill_files_sha256": {
+    ".agents/skills/verify-rcms/SKILL.md": "307dcaeeb94eb816fd89ebd9a06fa08fb6ece9406d0e1763b978aab61b3f1195",
+    ".agents/skills/verify-rcms/agents/openai.yaml": "364908df5bf385a1a8752de3c7c0c7c3025ca9740c6dd098ae1ce917cffb3d90",
+    ".agents/skills/verify-rcms/features/README.md": "fc19d0e2152751119e2428682dd3220426fa3a63b8339777c582c25b29988aed",
+    ".agents/skills/verify-rcms/features/analysis.md": "ae78098d702a975d50ba87477726252d4d6af1508ce4df2b9f3ad268ef225829",
+    ".agents/skills/verify-rcms/features/calculators.md": "b2c13262da2bbe6c23d84a8a402e571691ef02e1f55883c6e3492c6b50e2902a",
+    ".agents/skills/verify-rcms/features/plots.md": "31908c756d193966247eb6388bdc22dd97912b779a643da3e39b86a03a3752e1",
+    ".agents/skills/verify-rcms/features/projects.md": "4873574cf55d2288fdac84213d1b14f0913d65e0639143a5ef2b7c2761c0923a",
+    ".agents/skills/verify-rcms/features/ratios.md": "6d03c60485b4672933eb61b63f5502956c1bbc089ab8965ce4e17ecbfc80f646",
+    ".agents/skills/verify-rcms/features/small-study-effects.md": "bf2a7450ba00fe94bf9ad92f33d4027027964fbbb51bf49ce4b1c7475476dd4d",
+    ".agents/skills/verify-rcms/references/coverage.md": "e9233a32d475cdd0533a63412dd5f42dc66ca7f6f4ab2a709f52f78339e1501e",
+    ".agents/skills/verify-rcms/references/lanes.md": "c125021f5a33a9e1fe87dcd8b44f82bca66c1bde4f08dfb08841316aa3a8e9c0",
+    ".agents/skills/verify-rcms/scripts/advanced_workflows.py": "5706cd87d5ec94219f34cb398e68e6751df28b297c0d29bcf570cd04efcbecdd",
+    ".agents/skills/verify-rcms/scripts/analysis_authorities.R": "bcf10a753d07d4c63c1544833030baccb99ef6e2013c3668e82960675d2489d3",
+    ".agents/skills/verify-rcms/scripts/analysis_matrix.py": "161c85c8172194d863bac1614a5fb2e27fdefad991e6458e72c8eef593cd04b6",
+    ".agents/skills/verify-rcms/scripts/ratio_workflows.py": "54856971dbee63e441989009b87677f75f206f7fd521dda7076add64fee53e07",
+    ".agents/skills/verify-rcms/scripts/sequential_workflows.py": "f651a25dea1e08cf8ffa0010b20b32bceddccf5ec846b264d3cd5452f624615c",
+    ".agents/skills/verify-rcms/scripts/verify_all.py": "2e3d07d199d35906f0a16b02c939e08cdea21cb380480112fcd7a7244f488f39"
+  },
+  "python": "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+  "native_requested": false,
+  "passed": true,
+  "verification_context": {
+    "source_sha256": "63286572a9f300ed545eab0f84f4fa6911e1f61d700145b77184cf1612c84078",
+    "python": "3.11.9 (main, Aug 14 2024, 05:07:28) [Clang 18.1.8 ]",
+    "platform": "Linux-7.0.0-42-generic-x86_64-with-glibc2.39",
+    "libc": [
+      "glibc",
+      "2.39"
+    ],
+    "effective_cffi_mode": "API",
+    "r_startup_files": {
+      "profile": null,
+      "environ": null
+    },
+    "runtime_trees": [
+      "6bbf97dfd0000b65ba9b91e59125484cb18e2eb9c71d5159cd1a6aa2cdb5004b",
+      "859220f776f29032d07c94a5eda92ff707eb4be6e481a8f066300f996681f300",
+      "2e91860b12ee93d17cbfbae601698eb454e38d41fa1c27a375fb234e5ee3b52f",
+      "b68d7b744e1fa7ebd98a6a14ce9e14c2d0fe8249e8d2247ba15b07ef2f052415",
+      "3a22993c21b93a2ec3edb5b564188167f2f3d6fb3463670109bac080b8f7a9ba",
+      "c5f04b15dd511984fe26ffff0105eea8301b212f0a03c8132ce31b1bf929f556",
+      "022d6b16d1792e4d33a0ce24cd0cc5d747be83f34f7ed9a4266edf085cd56028",
+      "8c73b2ab8d1d615a93854e0a44219e3aafa9d3cef591bbdf97a42cb7e0e8fd79"
+    ],
+    "distributions": [
+      [
+        "Jinja2",
+        "3.1.6"
+      ],
+      [
+        "MarkupSafe",
+        "3.0.3"
+      ],
+      [
+        "PyQt6",
+        "6.11.0"
+      ],
+      [
+        "PyQt6-Qt6",
+        "6.11.1"
+      ],
+      [
+        "PyQt6_sip",
+        "13.11.1"
+      ],
+      [
+        "PySide6_Essentials",
+        "6.11.1"
+      ],
+      [
+        "PyYAML",
+        "6.0.3"
+      ],
+      [
+        "Pygments",
+        "2.20.0"
+      ],
+      [
+        "altgraph",
+        "0.17.5"
+      ],
+      [
+        "annotated-doc",
+        "0.0.5"
+      ],
+      [
+        "aqtinstall",
+        "3.3.0"
+      ],
+      [
+        "attrs",
+        "26.1.0"
+      ],
+      [
+        "backports.zstd",
+        "1.6.0"
+      ],
+      [
+        "beautifulsoup4",
+        "4.15.0"
+      ],
+      [
+        "brotli",
+        "1.2.0"
+      ],
+      [
+        "bs4",
+        "0.0.2"
+      ],
+      [
+        "certifi",
+        "2026.6.17"
+      ],
+      [
+        "cffi",
+        "2.0.0"
+      ],
+      [
+        "charset-normalizer",
+        "3.4.9"
+      ],
+      [
+        "colorama",
+        "0.4.6"
+      ],
+      [
+        "complexipy",
+        "7.0.1"
+      ],
+      [
+        "contourpy",
+        "1.3.3"
+      ],
+      [
+        "coverage",
+        "7.16.2"
+      ],
+      [
+        "cycler",
+        "0.12.1"
+      ],
+      [
+        "defusedxml",
+        "0.7.1"
+      ],
+      [
+        "et_xmlfile",
+        "2.0.0"
+      ],
+      [
+        "execnet",
+        "2.1.2"
+      ],
+      [
+        "fonttools",
+        "4.63.0"
+      ],
+      [
+        "grimp",
+        "3.16"
+      ],
+      [
+        "humanize",
+        "4.16.0"
+      ],
+      [
+        "idna",
+        "3.18"
+      ],
+      [
+        "inflate64",
+        "1.0.4"
+      ],
+      [
+        "iniconfig",
+        "2.3.0"
+      ],
+      [
+        "jsonschema",
+        "4.25.1"
+      ],
+      [
+        "jsonschema-specifications",
+        "2025.9.1"
+      ],
+      [
+        "kiwisolver",
+        "1.5.0"
+      ],
+      [
+        "libcst",
+        "1.8.6"
+      ],
+      [
+        "lxml",
+        "6.1.3"
+      ],
+      [
+        "mando",
+        "0.7.1"
+      ],
+      [
+        "markdown-it-py",
+        "4.2.0"
+      ],
+      [
+        "matplotlib",
+        "3.11.0"
+      ],
+      [
+        "mdurl",
+        "0.1.2"
+      ],
+      [
+        "multivolumefile",
+        "0.2.3"
+      ],
+      [
+        "numpy",
+        "2.4.6"
+      ],
+      [
+        "openpyxl",
+        "3.1.5"
+      ],
+      [
+        "packaging",
+        "26.2"
+      ],
+      [
+        "patch-ng",
+        "1.19.1"
+      ],
+      [
+        "pefile",
+        "2023.2.7"
+      ],
+      [
+        "pillow",
+        "12.3.0"
+      ],
+      [
+        "pluggy",
+        "1.6.0"
+      ],
+      [
+        "psutil",
+        "7.2.2"
+      ],
+      [
+        "py7zr",
+        "1.1.3"
+      ],
+      [
+        "pybcj",
+        "1.0.7"
+      ],
+      [
+        "pycparser",
+        "3.0"
+      ],
+      [
+        "pycryptodomex",
+        "3.23.0"
+      ],
+      [
+        "pyinstaller",
+        "6.21.0"
+      ],
+      [
+        "pyinstaller-hooks-contrib",
+        "2026.6"
+      ],
+      [
+        "pyparsing",
+        "3.3.2"
+      ],
+      [
+        "pyppmd",
+        "1.3.1"
+      ],
+      [
+        "pytest",
+        "9.1.1"
+      ],
+      [
+        "pytest-xdist",
+        "3.8.0"
+      ],
+      [
+        "python-dateutil",
+        "2.9.0.post0"
+      ],
+      [
+        "python-docx",
+        "1.2.0"
+      ],
+      [
+        "radon",
+        "6.0.1"
+      ],
+      [
+        "rc-metastudio",
+        "0.5.0"
+      ],
+      [
+        "rc-metastudio",
+        "0.5.0"
+      ],
+      [
+        "referencing",
+        "0.37.0"
+      ],
+      [
+        "requests",
+        "2.34.2"
+      ],
+      [
+        "rich",
+        "15.0.0"
+      ],
+      [
+        "rpds-py",
+        "2026.6.3"
+      ],
+      [
+        "rpy2",
+        "3.6.7"
+      ],
+      [
+        "rpy2-rinterface",
+        "3.6.6"
+      ],
+      [
+        "rpy2-robjects",
+        "3.6.5"
+      ],
+      [
+        "semantic-version",
+        "2.10.0"
+      ],
+      [
+        "setuptools",
+        "82.0.1"
+      ],
+      [
+        "shellingham",
+        "1.5.4"
+      ],
+      [
+        "shiboken6",
+        "6.11.1"
+      ],
+      [
+        "six",
+        "1.17.0"
+      ],
+      [
+        "soupsieve",
+        "2.8.4"
+      ],
+      [
+        "texttable",
+        "1.7.0"
+      ],
+      [
+        "tomli",
+        "2.4.1"
+      ],
+      [
+        "ty",
+        "0.0.18"
+      ],
+      [
+        "typer",
+        "0.27.2"
+      ],
+      [
+        "typing_extensions",
+        "4.16.0"
+      ],
+      [
+        "tzlocal",
+        "5.4.4"
+      ],
+      [
+        "urllib3",
+        "2.7.0"
+      ]
+    ],
+    "environment": {
+      "QT_SCALE_FACTOR": null,
+      "QT_FONT_DPI": null,
+      "QT_QPA_FONTDIR": null,
+      "LANG": "en_US.UTF-8",
+      "LC_ALL": "C.UTF-8",
+      "OPENBLAS_NUM_THREADS": null,
+      "OMP_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null
+    },
+    "sha256": "0c7200ff38e9dc3f4fb6513e76429cdd7f59520e768df6e83209c26a997e50b7"
+  },
+  "command": [
+    "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+    "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/scripts/run_with_timeout.py",
+    "--timeout-seconds",
+    "240",
+    "--label",
+    "RCMS plot-workflow-leave-one-out",
+    "--",
+    "/home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python",
+    "-X",
+    "faulthandler",
+    "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/tests/e2e/desktop_driver.py",
+    "plot-workflow-leave-one-out",
+    "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/build/verification/rcms/desktop-c7bg2t0n"
+  ],
+  "exit_code": 0,
+  "finished_utc": "2026-11-05T15:44:41.143586+00:00",
+  "worktree_status_after": "M .agents/skills/verify-rcms/scripts/advanced_workflows.py\n M .agents/skills/verify-rcms/scripts/analysis_matrix.py\n M artifacts/qa-r6/council/EVIDENCE.md\n M scripts/verify_golden_compatibility.py\n M src/rc_metastudio/analysis_results.py\n M src/rc_metastudio/manuscript_report.py\n M src/rc_metastudio/r_bridge.py\n M src/rc_metastudio/result_sections.py\n M src/rc_metastudio/results_window.py\n M tests/analysis_regression/baseline/manifest.json\n M tests/analysis_regression/baseline/numeric-contract.json\n M tests/analysis_regression/golden/support/golden_analysis.py\n M tests/analysis_regression/golden/test_analysis_regression_compare.py\n M tests/e2e/desktop_driver.py\n M tests/e2e/fixtures/sheets-original-numerics.json\n M tests/e2e/report_retention.py\n M tests/python/gui/test_main_window_automation_launch.py\n M tests/r_stack/test_inprocess_rpy2_backend.py",
+  "files": [
+    {
+      "path": "01-0-ready.png",
+      "sha256": "24a58a99ab8ec2dbdb1910af406adcd25258ba22d1bd3a9f8f4ca92d8dd2705c"
+    },
+    {
+      "path": "02-0-matrix-action.png",
+      "sha256": "4da9131c068acc5ba060ec6b43295c982340c6f910e5e8543a645a2492cda01f"
+    },
+    {
+      "path": "03-0-matrix-configured.png",
+      "sha256": "d70b5ef493884a1a0662df668bdfd5860264589b721f76a74d0cc75bb5ff09a5"
+    },
+    {
+      "path": "04-0-forest-d481352652f4.display.svg",
+      "sha256": "06000aaafe2a6fcb7b4bc25ddcff77bff1f17587edb2d3429eb86db7ee968139"
+    },
+    {
+      "path": "04-0-matrix-results.png",
+      "sha256": "c41b6194794028c3e6b60ca7ff8a8f8f59b64b7ef0f95e5bcc6c0bc74891284b"
+    },
+    {
+      "path": "05-0-properties-prefilled.png",
+      "sha256": "7e2722516856b1c45b35a55ce82e9c129d4ed33a6b593b1d0024d39593c6b385"
+    },
+    {
+      "path": "06-0-matrix-oracle.png",
+      "sha256": "c41b6194794028c3e6b60ca7ff8a8f8f59b64b7ef0f95e5bcc6c0bc74891284b"
+    },
+    {
+      "path": "07-0-forest-d481352652f4.display.svg",
+      "sha256": "06000aaafe2a6fcb7b4bc25ddcff77bff1f17587edb2d3429eb86db7ee968139"
+    },
+    {
+      "path": "07-0-review1-caption-initial.png",
+      "sha256": "c41b6194794028c3e6b60ca7ff8a8f8f59b64b7ef0f95e5bcc6c0bc74891284b"
+    },
+    {
+      "path": "08-0-figure-viewport-settled.png",
+      "sha256": "c41b6194794028c3e6b60ca7ff8a8f8f59b64b7ef0f95e5bcc6c0bc74891284b"
+    },
+    {
+      "path": "09-0-forest-footer-geometry.png",
+      "sha256": "da049becf5e6b39021afd7d3ea2f0883cef694fbb1d9b68c4a24ac8896917156"
+    },
+    {
+      "path": "10-0-forest-footer-geometry.png",
+      "sha256": "da049becf5e6b39021afd7d3ea2f0883cef694fbb1d9b68c4a24ac8896917156"
+    },
+    {
+      "path": "11-0-forest-footer-geometry.png",
+      "sha256": "9988aa7e1dda7f036209f3a60af3dec2a3f491acd4784c8c181cd342c173dd26"
+    },
+    {
+      "path": "12-0-forest-footer-geometry.png",
+      "sha256": "9988aa7e1dda7f036209f3a60af3dec2a3f491acd4784c8c181cd342c173dd26"
+    },
+    {
+      "path": "13-0-forest-footer-geometry.png",
+      "sha256": "da049becf5e6b39021afd7d3ea2f0883cef694fbb1d9b68c4a24ac8896917156"
+    },
+    {
+      "path": "14-0-forest-footer-geometry.png",
+      "sha256": "9988aa7e1dda7f036209f3a60af3dec2a3f491acd4784c8c181cd342c173dd26"
+    },
+    {
+      "path": "15-0-family-editor-controls.png",
+      "sha256": "44d897a21ccf6164da69f39ce59551b8d43b4f1a6fddcd3b3c44cd223e251efc"
+    },
+    {
+      "path": "16-0-family-plot-applied.png",
+      "sha256": "44d897a21ccf6164da69f39ce59551b8d43b4f1a6fddcd3b3c44cd223e251efc"
+    },
+    {
+      "path": "16-0-forest-d481352652f4.display.svg",
+      "sha256": "8e14e2abc67bca49cbd60860ecd791c8ee7fa30e151f4aaeeb064d1862562873"
+    },
+    {
+      "path": "17-0-family-plot-cancelled.png",
+      "sha256": "9793e33fea67d4dc16a0e06f7c1e5b553662f42e7d21b26f72c1cc88a9c0c1e3"
+    },
+    {
+      "path": "18-0-figure-viewport-settled.png",
+      "sha256": "9793e33fea67d4dc16a0e06f7c1e5b553662f42e7d21b26f72c1cc88a9c0c1e3"
+    },
+    {
+      "path": "19-0-family-plot-reopened.png",
+      "sha256": "9793e33fea67d4dc16a0e06f7c1e5b553662f42e7d21b26f72c1cc88a9c0c1e3"
+    },
+    {
+      "path": "20-0-figure-viewport-settled.png",
+      "sha256": "9793e33fea67d4dc16a0e06f7c1e5b553662f42e7d21b26f72c1cc88a9c0c1e3"
+    },
+    {
+      "path": "21-0-family-export-decoded.png",
+      "sha256": "f627be3dfbbeb03b5727eacf47147111b042092ca7cdd57a9f4b8bce453523ad"
+    },
+    {
+      "path": "22-0-figure-viewport-settled.png",
+      "sha256": "f627be3dfbbeb03b5727eacf47147111b042092ca7cdd57a9f4b8bce453523ad"
+    },
+    {
+      "path": "23-0-family-export-decoded.png",
+      "sha256": "572902c7e215c82be516ae31b3166a3a4fbef707fe3f7234466bf12f3f238f45"
+    },
+    {
+      "path": "24-0-figure-viewport-settled.png",
+      "sha256": "572902c7e215c82be516ae31b3166a3a4fbef707fe3f7234466bf12f3f238f45"
+    },
+    {
+      "path": "25-0-family-export-decoded.png",
+      "sha256": "efa789af1a8792bbc22ff002e6026825ffcf4b198d6667918d258d85b163bfb7"
+    },
+    {
+      "path": "26-0-figure-viewport-settled.png",
+      "sha256": "efa789af1a8792bbc22ff002e6026825ffcf4b198d6667918d258d85b163bfb7"
+    },
+    {
+      "path": "27-0-family-export-decoded.png",
+      "sha256": "82e576dde3e0e8e31d4ba9eb675455a1a3533be4a0f58bb26bf5610f785d8079"
+    },
+    {
+      "path": "28-0-figure-viewport-settled.png",
+      "sha256": "82e576dde3e0e8e31d4ba9eb675455a1a3533be4a0f58bb26bf5610f785d8079"
+    },
+    {
+      "path": "29-0-family-exports-cancelled.png",
+      "sha256": "9793e33fea67d4dc16a0e06f7c1e5b553662f42e7d21b26f72c1cc88a9c0c1e3"
+    },
+    {
+      "path": "29-0-forest-d481352652f4.display.svg",
+      "sha256": "8e14e2abc67bca49cbd60860ecd791c8ee7fa30e151f4aaeeb064d1862562873"
+    },
+    {
+      "path": "30-0-figure-viewport-settled.png",
+      "sha256": "9793e33fea67d4dc16a0e06f7c1e5b553662f42e7d21b26f72c1cc88a9c0c1e3"
+    },
+    {
+      "path": "31-0-round5-caption-removed.png",
+      "sha256": "6bbb07d4d8bb9d584817d35c6bf58845ddc857f3464f8139fa62263ceef341c4"
+    },
+    {
+      "path": "32-0-figure-viewport-settled.png",
+      "sha256": "6562c9427ebebfcf839625e334225de2202e50effaaf78374df30bdb4e993cd7"
+    },
+    {
+      "path": "33-0-workflow-passed.png",
+      "sha256": "706b5c0f5c02800ab2b0ba51ca7a9cdbb7b654e7035248d7b78a16d147a53d81"
+    },
+    {
+      "path": "qt-messages.log",
+      "sha256": "dc5cee7b41e89edd3b7a6f2c7f01b595fbcd966e4944ea2df9696a09ad4ebea4"
+    },
+    {
+      "path": "runtime.json",
+      "sha256": "3ee71e2e6e6368ab616e8947c4b278ea8db5c49f6fa38ea5b90bd980747a9e99"
+    },
+    {
+      "path": "startup.json",
+      "sha256": "a24eeaad075e88237a9e018e24ce6410ce4b55b8bb34171a7c6fa7705086204d"
+    },
+    {
+      "path": "stderr.log",
+      "sha256": "a3c7c563174c10f35e673479202ce17c647faa393bfc286d9deca52199696dc9"
+    },
+    {
+      "path": "stdout.log",
+      "sha256": "8a46711a4fdcaadf9bed4dcaeff58c6dc4688d3b5a2043b25199790e5b7d588f"
+    },
+    {
+      "path": "steps.jsonl",
+      "sha256": "6d012072c28c9705b0a53cdec9e5c9c510bb58e0fc96829d55633856b5eabf87"
+    },
+    {
+      "path": "workflow/Research Consultancy/RCMetaStudio.ini",
+      "sha256": "c9638aee5d227b6e895c78edb63ad72fb5f016a12c715fcdb3e8fadc0b456ef5"
+    },
+    {
+      "path": "workflow/analysis/1793893431.22752.data",
+      "sha256": "98a2697c4a581691b539ba9d52fbef14a8395346bc639f6f81b1aa2f0744be1e"
+    },
+    {
+      "path": "workflow/analysis/1793893431.22752.params",
+      "sha256": "60bb1f4fe14e8d9887fa138d671bdc4532bd81512c38deb6a982b8b9ebe41ba4"
+    },
+    {
+      "path": "workflow/analysis/1793893431.22752.plotdata",
+      "sha256": "5248ed0b8938916659d338924efafaf0ddd6737ad421ba57f4e3d412d542dac9"
+    },
+    {
+      "path": "workflow/analysis/1793893431.22752.res",
+      "sha256": "8ac694afe9b01b4fe64a9f07e85ff60bb1279e16bbefb9d21e91a209acea8932"
+    },
+    {
+      "path": "workflow/analysis/INTER",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "workflow/analysis/forest-d481352652f4.display.svg",
+      "sha256": "bbd13c2b1780a048634c00d4639473c9b7ede184dac30b178e631c6cba986d0c"
+    },
+    {
+      "path": "workflow/analysis/forest.png",
+      "sha256": "05304ea70505692444eb965ac56c4e10abdf3c403d7589fa4596cdadb4cdd0d0"
+    },
+    {
+      "path": "workflow/leave-one-out-BMJ-arms-12.svg",
+      "sha256": "9882394feba5718d81f7cfd1dd67f469b881151ce37cd1c04d35e5d990addedc"
+    },
+    {
+      "path": "workflow/leave-one-out-BMJ-arms-89.svg",
+      "sha256": "dbef655eba35e57df791e5884ee913042a51116ab0df72382f9dd031e18289af"
+    },
+    {
+      "path": "workflow/leave-one-out-Default-arms-12.svg",
+      "sha256": "06000aaafe2a6fcb7b4bc25ddcff77bff1f17587edb2d3429eb86db7ee968139"
+    },
+    {
+      "path": "workflow/leave-one-out-Default-arms-89.svg",
+      "sha256": "dbef655eba35e57df791e5884ee913042a51116ab0df72382f9dd031e18289af"
+    },
+    {
+      "path": "workflow/leave-one-out-RevMan-arms-12.svg",
+      "sha256": "06000aaafe2a6fcb7b4bc25ddcff77bff1f17587edb2d3429eb86db7ee968139"
+    },
+    {
+      "path": "workflow/leave-one-out-RevMan-arms-89.svg",
+      "sha256": "61f15cc82b7c0c3ec5be3b1fe2a289e7c55b448822e767fc7648b37733534193"
+    },
+    {
+      "path": "workflow/leave-one-out-without-caption.svg",
+      "sha256": "bbd13c2b1780a048634c00d4639473c9b7ede184dac30b178e631c6cba986d0c"
+    },
+    {
+      "path": "workflow/leave-one-out.pdf",
+      "sha256": "ac1dbdd3af856903fb2d35fa19ae5f6b5b1a2678de4c3df8a0d78094ca7cbcc0"
+    },
+    {
+      "path": "workflow/leave-one-out.png",
+      "sha256": "abda402789a3e1a8157a8862be80ae564420d100288bca7541dbcc789026b0ca"
+    },
+    {
+      "path": "workflow/leave-one-out.svg",
+      "sha256": "8e14e2abc67bca49cbd60860ecd791c8ee7fa30e151f4aaeeb064d1862562873"
+    },
+    {
+      "path": "workflow/leave-one-out.tiff",
+      "sha256": "2c830a755b51a8f7d68af82a207266e642c64d33992067bd48348e4a1fa54343"
+    },
+    {
+      "path": "workflow/report-retention/856aab8e095def2a/audit.json",
+      "sha256": "3cdbce217caf7f658353152f697459c5469942633650dacc921ea908a23512b9"
+    },
+    {
+      "path": "workflow/report-retention/856aab8e095def2a/copy.html",
+      "sha256": "edb40c758db1eb7832f8069e4a3c1f5b0ceb8c2d02880d0a73a1c1264f53c46c"
+    },
+    {
+      "path": "workflow/report-retention/856aab8e095def2a/copy.txt",
+      "sha256": "8b6b3b7012373ef2c4ae18d156b8ffe1e8719f38047aa271c2cc83bb62351d75"
+    },
+    {
+      "path": "workflow/report-retention/856aab8e095def2a/docx.txt",
+      "sha256": "0ba3dbe9734d084e527aa5aabd22d3e59a5177313722274cdf3996bd59022c83"
+    },
+    {
+      "path": "workflow/report-retention/856aab8e095def2a/pdf-bbox.xhtml",
+      "sha256": "c578bf3c84725e19dab6a87c5584aa18f8c7a2ff64e95122fbffd19006987dc9"
+    },
+    {
+      "path": "workflow/report-retention/856aab8e095def2a/pdf-raw.txt",
+      "sha256": "cd87f7ed052abfa872d5cd81ad1730ef4b455eca8b899da420747323667b4751"
+    },
+    {
+      "path": "workflow/report-retention/856aab8e095def2a/pdf.txt",
+      "sha256": "9c3a498a95eba06526fcdabec1390b505dd319879597ab82e8107397dce2dca1"
+    },
+    {
+      "path": "workflow/report-retention/856aab8e095def2a/report.docx",
+      "sha256": "b452203ab08c407e60610c3f3cd9697c1c73e284d04c546869442f1ecb1c6e07"
+    },
+    {
+      "path": "workflow/report-retention/856aab8e095def2a/report.pdf",
+      "sha256": "d90fd9c6409e5b30356a8a4ef74a2327a2adeff8850226fc9c6f17b9dd1ceafb"
+    }
+  ]
+}

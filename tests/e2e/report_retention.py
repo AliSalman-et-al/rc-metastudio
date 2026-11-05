@@ -208,7 +208,7 @@ def expected_effect_rows(result, section, overall, calculation):
         high = next((h for h in headers if h.startswith('Upper bound')), None)
         if not low or not high or low.partition('(')[2].removesuffix(')').strip().endswith(' PI') or table.title.startswith('Calculation scale'):
             continue
-        metric = table.title.lower() if vertical else section.title.removesuffix(' Summary').lower() if ',' in result.manuscript_metric else result.manuscript_metric or 'effect'
+        metric = table.title.lower() if vertical else section.title.removesuffix(' summary').lower() if ',' in result.manuscript_metric else result.manuscript_metric or 'effect'
         if table.title != 'Regression coefficients' and metric.endswith('transformed proportion'):
             metric = 'proportion'
         effects = expected_effect_values(values, headers, low, high, metric, vertical, table.title, overall, calculation)
@@ -237,7 +237,7 @@ def expected_studies(result):
         for table in section.tables:
             if table.title != 'Study weights':
                 continue
-            label = result.manuscript_metric or section.title if section.source_key == 'Weights' else section.title.removesuffix(' Summary')
+            label = result.manuscript_metric or section.title if section.source_key == 'Weights' else section.title.removesuffix(' summary')
             for row in table.rows:
                 cells = (row[0], row[1], row[2] + ' to ' + row[3], row[4]) if len(row) == 5 else (row[0], '—', '—', row[1])
                 rows.append((label, *cells))
@@ -279,7 +279,7 @@ def expected_fit_table(result, section, source):
                 row['Q'] = f'{0:.{result.manuscript_digits}f}'
             context = (' (' + row['Subgroups'] + ')' if 'Subgroups' in row else '')
             if ',' in result.manuscript_metric:
-                context += ' (' + section.title.removesuffix(' Summary') + ')'
+                context += ' (' + section.title.removesuffix(' summary') + ')'
             rows.extend((labels[h] + context, expected_p(v) if h == 'p-value' else v) for h, v in row.items() if h in labels)
     elif source.title == 'Test of subgroup differences' and data:
         if data[0]['Test'].endswith('(Q)') and 0 < abs(float(data[0]['Statistic'])) < 1e-10:
@@ -385,7 +385,7 @@ def assert_report(view):
     if studies is not None:
         assert studies.headers == headers
     if studies is not None:
-        assert studies.rows == presentation_rows(expected, view.results.manuscript_digits)
+        assert studies.rows == expected
     for section in view.results.sections:
         for source in section.tables:
             title = source.title if section.title == source.title else section.title + ' — ' + source.title

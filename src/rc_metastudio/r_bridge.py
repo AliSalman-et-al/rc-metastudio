@@ -22,6 +22,7 @@ from rc_metastudio.analysis_method_labels import (
     normalize_available_method_labels,
 )
 from rc_metastudio import result_sections
+from rc_metastudio.result_sections import sentence_case_title as _sentence_case_title
 from rc_metastudio.analysis_errors import DiagnosticExecutionError
 from rc_metastudio.analysis_results import AnalysisResult, parse_analysis_result
 from rc_metastudio.study_effect_shapes import (
@@ -1157,7 +1158,7 @@ def _execute_versioned_request(
         _to_r_params(normalized),
     )
     ro.globalenv[_r_symbol(res_name)] = result
-    return parse_out_results(result)
+    return parse_out_results(result, study_digits=params.get("digits"))
 
 
 @serialized_r_call
@@ -1219,7 +1220,7 @@ def _execute_versioned_requests(
     except RRuntimeError as error:
         raise DiagnosticExecutionError(str(error)) from error
     ro.globalenv[_r_symbol(res_name)] = result
-    return parse_out_results(result)
+    return parse_out_results(result, study_digits=_request_params(requests[0]).get("digits"))
 
 
 @serialized_r_call
@@ -1355,7 +1356,7 @@ _RESULT_DISPLAY_DIGITS: ContextVar[int | None] = ContextVar("result_display_digi
 
 
 @serialized_r_call
-def parse_out_results(result):
+def parse_out_results(result, *, study_digits=None):
     if _r_inherits(result, "try-error"):
         raise RuntimeError(_r_error_message(result))
     result = dict(_result_items_for_display(result))
@@ -1365,7 +1366,7 @@ def parse_out_results(result):
         digits = digits[0] if digits else None
     token = _RESULT_DISPLAY_DIGITS.set(int(digits) if digits is not None else None)
     try:
-        return _parse_display_results(result)
+        return _parse_display_results(result, study_digits=study_digits)
     finally:
         _RESULT_DISPLAY_DIGITS.reset(token)
 
@@ -1401,7 +1402,7 @@ def _regression_summary(fit, reports):
 
 
 
-def _insert_held_effects(fields, display, rows):
+def _insert_held_effects(fields, display, rows, *, digits=None):
     groups = fields.get("study_groups", ())
     display_indices = []
     offset = 0
@@ -1409,9 +1410,15 @@ def _insert_held_effects(fields, display, rows):
         if groups and index and groups[index] != groups[index - 1]:
             offset += 1
         display_indices.append(index + offset)
+    if digits is None:
+        digits = _RESULT_DISPLAY_DIGITS.get()
+    digits = int(digits) if digits is not None else 4
     for index, row in zip(display_indices, rows):
-        effects = [_format_r_table_cell(list(display[key])[index], field_name="Estimate")
-                   for key in ("y.disp", "lb.disp", "ub.disp")]
+        values = [list(display[key])[index] for key in ("y.disp", "lb.disp", "ub.disp")]
+        effects = [result_sections.format_effect_number(value, digits)
+                   if isinstance(value, (float, int)) and math.isfinite(value)
+                   else _format_r_table_cell(value)
+                   for value in values]
         row[1:1] = ["Not estimable", "—", "—"] if effects[0] == "NA" else effects
 
 
@@ -1429,7 +1436,7 @@ def _held_weight_rows(fields, weights):
     return rows
 
 
-def _held_study_report(metadata, reports):
+def _held_study_report(metadata, reports, *, digits=None):
     """Read already-rendered forest values; do not refit or reconstruct intervals."""
     weights = reports.get("Weights")
     if not reports:
@@ -1451,7 +1458,7 @@ def _held_study_report(metadata, reports):
         rows = _held_weight_rows(fields, weights)
         if rows is None:
             continue
-        _insert_held_effects(fields, display, rows)
+        _insert_held_effects(fields, display, rows, digits=digits)
         headers = ["Study", "Effect", "Lower bound", "Upper bound", "Weight (%)"]
         if weights is None:
             target = reports.get("Summary", next(iter(reports.values())))
@@ -1461,7 +1468,7 @@ def _held_study_report(metadata, reports):
         break
 
 
-def _parse_display_results(result):
+def _parse_display_results(result, *, study_digits=None):
     study_names = _study_names_from_result(result)
     metadata = _result_metadata(result)
     text_d = {}
@@ -1484,7 +1491,7 @@ def _parse_display_results(result):
             text_sources[key] = (text_n, index)
 
     _add_regression_reports(result, reports)
-    _held_study_report(metadata, reports)
+    _held_study_report(metadata, reports, digits=study_digits)
 
     text_d, text_sources = _apply_text_value_keys(
         text_d, text_sources, metadata["sections"]
@@ -1770,10 +1777,7 @@ def _section_display_fields(title, supplied, child_index):
         # semantic title, but point at the first rendered child value so the
         # validated result still has exactly one section per value.
         return supplied["title"], title
-    display_title = {"Leave-one-out Summary": "Leave-one-out summary",
-                     "Cumulative Summary": "Cumulative summary",
-                     "Subgroup Summary": "Subgroup summary"}.get(title, title)
-    return display_title, title
+    return title, title
 
 
 def _image_section_metadata(
@@ -2215,6 +2219,8 @@ def _summary_section_name(parent_name, child_name):
 
 def _display_section_name(name):
     return method_display_label(str(name))
+
+
 
 
 def _is_r_string_vector(r_object):

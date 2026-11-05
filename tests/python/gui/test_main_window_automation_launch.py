@@ -1084,7 +1084,7 @@ def test_results_window_refits_svg_plots_and_reflows_sections_on_resize(tmp_path
 
         def assert_sections_are_separated():
             assert (
-                text_items["Cumulative Forest Plot"].sceneBoundingRect().top()
+                text_items["Cumulative forest plot"].sceneBoundingRect().top()
                 - svg_items[0].sceneBoundingRect().bottom()
                 >= results_window.SECTION_SPACING
             )

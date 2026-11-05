@@ -190,7 +190,7 @@ def compare_authority(view, expected, family, record, metric=None):
 
     sections = parsed_numeric_sections(view.results)
     actual = sections[
-        ("Sensitivity Summary" if metric == "Sens" else "Diagnostic Odds Ratio Summary")
+        ("Sensitivity summary" if metric == "Sens" else "Diagnostic odds ratio summary")
         if family == "diagnostic"
         else "Summary"
     ]

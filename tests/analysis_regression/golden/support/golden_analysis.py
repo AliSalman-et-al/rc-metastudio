@@ -321,7 +321,7 @@ def curated_golden_bundles(root_dir=None):
             "parameters": [diagnostic_params],
             "tolerances": DEFAULT_TOLERANCES,
             "expected": {
-                "Diagnostic Odds Ratio Summary": {
+                "Diagnostic odds ratio summary": {
                     "estimate": 9.648,
                     "lower_bound": 5.529,
                     "upper_bound": 16.835,

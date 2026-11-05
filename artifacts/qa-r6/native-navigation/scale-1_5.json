@@ -1,0 +1,60 @@
+{
+  "captures": {
+    "results": {
+      "attempts": 1,
+      "capture_method": "QScreen.grabWindow(desktop); physical frame crop",
+      "device_pixel_ratio": 1.5,
+      "image_device_pixel_ratio": 1.5,
+      "logical_frame": {
+        "height": 375,
+        "width": 375,
+        "x": 52,
+        "y": 52
+      },
+      "path": "results-1_5.png",
+      "physical_crop": {
+        "height": 563,
+        "width": 563,
+        "x": 78,
+        "y": 78
+      },
+      "pixel_size": [
+        563,
+        563
+      ],
+      "screen_geometry": {
+        "height": 533,
+        "width": 533,
+        "x": 0,
+        "y": 0
+      },
+      "sha256": "14257b7fb5910c9e8fcb07f0957b2b6eca39ae3f31831c525993cbd0f70e6c1d",
+      "size_bytes": 22694,
+      "varied_pixels": true
+    }
+  },
+  "device_pixel_ratio": 1.5,
+  "navigation": [
+    "Manuscript",
+    "Text report",
+    "Tables",
+    "Forest plot"
+  ],
+  "plot_artifact": "forest-1_5.svg",
+  "plot_artifact_sha256": "a9f65ed66b66f52ef29f1f21ecc90f1ec10ac64ecc60f406a434173723bd2d86",
+  "plot_artifact_size": 292,
+  "plot_capability": {
+    "composition": "single",
+    "editable": true,
+    "plot_kind": "forest",
+    "regenerator": "forest",
+    "styleable": true
+  },
+  "plot_ratio": 2.0,
+  "qpa": "offscreen",
+  "result_text": {
+    "references": "Maintained native Qt6 Results evidence.",
+    "summary": "Random-effects model\nEstimate  Lower bound  Upper bound"
+  },
+  "scale_factor": 1.5
+}

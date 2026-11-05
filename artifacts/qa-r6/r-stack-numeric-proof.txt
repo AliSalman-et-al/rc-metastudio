@@ -1,0 +1,2 @@
+tests/analysis_regression/baseline/numeric-contract.json 419 numeric values identical; only section-label strings changed
+tests/e2e/fixtures/sheets-original-numerics.json 341 numeric values identical; only section-label strings changed

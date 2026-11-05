@@ -111,3 +111,20 @@ def format_effect_number(value: float, digits: int) -> str:
         mantissa, separator, exponent = formatted.partition("e")
         return mantissa.rstrip("0").rstrip(".") + separator + exponent
     return f"{value:.{digits}f}"
+
+
+_TITLE_PROPER_NAMES = frozenset((
+    "Baujat", "Begg", "Bayesian", "DerSimonian-Laird", "Egger", "Galbraith", "Hartung-Knapp",
+    "Knapp-Hartung", "Mantel-Haenszel", "Peto", "Reitsma",
+))
+
+
+def sentence_case_title(title: str) -> str:
+    def keep(word):
+        core = word.strip("()[],:;'’")
+        head = core.split("-")[0]
+        return (core.removesuffix("'s").removesuffix("’s") in _TITLE_PROPER_NAMES
+                or any(c.isupper() for c in core[1:])  # acronyms, DerSimonian, ML
+                or (len(head) == 1 and head.isupper()))  # I-squared, H-squared
+    return " ".join(word if index == 0 or keep(word) else word.lower()
+                    for index, word in enumerate(str(title).split()))

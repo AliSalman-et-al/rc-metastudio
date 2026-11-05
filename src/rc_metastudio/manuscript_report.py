@@ -142,7 +142,7 @@ def _study_inputs(result):
 def _study_result_rows(result):
     rows = []
     for section, table in _study_inputs(result):
-        analysis = section.title.removesuffix(' Summary')
+        analysis = section.title.removesuffix(' summary')
         if section.source_key == 'Weights':
             analysis = result.manuscript_metric or section.title
         for row in table.rows:
@@ -241,7 +241,7 @@ def _effect_metric(metric, section, table, vertical, coefficient):
     if vertical:
         metric = table.title.lower()
     elif ',' in metric:
-        metric = section.title.removesuffix(' Summary').lower()
+        metric = section.title.removesuffix(' summary').lower()
     if not coefficient and metric.endswith('transformed proportion'):
         return 'proportion'
     return metric
@@ -355,7 +355,7 @@ def _report_table(result, section, table, summary, pooled, fit, level, statistic
         start = len(fit)
         _heterogeneity_rows(table, fit, summary, _residual_statistics(section))
         if ',' in result.manuscript_metric:
-            fit[start:] = [(label + ' (' + section.title.removesuffix(' Summary') + ')', value) for label, value in fit[start:]]
+            fit[start:] = [(label + ' (' + section.title.removesuffix(' summary') + ')', value) for label, value in fit[start:]]
         return level, statistic
     _fit_table(table, fit, summary)
     return level, statistic
@@ -391,7 +391,7 @@ def _presentation_rows(rows, digits):
 def _presentation_result(result):
     return replace(result, sections=tuple(
         replace(section, tables=tuple(replace(table, rows=tuple(
-            tuple(value if header == 'p-value' or (table.headers == ('Statistic', 'Value') and row[0] == 'p-value') else _presentation_cell(value, result.manuscript_digits, zero_noise=header == 'Q' or (header == 'Statistic' and row[0].endswith('(Q)')))
+            tuple(value if (table.title == "Study weights" and header in ("Effect", "Lower bound", "Upper bound")) or header == 'p-value' or (table.headers == ('Statistic', 'Value') and row[0] == 'p-value') else _presentation_cell(value, result.manuscript_digits, zero_noise=header == 'Q' or (header == 'Statistic' and row[0].endswith('(Q)')))
                   for header, value in zip(table.headers, row)) for row in table.rows))
             for table in section.tables)) for section in result.sections))
 

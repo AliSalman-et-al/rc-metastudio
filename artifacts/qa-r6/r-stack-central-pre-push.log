@@ -1,0 +1,349 @@
+[20:20:20] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python scripts/build_qt6.py generate --build-root /home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/build/qt6-verification
+{"form": "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/build/qt6-verification/generated/rc_metastudio/forms/ui_about_legal.py", "resource": "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/build/qt6-verification/resources/icons.rcc"}
+[20:20:23] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -m ty check --python /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python --python-platform win32 --extra-search-path /home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/build/qt6-verification/generated/rc_metastudio --extra-search-path /home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/build/qt6-verification/generated/rc_metastudio/forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa
+All checks passed!
+[20:20:27] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python scripts/code_health.py --base 8b7796bcc840c3505c5fb0a1328cdd7682880e48 --head 8b7796bcc840c3505c5fb0a1328cdd7682880e48 --allow-fail --output artifacts/code-health/baseline.json --report artifacts/code-health/baseline.txt
+Code health (8b7796bcc840c3505c5fb0a1328cdd7682880e48..8b7796bcc840c3505c5fb0a1328cdd7682880e48)
+Scope: 156 files; as of 2026-09-04T02:06:13+05:00
+Coupling: 125 modules, 379 edges
+Cycles: 3; cognitive complexity total/max: 13207/150
+Typing: 1450/4674 parameters (31.0%), 871/2474 returns (35.2%), 113 Any annotations, 4 type: ignores, 26 casts to Any (8b7796bcc840c3505c5fb0a1328cdd7682880e48)
+Defect history: 51 matching commits across 35 files
+Gate: PASS
+Hotspots (180-day normalized churn × complexity density):
+  src/rc_metastudio/two_way_dict.py: 4.6216
+  src/rc_metastudio/launch.py: 2.6151
+  src/rc_metastudio/qt_layout.py: 1.7906
+  r/RCMetaR/R/plotting.R: 1.0539
+  r/RCMetaR/R/diagnostic_methods.R: 0.9653
+[20:21:04] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python scripts/code_health.py --base origin/master --head HEAD --baseline artifacts/code-health/baseline.json --output artifacts/code-health/final.json --report artifacts/code-health/final.txt
+Code health (36650a5744e4fdf74051a4300eecf9472948b186..a17d1a42647a2a3a1329ec540813a0f63ad7ce27)
+Scope: 187 files; as of 2026-11-05T20:00:35+05:00
+Coupling: 147 modules, 440 edges
+Cycles: 2; cognitive complexity total/max: 15319/95
+Typing: 3233/6963 parameters (46.4%), 1665/3349 returns (49.7%), 0 Any annotations, 3 type: ignores, 0 casts to Any (a17d1a42647a2a3a1329ec540813a0f63ad7ce27)
+Defect history: 221 matching commits across 79 files
+Baseline comparison: artifacts/code-health/baseline.json (recorded head 8b7796bcc840c3505c5fb0a1328cdd7682880e48)
+Gate: PASS
+Hotspots (180-day normalized churn × complexity density):
+  src/rc_metastudio/project_adapter.py: 8.4481
+  src/rc_metastudio/two_way_dict.py: 4.6216
+  src/rc_metastudio/analysis_dataset.py: 3.6667
+  src/rc_metastudio/automation.py: 2.5943
+  src/rc_metastudio/result_sections.py: 2.3178
+[20:22:08] Skipping dependency sync for warm local verification
+[20:22:08] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python scripts/build_qt6.py generate --build-root /home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/build/qt6-verification
+{"form": "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/build/qt6-verification/generated/rc_metastudio/forms/ui_about_legal.py", "resource": "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/build/qt6-verification/resources/icons.rcc"}
+[20:22:11] Collecting pytest nodes with strict marker validation
+[20:22:11] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -m pytest --strict-markers tests --collect-only -qq
+tests/analysis_regression/golden/test_analysis_regression_compare.py: 43
+tests/e2e/test_desktop_workflows.py: 142
+tests/packaging/contract/test_adaptive_layout_native_evidence_contract.py: 10
+tests/packaging/contract/test_clean_slate_delivery_contract.py: 2
+tests/packaging/contract/test_linux_distributable_contract.py: 2
+tests/packaging/contract/test_macos_embedded_r_adapter_behavior.py: 10
+tests/packaging/contract/test_macos_embedded_r_profile.py: 14
+tests/packaging/contract/test_macos_native_pipeline_contract.py: 3
+tests/packaging/contract/test_r_integration_kit.py: 23
+tests/packaging/contract/test_release_readiness_contract.py: 1
+tests/packaging/contract/test_staged_r_pruning.py: 1
+tests/packaging/contract/test_windows_distributable_contract.py: 15
+tests/python/fast/test_analysis_adapter.py: 8
+tests/python/fast/test_analysis_result_sections.py: 5
+tests/python/fast/test_artifact_cleanup_policy.py: 2
+tests/python/fast/test_calculator_qt6.py: 28
+tests/python/fast/test_code_health.py: 21
+tests/python/fast/test_confidence_level_validation.py: 7
+tests/python/fast/test_csv_import.py: 8
+tests/python/fast/test_dataset_contracts.py: 2
+tests/python/fast/test_dataset_model_edit_values.py: 22
+tests/python/fast/test_dataset_ordering.py: 4
+tests/python/fast/test_desktop_verification_output.py: 2
+tests/python/fast/test_domain_identity.py: 5
+tests/python/fast/test_main_workspace_policy.py: 8
+tests/python/fast/test_native_remaining_surfaces_evidence.py: 17
+tests/python/fast/test_native_results_evidence.py: 20
+tests/python/fast/test_packaged_automation_dispatch.py: 9
+tests/python/fast/test_plot_capabilities.py: 5
+tests/python/fast/test_plot_service.py: 7
+tests/python/fast/test_project_adapter.py: 6
+tests/python/fast/test_project_format.py: 53
+tests/python/fast/test_project_round_trip_property.py: 1
+tests/python/fast/test_publication_bias_contract.py: 23
+tests/python/fast/test_qt6_build_slice.py: 20
+tests/python/fast/test_qt6_macos_feasibility.py: 32
+tests/python/fast/test_qt_layout_contract_audit.py: 2
+tests/python/fast/test_r_bridge.py: 3
+tests/python/fast/test_r_call_serialization.py: 4
+tests/python/fast/test_r_runtime.py: 5
+tests/python/fast/test_ratio_data.py: 11
+tests/python/fast/test_rcmetar_r_manifest_validation.py: 15
+tests/python/fast/test_recent_file_settings.py: 1
+tests/python/fast/test_reitsma_meta_regression.py: 3
+tests/python/fast/test_result_formatting_audit.py: 15
+tests/python/fast/test_result_text_identity.py: 2
+tests/python/fast/test_two_way_dict.py: 1
+tests/python/fast/test_workspace_editing.py: 2
+tests/python/fast/test_workspace_session.py: 4
+tests/python/gui/test_adaptive_layout_native_evidence.py: 9
+tests/python/gui/test_adaptive_window_policy.py: 13
+tests/python/gui/test_analysis_configuration_layout.py: 25
+tests/python/gui/test_analysis_failure_safety.py: 20
+tests/python/gui/test_binary_data_transactional_layout.py: 14
+tests/python/gui/test_compact_transient_layout.py: 5
+tests/python/gui/test_continuous_data_transactional_layout.py: 30
+tests/python/gui/test_continuous_signal_blocker_contract.py: 3
+tests/python/gui/test_csv_import_wizard.py: 6
+tests/python/gui/test_declarative_dialog_sizing.py: 2
+tests/python/gui/test_diagnostic_analysis_workflow.py: 9
+tests/python/gui/test_diagnostic_transactional_layout.py: 17
+tests/python/gui/test_funnel_plot_editor.py: 12
+tests/python/gui/test_main_window_automation_launch.py: 64
+tests/python/gui/test_main_window_data_workflows.py: 21
+tests/python/gui/test_main_wizard_workflow_layout.py: 14
+tests/python/gui/test_main_workspace_window.py: 7
+tests/python/gui/test_publication_bias_dialog.py: 10
+tests/python/gui/test_qt6_application_shell.py: 17
+tests/python/gui/test_results_workspace_layout.py: 65
+tests/python/gui/test_user_facing_text_regressions.py: 2
+tests/r_stack/test_inprocess_rpy2_backend.py: 4
+tests/r_stack/test_r_metric_labels.py: 1
+tests/r_stack/test_reitsma_golden.py: 2
+tests/r_stack/test_reitsma_meta_regression_contract.py: 1
+tests/r_stack/test_reitsma_result_formatting.py: 1
+
+[20:22:16] Running fast and golden pytest lanes
+[20:22:16] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -m pytest --strict-markers tests/python/fast tests/analysis_regression/golden --dist loadfile -n 4
+============================= test session starts ==============================
+platform linux -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/ali/.t3/worktrees/rc-metastudio/t3-609f4836
+configfile: pyproject.toml
+plugins: xdist-3.8.0
+created: 4/4 workers
+4 workers [426 items]
+
+........................................................................ [ 16%]
+........................................................................ [ 33%]
+................sss..................................FF........s..F....F [ 50%]
+F..................s.................................................... [ 67%]
+........................................................................ [ 84%]
+....................s.............................................       [100%]
+=================================== FAILURES ===================================
+_ test_numeric_contract_covers_all_cases_and_rejects_shape_and_tolerance_drift _
+[gw1] linux -- Python 3.11.9 /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python
+
+    def test_numeric_contract_covers_all_cases_and_rejects_shape_and_tolerance_drift():
+        archive, frozen = verify_golden_compatibility._load_frozen_reference(ROOT)
+>       contract = verify_golden_compatibility._load_numeric_contract(ROOT, archive, frozen)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/analysis_regression/golden/test_analysis_regression_compare.py:416: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/verify_golden_compatibility.py:705: in _load_numeric_contract
+    _validate_numeric_cases(contract, reference)
+scripts/verify_golden_compatibility.py:756: in _validate_numeric_cases
+    _validate_numeric_case(case, frozen, coverage[case["id"]])
+scripts/verify_golden_compatibility.py:766: in _validate_numeric_case
+    derived_coverage = _numeric_case_coverage(sections, frozen)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts/verify_golden_compatibility.py:779: in _numeric_case_coverage
+    _validate_numeric_section(section, metrics, frozen)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+section = 'Diagnostic odds ratio summary'
+metrics = {'calculation_scale.estimate': 2.267, 'calculation_scale.lower_bound': 1.71, 'calculation_scale.standard_error': 0.284, 'calculation_scale.upper_bound': 2.823, ...}
+frozen = {'artifacts': [{'bundle_path': 'artifacts/lymph-diagnostic-random-dor/golden_lymph_forest_dor.png', 'path': 'artifacts...ckage': 'RCMetaR', 'pyqt': '5.15.11', ...}, 'id': 'local-debug', 'matches_expected': False, 'os': 'Windows', ...}, ...}
+
+    def _validate_numeric_section(
+        section: str, metrics: JsonObject, frozen: GoldenCase
+    ) -> None:
+        if not section or section not in frozen["texts"] or not metrics or len(metrics) > 256:
+>           raise ValueError("numeric section coverage is invalid")
+E           ValueError: numeric section coverage is invalid
+
+scripts/verify_golden_compatibility.py:788: ValueError
+____________ test_numeric_oracle_is_independent_from_runtime_parser ____________
+[gw1] linux -- Python 3.11.9 /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x712709c45ad0>
+
+    def test_numeric_oracle_is_independent_from_runtime_parser(monkeypatch):
+        archive, frozen = verify_golden_compatibility._load_frozen_reference(ROOT)
+        monkeypatch.setattr(
+            verify_golden_compatibility.golden_analysis,
+            "parsed_numeric_sections",
+            lambda _result: {"Poison": {"rewritten_oracle": 999.0}},
+        )
+>       contract = verify_golden_compatibility._load_numeric_contract(ROOT, archive, frozen)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/analysis_regression/golden/test_analysis_regression_compare.py:484: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/verify_golden_compatibility.py:705: in _load_numeric_contract
+    _validate_numeric_cases(contract, reference)
+scripts/verify_golden_compatibility.py:756: in _validate_numeric_cases
+    _validate_numeric_case(case, frozen, coverage[case["id"]])
+scripts/verify_golden_compatibility.py:766: in _validate_numeric_case
+    derived_coverage = _numeric_case_coverage(sections, frozen)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts/verify_golden_compatibility.py:779: in _numeric_case_coverage
+    _validate_numeric_section(section, metrics, frozen)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+section = 'Diagnostic odds ratio summary'
+metrics = {'calculation_scale.estimate': 2.267, 'calculation_scale.lower_bound': 1.71, 'calculation_scale.standard_error': 0.284, 'calculation_scale.upper_bound': 2.823, ...}
+frozen = {'artifacts': [{'bundle_path': 'artifacts/lymph-diagnostic-random-dor/golden_lymph_forest_dor.png', 'path': 'artifacts...ckage': 'RCMetaR', 'pyqt': '5.15.11', ...}, 'id': 'local-debug', 'matches_expected': False, 'os': 'Windows', ...}, ...}
+
+    def _validate_numeric_section(
+        section: str, metrics: JsonObject, frozen: GoldenCase
+    ) -> None:
+        if not section or section not in frozen["texts"] or not metrics or len(metrics) > 256:
+>           raise ValueError("numeric section coverage is invalid")
+E           ValueError: numeric section coverage is invalid
+
+scripts/verify_golden_compatibility.py:788: ValueError
+_____ test_golden_capture_uses_public_title_for_semantic_image_descriptor ______
+[gw1] linux -- Python 3.11.9 /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python
+
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-858/popen-gw1/test_golden_capture_uses_publi0')
+
+    def test_golden_capture_uses_public_title_for_semantic_image_descriptor(tmp_path):
+        display_path = tmp_path / "forest.display.svg"
+        display_path.write_text("<svg />", encoding="utf-8")
+        result = _typed_result(
+            images={"diagnostic.DOR.forest": str(tmp_path / "forest.png")},
+            display_images={"diagnostic.DOR.forest": str(display_path)},
+            capabilities={
+                "diagnostic.DOR.forest": {
+                    "plot_kind": "forest",
+                    "editable": True,
+                    "styleable": True,
+                    "composition": "single",
+                    "regenerator": "forest",
+                }
+            },
+            image_params_paths={"diagnostic.DOR.forest": "plot-data"},
+            sections=[
+                {
+                    "id": "test.diagnostic-dor-forest",
+                    "kind": "image",
+                    "order": 0,
+                    "title": "Odds Ratio Forest Plot",
+                    "source_key": "diagnostic.DOR.forest",
+                }
+            ],
+        )
+    
+        descriptor = verify_golden_compatibility.golden_analysis._capture_plot_descriptors(
+            {"artifacts": {"Odds Ratio Forest Plot": "forest.png"}}, result
+        )[0]
+    
+        assert descriptor["artifact_label"] == "Odds Ratio Forest Plot"
+>       assert descriptor["display"]["identity"] == "Odds Ratio Forest Plot"
+E       AssertionError: assert 'Odds ratio forest plot' == 'Odds Ratio Forest Plot'
+E         
+E         - Odds Ratio Forest Plot
+E         ?      ^     ^      ^
+E         + Odds ratio forest plot
+E         ?      ^     ^      ^
+
+tests/analysis_regression/golden/test_analysis_regression_compare.py:655: AssertionError
+__ test_golden_capture_maps_case_only_artifact_title_drift_to_typed_metadata ___
+[gw1] linux -- Python 3.11.9 /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python
+
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-858/popen-gw1/test_golden_capture_maps_case_0')
+
+    def test_golden_capture_maps_case_only_artifact_title_drift_to_typed_metadata(
+        tmp_path,
+    ):
+        image_path = tmp_path / "loo.png"
+        image_path.write_bytes(b"png")
+        display_path = tmp_path / "loo.display.svg"
+        display_path.write_text("<svg />", encoding="utf-8")
+        result = _typed_result(
+            images={"analysis.leave-one-out.loo.1": str(image_path)},
+            display_images={"analysis.leave-one-out.loo.1": str(display_path)},
+            capabilities={
+                "analysis.leave-one-out.loo.1": {
+                    "plot_kind": "leave_one_out_forest",
+                    "editable": True,
+                    "styleable": True,
+                    "composition": "single",
+                    "regenerator": "forest",
+                }
+            },
+            image_params_paths={"analysis.leave-one-out.loo.1": "loo.params"},
+            sections=[
+                {
+                    "id": "analysis.leave-one-out.loo.1",
+                    "kind": "image",
+                    "order": 0,
+                    "title": "Leave-one-out Forest Plot",
+                    "source_key": "analysis.leave-one-out.loo.1",
+                }
+            ],
+        )
+    
+        descriptor = verify_golden_compatibility.golden_analysis._capture_plot_descriptors(
+            {"artifacts": {"Leave-one-out Forest plot": str(image_path)}}, result
+        )[0]
+    
+>       assert descriptor["display"]["identity"] == "Leave-one-out Forest Plot"
+E       AssertionError: assert 'Leave-one-out forest plot' == 'Leave-one-out Forest Plot'
+E         
+E         - Leave-one-out Forest Plot
+E         ?               ^      ^
+E         + Leave-one-out forest plot
+E         ?               ^      ^
+
+tests/analysis_regression/golden/test_analysis_regression_compare.py:695: AssertionError
+_____ test_golden_comparison_uses_public_text_title_for_stable_source_key ______
+[gw1] linux -- Python 3.11.9 /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python
+
+    def test_golden_comparison_uses_public_text_title_for_stable_source_key():
+        result = _typed_result(
+            texts={"diagnostic.DOR.summary": "Estimate Lower bound Upper bound\n 1.0 0.5 1.5"},
+            sections=[
+                {
+                    "id": "diagnostic.DOR.summary",
+                    "kind": "text",
+                    "order": 0,
+                    "title": "Odds Ratio Summary",
+                    "source_key": "diagnostic.DOR.summary",
+                }
+            ],
+        )
+    
+>       assert verify_golden_compatibility.golden_analysis._public_texts(result) == {
+            "Odds Ratio Summary": "Estimate Lower bound Upper bound\n 1.0 0.5 1.5"
+        }
+E       AssertionError: assert {'Odds ratio ... 1.0 0.5 1.5'} == {'Odds Ratio ... 1.0 0.5 1.5'}
+E         
+E         Left contains 1 more item:
+E         {'Odds ratio summary': 'Estimate Lower bound Upper bound\n 1.0 0.5 1.5'}
+E         Right contains 1 more item:
+E         {'Odds Ratio Summary': 'Estimate Lower bound Upper bound\n 1.0 0.5 1.5'}
+E         Use -v to get more diff
+
+tests/analysis_regression/golden/test_analysis_regression_compare.py:714: AssertionError
+=========================== short test summary info ============================
+FAILED tests/analysis_regression/golden/test_analysis_regression_compare.py::test_numeric_contract_covers_all_cases_and_rejects_shape_and_tolerance_drift
+FAILED tests/analysis_regression/golden/test_analysis_regression_compare.py::test_numeric_oracle_is_independent_from_runtime_parser
+FAILED tests/analysis_regression/golden/test_analysis_regression_compare.py::test_golden_capture_uses_public_title_for_semantic_image_descriptor
+FAILED tests/analysis_regression/golden/test_analysis_regression_compare.py::test_golden_capture_maps_case_only_artifact_title_drift_to_typed_metadata
+FAILED tests/analysis_regression/golden/test_analysis_regression_compare.py::test_golden_comparison_uses_public_text_title_for_stable_source_key
+============= 5 failed, 415 passed, 6 skipped in 112.13s (0:01:52) =============
+verification failed: command failed with exit code 1: /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -m pytest --strict-markers tests/python/fast tests/analysis_regression/golden --dist loadfile -n 4
+
+| Step | Seconds | Result |
+| --- | ---: | --- |
+| prepare | 2.6 | pass |
+| typing (win32) | 3.81 | pass |
+| code health | 101.01 | pass |
+| Python fast and golden | 121.52 | fail |
+| GUI | 0.0 | not run |
+| packaging contracts | 0.0 | not run |
+| R stack, authorities and desktop E2E (local: python scripts/verify.py r-stack) | 0.0 | CI only |
+| Windows native Qt and package qualification | 0.0 | CI only |
+| macOS native smoke and packaging | 0.0 | CI only |
+| Linux native xcb smoke | 0.0 | CI only |

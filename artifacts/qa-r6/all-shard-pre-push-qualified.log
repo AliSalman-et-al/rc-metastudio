@@ -1,0 +1,187 @@
+[20:30:14] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python scripts/build_qt6.py generate --build-root /home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/build/qt6-verification
+{"form": "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/build/qt6-verification/generated/rc_metastudio/forms/ui_about_legal.py", "resource": "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/build/qt6-verification/resources/icons.rcc"}
+[20:30:17] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -m ty check --python /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python --python-platform win32 --extra-search-path /home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/build/qt6-verification/generated/rc_metastudio --extra-search-path /home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/build/qt6-verification/generated/rc_metastudio/forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa
+All checks passed!
+[20:30:21] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python scripts/code_health.py --base 8b7796bcc840c3505c5fb0a1328cdd7682880e48 --head 8b7796bcc840c3505c5fb0a1328cdd7682880e48 --allow-fail --output artifacts/code-health/baseline.json --report artifacts/code-health/baseline.txt
+Code health (8b7796bcc840c3505c5fb0a1328cdd7682880e48..8b7796bcc840c3505c5fb0a1328cdd7682880e48)
+Scope: 156 files; as of 2026-09-04T02:06:13+05:00
+Coupling: 125 modules, 379 edges
+Cycles: 3; cognitive complexity total/max: 13207/150
+Typing: 1450/4674 parameters (31.0%), 871/2474 returns (35.2%), 113 Any annotations, 4 type: ignores, 26 casts to Any (8b7796bcc840c3505c5fb0a1328cdd7682880e48)
+Defect history: 51 matching commits across 35 files
+Gate: PASS
+Hotspots (180-day normalized churn × complexity density):
+  src/rc_metastudio/two_way_dict.py: 4.6216
+  src/rc_metastudio/launch.py: 2.6151
+  src/rc_metastudio/qt_layout.py: 1.7906
+  r/RCMetaR/R/plotting.R: 1.0539
+  r/RCMetaR/R/diagnostic_methods.R: 0.9653
+[20:30:50] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python scripts/code_health.py --base origin/master --head HEAD --baseline artifacts/code-health/baseline.json --output artifacts/code-health/final.json --report artifacts/code-health/final.txt
+Code health (36650a5744e4fdf74051a4300eecf9472948b186..a17d1a42647a2a3a1329ec540813a0f63ad7ce27)
+Scope: 187 files; as of 2026-11-05T20:00:35+05:00
+Coupling: 147 modules, 440 edges
+Cycles: 2; cognitive complexity total/max: 15319/95
+Typing: 3233/6963 parameters (46.4%), 1665/3349 returns (49.7%), 0 Any annotations, 3 type: ignores, 0 casts to Any (a17d1a42647a2a3a1329ec540813a0f63ad7ce27)
+Defect history: 221 matching commits across 79 files
+Baseline comparison: artifacts/code-health/baseline.json (recorded head 8b7796bcc840c3505c5fb0a1328cdd7682880e48)
+Gate: PASS
+Hotspots (180-day normalized churn × complexity density):
+  src/rc_metastudio/project_adapter.py: 8.4481
+  src/rc_metastudio/two_way_dict.py: 4.6216
+  src/rc_metastudio/analysis_dataset.py: 3.6667
+  src/rc_metastudio/automation.py: 2.5943
+  src/rc_metastudio/result_sections.py: 2.3178
+[20:31:28] Skipping dependency sync for warm local verification
+[20:31:28] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python scripts/build_qt6.py generate --build-root /home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/build/qt6-verification
+{"form": "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/build/qt6-verification/generated/rc_metastudio/forms/ui_about_legal.py", "resource": "/home/ali/.t3/worktrees/rc-metastudio/t3-609f4836/build/qt6-verification/resources/icons.rcc"}
+[20:31:31] Collecting pytest nodes with strict marker validation
+[20:31:31] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -m pytest --strict-markers tests --collect-only -qq
+tests/analysis_regression/golden/test_analysis_regression_compare.py: 43
+tests/e2e/test_desktop_workflows.py: 142
+tests/packaging/contract/test_adaptive_layout_native_evidence_contract.py: 10
+tests/packaging/contract/test_clean_slate_delivery_contract.py: 2
+tests/packaging/contract/test_linux_distributable_contract.py: 2
+tests/packaging/contract/test_macos_embedded_r_adapter_behavior.py: 10
+tests/packaging/contract/test_macos_embedded_r_profile.py: 14
+tests/packaging/contract/test_macos_native_pipeline_contract.py: 3
+tests/packaging/contract/test_r_integration_kit.py: 23
+tests/packaging/contract/test_release_readiness_contract.py: 1
+tests/packaging/contract/test_staged_r_pruning.py: 1
+tests/packaging/contract/test_windows_distributable_contract.py: 15
+tests/python/fast/test_analysis_adapter.py: 8
+tests/python/fast/test_analysis_result_sections.py: 5
+tests/python/fast/test_artifact_cleanup_policy.py: 2
+tests/python/fast/test_calculator_qt6.py: 28
+tests/python/fast/test_code_health.py: 21
+tests/python/fast/test_confidence_level_validation.py: 7
+tests/python/fast/test_csv_import.py: 8
+tests/python/fast/test_dataset_contracts.py: 2
+tests/python/fast/test_dataset_model_edit_values.py: 22
+tests/python/fast/test_dataset_ordering.py: 4
+tests/python/fast/test_desktop_verification_output.py: 2
+tests/python/fast/test_domain_identity.py: 5
+tests/python/fast/test_main_workspace_policy.py: 8
+tests/python/fast/test_native_remaining_surfaces_evidence.py: 17
+tests/python/fast/test_native_results_evidence.py: 20
+tests/python/fast/test_packaged_automation_dispatch.py: 9
+tests/python/fast/test_plot_capabilities.py: 5
+tests/python/fast/test_plot_service.py: 7
+tests/python/fast/test_project_adapter.py: 6
+tests/python/fast/test_project_format.py: 53
+tests/python/fast/test_project_round_trip_property.py: 1
+tests/python/fast/test_publication_bias_contract.py: 23
+tests/python/fast/test_qt6_build_slice.py: 20
+tests/python/fast/test_qt6_macos_feasibility.py: 32
+tests/python/fast/test_qt_layout_contract_audit.py: 2
+tests/python/fast/test_r_bridge.py: 3
+tests/python/fast/test_r_call_serialization.py: 4
+tests/python/fast/test_r_runtime.py: 5
+tests/python/fast/test_ratio_data.py: 11
+tests/python/fast/test_rcmetar_r_manifest_validation.py: 15
+tests/python/fast/test_recent_file_settings.py: 1
+tests/python/fast/test_reitsma_meta_regression.py: 3
+tests/python/fast/test_result_formatting_audit.py: 15
+tests/python/fast/test_result_text_identity.py: 2
+tests/python/fast/test_two_way_dict.py: 1
+tests/python/fast/test_workspace_editing.py: 2
+tests/python/fast/test_workspace_session.py: 4
+tests/python/gui/test_adaptive_layout_native_evidence.py: 9
+tests/python/gui/test_adaptive_window_policy.py: 13
+tests/python/gui/test_analysis_configuration_layout.py: 25
+tests/python/gui/test_analysis_failure_safety.py: 20
+tests/python/gui/test_binary_data_transactional_layout.py: 14
+tests/python/gui/test_compact_transient_layout.py: 5
+tests/python/gui/test_continuous_data_transactional_layout.py: 30
+tests/python/gui/test_continuous_signal_blocker_contract.py: 3
+tests/python/gui/test_csv_import_wizard.py: 6
+tests/python/gui/test_declarative_dialog_sizing.py: 2
+tests/python/gui/test_diagnostic_analysis_workflow.py: 9
+tests/python/gui/test_diagnostic_transactional_layout.py: 17
+tests/python/gui/test_funnel_plot_editor.py: 12
+tests/python/gui/test_main_window_automation_launch.py: 64
+tests/python/gui/test_main_window_data_workflows.py: 21
+tests/python/gui/test_main_wizard_workflow_layout.py: 14
+tests/python/gui/test_main_workspace_window.py: 7
+tests/python/gui/test_publication_bias_dialog.py: 10
+tests/python/gui/test_qt6_application_shell.py: 17
+tests/python/gui/test_results_workspace_layout.py: 65
+tests/python/gui/test_user_facing_text_regressions.py: 2
+tests/r_stack/test_inprocess_rpy2_backend.py: 4
+tests/r_stack/test_r_metric_labels.py: 1
+tests/r_stack/test_reitsma_golden.py: 2
+tests/r_stack/test_reitsma_meta_regression_contract.py: 1
+tests/r_stack/test_reitsma_result_formatting.py: 1
+
+[20:31:33] Running fast and golden pytest lanes
+[20:31:33] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -m pytest --strict-markers tests/python/fast tests/analysis_regression/golden --dist loadfile -n 4
+============================= test session starts ==============================
+platform linux -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/ali/.t3/worktrees/rc-metastudio/t3-609f4836
+configfile: pyproject.toml
+plugins: xdist-3.8.0
+created: 4/4 workers
+4 workers [426 items]
+
+........................................................................ [ 16%]
+........................................................................ [ 33%]
+.................sss.................................................... [ 50%]
+.........................s.................................s..........s. [ 67%]
+........................................................................ [ 84%]
+..................................................................       [100%]
+======================= 420 passed, 6 skipped in 51.57s ========================
+[20:32:25] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -m pytest -W error --strict-markers tests/python/gui
+============================= test session starts ==============================
+platform linux -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/ali/.t3/worktrees/rc-metastudio/t3-609f4836
+configfile: pyproject.toml
+plugins: xdist-3.8.0
+collected 365 items
+
+tests/python/gui/test_adaptive_layout_native_evidence.py .........       [  2%]
+tests/python/gui/test_adaptive_window_policy.py .............            [  6%]
+tests/python/gui/test_analysis_configuration_layout.py ................. [ 10%]
+.s......                                                                 [ 12%]
+tests/python/gui/test_analysis_failure_safety.py ....................    [ 18%]
+tests/python/gui/test_binary_data_transactional_layout.py .............. [ 22%]
+                                                                         [ 22%]
+tests/python/gui/test_compact_transient_layout.py .....                  [ 23%]
+tests/python/gui/test_continuous_data_transactional_layout.py .......... [ 26%]
+....................                                                     [ 31%]
+tests/python/gui/test_continuous_signal_blocker_contract.py ...          [ 32%]
+tests/python/gui/test_csv_import_wizard.py ......                        [ 34%]
+tests/python/gui/test_declarative_dialog_sizing.py ..                    [ 34%]
+tests/python/gui/test_diagnostic_analysis_workflow.py .........          [ 37%]
+tests/python/gui/test_diagnostic_transactional_layout.py ............... [ 41%]
+..                                                                       [ 41%]
+tests/python/gui/test_funnel_plot_editor.py ............                 [ 45%]
+tests/python/gui/test_main_window_automation_launch.py ................. [ 49%]
+...............................................                          [ 62%]
+tests/python/gui/test_main_window_data_workflows.py .................... [ 68%]
+.                                                                        [ 68%]
+tests/python/gui/test_main_wizard_workflow_layout.py ..............      [ 72%]
+tests/python/gui/test_main_workspace_window.py .......                   [ 74%]
+tests/python/gui/test_publication_bias_dialog.py ..........              [ 76%]
+tests/python/gui/test_qt6_application_shell.py .................         [ 81%]
+tests/python/gui/test_results_workspace_layout.py ...................... [ 87%]
+...........................................                              [ 99%]
+tests/python/gui/test_user_facing_text_regressions.py ..                 [100%]
+
+================== 364 passed, 1 skipped in 77.01s (0:01:17) ===================
+[20:33:43] $ /home/ali/.t3/worktrees/rc-metastudio/t3-713f0f8a/.venv/bin/python -m pytest -q tests/packaging/contract
+.......................s..................ss..........................ss [ 88%]
+..ss...s.                                                                [100%]
+73 passed, 8 skipped in 3.11s
+
+| Step | Seconds | Result |
+| --- | ---: | --- |
+| prepare | 2.99 | pass |
+| typing (win32) | 3.62 | pass |
+| code health | 67.49 | pass |
+| Python fast and golden | 57.05 | pass |
+| GUI | 77.46 | pass |
+| packaging contracts | 3.42 | pass |
+| R stack, authorities and desktop E2E (local: python scripts/verify.py r-stack) | 0.0 | CI only |
+| Windows native Qt and package qualification | 0.0 | CI only |
+| macOS native smoke and packaging | 0.0 | CI only |
+| Linux native xcb smoke | 0.0 | CI only |
+[20:33:46] pre-push verification complete

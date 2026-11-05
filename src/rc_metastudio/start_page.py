@@ -48,6 +48,7 @@ class StartPage(QtWidgets.QScrollArea):
         layout.addWidget(intro)
         actions = QtWidgets.QHBoxLayout()
         actions.setSpacing(16)
+        buttons = []
         for attribute, action, caption, description in (
             ('create_button', create_action, 'Create dataset', 'Choose an outcome and effect measure, then enter study data.'),
             ('import_button', import_action, 'Import data', 'Map your spreadsheet columns and preview the data before importing.'),
@@ -65,17 +66,22 @@ class StartPage(QtWidgets.QScrollArea):
             qt_layout.configure_primary_action_buttons((button,))
             button.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
             setattr(self, attribute, button)
-            card_layout.addWidget(button)
+            buttons.append(button)
+            card_layout.addWidget(button, 0, QtCore.Qt.AlignmentFlag.AlignTop)
             label = QtWidgets.QLabel(description, card)
             qt_layout.configure_context_label(label)
             label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
             label_policy.setHeightForWidth(True)
             label.setSizePolicy(label_policy)
             card_layout.addWidget(label)
+            card_layout.addStretch()
             policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
             policy.setHeightForWidth(True)
             card.setSizePolicy(policy)
             actions.addWidget(card, 1)
+        height = max(button.sizeHint().height() for button in buttons)
+        for button in buttons:
+            button.setFixedHeight(height)
         layout.addLayout(actions)
         heading = QtWidgets.QLabel('Recent projects', content)
         qt_layout.configure_heading(heading)

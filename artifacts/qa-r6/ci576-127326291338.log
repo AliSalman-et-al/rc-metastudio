@@ -1,0 +1,897 @@
+﻿2026-11-05T15:02:22.1960569Z Current runner version: '2.338.2'
+2026-11-05T15:02:22.1982282Z ##[group]Runner Image Provisioner
+2026-11-05T15:02:22.1982916Z Hosted Compute Agent
+2026-11-05T15:02:22.1983374Z Version: 20261021.618
+2026-11-05T15:02:22.1983860Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-11-05T15:02:22.1984405Z Build Date: 2026-10-21T00:45:21Z
+2026-11-05T15:02:22.1984902Z Worker ID: {ae929877-fd8c-499d-a481-2aa3467158a7}
+2026-11-05T15:02:22.1985427Z Region: centralus
+2026-11-05T15:02:22.1985824Z Cloud: Azure
+2026-11-05T15:02:22.1986211Z ##[endgroup]
+2026-11-05T15:02:22.1987171Z ##[group]Operating System
+2026-11-05T15:02:22.1987622Z Microsoft Windows Server 2025
+2026-11-05T15:02:22.1988099Z 10.0.26100
+2026-11-05T15:02:22.1988511Z Datacenter
+2026-11-05T15:02:22.1988893Z ##[endgroup]
+2026-11-05T15:02:22.1989291Z ##[group]Runner Image
+2026-11-05T15:02:22.1989722Z Image: windows-2025-vs2026
+2026-11-05T15:02:22.1990184Z Version: 20261030.294.1
+2026-11-05T15:02:22.1991313Z Included Software: https://github.com/actions/runner-images/blob/win25-vs2026/20261030.294/images/windows/Windows2025-VS2026-Readme.md
+2026-11-05T15:02:22.1992573Z Image Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20261030.294
+2026-11-05T15:02:22.1993299Z ##[endgroup]
+2026-11-05T15:02:22.1994247Z ##[group]GITHUB_TOKEN Permissions
+2026-11-05T15:02:22.1995628Z Contents: read
+2026-11-05T15:02:22.1996120Z Metadata: read
+2026-11-05T15:02:22.1996529Z PullRequests: read
+2026-11-05T15:02:22.1996932Z ##[endgroup]
+2026-11-05T15:02:22.1998714Z Secret source: Actions
+2026-11-05T15:02:22.1999403Z Cache mode: write
+2026-11-05T15:02:22.1999935Z Prepare workflow directory
+2026-11-05T15:02:22.2315347Z Prepare all required actions
+2026-11-05T15:02:22.2358202Z Getting action download info
+2026-11-05T15:02:22.4534603Z Download action repository 'actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10' (SHA:df4cb1c069e1874edd31b4311f1884172cec0e10)
+2026-11-05T15:02:22.5643717Z Download action repository 'astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b' (SHA:08807647e7069bb48b6ef5acd8ec9567f424441b)
+2026-11-05T15:02:22.9892705Z Download action repository 'r-lib/actions@d3c5be51b12e724e68f33216ca3c148b66d5f0b6' (SHA:d3c5be51b12e724e68f33216ca3c148b66d5f0b6)
+2026-11-05T15:02:23.5360839Z Download action repository 'actions/cache@caa296126883cff596d87d8935842f9db880ef25' (SHA:caa296126883cff596d87d8935842f9db880ef25)
+2026-11-05T15:02:23.6469662Z Download action repository 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-05T15:02:23.9320157Z Complete job name: Required Windows Full R Stack Evidence (checks)
+2026-11-05T15:02:24.0693744Z ##[group]Run actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+2026-11-05T15:02:24.0694845Z with:
+2026-11-05T15:02:24.0695171Z   fetch-depth: 0
+2026-11-05T15:02:24.0695541Z   repository: AliSalman-et-al/rc-metastudio
+2026-11-05T15:02:24.0698753Z   token: ***
+2026-11-05T15:02:24.0699091Z   ssh-strict: true
+2026-11-05T15:02:24.0699451Z   ssh-user: git
+2026-11-05T15:02:24.0699790Z   persist-credentials: true
+2026-11-05T15:02:24.0700174Z   clean: true
+2026-11-05T15:02:24.0700529Z   sparse-checkout-cone-mode: true
+2026-11-05T15:02:24.0700937Z   fetch-tags: false
+2026-11-05T15:02:24.0701281Z   show-progress: true
+2026-11-05T15:02:24.0701632Z   lfs: false
+2026-11-05T15:02:24.0701943Z   submodules: false
+2026-11-05T15:02:24.0702284Z   set-safe-directory: true
+2026-11-05T15:02:24.0702814Z env:
+2026-11-05T15:02:24.0703251Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T15:02:24.0703784Z ##[endgroup]
+2026-11-05T15:02:24.1859691Z Syncing repository: AliSalman-et-al/rc-metastudio
+2026-11-05T15:02:24.1861107Z ##[group]Getting Git version info
+2026-11-05T15:02:24.1861709Z Working directory is 'D:\a\rc-metastudio\rc-metastudio'
+2026-11-05T15:02:24.2628338Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-05T15:02:24.5522444Z git version 2.56.0.windows.4
+2026-11-05T15:02:24.5561567Z ##[endgroup]
+2026-11-05T15:02:24.5577546Z Temporarily overriding HOME='D:\a\_temp\2557e5be-eba0-4efd-be0e-a8e8db26e761' before making global git config changes
+2026-11-05T15:02:24.5578853Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-05T15:02:24.5586039Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\rc-metastudio\rc-metastudio
+2026-11-05T15:02:24.6053896Z Deleting the contents of 'D:\a\rc-metastudio\rc-metastudio'
+2026-11-05T15:02:24.6058491Z ##[group]Determining repository object format
+2026-11-05T15:02:24.6060650Z ##[endgroup]
+2026-11-05T15:02:24.6061364Z ##[group]Initializing the repository
+2026-11-05T15:02:24.6068042Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\rc-metastudio\rc-metastudio
+2026-11-05T15:02:24.6954726Z Initialized empty Git repository in D:/a/rc-metastudio/rc-metastudio/.git/
+2026-11-05T15:02:24.6993488Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/AliSalman-et-al/rc-metastudio
+2026-11-05T15:02:24.7518417Z ##[endgroup]
+2026-11-05T15:02:24.7519440Z ##[group]Disabling automatic garbage collection
+2026-11-05T15:02:24.7527029Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-11-05T15:02:24.7854712Z ##[endgroup]
+2026-11-05T15:02:24.7856802Z ##[group]Setting up auth
+2026-11-05T15:02:24.7857557Z Removing SSH command configuration
+2026-11-05T15:02:24.7870098Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-05T15:02:24.8182123Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-05T15:02:25.9872370Z Removing HTTP extra header
+2026-11-05T15:02:25.9880407Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-05T15:02:26.0170054Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-05T15:02:26.4592204Z Removing includeIf entries pointing to credentials config files
+2026-11-05T15:02:26.4601694Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-05T15:02:26.4896854Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-05T15:02:26.9330913Z [command]"C:\Program Files\Git\bin\git.exe" config --file D:\a\_temp\git-credentials-9854a22c-e2ad-4269-bf09-c0b52d96a91d.config http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-11-05T15:02:26.9635955Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:D:/a/rc-metastudio/rc-metastudio/.git.path D:\a\_temp\git-credentials-9854a22c-e2ad-4269-bf09-c0b52d96a91d.config
+2026-11-05T15:02:26.9923043Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:D:/a/rc-metastudio/rc-metastudio/.git/worktrees/*.path D:\a\_temp\git-credentials-9854a22c-e2ad-4269-bf09-c0b52d96a91d.config
+2026-11-05T15:02:27.0249836Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-9854a22c-e2ad-4269-bf09-c0b52d96a91d.config
+2026-11-05T15:02:27.0532955Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-9854a22c-e2ad-4269-bf09-c0b52d96a91d.config
+2026-11-05T15:02:27.0813562Z ##[endgroup]
+2026-11-05T15:02:27.0814114Z ##[group]Fetching the repository
+2026-11-05T15:02:27.0825524Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +e70d86fa516677ab8db698149b97b77adc1c90ec:refs/remotes/pull/576/merge
+2026-11-05T15:02:58.7952250Z From https://github.com/AliSalman-et-al/rc-metastudio
+2026-11-05T15:02:58.7953501Z  * [new branch]        chore/verification-skills                -> origin/chore/verification-skills
+2026-11-05T15:02:58.7954219Z  * [new branch]        ci/baseline-history                      -> origin/ci/baseline-history
+2026-11-05T15:02:58.7954857Z  * [new branch]        ci/baseline-tests                        -> origin/ci/baseline-tests
+2026-11-05T15:02:58.7955508Z  * [new branch]        ci/planted-bugs                          -> origin/ci/planted-bugs
+2026-11-05T15:02:58.7956155Z  * [new branch]        fix/report-format-geometry-ui            -> origin/fix/report-format-geometry-ui
+2026-11-05T15:02:58.7956772Z  * [new branch]        master                                   -> origin/master
+2026-11-05T15:02:58.7957252Z  * [new branch]        ux/sheets                                -> origin/ux/sheets
+2026-11-05T15:02:58.7957777Z  * [new tag]           pre-qt6-baseline                         -> pre-qt6-baseline
+2026-11-05T15:02:58.7958257Z  * [new tag]           v0.1.0                                   -> v0.1.0
+2026-11-05T15:02:58.7958680Z  * [new tag]           v0.1.1                                   -> v0.1.1
+2026-11-05T15:02:58.7959353Z  * [new tag]           v0.1.2                                   -> v0.1.2
+2026-11-05T15:02:58.7960143Z  * [new tag]           v0.1.2-rc.1                              -> v0.1.2-rc.1
+2026-11-05T15:02:58.7960605Z  * [new tag]           v0.2.0                                   -> v0.2.0
+2026-11-05T15:02:58.7961130Z  * [new tag]           v0.2.0-rc.1                              -> v0.2.0-rc.1
+2026-11-05T15:02:58.7961626Z  * [new tag]           v0.2.0-rc.2                              -> v0.2.0-rc.2
+2026-11-05T15:02:58.7962110Z  * [new tag]           v0.2.1                                   -> v0.2.1
+2026-11-05T15:02:58.7962527Z  * [new tag]           v0.2.1-rc.1                              -> v0.2.1-rc.1
+2026-11-05T15:02:58.7962943Z  * [new tag]           v0.2.1-rc.2                              -> v0.2.1-rc.2
+2026-11-05T15:02:58.7963389Z  * [new tag]           v0.2.2                                   -> v0.2.2
+2026-11-05T15:02:58.7963825Z  * [new tag]           v0.2.2-rc.1                              -> v0.2.2-rc.1
+2026-11-05T15:02:58.7964276Z  * [new tag]           v0.2.3                                   -> v0.2.3
+2026-11-05T15:02:58.7964733Z  * [new tag]           v0.2.3-rc.1                              -> v0.2.3-rc.1
+2026-11-05T15:02:58.7965994Z  * [new tag]           v0.2.3-rc.2                              -> v0.2.3-rc.2
+2026-11-05T15:02:58.7966467Z  * [new tag]           v0.3.0                                   -> v0.3.0
+2026-11-05T15:02:58.7966887Z  * [new tag]           v0.3.0-rc.1                              -> v0.3.0-rc.1
+2026-11-05T15:02:58.7967329Z  * [new tag]           v0.3.1                                   -> v0.3.1
+2026-11-05T15:02:58.7968063Z  * [new tag]           v0.3.1-rc.1                              -> v0.3.1-rc.1
+2026-11-05T15:02:58.7968521Z  * [new tag]           v0.4.0                                   -> v0.4.0
+2026-11-05T15:02:58.7968982Z  * [new tag]           v0.4.0-rc.1                              -> v0.4.0-rc.1
+2026-11-05T15:02:58.7969418Z  * [new tag]           v0.4.1                                   -> v0.4.1
+2026-11-05T15:02:58.7969849Z  * [new tag]           v0.4.1-rc.1                              -> v0.4.1-rc.1
+2026-11-05T15:02:58.7970309Z  * [new tag]           v0.4.2                                   -> v0.4.2
+2026-11-05T15:02:58.7970900Z  * [new tag]           v0.4.2-rc.2                              -> v0.4.2-rc.2
+2026-11-05T15:02:58.7971385Z  * [new tag]           v0.5.0                                   -> v0.5.0
+2026-11-05T15:02:58.7971810Z  * [new tag]           v0.5.0-rc.1                              -> v0.5.0-rc.1
+2026-11-05T15:02:58.7972456Z  * [new tag]           v0.5.0-rc.2                              -> v0.5.0-rc.2
+2026-11-05T15:02:58.7972889Z  * [new tag]           v0.5.1                                   -> v0.5.1
+2026-11-05T15:02:58.7973313Z  * [new tag]           v0.5.1-rc.1                              -> v0.5.1-rc.1
+2026-11-05T15:02:58.7973817Z  * [new ref]           e70d86fa516677ab8db698149b97b77adc1c90ec -> pull/576/merge
+2026-11-05T15:02:58.7994043Z ##[endgroup]
+2026-11-05T15:02:58.7994389Z ##[group]Determining the checkout info
+2026-11-05T15:02:58.7994860Z ##[endgroup]
+2026-11-05T15:02:58.8003430Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-11-05T15:02:58.8477243Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-11-05T15:02:58.8762243Z ##[group]Checking out the ref
+2026-11-05T15:02:58.8768985Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force refs/remotes/pull/576/merge
+2026-11-05T15:02:59.9382879Z Updating files:  19% (1694/8525)
+2026-11-05T15:03:00.0390243Z Updating files:  20% (1705/8525)
+2026-11-05T15:03:00.0659828Z Updating files:  21% (1791/8525)
+2026-11-05T15:03:00.0975969Z Updating files:  22% (1876/8525)
+2026-11-05T15:03:00.1560711Z Updating files:  23% (1961/8525)
+2026-11-05T15:03:00.1845183Z Updating files:  24% (2046/8525)
+2026-11-05T15:03:00.2358412Z Updating files:  25% (2132/8525)
+2026-11-05T15:03:00.3823846Z Updating files:  26% (2217/8525)
+2026-11-05T15:03:00.4029877Z Updating files:  27% (2302/8525)
+2026-11-05T15:03:00.4464253Z Updating files:  28% (2387/8525)
+2026-11-05T15:03:00.4948392Z Updating files:  29% (2473/8525)
+2026-11-05T15:03:00.5310948Z Updating files:  30% (2558/8525)
+2026-11-05T15:03:00.5657847Z Updating files:  31% (2643/8525)
+2026-11-05T15:03:00.6166180Z Updating files:  32% (2728/8525)
+2026-11-05T15:03:00.6921804Z Updating files:  33% (2814/8525)
+2026-11-05T15:03:00.7565572Z Updating files:  34% (2899/8525)
+2026-11-05T15:03:00.8561027Z Updating files:  35% (2984/8525)
+2026-11-05T15:03:00.8867044Z Updating files:  36% (3069/8525)
+2026-11-05T15:03:00.9085817Z Updating files:  37% (3155/8525)
+2026-11-05T15:03:00.9338900Z Updating files:  38% (3240/8525)
+2026-11-05T15:03:00.9722549Z Updating files:  38% (3281/8525)
+2026-11-05T15:03:01.0452888Z Updating files:  39% (3325/8525)
+2026-11-05T15:03:01.0980053Z Updating files:  40% (3410/8525)
+2026-11-05T15:03:01.1790205Z Updating files:  41% (3496/8525)
+2026-11-05T15:03:01.2426926Z Updating files:  42% (3581/8525)
+2026-11-05T15:03:01.3127072Z Updating files:  43% (3666/8525)
+2026-11-05T15:03:01.3756968Z Updating files:  44% (3751/8525)
+2026-11-05T15:03:01.4319899Z Updating files:  45% (3837/8525)
+2026-11-05T15:03:01.4602351Z Updating files:  46% (3922/8525)
+2026-11-05T15:03:01.4982716Z Updating files:  47% (4007/8525)
+2026-11-05T15:03:01.5740102Z Updating files:  48% (4092/8525)
+2026-11-05T15:03:01.6273587Z Updating files:  49% (4178/8525)
+2026-11-05T15:03:01.7433568Z Updating files:  50% (4263/8525)
+2026-11-05T15:03:01.7943622Z Updating files:  51% (4348/8525)
+2026-11-05T15:03:01.8653653Z Updating files:  52% (4433/8525)
+2026-11-05T15:03:01.9227604Z Updating files:  53% (4519/8525)
+2026-11-05T15:03:01.9461628Z Updating files:  54% (4604/8525)
+2026-11-05T15:03:01.9627023Z Updating files:  54% (4636/8525)
+2026-11-05T15:03:01.9839928Z Updating files:  55% (4689/8525)
+2026-11-05T15:03:02.0015279Z Updating files:  56% (4774/8525)
+2026-11-05T15:03:02.0545487Z Updating files:  57% (4860/8525)
+2026-11-05T15:03:02.1173517Z Updating files:  58% (4945/8525)
+2026-11-05T15:03:02.2449837Z Updating files:  59% (5030/8525)
+2026-11-05T15:03:02.2935093Z Updating files:  60% (5115/8525)
+2026-11-05T15:03:02.3381086Z Updating files:  61% (5201/8525)
+2026-11-05T15:03:02.4084813Z Updating files:  62% (5286/8525)
+2026-11-05T15:03:02.4828965Z Updating files:  63% (5371/8525)
+2026-11-05T15:03:02.5817923Z Updating files:  64% (5456/8525)
+2026-11-05T15:03:02.6524601Z Updating files:  65% (5542/8525)
+2026-11-05T15:03:02.7187247Z Updating files:  66% (5627/8525)
+2026-11-05T15:03:02.7383544Z Updating files:  67% (5712/8525)
+2026-11-05T15:03:02.7597069Z Updating files:  68% (5797/8525)
+2026-11-05T15:03:02.7951881Z Updating files:  69% (5883/8525)
+2026-11-05T15:03:02.8414821Z Updating files:  70% (5968/8525)
+2026-11-05T15:03:02.8955718Z Updating files:  71% (6053/8525)
+2026-11-05T15:03:02.9371997Z Updating files:  72% (6138/8525)
+2026-11-05T15:03:02.9467346Z Updating files:  73% (6224/8525)
+2026-11-05T15:03:02.9690652Z Updating files:  73% (6250/8525)
+2026-11-05T15:03:03.0013588Z Updating files:  74% (6309/8525)
+2026-11-05T15:03:03.0299806Z Updating files:  75% (6394/8525)
+2026-11-05T15:03:03.0612343Z Updating files:  76% (6479/8525)
+2026-11-05T15:03:03.0921198Z Updating files:  77% (6565/8525)
+2026-11-05T15:03:03.1268865Z Updating files:  78% (6650/8525)
+2026-11-05T15:03:03.1640448Z Updating files:  79% (6735/8525)
+2026-11-05T15:03:03.2005145Z Updating files:  80% (6820/8525)
+2026-11-05T15:03:03.2356098Z Updating files:  81% (6906/8525)
+2026-11-05T15:03:03.2615085Z Updating files:  82% (6991/8525)
+2026-11-05T15:03:03.2810234Z Updating files:  83% (7076/8525)
+2026-11-05T15:03:03.3010028Z Updating files:  84% (7161/8525)
+2026-11-05T15:03:03.3303401Z Updating files:  85% (7247/8525)
+2026-11-05T15:03:03.3588819Z Updating files:  86% (7332/8525)
+2026-11-05T15:03:03.3882075Z Updating files:  87% (7417/8525)
+2026-11-05T15:03:03.4205617Z Updating files:  88% (7502/8525)
+2026-11-05T15:03:03.6058706Z Updating files:  89% (7588/8525)
+2026-11-05T15:03:03.6833157Z Updating files:  90% (7673/8525)
+2026-11-05T15:03:03.8361438Z Updating files:  91% (7758/8525)
+2026-11-05T15:03:03.8810542Z Updating files:  92% (7843/8525)
+2026-11-05T15:03:03.9169831Z Updating files:  93% (7929/8525)
+2026-11-05T15:03:03.9361323Z Updating files:  94% (8014/8525)
+2026-11-05T15:03:03.9524280Z Updating files:  95% (8099/8525)
+2026-11-05T15:03:03.9553765Z Updating files:  95% (8169/8525)
+2026-11-05T15:03:03.9758338Z Updating files:  96% (8184/8525)
+2026-11-05T15:03:03.9924057Z Updating files:  97% (8270/8525)
+2026-11-05T15:03:04.0437337Z Updating files:  98% (8355/8525)
+2026-11-05T15:03:04.0650765Z Updating files:  99% (8440/8525)
+2026-11-05T15:03:04.0651128Z Updating files: 100% (8525/8525)
+2026-11-05T15:03:04.0651351Z Updating files: 100% (8525/8525), done.
+2026-11-05T15:03:04.0803851Z Note: switching to 'refs/remotes/pull/576/merge'.
+2026-11-05T15:03:04.0804141Z 
+2026-11-05T15:03:04.0804731Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-11-05T15:03:04.0805270Z changes and commit them, and you can discard any commits you make in this
+2026-11-05T15:03:04.0805917Z state without impacting any branches by switching back to a branch.
+2026-11-05T15:03:04.0806130Z 
+2026-11-05T15:03:04.0806264Z If you want to create a new branch to retain commits you create, you may
+2026-11-05T15:03:04.0806597Z do so (now or later) by using -c with the switch command. Example:
+2026-11-05T15:03:04.0806790Z 
+2026-11-05T15:03:04.0806921Z   git switch -c <new-branch-name>
+2026-11-05T15:03:04.0807052Z 
+2026-11-05T15:03:04.0807133Z Or undo this operation with:
+2026-11-05T15:03:04.0807255Z 
+2026-11-05T15:03:04.0807318Z   git switch -
+2026-11-05T15:03:04.0807416Z 
+2026-11-05T15:03:04.0807570Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-11-05T15:03:04.0807795Z 
+2026-11-05T15:03:04.0808056Z HEAD is now at e70d86fa Merge a17d1a42647a2a3a1329ec540813a0f63ad7ce27 into 36650a5744e4fdf74051a4300eecf9472948b186
+2026-11-05T15:03:04.1370415Z ##[endgroup]
+2026-11-05T15:03:04.1689937Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-11-05T15:03:04.1955490Z e70d86fa516677ab8db698149b97b77adc1c90ec
+2026-11-05T15:03:04.2323778Z ##[group]Run astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+2026-11-05T15:03:04.2324127Z with:
+2026-11-05T15:03:04.2324288Z   enable-cache: true
+2026-11-05T15:03:04.2324462Z   activate-environment: false
+2026-11-05T15:03:04.2324655Z   no-project: false
+2026-11-05T15:03:04.2325403Z   working-directory: D:\a\rc-metastudio\rc-metastudio
+2026-11-05T15:03:04.2327333Z   github-token: ***
+2026-11-05T15:03:04.2327761Z   cache-dependency-glob: **/*requirements*.txt
+**/*requirements*.in
+**/*constraints*.txt
+**/*constraints*.in
+**/pyproject.toml
+**/uv.lock
+**/*.py.lock
+
+2026-11-05T15:03:04.2328218Z   restore-cache: true
+2026-11-05T15:03:04.2328378Z   save-cache: true
+2026-11-05T15:03:04.2328527Z   prune-cache: true
+2026-11-05T15:03:04.2328677Z   cache-python: false
+2026-11-05T15:03:04.2328842Z   ignore-nothing-to-cache: false
+2026-11-05T15:03:04.2329036Z   ignore-empty-workdir: false
+2026-11-05T15:03:04.2329224Z   add-problem-matchers: true
+2026-11-05T15:03:04.2329444Z   resolution-strategy: highest
+2026-11-05T15:03:04.2329617Z env:
+2026-11-05T15:03:04.2329844Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T15:03:04.2330123Z ##[endgroup]
+2026-11-05T15:03:04.3841328Z Trying to find version for uv in: D:\a\rc-metastudio\rc-metastudio\uv.toml
+2026-11-05T15:03:04.3841818Z Could not find file: D:\a\rc-metastudio\rc-metastudio\uv.toml
+2026-11-05T15:03:04.3842169Z Trying to find version for uv in: D:\a\rc-metastudio\rc-metastudio\pyproject.toml
+2026-11-05T15:03:04.3846225Z Could not determine uv version from uv.toml or pyproject.toml. Falling back to latest.
+2026-11-05T15:03:04.3849019Z Fetching manifest data from https://raw.githubusercontent.com/astral-sh/versions/main/v1/uv.ndjson ...
+2026-11-05T15:03:04.5058627Z Downloading uv from "https://releases.astral.sh/github/uv/releases/download/0.13.7/uv-x86_64-pc-windows-msvc.zip" ...
+2026-11-05T15:03:05.0346914Z [command]C:\Windows\system32\tar.exe x -C D:\a\_temp\70f7a317-fa7a-451d-b3ae-912713fa391c -f D:\a\_temp\d594328a-8d1d-439b-8d3f-d2cf103a626a
+2026-11-05T15:03:05.1578100Z Set UV_TOOL_BIN_DIR to D:\a\_temp\uv-tool-bin-dir
+2026-11-05T15:03:05.1580799Z Added D:\a\_temp\uv-tool-bin-dir to the path
+2026-11-05T15:03:05.1588990Z Added C:\hostedtoolcache\windows\uv\0.13.7\x86_64 to the path
+2026-11-05T15:03:05.1590895Z Set UV_TOOL_DIR to D:\a\_temp\uv-tool-dir
+2026-11-05T15:03:05.1593172Z Set UV_PYTHON_INSTALL_DIR to D:\a\_temp\uv-python-dir
+2026-11-05T15:03:05.1595578Z Added D:\a\_temp\uv-python-dir to the path
+2026-11-05T15:03:05.1615524Z Set UV_CACHE_DIR to D:\a\_temp\setup-uv-cache
+2026-11-05T15:03:05.1615793Z Successfully installed uv version 0.13.7
+2026-11-05T15:03:07.0561035Z Searching files using cache dependency glob: D:\a\rc-metastudio\rc-metastudio\**\*requirements*.txt,D:\a\rc-metastudio\rc-metastudio\**\*requirements*.in,D:\a\rc-metastudio\rc-metastudio\**\*constraints*.txt,D:\a\rc-metastudio\rc-metastudio\**\*constraints*.in,D:\a\rc-metastudio\rc-metastudio\**\pyproject.toml,D:\a\rc-metastudio\rc-metastudio\**\uv.lock,D:\a\rc-metastudio\rc-metastudio\**\*.py.lock
+2026-11-05T15:03:08.1146599Z D:\a\rc-metastudio\rc-metastudio\pyproject.toml
+2026-11-05T15:03:08.1901531Z D:\a\rc-metastudio\rc-metastudio\uv.lock
+2026-11-05T15:03:08.1911669Z Found 2 files to hash.
+2026-11-05T15:03:08.1920369Z Trying to restore cache from GitHub Actions cache with key: setup-uv-2-x86_64-pc-windows-msvc-windows-2025-3.11.9-pruned-87b0589369691bf181305e1f24a3f514800cb0266e95a749247ddfbc464536be
+2026-11-05T15:03:08.4930791Z Cache hit for: setup-uv-2-x86_64-pc-windows-msvc-windows-2025-3.11.9-pruned-87b0589369691bf181305e1f24a3f514800cb0266e95a749247ddfbc464536be
+2026-11-05T15:03:08.8347319Z Received 190353 of 190353 (100.0%), 0.9 MBs/sec
+2026-11-05T15:03:08.8348466Z Cache Size: ~0 MB (190353 B)
+2026-11-05T15:03:08.8368575Z [command]"C:\Program Files\Git\usr\bin\tar.exe" -xf D:/a/_temp/c1ed187f-01cf-4a67-ae60-28525de5102d/cache.tzst -P -C D:/a/rc-metastudio/rc-metastudio --force-local --use-compress-program "zstd -d"
+2026-11-05T15:03:08.9651415Z Cache restored successfully
+2026-11-05T15:03:08.9663945Z cache restored from GitHub Actions cache with key: setup-uv-2-x86_64-pc-windows-msvc-windows-2025-3.11.9-pruned-87b0589369691bf181305e1f24a3f514800cb0266e95a749247ddfbc464536be
+2026-11-05T15:03:09.0447164Z ##[group]Run uv python install 3.11.9
+2026-11-05T15:03:09.0447473Z [36;1muv python install 3.11.9[0m
+2026-11-05T15:03:09.0570104Z shell: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.EXE -command ". '{0}'"
+2026-11-05T15:03:09.0570449Z env:
+2026-11-05T15:03:09.0570685Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T15:03:09.0570983Z   UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+2026-11-05T15:03:09.0571205Z   UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+2026-11-05T15:03:09.0571425Z   UV_PYTHON_INSTALL_DIR: D:\a\_temp\uv-python-dir
+2026-11-05T15:03:09.0571646Z   UV_CACHE_DIR: D:\a\_temp\setup-uv-cache
+2026-11-05T15:03:09.0571840Z ##[endgroup]
+2026-11-05T15:03:10.9240660Z Downloading cpython-3.11.9-windows-x86_64-none (download) (23.9MiB)
+2026-11-05T15:03:12.0068019Z  Downloaded cpython-3.11.9-windows-x86_64-none (download)
+2026-11-05T15:03:12.0118137Z Installed Python 3.11.9 in 1.23s
+2026-11-05T15:03:12.0119278Z  + cpython-3.11.9-windows-x86_64-none (python3.11.exe)
+2026-11-05T15:03:12.0143678Z warning: `C:\Users\runneradmin\.local\bin` is not on your PATH. To use installed Python executables, run `$env:PATH = "C:\Users\runneradmin\.local\bin;$env:PATH"` or `uv python update-shell`.
+2026-11-05T15:03:12.3427478Z ##[group]Run r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6
+2026-11-05T15:03:12.3427820Z with:
+2026-11-05T15:03:12.3427972Z   r-version: 4.6.1
+2026-11-05T15:03:12.3428136Z   use-public-rspm: true
+2026-11-05T15:03:12.3428297Z   Ncpus: 1
+2026-11-05T15:03:12.3428448Z   remove-openmp-macos: true
+2026-11-05T15:03:12.3428622Z   http-user-agent: default
+2026-11-05T15:03:12.3428790Z   install-r: true
+2026-11-05T15:03:12.3428951Z   windows-path-include-rtools: true
+2026-11-05T15:03:12.3429161Z   windows-path-include-mingw: true
+2026-11-05T15:03:12.3429347Z   update-rtools: false
+2026-11-05T15:03:12.3429502Z   working-directory: .
+2026-11-05T15:03:12.3429646Z env:
+2026-11-05T15:03:12.3429873Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T15:03:12.3430183Z   UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+2026-11-05T15:03:12.3430397Z   UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+2026-11-05T15:03:12.3430641Z   UV_PYTHON_INSTALL_DIR: D:\a\_temp\uv-python-dir
+2026-11-05T15:03:12.3430869Z   UV_CACHE_DIR: D:\a\_temp\setup-uv-cache
+2026-11-05T15:03:12.3431055Z ##[endgroup]
+2026-11-05T15:03:13.3296665Z [command]D:\a\_temp\R-4.6.1-win.exe /VERYSILENT /SUPPRESSMSGBOXES /DIR=C:\R
+2026-11-05T15:03:30.4375709Z ##[group]Downloading and installing Ghostscript
+2026-11-05T15:03:30.9966938Z [command]"C:\Program Files\PowerShell\7\pwsh.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command "$ErrorActionPreference = 'Stop' ; try { Add-Type -AssemblyName System.IO.Compression.ZipFile } catch { } ; try { [System.IO.Compression.ZipFile]::ExtractToDirectory('D:\a\_temp\dcd2da4d-4d46-4f79-8f49-3b4adf039e97', 'D:\a\_temp\950b50b0-1401-42d6-b95c-012559945e3b', $true) } catch { if (($_.Exception.GetType().FullName -eq 'System.Management.Automation.MethodException') -or ($_.Exception.GetType().FullName -eq 'System.Management.Automation.RuntimeException') ){ Expand-Archive -LiteralPath 'D:\a\_temp\dcd2da4d-4d46-4f79-8f49-3b4adf039e97' -DestinationPath 'D:\a\_temp\950b50b0-1401-42d6-b95c-012559945e3b' -Force } else { throw $_ } } ;"
+2026-11-05T15:03:32.2762638Z ##[endgroup]
+2026-11-05T15:03:32.3033506Z ##[group]Run choco install poppler --version=26.9.0 --yes --no-progress
+2026-11-05T15:03:32.3033999Z [36;1mchoco install poppler --version=26.9.0 --yes --no-progress[0m
+2026-11-05T15:03:32.3034385Z [36;1mif ($LASTEXITCODE -ne 0) { throw "Poppler installation failed." }[0m
+2026-11-05T15:03:32.3034912Z [36;1m$pdfTool = Get-ChildItem "$env:ChocolateyInstall/lib/poppler/tools" -Filter pdftotext.exe -Recurse | Select-Object -First 1[0m
+2026-11-05T15:03:32.3035434Z [36;1mif ($null -eq $pdfTool) { throw "Poppler pdftotext was not installed." }[0m
+2026-11-05T15:03:32.3035859Z [36;1m$pdfTool.DirectoryName | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append[0m
+2026-11-05T15:03:32.3036410Z [36;1m$env:Path = "$($pdfTool.DirectoryName);$env:Path"[0m
+2026-11-05T15:03:32.3036679Z [36;1mGet-Command pdftotext -ErrorAction Stop[0m
+2026-11-05T15:03:32.4830383Z shell: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.EXE -command ". '{0}'"
+2026-11-05T15:03:32.4830806Z env:
+2026-11-05T15:03:32.4831052Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T15:03:32.4831350Z   UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+2026-11-05T15:03:32.4831576Z   UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+2026-11-05T15:03:32.4832166Z   UV_PYTHON_INSTALL_DIR: D:\a\_temp\uv-python-dir
+2026-11-05T15:03:32.4832401Z   UV_CACHE_DIR: D:\a\_temp\setup-uv-cache
+2026-11-05T15:03:32.4832624Z   _R_INSTALL_TIME_PATCHES_: no
+2026-11-05T15:03:32.4832824Z   R_LIBS_USER: D:\a\_temp\Library
+2026-11-05T15:03:32.4833003Z   TZ: UTC
+2026-11-05T15:03:32.4833149Z   _R_CHECK_SYSTEM_CLOCK_: FALSE
+2026-11-05T15:03:32.4833345Z   NOT_CRAN: true
+2026-11-05T15:03:32.4833544Z   RSPM: https://packagemanager.posit.co/cran/latest
+2026-11-05T15:03:32.4833871Z   RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/latest
+2026-11-05T15:03:32.4834153Z ##[endgroup]
+2026-11-05T15:03:41.6440814Z Chocolatey v2.7.5
+2026-11-05T15:03:41.8382381Z Installing the following packages:
+2026-11-05T15:03:41.8386237Z poppler
+2026-11-05T15:03:41.8389090Z By installing, you accept licenses for the packages.
+2026-11-05T15:03:44.7175586Z Downloading package from source 'https://community.chocolatey.org/api/v2/'
+2026-11-05T15:03:45.5727215Z 
+2026-11-05T15:03:45.5728180Z poppler v26.9.0 [Approved]
+2026-11-05T15:03:45.5899005Z poppler package files install completed. Performing other installation steps.
+2026-11-05T15:03:47.6856373Z Extracting 64-bit C:\ProgramData\chocolatey\lib\poppler\tools\Release-26.09.0-0.zip to C:\ProgramData\chocolatey\lib\poppler\tools...
+2026-11-05T15:03:49.7335539Z C:\ProgramData\chocolatey\lib\poppler\tools
+2026-11-05T15:03:51.0818770Z  ShimGen has successfully created a shim for pdfattach.exe
+2026-11-05T15:03:51.2379419Z  ShimGen has successfully created a shim for pdfdetach.exe
+2026-11-05T15:03:51.3981512Z  ShimGen has successfully created a shim for pdffonts.exe
+2026-11-05T15:03:51.5570036Z  ShimGen has successfully created a shim for pdfimages.exe
+2026-11-05T15:03:51.7131625Z  ShimGen has successfully created a shim for pdfinfo.exe
+2026-11-05T15:03:51.8802489Z  ShimGen has successfully created a shim for pdfseparate.exe
+2026-11-05T15:03:52.0370613Z  ShimGen has successfully created a shim for pdftocairo.exe
+2026-11-05T15:03:52.1924498Z  ShimGen has successfully created a shim for pdftohtml.exe
+2026-11-05T15:03:52.3499008Z  ShimGen has successfully created a shim for pdftoppm.exe
+2026-11-05T15:03:52.5056317Z  ShimGen has successfully created a shim for pdftops.exe
+2026-11-05T15:03:52.6613028Z  ShimGen has successfully created a shim for pdftotext.exe
+2026-11-05T15:03:52.8309651Z  ShimGen has successfully created a shim for pdfunite.exe
+2026-11-05T15:03:52.8868260Z  The install of poppler was successful.
+2026-11-05T15:03:52.8870856Z   Deployed to 'C:\ProgramData\chocolatey\lib\poppler\tools'
+2026-11-05T15:03:52.8986021Z 
+2026-11-05T15:03:52.8986340Z Chocolatey installed 1/1 packages. 
+2026-11-05T15:03:52.8988826Z  See the log for details (C:\ProgramData\chocolatey\logs\chocolatey.log).
+2026-11-05T15:03:53.1208660Z 
+2026-11-05T15:03:53.1221859Z CommandType     Name                                               Version    Source                                   
+2026-11-05T15:03:53.1225209Z -----------     ----                                               -------    ------                                   
+2026-11-05T15:03:53.1236098Z Application     pdftotext.exe                                      0.0.0.0    C:\ProgramData\chocolatey\lib\poppler\...
+2026-11-05T15:03:53.1254535Z 
+2026-11-05T15:03:53.1255003Z 
+2026-11-05T15:03:53.2494584Z ##[group]Run actions/cache@caa296126883cff596d87d8935842f9db880ef25
+2026-11-05T15:03:53.2495125Z with:
+2026-11-05T15:03:53.2495290Z   path: artifacts/r-library-cache
+2026-11-05T15:03:53.2495751Z   key: r-full-stack-v1-windows-r-4.6.1-public-ppm-2026-07-16-ea303f75d84ba67373b205fd434342f2be6047d1611c44016711c3b5f947ad1d
+2026-11-05T15:03:53.2496306Z   restore-keys: r-full-stack-v1-windows-r-4.6.1-public-ppm-2026-07-16-
+2026-11-05T15:03:53.2496604Z   enableCrossOsArchive: false
+2026-11-05T15:03:53.2496796Z   fail-on-cache-miss: false
+2026-11-05T15:03:53.2496969Z   lookup-only: false
+2026-11-05T15:03:53.2497124Z   save-always: false
+2026-11-05T15:03:53.2497264Z env:
+2026-11-05T15:03:53.2497481Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T15:03:53.2497759Z   UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+2026-11-05T15:03:53.2497967Z   UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+2026-11-05T15:03:53.2498221Z   UV_PYTHON_INSTALL_DIR: D:\a\_temp\uv-python-dir
+2026-11-05T15:03:53.2498456Z   UV_CACHE_DIR: D:\a\_temp\setup-uv-cache
+2026-11-05T15:03:53.2498659Z   _R_INSTALL_TIME_PATCHES_: no
+2026-11-05T15:03:53.2498837Z   R_LIBS_USER: D:\a\_temp\Library
+2026-11-05T15:03:53.2499008Z   TZ: UTC
+2026-11-05T15:03:53.2499168Z   _R_CHECK_SYSTEM_CLOCK_: FALSE
+2026-11-05T15:03:53.2499339Z   NOT_CRAN: true
+2026-11-05T15:03:53.2499528Z   RSPM: https://packagemanager.posit.co/cran/latest
+2026-11-05T15:03:53.2499836Z   RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/latest
+2026-11-05T15:03:53.2500110Z ##[endgroup]
+2026-11-05T15:03:53.8984997Z Cache hit for: r-full-stack-v1-windows-r-4.6.1-public-ppm-2026-07-16-ea303f75d84ba67373b205fd434342f2be6047d1611c44016711c3b5f947ad1d
+2026-11-05T15:03:55.0433132Z Received 130023424 of 152113818 (85.5%), 124.0 MBs/sec
+2026-11-05T15:03:56.0501036Z Received 134217728 of 152113818 (88.2%), 63.9 MBs/sec
+2026-11-05T15:03:56.3801756Z Received 152113818 of 152113818 (100.0%), 62.2 MBs/sec
+2026-11-05T15:03:56.3802424Z Cache Size: ~145 MB (152113818 B)
+2026-11-05T15:03:56.3806509Z [command]"C:\Program Files\Git\usr\bin\tar.exe" -xf D:/a/_temp/dc73fa98-541b-4092-baf6-ed958f274a82/cache.tzst -P -C D:/a/rc-metastudio/rc-metastudio --force-local --use-compress-program "zstd -d"
+2026-11-05T15:04:51.2010774Z Cache restored successfully
+2026-11-05T15:04:51.2194449Z Cache restored from key: r-full-stack-v1-windows-r-4.6.1-public-ppm-2026-07-16-ea303f75d84ba67373b205fd434342f2be6047d1611c44016711c3b5f947ad1d
+2026-11-05T15:04:51.2451578Z ##[group]Run uv run --locked python scripts\verify.py r-stack --skip-desktop
+2026-11-05T15:04:51.2452057Z [36;1muv run --locked python scripts\verify.py r-stack --skip-desktop[0m
+2026-11-05T15:04:51.2510838Z shell: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.EXE -command ". '{0}'"
+2026-11-05T15:04:51.2511160Z env:
+2026-11-05T15:04:51.2511396Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T15:04:51.2511690Z   UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+2026-11-05T15:04:51.2511911Z   UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+2026-11-05T15:04:51.2512158Z   UV_PYTHON_INSTALL_DIR: D:\a\_temp\uv-python-dir
+2026-11-05T15:04:51.2512388Z   UV_CACHE_DIR: D:\a\_temp\setup-uv-cache
+2026-11-05T15:04:51.2512591Z   _R_INSTALL_TIME_PATCHES_: no
+2026-11-05T15:04:51.2512776Z   R_LIBS_USER: D:\a\_temp\Library
+2026-11-05T15:04:51.2512951Z   TZ: UTC
+2026-11-05T15:04:51.2513093Z   _R_CHECK_SYSTEM_CLOCK_: FALSE
+2026-11-05T15:04:51.2513311Z   NOT_CRAN: true
+2026-11-05T15:04:51.2513508Z   RSPM: https://packagemanager.posit.co/cran/latest
+2026-11-05T15:04:51.2513818Z   RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/latest
+2026-11-05T15:04:51.2514098Z ##[endgroup]
+2026-11-05T15:04:51.5564231Z Using CPython 3.11.9
+2026-11-05T15:04:51.5565304Z Creating virtual environment at: .venv
+2026-11-05T15:04:51.5818445Z    Building rc-metastudio @ file:///D:/a/rc-metastudio/rc-metastudio
+2026-11-05T15:04:51.6887134Z Downloading pygments (1.2MiB)
+2026-11-05T15:04:51.6894291Z Downloading pyinstaller (1.3MiB)
+2026-11-05T15:04:51.6918820Z Downloading libcst (2.0MiB)
+2026-11-05T15:04:51.6921770Z Downloading matplotlib (8.9MiB)
+2026-11-05T15:04:51.6929572Z Downloading pyqt6-qt6 (74.8MiB)
+2026-11-05T15:04:51.6932827Z Downloading fonttools (2.2MiB)
+2026-11-05T15:04:51.6935619Z Downloading ty (10.1MiB)
+2026-11-05T15:04:51.6940207Z Downloading complexipy (2.2MiB)
+2026-11-05T15:04:51.6943124Z Downloading lxml (3.8MiB)
+2026-11-05T15:04:51.6961655Z Downloading pyqt6 (6.5MiB)
+2026-11-05T15:04:51.6962688Z Downloading numpy (12.0MiB)
+2026-11-05T15:04:51.6969408Z Downloading pycryptodomex (1.7MiB)
+2026-11-05T15:04:51.6971659Z Downloading pillow (6.9MiB)
+2026-11-05T15:04:51.6972611Z Downloading grimp (1.9MiB)
+2026-11-05T15:04:52.9150115Z  Downloaded pygments
+2026-11-05T15:04:52.9356328Z  Downloaded pycryptodomex
+2026-11-05T15:04:52.9501538Z  Downloaded grimp
+2026-11-05T15:04:52.9634087Z  Downloaded pyinstaller
+2026-11-05T15:04:52.9910332Z  Downloaded libcst
+2026-11-05T15:04:53.0317253Z  Downloaded fonttools
+2026-11-05T15:04:53.0356003Z  Downloaded complexipy
+2026-11-05T15:04:53.3574035Z  Downloaded lxml
+2026-11-05T15:04:53.8873831Z  Downloaded pyqt6
+2026-11-05T15:04:53.9584912Z  Downloaded pillow
+2026-11-05T15:04:54.5865924Z  Downloaded ty
+2026-11-05T15:04:54.6071774Z  Downloaded matplotlib
+2026-11-05T15:04:54.6964398Z  Downloaded numpy
+2026-11-05T15:04:54.7027159Z       Built rc-metastudio @ file:///D:/a/rc-metastudio/rc-metastudio
+2026-11-05T15:04:57.1241722Z  Downloaded pyqt6-qt6
+2026-11-05T15:04:57.7524939Z Installed 85 packages in 627ms
+2026-11-05T15:04:57.8255415Z [15:04:57] Skipping dependency sync for warm local R verification
+2026-11-05T15:04:57.8258061Z [15:04:57] $ D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe scripts/build_qt6.py generate --build-root D:\a\rc-metastudio\rc-metastudio\build\qt6-verification
+2026-11-05T15:05:03.2743275Z {"form": "D:\\a\\rc-metastudio\\rc-metastudio\\build\\qt6-verification\\generated\\rc_metastudio\\forms\\ui_about_legal.py", "resource": "D:\\a\\rc-metastudio\\rc-metastudio\\build\\qt6-verification\\resources\\icons.rcc"}
+2026-11-05T15:05:03.3320869Z [15:05:03] Delegating Full R Stack Evidence
+2026-11-05T15:05:03.3321832Z [15:05:03] $ D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe scripts/verify_rcmetar_r_stack.py --rscript C:\R\bin\Rscript.exe --r-library-cache-root D:\a\rc-metastudio\rc-metastudio\artifacts\r-library-cache --skip-desktop
+2026-11-05T15:05:03.4112566Z [RCMetaR-r-stack] Locked rpy2 identities verified: {"rpy2": "3.6.7", "rpy2-rinterface": "3.6.6", "rpy2-robjects": "3.6.5"}
+2026-11-05T15:05:03.4113540Z [RCMetaR-r-stack] D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe scripts\validate_rcmetar_r_manifests.py --root D:\a\rc-metastudio\rc-metastudio
+2026-11-05T15:05:03.4612780Z validated RCMetaR R dependency and drift manifests
+2026-11-05T15:05:03.9487165Z [RCMetaR-r-stack] D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe scripts\validate_rcmetar_r_manifests.py --root D:\a\rc-metastudio\rc-metastudio --report-installed-versions --rscript C:\R\bin\Rscript.exe
+2026-11-05T15:05:04.2196930Z [RCMetaR-r-stack] Manifest dependency versions are installed: {"packages": {"R": "4.6.1", "boot": "1.3-32", "grDevices": "4.6.1", "graphics": "4.6.1", "mada": "0.5.12", "meta": "8.5-0", "metafor": "5.0-1", "methods": "4.6.1", "png": "0.1-9", "roxygen2": "8.0.0", "rsvg": "2.7.0", "stats": "4.6.1", "svglite": "2.2.2", "testthat": "3.3.2", "tiff": "0.1-12", "utils": "4.6.1"}, "r_version": "4.6.1"}
+2026-11-05T15:05:04.2203033Z [RCMetaR-r-stack] C:\R\bin\Rscript.exe -e missing <- commandArgs(trailingOnly=TRUE)[!vapply(commandArgs(trailingOnly=TRUE), requireNamespace, logical(1), quietly=TRUE)]; if (length(missing)) stop(paste(missing, collapse=', ')) CompQuadForm Formula Hmisc MatrixModels RColorBrewer Rcpp RcppEigen S7 SparseM acepack ape cli colorspace data.table ellipse farver ggplot2 glue gridExtra gtable htmlTable htmltools htmlwidgets irlba isoband knitr labeling latticeExtra lifecycle mada magrittr meta metabook metafor mice minqa mixmeta mvmeta mvtnorm nloptr png quantreg rlang rmarkdown roxygen2 rsvg scales stringi stringr svglite testthat tiff vctrs viridis viridisLite withr xml2
+2026-11-05T15:05:05.8538516Z Registered S3 method overwritten by 'ape':
+2026-11-05T15:05:05.8538835Z   method    from   
+2026-11-05T15:05:05.8539023Z   print.ace acepack
+2026-11-05T15:05:06.6655246Z [RCMetaR-r-stack] Using cached R dependency library at D:\a\rc-metastudio\rc-metastudio\artifacts\r-library-cache\R-4.6.1-x86_64-win.binary-rdeps-9d78dc177e16\library
+2026-11-05T15:05:15.8443628Z [RCMetaR-r-stack] Using isolated R verification library at C:\Users\RUNNER~1\AppData\Local\Temp\RCMetaR-r-stack-xe19taue\library
+2026-11-05T15:05:15.8444386Z [RCMetaR-r-stack] C:\R\bin\x64\R.exe CMD build --no-build-vignettes D:\a\rc-metastudio\rc-metastudio\r\RCMetaR
+2026-11-05T15:05:16.0010234Z * checking for file 'D:\a\rc-metastudio\rc-metastudio\r\RCMetaR/DESCRIPTION' ... OK
+2026-11-05T15:05:16.1531667Z * preparing 'RCMetaR':
+2026-11-05T15:05:16.1594665Z * checking DESCRIPTION meta-information ... OK
+2026-11-05T15:05:16.3409217Z * checking for LF line-endings in source and make files and shell scripts
+2026-11-05T15:05:16.3437774Z * checking for empty or unneeded directories
+2026-11-05T15:05:16.3498042Z * building 'RCMetaR_0.5.1.tar.gz'
+2026-11-05T15:05:16.6033864Z 
+2026-11-05T15:05:16.6259185Z [RCMetaR-r-stack] C:\R\bin\x64\R.exe CMD check --no-manual --no-build-vignettes --library=C:\Users\RUNNER~1\AppData\Local\Temp\RCMetaR-r-stack-xe19taue\library C:\Users\RUNNER~1\AppData\Local\Temp\RCMetaR-r-stack-xe19taue\RCMetaR_0.5.1.tar.gz
+2026-11-05T15:05:16.8048390Z * using log directory 'C:/Users/RUNNER~1/AppData/Local/Temp/RCMetaR-r-stack-xe19taue/RCMetaR.Rcheck'
+2026-11-05T15:05:16.8050199Z * using R version 4.6.1 (2026-06-24 ucrt)
+2026-11-05T15:05:16.8051988Z * using platform: x86_64-w64-mingw32
+2026-11-05T15:05:16.8053499Z * R was compiled by
+2026-11-05T15:05:16.8054499Z     gcc.exe (GCC) 14.3.0
+2026-11-05T15:05:16.8054968Z     GNU Fortran (GCC) 14.3.0
+2026-11-05T15:05:16.8056161Z * running under: Windows Server 2022 x64 (build 26100)
+2026-11-05T15:05:16.8058027Z * using session charset: UTF-8
+2026-11-05T15:05:16.8063946Z * current time: 2026-11-05 15:05:16 UTC
+2026-11-05T15:05:16.9197969Z * using options '--no-manual --no-build-vignettes'
+2026-11-05T15:05:16.9213605Z * checking for file 'RCMetaR/DESCRIPTION' ... OK
+2026-11-05T15:05:16.9216655Z * checking extension type ... Package
+2026-11-05T15:05:16.9217387Z * this is package 'RCMetaR' version '0.5.1'
+2026-11-05T15:05:16.9219006Z * package encoding: UTF-8
+2026-11-05T15:05:16.9268347Z * checking package namespace information ... OK
+2026-11-05T15:05:18.5828990Z * checking package dependencies ... OK
+2026-11-05T15:05:18.5866569Z * checking if this is a source package ... OK
+2026-11-05T15:05:18.5869546Z * checking if there is a namespace ... OK
+2026-11-05T15:05:20.1741528Z * checking for executable files ... OK
+2026-11-05T15:05:20.1778737Z * checking for hidden files and directories ... OK
+2026-11-05T15:05:20.1805352Z * checking for portable file names ... OK
+2026-11-05T15:05:32.0011168Z * checking whether package 'RCMetaR' can be installed ... OK
+2026-11-05T15:05:32.2329674Z * checking installed package size ... OK
+2026-11-05T15:05:32.2335657Z * checking package directory ... OK
+2026-11-05T15:05:32.5550285Z * checking DESCRIPTION meta-information ... OK
+2026-11-05T15:05:32.5554465Z * checking top-level files ... OK
+2026-11-05T15:05:32.5572241Z * checking for left-over files ... OK
+2026-11-05T15:05:32.5575119Z * checking index information ... OK
+2026-11-05T15:05:32.7666515Z * checking package subdirectories ... OK
+2026-11-05T15:05:32.8727715Z * checking code files for non-ASCII characters ... OK
+2026-11-05T15:05:33.0770975Z * checking R files for syntax errors ... OK
+2026-11-05T15:05:34.8359076Z * checking whether the package can be loaded ... OK
+2026-11-05T15:05:36.2764100Z * checking whether the package can be loaded with stated dependencies ... OK
+2026-11-05T15:05:37.8275549Z * checking whether the package can be unloaded cleanly ... OK
+2026-11-05T15:05:39.2670073Z * checking whether the namespace can be loaded with stated dependencies ... OK
+2026-11-05T15:05:41.1266969Z * checking whether the namespace can be unloaded cleanly ... OK
+2026-11-05T15:05:42.9788415Z * checking loading without being on the library search path ... OK
+2026-11-05T15:05:47.1448286Z * checking dependencies in R code ... OK
+2026-11-05T15:05:49.6325423Z * checking S3 generic/method consistency ... OK
+2026-11-05T15:05:51.0981681Z * checking replacement functions ... OK
+2026-11-05T15:05:53.3880496Z * checking foreign function calls ... OK
+2026-11-05T15:06:09.9834652Z * checking R code for possible problems ... OK
+2026-11-05T15:06:10.2963336Z * checking Rd files ... OK
+2026-11-05T15:06:10.4010273Z * checking Rd metadata ... OK
+2026-11-05T15:06:10.5047199Z * checking Rd cross-references ... OK
+2026-11-05T15:06:12.2963441Z * checking for missing documentation entries ... OK
+2026-11-05T15:06:16.9440855Z * checking for code/documentation mismatches ... OK
+2026-11-05T15:06:19.1176298Z * checking Rd \usage sections ... OK
+2026-11-05T15:06:19.2210567Z * checking Rd contents ... OK
+2026-11-05T15:06:19.3318870Z * checking for unstated dependencies in examples ... OK
+2026-11-05T15:06:19.4761388Z * checking examples ... NONE
+2026-11-05T15:06:19.5796515Z * checking for unstated dependencies in 'tests' ... OK
+2026-11-05T15:06:19.7052439Z * checking tests ...
+2026-11-05T15:08:42.8734209Z   Running 'testthat.R'
+2026-11-05T15:08:42.8803709Z  OK
+2026-11-05T15:08:42.8828132Z * DONE
+2026-11-05T15:08:42.8834200Z 
+2026-11-05T15:08:42.8835023Z Status: OK
+2026-11-05T15:08:42.8835969Z 
+2026-11-05T15:08:42.9227812Z [RCMetaR-r-stack] C:\R\bin\x64\R.exe CMD INSTALL --library=C:\Users\RUNNER~1\AppData\Local\Temp\RCMetaR-r-stack-xe19taue\library C:\Users\RUNNER~1\AppData\Local\Temp\RCMetaR-r-stack-xe19taue\RCMetaR_0.5.1.tar.gz
+2026-11-05T15:08:43.1842061Z * installing *source* package 'RCMetaR' ...
+2026-11-05T15:08:43.1842709Z ** this is package 'RCMetaR' version '0.5.1'
+2026-11-05T15:08:43.2081385Z ** using staged installation
+2026-11-05T15:08:43.2277996Z ** R
+2026-11-05T15:08:43.3261409Z ** inst
+2026-11-05T15:08:43.3349914Z ** byte-compile and prepare package for lazy loading
+2026-11-05T15:08:51.0516085Z ** help
+2026-11-05T15:08:51.1317137Z *** installing help indices
+2026-11-05T15:08:51.1674452Z ** building package indices
+2026-11-05T15:08:51.3767983Z ** testing if installed package can be loaded from temporary location
+2026-11-05T15:08:53.1552834Z ** testing if installed package can be loaded from final location
+2026-11-05T15:08:55.1000332Z ** testing if installed package keeps a record of temporary installation path
+2026-11-05T15:08:55.1088267Z * DONE (RCMetaR)
+2026-11-05T15:08:55.1392586Z [RCMetaR-r-stack] C:\R\bin\Rscript.exe D:\a\rc-metastudio\rc-metastudio\.agents\skills\verify-rcms\scripts\analysis_authorities.R D:\a\rc-metastudio\rc-metastudio\artifacts\verification\rcms\authorities.json --installed
+2026-11-05T15:08:56.9485250Z Installed RCMetaR: C:/Users/runneradmin/AppData/Local/Temp/RCMetaR-r-stack-xe19taue/library/RCMetaR 
+2026-11-05T15:08:57.0421172Z PASS OR binary.fixed.inv.var 
+2026-11-05T15:08:57.0696769Z PASS OR binary.random 
+2026-11-05T15:08:57.0826996Z PASS OR MH 
+2026-11-05T15:08:57.0949274Z PASS OR Peto 
+2026-11-05T15:08:57.1128276Z PASS RD binary.fixed.inv.var 
+2026-11-05T15:08:57.1285665Z PASS RD binary.random 
+2026-11-05T15:08:57.1402162Z PASS RD MH 
+2026-11-05T15:08:57.1559416Z PASS RR binary.fixed.inv.var 
+2026-11-05T15:08:57.1722882Z PASS RR binary.random 
+2026-11-05T15:08:57.1845081Z PASS RR MH 
+2026-11-05T15:08:57.2003562Z PASS AS binary.fixed.inv.var 
+2026-11-05T15:08:57.2160567Z PASS AS binary.random 
+2026-11-05T15:08:57.2318180Z PASS YUQ binary.fixed.inv.var 
+2026-11-05T15:08:57.2475344Z PASS YUQ binary.random 
+2026-11-05T15:08:57.2630529Z PASS YUY binary.fixed.inv.var 
+2026-11-05T15:08:57.2787260Z PASS YUY binary.random 
+2026-11-05T15:08:57.2927298Z PASS PR binary.fixed.inv.var 
+2026-11-05T15:08:57.3081131Z PASS PR binary.random 
+2026-11-05T15:08:57.3262454Z PASS PLN binary.fixed.inv.var 
+2026-11-05T15:08:57.3416619Z PASS PLN binary.random 
+2026-11-05T15:08:57.3562584Z PASS PLO binary.fixed.inv.var 
+2026-11-05T15:08:57.3719780Z PASS PLO binary.random 
+2026-11-05T15:08:57.3866042Z PASS PAS binary.fixed.inv.var 
+2026-11-05T15:08:57.4026671Z PASS PAS binary.random 
+2026-11-05T15:08:57.4195718Z PASS PFT binary.fixed.inv.var 
+2026-11-05T15:08:57.4355296Z PASS PFT binary.random 
+2026-11-05T15:08:57.4638180Z PASS zero-cell only0 
+2026-11-05T15:08:57.4842228Z PASS zero-cell all 
+2026-11-05T15:08:57.5046655Z PASS zero-cell if0all 
+2026-11-05T15:08:57.5368779Z PASS MD continuous.fixed 
+2026-11-05T15:08:57.5527166Z PASS MD continuous.random 
+2026-11-05T15:08:57.5724812Z PASS SMD continuous.fixed 
+2026-11-05T15:08:57.5878984Z PASS SMD continuous.random 
+2026-11-05T15:08:57.5995317Z PASS TXMean continuous.fixed 
+2026-11-05T15:08:57.6152739Z PASS TXMean continuous.random 
+2026-11-05T15:08:57.6272032Z PASS entered-estimates continuous.fixed 
+2026-11-05T15:08:57.6431069Z PASS entered-estimates continuous.random 
+2026-11-05T15:08:57.6578923Z PASS entered continuous fixed t 
+2026-11-05T15:08:57.6625477Z ##[warning]Warning: Knapp and Hartung method is not meant to be used in the context of 'FE' models.
+2026-11-05T15:08:57.6645469Z ##[warning]Warning: Knapp and Hartung method is not meant to be used in the context of 'FE' models.
+2026-11-05T15:08:57.6699228Z PASS entered continuous fixed knha 
+2026-11-05T15:08:57.6723522Z ##[warning]Warning: Knapp and Hartung method is not meant to be used in the context of 'FE' models.
+2026-11-05T15:08:57.6761062Z ##[warning]Warning: Knapp and Hartung method is not meant to be used in the context of 'FE' models.
+2026-11-05T15:08:57.6814383Z PASS entered continuous fixed adhoc 
+2026-11-05T15:08:57.7122426Z PASS Sens diagnostic.fixed.inv.var 
+2026-11-05T15:08:57.7263206Z PASS Sens diagnostic.random 
+2026-11-05T15:08:57.7375356Z PASS Spec diagnostic.fixed.inv.var 
+2026-11-05T15:08:57.7511985Z PASS Spec diagnostic.random 
+2026-11-05T15:08:57.7624825Z PASS PLR diagnostic.fixed.inv.var 
+2026-11-05T15:08:57.7758584Z PASS PLR diagnostic.random 
+2026-11-05T15:08:57.7855665Z PASS PLR diagnostic MH 
+2026-11-05T15:08:57.7970726Z PASS NLR diagnostic.fixed.inv.var 
+2026-11-05T15:08:57.8105231Z PASS NLR diagnostic.random 
+2026-11-05T15:08:57.8237047Z PASS NLR diagnostic MH 
+2026-11-05T15:08:57.8348691Z PASS DOR diagnostic.fixed.inv.var 
+2026-11-05T15:08:57.8484258Z PASS DOR diagnostic.random 
+2026-11-05T15:08:57.8578269Z PASS DOR diagnostic MH 
+2026-11-05T15:08:57.8671451Z PASS DOR diagnostic Peto 
+2026-11-05T15:08:57.8907442Z PASS HE z 90% CI 
+2026-11-05T15:08:57.9065595Z PASS HE t 90% CI 
+2026-11-05T15:08:57.9223137Z PASS HE knha 90% CI 
+2026-11-05T15:08:57.9384496Z PASS HE adhoc 90% CI 
+2026-11-05T15:08:57.9547432Z PASS DL z 90% CI 
+2026-11-05T15:08:57.9738478Z PASS DL t 90% CI 
+2026-11-05T15:08:57.9921992Z PASS DL knha 90% CI 
+2026-11-05T15:08:58.0080575Z PASS DL adhoc 90% CI 
+2026-11-05T15:08:58.0241501Z PASS HS z 90% CI 
+2026-11-05T15:08:58.0398574Z PASS HS t 90% CI 
+2026-11-05T15:08:58.0555420Z PASS HS knha 90% CI 
+2026-11-05T15:08:58.0711129Z PASS HS adhoc 90% CI 
+2026-11-05T15:08:58.0868300Z PASS HSk z 90% CI 
+2026-11-05T15:08:58.1024993Z PASS HSk t 90% CI 
+2026-11-05T15:08:58.1215820Z PASS HSk knha 90% CI 
+2026-11-05T15:08:58.1371990Z PASS HSk adhoc 90% CI 
+2026-11-05T15:08:58.1533342Z PASS SJ z 90% CI 
+2026-11-05T15:08:58.1694499Z PASS SJ t 90% CI 
+2026-11-05T15:08:58.1856709Z PASS SJ knha 90% CI 
+2026-11-05T15:08:58.2024878Z PASS SJ adhoc 90% CI 
+2026-11-05T15:08:58.2198108Z PASS ML z 90% CI 
+2026-11-05T15:08:58.2368723Z PASS ML t 90% CI 
+2026-11-05T15:08:58.2537005Z PASS ML knha 90% CI 
+2026-11-05T15:08:58.2707662Z PASS ML adhoc 90% CI 
+2026-11-05T15:08:58.2885389Z PASS REML z 90% CI 
+2026-11-05T15:08:58.3058453Z PASS REML t 90% CI 
+2026-11-05T15:08:58.3230040Z PASS REML knha 90% CI 
+2026-11-05T15:08:58.3401090Z PASS REML adhoc 90% CI 
+2026-11-05T15:08:58.3566234Z PASS EB z 90% CI 
+2026-11-05T15:08:58.3731410Z PASS EB t 90% CI 
+2026-11-05T15:08:58.3909688Z PASS EB knha 90% CI 
+2026-11-05T15:08:58.4075892Z PASS EB adhoc 90% CI 
+2026-11-05T15:08:58.4306138Z PASS PM z 90% CI 
+2026-11-05T15:08:58.4490274Z PASS PM t 90% CI 
+2026-11-05T15:08:58.4676286Z PASS PM knha 90% CI 
+2026-11-05T15:08:58.4861099Z PASS PM adhoc 90% CI 
+2026-11-05T15:08:58.5075227Z PASS PMM z 90% CI 
+2026-11-05T15:08:58.5318727Z PASS PMM t 90% CI 
+2026-11-05T15:08:58.5503851Z PASS PMM knha 90% CI 
+2026-11-05T15:08:58.5693975Z PASS PMM adhoc 90% CI 
+2026-11-05T15:09:01.5572376Z binary.fixed.inv.var RCMS 27.08745 meta 27.08745 difference -4.618528e-14 
+2026-11-05T15:09:03.4808281Z binary.fixed.mh RCMS 29.23978 meta 29.23978 difference 1.421085e-14 
+2026-11-05T15:09:05.9743736Z binary.fixed.peto RCMS 26.63551 meta 26.63551 difference -1.776357e-14 
+2026-11-05T15:09:08.8244751Z binary.random RCMS 10.85996 meta 10.85996 difference -1.776357e-15 
+2026-11-05T15:09:11.7800478Z BCG DL Q 14.903849407 
+2026-11-05T15:09:14.4958731Z BCG REML Q 18.001340175 
+2026-11-05T15:09:21.5926395Z ##[warning]Warning: Some yi/vi values are NA.
+2026-11-05T15:09:21.6414284Z ZERO MH OR metafor -0.2544752 -0.7916301 0.2826796 meta -0.2544752 -0.7916301 0.2826796 
+2026-11-05T15:09:21.6444924Z ##[warning]Warning: Some yi/vi values are NA.
+2026-11-05T15:09:21.6544544Z ##[warning]Warning: Some yi/vi values are NA.
+2026-11-05T15:09:21.7026954Z ZERO MH RR metafor -0.2219334 -0.6929202 0.2490533 meta -0.2219334 -0.6929202 0.2490533 
+2026-11-05T15:09:21.7058638Z ##[warning]Warning: Some yi/vi values are NA.
+2026-11-05T15:09:21.7172774Z ##[warning]Warning: Some yi/vi values are NA.
+2026-11-05T15:09:21.7182742Z PETO raw pooling with individual correction -0.2541451 -0.7896609 0.2813707 add 0 -0.2541451 -0.7896609 0.2813707 
+2026-11-05T15:09:21.7443399Z ##[warning]Warning: Note, no continuity correction considered for method = "Peto".
+2026-11-05T15:09:21.7709078Z PETO raw metafor -0.2541451 -0.7896609 0.2813707 k 5 meta -0.2541451 -0.7896609 0.2813707 hand -0.2541451 
+2026-11-05T15:09:21.7786181Z PASS zero Peto raw pooling 
+2026-11-05T15:09:21.9391397Z AUTHORITY MATRIX PASSED 103 cases
+2026-11-05T15:09:21.9905109Z [RCMetaR-r-stack] Statistical authorities verified: 103 cases passed in 26.84s
+2026-11-05T15:09:21.9907930Z [RCMetaR-r-stack] D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe scripts\validate_rcmetar_r_manifests.py --root D:\a\rc-metastudio\rc-metastudio --report-installed-versions --rscript C:\R\bin\Rscript.exe
+2026-11-05T15:09:22.2716735Z [RCMetaR-r-stack] Manifest dependency versions are installed: {"packages": {"R": "4.6.1", "boot": "1.3-32", "grDevices": "4.6.1", "graphics": "4.6.1", "mada": "0.5.12", "meta": "8.5-0", "metafor": "5.0-1", "methods": "4.6.1", "png": "0.1-9", "roxygen2": "8.0.0", "rsvg": "2.7.0", "stats": "4.6.1", "svglite": "2.2.2", "testthat": "3.3.2", "tiff": "0.1-12", "utils": "4.6.1"}, "r_version": "4.6.1"}
+2026-11-05T15:09:22.2718312Z [RCMetaR-r-stack] C:\R\bin\Rscript.exe scripts\verify_reitsma_visual_qa.R C:\Users\RUNNER~1\AppData\Local\Temp\RCMetaR-r-stack-xe19taue\reitsma-visual-qa-1
+2026-11-05T15:09:27.4582212Z REITSMA VISUAL QA 21 SEMANTIC CASES OK
+2026-11-05T15:09:27.4895080Z [RCMetaR-r-stack] C:\R\bin\Rscript.exe scripts\verify_reitsma_visual_qa.R C:\Users\RUNNER~1\AppData\Local\Temp\RCMetaR-r-stack-xe19taue\reitsma-visual-qa-2
+2026-11-05T15:09:32.6915277Z REITSMA VISUAL QA 21 SEMANTIC CASES OK
+2026-11-05T15:09:32.7226401Z [RCMetaR-r-stack] Reitsma visual release evidence verified: 21 cases, deterministic hashes and normalized PDF/descriptor contracts
+2026-11-05T15:09:32.7228574Z [RCMetaR-r-stack] D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe -m pytest tests\r_stack
+2026-11-05T15:09:33.2445666Z ============================= test session starts =============================
+2026-11-05T15:09:33.2446270Z platform win32 -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0
+2026-11-05T15:09:33.2446887Z rootdir: D:\a\rc-metastudio\rc-metastudio
+2026-11-05T15:09:33.2447651Z configfile: pyproject.toml
+2026-11-05T15:09:33.2448116Z plugins: xdist-3.8.0
+2026-11-05T15:09:33.2448764Z collected 9 items
+2026-11-05T15:09:33.2449023Z 
+2026-11-05T15:09:54.3952612Z tests\r_stack\test_inprocess_rpy2_backend.py ..F.                        [ 44%]
+2026-11-05T15:09:54.5490986Z tests\r_stack\test_r_metric_labels.py .                                  [ 55%]
+2026-11-05T15:10:03.3208985Z tests\r_stack\test_reitsma_golden.py ..                                  [ 77%]
+2026-11-05T15:10:07.0748582Z tests\r_stack\test_reitsma_meta_regression_contract.py .                 [ 88%]
+2026-11-05T15:10:07.8683652Z tests\r_stack\test_reitsma_result_formatting.py .                        [100%]
+2026-11-05T15:10:07.8684134Z 
+2026-11-05T15:10:07.8684444Z ================================== FAILURES ===================================
+2026-11-05T15:10:07.8685030Z __________ test_r_null_result_sections_are_omitted_before_formatting __________
+2026-11-05T15:10:07.8685442Z 
+2026-11-05T15:10:07.8685744Z     def test_r_null_result_sections_are_omitted_before_formatting():
+2026-11-05T15:10:07.8686248Z         env = dict(os.environ)
+2026-11-05T15:10:07.8686662Z >       run_python_driver(_NULL_RESULT_DRIVER, env=env)
+2026-11-05T15:10:07.8686957Z 
+2026-11-05T15:10:07.8687190Z tests\r_stack\test_inprocess_rpy2_backend.py:880: 
+2026-11-05T15:10:07.8687606Z _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+2026-11-05T15:10:07.8687838Z 
+2026-11-05T15:10:07.8688596Z driver = '\nimport os, sys\nos.environ["RCMS_REQUIRE_IN_PROCESS_RPY2"] = "1"\nos.environ.setdefault("QT_QPA_PLATFORM", "offscre...s[0].title == "Ordinary Funnel Plot"\nsys.stdout.write("OK\\n")\nsys.stdout.flush()\nsys.stderr.flush()\nos._exit(0)\n'
+2026-11-05T15:10:07.8690013Z env = {'ACTIONS_ORCHESTRATION_ID': 'fe85cd45-6086-8cc5-aa6d-b374386bf581.full-r-stack.checks', 'ACTIONS_RUNNER_ACTION_ARCHIV...he\\', 'ACTIONS_RUNNER_RETURN_JOB_RESULT_FOR_HOSTED': '1', 'AGENT_TOOLSDIRECTORY': 'C:\\hostedtoolcache\\windows', ...}
+2026-11-05T15:10:07.8690684Z 
+2026-11-05T15:10:07.8690836Z     def run_python_driver(
+2026-11-05T15:10:07.8691068Z         driver: str, *, env: dict[str, str]
+2026-11-05T15:10:07.8691354Z     ) -> subprocess.CompletedProcess:
+2026-11-05T15:10:07.8691782Z         """Run an embedded-Python driver with the same required-lane policy."""
+2026-11-05T15:10:07.8692311Z     
+2026-11-05T15:10:07.8692562Z         result = subprocess.run(
+2026-11-05T15:10:07.8692890Z             [sys.executable, "-c", driver],
+2026-11-05T15:10:07.8693161Z             cwd=REPO_ROOT,
+2026-11-05T15:10:07.8693447Z             stdout=subprocess.PIPE,
+2026-11-05T15:10:07.8693730Z             stderr=subprocess.PIPE,
+2026-11-05T15:10:07.8694013Z             universal_newlines=True,
+2026-11-05T15:10:07.8694322Z             env=env,
+2026-11-05T15:10:07.8694539Z         )
+2026-11-05T15:10:07.8694790Z         if result.returncode == 42:
+2026-11-05T15:10:07.8695095Z             message = (
+2026-11-05T15:10:07.8695531Z                 result.stdout.strip() or "Python/R bridge prerequisites are unavailable"
+2026-11-05T15:10:07.8695897Z             )
+2026-11-05T15:10:07.8696133Z             if _REQUIRED:
+2026-11-05T15:10:07.8696424Z                 pytest.fail(message)
+2026-11-05T15:10:07.8696704Z             pytest.skip(message)
+2026-11-05T15:10:07.8696955Z     
+2026-11-05T15:10:07.8697372Z >       assert result.returncode == 0, "driver failed (rc=%s)\nSTDOUT:\n%s\nSTDERR:\n%s" % (
+2026-11-05T15:10:07.8697775Z                ^^^^^^^^^^^^^^^^^^^^^^
+2026-11-05T15:10:07.8698076Z             result.returncode,
+2026-11-05T15:10:07.8698488Z             result.stdout[-2000:],
+2026-11-05T15:10:07.8698768Z             result.stderr[-2000:],
+2026-11-05T15:10:07.8699028Z         )
+2026-11-05T15:10:07.8699271Z E       AssertionError: driver failed (rc=1)
+2026-11-05T15:10:07.8699578Z E       STDOUT:
+2026-11-05T15:10:07.8699792Z E       
+2026-11-05T15:10:07.8700004Z E       STDERR:
+2026-11-05T15:10:07.8700435Z E       Traceback (most recent call last):
+2026-11-05T15:10:07.8700705Z E       
+2026-11-05T15:10:07.8700990Z E         File "<string>", line 65, in <module>
+2026-11-05T15:10:07.8701259Z E       
+2026-11-05T15:10:07.8701478Z E       AssertionError
+2026-11-05T15:10:07.8701628Z 
+2026-11-05T15:10:07.8701829Z tests\r_stack\_r_driver_support.py:95: AssertionError
+2026-11-05T15:10:07.8702227Z =========================== short test summary info ===========================
+2026-11-05T15:10:07.8703027Z FAILED tests/r_stack/test_inprocess_rpy2_backend.py::test_r_null_result_sections_are_omitted_before_formatting - AssertionError: driver failed (rc=1)
+2026-11-05T15:10:07.8703840Z STDOUT:
+2026-11-05T15:10:07.8703969Z 
+2026-11-05T15:10:07.8704051Z STDERR:
+2026-11-05T15:10:07.8704315Z Traceback (most recent call last):
+2026-11-05T15:10:07.8704499Z 
+2026-11-05T15:10:07.8704721Z   File "<string>", line 65, in <module>
+2026-11-05T15:10:07.8704932Z 
+2026-11-05T15:10:07.8705063Z AssertionError
+2026-11-05T15:10:07.8705388Z ======================== 1 failed, 8 passed in 34.64s =========================
+2026-11-05T15:10:10.0502577Z error: command failed with exit code 1: D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe -m pytest tests\r_stack
+2026-11-05T15:10:10.0652987Z verification failed: command failed with exit code 1: D:\a\rc-metastudio\rc-metastudio\.venv\Scripts\python.exe scripts/verify_rcmetar_r_stack.py --rscript C:\R\bin\Rscript.exe --r-library-cache-root D:\a\rc-metastudio\rc-metastudio\artifacts\r-library-cache --skip-desktop
+2026-11-05T15:10:10.2225423Z ##[error]Process completed with exit code 1.
+2026-11-05T15:10:10.2392087Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+2026-11-05T15:10:10.2392509Z with:
+2026-11-05T15:10:10.2392760Z   name: full-r-stack-windows-checks-evidence
+2026-11-05T15:10:10.2393075Z   path: artifacts/verification
+2026-11-05T15:10:10.2393314Z   if-no-files-found: warn
+2026-11-05T15:10:10.2393563Z   retention-days: 14
+2026-11-05T15:10:10.2393819Z   compression-level: 6
+2026-11-05T15:10:10.2394051Z   overwrite: false
+2026-11-05T15:10:10.2394267Z   include-hidden-files: false
+2026-11-05T15:10:10.2394519Z env:
+2026-11-05T15:10:10.2394797Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T15:10:10.2395182Z   UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+2026-11-05T15:10:10.2395485Z   UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+2026-11-05T15:10:10.2395764Z   UV_PYTHON_INSTALL_DIR: D:\a\_temp\uv-python-dir
+2026-11-05T15:10:10.2396091Z   UV_CACHE_DIR: D:\a\_temp\setup-uv-cache
+2026-11-05T15:10:10.2396421Z   _R_INSTALL_TIME_PATCHES_: no
+2026-11-05T15:10:10.2396667Z   R_LIBS_USER: D:\a\_temp\Library
+2026-11-05T15:10:10.2396903Z   TZ: UTC
+2026-11-05T15:10:10.2397127Z   _R_CHECK_SYSTEM_CLOCK_: FALSE
+2026-11-05T15:10:10.2397363Z   NOT_CRAN: true
+2026-11-05T15:10:10.2397640Z   RSPM: https://packagemanager.posit.co/cran/latest
+2026-11-05T15:10:10.2398015Z   RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/latest
+2026-11-05T15:10:10.2398352Z ##[endgroup]
+2026-11-05T15:10:10.3949803Z (node:2964) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-05T15:10:10.3951021Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-05T15:10:10.4853496Z With the provided path, there will be 430 files uploaded
+2026-11-05T15:10:10.4854689Z Artifact name is valid!
+2026-11-05T15:10:10.4855114Z Root directory input is valid!
+2026-11-05T15:10:10.7884850Z Beginning upload of artifact content to blob storage
+2026-11-05T15:10:11.2074532Z (node:2964) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-05T15:10:11.8593560Z Uploaded bytes 8388608
+2026-11-05T15:10:12.1547497Z Uploaded bytes 16777216
+2026-11-05T15:10:12.3475936Z Uploaded bytes 25165824
+2026-11-05T15:10:12.4107459Z Uploaded bytes 25480942
+2026-11-05T15:10:12.4607487Z Finished uploading artifact content to blob storage!
+2026-11-05T15:10:12.4610994Z SHA256 digest of uploaded artifact zip is 3195542c130b9cad237bb9a1fda4a40f9e22d33dd66506679b9f792c45fceecc
+2026-11-05T15:10:12.4614144Z Finalizing artifact upload
+2026-11-05T15:10:12.9953140Z Artifact full-r-stack-windows-checks-evidence.zip successfully finalized. Artifact ID 13426792650
+2026-11-05T15:10:12.9954107Z Artifact full-r-stack-windows-checks-evidence has been successfully uploaded! Final size is 25480942 bytes. Artifact ID is 13426792650
+2026-11-05T15:10:12.9965454Z Artifact download URL: https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/42050640242/artifacts/13426792650
+2026-11-05T15:10:13.0252732Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+2026-11-05T15:10:13.0253163Z with:
+2026-11-05T15:10:13.0253352Z   name: full-r-stack-windows-golden-capture
+2026-11-05T15:10:13.0253672Z   path: build/qt6-verification/golden-compatibility-r-stack-v2
+2026-11-05T15:10:13.0253948Z   if-no-files-found: warn
+2026-11-05T15:10:13.0254135Z   retention-days: 14
+2026-11-05T15:10:13.0254304Z   compression-level: 6
+2026-11-05T15:10:13.0254474Z   overwrite: false
+2026-11-05T15:10:13.0254639Z   include-hidden-files: false
+2026-11-05T15:10:13.0254824Z env:
+2026-11-05T15:10:13.0255052Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T15:10:13.0255355Z   UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+2026-11-05T15:10:13.0255581Z   UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+2026-11-05T15:10:13.0255803Z   UV_PYTHON_INSTALL_DIR: D:\a\_temp\uv-python-dir
+2026-11-05T15:10:13.0256040Z   UV_CACHE_DIR: D:\a\_temp\setup-uv-cache
+2026-11-05T15:10:13.0256280Z   _R_INSTALL_TIME_PATCHES_: no
+2026-11-05T15:10:13.0256469Z   R_LIBS_USER: D:\a\_temp\Library
+2026-11-05T15:10:13.0256652Z   TZ: UTC
+2026-11-05T15:10:13.0256797Z   _R_CHECK_SYSTEM_CLOCK_: FALSE
+2026-11-05T15:10:13.0256987Z   NOT_CRAN: true
+2026-11-05T15:10:13.0257181Z   RSPM: https://packagemanager.posit.co/cran/latest
+2026-11-05T15:10:13.0257502Z   RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/latest
+2026-11-05T15:10:13.0257783Z ##[endgroup]
+2026-11-05T15:10:13.1862455Z (node:2456) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-05T15:10:13.1863071Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-05T15:10:13.1890426Z ##[warning]No files were found with the provided path: build/qt6-verification/golden-compatibility-r-stack-v2. No artifacts will be uploaded.
+2026-11-05T15:10:13.2106029Z ##[group]Run uv cache prune --ci
+2026-11-05T15:10:13.2106322Z [36;1muv cache prune --ci[0m
+2026-11-05T15:10:13.2168685Z shell: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.EXE -command ". '{0}'"
+2026-11-05T15:10:13.2169013Z env:
+2026-11-05T15:10:13.2169257Z   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-07-16
+2026-11-05T15:10:13.2169568Z   UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+2026-11-05T15:10:13.2169802Z   UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+2026-11-05T15:10:13.2170034Z   UV_PYTHON_INSTALL_DIR: D:\a\_temp\uv-python-dir
+2026-11-05T15:10:13.2170269Z   UV_CACHE_DIR: D:\a\_temp\setup-uv-cache
+2026-11-05T15:10:13.2170492Z   _R_INSTALL_TIME_PATCHES_: no
+2026-11-05T15:10:13.2170689Z   R_LIBS_USER: D:\a\_temp\Library
+2026-11-05T15:10:13.2170877Z   TZ: UTC
+2026-11-05T15:10:13.2171023Z   _R_CHECK_SYSTEM_CLOCK_: FALSE
+2026-11-05T15:10:13.2171203Z   NOT_CRAN: true
+2026-11-05T15:10:13.2171398Z   RSPM: https://packagemanager.posit.co/cran/latest
+2026-11-05T15:10:13.2171753Z   RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/latest
+2026-11-05T15:10:13.2172032Z ##[endgroup]
+2026-11-05T15:10:13.3787232Z Pruning cache at: D:\a\_temp\setup-uv-cache
+2026-11-05T15:10:14.0991385Z Removed 11757 files (383.0MiB)
+2026-11-05T15:10:14.2161342Z Post job cleanup.
+2026-11-05T15:10:14.3517227Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-05T15:10:14.3794413Z git version 2.56.0.windows.4
+2026-11-05T15:10:14.3850340Z Temporarily overriding HOME='D:\a\_temp\a2b85308-8d37-4082-9941-906dcfa78056' before making global git config changes
+2026-11-05T15:10:14.3851340Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-05T15:10:14.3859232Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\rc-metastudio\rc-metastudio
+2026-11-05T15:10:14.4147111Z Removing SSH command configuration
+2026-11-05T15:10:14.4156140Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-05T15:10:14.4454277Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-05T15:10:14.9255599Z Removing HTTP extra header
+2026-11-05T15:10:14.9264967Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-05T15:10:14.9566515Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-05T15:10:15.3954934Z Removing includeIf entries pointing to credentials config files
+2026-11-05T15:10:15.3965118Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-05T15:10:15.4227660Z includeif.gitdir:D:/a/rc-metastudio/rc-metastudio/.git.path
+2026-11-05T15:10:15.4228929Z includeif.gitdir:D:/a/rc-metastudio/rc-metastudio/.git/worktrees/*.path
+2026-11-05T15:10:15.4229340Z includeif.gitdir:/github/workspace/.git.path
+2026-11-05T15:10:15.4229690Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-05T15:10:15.4259772Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:D:/a/rc-metastudio/rc-metastudio/.git.path
+2026-11-05T15:10:15.4515648Z D:\a\_temp\git-credentials-9854a22c-e2ad-4269-bf09-c0b52d96a91d.config
+2026-11-05T15:10:15.4550856Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:D:/a/rc-metastudio/rc-metastudio/.git.path D:\a\_temp\git-credentials-9854a22c-e2ad-4269-bf09-c0b52d96a91d.config
+2026-11-05T15:10:15.4849300Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:D:/a/rc-metastudio/rc-metastudio/.git/worktrees/*.path
+2026-11-05T15:10:15.5112057Z D:\a\_temp\git-credentials-9854a22c-e2ad-4269-bf09-c0b52d96a91d.config
+2026-11-05T15:10:15.5145956Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:D:/a/rc-metastudio/rc-metastudio/.git/worktrees/*.path D:\a\_temp\git-credentials-9854a22c-e2ad-4269-bf09-c0b52d96a91d.config
+2026-11-05T15:10:15.5433438Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-11-05T15:10:15.5691607Z /github/runner_temp/git-credentials-9854a22c-e2ad-4269-bf09-c0b52d96a91d.config
+2026-11-05T15:10:15.5721887Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-9854a22c-e2ad-4269-bf09-c0b52d96a91d.config
+2026-11-05T15:10:15.6009358Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-05T15:10:15.6264686Z /github/runner_temp/git-credentials-9854a22c-e2ad-4269-bf09-c0b52d96a91d.config
+2026-11-05T15:10:15.6295995Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-9854a22c-e2ad-4269-bf09-c0b52d96a91d.config
+2026-11-05T15:10:15.6589526Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-05T15:10:16.0971293Z Removing credentials config 'D:\a\_temp\git-credentials-9854a22c-e2ad-4269-bf09-c0b52d96a91d.config'
+2026-11-05T15:10:16.1159423Z Cleaning up orphan processes
+2026-11-05T15:10:16.1421876Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
