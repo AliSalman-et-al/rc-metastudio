@@ -262,7 +262,7 @@ def validate_evidence(root: Path) -> list[dict[str, object]]:
             "Manuscript",
             "Text report",
             "Tables",
-            "Forest Plot",
+            "Forest plot",
         ]:
             raise ValueError("native Results evidence has the wrong navigation")
         if record.get("result_text") != {

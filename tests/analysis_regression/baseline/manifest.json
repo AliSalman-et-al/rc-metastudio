@@ -6,7 +6,7 @@
   },
   "golden_plot_descriptor_contract": {
     "path": "tests/analysis_regression/baseline/plot-descriptors.json",
-    "sha256": "a668521fe596435ee7e3e112219afef1f35a762240fb4739fa99327023bed46e",
+    "sha256": "242ecf14905e48454f755e225b0271e983f020f58c0a90164eebe843fe7f9f86",
     "size": 6384
   },
   "observed_golden_analysis_bundle": {

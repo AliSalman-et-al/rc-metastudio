@@ -140,7 +140,7 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Regression Plot",
+        "identity": "Regression plot",
         "name": "reg.display.svg",
         "type": "svg"
       },
@@ -158,7 +158,7 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Regression Plot",
+        "identity": "Regression plot",
         "name": "reg.display.svg",
         "type": "svg"
       },
