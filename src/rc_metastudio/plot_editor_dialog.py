@@ -199,7 +199,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
 
     def mark_commit_succeeded(self):
         """Allow an OK commit to close only after rendering succeeds."""
-        self._params = self.plot_params()
+        self._params.update(self.plot_params())
         self._allow_close = True
         self._commit_outcome = True
         self._commit_error.clear()
@@ -231,12 +231,36 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                     )
                     widget.setFocus()
                     return
+        if not self._validate_ticks():
+            return
         self._commit_outcome = None
         self.applied.emit()
         # Preserve the signal-only API for callers that use the dialog without
         # ResultsWindow. The real integration explicitly marks success/failure.
         if self._commit_outcome is None:
             self.mark_commit_succeeded()
+
+    def _validate_ticks(self):
+        ticks = self.x_ticks_le.text().strip()
+        if ticks and ticks != "[default]":
+            values = []
+            try:
+                values = [float(token.strip()) for token in ticks.split(",")]
+                valid = all(math.isfinite(value) for value in values)
+            except ValueError:
+                valid = False
+            if not valid:
+                self.mark_commit_failed(
+                    "X-axis ticks must be comma-separated finite numbers, or leave blank for automatic ticks."
+                )
+                self.x_ticks_le.setFocus()
+                return False
+            measure = str(self._scalar(self._params.get("measure", "")))
+            if measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"} and self.axis_scale.currentData() != "natural" and any(value <= 0 for value in values):
+                self.mark_commit_failed("X-axis ticks must be positive for a logarithmic effect axis.")
+                self.x_ticks_le.setFocus()
+                return False
+        return True
 
     def _button_clicked(self, button):
         button_type = self.buttonBox.standardButton(button)

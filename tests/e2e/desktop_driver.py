@@ -1555,6 +1555,9 @@ def plot_edit(app, window):
         view.results.images[title],
         params_path=view.results.image_params_paths[title],
     )
+    from rc_metastudio import r_bridge
+    r_bridge.load_vars_for_plot(artifact.params_path, return_params_dict=True)
+    r_bridge.execute_r_string('batch3.fit.before <- lapply(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], as.numeric)')
     callback_errors = []
 
     def edit():
@@ -1578,6 +1581,39 @@ def plot_edit(app, window):
                 view.plot_service.load_params(artifact.params_path)["fp_xlabel"]
                 == "Edited effect axis"
             )
+            applied = path.read_bytes()
+            for invalid in ("abc", "0.1, nope", "1, nan", "1,"):
+                dialog.x_ticks_le.setText(invalid)
+                dialog._commit()
+                assert "comma-separated finite numbers" in dialog._commit_error.text()
+                assert path.read_bytes() == applied
+            for invalid in ("0, 1", "-1, 1"):
+                dialog.x_ticks_le.setText(invalid)
+                dialog._commit()
+                assert "positive" in dialog._commit_error.text()
+                assert path.read_bytes() == applied
+            record_step("plot-invalid-ticks", dialog)
+            dialog.style_cbo.setCurrentText("BMJ")
+            dialog.x_ticks_le.setText("0.1, 1, 10")
+            dialog._commit()
+            assert dialog._commit_outcome is True, dialog._commit_error.text()
+            from xml.etree import ElementTree as ET
+            def plot_text():
+                return " ".join("".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
+            visible = plot_text()
+            assert "Gonzalez" in visible, visible
+            assert "0.770 (0.485 to 1.222)" in visible, visible
+            record_step("bmj-columns-visible", view)
+            dialog.show_1.setChecked(False)
+            dialog.show_2.setChecked(False)
+            dialog._commit()
+            assert dialog._commit_outcome is True, dialog._commit_error.text()
+            hidden = plot_text()
+            assert "Gonzalez" not in hidden, hidden
+            assert "0.770 (0.485" not in hidden, hidden
+            saved = view.plot_service.load_params(artifact.params_path)
+            assert not saved["fp_show_col1"] and not saved["fp_show_col2"]
+            record_step("bmj-columns-hidden", view)
             dialog.x_lbl_le.setText("Discard this draft")
         except Exception as error:  # noqa: BLE001 - propagate Qt callback failures after the modal loop.
             callback_errors.append(error)
@@ -1591,6 +1627,8 @@ def plot_edit(app, window):
         view.plot_service.load_params(artifact.params_path)["fp_xlabel"]
         == "Edited effect axis"
     )
+    r_bridge.load_vars_for_plot(artifact.params_path, return_params_dict=True)
+    assert bool(r_bridge.execute_r_string('identical(batch3.fit.before, lapply(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], as.numeric))')[0])
     assert QSvgRenderer(str(path)).isValid()
     record_step(
         "plot-applied-cancelled",

@@ -290,3 +290,10 @@ and overall t degrees of freedom against the saved metafor res$dfs in Methods,
 results and the forest SVG.
 
 Automatic SVG sizing keeps declared plot text at least 9 pt and allows horizontal scrolling when needed. Explicit **Fit width** may shrink below that floor. Manual zoom percentages apply once to native plot dimensions. The UX/results drive retains the 9 pt study-label assertion and repeats it after a +6 pt application-font change; matrix width checks explicitly request Fit width.
+
+`plot-edit` also rejects malformed/nonfinite comma-separated ticks inline without
+changing the last plot, applies a numeric list in BMJ, checks both column switches
+against SVG text and saved parameters,
+and compares every numeric fit field exactly before/after presentation edits.
+`project-axis-sequential` checks the cumulative dataset-row ordering note once in
+the rendered plot and in report details, alongside its existing public-fit checks.

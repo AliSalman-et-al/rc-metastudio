@@ -212,6 +212,10 @@ def run_sequential(app, window, work, record):
         }),digits=16)''')[0]))
         expected = reference['natural']
         path = Path(artifact.display_path())
+        if workflow == 'cumulative':
+            assert 'Order: dataset row order' in view.results.details
+            labels = ' '.join(''.join(node.itertext()) for node in ET.parse(path).iter('{http://www.w3.org/2000/svg}text'))
+            assert labels.count('Order: dataset row order') == 1, labels
         axis_ticks = check_axis(path, 'natural')
         if workflow != 'subgroup':
             geometry = {'natural':dict(lower=[row[1] for row in expected],upper=[row[2] for row in expected],pooled=None)}

@@ -1,0 +1,13 @@
+Code health (8d3609d2a7b8731cd9e252213cefabdf0892448f..9e2d7818180c74a686cce26aebb5721e0f3481cf)
+Scope: 187 files; as of 2026-11-05T08:52:04+05:00
+Coupling: 147 modules, 433 edges
+Cycles: 2; cognitive complexity total/max: 15160/95
+Typing: 3229/6937 parameters (46.5%), 1662/3334 returns (49.9%), 0 Any annotations, 3 type: ignores, 0 casts to Any (9e2d7818180c74a686cce26aebb5721e0f3481cf)
+Defect history: 169 matching commits across 72 files
+Gate: PASS
+Hotspots (180-day normalized churn × complexity density):
+  src/rc_metastudio/project_adapter.py: 8.4481
+  src/rc_metastudio/two_way_dict.py: 4.6216
+  src/rc_metastudio/analysis_dataset.py: 3.6667
+  src/rc_metastudio/automation.py: 2.5943
+  src/rc_metastudio/result_sections.py: 2.3945
