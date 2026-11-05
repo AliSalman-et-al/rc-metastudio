@@ -116,7 +116,7 @@ class DatasetTableView(QtWidgets.QTableView):
         self._batch_editing = False
         self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.DoubleClicked | QtWidgets.QAbstractItemView.EditTrigger.EditKeyPressed | QtWidgets.QAbstractItemView.EditTrigger.AnyKeyPressed)
         self.setAccessibleName("Study data")
-        self.setAccessibleDescription("Study rows and input columns. Italic effect cells show estimates and intervals; gold marks the effect columns. Press Enter to edit a cell or use the row calculator. Ctrl+Tab leaves the grid.")
+        self.setAccessibleDescription("Study rows and input columns. Gold marks the effect size and confidence interval columns. Press Enter to edit a cell or use the row calculator. Ctrl+Tab leaves the grid.")
 
         # the main gui is assumed to be the form
         # that owns this table view, i.e., the 'main'

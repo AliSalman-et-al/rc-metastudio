@@ -575,7 +575,7 @@ class DatasetTableModel(QAbstractTableModel):
         if not self._study_has_entered_data(index.row()):
             return _item_data()
         if index.column() in self.OUTCOMES:
-            return _item_data(QColor(128, 128, 128, 24))
+            return _item_data(QColor(214, 169, 58, 110))  # translucent gold: readable over light and dark bases
         if (
             index.column() in self.RAW_DATA[len(self.RAW_DATA) // 2 :]
             and self.current_effect in ONE_ARM_METRICS
