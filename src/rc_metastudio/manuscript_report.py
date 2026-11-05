@@ -208,12 +208,14 @@ def _pooled_statistics(values, overall, calculation):
     stat = next((key for key in ('t', 'z', 'Z', 'z-value', 't-value') if key in values or key in overall), None)
     statistic = 't' if stat in ('t', 't-value') else 'z'
     df = values.get('df', overall.get('df'))
+    method = ''
     if statistic == 't' and df:
         statistic += f' (df = {df})'
+        method = f'The overall effect was tested using t with {df} degrees of freedom.'
     se = next((v for h, v in {**calculation, **values}.items() if h.startswith('SE')), '—')
     test = values.get(stat, overall.get(stat, '—')) if stat else '—'
     p = p_value(values.get('p-value', overall.get('p-value', '')))
-    return statistic, se, test, p, df if stat in ('t', 't-value') else None
+    return statistic, se, test, p, method
 
 
 def _pooled_prose(result, values, effect, effect_metric, coefficient, statistic, test, p, level, lower, upper, summary):
@@ -255,11 +257,9 @@ def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overa
         effect = values.get('Term', values.get('Subgroups', context))
         if not coefficient and ',' in metric and effect.casefold() != effect_metric.casefold():
             effect = effect_metric.capitalize() + ': ' + effect
-        statistic, se, test, p, df = _pooled_statistics(values, overall, calculation)
-        if df and not coefficient and not vertical and values.get("Subgroups", "Overall").casefold() == "overall":
-            sentence = f"The overall effect was tested using t with {df} degrees of freedom."
-            if sentence not in methods:
-                methods.append(sentence)
+        statistic, se, test, p, method = _pooled_statistics(values, overall, calculation)
+        if not coefficient and not vertical and values.get("Subgroups", "Overall").casefold() == "overall":
+            methods.append(method)
         pooled.append((effect[:1].upper() + effect[1:], values['Estimate'], values[lower] + ' to ' + values[upper], se, test, p))
         _pooled_prose(result, values, effect, effect_metric, coefficient, statistic, test, p, level, lower, upper, summary)
     return level, statistic
@@ -429,7 +429,7 @@ def _available_columns(table):
 
 
 def _report_methods(result, pooled_methods):
-    methods = " ".join((result.manuscript_methods, *pooled_methods))
+    methods = " ".join(filter(None, (result.manuscript_methods, *dict.fromkeys(pooled_methods))))
     if any(t.headers[0] == 'Q' for s in result.sections for t in s.tables) and 'Reitsma' not in methods:
         methods += " Heterogeneity was assessed with Cochran's Q and I²."
     methods += f' Analyses were performed in RC MetaStudio {__version__}.'
