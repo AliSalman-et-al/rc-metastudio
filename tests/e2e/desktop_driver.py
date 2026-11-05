@@ -2218,11 +2218,15 @@ try:
         export_path = WORK / "meantime-export.png"
         view.plot_service.export(regenerator="forest", params_path=required(artifact.params_path),
                                  output_path=str(export_path))
-        exported = QtGui.QImageReader(str(export_path))
-        dimensions = exported.size()
-        assert dimensions.width() * dimensions.height() <= 32 * 1024**2
-        assert not exported.read().isNull()
-        record_step("meantime-raster-export", view, width=dimensions.width(), height=dimensions.height())
+        import struct
+        with export_path.open("rb") as exported:
+            header = exported.read(24)
+        assert header[:8] == b"\x89PNG\r\n\x1a\n"
+        width, height = struct.unpack(">II", header[16:24])
+        # The user export retains 600 dpi; it must not be decoded by Qt.
+        assert (width, height) == (9712, 19679), (width, height)
+        assert all(str(path).endswith(".svg") for _, path in view.manuscript.figures)
+        record_step("meantime-raster-export", view, width=width, height=height)
         results = view.results
         view.close()
         app.processEvents()

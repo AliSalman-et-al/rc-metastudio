@@ -79,7 +79,6 @@ from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
 from rc_metastudio.plot_editor_dialog import EditPlotDialog
 from rc_metastudio.plot_service import PlotService
 from rc_metastudio.runtime_types import required
-from rc_metastudio.qt_geometry import logical_extent_to_physical_pixels
 from rc_metastudio.settings import (
     load_plot_export_format,
     save_plot_export_format,
@@ -114,8 +113,8 @@ PLOT_EXPORT_EXTENSION_ALIASES = {
 PLOT_EXPORT_GUIDANCE = {
     "pdf": "Recommended vector format for journal submission and print workflows.",
     "svg": "Scalable vector format; ideal for editing and lossless resizing.",
-    "tiff": "Up to 600 dpi raster export with lossless compression; large figures use a lower resolution.",
-    "png": "Up to 600 dpi raster export; large figures use a lower resolution.",
+    "tiff": "Publication-grade 600 dpi raster export with lossless compression.",
+    "png": "Publication-grade 600 dpi raster export for compatible submission systems.",
 }
 NO_RESULTS_MESSAGE = "No results could be computed for this analysis."
 ROW_HEIGHT = 15  # by trial-and-error; seems to work very well
@@ -849,30 +848,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if size.isValid():
             width, height = self._fit_size_to_viewport(size.width(), size.height())
             reader.setScaledSize(QSize(max(1, int(width)), max(1, int(height))))
-        pixmap = QPixmap.fromImage(reader.read())
-        if pixmap.isNull():
-            return pixmap
-
-        logical_width, logical_height = _pixmap_device_independent_size(pixmap)
-        scaled_width, scaled_height = self._fit_size_to_viewport(
-            logical_width, logical_height
-        )
-
-        if scaled_width > self.scene.width():
-            # layout-audit: allow=intrinsic-ratio; reason=scene follows its intrinsic-ratio visual artifact
-            self.scene.setSceneRect(
-                0, 0, scaled_width + horizontal_padding, self.scene.height()
-            )
-
-        dpr = max(1.0, float(pixmap.devicePixelRatioF()))
-        pixmap = pixmap.scaled(
-            max(1, logical_extent_to_physical_pixels(scaled_width, dpr)),
-            max(1, logical_extent_to_physical_pixels(scaled_height, dpr)),
-            transformMode=Qt.TransformationMode.SmoothTransformation,
-        )
-        pixmap.setDevicePixelRatio(dpr)
-
-        return pixmap
+        return QPixmap.fromImage(reader.read())
 
     def _fit_size_to_viewport(self, width, height, max_scale=1.0):
         if width <= 0 or height <= 0:
