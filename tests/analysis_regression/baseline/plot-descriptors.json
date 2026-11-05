@@ -1,6 +1,6 @@
 {
   "contract": "golden-plot-descriptors",
-  "oracle_sha256": "983ca7e57d6643163af56c5b63471972b82c5a63a8aa34826469011662556991",
+  "oracle_sha256": "a9eb40195d40a0258aec8d309037a9ad2951b8d841bc30d614986d8b37917732",
   "rows": [
     {
       "artifact_label": "Forest Plot",
@@ -166,7 +166,7 @@
     },
     {
       "artifact_label": "Subgroup Forest Plot",
-      "artifact_oracle_sha256": "df281262fffa7f77ac6c88f08be591a76ed565fdd93df7c4e9c66df77c031a3c",
+      "artifact_oracle_sha256": "09fd47608900a71230894cdbbf3272d96379f4325ba6518a828e54944e10f746",
       "capability": {
         "composition": "single",
         "editable": true,

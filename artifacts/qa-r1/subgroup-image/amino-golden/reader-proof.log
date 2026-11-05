@@ -1,0 +1,3 @@
+qt.gui.imageio: QImageIOHandler: Rejecting image as it exceeds the current allocation limit of 256 megabytes
+/tmp/amino-old.png null= True size= 0 0
+/tmp/564-golden/artifacts/amino-binary-subgroup/golden_amino_subgroup_forest.png null= False size= 1931 1846
