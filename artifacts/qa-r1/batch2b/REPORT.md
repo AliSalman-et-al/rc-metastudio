@@ -48,3 +48,7 @@ Final display matrix: default light, default dark, large light, large dark. Corr
 ## Review follow-up: startup copy
 
 The [startup-copy proof](startup-copy/REPORT.md) supersedes startup text in the original captures: the primary line is `Starting… · Untitled dataset` until R is usable, and the temporary message is exactly `Starting R…`. The existing E2E now checks both strings and the transition to Ready. Fresh dark and light/large-font startup/ready captures and qualification transcripts are in that directory.
+
+## Review follow-up: SVG readability
+
+The [font regression proof](font-regression/REPORT.md) supersedes the old zoom/initial-size implementation: manual zoom is applied once; automatic SVG sizing keeps a 9 pt text floor with horizontal scrolling; explicit Fit width may shrink below the floor. The unchanged ≥9 pt study-label assertion and added +6 pt check passed in both requested scenarios. Master including #568 was merged before qualification.
