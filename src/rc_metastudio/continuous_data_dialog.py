@@ -12,6 +12,7 @@ from contextlib import ExitStack
 from functools import partial
 from typing import TYPE_CHECKING, TypeGuard, cast
 
+from rc_metastudio.qt_layout import style_inline_error
 from PyQt6.QtCore import QEvent, QObject, QSignalBlocker, QTimer, Qt
 from PyQt6.QtGui import QAction, QKeySequence, QPalette
 from PyQt6.QtWidgets import (
@@ -844,6 +845,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.summary_error = QLabel(self)
             self.summary_error.setWordWrap(True)
             self.content_layout.insertWidget(1, self.summary_error)
+        style_inline_error(self.summary_error)
         self.summary_error.setText(warning_msg or "")
         self.summary_error.setVisible(bool(warning_msg))
         required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "calculator OK").setEnabled(not warning_msg)
