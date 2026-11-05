@@ -1,9 +1,9 @@
 {
   "contract": "golden-plot-descriptors",
-  "oracle_sha256": "c1363f435f5687c1184dcfe372f7a2f046f21e79dffa069a8269fbeb61e26cd8",
+  "oracle_sha256": "d7f14081e21ac6c27f2c5f31f0bc9519d6e3f7e6747d0ddebc8b237ebc502ed6",
   "rows": [
     {
-      "artifact_label": "Forest Plot",
+      "artifact_label": "Forest plot",
       "artifact_oracle_sha256": "684fbe3ea5ac2928f472ae80d5db64a553ca35e36e8b920517ab9d4ac2d41e64",
       "capability": {
         "composition": "single",
@@ -21,7 +21,7 @@
       "id": "amino-binary-random"
     },
     {
-      "artifact_label": "Forest Plot",
+      "artifact_label": "Forest plot",
       "artifact_oracle_sha256": "4f8c3029aa5f3aee7be1272a082cf850da0650239e186cb13d835a50d6f302c6",
       "capability": {
         "composition": "single",
@@ -39,7 +39,7 @@
       "id": "continuous-random"
     },
     {
-      "artifact_label": "Odds Ratio Forest Plot",
+      "artifact_label": "Diagnostic odds ratio forest plot",
       "artifact_oracle_sha256": "e30c64e7c3cb26c5fc398b6a32ed13881e178fca71b95d4a0164a87651d35f83",
       "capability": {
         "composition": "single",
@@ -57,7 +57,7 @@
       "id": "lymph-diagnostic-random-dor"
     },
     {
-      "artifact_label": "Cumulative Forest Plot",
+      "artifact_label": "Cumulative forest plot",
       "artifact_oracle_sha256": "3afee6185ecf1b65002cecab4a0f38e13fa90dd8d5d5c5dde790d08dd3673c67",
       "capability": {
         "composition": "single",
@@ -75,7 +75,7 @@
       "id": "amino-binary-cumulative"
     },
     {
-      "artifact_label": "Leave-one-out Forest plot",
+      "artifact_label": "Leave-one-out forest plot",
       "artifact_oracle_sha256": "1a135b09b20a70ce3e6ab660dc0ce48c3e5490e731b65ce998ab843ffe5beb27",
       "capability": {
         "composition": "single",
@@ -93,7 +93,7 @@
       "id": "amino-binary-leave-one-out"
     },
     {
-      "artifact_label": "Cumulative Forest Plot",
+      "artifact_label": "Cumulative forest plot",
       "artifact_oracle_sha256": "6e3f655140f6048b38d20a69f5729ea94eee078e251d6e2f2105f3621eccac05",
       "capability": {
         "composition": "single",
@@ -111,7 +111,7 @@
       "id": "continuous-cumulative"
     },
     {
-      "artifact_label": "Leave-one-out Forest plot",
+      "artifact_label": "Leave-one-out forest plot",
       "artifact_oracle_sha256": "08aafbaa70e4af94539e1b8cb45a60613297b91cf3323a5e66db88da0fee0da8",
       "capability": {
         "composition": "single",
@@ -165,7 +165,7 @@
       "id": "continuous-meta-regression"
     },
     {
-      "artifact_label": "Subgroup Forest Plot",
+      "artifact_label": "Subgroup forest plot",
       "artifact_oracle_sha256": "09fd47608900a71230894cdbbf3272d96379f4325ba6518a828e54944e10f746",
       "capability": {
         "composition": "single",
@@ -183,7 +183,7 @@
       "id": "amino-binary-subgroup"
     },
     {
-      "artifact_label": "Subgroups Forest Plot",
+      "artifact_label": "Subgroup forest plot",
       "artifact_oracle_sha256": "0cdc4df67e92627f29d76de2aaa77f1cba4b9719308f98b27ebba23c02071d0a",
       "capability": {
         "composition": "single",
