@@ -1,0 +1,54 @@
+{
+  "frozen": true,
+  "project_schemas": {
+    "validated_members": [
+      "manifest.json",
+      "project.json",
+      "state.json"
+    ],
+    "version": 1
+  },
+  "python": {
+    "architecture": "AMD64",
+    "bundle_root": "D:\\a\\rc-metastudio\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\_internal",
+    "executable": "D:\\a\\rc-metastudio\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\RCMetaStudio.exe",
+    "version": "3.11.9"
+  },
+  "qt": {
+    "baseline_device_pixel_ratio": 1.0,
+    "baseline_logical_dpi": 96.0,
+    "compiled_qt_version": "6.11.0",
+    "library_paths": [
+      "D:/a/rc-metastudio/rc-metastudio/build/windows-package/dist/RCMetaStudio/_internal/PyQt6/Qt6/plugins",
+      "D:/a/rc-metastudio/rc-metastudio/build/windows-package/dist/RCMetaStudio"
+    ],
+    "platform_plugin": "windows",
+    "plugins_path": "D:/a/rc-metastudio/rc-metastudio/build/windows-package/dist/RCMetaStudio/_internal/PyQt6/Qt6/plugins",
+    "pyqt_version": "6.11.0",
+    "runtime_qt_version": "6.11.1",
+    "scale_factor_environment": null,
+    "sip_runtime_version": "6.15.2"
+  },
+  "r": {
+    "configured_home": "D:\\a\\rc-metastudio\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R",
+    "configured_library": "D:\\a\\rc-metastudio\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R\\library",
+    "direct_spike": false,
+    "home": "D:/a/rc-metastudio/rc-metastudio/build/windows-package/dist/RCMetaStudio/R",
+    "lc_numeric": "C",
+    "library_paths": [
+      "D:/a/rc-metastudio/rc-metastudio/build/windows-package/dist/RCMetaStudio/R/library"
+    ],
+    "shared_library_path": "D:\\a\\rc-metastudio\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R\\bin\\x64\\R.dll",
+    "version": "4.6.1"
+  },
+  "rpy2": {
+    "api_bridge_loaded": true,
+    "api_bridge_path": "D:\\a\\rc-metastudio\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\_internal\\_rinterface_cffi_api.pyd",
+    "cffi_mode": "API",
+    "distribution_version": "3.6.7",
+    "loaded_cffi_mode": "API",
+    "rinterface_distribution_version": "3.6.6",
+    "robjects_distribution_version": "3.6.5"
+  },
+  "schema_version": 1
+}

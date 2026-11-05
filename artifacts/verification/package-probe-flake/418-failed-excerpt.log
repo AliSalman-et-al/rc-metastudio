@@ -1,0 +1,5 @@
+Required Windows x64 Package Qualification / RCMetaStudio Windows x64	UNKNOWN STEP	2026-11-04T13:42:42.7359610Z Windows deployment inspection failed: frozen R runtime probe does not use the bundled R runtime/library
+Required Windows x64 Package Qualification / RCMetaStudio Windows x64	UNKNOWN STEP	2026-11-04T13:42:42.8046653Z Windows deployment inspection failed.
+Required Windows x64 Package Qualification / RCMetaStudio Windows x64	UNKNOWN STEP	2026-11-04T13:42:42.8048375Z + ... LASTEXITCODE -ne 0) { throw "Windows deployment inspection failed." }
+Required Windows x64 Package Qualification / RCMetaStudio Windows x64	UNKNOWN STEP	2026-11-04T13:42:42.8049308Z     + CategoryInfo          : OperationStopped: (Windows deployment inspection failed.:String) [], RuntimeException
+Required Windows x64 Package Qualification / RCMetaStudio Windows x64	UNKNOWN STEP	2026-11-04T13:42:42.8049882Z     + FullyQualifiedErrorId : Windows deployment inspection failed.

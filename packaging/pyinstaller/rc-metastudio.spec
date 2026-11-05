@@ -85,6 +85,12 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
+# R is staged separately under R/bin/x64. A second R.dll collected from
+# the build host can win DLL lookup even when R_HOME points at the bundle.
+a.binaries = [
+    entry for entry in a.binaries
+    if Path(entry[0]).name.casefold() not in {"r.dll", "rblas.dll", "rlapack.dll"}
+]
 # Never let an unrelated toolchain on PATH replace the Windows API-set, UCRT,
 # or system ICU forwarders with private copies in the application directory.
 a.binaries = [entry for entry in a.binaries if not is_windows_system_runtime(entry)]
