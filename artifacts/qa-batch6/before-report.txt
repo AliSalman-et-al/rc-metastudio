@@ -1,0 +1,238 @@
+Pooled effect
+Effect
+Estimate
+95% CI
+Sensitivity
+65.8%
+59.0% to 71.9%
+Specificity
+81.0%
+73.9% to 86.5%
+False-positive rate
+19.0%
+13.5% to 26.1%
+
+Model fit
+Statistic
+Value
+Studies (k)
+17
+Participants
+Not available
+95% prediction interval (Sensitivity)
+49.1% to 79.3%
+95% prediction interval (Specificity)
+49.3% to 94.9%
+95% prediction interval (False-positive rate)
+5.1% to 50.7%
+
+Study results
+No study-level estimates or weights are available for this workflow.
+Supplementary details
+Full-precision results
+Source
+Results
+Clinical interpretation
+Across 17 studies, summary sensitivity was 65.762% (95% confidence interval 59.020% to 71.923%) and summary specificity was 80.975% (95% confidence interval 73.885% to 86.492%).
+Clinical interpretation
+These are average operating characteristics across the included study thresholds. The Reitsma bivariate and HSROC formulations are equivalent parameterizations of this model; that equivalence does not assume a common threshold. Use the prediction intervals to assess how performance may vary in a new setting.
+Summary operating point — Sensitivity
+Statistic: Estimate
+Value: 65.762%
+Summary operating point — Sensitivity
+Statistic: Lower bound (95% CI )
+Value: 59.020%
+Summary operating point — Sensitivity
+Statistic: Upper bound (95% CI )
+Value: 71.923%
+Summary operating point — Specificity
+Statistic: Estimate
+Value: 80.975%
+Summary operating point — Specificity
+Statistic: Lower bound (95% CI )
+Value: 73.885%
+Summary operating point — Specificity
+Statistic: Upper bound (95% CI )
+Value: 86.492%
+Summary operating point — False-positive rate
+Statistic: Estimate
+Value: 19.025%
+Summary operating point — False-positive rate
+Statistic: Lower bound (95% CI )
+Value: 13.508%
+Summary operating point — False-positive rate
+Statistic: Upper bound (95% CI )
+Value: 26.115%
+Sampling-based summary ratios
+Term: Positive likelihood ratio
+Mean: 3.517
+Median: 3.450
+Lower bound (95% interval): 2.451
+Upper bound (95% interval): 4.963
+Sampling-based summary ratios
+Term: Negative likelihood ratio
+Mean: 0.426
+Median: 0.424
+Lower bound (95% interval): 0.341
+Upper bound (95% interval): 0.521
+Sampling-based summary ratios
+Term: Inverse negative likelihood ratio
+Mean: 2.377
+Median: 2.360
+Lower bound (95% interval): 1.918
+Upper bound (95% interval): 2.934
+Sampling-based summary ratios
+Term: Diagnostic odds ratio
+Mean: 8.471
+Median: 8.176
+Lower bound (95% interval): 4.850
+Upper bound (95% interval): 13.783
+SROC AUC
+Statistic: AUC
+Value: 0.7545
+SROC AUC
+Statistic: Normalized partial AUC
+Value: 0.6687
+SROC AUC
+Statistic: full FPR bounds
+Value: 0.01, 0.99
+SROC AUC
+Statistic: Partial FPR bounds
+Value: 0.0122, 0.5333
+SROC AUC
+Statistic: AUC confidence interval
+Value: Not provided by mada::AUC(); no invented AUC CI.
+Marginal prediction
+Statistic: description
+Value: Underlying new-study operating characteristics
+Marginal prediction — Sensitivity
+Statistic: Estimate
+Value: 65.762%
+Marginal prediction — Sensitivity
+Statistic: Lower bound (95% PI )
+Value: 49.071%
+Marginal prediction — Sensitivity
+Statistic: Upper bound (95% PI )
+Value: 79.292%
+Marginal prediction — Specificity
+Statistic: Estimate
+Value: 80.975%
+Marginal prediction — Specificity
+Statistic: Lower bound (95% PI )
+Value: 49.292%
+Marginal prediction — Specificity
+Statistic: Upper bound (95% PI )
+Value: 94.907%
+Marginal prediction — False-positive rate
+Statistic: Estimate
+Value: 19.025%
+Marginal prediction — False-positive rate
+Statistic: Lower bound (95% PI )
+Value: 5.093%
+Marginal prediction — False-positive rate
+Statistic: Upper bound (95% PI )
+Value: 50.708%
+Between-study heterogeneity
+Statistic: Sensitivity logit SD
+Value: 0.3199
+Between-study heterogeneity
+Statistic: False-positive rate logit SD
+Value: 0.7241
+Between-study heterogeneity
+Statistic: Sensitivity-specificity covariance
+Value: 0.0506
+Between-study heterogeneity
+Statistic: Sensitivity-specificity correlation
+Value: 0.2185
+Between-study heterogeneity
+Statistic: Interpretation
+Value: SDs and covariance are on the model logit scale; correlation is unitless.
+Diagnostic I-squared
+I² summary:
+Diagnostic I-squared
+  Zhou-Dendukuri: 10.151%
+Diagnostic I-squared
+  Holling unadjusted range: 41.936% to 63.651%
+Diagnostic I-squared
+  Holling adjusted range: 4.952% to 5.494%
+Diagnostic I-squared
+I² estimates:
+Diagnostic I-squared
+                            Measure   I² (%)
+Diagnostic I-squared
+  -  ------------------------------  -------
+Diagnostic I-squared
+  1                  Zhou-Dendukuri  10.151%
+Diagnostic I-squared
+  2  Holling (unadjusted), method 1  62.185%
+Diagnostic I-squared
+  3  Holling (unadjusted), method 2  63.651%
+Diagnostic I-squared
+  4  Holling (unadjusted), method 3  41.936%
+Diagnostic I-squared
+  5    Holling (adjusted), method 1   5.463%
+Diagnostic I-squared
+  6    Holling (adjusted), method 2   5.494%
+Diagnostic I-squared
+  7    Holling (adjusted), method 3   4.952%
+Diagnostic I-squared
+Interpretation: I-squared is shown as percent unexplained heterogeneity; Zhou-Dendukuri and Holling are distinct estimators.
+Model information
+Statistic: Estimator
+Value: REML
+Model information
+Statistic: Studies used
+Value: 17
+Model information
+Statistic: Continuity correction
+Value: 0.5
+Model information
+Statistic: Continuity correction policy
+Value: All studies if any zero exists
+Model information
+Statistic: Converged
+Value: True
+Model information
+Statistic: Log likelihood
+Value: 22.45
+Model information
+Statistic: Summary seed
+Value: 380381
+Model information
+Statistic: Summary iterations
+Value: 1000000
+Model information
+Statistic: summary warnings
+Value: 
+Model information
+Statistic: Warnings
+Value: 
+Model information
+Statistic: AIC
+Value: -34.91
+Model information
+Statistic: BIC
+Value: -27.27
+Model information
+Statistic: Model formula
+Value: Sensitivity and false-positive rate ~ 1
+Model information
+Statistic: Package version
+Value: 0.5.12
+
+note: The Reitsma bivariate and HSROC models are equivalent parameterizations of the same threshold-aware diagnostic model; this does not imply a common threshold.
+References
+Bivariate diagnostic meta-analysis: Reitsma, J. B., Glas, A. S., Rutjes, A. W., Scholten, R. J., Bossuyt, P. M., & Zwinderman, A. H. (2005). Bivariate analysis of sensitivity and specificity produces informative summary measures in diagnostic reviews. Journal of Clinical Epidemiology, 58(10), 982-990.
+Diagnostic accuracy model unification: Harbord, R. M., Deeks, J. J., Egger, M., Whiting, P., & Sterne, J. A. (2006). A unification of models for meta-analysis of diagnostic accuracy studies. Biostatistics, 8(2), 239-251.
+Statistical implementation: Doebler, P. (2025). mada: Meta-Analysis of Diagnostic Accuracy, version 0.5.12.
+Equivalent SROC parameterization: Rutter, C. M., & Gatsonis, C. A. (2001). A hierarchical regression approach to meta-analysis of diagnostic accuracy evaluations. Statistics in Medicine, 20(19), 2865-2884.
+Model configuration
+Confidence level: 95%
+
+Sensitivity
+Model: Reitsma bivariate model
+Estimator: REML
+
+Specificity
+Model: Reitsma bivariate model
+Estimator: REML
