@@ -1,0 +1,233 @@
+clinical failure: random-effects meta-analysis (odds ratio)
+
+Comparison: Intervention / Control
+
+Methods
+
+Odds ratios were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance. Confidence intervals (95%) used the normal approximation. A continuity correction of 0.5 was applied to studies with any zero cell. 2 studies with no events in either arm were retained with this correction. Heterogeneity was assessed with Cochran's Q and I². Analyses were performed in RC MetaStudio 0.5.1. R packages loaded for this analysis: metafor 5.0.1, meta 8.5-0.
+
+Results
+
+19 studies were included (1097 participants in Intervention, 1080 in Control). The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, p = .267). The confidence interval includes 1, so these data do not show a clear difference between Intervention and Control. Heterogeneity: Q = 33.360, df = 18, p = .015. I² = 46.0%, which may represent moderate heterogeneity (Cochrane Handbook ranges). Between-study variance was τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.
+
+Table 1. Pooled effect
+
+Effect	Estimate	95% CI	SE	z	p
+
+Odds ratio	0.770	0.485 to 1.222	0.236	-1.111	.267
+
+Table 2. Model fit
+
+Statistic	Value
+
+Studies (k)	19
+
+Participants in Intervention	1097
+
+Participants in Control	1080
+
+Cochran’s Q	33.360
+
+Heterogeneity degrees of freedom	18
+
+Heterogeneity p	.015
+
+I²	46.0%
+
+Between-study variance (τ²)	0.378
+
+95% prediction interval	0.212 to 2.799
+
+Table 3. Study results
+
+Study	Effect	95% CI	Weight
+
+Gonzalez	0.571	0.170 to 1.916	7.3%
+
+Prins	0.436	0.107 to 1.772	6.2%
+
+Giamarellou	0.076	0.004 to 1.441	2.1%
+
+Maller	1.401	0.667 to 2.945	10.7%
+
+Sturm	0.189	0.009 to 4.080	2.0%
+
+Marik	0.395	0.229 to 0.680	12.2%
+
+Muijsken	1.611	0.491 to 5.289	7.5%
+
+Vigano	2.878	0.115 to 71.821	1.8%
+
+Hansen	0.140	0.028 to 0.704	5.3%
+
+De Vries	1.973	0.475 to 8.188	6.1%
+
+Mauracher	0.073	0.004 to 1.311	2.2%
+
+Nordstrom	0.663	0.134 to 3.282	5.3%
+
+Rozdzinski	1.018	0.464 to 2.236	10.3%
+
+Ter Braak	1.356	0.501 to 3.666	8.7%
+
+Tulkens	1	0.019 to 52.977	1.2%
+
+Van der Auwera	0.187	0.009 to 4.062	2.0%
+
+Klastersky	5.762	1.363 to 24.362	6.0%
+
+Vanhaeverbeek	1.051	0.020 to 55.627	1.2%
+
+Hollender	0.316	0.013 to 7.928	1.8%
+
+Table 4. Full-precision results
+
+Source	Results
+
+Summary — Model Results	Estimate: 0.77
+Lower bound (95% CI): 0.485
+Upper bound (95% CI): 1.222
+p-value: 0.267
+
+Summary — Heterogeneity	Q: 33.360
+df: 18
+p-value: 0.015
+I²: 46.0%
+τ²: 0.378
+
+Summary — Test for overall effect	Z: -1.111
+p-value: 0.267
+
+Summary — Prediction interval	Lower bound (95% PI): 0.212
+Upper bound (95% PI): 2.799
+
+Summary — Calculation scale (log)	Estimate: -0.262
+Lower bound (95% CI): -0.724
+Upper bound (95% CI): 0.200
+SE (log scale): 0.236
+
+Weights — Study weights	Study: Gonzalez
+Effect: 0.571
+Lower bound: 0.17
+Upper bound: 1.916
+Weight (%): 7.3%
+
+Weights — Study weights	Study: Prins
+Effect: 0.436
+Lower bound: 0.107
+Upper bound: 1.772
+Weight (%): 6.2%
+
+Weights — Study weights	Study: Giamarellou
+Effect: 0.076
+Lower bound: 0.004
+Upper bound: 1.441
+Weight (%): 2.1%
+
+Weights — Study weights	Study: Maller
+Effect: 1.401
+Lower bound: 0.667
+Upper bound: 2.945
+Weight (%): 10.7%
+
+Weights — Study weights	Study: Sturm
+Effect: 0.189
+Lower bound: 0.009
+Upper bound: 4.08
+Weight (%): 2.0%
+
+Weights — Study weights	Study: Marik
+Effect: 0.395
+Lower bound: 0.229
+Upper bound: 0.68
+Weight (%): 12.2%
+
+Weights — Study weights	Study: Muijsken
+Effect: 1.611
+Lower bound: 0.491
+Upper bound: 5.289
+Weight (%): 7.5%
+
+Weights — Study weights	Study: Vigano
+Effect: 2.878
+Lower bound: 0.115
+Upper bound: 71.821
+Weight (%): 1.8%
+
+Weights — Study weights	Study: Hansen
+Effect: 0.14
+Lower bound: 0.028
+Upper bound: 0.704
+Weight (%): 5.3%
+
+Weights — Study weights	Study: De Vries
+Effect: 1.973
+Lower bound: 0.475
+Upper bound: 8.188
+Weight (%): 6.1%
+
+Weights — Study weights	Study: Mauracher
+Effect: 0.073
+Lower bound: 0.004
+Upper bound: 1.311
+Weight (%): 2.2%
+
+Weights — Study weights	Study: Nordstrom
+Effect: 0.663
+Lower bound: 0.134
+Upper bound: 3.282
+Weight (%): 5.3%
+
+Weights — Study weights	Study: Rozdzinski
+Effect: 1.018
+Lower bound: 0.464
+Upper bound: 2.236
+Weight (%): 10.3%
+
+Weights — Study weights	Study: Ter Braak
+Effect: 1.356
+Lower bound: 0.501
+Upper bound: 3.666
+Weight (%): 8.7%
+
+Weights — Study weights	Study: Tulkens
+Effect: 1
+Lower bound: 0.019
+Upper bound: 52.977
+Weight (%): 1.2%
+
+Weights — Study weights	Study: Van der Auwera
+Effect: 0.187
+Lower bound: 0.009
+Upper bound: 4.062
+Weight (%): 2.0%
+
+Weights — Study weights	Study: Klastersky
+Effect: 5.762
+Lower bound: 1.363
+Upper bound: 24.362
+Weight (%): 6.0%
+
+Weights — Study weights	Study: Vanhaeverbeek
+Effect: 1.051
+Lower bound: 0.02
+Upper bound: 55.627
+Weight (%): 1.2%
+
+Weights — Study weights	Study: Hollender
+Effect: 0.316
+Lower bound: 0.013
+Upper bound: 7.928
+Weight (%): 1.8%
+
+Pooled Odds ratio: 0.77 (95% CI 0.485 to 1.222).
+
+95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.

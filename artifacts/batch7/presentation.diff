@@ -1,0 +1,120 @@
+--- before-continuous-report
++++ after-continuous-report
+@@ -1,7 +1,7 @@
+ Summary
+ Continuous Random-Effects Model
+ 
+-Metric: Standardized Mean Difference
++Metric: Standardized mean difference
+ 
+ Model Results
+  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value
+@@ -12,8 +12,8 @@
+  11.914   5    0.036  58.0%  0.037
+ 
+ Test for overall effect
+- Z      p-value
+- 3.400  < 0.001
++ Z    p-value
++ 3.4  < 0.001
+ 
+ Prediction interval
+  Lower bound (95% PI)  Upper bound (95% PI)
+--- before-continuous-plot-text
++++ after-continuous-plot-text
+@@ -50,10 +50,10 @@
+ Weight
+ Intervention
+ Control
+-Standardized Mean Difference
++Standardized mean difference
+ IV, Random,
+ 95% CI
+-Standardized Mean Difference
++Standardized mean difference
+ IV, Random,
+ 95% CI
+ 0.358 [0.152, 0.565]
+@@ -73,16 +73,16 @@
+ 0.277 [-0.068, 0.623]
+ 0.367 [-0.075, 0.808]
+ 0.664 [0.463, 0.866]
+-0.462 [0.054, 0.870]
++0.462 [0.054, 0.87]
+ 0.185 [-0.116, 0.486]
+ Random-effects model (DerSimonian–Laird)
+ 500
+ 495
+ 100.0%
+ Heterogeneity: τ² = 0.037; Q = 11.914, df = 5 (P = 0.036); I² = 58.0%
+-Test for overall effect: Z = 3.400 (P < 0.001)
++Test for overall effect: Z = 3.4 (P < 0.001)
+ 95% prediction interval: [-0.072, 0.789]
+-Standardized Mean Difference
++Standardized mean difference
+ Favours Intervention
+ Favours Control
+- · Continuous · Standardized Mean Difference · Comparison: Intervention / Control
++ · Continuous · Standardized mean difference · Comparison: Intervention / Control
+--- before-amino-report
++++ after-amino-report
+@@ -1,7 +1,7 @@
+ Summary
+ Binary Random-Effects Model
+ 
+-Metric: Odds Ratio
++Metric: Odds ratio
+ 
+ Model Results
+  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  p-value
+@@ -17,7 +17,7 @@
+ 
+ Prediction interval
+  Lower bound (95% PI)  Upper bound (95% PI)
+- 0.21                                  2.80
++ 0.21                                   2.8
+ 
+ Calculation scale: log - estimate: -0.26, lower: -0.72, upper: 0.20, std. error: 0.236
+ 95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.
+--- before-amino-plot-text
++++ after-amino-plot-text
+@@ -134,20 +134,20 @@
+  1989
+ 0.57 [0.17, 1.92]
+ 0.44 [0.11, 1.77]
+-0.08 [0.0040, 1.44]
+-1.40 [0.67, 2.94]
+-0.19 [0.0088, 4.08]
++0.08 [0.004, 1.44]
++1.4 [0.67, 2.94]
++0.19 [0.01, 4.08]
+ 0.39 [0.23, 0.68]
+ 1.61 [0.49, 5.29]
+ 2.88 [0.12, 71.82]
+-0.14 [0.03, 0.70]
++0.14 [0.03, 0.7]
+ 1.97 [0.48, 8.19]
+-0.07 [0.0040, 1.31]
++0.07 [0.004, 1.31]
+ 0.66 [0.13, 3.28]
+ 1.02 [0.46, 2.24]
+-1.36 [0.50, 3.67]
+-1.00 [0.02, 52.98]
+-0.19 [0.0086, 4.06]
++1.36 [0.5, 3.67]
++1 [0.02, 52.98]
++0.19 [0.01, 4.06]
+ 5.76 [1.36, 24.36]
+ 1.05 [0.02, 55.63]
+ 0.32 [0.01, 7.93]
+@@ -160,8 +160,8 @@
+ 145
+ Heterogeneity: τ² = 0.38; Q = 33.36, df = 18 (P = 0.015); I² = 46.0%
+ Test for overall effect: Z = -1.11 (P = 0.267)
+-95% prediction interval: [0.21, 2.80]
++95% prediction interval: [0.21, 2.8]
+ Odds ratio
+ Favours Intervention
+ Favours Control
+- · Binary · Odds Ratio · Comparison: Intervention / Control
++ · Binary · Odds ratio · Comparison: Intervention / Control

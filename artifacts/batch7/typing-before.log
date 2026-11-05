@@ -1,0 +1,20 @@
+Using CPython 3.11.9
+Creating virtual environment at: .venv
+[15:33:51] $ /home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/.venv/bin/python -m ty check --python /home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/.venv/bin/python --python-platform win32 --extra-search-path /home/ali/.t3/qa-env/qt6/generated/rc_metastudio --extra-search-path /home/ali/.t3/qa-env/qt6/generated/rc_metastudio/forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa
+/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/.venv/bin/python: No module named ty
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/scripts/verify.py", line 64, in run
+    subprocess.run(command, cwd=REPO_ROOT, env=env, check=True)
+  File "/home/ali/.local/share/uv/python/cpython-3.11.9-linux-x86_64-gnu/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/.venv/bin/python', '-m', 'ty', 'check', '--python', '/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/.venv/bin/python', '--python-platform', 'win32', '--extra-search-path', '/home/ali/.t3/qa-env/qt6/generated/rc_metastudio', '--extra-search-path', '/home/ali/.t3/qa-env/qt6/generated/rc_metastudio/forms', '--extra-search-path', '.', '--extra-search-path', 'src/rc_metastudio', '--extra-search-path', 'src', '--extra-search-path', 'scripts', '--extra-search-path', 'tests/python/gui', 'src/rc_metastudio', 'scripts', 'tests', 'r/RCMetaR/inst/qa']' returned non-zero exit status 1.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/scripts/verify.py", line 237, in run_typing
+    run(command + ["src/rc_metastudio", "scripts", "tests", "r/RCMetaR/inst/qa"])
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/scripts/verify.py", line 68, in run
+    raise VerificationError(
+scripts.verify.VerificationError: command failed with exit code 1: /home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/.venv/bin/python -m ty check --python /home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/.venv/bin/python --python-platform win32 --extra-search-path /home/ali/.t3/qa-env/qt6/generated/rc_metastudio --extra-search-path /home/ali/.t3/qa-env/qt6/generated/rc_metastudio/forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa

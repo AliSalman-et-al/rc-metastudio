@@ -382,6 +382,9 @@ class DatasetTableModel(QAbstractTableModel):
         if column in self.RAW_DATA:
             return self._raw_cell_data(index, role, study)
         if column in self.OUTCOMES:
+            from rc_metastudio import r_backend
+            if not r_backend.is_ready():
+                return _item_data("")
             return self._outcome_cell_data(index, role, study)
         if self._is_covariate_column(column):
             return self._covariate_cell_data(column, role, study)

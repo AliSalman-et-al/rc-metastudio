@@ -169,8 +169,8 @@ binary.fixed.inv.var <- function(binary.data, params){
 		}
 
 
-        plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
-        images <- c("Forest Plot"=forest.path)
+        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+        images <- c("Forest plot"=forest.path)
         plot.names <- c("forest plot"="forest_plot")
         pure.res$weights <- weights(res)
         results <- list("input_data"=binary.data,
@@ -270,8 +270,8 @@ binary.fixed.mh <- function(binary.data, params){
 
 
 
-        plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
-        images <- c("Forest Plot"=forest.path)
+        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+        images <- c("Forest plot"=forest.path)
         plot.names <- c("forest plot"="forest_plot")
         pure.res$weights <- weights(res)
         results <- list("input_data"=binary.data,
@@ -386,7 +386,7 @@ binary.fixed.peto <- function(binary.data, params) {
         }
 
         metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-        model.title <- "Binary Fixed-Effect Model - Peto\n\nMetric: Odds Ratio"
+        model.title <- "Binary Fixed-Effect Model - Peto\n\nMetric: Odds ratio"
         summary.disp <- create.summary.disp(binary.data, params, res, model.title)
         forest.path <- paste(params$fp_outpath, sep="")
         plot.data <- create.plot.data.binary(binary.data, params, res)
@@ -402,8 +402,8 @@ binary.fixed.peto <- function(binary.data, params) {
 
 
 
-        plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
-        images <- c("Forest Plot"=forest.path)
+        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+        images <- c("Forest plot"=forest.path)
         plot.names <- c("forest plot"="forest_plot")
         pure.res$weights <- weights(res)
         results <- list("input_data"=binary.data,
@@ -519,8 +519,8 @@ binary.random <- function(binary.data, params) {
 		}
 
 
-        plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
-        images <- c("Forest Plot"=forest.path)
+        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+        images <- c("Forest plot"=forest.path)
         plot.names <- c("forest plot"="forest_plot")
         pure.res$weights <- weights(res)
         results <- list("input_data"=binary.data,

@@ -1,0 +1,122 @@
+[
+  {
+    "case": "amino-binary-random",
+    "section": "References",
+    "numeric_tokens": 29,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "amino-binary-random",
+    "section": "Summary",
+    "numeric_tokens": 22,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "amino-binary-random",
+    "section": "Weights",
+    "numeric_tokens": 19,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "continuous-random",
+    "section": "References",
+    "numeric_tokens": 29,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "continuous-random",
+    "section": "Summary",
+    "numeric_tokens": 19,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "continuous-random",
+    "section": "Weights",
+    "numeric_tokens": 6,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "lymph-diagnostic-random-dor",
+    "section": "Diagnostic Odds Ratio Summary",
+    "numeric_tokens": 24,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "lymph-diagnostic-random-dor",
+    "section": "References",
+    "numeric_tokens": 29,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "amino-binary-cumulative",
+    "section": "Cumulative Summary",
+    "numeric_tokens": 135,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "amino-binary-cumulative",
+    "section": "References",
+    "numeric_tokens": 34,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "amino-binary-leave-one-out",
+    "section": "Leave-one-out Summary",
+    "numeric_tokens": 121,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "amino-binary-leave-one-out",
+    "section": "References",
+    "numeric_tokens": 30,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "continuous-cumulative",
+    "section": "Cumulative Summary",
+    "numeric_tokens": 43,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "continuous-cumulative",
+    "section": "References",
+    "numeric_tokens": 34,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "continuous-leave-one-out",
+    "section": "Leave-one-out Summary",
+    "numeric_tokens": 43,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "continuous-leave-one-out",
+    "section": "References",
+    "numeric_tokens": 30,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "amino-binary-subgroup",
+    "section": "References",
+    "numeric_tokens": 30,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "amino-binary-subgroup",
+    "section": "Subgroup Summary",
+    "numeric_tokens": 49,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "continuous-subgroup",
+    "section": "References",
+    "numeric_tokens": 30,
+    "numeric_spellings_identical": true
+  },
+  {
+    "case": "continuous-subgroup",
+    "section": "Subgroup Summary",
+    "numeric_tokens": 49,
+    "numeric_spellings_identical": true
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "cases": 11,
+  "all_frozen_numeric_outputs_unchanged": true,
+  "all_parameters_unchanged": true,
+  "unchanged_binary_artifacts": 11,
+  "contract_values_and_tolerances_unchanged": true,
+  "only_numeric_metadata_change": "public heading keys and archive SHA binding"
+}

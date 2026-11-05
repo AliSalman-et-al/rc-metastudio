@@ -83,7 +83,7 @@ def run(app, window, work, root, record, analyze):
     app.processEvents()
     view = analyze(app, window, "binary.random")
     assert "clinical failure" in view.results.identity
-    assert "Odds Ratio" in view.results.identity
+    assert "Odds ratio" in view.results.identity
     assert view.nav_tree.width() < view.width() / 3, (view.nav_tree.width(), view.width(), view.results_nav_splitter.sizes(), view._restored_splitter_proportions)
     assert not view.report_action.isChecked()
     assert view.content_stack.currentWidget() is view.figure_page
@@ -150,7 +150,7 @@ def run(app, window, work, root, record, analyze):
         palette.setColor(QtGui.QPalette.ColorRole.Base, QtGui.QColor(base))
         app.setPalette(palette)
         for page in ("forest", "manuscript", "tables"):
-            item = next(item for item in view.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive) if item.text(0) == {"forest": "Forest Plot", "manuscript": "Manuscript", "tables": "Tables"}[page])
+            item = next(item for item in view.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive) if item.text(0) == {"forest": "Forest plot", "manuscript": "Manuscript", "tables": "Tables"}[page])
             view.nav_tree.setCurrentItem(item)
             app.processEvents()
             app.processEvents()
@@ -165,7 +165,7 @@ def run(app, window, work, root, record, analyze):
                 assert 0 <= button_top - row_bottom <= 32, (button_top, row_bottom)
             record("slice8b-results-" + page + "-" + theme, view)
     app.setPalette(original_palette)
-    view.nav_tree.setCurrentItem(next(item for item in view.nav_tree.findItems("Forest Plot", QtCore.Qt.MatchFlag.MatchExactly)))
+    view.nav_tree.setCurrentItem(next(item for item in view.nav_tree.findItems("Forest plot", QtCore.Qt.MatchFlag.MatchExactly)))
     app.processEvents()
 
 
@@ -249,7 +249,7 @@ def run(app, window, work, root, record, analyze):
            report_font=view.report_text.font().pointSizeF(), figure_zoom=125)
     view.zoom_control.setValue(100)
     plot_item = next(item for item in view._svg_plot_items)
-    nav = next(item for item in view.nav_tree.findItems("Forest Plot", QtCore.Qt.MatchFlag.MatchExactly))
+    nav = next(item for item in view.nav_tree.findItems("Forest plot", QtCore.Qt.MatchFlag.MatchExactly))
     mouse_click(view.nav_tree.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=view.nav_tree.visualItemRect(nav).center())
     app.processEvents()
     assert view.export_plot_action.isEnabled()

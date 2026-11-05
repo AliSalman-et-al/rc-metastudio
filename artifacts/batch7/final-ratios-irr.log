@@ -1,0 +1,105 @@
+Evidence: /home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/artifacts/verification/rcms/20261105T104859Z-1048b3ee-ratios-irr
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.0-1). For an
+introduction to the package please type: help(metafor)
+
+An updated version of the package (version 5.2-1) is available!
+To update to this version type: install.packages("metafor")
+
+  
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support raise()
+Qt QtWarningMsg: This plugin does not support grabbing the keyboard
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 95, in ready
+    drive(dialog)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 575, in edit
+    assert control.contentsRect().width() - 8 >= control.fontMetrics().horizontalAdvance(text), (heading, text, control.width())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('figure_caption', 'Recurrent events · Event rates · Incidence Rate Ratio · Comparison: Intervention / Control · Order: dataset row order', 638)
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/tests/e2e/desktop_driver.py", line 2484, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/.agents/skills/verify-rcms/scripts/ratio_workflows.py", line 422, in run
+    plots(app, window, "regression" if workflow == "meta-regression" else workflow, record, view=view)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 764, in plots
+    modal(
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 115, in modal
+    assert not errors, errors
+           ^^^^^^^^^^
+AssertionError: [AssertionError(('figure_caption', 'Recurrent events · Event rates · Incidence Rate Ratio · Comparison: Intervention / Control · Order: dataset row order', 638))]
+
+Traceback (most recent call last):
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/tests/e2e/desktop_driver.py", line 2484, in <module>
+    run(app, window, scenario, record_step)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/.agents/skills/verify-rcms/scripts/ratio_workflows.py", line 422, in run
+    plots(app, window, "regression" if workflow == "meta-regression" else workflow, record, view=view)
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 764, in plots
+    modal(
+  File "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/.agents/skills/verify-rcms/scripts/advanced_workflows.py", line 115, in modal
+    assert not errors, errors
+           ^^^^^^^^^^
+AssertionError: [AssertionError(('figure_caption', 'Recurrent events · Event rates · Incidence Rate Ratio · Comparison: Intervention / Control · Order: dataset row order', 638))]
+

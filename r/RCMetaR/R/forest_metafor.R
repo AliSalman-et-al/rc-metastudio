@@ -166,6 +166,8 @@ rcmetar.format.effect.number <- function(values, digits, max.decimals=6L, scale=
             )
         }
     }
+    labels[small] <- sub("(\\.[0-9]*?)0+($|e)", "\\1\\2", labels[small])
+    labels[small] <- sub("\\.($|e)", "\\1", labels[small])
     labels[is.na(values)] <- ""
     rcmetar.compact.numeric.labels(labels)
 }

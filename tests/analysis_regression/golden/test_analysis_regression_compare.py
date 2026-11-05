@@ -458,7 +458,7 @@ def test_numeric_contract_covers_all_cases_and_rejects_shape_and_tolerance_drift
         ("amino-binary-random", "Summary", "estimate"),
         (
             "continuous-leave-one-out",
-            "Leave-one-out Summary",
+            "Leave-one-out summary",
             "model.without_young.estimate",
         ),
     ):
@@ -854,15 +854,15 @@ def test_curated_golden_set_includes_sequential_binary_and_continuous_workflows(
         )
 
     assert bundles["amino-binary-cumulative"]["case"].analysis_type == "cumulative"
-    assert "Cumulative Summary" in bundles["amino-binary-cumulative"]["expected"]
+    assert "Cumulative summary" in bundles["amino-binary-cumulative"]["expected"]
     assert (
         bundles["amino-binary-leave-one-out"]["case"].analysis_type == "leave-one-out"
     )
-    assert "Leave-one-out Summary" in bundles["amino-binary-leave-one-out"]["expected"]
+    assert "Leave-one-out summary" in bundles["amino-binary-leave-one-out"]["expected"]
     assert bundles["continuous-cumulative"]["case"].analysis_type == "cumulative"
-    assert "Cumulative Summary" in bundles["continuous-cumulative"]["expected"]
+    assert "Cumulative summary" in bundles["continuous-cumulative"]["expected"]
     assert bundles["continuous-leave-one-out"]["case"].analysis_type == "leave-one-out"
-    assert "Leave-one-out Summary" in bundles["continuous-leave-one-out"]["expected"]
+    assert "Leave-one-out summary" in bundles["continuous-leave-one-out"]["expected"]
 
 
 def test_golden_summary_parser_reads_current_RCMetaR_summary_display():

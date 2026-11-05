@@ -1,0 +1,420 @@
+
+══ Testing test-forest-metafor-renderer.R ══════════════════════════════════════
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 1 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 2 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 3 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 4 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 5 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 6 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 7 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 8 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 9 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 10 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 11 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 12 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 13 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 14 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 15 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 16 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 17 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 18 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 19 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 20 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 21 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 22 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 23 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 24 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 25 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 26 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 27 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 28 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 29 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 30 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 31 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 32 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 33 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 34 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 35 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 36 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 37 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 38 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 39 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 40 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 41 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 42 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 43 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 44 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 45 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 46 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 47 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 48 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 49 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 50 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 51 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 52 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 53 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 54 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 55 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 56 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 57 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 58 | WARN 0 | SKIP 0 | PASS 0 ]
+[ FAIL 59 | WARN 0 | SKIP 0 | PASS 0 ]
+
+── Error ('test-forest-metafor-renderer.R:205:3'): binary Default Forest Style builds a self-contained metafor render bundle ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:205:3
+
+── Error ('test-forest-metafor-renderer.R:296:3'): effect estimates and confidence limits never use probability thresholds ──
+Error in `rcmetar.format.effect.number(values, 2)`: could not find function "rcmetar.format.effect.number"
+
+── Error ('test-forest-metafor-renderer.R:308:3'): forest style and universal appearance params persist in metafor bundles ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:308:3
+
+── Error ('test-forest-metafor-renderer.R:337:3'): binary RevMan Forest Style builds faithful count, weight, and block spec ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:337:3
+
+── Error ('test-forest-metafor-renderer.R:373:3'): Forest Layout Preflight produces deterministic layout plans for Default and RevMan styles ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:373:3
+
+── Error ('test-forest-metafor-renderer.R:419:3'): RevMan SVG uses inline study CI strokes for QtSvg compatibility ──
+Error in `compute.for.one.cont.study(data, params)`: could not find function "compute.for.one.cont.study"
+Backtrace:
+    ▆
+ 1. └─metafor_continuous_fixture(5) at test-forest-metafor-renderer.R:419:3
+
+── Error ('test-forest-metafor-renderer.R:444:3'): journal ratio axes adapt to observed effects across Forest Plot Styles ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:444:3
+
+── Error ('test-forest-metafor-renderer.R:472:3'): explicit Forest Plot axis ticks override adaptive defaults for every style ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:472:3
+
+── Error ('test-forest-metafor-renderer.R:488:3'): one-sided axis bounds and BMJ risk-difference bounds remain authoritative ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:488:3
+
+── Error ('test-forest-metafor-renderer.R:509:3'): narrow explicit axis bounds remain exact for every style ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:509:3
+
+── Error ('test-forest-metafor-renderer.R:525:3'): automatic forest limits preserve every finite study interval ──
+Error in `rma.uni(yi = fixture$data@y, sei = fixture$data@SE, method = "DL", level = fixture$params$conf.level)`: could not find function "rma.uni"
+
+── Error ('test-forest-metafor-renderer.R:550:3'): sparse automatic forests preserve extreme finite intervals ──
+Error in `rma.uni(yi = fixture$data@y, sei = fixture$data@SE, method = "DL")`: could not find function "rma.uni"
+
+── Error ('test-forest-metafor-renderer.R:566:3'): forest effect headings preserve entered metric identity ──
+Error in `compute.for.one.cont.study(data, params)`: could not find function "compute.for.one.cont.study"
+Backtrace:
+    ▆
+ 1. └─metafor_continuous_one_arm_fixture() at test-forest-metafor-renderer.R:566:3
+
+── Error ('test-forest-metafor-renderer.R:579:3'): automatic identity-scale limits leave room for finite endpoint caps ──
+Error in `compute.for.one.cont.study(data, params)`: could not find function "compute.for.one.cont.study"
+Backtrace:
+    ▆
+ 1. └─metafor_continuous_one_arm_fixture() at test-forest-metafor-renderer.R:579:3
+
+── Error ('test-forest-metafor-renderer.R:591:3'): Forest Layout Preflight records sparse and compact RevMan templates without persisting plans ──
+Error in `rma.uni(yi = fixture$data@y, sei = fixture$data@SE, slab = fixture$data@study.names, method = fixture$params$rm.method, level = fixture$params$conf.level, digits = fixture$params$digits)`: could not find function "rma.uni"
+
+── Error ('test-forest-metafor-renderer.R:642:3'): Forest Layout Preflight keeps hidden-header CI lines and readable moderate-row text ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:642:3
+
+── Error ('test-forest-metafor-renderer.R:669:3'): RevMan study heading uses reference default and respects custom labels ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:669:3
+
+── Error ('test-forest-metafor-renderer.R:693:3'): RevMan X-axis footer labels align to the plotted effect axis ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:693:3
+
+── Error ('test-forest-metafor-renderer.R:740:3'): RevMan keeps the CI text left of wide and translated plot ranges ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:740:3
+
+── Error ('test-forest-metafor-renderer.R:759:3'): continuous RevMan Forest Style builds mean SD total columns ──
+Error in `compute.for.one.cont.study(data, params)`: could not find function "compute.for.one.cont.study"
+Backtrace:
+    ▆
+ 1. └─metafor_continuous_fixture() at test-forest-metafor-renderer.R:759:3
+
+── Error ('test-forest-metafor-renderer.R:786:3'): diagnostic RevMan Forest Style uses DTA columns and a probability-scale metric axis ──
+Error in `compute.diag.point.estimates(data, params)`: could not find function "compute.diag.point.estimates"
+Backtrace:
+    ▆
+ 1. └─metafor_diagnostic_fixture(measure = "Sens") at test-forest-metafor-renderer.R:786:3
+
+── Error ('test-forest-metafor-renderer.R:815:3'): plot axis default placeholders resolve to the metric label ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:815:3
+
+── Error ('test-forest-metafor-renderer.R:843:3'): BMJ Forest Style builds faithful family columns and renders smoke cases ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:843:3
+
+── Error ('test-forest-metafor-renderer.R:923:3'): BMJ raw-column layouts measure long labels and wrapped headers ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:923:3
+
+── Error ('test-forest-metafor-renderer.R:957:3'): unspecified forest style selects the complete RevMan layout ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:957:3
+
+── Error ('test-forest-metafor-renderer.R:993:3'): Default Forest Style panel toggles raw counts headers and annotation ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:993:3
+
+── Error ('test-forest-metafor-renderer.R:1022:3'): entered-effect-only standard plots render without raw arm columns ──
+Error in `logit(c(0.7, 0.75, 0.8, 0.77, 0.73, 0.79)[seq_len(studies)])`: could not find function "logit"
+Backtrace:
+    ▆
+ 1. └─metafor_entered_diagnostic_fixture() at test-forest-metafor-renderer.R:1022:3
+ 2.   └─RCMetaR::rcmetar.create.diagnostic.data(...) at test-forest-metafor-renderer.R:166:3
+ 3.     └─methods::new(...)
+ 4.       ├─methods::initialize(value, ...)
+ 5.       └─methods::initialize(value, ...)
+
+── Error ('test-forest-metafor-renderer.R:1052:3'): entered-effect-only RevMan plots degrade to weight columns ──
+Error in `logit(c(0.7, 0.75, 0.8, 0.77, 0.73, 0.79)[seq_len(studies)])`: could not find function "logit"
+Backtrace:
+    ▆
+ 1. └─metafor_entered_diagnostic_fixture() at test-forest-metafor-renderer.R:1052:3
+ 2.   └─RCMetaR::rcmetar.create.diagnostic.data(...) at test-forest-metafor-renderer.R:166:3
+ 3.     └─methods::new(...)
+ 4.       ├─methods::initialize(value, ...)
+ 5.       └─methods::initialize(value, ...)
+
+── Error ('test-forest-metafor-renderer.R:1088:3'): RevMan and BMJ styles honor hidden raw count columns ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:1088:3
+
+── Error ('test-forest-metafor-renderer.R:1126:3'): mixed raw and entered-effect rows render blanks for unavailable raw data ──
+Error in `rma.uni(yi = fixture$data@y, sei = fixture$data@SE, slab = fixture$data@study.names, method = fixture$params$rm.method, level = fixture$params$conf.level, digits = fixture$params$digits)`: could not find function "rma.uni"
+
+── Error ('test-forest-metafor-renderer.R:1157:3'): Default Forest Style sizing reserves space for long group headers ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:1157:3
+
+── Error ('test-forest-metafor-renderer.R:1189:3'): plot text ceilings preserve source study names and numeric data ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:1189:3
+
+── Error ('test-forest-metafor-renderer.R:1211:3'): subgroup display headings truncate without changing grouping state ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:1211:3
+
+── Error ('test-forest-metafor-renderer.R:1231:3'): RevMan raw-column layouts reserve space for long study labels ──
+Error in `compute.for.one.cont.study(data, params)`: could not find function "compute.for.one.cont.study"
+Backtrace:
+    ▆
+ 1. └─metafor_continuous_fixture() at test-forest-metafor-renderer.R:1231:3
+
+── Error ('test-forest-metafor-renderer.R:1272:3'): single-study binary Default Forest Style uses normalized vectors ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture(studies = 1) at test-forest-metafor-renderer.R:1272:3
+
+── Error ('test-forest-metafor-renderer.R:1291:3'): journal display labels do not duplicate publication years ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture(studies = 2) at test-forest-metafor-renderer.R:1291:3
+
+── Error ('test-forest-metafor-renderer.R:1302:3'): generic plot labels tolerate missing publication years ──
+Error in `compute.for.one.cont.study(data, params)`: could not find function "compute.for.one.cont.study"
+Backtrace:
+    ▆
+ 1. └─metafor_continuous_fixture(studies = 2) at test-forest-metafor-renderer.R:1302:3
+
+── Error ('test-forest-metafor-renderer.R:1316:3'): model and inference labels are separate readable lines ──
+Error in `rcmetar.forest.model.label(result)`: could not find function "rcmetar.forest.model.label"
+Backtrace:
+    ▆
+ 1. └─testthat::expect_equal(rcmetar.forest.model.label(result), "Random-effects model (DerSimonian–Laird)") at test-forest-metafor-renderer.R:1316:3
+ 2.   └─testthat::quasi_label(enquo(object), label)
+ 3.     └─rlang::eval_bare(expr, quo_get_env(quo))
+
+── Error ('test-forest-metafor-renderer.R:1322:3'): default forest heterogeneity labels reflect the fitted model ──
+Error in `compute.for.one.cont.study(data, params)`: could not find function "compute.for.one.cont.study"
+Backtrace:
+    ▆
+ 1. └─metafor_continuous_fixture(studies = 5) at test-forest-metafor-renderer.R:1322:3
+
+── Error ('test-forest-metafor-renderer.R:1355:3'): raster plot exports default to publication-grade resolution ──
+Error in `rcmetar.plot.export.dpi(list())`: could not find function "rcmetar.plot.export.dpi"
+Backtrace:
+    ▆
+ 1. └─testthat::expect_equal(rcmetar.plot.export.dpi(list()), 600) at test-forest-metafor-renderer.R:1355:3
+ 2.   └─testthat::quasi_label(enquo(object), label)
+ 3.     └─rlang::eval_bare(expr, quo_get_env(quo))
+
+── Error ('test-forest-metafor-renderer.R:1367:5'): single-arm binary metrics build and render Default metafor bundles ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_one_arm_fixture(measure = metric) at test-forest-metafor-renderer.R:1367:5
+
+── Error ('test-forest-metafor-renderer.R:1398:3'): single-arm binary RevMan and BMJ styles use one-arm count columns and plain metric axes ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_one_arm_fixture(measure = "PLO") at test-forest-metafor-renderer.R:1398:3
+
+── Error ('test-forest-metafor-renderer.R:1443:3'): continuous Default Forest Style builds and renders mean SD N columns ──
+Error in `compute.for.one.cont.study(data, params)`: could not find function "compute.for.one.cont.study"
+Backtrace:
+    ▆
+ 1. └─metafor_continuous_fixture() at test-forest-metafor-renderer.R:1443:3
+
+── Error ('test-forest-metafor-renderer.R:1473:3'): single-arm continuous styles use one-arm mean SD N columns and plain metric axes ──
+Error in `compute.for.one.cont.study(data, params)`: could not find function "compute.for.one.cont.study"
+Backtrace:
+    ▆
+ 1. └─metafor_continuous_one_arm_fixture() at test-forest-metafor-renderer.R:1473:3
+
+── Error ('test-forest-metafor-renderer.R:1526:3'): diagnostic Default Forest Style builds and renders count columns on transformed axes ──
+Error in `compute.diag.point.estimates(data, params)`: could not find function "compute.diag.point.estimates"
+Backtrace:
+    ▆
+ 1. └─metafor_diagnostic_fixture(measure = "Sens") at test-forest-metafor-renderer.R:1526:3
+
+── Error ('test-forest-metafor-renderer.R:1575:3'): diagnostic extraction keeps image order aligned with semantic forest keys ──
+Error in `rcmetar.diagnostic.extract(fit, list(measure = "Sens"))`: could not find function "rcmetar.diagnostic.extract"
+
+── Error ('test-forest-metafor-renderer.R:1584:3'): diagnostic multi-metric workflows save independent metafor forest plots ──
+Error in `compute.diag.point.estimates(data, params)`: could not find function "compute.diag.point.estimates"
+Backtrace:
+    ▆
+ 1. └─metafor_diagnostic_fixture(measure = "Sens") at test-forest-metafor-renderer.R:1584:3
+
+── Error ('test-forest-metafor-renderer.R:1638:5'): repeated diagnostic workflows keep metric forest plots independent ──
+Error in `compute.diag.point.estimates(data, params)`: could not find function "compute.diag.point.estimates"
+Backtrace:
+    ▆
+ 1. └─metafor_diagnostic_fixture(measure = "NLR") at test-forest-metafor-renderer.R:1638:5
+
+── Error ('test-forest-metafor-renderer.R:1687:3'): single-study entered diagnostic Default Forest Style omits count ilab and uses normalized vectors ──
+Error in `logit(0.81)`: could not find function "logit"
+Backtrace:
+    ▆
+ 1. └─methods::new(...) at test-forest-metafor-renderer.R:1687:3
+ 2.   ├─methods::initialize(value, ...)
+ 3.   └─methods::initialize(value, ...)
+
+── Error ('test-forest-metafor-renderer.R:1714:3'): cumulative workflow saves and renders a Default metafor bundle ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:1714:3
+
+── Error ('test-forest-metafor-renderer.R:1731:7'): workflow forest artifacts regenerate through their saved public contract ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─cases[[variant]]() at test-forest-metafor-renderer.R:1756:5
+ 2.   └─metafor_binary_fixture() at test-forest-metafor-renderer.R:1731:7
+
+── Error ('test-forest-metafor-renderer.R:1786:3'): forest regeneration state rejects unsupported parameter overrides ──
+Error in `rcmetar.forest.regeneration.state("subgroup", subgroup.data = list(subgroup.list = list(), grouped.data = list(), results = list()), param.overrides = list(fp_col1_str = "Unexpected"))`: could not find function "rcmetar.forest.regeneration.state"
+Backtrace:
+    ▆
+ 1. └─testthat::expect_error(...) at test-forest-metafor-renderer.R:1786:3
+ 2.   └─testthat:::expect_condition_matching_(...)
+ 3.     └─testthat:::quasi_capture(...)
+ 4.       ├─testthat (local) .capture(...)
+ 5.       │ └─base::withCallingHandlers(...)
+ 6.       └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+
+── Error ('test-forest-metafor-renderer.R:1799:5'): sequential regeneration rejects invalid overall presence at its boundary ──
+Error in `rcmetar.forest.regeneration.state("leave-one-out", results = list(list(b = 0)), labels = "Study omitted: A", has.overall = flag)`: could not find function "rcmetar.forest.regeneration.state"
+Backtrace:
+    ▆
+ 1. └─testthat::expect_error(...) at test-forest-metafor-renderer.R:1799:5
+ 2.   └─testthat:::expect_condition_matching_(...)
+ 3.     └─testthat:::quasi_capture(...)
+ 4.       ├─testthat (local) .capture(...)
+ 5.       │ └─base::withCallingHandlers(...)
+ 6.       └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+
+── Error ('test-forest-metafor-renderer.R:1815:3'): cumulative workflow handles entered-effect-only data in Default, RevMan, and BMJ styles ──
+Error in `eval(code, test_env)`: object 'cum.ma.binary' not found
+
+── Error ('test-forest-metafor-renderer.R:1840:3'): leave-one-out workflow saves and renders a Default metafor bundle ──
+Error in `compute.for.one.cont.study(data, params)`: could not find function "compute.for.one.cont.study"
+Backtrace:
+    ▆
+ 1. └─metafor_continuous_fixture() at test-forest-metafor-renderer.R:1840:3
+
+── Error ('test-forest-metafor-renderer.R:1856:3'): leave-one-out workflow handles entered-effect-only data in Default, RevMan, and BMJ styles ──
+Error in `eval(code, test_env)`: object 'loo.ma.binary' not found
+
+── Error ('test-forest-metafor-renderer.R:1883:3'): subgroup workflow saves and renders Default metafor subtotal diamonds ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:1883:3
+
+── Error ('test-forest-metafor-renderer.R:1926:3'): subgroup workflow saves and renders RevMan subtotal diamonds ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:1926:3
+
+── Error ('test-forest-metafor-renderer.R:1955:3'): subgroup workflow saves and renders BMJ subtotal diamonds ──
+Error in `compute.for.one.bin.study(data, params)`: could not find function "compute.for.one.bin.study"
+Backtrace:
+    ▆
+ 1. └─metafor_binary_fixture() at test-forest-metafor-renderer.R:1955:3
+
+[ FAIL 59 | WARN 0 | SKIP 0 | PASS 0 ]

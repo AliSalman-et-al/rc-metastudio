@@ -275,7 +275,7 @@ def curated_golden_bundles(root_dir=None):
                     "i_squared": 46.0,
                 }
             },
-            "artifacts": {"Forest Plot": binary_params["fp_outpath"]},
+            "artifacts": {"Forest plot": binary_params["fp_outpath"]},
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("amino.rcms"),
                 "binary.random",
@@ -303,7 +303,7 @@ def curated_golden_bundles(root_dir=None):
                     "i_squared": 58.0,
                 }
             },
-            "artifacts": {"Forest Plot": continuous_params["fp_outpath"]},
+            "artifacts": {"Forest plot": continuous_params["fp_outpath"]},
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("continuous.rcms"),
                 "continuous.random",
@@ -331,7 +331,7 @@ def curated_golden_bundles(root_dir=None):
                     "i_squared": 62.0,
                 }
             },
-            "artifacts": {"Odds Ratio Forest Plot": diagnostic_params["fp_outpath"]},
+            "artifacts": {"Diagnostic odds ratio forest plot": diagnostic_params["fp_outpath"]},
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("lymph.rcms"),
                 ["diagnostic.random"],
@@ -347,9 +347,9 @@ def curated_golden_bundles(root_dir=None):
             "metric": "OR",
             "parameters": binary_cumulative_params,
             "tolerances": DEFAULT_TOLERANCES,
-            "expected": {"Cumulative Summary": {}},
+            "expected": {"Cumulative summary": {}},
             "artifacts": {
-                "Cumulative Forest Plot": binary_cumulative_params["fp_outpath"]
+                "Cumulative forest plot": binary_cumulative_params["fp_outpath"]
             },
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("amino.rcms"),
@@ -368,8 +368,8 @@ def curated_golden_bundles(root_dir=None):
             "metric": "OR",
             "parameters": binary_loo_params,
             "tolerances": DEFAULT_TOLERANCES,
-            "expected": {"Leave-one-out Summary": {}},
-            "artifacts": {"Leave-one-out Forest plot": binary_loo_params["fp_outpath"]},
+            "expected": {"Leave-one-out summary": {}},
+            "artifacts": {"Leave-one-out forest plot": binary_loo_params["fp_outpath"]},
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("amino.rcms"),
                 "binary.random",
@@ -387,9 +387,9 @@ def curated_golden_bundles(root_dir=None):
             "metric": "SMD",
             "parameters": continuous_cumulative_params,
             "tolerances": DEFAULT_TOLERANCES,
-            "expected": {"Cumulative Summary": {}},
+            "expected": {"Cumulative summary": {}},
             "artifacts": {
-                "Cumulative Forest Plot": continuous_cumulative_params["fp_outpath"]
+                "Cumulative forest plot": continuous_cumulative_params["fp_outpath"]
             },
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("continuous.rcms"),
@@ -408,9 +408,9 @@ def curated_golden_bundles(root_dir=None):
             "metric": "SMD",
             "parameters": continuous_loo_params,
             "tolerances": DEFAULT_TOLERANCES,
-            "expected": {"Leave-one-out Summary": {}},
+            "expected": {"Leave-one-out summary": {}},
             "artifacts": {
-                "Leave-one-out Forest plot": continuous_loo_params["fp_outpath"]
+                "Leave-one-out forest plot": continuous_loo_params["fp_outpath"]
             },
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("continuous.rcms"),
@@ -477,8 +477,8 @@ def curated_golden_bundles(root_dir=None):
             "metric": "OR",
             "parameters": binary_subgroup_params,
             "tolerances": DEFAULT_TOLERANCES,
-            "expected": {"Subgroup Summary": {}},
-            "artifacts": {"Subgroup Forest Plot": binary_subgroup_params["fp_outpath"]},
+            "expected": {"Subgroup summary": {}},
+            "artifacts": {"Subgroup forest plot": binary_subgroup_params["fp_outpath"]},
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("amino.rcms"),
                 "binary.random",
@@ -499,9 +499,9 @@ def curated_golden_bundles(root_dir=None):
             "metric": "SMD",
             "parameters": continuous_subgroup_params,
             "tolerances": DEFAULT_TOLERANCES,
-            "expected": {"Subgroup Summary": {}},
+            "expected": {"Subgroup summary": {}},
             "artifacts": {
-                "Subgroups Forest Plot": continuous_subgroup_params["fp_outpath"]
+                "Subgroup forest plot": continuous_subgroup_params["fp_outpath"]
             },
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("continuous.rcms"),
@@ -709,8 +709,8 @@ def capture_bundle(
             added.update(f"model.{group}.{field}"
                          for group in ("subgroup_early", "subgroup_late", "overall")
                          for field in ("studies", "z_value"))
-            section = outputs.get("Subgroup Summary", {})
-            additional_outputs["Subgroup Summary"] = {key: section.pop(key) for key in added if key in section}
+            section = outputs.get("Subgroup summary", {})
+            additional_outputs["Subgroup summary"] = {key: section.pop(key) for key in added if key in section}
         base.update(
             {
                 "status": "success",

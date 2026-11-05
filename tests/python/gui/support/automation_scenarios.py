@@ -101,7 +101,7 @@ from rc_metastudio.r_call_serialization import serialized_r_call
 from rc_metastudio.result_text_identity import normalize_packaged_summary_identity
 
 PACKAGED_SUMMARY_SHA256_BY_SAMPLE = {
-    "amino.rcms": "61ea84ba73eab657282ceabdf3ee1f29ab0ed55a1be574023017bc490d279ab5",
+    "amino.rcms": "16303526c7c3a40c8805b6245b8806fc765bf4efc2c269807c1a5d460060539d",
     "BCG.rcms": "b47d4f5347252350c0c6a5507221a41c3a65bbbedacfe34e0dd164c5f75c93cb",
 }
 AUTOMATION_SMOKE_LOG_ENV = "RCMS_AUTOMATION_SMOKE_LOG"

@@ -118,7 +118,7 @@
         }
       ],
       "sections": {
-        "Cumulative Summary": {
+        "Cumulative summary": {
           "model.gonzalez.estimate": 0.571,
           "model.gonzalez.lower_bound": 0.17,
           "model.gonzalez.p_value": 0.365,
@@ -227,7 +227,7 @@
         }
       ],
       "sections": {
-        "Leave-one-out Summary": {
+        "Leave-one-out summary": {
           "model.overall.estimate": 0.77,
           "model.overall.lower_bound": 0.485,
           "model.overall.p_value": 0.267,
@@ -341,12 +341,12 @@
         },
         {
           "reason": "The first cumulative row has no inferential p-value in the observed output.",
-          "section": "Cumulative Summary",
+          "section": "Cumulative summary",
           "target": "model.carroll.p_value"
         }
       ],
       "sections": {
-        "Cumulative Summary": {
+        "Cumulative summary": {
           "model.carroll.estimate": 0.095,
           "model.carroll.lower_bound": -0.264,
           "model.carroll.standard_error": 0.183,
@@ -389,7 +389,7 @@
         }
       ],
       "sections": {
-        "Leave-one-out Summary": {
+        "Leave-one-out summary": {
           "model.overall.estimate": 0.358,
           "model.overall.lower_bound": 0.152,
           "model.overall.p_value": 0.001,
@@ -517,7 +517,7 @@
         }
       ],
       "sections": {
-        "Subgroup Summary": {
+        "Subgroup summary": {
           "heterogeneity.overall.df": 18.0,
           "heterogeneity.overall.i_squared": 46.0,
           "heterogeneity.overall.p_value": 0.015,
@@ -564,7 +564,7 @@
         }
       ],
       "sections": {
-        "Subgroup Summary": {
+        "Subgroup summary": {
           "model.overall.estimate": 0.358,
           "model.overall.lower_bound": 0.152,
           "model.overall.p_value": 0.001,
@@ -587,7 +587,7 @@
   "contract": "golden-numeric-results",
   "coverage": {
     "amino-binary-cumulative": {
-      "Cumulative Summary": [
+      "Cumulative summary": [
         "model.gonzalez.estimate",
         "model.gonzalez.lower_bound",
         "model.gonzalez.p_value",
@@ -686,7 +686,7 @@
       ]
     },
     "amino-binary-leave-one-out": {
-      "Leave-one-out Summary": [
+      "Leave-one-out summary": [
         "model.overall.estimate",
         "model.overall.lower_bound",
         "model.overall.p_value",
@@ -864,7 +864,7 @@
       ]
     },
     "amino-binary-subgroup": {
-      "Subgroup Summary": [
+      "Subgroup summary": [
         "heterogeneity.overall.df",
         "heterogeneity.overall.i_squared",
         "heterogeneity.overall.p_value",
@@ -901,7 +901,7 @@
       ]
     },
     "continuous-cumulative": {
-      "Cumulative Summary": [
+      "Cumulative summary": [
         "model.carroll.estimate",
         "model.carroll.lower_bound",
         "model.carroll.standard_error",
@@ -934,7 +934,7 @@
       ]
     },
     "continuous-leave-one-out": {
-      "Leave-one-out Summary": [
+      "Leave-one-out summary": [
         "model.overall.estimate",
         "model.overall.lower_bound",
         "model.overall.p_value",
@@ -1018,7 +1018,7 @@
       ]
     },
     "continuous-subgroup": {
-      "Subgroup Summary": [
+      "Subgroup summary": [
         "model.overall.estimate",
         "model.overall.lower_bound",
         "model.overall.p_value",
@@ -1055,7 +1055,7 @@
       ]
     }
   },
-  "oracle_sha256": "bfb24b3017c60e4fea4c04bc46123f63b5782491352e1f8d68da068a76fa6e60",
+  "oracle_sha256": "576120f609f6b21fd646c9264810c490e134081c313d1cc9c512a73c521d39b8",
   "schema_version": 1,
   "tolerance_policy": {
     "absolute": 0.001,

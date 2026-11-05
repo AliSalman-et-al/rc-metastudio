@@ -1,0 +1,850 @@
+{
+  "title": "clinical failure: random-effects meta-analysis (odds ratio)",
+  "held": [
+    {
+      "section": "Summary",
+      "source": "Summary",
+      "title": "Model Results",
+      "headers": [
+        "Estimate",
+        "Lower bound (95% CI)",
+        "Upper bound (95% CI)",
+        "p-value"
+      ],
+      "rows": [
+        [
+          "0.77",
+          "0.485",
+          "1.222",
+          "0.267"
+        ]
+      ]
+    },
+    {
+      "section": "Summary",
+      "source": "Summary",
+      "title": "Heterogeneity",
+      "headers": [
+        "Q",
+        "df",
+        "p-value",
+        "I²",
+        "τ²"
+      ],
+      "rows": [
+        [
+          "33.360",
+          "18",
+          "0.015",
+          "46.0%",
+          "0.378"
+        ]
+      ]
+    },
+    {
+      "section": "Summary",
+      "source": "Summary",
+      "title": "Test for overall effect",
+      "headers": [
+        "Z",
+        "p-value"
+      ],
+      "rows": [
+        [
+          "-1.111",
+          "0.267"
+        ]
+      ]
+    },
+    {
+      "section": "Summary",
+      "source": "Summary",
+      "title": "Prediction interval",
+      "headers": [
+        "Lower bound (95% PI)",
+        "Upper bound (95% PI)"
+      ],
+      "rows": [
+        [
+          "0.212",
+          "2.799"
+        ]
+      ]
+    },
+    {
+      "section": "Summary",
+      "source": "Summary",
+      "title": "Calculation scale (log)",
+      "headers": [
+        "Estimate",
+        "Lower bound (95% CI)",
+        "Upper bound (95% CI)",
+        "SE (log scale)"
+      ],
+      "rows": [
+        [
+          "-0.262",
+          "-0.724",
+          "0.200",
+          "0.236"
+        ]
+      ]
+    },
+    {
+      "section": "Weights",
+      "source": "Weights",
+      "title": "Study weights",
+      "headers": [
+        "Study",
+        "Effect",
+        "Lower bound",
+        "Upper bound",
+        "Weight (%)"
+      ],
+      "rows": [
+        [
+          "Gonzalez",
+          "0.571",
+          "0.17",
+          "1.916",
+          "7.3%"
+        ],
+        [
+          "Prins",
+          "0.436",
+          "0.107",
+          "1.772",
+          "6.2%"
+        ],
+        [
+          "Giamarellou",
+          "0.076",
+          "0.004",
+          "1.441",
+          "2.1%"
+        ],
+        [
+          "Maller",
+          "1.401",
+          "0.667",
+          "2.945",
+          "10.7%"
+        ],
+        [
+          "Sturm",
+          "0.189",
+          "0.009",
+          "4.08",
+          "2.0%"
+        ],
+        [
+          "Marik",
+          "0.395",
+          "0.229",
+          "0.68",
+          "12.2%"
+        ],
+        [
+          "Muijsken",
+          "1.611",
+          "0.491",
+          "5.289",
+          "7.5%"
+        ],
+        [
+          "Vigano",
+          "2.878",
+          "0.115",
+          "71.821",
+          "1.8%"
+        ],
+        [
+          "Hansen",
+          "0.14",
+          "0.028",
+          "0.704",
+          "5.3%"
+        ],
+        [
+          "De Vries",
+          "1.973",
+          "0.475",
+          "8.188",
+          "6.1%"
+        ],
+        [
+          "Mauracher",
+          "0.073",
+          "0.004",
+          "1.311",
+          "2.2%"
+        ],
+        [
+          "Nordstrom",
+          "0.663",
+          "0.134",
+          "3.282",
+          "5.3%"
+        ],
+        [
+          "Rozdzinski",
+          "1.018",
+          "0.464",
+          "2.236",
+          "10.3%"
+        ],
+        [
+          "Ter Braak",
+          "1.356",
+          "0.501",
+          "3.666",
+          "8.7%"
+        ],
+        [
+          "Tulkens",
+          "1",
+          "0.019",
+          "52.977",
+          "1.2%"
+        ],
+        [
+          "Van der Auwera",
+          "0.187",
+          "0.009",
+          "4.062",
+          "2.0%"
+        ],
+        [
+          "Klastersky",
+          "5.762",
+          "1.363",
+          "24.362",
+          "6.0%"
+        ],
+        [
+          "Vanhaeverbeek",
+          "1.051",
+          "0.02",
+          "55.627",
+          "1.2%"
+        ],
+        [
+          "Hollender",
+          "0.316",
+          "0.013",
+          "7.928",
+          "1.8%"
+        ]
+      ]
+    }
+  ],
+  "held_text": [
+    {
+      "section": "References",
+      "value": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+    }
+  ],
+  "held_notes": [
+    {
+      "section": "Summary",
+      "paragraphs": [
+        "Pooled Odds ratio: 0.77 (95% CI 0.485 to 1.222).",
+        "95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate."
+      ]
+    }
+  ],
+  "presented": [
+    {
+      "section": "Pooled effect",
+      "title": "Pooled effect",
+      "headers": [
+        "Effect",
+        "Estimate",
+        "95% CI",
+        "SE",
+        "z",
+        "p"
+      ],
+      "rows": [
+        [
+          "Odds ratio",
+          "0.770",
+          "0.485 to 1.222",
+          "0.236",
+          "-1.111",
+          ".267"
+        ]
+      ]
+    },
+    {
+      "section": "Model fit",
+      "title": "Model fit",
+      "headers": [
+        "Statistic",
+        "Value"
+      ],
+      "rows": [
+        [
+          "Studies (k)",
+          "19"
+        ],
+        [
+          "Participants in Intervention",
+          "1097"
+        ],
+        [
+          "Participants in Control",
+          "1080"
+        ],
+        [
+          "Cochran’s Q",
+          "33.360"
+        ],
+        [
+          "Heterogeneity degrees of freedom",
+          "18"
+        ],
+        [
+          "Heterogeneity p",
+          ".015"
+        ],
+        [
+          "I²",
+          "46.0%"
+        ],
+        [
+          "Between-study variance (τ²)",
+          "0.378"
+        ],
+        [
+          "95% prediction interval",
+          "0.212 to 2.799"
+        ]
+      ]
+    },
+    {
+      "section": "Study results",
+      "title": "Study results",
+      "headers": [
+        "Study",
+        "Effect",
+        "95% CI",
+        "Weight"
+      ],
+      "rows": [
+        [
+          "Gonzalez",
+          "0.571",
+          "0.170 to 1.916",
+          "7.3%"
+        ],
+        [
+          "Prins",
+          "0.436",
+          "0.107 to 1.772",
+          "6.2%"
+        ],
+        [
+          "Giamarellou",
+          "0.076",
+          "0.004 to 1.441",
+          "2.1%"
+        ],
+        [
+          "Maller",
+          "1.401",
+          "0.667 to 2.945",
+          "10.7%"
+        ],
+        [
+          "Sturm",
+          "0.189",
+          "0.009 to 4.080",
+          "2.0%"
+        ],
+        [
+          "Marik",
+          "0.395",
+          "0.229 to 0.680",
+          "12.2%"
+        ],
+        [
+          "Muijsken",
+          "1.611",
+          "0.491 to 5.289",
+          "7.5%"
+        ],
+        [
+          "Vigano",
+          "2.878",
+          "0.115 to 71.821",
+          "1.8%"
+        ],
+        [
+          "Hansen",
+          "0.140",
+          "0.028 to 0.704",
+          "5.3%"
+        ],
+        [
+          "De Vries",
+          "1.973",
+          "0.475 to 8.188",
+          "6.1%"
+        ],
+        [
+          "Mauracher",
+          "0.073",
+          "0.004 to 1.311",
+          "2.2%"
+        ],
+        [
+          "Nordstrom",
+          "0.663",
+          "0.134 to 3.282",
+          "5.3%"
+        ],
+        [
+          "Rozdzinski",
+          "1.018",
+          "0.464 to 2.236",
+          "10.3%"
+        ],
+        [
+          "Ter Braak",
+          "1.356",
+          "0.501 to 3.666",
+          "8.7%"
+        ],
+        [
+          "Tulkens",
+          "1",
+          "0.019 to 52.977",
+          "1.2%"
+        ],
+        [
+          "Van der Auwera",
+          "0.187",
+          "0.009 to 4.062",
+          "2.0%"
+        ],
+        [
+          "Klastersky",
+          "5.762",
+          "1.363 to 24.362",
+          "6.0%"
+        ],
+        [
+          "Vanhaeverbeek",
+          "1.051",
+          "0.020 to 55.627",
+          "1.2%"
+        ],
+        [
+          "Hollender",
+          "0.316",
+          "0.013 to 7.928",
+          "1.8%"
+        ]
+      ]
+    },
+    {
+      "section": "Supplementary details",
+      "title": "Full-precision results",
+      "headers": [
+        "Source",
+        "Results"
+      ],
+      "rows": [
+        [
+          "Summary — Model Results",
+          "Estimate: 0.77\nLower bound (95% CI): 0.485\nUpper bound (95% CI): 1.222\np-value: 0.267"
+        ],
+        [
+          "Summary — Heterogeneity",
+          "Q: 33.360\ndf: 18\np-value: 0.015\nI²: 46.0%\nτ²: 0.378"
+        ],
+        [
+          "Summary — Test for overall effect",
+          "Z: -1.111\np-value: 0.267"
+        ],
+        [
+          "Summary — Prediction interval",
+          "Lower bound (95% PI): 0.212\nUpper bound (95% PI): 2.799"
+        ],
+        [
+          "Summary — Calculation scale (log)",
+          "Estimate: -0.262\nLower bound (95% CI): -0.724\nUpper bound (95% CI): 0.200\nSE (log scale): 0.236"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Gonzalez\nEffect: 0.571\nLower bound: 0.17\nUpper bound: 1.916\nWeight (%): 7.3%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Prins\nEffect: 0.436\nLower bound: 0.107\nUpper bound: 1.772\nWeight (%): 6.2%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Giamarellou\nEffect: 0.076\nLower bound: 0.004\nUpper bound: 1.441\nWeight (%): 2.1%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Maller\nEffect: 1.401\nLower bound: 0.667\nUpper bound: 2.945\nWeight (%): 10.7%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Sturm\nEffect: 0.189\nLower bound: 0.009\nUpper bound: 4.08\nWeight (%): 2.0%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Marik\nEffect: 0.395\nLower bound: 0.229\nUpper bound: 0.68\nWeight (%): 12.2%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Muijsken\nEffect: 1.611\nLower bound: 0.491\nUpper bound: 5.289\nWeight (%): 7.5%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Vigano\nEffect: 2.878\nLower bound: 0.115\nUpper bound: 71.821\nWeight (%): 1.8%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Hansen\nEffect: 0.14\nLower bound: 0.028\nUpper bound: 0.704\nWeight (%): 5.3%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: De Vries\nEffect: 1.973\nLower bound: 0.475\nUpper bound: 8.188\nWeight (%): 6.1%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Mauracher\nEffect: 0.073\nLower bound: 0.004\nUpper bound: 1.311\nWeight (%): 2.2%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Nordstrom\nEffect: 0.663\nLower bound: 0.134\nUpper bound: 3.282\nWeight (%): 5.3%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Rozdzinski\nEffect: 1.018\nLower bound: 0.464\nUpper bound: 2.236\nWeight (%): 10.3%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Ter Braak\nEffect: 1.356\nLower bound: 0.501\nUpper bound: 3.666\nWeight (%): 8.7%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Tulkens\nEffect: 1\nLower bound: 0.019\nUpper bound: 52.977\nWeight (%): 1.2%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Van der Auwera\nEffect: 0.187\nLower bound: 0.009\nUpper bound: 4.062\nWeight (%): 2.0%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Klastersky\nEffect: 5.762\nLower bound: 1.363\nUpper bound: 24.362\nWeight (%): 6.0%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Vanhaeverbeek\nEffect: 1.051\nLower bound: 0.02\nUpper bound: 55.627\nWeight (%): 1.2%"
+        ],
+        [
+          "Weights — Study weights",
+          "Study: Hollender\nEffect: 0.316\nLower bound: 0.013\nUpper bound: 7.928\nWeight (%): 1.8%"
+        ]
+      ]
+    }
+  ],
+  "docx_tables": [
+    [
+      [
+        "Effect",
+        "Estimate",
+        "95% CI",
+        "SE",
+        "z",
+        "p"
+      ],
+      [
+        "Odds ratio",
+        "0.770",
+        "0.485 to 1.222",
+        "0.236",
+        "-1.111",
+        ".267"
+      ]
+    ],
+    [
+      [
+        "Statistic",
+        "Value"
+      ],
+      [
+        "Studies (k)",
+        "19"
+      ],
+      [
+        "Participants in Intervention",
+        "1097"
+      ],
+      [
+        "Participants in Control",
+        "1080"
+      ],
+      [
+        "Cochran’s Q",
+        "33.360"
+      ],
+      [
+        "Heterogeneity degrees of freedom",
+        "18"
+      ],
+      [
+        "Heterogeneity p",
+        ".015"
+      ],
+      [
+        "I²",
+        "46.0%"
+      ],
+      [
+        "Between-study variance (τ²)",
+        "0.378"
+      ],
+      [
+        "95% prediction interval",
+        "0.212 to 2.799"
+      ]
+    ],
+    [
+      [
+        "Study",
+        "Effect",
+        "95% CI",
+        "Weight"
+      ],
+      [
+        "Gonzalez",
+        "0.571",
+        "0.170 to 1.916",
+        "7.3%"
+      ],
+      [
+        "Prins",
+        "0.436",
+        "0.107 to 1.772",
+        "6.2%"
+      ],
+      [
+        "Giamarellou",
+        "0.076",
+        "0.004 to 1.441",
+        "2.1%"
+      ],
+      [
+        "Maller",
+        "1.401",
+        "0.667 to 2.945",
+        "10.7%"
+      ],
+      [
+        "Sturm",
+        "0.189",
+        "0.009 to 4.080",
+        "2.0%"
+      ],
+      [
+        "Marik",
+        "0.395",
+        "0.229 to 0.680",
+        "12.2%"
+      ],
+      [
+        "Muijsken",
+        "1.611",
+        "0.491 to 5.289",
+        "7.5%"
+      ],
+      [
+        "Vigano",
+        "2.878",
+        "0.115 to 71.821",
+        "1.8%"
+      ],
+      [
+        "Hansen",
+        "0.140",
+        "0.028 to 0.704",
+        "5.3%"
+      ],
+      [
+        "De Vries",
+        "1.973",
+        "0.475 to 8.188",
+        "6.1%"
+      ],
+      [
+        "Mauracher",
+        "0.073",
+        "0.004 to 1.311",
+        "2.2%"
+      ],
+      [
+        "Nordstrom",
+        "0.663",
+        "0.134 to 3.282",
+        "5.3%"
+      ],
+      [
+        "Rozdzinski",
+        "1.018",
+        "0.464 to 2.236",
+        "10.3%"
+      ],
+      [
+        "Ter Braak",
+        "1.356",
+        "0.501 to 3.666",
+        "8.7%"
+      ],
+      [
+        "Tulkens",
+        "1",
+        "0.019 to 52.977",
+        "1.2%"
+      ],
+      [
+        "Van der Auwera",
+        "0.187",
+        "0.009 to 4.062",
+        "2.0%"
+      ],
+      [
+        "Klastersky",
+        "5.762",
+        "1.363 to 24.362",
+        "6.0%"
+      ],
+      [
+        "Vanhaeverbeek",
+        "1.051",
+        "0.020 to 55.627",
+        "1.2%"
+      ],
+      [
+        "Hollender",
+        "0.316",
+        "0.013 to 7.928",
+        "1.8%"
+      ]
+    ],
+    [
+      [
+        "Source",
+        "Results"
+      ],
+      [
+        "Summary — Model Results",
+        "Estimate: 0.77\nLower bound (95% CI): 0.485\nUpper bound (95% CI): 1.222\np-value: 0.267"
+      ],
+      [
+        "Summary — Heterogeneity",
+        "Q: 33.360\ndf: 18\np-value: 0.015\nI²: 46.0%\nτ²: 0.378"
+      ],
+      [
+        "Summary — Test for overall effect",
+        "Z: -1.111\np-value: 0.267"
+      ],
+      [
+        "Summary — Prediction interval",
+        "Lower bound (95% PI): 0.212\nUpper bound (95% PI): 2.799"
+      ],
+      [
+        "Summary — Calculation scale (log)",
+        "Estimate: -0.262\nLower bound (95% CI): -0.724\nUpper bound (95% CI): 0.200\nSE (log scale): 0.236"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Gonzalez\nEffect: 0.571\nLower bound: 0.17\nUpper bound: 1.916\nWeight (%): 7.3%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Prins\nEffect: 0.436\nLower bound: 0.107\nUpper bound: 1.772\nWeight (%): 6.2%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Giamarellou\nEffect: 0.076\nLower bound: 0.004\nUpper bound: 1.441\nWeight (%): 2.1%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Maller\nEffect: 1.401\nLower bound: 0.667\nUpper bound: 2.945\nWeight (%): 10.7%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Sturm\nEffect: 0.189\nLower bound: 0.009\nUpper bound: 4.08\nWeight (%): 2.0%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Marik\nEffect: 0.395\nLower bound: 0.229\nUpper bound: 0.68\nWeight (%): 12.2%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Muijsken\nEffect: 1.611\nLower bound: 0.491\nUpper bound: 5.289\nWeight (%): 7.5%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Vigano\nEffect: 2.878\nLower bound: 0.115\nUpper bound: 71.821\nWeight (%): 1.8%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Hansen\nEffect: 0.14\nLower bound: 0.028\nUpper bound: 0.704\nWeight (%): 5.3%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: De Vries\nEffect: 1.973\nLower bound: 0.475\nUpper bound: 8.188\nWeight (%): 6.1%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Mauracher\nEffect: 0.073\nLower bound: 0.004\nUpper bound: 1.311\nWeight (%): 2.2%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Nordstrom\nEffect: 0.663\nLower bound: 0.134\nUpper bound: 3.282\nWeight (%): 5.3%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Rozdzinski\nEffect: 1.018\nLower bound: 0.464\nUpper bound: 2.236\nWeight (%): 10.3%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Ter Braak\nEffect: 1.356\nLower bound: 0.501\nUpper bound: 3.666\nWeight (%): 8.7%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Tulkens\nEffect: 1\nLower bound: 0.019\nUpper bound: 52.977\nWeight (%): 1.2%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Van der Auwera\nEffect: 0.187\nLower bound: 0.009\nUpper bound: 4.062\nWeight (%): 2.0%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Klastersky\nEffect: 5.762\nLower bound: 1.363\nUpper bound: 24.362\nWeight (%): 6.0%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Vanhaeverbeek\nEffect: 1.051\nLower bound: 0.02\nUpper bound: 55.627\nWeight (%): 1.2%"
+      ],
+      [
+        "Weights — Study weights",
+        "Study: Hollender\nEffect: 0.316\nLower bound: 0.013\nUpper bound: 7.928\nWeight (%): 1.8%"
+      ]
+    ]
+  ],
+  "missing": {
+    "copy": [],
+    "pdf": [],
+    "docx": []
+  },
+  "directory": "/home/ali/.t3/worktrees/rc-metastudio/t3-37f255a4/build/verification/rcms/desktop-sin5wg_z/report-retention/6b24ff0fe7c08810"
+}

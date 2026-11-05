@@ -1770,7 +1770,10 @@ def _section_display_fields(title, supplied, child_index):
         # semantic title, but point at the first rendered child value so the
         # validated result still has exactly one section per value.
         return supplied["title"], title
-    return title, title
+    display_title = {"Leave-one-out Summary": "Leave-one-out summary",
+                     "Cumulative Summary": "Cumulative summary",
+                     "Subgroup Summary": "Subgroup summary"}.get(title, title)
+    return display_title, title
 
 
 def _image_section_metadata(
@@ -2771,7 +2774,8 @@ def _format_numeric_table_cell(value, field_name):
             return f"< {10**(-precision):g}" if value < 10**(-precision) else f"{value:.{precision}f}"
         if compact_name in {"df", "studies", "studiesused", "k", "summaryseed", "summaryiterations"} and float(value).is_integer():
             return str(int(value))
-        return result_sections.format_effect_number(value, digits)
+        formatted = f"{value:.{digits}f}"
+        return f"{value:.{max(1, digits)}g}" if value != 0 and float(formatted) == 0 else formatted
     if compact_name in {"p", "pvalue", "pval", "prz", "qmp", "qep"}:
         if value < 0.001:
             return "< 0.001"

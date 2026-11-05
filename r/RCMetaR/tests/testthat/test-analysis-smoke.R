@@ -127,9 +127,9 @@ test_that("forest analysis returns an explicit internal SVG display artifact", {
     list(version=1, method= "continuous.random", params = fixture$params)
   )
 
-  expect_equal(unname(result$images[["Forest Plot"]]), fixture$params$fp_outpath)
+  expect_equal(unname(result$images[["Forest plot"]]), fixture$params$fp_outpath)
   expect_equal(
-    unname(result$display_images[["Forest Plot"]]),
+    unname(result$display_images[["Forest plot"]]),
     fixture$params$fp_display_path
   )
   expect_true(file.exists(fixture$params$fp_outpath))
@@ -149,7 +149,7 @@ test_that("forest analysis returns an explicit internal SVG display artifact", {
     fixture$params$fp_display_path
   ))
   expect_equal(
-    unname(svg.result$display_images[["Forest Plot"]]),
+    unname(svg.result$display_images[["Forest plot"]]),
     fixture$params$fp_display_path
   )
   expect_true(file.exists(fixture$params$fp_outpath))

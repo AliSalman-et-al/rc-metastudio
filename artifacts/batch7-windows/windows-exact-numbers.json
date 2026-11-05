@@ -1,0 +1,2918 @@
+{
+  "passed": true,
+  "count": 416,
+  "rows": [
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "calculation_scale.estimate",
+      "reference": -0.262,
+      "windows_actual": -0.262
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "calculation_scale.lower_bound",
+      "reference": -0.724,
+      "windows_actual": -0.724
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "calculation_scale.standard_error",
+      "reference": 0.236,
+      "windows_actual": 0.236
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "calculation_scale.upper_bound",
+      "reference": 0.2,
+      "windows_actual": 0.2
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "estimate",
+      "reference": 0.77,
+      "windows_actual": 0.77
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "heterogeneity_df",
+      "reference": 18.0,
+      "windows_actual": 18.0
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "heterogeneity_p_value",
+      "reference": 0.015,
+      "windows_actual": 0.015
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "i_squared",
+      "reference": 46.0,
+      "windows_actual": 46.0
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "lower_bound",
+      "reference": 0.485,
+      "windows_actual": 0.485
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "p_value",
+      "reference": 0.267,
+      "windows_actual": 0.267
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "q",
+      "reference": 33.36,
+      "windows_actual": 33.36
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "tau_squared",
+      "reference": 0.378,
+      "windows_actual": 0.378
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Summary",
+      "field": "upper_bound",
+      "reference": 1.222,
+      "windows_actual": 1.222
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.de_vries",
+      "reference": 6.1,
+      "windows_actual": 6.1
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.giamarellou",
+      "reference": 2.1,
+      "windows_actual": 2.1
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.gonzalez",
+      "reference": 7.3,
+      "windows_actual": 7.3
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.hansen",
+      "reference": 5.3,
+      "windows_actual": 5.3
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.hollender",
+      "reference": 1.8,
+      "windows_actual": 1.8
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.klastersky",
+      "reference": 6.0,
+      "windows_actual": 6.0
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.maller",
+      "reference": 10.7,
+      "windows_actual": 10.7
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.marik",
+      "reference": 12.2,
+      "windows_actual": 12.2
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.mauracher",
+      "reference": 2.2,
+      "windows_actual": 2.2
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.muijsken",
+      "reference": 7.5,
+      "windows_actual": 7.5
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.nordstrom",
+      "reference": 5.3,
+      "windows_actual": 5.3
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.prins",
+      "reference": 6.2,
+      "windows_actual": 6.2
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.rozdzinski",
+      "reference": 10.3,
+      "windows_actual": 10.3
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.sturm",
+      "reference": 2.0,
+      "windows_actual": 2.0
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.ter_braak",
+      "reference": 8.7,
+      "windows_actual": 8.7
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.tulkens",
+      "reference": 1.2,
+      "windows_actual": 1.2
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.van_der_auwera",
+      "reference": 2.0,
+      "windows_actual": 2.0
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.vanhaeverbeek",
+      "reference": 1.2,
+      "windows_actual": 1.2
+    },
+    {
+      "case": "amino-binary-random",
+      "section": "Weights",
+      "field": "weight.vigano",
+      "reference": 1.8,
+      "windows_actual": 1.8
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "estimate",
+      "reference": 0.358,
+      "windows_actual": 0.358
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "heterogeneity_df",
+      "reference": 5.0,
+      "windows_actual": 5.0
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "heterogeneity_p_value",
+      "reference": 0.036,
+      "windows_actual": 0.036
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "i_squared",
+      "reference": 58.0,
+      "windows_actual": 58.0
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "lower_bound",
+      "reference": 0.152,
+      "windows_actual": 0.152
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "p_value",
+      "reference": 0.001,
+      "windows_actual": 0.001
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "q",
+      "reference": 11.914,
+      "windows_actual": 11.914
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "standard_error",
+      "reference": 0.105,
+      "windows_actual": 0.105
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "tau_squared",
+      "reference": 0.037,
+      "windows_actual": 0.037
+    },
+    {
+      "case": "continuous-random",
+      "section": "Summary",
+      "field": "upper_bound",
+      "reference": 0.565,
+      "windows_actual": 0.565
+    },
+    {
+      "case": "continuous-random",
+      "section": "Weights",
+      "field": "weight.carroll",
+      "reference": 15.8,
+      "windows_actual": 15.8
+    },
+    {
+      "case": "continuous-random",
+      "section": "Weights",
+      "field": "weight.donat",
+      "reference": 23.3,
+      "windows_actual": 23.3
+    },
+    {
+      "case": "continuous-random",
+      "section": "Weights",
+      "field": "weight.grant",
+      "reference": 16.3,
+      "windows_actual": 16.3
+    },
+    {
+      "case": "continuous-random",
+      "section": "Weights",
+      "field": "weight.peck",
+      "reference": 12.6,
+      "windows_actual": 12.6
+    },
+    {
+      "case": "continuous-random",
+      "section": "Weights",
+      "field": "weight.stewart",
+      "reference": 13.8,
+      "windows_actual": 13.8
+    },
+    {
+      "case": "continuous-random",
+      "section": "Weights",
+      "field": "weight.young",
+      "reference": 18.3,
+      "windows_actual": 18.3
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Diagnostic Odds Ratio Summary",
+      "field": "calculation_scale.estimate",
+      "reference": 2.267,
+      "windows_actual": 2.267
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Diagnostic Odds Ratio Summary",
+      "field": "calculation_scale.lower_bound",
+      "reference": 1.71,
+      "windows_actual": 1.71
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Diagnostic Odds Ratio Summary",
+      "field": "calculation_scale.standard_error",
+      "reference": 0.284,
+      "windows_actual": 0.284
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Diagnostic Odds Ratio Summary",
+      "field": "calculation_scale.upper_bound",
+      "reference": 2.823,
+      "windows_actual": 2.823
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Diagnostic Odds Ratio Summary",
+      "field": "estimate",
+      "reference": 9.648,
+      "windows_actual": 9.648
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Diagnostic Odds Ratio Summary",
+      "field": "heterogeneity_df",
+      "reference": 16.0,
+      "windows_actual": 16.0
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Diagnostic Odds Ratio Summary",
+      "field": "heterogeneity_p_value",
+      "reference": 0.001,
+      "windows_actual": 0.001
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Diagnostic Odds Ratio Summary",
+      "field": "i_squared",
+      "reference": 62.1,
+      "windows_actual": 62.1
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Diagnostic Odds Ratio Summary",
+      "field": "lower_bound",
+      "reference": 5.529,
+      "windows_actual": 5.529
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Diagnostic Odds Ratio Summary",
+      "field": "p_value",
+      "reference": 0.001,
+      "windows_actual": 0.001
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Diagnostic Odds Ratio Summary",
+      "field": "q",
+      "reference": 42.259,
+      "windows_actual": 42.259
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Diagnostic Odds Ratio Summary",
+      "field": "study_count",
+      "reference": 17.0,
+      "windows_actual": 17.0
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Diagnostic Odds Ratio Summary",
+      "field": "tau_squared",
+      "reference": 0.704,
+      "windows_actual": 0.704
+    },
+    {
+      "case": "lymph-diagnostic-random-dor",
+      "section": "Diagnostic Odds Ratio Summary",
+      "field": "upper_bound",
+      "reference": 16.835,
+      "windows_actual": 16.835
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.gonzalez.estimate",
+      "reference": 0.571,
+      "windows_actual": 0.571
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.gonzalez.lower_bound",
+      "reference": 0.17,
+      "windows_actual": 0.17
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.gonzalez.p_value",
+      "reference": 0.365,
+      "windows_actual": 0.365
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.gonzalez.standard_error",
+      "reference": 0.617,
+      "windows_actual": 0.617
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.gonzalez.upper_bound",
+      "reference": 1.916,
+      "windows_actual": 1.916
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_de_vries.estimate",
+      "reference": 0.646,
+      "windows_actual": 0.646
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_de_vries.lower_bound",
+      "reference": 0.352,
+      "windows_actual": 0.352
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_de_vries.p_value",
+      "reference": 0.16,
+      "windows_actual": 0.16
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_de_vries.standard_error",
+      "reference": 0.31,
+      "windows_actual": 0.31
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_de_vries.upper_bound",
+      "reference": 1.188,
+      "windows_actual": 1.188
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_giamarellou.estimate",
+      "reference": 0.43,
+      "windows_actual": 0.43
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_giamarellou.lower_bound",
+      "reference": 0.18,
+      "windows_actual": 0.18
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_giamarellou.p_value",
+      "reference": 0.059,
+      "windows_actual": 0.059
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_giamarellou.standard_error",
+      "reference": 0.446,
+      "windows_actual": 0.446
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_giamarellou.upper_bound",
+      "reference": 1.032,
+      "windows_actual": 1.032
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_hansen.estimate",
+      "reference": 0.572,
+      "windows_actual": 0.572
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_hansen.lower_bound",
+      "reference": 0.305,
+      "windows_actual": 0.305
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_hansen.p_value",
+      "reference": 0.082,
+      "windows_actual": 0.082
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_hansen.standard_error",
+      "reference": 0.321,
+      "windows_actual": 0.321
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_hansen.upper_bound",
+      "reference": 1.073,
+      "windows_actual": 1.073
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_hollender.estimate",
+      "reference": 0.77,
+      "windows_actual": 0.77
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_hollender.lower_bound",
+      "reference": 0.485,
+      "windows_actual": 0.485
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_hollender.p_value",
+      "reference": 0.267,
+      "windows_actual": 0.267
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_hollender.standard_error",
+      "reference": 0.236,
+      "windows_actual": 0.236
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_hollender.upper_bound",
+      "reference": 1.222,
+      "windows_actual": 1.222
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_klastersky.estimate",
+      "reference": 0.775,
+      "windows_actual": 0.775
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_klastersky.lower_bound",
+      "reference": 0.477,
+      "windows_actual": 0.477
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_klastersky.p_value",
+      "reference": 0.302,
+      "windows_actual": 0.302
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_klastersky.standard_error",
+      "reference": 0.247,
+      "windows_actual": 0.247
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_klastersky.upper_bound",
+      "reference": 1.258,
+      "windows_actual": 1.258
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_maller.estimate",
+      "reference": 0.657,
+      "windows_actual": 0.657
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_maller.lower_bound",
+      "reference": 0.268,
+      "windows_actual": 0.268
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_maller.p_value",
+      "reference": 0.358,
+      "windows_actual": 0.358
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_maller.standard_error",
+      "reference": 0.457,
+      "windows_actual": 0.457
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_maller.upper_bound",
+      "reference": 1.609,
+      "windows_actual": 1.609
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_marik.estimate",
+      "reference": 0.54,
+      "windows_actual": 0.54
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_marik.lower_bound",
+      "reference": 0.275,
+      "windows_actual": 0.275
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_marik.p_value",
+      "reference": 0.073,
+      "windows_actual": 0.073
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_marik.standard_error",
+      "reference": 0.344,
+      "windows_actual": 0.344
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_marik.upper_bound",
+      "reference": 1.06,
+      "windows_actual": 1.06
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_mauracher.estimate",
+      "reference": 0.594,
+      "windows_actual": 0.594
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_mauracher.lower_bound",
+      "reference": 0.323,
+      "windows_actual": 0.323
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_mauracher.p_value",
+      "reference": 0.095,
+      "windows_actual": 0.095
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_mauracher.standard_error",
+      "reference": 0.312,
+      "windows_actual": 0.312
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_mauracher.upper_bound",
+      "reference": 1.095,
+      "windows_actual": 1.095
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_muijsken.estimate",
+      "reference": 0.634,
+      "windows_actual": 0.634
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_muijsken.lower_bound",
+      "reference": 0.334,
+      "windows_actual": 0.334
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_muijsken.p_value",
+      "reference": 0.164,
+      "windows_actual": 0.164
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_muijsken.standard_error",
+      "reference": 0.328,
+      "windows_actual": 0.328
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_muijsken.upper_bound",
+      "reference": 1.205,
+      "windows_actual": 1.205
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_nordstrom.estimate",
+      "reference": 0.606,
+      "windows_actual": 0.606
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_nordstrom.lower_bound",
+      "reference": 0.345,
+      "windows_actual": 0.345
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_nordstrom.p_value",
+      "reference": 0.08,
+      "windows_actual": 0.08
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_nordstrom.standard_error",
+      "reference": 0.287,
+      "windows_actual": 0.287
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_nordstrom.upper_bound",
+      "reference": 1.062,
+      "windows_actual": 1.062
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_prins.estimate",
+      "reference": 0.509,
+      "windows_actual": 0.509
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_prins.lower_bound",
+      "reference": 0.204,
+      "windows_actual": 0.204
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_prins.p_value",
+      "reference": 0.149,
+      "windows_actual": 0.149
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_prins.standard_error",
+      "reference": 0.467,
+      "windows_actual": 0.467
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_prins.upper_bound",
+      "reference": 1.273,
+      "windows_actual": 1.273
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_rozdzinski.estimate",
+      "reference": 0.655,
+      "windows_actual": 0.655
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_rozdzinski.lower_bound",
+      "reference": 0.398,
+      "windows_actual": 0.398
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_rozdzinski.p_value",
+      "reference": 0.096,
+      "windows_actual": 0.096
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_rozdzinski.standard_error",
+      "reference": 0.255,
+      "windows_actual": 0.255
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_rozdzinski.upper_bound",
+      "reference": 1.078,
+      "windows_actual": 1.078
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_sturm.estimate",
+      "reference": 0.614,
+      "windows_actual": 0.614
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_sturm.lower_bound",
+      "reference": 0.265,
+      "windows_actual": 0.265
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_sturm.p_value",
+      "reference": 0.255,
+      "windows_actual": 0.255
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_sturm.standard_error",
+      "reference": 0.428,
+      "windows_actual": 0.428
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_sturm.upper_bound",
+      "reference": 1.422,
+      "windows_actual": 1.422
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_ter_braak.estimate",
+      "reference": 0.706,
+      "windows_actual": 0.706
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_ter_braak.lower_bound",
+      "reference": 0.442,
+      "windows_actual": 0.442
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_ter_braak.p_value",
+      "reference": 0.145,
+      "windows_actual": 0.145
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_ter_braak.standard_error",
+      "reference": 0.239,
+      "windows_actual": 0.239
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_ter_braak.upper_bound",
+      "reference": 1.127,
+      "windows_actual": 1.127
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_tulkens.estimate",
+      "reference": 0.712,
+      "windows_actual": 0.712
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_tulkens.lower_bound",
+      "reference": 0.453,
+      "windows_actual": 0.453
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_tulkens.p_value",
+      "reference": 0.143,
+      "windows_actual": 0.143
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_tulkens.standard_error",
+      "reference": 0.231,
+      "windows_actual": 0.231
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_tulkens.upper_bound",
+      "reference": 1.121,
+      "windows_actual": 1.121
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_van_der_auwera.estimate",
+      "reference": 0.696,
+      "windows_actual": 0.696
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_van_der_auwera.lower_bound",
+      "reference": 0.446,
+      "windows_actual": 0.446
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_van_der_auwera.p_value",
+      "reference": 0.11,
+      "windows_actual": 0.11
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_van_der_auwera.standard_error",
+      "reference": 0.227,
+      "windows_actual": 0.227
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_van_der_auwera.upper_bound",
+      "reference": 1.086,
+      "windows_actual": 1.086
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_vanhaeverbeek.estimate",
+      "reference": 0.78,
+      "windows_actual": 0.78
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_vanhaeverbeek.lower_bound",
+      "reference": 0.486,
+      "windows_actual": 0.486
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_vanhaeverbeek.p_value",
+      "reference": 0.304,
+      "windows_actual": 0.304
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_vanhaeverbeek.standard_error",
+      "reference": 0.241,
+      "windows_actual": 0.241
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_vanhaeverbeek.upper_bound",
+      "reference": 1.253,
+      "windows_actual": 1.253
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_vigano.estimate",
+      "reference": 0.668,
+      "windows_actual": 0.668
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_vigano.lower_bound",
+      "reference": 0.358,
+      "windows_actual": 0.358
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_vigano.p_value",
+      "reference": 0.205,
+      "windows_actual": 0.205
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_vigano.standard_error",
+      "reference": 0.318,
+      "windows_actual": 0.318
+    },
+    {
+      "case": "amino-binary-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_vigano.upper_bound",
+      "reference": 1.246,
+      "windows_actual": 1.246
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.overall.estimate",
+      "reference": 0.77,
+      "windows_actual": 0.77
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.overall.lower_bound",
+      "reference": 0.485,
+      "windows_actual": 0.485
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.overall.p_value",
+      "reference": 0.267,
+      "windows_actual": 0.267
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.overall.standard_error",
+      "reference": 0.236,
+      "windows_actual": 0.236
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.overall.upper_bound",
+      "reference": 1.222,
+      "windows_actual": 1.222
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_de_vries.estimate",
+      "reference": 0.724,
+      "windows_actual": 0.724
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_de_vries.lower_bound",
+      "reference": 0.449,
+      "windows_actual": 0.449
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_de_vries.p_value",
+      "reference": 0.184,
+      "windows_actual": 0.184
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_de_vries.standard_error",
+      "reference": 0.243,
+      "windows_actual": 0.243
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_de_vries.upper_bound",
+      "reference": 1.166,
+      "windows_actual": 1.166
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_giamarellou.estimate",
+      "reference": 0.811,
+      "windows_actual": 0.811
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_giamarellou.lower_bound",
+      "reference": 0.513,
+      "windows_actual": 0.513
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_giamarellou.p_value",
+      "reference": 0.369,
+      "windows_actual": 0.369
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_giamarellou.standard_error",
+      "reference": 0.233,
+      "windows_actual": 0.233
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_giamarellou.upper_bound",
+      "reference": 1.281,
+      "windows_actual": 1.281
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_gonzalez.estimate",
+      "reference": 0.783,
+      "windows_actual": 0.783
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_gonzalez.lower_bound",
+      "reference": 0.477,
+      "windows_actual": 0.477
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_gonzalez.p_value",
+      "reference": 0.332,
+      "windows_actual": 0.332
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_gonzalez.standard_error",
+      "reference": 0.253,
+      "windows_actual": 0.253
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_gonzalez.upper_bound",
+      "reference": 1.285,
+      "windows_actual": 1.285
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_hansen.estimate",
+      "reference": 0.851,
+      "windows_actual": 0.851
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_hansen.lower_bound",
+      "reference": 0.542,
+      "windows_actual": 0.542
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_hansen.p_value",
+      "reference": 0.484,
+      "windows_actual": 0.484
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_hansen.standard_error",
+      "reference": 0.23,
+      "windows_actual": 0.23
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_hansen.upper_bound",
+      "reference": 1.336,
+      "windows_actual": 1.336
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_hollender.estimate",
+      "reference": 0.78,
+      "windows_actual": 0.78
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_hollender.lower_bound",
+      "reference": 0.486,
+      "windows_actual": 0.486
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_hollender.p_value",
+      "reference": 0.304,
+      "windows_actual": 0.304
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_hollender.standard_error",
+      "reference": 0.241,
+      "windows_actual": 0.241
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_hollender.upper_bound",
+      "reference": 1.253,
+      "windows_actual": 1.253
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_klastersky.estimate",
+      "reference": 0.696,
+      "windows_actual": 0.696
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_klastersky.lower_bound",
+      "reference": 0.458,
+      "windows_actual": 0.458
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_klastersky.p_value",
+      "reference": 0.091,
+      "windows_actual": 0.091
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_klastersky.standard_error",
+      "reference": 0.214,
+      "windows_actual": 0.214
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_klastersky.upper_bound",
+      "reference": 1.059,
+      "windows_actual": 1.059
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_maller.estimate",
+      "reference": 0.715,
+      "windows_actual": 0.715
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_maller.lower_bound",
+      "reference": 0.437,
+      "windows_actual": 0.437
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_maller.p_value",
+      "reference": 0.184,
+      "windows_actual": 0.184
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_maller.standard_error",
+      "reference": 0.252,
+      "windows_actual": 0.252
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_maller.upper_bound",
+      "reference": 1.172,
+      "windows_actual": 1.172
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_marik.estimate",
+      "reference": 0.864,
+      "windows_actual": 0.864
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_marik.lower_bound",
+      "reference": 0.543,
+      "windows_actual": 0.543
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_marik.p_value",
+      "reference": 0.538,
+      "windows_actual": 0.538
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_marik.standard_error",
+      "reference": 0.237,
+      "windows_actual": 0.237
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_marik.upper_bound",
+      "reference": 1.375,
+      "windows_actual": 1.375
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_mauracher.estimate",
+      "reference": 0.813,
+      "windows_actual": 0.813
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_mauracher.lower_bound",
+      "reference": 0.515,
+      "windows_actual": 0.515
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_mauracher.p_value",
+      "reference": 0.375,
+      "windows_actual": 0.375
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_mauracher.standard_error",
+      "reference": 0.233,
+      "windows_actual": 0.233
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_mauracher.upper_bound",
+      "reference": 1.283,
+      "windows_actual": 1.283
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_muijsken.estimate",
+      "reference": 0.724,
+      "windows_actual": 0.724
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_muijsken.lower_bound",
+      "reference": 0.446,
+      "windows_actual": 0.446
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_muijsken.p_value",
+      "reference": 0.191,
+      "windows_actual": 0.191
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_muijsken.standard_error",
+      "reference": 0.247,
+      "windows_actual": 0.247
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_muijsken.upper_bound",
+      "reference": 1.175,
+      "windows_actual": 1.175
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_nordstrom.estimate",
+      "reference": 0.772,
+      "windows_actual": 0.772
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_nordstrom.lower_bound",
+      "reference": 0.474,
+      "windows_actual": 0.474
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_nordstrom.p_value",
+      "reference": 0.298,
+      "windows_actual": 0.298
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_nordstrom.standard_error",
+      "reference": 0.249,
+      "windows_actual": 0.249
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_nordstrom.upper_bound",
+      "reference": 1.257,
+      "windows_actual": 1.257
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_prins.estimate",
+      "reference": 0.796,
+      "windows_actual": 0.796
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_prins.lower_bound",
+      "reference": 0.489,
+      "windows_actual": 0.489
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_prins.p_value",
+      "reference": 0.359,
+      "windows_actual": 0.359
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_prins.standard_error",
+      "reference": 0.249,
+      "windows_actual": 0.249
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_prins.upper_bound",
+      "reference": 1.296,
+      "windows_actual": 1.296
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_rozdzinski.estimate",
+      "reference": 0.738,
+      "windows_actual": 0.738
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_rozdzinski.lower_bound",
+      "reference": 0.442,
+      "windows_actual": 0.442
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_rozdzinski.p_value",
+      "reference": 0.244,
+      "windows_actual": 0.244
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_rozdzinski.standard_error",
+      "reference": 0.261,
+      "windows_actual": 0.261
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_rozdzinski.upper_bound",
+      "reference": 1.231,
+      "windows_actual": 1.231
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_sturm.estimate",
+      "reference": 0.791,
+      "windows_actual": 0.791
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_sturm.lower_bound",
+      "reference": 0.494,
+      "windows_actual": 0.494
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_sturm.p_value",
+      "reference": 0.327,
+      "windows_actual": 0.327
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_sturm.standard_error",
+      "reference": 0.24,
+      "windows_actual": 0.24
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_sturm.upper_bound",
+      "reference": 1.265,
+      "windows_actual": 1.265
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_ter_braak.estimate",
+      "reference": 0.726,
+      "windows_actual": 0.726
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_ter_braak.lower_bound",
+      "reference": 0.443,
+      "windows_actual": 0.443
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_ter_braak.p_value",
+      "reference": 0.204,
+      "windows_actual": 0.204
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_ter_braak.standard_error",
+      "reference": 0.252,
+      "windows_actual": 0.252
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_ter_braak.upper_bound",
+      "reference": 1.189,
+      "windows_actual": 1.189
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_tulkens.estimate",
+      "reference": 0.764,
+      "windows_actual": 0.764
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_tulkens.lower_bound",
+      "reference": 0.476,
+      "windows_actual": 0.476
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_tulkens.p_value",
+      "reference": 0.266,
+      "windows_actual": 0.266
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_tulkens.standard_error",
+      "reference": 0.242,
+      "windows_actual": 0.242
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_tulkens.upper_bound",
+      "reference": 1.227,
+      "windows_actual": 1.227
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_van_der_auwera.estimate",
+      "reference": 0.791,
+      "windows_actual": 0.791
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_van_der_auwera.lower_bound",
+      "reference": 0.494,
+      "windows_actual": 0.494
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_van_der_auwera.p_value",
+      "reference": 0.327,
+      "windows_actual": 0.327
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_van_der_auwera.standard_error",
+      "reference": 0.24,
+      "windows_actual": 0.24
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_van_der_auwera.upper_bound",
+      "reference": 1.265,
+      "windows_actual": 1.265
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_vanhaeverbeek.estimate",
+      "reference": 0.764,
+      "windows_actual": 0.764
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_vanhaeverbeek.lower_bound",
+      "reference": 0.476,
+      "windows_actual": 0.476
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_vanhaeverbeek.p_value",
+      "reference": 0.265,
+      "windows_actual": 0.265
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_vanhaeverbeek.standard_error",
+      "reference": 0.242,
+      "windows_actual": 0.242
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_vanhaeverbeek.upper_bound",
+      "reference": 1.226,
+      "windows_actual": 1.226
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_vigano.estimate",
+      "reference": 0.75,
+      "windows_actual": 0.75
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_vigano.lower_bound",
+      "reference": 0.468,
+      "windows_actual": 0.468
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_vigano.p_value",
+      "reference": 0.23,
+      "windows_actual": 0.23
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_vigano.standard_error",
+      "reference": 0.24,
+      "windows_actual": 0.24
+    },
+    {
+      "case": "amino-binary-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_vigano.upper_bound",
+      "reference": 1.2,
+      "windows_actual": 1.2
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.carroll.estimate",
+      "reference": 0.095,
+      "windows_actual": 0.095
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.carroll.lower_bound",
+      "reference": -0.264,
+      "windows_actual": -0.264
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.carroll.standard_error",
+      "reference": 0.183,
+      "windows_actual": 0.183
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.carroll.upper_bound",
+      "reference": 0.453,
+      "windows_actual": 0.453
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_donat.estimate",
+      "reference": 0.376,
+      "windows_actual": 0.376
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_donat.lower_bound",
+      "reference": 0.091,
+      "windows_actual": 0.091
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_donat.p_value",
+      "reference": 0.01,
+      "windows_actual": 0.01
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_donat.standard_error",
+      "reference": 0.145,
+      "windows_actual": 0.145
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_donat.upper_bound",
+      "reference": 0.66,
+      "windows_actual": 0.66
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_grant.estimate",
+      "reference": 0.189,
+      "windows_actual": 0.189
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_grant.lower_bound",
+      "reference": -0.059,
+      "windows_actual": -0.059
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_grant.p_value",
+      "reference": 0.136,
+      "windows_actual": 0.136
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_grant.standard_error",
+      "reference": 0.127,
+      "windows_actual": 0.127
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_grant.upper_bound",
+      "reference": 0.438,
+      "windows_actual": 0.438
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_peck.estimate",
+      "reference": 0.232,
+      "windows_actual": 0.232
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_peck.lower_bound",
+      "reference": 0.015,
+      "windows_actual": 0.015
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_peck.p_value",
+      "reference": 0.036,
+      "windows_actual": 0.036
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_peck.standard_error",
+      "reference": 0.111,
+      "windows_actual": 0.111
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_peck.upper_bound",
+      "reference": 0.449,
+      "windows_actual": 0.449
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_stewart.estimate",
+      "reference": 0.397,
+      "windows_actual": 0.397
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_stewart.lower_bound",
+      "reference": 0.169,
+      "windows_actual": 0.169
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_stewart.p_value",
+      "reference": 0.001,
+      "windows_actual": 0.001
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_stewart.standard_error",
+      "reference": 0.116,
+      "windows_actual": 0.116
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_stewart.upper_bound",
+      "reference": 0.626,
+      "windows_actual": 0.626
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_young.estimate",
+      "reference": 0.358,
+      "windows_actual": 0.358
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_young.lower_bound",
+      "reference": 0.152,
+      "windows_actual": 0.152
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_young.p_value",
+      "reference": 0.001,
+      "windows_actual": 0.001
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_young.standard_error",
+      "reference": 0.105,
+      "windows_actual": 0.105
+    },
+    {
+      "case": "continuous-cumulative",
+      "section": "Cumulative summary",
+      "field": "model.through_young.upper_bound",
+      "reference": 0.565,
+      "windows_actual": 0.565
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.overall.estimate",
+      "reference": 0.358,
+      "windows_actual": 0.358
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.overall.lower_bound",
+      "reference": 0.152,
+      "windows_actual": 0.152
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.overall.p_value",
+      "reference": 0.001,
+      "windows_actual": 0.001
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.overall.standard_error",
+      "reference": 0.105,
+      "windows_actual": 0.105
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.overall.upper_bound",
+      "reference": 0.565,
+      "windows_actual": 0.565
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_carroll.estimate",
+      "reference": 0.411,
+      "windows_actual": 0.411
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_carroll.lower_bound",
+      "reference": 0.202,
+      "windows_actual": 0.202
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_carroll.p_value",
+      "reference": 0.001,
+      "windows_actual": 0.001
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_carroll.standard_error",
+      "reference": 0.107,
+      "windows_actual": 0.107
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_carroll.upper_bound",
+      "reference": 0.621,
+      "windows_actual": 0.621
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_donat.estimate",
+      "reference": 0.254,
+      "windows_actual": 0.254
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_donat.lower_bound",
+      "reference": 0.093,
+      "windows_actual": 0.093
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_donat.p_value",
+      "reference": 0.002,
+      "windows_actual": 0.002
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_donat.standard_error",
+      "reference": 0.082,
+      "windows_actual": 0.082
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_donat.upper_bound",
+      "reference": 0.416,
+      "windows_actual": 0.416
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_grant.estimate",
+      "reference": 0.37,
+      "windows_actual": 0.37
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_grant.lower_bound",
+      "reference": 0.126,
+      "windows_actual": 0.126
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_grant.p_value",
+      "reference": 0.003,
+      "windows_actual": 0.003
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_grant.standard_error",
+      "reference": 0.125,
+      "windows_actual": 0.125
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_grant.upper_bound",
+      "reference": 0.615,
+      "windows_actual": 0.615
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_peck.estimate",
+      "reference": 0.353,
+      "windows_actual": 0.353
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_peck.lower_bound",
+      "reference": 0.113,
+      "windows_actual": 0.113
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_peck.p_value",
+      "reference": 0.004,
+      "windows_actual": 0.004
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_peck.standard_error",
+      "reference": 0.122,
+      "windows_actual": 0.122
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_peck.upper_bound",
+      "reference": 0.593,
+      "windows_actual": 0.593
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_stewart.estimate",
+      "reference": 0.337,
+      "windows_actual": 0.337
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_stewart.lower_bound",
+      "reference": 0.094,
+      "windows_actual": 0.094
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_stewart.p_value",
+      "reference": 0.007,
+      "windows_actual": 0.007
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_stewart.standard_error",
+      "reference": 0.124,
+      "windows_actual": 0.124
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_stewart.upper_bound",
+      "reference": 0.58,
+      "windows_actual": 0.58
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_young.estimate",
+      "reference": 0.397,
+      "windows_actual": 0.397
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_young.lower_bound",
+      "reference": 0.169,
+      "windows_actual": 0.169
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_young.p_value",
+      "reference": 0.001,
+      "windows_actual": 0.001
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_young.standard_error",
+      "reference": 0.116,
+      "windows_actual": 0.116
+    },
+    {
+      "case": "continuous-leave-one-out",
+      "section": "Leave-one-out summary",
+      "field": "model.without_young.upper_bound",
+      "reference": 0.626,
+      "windows_actual": 0.626
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.coefficient",
+      "reference": 0.06,
+      "windows_actual": 0.06
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.lower_bound",
+      "reference": -0.03,
+      "windows_actual": -0.03
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.p_value",
+      "reference": 0.169,
+      "windows_actual": 0.169
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.standard_error",
+      "reference": 0.046,
+      "windows_actual": 0.046
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.upper_bound",
+      "reference": 0.15,
+      "windows_actual": 0.15
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.coefficient",
+      "reference": -124.77,
+      "windows_actual": -124.77
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.lower_bound",
+      "reference": -302.24,
+      "windows_actual": -302.24
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.p_value",
+      "reference": 0.168,
+      "windows_actual": 0.168
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.standard_error",
+      "reference": 90.552,
+      "windows_actual": 90.552
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.upper_bound",
+      "reference": 52.71,
+      "windows_actual": 52.71
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Summary",
+      "field": "omnibus.p_value",
+      "reference": 0.169,
+      "windows_actual": 0.169
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.de_vries",
+      "reference": 6.1,
+      "windows_actual": 6.1
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.giamarellou",
+      "reference": 2.0,
+      "windows_actual": 2.0
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.gonzalez",
+      "reference": 7.3,
+      "windows_actual": 7.3
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.hansen",
+      "reference": 5.2,
+      "windows_actual": 5.2
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.hollender",
+      "reference": 1.7,
+      "windows_actual": 1.7
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.klastersky",
+      "reference": 6.0,
+      "windows_actual": 6.0
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.maller",
+      "reference": 10.9,
+      "windows_actual": 10.9
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.marik",
+      "reference": 12.7,
+      "windows_actual": 12.7
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.mauracher",
+      "reference": 2.1,
+      "windows_actual": 2.1
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.muijsken",
+      "reference": 7.4,
+      "windows_actual": 7.4
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.nordstrom",
+      "reference": 5.2,
+      "windows_actual": 5.2
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.prins",
+      "reference": 6.2,
+      "windows_actual": 6.2
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.rozdzinski",
+      "reference": 10.5,
+      "windows_actual": 10.5
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.sturm",
+      "reference": 1.9,
+      "windows_actual": 1.9
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.ter_braak",
+      "reference": 8.8,
+      "windows_actual": 8.8
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.tulkens",
+      "reference": 1.2,
+      "windows_actual": 1.2
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.van_der_auwera",
+      "reference": 1.9,
+      "windows_actual": 1.9
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.vanhaeverbeek",
+      "reference": 1.2,
+      "windows_actual": 1.2
+    },
+    {
+      "case": "amino-binary-meta-regression",
+      "section": "Weights",
+      "field": "weight.vigano",
+      "reference": 1.7,
+      "windows_actual": 1.7
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.coefficient",
+      "reference": 0.04,
+      "windows_actual": 0.04
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.lower_bound",
+      "reference": -0.1,
+      "windows_actual": -0.1
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.p_value",
+      "reference": 0.598,
+      "windows_actual": 0.598
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.standard_error",
+      "reference": 0.067,
+      "windows_actual": 0.067
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.golden_year.upper_bound",
+      "reference": 0.17,
+      "windows_actual": 0.17
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.coefficient",
+      "reference": -69.9,
+      "windows_actual": -69.9
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.lower_bound",
+      "reference": -330.97,
+      "windows_actual": -330.97
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.p_value",
+      "reference": 0.6,
+      "windows_actual": 0.6
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.standard_error",
+      "reference": 133.199,
+      "windows_actual": 133.199
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "model.intercept.upper_bound",
+      "reference": 191.16,
+      "windows_actual": 191.16
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Summary",
+      "field": "omnibus.p_value",
+      "reference": 0.598,
+      "windows_actual": 0.598
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Weights",
+      "field": "weight.carroll",
+      "reference": 16.0,
+      "windows_actual": 16.0
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Weights",
+      "field": "weight.donat",
+      "reference": 22.2,
+      "windows_actual": 22.2
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Weights",
+      "field": "weight.grant",
+      "reference": 16.4,
+      "windows_actual": 16.4
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Weights",
+      "field": "weight.peck",
+      "reference": 13.1,
+      "windows_actual": 13.1
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Weights",
+      "field": "weight.stewart",
+      "reference": 14.2,
+      "windows_actual": 14.2
+    },
+    {
+      "case": "continuous-meta-regression",
+      "section": "Weights",
+      "field": "weight.young",
+      "reference": 18.1,
+      "windows_actual": 18.1
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "heterogeneity.overall.df",
+      "reference": 18.0,
+      "windows_actual": 18.0
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "heterogeneity.overall.i_squared",
+      "reference": 46.0,
+      "windows_actual": 46.0
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "heterogeneity.overall.p_value",
+      "reference": 0.015,
+      "windows_actual": 0.015
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "heterogeneity.overall.q",
+      "reference": 33.36,
+      "windows_actual": 33.36
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "heterogeneity.subgroup_early.df",
+      "reference": 9.0,
+      "windows_actual": 9.0
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "heterogeneity.subgroup_early.i_squared",
+      "reference": 54.8,
+      "windows_actual": 54.8
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "heterogeneity.subgroup_early.p_value",
+      "reference": 0.018,
+      "windows_actual": 0.018
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "heterogeneity.subgroup_early.q",
+      "reference": 19.929,
+      "windows_actual": 19.929
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "heterogeneity.subgroup_late.df",
+      "reference": 8.0,
+      "windows_actual": 8.0
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "heterogeneity.subgroup_late.i_squared",
+      "reference": 39.6,
+      "windows_actual": 39.6
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "heterogeneity.subgroup_late.p_value",
+      "reference": 0.104,
+      "windows_actual": 0.104
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "heterogeneity.subgroup_late.q",
+      "reference": 13.236,
+      "windows_actual": 13.236
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.overall.estimate",
+      "reference": 0.77,
+      "windows_actual": 0.77
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.overall.lower_bound",
+      "reference": 0.485,
+      "windows_actual": 0.485
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.overall.p_value",
+      "reference": 0.267,
+      "windows_actual": 0.267
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.overall.standard_error",
+      "reference": 0.236,
+      "windows_actual": 0.236
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.overall.studies",
+      "reference": 19.0,
+      "windows_actual": 19.0
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.overall.upper_bound",
+      "reference": 1.222,
+      "windows_actual": 1.222
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.overall.z_value",
+      "reference": -1.111,
+      "windows_actual": -1.111
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_early.estimate",
+      "reference": 0.623,
+      "windows_actual": 0.623
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_early.lower_bound",
+      "reference": 0.271,
+      "windows_actual": 0.271
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_early.p_value",
+      "reference": 0.266,
+      "windows_actual": 0.266
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_early.standard_error",
+      "reference": 0.425,
+      "windows_actual": 0.425
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_early.studies",
+      "reference": 10.0,
+      "windows_actual": 10.0
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_early.upper_bound",
+      "reference": 1.434,
+      "windows_actual": 1.434
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_early.z_value",
+      "reference": -1.113,
+      "windows_actual": -1.113
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_late.estimate",
+      "reference": 0.827,
+      "windows_actual": 0.827
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_late.lower_bound",
+      "reference": 0.476,
+      "windows_actual": 0.476
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_late.p_value",
+      "reference": 0.501,
+      "windows_actual": 0.501
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_late.standard_error",
+      "reference": 0.282,
+      "windows_actual": 0.282
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_late.studies",
+      "reference": 9.0,
+      "windows_actual": 9.0
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_late.upper_bound",
+      "reference": 1.438,
+      "windows_actual": 1.438
+    },
+    {
+      "case": "amino-binary-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_late.z_value",
+      "reference": -0.673,
+      "windows_actual": -0.673
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.overall.estimate",
+      "reference": 0.358,
+      "windows_actual": 0.358
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.overall.lower_bound",
+      "reference": 0.152,
+      "windows_actual": 0.152
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.overall.p_value",
+      "reference": 0.001,
+      "windows_actual": 0.001
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.overall.standard_error",
+      "reference": 0.105,
+      "windows_actual": 0.105
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.overall.upper_bound",
+      "reference": 0.565,
+      "windows_actual": 0.565
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_early.estimate",
+      "reference": 0.285,
+      "windows_actual": 0.285
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_early.lower_bound",
+      "reference": 0.055,
+      "windows_actual": 0.055
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_early.p_value",
+      "reference": 0.015,
+      "windows_actual": 0.015
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_early.standard_error",
+      "reference": 0.117,
+      "windows_actual": 0.117
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_early.upper_bound",
+      "reference": 0.515,
+      "windows_actual": 0.515
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_late.estimate",
+      "reference": 0.395,
+      "windows_actual": 0.395
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_late.lower_bound",
+      "reference": 0.068,
+      "windows_actual": 0.068
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_late.p_value",
+      "reference": 0.018,
+      "windows_actual": 0.018
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_late.standard_error",
+      "reference": 0.167,
+      "windows_actual": 0.167
+    },
+    {
+      "case": "continuous-subgroup",
+      "section": "Subgroup summary",
+      "field": "model.subgroup_late.upper_bound",
+      "reference": 0.721,
+      "windows_actual": 0.721
+    }
+  ]
+}

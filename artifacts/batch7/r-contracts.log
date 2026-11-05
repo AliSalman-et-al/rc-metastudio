@@ -1,0 +1,93 @@
+forest-metafor-renderer: ...........................................1............................................................................................................................................................................23456......................................................................................................................................................................................................................................................................................................................7.....8....................9a....bc.....................................................................................................................................................................................................
+summary-display: .........................................................................................................
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-forest-metafor-renderer.R:298:3'): effect estimates and con
+Expected `labels` to equal `c(...)`.
+Differences:
+`actual`:   "0"    "0.07" "0.01"   "4e-05"    "4e-07"    "-0.01"   ""
+`expected`: "0.00" "0.07" "0.0060" "0.000040" "4.00e-07" "-0.0060" ""
+
+
+── 2. Failure ('test-forest-metafor-renderer.R:833:5'): plot axis default placeh
+Expected `rcmetar.metafor.xlab(bundle)` to be identical to "Odds Ratio".
+Differences:
+`actual`:   "Odds ratio"
+`expected`: "Odds Ratio"
+
+
+── 3. Failure ('test-forest-metafor-renderer.R:833:5'): plot axis default placeh
+Expected `rcmetar.metafor.xlab(bundle)` to be identical to "Odds Ratio".
+Differences:
+`actual`:   "Odds ratio"
+`expected`: "Odds Ratio"
+
+
+── 4. Failure ('test-forest-metafor-renderer.R:833:5'): plot axis default placeh
+Expected `rcmetar.metafor.xlab(bundle)` to be identical to "Odds Ratio".
+Differences:
+`actual`:   "Odds ratio"
+`expected`: "Odds Ratio"
+
+
+── 5. Failure ('test-forest-metafor-renderer.R:833:5'): plot axis default placeh
+Expected `rcmetar.metafor.xlab(bundle)` to be identical to "Odds Ratio".
+Differences:
+`actual`:   "Odds ratio"
+`expected`: "Odds Ratio"
+
+
+── 6. Failure ('test-forest-metafor-renderer.R:833:5'): plot axis default placeh
+Expected `rcmetar.metafor.xlab(bundle)` to be identical to "Odds Ratio".
+Differences:
+`actual`:   "Odds ratio"
+`expected`: "Odds Ratio"
+
+
+── 7. Failure ('test-forest-metafor-renderer.R:1580:3'): diagnostic extraction k
+Expected `extracted$sections[[2]]$title` to be identical to "Sensitivity Forest Plot".
+Differences:
+`actual`:   "Sensitivity Forest plot"
+`expected`: "Sensitivity Forest Plot"
+
+
+── 8. Failure ('test-forest-metafor-renderer.R:1613:5'): diagnostic multi-metric
+Expected `vapply(image.sections, function(section) section$title, character(1))` to be identical to `expected_titles`.
+Differences:
+actual vs expected
+- "Sensitivity Forest plot"
++ "Sensitivity Forest Plot"
+- "Specificity Forest plot"
++ "Specificity Forest Plot"
+- "Negative Likelihood Ratio Forest plot"
++ "Negative Likelihood Ratio Forest Plot"
+- "Positive Likelihood Ratio Forest plot"
++ "Positive Likelihood Ratio Forest Plot"
+
+Backtrace:
+    ▆
+ 1. └─RCMetaR (local) run_metrics(c("Sens", "Spec", "NLR", "PLR")) at test-forest-metafor-renderer.R:1633:3
+ 2.   └─testthat::expect_identical(...) at test-forest-metafor-renderer.R:1613:5
+
+── 9. Failure ('test-forest-metafor-renderer.R:1672:5'): repeated diagnostic wor
+Expected `names(result$images)` to have the same values as `expected_names`.
+Actual: "Negative Likelihood Ratio Forest plot", "Positive Likelihood Ratio Forest plot"
+Expected: "Negative Likelihood Ratio Forest Plot", "Positive Likelihood Ratio Forest Plot"
+Needs: "Negative Likelihood Ratio Forest plot", "Positive Likelihood Ratio Forest plot"
+Absent: "Negative Likelihood Ratio Forest Plot", "Positive Likelihood Ratio Forest Plot"
+
+── 10. Failure ('test-forest-metafor-renderer.R:1673:5'): repeated diagnostic wo
+Expected `names(result$plot_params_paths)` to have the same values as `expected_names`.
+Actual: "Negative Likelihood Ratio Forest plot", "Positive Likelihood Ratio Forest plot"
+Expected: "Negative Likelihood Ratio Forest Plot", "Positive Likelihood Ratio Forest Plot"
+Needs: "Negative Likelihood Ratio Forest plot", "Positive Likelihood Ratio Forest plot"
+Absent: "Negative Likelihood Ratio Forest Plot", "Positive Likelihood Ratio Forest Plot"
+  ... and 2 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+Error:
+! Test failures.
+Execution halted

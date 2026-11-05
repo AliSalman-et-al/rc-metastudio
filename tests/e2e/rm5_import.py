@@ -186,7 +186,7 @@ def run(app, window, ROOT, WORK, record_step):
         if expected_method is None:
             assert any('unavailable' in d for d in imported.differences)
     assert not failures, failures
-    with patch.object(window, 'prompt_to_save_unsaved_data', return_value=QtWidgets.QMessageBox.StandardButton.No):
+    with patch.object(window, 'prompt_to_save_unsaved_data', return_value=QtWidgets.QMessageBox.StandardButton.Discard):
         assert window.open(str(ROOT / 'sample_projects/amino.rcms'), raise_on_error=True)
     window.model.setData(window.model.index(0, window.model.NAME), 'Dirty study', QtCore.Qt.ItemDataRole.EditRole)
     before = dataset_to_project(window.model.dataset)
@@ -216,7 +216,7 @@ def run(app, window, ROOT, WORK, record_step):
             prompt.assert_called_once()
         assert dataset_to_project(window.model.dataset) == before
         QtCore.QTimer.singleShot(0, lambda: review(True))
-        with patch.object(window, 'prompt_to_save_unsaved_data', return_value=QtWidgets.QMessageBox.StandardButton.No) as prompt:
+        with patch.object(window, 'prompt_to_save_unsaved_data', return_value=QtWidgets.QMessageBox.StandardButton.Discard) as prompt:
             action.trigger()
             prompt.assert_called_once()
     window.resize(1024, 700)

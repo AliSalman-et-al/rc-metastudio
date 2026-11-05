@@ -1791,7 +1791,7 @@ def table_covariates(app, window, record):
                 expected = float(r_bridge.execute_r_string(expression)[0])
                 assert (
                     abs(
-                        actual["Subgroup Summary"][
+                        actual["Subgroup summary"][
                             "model.subgroup_" + region.lower() + ".estimate"
                         ]
                         - expected
@@ -1938,8 +1938,12 @@ def shell(app, window, record):
     )
 
     def cancel(message):
+        assert message.standardButtons() == (QtWidgets.QMessageBox.StandardButton.Save | QtWidgets.QMessageBox.StandardButton.Discard | QtWidgets.QMessageBox.StandardButton.Cancel)
+        assert message.defaultButton() == message.button(QtWidgets.QMessageBox.StandardButton.Save)
+        assert message.button(QtWidgets.QMessageBox.StandardButton.Discard).text() == "Discard"
+        assert message.escapeButton() == message.button(QtWidgets.QMessageBox.StandardButton.Cancel)
         record("dirty-open-prompt", message, message=message.text())
-        click(app, message.button(QtWidgets.QMessageBox.StandardButton.Cancel))
+        QTest.keyClick(message, QtCore.Qt.Key.Key_Escape)
 
     with patch.object(
         QtWidgets.QFileDialog,

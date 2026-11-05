@@ -1,0 +1,125 @@
+blood pressure: random-effects meta-analysis (standardized mean difference)
+
+Comparison: Intervention / Control
+
+Methods
+
+Standardized mean differences were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance. Confidence intervals (95%) used the normal approximation. Heterogeneity was assessed with Cochran's Q and I². Analyses were performed in RC MetaStudio 0.5.1. R packages loaded for this analysis: metafor 5.0.1, meta 8.5-0.
+
+Results
+
+6 studies were included (500 participants in Intervention, 495 in Control). The pooled standardized mean difference was 0.358 (95% CI [0.152, 0.565], z = 3.400, p < .001). The confidence interval excludes 0, with higher mean values in Intervention than in Control. Heterogeneity: Q = 11.914, df = 5, p = .036. I² = 58.0%, which may represent moderate to substantial heterogeneity (Cochrane Handbook ranges). Between-study variance was τ² = 0.037. The 95% prediction interval was -0.072 to 0.789.
+
+Table 1. Pooled effect
+
+Effect	Estimate	95% CI	SE	z	p
+
+Standardized mean difference	0.358	0.152 to 0.565	0.105	3.400	< .001
+
+Table 2. Model fit
+
+Statistic	Value
+
+Studies (k)	6
+
+Participants in Intervention	500
+
+Participants in Control	495
+
+Cochran’s Q	11.914
+
+Heterogeneity degrees of freedom	5
+
+Heterogeneity p	.036
+
+I²	58.0%
+
+Between-study variance (τ²)	0.037
+
+95% prediction interval	-0.072 to 0.789
+
+Table 3. Study results
+
+Study	Effect	95% CI	Weight
+
+Carroll	0.095	-0.264 to 0.453	15.8%
+
+Grant	0.277	-0.068 to 0.623	16.3%
+
+Peck	0.367	-0.075 to 0.808	12.6%
+
+Donat	0.664	0.463 to 0.866	23.3%
+
+Stewart	0.462	0.054 to 0.870	13.8%
+
+Young	0.185	-0.116 to 0.486	18.3%
+
+Table 4. Full-precision results
+
+Source	Results
+
+Summary — Model Results	Estimate: 0.358
+Lower bound (95% CI): 0.152
+Upper bound (95% CI): 0.565
+SE (standardized scale): 0.105
+p-value: < 0.001
+
+Summary — Heterogeneity	Q: 11.914
+df: 5
+p-value: 0.036
+I²: 58.0%
+τ²: 0.037
+
+Summary — Test for overall effect	Z: 3.4
+p-value: < 0.001
+
+Summary — Prediction interval	Lower bound (95% PI): -0.072
+Upper bound (95% PI): 0.789
+
+Weights — Study weights	Study: Carroll
+Effect: 0.095
+Lower bound: -0.264
+Upper bound: 0.453
+Weight (%): 15.8%
+
+Weights — Study weights	Study: Grant
+Effect: 0.277
+Lower bound: -0.068
+Upper bound: 0.623
+Weight (%): 16.3%
+
+Weights — Study weights	Study: Peck
+Effect: 0.367
+Lower bound: -0.075
+Upper bound: 0.808
+Weight (%): 12.6%
+
+Weights — Study weights	Study: Donat
+Effect: 0.664
+Lower bound: 0.463
+Upper bound: 0.866
+Weight (%): 23.3%
+
+Weights — Study weights	Study: Stewart
+Effect: 0.462
+Lower bound: 0.054
+Upper bound: 0.87
+Weight (%): 13.8%
+
+Weights — Study weights	Study: Young
+Effect: 0.185
+Lower bound: -0.116
+Upper bound: 0.486
+Weight (%): 18.3%
+
+Pooled Standardized mean difference: 0.358 (95% CI 0.152 to 0.565).
+
+95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.
+
+References
+
+1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.
+
+2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.
+
+3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.

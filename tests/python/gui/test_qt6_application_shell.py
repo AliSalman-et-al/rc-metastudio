@@ -111,7 +111,7 @@ def test_close_cancel_and_failed_save_keep_owned_shell_alive(qapp, monkeypatch):
     monkeypatch.setattr(
         window,
         "prompt_to_save_unsaved_data",
-        lambda: QtWidgets.QMessageBox.StandardButton.Yes,
+        lambda: QtWidgets.QMessageBox.StandardButton.Save,
     )
     monkeypatch.setattr(window, "save", lambda: None)
     assert window.close() is False
@@ -120,7 +120,7 @@ def test_close_cancel_and_failed_save_keep_owned_shell_alive(qapp, monkeypatch):
     monkeypatch.setattr(
         window,
         "prompt_to_save_unsaved_data",
-        lambda: QtWidgets.QMessageBox.StandardButton.No,
+        lambda: QtWidgets.QMessageBox.StandardButton.Discard,
     )
     assert window.close() is True
     app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
@@ -449,7 +449,7 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
             monkeypatch.setattr(
                 window,
                 "prompt_to_save_unsaved_data",
-                lambda: QtWidgets.QMessageBox.StandardButton.Yes,
+                lambda: QtWidgets.QMessageBox.StandardButton.Save,
             )
             monkeypatch.setattr(
                 QtWidgets.QFileDialog,
@@ -556,8 +556,8 @@ def test_failed_open_and_save_preserve_current_project_dirty_state_and_recents(
         )
 
         for rejected, expected_message in (
-            (malformed, "valid ZIP container"),
-            (pickle_file, "valid ZIP container"),
+            (malformed, "This file is not a valid RC MetaStudio project"),
+            (pickle_file, "This file is not a valid RC MetaStudio project"),
             (unknown_version, "unsupported project format version"),
             (schema_invalid, "confidence_level"),
         ):

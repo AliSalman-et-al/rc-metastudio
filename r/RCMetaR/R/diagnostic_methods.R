@@ -160,7 +160,7 @@ rcmetar.diagnostic.extract <- function(fit, params) {
     metric <- as.character(params$measure %||% "")
     display.prefix <- diagnostic.summary.metric.name(metric)
     summary.title <- paste(display.prefix, "Summary", sep=" ")
-    plot.title <- paste(display.prefix, "Forest Plot", sep=" ")
+    plot.title <- paste(pretty.metric.name(metric), "forest plot", sep=" ")
     summary.key <- paste0("diagnostic.", metric, ".summary")
     plot.key <- paste0("diagnostic.", metric, ".forest")
     summary <- if (!is.null(fit$Summary)) stats::setNames(list(fit$Summary), summary.key) else list()
@@ -318,8 +318,8 @@ diagnostic.fixed.inv.var <- function(diagnostic.data, params){
             params <- update.changed.plot.params(params, changed.params)
             forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
 
-            plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
-            images <- c("Forest Plot"=forest.path)
+            plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+            images <- c("Forest plot"=forest.path)
             plot.names <- c("forest plot"="forest_plot")
 
 
@@ -429,8 +429,8 @@ diagnostic.fixed.mh <- function(diagnostic.data, params){
             params <- update.changed.plot.params(params, changed.params)
             forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
 
-            plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
-            images <- c("Forest Plot"=forest.path)
+            plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+            images <- c("Forest plot"=forest.path)
             plot.names <- c("forest plot"="forest_plot")
             results <- list("images"=images,
 					        "Summary"=summary.disp,
@@ -536,8 +536,8 @@ diagnostic.fixed.peto <- function(diagnostic.data, params){
         changed.params <- c(changed.params, params.changed.in.forest.plot)
         params <- update.changed.plot.params(params, changed.params)
         forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
-        plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
-        images <- c("Forest Plot"=forest.path)
+        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+        images <- c("Forest plot"=forest.path)
         plot.names <- c("forest plot"="forest_plot")
         results <- list("images"=images,
 				        "Summary"=summary.disp,
@@ -630,8 +630,8 @@ diagnostic.random <- function(diagnostic.data, params){
             params <- update.changed.plot.params(params, changed.params)
             forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
 
-            plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
-            images <- c("Forest Plot"=forest.path)
+            plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+            images <- c("Forest plot"=forest.path)
             plot.names <- c("forest plot"="forest_plot")
 
 

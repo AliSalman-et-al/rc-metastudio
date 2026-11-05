@@ -580,12 +580,12 @@ def test_opening_non_project_payload_reports_invalid_project(monkeypatch, tmp_pa
 
         assert shown
         assert shown[0][1] == "Could Not Open Project"
-        assert "project is not a valid ZIP container" in shown[0][2]
+        assert "This file is not a valid RC MetaStudio project" in shown[0][2]
         assert "get_outcome_names" not in shown[0][2]
         assert window.out_path is None
 
         shown.clear()
-        with pytest.raises(RuntimeError, match="project is not a valid ZIP container"):
+        with pytest.raises(RuntimeError, match="This file is not a valid RC MetaStudio project"):
             window.open(str(invalid_project), raise_on_error=True)
         assert shown == []
     finally:
