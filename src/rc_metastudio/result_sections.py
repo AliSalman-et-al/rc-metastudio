@@ -105,7 +105,8 @@ def _reference_key(reference: str) -> str:
 
 def format_effect_number(value: float, digits: int) -> str:
     if value != 0 and abs(value) < 10 ** (-digits):
-        required = math.ceil(-math.log10(abs(value))) + 1
+        # Keep `digits` significant figures so a small value stays nonzero.
+        required = math.ceil(-math.log10(abs(value))) + max(1, digits) - 1
         formatted = f"{value:.{required}f}" if required <= 6 else f"{value:.{max(1, digits)}e}"
         mantissa, separator, exponent = formatted.partition("e")
         return mantissa.rstrip("0").rstrip(".") + separator + exponent
