@@ -249,7 +249,7 @@ if result.get("status") != "Accepted":
 PY
 cp "$input_archive" "$tmp_output"
 xcrun stapler staple "$tmp_output"
-xcrun stapler validate "$tmp_output"
+xcrun stapler validate "$tmp_output" > "$verification_result" 2>&1
 codesign --verify --verbose=4 "$tmp_output"
 hdiutil verify "$tmp_output"
 
@@ -260,10 +260,9 @@ qualify_signed_app "notarized"
 {
   hdiutil verify "$tmp_output"
   codesign --verify --verbose=4 "$tmp_output"
-  xcrun stapler validate "$tmp_output"
   spctl --assess --type open --context context:primary-signature --verbose=4 "$tmp_output"
   codesign --verify --deep --strict --verbose=4 "$app"
   spctl --assess --type execute --verbose=4 "$app"
-} > "$verification_result" 2>&1
+} >> "$verification_result" 2>&1
 mv "$tmp_output" "$output_archive"
 echo "Created signed, notarized, and stapled DMG: $output_archive"
