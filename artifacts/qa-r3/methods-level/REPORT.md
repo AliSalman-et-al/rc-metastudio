@@ -94,3 +94,17 @@ Validation: unchanged review-workflows E2E assertions PASS (90%, 99%, KH df=18
 from saved metafor fit); typing PASS with win32 target. Exact command/transcript
 in typing-review.log and e2e-review.log; full fresh evidence in
 e2e-review-proof.tar.gz (20261105T022651Z-ce6568e6-review-workflows).
+
+## Code-health CI repair after master merge
+
+Merged origin/master 7646d481 (including #563) without conflicts.
+Exact reproduction: python scripts/code_health.py --base origin/master --head HEAD.
+Before: FAIL, _pooled_rows cyclomatic 17 / cognitive 21.
+After: PASS, _pooled_rows cyclomatic 15 / cognitive 18; _pooled_statistics 10 / 9.
+The existing t/df formatting branch builds the Methods sentence. Methods assembly
+deduplicates sentences in insertion order and discards empty entries. No new
+helper, gate exception, baseline change, or statistical change.
+Transcripts: health-before.log, health-after.log, typing-health.log (win32 PASS).
+Unchanged review-workflows assertions PASS with real Qt/R after the master merge;
+e2e-health.log and e2e-health-proof.tar.gz retain the full run and inputs.
+Full pre-push and platform/package matrix remain delegated to CI.
