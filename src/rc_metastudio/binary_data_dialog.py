@@ -730,6 +730,8 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             super().accept()
 
     def val_changed(self, val_str):
+        if getattr(self, "_raw_data_invalid", False):
+            return
         fields = {"est": self.effect_text_box, "lower": self.lower_text_box, "upper": self.upper_text_box}
         field = fields.get(val_str)
         if field is not None and field.text() == field.property("calculatorValue") and not getattr(self, "_validation_failed", False):
