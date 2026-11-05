@@ -198,6 +198,7 @@ class ResponsivePixmapItem(QGraphicsPixmapItem):
     def __init__(self, source_pixmap):
         super(ResponsivePixmapItem, self).__init__()
         self.source_pixmap = QPixmap(source_pixmap)
+        self.source_path = None
         self.setTransformationMode(Qt.TransformationMode.SmoothTransformation)
 
     def replace_source(self, source_pixmap):
@@ -845,9 +846,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def generate_pixmap(self, image):
         reader = QImageReader(image)
         size = reader.size()
-        if size.isValid():
-            width, height = self._fit_size_to_viewport(size.width(), size.height())
-            reader.setScaledSize(QSize(max(1, int(width)), max(1, int(height))))
+        # Only oversized sources need decoder scaling. Normal sources retain
+        # their original pixels so a later, larger viewport can refit them.
+        if size.width() * size.height() * 4 > 128 * 1024**2:
+            reader.setScaledSize(size.scaled(QSize(4096, 4096), Qt.AspectRatioMode.KeepAspectRatio))
         return QPixmap.fromImage(reader.read())
 
     def _fit_size_to_viewport(self, width, height, max_scale=1.0):
@@ -1080,7 +1082,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _refit_raster_plot_items(self):
         for item in self._raster_plot_items:
-            source = item.source_pixmap
+            source = self.generate_pixmap(item.source_path) if item.source_path else item.source_pixmap
             if source.isNull():
                 continue
             logical_width, logical_height = _pixmap_device_independent_size(source)
@@ -1166,6 +1168,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     ):
         artifact = self.create_plot_artifact(title, image_path, params_path=params_path)
         item = ResponsivePixmapItem(pixmap)
+        item.source_path = image_path
         item.setPixmap(pixmap)
         item.setToolTip(
             'To save the image:\nright-click on the image and choose "save image as".'
@@ -1473,6 +1476,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 source_pixmap = QPixmap(outpath)
                 if not source_pixmap.isNull():
                     plot_item.replace_source(source_pixmap)
+                    plot_item.source_path = outpath
                     self._schedule_viewport_refit()
 
     def save_image_as(self, artifact, unscaled_image=None, format=None):
