@@ -216,7 +216,13 @@ def _pooled_statistics(values, overall, calculation):
 def _pooled_prose(result, values, effect, effect_metric, coefficient, statistic, test, p, level, lower, upper, summary):
     if coefficient and effect == 'Intercept':
         return
-    lead = f"For {effect}, the coefficient" if coefficient else (f"Overall, the pooled {effect_metric}" if effect.lower() == "overall" else f"In {effect}, the pooled {effect_metric}") if 'Subgroups' in values or 'Term' in values or 'Level' in values else f"The pooled {effect_metric}"
+    lead = f"The pooled {effect_metric}"
+    if coefficient:
+        lead = f"For {effect}, the coefficient"
+    elif values.keys() & {"Subgroups", "Term", "Level"}:
+        lead = f"In {effect}, the pooled {effect_metric}"
+        if effect.lower() == "overall":
+            lead = f"Overall, the pooled {effect_metric}"
     inference = (f", {statistic} = {test}" if test != '—' else '') + (', ' + _p_clause(p) if p != '—' else '')
     summary.append(f"{lead} was {values['Estimate']} ({level} [{values[lower]}, {values[upper]}]{inference}).")
     meaning = _interval_meaning(values[lower], values[upper], effect_metric, result.manuscript_arms, coefficient=coefficient)
