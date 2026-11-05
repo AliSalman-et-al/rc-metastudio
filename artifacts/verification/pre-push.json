@@ -1,33 +1,33 @@
 [
   {
     "step": "prepare",
-    "seconds": 2.85,
+    "seconds": 3.05,
     "status": "pass"
   },
   {
     "step": "typing (win32)",
-    "seconds": 4.21,
+    "seconds": 4.12,
     "status": "pass"
   },
   {
     "step": "code health",
-    "seconds": 85.94,
+    "seconds": 75.01,
     "status": "pass"
   },
   {
     "step": "Python fast and golden",
-    "seconds": 71.81,
-    "status": "pass"
+    "seconds": 8.74,
+    "status": "fail"
   },
   {
     "step": "GUI",
-    "seconds": 170.02,
-    "status": "pass"
+    "seconds": 0.0,
+    "status": "not run"
   },
   {
     "step": "packaging contracts",
-    "seconds": 4.78,
-    "status": "pass"
+    "seconds": 0.0,
+    "status": "not run"
   },
   {
     "step": "R stack, authorities and desktop E2E (local: python scripts/verify.py r-stack)",
