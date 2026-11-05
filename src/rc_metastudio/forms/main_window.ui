@@ -149,7 +149,7 @@
     </property>
     <widget class="QMenu" name="action_open_recent_2">
      <property name="title">
-      <string>Open Recent</string>
+      <string>Open recent</string>
      </property>
     </widget>
     <addaction name="action_save" />

@@ -25,6 +25,7 @@ from PyQt6.QtGui import (
     QAction,
     QCloseEvent,
     QHideEvent,
+    QKeyEvent,
     QIcon,
     QPalette,
     QShowEvent,
@@ -311,6 +312,14 @@ class DataTypePage(MainWizardPage, _ui_data_type_page.Ui_DataTypePage):
         watched: QObject | None,
         event: QEvent | None,
     ) -> bool:
+        if (isinstance(event, QKeyEvent) and event.type() == QEvent.Type.KeyPress
+                and isinstance(watched, QAbstractButton) and watched in self._data_type_buttons()
+                and event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter)):
+            if watched.isChecked():
+                self.wizard().next()
+            else:
+                watched.click()
+            return True
         if (
             event is not None
             and event.type() == QEvent.Type.PaletteChange
@@ -676,7 +685,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 self.has_headers_chkbx.setChecked(True)
             except csv_import.CsvImportError as error:
                 self._reset_data()
-                self.import_status.setStyleSheet("color: #d32f2f;")
+                self.import_status.setStyleSheet("color: palette(text);")
                 self.import_status.setText(str(error))
                 self.worksheet_combo.blockSignals(False)
                 return
@@ -697,7 +706,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
     def _rebuild_display(self):
         self._reset_data()
         self.import_status.clear()
-        self.import_status.setStyleSheet("color: #d32f2f;")
+        self.import_status.setStyleSheet("color: palette(text);")
         try:
             file_path = self.file_path
             if not isinstance(file_path, str) or not file_path:
@@ -715,7 +724,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 raw_complete = bool(raw_count) and all(index is not None for index in mapping[2:2 + raw_count])
                 effects_complete = all(index is not None for index in mapping[raw_end:])
                 if any(index is None for index in mapping[:2]) or not (raw_complete or effects_complete):
-                    raise csv_import.CsvImportError("Map Study Name and Year, and either all raw data fields or all effect fields.")
+                    raise csv_import.CsvImportError("Map Study Name and Year, then map all raw data columns or all effect estimate columns.")
                 column_mapping = tuple(-1 if index is None else index for index in mapping)
             notices = []
             self._import_result = csv_import.parse_csv(
@@ -839,7 +848,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         if not headers:
             return
         aliases = self._legacy_header_aliases()
-        headers = [aliases.get(header.casefold(), header) for header in headers]
+        mapped_headers = [aliases.get(header.casefold(), header) for header in headers]
         self.mapping_table.setRowCount(len(self.required_header_labels))
         for row, field in enumerate(self.required_header_labels):
             item = QTableWidgetItem(field)
@@ -850,10 +859,10 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             control.addItem("Select column…", None)
             for index, header in enumerate(headers):
                 control.addItem(f"{index + 1}: {header}", index)
-            if row < len(headers) and headers[row] == field:
+            if row < len(headers) and mapped_headers[row] == field:
                 control.setCurrentIndex(control.findData(row))
-            elif headers.count(field) == 1:
-                control.setCurrentIndex(control.findData(headers.index(field)))
+            elif mapped_headers.count(field) == 1:
+                control.setCurrentIndex(control.findData(mapped_headers.index(field)))
             control.currentIndexChanged.connect(app_error_handler.safe_slot(lambda _index: self._rebuild_display(), parent=self))
             self.mapping_table.setCellWidget(row, 1, control)
             self.mapping_controls.append(control)
@@ -963,11 +972,15 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         self._naming_defaults = meta_globals.default_group_names(data_type, info["sub_type"])
         metric = "Mean" if info["effect"] == "TX Mean" else meta_globals.ALL_METRIC_NAMES.get(info["effect"], info["effect"])
         if info["sub_type"] in {"reg_coef", "generic_effect"}:
-            metric = "Regression coefficient" if info["sub_type"] == "reg_coef" else "Entered effect"
+            metric = "Regression coefficient" if info["sub_type"] == "reg_coef" else "Generic effect size"
+        metric = {"PR": "Proportion", "SMD": "Standardized mean difference (SMD)"}.get(info["effect"], metric[:1] + metric[1:].lower() if metric else metric)
         task = "Import data" if self.wizard().get_wizard_path() == "csv_import" else "Create dataset"
         kind = {"binary": "Two-arm binary" if self._comparative else "Single-arm proportion",
                 "continuous": "Two-arm continuous" if self._comparative else "Single-arm continuous",
                 "diagnostic": "Diagnostic accuracy", "time_to_event": "Time-to-event", "event_rates": "Event rates"}[info["data_type"]]
+        if info["sub_type"] in {"reg_coef", "generic_effect"}:
+            kind, metric = metric, ""
+        self.outcome_name_LineEdit.setPlaceholderText("For example, disease detection" if data_type == meta_globals.DIAGNOSTIC else "For example, outcome")
         self.setSubTitle(f"<p>{task} · {kind}" + (f" · {metric}" if metric else "") + "</p>")
         self.setTitle("Outcome and arms" if self._comparative else "Outcome")
         first_label = "Intervention name" if self._comparative else "Index test name" if data_type == meta_globals.DIAGNOSTIC else "Arm name"

@@ -3,7 +3,7 @@
  <class>new_covariate_dialog</class>
  <widget class="QDialog" name="new_covariate_dialog">
   <property name="geometry"><rect><x>0</x><y>0</y><width>0</width><height>0</height></rect></property>
-  <property name="windowTitle"><string>Add Covariate</string></property>
+  <property name="windowTitle"><string>Add covariate</string></property>
   <property name="windowIcon"><iconset resource="images/icons.qrc"><normaloff>:/misc/meta.png</normaloff>:/misc/meta.png</iconset></property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item><layout class="QFormLayout" name="formLayout">
