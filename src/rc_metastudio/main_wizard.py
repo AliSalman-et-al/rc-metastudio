@@ -971,15 +971,14 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         data_type = meta_globals.STR_TO_TYPE_DICT[info["data_type"]]
         self._naming_defaults = meta_globals.default_group_names(data_type, info["sub_type"])
         metric = "Mean" if info["effect"] == "TX Mean" else meta_globals.ALL_METRIC_NAMES.get(info["effect"], info["effect"])
-        if info["sub_type"] in {"reg_coef", "generic_effect"}:
-            metric = "Regression coefficient" if info["sub_type"] == "reg_coef" else "Generic effect size"
-        metric = {"PR": "Proportion", "SMD": "Standardized mean difference (SMD)"}.get(info["effect"], metric[:1] + metric[1:].lower() if metric else metric)
+        metric = {"PR": "Proportion", "SMD": "Standardized mean difference (SMD)"}.get(info["effect"], metric[:1] + metric[1:].lower())
         task = "Import data" if self.wizard().get_wizard_path() == "csv_import" else "Create dataset"
         kind = {"binary": "Two-arm binary" if self._comparative else "Single-arm proportion",
                 "continuous": "Two-arm continuous" if self._comparative else "Single-arm continuous",
                 "diagnostic": "Diagnostic accuracy", "time_to_event": "Time-to-event", "event_rates": "Event rates"}[info["data_type"]]
         if info["sub_type"] in {"reg_coef", "generic_effect"}:
-            kind, metric = metric, ""
+            kind = {"reg_coef": "Regression coefficient", "generic_effect": "Generic effect size"}[info["sub_type"]]
+            metric = ""
         self.outcome_name_LineEdit.setPlaceholderText("For example, disease detection" if data_type == meta_globals.DIAGNOSTIC else "For example, outcome")
         self.setSubTitle(f"<p>{task} · {kind}" + (f" · {metric}" if metric else "") + "</p>")
         self.setTitle("Outcome and arms" if self._comparative else "Outcome")
