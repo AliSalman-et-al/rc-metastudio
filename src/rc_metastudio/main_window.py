@@ -439,18 +439,18 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if not self.workspace.is_dirty:
             return True
         choice = self.prompt_to_save_unsaved_data()
-        if choice == QMessageBox.StandardButton.Yes:
+        if choice == QMessageBox.StandardButton.Save:
             return self.save() is True
-        return choice == QMessageBox.StandardButton.No
+        return choice == QMessageBox.StandardButton.Discard
 
     def _authorize_destructive_project_action(self):
         """Return whether New/Open/Import may replace the current project."""
         if not self.workspace.is_dirty:
             return True
         choice = self.prompt_to_save_unsaved_data()
-        if choice == QMessageBox.StandardButton.Yes:
+        if choice == QMessageBox.StandardButton.Save:
             return self.save() is True
-        return choice == QMessageBox.StandardButton.No
+        return choice == QMessageBox.StandardButton.Discard
 
     def _update_recent_project_nonfatal(self, path, operation):
         try:
@@ -1757,15 +1757,21 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.close()
 
     def prompt_to_save_unsaved_data(self):
-        choice = QMessageBox.warning(
-            self,
-            "Warning",
-            "You've made unsaved changes to your data. Do you want to save your changes?",
-            QMessageBox.StandardButton.Yes
-            | QMessageBox.StandardButton.No
-            | QMessageBox.StandardButton.Cancel,
+        prompt = QMessageBox(self)
+        prompt.setIcon(QMessageBox.Icon.Warning)
+        prompt.setWindowTitle("Warning")
+        prompt.setText("You've made unsaved changes to your data. Do you want to save your changes?")
+        prompt.setStandardButtons(
+            QMessageBox.StandardButton.Save
+            | QMessageBox.StandardButton.Discard
+            | QMessageBox.StandardButton.Cancel
         )
-        return choice
+        discard = prompt.button(QMessageBox.StandardButton.Discard)
+        assert discard is not None
+        discard.setText("Discard")
+        prompt.setDefaultButton(QMessageBox.StandardButton.Save)
+        prompt.setEscapeButton(QMessageBox.StandardButton.Cancel)
+        return prompt.exec()
 
     def save_as(self):
         return self.save(save_as=True)

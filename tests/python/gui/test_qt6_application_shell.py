@@ -111,7 +111,7 @@ def test_close_cancel_and_failed_save_keep_owned_shell_alive(qapp, monkeypatch):
     monkeypatch.setattr(
         window,
         "prompt_to_save_unsaved_data",
-        lambda: QtWidgets.QMessageBox.StandardButton.Yes,
+        lambda: QtWidgets.QMessageBox.StandardButton.Save,
     )
     monkeypatch.setattr(window, "save", lambda: None)
     assert window.close() is False
@@ -120,7 +120,7 @@ def test_close_cancel_and_failed_save_keep_owned_shell_alive(qapp, monkeypatch):
     monkeypatch.setattr(
         window,
         "prompt_to_save_unsaved_data",
-        lambda: QtWidgets.QMessageBox.StandardButton.No,
+        lambda: QtWidgets.QMessageBox.StandardButton.Discard,
     )
     assert window.close() is True
     app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
@@ -449,7 +449,7 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
             monkeypatch.setattr(
                 window,
                 "prompt_to_save_unsaved_data",
-                lambda: QtWidgets.QMessageBox.StandardButton.Yes,
+                lambda: QtWidgets.QMessageBox.StandardButton.Save,
             )
             monkeypatch.setattr(
                 QtWidgets.QFileDialog,

@@ -1736,7 +1736,7 @@ if __name__ == "__main__":
         "sections": [],
     }
     test_results["images"] = {
-        "Forest Plot": settings.analysis_output_path("forest.png")
+        "Forest plot": settings.analysis_output_path("forest.png")
     }
     test_results["texts"] = {
         "Weights": "Study names        Weights\nGonzalez       1993  7.3%\nPrins          1993  6.2%\nGiamarellou    1991  2.1%\nMaller         1993 10.7%\nSturm          1989  2.0%\nMarik          1991 12.2%\nMuijsken       1988  7.5%\nVigano         1992  1.8%\nHansen         1988  5.3%\nDe Vries       1990  6.1%\nMauracher      1989  2.2%\nNordstrom      1990  5.3%\nRozdzinski     1993 10.3%\nTer Braak      1990  8.7%\nTulkens        1988  1.2%\nVan der Auwera 1991  2.0%\nKlastersky     1977  6.0%\nVanhaeverbeek  1993  1.2%\nHollender      1989  1.8%\n",
@@ -1761,13 +1761,13 @@ if __name__ == "__main__":
             "id": "plot.forest",
             "kind": "image",
             "order": 2,
-            "title": "Forest Plot",
-            "source_key": "Forest Plot",
+            "title": "Forest plot",
+            "source_key": "Forest plot",
         },
     ]
     test_results["image_var_names"] = {"forest plot": "forest_plot"}
     test_results["image_params_paths"] = {
-        "Forest Plot": settings.analysis_output_path("1369769105.72079")
+        "Forest plot": settings.analysis_output_path("1369769105.72079")
     }  # change this number as necessary
     test_results["image_order"] = None
 

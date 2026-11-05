@@ -20,6 +20,22 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, size.
     direction <- rcmetar.forest.direction.metrics(bundle, plan)
     plan$device$direction_lines <- direction$lines
     plan$device$height <- plan$device$height + max(0, direction$lines - 2) * direction$spacing
+    # Reserve device space beyond the null for full-size direction labels.
+    if (direction$lines > 0) {
+        labels <- rcmetar.revman.direction.labels(bundle)
+        widths <- rcmetar.forest.with.measurement.device(
+            strwidth(paste0(unlist(labels[c("left", "right")]), "  "), units="inches",
+                     cex=plan$typography$cex.axis, font=if (style == "bmj") 2 else 1))
+        span <- diff(plan$x$xlim)
+        inches <- plan$device$width - 0.5
+        split <- plan$footer$axis$split.x
+        if (is.null(split)) split <- 0
+        available <- c(split - plan$x$xlim[[1]], plan$x$xlim[[2]] - split) / span * inches
+        extra <- pmax(0, widths - available)
+        plan$x$xlim <- plan$x$xlim + c(-extra[[1]], extra[[2]]) * span / inches
+        plan$layout$xlim <- plan$x$xlim
+        plan$device$width <- plan$device$width + sum(extra)
+    }
     plan$headers$height <- rcmetar.forest.header.height(bundle, plan$typography$cex)
     plan$device$height <- plan$device$height + max(0, plan$headers$height - 0.5)
     plan

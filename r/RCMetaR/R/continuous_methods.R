@@ -89,8 +89,8 @@ continuous.fixed <- function(cont.data, params){
       forest.plot.params.path <- save.data(cont.data, res, params, plot.data)
 		}
 
-    plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
-    images <- c("Forest Plot"=forest.path)
+    plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+    images <- c("Forest plot"=forest.path)
     plot.names <- c("forest plot"="forest_plot")
 		pure.res$weights <- weights(res)
         results <- list(
@@ -180,8 +180,8 @@ continuous.random <- function(cont.data, params) {
       forest.plot.params.path <- save.data(cont.data, res, params, plot.data)
 		}
 
-    plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
-    images <- c("Forest Plot"=forest.path)
+    plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+    images <- c("Forest plot"=forest.path)
     plot.names <- c("forest plot"="forest_plot")
     pure.res$weights <- weights(res)
     results <- list(

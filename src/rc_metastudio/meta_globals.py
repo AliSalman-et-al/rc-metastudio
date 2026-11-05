@@ -40,7 +40,7 @@ DEFAULT_DATASET_NAME = "untitled_dataset"
 BINARY_TWO_ARM_METRICS = ["OR", "RD", "RR", "AS", "YUQ", "YUY"]
 BINARY_ONE_ARM_METRICS = ["PR", "PLN", "PLO", "PAS", "PFT"]
 BINARY_METRIC_NAMES = {
-    "OR": "Odds Ratio",
+    "OR": "Odds ratio",
     "RD": "Risk Difference",
     "RR": "Risk Ratio",
     "AS": "Arcsine Difference",
@@ -58,7 +58,7 @@ CONTINUOUS_TWO_ARM_METRICS = ["MD", "SMD"]
 CONTINUOUS_ONE_ARM_METRICS = ["TX Mean"]
 CONTINUOUS_METRIC_NAMES = {
     "MD": "Mean Difference",
-    "SMD": "Standardized Mean Difference",
+    "SMD": "Standardized mean difference",
     "TX Mean": "Mean",
 }
 

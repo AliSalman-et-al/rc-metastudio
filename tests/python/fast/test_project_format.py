@@ -677,7 +677,7 @@ def test_reader_normalizes_crc_and_truncated_archive_failures(tmp_path: Path) ->
 
     truncated = tmp_path / "truncated.rcms"
     truncated.write_bytes(source.read_bytes()[:-12])
-    with pytest.raises(ProjectFormatError, match="not a valid ZIP container"):
+    with pytest.raises(ProjectFormatError, match="This file is not a valid RC MetaStudio project"):
         load_project(truncated)
 
 

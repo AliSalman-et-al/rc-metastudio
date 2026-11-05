@@ -169,8 +169,8 @@ binary.fixed.inv.var <- function(binary.data, params){
 		}
 
 
-        plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
-        images <- c("Forest Plot"=forest.path)
+        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+        images <- c("Forest plot"=forest.path)
         plot.names <- c("forest plot"="forest_plot")
         pure.res$weights <- weights(res)
         results <- list("input_data"=binary.data,
@@ -270,8 +270,8 @@ binary.fixed.mh <- function(binary.data, params){
 
 
 
-        plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
-        images <- c("Forest Plot"=forest.path)
+        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+        images <- c("Forest plot"=forest.path)
         plot.names <- c("forest plot"="forest_plot")
         pure.res$weights <- weights(res)
         results <- list("input_data"=binary.data,
@@ -402,8 +402,8 @@ binary.fixed.peto <- function(binary.data, params) {
 
 
 
-        plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
-        images <- c("Forest Plot"=forest.path)
+        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+        images <- c("Forest plot"=forest.path)
         plot.names <- c("forest plot"="forest_plot")
         pure.res$weights <- weights(res)
         results <- list("input_data"=binary.data,
@@ -519,8 +519,8 @@ binary.random <- function(binary.data, params) {
 		}
 
 
-        plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
-        images <- c("Forest Plot"=forest.path)
+        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+        images <- c("Forest plot"=forest.path)
         plot.names <- c("forest plot"="forest_plot")
         pure.res$weights <- weights(res)
         results <- list("input_data"=binary.data,

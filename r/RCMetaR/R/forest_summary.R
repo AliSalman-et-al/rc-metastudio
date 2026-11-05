@@ -32,24 +32,15 @@ rcmetar.forest.direction.metrics <- function(bundle, plan) {
     list(lines=as.integer(any(nzchar(labels))), spacing=0)
 }
 
-rcmetar.forest.direction.cex <- function(labels, footer, cex, font=1) {
-    widths <- c(footer$left.max.width, footer$right.max.width)
-    measured <- graphics::strwidth(paste0(labels, " "), cex=cex, font=font)
-    visible <- nzchar(trimws(labels)) & measured > 0
-    # Both sides use the same font size and baseline; reserve a space at the null.
-    min(c(cex, cex * widths[visible] / measured[visible]))
-}
-
 rcmetar.draw.forest.direction.blocks <- function(bundle, footer, top, cex, font=1) {
     if (!is.finite(footer$split.x) || abs(footer$split.x - footer$axis.x) >= footer$span / 2) return(invisible(NULL))
     labels <- rcmetar.revman.direction.labels(bundle)
-    cex <- rcmetar.forest.direction.cex(unlist(labels[c("left", "right")]), footer, cex, font)
     # Qt trims outer SVG whitespace, so reserve the space in coordinates.
     gap <- graphics::strwidth(" ", cex=cex, font=font)
     for (side in c("left", "right")) {
         at <- footer[[paste0(side, ".x")]] + if (side == "left") -gap else gap
         if (nzchar(labels[[side]])) graphics::text(at,
-            top, labels[[side]], cex=cex, font=font, adj=c(if (side == "left") 1 else 0, 0))
+            top, labels[[side]], cex=cex, font=font, xpd=NA, adj=c(if (side == "left") 1 else 0, 0))
     }
     invisible(NULL)
 }
@@ -61,7 +52,6 @@ rcmetar.draw.forest.direction <- function(bundle, alim, cex) {
     labels <- rcmetar.revman.direction.labels(bundle)
     footer <- rcmetar.forest.revman.axis.footer(bundle, list(alim=alim))
     if (!is.finite(footer$split.x) || footer$split.x <= alim[[1]] || footer$split.x >= alim[[2]]) return(invisible(NULL))
-    cex <- rcmetar.forest.direction.cex(unlist(labels[c("left", "right")]), footer, cex)
     gap <- graphics::strwidth(" ", cex=cex)
     for (side in c("left", "right")) {
         at <- footer[[paste0(side, ".x")]] + if (side == "left") -gap else gap

@@ -208,7 +208,7 @@ def run(app, window, work, root, record, analyze):
     assert not view.export_plot_action.isEnabled() and not view.edit_plot_action.isEnabled()
     record('review1-report-tables', view)
     keyboard_traversal(app, view, [view.table_selector, view.result_table, view.nav_tree, view.zoom_control], record, "results")
-    plot = next(item for item in view.nav_tree.findItems('Forest Plot', QtCore.Qt.MatchFlag.MatchExactly))
+    plot = next(item for item in view.nav_tree.findItems('Forest plot', QtCore.Qt.MatchFlag.MatchExactly))
     view.nav_tree.setCurrentItem(plot)
     assert view.export_format_control.currentData() == 'svg'
     view.report_action.trigger()

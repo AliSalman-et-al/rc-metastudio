@@ -59,8 +59,8 @@ cum.ma.binary <- function(fname, binary.data, params){
     }
     params <- update.changed.plot.params(params, changed.params)
     forest.plot.params.path <- save.data(binary.data, res, params, plot.data)
-    plot.params.paths <- c("Cumulative Forest Plot"=forest.plot.params.path)
-    images <- c("Cumulative Forest Plot"=forest.path)
+    plot.params.paths <- c("Cumulative Forest plot"=forest.plot.params.path)
+    images <- c("Cumulative Forest plot"=forest.path)
     plot.names <- c("cumulative forest plot"="cumulative_forest_plot")
 
 	references <- c(res$References, cum_meta_analysis_ref)
@@ -466,8 +466,8 @@ loo.ma.binary <- function(fname, binary.data, params){
     changed.params <- c(changed.params, params.changed.in.forest.plot)
     params <- update.changed.plot.params(params, changed.params)
     forest.plot.params.path <- save.data(binary.data, res=loo.results, params, plot.data)
-    plot.params.paths <- c("Leave-one-out Forest Plot"=forest.plot.params.path)
-    images <- c("Leave-one-out Forest Plot"=forest.path)
+    plot.params.paths <- c("Leave-one-out Forest plot"=forest.plot.params.path)
+    images <- c("Leave-one-out Forest plot"=forest.path)
     plot.names <- c("loo forest plot"="loo_forest_plot")
 	references <- c(res$References, loo_ma_ref)
     results <- list("images"=images,
@@ -549,8 +549,8 @@ cum.ma.continuous <- function(fname, cont.data, params){
     }
     params <- update.changed.plot.params(params, changed.params)
     forest.plot.params.path <- save.data(cont.data, res=cum.results, params, plot.data)
-    plot.params.paths <- c("Cumulative Forest Plot"=forest.plot.params.path)
-    images <- c("Cumulative Forest Plot"=forest.path)
+    plot.params.paths <- c("Cumulative Forest plot"=forest.plot.params.path)
+    images <- c("Cumulative Forest plot"=forest.path)
     plot.names <- c("cumulative forest plot"="cumulative forest_plot")
 
 	references <- c(res$References, cum_meta_analysis_ref)
@@ -619,8 +619,8 @@ cum.ma.diagnostic <- function(fname, diagnostic.data, params){
 	}
 	params <- update.changed.plot.params(params, changed.params)
 	forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
-	plot.params.paths <- c("Cumulative Forest Plot"=forest.plot.params.path)
-	images <- c("Cumulative Forest Plot"=forest.path)
+	plot.params.paths <- c("Cumulative Forest plot"=forest.plot.params.path)
+	images <- c("Cumulative Forest plot"=forest.path)
 	plot.names <- c("cumulative forest plot"="cumulative_forest_plot")
 
 	references <- c(res$References, cum_meta_analysis_ref)
@@ -657,7 +657,7 @@ multiple.cum.ma.diagnostic <- function(fnames, params.list, diagnostic.data) {
 
 		results <- c(results, summary)
 
-		image.name <- paste(params$measure, "Forest Plot", sep=" ")
+		image.name <- paste(params$measure, "Forest plot", sep=" ")
 		analysis_images <- c(res$images[[1]])
 		names(analysis_images) <- image.name
 		images <- c(images, analysis_images)
@@ -746,8 +746,8 @@ loo.ma.continuous <- function(fname, cont.data, params){
     changed.params <- c(changed.params, params.changed.in.forest.plot)
     params <- update.changed.plot.params(params, changed.params)
     forest.plot.params.path <- save.data(cont.data, res=loo.results, params, plot.data)
-    plot.params.paths <- c("Leave-one-out Forest Plot"=forest.plot.params.path)
-    images <- c("Leave-one-out Forest Plot"=forest.path)
+    plot.params.paths <- c("Leave-one-out Forest plot"=forest.plot.params.path)
+    images <- c("Leave-one-out Forest plot"=forest.path)
     plot.names <- c("loo forest plot"="loo_forest_plot")
 	references <- c(res$References, loo_ma_ref)
     results <- list("images"=images,
@@ -821,8 +821,8 @@ subgroup.ma.binary <- function(fname, binary.data, params){
     changed.params <- c(changed.params, params.changed.in.forest.plot)
     params <- update.changed.plot.params(params, changed.params)
     forest.plot.params.path <- save.data(binary.data, res, params, plot.data)
-    plot.params.paths <- c("Subgroup Forest Plot"=forest.plot.params.path)
-    images <- c("Subgroup Forest Plot"=forest.path)
+    plot.params.paths <- c("Subgroup Forest plot"=forest.plot.params.path)
+    images <- c("Subgroup Forest plot"=forest.path)
     plot.names <- c("subgroups forest plot"="subgroups_forest_plot")
 	references <- c(res$References, subgroup_ma_ref)
     results <- list("images"=images,
@@ -912,8 +912,8 @@ subgroup.ma.continuous <- function(fname, cont.data, params){
     changed.params <- c(changed.params, params.changed.in.forest.plot)
     params <- update.changed.plot.params(params, changed.params)
     forest.plot.params.path <- save.data(cont.data, res, params, plot.data)
-    plot.params.paths <- c("Subgroups Forest Plot"=forest.plot.params.path)
-    images <- c("Subgroups Forest Plot"=forest.path)
+    plot.params.paths <- c("Subgroups Forest plot"=forest.plot.params.path)
+    images <- c("Subgroups Forest plot"=forest.path)
     plot.names <- c("subgroups forest plot"="subgroups_forest_plot")
 
 	references <- c(res$References, subgroup_ma_ref)
@@ -1054,10 +1054,10 @@ multiple.loo.diagnostic <- function(fnames, params.list, diagnostic.data) {
             subset_diagnostic_data <- compute.diag.point.estimates(diagnostic.data, params.list[[count]])
             analysis_result <- loo.ma.diagnostic(fnames[[count]], subset_diagnostic_data, params.list[[count]])
             analysis_images <- analysis_result$images
-            names(analysis_images) <- paste(pretty.metric.name(as.character(params.list[[count]]$measure)), " Forest Plot", sep="")
+            names(analysis_images) <- paste(pretty.metric.name(as.character(params.list[[count]]$measure)), " Forest plot", sep="")
             images <- c(images, analysis_images)
             analysis_plot_paths <- analysis_result$plot_params_paths
-            names(analysis_plot_paths) <- paste(pretty.metric.name(as.character(params.list[[count]]$measure)), " Forest Plot", sep="")
+            names(analysis_plot_paths) <- paste(pretty.metric.name(as.character(params.list[[count]]$measure)), " Forest plot", sep="")
             plot.params.paths <- c(plot.params.paths, analysis_plot_paths)
             plot.names <- c(plot.names, analysis_result$plot.names)
             analysis_summary <- list("Summary"=analysis_result$Summary)
@@ -1129,7 +1129,7 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
         changed.params <- c(changed.params, params.changed.in.forest.plot)
         params <- update.changed.plot.params(params, changed.params)
         forest.plot.params.path <- save.data(diagnostic.data, res=loo.results, params, plot.data)
-        plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
+        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
         images <- c("Leave-one-out Forest plot"=forest.path)
         plot.names <- c("loo forest plot"="loo_forest_plot")
         results <- list("images"=images, "Summary"=loo.disp,
@@ -1165,10 +1165,10 @@ multiple.subgroup.diagnostic <- function(fnames, params.list, diagnostic.data) {
             analysis_result <- subgroup.ma.diagnostic(fnames[[count]], subset_diagnostic_data, params.list[[count]], selected.cov)
             if (is.null(params.list[[count]]$create.plot)) {
                 analysis_images <- analysis_result$images
-                names(analysis_images) <- paste(pretty.metric.name(as.character(params.list[[count]]$measure)), " Forest Plot", sep="")
+                names(analysis_images) <- paste(pretty.metric.name(as.character(params.list[[count]]$measure)), " Forest plot", sep="")
                 images <- c(images, analysis_images)
                 analysis_plot_paths <- analysis_result$plot_params_paths
-                names(analysis_plot_paths) <- paste(pretty.metric.name(as.character(params.list[[count]]$measure)), " Forest Plot", sep="")
+                names(analysis_plot_paths) <- paste(pretty.metric.name(as.character(params.list[[count]]$measure)), " Forest plot", sep="")
                 plot.params.paths <- c(plot.params.paths, analysis_plot_paths)
                 plot.names <- c(plot.names, analysis_result$plot_names)
             }
@@ -1243,8 +1243,8 @@ subgroup.ma.diagnostic <- function(fname, diagnostic.data, params, selected.cov)
         changed.params <- c(changed.params, params.changed.in.forest.plot)
         params <- update.changed.plot.params(params, changed.params)
         forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
-        plot.params.paths <- c("Forest Plot"=forest.plot.params.path)
-        images <- c("Subgroups Forest Plot"=forest.path)
+        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+        images <- c("Subgroups Forest plot"=forest.path)
         plot.names <- c("subgroups forest plot"="subgroups_forest_plot")
         results <- list("images"=images, "Summary"=subgroup.disp,
                     "plot_names"=plot.names,

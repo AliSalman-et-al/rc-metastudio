@@ -106,4 +106,4 @@ def format_effect_number(value: float, digits: int) -> str:
     formatted = f"{value:.{digits}f}"
     if value != 0 and float(formatted) == 0:
         return f"{value:.{max(1, digits)}g}"
-    return formatted
+    return formatted.rstrip("0").rstrip(".") if "." in formatted else formatted

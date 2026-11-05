@@ -1654,7 +1654,7 @@ def plot_edit(app, window):
                 return " ".join("".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
             visible = plot_text()
             assert "Gonzalez" in visible, visible
-            assert "0.770 (0.485 to 1.222)" in visible, visible
+            assert "0.77 (0.485 to 1.222)" in visible, visible
             record_step("bmj-columns-visible", view)
             dialog.show_1.setChecked(False)
             dialog.show_2.setChecked(False)
@@ -1662,7 +1662,7 @@ def plot_edit(app, window):
             assert dialog._commit_outcome is True, dialog._commit_error.text()
             hidden = plot_text()
             assert "Gonzalez" not in hidden, hidden
-            assert "0.770 (0.485" not in hidden, hidden
+            assert "0.77 (0.485" not in hidden, hidden
             saved = view.plot_service.load_params(artifact.params_path)
             assert not saved["fp_show_col1"] and not saved["fp_show_col2"]
             record_step("bmj-columns-hidden", view)

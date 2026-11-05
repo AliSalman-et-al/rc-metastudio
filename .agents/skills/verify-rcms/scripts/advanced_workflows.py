@@ -1938,6 +1938,8 @@ def shell(app, window, record):
     )
 
     def cancel(message):
+        assert message.standardButtons() == (QtWidgets.QMessageBox.StandardButton.Save | QtWidgets.QMessageBox.StandardButton.Discard | QtWidgets.QMessageBox.StandardButton.Cancel)
+        assert message.defaultButton() == message.button(QtWidgets.QMessageBox.StandardButton.Save)
         record("dirty-open-prompt", message, message=message.text())
         click(app, message.button(QtWidgets.QMessageBox.StandardButton.Cancel))
 

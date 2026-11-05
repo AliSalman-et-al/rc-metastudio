@@ -371,7 +371,7 @@ def _inspect_archive(
         archive = zipfile.ZipFile(path, "r")
         infos = archive.infolist()
     except (OSError, zipfile.BadZipFile, zipfile.LargeZipFile) as exc:
-        raise ProjectFormatError("project is not a valid ZIP container") from exc
+        raise ProjectFormatError("This file is not a valid RC MetaStudio project. Open another .rcms file or restore a backup.") from exc
 
     try:
         if len(infos) > limits.max_member_count:

@@ -651,10 +651,10 @@ pretty.metric.name <- function(metric, label=NULL) {
   if (!is.null(label) && length(label) == 1L && nzchar(label)) return(as.character(label))
   metric.names <- list(
     HR = "Hazard Ratio", IRR = "Incidence Rate Ratio",
-    OR = "Odds Ratio",
+    OR = "Odds ratio",
     RD = "Risk Difference",
     MD = "Mean Difference",
-    SMD = "Standardized Mean Difference",
+    SMD = "Standardized mean difference",
     RR = "Risk Ratio",
     AS = "Arcsine Difference",
     PR = "Proportion",
