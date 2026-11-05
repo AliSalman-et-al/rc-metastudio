@@ -1,0 +1,11 @@
+--- attempt1-failed
++++ attempt2-passed
+@@ -39,7 +39,7 @@
+       "D:/a/rc-metastudio/rc-metastudio/build/windows-package/dist/RCMetaStudio/R/library"
+     ],
+     "shared_library_path": "D:\\a\\rc-metastudio\\rc-metastudio\\build\\windows-package\\dist\\RCMetaStudio\\R\\bin\\x64\\R.dll",
+-    "version": "4.6.2"
++    "version": "4.6.1"
+   },
+   "rpy2": {
+     "api_bridge_loaded": true,
