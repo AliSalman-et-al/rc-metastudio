@@ -835,14 +835,39 @@ PY
 )"
   for scale in "1.25" "1.50" "1.75"; do
     step "Running packaged Cocoa surface smoke at scale $scale"
-    QT_SCALE_FACTOR="$scale" \
+    surface_start_marker="$qualification_root/packaged-surface-${scale/./}.started"
+    touch "$surface_start_marker"
+    if QT_SCALE_FACTOR="$scale" \
       RCMS_PACKAGE_BASELINE_DPR="$baseline_dpr" \
       RCMS_AUTOMATION_SMOKE_LOG="$smoke_log_path" \
       RCMS_PACKAGED_PROCESS_TIMEOUT_SECONDS=60 \
       RCMS_PACKAGED_STDOUT_PATH="$qualification_root/packaged-surface-${scale/./}.stdout.log" \
       RCMS_PACKAGED_STDERR_PATH="$qualification_root/packaged-surface-${scale/./}.stderr.log" \
       run_packaged_process "$app_root/RCMetaStudio" \
-        --automation-package-surface-smoke "$surface_records_path/surface-$scale.json" "$scale"
+        --automation-package-surface-smoke "$surface_records_path/surface-$scale.json" "$scale"; then
+      surface_status=0
+    else
+      surface_status=$?
+    fi
+    echo "$surface_status" > "$qualification_root/packaged-surface-${scale/./}.exit-status"
+    if [ "$surface_status" -ne 0 ]; then
+      # macOS writes native crash reports asynchronously after the child exits.
+      sleep 5
+      for report_scope in user system; do
+        if [ "$report_scope" = user ]; then
+          diagnostic_root="$HOME/Library/Logs/DiagnosticReports"
+        else
+          diagnostic_root="/Library/Logs/DiagnosticReports"
+        fi
+        crash_destination="$qualification_root/packaged-surface-${scale/./}-crash-reports/$report_scope"
+        mkdir -p "$crash_destination" || continue
+        if [ -d "$diagnostic_root" ]; then
+          find "$diagnostic_root" -type f -name '*.ips' -newer "$surface_start_marker" \
+            -exec cp {} "$crash_destination/" \; || true
+        fi
+      done
+      exit "$surface_status"
+    fi
   done
 
   step "Assembling packaged qualification evidence outside the application"
