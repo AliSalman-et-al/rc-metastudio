@@ -601,7 +601,7 @@ def sample_analysis(app, window, sample):
     view.close()
 
 
-def add_named_sheet(app, window, name):
+def add_named_sheet(app, window, name, diagnostic=False):
     from rc_metastudio import main_wizard, meta_globals
     def finish():
         wizard = app.activeModalWidget()
@@ -609,7 +609,7 @@ def add_named_sheet(app, window, name):
         page = wizard.currentPage()
         assert isinstance(page, main_wizard.DataTypePage)
         record_step("add-sheet-data-type", wizard)
-        mouse_click(page.twoarm_means_Button, QtCore.Qt.MouseButton.LeftButton)
+        mouse_click(page.diagnostic_Button if diagnostic else page.twoarm_means_Button, QtCore.Qt.MouseButton.LeftButton)
         wizard.next()
         wizard.next()
         page = wizard.currentPage()
@@ -621,7 +621,7 @@ def add_named_sheet(app, window, name):
     QtCore.QTimer.singleShot(0, finish)
     mouse_click(window.add_sheet_button, QtCore.Qt.MouseButton.LeftButton)
     assert window.model.current_sheet.name == name
-    assert window.model.current_sheet.data_type == meta_globals.CONTINUOUS
+    assert window.model.current_sheet.data_type == (meta_globals.DIAGNOSTIC if diagnostic else meta_globals.CONTINUOUS)
     record_step("added-continuous-sheet", window)
 
 
@@ -797,7 +797,7 @@ def sheets_swap(app, window):
     window.workspace.mark_saved()
     assert window.open(str(ROOT / "sample_projects/lymph.rcms"), raise_on_error=True)
     assert not window.action_swap_arms.isEnabled()
-    add_named_sheet(app, window, "Diagnostic 2")
+    add_named_sheet(app, window, "Diagnostic 2", diagnostic=True)
     for index in (0, 1, 0):
         window.sheet_tabs.setCurrentIndex(index)
         assert not window.action_swap_arms.isEnabled()
