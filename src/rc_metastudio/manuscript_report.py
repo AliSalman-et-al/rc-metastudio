@@ -359,8 +359,16 @@ def _section_statistics(section):
 def _presentation_cell(value, digits, *, zero_noise=False):
     if zero_noise and re.fullmatch(r"[+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?", value) and 0 < abs(Decimal(value)) < Decimal("1e-10"):
         return f"{0:.{digits}f}"
-    return re.sub(r"(?<![\w.])-?\d+\.\d+%?(?![\w.])",
-                  lambda match: f"{Decimal(match[0][:-1]):.1f}%" if match[0].endswith("%") else f"{Decimal(match[0]):.{digits}f}", value)
+    def format_match(match):
+        text = match[0]
+        if text.endswith("%"):
+            return f"{Decimal(text[:-1]):.1f}%"
+        number = Decimal(text)
+        rounded = f"{number:.{digits}f}"
+        # R's shared effect formatter already preserves small nonzero limits.
+        return text if number and not Decimal(rounded) else rounded
+
+    return re.sub(r"(?<![\w.])-?\d+\.\d+%?(?![\w.])", format_match, value)
 
 
 def _presentation_rows(rows, digits):

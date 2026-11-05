@@ -427,7 +427,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         option = manuscript_document.defaultTextOption()
         option.setWrapMode(QTextOption.WrapMode.WordWrap)
         manuscript_document.setDefaultTextOption(option)
-        self.manuscript_text.setHtml((self.manuscript.html() + self.manuscript.html(supplementary=True)).replace(' to ', '\u00a0to\u00a0'))
+        self.manuscript_text.setHtml((self.manuscript.html() + self.manuscript.html(supplementary=True)).replace('solid black', 'solid ' + self.manuscript_text.palette().color(self.manuscript_text.foregroundRole()).name()).replace(' to ', '\u00a0to\u00a0'))
         layout.addWidget(self.manuscript_text)
         self.content_stack.addWidget(self.manuscript_page)
 
