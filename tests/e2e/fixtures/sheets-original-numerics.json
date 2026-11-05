@@ -349,7 +349,7 @@
         "calculation_scale.standard_error": 0.169,
         "study_count": 17.0
       },
-      "Odds Ratio Summary": {
+      "Diagnostic Odds Ratio Summary": {
         "estimate": 9.648,
         "lower_bound": 5.529,
         "upper_bound": 16.835,

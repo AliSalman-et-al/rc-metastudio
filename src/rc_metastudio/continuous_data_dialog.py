@@ -174,6 +174,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.initialize_form()  # initialize cells to empty items
         self._field_history = calc_fncs.TransientEditHistory()
 
+        self._active_input_mode = "estimate" if self.analysis_unit.sheet.sub_type in {"reg_coef", "generic_effect"} else "summary"
         self.update_raw_data()
         self._populate_effect_data()
         self.set_current_effect()
