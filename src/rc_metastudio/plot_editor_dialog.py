@@ -63,7 +63,6 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._commit_outcome = None
         self._configure_accessibility()
         self._hide_internal_plot_path_controls()
-        configure_plot_text_inputs(self)
         self._loading_style = False
         self._params = dict(plot_params or {})
         self.plot_type = plot_type
@@ -117,7 +116,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._sroc_group = None
         if self.plot_type == "sroc":
             self._build_sroc_controls()
-            configure_plot_text_inputs(self)
+        configure_plot_text_inputs(self)
 
         self.x_ticks_le.textChanged.connect(self._ticks_changed)
 

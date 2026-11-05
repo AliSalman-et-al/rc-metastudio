@@ -1,9 +1,9 @@
 {
   "contract": "golden-plot-descriptors",
-  "oracle_sha256": "bfb24b3017c60e4fea4c04bc46123f63b5782491352e1f8d68da068a76fa6e60",
+  "oracle_sha256": "b5a7f39c339651fd667edc3baa60135dbb60fd3bbc0a3bf55e8deed7cc2f9bc5",
   "rows": [
     {
-      "artifact_label": "Forest Plot",
+      "artifact_label": "Forest plot",
       "artifact_oracle_sha256": "684fbe3ea5ac2928f472ae80d5db64a553ca35e36e8b920517ab9d4ac2d41e64",
       "capability": {
         "composition": "single",
@@ -14,14 +14,14 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Forest Plot",
+        "identity": "Forest plot",
         "name": "golden_amino_forest.display.svg",
         "type": "svg"
       },
       "id": "amino-binary-random"
     },
     {
-      "artifact_label": "Forest Plot",
+      "artifact_label": "Forest plot",
       "artifact_oracle_sha256": "4f8c3029aa5f3aee7be1272a082cf850da0650239e186cb13d835a50d6f302c6",
       "capability": {
         "composition": "single",
@@ -32,14 +32,14 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Forest Plot",
+        "identity": "Forest plot",
         "name": "golden_continuous_forest.display.svg",
         "type": "svg"
       },
       "id": "continuous-random"
     },
     {
-      "artifact_label": "Odds Ratio Forest Plot",
+      "artifact_label": "Odds Ratio Forest plot",
       "artifact_oracle_sha256": "e30c64e7c3cb26c5fc398b6a32ed13881e178fca71b95d4a0164a87651d35f83",
       "capability": {
         "composition": "single",
@@ -50,14 +50,14 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Diagnostic Odds Ratio Forest Plot",
+        "identity": "Diagnostic Odds Ratio Forest plot",
         "name": "golden_lymph_forest_dor.display.svg",
         "type": "svg"
       },
       "id": "lymph-diagnostic-random-dor"
     },
     {
-      "artifact_label": "Cumulative Forest Plot",
+      "artifact_label": "Cumulative Forest plot",
       "artifact_oracle_sha256": "3afee6185ecf1b65002cecab4a0f38e13fa90dd8d5d5c5dde790d08dd3673c67",
       "capability": {
         "composition": "single",
@@ -68,7 +68,7 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Cumulative Forest Plot",
+        "identity": "Cumulative Forest plot",
         "name": "golden_amino_cumulative_forest.display.svg",
         "type": "svg"
       },
@@ -86,14 +86,14 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Leave-one-out Forest Plot",
+        "identity": "Leave-one-out Forest plot",
         "name": "golden_amino_loo_forest.display.svg",
         "type": "svg"
       },
       "id": "amino-binary-leave-one-out"
     },
     {
-      "artifact_label": "Cumulative Forest Plot",
+      "artifact_label": "Cumulative Forest plot",
       "artifact_oracle_sha256": "6e3f655140f6048b38d20a69f5729ea94eee078e251d6e2f2105f3621eccac05",
       "capability": {
         "composition": "single",
@@ -104,7 +104,7 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Cumulative Forest Plot",
+        "identity": "Cumulative Forest plot",
         "name": "golden_continuous_cumulative_forest.display.svg",
         "type": "svg"
       },
@@ -122,7 +122,7 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Leave-one-out Forest Plot",
+        "identity": "Leave-one-out Forest plot",
         "name": "golden_continuous_loo_forest.display.svg",
         "type": "svg"
       },
@@ -165,7 +165,7 @@
       "id": "continuous-meta-regression"
     },
     {
-      "artifact_label": "Subgroup Forest Plot",
+      "artifact_label": "Subgroup Forest plot",
       "artifact_oracle_sha256": "09fd47608900a71230894cdbbf3272d96379f4325ba6518a828e54944e10f746",
       "capability": {
         "composition": "single",
@@ -176,14 +176,14 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Subgroup Forest Plot",
+        "identity": "Subgroup Forest plot",
         "name": "golden_amino_subgroup_forest.display.svg",
         "type": "svg"
       },
       "id": "amino-binary-subgroup"
     },
     {
-      "artifact_label": "Subgroups Forest Plot",
+      "artifact_label": "Subgroups Forest plot",
       "artifact_oracle_sha256": "0cdc4df67e92627f29d76de2aaa77f1cba4b9719308f98b27ebba23c02071d0a",
       "capability": {
         "composition": "single",
@@ -194,7 +194,7 @@
       },
       "display": {
         "content_required": true,
-        "identity": "Subgroups Forest Plot",
+        "identity": "Subgroups Forest plot",
         "name": "golden_continuous_subgroup_forest.display.svg",
         "type": "svg"
       },
