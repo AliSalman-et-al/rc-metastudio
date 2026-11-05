@@ -816,23 +816,26 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     def _get_correlation_str(self):
         return str(self.correlation_pre_post.text())
 
+    def _summary_table_error(self, table):
+        headers = self.get_column_header_strs(table)
+        for row in range(table.rowCount()):
+            if table.isRowHidden(row):
+                continue
+            for col in range(table.columnCount()):
+                item = table.item(row, col)
+                if item is None:
+                    continue
+                message = self._cell_data_not_valid(item.text(), headers[col])
+                if message:
+                    return message
+        return None
+
     def _validate_summary_tables(self):
         warning_msg = None
         for table in self.tables:
             if table.isHidden():
                 continue
-            headers = self.get_column_header_strs(table)
-            for row in range(table.rowCount()):
-                if table.isRowHidden(row):
-                    continue
-                for col in range(table.columnCount()):
-                    item = table.item(row, col)
-                    if item is not None:
-                        warning_msg = self._cell_data_not_valid(item.text(), headers[col])
-                        if warning_msg:
-                            break
-                if warning_msg:
-                    break
+            warning_msg = self._summary_table_error(table)
             if warning_msg:
                 break
         self._validation_failed = bool(warning_msg)
