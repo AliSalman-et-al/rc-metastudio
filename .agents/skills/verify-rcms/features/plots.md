@@ -288,3 +288,5 @@ The review-workflows drive also reruns amino through Change settings at 90% and
 99% with Knapp–Hartung. It checks Methods against the executed confidence level
 and overall t degrees of freedom against the saved metafor res$dfs in Methods,
 results and the forest SVG.
+
+Automatic SVG sizing keeps declared plot text at least 9 pt and allows horizontal scrolling when needed. Explicit **Fit width** may shrink below that floor. Manual zoom percentages apply once to native plot dimensions. The UX/results drive retains the 9 pt study-label assertion and repeats it after a +6 pt application-font change; matrix width checks explicitly request Fit width.

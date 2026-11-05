@@ -338,7 +338,8 @@ def analyze(app, window, method, *, digits=3):
         assert horizontal.value() == 0, "zooming back out clipped study names"
         effective_zoom = selected[1].deviceTransform(view.graphics_view.viewportTransform()).m11() * 100
         assert abs(effective_zoom - original_zoom) < 1, (effective_zoom, original_zoom)
-        view._fit_width()
+        view._fit_width_active = True
+        view._apply_fit_width()
     report_text = view.report_text.toPlainText().splitlines()
     assert report_text.count("Supplementary details") <= 1
     assert report_text.count("References") <= 1

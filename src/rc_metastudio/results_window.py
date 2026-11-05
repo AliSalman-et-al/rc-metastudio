@@ -256,6 +256,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     ):
 
         super(ResultsWindow, self).__init__(parent)
+        self._explicit_fit_width = False
         self._svg_plot_items = []
         self._raster_plot_items = []
         self._refitting_svg_plots = False
@@ -396,7 +397,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self._activate_report(True)
         self._set_restored_splitter_sizes()
         if not self.report_action.isChecked():
-            self._fit_width()
+            self._apply_fit_width()
 
     def _setup_identity(self):
         identity = self.results.identity or "Analysis results"
@@ -691,6 +692,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _fit_width(self):
         if self.report_action.isChecked():
             return
+        self._explicit_fit_width = True
         self._fit_width_active = True
         self._apply_fit_width()
 
@@ -905,7 +907,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             return scaled_width, scaled_height
 
         target_scale = float(scaled_width) / float(item_width)
-        if abs(target_scale - svg_item.scale()) >= 0.001:
+        text_pixels = svg_item.data(0)
+        if not self._explicit_fit_width and text_pixels:
+            # Automatic sizing preserves 9 pt text; explicit Fit width may shrink it.
+            target_scale = max(target_scale, math.nextafter(9 * 96 / 72 / text_pixels, math.inf))
+            scaled_width, scaled_height = item_width * target_scale, item_height * target_scale
+        if target_scale != svg_item.scale():
             svg_item.setScale(target_scale)
         return scaled_width, scaled_height
 
@@ -971,7 +978,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             return
         self._scroll_to_section(item)
         if getattr(self, "_fit_width_active", False):
-            self._fit_width()
+            self._apply_fit_width()
         if hasattr(self, "report_action"):
             selected = self._selected_plot()
             if selected is not None:
@@ -1025,7 +1032,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._refitting_viewport_items = True
         previous_width = self._viewport_width_override
         try:
-            if self._fit_width_active:
+            if self._fit_width_active and not self._explicit_fit_width:
+                self.graphics_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+                self.graphics_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+            if self._fit_width_active and self._explicit_fit_width:
                 # Decide whether scrolling is needed at full width first. Keep
                 # that decision when narrowing the plot makes it shorter again.
                 self.graphics_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -1037,7 +1047,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self._refit_svg_plot_items()
             self._refit_raster_plot_items()
             self._relayout_sections()
-            if self._fit_width_active:
+            if self._fit_width_active and self._explicit_fit_width:
                 needs_scrollbar = self.scene.height() > self.graphics_view.maximumViewportSize().height()
                 self.graphics_view.setVerticalScrollBarPolicy(
                     Qt.ScrollBarPolicy.ScrollBarAlwaysOn if needs_scrollbar else Qt.ScrollBarPolicy.ScrollBarAlwaysOff
@@ -1254,6 +1264,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             return None
         item = _svg_item_class()()
         item.setSharedRenderer(renderer)
+        svg = _svg_bytes_with_white_background(artifact.display_path())
+        font_sizes = [float(size) * (96 / 72 if unit == b"pt" else 1)
+                      for size, unit in re.findall(rb"font-size:\s*([\d.]+)(px|pt)", svg)]
+        if font_sizes and renderer.viewBoxF().width() > 0:
+            item.setData(0, min(font_sizes) * item.boundingRect().width() / renderer.viewBoxF().width())
 
         item.setToolTip(
             'To save the image:\nright-click on the image and choose "save image as".'
