@@ -207,6 +207,9 @@ def _prediction_rows(table, lower, upper, ci_level, vertical, fit, summary):
 def _pooled_statistics(values, overall, calculation):
     stat = next((key for key in ('t', 'z', 'Z', 'z-value', 't-value') if key in values or key in overall), None)
     statistic = 't' if stat in ('t', 't-value') else 'z'
+    df = values.get('df', overall.get('df'))
+    if statistic == 't' and df:
+        statistic += f' (df = {df})'
     se = next((v for h, v in {**calculation, **values}.items() if h.startswith('SE')), '—')
     test = values.get(stat, overall.get(stat, '—')) if stat else '—'
     p = p_value(values.get('p-value', overall.get('p-value', '')))
@@ -415,6 +418,11 @@ def _available_columns(table):
 
 def _report_methods(result):
     methods = result.manuscript_methods
+    for section in result.sections:
+        for table in section.tables:
+            if 't' in table.headers and 'df' in table.headers and len(table.rows) == 1:
+                df = table.rows[0][table.headers.index('df')]
+                methods += f" The overall effect was tested using t with {df} degrees of freedom."
     if any(t.headers[0] == 'Q' for s in result.sections for t in s.tables) and 'Reitsma' not in methods:
         methods += " Heterogeneity was assessed with Cochran's Q and I²."
     methods += f' Analyses were performed in RC MetaStudio {__version__}.'

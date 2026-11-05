@@ -281,3 +281,8 @@ Inputs, SVGs and geometry receipts remain in its chosen output directory; see
 the Windows notes for the install and run commands.
 
 `plot-workflow-mh-rd` exercises invalid lower-axis input: Apply displays a plain validation message before rendering and preserves the figure bytes; a recovered BMJ edit proves the fit-derived method header.
+
+The review-workflows drive also reruns amino through Change settings at 90% and
+99% with Knapp–Hartung. It checks Methods against the executed confidence level
+and overall t degrees of freedom against the saved metafor res$dfs in Methods,
+results and the forest SVG.
