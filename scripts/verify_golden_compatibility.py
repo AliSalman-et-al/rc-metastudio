@@ -15,9 +15,11 @@ from pathlib import Path
 from pathlib import PurePosixPath
 import shutil
 import stat
+import subprocess
 import sys
 from typing import TypeAlias, TypedDict, cast
 import zipfile
+from uuid import uuid4
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT))
@@ -385,7 +387,7 @@ def _prepare_output_root(root: Path, requested: Path) -> Path:
         ):
             raise ValueError("refusing to delete an unowned Golden output directory")
         _assert_plain_path(output_root)
-        shutil.rmtree(output_root)
+        output_root = output_root.with_name(output_root.name + "-" + uuid4().hex[:12])
     output_root.mkdir(parents=True)
     (output_root / OUTPUT_MARKER).write_text(
         "rcms-golden-verification-v1\n", encoding="utf-8"
@@ -1054,14 +1056,59 @@ def _validate_comparison(value: object) -> ComparisonReport:
     return {"rows": row_records, "passed": passed}
 
 
+def _verify_installed_source(root: Path, output_root: Path) -> None:
+    r_home = os.environ.get("RCMS_R_HOME") or os.environ.get("R_HOME")
+    rscript = str(Path(r_home) / "bin/Rscript.exe") if r_home and os.name == "nt" else shutil.which("Rscript")
+    if not rscript:
+        raise ValueError("Rscript is required to verify installed source identity")
+    script = r"""
+ns <- asNamespace("RCMetaR")
+cat("INSTALLED", find.package("RCMetaR"), "\n")
+checked <- 0L
+for (file in list.files("r/RCMetaR/R", pattern="\\.R$", full.names=TRUE)) {
+  for (definition in parse(file)) {
+    if (is.call(definition) && identical(definition[[1]], as.name("<-")) &&
+        is.symbol(definition[[2]]) && is.call(definition[[3]]) &&
+        identical(definition[[3]][[1]], as.name("function"))) {
+      name <- as.character(definition[[2]])
+      current <- eval(definition[[3]], ns)
+      installed <- get(name, ns)
+      if (!identical(formals(current), formals(installed)) || !identical(body(current), body(installed)))
+        stop("Installed RCMetaR source mismatch: ", name)
+      checked <- checked + 1L
+    }
+  }
+}
+stopifnot(checked > 100L)
+cat("SOURCE FUNCTIONS MATCH", checked, "\n")
+"""
+    (output_root / "source-identity.R").write_text(script, encoding="utf-8")
+    env = os.environ.copy()
+    library = env.get("RCMS_R_LIBS") or env.get("R_LIBS")
+    if not library:
+        raise ValueError("explicit RCMS_R_LIBS or R_LIBS is required")
+    for key in ("RCMS_R_LIBS", "R_LIBS", "R_LIBS_USER"):
+        env[key] = library
+        os.environ[key] = library
+    result = subprocess.run([rscript, str(output_root / "source-identity.R")], cwd=root, env=env, capture_output=True, text=True, timeout=120)
+    (output_root / "source-identity.stdout.log").write_text(result.stdout, encoding="utf-8")
+    (output_root / "source-identity.stderr.log").write_text(result.stderr, encoding="utf-8")
+    if result.returncode:
+        raise ValueError("Installed RCMetaR does not match current source; inspect source-identity logs")
+
+
 def verify(root: Path, output_root: Path) -> CompatibilityReport:
     root = root.resolve(strict=True)
+    if root != REPOSITORY_ROOT:
+        raise ValueError("--root must select the script checkout; cross-checkout capture is unsupported")
     archive_path, reference = _load_frozen_reference(root)
     plot_contract = _load_plot_descriptor_contract(root, archive_path, reference)
     numeric_contract = _load_numeric_contract(root, archive_path, reference)
     comparison_reference = _reference_with_numeric_contract(reference, numeric_contract)
     rpy2_identities = _validate_rpy2_identities(root)
     output_root = _prepare_output_root(root, output_root)
+    os.environ["RCMS_ANALYSIS_SCRATCH_DIR"] = str(output_root / "scratch")
+    _verify_installed_source(root, output_root)
     current = _validate_capture(golden_analysis.capture_comprehensive_golden_baseline(
         output_dir=str(output_root), capture_mode="local-debug", root_dir=str(root)
     ))
@@ -1106,14 +1153,27 @@ def verify(root: Path, output_root: Path) -> CompatibilityReport:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=Path.cwd())
-    parser.add_argument(
-        "--output-root",
-        type=Path,
-        default=Path("build/qt6-verification/golden-compatibility-current"),
-    )
+    parser.add_argument("--output-root", type=Path, default=Path("build/qt6-verification/golden-compatibility-current"))
     args = parser.parse_args(argv)
     root = args.root.resolve()
-    output_root = args.output_root
+    if root != REPOSITORY_ROOT:
+        print("--root must select the script checkout", file=sys.stderr)
+        return 1
+    from scripts.verify import run_typing
+    run_typing(root / "build/qt6-verification")
+    evidence = _prepare_output_root(root, args.output_root)
+    worker = "import sys; from pathlib import Path; from scripts.verify_golden_compatibility import _capture_main; raise SystemExit(_capture_main(Path(sys.argv[1]), Path(sys.argv[2])))"
+    command = [sys.executable, str(root / "scripts/run_with_timeout.py"),
+               "--timeout-seconds", "600", "--label", "golden compatibility", "--",
+               sys.executable, "-c", worker, str(root), str(evidence / "capture")]
+    with (evidence / "stdout.log").open("w", encoding="utf-8") as stdout, (evidence / "stderr.log").open("w", encoding="utf-8") as stderr:
+        result = subprocess.run(command, cwd=root, stdout=stdout, stderr=stderr)
+    (evidence / "command.json").write_text(json.dumps({"command": command, "exit_code": result.returncode}, indent=2), encoding="utf-8")
+    print(f"Golden evidence: {evidence}")
+    return result.returncode
+
+
+def _capture_main(root: Path, output_root: Path) -> int:
     try:
         report = verify(root, output_root)
     except Exception as exc:

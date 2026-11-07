@@ -345,8 +345,8 @@ def test_golden_output_root_only_replaces_owned_bounded_directory(tmp_path):
     (prepared / "old.txt").write_text("old", encoding="utf-8")
     replaced = verify_golden_compatibility._prepare_output_root(root, output)
 
-    assert replaced == prepared
-    assert not (replaced / "old.txt").exists()
+    assert replaced != prepared
+    assert (prepared / "old.txt").read_text() == "old"
     assert (replaced / verify_golden_compatibility.OUTPUT_MARKER).is_file()
 
 
@@ -813,6 +813,7 @@ def test_scoped_exception_accepts_only_named_detail_and_classification():
             {
                 "id": "amino-binary-random",
                 "reason": "reviewed output addition",
+                "accepted_texts": {"New Section": {"before": None, "after": "intentional"}},
                 "accepted_classifications": [TEXT_ARTIFACT_DRIFT],
                 "accepted_details": [
                     "Unexpected text section New Section was produced."
@@ -1337,7 +1338,7 @@ def test_comprehensive_golden_baseline_capture_writes_reproducible_bundle(
             lambda: types.SimpleNamespace(load_rcmetar=lambda: None),
         )
         monkeypatch.setattr(golden_analysis, "_commit_sha", lambda: "abc123")
-        monkeypatch.setattr(golden_analysis, "_r_package_version", lambda _package: "0.5.0")
+        monkeypatch.setattr(golden_analysis, "_r_package_version", lambda package: {"RCMetaR": "0.5.2", "meta": "8.5.0", "mada": "0.5.12", "metafor": "5.0.1"}[package])
         monkeypatch.setattr(
             golden_analysis,
             "_tool_versions",
@@ -1347,7 +1348,7 @@ def test_comprehensive_golden_baseline_capture_writes_reproducible_bundle(
                 "os": "Windows",
                 "r": "R version 4.6.0",
                 "rpy2": "3.6.7",
-                "pyqt": "5.15.11",
+                "pyqt": "6.11.0",
             },
         )
 
@@ -1429,6 +1430,8 @@ def _import_legacy_golden_modules():
         "r_bridge",
         "rc_metastudio.r_bridge",
     ]
+    import rc_metastudio.analysis_adapter as cached_adapter
+    previous_bridge = cached_adapter.r_bridge
     previous = dict((name, sys.modules.get(name)) for name in names)
     try:
         for name in ["golden_analysis", "headless_analysis"]:
@@ -1475,6 +1478,7 @@ def _import_legacy_golden_modules():
 
         yield golden_analysis, headless_analysis, meta_globals
     finally:
+        cached_adapter.r_bridge = previous_bridge
         for name, module in previous.items():
             if module is None:
                 sys.modules.pop(name, None)
@@ -1606,3 +1610,159 @@ def _current_plot_descriptors(contract):
             }
         )
     return {"curated_golden_set": rows}
+
+
+@pytest.mark.parametrize("side", ["reference", "current"])
+def test_duplicate_case_and_artifact_rejected(side):
+    import copy
+    reference, current = _baseline(), _current()
+    assert compare_golden_baseline(reference, current)["passed"]
+    selected = reference if side == "reference" else current
+    selected["curated_golden_set"].append(copy.deepcopy(selected["curated_golden_set"][0]))
+    with pytest.raises(ValueError, match="duplicate case"):
+        compare_golden_baseline(reference, current)
+    selected["curated_golden_set"].pop()
+    artifacts = selected["curated_golden_set"][0]["artifacts"]
+    artifacts.append(copy.deepcopy(artifacts[0]))
+    with pytest.raises(ValueError, match="duplicate artifact"):
+        compare_golden_baseline(reference, current)
+
+
+def test_empty_comparison_is_not_success():
+    assert compare_golden_baseline(_baseline(), _current())["passed"]
+    with pytest.raises(ValueError, match="nonempty"):
+        compare_golden_baseline({"results": []}, {"results": []})
+
+
+def test_fake_bridge_context_restores_cached_adapter():
+    import rc_metastudio.analysis_adapter as adapter
+    original = adapter.r_bridge
+    for fail in (False, True):
+        try:
+            with _import_legacy_golden_modules():
+                assert adapter.r_bridge is not original
+                if fail:
+                    raise RuntimeError("body failure")
+        except RuntimeError:
+            pass
+        assert adapter.r_bridge is original
+
+
+def test_supplied_environment_cannot_manufacture_authority():
+    with _import_legacy_golden_modules() as (golden, _headless, _globals):
+        measured = {"os": "Linux", "python": "3.11.9", "pyqt": "6.11.0"}
+        observed = golden._baseline_environment(golden.MODERN_BASELINE_ENVIRONMENT_EXPECTED, measured)
+        assert observed["os"] == "Linux"
+        assert not observed["matches_expected"]
+
+
+def test_capture_rejects_stale_configured_plot_but_accepts_current_svg(tmp_path):
+    with _import_legacy_golden_modules() as (golden, _headless, _globals):
+        stale = tmp_path / "old.png"
+        stale.write_bytes(b"old plot")
+        bundle = {"artifacts": {"Forest Plot": str(stale)}}
+        missing = parse_analysis_result({"version": 1, "images": {}, "sections": []})
+        with pytest.raises(ValueError, match="current plot"):
+            golden._capture_artifacts(bundle, missing)
+        svg = tmp_path / "current.svg"
+        svg.write_text("<svg />")
+        current = parse_analysis_result({"version": 1, "images": {"forest": str(tmp_path / "absent.png")},
+            "plot_capabilities": {"forest": {"plot_kind": "forest", "editable": True, "styleable": True, "composition": "single", "regenerator": "forest"}},
+            "image_params_paths": {"forest": "params"},
+            "display_images": {"forest": str(svg)}, "sections": [{"id": "forest", "kind": "image", "order": 0,
+            "title": "Forest Plot", "source_key": "forest"}]})
+        assert golden._capture_artifacts(bundle, current)[0]["sha256"] == golden._sha256(svg)
+
+
+@pytest.mark.parametrize("failure", [OSError, KeyboardInterrupt])
+def test_refresh_publish_restores_binding_set(tmp_path, monkeypatch, failure):
+    from scripts import regenerate_golden_presentation as refresh
+    paths = [tmp_path / name for name in ("archive.zip", "numeric.json", "manifest.json")]
+    for path in paths:
+        path.write_bytes(b"original")
+    original = Path.replace
+    fired = False
+    def interrupt(path, target):
+        nonlocal fired
+        if Path(target) == paths[1] and not fired:
+            fired = True
+            raise failure("injected publication failure")
+        return original(path, target)
+    monkeypatch.setattr(Path, "replace", interrupt)
+    with pytest.raises(failure):
+        refresh._publish({path: b"replacement" for path in paths})
+    assert [path.read_bytes() for path in paths] == [b"original"] * 3
+    monkeypatch.setattr(Path, "replace", original)
+    refresh._publish({path: b"replacement" for path in paths})
+    assert [path.read_bytes() for path in paths] == [b"replacement"] * 3
+
+
+@pytest.mark.parametrize("text", ["", "Effect is now 999", "Unreviewed citation"])
+def test_scoped_text_exception_rejects_arbitrary_replacement(text):
+    reference, current = _baseline(), _current()
+    detail = "Text section Summary changed."
+    exception = {"id": "amino-binary-random", "accepted_details": [detail],
+        "accepted_classifications": [TEXT_ARTIFACT_DRIFT], "accepted_texts": {"Summary": {"before": "same summary", "after": "reviewed wording"}}}
+    current["curated_golden_set"][0]["texts"]["Summary"] = "reviewed wording"
+    assert compare_golden_baseline(reference, current, [exception])["passed"]
+    current["curated_golden_set"][0]["texts"]["Summary"] = text
+    assert not compare_golden_baseline(reference, current, [exception])["passed"]
+
+
+
+def test_standalone_extended_cases_require_frozen_numbers(monkeypatch):
+    with _import_legacy_golden_modules() as (golden, _headless, _globals):
+        contract = json.loads((ROOT / "tests/analysis_regression/baseline/numeric-contract.json").read_text())
+        by_id = {case["id"]: case for case in contract["cases"]}
+        with zipfile.ZipFile(ROOT / "tests/analysis_regression/baseline/observed-golden-baseline.zip") as archive:
+            frozen = json.loads(archive.read("manifest.json"))
+        for bundle in golden.curated_golden_bundles():
+            if bundle["id"] in {"amino-binary-random", "continuous-random", "lymph-diagnostic-random-dor"}:
+                continue
+            texts = next(case["texts"] for case in frozen["curated_golden_set"] if case["id"] == bundle["id"])
+            sections = [{"id": str(i), "kind": "text", "order": i, "title": section, "source_key": section} for i, section in enumerate(texts)]
+            result = _typed_result(texts=texts, sections=sections)
+            # Retain an independent numeric contract while isolating artifact IO.
+            bundle = {**bundle, "artifacts": {}}
+            comparisons = golden.compare_bundle(bundle, result)
+            assert len(comparisons) == sum(len(values) for values in by_id[bundle["id"]]["sections"].values())
+            assert all(item["passed"] for item in comparisons), (bundle["id"], comparisons)
+            damaged = _typed_result(texts={section: "No scientific results" for section in texts}, sections=sections)
+            assert not all(item["passed"] for item in golden.compare_bundle(bundle, damaged))
+
+
+
+def test_refresh_failed_recovery_retains_originals(tmp_path, monkeypatch):
+    from scripts import regenerate_golden_presentation as refresh
+    paths = [tmp_path / "archive", tmp_path / "contract"]
+    for path in paths:
+        path.write_bytes(b"original")
+    replace = Path.replace
+    def fail(path, target):
+        if path.name.endswith(".backup") or Path(target) == paths[1]:
+            raise OSError("controlled filesystem failure")
+        return replace(path, target)
+    monkeypatch.setattr(Path, "replace", fail)
+    with pytest.raises(RuntimeError, match="backups retained"):
+        refresh._publish({path: b"replacement" for path in paths})
+    recovery = next(tmp_path.glob(".golden-refresh-*"))
+    assert (recovery / "0.backup").read_bytes() == b"original"
+    assert (recovery / "1.backup").read_bytes() == b"original"
+
+
+def test_root_cannot_mix_checkouts(tmp_path):
+    with pytest.raises(ValueError, match="cross-checkout"):
+        verify_golden_compatibility.verify(tmp_path, tmp_path / "output")
+
+
+
+def test_reviewed_scale_labels_preserve_all_scientific_values():
+    reference = {"results": [{"id": "amino-binary-meta-regression", "texts": {"Summary":
+        "Metric: Odds Ratio\nStd. error\nIntercept 0.77 0.12\nResidual heterogeneity (t²) 0.34\nSE of t² 0.306\nResidual heterogeneity (t) 0.58"}}]}
+    approved = "Metric: Odds ratio\nSE (log scale)\nIntercept    0.77    0.12\nResidual heterogeneity (τ²) 0.34\nSE of τ² 0.306\nResidual heterogeneity (τ) 0.58"
+    current = {"results": [{"id": "amino-binary-meta-regression", "texts": {"Summary": approved}}]}
+    exceptions = json.loads((ROOT / "tests/analysis_regression/baseline/exceptions.json").read_text())["exceptions"]
+    assert compare_golden_baseline(reference, current, exceptions)["passed"]
+    for text in (approved.replace("0.77", "999"), approved + "\nNew scientific claim", ""):
+        damaged = {"results": [{"id": "amino-binary-meta-regression", "texts": {"Summary": text}}]}
+        assert not compare_golden_baseline(reference, damaged, exceptions)["passed"]

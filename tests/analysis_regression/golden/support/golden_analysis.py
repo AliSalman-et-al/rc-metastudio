@@ -5,6 +5,7 @@ from collections.abc import Mapping
 from importlib import metadata
 import os
 import platform
+from pathlib import Path
 import re
 import shutil
 import subprocess
@@ -34,11 +35,11 @@ RCMetaR_R_PACKAGE = "RCMetaR"
 
 
 MODERN_BASELINE_ENVIRONMENT_EXPECTED = {
-    "id": "rc-metastudio-python3-pyqt5-r4-RCMetaR",
+    "id": "rc-metastudio-python3-pyqt6-r4-RCMetaR",
     "os": "Windows",
     "python": "3.11",
-    "pyqt": "5.15.11",
-    "r": "R version 4.6.0",
+    "pyqt": "6.11.0",
+    "r": "R version 4.6.",
     "rpy2": "3.6.7",
     "package": RCMetaR_R_PACKAGE,
 }
@@ -546,7 +547,11 @@ def compare_bundle(bundle, result: AnalysisResult):
     actual = parsed_numeric_sections(result)
     public_texts = _public_texts(result)
     comparisons = []
-    for section, expected_values in bundle["expected"].items():
+    contract_path = Path(__file__).resolve().parents[2] / "baseline/numeric-contract.json"
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    frozen = next((case for case in contract["cases"] if case["id"] == bundle.get("id")), None)
+    expected_sections = frozen["sections"] if frozen else bundle["expected"]
+    for section, expected_values in expected_sections.items():
         if not expected_values:
             comparisons.append(
                 {
@@ -562,7 +567,9 @@ def compare_bundle(bundle, result: AnalysisResult):
         for metric, expected in expected_values.items():
             observed = actual.get(section, {}).get(metric)
             drift = None if observed is None else abs(observed - expected)
-            tolerance = bundle["tolerances"][metric]
+            tolerance = (max(contract["tolerance_policy"]["absolute"],
+                             contract["tolerance_policy"]["relative"] * abs(expected))
+                         if frozen else bundle["tolerances"][metric])
             comparisons.append(
                 {
                     "section": section,
@@ -580,11 +587,12 @@ def compare_bundle(bundle, result: AnalysisResult):
 
 def _compare_artifacts(bundle, result: AnalysisResult):
     comparisons = []
-    images = result.images
     for label in sorted(bundle.get("artifacts", {})):
-        image_label = _matching_key(images, label)
-        path = images.get(image_label) if image_label is not None else None
-        present = bool(path and os.path.exists(path))
+        try:
+            _current_artifact_path(result, label)
+            present = True
+        except ValueError:
+            present = False
         comparisons.append(
             {
                 "section": label,
@@ -617,10 +625,16 @@ def _artifact_source_key(result: AnalysisResult, label, images, path):
             and section.source_key in images
         ):
             return section.source_key
-    for key, image_path in images.items():
-        if os.path.basename(image_path) == os.path.basename(path):
-            return key
     return _matching_key(images, label)
+
+
+def _current_artifact_path(result, label):
+    key = _artifact_source_key(result, label, result.images, "")
+    display_key = key if key in result.display_images else _matching_key(result.display_images, label)
+    for path in (result.images.get(key), result.display_images.get(display_key)):
+        if path and os.path.isfile(path):
+            return path
+    raise ValueError("Required current plot is missing: %s" % label)
 
 
 def run_curated_golden_set(report_path=None):
@@ -676,8 +690,15 @@ def capture_bundle(
     baseline_environment = _baseline_environment(
         baseline_environment or reference_environment, tool_versions
     )
+    package_versions = _package_versions(tool_versions)
+    root = Path(__file__).resolve().parents[4]
+    requirements = json.loads((root / "config/r-dependencies.json").read_text(encoding="utf-8"))
+    authority_versions = {entry["name"]: entry["installed_version"].replace("-", ".") for entry in requirements["direct_RCMetaR_dependencies"] if entry["name"] in {"meta", "mada", "metafor"}}
+    source_version = next(line.split(":", 1)[1].strip() for line in (root / "r/RCMetaR/DESCRIPTION").read_text(encoding="utf-8").splitlines() if line.startswith("Version:"))
     authoritative = (
         capture_mode == "authoritative" and baseline_environment["matches_expected"]
+        and package_versions["RCMetaR"] == source_version
+        and all(package_versions[name] == version for name, version in authority_versions.items())
     )
     base = {
         "id": bundle["id"],
@@ -688,7 +709,7 @@ def capture_bundle(
         "parameters": bundle["parameters"],
         "captured_at": captured_at,
         "tool_versions": tool_versions,
-        "package_versions": _package_versions(tool_versions),
+        "package_versions": package_versions,
         "commit_sha": _commit_sha(),
         "capture_mode": capture_mode,
         "capture_command": capture_command,
@@ -796,10 +817,9 @@ def capture_comprehensive_golden_baseline(
 
 
 def _capture_artifacts(bundle, result: AnalysisResult):
-    images = result.images
     artifacts = []
-    for label, expected_path in sorted(bundle.get("artifacts", {}).items()):
-        path = images.get(label, expected_path)
+    for label in sorted(bundle.get("artifacts", {})):
+        path = _current_artifact_path(result, label)
         artifacts.append(
             {
                 "label": label,
@@ -960,6 +980,7 @@ def _package_versions(tool_versions):
         "rpy2-robjects": tool_versions.get("rpy2-robjects"),
         "pyqt": tool_versions.get("pyqt"),
         "RCMetaR": _r_package_version(RCMetaR_R_PACKAGE),
+        **{name: _r_package_version(name) for name in ("meta", "mada", "metafor")},
     }
 
 
@@ -994,12 +1015,13 @@ def _commit_sha():
 
 
 def _baseline_environment(baseline_environment, tool_versions):
-    supplied = dict(baseline_environment or {})
-    if not supplied:
-        supplied = _baseline_environment_from_env(tool_versions)
-    supplied["expected"] = dict(MODERN_BASELINE_ENVIRONMENT_EXPECTED)
-    supplied["matches_expected"] = _matches_baseline_environment(supplied)
-    return supplied
+    requested = dict(baseline_environment or _baseline_environment_from_env(tool_versions))
+    observed = {key: tool_versions.get(key) for key in ("os", "python", "pyqt", "r", "rpy2")}
+    observed.update(id=MODERN_BASELINE_ENVIRONMENT_EXPECTED["id"], package=RCMetaR_R_PACKAGE)
+    observed["requested"] = requested
+    observed["expected"] = dict(MODERN_BASELINE_ENVIRONMENT_EXPECTED)
+    observed["matches_expected"] = _matches_baseline_environment(observed)
+    return observed
 
 
 def _baseline_environment_from_env(tool_versions):

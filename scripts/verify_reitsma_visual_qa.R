@@ -164,6 +164,14 @@ qa_row <- function(case, family, kind, workflow, scenario, image, error=NA_chara
 qa_render <- function(output.root=root) {
   root <- normalizePath(output.root, winslash="/", mustWork=FALSE)
   dir.create(root, recursive=TRUE, showWarnings=FALSE)
+  report.root <- root
+  for (name in c("manifest.csv", "descriptor-contract.json")) {
+    previous <- file.path(report.root, name)
+    if (file.exists(previous) && !file.copy(previous, tempfile(paste0(name, "-previous-"), tmpdir=report.root)))
+      stop("Could not retain previous visual QA report", call.=FALSE)
+  }
+  root <- tempfile("attempt-", tmpdir=report.root)
+  if (!dir.create(root)) stop("Could not create fresh visual QA output", call.=FALSE)
   qa_load_reitsma()
   data <- qa_data(); rows <- list()
   add <- function(case, family, kind, workflow, scenario, image, labels, colors=character(), draw=function(path) invisible(path)) {
@@ -237,8 +245,8 @@ qa_render <- function(output.root=root) {
   }
   manifest <- do.call(rbind, rows)
   if (!requireNamespace("jsonlite", quietly=TRUE)) stop("jsonlite is required for descriptor QA.", call.=FALSE)
-  jsonlite::write_json(descriptor.contract, file.path(root, "descriptor-contract.json"), auto_unbox=TRUE, pretty=TRUE)
-  utils::write.csv(manifest, file.path(root, "manifest.csv"), row.names=FALSE)
+  jsonlite::write_json(descriptor.contract, file.path(report.root, "descriptor-contract.json"), auto_unbox=TRUE, pretty=TRUE)
+  utils::write.csv(manifest, file.path(report.root, "manifest.csv"), row.names=FALSE)
   if (any(!is.na(manifest$error) & nzchar(manifest$error))) stop("Reitsma visual QA failures.", call.=FALSE)
   manifest
 }

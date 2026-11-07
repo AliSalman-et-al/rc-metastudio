@@ -299,17 +299,33 @@ def test_packaged_runner_reports_timeout_with_command(monkeypatch, tmp_path):
         )
 
 
-def test_assembler_rejects_unobserved_reopen_analysis(tmp_path):
+def test_assembler_rejects_unobserved_reopen_analysis(tmp_path, monkeypatch):
     from scripts import assemble_packaged_smoke_evidence as assembler
 
+    observation = {"summary": "summary", "svg_paths": {},
+        "edit_observed": True, "analysis_observed": True, "reopen_observed": True,
+        "analysis_after_reopen_observed": True,
+        "locale_inputs": [
+            {"operation": "analysis", "locale": "en_US", "decimal_point": ".", "input": "1.2", "canonical_value": 1.2, "summary": "summary", "svg_paths": {}},
+            {"operation": "locale", "locale": "de_DE", "decimal_point": ",", "input": "1,2", "canonical_value": 1.2, "summary": "summary", "svg_paths": {}},
+        ]}
     workflow = tmp_path / "workflow.json"
-    workflow.write_text(json.dumps({"edit_observed": True, "analysis_observed": True, "reopen_observed": True, "analysis_after_reopen_observed": False}), encoding="utf-8")
     surfaces = tmp_path / "surfaces.json"
     surfaces.write_text("[]", encoding="utf-8")
     samples = tmp_path / "samples.json"
     samples.write_text(json.dumps({"passed": True, "manifest_sha256": "a"*64, "projects": [{"project": "BCG.rcms", "sha256": "b"*64, "semantic_sha256": "c"*64, "opened_in_packaged_application": True}]}), encoding="utf-8")
-    with pytest.raises((ValueError, KeyError)):
-        assembler.assemble(workflow_observation=workflow, surface_records=surfaces, sample_observations=samples, sample="BCG.rcms", output=tmp_path / "out.json")
+    def assemble():
+        workflow.write_text(json.dumps(observation), encoding="utf-8")
+        return assembler.assemble(workflow_observation=workflow, surface_records=surfaces,
+            sample_observations=samples, sample="BCG.rcms", output=tmp_path / "out.json")
+    assert assemble()["passed"]
+    observation["analysis_after_reopen_observed"] = False
+    with pytest.raises(ValueError, match="workflow observation contains an unsuccessful operation"):
+        assemble()
+    # The negative control must fail if the required reopen guard is removed.
+    monkeypatch.setattr(assembler, "_workflow_flags_valid", lambda value: all(value[key] for key in
+        ("edit_observed", "analysis_observed", "reopen_observed")))
+    assert assemble()["passed"]
 
 
 def test_assembler_rejects_reused_locale_operation_observation(tmp_path):

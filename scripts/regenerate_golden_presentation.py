@@ -8,11 +8,42 @@ using this command with that capture directory.
 import argparse
 import hashlib
 import json
+import io
+import shutil
+import tempfile
+import sys
 from pathlib import Path
 import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+
+def _publish(outputs: dict[Path, bytes]) -> None:
+    # Keep recovery bytes on disk until every binding has been replaced.
+    originals = {path: path.read_bytes() for path in outputs}
+    recovery = Path(tempfile.mkdtemp(prefix=".golden-refresh-", dir=next(iter(outputs)).parent))
+    published = []
+    try:
+        (recovery / "paths.json").write_text(json.dumps([str(path) for path in outputs]), encoding="utf-8")
+        for index, (path, contents) in enumerate(outputs.items()):
+            (recovery / f"{index}.backup").write_bytes(originals[path])
+            staged = recovery / f"{index}.staged"
+            staged.write_bytes(contents)
+        for index, path in enumerate(outputs):
+            published.append(path)
+            (recovery / f"{index}.staged").replace(path)
+    except BaseException:
+        try:
+            for index, path in enumerate(outputs):
+                if path in published:
+                    (recovery / f"{index}.backup").replace(path)
+        except BaseException as error:
+            raise RuntimeError(f"Golden refresh recovery failed; backups retained at {recovery}") from error
+        shutil.rmtree(recovery)
+        raise
+    shutil.rmtree(recovery)
 
 
 def main() -> None:
@@ -57,15 +88,15 @@ def main() -> None:
             old["sha256"] = artifact["sha256"]
         members[f"captures/{row['id']}.json"] = json.dumps(row, indent=2, sort_keys=True).encode()
     members["manifest.json"] = json.dumps(manifest, indent=2, sort_keys=True).encode()
-    temporary = archive_path.with_suffix(".refresh.zip")
-    with zipfile.ZipFile(temporary, "w", zipfile.ZIP_DEFLATED) as archive:
+    staged_archive = io.BytesIO()
+    with zipfile.ZipFile(staged_archive, "w", zipfile.ZIP_DEFLATED) as archive:
         for name, contents in members.items():
             archive.writestr(member_info[name], contents)
-    temporary.replace(archive_path)
+    outputs = {archive_path: staged_archive.getvalue()}
     outer_path = baseline / "manifest.json"
     outer = json.loads(outer_path.read_text(encoding="utf-8"))
     entry = outer["observed_golden_analysis_bundle"]
-    entry.update(sha256=hashlib.sha256(archive_path.read_bytes()).hexdigest(), size=archive_path.stat().st_size)
+    entry.update(sha256=hashlib.sha256(outputs[archive_path]).hexdigest(), size=len(outputs[archive_path]))
     for filename, field in (("numeric-contract.json", "golden_numeric_contract"),
                             ("plot-descriptors.json", "golden_plot_descriptor_contract")):
         path = baseline / filename
@@ -76,10 +107,20 @@ def main() -> None:
                          for case in manifest["curated_golden_set"] for artifact in case["artifacts"]}
             for row in contract["rows"]:
                 row["artifact_oracle_sha256"] = artifacts[(row["id"], row["artifact_label"])]
-        path.write_text(json.dumps(contract, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
-                        encoding="utf-8", newline="\n")
-        outer[field].update(sha256=hashlib.sha256(path.read_bytes()).hexdigest(), size=path.stat().st_size)
-    outer_path.write_text(json.dumps(outer, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+        outputs[path] = (json.dumps(contract, indent=2, sort_keys=True, ensure_ascii=False) + "\n").encode("utf-8")
+        outer[field].update(sha256=hashlib.sha256(outputs[path]).hexdigest(), size=len(outputs[path]))
+    outputs[outer_path] = (json.dumps(outer, indent=2, sort_keys=True) + "\n").encode("utf-8")
+    from scripts import verify_golden_compatibility as verifier
+    with tempfile.TemporaryDirectory(prefix="golden-refresh-validation-") as directory:
+        staged_root = Path(directory).resolve()
+        staged_baseline = staged_root / "tests/analysis_regression/baseline"
+        staged_baseline.mkdir(parents=True)
+        for path, contents in outputs.items():
+            (staged_baseline / path.name).write_bytes(contents)
+        staged_archive, reference = verifier._load_frozen_reference(staged_root)
+        verifier._load_numeric_contract(staged_root, staged_archive, reference)
+        verifier._load_plot_descriptor_contract(staged_root, staged_archive, reference)
+    _publish(outputs)
     print("Refreshed text/figure members and archive SHA bindings; numerical outputs and policy retained.")
 
 
