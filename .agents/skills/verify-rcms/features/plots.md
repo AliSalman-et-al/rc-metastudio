@@ -49,6 +49,8 @@ Preconditions: doctor passes; amino analysis produces a real editable forest plo
 - **Overwrite after suffix normalization.** `ux-improvements` supplies a mismatched entered suffix with an existing final destination for PDF/DOCX reports, a raster PNG and a regenerated R PNG. No preserves the existing bytes; Yes writes the selected format. The controlled picker and confirmation responses do not qualify native file dialogs.
 - **Entry reachability.** The driver calls the Results editor/export paths directly. It does not exercise plot hit testing or context-menu selection. Add right-click/menu gestures when changing their wiring. Source owner: `results_window.py:_make_context_menu`; there is no double-click editor route.
 
+The funnel and contour `plot-workflow-*` drives reject partial/nonfinite axis bounds, malformed ticks and contour percentages before regeneration, preserving the last saved artifacts. They also commit a caption-only edit with OK and export it, then reject an incomplete persisted bundle while preserving the previously loaded analysis. Both axis bounds are required for a custom range; leave both empty for automatic limits. If a failed plot promotion cannot restore its files, the original error identifies the retained recovery directory.
+
 ## Gotchas
 
 `ux-improvements` drives report/plot toolbar export, the plot export shortcut, fit/zoom, deliberate CSV mapping and duplicate-name recovery with real Qt/R. It preserves exported report text, decoded PDF, mapped input and a reopened project. Native widget evidence does not establish Narrator/NVDA table semantics: the report uses selectable preformatted text, and plots have textual alternatives rather than interactive accessible study marks.

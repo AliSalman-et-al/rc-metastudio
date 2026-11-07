@@ -21,6 +21,7 @@ from PyQt6.QtCore import (
     QPointF,
     QRectF,
     QTimer,
+    QSignalBlocker,
     Qt,
 )
 from PyQt6.QtGui import (
@@ -987,6 +988,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if id(item) in getattr(self, "_report_nav_anchors", {}):
             anchor = self._report_nav_anchors[id(item)]
             if anchor == "manuscript":
+                with QSignalBlocker(self.report_action):
+                    self.report_action.setChecked(False)
                 self.content_stack.setCurrentWidget(self.manuscript_page)
             elif anchor is None:
                 self._show_tables()

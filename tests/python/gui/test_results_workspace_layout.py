@@ -109,6 +109,32 @@ def test_edited_plot_default_placeholder_remains_user_text():
     assert normalize_plot_text_value("[default]", was_edited=True) == "[default]"
 
 
+@pytest.mark.parametrize("label", ["default", "(default)", "<default>"])
+def test_plot_editor_preserves_saved_literal_default_label(qapp, label):
+    dialog = plot_editor_dialog.EditPlotDialog({"fp_xlabel": label}, "plot.svg")
+    try:
+        dialog.col1_str_edit.setText("Unrelated heading change")
+        assert dialog.plot_params()["fp_xlabel"] == label
+    finally:
+        _dispose(dialog, qapp)
+
+
+def test_manuscript_navigation_resets_text_report_action(qapp):
+    window = results_window.ResultsWindow(_empty_results())
+    try:
+        text = window.nav_tree.findItems("Text report", QtCore.Qt.MatchFlag.MatchExactly)[0]
+        manuscript = window.nav_tree.findItems("Manuscript", QtCore.Qt.MatchFlag.MatchExactly)[0]
+        window.nav_tree.setCurrentItem(text)
+        assert window.report_action.isChecked()
+        window.nav_tree.setCurrentItem(manuscript)
+        assert window.content_stack.currentWidget() is window.manuscript_page
+        assert not window.report_action.isChecked()
+        window.report_action.trigger()
+        assert window.content_stack.currentWidget() is window.report_text
+    finally:
+        _dispose(window, qapp)
+
+
 def test_qtsvg_renders_materialized_default_black_plot_stroke():
     svg = b"""<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40' viewBox='0 0 100 40'>
     <g class='svglite'><line x1='10' y1='20' x2='90' y2='20' stroke='#000000' fill='none'

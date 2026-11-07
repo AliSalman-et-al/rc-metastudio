@@ -32,11 +32,13 @@ def configure_plot_text_inputs(surface):
 def set_plot_text_value(widget, value):
     """Load complete generated or saved text."""
     text = str(value)
+    automatic = text in ("", "[default]")
+    widget.setPlaceholderText("")
     if text == "[default]":
         text = ""
         widget.setPlaceholderText("Automatic")
         widget.setToolTip(widget.toolTip() + " Automatic: determined by the plotted data.")
-    widget.setProperty("plotTextWasEdited", False)
+    widget.setProperty("plotTextWasEdited", not automatic)
     widget.setText(text)
 
 

@@ -132,7 +132,8 @@ class PlotService:
     ) -> None:
         """Render a stored plot to an already validated destination path."""
         if regenerator == "funnel":
-            self.bridge.load_vars_for_plot(params_path)
+            if self.bridge.load_vars_for_plot(params_path) is False:
+                raise PlotServiceError("Stored funnel plot bundle is incomplete: %s" % params_path)
             self.bridge.generate_small_study_effects_funnel(output_path)
             return
         if regenerator == "forest":
@@ -190,6 +191,7 @@ class PlotService:
                 targets.append(display_target)
         backups: dict[Path, Path] = {}
         promotion_started = False
+        retain_recovery = False
         try:
             for index, path in enumerate(targets):
                 if not path.exists():
@@ -231,19 +233,22 @@ class PlotService:
             if temporary_display is not None and display_target is not None:
                 os.replace(str(temporary_display), str(display_target))
         except Exception as error:
-            if promotion_started:
-                PlotService._restore_standard_files(targets, backups, error)
+            if promotion_started and not PlotService._restore_standard_files(targets, backups, error):
+                retain_recovery = True
+                error.add_note(f"Plot recovery files retained at {transaction_dir}")
             raise
         finally:
-            shutil.rmtree(transaction_dir, ignore_errors=True)
+            if not retain_recovery:
+                shutil.rmtree(transaction_dir, ignore_errors=True)
 
     @staticmethod
     def _restore_standard_files(
         targets: Sequence[Path],
         backups: Mapping[Path, Path],
         original_error: Exception,
-    ) -> None:
+    ) -> bool:
         """Restore each last-good standard plot file without hiding the error."""
+        restored = True
         for path in targets:
             backup = backups.get(path)
             try:
@@ -252,9 +257,11 @@ class PlotService:
                 elif backup is None and path.exists():
                     path.unlink()
             except OSError as restore_error:
+                restored = False
                 original_error.add_note(
                     "Plot rollback failed for %s: %s" % (path, restore_error)
                 )
+        return restored
 
     @staticmethod
     def _apply_funnel_edits(
@@ -279,6 +286,8 @@ class PlotService:
         persisted_params = Path("%s.params" % params_path)
         persisted_backup = transaction_dir / "params.backup"
         had_persisted_params = persisted_params.exists()
+        promotion_started = False
+        retain_recovery = False
         try:
             for suffix in ("data", "res"):
                 source = Path("%s.%s" % (params_path, suffix))
@@ -294,6 +303,7 @@ class PlotService:
             bridge.regenerate_small_study_effects_funnel(
                 str(temporary_base), output_path=str(temporary_output)
             )
+            promotion_started = True
             bridge.update_plot_params(
                 dict(updated_params),
                 plot_params_name="params",
@@ -302,15 +312,18 @@ class PlotService:
             )
             os.replace(str(temporary_output), str(target_path))
         except Exception as error:
-            PlotService._restore_params(
+            if promotion_started and not PlotService._restore_params(
                 persisted_params,
                 persisted_backup,
                 had_persisted_params,
                 error,
-            )
+            ):
+                retain_recovery = True
+                error.add_note(f"Plot recovery files retained at {transaction_dir}")
             raise
         finally:
-            shutil.rmtree(transaction_dir, ignore_errors=True)
+            if not retain_recovery:
+                shutil.rmtree(transaction_dir, ignore_errors=True)
 
     @staticmethod
     def _restore_params(
@@ -318,7 +331,7 @@ class PlotService:
         persisted_backup: Path,
         had_persisted_params: bool,
         original_error: Exception,
-    ) -> None:
+    ) -> bool:
         """Restore the parameter file without hiding the rendering failure."""
         try:
             if had_persisted_params and persisted_backup.exists():
@@ -329,6 +342,8 @@ class PlotService:
             original_error.add_note(
                 "Plot parameter rollback failed: %s" % restore_error
             )
+            return False
+        return True
 
 
 __all__ = ["PlotService", "PlotServiceError"]

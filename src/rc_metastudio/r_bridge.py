@@ -1230,12 +1230,11 @@ def load_vars_for_plot(params_path, return_params_dict=False):
     is the base, data is stored in *.data, params in *.params
     and result in *.res.
     """
-    for var in ("data", "params", "res"):
-        cur_path = "%s.%s" % (params_path, var)
-        if os.path.exists(cur_path):
-            load_in_r(cur_path)
-        else:
-            return False
+    paths = ["%s.%s" % (params_path, var) for var in ("data", "params", "res")]
+    if not all(os.path.isfile(path) for path in paths):
+        return False
+    for path in paths:
+        load_in_r(path)
 
     if return_params_dict:
         r_object = execute_r_string("params")

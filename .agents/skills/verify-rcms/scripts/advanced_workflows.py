@@ -828,6 +828,67 @@ def plots(app, window, family, record, *, view=None):
         assert dialog.figure_caption.text() == ""
         dialog.reject()
     modal(app, FunnelPlotEditorDialog if funnel else EditPlotDialog, reopen_without_caption, lambda: context("Edit plot…"))
+    if funnel:
+        last_good = snapshot()
+
+        def invalid_settings(dialog):
+            def warning(message):
+                record("funnel-invalid-settings-blocked", message, family=family, message=message.text())
+                click(app, message.button(QtWidgets.QMessageBox.StandardButton.Ok))
+
+            dialog.x_lower_edit.setText("0")
+            dialog.x_upper_edit.clear()
+            modal(app, QtWidgets.QMessageBox, warning,
+                  lambda: click(app, dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply)))
+            assert snapshot() == last_good
+            dialog.x_upper_edit.setText("2")
+            dialog.x_ticks_edit.setText("0,wrong,2")
+            modal(app, QtWidgets.QMessageBox, warning,
+                  lambda: click(app, dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply)))
+            assert snapshot() == last_good
+            if family == "contour":
+                dialog.x_ticks_edit.setText("0,1,2")
+                dialog.contour_levels_edit.setText("90,wrong,99")
+                modal(app, QtWidgets.QMessageBox, warning,
+                      lambda: click(app, dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply)))
+                assert snapshot() == last_good
+            dialog.reject()
+
+        modal(app, FunnelPlotEditorDialog, invalid_settings, lambda: context("Edit plot…"))
+
+        def caption_only(dialog):
+            dialog.figure_caption.setText("Caption-only accepted edit")
+            click(app, dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+
+        modal(app, FunnelPlotEditorDialog, caption_only, lambda: context("Edit plot…"))
+        assert view.plot_service.load_params(artifact.params_path)["plot_caption"] == "Caption-only accepted edit"
+        caption_export = Path(sys.argv[2]) / (family + "-caption-only.svg")
+        view.plot_service.export(regenerator="funnel", params_path=artifact.params_path, output_path=str(caption_export))
+        assert "Caption-only accepted edit" in caption_export.read_text()
+        record("funnel-caption-only-persisted", view, family=family, exports={"svg": str(caption_export)})
+
+        # The missing bundle contains different data from the live R globals.
+        # Presence validation must fail before any component is loaded.
+        from rc_metastudio import r_bridge as r
+        from rc_metastudio.plot_service import PlotServiceError
+        import shutil
+        incomplete = Path(sys.argv[2]) / (family + "-incomplete")
+        r.load_vars_for_plot(artifact.params_path)
+        names = list(r.execute_r_string("om.data@study.names"))
+        r.execute_r_string('om.data@study.names <- paste0("Other analysis ", seq_along(om.data@study.names))')
+        r.execute_r_function("save", list="om.data", file=str(incomplete) + ".data")
+        shutil.copyfile(str(artifact.params_path) + ".params", str(incomplete) + ".params")
+        r.load_vars_for_plot(artifact.params_path)
+        missing_export = Path(sys.argv[2]) / (family + "-must-not-exist.svg")
+        try:
+            view.plot_service.export(regenerator="funnel", params_path=str(incomplete), output_path=str(missing_export))
+        except PlotServiceError:
+            pass
+        else:
+            raise AssertionError("Incomplete funnel bundle was exported")
+        assert not missing_export.exists()
+        assert list(r.execute_r_string("om.data@study.names")) == names
+        record("funnel-missing-bundle-blocked", view, family=family, prefix=str(incomplete), study_names=names)
     view.close()
 
 
