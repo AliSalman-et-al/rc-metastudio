@@ -9,7 +9,11 @@ publication raster dimensions with a separate display artifact, and mixed
 SVG/SVGZ encodings. They decode rendered geometry, text, PNG dimensions and
 compression bytes. Public permutation checks compare selected intercept and
 Knapp–Hartung combinations and retained distributions against pinned metafor;
-these do not establish GUI reachability for those public R options.
+these do not establish GUI reachability for those public R options. The authority
+comparison uses an explicit no-intercept formula and checks coefficient identity.
+Pinned metafor cannot permute one-coefficient no-intercept models; the public
+permutation boundary rejects that shape explicitly instead of silently adding an
+intercept. Standard regression still supports that fit.
 Retained before/after evidence for G1B-001/002/004–011 lives under
 `artifacts/fixes/rendering-02`. The parent repair owns aggregate full-profile
 qualification; these focused checks do not qualify native DPI or packages.

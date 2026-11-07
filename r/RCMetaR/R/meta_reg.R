@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 regression.wrapper <- function(data, mods.formula, method, level, digits, btt=NULL, intercept=TRUE, knha=FALSE) {
+	if (!intercept) mods.formula <- stats::update.formula(mods.formula, ~ . - 1)
 	rma.args <- list(yi=data$yi, vi=data$vi, mods=mods.formula, data=data,
 	                 method=method, level=level, digits=digits, intercept=intercept,
 	                 test=if (knha) "knha" else "z")
@@ -246,6 +247,7 @@ g.meta.regression <- function(
 {
 
 	mods.formula <- make.mods.formula(mods)
+	intercept <- isTRUE(intercept) && attr(terms(mods.formula), "intercept") == 1L
 	model.formula <- stats::reformulate(attr(terms(mods.formula), "term.labels"),
 	                                    response="yi", intercept=intercept)
 

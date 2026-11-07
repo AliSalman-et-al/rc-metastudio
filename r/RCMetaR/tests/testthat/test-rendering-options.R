@@ -101,18 +101,26 @@ test_that("G1B-007 raw IRR arms independently follow visibility", {
   }
 })
 test_that("G1B-008 permutation regression matches the selected public authority", {
-  d <- data.frame(yi=c(.2,.4,.1,.8,.5,1.1),vi=c(.03,.05,.06,.04,.07,.08),x=c(1,2,4,3,5,6),slab=letters[1:6])
-  mods <- list(numeric="x",categorical=character(),interactions=list())
+  withr::local_seed(71)
+  d <- data.frame(yi=c(.2,.4,.1,.8,.5,1.1),vi=c(.03,.05,.06,.04,.07,.08),x=c(1,2,4,3,5,6),w=c(2,1,3,1,4,2),slab=letters[1:6])
+  mods <- list(numeric=c("x","w"),categorical=character(),interactions=list())
+  single <- regression.wrapper(d, ~x, "DL", 95, 4, intercept=FALSE)
+  single.ref <- metafor::rma.uni(yi,vi,mods=~x-1,data=d,method="DL")
+  expect_equal(unname(single$b), unname(single.ref$b))
+  expect_error(permuted.meta.reg(d,"DL",modifyList(mods,list(numeric="x")),intercept=FALSE,iter=99),
+               "one-coefficient no-intercept")
   for(intercept in c(FALSE,TRUE)) for(knha in c(FALSE,TRUE)) {
-    ref <- metafor::rma.uni(yi,vi,mods=~x,intercept=intercept,test=if(knha) "knha" else "z",data=d,method="DL",digits=4)
+    ref <- metafor::rma.uni(yi,vi,mods=if(intercept) ~x+w else ~x+w-1,test=if(knha) "knha" else "z",data=d,method="DL",digits=4)
     set.seed(71); expected <- metafor::permutest(ref,iter=99,digits=4)
     set.seed(71); actual <- permuted.meta.reg(d,"DL",mods,intercept=intercept,knha=knha,iter=99,retpermdist=TRUE,digits=4)
+    expect_equal(rownames(actual$res$beta), if(intercept) c("intrcpt","x","w") else c("x","w"))
     for(field in c("beta","se","pval","QMp","zval.perm","QM.perm")) expect_equal(actual$res[[field]],expected[[field]],info=field)
     expect_match(actual[["Standard Meta Regression Summary"]],paste(capture.output(ref),collapse="\n"),fixed=TRUE)
-    if (!intercept) expect_match(actual[["Standard Meta Regression Summary"]],"yi ~ x - 1",fixed=TRUE)
+    if (!intercept) expect_match(actual[["Standard Meta Regression Summary"]],"yi ~ x + w - 1",fixed=TRUE)
   }
 })
 test_that("G1B-009 MA exposes the requested permutation distribution", {
+  withr::local_seed(71)
   d <- data.frame(yi=c(.2,.4,.1,.8,.5,1.1),vi=rep(.05,6),slab=letters[1:6])
   set.seed(71); ref <- metafor::permutest(metafor::rma.uni(yi,vi,data=d,method="DL"),iter=99)
   set.seed(71); actual <- permuted.ma(d,"DL",iter=99,retpermdist=TRUE)

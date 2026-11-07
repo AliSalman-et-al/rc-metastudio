@@ -34,6 +34,9 @@ permuted.meta.reg <- function (
 
 	reg.res <- regression.wrapper(data, mods.formula, method, level, digits, btt,
 	                              intercept=intercept, knha=knha)
+	# Pinned metafor drops its design matrix dimension for this model shape.
+	if (!reg.res$int.incl && reg.res$p == 1L)
+		stop("Pinned metafor cannot permute one-coefficient no-intercept models.", call.=FALSE)
 
 	perm.res <- permutest(reg.res, exact=exact, iter=iter, digits=digits)
 	if (!retpermdist) perm.res[c("zval.perm", "QM.perm", "beta.perm")] <- NULL
