@@ -96,7 +96,7 @@ def test_close_cancel_and_failed_save_keep_owned_shell_alive(qapp, monkeypatch):
     from rc_metastudio import app_error_handler
     unexpected = []
     monkeypatch.setattr(app_error_handler, "show_unexpected_error",
-                        lambda error, parent=None: unexpected.append(str(error)))
+                        lambda error, parent=None, **kwargs: unexpected.append(str(error)))
     app, window = automation.start_automation()
     window.workspace.mark_dirty()
     monkeypatch.setattr(

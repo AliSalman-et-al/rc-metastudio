@@ -877,3 +877,23 @@ def _close_without_prompt(app, window):
     window.close()
     app.processEvents()
     os.chdir(REPO_ROOT)
+
+
+def test_log_write_failure_retains_original_error_and_recovers(monkeypatch, tmp_path, qapp, capsys):
+    from rc_metastudio import app_error_handler
+
+    log_path = tmp_path / "blocked-log"
+    log_path.mkdir()
+    shown = []
+    monkeypatch.setattr(app_error_handler, "exception_log_path", lambda: str(log_path))
+    monkeypatch.setattr(app_error_handler.QMessageBox, "critical", lambda *args: shown.append(args))
+    def fail():
+        raise ValueError("original action failed")
+    app_error_handler.safe_slot(fail)()
+    assert "original action failed" in shown[-1][2]
+    assert "trace was written" not in shown[-1][2]
+    assert "ValueError: original action failed" in capsys.readouterr().err
+    log_path.rmdir()
+    app_error_handler.safe_slot(fail)()
+    assert "original action failed" in log_path.read_text(encoding="utf-8")
+    assert "trace was written" in shown[-1][2]

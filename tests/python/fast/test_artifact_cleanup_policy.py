@@ -1,3 +1,4 @@
+import pytest
 from pathlib import Path
 
 
@@ -33,5 +34,26 @@ def test_scratch_override_remains_exact_and_cleanup_does_not_touch_siblings(
     (sibling / "other.svg").write_text("other", encoding="utf-8")
     settings.clear_r_tmp()
 
-    assert not (current / "current.svg").exists()
+    assert (current / "current.svg").read_text(encoding="utf-8") == "current"
     assert (sibling / "other.svg").exists()
+
+
+@pytest.mark.parametrize("relative", [False, True])
+def test_scratch_setup_preserves_caller_files_across_cwd_change(tmp_path, monkeypatch, relative):
+    from rc_metastudio import settings
+
+    invocation = tmp_path / "invocation"
+    base = tmp_path / "appdata"
+    for directory in (invocation / "scratch", base / "scratch"):
+        directory.mkdir(parents=True)
+        (directory / "sentinel").write_bytes(b"unrelated\x00bytes")
+    monkeypatch.chdir(invocation)
+    override = invocation / "scratch"
+    monkeypatch.setenv(settings.ANALYSIS_SCRATCH_ENV_VAR, "scratch" if relative else str(override))
+    monkeypatch.setattr(settings, "get_base_path", lambda **kwargs: str(base))
+    settings.setup_directories()
+    assert Path(settings.get_r_tmp_path()).resolve() == override
+    assert Path(settings.analysis_output_path("new.svg")).parent == override
+    settings.clear_r_tmp()
+    for directory in (invocation / "scratch", base / "scratch"):
+        assert (directory / "sentinel").read_bytes() == b"unrelated\x00bytes"

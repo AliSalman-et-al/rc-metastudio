@@ -46,14 +46,11 @@ def log_exception(exc_type, exc_value, exc_traceback):
     return path
 
 
-def show_unexpected_error(exc_value, parent=None):
+def show_unexpected_error(exc_value, parent=None, *, log_path=None):
     details = str(exc_value) or exc_value.__class__.__name__
-    try:
-        log_path = exception_log_path()
-        message = UNEXPECTED_ERROR_MESSAGE.format(details=details)
+    message = UNEXPECTED_ERROR_MESSAGE.format(details=details)
+    if log_path is not None:
         message += "\n\nA diagnostic trace was written to:\n%s" % log_path
-    except Exception:
-        message = UNEXPECTED_ERROR_MESSAGE.format(details=details)
     QMessageBox.critical(parent, UNEXPECTED_ERROR_TITLE, message)
 
 
@@ -72,10 +69,14 @@ def handle_exception(exc_type, exc_value, exc_traceback, parent=None):
 
     _handling_exception = True
     try:
-        log_exception(exc_type, exc_value, exc_traceback)
+        log_path = None
+        try:
+            log_path = log_exception(exc_type, exc_value, exc_traceback)
+        except OSError:
+            traceback.print_exception(exc_type, exc_value, exc_traceback)
         app = QApplication.instance()
         if app is not None:
-            show_unexpected_error(exc_value, parent=parent)
+            show_unexpected_error(exc_value, parent=parent, log_path=log_path)
         else:
             traceback.print_exception(exc_type, exc_value, exc_traceback)
     finally:

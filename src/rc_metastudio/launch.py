@@ -273,6 +273,8 @@ def start():
 
         return automation.dispatch(startup_argv)
     startup_project_path = _startup_project_path(startup_argv)
+    if startup_project_path:
+        startup_project_path = os.path.abspath(startup_project_path)
     app = app_error_handler.get_or_create_application(list(sys.argv))
     baseline_ids = _top_level_ids(app)
     meta = None
@@ -315,6 +317,10 @@ def compose_application(
             # Frozen bootstrap changes HOME, which Qt uses for AppDataLocation.
             # Configure it before creating the shared Python/R working directory.
             r_runtime.configure_bundled_r_environment()
+        if not getattr(sys, "frozen", False):
+            for name in ("RCMS_R_HOME", "RCMS_R_LIBS"):
+                if os.environ.get(name):
+                    os.environ[name] = os.path.abspath(os.environ[name])
         settings.setup_directories()
         meta = _finish_composition(app, main_window, splash=None)
         # Windows cannot remove an application base directory while it is cwd.
@@ -336,7 +342,7 @@ def compose_application(
                 r_backend.mark_ready()
                 meta.model.set_confidence_level(meta.model.get_confidence_level())
                 meta.model_updated()
-                meta.toggle_menu_options_that_require_dataset(meta.model.current_sheet is not None)
+                meta.tableView._enable_analysis_menus_if_appropriate()
                 meta.setEnabled(True)
                 if sys.platform != "darwin":
                     meta.unsetCursor()

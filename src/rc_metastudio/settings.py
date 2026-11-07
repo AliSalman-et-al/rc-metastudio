@@ -812,7 +812,10 @@ def setup_directories():
     Python stays in the application data directory; R is reset to the same base
     directory and writes analysis artifacts under the managed scratch folder.
     """
-    # Create the application data root and managed analysis scratch folder.
+    # Overrides belong to the caller; anchor them before switching cwd.
+    override = os.environ.get(ANALYSIS_SCRATCH_ENV_VAR)
+    if override:
+        os.environ[ANALYSIS_SCRATCH_ENV_VAR] = os.path.abspath(override)
     base_path = make_base_path()
     make_r_tmp()
 
@@ -886,6 +889,9 @@ def to_posix_path(path):
 
 
 def clear_r_tmp():
+    # A supplied directory can contain caller files or another launch's output.
+    if os.environ.get(ANALYSIS_SCRATCH_ENV_VAR):
+        return
     r_tmp_dir = get_r_tmp_path(normalize=True)
     if not os.path.isdir(r_tmp_dir):
         return

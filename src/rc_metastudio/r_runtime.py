@@ -167,9 +167,9 @@ def _configure_private_runtime_directories(root):
     home.mkdir(parents=True, exist_ok=True)
     temporary.mkdir(parents=True, exist_ok=True)
     for path in (home, temporary):
-        probe = path / ".write-probe"
-        probe.write_text("ok", encoding="utf-8")
-        probe.unlink()
+        descriptor, name = tempfile.mkstemp(prefix=".write-probe-", dir=path)
+        os.close(descriptor)
+        Path(name).unlink()
     os.environ["HOME"] = str(home)
     os.environ["TMPDIR"] = str(temporary)
     os.environ["TMP"] = str(temporary)
@@ -224,7 +224,13 @@ def _runtime_candidates(root, frozen):
 
 
 def _configure_r_home(root, frozen):
-    r_home = _first_existing(_runtime_candidates(root, frozen), required_child=os.path.join("bin"))
+    override = os.environ.get("RCMS_R_HOME") if not frozen else None
+    if override is not None and (not override or not os.path.isdir(os.path.join(override, "bin"))):
+        raise RuntimeError(f"Invalid RCMS_R_HOME: {override!r}; expected an R home with bin/.")
+    r_home = (
+        os.path.abspath(override) if override is not None else
+        _first_existing(_runtime_candidates(root, frozen), required_child="bin")
+    )
     if not r_home:
         if frozen:
             raise RuntimeError("Frozen application is missing its private R runtime.")
@@ -273,7 +279,13 @@ def _configure_r_libraries(root, r_home, frozen):
     ]
     if not frozen:
         candidates.insert(0, os.environ.get("RCMS_R_LIBS"))
-    r_libs = _first_existing(candidates, required_child=os.path.join("RCMetaR"))
+    override = os.environ.get("RCMS_R_LIBS") if not frozen else None
+    if override is not None and (not override or not os.path.isdir(os.path.join(override, "RCMetaR"))):
+        raise RuntimeError(f"Invalid RCMS_R_LIBS: {override!r}; expected a library containing RCMetaR/.")
+    r_libs = (
+        os.path.abspath(override) if override is not None else
+        _first_existing(candidates, required_child="RCMetaR")
+    )
     if r_libs:
         os.environ["R_LIBS"] = r_libs
         os.environ["R_LIBS_USER"] = r_libs
