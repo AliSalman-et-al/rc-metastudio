@@ -46,12 +46,12 @@ Run `uv run python scripts/verify_rcms.py calculator-mode-<suffix>`:
 
 | Suffix | Actual controls and independent expectations |
 | --- | --- |
-| `binary-metrics` | OR/RR/RD selector and count edit; independently calculated previews |
+| `binary-metrics` | OR/RR/RD selector and count edit; independently calculated previews; deleting a non-event count clears its derived total; impossible partial counts block OK and Clear recovers |
 | `continuous-metrics` | MD/SMD selector and mean edit; exact Hedges correction |
 | `diagnostic-metrics` | Sens/Spec selector and count edit; proportions from counts |
 | `onearm-proportion`, `onearm-mean` | Actual one-arm wizard, PR/mean calculator, accepted data and missing second arm |
 | `entered-binary`, `entered-continuous`, `entered-diagnostic` | Clear, entered estimate and both CI bounds; independent log/identity/logit storage; entered triplet survives Cancel, undo/redo and reopen |
-| `pre-post` | Both groups' pre/post tables; correlation 0 then .5 changes reconstructed SD; independent mean/variance |
+| `pre-post` | Mode switching preserves existing arm summaries; Clear recovers invalid input; both groups' pre/post tables, correlation 0 then .5, independent mean/variance; deleting a required mean clears its derived arm and preview |
 | `back-binary` | Independently known OR/CI and totals reconstruct a valid ambiguous count candidate; nested Cancel before candidate 1 |
 | `back-continuous` | MD/CI and partial N/mean/SD reconstruct the missing mean; nested Cancel before equal-SD candidate 1 |
 | `back-diagnostic` | Independently known Sens/Spec logit intervals and prevalence reconstruct [80,20,10,90] |
