@@ -20,7 +20,6 @@ test_that("optional forest visual QA matrix renders", {
   skip_if_not(file.exists(script))
 
   output.root <- file.path(tempdir(), "rcmetar-forest-visual-qa-test")
-  Sys.setenv(RCMETASTUDIO_QA_ROOT = output.root)
   source(script, local = TRUE)
   manifest <- qa_render_matrix(output.root)
 

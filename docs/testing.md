@@ -188,3 +188,20 @@ multi-monitor placement or native DPI behavior.
 The remaining-surfaces collector records close and Escape rejection while CSV
 import owns the modal dialog, followed by owner completion through `hide_once`.
 It requires all three observations; closing import progress is not cancellation.
+
+### QA audit contracts
+
+The standalone forest matrix writes its manifest before returning failure when any
+render fails. Footer CLI checks remain active under Python optimization, including
+the shared geometry observer. Optional visual tests must not change the caller's
+output-root environment.
+
+Formatting captures retain malformed array members with source/index diagnostics.
+The Qt ownership audit counts direct initializer registration (or the explicitly
+called `_configure_window` step), not calls in dead branches or uncalled methods.
+This is a narrow static contract, not proof of runtime native ownership.
+
+Native calculator bundle validation requires exactly the three successful Windows
+transactions, their model outcomes and intact captures. The analysis smoke checks
+the exact selected backend request and typed owner delivery; its explicit backend
+fixture does not establish live R numerical correctness.

@@ -119,7 +119,10 @@ def audit_top_level_form_ownership(
     findings: list[OwnershipFinding] = []
     actual_top_levels: set[str] = set()
     for path in forms_dir.glob("*.ui"):
-        top = ET.parse(path).getroot().find("widget")
+        try:
+            top = ET.parse(path).getroot().find("widget")
+        except ET.ParseError:
+            continue
         if top is not None and top.get("class") in TOP_LEVEL_CLASSES:
             actual_top_levels.add(path.name)
 
@@ -144,11 +147,13 @@ def audit_top_level_form_ownership(
         for source_name, class_name, role in registrations:
             source = source_dir / source_name
             if source not in parsed_sources:
-                parsed_sources[source] = (
-                    ast.parse(source.read_text(encoding="utf-8"))
-                    if source.exists()
-                    else None
-                )
+                try:
+                    parsed_sources[source] = (
+                        ast.parse(source.read_text(encoding="utf-8"))
+                        if source.exists() else None
+                    )
+                except SyntaxError:
+                    parsed_sources[source] = None
             tree = parsed_sources[source]
             target_class = next(
                 (
@@ -158,14 +163,31 @@ def audit_top_level_form_ownership(
                 ),
                 None,
             )
-            exact_registration = (
-                any(
-                    _is_exact_window_registration(node, role)
-                    for node in ast.walk(target_class)
-                )
-                if target_class is not None
-                else False
-            )
+            exact_registration = False
+            if target_class is not None:
+                initializer = next((method for method in target_class.body if isinstance(method, ast.FunctionDef) and method.name == "__init__"), None)
+                if initializer is not None:
+                    statements = list(initializer.body)
+                    # PublicationBiasDialog delegates this contract to its initializer's
+                    # explicit window-configuration step. Do not count uncalled helpers.
+                    configure = next((method for method in target_class.body if isinstance(method, ast.FunctionDef) and method.name == "_configure_window"), None)
+                    for statement in statements:
+                        if (configure is not None and isinstance(statement, ast.Expr)
+                            and isinstance(statement.value, ast.Call)
+                            and isinstance(statement.value.func, ast.Attribute)
+                            and isinstance(statement.value.func.value, ast.Name)
+                            and statement.value.func.value.id == "self"
+                            and statement.value.func.attr == "_configure_window"):
+                            for configured in configure.body:
+                                if isinstance(configured, (ast.Return, ast.Raise)):
+                                    break
+                                if isinstance(configured, (ast.Expr, ast.Assign)) and _is_exact_window_registration(configured.value, role):
+                                    exact_registration = True
+                        if isinstance(statement, (ast.Return, ast.Raise)):
+                            break
+                        if isinstance(statement, (ast.Expr, ast.Assign, ast.AnnAssign)) and statement.value is not None and _is_exact_window_registration(statement.value, role):
+                            exact_registration = True
+                            break
             if not exact_registration:
                 findings.append(
                     OwnershipFinding(

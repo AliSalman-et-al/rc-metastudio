@@ -147,13 +147,24 @@ def validate_evidence_bundle(evidence_root: Path) -> list[dict[str, object]]:
     if not isinstance(evidence, list):
         raise ValueError("native calculator evidence must be a JSON array")
 
-    calculator_records = [record for record in evidence if "calculator" in record]
-    if {record.get("calculator") for record in calculator_records} != {
-        "binary",
-        "continuous",
-        "diagnostic",
-    }:
-        raise ValueError("native calculator evidence must cover all calculators")
+    if any(not isinstance(record, dict) or "error" in record for record in evidence):
+        raise ValueError("native calculator evidence contains invalid or failed records")
+    calculator_records = evidence
+    expected = {
+        "binary": ("valid edit and accept", "accepted", [7, 21], False),
+        "continuous": ("comma-decimal edit and accept", "accepted", [10.0, 95.5, 2.0], False),
+        "diagnostic": ("invalid edit and cancel rollback", "rejected", [12, 3, 4, 21], True),
+    }
+    if len(calculator_records) != 3 or {record.get("calculator") for record in calculator_records} != set(expected):
+        raise ValueError("native calculator evidence must contain exactly three transactions")
+    for record in calculator_records:
+        action, outcome, model, nonmutation = expected[record["calculator"]]
+        if record.get("qpa") != "windows":
+            raise ValueError("native calculator evidence requires qwindows")
+        if (record.get("action"), record.get("expected_result"), record.get("model_after"), record.get("model_nonmutation")) != (action, outcome, model, nonmutation):
+            raise ValueError("native calculator transaction did not succeed")
+        if record.get("visible") is not True or record.get("default_accept") is not True:
+            raise ValueError("native calculator was not visible with default acceptance")
 
     for record in calculator_records:
         if record.get("capture_method") not in {

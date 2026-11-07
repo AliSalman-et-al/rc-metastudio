@@ -315,6 +315,13 @@ def test_native_calculator_evidence_is_relocatable_and_tamper_evident(tmp_path):
         payload = image.read_bytes()
         records.append(
             {
+                "qpa": "windows",
+                "visible": True,
+                "default_accept": True,
+                "action": {"binary": "valid edit and accept", "continuous": "comma-decimal edit and accept", "diagnostic": "invalid edit and cancel rollback"}[calculator],
+                "expected_result": "rejected" if calculator == "diagnostic" else "accepted",
+                "model_after": {"binary": [7, 21], "continuous": [10.0, 95.5, 2.0], "diagnostic": [12, 3, 4, 21]}[calculator],
+                "model_nonmutation": calculator == "diagnostic",
                 "calculator": calculator,
                 "capture_method": capture_method,
                 "image": image.name,
@@ -329,6 +336,22 @@ def test_native_calculator_evidence_is_relocatable_and_tamper_evident(tmp_path):
     assert smoke.validate_evidence_bundle(relocated) == records
 
     manifest = relocated / "evidence.json"
+    for defect in ("offscreen", "error", "duplicate", "missing", "wrong-model"):
+        broken = json.loads(json.dumps(records))
+        if defect == "offscreen":
+            broken[0]["qpa"] = "offscreen"
+        elif defect == "error":
+            broken.append({"error": "failed"})
+        elif defect == "duplicate":
+            broken.append(broken[0])
+        elif defect == "missing":
+            broken.pop()
+        else:
+            broken[0]["model_after"] = [6, 20]
+        manifest.write_text(json.dumps(broken), encoding="utf-8")
+        with pytest.raises(ValueError):
+            smoke.validate_evidence_bundle(relocated)
+    manifest.write_text(json.dumps(records), encoding="utf-8")
     tampered = json.loads(manifest.read_text(encoding="utf-8"))
     forged = b"not a PNG despite matching manifest integrity"
     forged_image = relocated / tampered[0]["image"]
@@ -546,10 +569,8 @@ def test_row_header_signals_are_restored_when_calculator_opening_raises(
     view = dataset_table_view.DatasetTableView()
     view.setModel(FakeModel())
 
-    try:
+    with pytest.raises(CalculatorOpenError):
         view.row_header_clicked(0)
-    except CalculatorOpenError:
-        pass
 
     assert not view.vert_header.signalsBlocked()
 

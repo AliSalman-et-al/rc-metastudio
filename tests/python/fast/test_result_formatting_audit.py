@@ -88,21 +88,21 @@ def test_audit_flags_duplicate_titles_and_ordering():
 
 
 @pytest.mark.parametrize(
-    "text",
+    ("text", "code"),
     [
-        "Package: meta\nCall: meta::metabias(...)" ,
-        "geometry: c(0.1, 0.2, 0.3)",
-        "prepared.effects: c(0.1, 0.2, 0.3)",
-        "Estimate  Lower bound  Upper bound\n0.1234567  0.1  0.2",
+        ("Package: meta\nCall: meta::metabias(...)", "internal-dump"),
+        ("geometry: c(0.1, 0.2, 0.3)", "internal-dump"),
+        ("prepared.effects: c(0.1, 0.2, 0.3)", "internal-key"),
+        ("Estimate  Lower bound  Upper bound\n0.1234567  0.1  0.2", "excessive-precision"),
     ],
 )
-def test_audit_flags_backend_dumps_and_unrounded_values(text):
+def test_audit_flags_backend_dumps_and_unrounded_values(text, code):
     from scripts.audit_result_formatting import audit_records
 
     report = audit_records([_result(texts={"Summary": text})])
     codes = {finding["code"] for finding in report["findings"]}
 
-    assert codes & {"internal-dump", "internal-key", "excessive-precision"}
+    assert code in codes
 
 
 def test_curated_publication_method_details_allow_package_and_call():

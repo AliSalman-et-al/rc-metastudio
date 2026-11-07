@@ -1674,7 +1674,12 @@ test_that("repeated diagnostic workflows keep metric forest plots independent", 
     expect_false(any(grepl(" and ", names(result$images), fixed = TRUE)))
     expect_true(all(file.exists(unname(result$images))))
 
-    bundles <- lapply(unname(result$plot_params_paths), load_saved_plot_data)
+    bundles <- lapply(result$plot_params_paths, load_saved_plot_data)
+    for (i in seq_along(measures)) {
+      bundle <- bundles[[expected_names[i]]]
+      expect_equal(bundle$params$measure, measures[i])
+      expect_equal(bundle$params$fp_outpath, unname(result$images[[expected_names[i]]]))
+    }
     expect_true(all(vapply(bundles, rcmetar.is.metafor.forest.bundle, logical(1))))
     expect_setequal(
       vapply(bundles, function(bundle) bundle$params$measure, character(1)),

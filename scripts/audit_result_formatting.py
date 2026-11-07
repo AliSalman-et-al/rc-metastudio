@@ -330,6 +330,9 @@ def audit_records(records: Iterable[Mapping[str, object]]) -> AuditReport:
             continue
         source = _record_source(record, f"record-{index}")
         source_count += 1
+        if "_load_error" in record:
+            findings.append(_finding("malformed-record", source, str(record["_load_error"])))
+            continue
         try:
             sections = _as_sections(record.get("texts", record.get("sections")), "texts")
             images = _as_sections(record.get("images"), "images")
@@ -428,15 +431,15 @@ def _records_from_json(value: object, source: str) -> list[dict[str, object]]:
     if _string_keyed_mapping(value):
         records = value.get("records")
         if isinstance(records, list):
-            return [dict(item, _source=f"{source}#{index}") for index, item in enumerate(records, 1) if _string_keyed_mapping(item)]
+            return [dict(item, _source=f"{source}#{index}") if _string_keyed_mapping(item) else {"_source": f"{source}#{index}", "_load_error": "Capture member is not a mapping."} for index, item in enumerate(records, 1)]
         captures = value.get("captures")
         if isinstance(captures, list):
-            return [dict(item, _source=f"{source}#{index}") for index, item in enumerate(captures, 1) if _string_keyed_mapping(item)]
+            return [dict(item, _source=f"{source}#{index}") if _string_keyed_mapping(item) else {"_source": f"{source}#{index}", "_load_error": "Capture member is not a mapping."} for index, item in enumerate(captures, 1)]
         if "texts" in value or "sections" in value:
             return [dict(value, _source=source)]
         return []
     if isinstance(value, list):
-        return [dict(item, _source=f"{source}#{index}") for index, item in enumerate(value, 1) if _string_keyed_mapping(item)]
+        return [dict(item, _source=f"{source}#{index}") if _string_keyed_mapping(item) else {"_source": f"{source}#{index}", "_load_error": "Capture member is not a mapping."} for index, item in enumerate(value, 1)]
     return []
 
 

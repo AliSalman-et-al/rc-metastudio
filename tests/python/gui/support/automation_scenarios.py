@@ -1419,7 +1419,7 @@ def _expected_packaged_summary_sha256(sample_path):
 
 
 def _packaged_result_identity(result, expected_summary_sha256):
-    summary = result.get("texts", {}).get("Summary", "").replace("\r\n", "\n")
+    summary = result.texts.get("Summary", "").replace("\r\n", "\n")
     raw_summary_sha256 = hashlib.sha256(summary.encode("utf-8")).hexdigest()
     normalized_summary = normalize_packaged_summary_identity(summary)
     normalized_summary_sha256 = hashlib.sha256(
@@ -1434,7 +1434,7 @@ def _packaged_result_identity(result, expected_summary_sha256):
                 normalized_summary,
             )
         )
-    display_images = result.get("display_images", {})
+    display_images = result.display_images
     svg_hashes = {}
     for label, raw_path in sorted(display_images.items()):
         path = Path(raw_path)
@@ -1877,7 +1877,7 @@ def _assert_standard_binary_summary_is_formatted(meta):
     captured = {}
     original_analysis = meta.analysis
 
-    def capture_analysis(result):
+    def capture_analysis(result, *, change_settings=None):
         captured["result"] = result
 
     specs = main_window.analysis_setup_dialog.AnalysisSetupDialog(
@@ -1908,7 +1908,7 @@ def _assert_standard_binary_summary_is_formatted(meta):
         raise SystemExit(
             "Packaged summary smoke test did not produce analysis results."
         )
-    summary = result.get("texts", {}).get("Summary", "")
+    summary = result.texts.get("Summary", "")
     required = [
         "Binary Random-Effects Model",
         "Metric: Odds Ratio",
