@@ -678,8 +678,12 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
                 required(
                     dialog.content_scroll_area.verticalScrollBar(), "vertical scrollbar"
                 ).setValue(0)
+                dialog.activateWindow()
+                qapp.processEvents()
+                assert dialog.isActiveWindow()
                 editable_value.setFocus()
                 qapp.processEvents()
+                assert editable_value.hasFocus()
                 visible_region = required(
                     dialog.content_scroll_area.viewport(), "content viewport"
                 ).rect()

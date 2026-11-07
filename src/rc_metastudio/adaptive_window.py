@@ -415,7 +415,8 @@ class AdaptiveWindowController(QObject):
             return
 
         available = self._available_geometry()
-        if screen is not None and self._uses_default_available_geometry_provider:
+        if (screen is not None and screen is not owning_screen(self.window)
+                and self._uses_default_available_geometry_provider):
             available = QRect(screen.availableGeometry())
         if not available.isValid():
             return

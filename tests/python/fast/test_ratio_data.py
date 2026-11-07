@@ -34,7 +34,7 @@ def test_reverse_preserves_source_ci_and_log_se(scale):
     assert asdict(reverse.reversed()) == pytest.approx(asdict(record))
 
 
-def test_ratio_inputs_survive_project_round_trip_renaming_and_reversal(tmp_path):
+def test_ratio_inputs_survive_project_round_trip_renaming_and_reversal(tmp_path, inject_python_boundary):
     project = _multi_arm_project("binary")
     project["schema_version"] = CURRENT_FORMAT_VERSION
     sheet_doc = project["sheets"][0]
