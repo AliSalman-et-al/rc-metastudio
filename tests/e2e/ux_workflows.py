@@ -580,9 +580,12 @@ def _run(app, window, work, root, record, analyze):
     assert window.model.current_sheet.rows[0].label == "Alpha, München"
     assert window.model.current_sheet.rows[1].covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == "Dose")] == 7.0
     assert window.model.get_current_raw_data_for_study(0) == [1, 10, 2, 12]
+    from rc_metastudio.project_adapter import dataset_to_project
+    mapped_project = dataset_to_project(window.model.dataset)
     window.out_path = str(work / "mapped.rcms")
     assert window.save()
     assert window.open(window.out_path, raise_on_error=True)
+    assert dataset_to_project(window.model.dataset) == mapped_project, "mapped project changed after reopening"
     analyze(app, window, "binary.random").close()
     for column, value in ((window.model.RAW_DATA[1], 10000), (window.model.RAW_DATA[3], 10000), (window.model.RAW_DATA[0], 1), (window.model.RAW_DATA[2], 5000)):
         assert window.model.setData(window.model.index(0, column), value)

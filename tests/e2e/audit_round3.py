@@ -36,9 +36,9 @@ def check_interval_caps(path):
                 caps.append((y1, abs(cap[1]-cap[3])))
     rows = sorted(set(round(y, 2) for y, _ in caps))
     spacing = [b-a for a,b in zip(rows, rows[1:]) if b-a > 2]
-    if len(spacing) > 1:
-        row_height = median(spacing)
-        assert all(height <= row_height*.45+.03 for _,height in caps), ("CI caps cross row bands", path, row_height, caps)
+    assert len(spacing) >= 2, ("expected at least three capped interval rows", path, caps)
+    row_height = median(spacing)
+    assert all(height <= row_height*.45+.03 for _,height in caps), ("CI caps cross row bands", path, row_height, caps)
 
 
 def check_report(app, view, work, record):

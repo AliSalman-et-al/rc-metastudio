@@ -92,7 +92,11 @@ def run(app, window, ROOT, WORK, record_step):
     window.set_model(imported.dataset)
     for index, sheet in enumerate(imported.dataset.sheets):
         window.sheet_tabs.setCurrentIndex(index)
-        for row, ref in zip(sheet.rows, [r for r in rows if int(r['outcome.no']) == index + 1]):
+        references = [r for r in rows if int(r['outcome.no']) == index + 1]
+        assert len(sheet.rows) == len(references), ('generic IV study count', index)
+        for row, ref in zip(sheet.rows, references, strict=True):
+            assert row.label == ref['studlab'], ('generic IV study identity', row.label, ref)
+            assert row.year == (int(ref['year']) if ref['year'].isdigit() else None), ('generic IV study year', row.label, row.year, ref['year'])
             te = float(ref['TE'])
             if ref['logscale'] == 'FALSE':
                 te = math.log(te)

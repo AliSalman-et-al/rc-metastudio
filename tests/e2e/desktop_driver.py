@@ -309,7 +309,8 @@ def analyze(app, window, method, *, digits=3):
             if control.isVisible() and isinstance(control, (QtWidgets.QLabel, QtWidgets.QComboBox, QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
                 left = control.mapTo(viewport, QtCore.QPoint()).x()
                 assert left >= 0 and left + control.width() <= viewport.width(), (control.objectName(), left, control.width(), viewport.width(), control.text() if isinstance(control, QtWidgets.QLabel) else "")
-    record_step("analysis-configured", dialog, method=method, digits=3)
+    assert precision.value() == digits, ("configured precision", precision.value(), digits)
+    record_step("analysis-configured", dialog, method=method, digits=precision.value())
     button = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
     assert button.isEnabled()
     mouse_click(required(button), QtCore.Qt.MouseButton.LeftButton)
@@ -921,13 +922,13 @@ def sheets(app, window):
     record_step("sheets-initial", window)
     screens = WORK / "sheets-screens"
     screens.mkdir(exist_ok=True)
-    window.grab().save(str(screens / "sheets-after-main.png"))
+    assert window.grab().save(str(screens / "sheets-after-main.png"))
     window.action_go.trigger()
     app.processEvents()
     dialog = next(w for w in app.topLevelWidgets() if isinstance(w, analysis_setup_dialog.AnalysisSetupDialog) and w.isVisible())
     dialog.resize(631, 437)
     app.processEvents()
-    dialog.grab().save(str(screens / "sheets-after-analysis.png"))
+    assert dialog.grab().save(str(screens / "sheets-after-analysis.png"))
     dialog.close()
 
     before_cancel = project(window.model.dataset)
@@ -1260,8 +1261,8 @@ def xlsx_import(app, window):
         assert isinstance(types, main_wizard.DataTypePage)
         buttons = types._data_type_buttons()
         assert all(not button.icon().isNull() for button in buttons)
-        capture.grab().save(str(screens / f"slice7-{theme}-data-types.png"))
-        capture.grab().save(str(screens / f"slice8a-data-types-{theme}.png"))
+        assert capture.grab().save(str(screens / f"slice7-{theme}-data-types.png"))
+        assert capture.grab().save(str(screens / f"slice8a-data-types-{theme}.png"))
         for page_id, page_name in ((main_wizard.Page_Welcome, "welcome"),
                                    (main_wizard.Page_OutcomeName, "outcome"),
                                    (main_wizard.Page_CsvImport, "csv")):
@@ -1269,14 +1270,14 @@ def xlsx_import(app, window):
             capture.setStartId(page_id)
             capture.restart()
             app.processEvents()
-            capture.grab().save(str(screens / f"slice8a-{page_name}-{theme}.png"))
+            assert capture.grab().save(str(screens / f"slice8a-{page_name}-{theme}.png"))
         window.resize(1200, 828)
         window.tableView.horizontalScrollBar().setValue(0)
         window.tableView.viewport().repaint()
         window.tableView.horizontalHeader().viewport().repaint()
         app.processEvents()
         assert_study_grid(app, window)
-        window.grab().save(str(screens / f"slice8a-grid-{theme}.png"))
+        assert window.grab().save(str(screens / f"slice8a-grid-{theme}.png"))
         for index, button in enumerate(buttons):
             types._button_selected(button)
             if capture.require_dataset_info()["data_type"] == "diagnostic":
@@ -1288,9 +1289,9 @@ def xlsx_import(app, window):
             assert isinstance(metric_page, main_wizard.ChooseMetricPage)
             metrics = metric_page.metric_cbo_box
             assert all(metrics.itemIcon(i).isNull() for i in range(metrics.count()))
-            capture.grab().save(str(screens / f"slice7-{theme}-metrics-{index}.png"))
+            assert capture.grab().save(str(screens / f"slice7-{theme}-metrics-{index}.png"))
             if theme == "light" and index == 0:
-                capture.grab().save(str(screens / "slice8a-metric.png"))
+                assert capture.grab().save(str(screens / "slice8a-metric.png"))
         capture.close()
     app.setPalette(original_palette)
     from openpyxl import Workbook
@@ -1333,7 +1334,7 @@ def xlsx_import(app, window):
     assert cast(main_wizard.CsvImportPage, welcome.currentPage()).file_path == str(path)
     assert cast(main_wizard.CsvImportPage, welcome.currentPage()).isComplete(), cast(main_wizard.CsvImportPage, welcome.currentPage()).import_status.text()
     record_step("welcome-import-loaded", welcome)
-    welcome.grab().save(str(screens / "slice8a-import.png"))
+    assert welcome.grab().save(str(screens / "slice8a-import.png"))
     welcome.close()
     wizard = main_wizard.MainWizard(path="csv_import")
     wizard.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions", effect="OR", metric_choices=[], name="Mortality"))
@@ -1816,7 +1817,7 @@ def calculator(app, window, family):
                 assert "SE" in dialog.wald_readout.text() and "Two-sided P" in dialog.wald_readout.text()
                 widths = [dialog.metric_readout.columnWidth(i) for i in range(4)]
                 assert max(widths) - min(widths) <= 1, widths
-            dialog.grab().save(str(WORK / f"slice8a-calculator-{family}.png"))
+            assert dialog.grab().save(str(WORK / f"slice8a-calculator-{family}.png"))
             for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
                 width = field.fontMetrics().horizontalAdvance(field.text())
                 assert field.width() >= width + field.textMargins().left() + field.textMargins().right() + 12

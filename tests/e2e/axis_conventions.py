@@ -23,7 +23,7 @@ GEOMETRY_R = """jsonlite::toJSON(local({
                     }
                     list(fitted=list(lower=lower,upper=upper,pooled=pooled),
                          natural=list(lower=inverse(lower),upper=inverse(upper),pooled=inverse(pooled,TRUE)),
-                         weights=as.numeric(weights(plot.data$res)), yi=yi,se=se)
+                         weights=as.numeric(weights(plot.data$res)), labels=plot.data$slab, yi=yi,se=se)
                 }),digits=16,auto_unbox=FALSE)"""
 
 def ticks(path):
@@ -63,14 +63,23 @@ def check_endpoints(path, axis_ticks, geometry, natural, ratio):
         return a[1] + (b[1]-a[1])*(value-a[0])/(b[0]-a[0])
     expected = geometry['natural' if natural else 'fitted']
     tree = ET.parse(path)
-    lines = [(float(n.attrib['x1']),float(n.attrib['x2'])) for n in tree.iter('{http://www.w3.org/2000/svg}line')
+    lines = [(float(n.attrib['x1']), float(n.attrib['x2']), float(n.attrib['y1']))
+             for n in tree.iter('{http://www.w3.org/2000/svg}line')
              if abs(float(n.attrib['y1'])-float(n.attrib['y2'])) < .02]
+    assert expected['lower'], ('expected study intervals absent', path)
     matched = 0
-    for lo,hi in zip(expected['lower'],expected['upper'],strict=True):
-        left,right = sorted((pixel(lo),pixel(hi)))
-        if any(abs(min(x,y)-left) < .2 and abs(max(x,y)-right) < .2 for x,y in lines):
-            matched += 1
-    assert matched == len(expected['lower']), ('interval endpoint projection', path, matched, expected, lines)
+    for label, lo, hi in zip(geometry['labels'], expected['lower'], expected['upper'], strict=True):
+        label_nodes = [n for n in tree.iter('{http://www.w3.org/2000/svg}text')
+                       if ''.join(n.itertext()) == label]
+        assert len(label_nodes) == 1, ('study row label', label, path)
+        baseline = float(label_nodes[0].attrib['y'])
+        left, right = sorted((pixel(lo), pixel(hi)))
+        candidates = [(i, line) for i, line in enumerate(lines)
+                      if abs(min(line[:2])-left) < .2 and abs(max(line[:2])-right) < .2
+                      and abs(line[2]-baseline) < 5]
+        assert len(candidates) == 1, ('interval endpoint projection at study row', path, label, candidates)
+        lines.pop(candidates[0][0])
+        matched += 1
     if expected['pooled'] is None:
         return matched
     lower,upper = pixel(expected['pooled'][1]),pixel(expected['pooled'][2])

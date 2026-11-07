@@ -50,6 +50,15 @@ def run(app, window, root, record, analyze):
     r_bridge.load_vars_for_plot(params_path)
     r_bridge.load_in_r(str(params_path) + ".plotdata")
     original_labels = list(cast(Iterable[str], r_bridge.ro.r("plot.data$slab[plot.data$display_order]")))
+    import json
+    inputs = json.loads(str(r_bridge.execute_r_string('jsonlite::toJSON(list(year=plot.data$years, effect=as.numeric(plot.data$res$yi), weight=as.numeric(plot.data$weights)), na="null", digits=16)')[0]))
+    expected_orders = {'table': original_labels}
+    for key, values in inputs.items():
+        assert len(values) == len(original_labels), (key, values)
+        # Python's stable sort retains fixture/table order for ties; missing years go last.
+        indexes = sorted(range(len(values)), key=lambda i: (values[i] is None or (key == 'year' and values[i] == 0),
+                         0 if values[i] is None else -values[i] if key == 'weight' else values[i]))
+        expected_orders[key] = [original_labels[i] for i in indexes]
     view.report_action.setChecked(True)
     report = view.report_text.toPlainText()
     assert "Q(df=" not in report and "Het. p-value" not in report
@@ -79,11 +88,7 @@ def run(app, window, root, record, analyze):
         r_bridge.load_vars_for_plot(next(iter(changed.params_paths.values())))
         r_bridge.load_in_r(str(next(iter(changed.params_paths.values()))) + ".plotdata")
         labels = list(cast(Iterable[str], r_bridge.ro.r("plot.data$slab[plot.data$display_order]")))
-        assert sorted(labels) == sorted(original_labels)
-        if order == "table":
-            assert labels == original_labels
-        else:
-            assert labels != original_labels
+        assert labels == expected_orders[order], ('study order', order, labels, expected_orders[order])
         assert list(cast(Iterable[str], r_bridge.ro.r("plot.data$ilab$columns[[length(plot.data$ilab$columns)]]$key"))) == ["weight"]
         record("review-ordered-result-" + order, changed, labels=labels, numbers=baseline,
                plots=dict(changed.results.display_images))

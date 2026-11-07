@@ -158,6 +158,12 @@ def run(app, window, ROOT, WORK, record_step):
                 assert not imported.dataset.sheets[0].rows[0].include
                 assert imported.dataset.sheets[0].rows[0].label
                 assert all(v is None for arm in imported.dataset.sheets[0].rows[0].analysis_unit.arms.values() for v in arm.raw_data)
+            if case.startswith('year'):
+                expected_years = {study.get('NAME'): int(study.get('YEAR') or '') if (study.get('YEAR') or '').isdigit() else None
+                                  for study in root.iter('STUDY')}
+                affected = [row for sheet in imported.dataset.sheets for row in sheet.rows]
+                assert affected, ('year variant has no imported study', case)
+                assert all(row.year == expected_years[row.label] for row in affected), (case, [(row.label, row.year) for row in affected], expected_years)
             if case == 'duplicate':
                 assert imported.dataset.sheets[-1].name == imported.dataset.sheets[0].name + ' (2)'
         except (ValueError, KeyError, AssertionError) as error:
