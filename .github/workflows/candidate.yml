@@ -35,17 +35,24 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           ref: ${{ inputs.source_sha }}
+          fetch-depth: 0
       - name: Verify source is protected master
         env:
           GH_TOKEN: ${{ github.token }}
           SOURCE_SHA: ${{ inputs.source_sha }}
         run: |
           set -euo pipefail
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          git fetch origin master --depth=1
+          git fetch origin master
           git merge-base --is-ancestor "$SOURCE_SHA" origin/master
       - name: Initialize three-target release set
-        run: python scripts/delivery.py init --version "${{ inputs.version }}" --commit "${{ inputs.source_sha }}" --repository "${{ github.repository }}" --trust-profile "${{ inputs.trust_profile }}" --target windows-x64 --target macos-arm64 --target linux-x64 --output candidate/release-set.json
+        env:
+          VERSION: ${{ inputs.version }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          REPOSITORY: ${{ github.repository }}
+          TRUST_PROFILE: ${{ inputs.trust_profile }}
+        run: python scripts/delivery.py init --version "$VERSION" --commit "$SOURCE_SHA" --repository "$REPOSITORY" --trust-profile "$TRUST_PROFILE" --target windows-x64 --target macos-arm64 --target linux-x64 --output candidate/release-set.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-set-initial

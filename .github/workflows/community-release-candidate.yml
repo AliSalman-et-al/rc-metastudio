@@ -21,7 +21,22 @@ permissions:
   actions: read
 
 jobs:
+  validate-candidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - name: Authenticate protected candidate producer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.candidate_run_id }}
+          EXPECTED_SOURCE_SHA: ${{ inputs.source_sha }}
+          WORKFLOW_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$WORKFLOW_SHA" = "$EXPECTED_SOURCE_SHA"
+          node scripts/release_actions.cjs validate-candidate
   qualify:
+    needs: validate-candidate
     strategy:
       fail-fast: false
       matrix:
@@ -58,6 +73,19 @@ jobs:
         run: gh run download "$RUN_ID" --name candidate-linux-x64 --dir candidate
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
       - run: uv python install 3.11.9
+      - name: Bind downloaded archive to assembled state
+        shell: pwsh
+        env:
+          TARGET: ${{ matrix.target }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          $manifest = Get-ChildItem candidate -Recurse -Filter release-set.json
+          $record = Get-ChildItem candidate -Recurse -Filter "$env:TARGET.assembled.json"
+          if (@($manifest).Count -ne 1 -or @($record).Count -ne 1) { throw "Ambiguous candidate evidence." }
+          $extension = if ($env:TARGET -eq 'linux-x64') { 'tar.gz' } else { 'zip' }
+          uv run python scripts/delivery.py verify-archive --manifest $manifest.FullName --result $record.FullName --target "$env:TARGET" --archive "candidate/artifacts/RCMetaStudio-$env:TARGET.$extension" --source-sha "$env:SOURCE_SHA" --version "$env:VERSION" --repository "$env:GITHUB_REPOSITORY" --trust-profile unsigned-community
+          if ($LASTEXITCODE -ne 0) { throw "Candidate archive binding failed." }
       - name: Install Linux display and Qt runtime libraries
         if: matrix.target == 'linux-x64'
         run: sudo apt-get update && sudo apt-get install -y xvfb libxcb-cursor0
@@ -332,14 +360,18 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: v${{ inputs.version }}
+          VERSION: ${{ inputs.version }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
         run: |
           set -euo pipefail
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
           if gh release view "$TAG" >/dev/null 2>&1; then echo "Release $TAG already exists; refusing overwrite." >&2; exit 1; fi
           if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
             git fetch origin "refs/tags/$TAG:refs/tags/$TAG"
-            test "$(git rev-list -n 1 "$TAG")" = "${{ inputs.source_sha }}"
+            test "$(git rev-list -n 1 "$TAG")" = "$SOURCE_SHA"
             tag_args=(--verify-tag)
           else
-            tag_args=(--target "${{ inputs.source_sha }}")
+            tag_args=(--target "$SOURCE_SHA")
           fi
-          gh release create "$TAG" release/RCMetaStudio-windows-x64.zip release/RCMetaStudio-macos-arm64.zip release/RCMetaStudio-linux-x64.tar.gz release/*.cdx.json release/SHA256SUMS release/release-set-rc.json "${tag_args[@]}" --prerelease --title "RC MetaStudio ${{ inputs.version }}" --notes $'**Signing status:** Windows, Linux, and macOS are unsigned in the community build.\n\nWindows x64, Apple silicon macOS, and Linux x86_64 artifacts were built once on native runners, package-smoke tested, SBOM inventoried, checksummed, and provenance-attested.'
+          gh release create "$TAG" release/RCMetaStudio-windows-x64.zip release/RCMetaStudio-macos-arm64.zip release/RCMetaStudio-linux-x64.tar.gz release/*.cdx.json release/SHA256SUMS release/release-set-rc.json "${tag_args[@]}" --prerelease --title "RC MetaStudio $VERSION" --notes $'**Signing status:** Windows, Linux, and macOS are unsigned in the community build.\n\nWindows x64, Apple silicon macOS, and Linux x86_64 artifacts were built once on native runners, package-smoke tested, SBOM inventoried, checksummed, and provenance-attested.'

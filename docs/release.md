@@ -26,6 +26,8 @@ For the normal release path, run `Publish macOS-Trusted Release Candidate` with 
 
 Use `Publish Unsigned Community Release Candidate` when all three artifacts are intentionally unsigned.
 
+Dispatch publication from a branch or tag pointing to the exact selected source SHA. Publication rejects a different workflow-run SHA so GitHub provenance identifies the source actually qualified. Candidate builds may still select an older protected-master ancestor. Both consumers authenticate the candidate workflow's repository, event, path and protected-master revision before using its artifacts, and compare downloaded archives with their assembled records before extraction or signing.
+
 Inspect the prerelease assets and checksums. Do not replace assets on an existing RC tag; build a new candidate and RC instead.
 
 ## Promote without rebuilding
@@ -42,3 +44,7 @@ After promotion, confirm that the stable release contains:
 - `release-set-stable.json`
 
 If a published release must be withdrawn, use the `Withdraw Release` workflow. It marks the release as a prerelease and records the superseding tag; it does not rewrite tags or delete historical artifacts.
+
+Withdrawal requires a different, published stable replacement. It creates the tracking issue before editing the release. If issue creation fails, the release stays unchanged; if the release edit fails, the issue records the pending request. Rerun the same tag, replacement and reason to resume without duplicating the issue or notice. Requests for a tag are serialized; a conflicting retry fails for operator review.
+
+Verification recomputes every stage link and validates nonempty output records. Promotion compares each downloaded archive and SBOM with its target's final attested outputs and requires provenance from the trusted publication workflow at the claimed source SHA. Promotion records the prior version so stable manifests retain the initial candidate identity; older stable manifests without that information may fail verification and are not rewritten.
