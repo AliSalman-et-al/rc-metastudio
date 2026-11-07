@@ -10,8 +10,8 @@ app=QApplication([]);assert app.platformName()=='xcb'
 editor=subprocess.Popen(['xedit',str(report)])
 try:
  QTest.qWait(1500)
- tree=subprocess.check_output(['xwininfo','-root','-tree'],text=True)
- ids=re.findall(r'(0x[0-9a-f]+).*xedit',tree,re.I);assert ids
+ tree=subprocess.check_output(['xdotool','search','--onlyvisible','--pid',str(editor.pid)],text=True)
+ ids=[hex(int(value)) for value in tree.split()];assert len(ids)==1,(editor.pid,ids)
  subprocess.run(['wmctrl','-ir',ids[0],'-b','add,maximized_vert,maximized_horz'],check=True)
  subprocess.run(['wmctrl','-ia',ids[0]],check=True);QTest.qWait(500)
  path=HERE/'screenshots/shell-exported-report-editor.png'

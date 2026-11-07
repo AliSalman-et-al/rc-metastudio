@@ -28,4 +28,4 @@ proof = dict(passed=True, command=command, source='metadat::dat.bcg', **source,
     project_sha256=hashlib.sha256((ROOT / 'sample_projects/BCG.rcms').read_bytes()).hexdigest(),
     conclusion='All 13 stored rows match the source with arm 0 vaccinated and arm 1 control; labels preserve the original direction.')
 (HERE / 'REVIEW1-BCG-SOURCE.json').write_text(json.dumps(proof, indent=2) + '\n')
-print('All 13 BCG rows match pinned metadat 1.6-0: vaccinated / non-vaccinated control; original direction preserved.')
+print(f"All 13 BCG rows match recorded metadat {source['package']}: vaccinated / non-vaccinated control; original direction preserved.")

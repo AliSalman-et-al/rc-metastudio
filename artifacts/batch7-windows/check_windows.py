@@ -62,25 +62,6 @@ with zipfile.ZipFile('tests/analysis_regression/baseline/observed-golden-baselin
    f=float(matched(aa,mb,dx).mean());rev=float(matched(bb,ma,-dx).mean());score=max(1-f,1-rev)
    if best is None or score<best[0]:best=(score,dx,f,rev)
   print(case,best,flush=True)
-  if best[0] and case == 'continuous-meta-regression':
-   # Circle fill distinguishes every observed study from the pale confidence band.
-   def circles(im):
-    a=np.asarray(im.convert('RGB'));mask=(a[:,:,2].astype(int)-a[:,:,0]>25)&(a[:,:,0]>130)&(a[:,:,0]<210)
-    mask[:int(im.height*.04)]=False;mask[int(im.height*.81):]=False
-    pending=set(map(tuple,np.argwhere(mask)));found=[]
-    while pending:
-     seed=pending.pop();todo=[seed];component=[seed]
-     while todo:
-      y,x=todo.pop()
-      for v in ((y-1,x),(y+1,x),(y,x-1),(y,x+1)):
-       if v in pending:pending.remove(v);todo.append(v);component.append(v)
-     if len(component)>20:found.append(np.mean(component,axis=0))
-    return sorted(found,key=lambda p:p[0])
-   ca,cb=circles(old),circles(new);assert len(ca)==len(cb)==7,(len(ca),len(cb))
-   for x,y in zip(ca,cb):
-    expected=na[1]+(x[1]-oa[1])*(na[2]-na[1])/(oa[2]-oa[1]);assert abs(x[0]-y[0])<=2 and abs(expected-y[1])<=2,(x,y,expected)
-   rows.append(dict(id=case,circle_fill_components_old=[p.tolist() for p in ca],circle_fill_components_new=[p.tolist() for p in cb],all_fill_component_centres_axis_normalized_within_two_pixels=True,curve_edge_unmatched_fraction=best[0],note='Canvas width changes four pixels with sentence-case ylabel; full-precision regression data and predictions checked separately with R identical().'))
-   continue
   if best[0]:
    bad=a[~matched(aa,mb,best[1])];print("unmatched old box",bad.min(axis=0),bad.max(axis=0),old.size,flush=True)
   assert best[0]==0,(case,best)

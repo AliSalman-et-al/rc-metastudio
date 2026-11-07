@@ -5,10 +5,8 @@ root=artifacts/statistical-mutants
 prove() {
   id=$1; shift
   for phase in base mutant restored; do
-    if [ "$phase" = mutant ]; then git apply tests/mutants/"$id".patch; fi
-    if [ "$phase" = restored ]; then git apply -R tests/mutants/"$id".patch; fi
     set +e
-    (set -x; "$@") > "$root/$id-$phase.log" 2>&1
+    (set -x; if [ "$phase" = mutant ]; then python "$root/mutate.py" tests/mutants/"$id".patch "$@"; else "$@"; fi) > "$root/$id-$phase.log" 2>&1
     status=$?
     set -e
     echo "$id $phase exit=$status" | tee -a "$root/status.txt"

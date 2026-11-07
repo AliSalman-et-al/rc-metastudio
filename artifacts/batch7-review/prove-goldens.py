@@ -18,7 +18,14 @@ def relabel(value):
 def original(name):return subprocess.check_output(['git','show','a1ae1b49:'+str(base/name)])
 with zipfile.ZipFile(io.BytesIO(original('observed-golden-baseline.zip'))) as before, zipfile.ZipFile(base/'observed-golden-baseline.zip') as after:
     old=json.loads(before.read('manifest.json'));new=json.loads(after.read('manifest.json'))
-    for a,b in zip(old['curated_golden_set'],new['curated_golden_set']):
+    assert len(before.namelist()) == len(set(before.namelist()))
+    assert len(after.namelist()) == len(set(after.namelist()))
+    assert set(before.namelist()) == set(after.namelist()), 'archive member inventory differs'
+    old_ids = [case['id'] for case in old['curated_golden_set']]
+    new_ids = [case['id'] for case in new['curated_golden_set']]
+    assert old_ids and len(old_ids) == len(set(old_ids))
+    assert old_ids == new_ids, 'case identity/order differs'
+    for a,b in zip(old['curated_golden_set'],new['curated_golden_set'], strict=True):
         assert relabel(a['outputs'])==b['outputs'],a['id']
         assert a['parameters']==b['parameters'],a['id']
     binary=[n for n in before.namelist() if not n.endswith('.json')]
@@ -27,7 +34,7 @@ old_contract=relabel(json.loads(original('numeric-contract.json')))
 new_contract=json.loads((base/'numeric-contract.json').read_text())
 old_contract.pop('oracle_sha256');new_contract.pop('oracle_sha256')
 assert old_contract==new_contract
-(proof/'numeric-oracle-proof.json').write_text(json.dumps(dict(cases=11,all_frozen_numeric_outputs_unchanged=True,all_parameters_unchanged=True,unchanged_binary_artifacts=len(binary),contract_values_and_tolerances_unchanged=True,only_numeric_metadata_change='public heading keys and archive SHA binding'),indent=2)+'\n')
+(proof/'numeric-oracle-proof.json').write_text(json.dumps(dict(cases=len(old_ids),all_frozen_numeric_outputs_unchanged=True,all_parameters_unchanged=True,unchanged_binary_artifacts=len(binary),contract_values_and_tolerances_unchanged=True,only_numeric_metadata_change='public heading keys and archive SHA binding'),indent=2)+'\n')
 number=re.compile(r'(?<!\w)[+-]?\d+(?:\.\d+)?(?:e[+-]?\d+)?')
 rows=[]
 for case in old['curated_golden_set']:

@@ -109,8 +109,8 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
   editor=subprocess.Popen(['xedit',str(report)])
   try:
    QTest.qWait(1500)
-   tree=subprocess.check_output(['xwininfo','-root','-tree'],text=True)
-   ids=re.findall(r'(0x[0-9a-f]+).*xedit',tree,re.I);assert ids,tree
+   tree=subprocess.check_output(['xdotool','search','--onlyvisible','--pid',str(editor.pid)],text=True)
+   ids=[hex(int(value)) for value in tree.split()];assert len(ids)==1,(editor.pid,ids)
    wid=int(ids[0],16);subprocess.run(['wmctrl','-ir',ids[0],'-b','add,maximized_vert,maximized_horz'],check=True);subprocess.run(['wmctrl','-ia',ids[0]],check=True);QTest.qWait(300)
    path=HERE/'screenshots'/'shell-exported-report-editor.png';assert window.screen().grabWindow(wid).save(str(path),'PNG')
    rows.append(dict(path=str(path.relative_to(HERE)),capture='QScreen.grabWindow external xedit',source=str(report.relative_to(ROOT)),sha256=hashlib.sha256(path.read_bytes()).hexdigest()))

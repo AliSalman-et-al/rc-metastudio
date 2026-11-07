@@ -41,6 +41,11 @@ for source in runs:
     target = destination / source.name
     if not target.exists():
         shutil.copytree(source, target)
+    assert (target / 'manifest.json').read_bytes() == (source / 'manifest.json').read_bytes(), target
+    for entry in manifest['files']:
+        local = (target / entry['path']).resolve()
+        assert local.is_relative_to(target.resolve()), local
+        assert hashlib.sha256(local.read_bytes()).hexdigest() == entry['sha256'], local
     rows.append({
         "source": str(source),
         "local": target.relative_to(audit).as_posix(),
