@@ -6,8 +6,21 @@ rpy2_sdist="${7:?rpy2 sdist}"; rpy2_url="${8:?rpy2 URL}"; rpy2_rinterface_sdist=
 rpy2_robjects_sdist="${11:?rpy2-robjects sdist}"; rpy2_robjects_url="${12:?rpy2-robjects URL}"; output="${13:?output}"
 case "$target" in macos-arm64) arch=arm64; deployment_target=14.0; package_type=mac.binary; contrib=bin/macosx/sonoma-arm64/contrib/4.6 ;; *) exit 2 ;; esac
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-work="$repo/build/r-kit-producer/$target"; stage="$work/R.framework"; archives="$work/ppm-archives"; logs="$work/logs"
-rm -rf "$work" "$output"; mkdir -p "$work" "$archives" "$logs"
+# Accept only a fresh named artifact, never an arbitrary deletion target.
+if [ -e "$output" ] || [ -L "$output" ]; then
+  echo "Integration-kit output already exists: $output" >&2
+  exit 1
+fi
+output_parent="$(cd "$(dirname "$output")" && pwd -P)"
+if [ "$output_parent" != "$(cd "$repo/artifacts" && pwd -P)" ]; then
+  echo "Integration-kit output must be a new direct child of $repo/artifacts." >&2
+  exit 1
+fi
+output="$output_parent/$(basename "$output")"
+if [ ! -d "$r_home" ] || [ ! -x "$r_home/bin/Rscript" ]; then
+  echo "Source R runtime is missing bin/Rscript: $r_home" >&2
+  exit 1
+fi
 framework="$($python - "$r_home" <<'PY'
 from pathlib import Path
 import sys
@@ -15,16 +28,23 @@ p=Path(sys.argv[1]).resolve()
 print(next(parent for parent in p.parents if parent.name == "R.framework"))
 PY
 )"
+# Keep each attempt, including its logs and profile evidence, independent.
+mkdir -p "$repo/build/r-kit-producer"
+work="$(mktemp -d "$repo/build/r-kit-producer/$target.XXXXXX")"
+stage="$work/R.framework"; archives="$work/ppm-archives"; logs="$work/logs"
+mkdir -p "$archives" "$logs"
 ditto "$framework" "$stage"
 staged_home="$stage/Resources"; library="$staged_home/library"; rscript="$staged_home/bin/Rscript"
+quarantine_profile="$work/runtime-quarantine.json"
+profile="$work/runtime-profile.json"
+"$python" "$repo/scripts/profile_macos_embedded_r_runtime.py" quarantine --resources "$staged_home" --evidence "$quarantine_profile" --dependency-manifest "$repo/config/r-dependencies.json" --r-version 4.6.1 --architecture "$arch" --source-resources "$r_home"
 export R_HOME="$staged_home" R_LIBS="$library" R_LIBS_USER="$library" MACOSX_DEPLOYMENT_TARGET="$deployment_target" RCMS_CRAN_REPO="https://packagemanager.posit.co/cran/2026-07-16" RCMS_R_PACKAGE_ARCHIVE_DIR="$archives"
 "$rscript" "$repo/scripts/install-r-deps.R" 2>&1 | tee "$logs/r-packages.log"
 commit="$(git -C "$repo" rev-parse HEAD)"; rc_url="https://github.com/AliSalman-et-al/rc-metastudio/archive/$commit.tar.gz"; rc_archive="$work/rc-metastudio-$commit.tar.gz"
 curl --fail --location --proto '=https' --tlsv1.2 "$rc_url" --output "$rc_archive"
 mkdir "$work/rc-source"; tar -xzf "$rc_archive" -C "$work/rc-source"; rc_package="$(find "$work/rc-source" -path '*/r/RCMetaR/DESCRIPTION' -print -quit | xargs dirname)"
 "$rscript" "$repo/scripts/install-rcmetar-source.R" "$rc_package" "$library" 2>&1 | tee "$logs/rcmetar.log"
-profile="$work/runtime-profile.json"
-"$python" "$repo/scripts/profile_macos_embedded_r_runtime.py" --resources "$staged_home" --evidence "$profile" --dependency-manifest "$repo/config/r-dependencies.json" --r-version 4.6.1 --architecture "$arch" --source-resources "$r_home"
+"$python" "$repo/scripts/profile_macos_embedded_r_runtime.py" finalize --resources "$staged_home" --evidence "$profile" --dependency-manifest "$repo/config/r-dependencies.json" --r-version 4.6.1 --architecture "$arch" --quarantine-evidence "$quarantine_profile"
 "$python" "$repo/scripts/relocate_macos_r_kit.py" --framework "$stage" --source-resources "$r_home" --version 4.6
 "$python" - "$staged_home/bin/R" <<'PY'
 from pathlib import Path

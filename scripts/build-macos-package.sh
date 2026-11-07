@@ -343,7 +343,7 @@ actual_r_version="$(R_HOME="$r_runtime_root" "$r_runtime_root/bin/Rscript" -e 'c
 [ "$actual_r_version" = "$r_version" ] || { echo "Private staged R version mismatch: expected $r_version, got $actual_r_version" >&2; exit 1; }
 R_HOME="$r_runtime_root" "$r_runtime_root/bin/R" RHOME | grep -Fx "$r_runtime_root" >/dev/null \
   || { echo "Private staged R does not report its private RHOME." >&2; exit 1; }
-R_HOME="$r_runtime_root" "$r_runtime_root/bin/Rscript" -e 'stopifnot(identical(R.home(), Sys.getenv("R_HOME"))); stopifnot(identical(Sys.getenv("RHOME"), Sys.getenv("R_HOME"))); stopifnot(!capabilities("X11")); cat("staged-r-ok\\n")' \
+R_HOME="$r_runtime_root" "$r_runtime_root/bin/Rscript" -e 'stopifnot(identical(R.home(), Sys.getenv("R_HOME"))); stopifnot(identical(Sys.getenv("RHOME"), Sys.getenv("R_HOME"))); stopifnot(!capabilities("X11")); cat("staged-r-ok\n")' \
   | grep -Fx 'staged-r-ok' >/dev/null \
   || { echo "Private staged R capability probe failed." >&2; exit 1; }
 "$python_exe" - "$r_substrate_probe_path" "$r_runtime_root" "$r_version" "$quarantine_profile_path" <<'PY'
