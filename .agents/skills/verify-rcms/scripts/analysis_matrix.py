@@ -263,9 +263,11 @@ def run(
                                 ["Mean", "SD", "Total", "Mean", "SD", "Total", "Weight"])
             assert headers == expected_headers, headers
         if any(section.plot_kind == "subgroup_forest" for section in view.results.sections):
-            assert any(table.title == "Test of subgroup differences"
-                       for section in view.results.sections for table in section.tables), dict(view.texts)
-            assert "Test of subgroup differences" in view.report_text.toPlainText()
+            expected_test = not method.endswith(".mh")
+            observed_test = any(table.title == "Test of subgroup differences"
+                                for section in view.results.sections for table in section.tables)
+            assert observed_test == expected_test, (method, dict(view.texts))
+            assert ("Test of subgroup differences" in view.report_text.toPlainText()) == expected_test
         for path in (view.results.display_images or view.results.images).values():
             assert (
                 QSvgRenderer(str(path)).isValid()

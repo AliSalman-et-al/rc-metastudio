@@ -227,7 +227,10 @@ def run_sequential(app, window, work, record):
             assert labels.count('Order: dataset row order') == 1, labels
         axis_ticks = check_axis(path, 'natural')
         if workflow != 'subgroup':
-            geometry = {'natural':dict(lower=[row[1] for row in expected],upper=[row[2] for row in expected],pooled=None)}
+            row_labels = ([f'Fixture {i} (k = {i})' for i in range(1, 7)]
+                          if workflow == 'cumulative' else ['All studies', *[f'Fixture {i}' for i in range(1, 7)]])
+            geometry = {'labels':row_labels,
+                        'natural':dict(lower=[row[1] for row in expected],upper=[row[2] for row in expected],pooled=None)}
             check_endpoints(path, axis_ticks, geometry, True, False)
         else:
             tree = ET.parse(path)

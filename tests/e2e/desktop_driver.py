@@ -292,16 +292,17 @@ def analyze(app, window, method, *, digits=3):
     )
     dialog.method_cbo_box.setCurrentText(label)
     app.processEvents()
-    precision_label = next(
-        label
-        for label in dialog.findChildren(QtWidgets.QLabel)
-        if label.text().casefold() == "decimal places"
-    )
-    precision = precision_label.buddy()
-    assert isinstance(precision, QtWidgets.QSpinBox)
+    def precision_control():
+        return next(control for control in [*dialog.current_widgets, *dialog._shared_diagnostic_widgets]
+                    if isinstance(control, QtWidgets.QSpinBox)
+                    and control.accessibleName().casefold() == "decimal places")
+
+    precision = precision_control()
     precision.setValue(digits)
     QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
     app.processEvents()
+    # Diagnostic method panels can rebuild their shared controls on this turn.
+    precision = precision_control()
     record_step("analysis-layout", dialog)
     if dialog.data_type == "diagnostic":
         viewport = dialog.content_scroll_area.viewport()
