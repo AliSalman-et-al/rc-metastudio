@@ -153,4 +153,3 @@ test_that("G1B-011 mixed SVG encoding matches each destination", {
     }
   }
 })
-

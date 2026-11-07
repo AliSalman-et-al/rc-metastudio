@@ -10,6 +10,9 @@ if sys.flags.optimize:
     environment = dict(os.environ)
     environment.pop("PYTHONOPTIMIZE", None)
     raise SystemExit(subprocess.run([sys.executable, __file__, *sys.argv[1:]], env=environment, check=False).returncode)
+from PyQt6.QtGui import QGuiApplication
+
+application = QGuiApplication.instance() or QGuiApplication([])
 output = Path(sys.argv[1])
 results = {}
 for path in sorted(output.glob('*.svg')):

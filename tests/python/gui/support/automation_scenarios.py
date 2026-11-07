@@ -1911,7 +1911,7 @@ def _assert_standard_binary_summary_is_formatted(meta):
     summary = result.texts.get("Summary", "")
     required = [
         "Binary Random-Effects Model",
-        "Metric: Odds Ratio",
+        "Metric: Odds ratio",
         "Model Results",
         "Estimate",
         "Lower bound (95% CI)",
