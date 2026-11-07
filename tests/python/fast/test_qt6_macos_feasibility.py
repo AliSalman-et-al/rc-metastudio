@@ -1276,3 +1276,82 @@ def test_deployment_inventory_resolves_symlink_graph_and_rejects_forgery(
 
         with pytest.raises(EvidenceError, match=expected_error):
             validate_evidence(evidence, "macos-arm64", evidence_dir=root)
+
+
+def test_used_feasibility_evidence_is_not_overwritten(tmp_path, monkeypatch):
+    from scripts import qt6_macos_feasibility_impl as impl
+
+    evidence = tmp_path / "evidence"
+    evidence.mkdir()
+    prior = evidence / "evidence.json"
+    prior.write_text('{"status":"passed"}')
+    monkeypatch.setattr(
+        impl,
+        "_native_target",
+        lambda _: (_ for _ in ()).throw(RuntimeError("later failure")),
+    )
+    with pytest.raises(RuntimeError, match="fresh empty"):
+        impl.run_feasibility("macos-arm64", evidence)
+    assert prior.read_text() == '{"status":"passed"}'
+
+
+def test_packaged_watchdog_retains_timeout_and_allows_recovery(tmp_path):
+    import sys
+    import os
+    from scripts import qt6_macos_feasibility_impl as impl
+
+    log = tmp_path / "smoke.log"
+    with pytest.raises(RuntimeError, match="124"):
+        impl._run_packaged_smoke(
+            [
+                sys.executable,
+                "-c",
+                "import time; print('entered', flush=True); time.sleep(60)",
+            ],
+            environment=os.environ.copy(),
+            log=log,
+            timeout_seconds=0.5,
+        )
+    assert "entered" in log.read_text()
+    assert "timed out" in log.read_text()
+    impl._run_packaged_smoke(
+        [sys.executable, "-c", "print('recovered')"],
+        environment=os.environ.copy(),
+        log=tmp_path / "recovery.log",
+        timeout_seconds=10,
+    )
+    assert "recovered" in (tmp_path / "recovery.log").read_text()
+
+
+def test_private_framework_only_relocates_owned_bridge(tmp_path, monkeypatch):
+    import types
+    from scripts import qt6_macos_feasibility_impl as impl
+
+    source = tmp_path / "installed/R.framework/Resources"
+    source.mkdir(parents=True)
+    installed = tmp_path / "installed/_rinterface_cffi_api.so"
+    installed.write_bytes(b"installed")
+    build = tmp_path / "build"
+    build.mkdir()
+    (build / "package-source").mkdir()
+    evidence = tmp_path / "evidence"
+    evidence.mkdir()
+    monkeypatch.setattr(impl.subprocess, "check_output", lambda *a, **k: str(source))
+    monkeypatch.setattr(
+        impl.importlib.util,
+        "find_spec",
+        lambda _: types.SimpleNamespace(origin=str(installed)),
+    )
+
+    def run(command, **kwargs):
+        if "relocate-bridge" in command:
+            bridge = Path(command[command.index("--bridge") + 1])
+            assert bridge != installed
+            assert bridge.parent == build / "package-source"
+            bridge.write_bytes(b"relocated")
+        return None
+
+    monkeypatch.setattr(impl, "_run", run)
+    impl._prepare_private_r_framework(build, evidence, "arm64")
+    assert installed.read_bytes() == b"installed"
+    assert (build / "package-source" / installed.name).read_bytes() == b"relocated"

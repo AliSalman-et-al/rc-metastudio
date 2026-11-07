@@ -130,16 +130,16 @@ def test_adapter_relocates_bridge_and_rejects_displaced_libr(tmp_path, monkeypat
 
     monkeypatch.setattr(adapter, "_run", run)
     output = tmp_path / "bridge.json"
-    adapter.relocate_bridge(framework, bridge, "arm64", output)
-    assert json.loads(output.read_text(encoding="utf-8"))["r_dependency"].startswith(
-        "@loader_path/"
-    )
     version_root = framework / "Versions/4.6-arm64"
     executable = version_root / "R"
     runtime_library = version_root / "Resources/lib/libR.dylib"
     executable.unlink()
     runtime_library.replace(executable)
     runtime_library.symlink_to(Path("../../R"))
+    adapter.relocate_bridge(framework, bridge, "arm64", output)
+    assert json.loads(output.read_text(encoding="utf-8"))["r_dependency"].startswith(
+        "@loader_path/"
+    )
     monkeypatch.setattr(adapter, "audit_symlinks", lambda _root: [])
     monkeypatch.setattr(
         adapter,

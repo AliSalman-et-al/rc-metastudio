@@ -531,7 +531,8 @@ def relocate_bridge(
     ]
     if len(r_edges) != 1:
         raise AdapterError(f"rpy2 API bridge must have one R edge, found {r_edges}")
-    lib_r = (framework / "Resources/lib/libR.dylib").resolve(strict=True)
+    lib_r = framework / "Resources/lib/libR.dylib"
+    _relative_inside(lib_r.resolve(strict=True), framework)
     replacement = _loader_replacement(bridge, lib_r)
     _run("install_name_tool", "-change", r_edges[0], replacement, str(bridge))
     final_dependencies = dependencies(bridge)
