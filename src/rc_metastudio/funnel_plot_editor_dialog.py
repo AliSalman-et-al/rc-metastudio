@@ -497,22 +497,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
 
     def plot_params(self):
         """Return the original run params plus presentation-only edits."""
-        lower, upper = self.x_lower_edit.text().strip(), self.x_upper_edit.text().strip()
-        if bool(lower) != bool(upper):
-            raise ValueError("Enter both X-axis bounds, or leave both empty for automatic bounds.")
-        if lower:
-            try:
-                bounds = (float(lower), float(upper))
-            except ValueError as error:
-                raise ValueError("X-axis bounds must be finite numbers.") from error
-            if not all(math.isfinite(value) for value in bounds) or bounds[0] >= bounds[1]:
-                raise ValueError("X-axis bounds must be finite, with the lower bound less than the upper bound.")
-        if self.x_ticks_edit.text().strip():
-            self._finite_list(self.x_ticks_edit.text(), "X-axis ticks")
-        if self.contour_levels_edit.isEnabled():
-            levels = self._finite_list(self.contour_levels_edit.text(), "Contour levels")
-            if any(not 0 < value < 100 for value in levels):
-                raise ValueError("Contour levels must be percentages strictly between 0 and 100.")
+        self._validate_plot_ranges()
         params = dict(self._params)
         edits = {
             "plot_caption": self.figure_caption.text().strip(),
@@ -561,6 +546,24 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             else:
                 params[name] = value
         return params
+
+    def _validate_plot_ranges(self):
+        lower, upper = self.x_lower_edit.text().strip(), self.x_upper_edit.text().strip()
+        if bool(lower) != bool(upper):
+            raise ValueError("Enter both X-axis bounds, or leave both empty for automatic bounds.")
+        if lower:
+            try:
+                bounds = (float(lower), float(upper))
+            except ValueError as error:
+                raise ValueError("X-axis bounds must be finite numbers.") from error
+            if not all(math.isfinite(value) for value in bounds) or bounds[0] >= bounds[1]:
+                raise ValueError("X-axis bounds must be finite, with the lower bound less than the upper bound.")
+        if self.x_ticks_edit.text().strip():
+            self._finite_list(self.x_ticks_edit.text(), "X-axis ticks")
+        if self.contour_levels_edit.isEnabled():
+            levels = self._finite_list(self.contour_levels_edit.text(), "Contour levels")
+            if any(not 0 < value < 100 for value in levels):
+                raise ValueError("Contour levels must be percentages strictly between 0 and 100.")
 
     @staticmethod
     def _finite_list(text, label):

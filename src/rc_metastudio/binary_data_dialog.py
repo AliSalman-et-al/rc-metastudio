@@ -922,28 +922,8 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             use_old_value=True,
         )
 
-        for check_row in range(self.raw_data_table.rowCount()):
-            if self.raw_data_table.isRowHidden(check_row):
-                continue
-            for check_col in range(self.raw_data_table.columnCount()):
-                if not self._raw_count_cell_is_editable(check_row, check_col):
-                    continue
-                item = self.raw_data_table.item(check_row, check_col)
-                message = self._cell_data_not_valid(item.text()) if item is not None else None
-                if message:
-                    self._mark_table_invalid(message)
-                    return
-
-        if col == 2:
-            with QSignalBlocker(self.raw_data_table):
-                required(self.raw_data_table.item(row, col), "entered total").setData(Qt.ItemDataRole.UserRole, True)
-        for check_row in range(2):
-            total_item = required(self.raw_data_table.item(check_row, 2), "arm total")
-            events = self._get_int(check_row, 0)
-            total = self._get_int(check_row, 2)
-            if total_item.data(Qt.ItemDataRole.UserRole) and events is not None and total is not None and events > total:
-                self._mark_table_invalid("Events cannot exceed the arm total.")
-                return
+        if not self._validate_raw_count_cells(col, row):
+            return
 
         try:
             self._update_data_table()  # calculate derived margins from raw counts
@@ -982,6 +962,31 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             old_state=(old_analysis_unit, old_table),
             new_state=(new_analysis_unit, new_table),
         )
+
+    def _validate_raw_count_cells(self, col, row):
+        for check_row in range(self.raw_data_table.rowCount()):
+            if self.raw_data_table.isRowHidden(check_row):
+                continue
+            for check_col in range(self.raw_data_table.columnCount()):
+                if not self._raw_count_cell_is_editable(check_row, check_col):
+                    continue
+                item = self.raw_data_table.item(check_row, check_col)
+                message = self._cell_data_not_valid(item.text()) if item is not None else None
+                if message:
+                    self._mark_table_invalid(message)
+                    return False
+
+        if col == 2:
+            with QSignalBlocker(self.raw_data_table):
+                required(self.raw_data_table.item(row, col), "entered total").setData(Qt.ItemDataRole.UserRole, True)
+        for check_row in range(2):
+            total_item = required(self.raw_data_table.item(check_row, 2), "arm total")
+            events = self._get_int(check_row, 0)
+            total = self._get_int(check_row, 2)
+            if total_item.data(Qt.ItemDataRole.UserRole) and events is not None and total is not None and events > total:
+                self._mark_table_invalid("Events cannot exceed the arm total.")
+                return False
+        return True
 
     def _get_table_values(self):
         """Package table from 2x2 table in to a dictionary"""

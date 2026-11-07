@@ -320,6 +320,72 @@ def _audit_order(source: str, sections: list[tuple[str, object]], categories: se
     return []
 
 
+def _audit_section_contract(source: str, sections: list[tuple[str, object]], images: list[tuple[str, object]], categories: set[str]) -> list[dict[str, str]]:
+    findings: list[dict[str, str]] = []
+    summary_positions = [
+        index
+        for index, (title, _value) in enumerate(sections)
+        if "summary" in title.lower()
+    ]
+    technical_positions = [
+        index
+        for index, (title, _value) in enumerate(sections)
+        if title.strip().lower() in _TECHNICAL_SECTIONS
+    ]
+    if summary_positions and technical_positions and min(technical_positions) < min(summary_positions):
+        findings.append(
+            _finding(
+                "technical-before-summary",
+                source,
+                "Technical result sections precede the headline summary.",
+            )
+        )
+    if "publication-bias" in categories:
+        required = {"Warning", "Data and eligibility", "Tests"}
+        missing = sorted(required - {title for title, _value in sections})
+        if missing:
+            findings.append(
+                _finding(
+                    "missing-contract-section",
+                    source,
+                    "Publication Bias result is missing required section(s): " + ", ".join(missing),
+                )
+            )
+    if not sections and not images:
+        findings.append(_finding("empty-result", source, "Result has neither text nor image sections."))
+    return findings
+
+
+def _audit_record_sections(source: str, sections: list[tuple[str, object]], images: list[tuple[str, object]], categories: set[str]) -> list[dict[str, str]]:
+    findings: list[dict[str, str]] = []
+    seen_titles: dict[str, str] = {}
+    for title, value in sections:
+        normalized = " ".join(title.strip().lower().split())
+        if not normalized:
+            findings.append(_finding("empty-title", source, "Result section has an empty title."))
+        elif normalized in seen_titles:
+            findings.append(
+                _finding("duplicate-title", source, f"Duplicate result title: {title!r}.", title)
+            )
+        else:
+            seen_titles[normalized] = title
+        if re.search(r"(?:\$|\[\[|^\.?res(?:ult)?\.|^params?\.|^plot\.)", title, re.IGNORECASE):
+            findings.append(
+                _finding("internal-key", source, "Raw backend field key is used as a result title.", title)
+            )
+        findings.extend(
+            _audit_text(
+                source,
+                title,
+                value,
+                allow_method_metadata="publication-bias" in categories,
+            )
+        )
+    findings.extend(_audit_order(source, sections, categories))
+    findings.extend(_audit_section_contract(source, sections, images, categories))
+    return findings
+
+
 def audit_records(records: Iterable[Mapping[str, object]]) -> AuditReport:
     findings: list[dict[str, str]] = []
     inventory: dict[str, list[str]] = {}
@@ -342,61 +408,7 @@ def audit_records(records: Iterable[Mapping[str, object]]) -> AuditReport:
         categories = _category_for_record(record, [title for title, _value in sections])
         for category in categories:
             inventory.setdefault(category, []).append(source)
-        seen_titles: dict[str, str] = {}
-        for title, value in sections:
-            normalized = " ".join(title.strip().lower().split())
-            if not normalized:
-                findings.append(_finding("empty-title", source, "Result section has an empty title."))
-            elif normalized in seen_titles:
-                findings.append(
-                    _finding("duplicate-title", source, f"Duplicate result title: {title!r}.", title)
-                )
-            else:
-                seen_titles[normalized] = title
-            if re.search(r"(?:\$|\[\[|^\.?res(?:ult)?\.|^params?\.|^plot\.)", title, re.IGNORECASE):
-                findings.append(
-                    _finding("internal-key", source, "Raw backend field key is used as a result title.", title)
-                )
-            findings.extend(
-                _audit_text(
-                    source,
-                    title,
-                    value,
-                    allow_method_metadata="publication-bias" in categories,
-                )
-            )
-        findings.extend(_audit_order(source, sections, categories))
-        summary_positions = [
-            index
-            for index, (title, _value) in enumerate(sections)
-            if "summary" in title.lower()
-        ]
-        technical_positions = [
-            index
-            for index, (title, _value) in enumerate(sections)
-            if title.strip().lower() in _TECHNICAL_SECTIONS
-        ]
-        if summary_positions and technical_positions and min(technical_positions) < min(summary_positions):
-            findings.append(
-                _finding(
-                    "technical-before-summary",
-                    source,
-                    "Technical result sections precede the headline summary.",
-                )
-            )
-        if "publication-bias" in categories:
-            required = {"Warning", "Data and eligibility", "Tests"}
-            missing = sorted(required - {title for title, _value in sections})
-            if missing:
-                findings.append(
-                    _finding(
-                        "missing-contract-section",
-                        source,
-                        "Publication Bias result is missing required section(s): " + ", ".join(missing),
-                    )
-                )
-        if not sections and not images:
-            findings.append(_finding("empty-result", source, "Result has neither text nor image sections."))
+        findings.extend(_audit_record_sections(source, sections, images, categories))
 
     findings.sort(
         key=lambda item: (
@@ -430,17 +442,24 @@ def audit_records(records: Iterable[Mapping[str, object]]) -> AuditReport:
 def _records_from_json(value: object, source: str) -> list[dict[str, object]]:
     if _string_keyed_mapping(value):
         records = value.get("records")
+        if not isinstance(records, list):
+            records = value.get("captures")
         if isinstance(records, list):
-            return [dict(item, _source=f"{source}#{index}") if _string_keyed_mapping(item) else {"_source": f"{source}#{index}", "_load_error": "Capture member is not a mapping."} for index, item in enumerate(records, 1)]
-        captures = value.get("captures")
-        if isinstance(captures, list):
-            return [dict(item, _source=f"{source}#{index}") if _string_keyed_mapping(item) else {"_source": f"{source}#{index}", "_load_error": "Capture member is not a mapping."} for index, item in enumerate(captures, 1)]
-        if "texts" in value or "sections" in value:
+            value = records
+        elif "texts" in value or "sections" in value:
             return [dict(value, _source=source)]
+        else:
+            return []
+    if not isinstance(value, list):
         return []
-    if isinstance(value, list):
-        return [dict(item, _source=f"{source}#{index}") if _string_keyed_mapping(item) else {"_source": f"{source}#{index}", "_load_error": "Capture member is not a mapping."} for index, item in enumerate(value, 1)]
-    return []
+    result: list[dict[str, object]] = []
+    for index, item in enumerate(value, 1):
+        item_source = f"{source}#{index}"
+        if _string_keyed_mapping(item):
+            result.append(dict(item, _source=item_source))
+        else:
+            result.append({"_source": item_source, "_load_error": "Capture member is not a mapping."})
+    return result
 
 
 def load_records(paths: Iterable[Path]) -> list[dict[str, object]]:

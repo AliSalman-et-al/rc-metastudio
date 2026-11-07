@@ -1158,6 +1158,42 @@ def _validate_retained_diagnostic(
         _fail(f"diagnostic {name} digest does not match retained bytes")
 
 
+def _validate_diagnostic_graph(graph: dict[str, object], package: dict[str, object], evidence_dir: Path) -> None:
+    if graph.get("schema_version") != 1 or graph.get("architecture") != package["target_arch"]:
+        _fail("diagnostic packaged_r_graph has the wrong identity")
+    inventory_record = _mapping(package["inventory"], "inventory")
+    inventory = json.loads(_retained_path(inventory_record, "inventory", evidence_dir).read_text(encoding="utf-8"))
+    files = {item["path"]: item for item in inventory["files"]}
+    for key in ("api_bridge", "lib_r"):
+        if graph.get(key) not in files:
+            _fail(f"diagnostic packaged_r_graph {key} is absent from package")
+    bridge = str(graph["api_bridge"])
+    lib_r = str(graph["lib_r"])
+    if not bridge.startswith("Contents/Frameworks/") or "_rinterface_cffi_api" not in bridge or not lib_r.startswith("Contents/Frameworks/R.framework/"):
+        _fail("diagnostic packaged_r_graph paths do not identify the private R runtime")
+    native = graph.get("framework_mach_o")
+    if not isinstance(native, list) or not native:
+        _fail("diagnostic packaged_r_graph lacks its native inventory")
+    for raw_record in native:
+        record = _mapping(raw_record, "diagnostic graph native record")
+        path = "Contents/Frameworks/R.framework/" + str(record["path"])
+        if path not in files or record.get("sha256") != files[path].get("sha256") or record.get("architectures") != [package["target_arch"]]:
+            _fail("diagnostic packaged_r_graph inventory differs from package")
+
+
+def _validate_diagnostic_profile(profile: dict[str, object], package: dict[str, object]) -> None:
+    from rc_metastudio.macos_r_profile_schema import PROFILE_POLICY, PROFILE_EXCLUSION_PATHS
+    source = _mapping(profile.get("source_framework"), "diagnostic profile source")
+    if (profile.get("schema_version") != 1 or profile.get("phase") != "quarantine"
+            or profile.get("policy") != PROFILE_POLICY
+            or profile.get("post_profile_exclusions") != sorted(PROFILE_EXCLUSION_PATHS)
+            or source.get("version") != EXPECTED_VERSIONS["r"]
+            or source.get("expected_architecture") != package["target_arch"]
+            or not all(isinstance(source.get(key), str) and re.fullmatch(r"[0-9a-f]{64}", str(source[key]))
+                       for key in ("source_tree_identity_sha256", "pre_profile_tree_identity_sha256"))):
+        _fail("diagnostic r_profile_quarantine has the wrong identity")
+
+
 def _validate_diagnostic_contents(root: dict[str, object], evidence_dir: Path) -> None:
     diagnostics = _mapping(root["diagnostics"], "diagnostics")
     package = _mapping(root["package"], "package")
@@ -1176,37 +1212,9 @@ def _validate_diagnostic_contents(root: dict[str, object], evidence_dir: Path) -
             if not str(smoke.get(key, "")).endswith(str(package[key])):
                 _fail(f"diagnostic packaged_smoke disagrees with package {key}")
         graph = _mapping(json.loads(read("packaged_r_graph")), "diagnostic packaged_r_graph")
-        if graph.get("schema_version") != 1 or graph.get("architecture") != package["target_arch"]:
-            _fail("diagnostic packaged_r_graph has the wrong identity")
-        inventory_record = _mapping(package["inventory"], "inventory")
-        inventory = json.loads(_retained_path(inventory_record, "inventory", evidence_dir).read_text(encoding="utf-8"))
-        files = {item["path"]: item for item in inventory["files"]}
-        for key in ("api_bridge", "lib_r"):
-            if graph.get(key) not in files:
-                _fail(f"diagnostic packaged_r_graph {key} is absent from package")
-        bridge = str(graph["api_bridge"])
-        lib_r = str(graph["lib_r"])
-        if not bridge.startswith("Contents/Frameworks/") or "_rinterface_cffi_api" not in bridge or not lib_r.startswith("Contents/Frameworks/R.framework/"):
-            _fail("diagnostic packaged_r_graph paths do not identify the private R runtime")
-        native = graph.get("framework_mach_o")
-        if not isinstance(native, list) or not native:
-            _fail("diagnostic packaged_r_graph lacks its native inventory")
-        for raw_record in native:
-            record = _mapping(raw_record, "diagnostic graph native record")
-            path = "Contents/Frameworks/R.framework/" + str(record["path"])
-            if path not in files or record.get("sha256") != files[path].get("sha256") or record.get("architectures") != [package["target_arch"]]:
-                _fail("diagnostic packaged_r_graph inventory differs from package")
+        _validate_diagnostic_graph(graph, package, evidence_dir)
         profile = _mapping(json.loads(read("r_profile_quarantine")), "diagnostic r_profile_quarantine")
-        from rc_metastudio.macos_r_profile_schema import PROFILE_POLICY, PROFILE_EXCLUSION_PATHS
-        source = _mapping(profile.get("source_framework"), "diagnostic profile source")
-        if (profile.get("schema_version") != 1 or profile.get("phase") != "quarantine"
-                or profile.get("policy") != PROFILE_POLICY
-                or profile.get("post_profile_exclusions") != sorted(PROFILE_EXCLUSION_PATHS)
-                or source.get("version") != EXPECTED_VERSIONS["r"]
-                or source.get("expected_architecture") != package["target_arch"]
-                or not all(isinstance(source.get(key), str) and re.fullmatch(r"[0-9a-f]{64}", str(source[key]))
-                           for key in ("source_tree_identity_sha256", "pre_profile_tree_identity_sha256"))):
-            _fail("diagnostic r_profile_quarantine has the wrong identity")
+        _validate_diagnostic_profile(profile, package)
     except (ValueError, KeyError, TypeError, AttributeError) as exc:
         _fail(f"diagnostic content is malformed: {exc}")
 

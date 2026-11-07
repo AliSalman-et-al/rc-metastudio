@@ -373,6 +373,39 @@ def _validate_surface_capture(surface_id: str, surface: dict[str, object], scale
         raise ValueError("remaining-surface %s PNG is blank" % surface_id)
 
 
+def _validate_scale_record(record: dict, scale: float, root: Path, expected_ids: set[str], seen_capture_paths: set[str]) -> None:
+    if set(record) != {
+        "qpa",
+        "run_id",
+        "source_identity",
+        "scale_factor",
+        "surfaces",
+        "tab_focus_behavior",
+    }:
+        raise ValueError("remaining-surface evidence record fields drifted")
+    qpa = record["qpa"]
+    if qpa not in ({"offscreen"} if _offscreen() else {"windows", "cocoa"}):
+        raise ValueError("remaining-surface evidence is not native hosted Qt")
+    if record["tab_focus_behavior"] != "TabFocusAllControls":
+        raise ValueError(
+            "remaining-surface evidence lacks all-control keyboard navigation"
+        )
+    if abs(_number(record["scale_factor"], "scale") - scale) > TOLERANCE:
+        raise ValueError("remaining-surface evidence scale does not match")
+    surfaces = record["surfaces"]
+    if not isinstance(surfaces, dict) or set(surfaces) != expected_ids:
+        raise ValueError("remaining-surface evidence inventory is incomplete")
+    for surface_id, surface in surfaces.items():
+        if not isinstance(surface, dict):
+            raise ValueError("remaining-surface %s fields drifted" % surface_id)
+        _validate_surface_fields(surface_id, surface)
+        _validate_surface_layout(surface_id, surface)
+        _validate_surface_geometry(surface_id, surface, scale)
+        _validate_surface_capture(surface_id, surface, scale, root, seen_capture_paths)
+    if not record.get("run_id") or not record.get("source_identity"):
+        raise ValueError("remaining-surface identity is missing")
+
+
 def validate_evidence(root: Path = DEFAULT_EVIDENCE_ROOT) -> list[dict[str, object]]:
     """Validate relocated native evidence at standard and fractional scale."""
     expected_ids = _remaining_surface_ids()
@@ -380,36 +413,7 @@ def validate_evidence(root: Path = DEFAULT_EVIDENCE_ROOT) -> list[dict[str, obje
     seen_capture_paths: set[str] = set()
     for scale in SCALE_FACTORS:
         record = json.loads(_record_path(root, scale).read_text(encoding="utf-8"))
-        if set(record) != {
-            "qpa",
-            "run_id",
-            "source_identity",
-            "scale_factor",
-            "surfaces",
-            "tab_focus_behavior",
-        }:
-            raise ValueError("remaining-surface evidence record fields drifted")
-        qpa = record["qpa"]
-        if qpa not in ({"offscreen"} if _offscreen() else {"windows", "cocoa"}):
-            raise ValueError("remaining-surface evidence is not native hosted Qt")
-        if record["tab_focus_behavior"] != "TabFocusAllControls":
-            raise ValueError(
-                "remaining-surface evidence lacks all-control keyboard navigation"
-            )
-        if abs(_number(record["scale_factor"], "scale") - scale) > TOLERANCE:
-            raise ValueError("remaining-surface evidence scale does not match")
-        surfaces = record["surfaces"]
-        if not isinstance(surfaces, dict) or set(surfaces) != expected_ids:
-            raise ValueError("remaining-surface evidence inventory is incomplete")
-        for surface_id, surface in surfaces.items():
-            if not isinstance(surface, dict):
-                raise ValueError("remaining-surface %s fields drifted" % surface_id)
-            _validate_surface_fields(surface_id, surface)
-            _validate_surface_layout(surface_id, surface)
-            _validate_surface_geometry(surface_id, surface, scale)
-            _validate_surface_capture(surface_id, surface, scale, root, seen_capture_paths)
-        if not record.get("run_id") or not record.get("source_identity"):
-            raise ValueError("remaining-surface identity is missing")
+        _validate_scale_record(record, scale, root, expected_ids, seen_capture_paths)
         if records and any(record[key] != records[0][key] for key in ("qpa", "run_id", "source_identity")):
             raise ValueError("remaining-surface scale identity differs")
         records.append(record)

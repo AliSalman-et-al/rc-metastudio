@@ -1169,6 +1169,37 @@ def finalize_smoke_evidence(path: Path, log_path: Path) -> dict:
     return evidence
 
 
+def _archive_names(bundle: zipfile.ZipFile, prefix: str) -> list[str]:
+    # ZipInfo normalizes backslashes on Windows; inspect the original
+    # central-directory spelling before that normalization hides it.
+    names = [info.orig_filename for info in bundle.infolist() if not info.is_dir()]
+    folded = {}
+    for name in names:
+        if (
+            "\\" in name
+            or name.startswith("/")
+            or unicodedata.normalize("NFC", name) != name
+            or not name.startswith(prefix)
+        ):
+            raise DeploymentInspectionError(
+                f"ZIP contains a non-normalized member: {name}"
+            )
+        relative = name[len(prefix) :]
+        if not relative or any(
+            part in {"", ".", ".."} for part in relative.split("/")
+        ):
+            raise DeploymentInspectionError(
+                f"ZIP contains traversal or empty components: {name}"
+            )
+        key = name.casefold()
+        if key in folded:
+            raise DeploymentInspectionError(
+                f"ZIP contains duplicate/case-colliding members: {folded[key]}, {name}"
+            )
+        folded[key] = name
+    return names
+
+
 def inspect_archive(
     archive: Path,
     *,
@@ -1177,33 +1208,7 @@ def inspect_archive(
 ) -> dict:
     prefix = archive_root_name + "/"
     with zipfile.ZipFile(archive) as bundle:
-        # ZipInfo normalizes backslashes on Windows; inspect the original
-        # central-directory spelling before that normalization hides it.
-        names = [info.orig_filename for info in bundle.infolist() if not info.is_dir()]
-        folded = {}
-        for name in names:
-            if (
-                "\\" in name
-                or name.startswith("/")
-                or unicodedata.normalize("NFC", name) != name
-                or not name.startswith(prefix)
-            ):
-                raise DeploymentInspectionError(
-                    f"ZIP contains a non-normalized member: {name}"
-                )
-            relative = name[len(prefix) :]
-            if not relative or any(
-                part in {"", ".", ".."} for part in relative.split("/")
-            ):
-                raise DeploymentInspectionError(
-                    f"ZIP contains traversal or empty components: {name}"
-                )
-            key = name.casefold()
-            if key in folded:
-                raise DeploymentInspectionError(
-                    f"ZIP contains duplicate/case-colliding members: {folded[key]}, {name}"
-                )
-            folded[key] = name
+        names = _archive_names(bundle, prefix)
 
         embedded_hashes = {}
         for relative, source in embedded_files.items():

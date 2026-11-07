@@ -16,6 +16,36 @@ from pathlib import Path
 VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
 
 
+def _restore_updates(backups: dict[Path, Path], recovery: Path) -> None:
+    failed = []
+    for path, backup in backups.items():
+        try:
+            shutil.copyfile(backup, path)
+        except OSError:
+            failed.append(str(path))
+    if failed:
+        print(f"Version recovery retained at {recovery}: {failed}", file=sys.stderr)
+    else:
+        shutil.rmtree(recovery)
+
+
+def _write_updates(updates: dict[Path, str]) -> None:
+    # Keep exact recovery bytes until every write has succeeded. A failed
+    # rollback leaves this directory available for manual recovery.
+    recovery = Path(tempfile.mkdtemp(prefix="rcms-version-recovery-"))
+    backups = {path: recovery / str(index) for index, path in enumerate(updates)}
+    for path, backup in backups.items():
+        shutil.copyfile(path, backup)
+    (recovery / "paths.json").write_text(json.dumps({backup.name: str(path) for path, backup in backups.items()}, indent=2), encoding="utf-8")
+    try:
+        for path, text in updates.items():
+            write_text(path, text)
+    except BaseException:
+        _restore_updates(backups, recovery)
+        raise
+    shutil.rmtree(recovery)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
@@ -98,29 +128,7 @@ def main(argv: list[str] | None = None) -> int:
         path = root / "CHANGELOG.md"
         updates[path] = changelog_text(path, args.version)
 
-    # Keep exact recovery bytes until every write has succeeded. A failed
-    # rollback leaves this directory available for manual recovery.
-    recovery = Path(tempfile.mkdtemp(prefix="rcms-version-recovery-"))
-    backups = {path: recovery / str(index) for index, path in enumerate(updates)}
-    for path, backup in backups.items():
-        shutil.copyfile(path, backup)
-    (recovery / "paths.json").write_text(json.dumps({backup.name: str(path) for path, backup in backups.items()}, indent=2), encoding="utf-8")
-    try:
-        for path, text in updates.items():
-            write_text(path, text)
-    except BaseException:
-        failed = []
-        for path, backup in backups.items():
-            try:
-                shutil.copyfile(backup, path)
-            except OSError:
-                failed.append(str(path))
-        if failed:
-            print(f"Version recovery retained at {recovery}: {failed}", file=sys.stderr)
-        else:
-            shutil.rmtree(recovery)
-        raise
-    shutil.rmtree(recovery)
+    _write_updates(updates)
 
     print(f"Bumped RC MetaStudio version surfaces to {args.version}.")
     return 0

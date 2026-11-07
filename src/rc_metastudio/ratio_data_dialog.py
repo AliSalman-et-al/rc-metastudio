@@ -87,17 +87,21 @@ class RatioDataDialog(QDialog):
     def _change_format(self):
         scale = self.fields["scale"].currentData()
         if scale != self._input_scale:
-            for name in ("estimate", "lower", "upper"):
-                field = self.fields[name]
-                text = field.text().strip()
-                if text:
-                    try:
-                        value = self._number(text)
-                        field.setText(str(math.log(value) if scale == "log" else math.exp(value)))
-                    except (ValueError, OverflowError):
-                        field.clear()
+            self._convert_format_fields(scale)
         self._input_scale = scale
         self._update_fields()
+
+    def _convert_format_fields(self, scale):
+        convert = math.log if scale == "log" else math.exp
+        for name in ("estimate", "lower", "upper"):
+            field = self.fields[name]
+            text = field.text().strip()
+            if not text:
+                continue
+            try:
+                field.setText(str(convert(self._number(text))))
+            except (ValueError, OverflowError):
+                field.clear()
 
     def _update_fields(self):
         raw = self.effect_metric == "IRR" and self.fields["source"].currentData() == "raw"

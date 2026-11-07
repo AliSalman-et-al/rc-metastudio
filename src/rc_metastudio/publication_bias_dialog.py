@@ -401,14 +401,7 @@ class PublicationBiasDialog(
             "Outside pseudo-confidence region": LabelPolicy.OUTSIDE_REGION,
             "All": LabelPolicy.ALL,
         }
-        levels = ()
-        if self.contour_funnel_check.isChecked():
-            try:
-                levels = tuple(float(value.strip()) for value in self.contour_levels_edit.text().split(","))
-            except ValueError as error:
-                raise ValueError("Contour levels must be numbers between 0 and 100, separated by commas (for example, 90, 95, 99).") from error
-            if not levels or any(not 0 < value < 100 for value in levels):
-                raise ValueError("Contour levels must be between 0 and 100 (for example, 90, 95, 99).")
+        levels = self._contour_levels()
         return SmallStudyEffectsRequest.create(
             data_type=data_type,
             metric=metric,
@@ -440,6 +433,17 @@ class PublicationBiasDialog(
             trim_and_fill_model=self.trim_fill_model_combo.currentText(),
             extrapolation=self.extrapolation_check.isChecked(),
         )
+
+    def _contour_levels(self):
+        if not self.contour_funnel_check.isChecked():
+            return ()
+        try:
+            levels = tuple(float(value.strip()) for value in self.contour_levels_edit.text().split(","))
+        except ValueError as error:
+            raise ValueError("Contour levels must be numbers between 0 and 100, separated by commas (for example, 90, 95, 99).") from error
+        if not levels or any(not 0 < value < 100 for value in levels):
+            raise ValueError("Contour levels must be between 0 and 100 (for example, 90, 95, 99).")
+        return levels
 
     def run(self):
         try:

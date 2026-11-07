@@ -448,6 +448,19 @@ def calculator_effect_source(
     return "derived_preview" if any(value is not None for value in preview) else "entered"
 
 
+def _effect_values_on_display_scale(analysis_unit, current_effect, arm_key, data_type, converter, values):
+    if data_type != "binary" or current_effect != "PFT":
+        return [converter(value, current_effect, convert_to="display.scale") for value in values]
+    converted = []
+    for value in values:
+        raw = analysis_unit.arms_by_id[arm_key[0]].raw_data
+        n = raw[1] if len(raw) >= 2 and raw[1] not in EMPTY_VALS else None
+        if value is not None and n is None:
+            raise ValueError("PFT display requires the actual arm sample size.")
+        converted.append(converter(value, current_effect, convert_to="display.scale", n1=n))
+    return converted
+
+
 def set_current_effect_from_value(
     analysis_unit,
     txt_boxes,
@@ -471,14 +484,6 @@ def set_current_effect_from_value(
         converter = converters[data_type]
     except KeyError as exc:
         raise ValueError("data_type unrecognized") from exc
-    def conv_to_disp_scale(value):
-        if data_type == "binary" and current_effect == "PFT":
-            raw = analysis_unit.arms_by_id[arm_key[0]].raw_data
-            n = raw[1] if len(raw) >= 2 and raw[1] not in EMPTY_VALS else None
-            if value is not None and n is None:
-                raise ValueError("PFT display requires the actual arm sample size.")
-            return r_bridge.binary_convert_scale(value, current_effect, convert_to="display.scale", n1=n)
-        return converter(value, current_effect, convert_to="display.scale")
     effect_tbox, lower_tbox, upper_tbox = [
         txt_boxes[box_name] for box_name in ("effect", "lower", "upper")
     ]
@@ -488,9 +493,9 @@ def set_current_effect_from_value(
     )
     if data_type in {"binary", "continuous"} and source == "entered":
         est, lower, upper = analysis_unit.get_entered_effect_and_ci(current_effect, arm_key)
-    (display_estimate, display_lower, display_upper) = [
-        conv_to_disp_scale(x) for x in (est, lower, upper)
-    ]
+    display_estimate, display_lower, display_upper = _effect_values_on_display_scale(
+        analysis_unit, current_effect, arm_key, data_type, converter, (est, lower, upper)
+    )
     for val, txt_box in zip(
         (display_estimate, display_lower, display_upper),
         [effect_tbox, lower_tbox, upper_tbox],

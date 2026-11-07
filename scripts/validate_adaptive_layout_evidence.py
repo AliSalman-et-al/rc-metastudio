@@ -293,17 +293,19 @@ def source_identity() -> str:
     return digest.hexdigest()
 
 
-def _validate_exercises(root: Path, manifest: dict[str, object]) -> None:
-    if not isinstance(manifest.get("run_id"), str) or not manifest["run_id"]:
-        _fail("missing run identity")
-    if manifest.get("source_identity") != source_identity():
-        _fail("source identity does not match current source")
-    try:
-        invocation = _mapping(json.loads((root / "invocation.json").read_text(encoding="utf-8")), "invocation")
-    except (OSError, json.JSONDecodeError) as exc:
-        _fail(f"missing or unreadable invocation identity: {exc}")
-    if any(manifest.get(key) != invocation.get(key) for key in ("run_id", "source_identity")):
-        _fail("manifest does not belong to current invocation")
+def _validate_remembered_geometry(manifest: dict[str, object]) -> None:
+    remembered = _mapping(manifest.get("remembered_geometry"), "remembered geometry")
+    if any(remembered.get(key) is not True for key in ("round_trip", "frame_matches", "state_matches")):
+        _fail("remembered geometry exercise failed")
+    if _rect(remembered, "saved_normalized_frame_geometry") != _rect(remembered, "loaded_frame_geometry"):
+        _fail("remembered geometry is contradictory")
+    saved = _mapping(remembered.get("saved_state"), "saved state")
+    loaded = _mapping(remembered.get("loaded_state"), "loaded state")
+    if saved != loaded or set(saved) != {"maximized", "full_screen"} or any(type(value) is not bool for value in saved.values()):
+        _fail("remembered state is contradictory")
+
+
+def _validate_layout_exercises(manifest: dict[str, object]) -> None:
     table = _mapping(manifest.get("table"), "table")
     columns = _integer(table.get("columns"), "table columns")
     widths = _list(table.get("column_widths"), "table widths")
@@ -317,15 +319,21 @@ def _validate_exercises(root: Path, manifest: dict[str, object]) -> None:
     before, after = _rect(resize, "before"), _rect(resize, "after")
     if before[2:] == after[2:] or resize.get("table_reachable") is not True:
         _fail("runtime resize did not change size or preserve table access")
-    remembered = _mapping(manifest.get("remembered_geometry"), "remembered geometry")
-    if any(remembered.get(key) is not True for key in ("round_trip", "frame_matches", "state_matches")):
-        _fail("remembered geometry exercise failed")
-    if _rect(remembered, "saved_normalized_frame_geometry") != _rect(remembered, "loaded_frame_geometry"):
-        _fail("remembered geometry is contradictory")
-    saved = _mapping(remembered.get("saved_state"), "saved state")
-    loaded = _mapping(remembered.get("loaded_state"), "loaded state")
-    if saved != loaded or set(saved) != {"maximized", "full_screen"} or any(type(value) is not bool for value in saved.values()):
-        _fail("remembered state is contradictory")
+    _validate_remembered_geometry(manifest)
+
+
+def _validate_exercises(root: Path, manifest: dict[str, object]) -> None:
+    if not isinstance(manifest.get("run_id"), str) or not manifest["run_id"]:
+        _fail("missing run identity")
+    if manifest.get("source_identity") != source_identity():
+        _fail("source identity does not match current source")
+    try:
+        invocation = _mapping(json.loads((root / "invocation.json").read_text(encoding="utf-8")), "invocation")
+    except (OSError, json.JSONDecodeError) as exc:
+        _fail(f"missing or unreadable invocation identity: {exc}")
+    if any(manifest.get(key) != invocation.get(key) for key in ("run_id", "source_identity")):
+        _fail("manifest does not belong to current invocation")
+    _validate_layout_exercises(manifest)
 
 
 def _read_manifest(root: Path) -> dict[str, object]:

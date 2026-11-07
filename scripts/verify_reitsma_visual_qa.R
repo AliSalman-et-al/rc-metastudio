@@ -161,15 +161,32 @@ qa_row <- function(case, family, kind, workflow, scenario, image, error=NA_chara
              sha256=sha256, pdf_contract=pdf.contract, error=error, stringsAsFactors=FALSE)
 }
 
+qa_check_export <- function(image, labels, colors) {
+  extension <- tolower(tools::file_ext(image))
+  if (extension %in% c("svg", "svgz")) qa_svg_semantics(image, labels, colors)
+  else {
+    qa_binary_export(image, extension)
+    if (identical(extension, "pdf")) {
+      contract <- qa_pdf_contract(image)
+      if (!identical(contract$pages, 1L) || !isTRUE(contract$has_xref_or_xref_stream) || !isTRUE(contract$has_eof))
+        stop("PDF failed the normalized one-page/trailer contract: ", image, call.=FALSE)
+    }
+  }
+}
+
+qa_retain_reports <- function(root) {
+  for (name in c("manifest.csv", "descriptor-contract.json")) {
+    previous <- file.path(root, name)
+    if (file.exists(previous) && !file.copy(previous, tempfile(paste0(name, "-previous-"), tmpdir=root)))
+      stop("Could not retain previous visual QA report", call.=FALSE)
+  }
+}
+
 qa_render <- function(output.root=root) {
   root <- normalizePath(output.root, winslash="/", mustWork=FALSE)
   dir.create(root, recursive=TRUE, showWarnings=FALSE)
   report.root <- root
-  for (name in c("manifest.csv", "descriptor-contract.json")) {
-    previous <- file.path(report.root, name)
-    if (file.exists(previous) && !file.copy(previous, tempfile(paste0(name, "-previous-"), tmpdir=report.root)))
-      stop("Could not retain previous visual QA report", call.=FALSE)
-  }
+  qa_retain_reports(report.root)
   root <- tempfile("attempt-", tmpdir=report.root)
   if (!dir.create(root)) stop("Could not create fresh visual QA output", call.=FALSE)
   qa_load_reitsma()
@@ -178,16 +195,7 @@ qa_render <- function(output.root=root) {
     err <- NA_character_
     tryCatch({
       draw(image)
-      extension <- tolower(tools::file_ext(image))
-      if (extension %in% c("svg", "svgz")) qa_svg_semantics(image, labels, colors)
-      else {
-        qa_binary_export(image, extension)
-        if (identical(extension, "pdf")) {
-          contract <- qa_pdf_contract(image)
-          if (!identical(contract$pages, 1L) || !isTRUE(contract$has_xref_or_xref_stream) || !isTRUE(contract$has_eof))
-            stop("PDF failed the normalized one-page/trailer contract: ", image, call.=FALSE)
-        }
-      }
+      qa_check_export(image, labels, colors)
     }, error=function(e) err <<- conditionMessage(e))
     rows[[length(rows)+1L]] <<- qa_row(case, family, kind, workflow, scenario, image, err)
   }
