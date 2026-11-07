@@ -700,7 +700,7 @@ def capture_bundle(
         capture_mode == "authoritative" and baseline_environment["matches_expected"]
         and all(tool_versions.get(name) == version for name, version in locked_python.items() if name.startswith("rpy2"))
         and package_versions["RCMetaR"] == source_version
-        and all(package_versions[name] == version for name, version in authority_versions.items())
+        and all(str(package_versions[name]).replace("-", ".") == version for name, version in authority_versions.items())
     )
     base = {
         "id": bundle["id"],
