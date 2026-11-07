@@ -511,8 +511,8 @@ def test_reitsma_coefficient_editor_hides_inapplicable_forest_controls(qapp):
         "coefficients.svg",
     )
     try:
-        assert not dialog.groupBox.isVisible()
-        assert not dialog.default_panel.isVisible()
+        assert dialog.groupBox.isHidden()
+        assert dialog.default_panel.isHidden()
         params = dialog.plot_params()
         assert params["reitsma.coefficient.scale"] == "Sensitivity"
         assert params["reitsma.moderator.coding"]["quality"]["reference"] == "A"

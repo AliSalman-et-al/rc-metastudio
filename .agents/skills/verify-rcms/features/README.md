@@ -24,7 +24,7 @@ diagnostic results; hillclimb T5 completes with both manuscript formats.
 Shared report observers compare the complete rows of Pooled effect, Model fit and
 Study results with held inputs, including sequential fit identities and diagnostic
 metric labels. Every original table row is also retained with its complete field labels and
-source section/table identity in the compact Supplementary Full-precision results table. Structured notes are retained verbatim as prose beneath their source tables.
+source section/table identity in the compact Supplementary Full-precision results table. Structured notes are retained verbatim as prose beneath their source tables. Prediction-interval notes also accompany the main report prose and Model fit table; the Pooled effect table retains each row's producer SE scale so combined diagnostic metrics remain distinguishable.
 References are retained as a numbered prose section rather than a table.
 The manuscript export drive checks every prose paragraph in clipboard, PDF and DOCX
 and rejects developer-facing “Held” labels.

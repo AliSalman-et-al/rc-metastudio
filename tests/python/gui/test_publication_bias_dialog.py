@@ -297,7 +297,7 @@ def test_correction_group_is_hidden_without_raw_count_eligibility(qapp, monkeypa
     )
     dialog = publication_bias_dialog.PublicationBiasDialog(_Model("continuous", "MD"))
     try:
-        assert not dialog.correction_group.isVisible()
+        assert dialog.correction_group.isHidden()
         assert not dialog.correction_policy_combo.isEnabled()
     finally:
         dialog.close()
@@ -316,8 +316,9 @@ def test_correction_group_is_hidden_for_one_arm_proportion(qapp, monkeypatch):
     )
     dialog = publication_bias_dialog.PublicationBiasDialog(_Model("binary", "PR"))
     try:
-        assert not dialog.correction_group.isVisible()
+        assert dialog.correction_group.isHidden()
         assert not dialog.correction_policy_combo.isEnabled()
+        assert captured
         assert all("correction.policy" not in request for request in captured)
         assert "correction.policy" not in dialog._request().to_mapping()
     finally:
@@ -346,5 +347,38 @@ def test_failure_is_reported_in_dedicated_label(qapp, monkeypatch):
         dialog.run()
         assert dialog.failure_label.text() == "run failed"
         assert not dialog.failure_label.isHidden()
+    finally:
+        dialog.close()
+
+
+def test_output_confidence_and_unique_sensitivity_choices(qapp, monkeypatch):
+    monkeypatch.setattr(r_bridge, "run_small_study_effects", lambda *a, **k:
+        _report("continuous", "MD", [_method("classical-egger", True, "primary")]))
+    dialog = publication_bias_dialog.PublicationBiasDialog(_Model("continuous", "MD", 90))
+    try:
+        dialog.sampling_confidence_combo.setCurrentText("99")
+        request = dialog._request().to_mapping()
+        assert request["conf.level"] == 90
+        assert request["funnel.sampling.conf.level"] == [99.0]
+        for combo in (dialog.trim_fill_estimator_combo, dialog.trim_fill_side_combo, dialog.trim_fill_model_combo):
+            choices = [combo.itemText(i) for i in range(combo.count())]
+            assert len(choices) == len(set(choices))
+    finally:
+        dialog.close()
+
+
+def test_preview_failure_blocks_silent_primary_only_request_and_allows_retry(qapp, monkeypatch):
+    import pytest
+    def failed(*args, **kwargs):
+        raise RuntimeError("preview unavailable")
+    monkeypatch.setattr(r_bridge, "run_small_study_effects", failed)
+    dialog = publication_bias_dialog.PublicationBiasDialog(_Model("continuous", "MD"))
+    try:
+        with pytest.raises(ValueError, match="availability"):
+            dialog._request()
+        monkeypatch.setattr(r_bridge, "run_small_study_effects", lambda *a, **k:
+            _report("continuous", "MD", [_method("classical-egger", True, "primary"), _method("begg-mazumdar", True, "exploratory")]))
+        dialog._refresh_eligibility()
+        assert dialog._request().to_mapping()["tests"] == ["classical-egger", "begg-mazumdar"]
     finally:
         dialog.close()

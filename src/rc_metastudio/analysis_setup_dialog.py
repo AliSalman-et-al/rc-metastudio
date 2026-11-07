@@ -825,6 +825,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             selection.excluded_study_names
         ):
             return
+        self._executed_studies = selection.studies
         request = self._meta_regression_request()
         fixed_effects = self.fixed_effects_radio.isChecked()
         self._run_analysis(
@@ -1065,9 +1066,18 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                        manuscript_model_info=tuple(model_info),
                        manuscript_comparison="Comparison: " + " / ".join(self.model.arm_names))
 
+    def _manuscript_studies(self):
+        return getattr(self, "_executed_studies", self.model.get_studies())
+
+    def _manuscript_raw_data(self):
+        studies = getattr(self, "_executed_studies", None)
+        if studies is None:
+            return self.model.get_current_raw_data()
+        return self.model.get_current_raw_data(only_these_studies=[study.id for study in studies])
+
     def _manuscript_model_info(self):
-        model_info = [("Studies (k)", str(len(self.model.get_studies())))]
-        raw = self.model.get_current_raw_data()
+        model_info = [("Studies (k)", str(len(self._manuscript_studies())))]
+        raw = self._manuscript_raw_data()
         if self.data_type in ("binary", "continuous") and len(self.model.arm_names) == 2 and raw and all(
             len(row) == (4 if self.data_type == "binary" else 6) and all(isinstance(v, (int, float)) for v in row) for row in raw
         ):
@@ -1095,13 +1105,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         return applied_parameters
 
     def _result_context(self, applied_parameters):
-        included = len(self.model.get_studies())
+        included = len(self._manuscript_studies())
         excluded = len(self.model.get_studies(only_if_included=False)) - included
         context = f"{included} studies were included"
         if excluded:
             context += f" ({excluded} studies were excluded)"
         if self.data_type in ('binary', 'continuous'):
-            raw = self.model.get_current_raw_data()
+            raw = self._manuscript_raw_data()
             if len(self.model.arm_names) == 2 and raw and all(len(row) == (4 if self.data_type == "binary" else 6) and all(isinstance(v, (int, float)) for v in row) for row in raw):
                 totals = [sum(row[i] for row in raw) for i in ((1, 3) if self.data_type == "binary" else (0, 3))]
                 context += f" ({totals[0]:g} participants in {self.model.arm_names[0]}, {totals[1]:g} in {self.model.arm_names[1]})"
@@ -1111,7 +1121,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _correction_context(self, applied_parameters):
         if self.data_type not in ("binary", "diagnostic") or not applied_parameters.get("adjust"):
             return ""
-        raw = self.model.get_current_raw_data()
+        raw = self._manuscript_raw_data()
         policy = applied_parameters.get("correction.policy", applied_parameters.get("to", "only0"))
         zero = self._has_zero_cell(raw)
         if policy in ("none", "None") or not (zero or policy in ("all", "All studies")):
@@ -1443,11 +1453,14 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             expanded = QtCore.QSettings().value("analysis/advancedExpanded", False, type=bool)
             self.advanced_toggle.setChecked(expanded)
             self.advanced_panel.setVisible(expanded)
-        layout.addWidget(QLabel("Effect measure"), 0, 0)
+        effect_label = QLabel("Effect measure")
+        layout.addWidget(effect_label, 0, 0)
         metric_label = QLabel(self._result_metric_label().capitalize())
         metric_label.setWordWrap(True)
         metric_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         layout.addWidget(metric_label, 0, 1)
+        self._configure_parameter_accessibility(effect_label, metric_label)
+        self.current_widgets.extend((effect_label, metric_label))
         row = 1
         for spec in definitions:
             if spec.name in excluded_names:
@@ -2008,12 +2021,12 @@ def add_plot_params(specs_form):
 
     plot_lb = _text_value(specs_form.plot_lb_le)
     specs_form.current_param_vals["fp_plot_lb"] = "[default]"
-    if plot_lb != "[default]" and check_plot_bound(plot_lb):
+    if plot_lb != "[default]" and check_plot_bound(plot_lb) is not False:
         specs_form.current_param_vals["fp_plot_lb"] = plot_lb
 
     plot_ub = _text_value(specs_form.plot_ub_le)
     specs_form.current_param_vals["fp_plot_ub"] = "[default]"
-    if plot_ub != "[default]" and check_plot_bound(plot_ub):
+    if plot_ub != "[default]" and check_plot_bound(plot_ub) is not False:
         specs_form.current_param_vals["fp_plot_ub"] = plot_ub
 
     xticks = _text_value(specs_form.x_ticks_le)
@@ -2043,7 +2056,7 @@ def add_plot_params(specs_form):
 
 def _validated_plot_bound(widget):
     value = _text_value(widget)
-    return value if value != "[default]" and check_plot_bound(value) else "[default]"
+    return value if value != "[default]" and check_plot_bound(value) is not False else "[default]"
 
 
 def _validated_plot_ticks(widget):

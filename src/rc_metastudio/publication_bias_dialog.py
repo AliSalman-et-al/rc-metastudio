@@ -187,6 +187,9 @@ class PublicationBiasDialog(
         self.correction_policy_combo.addItems(
             [policy.value for policy in CorrectionPolicy]
         )
+        self.trim_fill_estimator_combo.clear()
+        self.trim_fill_side_combo.clear()
+        self.trim_fill_model_combo.clear()
         self.trim_fill_estimator_combo.addItems(
             [item.value for item in TrimAndFillEstimator]
         )
@@ -268,6 +271,7 @@ class PublicationBiasDialog(
                 if correction_applicable and self.correction_policy_combo.isEnabled()
                 else None
             ),
+            confidence_level=float(self.model.get_confidence_level()),
             selected_tests=(),
         )
 
@@ -370,6 +374,10 @@ class PublicationBiasDialog(
         self.correction_reason_label.clear()
 
     def _request(self) -> SmallStudyEffectsRequest:
+        if self._eligibility_report is None:
+            self._refresh_eligibility()
+        if self._eligibility_report is None:
+            raise ValueError("Test availability could not be checked. Try running again when preview is available.")
         funnels = [
             kind.value
             for kind, control in (
@@ -409,6 +417,7 @@ class PublicationBiasDialog(
                 if self.correction_policy_combo.isEnabled()
                 else None
             ),
+            confidence_level=float(self.model.get_confidence_level()),
             selected_tests=selected_tests,
             selected_funnels=funnels,
             label_policy=labels[self.label_policy_combo.currentText()],

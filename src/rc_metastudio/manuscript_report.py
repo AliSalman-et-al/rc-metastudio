@@ -212,10 +212,11 @@ def _pooled_statistics(values, overall, calculation):
     if statistic == 't' and df:
         statistic += f' (df = {df})'
         method = f'The overall effect was tested using t with {df} degrees of freedom.'
-    se = next((v for h, v in {**calculation, **values}.items() if h.startswith('SE')), '—')
+    se_header, se = next(((h, v) for h, v in {**calculation, **values}.items() if h.startswith('SE')), ('SE', '—'))
+    se_scale = se_header.removeprefix('SE').strip() or '—'
     test = values.get(stat, overall.get(stat, '—')) if stat else '—'
     p = p_value(values.get('p-value', overall.get('p-value', '')))
-    return statistic, se, test, p, method
+    return statistic, se, se_scale, test, p, method
 
 
 def _pooled_prose(result, values, effect, effect_metric, coefficient, statistic, test, p, level, lower, upper, summary):
@@ -263,10 +264,10 @@ def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overa
         effect = values.get('Term', values.get('Subgroups', values.get('Level', context)))
         if not coefficient and ',' in metric and effect.casefold() != effect_metric.casefold():
             effect = effect_metric.capitalize() + ': ' + effect
-        statistic, se, test, p, method = _pooled_statistics(values, overall, calculation)
+        statistic, se, se_scale, test, p, method = _pooled_statistics(values, overall, calculation)
         if not coefficient and not vertical and values.get("Subgroups", "Overall").casefold() == "overall":
             methods.append(method)
-        pooled.append((effect[:1].upper() + effect[1:], values['Estimate'], values[lower] + ' to ' + values[upper], se, test, p))
+        pooled.append((effect[:1].upper() + effect[1:], values['Estimate'], values[lower] + ' to ' + values[upper], se, se_scale, test, p))
         _pooled_prose(result, values, effect, effect_metric, coefficient, statistic, test, p, level, lower, upper, summary)
     return level, statistic
 
@@ -406,6 +407,10 @@ def _report_sections(result, summary, methods):
         if section.kind != 'text':
             continue
         overall, calculation = _section_statistics(section)
+        for note in section.paragraphs:
+            if 'prediction' in note.casefold():
+                summary.append(note)
+                fit.append(('Prediction interval note (' + section.title + ')', note))
         for table in section.tables:
             level, statistic = _report_table(result, section, table, summary, pooled, fit, level, statistic, overall, calculation, methods)
     return _primary_sections(result, text_sections, pooled, fit, level, statistic), _held_sections(result)
@@ -415,7 +420,7 @@ def _primary_sections(result, text_sections, pooled, fit, level, statistic):
     template = text_sections[0]
     sections = [replace(template, title='Pooled effect', paragraphs=(() if pooled else
                          ('No structured pooled estimates are available for this workflow; the complete output is in Supplementary details.',)),
-                        tables=(ResultTable('Pooled effect', ('Effect', 'Estimate', level, 'SE', statistic, 'p'), _presentation_rows(pooled, result.manuscript_digits)),)),
+                        tables=(ResultTable('Pooled effect', ('Effect', 'Estimate', level, 'SE', 'SE scale', statistic, 'p'), _presentation_rows(pooled, result.manuscript_digits)),)),
                 replace(template, title='Model fit', paragraphs=(),
                         tables=(ResultTable('Model fit', ('Statistic', 'Value'), _presentation_rows(fit, result.manuscript_digits)),)),
                 _study_results(_presentation_result(result), template, level)]
