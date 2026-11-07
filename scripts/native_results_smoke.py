@@ -278,6 +278,12 @@ def validate_evidence(root: Path) -> list[dict[str, object]]:
             "styleable": True,
         }:
             raise ValueError("native Results evidence has the wrong plot descriptor")
+        actions = cast(dict[str, object], record.get("plot_actions"))
+        if not isinstance(actions, dict) or actions.get("edit_committed") is not True:
+            raise ValueError("native Results plot actions missing")
+        export = root / ("exported-" + _scale_slug(scale) + ".svg")
+        if actions.get("export_path") != export.name or not export.is_file() or actions.get("export_sha256") != _sha256(export):
+            raise ValueError("native Results export action artifact is invalid")
         ratio = _strict_number(record.get("plot_ratio"), "plot ratio", minimum=0.01)
         _require_close(ratio, 2.0, "plot ratio")
         captures = record.get("captures")
@@ -466,6 +472,57 @@ def _native_device_pixel_ratio(repo_root: Path) -> float:
     return float(completed.stdout.strip().splitlines()[-1])
 
 
+def _exercise_plot_actions(app, results, svg: Path, root: Path, slug: str):
+    """Drive real editor/export actions with an explicit renderer boundary fixture."""
+    from PyQt6 import QtCore, QtWidgets
+    from unittest.mock import patch
+    from rc_metastudio import r_bridge
+    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+    base = root / "forest"
+    params = {"fp_outpath": str(svg), "fp_col1_str": "Study"}
+    Path(str(base) + ".params").write_text(json.dumps(params), encoding="utf-8")
+    payload = svg.read_text(encoding="utf-8")
+    def load(_path, return_params_dict=False):
+        return json.loads(Path(str(base) + ".params").read_text(encoding="utf-8")) if return_params_dict else True
+    def update(values, **kwargs):
+        params.clear()
+        params.update(values)
+        if kwargs.get("outpath"):
+            Path(kwargs["outpath"]).write_text(json.dumps(values), encoding="utf-8")
+    def generate(path):
+        Path(path).write_text(payload.replace("</svg>", '<text x="80" y="150" font-size="24">Edited fixture</text></svg>'), encoding="utf-8")
+    def plotdata(path, **_kwargs):
+        Path(str(path) + ".plotdata").write_text("controlled fixture plot data", encoding="utf-8")
+    observed = []
+    def edit():
+        dialog = next((widget for widget in app.topLevelWidgets() if isinstance(widget, EditPlotDialog) and widget.isVisible()), None)
+        if dialog is None:
+            observed.append(False)
+            return
+        dialog.figure_caption.setText("Native fixture edited caption")
+        button = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
+        if button is not None:
+            button.click()
+            observed.append(dialog.result() == QtWidgets.QDialog.DialogCode.Accepted)
+    destination = root / ("exported-" + slug + ".svg")
+    before = _sha256(svg)
+    with patch.object(r_bridge, "load_vars_for_plot", load), patch.object(r_bridge, "update_plot_params", update), patch.object(r_bridge, "regenerate_plot_data", lambda: None), patch.object(r_bridge, "write_out_plot_data", plotdata), patch.object(r_bridge, "load_in_r", lambda _path: None), patch.object(r_bridge, "generate_forest_plot", generate):
+        results.nav_tree.setCurrentItem(next(item for item in results.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive) if item.text(0) == "Forest plot"))
+        app.processEvents()
+        QtCore.QTimer.singleShot(0, edit)
+        results.edit_plot_action.trigger()
+        app.processEvents()
+        persisted = json.loads(Path(str(base) + ".params").read_text(encoding="utf-8"))
+        if observed != [True] or persisted.get("plot_caption") != "Native fixture edited caption" or before == _sha256(svg):
+            raise RuntimeError("native Results edit action did not commit parameters and image")
+        results.export_format_control.setCurrentIndex(results.export_format_control.findData("svg"))
+        with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(destination), "")):
+            results.export_plot_action.trigger()
+        if not destination.exists() or destination.read_bytes() != svg.read_bytes():
+            raise RuntimeError("native Results export action did not write edited plot")
+    return {"edit_committed": True, "export_path": destination.name, "export_sha256": _sha256(destination)}
+
+
 def _run_scale(scale: float, repo_root: Path, evidence_root: Path) -> None:
     from PyQt6 import QtCore, QtWidgets
 
@@ -589,6 +646,7 @@ def _run_scale(scale: float, repo_root: Path, evidence_root: Path) -> None:
             if item is None:
                 raise RuntimeError("native Results navigation contains a missing item")
             navigation.append(item.text(0))
+        actions = _exercise_plot_actions(app, results, svg, evidence_root, slug)
         results_capture = _capture_window(app, results, results_image)
         record = {
             "captures": {"results": results_capture},
@@ -598,6 +656,7 @@ def _run_scale(scale: float, repo_root: Path, evidence_root: Path) -> None:
             "plot_artifact_sha256": _sha256(svg),
             "plot_artifact_size": svg.stat().st_size,
             "plot_capability": capability,
+            "plot_actions": actions,
             "plot_ratio": plot_rect.width() / plot_rect.height(),
             "qpa": app.platformName(),
             "result_text": {

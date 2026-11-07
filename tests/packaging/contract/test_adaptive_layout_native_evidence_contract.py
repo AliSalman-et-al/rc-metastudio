@@ -96,6 +96,12 @@ def _write_validator_fixture(tmp_path, validator):
     write_nonblank_png(artifact, [640, 360])
     manifest = {
         "schema_version": 2,
+        "run_id": "fixture-run",
+        "source_identity": validator.source_identity(),
+        "table": {"rows": 2, "columns": 2, "column_widths": [80, 90]},
+        "splitter": {"sizes": [100, 300], "both_panes_reachable": True},
+        "runtime_resize": {"before": {"x": 0, "y": 0, "width": 700, "height": 500}, "after": {"x": 0, "y": 0, "width": 800, "height": 600}, "table_reachable": True},
+        "remembered_geometry": {"round_trip": True, "frame_matches": True, "state_matches": True, "saved_normalized_frame_geometry": {"x": 0, "y": 0, "width": 800, "height": 600}, "loaded_frame_geometry": {"x": 0, "y": 0, "width": 800, "height": 600}, "saved_state": {"maximized": False, "full_screen": False}, "loaded_state": {"maximized": False, "full_screen": False}},
         "platform_plugin": "windows",
         "scale_factor_environment": "1.0",
         # This fixture exercises the Windows x64 release-evidence contract even
@@ -110,6 +116,7 @@ def _write_validator_fixture(tmp_path, validator):
         },
     }
     (tmp_path / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    (tmp_path / "invocation.json").write_text(json.dumps({key: manifest[key] for key in ("run_id", "source_identity")}), encoding="utf-8")
     (tmp_path / "HUMAN_REVIEW.md").write_text("review me\n", encoding="utf-8")
     return manifest
 
@@ -218,4 +225,48 @@ def test_native_evidence_validator_rejects_semantic_contract_mutations(
     (tmp_path / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
 
     with pytest.raises(ValueError, match=message):
+        validator.validate_evidence(tmp_path, "windows", "1.0")
+
+
+@pytest.mark.parametrize("field", ["table", "splitter", "remembered_geometry", "runtime_resize", "run_id", "source_identity"])
+def test_validator_requires_exercises_and_identity(tmp_path, field):
+    validator = _load_validator()
+    manifest = _write_validator_fixture(tmp_path, validator)
+    validator.validate_evidence(tmp_path, "windows", "1.0")
+    del manifest[field]
+    (tmp_path / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError):
+        validator.validate_evidence(tmp_path, "windows", "1.0")
+
+
+def test_validator_accepts_apple_silicon_and_rejects_equal_resize(tmp_path):
+    validator = _load_validator()
+    manifest = _write_validator_fixture(tmp_path, validator)
+    manifest.update(platform_plugin="cocoa", machine="arm64")
+    (tmp_path / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    validator.validate_evidence(tmp_path, "cocoa", "1.0")
+    manifest["runtime_resize"]["after"] = manifest["runtime_resize"]["before"]
+    (tmp_path / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="resize"):
+        validator.validate_evidence(tmp_path, "cocoa", "1.0")
+
+
+@pytest.mark.parametrize("field,key,value", [
+    ("source_identity", None, "stale-source"),
+    ("run_id", None, "different-run"),
+    ("table", "column_widths", [0, 90]),
+    ("splitter", "both_panes_reachable", False),
+    ("remembered_geometry", "loaded_state", {"maximized": True, "full_screen": False}),
+    ("runtime_resize", "table_reachable", False),
+])
+def test_validator_rejects_contradictory_exercises(tmp_path, field, key, value):
+    validator = _load_validator()
+    manifest = _write_validator_fixture(tmp_path, validator)
+    validator.validate_evidence(tmp_path, "windows", "1.0")
+    if key is None:
+        manifest[field] = value
+    else:
+        manifest[field][key] = value
+    (tmp_path / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError):
         validator.validate_evidence(tmp_path, "windows", "1.0")

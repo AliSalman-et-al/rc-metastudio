@@ -51,6 +51,8 @@ def _valid_bundle(root: Path) -> None:
             '<svg><line stroke="#000000"/><text>Forest Plot 95% confidence interval</text></svg>',
             encoding="utf-8",
         )
+        exported = root / ("exported-" + slug + ".svg")
+        exported.write_bytes(artifact.read_bytes())
         captures = {}
         for name in ("results",):
             path = root / f"{name}-{slug}.png"
@@ -88,6 +90,7 @@ def _valid_bundle(root: Path) -> None:
             "plot_artifact_sha256": _sha256(artifact),
             "plot_artifact_size": artifact.stat().st_size,
             "plot_capability": capability,
+            "plot_actions": {"edit_committed": True, "export_path": exported.name, "export_sha256": _sha256(exported)},
             "plot_ratio": 2.0,
             "qpa": "windows",
             "result_text": {
@@ -400,3 +403,14 @@ def test_native_results_capture_fails_closed_after_bounded_attempts(
         native_results_smoke._capture_window(
             qapp, Window(), tmp_path / "capture.png", attempts=2
         )
+
+
+def test_native_results_require_observed_plot_actions(tmp_path):
+    _valid_bundle(tmp_path)
+    native_results_smoke.validate_evidence(tmp_path)
+    path = native_results_smoke._record_path(tmp_path, 1.0)
+    record = json.loads(path.read_text())
+    del record["plot_actions"]
+    path.write_text(json.dumps(record))
+    with pytest.raises(ValueError, match="plot actions"):
+        native_results_smoke.validate_evidence(tmp_path)

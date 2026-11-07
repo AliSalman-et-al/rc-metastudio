@@ -154,3 +154,31 @@ tests alone do not replace this gate. Afterwards reinstall RCMetaR into the
 persistent development library selected by `RCMS_R_LIBS`.
 
 Before pushing, run `python scripts/verify.py pre-push` in the locked development environment; it takes about 4 minutes and fails fast through generated Qt preparation, Windows-target strict typing, code health, Python fast/golden tests, GUI tests and packaging contracts. Commit changes first so code health measures HEAD against origin/master. The timing table is printed and saved to `artifacts/verification/pre-push.json`. R stack, authorities, desktop E2E and native platform qualification are listed as “CI only”; run `python scripts/verify.py r-stack` to exercise the full R/desktop lane locally when needed. No dependency sync or reference regeneration is performed.
+
+
+### Native layout evidence identity and retries
+
+Adaptive-layout evidence includes a current-source digest, a run ID and an
+`invocation.json` receipt. The validator requires matching receipt/manifest
+identity plus table, splitter, geometry round-trip and actual resize observations.
+It accepts Windows x64 and Apple Silicon macOS architecture names only for their
+respective targets. Older bundles without these records must be recollected.
+Starting another attempt archives prior captures beside the output directory;
+startup failure cannot leave an earlier manifest presented as the new result.
+
+Remaining-surfaces evidence requires both scales to share platform, run and
+source identity. Each scale uses a fresh fragment directory; retries retain
+fragments and archive previous scale captures under `.previous-attempts`.
+The covariate Cancel probe edits the real conversion model through the owning
+MainWindow and checks covariate definitions and every row's values after rejection.
+Native Results smoke drives Edit and Export through their QActions, observes a
+committed caption and image, and hashes the exported SVG. Its renderer is a
+controlled fixture, so this lane does not qualify statistical fitting.
+
+The UX scenario snapshots/restores clipboard MIME bytes in `finally` and seeds
+owned content before exercising Copy. It never records the prior clipboard.
+The clipboard GUI cases also restore MIME data; sentinel failure tests run only
+with the offscreen clipboard. The fractional-scale workspace child sets its own
+INI settings path before startup and reports that path for containment checking.
+Offscreen screen descriptors and rendered captures cannot establish native
+multi-monitor placement or native DPI behavior.

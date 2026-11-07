@@ -282,6 +282,52 @@ def _required_frame_size(client_size: list[int], margins: list[int]) -> list[int
     ]
 
 
+def source_identity() -> str:
+    """Bind native layout proof to the executable source and UI inputs."""
+    root = Path(__file__).resolve().parents[1]
+    digest = hashlib.sha256()
+    paths = sorted(path for folder in (root / "src", root / "scripts") for path in folder.rglob("*") if path.suffix in {".py", ".ui", ".qrc"})
+    for path in paths:
+        digest.update(path.relative_to(root).as_posix().encode())
+        digest.update(path.read_bytes())
+    return digest.hexdigest()
+
+
+def _validate_exercises(root: Path, manifest: dict[str, object]) -> None:
+    if not isinstance(manifest.get("run_id"), str) or not manifest["run_id"]:
+        _fail("missing run identity")
+    if manifest.get("source_identity") != source_identity():
+        _fail("source identity does not match current source")
+    try:
+        invocation = _mapping(json.loads((root / "invocation.json").read_text(encoding="utf-8")), "invocation")
+    except (OSError, json.JSONDecodeError) as exc:
+        _fail(f"missing or unreadable invocation identity: {exc}")
+    if any(manifest.get(key) != invocation.get(key) for key in ("run_id", "source_identity")):
+        _fail("manifest does not belong to current invocation")
+    table = _mapping(manifest.get("table"), "table")
+    columns = _integer(table.get("columns"), "table columns")
+    widths = _list(table.get("column_widths"), "table widths")
+    if _integer(table.get("rows"), "table rows") < 1 or columns < 1 or len(widths) != columns or any(_integer(width, "column width") < 1 for width in widths):
+        _fail("table exercise is incomplete")
+    splitter = _mapping(manifest.get("splitter"), "splitter")
+    sizes = _list(splitter.get("sizes"), "splitter sizes")
+    if splitter.get("both_panes_reachable") is not True or len(sizes) != 2 or any(_integer(size, "pane size") < 1 for size in sizes):
+        _fail("splitter exercise failed")
+    resize = _mapping(manifest.get("runtime_resize"), "runtime resize")
+    before, after = _rect(resize, "before"), _rect(resize, "after")
+    if before[2:] == after[2:] or resize.get("table_reachable") is not True:
+        _fail("runtime resize did not change size or preserve table access")
+    remembered = _mapping(manifest.get("remembered_geometry"), "remembered geometry")
+    if any(remembered.get(key) is not True for key in ("round_trip", "frame_matches", "state_matches")):
+        _fail("remembered geometry exercise failed")
+    if _rect(remembered, "saved_normalized_frame_geometry") != _rect(remembered, "loaded_frame_geometry"):
+        _fail("remembered geometry is contradictory")
+    saved = _mapping(remembered.get("saved_state"), "saved state")
+    loaded = _mapping(remembered.get("loaded_state"), "loaded state")
+    if saved != loaded or set(saved) != {"maximized", "full_screen"} or any(type(value) is not bool for value in saved.values()):
+        _fail("remembered state is contradictory")
+
+
 def _read_manifest(root: Path) -> dict[str, object]:
     manifest_path = root / "manifest.json"
     try:
@@ -302,8 +348,9 @@ def _validate_manifest_metadata(
         _fail("scale factor does not match the requested package run")
     if str(expected_scale) not in {"1.0", "1.5"}:
         _fail("unexpected release scale")
-    if str(manifest.get("machine", "")).lower() not in {"amd64", "x86_64"}:
-        _fail("evidence was not generated on x64")
+    architectures = {"windows": {"amd64", "x86_64"}, "cocoa": {"arm64", "aarch64"}}
+    if str(manifest.get("machine", "")).lower() not in architectures.get(expected_platform, set()):
+        _fail("evidence architecture does not match platform target")
 
 
 def _scenario_records(
@@ -415,6 +462,7 @@ def validate_evidence(
     root = Path(root).resolve()
     manifest = _read_manifest(root)
     _validate_manifest_metadata(manifest, expected_platform, expected_scale)
+    _validate_exercises(root, manifest)
     surfaces, unavailable = _scenario_records(manifest)
     _validate_scenario_membership(surfaces, unavailable)
     for record in unavailable:
@@ -422,6 +470,7 @@ def validate_evidence(
 
     expected_files: set[str] = {
         "manifest.json",
+        "invocation.json",
         "HUMAN_REVIEW.md",
         "intrinsic-ratio-evidence.png",
     }

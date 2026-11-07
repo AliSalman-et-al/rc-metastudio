@@ -143,6 +143,21 @@ def export_destination_case(view, work, record, kind):
 
 
 def run(app, window, work, root, record, analyze):
+    # Copy MIME bytes, not the Qt-owned object invalidated by the first copy.
+    saved = QtCore.QMimeData()
+    clipboard = app.clipboard()
+    original = clipboard.mimeData()
+    if original is not None:
+        for mime in original.formats():
+            saved.setData(mime, original.data(mime))
+    try:
+        clipboard.setText("RCMS verification clipboard")
+        return _run(app, window, work, root, record, analyze)
+    finally:
+        clipboard.setMimeData(saved)
+
+
+def _run(app, window, work, root, record, analyze):
     from rc_metastudio import add_new_dialogs, main_wizard, automation
     from PyQt6 import sip
 
@@ -328,7 +343,7 @@ def run(app, window, work, root, record, analyze):
     assert cast(Callable[..., bool], QtTest.QTest.qWaitForWindowActive)(view, 2000)
     assert view.report_text.hasFocus()
     assert view.report_text.find("Model:")
-    record("ux-copy-selection-before", view, selection=view.report_text.textCursor().selectedText(), focus=app.focusWidget().objectName(), active=view.isActiveWindow(), clipboard=app.clipboard().text())
+    record("ux-copy-selection-before", view, selection=view.report_text.textCursor().selectedText(), focus=app.focusWidget().objectName(), active=view.isActiveWindow())
     key_click(view.report_text, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier)
     app.processEvents()
     record("ux-copy-selection-after", view, selection=view.report_text.textCursor().selectedText(), clipboard=app.clipboard().text(), owns=app.clipboard().ownsClipboard())

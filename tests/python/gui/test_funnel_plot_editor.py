@@ -323,6 +323,11 @@ def test_funnel_editor_failed_second_apply_preserves_last_good_artifacts(
     try:
         dialog.point_size_spin.setValue(2.0)
         window._apply_funnel_plot_edits(dialog, artifact, None)
+        assert regenerate_count == [1]
+        assert image_path.read_bytes() == b"first good image"
+        import ast
+        persisted = dict(ast.literal_eval(params_path.read_text(encoding="utf-8")))
+        assert float(persisted["funnel.point.size"]) == 2.0
         committed_params = params_path.read_bytes()
         committed_image = image_path.read_bytes()
         dialog.point_size_spin.setValue(3.0)

@@ -153,7 +153,7 @@ def first_use_screen(window, archetype, active_window_provider=None):
     """Resolve first-use ownership, including the active Workspace screen."""
     parent = window.parentWidget()
     if parent is not None:
-        return owning_screen(window)
+        return owning_screen(parent.window())
 
     if WindowArchetype(archetype) == WindowArchetype.WORKSPACE:
         provider = active_window_provider or QApplication.activeWindow
@@ -179,7 +179,10 @@ def place_window_on_screen(window, screen):
 
 
 def owning_screen(window):
-    """Resolve the owning screen, preferring the parent before first display."""
+    """Resolve runtime ownership from the window handle before its parent."""
+    handle = window.windowHandle()
+    if handle is not None and handle.screen() is not None:
+        return handle.screen()
     parent = window.parentWidget()
     if parent is not None:
         parent_window = parent.window()
@@ -191,9 +194,6 @@ def owning_screen(window):
         if screen is not None:
             return screen
 
-    handle = window.windowHandle()
-    if handle is not None and handle.screen() is not None:
-        return handle.screen()
     return QGuiApplication.primaryScreen()
 
 
@@ -415,6 +415,8 @@ class AdaptiveWindowController(QObject):
             return
 
         available = self._available_geometry()
+        if screen is not None and self._uses_default_available_geometry_provider:
+            available = QRect(screen.availableGeometry())
         if not available.isValid():
             return
         if self.policy.first_use_behavior == FirstUseBehavior.SCREEN_FRACTION:
@@ -449,7 +451,20 @@ class AdaptiveWindowController(QObject):
 
     def restore_frame_geometry(self, frame_geometry):
         """Restore a validated outer-frame rectangle for a workspace window."""
-        target = clamp_frame_geometry(frame_geometry, self._available_geometry())
+        available = self._available_geometry()
+        if self._uses_default_available_geometry_provider:
+            selected_screen = None
+            largest_overlap = 0
+            for screen in QGuiApplication.screens():
+                overlap = screen.availableGeometry().intersected(frame_geometry)
+                area = overlap.width() * overlap.height() if overlap.isValid() else 0
+                if area > largest_overlap:
+                    largest_overlap = area
+                    selected_screen = screen
+            if selected_screen is not None:
+                available = selected_screen.availableGeometry()
+                self._screen_placer(self.window, selected_screen)
+        target = clamp_frame_geometry(frame_geometry, available)
         self._first_show_pending = False
         self._set_outer_frame_geometry(target)
         self._normal_frame_geometry = target
