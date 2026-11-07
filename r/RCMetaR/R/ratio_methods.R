@@ -202,7 +202,12 @@ ratio.sequential <- function(data, request, suppressed) {
     loo <- request$workflow == "leave-one-out"
     if (loo && n < 2) stop("Leave-one-out needs at least two studies.")
     subsets <- lapply(seq_len(n), function(i) get.subset(data, if (loo) setdiff(seq_len(n), i) else seq_len(i)))
-    fits <- lapply(subsets, ratio.fit, params=suppressed, method=method)
+    fits <- lapply(subsets, function(subset) {
+        if (!endsWith(method, ".mh") && length(subset@y) == 1L &&
+                rcmetar.inference.method(params) != "z")
+            return(rcmetar.nonestimable.inference.row(1L, params))
+        ratio.fit(subset, suppressed, method)
+    })
     labels <- rcmetar.sequential.labels(rcmetar.study.labels(data), request$workflow, FALSE)
     model.title <- paste(pretty.metric.name(data@metric),
         if (loo) "Leave-one-out Meta-analysis" else "Cumulative Meta-analysis")
