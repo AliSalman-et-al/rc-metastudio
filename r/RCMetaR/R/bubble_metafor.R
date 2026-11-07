@@ -215,13 +215,6 @@ rcmetar.bubble.style.args <- function(bundle) {
 rcmetar.bubble.xlim <- function(bundle) {
     lower <- bundle$params$bp_plot_lb
     upper <- bundle$params$bp_plot_ub
-    if (!is.null(lower) && !is.null(upper) &&
-            !identical(lower[1], "[default]") && !identical(upper[1], "[default]")) {
-        bounds <- suppressWarnings(as.numeric(c(lower[[1]], upper[[1]])))
-        if (length(bounds) == 2 && all(is.finite(bounds)) && bounds[[1]] < bounds[[2]]) {
-            return(bounds)
-        }
-    }
     x <- as.numeric(bundle$moderator$values)
     x <- x[is.finite(x)]
     if (length(x) == 0) {
@@ -234,7 +227,13 @@ rcmetar.bubble.xlim <- function(bundle) {
     } else {
         pad <- width * 0.12
     }
-    c(range[[1]] - pad, range[[2]] + pad)
+    automatic <- c(range[[1]] - pad, range[[2]] + pad)
+    bounds <- automatic
+    for (index in 1:2) {
+        value <- suppressWarnings(as.numeric(list(lower, upper)[[index]][1]))
+        if (length(value) == 1 && is.finite(value)) bounds[[index]] <- value
+    }
+    if (bounds[[1]] < bounds[[2]]) bounds else automatic
 }
 
 rcmetar.bubble.ylim <- function(bundle) {

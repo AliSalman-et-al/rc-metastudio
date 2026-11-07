@@ -286,9 +286,11 @@ rcmetar.render.plot_file <- function(outpath, size, draw, display.path=NULL, cap
         dir.create(dirname(display.path), recursive=TRUE, showWarnings=FALSE)
         result <- rcmetar.render.plot_svg(display.path, size, draw)
         if (!rcmetar.plot.paths.equal(display.path, outpath)) {
-            if (!isTRUE(file.copy(display.path, outpath, overwrite=TRUE))) {
-                stop("Could not copy the internal SVG display artifact to the requested output.", call.=FALSE)
-            }
+            input <- gzfile(display.path, open="rb")
+            svg <- tryCatch(readLines(input, warn=FALSE, encoding="UTF-8"),
+                            finally=close(input))
+            output <- if (identical(ext, "svgz")) gzfile(outpath, open="wb") else file(outpath, open="wb")
+            tryCatch(writeLines(svg, output, useBytes=TRUE), finally=close(output))
         }
         return(invisible(result))
     }
@@ -299,7 +301,6 @@ rcmetar.render.plot_file <- function(outpath, size, draw, display.path=NULL, cap
     )
     if (keep.display) {
         dir.create(dirname(svg.path), recursive=TRUE, showWarnings=FALSE)
-        size <- rcmetar.plot.preview.size(size)
     }
     if (!keep.display) {
         on.exit(unlink(svg.path), add=TRUE)

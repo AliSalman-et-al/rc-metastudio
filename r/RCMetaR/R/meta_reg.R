@@ -1,9 +1,10 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-regression.wrapper <- function(data, mods.formula, method, level, digits, btt=NULL) {
+regression.wrapper <- function(data, mods.formula, method, level, digits, btt=NULL, intercept=TRUE, knha=FALSE) {
 	rma.args <- list(yi=data$yi, vi=data$vi, mods=mods.formula, data=data,
-	                 method=method, level=level, digits=digits)
+	                 method=method, level=level, digits=digits, intercept=intercept,
+	                 test=if (knha) "knha" else "z")
 	if (!is.null(btt)) rma.args$btt <- btt
 	do.call(metafor::rma.uni, rma.args)
 }
@@ -241,12 +242,14 @@ g.meta.regression <- function(
   btt=NULL,
   make.coeff.forest.plot=FALSE,
   exclude.intercept=FALSE,
-  disable.plots = FALSE)
+  disable.plots = FALSE, intercept=TRUE, knha=FALSE)
 {
 
 	mods.formula <- make.mods.formula(mods)
+	model.formula <- stats::reformulate(attr(terms(mods.formula), "term.labels"),
+	                                    response="yi", intercept=intercept)
 
-	res <- regression.wrapper(data, mods.formula, method, level, digits,btt)
+	res <- regression.wrapper(data, mods.formula, method, level, digits,btt, intercept=intercept, knha=knha)
 
 	residuals <- rstandard(res, digits=digits)
 	residuals$slab <- data$slab
@@ -256,17 +259,17 @@ g.meta.regression <- function(
 			                    list(residuals=list(type="blob", description="Standardized residuals for fitted models")))
 
 	Summary <- paste(capture.output(res), collapse="\n")
-	regression.model.formula.str <- sprintf("Regression model formula: %s", paste(deparse(stats::reformulate(attr(terms(mods.formula), "term.labels"), response="yi")), collapse=" "))
+	regression.model.formula.str <- sprintf("Regression model formula: %s", paste(deparse(model.formula), collapse=" "))
 	Summary <- paste(Summary, regression.model.formula.str, sep="\n\n")
 	est.coeffs <- round(res$b[,1], digits=digits)
 	tmp <- est.coeffs[2:length(est.coeffs)]
 	tmp <- paste(tmp, names(tmp), sep="*")
 	tmp <- paste(tmp, collapse=" + ")
 	reg.equation <- paste(est.coeffs[1],tmp, sep=" + ")
+	if (!intercept) reg.equation <- paste(paste(est.coeffs, names(est.coeffs), sep="*"), collapse=" + ")
 	reg.equation.str <- sprintf("Regression model equation: %s", reg.equation)
 	Summary <- paste(Summary, reg.equation.str, sep="\n")
 
-	model.formula <- stats::reformulate(attr(terms(mods.formula), "term.labels"), response="yi")
 	more.output <- reg.output.helper(theData=data, rma.results=res, model.formula=model.formula, digits=digits)
 	pre.summary <- ""
 	for (name in names(more.output)) {
@@ -657,7 +660,6 @@ meta.regression <- function(reg.data, params, cond.means.data=NULL, stop.at.rma=
             }
             plot.data <- create.plot.data.reg(reg.data, params, fitted.line, res=res)
 
-            plot.data$xlabel <- reg.data@covariates[[1]]@cov.name
             meta.regression.plot(plot.data, plot.path)
 
             plot.data.path <- save.data(reg.data, res, params, plot.data)

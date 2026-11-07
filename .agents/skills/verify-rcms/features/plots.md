@@ -1,5 +1,19 @@
 # Results, plot editing, and export
 
+The focused installed-R boundary checks in
+`r/RCMetaR/tests/testthat/test-rendering-options.R` cover independently supplied
+bubble endpoints (the GUI still requires paired custom bounds), the initial
+regression label, BMJ continuation-arrow geometry, pooled BMJ/RevMan marker
+scaling, hidden RevMan effect annotations, independently hidden raw IRR arms,
+publication raster dimensions with a separate display artifact, and mixed
+SVG/SVGZ encodings. They decode rendered geometry, text, PNG dimensions and
+compression bytes. Public permutation checks compare selected intercept and
+Knapp–Hartung combinations and retained distributions against pinned metafor;
+these do not establish GUI reachability for those public R options.
+Retained before/after evidence for G1B-001/002/004–011 lives under
+`artifacts/fixes/rendering-02`. The parent repair owns aggregate full-profile
+qualification; these focused checks do not qualify native DPI or packages.
+
 Users inspect analysis summaries and plots, apply plot edits, discard subsequent drafts, and export rendered figures.
 
 The `subgroup-image` and `subgroup-image-dark-large` drives run meantime by treatment group, verify the SVG forest and full-resolution raster export (PNG header, without Qt decoding), and force a plot-load exception while retaining text results and a plot-pane message.
