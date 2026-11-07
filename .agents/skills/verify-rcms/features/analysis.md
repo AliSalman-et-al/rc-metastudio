@@ -103,8 +103,14 @@ displayed study-prefix, omission, subgroup and overall estimate, lower/upper CI
 and standard error matches independent public `metafor` fits within `1e-6`.
 These replace the fixed and multimetric route checks in the removed standalone
 smoke matrix. Subgroup fixtures inject a factor; `project-table-covariates` proves
-the actual covariate creation path. Single-study rows use the public study effect
-and normal interval, reflecting the application's single-study result contract.
+the actual covariate creation path. With normal inference, single-study rows use
+the public study effect and normal interval. Continuous and inverse-variance
+HR/IRR sequential requests with t, Knapp–Hartung or modified Knapp–Hartung inference
+retain insufficient singleton subsets as non-estimable, with the selected inference
+and reason; later estimable prefixes retain authority inference. MH subgroup
+difference tests are omitted. The installed-package statistics-02 tests cover these
+boundaries; the options drives exercise pooled nondefault inference, not every
+non-estimable GUI case.
 
 Automated `options-binary`, `options-continuous`, and `options-diagnostic` drive REML/Knapp-Hartung, PM/t, and ML/modified Knapp-Hartung through actual parameter controls at 90% CI and six digits. All eight pooled/inference/heterogeneity fields match independent public `metafor` fits. `options-confidence-inclusion` changes global CI, undoes/redoes it, excludes Gonzalez using the inclusion cell, saves/reopens, and verifies the inherited 90% CI, 18-study weights and independent subset fit. `options-zero-cells` enters single- and double-zero binary rows and drives both UI-supported policies (`only0`, `all`), checking the independent fit and all 19 weights. The backend-only `if0all` policy remains in the public-package matrix; it is not claimed as binary selector coverage.
 

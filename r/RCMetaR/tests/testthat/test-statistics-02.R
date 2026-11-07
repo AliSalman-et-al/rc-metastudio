@@ -24,7 +24,7 @@ test_that("MH and incomplete subgroup estimates do not manufacture difference te
 })
 
 test_that("bootstrap pooled and coefficient intervals preserve requested coverage", {
- set.seed(42)
+ withr::local_seed(42)
  b <- boot::boot(1:12,function(d,i) mean(d[i]),R=199)
  for (level in c(80,90,99)) {
   p <- s2_params(conf.level=level,histogram.title="Proof",histogram.xlab="Effect")
@@ -103,7 +103,7 @@ test_that("HR and IRR cumulative non-normal inference keeps all study identities
 test_that("public bootstrap uses selected output coverage", {
  p <- s2_params(bootstrap.type="boot.ma", num.bootstrap.replicates=99,
  bootstrap.plot.path=tempfile(tmpdir=rcmetar.scratch.path(),fileext=".png"),histogram.title="Proof",histogram.xlab="Effect")
- set.seed(52)
+ withr::local_seed(52)
  x <- rcmetar.run.analysis(s2_data(),method="continuous.fixed",params=p,workflow="bootstrap")
  expect_match(x$Summary,"90% Confidence",fixed=TRUE)
 })
