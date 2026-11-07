@@ -68,7 +68,7 @@ def generate(rng, index, samples):
                 ratio_inputs=ratio))
         sheets.append(dict(id=f"s{s}", name=f"Sheet {s} {rng.choice(TEXT)}", family=family,
             data_type=dtype, sub_type=rng.choice(subtypes), arms=arms,
-            covariates=[dict(id="c", name="Age", data_type=1), dict(id="f", name="Category", data_type=0)],
+            covariates=[dict(id="c", name="Age", data_type=1), dict(id="f", name="Category", data_type=4)],
             settings=dict(arms=[a["id"] for a in arms], metric=rng.choice(metrics), extra={"text": rng.choice(TEXT)}), rows=rows))
     return dict(schema_version=3, title=rng.choice(TEXT), notes=rng.choice(TEXT), sheets=sheets), dict(
         schema_version=3, current_sheet_id=rng.choice([None] + [s["id"] for s in sheets]))

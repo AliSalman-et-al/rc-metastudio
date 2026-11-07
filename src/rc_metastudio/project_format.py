@@ -131,7 +131,8 @@ def _legacy_comparisons(labels, identities):
     return comparisons
 
 def _legacy_sheet_settings(source, state, outcome, identities, arms):
-    settings = copy.deepcopy(source.get("summary") or {})
+    summary = source.get("summary")
+    settings = copy.deepcopy(summary) if isinstance(summary, dict) else {}
     settings["summary"] = copy.deepcopy(source.get("summary"))
     settings.update({k: copy.deepcopy(v) for k,v in state.items() if k not in {"schema_version", "active_outcome", "active_follow_up", "active_groups"}})
     settings["metric"] = state.get("active_effect") or settings.get("effect")

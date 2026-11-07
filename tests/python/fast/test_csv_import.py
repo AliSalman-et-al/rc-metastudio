@@ -37,7 +37,7 @@ def test_parse_csv_assigns_names_to_blank_covariates(tmp_path: Path) -> None:
 def test_parse_csv_rejects_missing_or_invalid_year(tmp_path: Path) -> None:
     missing = tmp_path / "missing.csv"
     missing.write_text("Study,Year\nA\n", encoding="utf-8")
-    with pytest.raises(CsvImportError, match="year at row 1 is not an integer"):
+    with pytest.raises(CsvImportError, match="row 2: expected 2 columns, found 1"):
         parse_csv(
             missing,
             expected_headers=["Study", "Year"],
@@ -132,3 +132,22 @@ def test_xlsx_unmapped_date_year(tmp_path: Path) -> None:
     result = parse_csv(path, expected_headers=["Study", "Year"],
                        has_headers=True, from_excel=True)
     assert result.rows == (("Alpha", "2022"),)
+
+
+@pytest.mark.parametrize("mapping", [None, (0, 1)])
+@pytest.mark.parametrize("cells", ["A,2024,10,extra", "A,2024"])
+def test_storage_boundary_csv_rejects_header_width_mismatch(tmp_path, mapping, cells):
+    path = tmp_path / "width.csv"
+    path.write_text("Study,Year,Dose\n" + cells + "\n", encoding="utf-8")
+    with pytest.raises(CsvImportError, match="row 2.*3.*columns"):
+        parse_csv(path, expected_headers=["Study", "Year"], has_headers=True,
+                  from_excel=False, column_mapping=mapping)
+
+
+def test_storage_boundary_csv_missing_numeric_and_verbatim_categories(tmp_path):
+    path = tmp_path / "missing.csv"
+    path.write_text("Study,Year,Dose,Region,Empty\nA,2024,10,North,\nB,2024,, South ,\nC,2024,20,NA,\n", encoding="utf-8")
+    result = parse_csv(path, expected_headers=["Study", "Year"], has_headers=True, from_excel=False)
+    assert result.covariate_types == ("continuous", "factor", "continuous")
+    assert [row[2] for row in result.rows] == ["10", "", "20"]
+    assert [row[3] for row in result.rows] == ["North", " South ", "NA"]

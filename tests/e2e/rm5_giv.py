@@ -41,14 +41,24 @@ def run(app, window, ROOT, WORK, record_step):
     study = tree.find('.//STUDY')
     assert study is not None
     study.set('NAME', 'München')
+    # Keep identical numerical inputs flat for meta::read.rm5, whose generic-IV
+    # subgroup parser rejects nested XML. Row assignments are asserted below.
+    reference_source = WORK / 'generic-reference.rm5'
+    tree.write(reference_source, encoding='ascii', xml_declaration=True)
+    for outcome in tree.iter('IV_OUTCOME'):
+        outcome.set('SUBGROUPS', 'YES')
+        for i, entry in enumerate(list(outcome.findall('IV_DATA'))):
+            outcome.remove(entry)
+            subgroup = ET.SubElement(outcome, 'IV_SUBGROUP', NO=str(i + 1), ID=f'{outcome.get("ID")}-subgroup-{i + 1}')
+            ET.SubElement(subgroup, 'NAME').text = f'Region {i}'
+            subgroup.append(entry)
     source = WORK / 'generic-unicode.rm5'
     tree.write(source, encoding='utf-8', xml_declaration=True)
     imported = read_rm5(source)
     assert any(row.label == 'München' for sheet in imported.dataset.sheets for row in sheet.rows)
-    # The public reader misdecodes literal UTF-8 names. XML character references
-    # preserve the same Unicode input for its independent numerical reference.
-    reference_source = WORK / 'generic-reference.rm5'
-    tree.write(reference_source, encoding='ascii', xml_declaration=True)
+    for sheet in imported.dataset.sheets:
+        cov_id = sheet.covariates[0]['id']
+        assert [row.covariate_values.get(cov_id) for row in sheet.rows] == ['Region 0', 'Region 1', 'Region 2']
     assert [s.settings['metric'] for s in imported.dataset.sheets] == ['HR', 'OR', 'MD']
     assert any('Custom score' in x for x in imported.not_imported)
     reference, pooled = WORK / 'giv-read.csv', WORK / 'giv-pooled.csv'

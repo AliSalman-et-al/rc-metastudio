@@ -104,6 +104,12 @@ def parse_csv(
     )
     if Path(path).suffix.lower() == ".xlsx":
         has_headers = True
+    if has_headers and headers:
+        for row_number, row in enumerate(rows, start=2):
+            if len(row) != len(headers):
+                raise CsvImportError(
+                    f"CSV row {row_number}: expected {len(headers)} columns, found {len(row)}."
+                )
     if header_aliases:
         headers = [header_aliases.get(header.casefold(), header) for header in headers]
 
@@ -241,7 +247,10 @@ def _infer_covariates(
 
 
 def _covariate_type(values: Iterable[str]) -> str:
+    # An all-missing column remains numeric until a nonnumeric value is supplied.
     for value in values:
+        if not value.strip():
+            continue
         try:
             float(value)
         except ValueError:

@@ -3027,3 +3027,39 @@ def _assert_sample_projects_open_directory(directory):
     assert os.path.basename(directory) == "sample_projects"
     assert os.path.exists(os.path.join(directory, "amino.rcms"))
     assert os.path.normcase(directory) != os.path.normcase(os.getcwd())
+
+
+
+def test_storage_boundary_conversion_preserves_all_row_identities(tmp_path):
+    import copy
+    from PyQt6.QtWidgets import QApplication
+    from rc_metastudio.covariate_type_dialog import CovariateTypeDialog
+    from rc_metastudio.project_adapter import project_to_dataset, dataset_to_project, document_to_runtime_project
+    from rc_metastudio.project_format import save_project, load_project
+    from tests.python.fast.test_project_format import _group_project
+    app = QApplication.instance() or QApplication([])
+    project = _group_project("binary", None, [[1, 10], [2, 10]])
+    sheet = project["sheets"][0]
+    sheet["covariates"] = [dict(id="dose", name="Dose", data_type=1)]
+    original = sheet["rows"][0]
+    sheet["rows"] = []
+    for i, value in enumerate([10, 20, 30]):
+        row = copy.deepcopy(original)
+        row.update(id=f"row-{i}", label="Duplicate" if i < 2 else "Excluded", include=i != 2, manually_excluded=i == 2, covariates={"dose": value})
+        sheet["rows"].append(row)
+    dataset = project_to_dataset(project)
+    live = dataset.sheets[0]
+    dialog = CovariateTypeDialog(live, live.covariates[0])
+    preview = dialog.cov_model
+    assert preview.rowCount() == 3
+    assert preview.orig_cov_list[:3] == [10, 20, 30]
+    assert preview.new_cov_list == ["a", "b", "c"]
+    assert preview.setData(preview.index(2, preview.NEW_VAL), "Excluded category")
+    dialog.accept()
+    new_id = preview.new_covariate["id"]
+    path = tmp_path / "converted.rcms"
+    save_project(path, dataset_to_project(dataset), dict(schema_version=3, current_sheet_id=live.id))
+    reopened = document_to_runtime_project(load_project(path)).dataset.sheets[0]
+    assert [(r.id, r.include, r.manually_excluded, r.covariate_values["dose"], r.covariate_values[new_id]) for r in reopened.rows] == [
+        ("row-0", True, False, 10, "a"), ("row-1", True, False, 20, "b"), ("row-2", False, True, 30, "Excluded category")]
+    dialog.close()
