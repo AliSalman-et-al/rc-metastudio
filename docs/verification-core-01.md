@@ -33,3 +33,11 @@ The focused authority script copies the changed reconstruction, effect-only and 
 R is `C:/Program Files/R/R-4.6.1`. Dependencies came read-only from parent `runtime-04/r-library`; its qualification, installed-statistics and golden exit files were inspected and all contain 0. Numerical authority runs use pkgload::load_all of this checkout's unchanged current R source, not a fabricated statistical backend. The probe records the actual R/direct-package report. Doctor records actual installed namespace/runtime identity. No reference/system library was modified. Isolated child/typing failure controls prove runner contracts, not numerical or native execution.
 
 Compatibility: conflicting runtime arguments now fail; audit automation now receives failure exits; captures retain more attempts; requested comparisons rerun; direct qualification commands now require successful strict typing and current forms. Qt smoke stdout remains JSON. Source/test/docs only are committed; evidence and the isolated worktree are retained.
+
+Parent integration corrected the authority matrix's stale MH subgroup expectation:
+the repaired product deliberately omits that unsupported difference test. The
+matrix now requires absence; restoring the old inferential helper in an isolated
+process fails that assertion. The complete matrix passes 103 cases, while all
+supported numerical references remain in place. Integrated focused tests pass
+69 cases with one Windows symlink-privilege skip. Aggregate qualification is still
+pending; this supersedes the worker-base subgroup-Q limitation above.

@@ -173,6 +173,12 @@ for (method in c("binary.fixed.inv.var", "binary.fixed.mh", "binary.fixed.peto",
   result <- RCMetaR:::subgroup.ma.binary(method, data, p)
   e <- new.env(); load(paste0(result$plot_params_paths[[1]], ".plotdata"), envir=e)
   actual <- e$plot.data$subgroups$difference_test
+  if (method == "binary.fixed.mh") {
+    if (!is.null(actual)) stop("MH subgroup difference test must be omitted")
+    rows[[length(rows)+1L]] <- list(case=paste(method,"subgroup"), passed=TRUE,
+      type="inference availability", actual="omitted", expected="omitted")
+    next
+  }
   authority <- meta::metabin(a,a+b,c,c+d, subgroup=group, sm="OR",
     method=switch(method, binary.fixed.mh="MH", binary.fixed.peto="Peto", "Inverse"),
     method.tau="DL", tau.common=FALSE)
