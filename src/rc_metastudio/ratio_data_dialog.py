@@ -129,7 +129,7 @@ class RatioDataDialog(QDialog):
             "Enter events and person-time for both groups in the same unit. Recurrent events are allowed."
             if raw else "Enter the reported log ratio and its standard error."
             if reported and log else "Enter the reported ratio and the bounds of its original confidence interval."
-            if reported else "Both input sources are present. Choose which study data to use."
+            if reported else "Choose events and person-time or a reported IRR for this study."
         )
 
     def accept(self):

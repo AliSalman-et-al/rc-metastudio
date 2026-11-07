@@ -1510,13 +1510,13 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
            lty=c(rep(NA, length(levels)), if (settings$show.pooled) 2), bty="n")
 }
 
-rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.path=NULL) {
+rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.path=NULL, dpi=120) {
     path <- output.path %||% tempfile(pattern="small-study-funnel-", fileext=".png")
     y <- om.data@y
     se <- om.data@SE
     keep <- is.finite(y) & is.finite(se) & se > 0
     settings <- .small.study.funnel.settings(params)
-    size <- list(width=1000/120, height=800/120, dpi=120, bg=settings$background.color)
+    size <- list(width=1000/120, height=800/120, dpi=dpi, bg=settings$background.color)
     rcmetar.render.plot_file(path, size, function() {
         if (identical(settings$kind, "deeks") && is(om.data, "DiagnosticData"))
             .small.study.draw.deeks(om.data, params, settings, y, se, keep)

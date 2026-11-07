@@ -86,6 +86,12 @@ def run(app, window, scenario, record):
         raws.append(raw)
         if i < 2:
             def enter_first(dialog):
+                if not hazard and i == 0:
+                    source = dialog.fields["source"]
+                    source.setCurrentIndex(source.findData(""))
+                    record("ratio-unselected-source-guidance", dialog, guidance=dialog.help_text.text())
+                    assert "Both input sources are present" not in dialog.help_text.text()
+                    source.setCurrentIndex(source.findData("raw"))
                 if hazard:
                     for name, value in zip(("estimate", "lower", "upper"), (math.exp(y), math.exp(y-z90*se), math.exp(y+z90*se))):
                         dialog.fields[name].setText(str(value))

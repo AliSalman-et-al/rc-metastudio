@@ -190,7 +190,7 @@ def _held_sections(result):
             full_rows.extend((table.title, '\n'.join((f'{h}: {v}' if h else v) for h, v in zip(table.headers, row))) for row in table.rows)
         sections.append(replace(section, title='Supplementary details', value='', paragraphs=paragraphs, tables=()))
     if full_rows:
-        sections.insert(0, replace(sections[0], source_key='', paragraphs=(), tables=(ResultTable('Full-precision results', ('Source', 'Results'), tuple(full_rows)),)))
+        sections.insert(0, replace(sections[0], source_key='', paragraphs=(), tables=(ResultTable('Detailed results', ('Source', 'Results'), tuple(full_rows)),)))
     return sections
 
 

@@ -538,6 +538,58 @@ def plots(app, window, family, record, *, view=None):
         return values
 
     def edit(dialog):
+        if funnel:
+            from tests.python.gui.test_types import wheel_scroll, key_click
+            spinner = dialog.sampling_confidence_spin
+            original_confidence = spinner.value()
+            spinner.setFocus()
+            app.processEvents()
+            wheel_scroll(spinner)
+            app.processEvents()
+            record("funnel-wheel-preserves-confidence", dialog,
+                   before=original_confidence, after=spinner.value())
+            assert spinner.value() == original_confidence, "Scrolling changed the sampling confidence"
+            key_click(spinner, QtCore.Qt.Key.Key_Up)
+            assert spinner.value() > original_confidence, "Keyboard confidence editing stopped working"
+            spinner.setValue(original_confidence)
+        if family in {"regression", "sroc"}:
+            if family == "sroc":
+                import re
+                from xml.etree import ElementTree as ET
+                curve = max(ET.parse(initial_svg).iter("{http://www.w3.org/2000/svg}polyline"),
+                            key=lambda node: len(node.get("points", "")))
+                stroke = re.search(r"(?:^|;)\s*stroke:\s*(#[0-9A-Fa-f]{6})", curve.get("style", ""))
+                rendered_color = stroke[1] if stroke else "#000000"
+                record("sroc-unedited-curve-color", dialog, rendered=rendered_color,
+                       editor=dialog.sroc_curve_color.text())
+                assert QtGui.QColor(dialog.sroc_curve_color.text()).name() == QtGui.QColor(rendered_color).name()
+                lower, upper = dialog.sroc_y_lower, dialog.sroc_y_upper
+            else:
+                lower, upper = dialog.plot_lb_le, dialog.plot_ub_le
+            original_bounds = lower.text(), upper.text()
+            original_files = snapshot()
+            for limits in (("70", "60"), ("1", "1"), ("nan", "60")):
+                lower.setText(limits[0])
+                upper.setText(limits[1])
+                click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+                record("plot-invalid-bounds-preserved", dialog, family=family, bounds=limits,
+                       error=dialog._commit_error.text())
+                assert not dialog._commit_error.isHidden(), (family, limits, "No validation message")
+                assert snapshot() == original_files, (family, limits, "Invalid draft changed the plot bundle")
+            lower.setText(original_bounds[0])
+            upper.setText(original_bounds[1])
+            if family == "regression":
+                original_ticks = dialog.x_ticks_le.text()
+                # This fixture uses publication year, not latitude. Keep its
+                # fitted range while checking zero as a numeric moderator tick.
+                dialog.x_ticks_le.setText("0,1990,2000")
+                click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+                record("bubble-zero-moderator-tick", dialog, error=dialog._commit_error.text())
+                assert dialog._commit_error.isHidden(), dialog._commit_error.text()
+                lower.setText(original_bounds[0])
+                upper.setText(original_bounds[1])
+                dialog.x_ticks_le.setText(original_ticks)
+                click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
         if family in {"forest", "cumulative", "leave-one-out", "subgroup"}:
             original_style = dialog.style_cbo.currentText()
             original_directions = (dialog.favours_left.text(), dialog.favours_right.text())
@@ -911,8 +963,11 @@ def export_formats(app, view, directory, family, record, invoke=None):
             QtWidgets.QFileDialog,
             "getSaveFileName",
             return_value=(str(destination), ""),
-        ):
+        ) as picker:
             invoke(extension, action_label)
+        assert picker.call_args is not None
+        name_filter = picker.call_args.args[3] if len(picker.call_args.args) > 3 else picker.call_args.kwargs.get("filter", "")
+        assert f"*.{extension}" in name_filter, (extension, name_filter)
         assert destination.is_file(), destination
         if extension == "svg":
             renderer = QSvgRenderer(str(destination))
@@ -936,6 +991,11 @@ def export_formats(app, view, directory, family, record, invoke=None):
 
             with Image.open(destination) as image:
                 assert image.width > 100 and image.height > 100
+                if extension == "tiff":
+                    dpi = tuple(float(value) for value in image.info.get("dpi", ()))
+                    record("publication-raster-resolution", view, family=family,
+                           pixels=image.size, dpi=dpi, exports={extension: str(destination)})
+                    assert len(dpi) == 2 and min(dpi) >= 600, (family, "Publication TIFF is below 600 dpi", dpi)
                 assert image.crop((0, 0, 1, 1)).convert("RGB").getpixel((0, 0)) == (255, 255, 255)
                 image.load()
                 assert (
@@ -1071,6 +1131,20 @@ def calculators(app, window, mode, record):
         observed[metric] = {"actual": value, "expected": expected}
 
     def drive(dialog):
+        if mode == "diagnostic-metrics":
+            original_count = dialog.two_by_two_table.item(0, 0).text()
+            def dismiss_invalid(message):
+                assert "Counts cannot be negative" in message.text()
+                click(app, message.button(QtWidgets.QMessageBox.StandardButton.Ok))
+            modal(app, QtWidgets.QMessageBox, dismiss_invalid,
+                  lambda: cell(dialog.two_by_two_table, 0, 0, "-1"))
+            assert dialog.two_by_two_table.item(0, 0).text() == original_count
+            cell(dialog.two_by_two_table, 0, 0, original_count)
+            record("diagnostic-valid-unchanged-recommit", dialog,
+                   count=original_count, warning=dialog.inconsistencyLabel.text(),
+                   warning_visible=not dialog.inconsistencyLabel.isHidden())
+            assert dialog.inconsistencyLabel.isHidden(), "Valid count recommit left a stale warning"
+            assert list(dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)) == before
         if mode == "binary-metrics":
             original = list(dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names))
             cell(dialog.raw_data_table, 0, 1, "")

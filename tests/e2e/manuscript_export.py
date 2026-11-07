@@ -297,6 +297,37 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         assert window.open(str(root / 'sample_projects' / (sample + '.rcms')), raise_on_error=True)
         print(f"Manuscript analysis: {method}", file=sys.stderr, flush=True)
         view = analyze(app, window, method)
+        if sample == "amino":
+            figure_item = view.nav_tree.currentItem()
+            figure_zoom = view.zoom_control.value()
+            figure_transform = view.graphics_view.transform()
+            manuscript_item = view.nav_tree.findItems("Manuscript", QtCore.Qt.MatchFlag.MatchExactly)[0]
+            view.nav_tree.setCurrentItem(manuscript_item)
+            app.processEvents()
+            cursor = required(view.manuscript_text.document()).find(view.manuscript.methods[:40])
+            assert not cursor.isNull()
+            view.manuscript_text.setTextCursor(cursor)
+            before_height = view.manuscript_text.cursorRect(cursor).height()
+            view.zoom_control.setValue(150)
+            app.processEvents()
+            after_height = view.manuscript_text.cursorRect(cursor).height()
+            record("manuscript-visible-zoom", view, before_height=before_height,
+                   after_height=after_height, zoom=view.zoom_control.value())
+            assert after_height > before_height * 1.3, "Manuscript zoom did not enlarge rendered text"
+            assert view.graphics_view.transform() == figure_transform, "Manuscript zoom changed the hidden figure"
+            view.nav_tree.setCurrentItem(figure_item)
+            app.processEvents()
+            assert view.zoom_control.value() == figure_zoom
+            view.nav_tree.setCurrentItem(manuscript_item)
+            app.processEvents()
+            assert view.zoom_control.value() == 150
+            view.tables_action.trigger()
+            app.processEvents()
+            view.nav_tree.setCurrentItem(manuscript_item)
+            app.processEvents()
+            assert view.zoom_control.isEnabled(), "Manuscript inherited disabled table zoom controls"
+            assert not view.fit_width_action.isEnabled()
+            view.zoom_control.setValue(100)
         assert_manuscript_tables(view)
         for suffix in ('pdf', 'docx'):
             operation = f"{sample}-{suffix}"

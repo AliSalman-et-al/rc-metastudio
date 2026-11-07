@@ -468,7 +468,7 @@ rcmetar.reitsma.legend.spec <- function(style, curve, confidence, prediction, sa
 }
 
 rcmetar.reitsma.draw <- function(plot.data, outpath) {
-    size <- list(width=7, height=6, dpi=300, bg="white")
+    size <- list(width=7, height=6, dpi=600, bg="white")
     style <- plot.data$style
     if (is.null(style)) style <- list()
     scalar.bool <- function(x, default) if (is.null(x)) default else isTRUE(x)
@@ -634,7 +634,7 @@ rcmetar.draw.reitsma.coefficient <- function(plot.data, outpath) {
         lines <- unlist(lapply(as.character(plot.data$labels), strwrap, width=40))
         label.width <- max(graphics::strwidth(lines, units="inches"), 1.5)
         list(width=max(8, label.width + 4.6), height=max(4.5, 1.8 + length(lines) * 0.42),
-             dpi=300, bg="white", margins=c(0.9, label.width + 0.25, 0.7, 0.3))
+             dpi=600, bg="white", margins=c(0.9, label.width + 0.25, 0.7, 0.3))
     })
     rcmetar.render.plot_file(outpath, size, draw, caption=plot.data$params$plot_caption)
     invisible(outpath)

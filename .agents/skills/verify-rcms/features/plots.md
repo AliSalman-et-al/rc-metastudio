@@ -20,6 +20,20 @@ qualification; these focused checks do not qualify native DPI or packages.
 
 Users inspect analysis summaries and plots, apply plot edits, discard subsequent drafts, and export rendered figures.
 
+The manuscript export drive measures visible text enlargement at 150%, checks
+that hidden figure zoom stays unchanged, and restores independent zoom settings
+across navigation. Plot workflows reject reversed, equal and nonfinite bounds
+without replacing saved artifacts; the SROC drive compares its initial editor
+curve color with the rendered SVG. Decoded TIFF exports must report at least
+600 DPI. These source drives inspect the selected file filter but do not prove
+the native picker presentation.
+
+The small-study drive sends a wheel event over the focused correction selector;
+the funnel editor drive does the same over sampling confidence. Both preserve
+settings while retaining keyboard editing. Their scroll areas route wheel events
+to the form viewport. Native scrolling and popup selection still require the
+targeted package drive.
+
 The `subgroup-image` and `subgroup-image-dark-large` drives run meantime by treatment group, verify the SVG forest and full-resolution raster export (PNG header, without Qt decoding), and force a plot-load exception while retaining text results and a plot-pane message.
 
 ## Sub-features

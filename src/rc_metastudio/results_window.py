@@ -430,6 +430,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             actions.addAction(action)
         layout.addWidget(actions)
         self.manuscript_text = QTextBrowser(self.manuscript_page)
+        self._manuscript_base_font = QFont(self.font())
+        self._manuscript_base_font.setPointSizeF(max(11.0, self.font().pointSizeF()))
+        self._manuscript_zoom_percent = 100
+        self.manuscript_text.setFont(self._manuscript_base_font)
         self.manuscript_text.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.manuscript_text.setAccessibleName("Manuscript")
         manuscript_document = required(self.manuscript_text.document(), "manuscript document")
@@ -698,7 +702,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             required(menu, "Results menu").addAction(action)
 
     def _fit_width(self):
-        if self.report_action.isChecked():
+        if self.content_stack.currentWidget() is not self.figure_page:
             return
         self._explicit_fit_width = True
         self._fit_width_active = True
@@ -709,7 +713,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._refit_viewport_items()
         selected = self._selected_plot()
         self._figure_zoom_percent = round((selected[1].scale() if selected else 1) * 100)
-        if not self.report_action.isChecked():
+        if self.content_stack.currentWidget() is self.figure_page:
             self._update_zoom_control(self._figure_zoom_percent)
         self._scroll_to_section(self.nav_tree.currentItem())
 
@@ -724,15 +728,26 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             required(self.graphics_view.verticalScrollBar(), "figure scrollbar").setValue(round(heading.sceneBoundingRect().top() * self.graphics_view.transform().m22()))
 
     def _set_zoom(self, percent):
-        if self.report_action.isChecked():
-            self._report_zoom_percent = percent
-            font = QFont(self._report_base_font)
-            font.setPointSizeF(self._report_base_font.pointSizeF() * percent / 100)
-            scrollbar = required(self.report_text.verticalScrollBar(), "report scrollbar")
+        page = self.content_stack.currentWidget()
+        if page is self.manuscript_page or page is self.report_text:
+            if page is self.manuscript_page:
+                self._manuscript_zoom_percent = percent
+                browser = self.manuscript_text
+                base_font = self._manuscript_base_font
+            else:
+                self._report_zoom_percent = percent
+                browser = self.report_text
+                base_font = self._report_base_font
+            font = QFont(base_font)
+            font.setPointSizeF(base_font.pointSizeF() * percent / 100)
+            scrollbar = required(browser.verticalScrollBar(), "report scrollbar")
             fraction = scrollbar.value() / max(1, scrollbar.maximum())
-            self._apply_report_typography(font)
+            if browser is self.report_text:
+                self._apply_report_typography(font)
+            else:
+                browser.setFont(font)
             scrollbar.setValue(round(fraction * scrollbar.maximum()))
-        else:
+        elif page is self.figure_page:
             self._fit_width_active = False
             self.graphics_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
             self.graphics_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -991,6 +1006,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 with QSignalBlocker(self.report_action):
                     self.report_action.setChecked(False)
                 self.content_stack.setCurrentWidget(self.manuscript_page)
+                self.zoom_control.setEnabled(True)
+                self.fit_width_action.setEnabled(False)
+                self._update_zoom_control(self._manuscript_zoom_percent)
             elif anchor is None:
                 self._show_tables()
             else:
@@ -1564,6 +1582,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         export_format = PLOT_EXPORT_FORMATS_BY_EXTENSION[format]
         allow_svgz = artifact.capability.regenerator != "funnel"
+        suffixes = PLOT_EXPORT_EXTENSION_ALIASES[export_format.extension]
+        patterns = " ".join("*" + suffix for suffix in suffixes if allow_svgz or suffix != ".svgz")
+        name_filter = f"{export_format.label} ({patterns})"
 
         if not unscaled_image:
             regenerator = artifact.capability.regenerator
@@ -1580,6 +1601,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 self,
                 "Save Plot As",
                 default_path,
+                name_filter,
             )
 
             # now we re-generate it, unless they canceled, of course
@@ -1601,6 +1623,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 self,
                 "Save Plot As",
                 default_path,
+                name_filter,
             )
             if file_path != "":
                 destination = _path_with_export_extension(

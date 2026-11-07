@@ -1706,6 +1706,19 @@ def small_study_effects(app, window):
             QtCore.QTimer.singleShot(10, run)
             return
         try:
+            from tests.python.gui.test_types import wheel_scroll
+            combo = dialog.correction_policy_combo
+            original = combo.currentIndex()
+            combo.setFocus()
+            app.processEvents()
+            wheel_scroll(combo)
+            app.processEvents()
+            record_step("small-study-wheel-preserves-correction", dialog,
+                        before=original, after=combo.currentIndex())
+            assert combo.currentIndex() == original, "Scrolling changed the continuity correction"
+            key_click(combo, QtCore.Qt.Key.Key_Down)
+            assert combo.currentIndex() != original, "Keyboard selection stopped working"
+            combo.setCurrentIndex(original)
             button = dialog.button_box.button(
                 QtWidgets.QDialogButtonBox.StandardButton.Ok
             )

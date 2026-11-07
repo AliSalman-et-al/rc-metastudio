@@ -12,6 +12,7 @@ from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QFileDialog, QLabel, QLineEdit, QMessageBox
 
 from rc_metastudio import adaptive_window, app_error_handler, qt_text
+from rc_metastudio.qt_layout import protect_scroll_settings
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
     size_plot_text_editor,
@@ -123,6 +124,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self.button_box.clicked.connect(self._button_clicked)
         self._connect_dirty_signals()
         size_plot_text_editor(self)
+        self._scroll_settings_filter = protect_scroll_settings(self.content_scroll)
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )

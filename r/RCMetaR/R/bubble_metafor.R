@@ -351,6 +351,7 @@ rcmetar.bubble.tick.labels <- function(bundle, ticks) {
 rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
     size <- rcmetar.bubble.measure.device(bundle)
     display.path <- rcmetar.plot.display_path_for_bundle(bundle, outpath, "bp")
+    if (is.null(display.path)) size$dpi <- 600
     rcmetar.render.plot_file(outpath, size, function() {
         old.par <- graphics::par(no.readonly=TRUE)
         on.exit(graphics::par(old.par), add=TRUE)

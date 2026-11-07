@@ -10,6 +10,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLayout, QSizePolicy
 
 from rc_metastudio import adaptive_window, app_error_handler
+from rc_metastudio.qt_layout import protect_scroll_settings
 from rc_metastudio.meta_globals import ONE_ARM_METRICS
 from rc_metastudio.runtime_types import required
 from rc_metastudio.publication_bias import (
@@ -89,6 +90,10 @@ class PublicationBiasDialog(
         self.failure_label.clear()
         self._connect_controls()
         self._configure_window()
+        self._scroll_settings_filters = (
+            protect_scroll_settings(self.methods_scroll),
+            protect_scroll_settings(self.plots_scroll),
+        )
 
     def _configure_accessibility(self):
         """Give configuration controls stable names and plain-language help."""

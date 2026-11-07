@@ -1033,6 +1033,7 @@ def generate_small_study_effects_funnel(file_path, params_name="params"):
         _r_object_from_symbol("res"),
         _r_object_from_symbol(params_name),
         str(file_path),
+        dpi=600,
     )
 
 
