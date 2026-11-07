@@ -961,7 +961,7 @@ diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
                        stringsAsFactors=FALSE)
     moderators <- lapply(covariates, .rcmetar.reitsma.moderator, nrow(data))
     terms <- vapply(moderators, `[[`, character(1), "name")
-    model.terms <- make.names(terms, unique=TRUE)
+    model.terms <- paste0("rcms_moderator_", seq_along(terms))
     coding <- stats::setNames(lapply(moderators, `[[`, "coding"), terms)
     for (index in seq_along(terms)) {
         data[[model.terms[[index]]]] <- moderators[[index]]$values

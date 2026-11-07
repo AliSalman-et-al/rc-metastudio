@@ -108,6 +108,7 @@ testthat::test_that("Reitsma uses mada numeric estimates and restores RNG state"
   data <- methods::new("DiagnosticData", TP=counts$TP, FN=counts$FN,
     TN=counts$TN, FP=counts$FP, study.names=letters[1:5])
   fit <- mada::reitsma(counts, correction=.5, correction.control="all", method="reml")
+  withr::local_preserve_seed()
   set.seed(12345)
   before <- .Random.seed
   wrapped <- RCMetaR:::diagnostic.reitsma(data, list(create.plot=FALSE))
@@ -126,6 +127,28 @@ testthat::test_that("Reitsma uses mada numeric estimates and restores RNG state"
   testthat::expect_true(raw.prediction$specificity[["estimate"]] <= raw.prediction$specificity[["upper"]])
   testthat::expect_equal(unname(raw.point$sensitivity[["estimate"]]),
                          unname(mada::talpha(fit$alphasens)$linkinv(fit$coefficients["(Intercept)", "tsens"])), tolerance=1e-12)
+  # Compare the wrapped fields, not another RCMetaR extractor.
+  precise <- RCMetaR:::diagnostic.reitsma(data, list(create.plot=FALSE, digits=8))
+  displayed <- precise$Summary[["Summary operating point"]]
+  latent <- function(side, alpha) {
+    index <- grep(side, rownames(vcov(fit)), fixed=TRUE)[1L]
+    mada::talpha(alpha)$linkinv(fit$coefficients["(Intercept)", side] +
+      c(0, -1, 1) * qnorm(.975) * sqrt(vcov(fit)[index,index]))
+  }
+  sens <- latent("tsens", fit$alphasens)
+  fpr <- latent("tfpr", fit$alphafpr)
+  expected <- list(sens, 1-fpr[c(1,3,2)], fpr)
+  for (i in seq_along(expected)) {
+    values <- as.numeric(sub("%", "", displayed[[i]], fixed=TRUE))/100
+    testthat::expect_equal(values, unname(expected[[i]]), tolerance=1e-9)
+  }
+  set.seed(380381L)
+  ratios <- as.matrix(summary(mada::SummaryPts(fit, n.iter=1000000L), level=.95, digits=16))
+  labels <- c(posLR="Positive likelihood ratio", negLR="Negative likelihood ratio",
+    invnegLR="Inverse negative likelihood ratio", DOR="Diagnostic odds ratio")
+  actual.ratios <- precise$Summary[["Sampling-based summary ratios"]]
+  for (row in names(labels)) testthat::expect_equal(
+    as.numeric(actual.ratios[labels[[row]],]), unname(ratios[row,]), tolerance=1e-8)
   one <- RCMetaR:::rcmetar.reitsma.summary.points(fit, .95, 380381L)
   two <- RCMetaR:::rcmetar.reitsma.summary.points(fit, .95, 380381L)
   testthat::expect_identical(one, two)
@@ -164,7 +187,7 @@ testthat::test_that("Reitsma rejects entered effects, incomplete counts, and bou
   incomplete <- methods::new("DiagnosticData", TP=rep(1, 5), FN=rep(1, 5), TN=rep(1, 5), study.names=letters[1:5])
   testthat::expect_error(RCMetaR:::rcmetar.reitsma.validate.counts(incomplete), "complete TP/FN/FP/TN")
   boundary <- methods::new("DiagnosticData", TP=c(0,1,2,3,4), FN=rep(1,5), TN=rep(4,5), FP=rep(1,5), study.names=letters[1:5])
-  testthat::expect_error(RCMetaR:::diagnostic.reitsma(boundary, list(correction.policy="None", create.plot=FALSE)), "boundary")
+  testthat::expect_error(RCMetaR:::rcmetar.reitsma.prepare(boundary, list(correction.policy="None", create.plot=FALSE)), "boundary")
 })
 
 testthat::test_that("Boundary covariance preserves valid summaries and omits undefined SROC output", {
@@ -374,12 +397,12 @@ testthat::test_that("Reitsma meta-regression rejects missing and rank-deficient 
   missing <- methods::new("DiagnosticData", TP=counts$TP, FN=counts$FN, TN=counts$TN, FP=counts$FP,
     study.names=letters[1:6], covariates=list(methods::new("CovariateValues", cov.name="quality",
       cov.vals=c("A", "A", "B", "B", "A", NA_character_), cov.type="factor", ref.var="A")))
-  testthat::expect_error(RCMetaR:::diagnostic.reitsma.meta.regression(missing, list(create.plot=FALSE)), "Missing moderator")
+  testthat::expect_error(RCMetaR:::.rcmetar.reitsma.prepare.meta.regression(missing), "Missing moderator")
   collapsed <- methods::new("DiagnosticData", TP=counts$TP, FN=counts$FN, TN=counts$TN, FP=counts$FP,
     study.names=letters[1:6], covariates=list(methods::new("CovariateValues", cov.name="quality",
       cov.vals=factor(rep("A", 6), levels=c("A", "B")), cov.type="factor", ref.var="A")))
   testthat::expect_error(
-    RCMetaR:::diagnostic.reitsma.meta.regression(collapsed, list(create.plot=FALSE)),
+    RCMetaR:::.rcmetar.reitsma.prepare.meta.regression(collapsed),
     "Categorical moderator 'quality' has fewer than two observed levels after missing-value exclusions"
   )
   duplicate <- methods::new("DiagnosticData", TP=counts$TP, FN=counts$FN, TN=counts$TN, FP=counts$FP,
@@ -387,7 +410,7 @@ testthat::test_that("Reitsma meta-regression rejects missing and rank-deficient 
       methods::new("CovariateValues", cov.name="quality", cov.vals=c("A", "A", "B", "B", "A", "B"), cov.type="factor", ref.var="A"),
       methods::new("CovariateValues", cov.name="quality_duplicate", cov.vals=c("A", "A", "B", "B", "A", "B"), cov.type="factor", ref.var="A")
     ))
-  testthat::expect_error(RCMetaR:::diagnostic.reitsma.meta.regression(duplicate, list(create.plot=FALSE)), "rank deficient")
+  testthat::expect_error(RCMetaR:::.rcmetar.reitsma.prepare.meta.regression(duplicate), "rank deficient")
 })
 
 testthat::test_that("Reitsma warning capture preserves partial output and omits unavailable AUC", {
@@ -431,4 +454,24 @@ testthat::test_that("Reitsma warning capture preserves partial output and omits 
   testthat::expect_false("SROC AUC" %in% names(result$Summary))
   testthat::expect_true(any(grepl("SROC AUC unavailable: controlled AUC failure",
     result$Summary[["Model information"]]$warnings, fixed=TRUE)))
+})
+
+
+testthat::test_that("count-named moderators preserve counts and agree with public mada", {
+  counts <- data.frame(TP=c(19,8,41,5,45,8,21,33), FN=c(10,2,12,2,32,2,9,11),
+    TN=c(81,13,49,18,165,32,72,91), FP=c(1,9,1,1,58,6,5,7))
+  values <- seq_len(nrow(counts))
+  authority <- mada::reitsma(transform(counts, moderator=values),
+    formula=cbind(tsens, tfpr) ~ moderator, correction=.5, correction.control="all", method="reml")
+  for (name in c("TP", "FN", "FP", "TN", "renamed")) {
+    d <- new("DiagnosticData", TP=counts$TP, FN=counts$FN, FP=counts$FP, TN=counts$TN,
+      study.names=letters[1:8], covariates=list(new("CovariateValues", cov.name=name,
+        cov.vals=values, cov.type="continuous", ref.var="")))
+    fit <- rcmetar.run.analysis(d, method="diagnostic.reitsma", workflow="meta-regression",
+      params=list(measure="Sens", create.plot=FALSE), stop.at.rma=TRUE)
+    testthat::expect_equal(unname(fit$coefficients), unname(authority$coefficients), tolerance=1e-8)
+    testthat::expect_equal(as.numeric(fit$logLik), as.numeric(authority$logLik), tolerance=1e-8)
+    prepared <- RCMetaR:::.rcmetar.reitsma.prepare.meta.regression(d)
+    testthat::expect_equal(prepared$data[names(counts)], counts)
+  }
 })

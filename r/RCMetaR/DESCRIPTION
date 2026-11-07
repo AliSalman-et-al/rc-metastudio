@@ -12,7 +12,7 @@ Author: Ali Salman [aut, cre],
 Maintainer: Ali Salman <alisalman.et.al@gmail.com>
 Description: R component for RC MetaStudio, a graphical user interface
     for performing meta-analysis.
-License: GPL (>= 2)
+License: GPL (>= 3)
 URL: https://github.com/AliSalman-et-al/rc-metastudio
 BugReports: https://github.com/AliSalman-et-al/rc-metastudio/issues
 Depends:

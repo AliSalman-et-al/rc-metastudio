@@ -30,7 +30,10 @@ rcmetar.create.ratio.data(
 
 \item{estimate, lower, upper}{Original reported effect and interval vectors.}
 
-\item{se}{Positive log-effect standard errors, or missing for CI conversion.}
+\item{se}{Positive log-effect standard errors, used only with a log estimate.
+With scale = ratio, lower and upper bounds are required and determine
+uncertainty even when se is supplied. With scale = log, a supplied finite
+se takes precedence over bounds; otherwise bounds determine uncertainty.}
 
 \item{scale}{Per-study ratio or log input scales.}
 

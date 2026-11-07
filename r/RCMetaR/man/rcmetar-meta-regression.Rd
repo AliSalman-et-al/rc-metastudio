@@ -31,7 +31,9 @@ compute conditional means, and format model output for rc-metastudio.
 }
 \section{Regression wrappers}{
 
-\code{meta.regression()} is the primary exported meta-regression workflow.
+The desktop adapter uses a private \code{meta.regression()} workflow.
+Use the exported \code{rcmetar.run.analysis()} with
+\code{workflow = "meta-regression"}; the method wrappers below are private.
 \code{regression.wrapper()}, \code{g.meta.regression()},
 \code{g.meta.regression.cond.means()},
 \code{g.bootstrap.meta.regression()}, and

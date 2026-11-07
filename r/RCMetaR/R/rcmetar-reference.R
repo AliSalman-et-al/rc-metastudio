@@ -9,21 +9,23 @@
 #'
 #' @section Classes:
 #' \describe{
-#'   \item{\code{OMData}}{Base study container with study names, notes, covariate names, covariate values, and raw data.}
+#'   \item{\code{OMData}}{Metadata base container with study.names, notes, years, and covariates slots; raw measurements and effects belong to subclasses.}
 #'   \item{\code{BinaryData}}{Two-arm or one-arm binary outcome data with event counts, sample sizes, and optional effect-size columns.}
 #'   \item{\code{ContinuousData}}{Continuous outcome data with group means, standard deviations, sample sizes, and optional effect-size columns.}
 #'   \item{\code{RatioData}}{Reported HR/IRR inputs with source confidence and selection, plus raw IRR events and person-time.}
 #'   \item{\code{DiagnosticData}}{Diagnostic test accuracy data with true-positive, false-positive, false-negative, and true-negative counts.}
-#'   \item{\code{AnalysisSpecification}}{A named analysis request: data type, metric, method, and parameter list.}
+#'   \item{\code{AnalysisSpecification}}{An S4 container with one parameters slot of class data.frame. Construct with methods::new("AnalysisSpecification", parameters = data.frame()) and access with object@parameters; it does not hold separate metric, method, or data-type fields.}
 #'   \item{\code{CovariateValues}}{A single covariate's name, values, type, and reference level metadata.}
 #' }
 #'
 #' @section Data access:
-#' Use \code{get.subset()} to preserve class-specific slots while selecting a
-#' subset of study rows. Use \code{get.cov()} and \code{study.column()} when
-#' building grouped analyses and display tables.
+#' The internal \code{get.subset()} helper preserves class-specific slots for a
+#' subset of BinaryData, ContinuousData, DiagnosticData, or RatioData study rows.
+#' Access metadata through S4 slots, for example \code{object@covariates} and
+#' \code{object@study.names}; each covariate has \code{cov.name} and
+#' \code{cov.vals} slots.
 #'
-#' @aliases OMData OMData-class BinaryData BinaryData-class ContinuousData ContinuousData-class RatioData RatioData-class DiagnosticData DiagnosticData-class AnalysisSpecification AnalysisSpecification-class CovariateValues CovariateValues-class get.cov study.column
+#' @aliases OMData OMData-class BinaryData BinaryData-class ContinuousData ContinuousData-class RatioData RatioData-class DiagnosticData DiagnosticData-class AnalysisSpecification AnalysisSpecification-class CovariateValues CovariateValues-class
 #' @name RCMetaR-data-classes
 NULL
 
@@ -187,7 +189,9 @@ NULL
 #' compute conditional means, and format model output for rc-metastudio.
 #'
 #' @section Regression wrappers:
-#' \code{meta.regression()} is the primary exported meta-regression workflow.
+#' The desktop adapter uses a private \code{meta.regression()} workflow.
+#' Use the exported \code{rcmetar.run.analysis()} with
+#' \code{workflow = "meta-regression"}; the method wrappers below are private.
 #' \code{regression.wrapper()}, \code{g.meta.regression()},
 #' \code{g.meta.regression.cond.means()},
 #' \code{g.bootstrap.meta.regression()}, and

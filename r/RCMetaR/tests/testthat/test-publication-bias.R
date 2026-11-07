@@ -856,3 +856,75 @@ test_that("ratio funnels use readable ticks without moving points or limits", {
   settings$at <- c(-4, 0, 2)
   expect_equal(RCMetaR:::.small.study.funnel.args(settings, 0, TRUE)$at, settings$at)
 })
+
+
+test_that("omitted binary correction retains single-zero studies against meta", {
+  d <- new("BinaryData", study.names=letters[1:12],
+    g1O1=c(0, 11:21), g1O2=seq(60, 82, 2),
+    g2O1=seq(9, 31, 2), g2O2=seq(70, 103, 3))
+  request <- list(version=1L, data.type="binary", metric="OR", preview=TRUE)
+  preview <- rcmetar.run.small.study.effects(d, request)
+  expect_identical(preview$eligibility$included.indices, 1:12)
+  prepared <- RCMetaR:::.small.study.prepare(d, request)
+  authority <- meta::metabin(d@g1O1, d@g1O1+d@g1O2, d@g2O1, d@g2O1+d@g2O2,
+    studlab=d@study.names, sm="OR", incr=.5, method.incr="only0",
+    common=TRUE, random=TRUE, method.tau="REML")
+  expect_equal(unname(prepared$y), authority$TE)
+  expect_equal(unname(prepared$se), authority$seTE)
+  expect_equal(prepared$native.model$studlab, authority$studlab)
+  expect_equal(prepared$pooled$TE.random, authority$TE.random)
+  for (method in c("classical-egger", "begg-mazumdar")) {
+    result <- RCMetaR:::.small.study.fit.classical(prepared, list(role="exploratory"), method, 3L)
+    ref <- meta::metabias(authority, method.bias=if (method == "classical-egger") "Egger" else "Begg", k.min=3)
+    expect_identical(result$method, method)
+    expect_identical(result$package, "meta")
+    expect_equal(result$statistic, as.numeric(ref$statistic))
+    expect_equal(result$p.value, as.numeric(ref$p.value))
+    if (method == "classical-egger") expect_equal(result$df, as.numeric(ref$df))
+  }
+  ref <- metafor::regtest(authority$TE, sei=authority$seTE, model="rma", predictor="sei")
+  result <- RCMetaR:::.small.study.fit.mixed.egger(prepared, list(role="exploratory"))
+  expect_equal(result$statistic, as.numeric(ref$zval))
+  expect_equal(result$p.value, as.numeric(ref$pval))
+  for (policy in c("Studies with any zero cell", "All studies", "All studies if any zero exists")) {
+    request$correction.policy <- policy
+    actual <- RCMetaR:::.small.study.prepare(d, request)
+    ref <- meta::metabin(d@g1O1, d@g1O1+d@g1O2, d@g2O1, d@g2O1+d@g2O2,
+      sm="OR", incr=.5, method.incr=switch(policy, "Studies with any zero cell"="only0",
+        "All studies"="all", "All studies if any zero exists"="if0all"), method.tau="REML")
+    expect_equal(unname(actual$y), ref$TE)
+    expect_equal(unname(actual$se), ref$seTE)
+    expect_identical(actual$params$correction.policy, policy)
+  }
+  request$correction.policy <- "None"
+  expect_identical(rcmetar.run.small.study.effects(d, request)$eligibility$included.indices, 2:12)
+})
+
+test_that("subset rejects metadata-only base container at its public boundary", {
+  expect_error(RCMetaR:::get.subset(new("OMData", study.names="a"), 1L), "BinaryData.*ContinuousData.*DiagnosticData.*RatioData")
+})
+
+
+test_that("public small-study reports match direct meta and metafor tests", {
+  y <- c(.1,.6,.2,.8,.3,.9,.2,.7,.4,.5,.8,.6)
+  se <- seq(.1,.32,length.out=12)
+  d <- new("ContinuousData", study.names=letters[1:12], y=y, SE=se)
+  result <- rcmetar.run.small.study.effects(d, list(version=1L, data.type="continuous",
+    metric="MD", tests=c("classical-egger", "begg-mazumdar", "mixed-effects-egger"),
+    funnels=character()))
+  model <- meta::metagen(y, se, sm="MD", common=TRUE, random=TRUE, method.tau="REML")
+  for (method in c("classical-egger", "begg-mazumdar")) {
+    ref <- meta::metabias(model, method.bias=if (method == "classical-egger") "Egger" else "Begg", k.min=3)
+    actual <- result$tests.data[[method]]
+    expect_identical(actual$method, method)
+    expect_identical(actual$package, "meta")
+    expect_equal(actual$statistic, as.numeric(ref$statistic))
+    expect_equal(actual$p.value, as.numeric(ref$p.value))
+    if (method == "classical-egger") expect_equal(actual$df, as.numeric(ref$df))
+  }
+  ref <- metafor::regtest(y, sei=se, model="rma", predictor="sei")
+  actual <- result$tests.data[["mixed-effects-egger"]]
+  expect_identical(actual$package, "metafor")
+  expect_equal(actual$statistic, as.numeric(ref$zval))
+  expect_equal(actual$p.value, as.numeric(ref$pval))
+})
