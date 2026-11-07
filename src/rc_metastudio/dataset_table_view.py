@@ -503,15 +503,13 @@ class DatasetTableView(QtWidgets.QTableView):
         indexes = selection.selectedIndexes()
         if not indexes:
             return
-        rows = sorted({index.row() for index in indexes})
         columns = sorted({index.column() for index in indexes})
-        if len(rows) < 2:
-            return
         owner = self._main_gui()
         owner.workspace.begin_change()
         try:
             model = self.model()
             for column in columns:
+                rows = sorted(index.row() for index in indexes if index.column() == column)
                 value = model.data(model.index(rows[0], column), Qt.ItemDataRole.EditRole)
                 for row in rows[1:]:
                     index = model.index(row, column)
@@ -543,7 +541,8 @@ class DatasetTableView(QtWidgets.QTableView):
         upper_left_index = self._upper_left(selected_indexes)
         lower_right_index = self._lower_right(selected_indexes)
         self.copy_contents_in_range(
-            upper_left_index, lower_right_index, to_clipboard=True
+            upper_left_index, lower_right_index, to_clipboard=True,
+            selected_cells={(index.row(), index.column()) for index in selected_indexes},
         )
 
     def paste(self):
@@ -742,7 +741,7 @@ class DatasetTableView(QtWidgets.QTableView):
             return False, "Clipboard data extends beyond the workspace columns."
         return True, None
 
-    def copy_contents_in_range(self, upper_left_index, lower_right_index, to_clipboard):
+    def copy_contents_in_range(self, upper_left_index, lower_right_index, to_clipboard, selected_cells=None):
         """Copy the (textual) content of the cells in provided cell_range -- the copied contents will be
         cast to python Unicode strings and returned. If the to_clipboard flag is true, the contents will
         also be copied to the system clipboard
@@ -754,6 +753,9 @@ class DatasetTableView(QtWidgets.QTableView):
             current_row = []
             for col in range(upper_left_index.column(), lower_right_index.column() + 1):
                 if to_clipboard and self.isColumnHidden(col):
+                    continue
+                if selected_cells is not None and (row, col) not in selected_cells:
+                    current_row.append("")
                     continue
                 current_index = self.model().createIndex(row, col)
                 cur_data = self.model().data(current_index, Qt.ItemDataRole.EditRole)
@@ -787,6 +789,9 @@ class DatasetTableView(QtWidgets.QTableView):
             dataset=copy.deepcopy(model.dataset), add_blank_study=False
         )
         candidate.set_state(copy.deepcopy(model.get_state()))
+        # Clipboard coordinates refer to visible studies, not canonical storage order.
+        by_id = {study.id: study for study in candidate.current_sheet.rows}
+        candidate._display_studies = [by_id[study_id] for study_id in model.get_ordered_study_ids()]
         skipped = 0
         try:
             columns = self._paste_columns(origin_col)
@@ -811,6 +816,8 @@ class DatasetTableView(QtWidgets.QTableView):
             self._main_gui().statusBar().showMessage(f"{skipped} {noun} skipped: not a number", 8000)
         model.dataset = candidate.dataset
         model.set_state(candidate.get_state())
+        model._display_studies = candidate._display_studies
+        model._blank_study = candidate._blank_study
         model.reset_model()
         self.dataDirtied.emit()
         return True
@@ -894,37 +901,21 @@ class DatasetTableView(QtWidgets.QTableView):
         self, m, col_delimiter="\t", row_delimiter="\n", append_new_line=False
     ):
         """Takes a matrix of data (i.e., a nested list) and converts to a string representation"""
-        m_str = []
-        for row in m:
-            m_str.append(col_delimiter.join(row))
-        return_str = row_delimiter.join(m_str)
-        if append_new_line:
-            return_str += row_delimiter
-        return return_str
+        stream = io.StringIO(newline="")
+        writer = csv.writer(stream, delimiter=col_delimiter, lineterminator=row_delimiter)
+        writer.writerows(m)
+        text = stream.getvalue()
+        return text if append_new_line or not text else text[:-len(row_delimiter)]
 
     def _upper_left(self, indexes):
         """Returns the upper most index object in the indexes list."""
         if len(indexes) > 0:
-            upper_left = indexes[0]
-            for index in indexes[1:]:
-                if (
-                    index.row() < upper_left.row()
-                    or index.column() < upper_left.column()
-                ):
-                    upper_left = index
-            return upper_left
+            return self.model().index(min(index.row() for index in indexes), min(index.column() for index in indexes))
         return None
 
     def _lower_right(self, indexes):
         if len(indexes) > 0:
-            lower_right = indexes[0]
-            for index in indexes[1:]:
-                if (
-                    index.row() > lower_right.row()
-                    or index.column() > lower_right.column()
-                ):
-                    lower_right = index
-            return lower_right
+            return self.model().index(max(index.row() for index in indexes), max(index.column() for index in indexes))
         return None
 
 

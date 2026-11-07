@@ -15,6 +15,18 @@ from test_types import key_click, required
 REPO_ROOT = os.getcwd()
 
 
+@pytest.mark.parametrize("case", ["sorted-paste", "sparse-fill", "quoted-copy", "sparse-copy", "invalid-paste"])
+def test_table_editing_transactions(case, tmp_path):
+    from pathlib import Path
+    from tests.e2e.ux_workflows import table_editing_case
+
+    app, window = automation.start_automation()
+    try:
+        table_editing_case(app, window, tmp_path, Path(REPO_ROOT), lambda *args, **kwargs: None, case)
+    finally:
+        _close_without_prompt(app, window)
+
+
 def _derived_effect_and_ci(analysis_unit, metric, arm_key):
     value = analysis_unit.get_effect_for_source(
         "derived_preview", metric, arm_key

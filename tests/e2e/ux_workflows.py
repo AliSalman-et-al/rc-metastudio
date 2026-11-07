@@ -1,6 +1,8 @@
 """Real desktop proof for result controls, mapped CSV and input recovery."""
 
 import csv
+import copy
+import io
 from pathlib import Path
 from typing import Callable, cast
 from unittest.mock import patch
@@ -8,6 +10,98 @@ from unittest.mock import patch
 from PyQt6 import QtCore, QtGui, QtWidgets, QtTest
 
 from tests.python.gui.test_types import mouse_click, key_click, required, wait
+
+
+def table_editing_case(app, window, work, root, record, case):
+    """Exercise table transactions; the clipboard substitute never touches the OS."""
+    assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
+    table = window.tableView
+    role = QtCore.Qt.ItemDataRole.EditRole
+
+    def cells():
+        model = window.model
+        return [[model.data(model.index(r, c), role) for c in range(model.columnCount())]
+                for r in range(len(model.current_sheet.rows))]
+
+    def select(coordinates):
+        selection = required(table.selectionModel())
+        selection.clearSelection()
+        for row, column in coordinates:
+            selection.select(window.model.index(row, column), QtCore.QItemSelectionModel.SelectionFlag.Select)
+
+    if case == "sorted-paste":
+        canonical = [row.id for row in window.model.current_sheet.rows]
+        window.model.sort_studies(window.model.NAME, True)
+        if window.model.get_ordered_study_ids() == canonical:
+            window.model.sort_studies(window.model.NAME, False)
+        ordered = window.model.get_ordered_study_ids()
+        assert ordered != canonical
+        before = {row.id: row.year for row in window.model.current_sheet.rows}
+        assert table.paste_contents(window.model.index(0, window.model.YEAR), [["2001"], ["2002"]])
+        expected = dict(before, **{ordered[0]: 2001, ordered[1]: 2002})
+        assert {row.id: row.year for row in window.model.current_sheet.rows} == expected
+        assert window.model.get_ordered_study_ids() == ordered
+        window.undo()
+        assert {row.id: row.year for row in window.model.current_sheet.rows} == before
+        window.redo()
+        assert {row.id: row.year for row in window.model.current_sheet.rows} == expected
+    elif case == "sparse-fill":
+        year, name = window.model.YEAR, window.model.NAME
+        assert table.paste_contents(window.model.index(0, year), [["1991"], ["1992"], ["1993"]])
+        before = cells()
+        select([(0, year), (2, year), (1, name)])
+        with patch.object(QtWidgets.QMessageBox, "warning"):
+            table.fill_down()
+        expected = copy.deepcopy(before)
+        expected[2][year] = before[0][year]
+        assert cells() == expected
+        window.undo()
+        assert cells() == before
+        window.redo()
+        assert cells() == expected
+    elif case == "quoted-copy":
+        labels = ['"München"', 'Trial\twith tab', 'Line one\nLine two']
+        assert table.paste_contents(window.model.index(0, window.model.NAME), [[label] for label in labels])
+        copied = table.copy_contents_in_range(window.model.index(0, window.model.NAME), window.model.index(2, window.model.NAME), False)
+        assert list(csv.reader(io.StringIO(copied, newline=""), delimiter="\t")) == [[label] for label in labels]
+        with patch.object(QtWidgets.QApplication, "clipboard") as clipboard:
+            clipboard.return_value.text.return_value = copied
+            assert table.paste_from_clipboard(window.model.index(0, window.model.NAME))
+        assert [window.model.data(window.model.index(r, window.model.NAME), role) for r in range(3)] == labels
+    elif case == "sparse-copy":
+        name, year = window.model.NAME, window.model.YEAR
+        select([(0, year), (2, name)])
+        before = cells()
+        with patch.object(QtWidgets.QApplication, "clipboard") as clipboard:
+            table.copy()
+        copied = clipboard.return_value.setText.call_args.args[0]
+        assert list(csv.reader(io.StringIO(copied), delimiter="\t")) == [["", str(before[0][year])], ["", ""], [str(before[2][name]), ""]]
+    else:
+        before = cells()
+        dataset = window.model.dataset
+        dirty = window.workspace.is_dirty
+        with patch.object(window, "data_error") as error:
+            duplicate = window.model.current_sheet.rows[2].label
+            assert not table.paste_contents(window.model.index(0, window.model.NAME), [["Changed", "2000"], [duplicate, "2001"]])
+        assert error.called
+        assert window.model.dataset is dataset
+        assert window.workspace.is_dirty == dirty
+        assert cells() == before
+
+    record("table-" + case, window, cells=cells())
+    if case in ("sorted-paste", "sparse-fill"):
+        year = window.model.YEAR
+        select([(1, year)])
+        assert table.clear_selected_cells()
+        expected = cells()
+        destination = work / (case + ".rcms")
+        with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(destination), "")):
+            assert window.save_as()
+        assert window.open(str(destination), raise_on_error=True)
+        # Visible sorting is transient; compare persistence by study label.
+        assert sorted((row[window.model.NAME], row[year]) for row in cells()) == sorted((row[window.model.NAME], row[year]) for row in expected)
+        record("table-reopened-" + case, window, project=str(destination), cells=cells())
+    window.workspace.mark_saved()
 
 
 def run(app, window, work, root, record, analyze):
@@ -46,6 +140,8 @@ def run(app, window, work, root, record, analyze):
     next(action for action in window.menuHelp.actions() if "Quick start" in action.text()).trigger()
     assert not guide_errors, guide_errors
 
+    for case in ("sorted-paste", "sparse-fill", "quoted-copy", "sparse-copy", "invalid-paste"):
+        table_editing_case(app, window, work, root, record, case)
     assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
     year = str(window.model.data(window.model.index(0, window.model.YEAR)))
     assert window.tableView.columnWidth(window.model.YEAR) >= window.tableView.fontMetrics().horizontalAdvance(year) + 8
