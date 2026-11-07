@@ -104,6 +104,44 @@ def table_editing_case(app, window, work, root, record, case):
     window.workspace.mark_saved()
 
 
+def export_destination_case(view, work, record, kind):
+    """Check the final destination using real writers and test-owned files."""
+    extension = kind if kind in ("pdf", "docx") else "png"
+    selected = work / (kind + "-export.jpg")
+    destination = selected.with_suffix("." + extension) if kind in ("pdf", "docx") else Path(str(selected) + ".png")
+    sentinel = b"existing export must survive cancellation"
+    destination.write_bytes(sentinel)
+
+    def export():
+        if kind in ("pdf", "docx"):
+            view._export_report()
+        elif kind == "regenerated":
+            view.save_image_as(view._selected_plot()[0], format="png")
+        else:
+            from rc_metastudio.analysis_results import PlotCapability
+            from rc_metastudio.results_window import PlotArtifact
+
+            image = QtGui.QPixmap(24, 24)
+            image.fill(QtGui.QColor("#336699"))
+            artifact = PlotArtifact("Raster", "fixture.png", PlotCapability("forest", False, False, "single", "forest"))
+            view.save_image_as(artifact, image, format="png")
+
+    for answer in (QtWidgets.QMessageBox.StandardButton.No, QtWidgets.QMessageBox.StandardButton.Yes):
+        with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(selected), extension)), \
+             patch.object(QtWidgets.QMessageBox, "question", return_value=answer) as confirm:
+            export()
+        assert confirm.call_count == 1
+        assert str(destination) in confirm.call_args.args[2]
+        assert confirm.call_args.args[-1] == QtWidgets.QMessageBox.StandardButton.No
+        if answer == QtWidgets.QMessageBox.StandardButton.No:
+            assert destination.read_bytes() == sentinel
+            record("export-overwrite-cancelled", view, kind=kind, destination=str(destination))
+        else:
+            header = b"%PDF" if kind == "pdf" else b"PK" if kind == "docx" else b"\x89PNG\r\n\x1a\n"
+            assert destination.read_bytes().startswith(header)
+            record("export-overwrite-confirmed", view, kind=kind, destination=str(destination))
+
+
 def run(app, window, work, root, record, analyze):
     from rc_metastudio import add_new_dialogs, main_wizard, automation
     from PyQt6 import sip
@@ -178,6 +216,8 @@ def run(app, window, work, root, record, analyze):
     close_result(recovered)
     app.processEvents()
     view = analyze(app, window, "binary.random")
+    for kind in ("pdf", "docx", "raster", "regenerated"):
+        export_destination_case(view, work, record, kind)
     assert "clinical failure" in view.results.identity
     assert "Odds ratio" in view.results.identity
     assert view.nav_tree.width() < view.width() / 3, (view.nav_tree.width(), view.width(), view.results_nav_splitter.sizes(), view._restored_splitter_proportions)

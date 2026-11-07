@@ -657,6 +657,17 @@ def test_results_window_regenerates_each_supported_export_format(
         _dispose(window, qapp)
 
 
+@pytest.mark.parametrize("kind", ["pdf", "docx", "raster"])
+def test_export_confirms_normalized_destination(qapp, tmp_path, kind):
+    from tests.e2e.ux_workflows import export_destination_case
+
+    window = results_window.ResultsWindow(_empty_results())
+    try:
+        export_destination_case(window, tmp_path, lambda *args, **kwargs: None, kind)
+    finally:
+        _dispose(window, qapp)
+
+
 @pytest.mark.parametrize("extension", ["pdf", "png", "tiff", "svg"])
 def test_results_window_exports_sroc_with_format_specific_default_name(
     qapp, tmp_path, monkeypatch, extension

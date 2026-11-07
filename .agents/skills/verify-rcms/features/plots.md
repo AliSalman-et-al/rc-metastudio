@@ -46,6 +46,7 @@ Preconditions: doctor passes; amino analysis produces a real editable forest plo
 
 - **Edit and cancel.** Run `uv run python scripts/verify_rcms.py plot-edit`. The existing Results editor path opens `EditPlotDialog`. Fill `x_lbl_le` with `Edited effect axis`, click the button box Apply, and require changed SVG bytes and persisted `fp_xlabel`. Change the draft again and reject the editor; the applied label and a valid SVG remain. `plot-edit-draft` and `plot-applied-cancelled` capture the sequence and final result.
 - **Export.** Run `uv run python scripts/verify_rcms.py amino` (or `continuous`/`lymph`). The production Results save-image path writes `workflow/forest.pdf`; require a PDF header and inspect the figure when export behavior changed.
+- **Overwrite after suffix normalization.** `ux-improvements` supplies a mismatched entered suffix with an existing final destination for PDF/DOCX reports, a raster PNG and a regenerated R PNG. No preserves the existing bytes; Yes writes the selected format. The controlled picker and confirmation responses do not qualify native file dialogs.
 - **Entry reachability.** The driver calls the Results editor/export paths directly. It does not exercise plot hit testing or context-menu selection. Add right-click/menu gestures when changing their wiring. Source owner: `results_window.py:_make_context_menu`; there is no double-click editor route.
 
 ## Gotchas

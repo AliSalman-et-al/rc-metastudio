@@ -45,6 +45,7 @@ from PyQt6.QtWidgets import (
     QGraphicsTextItem,
     QMainWindow,
     QMenu,
+    QMessageBox,
     QSizePolicy,
     QTreeWidgetItem,
     QToolButton,
@@ -783,10 +784,24 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         path, selected = QFileDialog.getSaveFileName(self, "Export manuscript report", self._export_name("report", "pdf"), "PDF (*.pdf);;Word document (*.docx)")
         if path:
             extension = "docx" if "docx" in selected else "pdf"
-            path = str(Path(path).with_suffix("." + extension))
+            destination = str(Path(path).with_suffix("." + extension))
+            if not self._confirm_export_destination(path, destination):
+                return
+            path = destination
             report = ManuscriptReport.from_result(self.results)
             (write_docx if extension == "docx" else write_pdf)(report, path)
             self.statusbar.showMessage(f"Saved report: {Path(path).resolve()}")
+
+    def _confirm_export_destination(self, selected, destination):
+        # The save dialog confirmed the entered name, before suffix normalization.
+        if selected != destination and Path(destination).exists():
+            return QMessageBox.question(
+                self, "Replace existing file?",
+                f"This file already exists:\n{destination}\n\nReplace it?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            ) == QMessageBox.StandardButton.Yes
+        return True
 
     def _export_name(self, title, extension):
         context = (self.results.identity or "Analysis results").split("\n")[0]
@@ -1566,9 +1581,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
             # now we re-generate it, unless they canceled, of course
             if file_path != "":
-                file_path = _path_with_export_extension(
+                destination = _path_with_export_extension(
                     file_path, export_format, allow_svgz=allow_svgz
                 )
+                if not self._confirm_export_destination(file_path, destination):
+                    return
+                file_path = destination
                 self.plot_service.export(
                     regenerator=regenerator,
                     params_path=artifact.params_path,
@@ -1582,9 +1600,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 default_path,
             )
             if file_path != "":
-                file_path = _path_with_export_extension(
+                destination = _path_with_export_extension(
                     file_path, export_format, allow_svgz=allow_svgz
                 )
+                if not self._confirm_export_destination(file_path, destination):
+                    return
+                file_path = destination
                 if not unscaled_image.save(file_path, export_format.qt_format):
                     raise OSError(f"Could not save plot: {file_path}")
         if file_path:
