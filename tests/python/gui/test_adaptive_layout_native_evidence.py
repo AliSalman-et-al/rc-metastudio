@@ -441,3 +441,35 @@ def test_covariate_cancel_probe_detects_live_sheet_mutation(qapp, monkeypatch):
     monkeypatch.setattr(covariate_type_dialog.CovariateTypeDialog, "__init__", mutate_live_sheet)
     with pytest.raises(RuntimeError, match="cancel did not preserve owner sheet"):
         smoke._observe_covariate_owner_cancel(qapp)
+
+
+@pytest.mark.parametrize("defect", [None, "escape", "close", "completion"])
+def test_import_progress_observer_checks_blocked_gestures_and_owner_completion(qapp, monkeypatch, defect):
+    import sys
+    from scripts import native_remaining_surfaces_smoke as smoke
+    from rc_metastudio import main_window, progress_dialog
+    callback_errors = []
+    monkeypatch.setattr(sys, "excepthook", lambda _kind, error, _trace: callback_errors.append(error))
+    if defect == "escape":
+        monkeypatch.setattr(main_window.ImportProgressDialog, "reject", lambda self: self.hide())
+    elif defect == "close":
+        monkeypatch.setattr(main_window.ImportProgressDialog, "closeEvent", lambda self, event: event.accept())
+    elif defect == "completion":
+        monkeypatch.setattr(progress_dialog, "hide_once", lambda _window: None)
+    window = main_window.ImportProgressDialog()
+    try:
+        window.show()
+        qapp.processEvents()
+        observation = smoke._observe_capture_close(qapp, window, "import-progress")
+        assert callback_errors == []
+        expected = {"close_blocked": True, "escape_blocked": True, "owner_completed": True}
+        if defect is None:
+            assert observation == expected
+        else:
+            assert isinstance(observation, dict)
+            field = {"close": "close_blocked", "escape": "escape_blocked", "completion": "owner_completed"}[defect]
+            assert observation[field] is False
+    finally:
+        window.hide()
+        window.deleteLater()
+        qapp.processEvents()

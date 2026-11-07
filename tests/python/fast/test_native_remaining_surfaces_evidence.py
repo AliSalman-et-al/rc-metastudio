@@ -221,7 +221,7 @@ def _write_bundle(root: Path) -> None:
                     "size_bytes": len(payload),
                     "varied_pixels": True,
                 },
-                "close_semantics": True,
+                "close_semantics": {"close_blocked": True, "escape_blocked": True, "owner_completed": True} if surface_id == "import-progress" else True,
                 "device_pixel_ratio": scale,
                 "first_use_behavior": contract["first_use_behavior"],
                 "focus": focus,
@@ -519,3 +519,15 @@ def test_scale_retry_preserves_interrupted_fragments(tmp_path, monkeypatch):
     assert old.read_text() == "prior failed evidence"
     assert len(list(old.parent.iterdir())) == 4
     assert set(json.loads(native_smoke._record_path(tmp_path, 1.0).read_text())["surfaces"]) == set(native_smoke._surface_capture_order())
+
+
+@pytest.mark.parametrize("field", ["close_blocked", "escape_blocked", "owner_completed"])
+def test_import_progress_evidence_requires_blocked_gestures_and_completion(tmp_path, field):
+    _write_bundle(tmp_path)
+    native_smoke.validate_evidence(tmp_path)
+    path = native_smoke._record_path(tmp_path, 1.0)
+    record = json.loads(path.read_text())
+    record["surfaces"]["import-progress"]["close_semantics"][field] = False
+    path.write_text(json.dumps(record))
+    with pytest.raises(ValueError, match="import-progress.*close"):
+        native_smoke.validate_evidence(tmp_path)

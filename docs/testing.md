@@ -182,3 +182,9 @@ with the offscreen clipboard. The fractional-scale workspace child sets its own
 INI settings path before startup and reports that path for containment checking.
 Offscreen screen descriptors and rendered captures cannot establish native
 multi-monitor placement or native DPI behavior.
+
+## Import progress completion evidence
+
+The remaining-surfaces collector records close and Escape rejection while CSV
+import owns the modal dialog, followed by owner completion through `hide_once`.
+It requires all three observations; closing import progress is not cancellation.

@@ -244,7 +244,16 @@ def _validate_surface_fields(surface_id: str, surface: dict[str, object]) -> Non
         )
     _validate_focus_observation(surface_id, surface["focus"])
     _validate_action_observation(surface_id, surface["actions"])
-    if surface["close_semantics"] is not True:
+    close = surface["close_semantics"]
+    if surface_id == "import-progress":
+        closed_correctly = (
+            isinstance(close, dict)
+            and set(close) == {"close_blocked", "escape_blocked", "owner_completed"}
+            and all(value is True for value in close.values())
+        )
+    else:
+        closed_correctly = close is True
+    if not closed_correctly:
         raise ValueError(
             "remaining-surface %s did not close cleanly" % surface_id
         )
@@ -1237,6 +1246,31 @@ def _observe_window_contract(window: QtWidgets.QWidget) -> dict[str, object]:
     }
 
 
+def _observe_capture_close(
+    app: QtWidgets.QApplication, window: QtWidgets.QWidget, surface_id: str
+) -> bool | dict[str, bool]:
+    window.close()
+    app.processEvents()
+    if surface_id != "import-progress":
+        return not window.isVisible()
+    from rc_metastudio import progress_dialog
+    # Import owns completion; user gestures must not release its modality.
+    close_blocked = window.isVisible() and app.activeModalWidget() is window
+    for event_type in (QtCore.QEvent.Type.KeyPress, QtCore.QEvent.Type.KeyRelease):
+        QtCore.QCoreApplication.sendEvent(window, QtGui.QKeyEvent(
+            event_type, QtCore.Qt.Key.Key_Escape, QtCore.Qt.KeyboardModifier.NoModifier
+        ))
+    app.processEvents()
+    escape_blocked = window.isVisible() and app.activeModalWidget() is window
+    progress_dialog.hide_once(window)
+    app.processEvents()
+    return {
+        "close_blocked": close_blocked,
+        "escape_blocked": escape_blocked,
+        "owner_completed": not window.isVisible(),
+    }
+
+
 def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None:
     from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
@@ -1311,8 +1345,7 @@ def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None
                 "width": round(frame.width() * dpr),
                 "height": round(frame.height() * dpr),
             }
-            window.close()
-            app.processEvents()
+            close_observation = _observe_capture_close(app, window, surface_id)
             # Finish the capture instance before action probes construct their
             # own top-level windows. Keeping a captured QWizard alive while two
             # more MainWizard trees were created caused an intermittent Windows
@@ -1329,7 +1362,7 @@ def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None
                 ],
                 "archetype": observed_contract["archetype"],
                 "capture": capture,
-                "close_semantics": not window.isVisible(),
+                "close_semantics": close_observation,
                 "device_pixel_ratio": dpr,
                 "first_use_behavior": observed_contract["first_use_behavior"],
                 "focus": focus,
