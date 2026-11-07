@@ -80,6 +80,14 @@ rcmetar.plot.pixel.size <- function(size) {
     )
 }
 
+rcmetar.plot.raster.size <- function(size, keep.display, extension) {
+    # Analysis previews stay bounded; an explicit publication DPI is never reduced.
+    if (keep.display && is.null(size$dpi) && extension %in% c("png", "tif", "tiff")) {
+        size$dpi <- 120
+    }
+    size
+}
+
 rcmetar.open.svg_device <- function(outpath, size) {
     bg <- if (!is.null(size$bg)) size$bg else "white"
     svglite::svglite(
@@ -297,6 +305,6 @@ rcmetar.render.plot_file <- function(outpath, size, draw, display.path=NULL, cap
         on.exit(unlink(svg.path), add=TRUE)
     }
     result <- rcmetar.render.plot_svg(svg.path, size, draw)
-    rcmetar.export.svg_render(svg.path, outpath, size)
+    rcmetar.export.svg_render(svg.path, outpath, rcmetar.plot.raster.size(size, keep.display, ext))
     invisible(result)
 }

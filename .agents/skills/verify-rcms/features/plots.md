@@ -321,6 +321,14 @@ the rendered plot and in report details, alongside its existing public-fit check
 
 The in-process R bridge contract first checks the automatic 9 pt SVG text floor and horizontal overflow at a narrow window, then explicitly requests Fit width before asserting shrink/grow resizing.
 
+Analysis PNG/TIFF previews with a separate SVG stay at 120 dpi when no DPI was
+specified. Explicit raster DPI is honored with or without a display SVG; exports
+to a separate destination retain the default 600 dpi. The two `subgroup-image`
+drives check a Qt-decodable analysis preview and the full-resolution user export.
+Cap-height checks require capped rows in Default and RevMan; BMJ intentionally
+uses uncapped intervals. The IRR context drive explicitly enables both arm columns
+before requiring their event and person-time headers.
+
 Batch 7 direction labels retain the axis tick font size and extend outward from
 its null; preflight reserves extra device space for long labels. HR/IRR drives
 retain the existing footer bounds, gap and overlap assertions. Native continuous

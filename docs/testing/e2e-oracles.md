@@ -6,7 +6,7 @@ The bounded e2e-oracles-01 batch strengthens evidence, without changing product 
 | --- | --- | --- |
 | G6B-001 | Configured precision equals the request; receipt records the observed spinbox | amino |
 | G6B-002 | Required screenshot saves return success | sheets; calculator and XLSX paths retain the same assertion |
-| G6B-003 | At least three capped interval rows establish spacing; caps cannot cross row bands | audit-round3-twoarm-proportion |
+| G6B-003 | Default/RevMan require at least three capped interval rows; caps cannot cross row bands. BMJ deliberately draws uncapped intervals and uses its other plot geometry checks. | audit-round3-twoarm-proportion; audit-round3-round5 |
 | G6B-005 | Every DOCX summary cell equals the source report; nondefault judgement/comments are exported; PDF contains each source cell | summary-of-findings |
 | G6B-007 | Entire mapped project, including stable identities, labels, raw data and covariates, survives reopening | ux-improvements |
 | G6B-008 | Every imported study year matches the XML fixture, including empty/non-digit years | rm5-import |

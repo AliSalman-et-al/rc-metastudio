@@ -74,10 +74,11 @@ def check_report(app, view, work, record):
                                for s in view.results.sections for t in s.tables])
 
 
-def check_annotation_spacing(view):
+def check_annotation_spacing(view, *, style="default"):
     assert "Overall-effect null:" not in view.report_text.toPlainText(), view.report_text.toPlainText()
     for path in view.results.display_images.values():
-        check_interval_caps(path)
+        if style != "bmj":
+            check_interval_caps(path)
         nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
         for weight in (node for node in nodes if re.fullmatch(r"[\d.]+%", "".join(node.itertext()))):
             row = [node for node in nodes if "[" in "".join(node.itertext())
@@ -525,7 +526,7 @@ def run(app, window, work, record, scenario):
                     window.workspace.mark_saved()
                     view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
                                   parameters={"digits": digits, "fp_style": style}, prepare=select_metric)
-                    check_annotation_spacing(view)
+                    check_annotation_spacing(view, style=style)
                     if metric:
                         from rc_metastudio import r_bridge
                         for title, path in view.results.display_images.items():
@@ -954,7 +955,8 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
             destination = work / ("long-" + style + "-" + workflow + ".svg")
             view.plot_service.export(regenerator="forest", params_path=view.params_paths[title], output_path=str(destination))
             assert destination.is_file()
-            check_interval_caps(destination)
+            if style != "bmj":
+                check_interval_caps(destination)
             measurements.append(dict(style=style, workflow=workflow, **layout))
             view.close()
     if not only_bubbles:
@@ -963,7 +965,7 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
                       workflow_override="subgroup", parameters={"fp_style":"bmj", "digits":6}, prepare=prepare)
         check_report(app, view, work, record)
         check_subgroup(view, record)
-        check_annotation_spacing(view)
+        check_annotation_spacing(view, style="bmj")
         view.report_action.setChecked(False)
         view._show_report(False)
         view.graphics_view.verticalScrollBar().setValue(0)
@@ -1049,8 +1051,9 @@ def run_irr_context(app, window, record):
     for style in ("default", "revman", "bmj"):
         window.workspace.mark_saved()
         assert window.open(str(root / "sample_projects/NielWeise2008-IRR.rcms")), style
-        view = analyze_existing(app, window, "standard", "event_rates.random", record, parameters={"fp_style":style})
-        check_annotation_spacing(view)
+        view = analyze_existing(app, window, "standard", "event_rates.random", record,
+                                parameters={"fp_style":style, "fp_show_col3":True, "fp_show_col4":True})
+        check_annotation_spacing(view, style=style)
         title, path = next(iter(view.results.display_images.items()))
         from rc_metastudio.analysis_identity import dataset_identity
         check_caption(path, dataset_identity(window.model))
