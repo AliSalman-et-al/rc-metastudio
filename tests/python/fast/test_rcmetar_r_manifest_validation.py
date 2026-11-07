@@ -125,7 +125,7 @@ def test_r_verifiers_preserve_symlinked_python_identity(monkeypatch, tmp_path):
                 },
             )
             if hasattr(module, "verify_rpy2_identities"):
-                patch.setattr(module, "verify_rpy2_identities", lambda: None)
+                patch.setattr(module, "verify_rpy2_identities", lambda *a: None)
             patch.setattr(module, "run", stop_after_first_child)
             args = argparse.Namespace(
                 root=REPO_ROOT,

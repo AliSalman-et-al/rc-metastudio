@@ -29,35 +29,6 @@ def main():
     evidence.mkdir(parents=True)
     print(f"Complete-run evidence: {evidence}", flush=True)
     commands = []
-    if args.full:
-        from scripts.r_verification_support import resolve_rscript
-        rscript = resolve_rscript("Rscript")
-        if rscript is None:
-            raise RuntimeError("Full verification requires Rscript on PATH or a configured R home")
-        commands.extend(
-            [
-                [
-                    sys.executable,
-                    "scripts/verify.py",
-                    "r-stack",
-                    "--rscript",
-                    str(rscript),
-                ],
-                [
-                    str(rscript),
-                    ".agents/skills/verify-rcms/scripts/analysis_authorities.R",
-                    str(evidence / "authorities.json"),
-                ],
-            ]
-        )
-    # The full R-stack lane already exercises every desktop scenario via pytest.
-    # Keep doctor here; repeating the whole registry doubles the expensive work.
-    if not args.full:
-        commands.append([sys.executable, "-m", "pytest", "tests/e2e", "-n", "auto", "--durations=10"])
-    scenarios = ("doctor",)
-    commands.extend(
-        [sys.executable, "scripts/verify_rcms.py", scenario] for scenario in scenarios
-    )
     rows = []
     status_before = subprocess.check_output(
         ["git", "status", "--short"], cwd=ROOT, text=True
@@ -67,7 +38,37 @@ def main():
         env["RCMS_E2E_FRESH"] = "1"
     if env.get("RCMS_R_LIBS"):
         env["R_LIBS"] = env["RCMS_R_LIBS"]
+    preflight_error = None
     try:
+        if args.full:
+            from scripts.r_verification_support import resolve_rscript
+            rscript = resolve_rscript("Rscript")
+            if rscript is None:
+                raise RuntimeError("Full verification requires Rscript on PATH or a configured R home")
+            commands.extend(
+                [
+                    [
+                        sys.executable,
+                        "scripts/verify.py",
+                        "r-stack",
+                        "--rscript",
+                        str(rscript),
+                    ],
+                    [
+                        str(rscript),
+                        ".agents/skills/verify-rcms/scripts/analysis_authorities.R",
+                        str(evidence / "authorities.json"),
+                    ],
+                ]
+            )
+        # The full R-stack lane already exercises every desktop scenario via pytest.
+        # Keep doctor here; repeating the whole registry doubles the expensive work.
+        if not args.full:
+            commands.append([sys.executable, "-m", "pytest", "tests/e2e", "-n", "auto", "--durations=10"])
+        scenarios = ("doctor",)
+        commands.extend(
+            [sys.executable, "scripts/verify_rcms.py", scenario] for scenario in scenarios
+        )
         for index, command in enumerate(commands):
             print("Running " + " ".join(command), flush=True)
             with (evidence / f"{index:02d}.log").open("wb") as output:
@@ -98,6 +99,10 @@ def main():
                 print(f"Failed; inspect {evidence / rows[-1]['log']}", flush=True)
                 return 1
         return 0
+    except Exception as exc:
+        preflight_error = str(exc)
+        (evidence / "preflight.log").write_text(preflight_error + "\n", encoding="utf-8")
+        return 1
     finally:
         (evidence / "summary.json").write_text(
             json.dumps(
@@ -106,7 +111,8 @@ def main():
                         ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
                     ).strip(),
                     "full_requested": args.full,
-                    "passed": len(rows) == len(commands)
+                    "preflight_error": preflight_error,
+                    "passed": preflight_error is None and len(rows) == len(commands)
                     and all(row["exit_code"] == 0 for row in rows),
                     "commands": rows,
                     "worktree_status_before": status_before,

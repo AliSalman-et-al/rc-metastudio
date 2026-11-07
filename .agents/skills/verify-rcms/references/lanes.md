@@ -13,6 +13,8 @@ Choose checks that can detect the changed failure. Preserve transcripts and dist
 
 ## Native and typing commands
 
+The source smoke/fast, R-stack, desktop helper, E2E pytest controller, Qt smoke and both PowerShell sections enforce strict Ty before GUI work. E2E workers use their controller’s gate, rather than repeating it for every study or scenario. Each `run_typing` invocation retains its exact command, win32 target, exit code and stdout/stderr under `artifacts/verification/typing/`. A missing or failing gate stops qualification; no skip flag is supported.
+
 Every qualification runs the repository-wide strict Ty invocation in `scripts/verify-qt6.ps1` before GUI tests. On POSIX, preserve its generated-module search paths and full source selection, using the configured `RCMS_QT6_BUILD_ROOT`.
 
 For Windows-target qualification on another host, add `--python-platform win32` so platform-specific APIs such as `winreg` resolve against Windows. Keep that target on subsequent qualification runs. Retain the exact command and transcript. Record typing and GUI results separately: a failed typing gate means the following GUI phase has not run.

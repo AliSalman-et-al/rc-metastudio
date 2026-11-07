@@ -17,6 +17,9 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 
 def pytest_configure(config: pytest.Config) -> None:
+    if not hasattr(config, "workerinput") and not config.option.collectonly:
+        from scripts.verify import DEFAULT_BUILD_ROOT, run_typing
+        run_typing(Path(os.environ.get("RCMS_QT6_BUILD_ROOT", str(DEFAULT_BUILD_ROOT))).resolve())
     if not hasattr(config, "workerinput") and not config.option.collectonly and os.environ.get("RCMS_R_HOME"):
         os.environ["RCMS_E2E_CONTEXT"] = json.dumps(verification_context())
         fresh = config.getoption("--fresh") or os.environ.get("RCMS_E2E_FRESH") == "1"

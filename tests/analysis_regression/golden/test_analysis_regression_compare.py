@@ -741,9 +741,9 @@ def test_current_golden_manifest_requires_exact_rpy2_identities():
 
 def test_real_r_verifiers_reject_null_or_mismatched_rpy2_identity(monkeypatch):
     monkeypatch.setattr(
-        verify_rcmetar_r_stack.metadata,
-        "version",
-        lambda distribution: "0.0.0" if distribution == "rpy2" else "3.6.6",
+        verify_rcmetar_r_stack,
+        "run_json",
+        lambda *args, **kwargs: {"rpy2": "0.0.0"},
     )
     with pytest.raises(
         verify_rcmetar_r_stack.VerificationError, match="identity mismatch"

@@ -7,6 +7,7 @@ import subprocess
 from pathlib import Path
 import sys
 import unicodedata
+from uuid import uuid4
 import xml.etree.ElementTree as ET
 
 from docx import Document
@@ -139,12 +140,8 @@ def capture(view, directory):
                  for s in view.manuscript.sections for t in s.tables]
     key = hashlib.sha256(json.dumps([held, held_text, held_notes, presented, view.manuscript.title,
                                     view.manuscript.methods, view.manuscript.results], sort_keys=True).encode()).hexdigest()[:16]
-    target = directory / key
+    target = directory / (key + "-" + uuid4().hex[:8])
     view._copy_report()
-    if (target / 'audit.json').exists():
-        data = json.loads((target / 'audit.json').read_text(encoding="utf-8"))
-        data['directory'] = str(target)
-        return data
     target.mkdir(exist_ok=True)
     report = view.manuscript
     (target / 'copy.html').write_text(required(required(QApplication.clipboard(), 'clipboard').mimeData(), 'copied report').html(), encoding="utf-8")

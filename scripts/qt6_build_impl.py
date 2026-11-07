@@ -419,10 +419,6 @@ def _load_generated_form(module_path: Path) -> type[_GeneratedForm]:
 
 
 def _smoke_inputs(build_root: Path) -> tuple[Path, Path]:
-    module_path = build_root / "generated/rc_metastudio/forms/ui_about_legal.py"
-    resource_path = build_root / "resources/icons.rcc"
-    if module_path.is_file() and resource_path.is_file():
-        return module_path, resource_path
     return generate(build_root)
 
 
@@ -500,6 +496,11 @@ def smoke(
 ) -> dict[str, str | bool]:
     """Launch a visible native Qt6 form and return user-observable evidence."""
     module_path, resource_path = _smoke_inputs(build_root)
+    from contextlib import redirect_stdout
+    from scripts.verify import run_typing
+    # The smoke CLI stdout is a JSON contract consumed by package tooling.
+    with redirect_stdout(sys.stderr):
+        run_typing(build_root.resolve())
     if not QtCore.QResource.registerResource(str(resource_path)):
         raise RuntimeError(f"Qt refused to register binary resource {resource_path}")
 
