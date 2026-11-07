@@ -277,8 +277,8 @@ function Stage-AuthenticatedOfficialR {
         "/SUPPRESSMSGBOXES",
         "/SP-",
         "/NORESTART",
-        ('/DIR="{0}"' -f $rStage),
-        ('/LOG="{0}"' -f $installerLog)
+        ('/DIR={0}' -f $rStage),
+        ('/LOG={0}' -f $installerLog)
     )
     $registrySnapshots = Save-CurrentUserRInstallerState -BackupRoot "$rStage.registry-backup"
     try {

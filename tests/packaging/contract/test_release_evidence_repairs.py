@@ -6,10 +6,57 @@ from pathlib import Path
 import importlib.util
 import json
 import shutil
+import subprocess
+import sys
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
+
+
+@pytest.mark.skipif(sys.platform != 'win32', reason='Windows argument transport')
+@pytest.mark.parametrize('shell', ['pwsh', 'powershell'])
+def test_private_installer_watchdog_preserves_directory_arguments(tmp_path, shell):
+    """Paths with spaces must reach the child without literal quote characters.
+
+    Run the actual array and watchdog invocation with an argv recorder replacing
+    the installer, so no registry, download or installation is involved.
+    """
+    executable = shutil.which(shell)
+    if not executable:
+        pytest.skip(f'{shell} unavailable')
+    source = (ROOT / 'scripts/package-windows.ps1').read_text()
+    argument_start = source.index('    $installerArgs = @(')
+    argument_end = source.index('\n    $registrySnapshots', argument_start)
+    call_start = source.index('            & uv run --locked python', argument_end)
+    call_end = source.index('\n            $installerExitCode', call_start)
+    recorder = tmp_path / 'record args.py'
+    output = tmp_path / 'argv.json'
+    recorder.write_text('import json, os, sys\nfrom pathlib import Path\n'
+                        'Path(os.environ["RCMS_ARGV_OUTPUT"]).write_text(json.dumps(sys.argv[1:]))\n')
+    quote = lambda value: "'" + str(value).replace("'", "''") + "'"
+    stage = tmp_path / 'private R stage'
+    log = tmp_path / 'installer log.txt'
+    script = tmp_path / 'drive.ps1'
+    script.write_text('\n'.join([
+        '$ErrorActionPreference = "Stop"',
+        '$repoRoot = ' + quote(ROOT), '$rStage = ' + quote(stage),
+        '$installerLog = ' + quote(log), '$rInstaller = ' + quote(sys.executable),
+        '$env:RCMS_ARGV_OUTPUT = ' + quote(output),
+        source[argument_start:argument_end],
+        '$installerArgs = @(' + quote(recorder) + ') + $installerArgs',
+        source[call_start:call_end], 'exit $LASTEXITCODE',
+    ]))
+    command = [executable, '-NoProfile', '-File', str(script)]
+    result = subprocess.run(command, cwd=ROOT, text=True, capture_output=True, timeout=45)
+    (tmp_path / 'command.json').write_text(json.dumps(command))
+    (tmp_path / 'stdout.log').write_text(result.stdout)
+    (tmp_path / 'stderr.log').write_text(result.stderr)
+    assert result.returncode == 0, result.stderr
+    assert json.loads(output.read_text()) == [
+        '/CURRENTUSER', '/VERYSILENT', '/SUPPRESSMSGBOXES', '/SP-', '/NORESTART',
+        f'/DIR={stage}', f'/LOG={log}',
+    ]
 
 
 def load(name):
