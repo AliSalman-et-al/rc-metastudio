@@ -85,6 +85,7 @@ def run_python_driver(
     (evidence / "driver.py").write_text(driver, encoding="utf-8")
     with tempfile.TemporaryDirectory(prefix="rcms-driver-") as work:
         owned_env = dict(env)
+        owned_env["PYTHONPATH"] = os.pathsep.join(filter(None, (REPO_ROOT, env.get("PYTHONPATH"))))
         owned_env["RCMS_DRIVER_OWNED_CWD"] = work
         owned_env["RCMS_SUMMARY_OWNED_LIBRARY"] = str(Path(work) / "r-library")
         library = Path(owned_env["RCMS_SUMMARY_OWNED_LIBRARY"])

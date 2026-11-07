@@ -1346,8 +1346,10 @@ def test_comprehensive_golden_baseline_capture_writes_reproducible_bundle(
                 "rc_metastudio": "0.1.0",
                 "python": "3.11.15",
                 "os": "Windows",
-                "r": "R version 4.6.0",
+                "r": "R version 4.6.1",
                 "rpy2": "3.6.7",
+                "rpy2-rinterface": "3.6.6",
+                "rpy2-robjects": "3.6.5",
                 "pyqt": "6.11.0",
             },
         )
