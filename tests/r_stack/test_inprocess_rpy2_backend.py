@@ -131,6 +131,16 @@ _DRIVER = textwrap.dedent(
                     },
                 },
             )
+            from types import SimpleNamespace
+            from rc_metastudio import meta_globals
+            from rc_metastudio.analysis_unit import AnalysisUnit
+            sheet = SimpleNamespace(data_type={
+                "binary": meta_globals.BINARY,
+                "continuous": meta_globals.CONTINUOUS,
+                "diagnostic": meta_globals.DIAGNOSTIC,
+            }[data_type], sub_type=None)
+            for study in self._studies:
+                study.analysis_unit = AnalysisUnit(sheet)
 
         @property
         def current_sheet(self):
@@ -138,6 +148,9 @@ _DRIVER = textwrap.dedent(
 
         def get_studies(self, only_if_included=True):
             return self._studies
+
+        def get_current_arm_key(self):
+            return self._studies[0].analysis_unit.get_arm_strings(self.current_effect)[0]
 
         def get_current_estimates_and_standard_errors(self, **kwargs):
             return [-0.5596157879, -0.8295982833], [0.6172133998, 0.7152562329]
@@ -190,6 +203,8 @@ _DRIVER = textwrap.dedent(
     binary_model = FakeModel("binary", [[6, 27, 9, 27], [3, 59, 7, 64]])
     r_bridge.dataset_to_simple_binary_r_object(binary_model, var_name="issue146_binary")
     assert_text_survived("issue146_binary")
+    assert list(ro.r("issue146_binary@g1O1")) == [6, 3]
+    assert list(ro.r("issue146_binary@g1O2")) == [21, 56]
 
     continuous_model = FakeModel(
         "continuous",
@@ -201,6 +216,7 @@ _DRIVER = textwrap.dedent(
         var_name="issue146_continuous",
     )
     assert_text_survived("issue146_continuous")
+    assert list(ro.r("issue146_continuous@N1")) == [27, 59]
     # The production forest renderer cannot compose a study label from a
     # missing year. Preserve the conversion assertion above, then provide a
     # valid analysis fixture for the cross-layer display contract below.
@@ -889,7 +905,6 @@ def test_RCMetaR_summary_capture_uses_formatted_print_methods():
 def test_summary_source_install_failure_is_not_a_skip():
     import pytest
     # Installation is the external boundary; fail before importing embedded R.
-    fault = _SUMMARY_PRINT_DRIVER.replace("    import subprocess", "    import subprocess")
-    fault = fault.replace("import subprocess\n", "import subprocess\nfrom types import SimpleNamespace\nsubprocess.run = lambda *a, **k: SimpleNamespace(returncode=1, stdout='injected install failure', stderr='installer diagnostic')\n", 1)
+    fault = _SUMMARY_PRINT_DRIVER.replace("import subprocess\n", "import subprocess\nfrom types import SimpleNamespace\nsubprocess.run = lambda *a, **k: SimpleNamespace(returncode=1, stdout='injected install failure', stderr='installer diagnostic')\n", 1)
     with pytest.raises(AssertionError, match="driver failed .*rc=1"):
         run_python_driver(fault, env=dict(os.environ))

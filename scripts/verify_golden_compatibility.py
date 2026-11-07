@@ -1058,7 +1058,7 @@ def _validate_comparison(value: object) -> ComparisonReport:
 
 def _verify_installed_source(root: Path, output_root: Path) -> None:
     r_home = os.environ.get("RCMS_R_HOME") or os.environ.get("R_HOME")
-    rscript = str(Path(r_home) / "bin/Rscript.exe") if r_home and os.name == "nt" else shutil.which("Rscript")
+    rscript = str(Path(r_home) / "bin" / ("Rscript.exe" if os.name == "nt" else "Rscript")) if r_home else shutil.which("Rscript")
     if not rscript:
         raise ValueError("Rscript is required to verify installed source identity")
     script = r"""
