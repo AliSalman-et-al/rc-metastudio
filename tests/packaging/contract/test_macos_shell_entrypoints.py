@@ -17,7 +17,7 @@ def posix(path: Path) -> str:
     return "/" + value[0].lower() + value[2:] if len(value) > 1 and value[1] == ":" else value
 
 
-def run_fixture(tmp_path: Path, output: Path, *, valid_source: bool = True):
+def run_fixture(tmp_path: Path, output: Path, *, valid_source: bool = True, python_with_spaces: bool = False):
     if not BASH:
         pytest.skip("bash is required")
     repo = tmp_path / "repo"
@@ -30,7 +30,7 @@ def run_fixture(tmp_path: Path, output: Path, *, valid_source: bool = True):
     work = repo / "build/r-kit-producer/macos-arm64"
     work.mkdir(parents=True, exist_ok=True)
     (work / "sentinel").write_text("previous evidence")
-    commands = tmp_path / "commands"
+    commands = tmp_path / ("commands with spaces" if python_with_spaces else "commands")
     commands.mkdir(exist_ok=True)
     # These doubles only test shell control flow. They never install or download.
     bodies = {
@@ -63,13 +63,13 @@ esac
         path.write_text('#!/usr/bin/env bash\nprintf "%s\\n" "' + name + ' $*" >> "$FIXTURE/events"\n' + body, newline="\n")
         path.chmod(0o755)
     shutil.copy2(commands / "Rscript", source / "bin/Rscript")
-    env = dict(os.environ, FIXTURE=posix(tmp_path), PATH=posix(commands) + os.pathsep + os.environ["PATH"])
+    env = dict(os.environ, FIXTURE=posix(tmp_path), COMMANDS=posix(commands))
     # Set PATH inside Bash: Windows subprocess PATH uses semicolons.
-    args = [BASH, "-c", 'export PATH="$FIXTURE/commands:$PATH"; exec bash "$@"', "fixture",
+    args = [BASH, "-c", 'export PATH="$COMMANDS:$PATH"; exec bash "$@"', "fixture",
             posix(scripts / "produce-r-integration-kit-macos.sh"), "macos-arm64",
-            posix(source if valid_source else tmp_path / "missing"), "python",
+            posix(source if valid_source else tmp_path / "missing"), posix(commands / "python"),
             "pkg", "url", "signature", "sdist", "url", "interface", "url", "objects", "url", posix(output)]
-    result = subprocess.run(args, env=env, capture_output=True, text=True)
+    result = subprocess.run(args, env=env, capture_output=True, text=True, timeout=30)
     (tmp_path / "invocation.txt").write_text(shlex.join(args))
     (tmp_path / "stdout.log").write_text(result.stdout)
     (tmp_path / "stderr.log").write_text(result.stderr)
@@ -77,7 +77,7 @@ esac
     return result, repo, source
 
 
-@pytest.mark.parametrize("kind", ["directory", "file", "outside", "source", "work", "invalid-source"])
+@pytest.mark.parametrize("kind", ["directory", "file", "source", "work", "invalid-source"])
 def test_producer_rejects_output_without_mutation(tmp_path: Path, kind: str):
     output = tmp_path / "repo/artifacts/kit"
     output.parent.mkdir(parents=True)
@@ -86,8 +86,6 @@ def test_producer_rejects_output_without_mutation(tmp_path: Path, kind: str):
         (output / "sentinel").write_text("existing output")
     elif kind == "file":
         output.write_text("existing output")
-    elif kind == "outside":
-        output = tmp_path / "arbitrary-new-output"
     elif kind == "source":
         output = tmp_path / "source"
     elif kind == "work":
@@ -106,10 +104,11 @@ def test_producer_rejects_output_without_mutation(tmp_path: Path, kind: str):
     assert "curl " not in events
 
 
-def test_producer_profiles_in_order_with_distinct_evidence(tmp_path: Path):
-    output = tmp_path / "repo/artifacts/kit"
+@pytest.mark.parametrize("python_with_spaces", [False, True])
+def test_producer_profiles_in_order_with_distinct_evidence(tmp_path: Path, python_with_spaces: bool):
+    output = tmp_path / "outside artifacts/kit"
     output.parent.mkdir(parents=True)
-    result, repo, source = run_fixture(tmp_path, output)
+    result, repo, source = run_fixture(tmp_path, output, python_with_spaces=python_with_spaces)
     assert result.returncode == 73, result.stderr
     events = (tmp_path / "events").read_text().splitlines()
     quarantine = next(i for i, line in enumerate(events) if "runtime.py quarantine " in line)
