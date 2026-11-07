@@ -1298,6 +1298,13 @@ def calculators(app, window, mode, record):
             point, lower, upper = [transform(value) for value in values]
             z = r_bridge.get_confidence_multiplier_from_r(95)
             observed["authority_entered"] = [point, (upper - point) / z]
+            if family in {"binary", "continuous"}:
+                from rc_metastudio import calculator_routines
+                calculator_routines.update_calculator_readout(dialog, family)
+                expected_se = (upper - point) / z
+                assert f"{expected_se:.4f}" in dialog.wald_readout.text(), dialog.wald_readout.text()
+                record("asymmetric-entered-wald-source", dialog, estimate=point, lower=lower,
+                       upper=upper, source_se=expected_se, readout=dialog.wald_readout.text())
             actual_entered = dialog.analysis_unit.get_entered_effect_and_ci(
                 dialog.current_effect, dialog.arm_key
             )
@@ -1360,6 +1367,17 @@ def calculators(app, window, mode, record):
                     "diagnostic": ["Sens", "Spec"],
                 }[family]
             )
+            if mode == "onearm-proportion":
+                combo.setCurrentIndex(combo.findData("PFT"))
+                app.processEvents()
+                a, n = dialog.analysis_unit.get_raw_data_for_arm(dialog.arm_names[0])
+                expected = r_bridge.execute_r_string(
+                    f"local({{e <- metafor::escalc(measure='PFT', xi={a}, ni={n}); "
+                    f"metafor::transf.ipft(e$yi, ni={n})}})"
+                )[0]
+                actual = float(dialog.effect_text_box.text())
+                assert math.isclose(actual, expected, abs_tol=.0001), (actual, expected, n)
+                record("pft-actual-sample-size", dialog, events=a, n=n, expected=float(expected), actual=actual)
             for metric in metrics:
                 index = (
                     combo.findData(metric)

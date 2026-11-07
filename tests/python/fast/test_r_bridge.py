@@ -111,3 +111,25 @@ def test_omitted_null_value_does_not_require_a_section():
     assert [section.source_key for section in result.sections] == [
         "small-study.warning"
     ]
+
+
+def test_selected_raw_rows_are_not_suppressed_by_other_rows(monkeypatch):
+    from types import SimpleNamespace
+    from rc_metastudio import r_bridge
+    captured = {}
+    class Model:
+        current_effect = 'OR'
+        current_sheet = None
+        def get_current_arm_key(self): return ('a', 'b')
+        def get_current_estimates_and_standard_errors(self, **kw): return [99.], [.2]
+        def get_current_raw_data(self, **kw): return [[4, 40, 8, 40]]
+        def included_studies_have_raw_data(self): return False
+    study = SimpleNamespace(id='selected', label='Selected', year=2026, analysis_unit=SimpleNamespace(calculator_source=lambda *a: None))
+    monkeypatch.setattr(r_bridge, '_analysis_data_kwargs', lambda *a, **kw: {})
+    monkeypatch.setattr(r_bridge, '_r_numeric_vector', lambda x: x)
+    monkeypatch.setattr(r_bridge, 'execute_r_function', lambda name, **kw: captured.update(kw) or kw)
+    monkeypatch.setattr(r_bridge, 'ro', SimpleNamespace(globalenv={}), raising=False)
+    monkeypatch.setattr(r_bridge, '_require_initialized_r', lambda: None)
+    r_bridge.dataset_to_simple_binary_r_object(Model(), studies=[study])
+    assert captured['g1O1'] == [4]
+    assert captured['g2O1'] == [8]

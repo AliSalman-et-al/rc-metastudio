@@ -86,14 +86,16 @@ class RatioDataDialog(QDialog):
 
     def _change_format(self):
         scale = self.fields["scale"].currentData()
-        field = self.fields["estimate"]
-        text = field.text().strip()
-        if text and scale != self._input_scale:
-            try:
-                value = self._number(text)
-                field.setText(str(math.log(value) if scale == "log" else math.exp(value)))
-            except (ValueError, OverflowError):
-                field.clear()
+        if scale != self._input_scale:
+            for name in ("estimate", "lower", "upper"):
+                field = self.fields[name]
+                text = field.text().strip()
+                if text:
+                    try:
+                        value = self._number(text)
+                        field.setText(str(math.log(value) if scale == "log" else math.exp(value)))
+                    except (ValueError, OverflowError):
+                        field.clear()
         self._input_scale = scale
         self._update_fields()
 
@@ -128,13 +130,17 @@ class RatioDataDialog(QDialog):
 
     def accept(self):
         try:
-            record = replace(self.analysis_unit.ratio_input(self.groups), **self._read_reported_inputs())
-            if record.scale == "log" and (self.effect_metric == "HR" or record.source == "reported"):
-                if record.se is None:
+            original = self.analysis_unit.ratio_input(self.groups)
+            source = "reported" if self.effect_metric == "HR" else self.fields["source"].currentData()
+            if source == "raw":
+                record = replace(original, source=source, unit=self.fields["unit"].text().strip())
+                raw = self._read_raw_inputs()
+            else:
+                record = replace(original, **self._read_reported_inputs())
+                if record.scale == "log" and record.se is None:
                     raise ValueError("Enter the standard error of the log ratio.")
-                record = replace(record, lower=None, upper=None)
+                raw = self.analysis_unit.get_raw_data_for_arms(self.groups)
             record.validate()
-            raw = self._read_raw_inputs()
             record.selected_source(raw, metric=self.effect_metric)
         except (ValueError, TypeError) as error:
             QMessageBox.warning(self, "Invalid study input", str(error))
@@ -154,6 +160,8 @@ class RatioDataDialog(QDialog):
     def _read_reported_inputs(self):
         values = {}
         for name, field in self.fields.items():
+            if name == "unit" or (name == "se" and self.fields["scale"].currentData() == "ratio"):
+                continue
             text = field.currentData() if isinstance(field, QComboBox) else field.text().strip()
             values[name] = (self._number(text) if text else None) if name in ("estimate", "lower", "upper", "se", "confidence") else text
         return values

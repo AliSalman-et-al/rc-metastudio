@@ -128,3 +128,9 @@ font and at +6 points on the existing reopen/Cancel pass.
 Entered continuous and binary mode drives retain the sample group data, exercise a pending continuous draft across a mode shortcut, switch back, and check the accepted grid/model source, undo/redo, reopen and independent R fit. Calculator source is persisted per metric/comparison; inactive group inputs remain available. These drives do not qualify native mouse-wheel behavior or every invalid draft.
 
 Batch-5 targeted xcb evidence (`artifacts/qa-r1/batch5/`) covers continuous summary invalid numeric/negative N, repeated Tab without a modal, disabled OK and correction recovery in light and dark/large font. The summary grid uses visible rows and compact content height; native proof does not cover every metric/pre-post input.
+
+The one-arm proportion drive also selects PFT and compares its preview with
+`metafor::transf.ipft` using the actual arm sample size before returning to PR.
+Effect-only PFT without a sample size remains unsupported. Entered binary and
+continuous drives compare the Wald readout with the selected source SE, including
+asymmetric entered intervals; the readout does not infer a second SE from CI width.

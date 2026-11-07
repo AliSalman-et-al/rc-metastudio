@@ -471,9 +471,14 @@ def set_current_effect_from_value(
         converter = converters[data_type]
     except KeyError as exc:
         raise ValueError("data_type unrecognized") from exc
-    conv_to_disp_scale = lambda value: converter(
-        value, current_effect, convert_to="display.scale"
-    )
+    def conv_to_disp_scale(value):
+        if data_type == "binary" and current_effect == "PFT":
+            raw = analysis_unit.arms_by_id[arm_key[0]].raw_data
+            n = raw[1] if len(raw) >= 2 and raw[1] not in EMPTY_VALS else None
+            if value is not None and n is None:
+                raise ValueError("PFT display requires the actual arm sample size.")
+            return r_bridge.binary_convert_scale(value, current_effect, convert_to="display.scale", n1=n)
+        return converter(value, current_effect, convert_to="display.scale")
     effect_tbox, lower_tbox, upper_tbox = [
         txt_boxes[box_name] for box_name in ("effect", "lower", "upper")
     ]
@@ -508,10 +513,9 @@ def set_current_effect_from_value(
     )
 
 
-def _wald_summary(data_type, current_effect, est, lower, upper, confidence_multiplier) -> str:
+def _wald_summary(data_type, current_effect, est, se) -> str:
     summary = ""
-    if all(value is not None for value in (est, lower, upper)):
-        se = (upper - lower) / (2 * confidence_multiplier)
+    if est is not None and se is not None:
         if se > 0:
             z = est / se
             p = math.erfc(abs(z) / math.sqrt(2))
@@ -599,7 +603,8 @@ def update_calculator_readout(dialog, data_type):
             dialog.effect_layout.addWidget(dialog.wald_readout, 2, 0, 1, 6)
         else:
             dialog.content_layout.addWidget(dialog.wald_readout)
-    summary = _wald_summary(data_type, current_effect, est, lower, upper, confidence_multiplier)
+    se = analysis_unit.get_se(source, current_effect, arm_key, confidence_multiplier)
+    summary = _wald_summary(data_type, current_effect, est, se)
     dialog.wald_readout.setText(summary)
     dialog.wald_readout.show()
     raw = analysis_unit.get_raw_data_for_arms(dialog.arm_names)

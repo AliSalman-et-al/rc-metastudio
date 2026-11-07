@@ -67,3 +67,59 @@ def test_invalid_reported_input_is_rejected(changes):
         setattr(record, name, value)
     with pytest.raises(ValueError):
         record.validate()
+
+
+def test_clearing_entered_effect_invalidates_display_cache():
+    from rc_metastudio import analysis_dataset, meta_globals
+    from rc_metastudio.project_domain import SheetId
+    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', meta_globals.CONTINUOUS), arm_names=['A', 'B'])
+    unit.set_effect_for_source('entered', 'MD', 'A-B', 1, 0, 3)
+    unit.calculate_display_effect_and_ci('MD', 'A-B', lambda x: x, 95, 1.96, source='entered')
+    unit.set_effect('MD', 'A-B', None)
+    unit.calculate_display_effect_and_ci('MD', 'A-B', lambda x: x, 95, 1.96, source='entered')
+    assert unit.get_display_effect_and_ci_for_source('entered', 'MD', 'A-B') == (None, None, None)
+    assert unit.get_display_se_for_source('entered', 'MD', 'A-B') is None
+
+
+@pytest.mark.parametrize('selected', ['raw', 'reported'])
+def test_ratio_dialog_accepts_only_active_source_and_retains_other_record(qapp, monkeypatch, selected):
+    from rc_metastudio import analysis_dataset, meta_globals
+    from rc_metastudio.project_domain import SheetId
+    from rc_metastudio.ratio_data_dialog import RatioDataDialog
+    from PyQt6.QtWidgets import QMessageBox, QDialog
+    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', meta_globals.EVENT_RATES), raw_data=[[2, 30], [3, 40]], arm_names=['A', 'B'])
+    record = RatioInput(estimate=2, lower=.5, upper=3, se=.4, source='reported')
+    unit.set_ratio_input(['A', 'B'], record)
+    dialog = RatioDataDialog(unit, ['A', 'B'], 'IRR')
+    warnings = []
+    monkeypatch.setattr(QMessageBox, 'warning', lambda *args: warnings.append(args[2]))
+    dialog.fields['source'].setCurrentIndex(dialog.fields['source'].findData(selected))
+    if selected == 'raw':
+        dialog.fields['estimate'].setText('invalid inactive draft')
+    else:
+        dialog.raw_fields[0].setText('invalid inactive draft')
+    dialog.accept()
+    assert not warnings
+    assert dialog.result() == QDialog.DialogCode.Accepted
+    assert unit.ratio_input(['A', 'B']).estimate == 2
+    assert unit.get_raw_data_for_arms(['A', 'B']) == [2, 30, 3, 40]
+
+
+def test_ratio_format_round_trip_preserves_interval_and_reversal(qapp):
+    from rc_metastudio import analysis_dataset, meta_globals
+    from rc_metastudio.project_domain import SheetId
+    from rc_metastudio.ratio_data_dialog import RatioDataDialog
+    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', meta_globals.TIME_TO_EVENT), arm_names=['A', 'B'])
+    unit.set_ratio_input(['A', 'B'], RatioInput(estimate=2, lower=.5, upper=3, se=.4, source='reported'))
+    dialog = RatioDataDialog(unit, ['A', 'B'], 'HR')
+    dialog.fields['scale'].setCurrentIndex(1)
+    assert float(dialog.fields['lower'].text()) == pytest.approx(math.log(.5))
+    dialog.accept()
+    record = unit.ratio_input(['A', 'B'])
+    assert (record.lower, record.upper) == pytest.approx((math.log(.5), math.log(3)))
+    reverse = unit.ratio_input(['B', 'A'])
+    assert (reverse.lower, reverse.upper) == pytest.approx((-math.log(3), -math.log(.5)))
+    reopened = RatioDataDialog(unit, ['A', 'B'], 'HR')
+    reopened.fields['scale'].setCurrentIndex(0)
+    reopened.accept()
+    assert (unit.ratio_input(['A', 'B']).lower, unit.ratio_input(['A', 'B']).upper) == pytest.approx((.5, 3))
