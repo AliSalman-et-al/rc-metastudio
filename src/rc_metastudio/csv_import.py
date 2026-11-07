@@ -106,7 +106,7 @@ def parse_csv(
         has_headers = True
     if has_headers and headers:
         for row_number, row in enumerate(rows, start=2):
-            if len(row) != len(headers):
+            if len(row) > len(headers):
                 raise CsvImportError(
                     f"CSV row {row_number}: expected {len(headers)} columns, found {len(row)}."
                 )
