@@ -247,6 +247,9 @@ binary.fixed.mh <- function(binary.data, params){
                     slab=binary.data@study.names,
                     level=params$conf.level,
                     digits=params$digits,
+                    # Study correction follows the request; MH pooling remains uncorrected.
+                    add=c(params$adjust, 0),
+                    to=c(.rcmetar.binary.correction.target(params), "none"),
                     measure=params$measure)
         pure.res <- res
         if (length(binary.data@y) == 0 || length(binary.data@SE) == 0) {

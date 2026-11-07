@@ -486,19 +486,23 @@ diagnostic.fixed.mh.overall <- function(results) {
 diagnostic.fixed.peto <- function(diagnostic.data, params){
   if (!("DiagnosticData" %in% class(diagnostic.data))) stop("Diagnostic data expected.")
 
-  if (length(diagnostic.data@TP) == 1 || length(diagnostic.data@y) == 1){
-    res <- get.res.for.one.diag.study(diagnostic.data, params)
-    summary.disp <- list("MAResults" = res)
-    results <- list("Summary"=summary.disp)
+  if (!.rcmetar.has.complete.raw.data(
+      list(diagnostic.data@TP, diagnostic.data@FN, diagnostic.data@FP, diagnostic.data@TN),
+      length(diagnostic.data@study.names))) {
+    stop("Peto requires complete finite diagnostic cell counts for every study.", call.=FALSE)
   }
-  else{
-    res <- rma.peto(ai=diagnostic.data@TP, bi=diagnostic.data@FN,
+  res <- rma.peto(ai=diagnostic.data@TP, bi=diagnostic.data@FN,
                     ci=diagnostic.data@FP, di=diagnostic.data@TN,
 					slab=diagnostic.data@study.names,
                     level=params$conf.level,
 					digits=params$digits,
                     add=c(params$adjust, 0),
 					to=c(as.character(params$to), "none"))
+  if (length(diagnostic.data@TP) == 1){
+    summary.disp <- list("MAResults" = res)
+    results <- list("Summary"=summary.disp)
+  }
+  else{
 	res$study.weights <- (1 / res$vi) / sum(1 / res$vi)
 	res$study.names <- diagnostic.data@study.names
 	res$study.years <- diagnostic.data@years

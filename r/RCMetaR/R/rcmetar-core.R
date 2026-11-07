@@ -806,6 +806,18 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
         stop("Analysis request metric does not match params$measure.", call.=FALSE)
     }
 
+    if (identical(data.type, "binary") && identical(metric, "PFT")) {
+        counts <- list(om.data@g1O1, om.data@g1O2)
+        if (!.rcmetar.has.complete.raw.data(counts, length(om.data@study.names)) ||
+                any(om.data@g1O1 < 0) || any(om.data@g1O2 < 0) ||
+                any(!is.finite(om.data@g1O1 + om.data@g1O2)) ||
+                any(om.data@g1O1 + om.data@g1O2 <= 0)) {
+            stop(paste("PFT requires complete finite nonnegative event and non-event counts",
+                       "with a positive finite sample size for every study;",
+                       "entered effects alone cannot be inverted to proportions."), call.=FALSE)
+        }
+    }
+
     list(
         data.type=data.type,
         method=method,
