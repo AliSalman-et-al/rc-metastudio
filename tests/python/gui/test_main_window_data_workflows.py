@@ -823,3 +823,14 @@ def _close_without_prompt(app, window):
     window.close()
     app.processEvents()
     os.chdir(REPO_ROOT)
+
+
+@pytest.mark.parametrize('case', ['duplicate', 'placeholder', 'notifications', 'metric', 'csv', 'csv-failure', 'progress', 'alias-resolved', 'alias-hardlink', 'alias-destination'])
+def test_workspace_safety_transactions(case, tmp_path):
+    from pathlib import Path
+    from tests.e2e.ux_workflows import workspace_safety_case
+    app, window = automation.start_automation()
+    try:
+        workspace_safety_case(app, window, tmp_path, Path(REPO_ROOT), lambda *a, **k: None, case)
+    finally:
+        _close_without_prompt(app, window)

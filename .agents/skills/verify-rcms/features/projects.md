@@ -189,3 +189,13 @@ unsaved prompt drive checks Save/Discard/Cancel, Save default and Escape cancel;
 project. Native dark/default and light/large prompt evidence is in
 `artifacts/batch7/`. Native Save/Discard through every destructive entry point
 still requires a targeted drive; shared authorization behavior has GUI coverage.
+
+### Workspace transaction safety
+
+`test_workspace_safety_transactions` reuses `workspace_safety_case` for duplicate
+name rejection, later placeholders, Qt insertion notifications, metric undo/redo,
+CSV replacement/rollback and safe Save/reopen, import Escape/close, and automation
+output aliases (including hardlinks). CSV replacement starts an unnamed session;
+its single import undo restores the previous data without restoring that
+project’s path or older history. File pickers are substituted and write failure is injected after accepted
+cells. These checks do not establish native picker/window-manager behavior.

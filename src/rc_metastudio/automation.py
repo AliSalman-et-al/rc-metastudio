@@ -42,8 +42,20 @@ def _close_automation_window(app, window) -> None:
     app.quit()
 
 
+def _reject_output_aliases(outputs, inputs) -> None:
+    for output in outputs:
+        destination = Path(output)
+        for source in inputs:
+            protected = Path(source)
+            if destination.resolve() == protected.resolve() or (
+                destination.exists() and protected.exists() and destination.samefile(protected)
+            ):
+                raise ValueError("Automation output must not alias an input or project destination.")
+
+
 def start_package_open_report(output_path: str, project_path: str) -> int:
     """Open one explicit project and report only resulting window facts."""
+    _reject_output_aliases([output_path], [project_path])
     trace_path = os.environ.get("RCMS_AUTOMATION_HANG_TRACE")
     trace_stream = Path(trace_path).open("a", encoding="utf-8") if trace_path else None
 
@@ -88,6 +100,7 @@ def start_package_edit_save(
     output_path: str, project_path: str, destination_path: str, column: str, value: str
 ) -> int:
     """Edit one explicit cell and save to one explicit destination."""
+    _reject_output_aliases([output_path], [project_path, destination_path])
     _configure_package_locale()
     app, window = _start_package_application()
     try:
@@ -116,6 +129,7 @@ def start_package_edit_save(
 
 def start_package_analyze(output_path: str, project_path: str, analysis_method: str) -> int:
     """Open one explicit project and run one explicit analysis method."""
+    _reject_output_aliases([output_path], [project_path])
     _configure_package_locale()
     app, window = _start_package_application()
     try:
@@ -146,6 +160,9 @@ def start_package_analyze(output_path: str, project_path: str, analysis_method: 
 
 def start_package_import_export(output_path, project_path, xlsx_path, rm5_path):
     """Exercise frozen import readers and manuscript output on explicit inputs."""
+    destination = Path(output_path).with_suffix(".docx")
+    _reject_output_aliases([output_path, destination], [project_path, xlsx_path, rm5_path])
+    _reject_output_aliases([output_path], [destination])
     from rc_metastudio import csv_import, rm5_import, main_window
     from rc_metastudio.manuscript_report import ManuscriptReport, write_docx
     from docx import Document
@@ -158,7 +175,6 @@ def start_package_import_export(output_path, project_path, xlsx_path, rm5_path):
             raise RuntimeError("project did not open")
         result = _run_analysis(window, main_window, "binary.random")
         report = ManuscriptReport.from_result(result)
-        destination = Path(output_path).with_suffix('.docx')
         write_docx(report, destination)
         paragraphs = [p.text for p in Document(str(destination)).paragraphs]
         if report.methods not in paragraphs:

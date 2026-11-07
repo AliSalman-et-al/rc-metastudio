@@ -367,6 +367,10 @@ class WorkspaceEditingService:
             except ValueError as error:
                 self._last_error = str(error)
                 return None
+        name = name_validation.normalize_name(value)
+        if any(name_validation.normalize_name(row.label) == name for row in sheet.rows):
+            self._last_error = f"Study name ‘{name}’ already exists. Use a unique name before pasting."
+            return None
         while len(sheet.rows) <= target.row:
             sheet.rows.append(StudyRow(RowId(uuid.uuid4().hex), '', AnalysisUnit(sheet, arm_names=[a.name for a in sheet.arms], arm_stable_ids=[a.id for a in sheet.arms])))
         return sheet.rows[target.row]

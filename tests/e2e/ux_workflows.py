@@ -693,3 +693,153 @@ def run(app, window, work, root, record, analyze):
         record('table-wide-font-even-width-sharing', subgroup, title=subgroup.table_selector.currentText(),
                font=font.toString(), minimums=minimums, before=before, after=after, gains=gains)
     close_result(subgroup)
+
+
+def workspace_safety_case(app, window, work, root, record, case):
+    """Workspace-02 proofs use disposable projects and real Qt transactions."""
+    import os
+    from rc_metastudio import automation, main_window
+    from rc_metastudio.dataset_table_model import DatasetTableModel
+    from rc_metastudio.progress_dialog import AnalysisProgressDialog
+    source = work / 'source.rcms'
+    source.write_bytes((root / 'sample_projects/amino.rcms').read_bytes())
+    original = source.read_bytes()
+    assert window.open(str(source), raise_on_error=True)
+    model = window.model
+    if case in ('duplicate', 'placeholder', 'notifications'):
+        if case == 'duplicate':
+            before = window.workspace.runtime_digest
+            rows = len(model.current_sheet.rows)
+            def acknowledge():
+                for widget in app.topLevelWidgets():
+                    if isinstance(widget, QtWidgets.QMessageBox):
+                        widget.accept()
+            QtCore.QTimer.singleShot(0, acknowledge)
+            assert not model.setData(model.index(rows, model.NAME), model.current_sheet.rows[0].label)
+            assert len(model.current_sheet.rows) == rows
+            assert window.workspace.runtime_digest == before
+            assert not window.workspace.is_dirty and not window.workspace.can_undo
+        elif case == 'placeholder':
+            candidate = DatasetTableModel(dataset=copy.deepcopy(model.dataset), add_blank_study=True)
+            later = len(candidate._display_studies) + 3
+            assert candidate.setData(candidate.index(later, candidate.NAME), 'Auto-blank later row')
+            row = len(model._display_studies) + 3
+            assert model.setData(model.index(row, model.NAME), 'Later placeholder')
+            assert model.data(model.index(row, model.NAME)) == 'Later placeholder'
+            window.undo()
+            assert all(r.label != 'Later placeholder' for r in window.model.current_sheet.rows)
+            window.redo()
+            assert any(r.label == 'Later placeholder' for r in window.model.current_sheet.rows)
+        else:
+            # Explicitly include the legitimate auto-blank presentation state.
+            candidate = DatasetTableModel(dataset=copy.deepcopy(model.dataset), add_blank_study=True)
+            observed = []
+            candidate.rowsAboutToBeInserted.connect(lambda parent, first, last: observed.append(('before', candidate.rowCount(), first, last)))
+            candidate.rowsInserted.connect(lambda parent, first, last: observed.append(('after', candidate.rowCount(), first, last)))
+            from PyQt6.QtCore import QPersistentModelIndex
+            persistent = QPersistentModelIndex(candidate.index(0, candidate.NAME))
+            old_count = candidate.rowCount()
+            assert candidate.setData(candidate.index(len(candidate.current_sheet.rows), candidate.NAME), 'New study')
+            assert observed == [('before', old_count, old_count, old_count), ('after', old_count + 1, old_count, old_count)]
+            assert persistent.data() == model.current_sheet.rows[0].label
+    elif case == 'metric':
+        old = model.current_effect
+        window.metric_selected('RR', window.twoArmMetricMenu)
+        assert window.model.current_effect == 'RR'
+        assert window.workspace.can_undo and window.workspace.is_dirty
+        assert '*' in window.windowTitle()
+        window.undo()
+        assert window.model.current_effect == old and not window.workspace.is_dirty
+        window.redo()
+        assert window.model.current_effect == 'RR'
+        destination = work / 'metric.rcms'
+        window.out_path = str(destination)
+        assert window.save() is True
+        assert window.open(str(destination), raise_on_error=True)
+        assert window.model.current_effect == 'RR'
+    elif case in ('csv', 'csv-failure'):
+        payload = {'path': 'csv_import', 'outcome_info': {'arms': 'two', 'data_type': 'binary', 'sub_type': 'proportions', 'effect': 'OR', 'name': 'Imported'}, 'csv_data': {'data': [['Imported study', '2020', '1', '10', '2', '20']], 'covariate_names': [], 'covariate_types': []}}
+        if case == 'csv-failure':
+            before = window.workspace.runtime_digest
+            write = DatasetTableModel.setData
+            def fail(self, index, *args, **kwargs):
+                if index.column() == self.RAW_DATA[0]:
+                    raise OSError('controlled write failure after name/year')
+                return write(self, index, *args, **kwargs)
+            with patch.object(DatasetTableModel, 'setData', fail):
+                try:
+                    window._handle_wizard_results(payload)
+                except OSError:
+                    pass
+                else:
+                    raise AssertionError('write failure did not propagate')
+            assert window.workspace.runtime_digest == before
+            assert window.out_path == str(source)
+            assert not window.workspace.is_dirty and not window.workspace.can_undo
+        else:
+            window._handle_wizard_results(payload)
+            assert window.out_path is None and window.workspace.path is None
+            window.undo()
+            assert [r.label for r in window.model.current_sheet.rows] == [r.label for r in model.current_sheet.rows]
+            assert window.out_path is None and window.workspace.path is None
+            window.redo()
+            assert window.model.current_sheet.rows[0].label == 'Imported study'
+            with patch.object(main_window.QFileDialog, 'getSaveFileName', return_value=('', '')):
+                assert window.save() is None
+            assert window.workspace.is_dirty and source.read_bytes() == original
+            destination = work / 'imported.rcms'
+            with patch.object(main_window.QFileDialog, 'getSaveFileName', return_value=(str(destination), '')):
+                assert window.save() is True
+            assert window.open(str(destination), raise_on_error=True)
+            assert window.model.current_sheet.rows[0].label == 'Imported study'
+            assert window.model.current_sheet.rows[0].analysis_unit.get_raw_data_for_arms(window.model.arm_names) == [1.0, 10.0, 2.0, 20.0]
+    elif case == 'progress':
+        dialog = main_window.ImportProgressDialog(window)
+        dialog.show()
+        app.processEvents()
+        assert dialog.isModal()
+        key_click(dialog, QtCore.Qt.Key.Key_Escape)
+        assert dialog.isVisible() and dialog.isModal()
+        assert not dialog.close()
+        assert dialog.isVisible()
+        labels = ' '.join(label.text() for label in dialog.findChildren(QtWidgets.QLabel))
+        assert 'Importing' in labels and 'Fitting' not in labels
+        dialog.hide()
+        during_writes = []
+        def attempt_dismissal():
+            active = app.activeModalWidget()
+            assert isinstance(active, main_window.ImportProgressDialog)
+            key_click(active, QtCore.Qt.Key.Key_Escape)
+            during_writes.append((active.close(), active.isVisible(), active.isModal()))
+        QtCore.QTimer.singleShot(0, attempt_dismissal)
+        main_window.ImportCsvCommand(main_form=window, imported_data=[['Progress study', '2022', '2', '10', '3', '20']]).redo()
+        assert during_writes == [(False, True, True)]
+        assert window.model.current_sheet.rows[0].label == 'Progress study'
+        assert window.model.current_sheet.rows[0].year == 2022
+        summary = QtWidgets.QDialog(window)
+        summary.setWindowTitle('Summary of findings')
+        progress = AnalysisProgressDialog(summary)
+        assert all('Fitting' not in label.text() for label in progress.findChildren(QtWidgets.QLabel))
+        progress.close()
+    elif case.startswith('alias-'):
+        alias = work / 'alias.rcms'
+        if case == 'alias-hardlink':
+            os.link(source, alias)
+        else:
+            alias = source.parent / '.' / source.name
+        destination = work / 'saved.rcms'
+        destination.write_bytes(original)
+        try:
+            if case == 'alias-destination':
+                automation.start_package_edit_save(str(destination), str(source), str(destination), 'name', 'Changed')
+            else:
+                automation.start_package_open_report(str(alias), str(source))
+        except ValueError:
+            pass
+        else:
+            raise AssertionError('aliased output was accepted')
+        assert source.read_bytes() == original and destination.read_bytes() == original
+    else:
+        raise AssertionError(case)
+    assert source.read_bytes() == original
+    record('Workspace safety: ' + case, window)
