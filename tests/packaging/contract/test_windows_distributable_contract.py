@@ -1236,16 +1236,20 @@ def test_windows_qualification_evidence_authenticates_complete_packaged_smoke(tm
             output=tmp_path / "mutated.json",
         )
 
-    for member_names in (
-        (f"{root}/../escape.txt",),
-        (f"{root}\\qualification\\runtime-probe.json",),
-        (f"{root}/A.txt", f"{root}/a.txt"),
+    for member_names, error in (
+        ((f"{root}/../escape.txt",), "traversal"),
+        ((f"{root}/extra\\bad.txt",), "non-normalized"),
+        ((f"{root}/A.txt", f"{root}/a.txt"), "case-colliding"),
     ):
         bad_archive = tmp_path / ("bad-" + str(len(member_names)) + ".zip")
-        with zipfile.ZipFile(bad_archive, "w") as bundle:
+        with zipfile.ZipFile(archive) as source, zipfile.ZipFile(bad_archive, "w") as bundle:
+            for info in source.infolist():
+                bundle.writestr(info, source.read(info))
             for name in member_names:
-                bundle.writestr(name, b"bad")
-        with pytest.raises(inspector.DeploymentInspectionError):
+                member = zipfile.ZipInfo("placeholder")
+                member.filename = name
+                bundle.writestr(member, b"bad")
+        with pytest.raises(inspector.DeploymentInspectionError, match=error):
             inspector.inspect_archive(
                 bad_archive, archive_root_name=root, embedded_files=embedded
             )

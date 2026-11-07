@@ -174,7 +174,7 @@ app_bundle="$dist_root/RCMetaStudio.app"
 app_root="$app_bundle/Contents/MacOS"
 archive_staging_root="$work_root/zip-staging"
 zip_path="$artifact_dir/$artifact_name.zip"
-tmp_zip_path="$zip_path.tmp"
+
 qualification_root="$work_root/qualification"
 runtime_probe_path="$qualification_root/runtime-probe.json"
 runtime_stdout_path="$qualification_root/runtime-probe.stdout.log"
@@ -388,7 +388,6 @@ if PyInstaller.__version__ != "6.21.0":
     raise SystemExit("macOS packaging requires PyInstaller 6.21.0.")
 PY
 
-rm -rf "$zip_path" "$tmp_zip_path" "$archive_inspection_path" "$qualification_evidence_path"
 mkdir -p "$artifact_dir"
 if [ -n "${signature_stdout:-}" ]; then
   "$python_exe" "$repo_root/scripts/macos_pkg_signature.py" \
@@ -976,6 +975,20 @@ ppm_contrib_path="$("$python_exe" -c 'import json,sys; p=json.load(open(sys.argv
   --source-commit "$source_commit" --bridge "$rpy2_api_bridge" \
   --output "$r_direct_build_manifest_path"
 
+candidate_dir="$(mktemp -d "$artifact_dir/.macos-candidate.XXXXXX")"
+tmp_zip_path="$candidate_dir/$artifact_name.zip"
+final_archive_inspection_path="$archive_inspection_path"
+final_qualification_evidence_path="$qualification_evidence_path"
+archive_inspection_path="$candidate_dir/$artifact_name-archive-inspection.json"
+qualification_evidence_path="$candidate_dir/$artifact_name-evidence.json"
+retain_failed_candidate() {
+  status=$?
+  if [ "$status" -ne 0 ]; then
+    cp -R "$qualification_root" "$candidate_dir/qualification" || true
+  fi
+  exit "$status"
+}
+trap retain_failed_candidate EXIT
 (
   step "Creating macOS artifact ZIP"
   rm -rf "$archive_staging_root"
@@ -983,9 +996,8 @@ ppm_contrib_path="$("$python_exe" -c 'import json,sys; p=json.load(open(sys.argv
   copy_tree "$qualification_root" "$archive_root_dir/qualification"
   ditto -c -k --norsrc --keepParent "$archive_root_dir" "$tmp_zip_path"
 )
-mv "$tmp_zip_path" "$zip_path"
 
-python3 - "$zip_path" "$archive_root_name" "$skip_smoke" "$r_framework_version" <<'PY'
+python3 - "$tmp_zip_path" "$archive_root_name" "$skip_smoke" "$r_framework_version" <<'PY'
 import stat
 import sys
 import zipfile
@@ -1057,7 +1069,7 @@ PY
 if [ "$skip_smoke" -eq 0 ]; then
   "$python_exe" "$repo_root/scripts/inspect_macos_deployment.py" archive \
     --target "macos-$architecture" \
-    --archive "$zip_path" --archive-root-name "$archive_root_name" \
+    --archive "$tmp_zip_path" --archive-root-name "$archive_root_name" \
     --deployment-manifest "$deployment_manifest_path" \
     --signing-inventory "$signing_inventory_path" \
     --runtime-probe "$runtime_probe_path" \
@@ -1076,7 +1088,7 @@ if [ "$skip_smoke" -eq 0 ]; then
   extracted_root="$work_root/extracted-qualification"
   rm -rf "$extracted_root"
   mkdir -p "$extracted_root"
-  ditto -x -k "$zip_path" "$extracted_root"
+  ditto -x -k "$tmp_zip_path" "$extracted_root"
   extracted_app="$extracted_root/$archive_root_name/RCMetaStudio.app"
   extracted_probe="$qualification_root/extracted-runtime-probe.json"
   extracted_manifest="$qualification_root/extracted-deployment-manifest.json"
@@ -1145,7 +1157,7 @@ if [ "$skip_smoke" -eq 0 ]; then
     --sip-version "$sip_version" --sip-runtime-version "$sip_runtime_version" \
     --r-version "$r_version" --rpy2-version "$rpy2_version" --pyinstaller-version 6.21.0
   "$python_exe" "$repo_root/scripts/inspect_macos_deployment.py" evidence \
-    --target "macos-$architecture" --archive "$zip_path" \
+    --target "macos-$architecture" --archive "$tmp_zip_path" \
     --deployment-manifest "$deployment_manifest_path" --signing-inventory "$signing_inventory_path" \
     --runtime-probe "$runtime_probe_path" --r-runtime-profile "$r_runtime_profile_path" \
     --direct-build-manifest "$r_direct_build_manifest_path" \
@@ -1159,4 +1171,9 @@ if [ "$skip_smoke" -eq 0 ]; then
     --archive-inspection "$archive_inspection_path" --output "$qualification_evidence_path"
 fi
 
+mv "$tmp_zip_path" "$zip_path"
+if [ "$skip_smoke" -eq 0 ]; then
+  mv "$archive_inspection_path" "$final_archive_inspection_path"
+  mv "$qualification_evidence_path" "$final_qualification_evidence_path"
+fi
 echo "Created $zip_path"

@@ -1059,6 +1059,7 @@ def _windows_log_markers_valid(log_text: str) -> bool:
 def _validate_windows_extracted_smoke(extracted: dict, log_text: str) -> None:
     if (
         extracted.get("passed") is not True
+        or not _valid_sample_projects(extracted.get("workflows", {}).get("sample_projects"))
         or extracted.get("execution", {}).get("positional_user_entry_exit_code") != 0
         or extracted.get("execution", {}).get("clean_exit") is not True
         or "startup-project:normal-entry-point-passed" not in log_text
@@ -1176,7 +1177,9 @@ def inspect_archive(
 ) -> dict:
     prefix = archive_root_name + "/"
     with zipfile.ZipFile(archive) as bundle:
-        names = [info.filename for info in bundle.infolist() if not info.is_dir()]
+        # ZipInfo normalizes backslashes on Windows; inspect the original
+        # central-directory spelling before that normalization hides it.
+        names = [info.orig_filename for info in bundle.infolist() if not info.is_dir()]
         folded = {}
         for name in names:
             if (

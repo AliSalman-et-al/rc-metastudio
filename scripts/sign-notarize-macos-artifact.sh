@@ -70,14 +70,16 @@ for result in "$signing_inventory" "$submission_result" "$notarization_result" "
 done
 
 work_root="$(mktemp -d "${RUNNER_TEMP:-/tmp}/rcms-macos-trust.XXXXXX")"
-if [[ "$output_archive" = *.dmg ]]; then
-  tmp_output="${output_archive%.dmg}.tmp.dmg"
-else
-  tmp_output="$output_archive.tmp"
-fi
+# A private sibling directory gives hdiutil a .dmg suffix without ever
+# aliasing the caller's input or an existing temporary-name file.
+output_work="$(mktemp -d "$output_parent/.rcms-trust.XXXXXX")"
+tmp_output="$output_work/artifact.dmg"
+attached_points=()
 cleanup() {
-  rm -rf "$work_root"
-  rm -f "$tmp_output"
+  for point in "${attached_points[@]}"; do
+    hdiutil detach "$point" >/dev/null 2>&1 || true
+  done
+  rm -rf "$work_root" "$output_work"
 }
 trap cleanup EXIT
 
@@ -93,23 +95,23 @@ copy_app_from_dmg() {
 
   hdiutil verify "$dmg"
   hdiutil attach "$dmg" -readonly -nobrowse -plist > "$attach_plist"
-  mount_point="$(python3 - "$attach_plist" <<'PY'
+  # Record every mounted volume before validating the single-volume contract.
+  local points_file="$work_root/mount-points"
+  python3 - "$attach_plist" > "$points_file" <<'PY'
 import plistlib
 import sys
-
 with open(sys.argv[1], "rb") as stream:
     payload = plistlib.load(stream)
-points = [
-    entity.get("mount-point")
-    for entity in payload.get("system-entities", [])
-    if entity.get("mount-point")
-]
-if len(points) != 1:
-    raise SystemExit("Expected exactly one mounted DMG volume")
-print(points[0])
+for entity in payload.get("system-entities", []):
+    if entity.get("mount-point"):
+        print(entity["mount-point"])
 PY
-)"
-  trap 'hdiutil detach "$mount_point" >/dev/null 2>&1 || true; cleanup' EXIT
+  while IFS= read -r point; do attached_points+=("$point"); done < "$points_file"
+  if [ "${#attached_points[@]}" -ne 1 ]; then
+    echo "Expected exactly one mounted DMG volume" >&2
+    exit 1
+  fi
+  mount_point="${attached_points[0]}"
   if [ ! -d "$mount_point/RCMetaStudio.app" ]; then
     echo "DMG does not contain RCMetaStudio.app." >&2
     exit 1
@@ -117,7 +119,7 @@ PY
   mkdir -p "$destination"
   ditto "$mount_point/RCMetaStudio.app" "$destination/RCMetaStudio.app"
   hdiutil detach "$mount_point"
-  trap cleanup EXIT
+  attached_points=()
 }
 
 qualify_signed_app() {

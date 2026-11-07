@@ -81,7 +81,6 @@ cd "$repo_root"
 mkdir -p "$artifact_dir/download-cache/linux-x64" "$qualification_root"
 rm -rf "$work_root" "$dist_root"
 mkdir -p "$work_root" "$dist_root" "$qualification_root" "$artifact_dir/download-cache/linux-x64"
-rm -f "$artifact_path" "$artifact_path.tmp" "$evidence_path"
 
 download_pinned() {
   local name="$1" url="$2" expected="$3" path="$artifact_dir/download-cache/linux-x64/$1"
@@ -274,16 +273,27 @@ env -u R_HOME -u R_LIBS -u R_LIBS_USER xvfb-run -a \
 [ -s "$runtime_probe" ] || die "Packaged runtime probe did not produce evidence."
 
 step "Creating the portable tar.gz"
+candidate_dir="$(mktemp -d "$artifact_dir/.linux-candidate.XXXXXX")"
+candidate_archive="$candidate_dir/$artifact_name.tar.gz"
+candidate_evidence="$candidate_dir/qualification.json"
+retain_failed_candidate() {
+  status=$?
+  if [ "$status" -ne 0 ]; then
+    cp -R "$qualification_root" "$candidate_dir/qualification" || true
+  fi
+  exit "$status"
+}
+trap retain_failed_candidate EXIT
 mkdir -p "$work_root/archive-staging"
 mv "$archive_root" "$work_root/archive-staging/$artifact_name"
 tar --sort=name --mtime='UTC 2020-01-01' --owner=0 --group=0 --numeric-owner \
-  -I 'gzip -9' -cf "$artifact_path.tmp" -C "$work_root/archive-staging" "$artifact_name"
-mv "$artifact_path.tmp" "$artifact_path"
+  -I 'gzip -9' -cf "$candidate_archive" -C "$work_root/archive-staging" "$artifact_name"
+
 
 step "Extracting the archive and running native package qualification"
 extract_root="$qualification_root/extracted"
 mkdir -p "$extract_root"
-tar -xzf "$artifact_path" -C "$extract_root"
+tar -xzf "$candidate_archive" -C "$extract_root"
 extracted_root="$extract_root/$artifact_name"
 [ -x "$extracted_root/LaunchRCMetaStudio.sh" ] || die "Extracted Linux archive is missing its launcher."
 mv "$r_home" "$work_root/r-home-hidden"
@@ -309,7 +319,7 @@ mv "$work_root/r-home-hidden" "$r_home"
 [ -s "$smoke_evidence" ] || die "Extracted package smoke did not produce evidence."
 
 step "Recording artifact identity and runtime qualification"
-"$python_exe" - "$artifact_path" "$evidence_path" "$qualification_root/extracted-runtime-probe.json" "$smoke_evidence" "$r_deb_sha256" "$cursor_library_sha256" "$cursor_source" "$cursor_deb_sha256" "$linux_cran_repo" "${ID:-unknown}" "${VERSION_ID:-unknown}" "${PRETTY_NAME:-unknown}" "$host_glibc" <<'PY'
+"$python_exe" - "$candidate_archive" "$candidate_evidence" "$qualification_root/extracted-runtime-probe.json" "$smoke_evidence" "$r_deb_sha256" "$cursor_library_sha256" "$cursor_source" "$cursor_deb_sha256" "$linux_cran_repo" "${ID:-unknown}" "${VERSION_ID:-unknown}" "${PRETTY_NAME:-unknown}" "$host_glibc" <<'PY'
 import hashlib
 import json
 from pathlib import Path
@@ -341,5 +351,8 @@ payload = {
 }
 Path(evidence).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 PY
+
+mv "$candidate_archive" "$artifact_path"
+mv "$candidate_evidence" "$evidence_path"
 
 step "Linux package ready: $artifact_path"

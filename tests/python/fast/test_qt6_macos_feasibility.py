@@ -333,6 +333,26 @@ def _materialize_retained_evidence(evidence: dict, root: Path) -> None:
         (json.dumps(build_plan, sort_keys=True) + "\n").encode(),
     )
 
+    from rc_metastudio.macos_r_profile_schema import PROFILE_POLICY, PROFILE_EXCLUSION_PATHS
+    payloads = {
+        "packaged_phases": "".join(json.dumps({"phase": phase}) + "\n" for phase in
+            ["python-entry", "private-r-owned", "qt-imported", "rpy2-api-imported", "clean-exit"]),
+        "packaged_smoke": json.dumps(evidence["package"]),
+        "packaged_r_graph": json.dumps({"schema_version": 1, "architecture": "arm64",
+            "api_bridge": "Contents/Frameworks/_rinterface_cffi_api.abi3.so",
+            "lib_r": "Contents/Frameworks/R.framework/Resources/lib/libR.dylib",
+            "framework_mach_o": [{"path": "Resources/lib/libR.dylib", "sha256": hashlib.sha256(b"libR").hexdigest(), "architectures": ["arm64"]}]}),
+        "r_profile_quarantine": json.dumps({"schema_version": 1, "phase": "quarantine", "policy": PROFILE_POLICY,
+            "post_profile_exclusions": sorted(PROFILE_EXCLUSION_PATHS),
+            "source_framework": {"version": "4.6.1", "expected_architecture": "arm64",
+                "source_tree_identity_sha256": "a"*64, "pre_profile_tree_identity_sha256": "b"*64}}),
+    }
+    for name, payload in payloads.items():
+        record = evidence["diagnostics"][name]
+        path = root / record["path"]
+        path.write_text(payload, encoding="utf-8")
+        record["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+
 
 def _write_inventory(path: Path, record: dict, inventory: dict) -> None:
     inventory["file_count"] = len(inventory["files"])
@@ -343,6 +363,7 @@ def _write_inventory(path: Path, record: dict, inventory: dict) -> None:
 
 
 @pytest.mark.parametrize("target", ["macos-arm64"])
+
 def test_native_macos_evidence_accepts_the_complete_locked_contract(target):
     validate_evidence(_valid_evidence(target), target)
 

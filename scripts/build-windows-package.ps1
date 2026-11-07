@@ -323,7 +323,7 @@ function Invoke-PackagedAppSmokeTest {
         $env:RCMS_STARTUP_PROJECT_SMOKE = "1"
         $startupExitCode = Invoke-BoundedPackageProcess -FilePath $exePath -ArgumentList @($quotedSamplePath)
         if ($startupExitCode -ne 0) { throw "Packaged startup project smoke test failed while opening '$samplePath' with exit code $startupExitCode." }
-        & $PythonExe scripts\assemble_packaged_smoke_evidence.py `
+        & $PythonExe (Join-Path $repoRoot "scripts\assemble_packaged_smoke_evidence.py") `
             --workflow-observation $workflowObservationPath `
             --surface-records $surfaceDirectory `
             --sample-observations $sampleObservationsPath `
@@ -333,7 +333,7 @@ function Invoke-PackagedAppSmokeTest {
             --surface-directory $surfaceDirectory --log-path $smokeLogPath `
             --output $smokeEvidencePath
         if ($LASTEXITCODE -ne 0) { throw "Packaged evidence assembly failed." }
-        & $PythonExe scripts\inspect_windows_deployment.py finalize-smoke `
+        & $PythonExe (Join-Path $repoRoot "scripts\inspect_windows_deployment.py") finalize-smoke `
             --smoke-evidence $smokeEvidencePath --smoke-log $smokeLogPath
         if ($LASTEXITCODE -ne 0) { throw "Packaged smoke finalization failed after clean process exits." }
     }
@@ -446,7 +446,7 @@ function Expand-AndQualifyExactArchive {
     if ($archiveSourceProvenance.head_sha -notmatch '^[0-9a-f]{40}$') { throw "Exact archive has invalid source provenance." }
     $reinspectionPath = Join-Path $qualificationRoot "deployment-reinspection.json"
     $extractedProbe = Join-Path $extractedApp "qualification\runtime-probe.json"
-    & $PythonExe scripts\inspect_windows_deployment.py inspect `
+    & $PythonExe (Join-Path $repoRoot "scripts\inspect_windows_deployment.py") inspect `
         --app-root $extractedApp --output $reinspectionPath --source-commit $archiveSourceProvenance.head_sha --source-provenance (Join-Path $archiveInputs "source-provenance.json") `
         --runtime-probe $extractedProbe --locked-qt-root $LockedQtRoot `
         --python-version $Versions.python --pyqt6-version $Versions.pyqt6 --qt-version $Versions.qt `
@@ -693,11 +693,11 @@ if ($QualifyExistingArchive) {
     if (($archivedSourceProvenance | ConvertTo-Json -Compress) -ne ($initialSourceProvenance | ConvertTo-Json -Compress)) {
         throw "Exact-archive continuation requires current source provenance to equal the embedded artifact provenance."
     }
-    & $PythonExe scripts\inspect_windows_deployment.py archive --archive $existingArchive --archive-root-name $artifactName `
+    & $PythonExe (Join-Path $repoRoot "scripts\inspect_windows_deployment.py") archive --archive $existingArchive --archive-root-name $artifactName `
         --deployment-manifest (Join-Path $input "deployment-manifest.json") --runtime-probe (Join-Path $input "runtime-probe.json") `
         --smoke-evidence (Join-Path $input "packaged-smoke.json") --smoke-log (Join-Path $input "packaged-smoke.log") --output $existingInspection
     if ($LASTEXITCODE -ne 0) { throw "Existing Windows ZIP inspection failed." }
-    & $PythonExe scripts\inspect_windows_deployment.py evidence --archive $existingArchive `
+    & $PythonExe (Join-Path $repoRoot "scripts\inspect_windows_deployment.py") evidence --archive $existingArchive `
         --deployment-manifest (Join-Path $input "deployment-manifest.json") --smoke-evidence (Join-Path $input "packaged-smoke.json") --smoke-log (Join-Path $input "packaged-smoke.log") `
         --runtime-probe (Join-Path $input "runtime-probe.json") --archive-inspection $existingInspection `
         --extracted-deployment-manifest $exactQualification.Reinspection --extracted-smoke-evidence $exactQualification.SmokeEvidence --extracted-smoke-log $exactQualification.SmokeLog --output $existingEvidence
@@ -746,7 +746,7 @@ try {
     $env:RPY2_CFFI_MODE = "API"
     $env:RCMS_PYQT_ROOT = $pyQtRoot
     $qt6PackageBuildRoot = Join-Path $workRoot "qt6-input"
-    & $PythonExe scripts\build_qt6.py generate --build-root $qt6PackageBuildRoot
+    & $PythonExe (Join-Path $repoRoot "scripts\build_qt6.py") generate --build-root $qt6PackageBuildRoot
     if ($LASTEXITCODE -ne 0) { throw "Qt6 package form/resource generation failed." }
     $env:RCMS_QT6_BUILD_ROOT = $qt6PackageBuildRoot
     $pyInstallerArgs = @(
@@ -817,7 +817,7 @@ $sipRuntimeVersion = (& $PythonExe -c "from PyQt6 import sip; print(sip.SIP_VERS
 $rpy2Version = (& $PythonExe -c "import importlib.metadata as m; print(m.version('rpy2'))").Trim()
 $rVersion = (& (Join-Path $resolvedRRuntimeRoot "bin\Rscript.exe") -e "cat(as.character(getRversion()))").Trim()
 Write-Step "Inspecting coherent Windows x64 deployment"
-& $PythonExe scripts\inspect_windows_deployment.py inspect `
+& $PythonExe (Join-Path $repoRoot "scripts\inspect_windows_deployment.py") inspect `
     --app-root $appDir --output $deploymentManifestPath --source-commit $sourceCommit --source-provenance $sourceProvenancePath `
     --runtime-probe $runtimeProbePath --locked-qt-root (Join-Path $pyQtRoot "Qt6") `
     --python-version $pythonVersion --pyqt6-version $pyQtVersion --qt-version $qtVersion `
@@ -832,7 +832,7 @@ if (-not $SkipSmoke) {
 Compress-AppDirectory -SourceDirectory $appDir -ArchiveStagingRoot $archiveStagingRoot -ArchiveRootDirectory $archiveRootDir -DestinationPath $zipPath
 Assert-ZipLayout -Path $zipPath -ArchiveRootName $archiveRootName
 if (-not $SkipSmoke) {
-    & $PythonExe scripts\inspect_windows_deployment.py archive `
+    & $PythonExe (Join-Path $repoRoot "scripts\inspect_windows_deployment.py") archive `
         --archive $zipPath --archive-root-name $archiveRootName `
         --deployment-manifest $deploymentManifestPath --runtime-probe $runtimeProbePath `
         --smoke-evidence (Join-Path $appDir "qualification\packaged-smoke.json") `
@@ -848,7 +848,7 @@ if (-not $SkipSmoke) {
     $exactQualification = Expand-AndQualifyExactArchive -Archive $zipPath -ArchiveRootName $archiveRootName `
         -LockedQtRoot (Join-Path $pyQtRoot "Qt6") -Versions $versionEvidence
     Assert-SourceProvenanceUnchanged -Expected $sourceProvenance -Boundary "writing qualification evidence" | Out-Null
-    & $PythonExe scripts\inspect_windows_deployment.py evidence `
+    & $PythonExe (Join-Path $repoRoot "scripts\inspect_windows_deployment.py") evidence `
         --archive $zipPath --deployment-manifest $deploymentManifestPath `
         --smoke-evidence (Join-Path $appDir "qualification\packaged-smoke.json") `
         --smoke-log (Join-Path $appDir "qualification\packaged-smoke.log") `

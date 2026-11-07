@@ -215,9 +215,17 @@ def capture_sample_observations(
 ) -> None:
     """Open every shipped sample through the executable and record identities."""
     manifest = json.loads((sample_root / "manifest.json").read_text(encoding="utf-8"))
+    projects = manifest["projects"]
+    listed = [item["file"] for item in projects]
+    shipped = {path.relative_to(sample_root).as_posix() for path in sample_root.rglob("*.rcms")}
+    if not shipped or len(listed) != len(set(listed)) or set(listed) != shipped:
+        raise ValueError("sample inventory differs from shipped projects")
     records = []
-    for item in manifest["projects"]:
+    for item in projects:
         path = sample_root / item["file"]
+        if (not path.resolve().is_relative_to(sample_root.resolve())
+                or hashlib.sha256(path.read_bytes()).hexdigest() != item["sha256"]):
+            raise ValueError("sample inventory hash or path differs from shipped project")
         report_path = output.parent / ("open-" + path.stem + ".json")
         result = _run_packaged(
             executable,
@@ -242,6 +250,10 @@ def assemble(
     observation = json.loads(workflow_observation.read_text(encoding="utf-8"))
     surfaces = _load_surfaces(surface_records)
     samples = json.loads(sample_observations.read_text(encoding="utf-8"))
+    if (samples.get("passed") is not True or not samples.get("projects")
+            or any(item.get("opened_in_packaged_application") is not True
+                   for item in samples["projects"])):
+        raise ValueError("sample observation contains an unsuccessful operation")
     _validate_workflow_observation(observation)
     plot_directory = output.with_suffix(".plots")
     plot_directory.mkdir(parents=True, exist_ok=True)
