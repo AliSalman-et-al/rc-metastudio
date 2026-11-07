@@ -103,9 +103,14 @@ def set_parameter(app, dialog, key, value):
         return
 
     plot_controls = {"bp_plot_lb": dialog.plot_lb_le, "bp_plot_ub": dialog.plot_ub_le,
-                     "fp_plot_lb": dialog.plot_lb_le, "fp_plot_ub": dialog.plot_ub_le}
+                     "fp_plot_lb": dialog.plot_lb_le, "fp_plot_ub": dialog.plot_ub_le,
+                     "fp_show_col3": dialog.show_3, "fp_show_col4": dialog.show_4}
     if key in plot_controls:
-        plot_controls[key].setText(str(value))
+        control = plot_controls[key]
+        if isinstance(control, QtWidgets.QCheckBox):
+            control.setChecked(str(value).upper() == "TRUE")
+        else:
+            control.setText(str(value))
         app.processEvents()
         return
     label = parameter_display_label(key, dialog.param_d.get(key))

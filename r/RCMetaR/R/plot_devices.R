@@ -82,8 +82,9 @@ rcmetar.plot.pixel.size <- function(size) {
 
 rcmetar.plot.raster.size <- function(size, keep.display, extension) {
     # Analysis previews stay bounded; an explicit publication DPI is never reduced.
-    if (keep.display && is.null(size$dpi) && extension %in% c("png", "tif", "tiff")) {
-        size$dpi <- 120
+    if (keep.display && is.null(size$dpi) && extension %in% c("png", "tif", "tiff") &&
+            prod(rcmetar.plot.pixel.size(size)) * 4 > 256 * 1024^2) {
+        size$dpi <- min(120, sqrt(32 * 1024^2 / (size$width * size$height)))
     }
     size
 }
