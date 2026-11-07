@@ -23,7 +23,6 @@ from PyQt6.QtWidgets import (
     QWIDGETSIZE_MAX,
 )
 
-from rc_metastudio import tabular_data
 from rc_metastudio.calculator_service import (
     BinaryImputationOption,
     CalculatorService,
@@ -665,11 +664,8 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                 if current_effect_is_one_arm:
                     item.setBackground(QBrush(QColor(Qt.GlobalColor.gray)))
                 else:
-                    text = item.text()
                     with QSignalBlocker(self.raw_data_table):
-                        popped_item = self.raw_data_table.takeItem(row, col)
-                    del popped_item
-                    self._set_val(row, col, text)
+                        item.setBackground(QBrush())
 
     def effect_changed(self):
         """Called when a new effect is selected in the combo box"""
@@ -819,6 +815,8 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             self._set_val(row, 0, events)
             self._set_val(row, 1, no_events)
             self._set_val(row, 2, total)
+            with QSignalBlocker(self.raw_data_table):
+                required(self.raw_data_table.item(row, 2), "arm total").setData(Qt.ItemDataRole.UserRole, events in EMPTY_VALS)
 
     def _update_analysis_unit(self):
         """Copy the potentially imputed table values into the analysis unit."""
@@ -862,7 +860,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self.update_back_calculation_button()
 
     def restore_table(self, old_table):
-        old_table = tabular_data.normalize_rows(old_table)
         if not old_table:
             return
         nrows = min(len(old_table), self.raw_data_table.rowCount())
@@ -870,7 +867,10 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
         for row in range(nrows):
             for col in range(ncols):
-                self._set_val(row, col, old_table[row][col])
+                value, supplied = old_table[row][col]
+                self._set_val(row, col, value)
+                with QSignalBlocker(self.raw_data_table):
+                    required(self.raw_data_table.item(row, col), "restored count").setData(Qt.ItemDataRole.UserRole, supplied)
         self._update_data_table()
         self._mark_table_consistent()
 
@@ -887,9 +887,17 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         old_value=None,
         use_old_value=True,
     ):
-        old_table = calc_fncs.save_table_data(table)
+        old_table = []
+        for snapshot_row in range(table.rowCount()):
+            cells = []
+            for snapshot_col in range(table.columnCount()):
+                item = required(table.item(snapshot_row, snapshot_col), "count snapshot")
+                cells.append((item.text(), bool(item.data(Qt.ItemDataRole.UserRole))))
+            old_table.append(cells)
         if use_old_value:
-            old_table[row][col] = old_value
+            row = required(row, "edited count row")
+            col = required(col, "edited count column")
+            old_table[row][col] = (old_value, old_table[row][col][1])
 
         old_analysis_unit = copy.deepcopy(analysis_unit)
         return old_analysis_unit, old_table
@@ -925,6 +933,17 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                 if message:
                     self._mark_table_invalid(message)
                     return
+
+        if col == 2:
+            with QSignalBlocker(self.raw_data_table):
+                required(self.raw_data_table.item(row, col), "entered total").setData(Qt.ItemDataRole.UserRole, True)
+        for check_row in range(2):
+            total_item = required(self.raw_data_table.item(check_row, 2), "arm total")
+            events = self._get_int(check_row, 0)
+            total = self._get_int(check_row, 2)
+            if total_item.data(Qt.ItemDataRole.UserRole) and events is not None and total is not None and events > total:
+                self._mark_table_invalid("Events cannot exceed the arm total.")
+                return
 
         try:
             self._update_data_table()  # calculate derived margins from raw counts
@@ -1022,8 +1041,12 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             params = self._get_table_values()
             computed_params = calc_fncs.compute_2x2_table_from_inner_counts(params)
             for total_name in ("r1sum", "r2sum"):
-                if computed_params[total_name] in EMPTY_VALS:
+                row = 0 if total_name == "r1sum" else 1
+                total_item = required(self.raw_data_table.item(row, 2), "arm total")
+                if computed_params[total_name] in EMPTY_VALS and total_item.data(Qt.ItemDataRole.UserRole):
                     computed_params[total_name] = params[total_name]
+                elif computed_params[total_name] not in EMPTY_VALS:
+                    total_item.setData(Qt.ItemDataRole.UserRole, False)
             if (
                 computed_params["total"] in EMPTY_VALS
                 and computed_params["r1sum"] not in EMPTY_VALS
@@ -1122,7 +1145,11 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         }
 
         self._set_vals(blank_vals)
+        for row in range(2):
+            with QSignalBlocker(self.raw_data_table):
+                required(self.raw_data_table.item(row, 2), "cleared total").setData(Qt.ItemDataRole.UserRole, False)
         self._update_analysis_unit()
+        self._mark_table_consistent()
 
         for metric in BINARY_ONE_ARM_METRICS + BINARY_TWO_ARM_METRICS:
             if (

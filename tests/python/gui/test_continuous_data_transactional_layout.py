@@ -208,6 +208,58 @@ def _close(app, dialog):
     app.processEvents()
 
 
+def test_pre_post_mode_preserves_unreplaced_summaries(monkeypatch):
+    app, dialog = _open_continuous_dialog(monkeypatch, QtCore.QRect(20, 30, 1024, 640))
+    try:
+        original = list(dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names))
+        dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
+        assert dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names) == original
+        dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("summary"))
+        assert dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names) == original
+    finally:
+        _close(app, dialog)
+
+
+def test_incomplete_successful_pre_post_result_clears_only_derived_arm(monkeypatch):
+    app, dialog = _open_continuous_dialog(monkeypatch, QtCore.QRect(20, 30, 1024, 640))
+    try:
+        dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
+        fields = ("n", "mean", "sd", "se", "var", "low", "high", "pval")
+        values = dict.fromkeys(fields)
+        values.update(n=20, mean=4, sd=3)
+        complete = {"succeeded": True, "output": values, "pre": dict(values), "post": dict(values)}
+        monkeypatch.setattr(calculator_service.r_bridge, "impute_pre_post_continuous_data", lambda *_args: complete)
+        dialog.g1_pre_post_table.setCurrentCell(0, 1)
+        dialog.g1_pre_post_table.item(0, 1).setText("10")
+        assert dialog.analysis_unit.get_raw_data_for_arm("Group 1") == [20, 4, 3]
+        incomplete = {**complete, "output": {**values, "mean": None}, "pre": {**values, "mean": None}}
+        monkeypatch.setattr(calculator_service.r_bridge, "impute_pre_post_continuous_data", lambda *_args: incomplete)
+        dialog.g1_pre_post_table.item(0, 1).setText("")
+        assert dialog.analysis_unit.get_raw_data_for_arm("Group 1") == [None, None, None]
+        assert dialog.effect_text_box.text() == ""
+    finally:
+        _close(app, dialog)
+
+
+def test_clear_recovers_invalid_continuous_summary(monkeypatch):
+    app, dialog = _open_continuous_dialog(monkeypatch, QtCore.QRect(20, 30, 1024, 640))
+    try:
+        dialog.simple_table.setCurrentCell(0, 0)
+        dialog.simple_table.item(0, 0).setText("0")
+        ok = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
+        assert not ok.isEnabled()
+        dialog.clear_form()
+        assert ok.isEnabled()
+        assert dialog.summary_error.isHidden()
+        assert dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names) == [None] * 6
+        dialog.undo()
+        assert not ok.isEnabled()
+        dialog.redo()
+        assert ok.isEnabled()
+    finally:
+        _close(app, dialog)
+
+
 def test_continuous_back_calculation_choice_opens_only_after_user_action(monkeypatch):
     recorder = {}
     app, dialog = _open_continuous_dialog(
@@ -498,8 +550,8 @@ def test_continuous_metric_transition_does_not_resize_visible_root(monkeypatch):
         dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
         app.processEvents()
         assert dialog.pre_post_group_box.isVisible()
-        assert dialog.simple_table.item(0, 1).text() == ""
-        assert dialog.effect_text_box.text() == ""
+        assert dialog.simple_table.item(0, 1).text() == "94.0"
+        assert dialog.effect_text_box.text() == "2.5000"
         assert dialog.buttonBox.isVisible()
     finally:
         _close(app, dialog)
@@ -548,10 +600,10 @@ def test_continuous_major_variant_behavior_matrix(monkeypatch, variant):
             assert any(payload[0].get("mean") == 95 for payload in recorder["impute"])
 
         if variant == "smd_pre_post":
-            # Failed/incomplete pre/post reconstruction cannot retain a hidden summary preview.
-            assert dialog.effect_text_box.text() == ""
-            assert dialog.lower_text_box.text() == ""
-            assert dialog.upper_text_box.text() == ""
+            # A failed reconstruction leaves the previously supplied summaries intact.
+            assert dialog.effect_text_box.text() == "2.5000"
+            assert dialog.lower_text_box.text() == "1.5000"
+            assert dialog.upper_text_box.text() == "3.5000"
         else:
             assert dialog.effect_text_box.text() == "2.5000"
             assert dialog.lower_text_box.text() == "1.5000"

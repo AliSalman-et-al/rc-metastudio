@@ -956,6 +956,7 @@ def calculators(app, window, mode, record):
         editor = next((field for field in table.findChildren(QtWidgets.QLineEdit) if field.isVisible()), None)
         assert editor is not None, (mode, row, column)
         QTest.keyClick(editor, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
+        QTest.keyClick(editor, QtCore.Qt.Key.Key_Backspace)
         QTest.keyClicks(editor, str(value))
         QTest.keyClick(editor, QtCore.Qt.Key.Key_Tab)
         app.processEvents()
@@ -1009,6 +1010,24 @@ def calculators(app, window, mode, record):
         observed[metric] = {"actual": value, "expected": expected}
 
     def drive(dialog):
+        if mode == "binary-metrics":
+            original = list(dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names))
+            cell(dialog.raw_data_table, 0, 1, "")
+            deleted = list(dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names))
+            assert deleted[:2] == [original[0], None], deleted
+            record("calculator-binary-derived-total-deleted", dialog, raw=deleted)
+            click(app, dialog.clear_button)
+            cell(dialog.raw_data_table, 0, 2, "10")
+            cell(dialog.raw_data_table, 0, 0, "11")
+            assert not dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
+            record("calculator-binary-impossible-partial-counts", dialog)
+            click(app, dialog.clear_button)
+            assert dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
+            assert dialog.inconsistencyLabel.isHidden()
+            for row in (0, 1):
+                events, total = original[row * 2:row * 2 + 2]
+                cell(dialog.raw_data_table, row, 0, events)
+                cell(dialog.raw_data_table, row, 1, total - events)
         if mode.startswith("back-"):
             click(app, dialog.clear_button)
             if family == "binary":
@@ -1226,6 +1245,17 @@ def calculators(app, window, mode, record):
                 for a, b in zip(actual_entered, (point, lower, upper))
             ), actual_entered
         elif mode == "pre-post":
+            original_raw = list(dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names))
+            dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
+            assert dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names) == original_raw
+            dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("summary"))
+            assert dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names) == original_raw
+            cell(dialog.simple_table, 0, 0, "0")
+            assert not dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
+            click(app, dialog.clear_button)
+            assert dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
+            assert dialog.summary_error.isHidden()
+            record("calculator-invalid-summary-clear", dialog, original=original_raw)
             dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
             click(app, dialog.clear_button)
             combo = dialog.effect_combo_box
@@ -1248,6 +1278,13 @@ def calculators(app, window, mode, record):
                 math.isclose(a, b, abs_tol=0.0001) for a, b in zip(actual, expected)
             ), (actual, expected)
             preview(dialog, "MD")
+            cell(dialog.g1_pre_post_table, 0, 1, "")
+            deleted = list(dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names))
+            assert deleted[:3] == [None, None, None], deleted
+            assert dialog.effect_text_box.text() == ""
+            record("calculator-pre-post-required-mean-deleted", dialog, raw=deleted)
+            cell(dialog.g1_pre_post_table, 0, 1, "10")
+            assert all(math.isclose(a, b, abs_tol=0.0001) for a, b in zip(dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names), expected))
             observed["raw"] = expected
         else:
             combo = dialog.effect_combo_box

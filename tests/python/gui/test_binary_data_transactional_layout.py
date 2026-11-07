@@ -79,6 +79,55 @@ def _close(app, window, dialog):
     app.processEvents()
 
 
+def test_deleted_non_events_drops_derived_total_with_history(monkeypatch):
+    app, window, dialog = _open_binary_dialog(monkeypatch)
+    try:
+        original = list(dialog.analysis_unit.get_raw_data_for_arm(dialog.arm_names[0]))
+        dialog.raw_data_table.setCurrentCell(0, 1)
+        dialog.raw_data_table.item(0, 1).setText("")
+        assert dialog.analysis_unit.get_raw_data_for_arm(dialog.arm_names[0]) == [original[0], None]
+        assert dialog.raw_data_table.item(0, 2).text() == ""
+        dialog.undo()
+        assert dialog.analysis_unit.get_raw_data_for_arm(dialog.arm_names[0]) == original
+        dialog.redo()
+        assert dialog.analysis_unit.get_raw_data_for_arm(dialog.arm_names[0]) == [original[0], None]
+    finally:
+        _close(app, window, dialog)
+
+
+def test_partial_binary_total_is_explicit_and_rejects_excess_events(monkeypatch):
+    app, window, dialog = _open_binary_dialog(monkeypatch)
+    try:
+        dialog.clear_form()
+        dialog.raw_data_table.setCurrentCell(0, 2)
+        dialog.raw_data_table.item(0, 2).setText("10")
+        dialog.raw_data_table.setCurrentCell(0, 0)
+        dialog.raw_data_table.item(0, 0).setText("11")
+        ok = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
+        assert not ok.isEnabled()
+        assert dialog.analysis_unit.get_raw_data_for_arm(dialog.arm_names[0]) == [None, 10]
+        dialog.clear_form()
+        assert ok.isEnabled()
+        assert dialog.inconsistencyLabel.isHidden()
+    finally:
+        _close(app, window, dialog)
+
+
+def test_clear_recovers_invalid_binary_count(monkeypatch):
+    app, window, dialog = _open_binary_dialog(monkeypatch)
+    try:
+        dialog.raw_data_table.setCurrentCell(0, 0)
+        dialog.raw_data_table.item(0, 0).setText("-1")
+        ok = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
+        assert not ok.isEnabled()
+        dialog.clear_form()
+        assert ok.isEnabled()
+        assert dialog.inconsistencyLabel.isHidden()
+        assert dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names) == [None] * 4
+    finally:
+        _close(app, window, dialog)
+
+
 def test_binary_data_declares_transactional_overflow_and_reachable_actions(
     monkeypatch,
 ):
