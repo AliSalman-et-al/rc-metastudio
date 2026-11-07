@@ -818,7 +818,7 @@ def workspace_safety_case(app, window, work, root, record, case):
         assert window.model.current_sheet.rows[0].year == 2022
         summary = QtWidgets.QDialog(window)
         summary.setWindowTitle('Summary of findings')
-        progress = AnalysisProgressDialog(summary)
+        progress = AnalysisProgressDialog(summary, operation='Building summary of findings…')
         assert all('Fitting' not in label.text() for label in progress.findChildren(QtWidgets.QLabel))
         progress.close()
     elif case.startswith('alias-'):

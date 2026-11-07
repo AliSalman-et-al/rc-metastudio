@@ -93,7 +93,7 @@ class SummaryOfFindingsDialog(QtWidgets.QDialog):
             button = QtWidgets.QPushButton(label, self)
             button.clicked.connect(callback)
             buttons.addWidget(button)
-        progress = AnalysisProgressDialog(self)
+        progress = AnalysisProgressDialog(self, operation='Building summary of findings…')
         progress.show()
         QtWidgets.QApplication.processEvents()
         try:
