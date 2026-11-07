@@ -1,5 +1,4 @@
 """Apply one historical mutant and restore only its exact owned file preimages."""
-import os
 from pathlib import Path
 import signal
 import subprocess

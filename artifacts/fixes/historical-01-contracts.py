@@ -27,11 +27,6 @@ def source(path):
         return subprocess.check_output(['git', 'show', 'f6ffae40:' + path], cwd=ROOT, text=True)
     return (ROOT / path).read_text()
 
-def block(path, start, end, ns):
-    tree = ast.parse(source(path))
-    nodes = [node for node in tree.body if node.lineno >= start and node.lineno < end]
-    exec(compile(ast.Module(body=nodes, type_ignores=[]), path, 'exec'), ns)
-
 class HistoricalContracts(unittest.TestCase):
     def test_G7A_002_archive_inventory(self):
         path = 'artifacts/batch7-review/prove-goldens.py'
@@ -145,27 +140,31 @@ class HistoricalContracts(unittest.TestCase):
                 self.assertTrue((target/name).is_file(),name)
                 self.assertEqual(hashlib.sha256((target/name).read_bytes()).digest(),hashlib.sha256((ROOT/'docs/ux-audit/2026-10-16-round6'/name).read_bytes()).digest())
 
-    def test_G7A_003_replay_identity(self):
+    def test_G7A_003_replay_reruns_without_overwriting_history(self):
         code=source('artifacts/qa-r1/shard-repair/replay.py')
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory).resolve();here=root/'artifacts/qa-r1/shard-repair';here.mkdir(parents=True)
             (root/'sample_projects').mkdir();(root/'sample_projects/input.rcms').write_bytes(b'input')
             (here/'run_scenario.py').write_text('driver')
             calls=[]
+            old = here/'replay-results.json'
+            old.write_text('[]\n')
+            old_log = here/'ux-improvements.log'
+            old_log.write_text('original historical transcript\n')
             def run(command, **kwargs):
                 calls.append(command);kwargs['stdout'].write('Evidence: fixture\n')
                 return subprocess.CompletedProcess(command,0)
-            revision=['revision-a']
-            def output(command,**kwargs):return revision[0]+'\n' if 'rev-parse' in command else b'diff'
             def execute(args):
-                with patch.object(sys,'argv',args),patch('subprocess.run',side_effect=run),patch('subprocess.check_output',side_effect=output),patch('platform.platform',return_value='Windows fixture'):
+                with patch.object(sys,'argv',args),patch('subprocess.run',side_effect=run),patch('subprocess.check_output',side_effect=lambda command,**kwargs: 'revision-a\n' if 'rev-parse' in command else b'diff'),patch('platform.platform',return_value='Windows fixture'):
                     with self.assertRaises(SystemExit) as result:exec(code,{'__file__':str(here/'replay.py')})
                     self.assertEqual(result.exception.code,False)
             execute(['replay']);first=len(calls);self.assertGreater(first,0)
             execute(['replay']);self.assertEqual(len(calls),first*2)
-            execute(['replay','--resume']);self.assertEqual(len(calls),first*2)
-            revision[0]='revision-b'
-            with self.assertRaises(AssertionError):execute(['replay','--resume'])
+            self.assertEqual(old.read_text(),'[]\n')
+            self.assertEqual(old_log.read_text(),'original historical transcript\n')
+            runs=list((here/'runs').glob('*/replay-results.json'))
+            self.assertEqual(len(runs),2)
+            self.assertTrue(all(len(json.loads(path.read_text()))==first for path in runs))
 
     def test_G7A_006_aggregate_receipts(self):
         from types import ModuleType
@@ -173,17 +172,25 @@ class HistoricalContracts(unittest.TestCase):
         code=source('docs/ux-audit/2026-10-14-round3-reaudit/run_all.py')
         with tempfile.TemporaryDirectory() as directory,patch.dict(sys.modules,{'scripts.verify_rcms':fake}):
             here=Path(directory)/'docs/ux-audit/audit';(here/'raw').mkdir(parents=True)
+            old = here/'RUNS.json';old.write_text('[]\n')
+            old_case = here/'raw/native-one.json';old_case.write_text('original case\n')
             failure=[False]
             def run(command,**kwargs):
                 label=command[2];status=int(failure[0] and label=='native-one')
-                (here/'raw'/(label+'.json')).write_text(json.dumps({'label':label,'exit_code':status}))
+                destination=Path(kwargs.get('env',{}).get('RCMS_AUDIT_OUTPUT',here/'raw'))
+                destination.mkdir(parents=True,exist_ok=True)
+                (destination/(label+'.json')).write_text(json.dumps({'label':label,'exit_code':status}))
                 return subprocess.CompletedProcess(command,status)
             with patch('subprocess.run',side_effect=run):
                 for failed in (False,True):
                     failure[0]=failed
                     with self.assertRaises(SystemExit) as result:exec(code,{'__file__':str(here/'run_all.py')})
                     self.assertEqual(result.exception.code,int(failed))
-                    self.assertEqual(len(json.loads((here/'RUNS.json').read_text())),2)
+                    self.assertEqual(old.read_text(),'[]\n')
+                    self.assertEqual(old_case.read_text(),'original case\n')
+                    receipts=list((here/'runs').glob('*/RUNS.json'))
+                    self.assertEqual(len(receipts),1+int(failed))
+                    self.assertTrue(all(len(json.loads(path.read_text()))==2 for path in receipts))
 
     def test_G7B_001_menu_schema(self):
         tree=ast.parse(source('docs/ux-audit/2026-10-15-round4-reaudit/native_options_remaining.py'))
