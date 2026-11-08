@@ -1,8 +1,0 @@
-library(RCMetaR)
-invisible(rcmetar.set.global.conf.level(95))
-options(testthat.progress.max_fails=Inf)
-results <- testthat::test_dir("r/RCMetaR/tests/testthat", filter="forest-metafor-renderer|summary-display|ratios", package="RCMetaR", load_package="installed", reporter="summary", stop_on_failure=TRUE)
-counts <- as.data.frame(results)
-write.csv(counts[, vapply(counts, is.atomic, logical(1)), drop=FALSE], "artifacts/qa-r1/shard-repair/r-tests.csv", row.names=FALSE)
-cat("Failed expectations:", sum(counts$failed), "; errors:", sum(counts$error), "; passed:", sum(counts$passed), "\n")
-stopifnot(sum(counts$failed) == 0, !any(counts$error))

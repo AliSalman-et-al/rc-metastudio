@@ -1,1 +1,0 @@
-ratios-hr passed; 54 viewport-settling probes; maximum resize events: 0

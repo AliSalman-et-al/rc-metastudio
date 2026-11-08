@@ -1,3 +1,0 @@
-Changed ZIP members: ['manifest.json', 'artifacts/amino-binary-subgroup/golden_amino_subgroup_forest.png', 'captures/amino-binary-subgroup.json']
-All numerical outputs, baseline text, parameters and other cases unchanged.
-Downloaded Windows capture vs refreshed frozen oracle: {'pass': 462, 'accepted_exception': 13}

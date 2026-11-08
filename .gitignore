@@ -2,25 +2,23 @@
 *.pyc
 *.pyo
 **/__pycache__/
-*/__pycache__/*
 .venv/
-.pytest_cache/*
-.ruff_cache/*
-.mypy_cache/*
-.tox/*
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.grimp_cache/
+.tox/
 *.egg-info/
-*.egg-info/*
 .coverage
 .coverage.*
 coverage.xml
-htmlcov/*
+htmlcov/
 
 # R
 .RData
 .Rhistory
 **/r_tmp/
-r_tmp/*
-src/R/rtmp/*
+src/R/rtmp/
 HSROC_2.0.5.tar.gz
 RCMetaR_*.tar.gz
 RCMetaR_*.zip
@@ -35,14 +33,14 @@ RCMetaR_*.zip
 Thumbs.db
 
 # Build outputs
-build/*
-dist/*
+/build/
+/dist/
 dist.zip
-artifacts/*
-src/build/*
-src/build-debug/*
-src/dist/*
-src/dist-debug/*
+/artifacts/
+/src/build/
+/src/build-debug/
+/src/dist/
+/src/dist-debug/
 RCMetaStudio*.spec
 src/RCMetaStudio*.spec
 
@@ -55,4 +53,4 @@ src/RCMetaStudio*.spec
 .codex/
 .claude/
 .codex-tmp/
-/.scratch
+/.scratch/

@@ -1,1 +1,0 @@
-All 11 frozen output/parameter objects unchanged. Every frozen artifact byte unchanged. Numeric contract unchanged except required archive SHA binding. Only report strings, forest display identities, and their archive/descriptor SHA bindings changed.

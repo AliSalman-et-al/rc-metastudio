@@ -1,7 +1,0 @@
-usage: verify_golden_compatibility.py [-h] [--root ROOT]
-                                      [--output-root OUTPUT_ROOT]
-
-options:
-  -h, --help            show this help message and exit
-  --root ROOT
-  --output-root OUTPUT_ROOT

@@ -1,2 +1,0 @@
-source artifacts/statistical-mutants/env.sh
-ty check --python-platform win32 --extra-search-path "$RCMS_QT6_BUILD_ROOT/generated/rc_metastudio" --extra-search-path "$RCMS_QT6_BUILD_ROOT/generated/rc_metastudio/forms" --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa

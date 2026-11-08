@@ -1,4 +1,0 @@
-continuous res 157 numeric fields IDENTICAL
-continuous plotdata 203 numeric fields IDENTICAL
-amino res 593 numeric fields IDENTICAL
-amino plotdata 815 numeric fields IDENTICAL

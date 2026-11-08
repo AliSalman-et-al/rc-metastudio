@@ -1,5 +1,0 @@
- tests/analysis_regression/baseline/manifest.json   |   8 ++++----
- .../baseline/numeric-contract.json                 |   2 +-
- .../baseline/observed-golden-baseline.zip          | Bin 11774157 -> 11774097 bytes
- .../baseline/plot-descriptors.json                 |   2 +-
- 4 files changed, 6 insertions(+), 6 deletions(-)

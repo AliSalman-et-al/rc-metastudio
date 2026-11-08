@@ -1,6 +1,0 @@
-{
-  "passed": true,
-  "changed_fields": 2,
-  "mismatches": [],
-  "output": "/home/ali/.t3/worktrees/rc-metastudio/t3-209d8a2b/artifacts/qa-r1/golden-proof/output.json"
-}

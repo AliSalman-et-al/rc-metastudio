@@ -1,4 +1,0 @@
-5.43 px: 2 elements; examples: ['Favours Intervention', 'Favours Control']
-12.96 px: 86 elements; examples: ['96.00', '98.00', '94.00', '98.00', '98.00']
-Study label/body size: 12.96 px
-Annotation/body floor inflation: 2.386740331491713
