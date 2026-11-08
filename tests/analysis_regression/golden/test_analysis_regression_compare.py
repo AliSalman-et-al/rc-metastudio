@@ -14,6 +14,7 @@ import pytest
 sys.path.insert(0, os.path.abspath("src"))
 ROOT = Path(__file__).resolve().parents[3]
 
+from rc_metastudio import __version__
 from rc_metastudio.analysis_results import parse_analysis_result
 from tests.analysis_regression.golden.support.analysis_regression_compare import (  # noqa: E402
     ACCEPTED_EXCEPTION,
@@ -1316,8 +1317,9 @@ def test_headless_analysis_dispatches_meta_regression_with_selected_covariates(
         assert backend_requests[0]["params"]["adjust"] == 0.5
 
 
+@pytest.mark.parametrize("rcmetar_version,authoritative", [(__version__, True), ("0.0.0", False)])
 def test_comprehensive_golden_baseline_capture_writes_reproducible_bundle(
-    tmp_path, monkeypatch
+    tmp_path, monkeypatch, rcmetar_version, authoritative
 ):
     with _import_legacy_golden_modules() as (golden_analysis, _, _):
         bundles = [
@@ -1338,12 +1340,12 @@ def test_comprehensive_golden_baseline_capture_writes_reproducible_bundle(
             lambda: types.SimpleNamespace(load_rcmetar=lambda: None),
         )
         monkeypatch.setattr(golden_analysis, "_commit_sha", lambda: "abc123")
-        monkeypatch.setattr(golden_analysis, "_r_package_version", lambda package: {"RCMetaR": "0.5.2", "meta": "8.5-0", "mada": "0.5.12", "metafor": "5.0.1"}[package])
+        monkeypatch.setattr(golden_analysis, "_r_package_version", lambda package: {"RCMetaR": rcmetar_version, "meta": "8.5-0", "mada": "0.5.12", "metafor": "5.0.1"}[package])
         monkeypatch.setattr(
             golden_analysis,
             "_tool_versions",
             lambda: {
-                "rc_metastudio": "0.1.0",
+                "rc_metastudio": __version__,
                 "python": "3.11.15",
                 "os": "Windows",
                 "r": "R version 4.6.1",
@@ -1412,7 +1414,7 @@ def test_comprehensive_golden_baseline_capture_writes_reproducible_bundle(
         "success",
         "failure",
     ]
-    assert report["curated_golden_set"][0]["authoritative"] is True
+    assert report["curated_golden_set"][0]["authoritative"] is authoritative
     assert (capture_dir / "amino-binary-random.json").exists()
     assert (capture_dir / "continuous-random.json").exists()
     assert archive_path.exists()
