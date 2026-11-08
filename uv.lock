@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = "==3.11.*"
 resolution-markers = [
     "sys_platform == 'linux'",
@@ -1067,6 +1067,7 @@ dev = [
     { name = "grimp" },
     { name = "libcst" },
     { name = "matplotlib" },
+    { name = "pefile" },
     { name = "pillow" },
     { name = "psutil" },
     { name = "py7zr" },
@@ -1096,6 +1097,7 @@ dev = [
     { name = "grimp", specifier = ">=3.16" },
     { name = "libcst", specifier = "==1.8.6" },
     { name = "matplotlib", specifier = ">=3.11.0" },
+    { name = "pefile", specifier = "==2023.2.7" },
     { name = "pillow", specifier = ">=12.3.0" },
     { name = "psutil", specifier = "==7.2.2" },
     { name = "py7zr", specifier = "==1.1.3" },

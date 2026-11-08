@@ -20,6 +20,8 @@ from typing import Protocol, TypeAlias, TypeGuard, cast
 SCALE_FACTORS = (1.0, 1.5)
 TOLERANCE = 0.02
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 DEFAULT_EVIDENCE_ROOT = ROOT / "build/qt6-verification/native-remaining-surfaces"
 os.environ.setdefault("RCMS_QT6_BUILD_ROOT", str(ROOT / "build/qt6-verification"))
 
