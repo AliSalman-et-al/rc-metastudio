@@ -252,7 +252,20 @@ if result.get("status") != "Accepted":
 PY
 cp "$input_archive" "$tmp_output"
 xcrun stapler staple "$tmp_output"
-xcrun stapler validate "$tmp_output" > "$verification_result" 2>&1
+: > "$verification_result"
+for attempt in 1 2 3; do
+  if xcrun stapler validate "$tmp_output" >> "$verification_result" 2>&1; then
+    break
+  else
+    validation_status=$?
+  fi
+  # CloudKit lookup failures can be transient even after successful stapling.
+  if [ "$validation_status" -ne 68 ] || [ "$attempt" -eq 3 ]; then
+    exit "$validation_status"
+  fi
+  echo "Stapler validation returned 68; retrying CloudKit lookup (attempt $attempt)." | tee -a "$verification_result"
+  sleep 5
+done
 codesign --verify --verbose=4 "$tmp_output"
 hdiutil verify "$tmp_output"
 
