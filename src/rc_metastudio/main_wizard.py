@@ -1011,6 +1011,10 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         self.outcome_name_LineEdit.setFocus()
         self.outcome_name_LineEdit.selectAll()
 
+    def cleanupPage(self) -> None:
+        # QWizard's default resets registered fields on Back; keep the user's draft.
+        pass
+
     def group_names(self):
         names = list(self._naming_defaults)
         names[0] = self.first_group_name.text().strip() or names[0]

@@ -16,16 +16,20 @@ def run(app, window, ROOT, WORK, record_step):
     from rc_metastudio.rm5_import import read_rm5
     from rc_metastudio.project_adapter import dataset_to_project
     # Exercise existing entered-only paths before deciding their import mapping.
-    for index, metric, method in ((0, 'OR', 'binary.fixed.inv.var'), (1, 'MD', 'continuous.fixed')):
+    for index, metric, method, keep_raw in ((0, 'OR', 'binary.fixed.inv.var', False),
+                                          (0, 'OR', 'binary.fixed.inv.var', True),
+                                          (1, 'MD', 'continuous.fixed', False)):
         dataset = read_rm5(ROOT / 'tests/fixtures/rm5/Fleiss1993.rm5').dataset
         sheet = dataset.sheets[index]
         sheet.settings['metric'] = metric
-        sheet.settings['analysis'] = dict(method=method, parameters={}, fixed_effects=True, covariates=[])
+        sheet.settings['analysis'] = dict(method=method, parameters={'to': 'all'} if keep_raw else {}, fixed_effects=True, covariates=[])
         for row in sheet.rows:
             unit = row.analysis_unit
-            for arm in unit.arms.values():
-                arm.raw_data = [None] * len(arm.raw_data)
+            if not keep_raw:
+                for arm in unit.arms.values():
+                    arm.raw_data = [None] * len(arm.raw_data)
             unit.set_effect_for_source('entered', metric, tuple(a.id for a in sheet.arms), -.1, standard_error=.2)
+            unit.set_calculator_source(metric, tuple(a.id for a in sheet.arms), 'entered')
         window.set_model(dataset)
         window.sheet_tabs.setCurrentIndex(index)
         window.action_go.trigger()
@@ -35,20 +39,35 @@ def run(app, window, ROOT, WORK, record_step):
         setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
         app.processEvents()
         view = next(w for w in app.topLevelWidgets() if isinstance(w, ResultsWindow) and w.isVisible())
-        record_step('rm5-entered-only-probe', view, metric=metric, method=method)
+        record_step('rm5-entered-only-probe', view, metric=metric, method=method,
+                    stored_raw_counts=keep_raw, details=view.results.details,
+                    manuscript_methods=view.manuscript.methods)
+        assert 'A continuity correction' not in view.report_text.toPlainText(), view.results.details
+        assert 'A continuity correction' not in view.manuscript.methods
+        assert abs(float(r_bridge.execute_r_string('result$res$b[1]')[0]) + .1) < 1e-12
         view.close()
     tree = ET.parse(ROOT / 'tests/fixtures/rm5/generic-derived.rm5')
     study = tree.find('.//STUDY')
     assert study is not None
     study.set('NAME', 'München')
+    # Keep identical numerical inputs flat for meta::read.rm5, whose generic-IV
+    # subgroup parser rejects nested XML. Row assignments are asserted below.
+    reference_source = WORK / 'generic-reference.rm5'
+    tree.write(reference_source, encoding='ascii', xml_declaration=True)
+    for outcome in tree.iter('IV_OUTCOME'):
+        outcome.set('SUBGROUPS', 'YES')
+        for i, entry in enumerate(list(outcome.findall('IV_DATA'))):
+            outcome.remove(entry)
+            subgroup = ET.SubElement(outcome, 'IV_SUBGROUP', NO=str(i + 1), ID=f'{outcome.get("ID")}-subgroup-{i + 1}')
+            ET.SubElement(subgroup, 'NAME').text = f'Region {i}'
+            subgroup.append(entry)
     source = WORK / 'generic-unicode.rm5'
     tree.write(source, encoding='utf-8', xml_declaration=True)
     imported = read_rm5(source)
     assert any(row.label == 'München' for sheet in imported.dataset.sheets for row in sheet.rows)
-    # The public reader misdecodes literal UTF-8 names. XML character references
-    # preserve the same Unicode input for its independent numerical reference.
-    reference_source = WORK / 'generic-reference.rm5'
-    tree.write(reference_source, encoding='ascii', xml_declaration=True)
+    for sheet in imported.dataset.sheets:
+        cov_id = sheet.covariates[0]['id']
+        assert [row.covariate_values.get(cov_id) for row in sheet.rows] == ['Region 0', 'Region 1', 'Region 2']
     assert [s.settings['metric'] for s in imported.dataset.sheets] == ['HR', 'OR', 'MD']
     assert any('Custom score' in x for x in imported.not_imported)
     reference, pooled = WORK / 'giv-read.csv', WORK / 'giv-pooled.csv'
@@ -82,7 +101,11 @@ def run(app, window, ROOT, WORK, record_step):
     window.set_model(imported.dataset)
     for index, sheet in enumerate(imported.dataset.sheets):
         window.sheet_tabs.setCurrentIndex(index)
-        for row, ref in zip(sheet.rows, [r for r in rows if int(r['outcome.no']) == index + 1]):
+        references = [r for r in rows if int(r['outcome.no']) == index + 1]
+        assert len(sheet.rows) == len(references), ('generic IV study count', index)
+        for row, ref in zip(sheet.rows, references, strict=True):
+            assert row.label == ref['studlab'], ('generic IV study identity', row.label, ref)
+            assert row.year == (int(ref['year']) if ref['year'].isdigit() else None), ('generic IV study year', row.label, row.year, ref['year'])
             te = float(ref['TE'])
             if ref['logscale'] == 'FALSE':
                 te = math.log(te)
@@ -107,6 +130,8 @@ def run(app, window, ROOT, WORK, record_step):
         ref = refs[index]
         expected = [float(ref[k]) for k in ('estimate', 'lower', 'upper')] + [100 * float(ref['I2'])]
         record_step('rm5-giv-results', view, metric=sheet.settings['metric'], actual=actual, expected=expected)
+        assert 'A continuity correction' not in view.report_text.toPlainText(), view.results.details
+        assert 'A continuity correction' not in view.manuscript.methods
         assert all(abs(a-b) <= 1e-6 for a,b in zip(actual, expected)), (actual, expected)
         view.close()
     expected = dataset_to_project(window.model.dataset)

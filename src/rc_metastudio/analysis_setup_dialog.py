@@ -47,6 +47,7 @@ from rc_metastudio.analysis_method_labels import (
     parameter_value_display_label,
 )
 from rc_metastudio.plot_defaults import apply_default_forest_arm_labels
+from rc_metastudio.dataset_analysis_domain import raw_data_is_complete
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
     plot_parameter_text_value,
@@ -825,6 +826,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             selection.excluded_study_names
         ):
             return
+        self._executed_studies = selection.studies
         request = self._meta_regression_request()
         fixed_effects = self.fixed_effects_radio.isChecked()
         self._run_analysis(
@@ -1054,30 +1056,55 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         correction = context.partition(". ")[2]
         if correction:
             methods += " " + correction
+            details += "\n" + correction
         model_info = self._manuscript_model_info()
+        arms = self._manuscript_arms()
         return replace(result, identity=identity, details=details, software=software,
                        manuscript_context=context.split(". ")[0].rstrip(".") + ".",
                        manuscript_digits=int(applied_parameters.get("digits", 3)),
                        manuscript_title=title, manuscript_methods=methods,
-                       manuscript_metric=metric, manuscript_arms=tuple(self.model.arm_names),
+                       manuscript_metric=metric, manuscript_arms=tuple(arms),
                        manuscript_favours=tuple(label.removeprefix("Favours ").strip() for label in
-                           self.model.current_sheet.settings.get("favours_labels", ["Favours " + name for name in self.model.arm_names])),
+                           self.model.current_sheet.settings.get("favours_labels", ["Favours " + name for name in arms])[:len(arms)]),
                        manuscript_model_info=tuple(model_info),
-                       manuscript_comparison="Comparison: " + " / ".join(self.model.arm_names))
+                       manuscript_comparison=("Group: " if self.model.current_effect in ONE_ARM_METRICS else "Comparison: ") + " / ".join(arms))
+
+    def _manuscript_arms(self) -> list[str]:
+        names = self.model.arm_names
+        return names[:1] if self.model.current_effect in ONE_ARM_METRICS else names
+
+    def _manuscript_studies(self):
+        return getattr(self, "_executed_studies", self.model.get_studies())
+
+    def _manuscript_raw_data(self):
+        studies = getattr(self, "_executed_studies", None)
+        if studies is None:
+            return self.model.get_current_raw_data()
+        return self.model.get_current_raw_data(only_these_studies=[study.id for study in studies])
 
     def _manuscript_model_info(self):
-        model_info = [("Studies (k)", str(len(self.model.get_studies())))]
-        raw = self.model.get_current_raw_data()
-        if self.data_type in ("binary", "continuous") and len(self.model.arm_names) == 2 and raw and all(
-            len(row) == (4 if self.data_type == "binary" else 6) and all(isinstance(v, (int, float)) for v in row) for row in raw
-        ):
-            model_info.extend((f"Participants in {name}", f"{sum(row[index] for row in raw):g}")
-                              for name, index in zip(self.model.arm_names, (1, 3) if self.data_type == "binary" else (0, 3)))
+        model_info = [("Studies (k)", str(len(self._manuscript_studies())))]
+        model_info.extend((f"Participants in {name}", f"{total:g}")
+                          for name, total in self._manuscript_participants())
         if self.data_type == "diagnostic":
-            model_info.extend(self._diagnostic_participants(raw))
+            model_info.extend(self._diagnostic_participants(self._manuscript_raw_data()))
         if len(model_info) == 1:
             model_info.append(("Participants", "Not available"))
         return model_info
+
+    def _manuscript_participants(self) -> list[tuple[str, float]]:
+        if self.data_type not in ("binary", "continuous"):
+            return []
+        arms = self._manuscript_arms()
+        raw = self._manuscript_raw_data()
+        if not arms or not raw:
+            return []
+        indices = ((1, 3) if self.data_type == "binary" else (0, 3))[:len(arms)]
+        if any(len(row) <= index or not isinstance(row[index], (int, float))
+               or not math.isfinite(row[index]) for row in raw for index in indices):
+            return []
+        return [(name, sum(row[index] for row in raw))
+                for name, index in zip(arms, indices, strict=True)]
 
     @staticmethod
     def _diagnostic_participants(raw):
@@ -1095,23 +1122,36 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         return applied_parameters
 
     def _result_context(self, applied_parameters):
-        included = len(self.model.get_studies())
+        included = len(self._manuscript_studies())
         excluded = len(self.model.get_studies(only_if_included=False)) - included
         context = f"{included} studies were included"
         if excluded:
             context += f" ({excluded} studies were excluded)"
-        if self.data_type in ('binary', 'continuous'):
-            raw = self.model.get_current_raw_data()
-            if len(self.model.arm_names) == 2 and raw and all(len(row) == (4 if self.data_type == "binary" else 6) and all(isinstance(v, (int, float)) for v in row) for row in raw):
-                totals = [sum(row[i] for row in raw) for i in ((1, 3) if self.data_type == "binary" else (0, 3))]
-                context += f" ({totals[0]:g} participants in {self.model.arm_names[0]}, {totals[1]:g} in {self.model.arm_names[1]})"
+        participants = self._manuscript_participants()
+        if participants:
+            (name, total), *others = participants
+            context += f" ({total:g} participants in {name}"
+            context += "".join(f", {total:g} in {name}" for name, total in others) + ")"
         context += "."
         return context + self._correction_context(applied_parameters)
+
+    def _correction_raw_data(self):
+        raw = self._manuscript_raw_data()
+        if self.data_type == "binary":
+            if any(study.analysis_unit.calculator_source(
+                self.model.current_effect, self.model.get_current_arm_key()
+            ) == "entered" for study in self._manuscript_studies()):
+                return []
+            if self.model.current_effect in ONE_ARM_METRICS:
+                raw = [row[:2] for row in raw]
+        return raw if all(raw_data_is_complete(row) for row in raw) else []
 
     def _correction_context(self, applied_parameters):
         if self.data_type not in ("binary", "diagnostic") or not applied_parameters.get("adjust"):
             return ""
-        raw = self.model.get_current_raw_data()
+        raw = self._correction_raw_data()
+        if not raw:
+            return ""
         policy = applied_parameters.get("correction.policy", applied_parameters.get("to", "only0"))
         zero = self._has_zero_cell(raw)
         if policy in ("none", "None") or not (zero or policy in ("all", "All studies")):
@@ -1443,11 +1483,14 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             expanded = QtCore.QSettings().value("analysis/advancedExpanded", False, type=bool)
             self.advanced_toggle.setChecked(expanded)
             self.advanced_panel.setVisible(expanded)
-        layout.addWidget(QLabel("Effect measure"), 0, 0)
+        effect_label = QLabel("Effect measure")
+        layout.addWidget(effect_label, 0, 0)
         metric_label = QLabel(self._result_metric_label().capitalize())
         metric_label.setWordWrap(True)
         metric_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         layout.addWidget(metric_label, 0, 1)
+        self._configure_parameter_accessibility(effect_label, metric_label)
+        self.current_widgets.extend((effect_label, metric_label))
         row = 1
         for spec in definitions:
             if spec.name in excluded_names:
@@ -2008,12 +2051,12 @@ def add_plot_params(specs_form):
 
     plot_lb = _text_value(specs_form.plot_lb_le)
     specs_form.current_param_vals["fp_plot_lb"] = "[default]"
-    if plot_lb != "[default]" and check_plot_bound(plot_lb):
+    if plot_lb != "[default]" and check_plot_bound(plot_lb) is not False:
         specs_form.current_param_vals["fp_plot_lb"] = plot_lb
 
     plot_ub = _text_value(specs_form.plot_ub_le)
     specs_form.current_param_vals["fp_plot_ub"] = "[default]"
-    if plot_ub != "[default]" and check_plot_bound(plot_ub):
+    if plot_ub != "[default]" and check_plot_bound(plot_ub) is not False:
         specs_form.current_param_vals["fp_plot_ub"] = plot_ub
 
     xticks = _text_value(specs_form.x_ticks_le)
@@ -2043,7 +2086,7 @@ def add_plot_params(specs_form):
 
 def _validated_plot_bound(widget):
     value = _text_value(widget)
-    return value if value != "[default]" and check_plot_bound(value) else "[default]"
+    return value if value != "[default]" and check_plot_bound(value) is not False else "[default]"
 
 
 def _validated_plot_ticks(widget):

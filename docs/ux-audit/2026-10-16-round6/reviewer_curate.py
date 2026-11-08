@@ -10,6 +10,8 @@ import subprocess
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
+from reviewer_preflight import preflight
+preflight(HERE)
 SHOTS = HERE/'reviewer-screenshots'
 SHOTS.mkdir(exist_ok=True)
 rows = []
@@ -123,5 +125,12 @@ main=main.replace('</body>', '<section id="reviewer-fixes"><h2>Accepted reviewer
 (HERE/'contact-sheet.html').write_text(main)
 print(f'{len(rows)} reviewer entries; {sum(int(role in row) for row in rows for role in ("before","after"))} original PNG frames.')
 
-for name in ('reviewer-diagnostic-multiple-before.png','reviewer-diagnostic-multiple-after.png'):
-    (SHOTS/name).unlink(missing_ok=True)
+
+# Keep the interactive gallery bound to the copied assets, including on reproduction.
+gallery = HERE / 'reviewer-gallery.html'
+page = gallery.read_text()
+page = re.sub(r'/home/[^"\s<>]*?/reviewer-screenshots/', 'reviewer-screenshots/', page)
+for name in re.findall(r'reviewer-screenshots/[^"\s<>]+?\.png', page):
+    if not (HERE / name).is_file():
+        raise FileNotFoundError(name)
+gallery.write_text(page)

@@ -125,11 +125,8 @@ def run(app, window, work, record):
             wizard.reject()
     window.workspace.mark_saved()
     # Frozen legacy input remains intentional test data, separate from bundled examples.
-    import subprocess
     legacy = work / "legacy-input-arm-names.rcms"
-    legacy.write_bytes(subprocess.check_output(
-        ["git", "show", "322ede26:sample_projects/amino.rcms"],
-        cwd=Path(__file__).resolve().parents[2]))
+    legacy.write_bytes((Path(__file__).resolve().parents[1] / "fixtures/legacy-projects/amino.rcms").read_bytes())
     original = legacy.read_bytes()
     assert window.open(str(legacy), raise_on_error=True)
     assert window.model.arm_names == ["Intervention", "Control"], window.model.arm_names

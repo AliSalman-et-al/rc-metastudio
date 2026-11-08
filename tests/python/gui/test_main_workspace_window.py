@@ -306,9 +306,13 @@ def test_deleted_covariate_keeps_identity_and_width_through_undo_redo(qapp):
     sys.platform not in ("win32", "darwin") and not os.environ.get("DISPLAY"),
     reason="Native fractional-scale evidence requires a window-system display.",
 )
-def test_workspace_table_uses_valid_logical_geometry_at_fractional_scale_factors():
+def test_workspace_table_uses_valid_logical_geometry_at_fractional_scale_factors(tmp_path):
     script = r"""
 import json
+import os
+from PyQt6 import QtCore
+QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
+QtCore.QSettings.setPath(QtCore.QSettings.Format.IniFormat, QtCore.QSettings.Scope.UserScope, os.environ["RCMS_TEST_SETTINGS"])
 from rc_metastudio import automation
 from scripts.local_r_test_backend import create
 from rc_metastudio import r_backend, r_bridge
@@ -329,6 +333,7 @@ try:
     screen = window.windowHandle().screen()
     evidence = {
         "platform": app.platformName(),
+        "settings_path": QtCore.QSettings().fileName(),
         "device_pixel_ratio": screen.devicePixelRatio(),
         "window": [window.width(), window.height()],
         "table": [table.width(), table.height()],
@@ -352,6 +357,7 @@ finally:
         environment = os.environ.copy()
         environment.pop("QT_QPA_PLATFORM", None)
         environment["QT_SCALE_FACTOR"] = factor
+        environment["RCMS_TEST_SETTINGS"] = str(tmp_path / ("settings-" + factor))
         environment["PYTHONPATH"] = os.pathsep.join(
             (
                 str(ROOT / "src"),
@@ -377,7 +383,9 @@ finally:
         )
         evidence = json.loads(evidence_line.split("=", 1)[1])
         evidence_by_factor[factor] = evidence
+        print("QT6_SCALE_EVIDENCE=" + json.dumps(evidence, sort_keys=True))
         assert evidence["platform"] == expected_platform
+        assert Path(evidence["settings_path"]).resolve().is_relative_to(tmp_path.resolve())
         assert evidence["visible"] is True
         assert evidence["all_columns_positive"] is True
         assert all(dimension > 0 for dimension in evidence["viewport"])

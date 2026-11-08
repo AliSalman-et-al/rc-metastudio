@@ -7,6 +7,7 @@ Users open an `.rcms` project, edit studies, undo or redo changes, save/reopen t
 - `project-structure` uses the same sheet-tab transaction drive as `sheets`: add, rename, delete, undo/redo, arm swap and persistence. The obsolete structure editor is removed.
 - `project-table-covariates` creates numeric Dose and factor Region through their dialogs, pastes/copies a 19×2 clipboard rectangle, undoes/redoes once, sorts through the actual name-header context menu, and saves/reopens. Compare study identity, inclusion and attached covariates before/after. Sorting changes display order, not canonical dataset identity. Run the reopened Dose regression and Region subgroup with independent numerical fits. It also converts/edits a covariate type, renames/deletes/undoes it, reopens the saved result and checks the other sheet remains unchanged.
 - `project-shell` opens through the real Open action with a test-owned picker path, edits a name, cancels a dirty-open prompt, saves through Save As, opens the recent-file action, and reads the actual About/Legal dialog. The accepted name and clean state must survive.
+- `ux-improvements` checks sorted paste by stable study identity, sparse fill/copy, quoted clipboard round trips and rejected-paste rollback. Sorted paste and sparse fill include undo/redo, selected-cell clearing and save/reopen. Its clipboard substitute isolates these checks from the user's clipboard.
 
 These add to `editing`, `csv`, and the eight original New Dataset workflows plus the HR/IRR metric variants. They do not establish structural deletion, every navigation state, all dirty-close responses, shortcuts, native picker interaction, earlier import pages, or Excel import. Use the targeted recipes below when those paths change.
 
@@ -18,7 +19,7 @@ These add to `editing`, `csv`, and the eight original New Dataset workflows plus
 - `project-persist`: Save As and reopen preserve edited values.
 - `project-reject`: corrupt open preserves the active project and save destination.
 - `csv-import`: UTF-8 BOM headers, quoted Unicode names, numeric/factor covariates and raw counts reach analysis and persist. Windows must retain names even when Python UTF-8 mode is disabled.
-- `dataset-create`: all eight original New Dataset paths and the two HR/IRR variants reach default analysis and save/reopen; see the analysis dataset matrix.
+- `dataset-create`: all eight original New Dataset paths and the two HR/IRR variants reach default analysis and save/reopen; see the analysis dataset matrix. The eight original routes also check the blank-name guard and Unicode outcome-name persistence through Back/Next, alternate metric selection where available, creation and reopening.
 
 ## How to get to it (user POV)
 
@@ -54,6 +55,15 @@ These are source-backed targeted recipes, not claims that the ordinary editing s
 - **Structure:** `action_edit` opens `EditDialog`: `outcome_list`, `follow_up_list`, `group_list`, `study_list`, `covariate_list` with corresponding add/remove buttons. Add/rename/remove items, cancel a second draft, accept, undo/redo, and reopen. Assert retained study identity/data across multiple outcomes/follow-ups/groups. Deletion must be confirmed and undoable where supported.
 - **Navigation:** `nav_up_btn`/`nav_down_btn` choose dimension, `nav_right_btn`/`nav_left_btn` choose item, `nav_add_btn` adds one. Add dialogs use `outcome_name_le`, `datatype_cbo_box`, `group_name_le`, `follow_up_name_le`. Bounds disable the appropriate controls; switching back must restore the original data and metric.
 - **Covariates:** `action_add_covariate` opens `AddCovariateDialog.covariate_name_le`/`datatype_cbo_box`. Header context choices rename/delete or create a factor/continuous copy. Compare values, types and identity, undo/redo and reopen. Use the covariate in subgroup/regression to prove it crosses the analysis boundary.
+
+`project-table-covariates` exercises the actual header menu for numeric sorting,
+rename Cancel/accept/undo/redo, category copy, and copy rename/delete/undo before
+save/reopen. It retains study identities, raw data and covariate values; direct
+metafor regression/subgroup comparisons remain part of that workflow.
+`project-structure` also checks that selecting sheets leaves a saved project clean,
+Open requires no save prompt after navigation, deliberate data edits remain dirty
+across navigation, undo/redo restores that state, and explicit Save remembers the
+selected sheet. These paths use isolated settings and owned output files.
 - **Table:** inclusion checkbox, header Include All/Exclude All, row deletion confirmation, sorting, rectangular copy/paste and clear. Trigger `action_copy`/`action_paste`; assert clipboard/live values, trailing-row expansion and one undo transaction. Invalid bulk data must roll back the whole operation. Sorting must retain values, covariates and inclusion attached to study IDs, not row positions. Auto-fit must not alter data.
 - **Confidence:** `action_change_confidence_level` → `ConfidenceLevelDialog.confidence_level_spinbox` → `button_box` OK. Check `cl_label`, actual analysis intervals, undo/redo, save/reopen and inherited parameters.
 - **Dirty actions:** Open/New/Import/Close/Quit on an unsaved project: Cancel preserves live project and destination; No proceeds; Yes proceeds only after successful save. Cancelled/failed Save As must preserve the unsaved project. Use test-owned files and record the actual prompt/action/recovered state.
@@ -188,3 +198,13 @@ unsaved prompt drive checks Save/Discard/Cancel, Save default and Escape cancel;
 project. Native dark/default and light/large prompt evidence is in
 `artifacts/batch7/`. Native Save/Discard through every destructive entry point
 still requires a targeted drive; shared authorization behavior has GUI coverage.
+
+### Workspace transaction safety
+
+`test_workspace_safety_transactions` reuses `workspace_safety_case` for duplicate
+name rejection, later placeholders, Qt insertion notifications, metric undo/redo,
+CSV replacement/rollback and safe Save/reopen, import Escape/close, and automation
+output aliases (including hardlinks). CSV replacement starts an unnamed session;
+its single import undo restores the previous data without restoring that
+project’s path or older history. File pickers are substituted and write failure is injected after accepted
+cells. These checks do not establish native picker/window-manager behavior.

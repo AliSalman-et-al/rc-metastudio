@@ -169,11 +169,12 @@ def _append_comparative_rows(sheet, outcome, records, studies, tag, fields, name
             raise ValueError(f'{name}: unknown study {record.get("STUDY_ID")}.')
         if tag == 'IV_DATA':
             _append_iv_row(sheet, outcome, record, study, names, metric, level)
-            continue
-        row = _raw_row(sheet, record, study, names, fields)
+            row = sheet.rows[-1]
+        else:
+            row = _raw_row(sheet, record, study, names, fields)
+            sheet.rows.append(row)
         if subgroups:
             row.covariate_values[sheet.covariates[0]['id']] = subgroups.get(id(record), '')
-        sheet.rows.append(row)
 
 
 def _import_outcome(dataset, comparison, outcome, multiple_comparisons, studies, differences, not_imported):

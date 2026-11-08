@@ -140,6 +140,8 @@ def _scenario_timeout(scenario: str) -> int:
 
 
 def _reuse_evidence(context, args) -> bool:
+    if args.compare_measures is not None:
+        return False
     if context is not None and not args.native and os.environ.get("RCMS_E2E_REUSE_PASSED") == "1":
         reused = passed_evidence(context, args.scenario)
         if reused is not None:
@@ -229,6 +231,9 @@ def main() -> int:
     context = json.loads(os.environ["RCMS_E2E_CONTEXT"]) if os.environ.get("RCMS_E2E_CONTEXT") else None
     if context is not None and source_digest() != context["source_sha256"]:
         raise RuntimeError("Verification inputs changed after desktop collection; restart the run")
+    if context is None:
+        from scripts.verify import DEFAULT_BUILD_ROOT, run_typing
+        run_typing(Path(os.environ.get("RCMS_QT6_BUILD_ROOT", str(DEFAULT_BUILD_ROOT))).resolve())
     if _reuse_evidence(context, args):
         return 0
     run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8]

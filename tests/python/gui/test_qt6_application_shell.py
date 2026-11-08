@@ -96,7 +96,7 @@ def test_close_cancel_and_failed_save_keep_owned_shell_alive(qapp, monkeypatch):
     from rc_metastudio import app_error_handler
     unexpected = []
     monkeypatch.setattr(app_error_handler, "show_unexpected_error",
-                        lambda error, parent=None: unexpected.append(str(error)))
+                        lambda error, parent=None, **kwargs: unexpected.append(str(error)))
     app, window = automation.start_automation()
     window.workspace.mark_dirty()
     monkeypatch.setattr(
@@ -446,15 +446,18 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
             original_title = window.model.dataset.title
             assert window.workspace.is_dirty is True
 
-            monkeypatch.setattr(
-                window,
-                "prompt_to_save_unsaved_data",
-                lambda: QtWidgets.QMessageBox.StandardButton.Save,
-            )
+            prompt_calls, save_as_calls = [], []
+            def prompt():
+                prompt_calls.append(True)
+                return QtWidgets.QMessageBox.StandardButton.Save
+            def cancel_save_as(**_kwargs):
+                save_as_calls.append(True)
+                return "", ""
+            monkeypatch.setattr(window, "prompt_to_save_unsaved_data", prompt)
             monkeypatch.setattr(
                 QtWidgets.QFileDialog,
                 "getSaveFileName",
-                lambda **_kwargs: ("", ""),
+                cancel_save_as,
             )
             monkeypatch.setattr(
                 main_wizard,
@@ -470,7 +473,11 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
                 lambda: window.dataset_selected(target),
                 window._import_csv,
             ):
+                prompt_calls.clear()
+                save_as_calls.clear()
                 action()
+                assert prompt_calls == [True]
+                assert save_as_calls == [True]
                 assert window.model is original_model
                 assert window.tableView.model() is original_model
                 assert window.out_path == original_path
@@ -754,6 +761,7 @@ def test_post_replace_durability_failure_commits_save_and_authorizes_next_action
         window.create_new_dataset()
         assert wizard_calls == [True]
 
+        warnings.clear()
         window.model.dataset.notes = "save installed"
         window.data_dirtied()
         with monkeypatch.context() as context:

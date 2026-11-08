@@ -15,6 +15,7 @@ from PyQt6.QtWidgets import (
     QDialogButtonBox,
     QMessageBox,
     QHeaderView,
+    QLineEdit,
     QSizePolicy,
     QStyle,
     QTableWidgetItem,
@@ -282,6 +283,11 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                 self.on_two_by_two_table_currentCellChanged, parent=self
             )
         )
+        delegate = self.two_by_two_table.itemDelegate()
+        assert delegate is not None
+        delegate.commitData.connect(
+            app_error_handler.safe_slot(self._count_editor_committed, parent=self)
+        )
         self.effect_combo_box.currentTextChanged.connect(
             app_error_handler.safe_slot(
                 lambda _text: self.effect_changed(), parent=self
@@ -328,6 +334,11 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         self, currentRow, currentColumn, previousRow, previousColumn
     ):
         self.current_item_data = self._get_int(currentRow, currentColumn)
+
+    def _count_editor_committed(self, editor):
+        # Recommitting unchanged valid text does not emit cellChanged.
+        if isinstance(editor, QLineEdit) and self.cell_data_invalid(editor.text()) is None:
+            self._mark_table_consistent()
 
     def setup_back_calculation_feedback(self):
         inconsistency_palette = QPalette()

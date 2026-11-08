@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/../../.."
+# Requires the original raw/reviewer-groups-before.json, its log and complete native evidence tree.
+uv run python docs/ux-audit/2026-10-16-round6/reviewer_preflight.py
 source docs/ux-audit/2026-10-14-round3/ENV.sh
 export RCMS_AUDIT_DIR="$PWD/docs/ux-audit/2026-10-16-round6"
 export DISPLAY="${DISPLAY:-:0}"

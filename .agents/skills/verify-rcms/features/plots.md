@@ -1,6 +1,38 @@
 # Results, plot editing, and export
 
+The focused installed-R boundary checks in
+`r/RCMetaR/tests/testthat/test-rendering-options.R` cover independently supplied
+bubble endpoints (the GUI still requires paired custom bounds), the initial
+regression label, BMJ continuation-arrow geometry, pooled BMJ/RevMan marker
+scaling, hidden RevMan effect annotations, independently hidden raw IRR arms,
+publication raster dimensions with a separate display artifact, and mixed
+SVG/SVGZ encodings. They decode rendered geometry, text, PNG dimensions and
+compression bytes. Public permutation checks compare selected intercept and
+Knapp–Hartung combinations and retained distributions against pinned metafor;
+these do not establish GUI reachability for those public R options. The authority
+comparison uses an explicit no-intercept formula and checks coefficient identity.
+Pinned metafor cannot permute one-coefficient no-intercept models; the public
+permutation boundary rejects that shape explicitly instead of silently adding an
+intercept. Standard regression still supports that fit.
+Retained before/after evidence for G1B-001/002/004–011 lives under
+`artifacts/fixes/rendering-02`. The parent repair owns aggregate full-profile
+qualification; these focused checks do not qualify native DPI or packages.
+
 Users inspect analysis summaries and plots, apply plot edits, discard subsequent drafts, and export rendered figures.
+
+The manuscript export drive measures visible text enlargement at 150%, checks
+that hidden figure zoom stays unchanged, and restores independent zoom settings
+across navigation. Plot workflows reject reversed, equal and nonfinite bounds
+without replacing saved artifacts; the SROC drive compares its initial editor
+curve color with the rendered SVG. Decoded TIFF exports must report at least
+600 DPI. These source drives inspect the selected file filter but do not prove
+the native picker presentation.
+
+The small-study drive sends a wheel event over the focused correction selector;
+the funnel editor drive does the same over sampling confidence. Both preserve
+settings while retaining keyboard editing. Their scroll areas route wheel events
+to the form viewport. Native scrolling and popup selection still require the
+targeted package drive.
 
 The `subgroup-image` and `subgroup-image-dark-large` drives run meantime by treatment group, verify the SVG forest and full-resolution raster export (PNG header, without Qt decoding), and force a plot-load exception while retaining text results and a plot-pane message.
 
@@ -46,7 +78,10 @@ Preconditions: doctor passes; amino analysis produces a real editable forest plo
 
 - **Edit and cancel.** Run `uv run python scripts/verify_rcms.py plot-edit`. The existing Results editor path opens `EditPlotDialog`. Fill `x_lbl_le` with `Edited effect axis`, click the button box Apply, and require changed SVG bytes and persisted `fp_xlabel`. Change the draft again and reject the editor; the applied label and a valid SVG remain. `plot-edit-draft` and `plot-applied-cancelled` capture the sequence and final result.
 - **Export.** Run `uv run python scripts/verify_rcms.py amino` (or `continuous`/`lymph`). The production Results save-image path writes `workflow/forest.pdf`; require a PDF header and inspect the figure when export behavior changed.
+- **Overwrite after suffix normalization.** `ux-improvements` supplies a mismatched entered suffix with an existing final destination for PDF/DOCX reports, a raster PNG and a regenerated R PNG. No preserves the existing bytes; Yes writes the selected format. The controlled picker and confirmation responses do not qualify native file dialogs.
 - **Entry reachability.** The driver calls the Results editor/export paths directly. It does not exercise plot hit testing or context-menu selection. Add right-click/menu gestures when changing their wiring. Source owner: `results_window.py:_make_context_menu`; there is no double-click editor route.
+
+The funnel and contour `plot-workflow-*` drives reject partial/nonfinite axis bounds, malformed ticks and contour percentages before regeneration, preserving the last saved artifacts. They also commit a caption-only edit with OK and export it, then reject an incomplete persisted bundle while preserving the previously loaded analysis. Both axis bounds are required for a custom range; leave both empty for automatic limits. If a failed plot promotion cannot restore its files, the original error identifies the retained recovery directory.
 
 ## Gotchas
 
@@ -299,6 +334,15 @@ and compares every numeric fit field exactly before/after presentation edits.
 the rendered plot and in report details, alongside its existing public-fit checks.
 
 The in-process R bridge contract first checks the automatic 9 pt SVG text floor and horizontal overflow at a narrow window, then explicitly requests Fit width before asserting shrink/grow resizing.
+
+Analysis PNG/TIFF previews with a separate SVG are reduced only when their decoded
+size exceeds Qt's 256 MiB limit and no DPI was specified. They use at most 120 dpi
+and a 32 MiB decoded target. Explicit raster DPI is honored with or without a
+display SVG; exports to a separate destination retain the default 600 dpi. The two `subgroup-image`
+drives check a Qt-decodable analysis preview and the full-resolution user export.
+Cap-height checks require capped rows in Default and RevMan; BMJ intentionally
+uses uncapped intervals. The IRR context drive explicitly enables both arm columns
+before requiring their event and person-time headers.
 
 Batch 7 direction labels retain the axis tick font size and extend outward from
 its null; preflight reserves extra device space for long labels. HR/IRR drives

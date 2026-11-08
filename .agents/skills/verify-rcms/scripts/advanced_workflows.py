@@ -145,8 +145,8 @@ def authority(
     metric = metric or window.model.current_effect
     if family == "binary":
         expression = (
-            f'metafor::escalc("PR", xi={vector(0)}, ni={vector(1)})'
-            if metric == "PR"
+            f'metafor::escalc("{metric}", xi={vector(0)}, ni={vector(1)}, add=.5, to="{correction}")'
+            if metric in {"PR", "PLN", "PLO", "PAS", "PFT"}
             else f'metafor::escalc("{metric}", ai={vector(0)}, n1i={vector(1)}, ci={vector(2)}, n2i={vector(3)}, add=.5, to="{correction}", drop00=FALSE)'
         )
     elif family == "continuous":
@@ -167,6 +167,12 @@ def authority(
         if entered is None
         else f"e$yi[1] <- {entered[0]}; e$vi[1] <- {entered[1] ** 2}; "
     )
+    point, lower, upper = "as.numeric(f$b)", "f$ci.lb", "f$ci.ub"
+    if metric == "PFT":
+        point, lower, upper = (
+            f"metafor::transf.ipft.hm({value}, targs=list(ni={vector(1)}))"
+            for value in (point, lower, upper)
+        )
     result = r_bridge.execute_r_string(
         "{ e <- "
         + expression
@@ -178,7 +184,7 @@ def authority(
         + inference
         + '", level='
         + str(confidence)
-        + "); jsonlite::toJSON(list(estimate=as.numeric(f$b), lower_bound=f$ci.lb, upper_bound=f$ci.ub, standard_error=f$se, p_value=f$pval, q=f$QE, heterogeneity_p_value=f$QEp, tau_squared=f$tau2), auto_unbox=TRUE, digits=16) }"
+        + f"); jsonlite::toJSON(list(estimate={point}, lower_bound={lower}, upper_bound={upper}, standard_error=f$se, p_value=f$pval, q=f$QE, heterogeneity_p_value=f$QEp, tau_squared=f$tau2), auto_unbox=TRUE, digits=16) }}"
     )
     return json.loads(str(result[0]))
 
@@ -197,7 +203,7 @@ def compare_authority(view, expected, family, record, metric=None):
     for key, value in expected.items():
         observed_key = (
             "calculation_scale." + key
-            if (family == "diagnostic" or (family == "binary" and metric != "PR"))
+            if (family == "diagnostic" or (family == "binary" and metric not in {"PR", "PFT"}))
             and key in ("estimate", "lower_bound", "upper_bound", "standard_error")
             else key
         )
@@ -378,9 +384,32 @@ def zero_cells(app, window, record):
         compare_authority(
             view, authority(window, "binary", "DL", "z", 95, policy), "binary", record
         )
+        note = "A continuity correction of 0.5 was applied to " + {
+            "only0": "studies with any zero cell.", "all": "all studies."
+        }[policy]
+        assert note in view.report_text.toPlainText(), (policy, view.report_text.toPlainText())
+        assert note in view.manuscript.methods
         assert len(view.texts["Weights"].strip().splitlines()) == 20
         view.close()
         window.workspace.mark_saved()
+
+    view = matrix(app, window, "analysis-amino-binary-cumulative", record,
+                  keep_results=True, workflow_override="standard", metric_override="PFT",
+                  parameters={"to": "only0", "adjust": .5, "digits": 6, "rm.method": "DL"})
+    assert window.model.current_effect == "PFT", window.model.current_effect
+    compare_authority(view, authority(window, "binary", "DL", "z", 95, "only0"), "binary", record, metric="PFT")
+    note = "A continuity correction of 0.5 was applied to studies with any zero cell."
+    assert note in view.report_text.toPlainText()
+    assert note in view.manuscript.methods
+    record("pft-correction-report", view, correction_note=note, texts=dict(view.texts))
+    report = view.report_text.toPlainText()
+    manuscript = view.manuscript_text.toPlainText()
+    assert "Participants in Control" not in report, report
+    assert "1097" in report and "Participants in Intervention" in report, report
+    assert "Comparison: Intervention / Control" not in manuscript, manuscript
+    assert "Group: Intervention" in manuscript, manuscript
+    view.close()
+    window.workspace.mark_saved()
 
     # One participant per group leaves no residual degrees of freedom for SMD.
     assert window.open(str(ROOT / "sample_projects/continuous.rcms"), raise_on_error=True)
@@ -538,6 +567,62 @@ def plots(app, window, family, record, *, view=None):
         return values
 
     def edit(dialog):
+        if funnel:
+            from tests.python.gui.test_types import wheel_scroll, key_click
+            spinner = dialog.sampling_confidence_spin
+            original_confidence = spinner.value()
+            spinner.setFocus()
+            app.processEvents()
+            wheel_scroll(spinner)
+            app.processEvents()
+            record("funnel-wheel-preserves-confidence", dialog,
+                   before=original_confidence, after=spinner.value())
+            assert spinner.value() == original_confidence, "Scrolling changed the sampling confidence"
+            if family == "deeks":
+                assert not spinner.isEnabled(), "Deeks does not use sampling confidence"
+            else:
+                assert spinner.isEnabled()
+                key_click(spinner, QtCore.Qt.Key.Key_Up)
+                assert spinner.value() > original_confidence, "Keyboard confidence editing stopped working"
+                spinner.setValue(original_confidence)
+        if family in {"regression", "sroc"}:
+            if family == "sroc":
+                import re
+                from xml.etree import ElementTree as ET
+                curve = max(ET.parse(initial_svg).iter("{http://www.w3.org/2000/svg}polyline"),
+                            key=lambda node: len(node.get("points", "")))
+                stroke = re.search(r"(?:^|;)\s*stroke:\s*(#[0-9A-Fa-f]{6})", curve.get("style", ""))
+                rendered_color = stroke[1] if stroke else "#000000"
+                record("sroc-unedited-curve-color", dialog, rendered=rendered_color,
+                       editor=dialog.sroc_curve_color.text())
+                assert QtGui.QColor(dialog.sroc_curve_color.text()).name() == QtGui.QColor(rendered_color).name()
+                lower, upper = dialog.sroc_y_lower, dialog.sroc_y_upper
+            else:
+                lower, upper = dialog.plot_lb_le, dialog.plot_ub_le
+            original_bounds = lower.text(), upper.text()
+            original_files = snapshot()
+            for limits in (("70", "60"), ("1", "1"), ("nan", "60")):
+                lower.setText(limits[0])
+                upper.setText(limits[1])
+                click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+                record("plot-invalid-bounds-preserved", dialog, family=family, bounds=limits,
+                       error=dialog._commit_error.text())
+                assert not dialog._commit_error.isHidden(), (family, limits, "No validation message")
+                assert snapshot() == original_files, (family, limits, "Invalid draft changed the plot bundle")
+            lower.setText(original_bounds[0])
+            upper.setText(original_bounds[1])
+            if family == "regression":
+                original_ticks = dialog.x_ticks_le.text()
+                # This fixture uses publication year, not latitude. Keep its
+                # fitted range while checking zero as a numeric moderator tick.
+                dialog.x_ticks_le.setText("0,1990,2000")
+                click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+                record("bubble-zero-moderator-tick", dialog, error=dialog._commit_error.text())
+                assert dialog._commit_error.isHidden(), dialog._commit_error.text()
+                lower.setText(original_bounds[0])
+                upper.setText(original_bounds[1])
+                dialog.x_ticks_le.setText(original_ticks)
+                click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
         if family in {"forest", "cumulative", "leave-one-out", "subgroup"}:
             original_style = dialog.style_cbo.currentText()
             original_directions = (dialog.favours_left.text(), dialog.favours_right.text())
@@ -828,6 +913,67 @@ def plots(app, window, family, record, *, view=None):
         assert dialog.figure_caption.text() == ""
         dialog.reject()
     modal(app, FunnelPlotEditorDialog if funnel else EditPlotDialog, reopen_without_caption, lambda: context("Edit plot…"))
+    if funnel:
+        last_good = snapshot()
+
+        def invalid_settings(dialog):
+            def warning(message):
+                record("funnel-invalid-settings-blocked", message, family=family, message=message.text())
+                click(app, message.button(QtWidgets.QMessageBox.StandardButton.Ok))
+
+            dialog.x_lower_edit.setText("0")
+            dialog.x_upper_edit.clear()
+            modal(app, QtWidgets.QMessageBox, warning,
+                  lambda: click(app, dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply)))
+            assert snapshot() == last_good
+            dialog.x_upper_edit.setText("2")
+            dialog.x_ticks_edit.setText("0,wrong,2")
+            modal(app, QtWidgets.QMessageBox, warning,
+                  lambda: click(app, dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply)))
+            assert snapshot() == last_good
+            if family == "contour":
+                dialog.x_ticks_edit.setText("0,1,2")
+                dialog.contour_levels_edit.setText("90,wrong,99")
+                modal(app, QtWidgets.QMessageBox, warning,
+                      lambda: click(app, dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply)))
+                assert snapshot() == last_good
+            dialog.reject()
+
+        modal(app, FunnelPlotEditorDialog, invalid_settings, lambda: context("Edit plot…"))
+
+        def caption_only(dialog):
+            dialog.figure_caption.setText("Caption-only accepted edit")
+            click(app, dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+
+        modal(app, FunnelPlotEditorDialog, caption_only, lambda: context("Edit plot…"))
+        assert view.plot_service.load_params(artifact.params_path)["plot_caption"] == "Caption-only accepted edit"
+        caption_export = Path(sys.argv[2]) / (family + "-caption-only.svg")
+        view.plot_service.export(regenerator="funnel", params_path=artifact.params_path, output_path=str(caption_export))
+        assert "Caption-only accepted edit" in caption_export.read_text()
+        record("funnel-caption-only-persisted", view, family=family, exports={"svg": str(caption_export)})
+
+        # The missing bundle contains different data from the live R globals.
+        # Presence validation must fail before any component is loaded.
+        from rc_metastudio import r_bridge as r
+        from rc_metastudio.plot_service import PlotServiceError
+        import shutil
+        incomplete = Path(sys.argv[2]) / (family + "-incomplete")
+        r.load_vars_for_plot(artifact.params_path)
+        names = list(r.execute_r_string("om.data@study.names"))
+        r.execute_r_string('om.data@study.names <- paste0("Other analysis ", seq_along(om.data@study.names))')
+        r.execute_r_function("save", list="om.data", file=str(incomplete) + ".data")
+        shutil.copyfile(str(artifact.params_path) + ".params", str(incomplete) + ".params")
+        r.load_vars_for_plot(artifact.params_path)
+        missing_export = Path(sys.argv[2]) / (family + "-must-not-exist.svg")
+        try:
+            view.plot_service.export(regenerator="funnel", params_path=str(incomplete), output_path=str(missing_export))
+        except PlotServiceError:
+            pass
+        else:
+            raise AssertionError("Incomplete funnel bundle was exported")
+        assert not missing_export.exists()
+        assert list(r.execute_r_string("om.data@study.names")) == names
+        record("funnel-missing-bundle-blocked", view, family=family, prefix=str(incomplete), study_names=names)
     view.close()
 
 
@@ -850,8 +996,11 @@ def export_formats(app, view, directory, family, record, invoke=None):
             QtWidgets.QFileDialog,
             "getSaveFileName",
             return_value=(str(destination), ""),
-        ):
+        ) as picker:
             invoke(extension, action_label)
+        assert picker.call_args is not None
+        name_filter = picker.call_args.args[3] if len(picker.call_args.args) > 3 else picker.call_args.kwargs.get("filter", "")
+        assert f"*.{extension}" in name_filter, (extension, name_filter)
         assert destination.is_file(), destination
         if extension == "svg":
             renderer = QSvgRenderer(str(destination))
@@ -875,6 +1024,11 @@ def export_formats(app, view, directory, family, record, invoke=None):
 
             with Image.open(destination) as image:
                 assert image.width > 100 and image.height > 100
+                if extension == "tiff":
+                    dpi = tuple(float(value) for value in image.info.get("dpi", ()))
+                    record("publication-raster-resolution", view, family=family,
+                           pixels=image.size, dpi=dpi, exports={extension: str(destination)})
+                    assert len(dpi) == 2 and min(dpi) >= 600, (family, "Publication TIFF is below 600 dpi", dpi)
                 assert image.crop((0, 0, 1, 1)).convert("RGB").getpixel((0, 0)) == (255, 255, 255)
                 image.load()
                 assert (
@@ -956,6 +1110,7 @@ def calculators(app, window, mode, record):
         editor = next((field for field in table.findChildren(QtWidgets.QLineEdit) if field.isVisible()), None)
         assert editor is not None, (mode, row, column)
         QTest.keyClick(editor, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
+        QTest.keyClick(editor, QtCore.Qt.Key.Key_Backspace)
         QTest.keyClicks(editor, str(value))
         QTest.keyClick(editor, QtCore.Qt.Key.Key_Tab)
         app.processEvents()
@@ -1009,6 +1164,38 @@ def calculators(app, window, mode, record):
         observed[metric] = {"actual": value, "expected": expected}
 
     def drive(dialog):
+        if mode == "diagnostic-metrics":
+            original_count = dialog.two_by_two_table.item(0, 0).text()
+            def dismiss_invalid(message):
+                assert "Counts cannot be negative" in message.text()
+                click(app, message.button(QtWidgets.QMessageBox.StandardButton.Ok))
+            modal(app, QtWidgets.QMessageBox, dismiss_invalid,
+                  lambda: cell(dialog.two_by_two_table, 0, 0, "-1"))
+            assert dialog.two_by_two_table.item(0, 0).text() == original_count
+            cell(dialog.two_by_two_table, 0, 0, original_count)
+            record("diagnostic-valid-unchanged-recommit", dialog,
+                   count=original_count, warning=dialog.inconsistencyLabel.text(),
+                   warning_visible=not dialog.inconsistencyLabel.isHidden())
+            assert dialog.inconsistencyLabel.isHidden(), "Valid count recommit left a stale warning"
+            assert list(dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)) == before
+        if mode == "binary-metrics":
+            original = list(dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names))
+            cell(dialog.raw_data_table, 0, 1, "")
+            deleted = list(dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names))
+            assert deleted[:2] == [original[0], None], deleted
+            record("calculator-binary-derived-total-deleted", dialog, raw=deleted)
+            click(app, dialog.clear_button)
+            cell(dialog.raw_data_table, 0, 2, "10")
+            cell(dialog.raw_data_table, 0, 0, "11")
+            assert not dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
+            record("calculator-binary-impossible-partial-counts", dialog)
+            click(app, dialog.clear_button)
+            assert dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
+            assert dialog.inconsistencyLabel.isHidden()
+            for row in (0, 1):
+                events, total = original[row * 2:row * 2 + 2]
+                cell(dialog.raw_data_table, row, 0, events)
+                cell(dialog.raw_data_table, row, 1, total - events)
         if mode.startswith("back-"):
             click(app, dialog.clear_button)
             if family == "binary":
@@ -1022,6 +1209,7 @@ def calculators(app, window, mode, record):
                     math.exp(math.log(effect) - z * se),
                     math.exp(math.log(effect) + z * se),
                 )
+                observed["reconstruction_interval"] = values
             elif family == "continuous":
                 dialog.effect_combo_box.setCurrentIndex(
                     dialog.effect_combo_box.findData("MD")
@@ -1218,6 +1406,17 @@ def calculators(app, window, mode, record):
             point, lower, upper = [transform(value) for value in values]
             z = r_bridge.get_confidence_multiplier_from_r(95)
             observed["authority_entered"] = [point, (upper - point) / z]
+            if family in {"binary", "continuous"}:
+                from rc_metastudio import calculator_routines
+                calculator_routines.update_calculator_readout(dialog, family)
+                expected_se = (upper - point) / z
+                assert f"{expected_se:.4f}" in dialog.wald_readout.text(), dialog.wald_readout.text()
+                record("asymmetric-entered-wald-source", dialog, estimate=point, lower=lower,
+                       upper=upper, source_se=expected_se, readout=dialog.wald_readout.text(),
+                       readout_visible=dialog.wald_readout.isVisible())
+                assert dialog.wald_readout.isVisible(), "Entered estimate hides the SE/Z/P readout"
+                bounds = QtCore.QRect(dialog.wald_readout.mapTo(dialog, QtCore.QPoint()), dialog.wald_readout.size())
+                assert dialog.rect().contains(bounds), (dialog.rect(), bounds)
             actual_entered = dialog.analysis_unit.get_entered_effect_and_ci(
                 dialog.current_effect, dialog.arm_key
             )
@@ -1226,6 +1425,17 @@ def calculators(app, window, mode, record):
                 for a, b in zip(actual_entered, (point, lower, upper))
             ), actual_entered
         elif mode == "pre-post":
+            original_raw = list(dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names))
+            dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
+            assert dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names) == original_raw
+            dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("summary"))
+            assert dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names) == original_raw
+            cell(dialog.simple_table, 0, 0, "0")
+            assert not dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
+            click(app, dialog.clear_button)
+            assert dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
+            assert dialog.summary_error.isHidden()
+            record("calculator-invalid-summary-clear", dialog, original=original_raw)
             dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
             click(app, dialog.clear_button)
             combo = dialog.effect_combo_box
@@ -1248,6 +1458,13 @@ def calculators(app, window, mode, record):
                 math.isclose(a, b, abs_tol=0.0001) for a, b in zip(actual, expected)
             ), (actual, expected)
             preview(dialog, "MD")
+            cell(dialog.g1_pre_post_table, 0, 1, "")
+            deleted = list(dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names))
+            assert deleted[:3] == [None, None, None], deleted
+            assert dialog.effect_text_box.text() == ""
+            record("calculator-pre-post-required-mean-deleted", dialog, raw=deleted)
+            cell(dialog.g1_pre_post_table, 0, 1, "10")
+            assert all(math.isclose(a, b, abs_tol=0.0001) for a, b in zip(dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names), expected))
             observed["raw"] = expected
         else:
             combo = dialog.effect_combo_box
@@ -1262,6 +1479,17 @@ def calculators(app, window, mode, record):
                     "diagnostic": ["Sens", "Spec"],
                 }[family]
             )
+            if mode == "onearm-proportion":
+                combo.setCurrentIndex(combo.findData("PFT"))
+                app.processEvents()
+                a, n = dialog.analysis_unit.get_raw_data_for_arm(dialog.arm_names[0])
+                expected = r_bridge.execute_r_string(
+                    f"local({{e <- metafor::escalc(measure='PFT', xi={a}, ni={n}); "
+                    f"metafor::transf.ipft(e$yi, ni={n})}})"
+                )[0]
+                actual = float(dialog.effect_text_box.text())
+                assert math.isclose(actual, expected, abs_tol=.0001), (actual, expected, n)
+                record("pft-actual-sample-size", dialog, events=a, n=n, expected=float(expected), actual=actual)
             for metric in metrics:
                 index = (
                     combo.findData(metric)
@@ -1394,7 +1622,30 @@ def calculators(app, window, mode, record):
         )
         QTest.mouseClick(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=point)
 
-    modal(app, kind, drive, launch)
+    acceptance_notifications = []
+
+    def observe_acceptance():
+        model = window.model
+        unit = model.get_current_analysis_unit_for_study(0)
+        acceptance_notifications.append({
+            "raw": list(unit.get_raw_data_for_arms(model.arm_names)),
+            "effect_cells": [str(model.data(model.index(0, column))) for column in model.OUTCOMES[:3]],
+        })
+
+    if mode == "back-binary":
+        window.model.modelReset.connect(observe_acceptance)
+    try:
+        modal(app, kind, drive, launch)
+    finally:
+        if mode == "back-binary":
+            window.model.modelReset.disconnect(observe_acceptance)
+    if mode == "back-binary":
+        record("calculator-acceptance-notifications", window, notifications=acceptance_notifications,
+               expected_interval=observed["reconstruction_interval"])
+        accepted = [state for state in acceptance_notifications if state["raw"] == observed["accepted_raw"]]
+        assert accepted, acceptance_notifications
+        expected_cells = [str(window.model.format_float(value)) for value in observed["reconstruction_interval"]]
+        assert all(state["effect_cells"] == expected_cells for state in accepted), (accepted, expected_cells)
     assert window.model.get_studies(False)[0].include
     assert (
         sum(study.include for study in window.model.get_studies(False)) == included_before
@@ -1643,6 +1894,9 @@ def table_covariates(app, window, record):
         s.id: (s.label, dict(s.covariate_values), s.include)
         for s in model.current_sheet.rows
     }
+    from tests.e2e.covariate_menu import check_sort_and_rename, header_action
+    check_sort_and_rename(app, window, dose_id, record)
+    model = window.model
     table.scrollTo(window.model.index(0, window.model.NAME))
     app.processEvents()
     # A real header context event reaches sorting, including identity preservation.
@@ -1804,17 +2058,22 @@ def table_covariates(app, window, record):
     sheet_id = window.model.current_sheet_id
     other_sheet = window.model.dataset.sheets[1]
     other_before = [(r.id, dict(r.covariate_values)) for r in other_sheet.rows], list(other_sheet.covariates)
-    dose = next(c for c in window.model.current_sheet.covariates if c["id"] == dose_id)
     def convert(dialog):
         assert dialog.cov_model.rowCount() == 19
         assert dialog.cov_model.setData(dialog.cov_model.index(0, 2), "Low")
         dialog.accept()
-    modal(app, CovariateTypeDialog, convert, lambda: window.change_covariate_type(dose))
+    modal(app, CovariateTypeDialog, convert,
+          lambda: header_action(app, window, dose_id, "Create category copy of Dose…", record))
     converted = window.model.current_sheet.covariates[-1]
     assert converted["name"] == "Dose (category)"
     assert window.model.current_sheet.rows[0].covariate_values[converted["id"]] == "Low"
-    window._commit_model_operation(lambda: window.model.rename_covariate("Dose (category)", "Dose category"))
-    window.delete_covariate(converted)
+    from rc_metastudio.edit_name_dialogs import EditCovariateNameDialog
+    def rename_copy(dialog):
+        dialog.group_name_le.setText("Dose category")
+        dialog.accept()
+    modal(app, EditCovariateNameDialog, rename_copy,
+          lambda: header_action(app, window, converted["id"], "Rename covariate Dose (category)…", record))
+    header_action(app, window, converted["id"], "Delete covariate Dose category…", record)
     assert converted["id"] not in [c["id"] for c in window.model.current_sheet.covariates]
     window.undo()
     assert converted["id"] in [c["id"] for c in window.model.current_sheet.covariates]

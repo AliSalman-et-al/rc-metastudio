@@ -257,7 +257,7 @@ def select_studies_for_covariates(
 ) -> StudySelectionResult:
     """Select included studies with complete values for selected covariates."""
     covariate_values = {
-        covariate['name']: {row.id:row.covariate_values[covariate['id']] for row in model.current_sheet.rows if row.covariate_values.get(covariate['id']) is not None}
+        covariate['name']: {row.id:row.covariate_values[covariate['id']] for row in model.current_sheet.rows if row.covariate_values.get(covariate['id']) is not None and str(row.covariate_values[covariate['id']]).strip()}
         for covariate in selected_covariates
     }
     studies = []

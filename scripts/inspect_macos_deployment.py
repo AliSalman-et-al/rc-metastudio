@@ -283,6 +283,7 @@ def validate_r_delivery_identity(
         raise MacOSDeploymentInspectionError(
             "macOS R integration-kit identity is invalid"
         )
+    _validate_kit_probe_paths(app_root, derivation, probe_r, probe_rpy2)
     return _r_kit_identity_result(kit_manifest_path, derivation_path, kit_manifest)
 
 
@@ -341,6 +342,8 @@ def _valid_r_kit_identity(
 ) -> bool:
     if not _valid_r_kit_manifest_header(manifest, target, architecture):
         return False
+    if probe_r.get("kit_sha256") != manifest.get("kit_sha256"):
+        return False
     if derivation.get("kit_sha256") != manifest.get("kit_sha256"):
         return False
     if not _valid_r_kit_derivation(manifest, derivation, target):
@@ -375,6 +378,21 @@ def _valid_r_kit_probe_digests(
         and Path(str(probe_r.get("shared_library_path", ""))).name
         == Path(str(shared_library.get("path", ""))).name
     )
+
+
+def _validate_kit_probe_paths(app_root: Path, derivation: dict, probe_r: dict, probe_rpy2: dict) -> None:
+    frameworks = app_root / "Contents/Frameworks"
+    for name, observed in (("api_bridge", probe_rpy2.get("api_bridge_path")),
+                           ("r_shared_library", probe_r.get("shared_library_path"))):
+        record = derivation.get("final", {}).get(name, {})
+        relative = record.get("path")
+        if not isinstance(relative, str) or not isinstance(observed, str):
+            raise MacOSDeploymentInspectionError("R kit probe paths are incomplete")
+        expected = (frameworks / relative).resolve()
+        if (not expected.is_relative_to(app_root.resolve())
+                or not expected.is_file() or Path(observed).resolve() != expected
+                or sha256_file(expected) != record.get("sha256")):
+            raise MacOSDeploymentInspectionError("R kit probe paths differ from packaged derivation")
 
 
 def _r_kit_identity_result(
@@ -2655,6 +2673,22 @@ def _surface_scale_values(item: dict[str, object]) -> bool:
     )
 
 
+def _validate_shipped_samples(deployment: dict, smoke: dict) -> None:
+    prefix = "Contents/Resources/sample_projects/"
+    files = deployment.get("inventory", {}).get("files", [])
+    shipped = {item["path"][len(prefix):]: item.get("sha256") for item in files
+               if item.get("path", "").startswith(prefix) and item["path"].endswith(".rcms")}
+    manifest = next((item.get("sha256") for item in files
+                     if item.get("path") == prefix + "manifest.json"), None)
+    samples = smoke.get("workflows", {}).get("sample_projects", {})
+    records = samples.get("projects", [])
+    observed = {item.get("project"): item.get("sha256") for item in records}
+    if (not shipped or shipped != observed or len(records) != len(observed)
+            or samples.get("manifest_sha256") != manifest
+            or not _workflow_samples_valid(samples, records)):
+        raise MacOSDeploymentInspectionError("sample inventory differs from shipped deployment")
+
+
 def _validate_extracted_qualification(
     extracted_probe_path: Path,
     extracted_deployment_path: Path,
@@ -2693,6 +2727,12 @@ def _validate_extracted_deployment(
     target: str,
 ) -> None:
     contract = TARGET_CONTRACTS[target]
+    original_files = deployment.get("inventory", {}).get("files")
+    extracted_files = extracted_deployment.get("inventory", {}).get("files")
+    if (not original_files or not extracted_files
+            or sorted(original_files, key=lambda item: item["path"])
+            != sorted(extracted_files, key=lambda item: item["path"])):
+        raise MacOSDeploymentInspectionError("extracted ZIP inventory differs from archive deployment")
     valid = (
         _extracted_stack_matches(extracted_deployment, target, contract)
         and _extracted_source_matches(extracted_deployment, deployment)
@@ -2866,6 +2906,7 @@ def write_qualification_evidence(
     _validate_extracted_deployment(
         deployment, extracted_probe, extracted_deployment, target
     )
+    _validate_shipped_samples(deployment, extracted_smoke)
     architecture = TARGET_CONTRACTS[target]["architecture"]
     _validate_profile(r_runtime_profile, architecture)
     smoke = finalize_smoke_evidence(
@@ -2875,6 +2916,7 @@ def write_qualification_evidence(
         require_atomic_completion=True,
         persist=False,
     )
+    _validate_shipped_samples(deployment, smoke)
     archive_report = json.loads(archive_inspection.read_text(encoding="utf-8"))
     validate_direct_build_manifest(
         json.loads(direct_build_manifest.read_text(encoding="utf-8")), target=target

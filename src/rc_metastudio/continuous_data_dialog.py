@@ -238,13 +238,10 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             confidence_multiplier=self.confidence_multiplier,
         )
         if mode == "pre-post":
-            # Summary rows are derived from the visible pre/post tables in this mode.
-            for row in range(self.simple_table.rowCount()):
-                for column in range(self.simple_table.columnCount()):
-                    self._set_val(row, column, None, supplied=False)
-            self._copy_raw_data_from_table_to_analysis_unit()
+            # Selecting a method does not replace an existing arm summary.
             self.impute_pre_post_data(self.g1_pre_post_table, 0)
             self.impute_pre_post_data(self.g2_pre_post_table, 1)
+            self.update_effect_from_raw_data()
         else:
             self._copy_raw_data_from_table_to_analysis_unit()
             self.update_effect_from_raw_data()
@@ -656,10 +653,10 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             val_str, new_text
         )
         if no_errors is False:
-            self._validation_failed = True
             self.restore_analysis_unit_and_tables(
                 old_analysis_unit, old_tables_data, old_correlation
             )
+            self._validation_failed = True
             with ExitStack() as signal_blockers:
                 for widget in self.entry_widgets:
                     signal_blockers.enter_context(QSignalBlocker(widget))
@@ -869,6 +866,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 return
             with QSignalBlocker(self.simple_table):
                 required(self.simple_table.item(row, col), "edited summary cell").setData(Qt.ItemDataRole.UserRole, True)
+                required(self.simple_table.item(row, 0), "summary source cell").setData(Qt.ItemDataRole.UserRole + 1, False)
             self.impute_data()
         except Exception as e:
             msg = e.args[0]
@@ -991,9 +989,12 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
             for row in range(nrows):
                 for col in range(ncols):
-                    value, supplied = old_table_data[row][col]
+                    value, supplied, pre_post_derived = old_table_data[row][col]
                     self._set_val(row, col, value, table=table, supplied=supplied)
+                    with QSignalBlocker(table):
+                        required(table.item(row, col), "restored summary cell").setData(Qt.ItemDataRole.UserRole + 1, pre_post_derived)
         self._fit_tables_to_contents()
+        self._validate_summary_tables()
 
     def restore_analysis_unit_and_tables(
         self, old_analysis_unit, old_tables_data, old_correlation
@@ -1005,11 +1006,14 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     def save_tables_data(self):
         old_tables_data = []
         for table in self.tables:
-            old_tables_data.append([
-                [(required(table.item(row, col), "summary snapshot cell").text(), bool(required(table.item(row, col), "summary snapshot cell").data(Qt.ItemDataRole.UserRole)))
-                 for col in range(table.columnCount())]
-                for row in range(table.rowCount())
-            ])
+            rows = []
+            for row in range(table.rowCount()):
+                cells = []
+                for col in range(table.columnCount()):
+                    item = required(table.item(row, col), "summary snapshot cell")
+                    cells.append((item.text(), bool(item.data(Qt.ItemDataRole.UserRole)), bool(item.data(Qt.ItemDataRole.UserRole + 1))))
+                rows.append(cells)
+            old_tables_data.append(rows)
         return old_tables_data
 
     def _save_analysis_unit_and_table_states(
@@ -1026,7 +1030,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         if use_old_value:
             # From before most recently changed cell changed
             old_cell = old_tables_data[self._get_index_of_table(table)][row][col]
-            old_tables_data[self._get_index_of_table(table)][row][col] = (old_value, old_cell[1])
+            old_tables_data[self._get_index_of_table(table)][row][col] = (old_value, old_cell[1], old_cell[2])
 
         old_analysis_unit = copy.deepcopy(analysis_unit)
         return old_analysis_unit, old_tables_data
@@ -1134,6 +1138,15 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 field_name = self._imputation_field_name(var_name)
                 val = computed_vals[field_name]
                 self._set_val(group_index, var_index, val, supplied=field_name in {"n", "mean", "sd"})
+            with QSignalBlocker(self.simple_table):
+                required(self.simple_table.item(group_index, 0), "derived arm source").setData(Qt.ItemDataRole.UserRole + 1, True)
+        elif required(self.simple_table.item(group_index, 0), "derived arm source").data(Qt.ItemDataRole.UserRole + 1):
+            for var_index in range(self.simple_table.columnCount()):
+                self._set_val(group_index, var_index, None, supplied=False)
+            self.analysis_unit.set_effect_for_source(
+                "derived_preview", self.current_effect, self.arm_key, None, None, None
+            )
+            self.set_current_effect()
 
         # also update the pre/post tables
         pre_vals = cast(ContinuousValues, results_from_r["pre"])
@@ -1317,13 +1330,14 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             blocked = table.blockSignals(True)
             try:
                 for row_index, row in enumerate(rows):
-                    for column_index, (text, supplied) in enumerate(row):
+                    for column_index, (text, supplied, pre_post_derived) in enumerate(row):
                         item = table.item(row_index, column_index)
                         if item is None:
                             item = QTableWidgetItem()
                             table.setItem(row_index, column_index, item)
                         item.setText(text)
                         item.setData(Qt.ItemDataRole.UserRole, supplied)
+                        item.setData(Qt.ItemDataRole.UserRole + 1, pre_post_derived)
             finally:
                 table.blockSignals(blocked)
 
@@ -1633,6 +1647,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
         # For undo/redo
         self.update_back_calculation_button()
+        self._validate_summary_tables()
         new_analysis_unit, new_tables_data = self._save_analysis_unit_and_table_states(
             tables=[self.simple_table, self.g1_pre_post_table, self.g2_pre_post_table],
             analysis_unit=self.analysis_unit,

@@ -4,13 +4,46 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
+import tempfile
+import shutil
 from datetime import date
 from pathlib import Path
 
 
 VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
+
+
+def _restore_updates(backups: dict[Path, Path], recovery: Path) -> None:
+    failed = []
+    for path, backup in backups.items():
+        try:
+            shutil.copyfile(backup, path)
+        except OSError:
+            failed.append(str(path))
+    if failed:
+        print(f"Version recovery retained at {recovery}: {failed}", file=sys.stderr)
+    else:
+        shutil.rmtree(recovery)
+
+
+def _write_updates(updates: dict[Path, str]) -> None:
+    # Keep exact recovery bytes until every write has succeeded. A failed
+    # rollback leaves this directory available for manual recovery.
+    recovery = Path(tempfile.mkdtemp(prefix="rcms-version-recovery-"))
+    backups = {path: recovery / str(index) for index, path in enumerate(updates)}
+    for path, backup in backups.items():
+        shutil.copyfile(path, backup)
+    (recovery / "paths.json").write_text(json.dumps({backup.name: str(path) for path, backup in backups.items()}, indent=2), encoding="utf-8")
+    try:
+        for path, text in updates.items():
+            write_text(path, text)
+    except BaseException:
+        _restore_updates(backups, recovery)
+        raise
+    shutil.rmtree(recovery)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -46,6 +79,11 @@ def main(argv: list[str] | None = None) -> int:
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", args.date):
         parser.error("date must use YYYY-MM-DD")
 
+    try:
+        date.fromisoformat(args.date)
+    except ValueError:
+        parser.error("date must be a valid calendar date")
+
     root = args.root.resolve()
     replacements = [
         (
@@ -78,28 +116,28 @@ def main(argv: list[str] | None = None) -> int:
         ),
     ]
 
+    updates: dict[Path, str] = {}
     for path, pattern, replacement in replacements:
-        replace_once(path, pattern, replacement)
+        text = updates[path] if path in updates else read_text(path)
+        updated, count = re.subn(pattern, replacement, text)
+        if count != 1:
+            raise SystemExit(f"Expected exactly one version surface match in {path}")
+        updates[path] = updated
 
     if not args.no_changelog:
-        ensure_changelog_section(root / "CHANGELOG.md", args.version)
+        path = root / "CHANGELOG.md"
+        updates[path] = changelog_text(path, args.version)
+
+    _write_updates(updates)
 
     print(f"Bumped RC MetaStudio version surfaces to {args.version}.")
     return 0
 
 
-def replace_once(path: Path, pattern: str, replacement: str) -> None:
-    text = read_text(path)
-    updated, count = re.subn(pattern, replacement, text, count=1)
-    if count != 1:
-        raise SystemExit(f"Expected exactly one version surface match in {path}")
-    write_text(path, updated)
-
-
-def ensure_changelog_section(path: Path, version: str) -> None:
+def changelog_text(path: Path, version: str) -> str:
     text = read_text(path)
     if re.search(rf"(?m)^## {re.escape(version)}(?:\s|-)", text):
-        return
+        return text
 
     first_release = re.search(r"(?m)^## \d+\.\d+\.\d+(?:\s|-)", text)
     if first_release is None:
@@ -113,7 +151,7 @@ def ensure_changelog_section(path: Path, version: str) -> None:
         "- TODO: summarize user-visible changes.\n\n"
     )
     updated = text[: first_release.start()] + section + text[first_release.start() :]
-    write_text(path, updated)
+    return updated
 
 
 def read_text(path: Path) -> str:

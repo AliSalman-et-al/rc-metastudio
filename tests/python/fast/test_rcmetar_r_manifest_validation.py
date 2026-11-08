@@ -125,7 +125,7 @@ def test_r_verifiers_preserve_symlinked_python_identity(monkeypatch, tmp_path):
                 },
             )
             if hasattr(module, "verify_rpy2_identities"):
-                patch.setattr(module, "verify_rpy2_identities", lambda: None)
+                patch.setattr(module, "verify_rpy2_identities", lambda *a: None)
             patch.setattr(module, "run", stop_after_first_child)
             args = argparse.Namespace(
                 root=REPO_ROOT,
@@ -545,7 +545,7 @@ install_rcms_binary_packages(
   {json.dumps(library)},
   database = archive_db,
   download_binary = function(packages, destdir, ...) {{
-    archive <- file.path(destdir, "root_1.0.zip")
+    archive <- file.path(destdir, "root_1.0.{"tgz" if sys.platform == "darwin" else "zip"}")
     writeBin(charToRaw("retained root archive"), archive)
     matrix(c("root", archive), nrow = 1)
   }},
@@ -556,9 +556,9 @@ install_rcms_binary_packages(
   installed_in_target = function() installed_packages,
   package_loadable = function(package) package %in% installed_packages
 )
-if (!identical(basename(retained_archives), "root_1.0.zip")) stop("retained archive was not passed to binary installer")
+if (!identical(basename(retained_archives), "root_1.0.{"tgz" if sys.platform == "darwin" else "zip"}")) stop("retained archive was not passed to binary installer")
 archive_lines <- readLines(archive_evidence)
-if (!any(grepl("root_1.0.zip=sha256:876e271c21d2211a48f258bcf036d820d3df0464e65392e9be84424ffa1f147c", archive_lines, fixed = TRUE))) {{
+if (!any(grepl("root_1.0.{"tgz" if sys.platform == "darwin" else "zip"}=sha256:876e271c21d2211a48f258bcf036d820d3df0464e65392e9be84424ffa1f147c", archive_lines, fixed = TRUE))) {{
   stop("retained archive SHA256 evidence was not emitted")
 }}
 Sys.unsetenv("RCMS_R_PACKAGE_ARCHIVE_DIR")

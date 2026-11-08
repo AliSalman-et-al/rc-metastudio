@@ -110,6 +110,19 @@ def test_developer_assembly_emits_evidence_accepted_by_both_inspectors(
     finalized = inspect_windows_deployment.finalize_smoke_evidence(output, log)
     assert finalized["execution"]["clean_exit"] is True
 
+    for defect in ("aggregate", "observation"):
+        samples = json.loads(samples_path.read_text())
+        if defect == "aggregate":
+            samples["passed"] = False
+        else:
+            samples["passed"] = True
+            samples["projects"][0]["opened_in_packaged_application"] = False
+        samples_path.write_text(json.dumps(samples))
+        with pytest.raises(ValueError, match="sample observation"):
+            assembler.assemble(workflow_observation=workflow_path, surface_records=surfaces_path,
+                sample_observations=samples_path, sample="BCG.rcms", output=tmp_path / "bad.json")
+        assert not (tmp_path / "bad.json").exists()
+
 
 def test_assembler_keeps_surface_directory_records_in_place(monkeypatch, tmp_path):
     from scripts import assemble_packaged_smoke_evidence as assembler
@@ -153,7 +166,7 @@ def test_assembler_keeps_surface_directory_records_in_place(monkeypatch, tmp_pat
         encoding="utf-8",
     )
     samples = tmp_path / "samples.json"
-    samples.write_text("{}", encoding="utf-8")
+    samples.write_text(json.dumps({"passed": True, "manifest_sha256": "a"*64, "projects": [{"project": "BCG.rcms", "sha256": "b"*64, "semantic_sha256": "c"*64, "opened_in_packaged_application": True}]}), encoding="utf-8")
     output = tmp_path / "packaged-smoke.json"
     monkeypatch.setattr(
         assembler,
@@ -286,17 +299,33 @@ def test_packaged_runner_reports_timeout_with_command(monkeypatch, tmp_path):
         )
 
 
-def test_assembler_rejects_unobserved_reopen_analysis(tmp_path):
+def test_assembler_rejects_unobserved_reopen_analysis(tmp_path, monkeypatch):
     from scripts import assemble_packaged_smoke_evidence as assembler
 
+    observation = {"summary": "summary", "svg_paths": {},
+        "edit_observed": True, "analysis_observed": True, "reopen_observed": True,
+        "analysis_after_reopen_observed": True,
+        "locale_inputs": [
+            {"operation": "analysis", "locale": "en_US", "decimal_point": ".", "input": "1.2", "canonical_value": 1.2, "summary": "summary", "svg_paths": {}},
+            {"operation": "locale", "locale": "de_DE", "decimal_point": ",", "input": "1,2", "canonical_value": 1.2, "summary": "summary", "svg_paths": {}},
+        ]}
     workflow = tmp_path / "workflow.json"
-    workflow.write_text(json.dumps({"edit_observed": True, "analysis_observed": True, "reopen_observed": True, "analysis_after_reopen_observed": False}), encoding="utf-8")
     surfaces = tmp_path / "surfaces.json"
     surfaces.write_text("[]", encoding="utf-8")
     samples = tmp_path / "samples.json"
-    samples.write_text("{}", encoding="utf-8")
-    with pytest.raises((ValueError, KeyError)):
-        assembler.assemble(workflow_observation=workflow, surface_records=surfaces, sample_observations=samples, sample="BCG.rcms", output=tmp_path / "out.json")
+    samples.write_text(json.dumps({"passed": True, "manifest_sha256": "a"*64, "projects": [{"project": "BCG.rcms", "sha256": "b"*64, "semantic_sha256": "c"*64, "opened_in_packaged_application": True}]}), encoding="utf-8")
+    def assemble():
+        workflow.write_text(json.dumps(observation), encoding="utf-8")
+        return assembler.assemble(workflow_observation=workflow, surface_records=surfaces,
+            sample_observations=samples, sample="BCG.rcms", output=tmp_path / "out.json")
+    assert assemble()["passed"]
+    observation["analysis_after_reopen_observed"] = False
+    with pytest.raises(ValueError, match="workflow observation contains an unsuccessful operation"):
+        assemble()
+    # The negative control must fail if the required reopen guard is removed.
+    monkeypatch.setattr(assembler, "_workflow_flags_valid", lambda value: all(value[key] for key in
+        ("edit_observed", "analysis_observed", "reopen_observed")))
+    assert assemble()["passed"]
 
 
 def test_assembler_rejects_reused_locale_operation_observation(tmp_path):
@@ -326,6 +355,6 @@ def test_assembler_rejects_reused_locale_operation_observation(tmp_path):
     surfaces = tmp_path / "surfaces.json"
     surfaces.write_text("[]", encoding="utf-8")
     samples = tmp_path / "samples.json"
-    samples.write_text("{}", encoding="utf-8")
+    samples.write_text(json.dumps({"passed": True, "manifest_sha256": "a"*64, "projects": [{"project": "BCG.rcms", "sha256": "b"*64, "semantic_sha256": "c"*64, "opened_in_packaged_application": True}]}), encoding="utf-8")
     with pytest.raises(ValueError, match="distinct locale operations"):
         assembler.assemble(workflow_observation=workflow, surface_records=surfaces, sample_observations=samples, sample="BCG.rcms", output=tmp_path / "out.json")

@@ -64,6 +64,12 @@ try {
         throw "Core and RemainingSurfaces GUI selections overlap or omit a GUI test."
     }
 
+    # Ty resolves generated modules from their flat build search paths while
+    # runtime imports remain package-qualified through rc_metastudio.forms.
+    uv run python -c "from scripts.verify import run_typing; from pathlib import Path; import sys; run_typing(Path(sys.argv[1]))" $BuildRoot
+    if ($LASTEXITCODE -ne 0) { throw "Repository-wide strict type verification failed." }
+
+
     if ($Section -eq "RemainingSurfaces") {
         uv run pytest -W error @remainingSurfaceTests
         if ($LASTEXITCODE -ne 0) { throw "Qt6 remaining-surface tests failed." }
@@ -81,11 +87,6 @@ try {
         }
         return
     }
-
-    # Ty resolves generated modules from their flat build search paths while
-    # runtime imports remain package-qualified through rc_metastudio.forms.
-    uv run python -c "from scripts.verify import run_typing; from pathlib import Path; run_typing(Path(r'$BuildRoot'))"
-    if ($LASTEXITCODE -ne 0) { throw "Repository-wide strict type verification failed." }
 
     # Core owns every GUI module except the five deliberately isolated
     # RemainingSurfaces modules, in one process with one QApplication owner.

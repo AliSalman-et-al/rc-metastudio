@@ -162,10 +162,11 @@ def main() -> int:
     owner = Owner()
     baseline = len(app.topLevelWidgets())
     calls = []
+    returned_results = []
 
     def run_backend(request: dict[str, object]) -> dict[str, object]:
         calls.append(dict(request))
-        return {
+        result = {
             "version": 1,
             "texts": {"Summary": "ok"},
             "images": {},
@@ -184,6 +185,9 @@ def main() -> int:
                 }
             ],
         }
+
+        returned_results.append(result)
+        return result
 
     _install_backend_test_double(backend, "run_versioned_analysis_request", run_backend)
     _install_backend_test_double(backend, "reset_r_working_directory", lambda: None)
@@ -254,6 +258,12 @@ def main() -> int:
             original_critical,
         )
     _phase("success-run-return")
+    if calls != [request.to_mapping()]:
+        raise RuntimeError("successful backend did not receive the exact selected request")
+    from rc_metastudio.analysis_results import parse_analysis_result
+
+    if len(returned_results) != 1 or owner.results != [configuration._with_result_identity(parse_analysis_result(returned_results[0]))]:
+        raise RuntimeError("successful analysis did not deliver the exact typed result to owner")
     if not created_progress_dialogs:
         raise RuntimeError("real analysis run did not create AnalysisProgressDialog")
     progress = created_progress_dialogs[-1]

@@ -1,7 +1,7 @@
 """Reviewers' cross-outcome summary, recalculated on every opening."""
 from rc_metastudio.runtime_types import required
 import copy
-from rc_metastudio import app_error_handler
+from rc_metastudio import app_error_handler, qt_layout
 from PyQt6 import QtCore, QtWidgets
 from rc_metastudio.analysis_results import ResultSection, ResultTable
 from rc_metastudio.manuscript_report import ManuscriptReport, write_docx, write_pdf
@@ -93,7 +93,7 @@ class SummaryOfFindingsDialog(QtWidgets.QDialog):
             button = QtWidgets.QPushButton(label, self)
             button.clicked.connect(callback)
             buttons.addWidget(button)
-        progress = AnalysisProgressDialog(self)
+        progress = AnalysisProgressDialog(self, operation='Building summary of findings…')
         progress.show()
         QtWidgets.QApplication.processEvents()
         try:
@@ -110,6 +110,7 @@ class SummaryOfFindingsDialog(QtWidgets.QDialog):
             self.table.setColumnWidth(column, width)
         header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.Stretch)
         required(self.table.verticalHeader(), "findings row header").setDefaultSectionSize(64)
+        qt_layout.protect_scroll_settings(self.table)
 
     def _populate_row(self, row, sheet, values):
         for column, value in enumerate(values):

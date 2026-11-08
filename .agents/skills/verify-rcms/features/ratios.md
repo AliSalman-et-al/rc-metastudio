@@ -23,3 +23,8 @@ Complete double-zero IRR rows show Not estimable and interval dashes, with an ex
 Native Windows driving uses separate test-owned projects/settings and the ordinary app entry point. Review compact workspaces, raw/reported/log dialogs, actual analysis results and funnel layouts for clipping, spacing, scale labels, focus and scroll access. Pair each action with its observed result and save a replayable evidence record.
 
 CSV automation starts at the import page and controls the picker return; it does not prove every earlier import entry point. The targeted moderator is numeric; factor/interactions and legacy bootstrap/permutation are not claimed as newly demonstrated HR/IRR GUI workflows. Backend inference coverage does not prove every UI estimator/inference pair. Windows source evidence does not qualify release packages, other operating systems, or fractional-DPI displays. The [verification report](../../../../docs/hr-irr-verification.md) owns actual run status and limitations.
+
+Format switching must convert the estimate and both retained bounds together.
+Accepting log/SE retains the supported source interval on log scale, so reopen
+and reversal remain coherent. Accept validates the selected raw or reported source;
+inactive field edits do not replace the previously accepted inactive source.

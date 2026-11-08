@@ -2,6 +2,25 @@
 
 Users select included studies, choose a statistical method and parameters, run the analysis, and read package-authoritative numerical results and plots.
 
+`analysis-dialog` measures Method-to-Plots growth near the working area's lower
+edge for binary, continuous, HR and diagnostic forms. It requires the full frame
+and both fixed button centers inside the available screen geometry, including
+after scrolling plot settings. Offscreen geometry does not establish native
+monitor placement or physical button reachability; use a rebuilt native drive
+for those checks.
+
+`options-zero-cells` checks the applied correction explanation in both the Text
+report and manuscript Methods for zero-cell-only and all-study policies. It also
+asserts the selected PFT metric and compares its pooled display and calculation-scale
+SE with an independent metafor fit and harmonic-mean inversion. The PFT report
+includes only the active Intervention arm's participant total and group heading;
+raw grid previews can differ
+from fitted study estimates when the selected analysis applies a correction.
+`rm5-import` checks that entered-only generic-IV fits omit this explanation in
+both report surfaces, including when complete counts remain stored but the
+calculator explicitly selects entered effects. It compares the actual fitted
+coefficient and the imported HR/OR/MD results with their independent references.
+
 ## Sub-features
 
 - `analysis-binary`: amino project, binary random-effects analysis.
@@ -53,6 +72,12 @@ Covariate injection constructs a controlled fixture; these drives do not establi
 
 `analysis-data-*` starts **Dataset > New Dataset** through `action_new_dataset`, clicks the real data-type button, advances the metric/name pages, finishes, populates study cells through validated table edits, saves/reopens `typed.rcms`, then analyzes. It does not bypass wizard type selection.
 
+The standard untouched one-arm proportion and mean fixtures require their active
+Group total of 135 in the report and a single Group manuscript heading. Entered-only
+coefficient and generic fixtures require unavailable participant totals. Stored
+inactive arms remain available for metric switching. Custom names, prepared study
+subsets and alternate workflows need their own explicit participant expectations.
+
 | Scenario suffix | Arms/type | Default metric | Supported metric domain to verify after shared reconstruction changes |
 | --- | --- | --- | --- |
 | `onearm-proportion` | One arm binary proportion | PR | PR, PLN, PLO, PAS, PFT |
@@ -103,8 +128,14 @@ displayed study-prefix, omission, subgroup and overall estimate, lower/upper CI
 and standard error matches independent public `metafor` fits within `1e-6`.
 These replace the fixed and multimetric route checks in the removed standalone
 smoke matrix. Subgroup fixtures inject a factor; `project-table-covariates` proves
-the actual covariate creation path. Single-study rows use the public study effect
-and normal interval, reflecting the application's single-study result contract.
+the actual covariate creation path. With normal inference, single-study rows use
+the public study effect and normal interval. Continuous and inverse-variance
+HR/IRR sequential requests with t, Knapp–Hartung or modified Knapp–Hartung inference
+retain insufficient singleton subsets as non-estimable, with the selected inference
+and reason; later estimable prefixes retain authority inference. MH subgroup
+difference tests are omitted. The installed-package statistics-02 tests cover these
+boundaries; the options drives exercise pooled nondefault inference, not every
+non-estimable GUI case.
 
 Automated `options-binary`, `options-continuous`, and `options-diagnostic` drive REML/Knapp-Hartung, PM/t, and ML/modified Knapp-Hartung through actual parameter controls at 90% CI and six digits. All eight pooled/inference/heterogeneity fields match independent public `metafor` fits. `options-confidence-inclusion` changes global CI, undoes/redoes it, excludes Gonzalez using the inclusion cell, saves/reopens, and verifies the inherited 90% CI, 18-study weights and independent subset fit. `options-zero-cells` enters single- and double-zero binary rows and drives both UI-supported policies (`only0`, `all`), checking the independent fit and all 19 weights. The backend-only `if0all` policy remains in the public-package matrix; it is not claimed as binary selector coverage.
 

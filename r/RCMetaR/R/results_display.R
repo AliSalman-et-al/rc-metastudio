@@ -491,7 +491,9 @@ adjusted_means_display <- function(res, params, display.data) {
     stop("meta-regression result has fewer coefficients than factor levels")
   }
 
-  mult <- get.mult.from.conf.level(params$conf.level)
+  mult <- if (isTRUE((res$test %||% rcmetar.inference.method(params)) %in% c("t", "knha", "adhoc"))) {
+    qt(1 - (1 - validate.conf.level(params$conf.level)/100)/2, df=res$k-res$p)
+  } else get.mult.from.conf.level(params$conf.level)
   digits.str <- paste("%.", display.digits(params), "f", sep="")
 
   se.digits.str <- paste("%.", display.digits(params, minimum=3L), "f", sep="")

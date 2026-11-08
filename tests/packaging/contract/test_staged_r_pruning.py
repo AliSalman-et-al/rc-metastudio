@@ -2,6 +2,7 @@
 from pathlib import Path
 import subprocess
 import sys
+import pytest
 
 
 def test_pruning_removes_development_aliases_and_rejects_broken_links(tmp_path):
@@ -13,7 +14,12 @@ def test_pruning_removes_development_aliases_and_rejects_broken_links(tmp_path):
     (home / "include").mkdir()
     (home / "doc").mkdir()
     (home / "share").mkdir()
-    (version / "Headers").symlink_to(Path("Resources/include"), target_is_directory=True)
+    try:
+        (version / "Headers").symlink_to(Path("Resources/include"), target_is_directory=True)
+    except OSError as exc:
+        if sys.platform == "win32" and getattr(exc, "winerror", None) == 1314:
+            pytest.skip("Windows symlink privilege unavailable; run pruning in a symlink-capable lane")
+        raise
     (version / "Documentation").symlink_to(Path("Resources/doc"), target_is_directory=True)
     (framework / "Versions/Current").symlink_to("4.6", target_is_directory=True)
     (framework / "Resources").symlink_to(Path("Versions/Current/Resources"), target_is_directory=True)

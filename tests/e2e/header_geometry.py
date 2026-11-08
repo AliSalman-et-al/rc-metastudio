@@ -7,6 +7,7 @@ from tests.python.gui.test_types import required
 
 def check_headers(source, names):
     tree = ET.parse(source)
+    device_left, _, device_width, _ = map(float, tree.getroot().attrib['viewBox'].split())
     texts = list(tree.iter('{http://www.w3.org/2000/svg}text'))
     first = min(float(n.attrib['y']) for n in texts if ''.join(n.itertext()).startswith('Fixture 1'))
     caption_nodes = set()
@@ -37,6 +38,7 @@ def check_headers(source, names):
         left = x-width if anchor == 'end' else x-width/2 if anchor == 'middle' else x
         box = (left, y-size*.8, left+width, y+size*.2)
         text = ''.join(node.itertext())
+        assert box[0] >= device_left and box[2] <= device_left + device_width, ('header outside device horizontally', source, text, box)
         assert box[1] >= 4, ('header outside device top', source, text, box)
         for line in tree.iter('{http://www.w3.org/2000/svg}line'):
             a,b,c,d = (float(line.attrib[key]) for key in ('x1','y1','x2','y2'))

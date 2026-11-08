@@ -131,6 +131,16 @@ _DRIVER = textwrap.dedent(
                     },
                 },
             )
+            from types import SimpleNamespace
+            from rc_metastudio import meta_globals
+            from rc_metastudio.analysis_unit import AnalysisUnit
+            sheet = SimpleNamespace(data_type={
+                "binary": meta_globals.BINARY,
+                "continuous": meta_globals.CONTINUOUS,
+                "diagnostic": meta_globals.DIAGNOSTIC,
+            }[data_type], sub_type=None)
+            for study in self._studies:
+                study.analysis_unit = AnalysisUnit(sheet)
 
         @property
         def current_sheet(self):
@@ -138,6 +148,9 @@ _DRIVER = textwrap.dedent(
 
         def get_studies(self, only_if_included=True):
             return self._studies
+
+        def get_current_arm_key(self):
+            return self._studies[0].analysis_unit.get_arm_strings(self.current_effect)[0]
 
         def get_current_estimates_and_standard_errors(self, **kwargs):
             return [-0.5596157879, -0.8295982833], [0.6172133998, 0.7152562329]
@@ -190,6 +203,8 @@ _DRIVER = textwrap.dedent(
     binary_model = FakeModel("binary", [[6, 27, 9, 27], [3, 59, 7, 64]])
     r_bridge.dataset_to_simple_binary_r_object(binary_model, var_name="issue146_binary")
     assert_text_survived("issue146_binary")
+    assert list(ro.r("issue146_binary@g1O1")) == [6, 3]
+    assert list(ro.r("issue146_binary@g1O2")) == [21, 56]
 
     continuous_model = FakeModel(
         "continuous",
@@ -201,12 +216,14 @@ _DRIVER = textwrap.dedent(
         var_name="issue146_continuous",
     )
     assert_text_survived("issue146_continuous")
+    assert list(ro.r("issue146_continuous@N1")) == [27, 59]
     # The production forest renderer cannot compose a study label from a
     # missing year. Preserve the conversion assertion above, then provide a
     # valid analysis fixture for the cross-layer display contract below.
     ro.r("issue146_continuous@years[2] <- 2001L")
 
-    analysis_dir = tempfile.mkdtemp(prefix="rcmetastudio-display-contract-")
+    analysis_dir = os.path.join(os.environ["RCMS_DRIVER_OWNED_CWD"], "display-contract")
+    os.makedirs(analysis_dir)
     forest_path = os.path.join(analysis_dir, "forest.png")
     forest_display_path = os.path.join(analysis_dir, "forest.display.svg")
     continuous_result = r_bridge.run_versioned_analysis_request(
@@ -660,199 +677,197 @@ _SUMMARY_PRINT_DRIVER = textwrap.dedent(
         sys.stdout.write("SKIP R executable not found\\n")
         sys.exit(42)
 
-    with tempfile.TemporaryDirectory() as r_lib:
-        env = dict(os.environ)
-        existing_r_libs = env.get("R_LIBS")
-        env["R_LIBS"] = (
-            r_lib if not existing_r_libs
-            else r_lib + os.pathsep + existing_r_libs
-        )
-        install = subprocess.run(
-            [r_exe, "CMD", "INSTALL", "--library=" + r_lib, os.path.join(repo_root, "r", "RCMetaR")],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True,
-            env=env,
-        )
-        if install.returncode != 0:
-            sys.stdout.write("SKIP R CMD INSTALL RCMetaR failed\\n%s\\n%s\\n" % (install.stdout[-2000:], install.stderr[-2000:]))
-            sys.exit(42)
+    r_lib = os.environ["RCMS_SUMMARY_OWNED_LIBRARY"]
+    env = dict(os.environ)
+    for name in ("R_LIBS", "R_LIBS_USER", "RCMS_R_LIBS"):
+        env[name] = r_lib
+    install = subprocess.run(
+        [r_exe, "CMD", "INSTALL", "--library=" + r_lib, os.path.join(repo_root, "r", "RCMetaR")],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        env=env,
+    )
+    sys.stdout.write(install.stdout)
+    sys.stderr.write(install.stderr)
+    if install.returncode != 0:
+        sys.stdout.write("FAIL R CMD INSTALL RCMetaR failed\\n%s\\n%s\\n" % (install.stdout[-2000:], install.stderr[-2000:]))
+        sys.exit(1)
 
-        env["RCMS_REQUIRE_IN_PROCESS_RPY2"] = "1"
-        env["R_LIBS"] = (
-            r_lib if not existing_r_libs
-            else r_lib + os.pathsep + existing_r_libs
-        )
-        os.environ.update(env)
-        sys.path.insert(0, os.path.join(repo_root, "src"))
-        sys.path.insert(0, os.path.join(repo_root, "tests", "python", "fast"))
+    env["RCMS_REQUIRE_IN_PROCESS_RPY2"] = "1"
+    os.environ.update(env)
+    sys.path.insert(0, os.path.join(repo_root, "src"))
+    sys.path.insert(0, os.path.join(repo_root, "tests", "python", "fast"))
 
-        from rc_metastudio import r_backend
-        r_backend.install_r_backend()
-        try:
-            from rc_metastudio import r_bridge
-            r_bridge.RLibraryLoader().load_rcmetar()
-        except Exception as exc:
-            sys.stdout.write("SKIP %s: %s\\n" % (exc.__class__.__name__, exc))
-            sys.exit(42)
+    from rc_metastudio import r_backend
+    r_backend.install_r_backend()
+    try:
+        from rc_metastudio import r_bridge
+        r_bridge.RLibraryLoader().load_rcmetar()
+    except Exception as exc:
+        sys.stdout.write("SKIP %s: %s\\n" % (exc.__class__.__name__, exc))
+        sys.exit(42)
 
-        ro = r_bridge.ro
-        summary_expr = textwrap.dedent(
-            '''
-            summary <- structure(
-              list(
-                model.title = "Binary Random-Effects Model\\\\n\\\\nMetric: Odds Ratio",
-                table.titles = c(" Model Results"),
-                arrays = list(
-                  arr1 = structure(
-                    rbind(
-                      c("Estimate", "Lower bound", "Upper bound", "p-Value"),
-                      c("0.770", "0.485", "1.222", "0.267")
-                    ),
-                    class = "summary.data"
-                  )
-                )
-              ),
-              class = "summary.display"
-            )
-            paste(capture.output(print(summary)), collapse="\\n")
-            '''
-        )
-        rendered = str(ro.r(summary_expr)[0])
-        assert "Binary Random-Effects Model" in rendered, rendered
-        assert "Model Results" in rendered, rendered
-        assert " Model Results" not in rendered, rendered
-        assert "p-value" in rendered, rendered
-        assert "p-Value" not in rendered, rendered
-        assert "\\n\\n\\n" not in rendered, rendered
-        assert "Estimate" in rendered and "0.770" in rendered, rendered
-        assert "$model.title" not in rendered, rendered
-        assert "$arrays" not in rendered, rendered
-        assert 'attr(,"class")' not in rendered, rendered
-        assert bool(ro.r('!is.null(getS3method("print", "summary.display", optional=TRUE))')[0])
-        assert bool(ro.r('!is.null(getS3method("print", "summary.data", optional=TRUE))')[0])
-        assert str(ro.r('RCMetaR:::forest.plot.p.value.label(0.0002, 3)')[0]) == "P< 0.001"
-        assert str(ro.r('RCMetaR:::forest.plot.p.value.label(0.015, 3)')[0]) == "P=0.015"
-
-        # Application reports must not pass through native console encoding.
-        unicode_summary = ro.r('''
-          structure(list(
-            model.title=paste0("Model ", intToUtf8(0x03c4)),
-            table.titles="Heterogeneity",
-            arrays=list(rbind(
-              c("Subgroups", paste0(intToUtf8(0x03c4), intToUtf8(0x00b2))),
-              c(paste0("Group ", intToUtf8(0x03b1)), "0.378")
-            )),
-            notes=paste0("Interval ", intToUtf8(0x2264), " 1 ", intToUtf8(0x2013), " preserved")
-          ), class="summary.display")
-        ''')
-        unicode_before = r_bridge.parse_out_results(ro.r.list(Summary=unicode_summary)).texts["Summary"]
-        old_locale = str(ro.r('Sys.getlocale("LC_CTYPE")')[0])
-        try:
-            assert str(ro.r('Sys.setlocale("LC_CTYPE", "C")')[0]) == "C"
-            unicode_after = r_bridge.parse_out_results(ro.r.list(Summary=unicode_summary)).texts["Summary"]
-            assert str(ro.r('Sys.getlocale("LC_CTYPE")')[0]) == "C"
-            assert unicode_after == unicode_before, (unicode_before, unicode_after)
-            for label in ["τ²", "Group α", "≤", "–"]:
-                assert label in unicode_after, unicode_after
-        finally:
-            ro.r['Sys.setlocale']("LC_CTYPE", old_locale)
-
-        meta_regression_expr = textwrap.dedent(
-            '''
-            dir.create("r_tmp", showWarnings=FALSE)
-            rcmetar.set.global.conf.level(95)
-
-            regression_display <- RCMetaR:::create.regression.display(
-              list(
-                b = c(0.1, 0.2),
-                ci.lb = c(0.0, 0.1),
-                ci.ub = c(0.2, 0.3),
-                se = c(0.01, 0.02),
-                zval = c(10, 2.5),
-                pval = c(0.0002, 0.267),
-                method = "REML", test = "z", k = 13, p = 2, m = 1,
-                tau2 = 0.0764, se.tau2 = 0.0591, I2 = 68.39, H2 = 3.16, R2 = 75.62,
-                QM = 16.3571, QMp = 0.0002, QE = 30.7331, QEp = 0.0012
-              ),
-              list(digits = 3, measure = "OR", inference.method = "z"),
-              list(
-                cov.display.col = c("intercept", "latitude"),
-                levels.display.col = character(0),
-                studies.display.col = character(0),
-                factor.n.levels = numeric(0),
-                n.cont.covs = 1,
-                cont.cov.names = "latitude",
-                cont.cov.ranges = list(latitude=c(6, 55)),
-                factor.cov.names = character(0),
-                factor.ref.levels = character(0)
+    ro = r_bridge.ro
+    loaded = str(ro.r('find.package("RCMetaR")')[0])
+    assert os.path.normcase(os.path.realpath(loaded)) == os.path.normcase(os.path.realpath(os.path.join(r_lib, "RCMetaR"))), loaded
+    print("INSTALLED SOURCE", loaded, flush=True)
+    summary_expr = textwrap.dedent(
+        '''
+        summary <- structure(
+          list(
+            model.title = "Binary Random-Effects Model\\\\n\\\\nMetric: Odds Ratio",
+            table.titles = c(" Model Results"),
+            arrays = list(
+              arr1 = structure(
+                rbind(
+                  c("Estimate", "Lower bound", "Upper bound", "p-Value"),
+                  c("0.770", "0.485", "1.222", "0.267")
+                ),
+                class = "summary.data"
               )
             )
-            regression_text <- paste(capture.output(print(regression_display)), collapse="\\n")
-            stopifnot(grepl("< 0.001", regression_text, fixed=TRUE))
-            stopifnot(grepl("Heterogeneity explained (R²)", regression_text, fixed=TRUE))
-            stopifnot(grepl("Overall moderators (Qₘ)", regression_text, fixed=TRUE))
-
-            advanced_data <- new(
-              "BinaryData",
-              g1O1=c(6, 3, 19, 26, 8, 6),
-              g1O2=c(21, 56, 145, 129, 24, 74),
-              g2O1=c(9, 7, 13, 49, 6, 3),
-              g2O2=c(18, 57, 139, 96, 29, 73),
-              y=c(-0.5596157879, -0.8295982833, 0.3372298124, -0.9291879730, 0.4769240721, 0.6795415285),
-              SE=c(0.6172133998, 0.7152562329, 0.3790058736, 0.2775577532, 0.6064784349, 0.7260937568),
-              study.names=c("Gonzalez", "Prins", "Maller", "Marik", "Muijsken", "De Vries"),
-              years=as.integer(c(1993, 1993, 1993, 1991, 1988, 1990)),
-              covariates=list(
-                new("CovariateValues", cov.name="year", cov.vals=c(1993, 1993, 1993, 1991, 1988, 1990), cov.type="continuous", ref.var="1993")
-              )
-            )
-            params <- data.frame(
-              conf.level=95, digits=3, measure="OR", rm.method="DL", to="only0", adjust=0.5,
-              fp_col1_str="Study or Subgroup", fp_col2_str="[default]", fp_col3_str="Ev/Trt", fp_col4_str="Ev/Ctrl",
-              fp_xlabel="[default]", fp_outpath="./r_tmp/meta_regression_names_forest.png",
-              fp_plot_lb="[default]", fp_plot_ub="[default]", fp_show_col1=TRUE,
-              fp_show_col2=TRUE, fp_show_col3=TRUE, fp_show_col4=TRUE,
-              fp_show_summary_line=TRUE, fp_xticks="[default]"
-            )
-            rcmetar.run.analysis(
-              advanced_data,
-              list(version=1, method="meta.regression", params=params, workflow="meta-regression")
-            )
-            '''
+          ),
+          class = "summary.display"
         )
-        meta_reg_result = ro.r(meta_regression_expr)
-        parsed_meta_regression = r_bridge.parse_out_results(meta_reg_result)
-        regression_summary = parsed_meta_regression.texts["Summary"]
-        assert "Overall moderators (Qₘ)" in regression_summary, regression_summary
-        assert "Residual heterogeneity (Qₑ)" in regression_summary, regression_summary
-        assert "Q<U+2098>" not in regression_summary, regression_summary
-        assert "Q<U+2091>" not in regression_summary, regression_summary
-        weights = parsed_meta_regression.texts["Weights"]
-        assert weights.splitlines()[0].strip() == "Study names  Weights", weights
-        assert "study names" not in weights, weights
-        assert "Gonzalez" in weights, weights
-        assert "De Vries" in weights, weights
-        assert "Study 1" not in weights, weights
+        paste(capture.output(print(summary)), collapse="\\n")
+        '''
+    )
+    rendered = str(ro.r(summary_expr)[0])
+    assert "Binary Random-Effects Model" in rendered, rendered
+    assert "Model Results" in rendered, rendered
+    assert " Model Results" not in rendered, rendered
+    assert "p-value" in rendered, rendered
+    assert "p-Value" not in rendered, rendered
+    assert "\\n\\n\\n" not in rendered, rendered
+    assert "Estimate" in rendered and "0.770" in rendered, rendered
+    assert "$model.title" not in rendered, rendered
+    assert "$arrays" not in rendered, rendered
+    assert 'attr(,"class")' not in rendered, rendered
+    assert bool(ro.r('!is.null(getS3method("print", "summary.display", optional=TRUE))')[0])
+    assert bool(ro.r('!is.null(getS3method("print", "summary.data", optional=TRUE))')[0])
+    assert str(ro.r('RCMetaR:::forest.plot.p.value.label(0.0002, 3)')[0]) == "P< 0.001"
+    assert str(ro.r('RCMetaR:::forest.plot.p.value.label(0.015, 3)')[0]) == "P=0.015"
 
-        named_weights_result = ro.r(
-            '''
-            list(
-              Weights = structure(c(12.345, 67.89), names = c("Alpha Study", "Beta Study")),
-              input_params = list(digits = 3)
-            )
-            '''
+    # Application reports must not pass through native console encoding.
+    unicode_summary = ro.r('''
+      structure(list(
+        model.title=paste0("Model ", intToUtf8(0x03c4)),
+        table.titles="Heterogeneity",
+        arrays=list(rbind(
+          c("Subgroups", paste0(intToUtf8(0x03c4), intToUtf8(0x00b2))),
+          c(paste0("Group ", intToUtf8(0x03b1)), "0.378")
+        )),
+        notes=paste0("Interval ", intToUtf8(0x2264), " 1 ", intToUtf8(0x2013), " preserved")
+      ), class="summary.display")
+    ''')
+    unicode_before = r_bridge.parse_out_results(ro.r.list(Summary=unicode_summary)).texts["Summary"]
+    old_locale = str(ro.r('Sys.getlocale("LC_CTYPE")')[0])
+    try:
+        assert str(ro.r('Sys.setlocale("LC_CTYPE", "C")')[0]) == "C"
+        unicode_after = r_bridge.parse_out_results(ro.r.list(Summary=unicode_summary)).texts["Summary"]
+        assert str(ro.r('Sys.getlocale("LC_CTYPE")')[0]) == "C"
+        assert unicode_after == unicode_before, (unicode_before, unicode_after)
+        for label in ["τ²", "Group α", "≤", "–"]:
+            assert label in unicode_after, unicode_after
+    finally:
+        ro.r['Sys.setlocale']("LC_CTYPE", old_locale)
+
+    meta_regression_expr = textwrap.dedent(
+        '''
+        dir.create("r_tmp", showWarnings=FALSE)
+        rcmetar.set.global.conf.level(95)
+
+        regression_display <- RCMetaR:::create.regression.display(
+          list(
+            b = c(0.1, 0.2),
+            ci.lb = c(0.0, 0.1),
+            ci.ub = c(0.2, 0.3),
+            se = c(0.01, 0.02),
+            zval = c(10, 2.5),
+            pval = c(0.0002, 0.267),
+            method = "REML", test = "z", k = 13, p = 2, m = 1,
+            tau2 = 0.0764, se.tau2 = 0.0591, I2 = 68.39, H2 = 3.16, R2 = 75.62,
+            QM = 16.3571, QMp = 0.0002, QE = 30.7331, QEp = 0.0012
+          ),
+          list(digits = 3, measure = "OR", inference.method = "z"),
+          list(
+            cov.display.col = c("intercept", "latitude"),
+            levels.display.col = character(0),
+            studies.display.col = character(0),
+            factor.n.levels = numeric(0),
+            n.cont.covs = 1,
+            cont.cov.names = "latitude",
+            cont.cov.ranges = list(latitude=c(6, 55)),
+            factor.cov.names = character(0),
+            factor.ref.levels = character(0)
+          )
         )
-        named_weights = r_bridge.parse_out_results(named_weights_result).texts["Weights"]
-        assert named_weights.splitlines()[0].strip() == "Study names  Weights", named_weights
-        assert "Alpha Study" in named_weights, named_weights
-        assert "Beta Study" in named_weights, named_weights
-        assert "Study 1" not in named_weights, named_weights
+        regression_text <- paste(capture.output(print(regression_display)), collapse="\\n")
+        stopifnot(grepl("< 0.001", regression_text, fixed=TRUE))
+        stopifnot(grepl("Heterogeneity explained (R²)", regression_text, fixed=TRUE))
+        stopifnot(grepl("Overall moderators (Qₘ)", regression_text, fixed=TRUE))
 
-        sys.stdout.write("OK\\n")
-        sys.stdout.flush()
-        sys.stderr.flush()
-        os._exit(0)
+        advanced_data <- new(
+          "BinaryData",
+          g1O1=c(6, 3, 19, 26, 8, 6),
+          g1O2=c(21, 56, 145, 129, 24, 74),
+          g2O1=c(9, 7, 13, 49, 6, 3),
+          g2O2=c(18, 57, 139, 96, 29, 73),
+          y=c(-0.5596157879, -0.8295982833, 0.3372298124, -0.9291879730, 0.4769240721, 0.6795415285),
+          SE=c(0.6172133998, 0.7152562329, 0.3790058736, 0.2775577532, 0.6064784349, 0.7260937568),
+          study.names=c("Gonzalez", "Prins", "Maller", "Marik", "Muijsken", "De Vries"),
+          years=as.integer(c(1993, 1993, 1993, 1991, 1988, 1990)),
+          covariates=list(
+            new("CovariateValues", cov.name="year", cov.vals=c(1993, 1993, 1993, 1991, 1988, 1990), cov.type="continuous", ref.var="1993")
+          )
+        )
+        params <- data.frame(
+          conf.level=95, digits=3, measure="OR", rm.method="DL", to="only0", adjust=0.5,
+          fp_col1_str="Study or Subgroup", fp_col2_str="[default]", fp_col3_str="Ev/Trt", fp_col4_str="Ev/Ctrl",
+          fp_xlabel="[default]", fp_outpath="./r_tmp/meta_regression_names_forest.png",
+          fp_plot_lb="[default]", fp_plot_ub="[default]", fp_show_col1=TRUE,
+          fp_show_col2=TRUE, fp_show_col3=TRUE, fp_show_col4=TRUE,
+          fp_show_summary_line=TRUE, fp_xticks="[default]"
+        )
+        rcmetar.run.analysis(
+          advanced_data,
+          list(version=1, method="meta.regression", params=params, workflow="meta-regression")
+        )
+        '''
+    )
+    meta_reg_result = ro.r(meta_regression_expr)
+    parsed_meta_regression = r_bridge.parse_out_results(meta_reg_result)
+    regression_summary = parsed_meta_regression.texts["Summary"]
+    assert "Overall moderators (Qₘ)" in regression_summary, regression_summary
+    assert "Residual heterogeneity (Qₑ)" in regression_summary, regression_summary
+    assert "Q<U+2098>" not in regression_summary, regression_summary
+    assert "Q<U+2091>" not in regression_summary, regression_summary
+    weights = parsed_meta_regression.texts["Weights"]
+    assert weights.splitlines()[0].strip() == "Study names  Weights", weights
+    assert "study names" not in weights, weights
+    assert "Gonzalez" in weights, weights
+    assert "De Vries" in weights, weights
+    assert "Study 1" not in weights, weights
+
+    named_weights_result = ro.r(
+        '''
+        list(
+          Weights = structure(c(12.345, 67.89), names = c("Alpha Study", "Beta Study")),
+          input_params = list(digits = 3)
+        )
+        '''
+    )
+    named_weights = r_bridge.parse_out_results(named_weights_result).texts["Weights"]
+    assert named_weights.splitlines()[0].strip() == "Study names  Weights", named_weights
+    assert "Alpha Study" in named_weights, named_weights
+    assert "Beta Study" in named_weights, named_weights
+    assert "Study 1" not in named_weights, named_weights
+
+    sys.stdout.write("OK\\n")
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(0)
     """
 ).replace("__REPO_ROOT__", repr(REPO_ROOT))
 
@@ -883,4 +898,13 @@ def test_r_null_result_sections_are_omitted_before_formatting():
 def test_RCMetaR_summary_capture_uses_formatted_print_methods():
     env = dict(os.environ)
     env["RCMS_REQUIRE_IN_PROCESS_RPY2"] = "1"
-    run_python_driver(_SUMMARY_PRINT_DRIVER, env=env)
+    run_python_driver(_SUMMARY_PRINT_DRIVER, env=env, source_install=True)
+
+
+
+def test_summary_source_install_failure_is_not_a_skip():
+    import pytest
+    # Installation is the external boundary; fail before importing embedded R.
+    fault = _SUMMARY_PRINT_DRIVER.replace("import subprocess\n", "import subprocess\nfrom types import SimpleNamespace\nsubprocess.run = lambda *a, **k: SimpleNamespace(returncode=1, stdout='injected install failure', stderr='installer diagnostic')\n", 1)
+    with pytest.raises(AssertionError, match="driver failed .*rc=1"):
+        run_python_driver(fault, env=dict(os.environ))

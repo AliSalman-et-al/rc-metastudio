@@ -38,7 +38,7 @@ with patch('rc_metastudio.settings.get_base_path',return_value=str(work)):
   for family in ('diagnostic','hr','irr'):
    window.workspace.mark_saved();assert window.open(str(HERE/'raw'/('matrix-'+family)/'standard-input.rcms'),raise_on_error=True)
    # Enumerate actual type-dependent menu actions, not UI resource strings.
-   menu_rows=json.loads((HERE/'OPTIONS.json').read_text())
+   menu_rows=[]
    for menu in window.findChildren(QtWidgets.QMenu):
     menu_rows.append({'title':menu.title(),'actions':[{'text':a.text(),'enabled':a.isEnabled(),'tooltip':a.toolTip()} for a in menu.actions()]})
    (work/(family+'-menus.json')).write_text(json.dumps(menu_rows,indent=2)+'\n')

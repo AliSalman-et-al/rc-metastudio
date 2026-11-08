@@ -27,7 +27,7 @@
 #'   \code{"meta-regression"}.
 #' @param selected.cov Optional \code{CovariateValues} object or covariate name
 #'   used by subgroup requests.
-#' @param cond.means.data Optional conditional-means payload for meta-regression.
+#' @param cond.means.data Reserved conditional-means payload. Non-diagnostic conditional means are not supported and are rejected explicitly.
 #' @param stop.at.rma Logical flag forwarded to \code{meta.regression()}.
 #'
 #' @return A standard RCMetaR result list. The list is augmented with an
@@ -800,10 +800,29 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
 
     if (workflow == "subgroup") {
         selected.cov <- .rcmetar.resolve.selected.cov(om.data, request$selected.cov %||% selected.cov, params)
+        params$cov_name <- selected.cov@cov.name
+    }
+    conditional.means <- request$cond.means.data %||% cond.means.data
+    if (data.type != "diagnostic" &&
+            ((!is.null(conditional.means) && !identical(conditional.means, FALSE)) ||
+             identical(as.character(params$bootstrap.type), "boot.meta.reg.cond.means"))) {
+        stop("Conditional means are not supported by this analysis interface.", call.=FALSE)
     }
 
     if (!is.null(params$measure) && !identical(as.character(params$measure), metric)) {
         stop("Analysis request metric does not match params$measure.", call.=FALSE)
+    }
+
+    if (identical(data.type, "binary") && identical(metric, "PFT")) {
+        counts <- list(om.data@g1O1, om.data@g1O2)
+        if (!.rcmetar.has.complete.raw.data(counts, length(om.data@study.names)) ||
+                any(om.data@g1O1 < 0) || any(om.data@g1O2 < 0) ||
+                any(!is.finite(om.data@g1O1 + om.data@g1O2)) ||
+                any(om.data@g1O1 + om.data@g1O2 <= 0)) {
+            stop(paste("PFT requires complete finite nonnegative event and non-event counts",
+                       "with a positive finite sample size for every study;",
+                       "entered effects alone cannot be inverted to proportions."), call.=FALSE)
+        }
     }
 
     list(
@@ -811,7 +830,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
         method=method,
         params=params,
         workflow=workflow,
-        selected.cov=request$selected.cov %||% selected.cov,
+        selected.cov=selected.cov,
         cond.means.data=request$cond.means.data %||% cond.means.data,
         stop.at.rma=isTRUE(request$stop.at.rma %||% stop.at.rma)
     )

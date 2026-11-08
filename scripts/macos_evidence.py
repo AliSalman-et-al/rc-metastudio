@@ -94,7 +94,13 @@ def _retained_path(record: dict[str, object], label: str, evidence_dir: Path) ->
     relative = Path(raw_path)
     if relative.is_absolute() or ".." in relative.parts:
         _fail(f"{label} retained path must remain within the evidence directory")
-    return evidence_dir / relative
+    try:
+        target = (evidence_dir / relative).resolve()
+        if not target.is_relative_to(evidence_dir.resolve()):
+            _fail(f"{label} retained path must remain within the evidence directory")
+        return target
+    except (OSError, RuntimeError) as exc:
+        _fail(f"{label} retained path cannot resolve within the evidence directory: {exc}")
 
 
 def _validate_retained_file_record(
@@ -1147,9 +1153,70 @@ def _validate_retained_diagnostic(
     relative = Path(path)
     if relative.is_absolute() or ".." in relative.parts:
         _fail(f"diagnostic {name} path must remain within the evidence directory")
-    diagnostic_path = evidence_dir / relative
+    diagnostic_path = _retained_path({"retained_path": path}, f"diagnostic {name}", evidence_dir)
     if not diagnostic_path.is_file() or _sha256(diagnostic_path) != digest:
         _fail(f"diagnostic {name} digest does not match retained bytes")
+
+
+def _validate_diagnostic_graph(graph: dict[str, object], package: dict[str, object], evidence_dir: Path) -> None:
+    if graph.get("schema_version") != 1 or graph.get("architecture") != package["target_arch"]:
+        _fail("diagnostic packaged_r_graph has the wrong identity")
+    inventory_record = _mapping(package["inventory"], "inventory")
+    inventory = json.loads(_retained_path(inventory_record, "inventory", evidence_dir).read_text(encoding="utf-8"))
+    files = {item["path"]: item for item in inventory["files"]}
+    for key in ("api_bridge", "lib_r"):
+        if graph.get(key) not in files:
+            _fail(f"diagnostic packaged_r_graph {key} is absent from package")
+    bridge = str(graph["api_bridge"])
+    lib_r = str(graph["lib_r"])
+    if not bridge.startswith("Contents/Frameworks/") or "_rinterface_cffi_api" not in bridge or not lib_r.startswith("Contents/Frameworks/R.framework/"):
+        _fail("diagnostic packaged_r_graph paths do not identify the private R runtime")
+    native = graph.get("framework_mach_o")
+    if not isinstance(native, list) or not native:
+        _fail("diagnostic packaged_r_graph lacks its native inventory")
+    for raw_record in native:
+        record = _mapping(raw_record, "diagnostic graph native record")
+        path = "Contents/Frameworks/R.framework/" + str(record["path"])
+        if path not in files or record.get("sha256") != files[path].get("sha256") or record.get("architectures") != [package["target_arch"]]:
+            _fail("diagnostic packaged_r_graph inventory differs from package")
+
+
+def _validate_diagnostic_profile(profile: dict[str, object], package: dict[str, object]) -> None:
+    from rc_metastudio.macos_r_profile_schema import PROFILE_POLICY, PROFILE_EXCLUSION_PATHS
+    source = _mapping(profile.get("source_framework"), "diagnostic profile source")
+    if (profile.get("schema_version") != 1 or profile.get("phase") != "quarantine"
+            or profile.get("policy") != PROFILE_POLICY
+            or profile.get("post_profile_exclusions") != sorted(PROFILE_EXCLUSION_PATHS)
+            or source.get("version") != EXPECTED_VERSIONS["r"]
+            or source.get("expected_architecture") != package["target_arch"]
+            or not all(isinstance(source.get(key), str) and re.fullmatch(r"[0-9a-f]{64}", str(source[key]))
+                       for key in ("source_tree_identity_sha256", "pre_profile_tree_identity_sha256"))):
+        _fail("diagnostic r_profile_quarantine has the wrong identity")
+
+
+def _validate_diagnostic_contents(root: dict[str, object], evidence_dir: Path) -> None:
+    diagnostics = _mapping(root["diagnostics"], "diagnostics")
+    package = _mapping(root["package"], "package")
+    def read(name: str) -> str:
+        record = _mapping(diagnostics[name], name)
+        return _retained_path({"retained_path": record["path"]}, name, evidence_dir).read_text(encoding="utf-8")
+    try:
+        phases = [json.loads(line).get("phase") for line in read("packaged_phases").splitlines() if line.strip()]
+        if phases != ["python-entry", "private-r-owned", "qt-imported", "rpy2-api-imported", "clean-exit"]:
+            _fail("diagnostic packaged_phases has an incomplete phase sequence")
+        smoke = _mapping(json.loads(read("packaged_smoke")), "diagnostic packaged_smoke")
+        for key in ("qpa", "visible", "resource_registered", "svg_rendered", "r_result", "rpy2_mode", "clean_exit", "dependencies"):
+            if smoke.get(key) != package.get(key):
+                _fail(f"diagnostic packaged_smoke disagrees with package {key}")
+        for key in ("r_home", "cocoa_plugin"):
+            if not str(smoke.get(key, "")).endswith(str(package[key])):
+                _fail(f"diagnostic packaged_smoke disagrees with package {key}")
+        graph = _mapping(json.loads(read("packaged_r_graph")), "diagnostic packaged_r_graph")
+        _validate_diagnostic_graph(graph, package, evidence_dir)
+        profile = _mapping(json.loads(read("r_profile_quarantine")), "diagnostic r_profile_quarantine")
+        _validate_diagnostic_profile(profile, package)
+    except (ValueError, KeyError, TypeError, AttributeError) as exc:
+        _fail(f"diagnostic content is malformed: {exc}")
 
 
 def _validate_native_components(
@@ -1228,6 +1295,8 @@ def validate_evidence(
     )
 
     _validate_diagnostics(root.get("diagnostics"), evidence_dir)
+    if evidence_dir is not None:
+        _validate_diagnostic_contents(root, evidence_dir)
     _validate_native_components(
         root.get("native_components"),
         expected_machine,

@@ -75,7 +75,7 @@ class CovariateTypeModel(QAbstractTableModel):
         # now we add a covariate with the new type
         self.new_data_type = CONTINUOUS if covariate["data_type"] == FACTOR else FACTOR
 
-        self.update_included_studies()
+        self.update_preview_rows()
         self.add_covariate_with_new_type()
 
         self.refresh_covariate_values()
@@ -108,11 +108,11 @@ class CovariateTypeModel(QAbstractTableModel):
 
         self.dataset.covariates.append(self.new_covariate)
         for row in self.dataset.rows:
-            row.covariate_values[self.new_covariate["id"]] = guessed_vals.get(row.label)
+            row.covariate_values[self.new_covariate["id"]] = guessed_vals.get(row.id)
         self.reset_model()
 
     def covariate_values(self, covariate):
-        return {row.label: row.covariate_values.get(covariate["id"]) for row in self.dataset.rows}
+        return {row.id: row.covariate_values.get(covariate["id"]) for row in self.dataset.rows}
 
     def guess_at_values(self):
         covariate_values = self.covariate_values(
@@ -121,12 +121,12 @@ class CovariateTypeModel(QAbstractTableModel):
         guessed_vals_d = self.vals_to_new_vals(covariate_values)
 
         studies_to_guessed_vals = {}
-        for study in self.included_studies:
-            if study.label in covariate_values:
-                orig_val = covariate_values[study.label]
-                studies_to_guessed_vals[study.label] = guessed_vals_d.get(orig_val)
+        for study in self.preview_rows:
+            if study.id in covariate_values:
+                orig_val = covariate_values[study.id]
+                studies_to_guessed_vals[study.id] = guessed_vals_d.get(orig_val)
             else:
-                studies_to_guessed_vals[study.label] = None
+                studies_to_guessed_vals[study.id] = None
 
         return studies_to_guessed_vals
 
@@ -158,15 +158,15 @@ class CovariateTypeModel(QAbstractTableModel):
         return alpha_str
 
     def refresh_covariate_values(self):
-        self.update_included_studies()
+        self.update_preview_rows()
         covariate_values = self.covariate_values(self.covariate)
         new_cov_d = self.covariate_values(self.new_covariate)
 
         self.orig_cov_list, self.new_cov_list = [], []
-        for study in self.included_studies:
-            if study.label in covariate_values:
-                self.orig_cov_list.append(covariate_values[study.label])
-                self.new_cov_list.append(new_cov_d[study.label])
+        for study in self.preview_rows:
+            if study.id in covariate_values:
+                self.orig_cov_list.append(covariate_values[study.id])
+                self.new_cov_list.append(new_cov_d[study.id])
             else:
                 self.orig_cov_list.append(None)
                 self.new_cov_list.append(None)
@@ -174,22 +174,18 @@ class CovariateTypeModel(QAbstractTableModel):
 
         self.reset_model()
 
-    def update_included_studies(self):
-        study_list = []
-        for study in self.dataset.rows:
-            if study.include:
-                study_list.append(study)
-        self.included_studies = study_list
+    def update_preview_rows(self):
+        self.preview_rows = list(self.dataset.rows)
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
 
-        if not index.isValid() or not (0 <= index.row() < len(self.included_studies)):
+        if not index.isValid() or not (0 <= index.row() < len(self.preview_rows)):
             return None
 
         if role == Qt.ItemDataRole.DisplayRole:
             row, column = index.row(), index.column()
             if column == self.STUDY_COL:
-                return self.included_studies[row].label
+                return self.preview_rows[row].label
             elif column == self.ORIG_VAL:
                 if self.covariate["data_type"] == FACTOR:
                     return _to_native_text(self.orig_cov_list[row])
@@ -204,7 +200,7 @@ class CovariateTypeModel(QAbstractTableModel):
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         del parent
-        return len(self.included_studies)  # don't show blank study!
+        return len(self.preview_rows)
 
     def columnCount(self, parent: QModelIndex = QModelIndex()) -> int:
         del parent
@@ -213,12 +209,12 @@ class CovariateTypeModel(QAbstractTableModel):
     def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
         # don't allow users to mess with the original
         # covariate.
-        if index.isValid() and 0 <= index.row() < len(self.included_studies):
+        if index.isValid() and 0 <= index.row() < len(self.preview_rows):
             column = index.column()
 
             if column == self.NEW_VAL:
                 # then a (new) covariate value has been edited.
-                study = self.included_studies[index.row()]  # associated study
+                study = self.preview_rows[index.row()]  # associated study
                 new_value, converted_ok = _new_covariate_value(
                     self.new_covariate, value
                 )

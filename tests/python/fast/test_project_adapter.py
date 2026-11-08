@@ -144,3 +144,30 @@ def test_document_to_runtime_project_reconstructs_state_and_selection():
     assert runtime.model_state == {"current_sheet_id": "sheet"}
     assert runtime.dataset.sheets[0].settings == project["sheets"][0]["settings"]
     assert runtime.restored_selection is True
+
+
+
+def test_storage_boundary_revman_iv_subgroups_reopen(tmp_path):
+    import xml.etree.ElementTree as ET
+    from rc_metastudio.rm5_import import read_rm5
+    from rc_metastudio.project_format import save_project, load_project
+    root = ET.parse(Path(__file__).parents[2] / "fixtures/rm5/generic-derived.rm5")
+    for outcome in root.iter("IV_OUTCOME"):
+        outcome.set("SUBGROUPS", "YES")
+        for i, record in enumerate(list(outcome.findall("IV_DATA"))):
+            outcome.remove(record)
+            group = ET.SubElement(outcome, "IV_SUBGROUP", NO=str(i + 1), ID=f"group-{i + 1}")
+            label = f"Region {i}"
+            ET.SubElement(group, "NAME").text = label
+            group.append(record)
+    source = tmp_path / "subgroups.rm5"
+    root.write(source)
+    dataset = read_rm5(source).dataset
+    for sheet in dataset.sheets:
+        cov_id = sheet.covariates[0]["id"]
+        assert [r.covariate_values.get(cov_id) for r in sheet.rows] == ["Region 0", "Region 1", "Region 2"]
+    project = project_adapter.dataset_to_project(dataset)
+    state = dict(schema_version=3, current_sheet_id=dataset.sheets[0].id)
+    path = tmp_path / "import.rcms"
+    save_project(path, project, state)
+    assert project_adapter.dataset_to_project(project_adapter.document_to_runtime_project(load_project(path)).dataset) == project

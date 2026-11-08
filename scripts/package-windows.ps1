@@ -277,13 +277,25 @@ function Stage-AuthenticatedOfficialR {
         "/SUPPRESSMSGBOXES",
         "/SP-",
         "/NORESTART",
-        ('/DIR="{0}"' -f $rStage),
-        ('/LOG="{0}"' -f $installerLog)
+        ('/DIR={0}' -f $rStage),
+        ('/LOG={0}' -f $installerLog)
     )
     $registrySnapshots = Save-CurrentUserRInstallerState -BackupRoot "$rStage.registry-backup"
     try {
-        $process = Start-Process -FilePath $rInstaller -ArgumentList $installerArgs -Wait -PassThru
-        if ($process.ExitCode -ne 0 -or -not (Test-Path (Join-Path $rStage "bin\Rscript.exe"))) { throw "Official R installer failed with exit code $($process.ExitCode)." }
+        # The watchdog owns this installer process tree; its timeout transcript
+        # and the installer's own log survive registry restoration in finally.
+        $previousErrorActionPreference = $ErrorActionPreference
+        try {
+            # Windows PowerShell otherwise turns native stderr into an early
+            # terminating error before the watchdog exit and log are recorded.
+            $ErrorActionPreference = "Continue"
+            & uv run --locked python (Join-Path $repoRoot "scripts/run_with_timeout.py") `
+                --timeout-seconds 900 --label "Official R private staging installer" -- `
+                $rInstaller @installerArgs 2>&1 | Tee-Object -FilePath "$rStage-watchdog.log"
+            $installerExitCode = $LASTEXITCODE
+        }
+        finally { $ErrorActionPreference = $previousErrorActionPreference }
+        if ($installerExitCode -ne 0 -or -not (Test-Path (Join-Path $rStage "bin\Rscript.exe"))) { throw "Official R installer failed with exit code $installerExitCode; see $rStage-watchdog.log and $installerLog." }
     }
     finally {
         Restore-CurrentUserRInstallerState -Snapshots $registrySnapshots

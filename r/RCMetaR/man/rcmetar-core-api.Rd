@@ -55,7 +55,7 @@
 \item{selected.cov}{Optional \code{CovariateValues} object or covariate name
 used by subgroup requests.}
 
-\item{cond.means.data}{Optional conditional-means payload for meta-regression.}
+\item{cond.means.data}{Reserved conditional-means payload. Non-diagnostic conditional means are not supported and are rejected explicitly.}
 
 \item{stop.at.rma}{Logical flag forwarded to \code{meta.regression()}.}
 }

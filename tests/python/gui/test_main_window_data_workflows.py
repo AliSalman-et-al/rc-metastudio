@@ -15,6 +15,18 @@ from test_types import key_click, required
 REPO_ROOT = os.getcwd()
 
 
+@pytest.mark.parametrize("case", ["sorted-paste", "sparse-fill", "quoted-copy", "sparse-copy", "invalid-paste"])
+def test_table_editing_transactions(case, tmp_path):
+    from pathlib import Path
+    from tests.e2e.ux_workflows import table_editing_case
+
+    app, window = automation.start_automation()
+    try:
+        table_editing_case(app, window, tmp_path, Path(REPO_ROOT), lambda *args, **kwargs: None, case)
+    finally:
+        _close_without_prompt(app, window)
+
+
 def _derived_effect_and_ci(analysis_unit, metric, arm_key):
     value = analysis_unit.get_effect_for_source(
         "derived_preview", metric, arm_key
@@ -183,7 +195,7 @@ def test_dataset_model_rejects_invalid_covariate_names():
         _close_without_prompt(app, window)
 
 
-def test_clipboard_preserves_platform_newlines_unicode_blanks_and_comma_decimals():
+def test_clipboard_preserves_platform_newlines_unicode_blanks_and_comma_decimals(preserve_clipboard):
     from PyQt6.QtWidgets import QApplication
 
     app, window = automation.start_automation()
@@ -213,7 +225,7 @@ def test_clipboard_preserves_platform_newlines_unicode_blanks_and_comma_decimals
         _close_without_prompt(app, window)
 
 
-def test_clipboard_skips_nonnumeric_cells_and_commits_valid_cells_once():
+def test_clipboard_skips_nonnumeric_cells_and_commits_valid_cells_once(preserve_clipboard):
     app, window = automation.start_automation()
     try:
         _create_binary_dataset(window)
@@ -811,3 +823,52 @@ def _close_without_prompt(app, window):
     window.close()
     app.processEvents()
     os.chdir(REPO_ROOT)
+
+
+@pytest.mark.parametrize('case', ['duplicate', 'placeholder', 'notifications', 'metric', 'csv', 'csv-failure', 'progress', 'alias-resolved', 'alias-hardlink', 'alias-destination'])
+def test_workspace_safety_transactions(case, tmp_path):
+    from pathlib import Path
+    from tests.e2e.ux_workflows import workspace_safety_case
+    app, window = automation.start_automation()
+    try:
+        workspace_safety_case(app, window, tmp_path, Path(REPO_ROOT), lambda *a, **k: None, case)
+    finally:
+        _close_without_prompt(app, window)
+
+
+@pytest.fixture
+def preserve_clipboard(qapp):
+    from PyQt6.QtCore import QMimeData
+    clipboard = required(QApplication.clipboard(), "clipboard")
+    saved = QMimeData()
+    original = clipboard.mimeData()
+    if original is not None:
+        for mime in original.formats():
+            saved.setData(mime, original.data(mime))
+    try:
+        yield
+    finally:
+        clipboard.setMimeData(saved)
+
+
+def test_ux_clipboard_restores_all_mime_on_failure(qapp, monkeypatch, preserve_clipboard):
+    from PyQt6 import QtCore
+    from tests.e2e import ux_workflows
+    if qapp.platformName() != "offscreen":
+        pytest.skip("sentinel proof owns the offscreen clipboard only")
+    clipboard = required(QApplication.clipboard(), "clipboard")
+    sentinel = QtCore.QMimeData()
+    sentinel.setData("text/plain", b"owned private sentinel")
+    sentinel.setData("text/html", b"<b>owned private sentinel</b>")
+    sentinel.setData("application/x-rcms-proof", b"owned bytes")
+    clipboard.setMimeData(sentinel)
+    def fail(*_args):
+        clipboard.setText("scenario output")
+        raise RuntimeError("controlled workflow failure")
+    monkeypatch.setattr(ux_workflows, "_run", fail)
+    with pytest.raises(RuntimeError, match="controlled workflow failure"):
+        ux_workflows.run(qapp, None, None, None, None, None)
+    restored = required(clipboard.mimeData(), "restored MIME")
+    assert set(restored.formats()) == {"text/plain", "text/html", "application/x-rcms-proof"}
+    assert restored.data("application/x-rcms-proof").data() == b"owned bytes"
+    assert restored.text() == "owned private sentinel"

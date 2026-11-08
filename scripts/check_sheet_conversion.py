@@ -9,7 +9,6 @@ import io
 from typing import cast
 import json
 from pathlib import Path
-import subprocess
 import tempfile
 import zipfile
 from rc_metastudio.project_format import load_project, save_project
@@ -119,7 +118,7 @@ def _check_bundled(path, document):
 
 
 def _check_file(path):
-    original = subprocess.check_output(['git', 'show', f'322ede26:sample_projects/{path.name}'], cwd=ROOT)
+    original = (ROOT / 'tests/fixtures/legacy-projects' / path.name).read_bytes()
     with zipfile.ZipFile(io.BytesIO(original)) as archive:
         source = json.loads(archive.read('project.json'))['dataset']
         state = json.loads(archive.read('state.json'))

@@ -41,6 +41,17 @@ class FakeDiagnosticAnalysisUnit:
     ):
         return self.get_effect_and_ci(effect, arm_key, confidence_multiplier)
 
+    def get_se(self, _source, metric, arm_key, confidence_multiplier):
+        estimate, lower, upper = self.get_effect_and_ci(metric, arm_key, confidence_multiplier)
+        for high, low, divisor in (
+            (upper, estimate, confidence_multiplier),
+            (estimate, lower, confidence_multiplier),
+            (upper, lower, 2 * confidence_multiplier),
+        ):
+            if high is not None and low is not None:
+                return (high - low) / divisor
+        return None
+
     def set_effect_for_source(
         self, _source, metric, arm_key, est, low=None, high=None, **kwargs
     ):

@@ -1,6 +1,6 @@
 from tests.python.gui.test_types import required
 """Drive the all-outcome summary through the Analysis menu."""
-from PyQt6 import QtWidgets
+from PyQt6 import QtCore, QtWidgets
 from docx import Document
 
 
@@ -61,8 +61,9 @@ def run(app, window, work, root, record, analyze):
         assert dialog.table.cellWidget(row, 4).currentText() == 'Not rated'
     assert 'Too little data' in dialog.table.item(2, 3).text()
     record('summary-diagnostic', dialog, effect=dialog.table.item(3, 3).text())
-    screens = root / 'docs/ux-hill-climb/screens'
-    dialog.grab().save(str(screens / 'slice9-sof-light.png'))
+    screens = work / 'summary-screens'
+    screens.mkdir(exist_ok=True)
+    assert dialog.grab().save(str(screens / 'slice9-sof-light.png'))
     from PyQt6 import QtGui
     original = app.palette()
     palette = QtGui.QPalette(original)
@@ -72,8 +73,43 @@ def run(app, window, work, root, record, analyze):
         palette.setColor(role, QtGui.QColor('#202020'))
     app.setPalette(palette)
     app.processEvents()
-    dialog.grab().save(str(screens / 'slice9-sof-dark.png'))
+    assert dialog.grab().save(str(screens / 'slice9-sof-dark.png'))
     app.setPalette(original)
+    dialog.table.cellWidget(0, 4).setCurrentText('Moderate')
+    from tests.python.gui.test_types import key_click, wheel_scroll
+    certainty = dialog.table.cellWidget(0, 4)
+    table_height = dialog.table.maximumHeight()
+    dialog.table.setMaximumHeight(128)
+    app.processEvents()
+    scrollbar = required(dialog.table.verticalScrollBar())
+    assert scrollbar.maximum() > 0
+    scrollbar.setValue(0)
+    certainty.setFocus()
+    key_click(certainty, QtCore.Qt.Key.Key_Down)
+    assert certainty.currentText() == 'Low'
+    key_click(certainty, QtCore.Qt.Key.Key_Up)
+    assert certainty.currentText() == 'Moderate'
+    wheel_scroll(certainty)
+    app.processEvents()
+    record('summary-focused-wheel', dialog, certainty=certainty.currentText(),
+           scroll=scrollbar.value(), maximum=scrollbar.maximum())
+    assert certainty.currentText() == 'Moderate', 'Scrolling changed reviewer certainty'
+    assert scrollbar.value() > 0, 'Wheel did not scroll the summary table'
+    wheel_scroll(dialog.table.viewport(), 120)
+    app.processEvents()
+    assert scrollbar.value() == 0
+    certainty.showPopup()
+    app.processEvents()
+    key_click(certainty.view(), QtCore.Qt.Key.Key_End)
+    key_click(certainty.view(), QtCore.Qt.Key.Key_Return)
+    assert certainty.currentText() == 'Very low'
+    key_click(certainty, QtCore.Qt.Key.Key_Up)
+    key_click(certainty, QtCore.Qt.Key.Key_Up)
+    assert certainty.currentText() == 'Moderate'
+    dialog.table.setMaximumHeight(table_height)
+    record('summary-keyboard-popup-restored', dialog, certainty=certainty.currentText())
+    dialog.table.cellWidget(0, 5).setText('Export judgement')
+    dialog.table.cellWidget(0, 5).editingFinished.emit()
     report = dialog.report()
     next(b for b in dialog.findChildren(QtWidgets.QPushButton) if b.text() == 'Copy').click()
     mime = app.clipboard().mimeData()
@@ -97,17 +133,24 @@ def run(app, window, work, root, record, analyze):
     document = Document(work / 'summary.docx')
     assert not {'Methods', 'Results'} & {p.text for p in document.paragraphs}
     assert len(document.tables[0].rows) == 5
-    assert document.tables[0].cell(1, 4).text == 'Not rated'
+    expected_table = report.sections[0].tables[0]
+    observed_cells = [[cell.text for cell in row.cells] for row in document.tables[0].rows]
+    assert observed_cells == [list(expected_table.headers), *map(list, expected_table.rows)], ('summary exported cells', observed_cells, expected_table)
     record('summary-of-findings', dialog, rows=report.sections[0].tables[0].rows)
     import subprocess
-    pdf_text = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', str(work / 'summary.pdf'), '-'], text=True, encoding='utf-8')
+    # Preserve literal hyphens at wrapped line endings in estimator names.
+    pdf_text = subprocess.check_output(['pdftotext', '-raw', '-enc', 'UTF-8', str(work / 'summary.pdf'), '-'], text=True, encoding='utf-8')
     import unicodedata
     pdf_text = unicodedata.normalize('NFKC', pdf_text)
     assert not {'Methods', 'Results'} & set(pdf_text.splitlines())
     assert 'Summary of findings' in pdf_text and 'Not rated' in pdf_text
-    dialog.table.cellWidget(0, 4).setCurrentText('Moderate')
+    compact_pdf = ''.join(pdf_text.split())
+    for row in expected_table.rows:
+        for cell in row:
+            assert ''.join(cell.split()) in compact_pdf, ('summary PDF cell missing', cell)
+    dialog.table.cellWidget(0, 4).setCurrentText('Low')
     window.undo()
-    assert window.model.dataset.sheets[0].settings.get('summary_of_findings', {}).get('certainty', 'Not rated') == 'Not rated'
+    assert window.model.dataset.sheets[0].settings.get('summary_of_findings', {}).get('certainty', 'Not rated') == 'Moderate'
     dialog.table.cellWidget(0, 4).setCurrentText('Low')
     dialog.table.cellWidget(0, 4).setCurrentText('Moderate')
     dialog.table.cellWidget(0, 5).setText('Reviewer judgement')

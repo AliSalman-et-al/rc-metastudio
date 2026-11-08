@@ -13,6 +13,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+from uuid import uuid4
 
 if __package__:
     from scripts import r_verification_support as r_support
@@ -131,6 +132,11 @@ def selected_rscript(args: argparse.Namespace) -> str:
     requested = args.rscript
     if args.r_runtime_root:
         candidates = r_support.rscript_paths_for_r_home(args.r_runtime_root)
+        if requested:
+            explicit = r_support.resolve_rscript(requested)
+            if explicit is None or explicit.resolve() not in {p.resolve() for p in candidates}:
+                raise VerificationError("explicit Rscript conflicts with selected R runtime root")
+            return str(explicit.resolve())
         for candidate in candidates:
             if candidate.exists():
                 return str(candidate.resolve())
@@ -173,6 +179,7 @@ def run_source_lane(args: argparse.Namespace, *, smoke: bool) -> None:
         write_step("Skipping dependency sync for warm local verification")
     build_root = (REPO_ROOT / args.build_root).resolve()
     env = prepare_qt_environment(build_root)
+    run_typing(build_root)
     preflight(env)
     if smoke:
         write_step("Running smoke pytest nodes")
@@ -234,7 +241,19 @@ def run_typing(build_root: Path) -> None:
         "tests/python/gui",
     ):
         command += ["--extra-search-path", path]
-    run(command + ["src/rc_metastudio", "scripts", "tests", "r/RCMetaR/inst/qa"])
+    command += ["src/rc_metastudio", "scripts", "tests", "r/RCMetaR/inst/qa"]
+    evidence = REPO_ROOT / "artifacts/verification/typing" / (datetime.now().strftime("%Y%m%dT%H%M%S") + "-" + uuid4().hex[:8])
+    evidence.mkdir(parents=True)
+    write_step("$ " + " ".join(command))
+    result = subprocess.run(command, cwd=REPO_ROOT, capture_output=True, text=True, check=False)
+    (evidence / "stdout.log").write_text(result.stdout, encoding="utf-8")
+    (evidence / "stderr.log").write_text(result.stderr, encoding="utf-8")
+    (evidence / "command.json").write_text(json.dumps({"command": command, "python_platform": "win32", "exit_code": result.returncode}, indent=2), encoding="utf-8")
+    print(result.stdout, end="")
+    print(result.stderr, end="", file=sys.stderr)
+    print(f"Typing evidence: {evidence}", flush=True)
+    if result.returncode:
+        raise VerificationError(f"strict typing failed; inspect {evidence}")
 
 
 def run_code_health(base: str = "origin/master", head: str = "HEAD") -> None:

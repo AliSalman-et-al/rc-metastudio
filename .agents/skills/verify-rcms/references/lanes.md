@@ -13,6 +13,8 @@ Choose checks that can detect the changed failure. Preserve transcripts and dist
 
 ## Native and typing commands
 
+The source smoke/fast, R-stack, desktop helper, E2E pytest controller, Qt smoke and both PowerShell sections enforce strict Ty before GUI work. E2E workers use their controller’s gate, rather than repeating it for every study or scenario. Each `run_typing` invocation retains its exact command, win32 target, exit code and stdout/stderr under `artifacts/verification/typing/`. A missing or failing gate stops qualification; no skip flag is supported.
+
 Every qualification runs the repository-wide strict Ty invocation in `scripts/verify-qt6.ps1` before GUI tests. On POSIX, preserve its generated-module search paths and full source selection, using the configured `RCMS_QT6_BUILD_ROOT`.
 
 For Windows-target qualification on another host, add `--python-platform win32` so platform-specific APIs such as `winreg` resolve against Windows. Keep that target on subsequent qualification runs. Retain the exact command and transcript. Record typing and GUI results separately: a failed typing gate means the following GUI phase has not run.
@@ -61,7 +63,7 @@ $env:PATH = "$env:R_HOME/bin/x64;$env:R_HOME/bin;$env:PATH"
 uv run python scripts/verify_golden_compatibility.py --root . --output-root build/qt6-verification/golden-compatibility-targeted
 ```
 
-The golden CLI needs that R environment explicitly; the desktop helper configures its bootstrap itself. Verify the saved `compatibility-report.json`, all 415 numerical fields and plot contracts, and identify the selected library/source provenance. Text comparison canonicalizes only a line-leading heterogeneity `t²`/`τ²` header before Q: runtime encoding can change that spelling within the same OS. Changed numbers, narrative and other text still fail. Frozen contracts and tolerances remain unchanged. A focused recovery pass does not retroactively make the original failed full-run command successful; report its failed stage and the corrected gate's evidence.
+The golden CLI needs that R environment explicitly; the desktop helper configures its bootstrap itself. Verify the saved `compatibility-report.json`, all 416 numerical fields and plot contracts, and identify the selected library/source provenance. Text comparison canonicalizes a line-leading heterogeneity `t²`/`τ²` header before Q. Scoped exceptions also bind exact before/after text or the documented scale and Greek-label corrections; they preserve scientific tokens and numbers. Changed numbers, unrelated narrative and other text still fail. Frozen contracts and tolerances remain unchanged. A focused recovery pass does not retroactively make the original failed full-run command successful; report its failed stage and the corrected gate's evidence.
 
 Read `docs/maintaining.md` for runner options and `docs/release.md` for package qualification. R dependency identity comes from `config/r-dependencies.json`, not remembered latest versions. ADR-0007 delegates statistical decisions to the authority packages. Golden tolerance changes require justification independent of current output.
 

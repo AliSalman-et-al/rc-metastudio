@@ -96,7 +96,7 @@ def main() -> int:
                 "package_type": args.package_type,
                 "url": args.contrib_url.rstrip("/") + "/" + archive.name,
                 "archive": archive.name,
-                "license_files": sorted(licenses),
+                "license_files": sorted(licenses, key=lambda record: record["path"]),
                 "license": license_name,
             }
         )

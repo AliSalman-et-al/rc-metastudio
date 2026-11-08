@@ -225,8 +225,19 @@
     warnings
 }
 
+.small.study.normalize.params <- function(om.data, params) {
+    if (is.null(params$correction.policy)) {
+        if (is(om.data, "BinaryData"))
+            params$correction.policy <- "Studies with any zero cell"
+        else if (is(om.data, "DiagnosticData"))
+            params$correction.policy <- "All studies if any zero exists"
+    }
+    params
+}
+
 .small.study.eligibility <- function(om.data, params=list(), prepared=NULL) {
     if (!is(om.data, "OMData")) stop("RCMetaR data expected.")
+    params <- .small.study.normalize.params(om.data, params)
     metric <- as.character(params$metric %||% "")
     data.type <- as.character(params$data.type %||% .rcmetar.data.type(om.data))
     confidence.level <- .small.study.confidence.level(params)
@@ -324,6 +335,7 @@
 }
 
 .small.study.prepare <- function(om.data, params) {
+    params <- .small.study.normalize.params(om.data, params)
     metric <- as.character(params$metric %||% "MD")
     confidence.level <- .small.study.confidence.level(params)
     diagnostic <- is(om.data, "DiagnosticData") && metric == "DOR"
@@ -1322,7 +1334,25 @@ publication.bias.effects <- function(om.data, params) {
     ), collapse="\n"))
 }
 
-rcmetar.run.small.study.effects <- function(om.data, params=list()) {
+#' Guided small-study effects analysis
+#'
+#' @param om.data An RCMetaR analysis data object.
+#' @param params A required named request list with version = 1L, data.type (binary,
+#'   continuous, diagnostic, time-to-event, or event-rate), and metric. Use preview = TRUE
+#'   for eligibility only. For execution supply tests (method identifiers), funnels
+#'   (ordinary, contour, or deeks), and optional conf.level (percentage, default 95),
+#'   trim.and.fill (logical, default FALSE), and extrapolation (logical, default FALSE).
+#'   Diagnostic requests require DOR. Omitted binary correction.policy uses Studies with
+#'   any zero cell; omitted diagnostic policy uses All studies if any zero exists. Explicit
+#'   correction selections are preserved.
+#' Tests use identifiers classical-egger, mixed-effects-egger, begg-mazumdar,
+#' harbord, peters, rucker-as-re, pustejovsky-rodgers, or deeks; inspect preview
+#' eligibility before selection. Empty tests/funnels vectors request no tests/plots.
+#' Supply raw data or finite analysis-scale y and positive SE (RatioData retains
+#' its original inputs). See the package help for an executable preview example.
+#' @rdname RCMetaR-publication-bias
+#' @return An eligibility report (preview) or analysis result list.
+rcmetar.run.small.study.effects <- function(om.data, params) {
     if (length(params$version) != 1L || !identical(params$version, 1L))
         stop("Unsupported small-study effects request version.", call.=FALSE)
     if (!requireNamespace("meta", quietly=TRUE)) stop("RCMetaR requires meta 8.5-0 for small-study effects methods.")
@@ -1330,8 +1360,7 @@ rcmetar.run.small.study.effects <- function(om.data, params=list()) {
     data.type <- as.character(params$data.type %||% if (is(om.data, "DiagnosticData")) "diagnostic" else "")
     metric <- as.character(params$metric %||% "")
     if (data.type == "diagnostic" && metric != "DOR") stop("diagnostic small-study effects analysis is DOR-only")
-    if (data.type == "diagnostic" && metric == "DOR" && is.null(params$correction.policy))
-        params$correction.policy <- "All studies if any zero exists"
+    params <- .small.study.normalize.params(om.data, params)
     if (is(om.data, "RatioData")) om.data <- ratio.prepare(om.data, params)
     eligibility <- .small.study.eligibility(om.data, params)
     if (isTRUE(params$preview)) return(list(eligibility=eligibility))
@@ -1481,13 +1510,13 @@ rcmetar.run.small.study.effects <- function(om.data, params=list()) {
            lty=c(rep(NA, length(levels)), if (settings$show.pooled) 2), bty="n")
 }
 
-rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.path=NULL) {
+rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.path=NULL, dpi=120) {
     path <- output.path %||% tempfile(pattern="small-study-funnel-", fileext=".png")
     y <- om.data@y
     se <- om.data@SE
     keep <- is.finite(y) & is.finite(se) & se > 0
     settings <- .small.study.funnel.settings(params)
-    size <- list(width=1000/120, height=800/120, dpi=120, bg=settings$background.color)
+    size <- list(width=1000/120, height=800/120, dpi=dpi, bg=settings$background.color)
     rcmetar.render.plot_file(path, size, function() {
         if (identical(settings$kind, "deeks") && is(om.data, "DiagnosticData"))
             .small.study.draw.deeks(om.data, params, settings, y, se, keep)

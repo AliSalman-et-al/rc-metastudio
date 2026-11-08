@@ -448,6 +448,19 @@ def calculator_effect_source(
     return "derived_preview" if any(value is not None for value in preview) else "entered"
 
 
+def _effect_values_on_display_scale(analysis_unit, current_effect, arm_key, data_type, converter, values):
+    if data_type != "binary" or current_effect != "PFT":
+        return [converter(value, current_effect, convert_to="display.scale") for value in values]
+    converted = []
+    for value in values:
+        raw = analysis_unit.arms_by_id[arm_key[0]].raw_data
+        n = raw[1] if len(raw) >= 2 and raw[1] not in EMPTY_VALS else None
+        if value is not None and n is None:
+            raise ValueError("PFT display requires the actual arm sample size.")
+        converted.append(converter(value, current_effect, convert_to="display.scale", n1=n))
+    return converted
+
+
 def set_current_effect_from_value(
     analysis_unit,
     txt_boxes,
@@ -471,9 +484,6 @@ def set_current_effect_from_value(
         converter = converters[data_type]
     except KeyError as exc:
         raise ValueError("data_type unrecognized") from exc
-    conv_to_disp_scale = lambda value: converter(
-        value, current_effect, convert_to="display.scale"
-    )
     effect_tbox, lower_tbox, upper_tbox = [
         txt_boxes[box_name] for box_name in ("effect", "lower", "upper")
     ]
@@ -483,9 +493,9 @@ def set_current_effect_from_value(
     )
     if data_type in {"binary", "continuous"} and source == "entered":
         est, lower, upper = analysis_unit.get_entered_effect_and_ci(current_effect, arm_key)
-    (display_estimate, display_lower, display_upper) = [
-        conv_to_disp_scale(x) for x in (est, lower, upper)
-    ]
+    display_estimate, display_lower, display_upper = _effect_values_on_display_scale(
+        analysis_unit, current_effect, arm_key, data_type, converter, (est, lower, upper)
+    )
     for val, txt_box in zip(
         (display_estimate, display_lower, display_upper),
         [effect_tbox, lower_tbox, upper_tbox],
@@ -508,23 +518,20 @@ def set_current_effect_from_value(
     )
 
 
-def _wald_summary(data_type, current_effect, est, lower, upper, confidence_multiplier) -> str:
-    summary = ""
-    if all(value is not None for value in (est, lower, upper)):
-        se = (upper - lower) / (2 * confidence_multiplier)
-        if se > 0:
-            z = est / se
-            p = math.erfc(abs(z) / math.sqrt(2))
-            log_scale = current_effect in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR", "PLN"}
-            scale = ""
-            if log_scale:
-                scale = " (log scale)"
-            elif current_effect in {"Sens", "Spec", "PLO"}:
-                scale = " (logit scale)"
-            summary = f"SE{scale}: {se:.4f}"
-            if data_type != "diagnostic":
-                p_text = "<0.001" if p < 0.001 else f"{p:.3f}"
-                summary += f"    Z: {z:.4f}    Two-sided P: {p_text}"
+def _wald_summary(data_type, current_effect, est, se) -> str:
+    if est is None or se is None:
+        return ""
+    scale = ""
+    if current_effect in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR", "PLN"}:
+        scale = " (log scale)"
+    elif current_effect in {"Sens", "Spec", "PLO"}:
+        scale = " (logit scale)"
+    summary = f"SE{scale}: {se:.4f}"
+    if data_type != "diagnostic" and se > 0:
+        z = est / se
+        p = math.erfc(abs(z) / math.sqrt(2))
+        p_text = "<0.001" if p < 0.001 else f"{p:.3f}"
+        summary += f"    Z: {z:.4f}    Two-sided P: {p_text}"
     return summary
 
 
@@ -593,13 +600,15 @@ def update_calculator_readout(dialog, data_type):
     if not hasattr(dialog, "wald_readout"):
         dialog.wald_readout = QLabel(dialog)
         dialog.wald_readout.setObjectName("calculator_wald")
+        dialog.wald_readout.setWordWrap(True)
         for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
             field.editingFinished.connect(lambda: update_calculator_readout(dialog, data_type))
         if data_type == "diagnostic":
             dialog.effect_layout.addWidget(dialog.wald_readout, 2, 0, 1, 6)
         else:
-            dialog.content_layout.addWidget(dialog.wald_readout)
-    summary = _wald_summary(data_type, current_effect, est, lower, upper, confidence_multiplier)
+            dialog.dialog_layout.insertWidget(dialog.dialog_layout.indexOf(dialog.buttonBox), dialog.wald_readout)
+    se = analysis_unit.get_se(source, current_effect, arm_key, confidence_multiplier)
+    summary = _wald_summary(data_type, current_effect, est, se)
     dialog.wald_readout.setText(summary)
     dialog.wald_readout.show()
     raw = analysis_unit.get_raw_data_for_arms(dialog.arm_names)

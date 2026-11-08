@@ -196,10 +196,18 @@ class ElidingStatusLabel(QLabel):
 
 class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
     def __init__(self, parent=None, min_=0, max_=10):
-        super().__init__(parent)
+        super().__init__(parent, operation="Importing study data…")
 
         self.setWindowTitle("Import CSV")
         self.progress_bar.setRange(min_, max_)
+
+    def reject(self):
+        # Import has no cancellation/rollback gesture while the write loop runs.
+        pass
+
+    def closeEvent(self, a0):
+        if a0 is not None:
+            a0.ignore()
 
     def setValue(self, value):
         if self.progress_bar.minimum() <= value <= self.progress_bar.maximum():
@@ -1140,8 +1148,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 action.setChecked(True)
                 action.blockSignals(False)
 
-        self.tableView.model().set_current_metric(metric_name)
-        self.model.hydrate_derived_previews()
+        def apply_metric():
+            self.model.set_current_metric(metric_name)
+            self.model.hydrate_derived_previews()
+            self.data_dirtied()
+
+        self._commit_model_operation(apply_metric)
         self.model.reset_model()
         self.tableView.synchronize_column_widths()
         self.toggle_menu_options_that_require_dataset(self.action_go.isEnabled())
@@ -1867,16 +1879,29 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         elif path == "csv_import":
             csv_data = wizard_data["csv_data"]
 
-            def import_csv() -> None:
-                self._make_new_dataset_and_setup_spreadsheet(dataset_info)
-                ImportCsvCommand(
-                    imported_data=csv_data["data"],
-                    main_form=self,
-                    covariate_names=csv_data["covariate_names"],
-                    covariate_types=csv_data["covariate_types"],
-                ).redo()
+            previous_workspace = self.workspace
+            previous_runtime = previous_workspace.runtime
+            previous_path = self.out_path
+            self.workspace = WorkspaceSession(previous_workspace.document)
+            self.workspace.start_new_document()
+            self.out_path = None
+            try:
+                def import_csv() -> None:
+                    self._make_new_dataset_and_setup_spreadsheet(dataset_info)
+                    ImportCsvCommand(
+                        imported_data=csv_data["data"],
+                        main_form=self,
+                        covariate_names=csv_data["covariate_names"],
+                        covariate_types=csv_data["covariate_types"],
+                    ).redo()
 
-            self._commit_model_operation(import_csv)
+                self._commit_model_operation(import_csv)
+            except Exception:
+                self.workspace = previous_workspace
+                if previous_runtime is not None:
+                    self._install_workspace_runtime(previous_runtime)
+                self.out_path = previous_path
+                raise
             self.out_path = None
             self._notify_user_that_data_is_unsaved()
 

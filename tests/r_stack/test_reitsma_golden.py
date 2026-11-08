@@ -314,14 +314,39 @@ _HEADLESS_ADAPTER_DRIVER = textwrap.dedent(
           })
         '''))
     expected_or = [float(value) for value in expected_or]
-    rendered_numbers = [
-        float(value)
-        for value in re.findall(r"(?<![A-Za-z])(?:[0-9]+\.[0-9]+|[0-9]+)(?![A-Za-z])", sens_text + "\n" + spec_text)
-    ]
-    for value in expected_or:
-        assert min(abs(actual_value - value) for actual_value in rendered_numbers) <= 0.0005 + 1e-8, (
-            value, sens_text, spec_text
-        )
+    def coefficient_cells(text):
+        lines = [line for line in text.splitlines() if line.strip()]
+        header_index = next(i for i, line in enumerate(lines) if "Odds ratio" in line or "Odds Ratio" in line)
+        headers = ["Term"] + re.split(r"\s{2,}", lines[header_index].strip())
+        or_column = next(i for i, label in enumerate(headers) if label.lower() == "odds ratio")
+        cells = {}
+        for line in lines[header_index + 2:]:
+            parts = re.split(r"\s{2,}", line.strip())
+            if len(parts) == len(headers) and "reference" not in parts[0]:
+                cells[parts[0]] = float(parts[or_column])
+        return cells
+
+    def check_coefficients(sensitivity, specificity):
+        for side, text, values in (
+            ("Sensitivity", sensitivity, expected_or[:2]),
+            ("Specificity", specificity, expected_or[2:]),
+        ):
+            cells = coefficient_cells(text)
+            for term, expected in zip(("quality = B vs A", "threshold"), values):
+                matches = [value for label, value in cells.items() if term in label]
+                assert len(matches) == 1, (side, term, cells, text)
+                assert abs(matches[0] - expected) <= 0.0005 + 1e-8, (side, term, matches[0], expected)
+
+    check_coefficients(sens_text, spec_text)
+    for wrong_sens, wrong_spec in ((spec_text, sens_text),
+                                  (sens_text.replace("quality = B vs A", "TEMP_TERM").replace("threshold", "quality = B vs A").replace("TEMP_TERM", "threshold"), spec_text)):
+        try:
+            check_coefficients(wrong_sens, wrong_spec)
+        except AssertionError:
+            pass
+        else:
+            raise AssertionError("OR comparator accepted a deliberate side/term mutation")
+    sys.stdout.write("OR cells: positive control and wrong-side/wrong-term rejection passed\n")
 
     sys.stdout.write("OK\n")
     sys.stdout.flush()

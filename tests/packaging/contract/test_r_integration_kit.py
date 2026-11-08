@@ -561,3 +561,127 @@ def test_installed_package_inventory_rejects_unclaimed_non_base_package():
     ]
     with pytest.raises(kit.KitError, match="lacks exact provenance"):
         kit.validate_installed_provenance(installed, provenance)
+
+
+def test_index_cli_retains_multiple_license_files(tmp_path):
+    import zipfile
+
+    archives = tmp_path / "archives"
+    archives.mkdir()
+    library = tmp_path / "library"
+    package = library / "example"
+    package.mkdir(parents=True)
+    for name in ("LICENSE", "COPYRIGHTS"):
+        (package / name).write_text(name)
+    with zipfile.ZipFile(archives / "example.zip", "w") as bundle:
+        bundle.writestr(
+            "example/DESCRIPTION",
+            "Package: example\nVersion: 1\nLicense: MIT + file LICENSE\n",
+        )
+    output = tmp_path / "index.json"
+    subprocess.run(
+        [
+            sys.executable,
+            "scripts/index_r_binary_archives.py",
+            "--archives",
+            str(archives),
+            "--library",
+            str(library),
+            "--output",
+            str(output),
+            "--package-type",
+            "win.binary",
+            "--contrib-url",
+            "https://example.org",
+        ],
+        check=True,
+    )
+    assert [x["path"] for x in json.loads(output.read_text())[0]["license_files"]] == [
+        "COPYRIGHTS",
+        "LICENSE",
+    ]
+
+
+@pytest.mark.parametrize("priority", ["base", "recommended"])
+def test_unclaimed_priority_does_not_grant_provenance(priority):
+    kit = module()
+    with pytest.raises(kit.KitError, match="lacks exact provenance"):
+        kit.validate_installed_provenance(
+            [{"name": "untrusted", "version": "1", "priority": priority}],
+            {"ppm_packages": [], "source_packages": []},
+        )
+    policy = json.loads(Path("config/r-dependencies.json").read_text())
+    official = [
+        {
+            "name": x["name"],
+            "version": x.get("installed_version", "4.6.1"),
+            "priority": "base" if x["source"] == "base-runtime" else "recommended",
+        }
+        for x in policy["app_r_bundle_dependencies"]
+        if x["source"] in {"base-runtime", "recommended"} and x["name"] != "R"
+    ]
+    kit.validate_installed_provenance(
+        official, {"ppm_packages": [], "source_packages": []}
+    )
+
+
+def test_build_failure_retry_and_changed_bridge_contract(tmp_path, monkeypatch):
+    kit = module()
+    monkeypatch.setattr(kit.platform, "system", lambda: "Windows")
+    monkeypatch.setattr(kit.platform, "machine", lambda: "AMD64")
+    monkeypatch.setattr(kit, "native_dependency_inventory", lambda *_: [])
+    monkeypatch.setattr(
+        kit.subprocess,
+        "run",
+        lambda *a, **k: types.SimpleNamespace(returncode=0, stdout="4.6.1", stderr=""),
+    )
+    args = build_args(tmp_path, kit)
+    original = args.api_bridge.read_bytes()
+    copy_cache = kit._copy_python_cache
+
+    def changed_then_fail(args, output):
+        (output / "bridge" / args.api_bridge.name).write_bytes(b"relocated")
+        raise OSError("test-owned copy failure")
+
+    monkeypatch.setattr(kit, "_copy_python_cache", changed_then_fail)
+    with pytest.raises(OSError, match="test-owned"):
+        kit.build(args)
+    assert not args.output.exists()
+    monkeypatch.setattr(kit, "_copy_python_cache", copy_cache)
+    copy_bridge = kit.shutil.copy2
+
+    def change_copy(source, destination, *a, **k):
+        result = copy_bridge(source, destination, *a, **k)
+        if Path(source) == args.api_bridge:
+            Path(destination).write_bytes(b"relocated")
+        return result
+
+    monkeypatch.setattr(kit.shutil, "copy2", change_copy)
+    manifest = kit.build(args)
+    assert kit.verify(args.output)["kit_sha256"] == manifest["kit_sha256"]
+    sources = json.loads((args.output / "sources.json").read_text())
+    assert (
+        sources["provenance"]["rpy2"]["built_bridge_sha256"]
+        == hashlib.sha256(original).hexdigest()
+    )
+    destination = tmp_path / "consumed"
+    consume_args = argparse.Namespace(
+        kit=args.output, target=args.target, destination=destination
+    )
+    verify = kit.verify
+
+    def fail_staged(root, **kwargs):
+        if root != args.output:
+            raise OSError("test-owned verify failure")
+        return verify(root, **kwargs)
+
+    monkeypatch.setattr(kit, "verify", fail_staged)
+    with pytest.raises(OSError):
+        kit.consume(consume_args)
+    assert not destination.exists()
+    monkeypatch.setattr(kit, "verify", verify)
+    kit.consume(consume_args)
+    before = (destination / "manifest.json").read_bytes()
+    with pytest.raises(kit.KitError, match="already exists"):
+        kit.consume(consume_args)
+    assert (destination / "manifest.json").read_bytes() == before

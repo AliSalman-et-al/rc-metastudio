@@ -1,6 +1,6 @@
 [project]
 name = "rc-metastudio"
-version = "0.5.2"
+version = "0.5.3"
 description = "RC MetaStudio open-source desktop software for advanced meta-analysis."
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
@@ -63,6 +63,7 @@ dev = [
     "grimp>=3.16",
     "libcst==1.8.6",
     "matplotlib>=3.11.0",
+    "pefile==2023.2.7",
     "pillow>=12.3.0",
     "psutil==7.2.2",
     "py7zr==1.1.3",

@@ -12,8 +12,9 @@ permuted.ma <- function(
 		digits=digits,
 		weighted=weighted)
 
-	perm.res <- permutest(ma.res, exact=exact, iter=iter,
-              retpermdist=FALSE, digits=digits)
+	# Pinned metafor always returns distributions; retpermdist is an RCMetaR option.
+	perm.res <- permutest(ma.res, exact=exact, iter=iter, digits=digits)
+	if (!retpermdist) perm.res[c("zval.perm", "QM.perm", "beta.perm")] <- NULL
 	summary <- paste(capture.output(perm.res), collapse="\n")
 
 	results <- list(
@@ -31,10 +32,14 @@ permuted.meta.reg <- function (
 
 	mods.formula <- make.mods.formula(mods)
 
-	reg.res <- regression.wrapper(data, mods.formula, method, level, digits, btt)
+	reg.res <- regression.wrapper(data, mods.formula, method, level, digits, btt,
+	                              intercept=intercept, knha=knha)
+	# Pinned metafor drops its design matrix dimension for this model shape.
+	if (!reg.res$int.incl && reg.res$p == 1L)
+		stop("Pinned metafor cannot permute one-coefficient no-intercept models.", call.=FALSE)
 
-	perm.res <- permutest(reg.res, exact=exact, iter=iter,
-              retpermdist=retpermdist, digits=digits)
+	perm.res <- permutest(reg.res, exact=exact, iter=iter, digits=digits)
+	if (!retpermdist) perm.res[c("zval.perm", "QM.perm", "beta.perm")] <- NULL
 	summary <- paste(capture.output(perm.res), collapse="\n")
 
 	results <- list(
@@ -54,7 +59,9 @@ permuted.meta.reg <- function (
 			btt=btt,
 			make.coeff.forest.plot=FALSE,
 			exclude.intercept=FALSE,
-			disable.plots=TRUE
+			disable.plots=TRUE,
+			intercept=intercept,
+			knha=knha
 		)
 
 		results <- c(list('Standard Meta Regression Summary'=meta.reg.result$Summary), results)
@@ -69,7 +76,7 @@ permutest.value.info <- function(retpermdist, meta.reg.mode=TRUE) {
 			QMp = list(type="vector", description='p-value for the omnibus test of coefficients based on the permutation test.')
 	)
 
-	if (retpermdist && meta.reg.mode) {
+	if (retpermdist) {
 		additional.info = list(
 				zval.perm = list(type="data.frame", description='values of the test statistics of the coefficients under the various permutations'),
 				QM.perm = list(type="vector", description='values of the test statistic for the omnibus test of coefficients under the various permutations')

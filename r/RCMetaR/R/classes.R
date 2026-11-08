@@ -34,8 +34,18 @@ setClass("AnalysisSpecification",
 
 setClass("CovariateValues", representation(cov.name="character", cov.vals="vector", cov.type="character", ref.var="character"))
 
+#' Subset RCMetaR data
+#'
+#' Creates a row subset while preserving study metadata and covariates.
+#' @param omdata A BinaryData, ContinuousData, DiagnosticData, or RatioData
+#'   object; metadata-only OMData is not supported.
+#' @param indices Study row indices to keep.
+#' @param make.unique.names Whether to make duplicated study names unique.
+#' @return An object of the same supported data class with selected rows.
 get.subset <- function(omdata, indices, make.unique.names=FALSE) {
-  if (!is(omdata, "OMData")) stop("RCMetaR data expected.")
+  if (!any(vapply(c("BinaryData", "ContinuousData", "DiagnosticData", "RatioData"),
+                  function(class) is(omdata, class), logical(1))))
+    stop("get.subset requires BinaryData, ContinuousData, DiagnosticData, or RatioData.")
 
   subset.slot <- function(values) {
     if (length(values) == 0) {

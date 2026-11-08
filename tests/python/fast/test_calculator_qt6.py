@@ -14,6 +14,7 @@ from PIL import Image
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtWidgets import (
     QDialog,
+    QDialogButtonBox,
     QHeaderView,
     QLabel,
     QLineEdit,
@@ -315,6 +316,13 @@ def test_native_calculator_evidence_is_relocatable_and_tamper_evident(tmp_path):
         payload = image.read_bytes()
         records.append(
             {
+                "qpa": "windows",
+                "visible": True,
+                "default_accept": True,
+                "action": {"binary": "valid edit and accept", "continuous": "comma-decimal edit and accept", "diagnostic": "invalid edit and cancel rollback"}[calculator],
+                "expected_result": "rejected" if calculator == "diagnostic" else "accepted",
+                "model_after": {"binary": [7, 21], "continuous": [10.0, 95.5, 2.0], "diagnostic": [12, 3, 4, 21]}[calculator],
+                "model_nonmutation": calculator == "diagnostic",
                 "calculator": calculator,
                 "capture_method": capture_method,
                 "image": image.name,
@@ -329,6 +337,22 @@ def test_native_calculator_evidence_is_relocatable_and_tamper_evident(tmp_path):
     assert smoke.validate_evidence_bundle(relocated) == records
 
     manifest = relocated / "evidence.json"
+    for defect in ("offscreen", "error", "duplicate", "missing", "wrong-model"):
+        broken = json.loads(json.dumps(records))
+        if defect == "offscreen":
+            broken[0]["qpa"] = "offscreen"
+        elif defect == "error":
+            broken.append({"error": "failed"})
+        elif defect == "duplicate":
+            broken.append(broken[0])
+        elif defect == "missing":
+            broken.pop()
+        else:
+            broken[0]["model_after"] = [6, 20]
+        manifest.write_text(json.dumps(broken), encoding="utf-8")
+        with pytest.raises(ValueError):
+            smoke.validate_evidence_bundle(relocated)
+    manifest.write_text(json.dumps(records), encoding="utf-8")
     tampered = json.loads(manifest.read_text(encoding="utf-8"))
     forged = b"not a PNG despite matching manifest integrity"
     forged_image = relocated / tampered[0]["image"]
@@ -546,15 +570,17 @@ def test_row_header_signals_are_restored_when_calculator_opening_raises(
     view = dataset_table_view.DatasetTableView()
     view.setModel(FakeModel())
 
-    try:
+    with pytest.raises(CalculatorOpenError):
         view.row_header_clicked(0)
-    except CalculatorOpenError:
-        pass
 
     assert not view.vert_header.signalsBlocked()
 
 
 class FakeAnalysisUnit:
+    def get_se(self, source, effect, arm_key, confidence_multiplier):
+        est, lower, upper = self.get_effect_and_ci_for_source(source, effect, arm_key, confidence_multiplier)
+        return None if est is None or upper is None else (upper - est) / confidence_multiplier
+
     def calculator_source(self, effect, arm_key):
         return getattr(self, "selected_source", None)
 
@@ -1163,6 +1189,10 @@ def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
 
 
 class FakeDiagnosticAnalysisUnit:
+    def get_se(self, source, effect, arm_key, confidence_multiplier):
+        est, lower, upper = self.get_effect_and_ci_for_source(source, effect, arm_key, confidence_multiplier)
+        return None if est is None or upper is None else (upper - est) / confidence_multiplier
+
     def __init__(self):
         self.raw_data = [1, 2, 3, 4]
         self.groups = {"Group 1-Group 2": FakeDiagnosticGroup(self.raw_data)}
@@ -1242,6 +1272,10 @@ def test_diagnostic_calculator_grid_columns_fill_expanded_table_width(
 
 
 class FakeContinuousAnalysisUnit:
+    def get_se(self, source, effect, arm_key, confidence_multiplier):
+        est, lower, upper = self.get_effect_and_ci_for_source(source, effect, arm_key, confidence_multiplier)
+        return None if est is None or upper is None else (upper - est) / confidence_multiplier
+
     def calculator_source(self, effect, arm_key):
         return getattr(self, "selected_source", None)
 
@@ -1300,3 +1334,52 @@ class FakeContinuousAnalysisUnit:
 
     def set_upper(self, *args, **kwargs):
         pass
+
+
+def test_asymmetric_entered_readout_uses_analysis_se(qapp):
+    from rc_metastudio import analysis_dataset, calculator_routines
+    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', meta_globals.CONTINUOUS), arm_names=['A', 'B'])
+    unit.set_effect_for_source('entered', 'MD', 'A-B', 1, 0, 3)
+    unit.set_upper('MD', 'A-B', 3)
+    from statistics import NormalDist
+    multiplier = NormalDist().inv_cdf(.975)
+    class ReadoutDialog(QDialog):
+        def __init__(self):
+            super().__init__()
+            self.analysis_unit, self.arm_names = unit, ['A', 'B']
+            self.current_effect, self.arm_key, self.confidence_multiplier = 'MD', 'A-B', multiplier
+            self._active_input_mode = 'estimate'
+            self.dialog_layout = QVBoxLayout(self)
+            self.buttonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok, self)
+            self.dialog_layout.addWidget(self.buttonBox)
+            self.effect_text_box, self.lower_text_box, self.upper_text_box = QLineEdit(), QLineEdit(), QLineEdit()
+    dialog = ReadoutDialog()
+    calculator_routines.update_calculator_readout(dialog, 'continuous')
+    se = unit.get_se('entered', 'MD', 'A-B', 1.96)
+    assert f'SE: {se:.4f}' in _required(dialog.findChild(QLabel, 'calculator_wald')).text()
+
+
+def test_pft_display_passes_actual_arm_sample_size(qapp, monkeypatch):
+    from rc_metastudio import analysis_dataset, calculator_routines
+    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', meta_globals.BINARY), raw_data=[[4, 40]], arm_names=['A'])
+    arm_key = (unit.arms['A'].stable_id,)
+    unit.set_effect_for_source('derived_preview', 'PFT', arm_key, .3, .2, .4)
+    seen = []
+    def convert(x, metric, convert_to='display.scale', n1=None):
+        seen.append(n1)
+        return x
+    monkeypatch.setattr(calculator_routines.r_bridge, 'binary_convert_scale', convert)
+    calculator_routines.set_current_effect_from_value(unit, {k: QLineEdit() for k in ('effect', 'lower', 'upper')}, 'PFT', arm_key, 'binary', 1.96, source='derived_preview')
+    assert seen == [40, 40, 40]
+
+
+def test_diagnostic_clear_refreshes_existing_back_calculation_availability(qapp, monkeypatch):
+    from rc_metastudio import analysis_dataset, diagnostic_data_dialog
+    monkeypatch.setattr(calculator_service.r_bridge, 'get_confidence_multiplier_from_r', lambda conf: 1.96)
+    monkeypatch.setattr(calculator_service.r_bridge, 'diagnostic_convert_scale', lambda x, *args, **kwargs: x)
+    monkeypatch.setattr(calculator_service.r_bridge, 'impute_diagnostic_data', lambda data: {'TP': None, 'FP': None, 'FN': None, 'TN': None})
+    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', meta_globals.DIAGNOSTIC), raw_data=[['', '', '', '']], arm_names=['Test'])
+    form = diagnostic_data_dialog.DiagnosticDataDialog(unit, ['Test'], 'Test', confidence_level=95)
+    form.back_calculate_button.setEnabled(True)
+    form.clear_form()
+    assert not form.back_calculate_button.isEnabled()

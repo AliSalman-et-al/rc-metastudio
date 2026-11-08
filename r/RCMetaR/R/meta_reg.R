@@ -1,9 +1,11 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-regression.wrapper <- function(data, mods.formula, method, level, digits, btt=NULL) {
+regression.wrapper <- function(data, mods.formula, method, level, digits, btt=NULL, intercept=TRUE, knha=FALSE) {
+	if (!intercept) mods.formula <- stats::update.formula(mods.formula, ~ . - 1)
 	rma.args <- list(yi=data$yi, vi=data$vi, mods=mods.formula, data=data,
-	                 method=method, level=level, digits=digits)
+	                 method=method, level=level, digits=digits, intercept=intercept,
+	                 test=if (knha) "knha" else "z")
 	if (!is.null(btt)) rma.args$btt <- btt
 	do.call(metafor::rma.uni, rma.args)
 }
@@ -241,12 +243,15 @@ g.meta.regression <- function(
   btt=NULL,
   make.coeff.forest.plot=FALSE,
   exclude.intercept=FALSE,
-  disable.plots = FALSE)
+  disable.plots = FALSE, intercept=TRUE, knha=FALSE)
 {
 
 	mods.formula <- make.mods.formula(mods)
+	intercept <- isTRUE(intercept) && attr(terms(mods.formula), "intercept") == 1L
+	model.formula <- stats::reformulate(attr(terms(mods.formula), "term.labels"),
+	                                    response="yi", intercept=intercept)
 
-	res <- regression.wrapper(data, mods.formula, method, level, digits,btt)
+	res <- regression.wrapper(data, mods.formula, method, level, digits,btt, intercept=intercept, knha=knha)
 
 	residuals <- rstandard(res, digits=digits)
 	residuals$slab <- data$slab
@@ -256,17 +261,17 @@ g.meta.regression <- function(
 			                    list(residuals=list(type="blob", description="Standardized residuals for fitted models")))
 
 	Summary <- paste(capture.output(res), collapse="\n")
-	regression.model.formula.str <- sprintf("Regression model formula: %s", paste(deparse(stats::reformulate(attr(terms(mods.formula), "term.labels"), response="yi")), collapse=" "))
+	regression.model.formula.str <- sprintf("Regression model formula: %s", paste(deparse(model.formula), collapse=" "))
 	Summary <- paste(Summary, regression.model.formula.str, sep="\n\n")
 	est.coeffs <- round(res$b[,1], digits=digits)
 	tmp <- est.coeffs[2:length(est.coeffs)]
 	tmp <- paste(tmp, names(tmp), sep="*")
 	tmp <- paste(tmp, collapse=" + ")
 	reg.equation <- paste(est.coeffs[1],tmp, sep=" + ")
+	if (!intercept) reg.equation <- paste(paste(est.coeffs, names(est.coeffs), sep="*"), collapse=" + ")
 	reg.equation.str <- sprintf("Regression model equation: %s", reg.equation)
 	Summary <- paste(Summary, reg.equation.str, sep="\n")
 
-	model.formula <- stats::reformulate(attr(terms(mods.formula), "term.labels"), response="yi")
 	more.output <- reg.output.helper(theData=data, rma.results=res, model.formula=model.formula, digits=digits)
 	pre.summary <- ""
 	for (name in names(more.output)) {
@@ -619,6 +624,8 @@ meta.regression <- function(reg.data, params, cond.means.data=NULL, stop.at.rma=
 	if (is(reg.data, "DiagnosticData")) {
 		return(diagnostic.reitsma.meta.regression(reg.data, params, stop.at.rma=stop.at.rma))
 	}
+    if (!is.null(cond.means.data) && !identical(cond.means.data, FALSE))
+        stop("Conditional means are not supported by this analysis interface.", call.=FALSE)
 	params$digits <- display.digits(params)
 	cov.data <- extract.cov.data(reg.data)
 	cov.array <- cov.data$cov.array
@@ -627,13 +634,16 @@ meta.regression <- function(reg.data, params, cond.means.data=NULL, stop.at.rma=
 	method <- as.character(params$rm.method)
 	inference.method <- rcmetar.validate.inference.method(
 		params,
-		length(reg.data@y),
-		ncol(cov.array) + 1)
+        sum(complete.cases(reg.data@y, reg.data@SE, cov.array)),
+        qr(cbind(1, cov.array)[complete.cases(reg.data@y, reg.data@SE, cov.array), , drop=FALSE])$rank)
 
 
 	res<-rma.uni(yi=reg.data@y, sei=reg.data@SE, slab=reg.data@study.names,
 					level=params$conf.level, digits=params$digits,
 					method=method, test=inference.method, mods=cov.array)
+    rcmetar.validate.inference.method(params, res$k, res$p)
+    # Count exactly the study rows retained by the authority fit.
+    cov.data <- extract.cov.data(reg.data, analysis.rows=res$not.na)
 	pure.res<-res
 	if (stop.at.rma) {
 		return(res)
@@ -652,7 +662,6 @@ meta.regression <- function(reg.data, params, cond.means.data=NULL, stop.at.rma=
             }
             plot.data <- create.plot.data.reg(reg.data, params, fitted.line, res=res)
 
-            plot.data$xlabel <- reg.data@covariates[[1]]@cov.name
             meta.regression.plot(plot.data, plot.path)
 
             plot.data.path <- save.data(reg.data, res, params, plot.data)
@@ -670,22 +679,7 @@ meta.regression <- function(reg.data, params, cond.means.data=NULL, stop.at.rma=
 							"res"=pure.res,
 							"res.info"=rma.uni.value.info(),
 							"Weights"=weights(res))
-  } else if (isnt.null(cond.means.data)) {
-			mr.cond.means.disp <- cond_means_display(res, params, display.data, reg.data=reg.data, cat.ref.var.and.levels=cat.ref.var.and.levels, cond.means.data=cond.means.data)
-			res.output <- c(pure.res,
-							list(Conditional_Means_Section=paste("############################",cond.means.info(cond.means.data), sep="\n"),
-								 Conditional_Means=mr.cond.means.disp))
-			res.output.info <- c(rma.uni.value.info(),
-								 list(Conditional_Means_Section = list(type="vector", description=""),
-						              Conditional_Means=list(type="blob", description="")))
-			results <- list("Summary"=reg.disp,
-							"Conditional Means"=mr.cond.means.disp,
-							"res"= res.output,
-							"res.info"= res.output.info
-							  )
-
-
-		} else if (display.data$n.cont.covs==0 & length(display.data$factor.n.levels)==1) {
+  } else if (display.data$n.cont.covs==0 & length(display.data$factor.n.levels)==1) {
 			adj.reg.disp <- adjusted_means_display(res, params, display.data)
 			res.output <- c(pure.res,
 							list(Adjusted_Means_Section="#############################",
@@ -742,7 +736,7 @@ cond.means.info <- function(cond.means.data) {
 }
 
 
-extract.cov.data <- function(reg.data, dont.make.array = FALSE) {
+extract.cov.data <- function(reg.data, dont.make.array = FALSE, analysis.rows=rep(TRUE, length(reg.data@y))) {
   n.cont.covs <- 0
   factor.n.levels <- NULL
   factor.cov.display.col <- NULL
@@ -778,14 +772,14 @@ extract.cov.data <- function(reg.data, dont.make.array = FALSE) {
       cov.cols <- array(dim=c(length(reg.data@y), length(levels.minus.ref.var)),
                         dimnames=list(NULL, paste0(cov.name, ": ", levels.minus.ref.var,
                                                   " vs ", ref.var, " (reference)")))
-      studies.col <- c(sum(cov.vals==ref.var))
+      studies.col <- c(sum(cov.vals[analysis.rows]==ref.var, na.rm=TRUE))
       for (col.index in 1:length(levels.minus.ref.var)) {
            level <- levels.minus.ref.var[col.index]
 		   if (!dont.make.array) {
                cov.cols[cov.vals!="" & cov.vals!=level, col.index] <- 0
                cov.cols[cov.vals!="" & cov.vals==level, col.index] <- 1
 	       }
-           studies.col <- c(studies.col, sum(cov.vals==level))
+           studies.col <- c(studies.col, sum(cov.vals[analysis.rows]==level, na.rm=TRUE))
       }
       factor.cov.array <- cbind(factor.cov.array, cov.cols)
       factor.cov.names <- c(factor.cov.names, cov.name)

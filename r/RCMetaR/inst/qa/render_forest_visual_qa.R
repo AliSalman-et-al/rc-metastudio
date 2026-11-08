@@ -385,5 +385,6 @@ if (sys.nframe() == 0) {
   repo.root <- qa_find_repo_root()
   qa_load_rcmetar(repo.root)
   format <- Sys.getenv("RCMETASTUDIO_QA_FORMAT", "png")
-  qa_render_matrix(qa_root(repo.root), format)
+  manifest <- qa_render_matrix(qa_root(repo.root), format)
+  if (any(!is.na(manifest$error))) quit(status = 1L)
 }

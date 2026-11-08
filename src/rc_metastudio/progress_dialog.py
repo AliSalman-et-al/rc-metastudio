@@ -11,12 +11,12 @@ else:
 
 
 class AnalysisProgressDialog(QDialog, _ui_progress_dialog.Ui_ProgressDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, *, operation="Fitting model and drawing plots…"):
         super().__init__(parent)
         self.setupUi(self)
         context = parent.windowTitle() if parent is not None else "Analysis"
         self.setWindowTitle(context)
-        label = QLabel(f"Fitting model and drawing plots…\n{context}", self)
+        label = QLabel(f"{operation}\n{context}", self)
         label.setWordWrap(True)
         self.verticalLayout.insertWidget(0, label)
         self._layout_controller = adaptive_window.register_adaptive_window(

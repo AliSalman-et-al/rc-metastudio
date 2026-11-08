@@ -678,8 +678,12 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
                 required(
                     dialog.content_scroll_area.verticalScrollBar(), "vertical scrollbar"
                 ).setValue(0)
+                dialog.activateWindow()
+                qapp.processEvents()
+                assert dialog.isActiveWindow()
                 editable_value.setFocus()
                 qapp.processEvents()
+                assert editable_value.hasFocus()
                 visible_region = required(
                     dialog.content_scroll_area.viewport(), "content viewport"
                 ).rect()
@@ -1359,5 +1363,62 @@ def test_meta_regression_dialog_uses_shared_rcmetar_method(
         assert request.data_type == data_type
         assert request.workflow == "meta-regression"
         assert request.method == "meta.regression"
+    finally:
+        dialog.close()
+
+
+def test_rebuilding_method_does_not_accumulate_effect_labels(qapp, monkeypatch):
+    from rc_metastudio import analysis_setup_dialog
+    _install_analysis_backend(monkeypatch, analysis_setup_dialog)
+    dialog = analysis_setup_dialog.AnalysisSetupDialog(_AnalysisModel("binary"), confidence_level=95.0)
+    try:
+        for i in range(5):
+            dialog.method_cbo_box.setCurrentIndex(i % dialog.method_cbo_box.count())
+            qapp.processEvents()
+        labels = [w for w in dialog.findChildren(QtWidgets.QLabel) if w.text() == "Effect measure"]
+        assert len(labels) == 1
+    finally:
+        dialog.close()
+
+
+@pytest.mark.parametrize("workflow, prefix", [(None, "fp"), ("meta-regression", "bp")])
+def test_plot_bound_zero_survives_selected_configuration(qapp, monkeypatch, workflow, prefix):
+    from rc_metastudio import analysis_setup_dialog
+    _install_analysis_backend(monkeypatch, analysis_setup_dialog)
+    dialog = analysis_setup_dialog.AnalysisSetupDialog(_AnalysisModel("binary"), analysis_type=workflow, confidence_level=95.0)
+    try:
+        dialog.plot_lb_le.setText("0")
+        dialog.plot_ub_le.setText("0")
+        analysis_setup_dialog.add_plot_params(dialog)
+        assert dialog.current_param_vals[prefix + "_plot_lb"] == "0"
+        assert dialog.current_param_vals[prefix + "_plot_ub"] == "0"
+        dialog.plot_lb_le.setText("invalid")
+        analysis_setup_dialog.add_plot_params(dialog)
+        assert dialog.current_param_vals[prefix + "_plot_lb"] == "[default]"
+    finally:
+        dialog.close()
+
+
+def test_manuscript_counts_and_correction_describe_only_fitted_studies(qapp, monkeypatch):
+    from rc_metastudio import analysis_setup_dialog, meta_globals
+    _install_analysis_backend(monkeypatch, analysis_setup_dialog)
+    model = _AnalysisModel("binary")
+    sheet = analysis_dataset.Sheet(SheetId("counts"), "Outcome", meta_globals.BINARY)
+    kept, missing = (
+        analysis_dataset.StudyRow(RowId(name), name, AnalysisUnit(sheet))
+        for name in ("kept", "missing")
+    )
+    monkeypatch.setattr(model, "get_current_arm_key", lambda: tuple(kept.analysis_unit.arms_by_id), raising=False)
+    monkeypatch.setattr(model, "get_studies", lambda only_if_included=True: [kept, missing])
+    def raw(only_these_studies=None):
+        return [[1, 20, 2, 30]] if only_these_studies == [kept.id] else [[1, 20, 2, 30], [0, 100, 0, 200]]
+    monkeypatch.setattr(model, "get_current_raw_data", raw, raising=False)
+    dialog = analysis_setup_dialog.AnalysisSetupDialog(model, confidence_level=95.0)
+    try:
+        dialog._executed_studies = (kept,)
+        assert dict(dialog._manuscript_model_info()) == {"Studies (k)": "1", "Participants in A": "20", "Participants in B": "30"}
+        context = dialog._result_context({"adjust": .5, "to": "only0"})
+        assert "1 studies were included (1 studies were excluded)" in context
+        assert "100" not in context and "correction" not in context
     finally:
         dialog.close()

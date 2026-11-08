@@ -10,6 +10,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLayout, QSizePolicy
 
 from rc_metastudio import adaptive_window, app_error_handler
+from rc_metastudio.qt_layout import protect_scroll_settings
 from rc_metastudio.meta_globals import ONE_ARM_METRICS
 from rc_metastudio.runtime_types import required
 from rc_metastudio.publication_bias import (
@@ -89,6 +90,10 @@ class PublicationBiasDialog(
         self.failure_label.clear()
         self._connect_controls()
         self._configure_window()
+        self._scroll_settings_filters = (
+            protect_scroll_settings(self.methods_scroll),
+            protect_scroll_settings(self.plots_scroll),
+        )
 
     def _configure_accessibility(self):
         """Give configuration controls stable names and plain-language help."""
@@ -187,6 +192,9 @@ class PublicationBiasDialog(
         self.correction_policy_combo.addItems(
             [policy.value for policy in CorrectionPolicy]
         )
+        self.trim_fill_estimator_combo.clear()
+        self.trim_fill_side_combo.clear()
+        self.trim_fill_model_combo.clear()
         self.trim_fill_estimator_combo.addItems(
             [item.value for item in TrimAndFillEstimator]
         )
@@ -268,6 +276,7 @@ class PublicationBiasDialog(
                 if correction_applicable and self.correction_policy_combo.isEnabled()
                 else None
             ),
+            confidence_level=float(self.model.get_confidence_level()),
             selected_tests=(),
         )
 
@@ -370,6 +379,10 @@ class PublicationBiasDialog(
         self.correction_reason_label.clear()
 
     def _request(self) -> SmallStudyEffectsRequest:
+        if self._eligibility_report is None:
+            self._refresh_eligibility()
+        if self._eligibility_report is None:
+            raise ValueError("Test availability could not be checked. Try running again when preview is available.")
         funnels = [
             kind.value
             for kind, control in (
@@ -393,14 +406,7 @@ class PublicationBiasDialog(
             "Outside pseudo-confidence region": LabelPolicy.OUTSIDE_REGION,
             "All": LabelPolicy.ALL,
         }
-        levels = ()
-        if self.contour_funnel_check.isChecked():
-            try:
-                levels = tuple(float(value.strip()) for value in self.contour_levels_edit.text().split(","))
-            except ValueError as error:
-                raise ValueError("Contour levels must be numbers between 0 and 100, separated by commas (for example, 90, 95, 99).") from error
-            if not levels or any(not 0 < value < 100 for value in levels):
-                raise ValueError("Contour levels must be between 0 and 100 (for example, 90, 95, 99).")
+        levels = self._contour_levels()
         return SmallStudyEffectsRequest.create(
             data_type=data_type,
             metric=metric,
@@ -409,6 +415,7 @@ class PublicationBiasDialog(
                 if self.correction_policy_combo.isEnabled()
                 else None
             ),
+            confidence_level=float(self.model.get_confidence_level()),
             selected_tests=selected_tests,
             selected_funnels=funnels,
             label_policy=labels[self.label_policy_combo.currentText()],
@@ -431,6 +438,17 @@ class PublicationBiasDialog(
             trim_and_fill_model=self.trim_fill_model_combo.currentText(),
             extrapolation=self.extrapolation_check.isChecked(),
         )
+
+    def _contour_levels(self):
+        if not self.contour_funnel_check.isChecked():
+            return ()
+        try:
+            levels = tuple(float(value.strip()) for value in self.contour_levels_edit.text().split(","))
+        except ValueError as error:
+            raise ValueError("Contour levels must be numbers between 0 and 100, separated by commas (for example, 90, 95, 99).") from error
+        if not levels or any(not 0 < value < 100 for value in levels):
+            raise ValueError("Contour levels must be between 0 and 100 (for example, 90, 95, 99).")
+        return levels
 
     def run(self):
         try:

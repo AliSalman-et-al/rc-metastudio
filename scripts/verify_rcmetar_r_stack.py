@@ -11,7 +11,6 @@ import subprocess
 import sys
 import tempfile
 import time
-from importlib import metadata
 from pathlib import Path
 
 if __package__:
@@ -46,20 +45,18 @@ def step(message: str) -> None:
     print(f"[RCMetaR-r-stack] {message}", flush=True)
 
 
-def verify_rpy2_identities() -> dict[str, str]:
-    observed = {}
+def verify_rpy2_identities(python: str = sys.executable) -> dict[str, str]:
+    observed = run_json(
+        [python, "-c", "import json; from importlib.metadata import version; "
+         "print(json.dumps({name: version(name) for name in "
+         + repr(list(REQUIRED_RPY2_IDENTITIES)) + "}))"],
+        cwd=Path(__file__).resolve().parents[1],
+    )
     for distribution, required in REQUIRED_RPY2_IDENTITIES.items():
-        try:
-            version = metadata.version(distribution)
-        except metadata.PackageNotFoundError as exc:
+        if observed.get(distribution) != required:
             raise VerificationError(
-                f"required distribution is missing: {distribution}"
-            ) from exc
-        if version != required:
-            raise VerificationError(
-                f"{distribution} identity mismatch: expected {required}, observed {version}"
+                f"{distribution} identity mismatch: expected {required}, observed {observed.get(distribution)}"
             )
-        observed[distribution] = version
     step("Locked rpy2 identities verified: " + json.dumps(observed, sort_keys=True))
     return observed
 
@@ -215,9 +212,7 @@ def ensure_dependency_library(
             cache_env["RCMS_CRAN_REPO"] = cran_repo
             cache_env["RCMS_POLICY_PYTHON"] = python
             verify_manifest_versions(root, python, rscript, cache_env)
-            packages = binary_dependency_policy(root)["normal_packages"]
-            expression = "missing <- commandArgs(trailingOnly=TRUE)[!vapply(commandArgs(trailingOnly=TRUE), requireNamespace, logical(1), quietly=TRUE)]; if (length(missing)) stop(paste(missing, collapse=', '))"
-            run([rscript, "-e", expression, *packages], cwd=root, env=cache_env)
+            verify_dependency_closure(root, rscript, cache_env)
             step(f"Using cached R dependency library at {cache_library}")
         except VerificationError:
             shutil.rmtree(cache_library)
@@ -237,6 +232,30 @@ def ensure_dependency_library(
     r_library = work_dir / "library"
     copy_library(cache_library, r_library)
     return r_library
+
+
+def verify_dependency_closure(root: Path, rscript: Path, env: dict[str, str]) -> None:
+    # Search only the target and the selected R's own runtime packages. Never
+    # let an ambient site library fill a hole in the copied dependency cache.
+    expression = """
+    target <- Sys.getenv("R_LIBS")
+    .libPaths(c(target, .Library), include.site=FALSE)
+    local <- installed.packages(lib.loc=target)
+    runtime <- installed.packages(lib.loc=.Library)
+    runtime <- runtime[!is.na(runtime[, "Priority"]), , drop=FALSE]
+    db <- rbind(local, runtime[!rownames(runtime) %in% rownames(local), , drop=FALSE])
+    roots <- commandArgs(trailingOnly=TRUE)
+    closure <- unique(c(roots, unlist(tools::package_dependencies(
+      roots, db=db, which=c("Depends", "Imports", "LinkingTo"), recursive=TRUE))))
+    missing <- setdiff(closure, c(rownames(local), rownames(runtime), "R"))
+    if (length(missing)) stop(paste("Target-local closure missing:", paste(missing, collapse=", ")))
+    for (package in roots) loadNamespace(package, lib.loc=c(target, .Library))
+    cat("Target-local dependency closure verified:", length(closure), "packages\n")
+    """
+    with tempfile.TemporaryDirectory(prefix="rcms-closure-") as temporary:
+        script = Path(temporary) / "closure.R"
+        script.write_text(expression, encoding="utf-8")
+        run([rscript, "--vanilla", script, *binary_dependency_policy(root)["normal_packages"]], cwd=root, env=env)
 
 
 def built_RCMetaR_tarball(work_dir: Path) -> Path:
@@ -276,6 +295,10 @@ def verify_manifest_versions(
     manifest = json.loads(
         (root / "config/r-dependencies.json").read_text(encoding="utf-8")
     )
+    if report.get("r_version") != manifest["target_runtime"]["r"]:
+        raise VerificationError(
+            f"R runtime mismatch: expected {manifest['target_runtime']['r']}, observed {report.get('r_version')}"
+        )
     exact_versions = {
         dependency["name"]: dependency["installed_version"]
         for dependency in manifest["direct_RCMetaR_dependencies"]
@@ -424,6 +447,13 @@ def bridge_test_command(python: str, pytest_runner: str) -> list[str | Path]:
 
 def verify(args: argparse.Namespace) -> None:
     root = args.root.resolve()
+    if __package__:
+        from scripts.verify import DEFAULT_BUILD_ROOT, prepare_qt_environment, run_typing
+    else:
+        from verify import DEFAULT_BUILD_ROOT, prepare_qt_environment, run_typing
+    build_root = Path(os.environ.get("RCMS_QT6_BUILD_ROOT", str(DEFAULT_BUILD_ROOT))).resolve()
+    prepare_qt_environment(build_root)
+    run_typing(build_root)
     python = (
         str(Path(args.python).absolute()) if Path(args.python).exists() else args.python
     )
@@ -440,7 +470,7 @@ def verify(args: argparse.Namespace) -> None:
     base_env["RCMS_CRAN_REPO"] = cran_repo
     base_env["RCMS_POLICY_PYTHON"] = python
 
-    verify_rpy2_identities()
+    verify_rpy2_identities(python)
 
     run([python, R_MANIFEST_VALIDATOR, "--root", root], cwd=root, env=base_env)
 

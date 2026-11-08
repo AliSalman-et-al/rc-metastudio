@@ -69,6 +69,29 @@ def _run(
     return completed
 
 
+def _run_packaged_smoke(
+    command: list[str],
+    *,
+    environment: dict[str, str],
+    log: Path,
+    timeout_seconds: float = 120,
+) -> subprocess.CompletedProcess[str]:
+    return _run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/run_with_timeout.py"),
+            "--timeout-seconds",
+            str(timeout_seconds),
+            "--label",
+            "packaged feasibility smoke",
+            "--",
+            *command,
+        ],
+        environment=environment,
+        log=log,
+    )
+
+
 def _rosetta_translated() -> bool:
     completed = subprocess.run(
         ["sysctl", "-in", "sysctl.proc_translated"],
@@ -556,7 +579,9 @@ def _prepare_private_r_framework(
     bridge_spec = importlib.util.find_spec("_rinterface_cffi_api")
     if bridge_spec is None or bridge_spec.origin is None:
         raise RuntimeError("locked rpy2 API bridge is unavailable")
-    bridge = Path(bridge_spec.origin).resolve(strict=True)
+    installed_bridge = Path(bridge_spec.origin).resolve(strict=True)
+    bridge = build_root / "package-source" / installed_bridge.name
+    shutil.copy2(installed_bridge, bridge)
     _run(
         [
             sys.executable,
@@ -643,6 +668,9 @@ def _validate_packaged_smoke(
 
 
 def run_feasibility(target: str, evidence_dir: Path) -> dict[str, object]:
+    if evidence_dir.exists() and any(evidence_dir.iterdir()):
+        raise RuntimeError("feasibility requires a fresh empty evidence directory")
+    evidence_dir.mkdir(parents=True, exist_ok=True)
     expected_machine, machine = _native_target(target)
 
     build_root = _feasibility_build_root(target, evidence_dir)
@@ -670,11 +698,11 @@ def run_feasibility(target: str, evidence_dir: Path) -> dict[str, object]:
     generated = build_root / "source/generated/rc_metastudio/forms/ui_about_legal.py"
     resource = build_root / "source/resources/icons.rcc"
     target_arch = "arm64"
+    work = build_root / "package-source"
+    work.mkdir()
     staged_r_framework, r_toc = _prepare_private_r_framework(
         build_root, evidence_dir, target_arch
     )
-    work = build_root / "package-source"
-    work.mkdir()
     shutil.copy2(generated, work / "generated_form.py")
     (work / "entry.py").write_text(PACKAGED_ENTRY, encoding="utf-8", newline="\n")
     pyinstaller_log = evidence_dir / "pyinstaller-build.log"
@@ -753,7 +781,11 @@ def run_feasibility(target: str, evidence_dir: Path) -> dict[str, object]:
     package_environment = environment.copy()
     package_environment["RCMS_FEASIBILITY_REPORT"] = str(packaged_report)
     package_environment["RCMS_FEASIBILITY_PHASES"] = str(packaged_phases)
-    _run([str(executable)], environment=package_environment)
+    _run_packaged_smoke(
+        [str(executable)],
+        environment=package_environment,
+        log=evidence_dir / "packaged-smoke.log",
+    )
     package = json.loads(packaged_report.read_text(encoding="utf-8"))
     plugin = _validate_packaged_smoke(package, app_root)
     probe_root = evidence_dir / "package-probe"

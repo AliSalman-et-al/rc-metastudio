@@ -497,7 +497,25 @@ def _unique_sheet_items(items, location):
         raise ProjectSemanticError(f"{location}: invalid or duplicate identity")
 
 
+def _validate_sheet_ratio(value):
+    from rc_metastudio.ratio_data import RatioInput
+
+    for key in ("estimate", "lower", "upper", "se", "confidence"):
+        if key in value and (value[key] is not None or key == "confidence"):
+            _finite(value[key], f"ratio input {key}")
+    try:
+        RatioInput(**value).validate()
+    except (TypeError, ValueError) as exc:
+        raise ProjectSemanticError(f"invalid ratio input: {exc}") from exc
+
+
 def _validate_sheet_comparisons(sheet, row, arms):
+    effect_keys = [(record["metric"], tuple(record["arms"])) for record in row["entered_effects"]]
+    ratio_keys = ["|".join(record["arms"]) for record in row["ratio_inputs"]]
+    if len(effect_keys) != len(set(effect_keys)) or len(ratio_keys) != len(set(ratio_keys)):
+        raise ProjectSemanticError("duplicate persisted comparison key")
+    for record in row["ratio_inputs"]:
+        _validate_sheet_ratio(record["input"])
     for record in row["entered_effects"] + row["ratio_inputs"]:
         if not record["arms"] or not set(record["arms"]) <= arms:
             raise ProjectSemanticError("comparison references undeclared arm")
@@ -526,6 +544,17 @@ def _validate_sheet_row(sheet, row, arms, covariates):
     _validate_sheet_comparisons(sheet, row, arms)
 
 
+def _validate_sheet_covariates(covariates):
+    for cov in covariates:
+        if not isinstance(cov.get("name"), str) or not cov["name"].strip():
+            raise ProjectSemanticError("covariate name must be nonempty text")
+        if type(cov.get("data_type")) is not int or cov["data_type"] not in (1, 4):
+            raise ProjectSemanticError("covariate data_type must be numeric or categorical")
+    names = [cov["name"] for cov in covariates]
+    if len(names) != len(set(names)):
+        raise ProjectSemanticError("duplicate covariate identifier")
+
+
 def _validate_sheet(sheet):
     family = sheet["family"]
     if sheet["data_type"] != _FAMILY_DATA_TYPES[family]:
@@ -535,12 +564,13 @@ def _validate_sheet(sheet):
     _unique_sheet_items(sheet["arms"], "arms")
     _unique_sheet_items(sheet["rows"], "rows")
     _unique_sheet_items(sheet["covariates"], "covariates")
-    names = [cov["name"] for cov in sheet["covariates"]]
-    if len(names) != len(set(names)):
-        raise ProjectSemanticError("duplicate covariate identifier")
+    _validate_sheet_covariates(sheet["covariates"])
     _validate_group_count(sheet["id"], 0, sheet, family, len(sheet["arms"]))
     arms = {a["id"] for a in sheet["arms"]}
-    if not set(sheet["settings"].get("arms", [])) <= arms:
+    selected_arms = sheet["settings"].get("arms", [])
+    if not isinstance(selected_arms, list) or any(not isinstance(arm, str) for arm in selected_arms):
+        raise ProjectSemanticError("settings arms must be a list of arm identities")
+    if not set(selected_arms) <= arms:
         raise ProjectSemanticError("settings reference undeclared arm")
     covariates = {cov["id"]: cov for cov in sheet["covariates"]}
     for row in sheet["rows"]:

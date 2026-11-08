@@ -221,7 +221,7 @@ def _write_bundle(root: Path) -> None:
                     "size_bytes": len(payload),
                     "varied_pixels": True,
                 },
-                "close_semantics": True,
+                "close_semantics": {"close_blocked": True, "escape_blocked": True, "owner_completed": True} if surface_id == "import-progress" else True,
                 "device_pixel_ratio": scale,
                 "first_use_behavior": contract["first_use_behavior"],
                 "focus": focus,
@@ -242,6 +242,8 @@ def _write_bundle(root: Path) -> None:
             json.dumps(
                 {
                     "qpa": "windows",
+                    "run_id": "fixture-run",
+                    "source_identity": "fixture-source",
                     "scale_factor": scale,
                     "surfaces": surfaces,
                     "tab_focus_behavior": "TabFocusAllControls",
@@ -480,4 +482,52 @@ def test_native_remaining_surface_evidence_rejects_invalid_focus_sequence(
     record_path.write_text(json.dumps(record), encoding="utf-8")
 
     with pytest.raises(ValueError, match="focus traversal was not observed"):
+        native_smoke.validate_evidence(tmp_path)
+
+
+@pytest.mark.parametrize("field,value", [("qpa", "cocoa"), ("run_id", "other-run"), ("source_identity", "other-source")])
+def test_remaining_surfaces_reject_mixed_scale_identity(tmp_path, field, value):
+    _write_bundle(tmp_path)
+    native_smoke.validate_evidence(tmp_path)
+    path = native_smoke._record_path(tmp_path, 1.5)
+    record = json.loads(path.read_text())
+    record[field] = value
+    path.write_text(json.dumps(record))
+    with pytest.raises(ValueError, match="identity"):
+        native_smoke.validate_evidence(tmp_path)
+
+
+def test_scale_retry_preserves_interrupted_fragments(tmp_path, monkeypatch):
+    old = tmp_path / ".surface-records" / "interrupted-other-scale.json"
+    old.parent.mkdir()
+    old.write_text("prior failed evidence")
+    def child(command, **kwargs):
+        environment = kwargs["env"]
+        surface = command[command.index("--surface") + 1]
+        scale = float(command[command.index("--scale") + 1])
+        fragment = Path(environment["RCMS_SURFACE_FRAGMENT_ROOT"])
+        fragment.mkdir(exist_ok=True)
+        (fragment / ("scale-%s-%s.json" % (native_smoke._slug(scale), surface))).write_text(json.dumps({
+            "qpa": "windows", "scale_factor": scale, "tab_focus_behavior": "TabFocusAllControls",
+            "run_id": environment["RCMS_NATIVE_RUN_ID"], "source_identity": environment["RCMS_NATIVE_SOURCE"],
+            "surfaces": {surface: {"observed": True}},
+        }))
+    monkeypatch.setattr(native_smoke.subprocess, "run", child)
+    native_smoke._run_scale(1.0, tmp_path)
+    native_smoke._run_scale(1.5, tmp_path)
+    native_smoke._run_scale(1.0, tmp_path)
+    assert old.read_text() == "prior failed evidence"
+    assert len(list(old.parent.iterdir())) == 4
+    assert set(json.loads(native_smoke._record_path(tmp_path, 1.0).read_text())["surfaces"]) == set(native_smoke._surface_capture_order())
+
+
+@pytest.mark.parametrize("field", ["close_blocked", "escape_blocked", "owner_completed"])
+def test_import_progress_evidence_requires_blocked_gestures_and_completion(tmp_path, field):
+    _write_bundle(tmp_path)
+    native_smoke.validate_evidence(tmp_path)
+    path = native_smoke._record_path(tmp_path, 1.0)
+    record = json.loads(path.read_text())
+    record["surfaces"]["import-progress"]["close_semantics"][field] = False
+    path.write_text(json.dumps(record))
+    with pytest.raises(ValueError, match="import-progress.*close"):
         native_smoke.validate_evidence(tmp_path)

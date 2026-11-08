@@ -276,7 +276,7 @@ def test_evidence_runner_captures_all_archetypes_and_runtime_contracts(
     monkeypatch.setattr(
         adaptive_layout_evidence,
         "validate_native_platform",
-        lambda: "test-native-plugin",
+        lambda: "windows",
     )
     monkeypatch.setenv("QT_SCALE_FACTOR", "1.0")
     # The offscreen pytest display is only 800x600 including synthetic frame
@@ -346,7 +346,7 @@ def test_evidence_runner_captures_all_archetypes_and_runtime_contracts(
         json.loads((output / "manifest.json").read_text(encoding="utf-8"))[
             "platform_plugin"
         ]
-        == "test-native-plugin"
+        == "windows"
     )
     assert "pixel-diff" in (output / "HUMAN_REVIEW.md").read_text(encoding="utf-8")
     validator_path = ROOT / "scripts" / "validate_adaptive_layout_evidence.py"
@@ -391,6 +391,85 @@ def test_evidence_runner_captures_all_archetypes_and_runtime_contracts(
         )
     validator.validate_evidence(
         output,
-        "test-native-plugin",
+        "windows",
         manifest["scale_factor_environment"],
     )
+
+
+def test_early_startup_archives_previous_evidence_before_qt(qapp, tmp_path):
+    from scripts import adaptive_layout_evidence as evidence
+    output = tmp_path / "attempt"
+    output.mkdir()
+    (output / "manifest.json").write_text("prior success")
+    (output / "screenshots").mkdir()
+    (output / "screenshots" / "prior.png").write_bytes(b"prior pixels")
+    evidence.configure_isolated_evidence_settings(output)
+    assert not (output / "manifest.json").exists()
+    archive = next(tmp_path.glob("attempt-previous-*"))
+    assert (archive / "manifest.json").read_text() == "prior success"
+    assert (archive / "screenshots" / "prior.png").read_bytes() == b"prior pixels"
+
+
+def test_runtime_resize_records_a_real_change_and_reachable_table(qapp, monkeypatch):
+    from scripts import adaptive_layout_evidence as evidence
+    app, window = automation.start_automation()
+    try:
+        assert window.open(str(ROOT / "sample_projects/amino.rcms"))
+        window.showNormal()
+        window.resize(800, 600)
+        app.processEvents()
+        record = evidence._exercise_runtime_resize(app, window)
+        assert record["before"] != record["after"]
+        assert record["table_reachable"] is True
+        monkeypatch.setattr(window, "resize", lambda *_args: None)
+        with pytest.raises(RuntimeError, match="did not change frame size"):
+            evidence._exercise_runtime_resize(app, window)
+    finally:
+        window.workspace.mark_saved()
+        window.close()
+        app.processEvents()
+
+
+def test_covariate_cancel_probe_detects_live_sheet_mutation(qapp, monkeypatch):
+    from scripts import native_remaining_surfaces_smoke as smoke
+    from rc_metastudio import covariate_type_dialog
+    assert smoke._observe_covariate_owner_cancel(qapp) is True
+    original = covariate_type_dialog.CovariateTypeDialog.__init__
+    def mutate_live_sheet(self, dataset, covariate, parent=None):
+        assert parent is not None
+        original(self, parent.model.current_sheet, covariate, parent=parent)
+    monkeypatch.setattr(covariate_type_dialog.CovariateTypeDialog, "__init__", mutate_live_sheet)
+    with pytest.raises(RuntimeError, match="cancel did not preserve owner sheet"):
+        smoke._observe_covariate_owner_cancel(qapp)
+
+
+@pytest.mark.parametrize("defect", [None, "escape", "close", "completion"])
+def test_import_progress_observer_checks_blocked_gestures_and_owner_completion(qapp, monkeypatch, defect):
+    import sys
+    from scripts import native_remaining_surfaces_smoke as smoke
+    from rc_metastudio import main_window, progress_dialog
+    callback_errors = []
+    monkeypatch.setattr(sys, "excepthook", lambda _kind, error, _trace: callback_errors.append(error))
+    if defect == "escape":
+        monkeypatch.setattr(main_window.ImportProgressDialog, "reject", lambda self: self.hide())
+    elif defect == "close":
+        monkeypatch.setattr(main_window.ImportProgressDialog, "closeEvent", lambda self, event: event.accept())
+    elif defect == "completion":
+        monkeypatch.setattr(progress_dialog, "hide_once", lambda _window: None)
+    window = main_window.ImportProgressDialog()
+    try:
+        window.show()
+        qapp.processEvents()
+        observation = smoke._observe_capture_close(qapp, window, "import-progress")
+        assert callback_errors == []
+        expected = {"close_blocked": True, "escape_blocked": True, "owner_completed": True}
+        if defect is None:
+            assert observation == expected
+        else:
+            assert isinstance(observation, dict)
+            field = {"close": "close_blocked", "escape": "escape_blocked", "completion": "owner_completed"}[defect]
+            assert observation[field] is False
+    finally:
+        window.hide()
+        window.deleteLater()
+        qapp.processEvents()

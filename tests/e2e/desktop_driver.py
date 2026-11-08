@@ -292,16 +292,17 @@ def analyze(app, window, method, *, digits=3):
     )
     dialog.method_cbo_box.setCurrentText(label)
     app.processEvents()
-    precision_label = next(
-        label
-        for label in dialog.findChildren(QtWidgets.QLabel)
-        if label.text().casefold() == "decimal places"
-    )
-    precision = precision_label.buddy()
-    assert isinstance(precision, QtWidgets.QSpinBox)
+    def precision_control():
+        return next(control for control in [*dialog.current_widgets, *dialog._shared_diagnostic_widgets]
+                    if isinstance(control, QtWidgets.QSpinBox)
+                    and control.accessibleName().casefold() == "decimal places")
+
+    precision = precision_control()
     precision.setValue(digits)
     QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
     app.processEvents()
+    # Diagnostic method panels can rebuild their shared controls on this turn.
+    precision = precision_control()
     record_step("analysis-layout", dialog)
     if dialog.data_type == "diagnostic":
         viewport = dialog.content_scroll_area.viewport()
@@ -309,7 +310,8 @@ def analyze(app, window, method, *, digits=3):
             if control.isVisible() and isinstance(control, (QtWidgets.QLabel, QtWidgets.QComboBox, QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
                 left = control.mapTo(viewport, QtCore.QPoint()).x()
                 assert left >= 0 and left + control.width() <= viewport.width(), (control.objectName(), left, control.width(), viewport.width(), control.text() if isinstance(control, QtWidgets.QLabel) else "")
-    record_step("analysis-configured", dialog, method=method, digits=3)
+    assert precision.value() == digits, ("configured precision", precision.value(), digits)
+    record_step("analysis-configured", dialog, method=method, digits=precision.value())
     button = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
     assert button.isEnabled()
     mouse_click(required(button), QtCore.Qt.MouseButton.LeftButton)
@@ -430,6 +432,8 @@ def analysis_dialog(app, window):
         assert toggle.text().startswith("▸ Advanced · ") and toggle.text().endswith(" changed")
         assert toggle.width() >= toggle.fontMetrics().horizontalAdvance(toggle.text()) + 12
         record_step("advanced-collapsed", form, sample=sample, summary=toggle.text(), changed_options=toggle.toolTip())
+        from tests.e2e.analysis_layout import check as check_tab_layout
+        check_tab_layout(app, form, sample, record_step)
 
         mouse_click(required(form.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)), QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
@@ -819,13 +823,12 @@ def sheets_swap(app, window):
 
 def sheets_legacy(app, window):
     import hashlib
-    import subprocess
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections
     baseline = json.loads((ROOT / "tests/e2e/fixtures/sheets-original-numerics.json").read_text())
     for filename in dict.fromkeys(row["file"] for row in baseline):
         window.workspace.mark_saved()
         source = WORK / filename
-        source.write_bytes(subprocess.check_output(["git", "show", "322ede26:sample_projects/" + filename], cwd=ROOT))
+        source.write_bytes((ROOT / "tests/fixtures/legacy-projects" / filename).read_bytes())
         digest = hashlib.sha256(source.read_bytes()).hexdigest()
         assert window.open(str(source), raise_on_error=True)
         rows = [row for row in baseline if row["file"] == filename]
@@ -843,6 +846,8 @@ def sheets_legacy(app, window):
 
 def sheets(app, window):
     from rc_metastudio import r_bridge
+    from tests.e2e.sheet_navigation import check as check_navigation
+    check_navigation(app, window, ROOT, WORK, record_step)
     # Non-unit sampling variance exposes variance/SE confusion in raw IRR previews.
     code = 'local({e <- metafor::escalc("IRR", x1i=4, t1i=100, x2i=9, t2i=120, add=.5, to="only0", drop00=TRUE); c(e$yi, e$yi-qnorm(.975)*sqrt(e$vi), e$yi+qnorm(.975)*sqrt(e$vi))})'
     expected = [float(x) for x in r_bridge.execute_r_string(code)]
@@ -921,13 +926,13 @@ def sheets(app, window):
     record_step("sheets-initial", window)
     screens = WORK / "sheets-screens"
     screens.mkdir(exist_ok=True)
-    window.grab().save(str(screens / "sheets-after-main.png"))
+    assert window.grab().save(str(screens / "sheets-after-main.png"))
     window.action_go.trigger()
     app.processEvents()
     dialog = next(w for w in app.topLevelWidgets() if isinstance(w, analysis_setup_dialog.AnalysisSetupDialog) and w.isVisible())
     dialog.resize(631, 437)
     app.processEvents()
-    dialog.grab().save(str(screens / "sheets-after-analysis.png"))
+    assert dialog.grab().save(str(screens / "sheets-after-analysis.png"))
     dialog.close()
 
     before_cancel = project(window.model.dataset)
@@ -1260,8 +1265,8 @@ def xlsx_import(app, window):
         assert isinstance(types, main_wizard.DataTypePage)
         buttons = types._data_type_buttons()
         assert all(not button.icon().isNull() for button in buttons)
-        capture.grab().save(str(screens / f"slice7-{theme}-data-types.png"))
-        capture.grab().save(str(screens / f"slice8a-data-types-{theme}.png"))
+        assert capture.grab().save(str(screens / f"slice7-{theme}-data-types.png"))
+        assert capture.grab().save(str(screens / f"slice8a-data-types-{theme}.png"))
         for page_id, page_name in ((main_wizard.Page_Welcome, "welcome"),
                                    (main_wizard.Page_OutcomeName, "outcome"),
                                    (main_wizard.Page_CsvImport, "csv")):
@@ -1269,14 +1274,14 @@ def xlsx_import(app, window):
             capture.setStartId(page_id)
             capture.restart()
             app.processEvents()
-            capture.grab().save(str(screens / f"slice8a-{page_name}-{theme}.png"))
+            assert capture.grab().save(str(screens / f"slice8a-{page_name}-{theme}.png"))
         window.resize(1200, 828)
         window.tableView.horizontalScrollBar().setValue(0)
         window.tableView.viewport().repaint()
         window.tableView.horizontalHeader().viewport().repaint()
         app.processEvents()
         assert_study_grid(app, window)
-        window.grab().save(str(screens / f"slice8a-grid-{theme}.png"))
+        assert window.grab().save(str(screens / f"slice8a-grid-{theme}.png"))
         for index, button in enumerate(buttons):
             types._button_selected(button)
             if capture.require_dataset_info()["data_type"] == "diagnostic":
@@ -1288,9 +1293,9 @@ def xlsx_import(app, window):
             assert isinstance(metric_page, main_wizard.ChooseMetricPage)
             metrics = metric_page.metric_cbo_box
             assert all(metrics.itemIcon(i).isNull() for i in range(metrics.count()))
-            capture.grab().save(str(screens / f"slice7-{theme}-metrics-{index}.png"))
+            assert capture.grab().save(str(screens / f"slice7-{theme}-metrics-{index}.png"))
             if theme == "light" and index == 0:
-                capture.grab().save(str(screens / "slice8a-metric.png"))
+                assert capture.grab().save(str(screens / "slice8a-metric.png"))
         capture.close()
     app.setPalette(original_palette)
     from openpyxl import Workbook
@@ -1333,7 +1338,7 @@ def xlsx_import(app, window):
     assert cast(main_wizard.CsvImportPage, welcome.currentPage()).file_path == str(path)
     assert cast(main_wizard.CsvImportPage, welcome.currentPage()).isComplete(), cast(main_wizard.CsvImportPage, welcome.currentPage()).import_status.text()
     record_step("welcome-import-loaded", welcome)
-    welcome.grab().save(str(screens / "slice8a-import.png"))
+    assert welcome.grab().save(str(screens / "slice8a-import.png"))
     welcome.close()
     wizard = main_wizard.MainWizard(path="csv_import")
     wizard.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions", effect="OR", metric_choices=[], name="Mortality"))
@@ -1704,6 +1709,19 @@ def small_study_effects(app, window):
             QtCore.QTimer.singleShot(10, run)
             return
         try:
+            from tests.python.gui.test_types import wheel_scroll
+            combo = dialog.correction_policy_combo
+            original = combo.currentIndex()
+            combo.setFocus()
+            app.processEvents()
+            wheel_scroll(combo)
+            app.processEvents()
+            record_step("small-study-wheel-preserves-correction", dialog,
+                        before=original, after=combo.currentIndex())
+            assert combo.currentIndex() == original, "Scrolling changed the continuity correction"
+            key_click(combo, QtCore.Qt.Key.Key_Down)
+            assert combo.currentIndex() != original, "Keyboard selection stopped working"
+            combo.setCurrentIndex(original)
             button = dialog.button_box.button(
                 QtWidgets.QDialogButtonBox.StandardButton.Ok
             )
@@ -1808,15 +1826,21 @@ def calculator(app, window, family):
             app.processEvents()
             if family == "binary":
                 viewport = dialog.content_scroll.viewport()
-                for widget in (dialog.raw_data_table, dialog.wald_readout, dialog.metric_readout):
+                for widget in (dialog.raw_data_table, dialog.metric_readout):
                     assert widget.isVisible()
                     assert viewport.rect().contains(QtCore.QRect(widget.mapTo(viewport, QtCore.QPoint()), widget.size())), (widget.objectName(), widget.geometry(), viewport.size())
+                readout_bounds = QtCore.QRect(dialog.wald_readout.mapTo(dialog, QtCore.QPoint()), dialog.wald_readout.size())
+                footer_bounds = QtCore.QRect(dialog.buttonBox.mapTo(dialog, QtCore.QPoint()), dialog.buttonBox.size())
+                record_step("calculator-readout-layout", dialog, readout_bounds=str(readout_bounds), footer_bounds=str(footer_bounds))
+                assert dialog.wald_readout.isVisible()
+                assert dialog.rect().contains(readout_bounds), (dialog.rect(), readout_bounds)
+                assert readout_bounds.bottom() < footer_bounds.top(), (readout_bounds, footer_bounds)
                 assert dialog.content_scroll.verticalScrollBar().maximum() == 0
                 assert dialog.raw_data_table.verticalScrollBar().maximum() == 0
                 assert "SE" in dialog.wald_readout.text() and "Two-sided P" in dialog.wald_readout.text()
                 widths = [dialog.metric_readout.columnWidth(i) for i in range(4)]
                 assert max(widths) - min(widths) <= 1, widths
-            dialog.grab().save(str(WORK / f"slice8a-calculator-{family}.png"))
+            assert dialog.grab().save(str(WORK / f"slice8a-calculator-{family}.png"))
             for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
                 width = field.fontMetrics().horizontalAdvance(field.text())
                 assert field.width() >= width + field.textMargins().left() + field.textMargins().right() + 12

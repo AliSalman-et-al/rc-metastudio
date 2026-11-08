@@ -11,6 +11,7 @@ import math
 import os
 import subprocess
 import sys
+from uuid import uuid4
 from collections.abc import Callable, Collection
 from pathlib import Path, PurePosixPath
 from typing import Protocol, TypeAlias, TypeGuard, cast
@@ -19,6 +20,8 @@ from typing import Protocol, TypeAlias, TypeGuard, cast
 SCALE_FACTORS = (1.0, 1.5)
 TOLERANCE = 0.02
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 DEFAULT_EVIDENCE_ROOT = ROOT / "build/qt6-verification/native-remaining-surfaces"
 os.environ.setdefault("RCMS_QT6_BUILD_ROOT", str(ROOT / "build/qt6-verification"))
 
@@ -82,7 +85,7 @@ def _record_path(root: Path, scale: float) -> Path:
 
 
 def _surface_record_path(root: Path, scale: float, surface_id: str) -> Path:
-    return root / ".surface-records" / ("scale-%s-%s.json" % (_slug(scale), surface_id))
+    return Path(os.environ.get("RCMS_SURFACE_FRAGMENT_ROOT", str(root / ".surface-records"))) / ("scale-%s-%s.json" % (_slug(scale), surface_id))
 
 
 def _surface_capture_order() -> tuple[str, ...]:
@@ -243,7 +246,16 @@ def _validate_surface_fields(surface_id: str, surface: dict[str, object]) -> Non
         )
     _validate_focus_observation(surface_id, surface["focus"])
     _validate_action_observation(surface_id, surface["actions"])
-    if surface["close_semantics"] is not True:
+    close = surface["close_semantics"]
+    if surface_id == "import-progress":
+        closed_correctly = (
+            isinstance(close, dict)
+            and set(close) == {"close_blocked", "escape_blocked", "owner_completed"}
+            and all(value is True for value in close.values())
+        )
+    else:
+        closed_correctly = close is True
+    if not closed_correctly:
         raise ValueError(
             "remaining-surface %s did not close cleanly" % surface_id
         )
@@ -363,6 +375,39 @@ def _validate_surface_capture(surface_id: str, surface: dict[str, object], scale
         raise ValueError("remaining-surface %s PNG is blank" % surface_id)
 
 
+def _validate_scale_record(record: dict, scale: float, root: Path, expected_ids: set[str], seen_capture_paths: set[str]) -> None:
+    if set(record) != {
+        "qpa",
+        "run_id",
+        "source_identity",
+        "scale_factor",
+        "surfaces",
+        "tab_focus_behavior",
+    }:
+        raise ValueError("remaining-surface evidence record fields drifted")
+    qpa = record["qpa"]
+    if qpa not in ({"offscreen"} if _offscreen() else {"windows", "cocoa"}):
+        raise ValueError("remaining-surface evidence is not native hosted Qt")
+    if record["tab_focus_behavior"] != "TabFocusAllControls":
+        raise ValueError(
+            "remaining-surface evidence lacks all-control keyboard navigation"
+        )
+    if abs(_number(record["scale_factor"], "scale") - scale) > TOLERANCE:
+        raise ValueError("remaining-surface evidence scale does not match")
+    surfaces = record["surfaces"]
+    if not isinstance(surfaces, dict) or set(surfaces) != expected_ids:
+        raise ValueError("remaining-surface evidence inventory is incomplete")
+    for surface_id, surface in surfaces.items():
+        if not isinstance(surface, dict):
+            raise ValueError("remaining-surface %s fields drifted" % surface_id)
+        _validate_surface_fields(surface_id, surface)
+        _validate_surface_layout(surface_id, surface)
+        _validate_surface_geometry(surface_id, surface, scale)
+        _validate_surface_capture(surface_id, surface, scale, root, seen_capture_paths)
+    if not record.get("run_id") or not record.get("source_identity"):
+        raise ValueError("remaining-surface identity is missing")
+
+
 def validate_evidence(root: Path = DEFAULT_EVIDENCE_ROOT) -> list[dict[str, object]]:
     """Validate relocated native evidence at standard and fractional scale."""
     expected_ids = _remaining_surface_ids()
@@ -370,32 +415,9 @@ def validate_evidence(root: Path = DEFAULT_EVIDENCE_ROOT) -> list[dict[str, obje
     seen_capture_paths: set[str] = set()
     for scale in SCALE_FACTORS:
         record = json.loads(_record_path(root, scale).read_text(encoding="utf-8"))
-        if set(record) != {
-            "qpa",
-            "scale_factor",
-            "surfaces",
-            "tab_focus_behavior",
-        }:
-            raise ValueError("remaining-surface evidence record fields drifted")
-        qpa = record["qpa"]
-        if qpa not in ({"offscreen"} if _offscreen() else {"windows", "cocoa"}):
-            raise ValueError("remaining-surface evidence is not native hosted Qt")
-        if record["tab_focus_behavior"] != "TabFocusAllControls":
-            raise ValueError(
-                "remaining-surface evidence lacks all-control keyboard navigation"
-            )
-        if abs(_number(record["scale_factor"], "scale") - scale) > TOLERANCE:
-            raise ValueError("remaining-surface evidence scale does not match")
-        surfaces = record["surfaces"]
-        if not isinstance(surfaces, dict) or set(surfaces) != expected_ids:
-            raise ValueError("remaining-surface evidence inventory is incomplete")
-        for surface_id, surface in surfaces.items():
-            if not isinstance(surface, dict):
-                raise ValueError("remaining-surface %s fields drifted" % surface_id)
-            _validate_surface_fields(surface_id, surface)
-            _validate_surface_layout(surface_id, surface)
-            _validate_surface_geometry(surface_id, surface, scale)
-            _validate_surface_capture(surface_id, surface, scale, root, seen_capture_paths)
+        _validate_scale_record(record, scale, root, expected_ids, seen_capture_paths)
+        if records and any(record[key] != records[0][key] for key in ("qpa", "run_id", "source_identity")):
+            raise ValueError("remaining-surface scale identity differs")
         records.append(record)
     if len(seen_capture_paths) != len(SCALE_FACTORS) * len(expected_ids):
         raise ValueError("remaining-surface evidence capture count is incomplete")
@@ -674,13 +696,15 @@ def _surface_factories() -> dict[str, SurfaceFactory]:
         progress_dialog,
     )
 
-    class PreviewModel(QtGui.QStandardItemModel):
-        dataError = QtCore.pyqtSignal(str)
-
-        def __init__(self, _dataset: object, _covariate: object) -> None:
-            super().__init__(2, 3)
-
-    setattr(covariate_type_dialog, "CovariateTypeModel", PreviewModel)
+    def covariate_factory():
+        import copy
+        from rc_metastudio import project_format, project_adapter
+        sheet = project_adapter.project_to_dataset(project_format.load_project(ROOT / "sample_projects/amino.rcms").project).sheets[0]
+        covariate = {"id": "native-dose", "name": "Dose", "data_type": 1}
+        sheet.covariates.append(covariate)
+        for index, row in enumerate(sheet.rows):
+            row.covariate_values[covariate["id"]] = index + 1
+        return covariate_type_dialog.CovariateTypeDialog(copy.deepcopy(sheet), covariate)
 
     def checked_factory(candidate: object, name: str) -> SurfaceFactory:
         if not _is_zero_argument_factory(candidate):
@@ -697,9 +721,7 @@ def _surface_factories() -> dict[str, SurfaceFactory]:
     return {
         "about-legal": checked_factory(about_legal_dialog.AboutLegalDialog, "about-legal"),
         "change-covariate-type": checked_factory(
-            lambda: covariate_type_dialog.CovariateTypeDialog(
-            object(), object()
-            ),
+            covariate_factory,
             "change-covariate-type",
         ),
         "edit-group-name": checked_factory(
@@ -1081,6 +1103,39 @@ def _observe_accept_action(
     return default_accept, accepted_observed
 
 
+def _observe_covariate_owner_cancel(app):
+    import copy
+    from rc_metastudio import main_window, covariate_type_dialog
+    owner = main_window.MainWindow()
+    observed = []
+    try:
+        if not owner.open(str(ROOT / "sample_projects/amino.rcms")):
+            raise RuntimeError("could not open owned cancellation fixture")
+        owner.model.add_covariate("Dose", "continuous", {row.label: index + 1 for index, row in enumerate(owner.model.current_sheet.rows)})
+        before = copy.deepcopy(owner.model.current_sheet)
+        def sheet_state(sheet):
+            return (copy.deepcopy(sheet.covariates), [(row.id, copy.deepcopy(row.covariate_values)) for row in sheet.rows])
+        before_state = sheet_state(before)
+        def cancel():
+            dialog = next((widget for widget in app.topLevelWidgets() if isinstance(widget, covariate_type_dialog.CovariateTypeDialog) and widget.parentWidget() is owner), None)
+            if dialog is None:
+                return
+            index = dialog.cov_model.index(0, dialog.cov_model.NEW_VAL)
+            edited = dialog.cov_model.setData(index, "cancelled-category", QtCore.Qt.ItemDataRole.EditRole)
+            observed.append(edited and sheet_state(dialog.dataset) != before_state)
+            button = _button_for_roles(_dialog_box(dialog, "accept-cancel"), {QtWidgets.QDialogButtonBox.ButtonRole.RejectRole, QtWidgets.QDialogButtonBox.ButtonRole.NoRole})
+            if button is not None:
+                button.click()
+        QtCore.QTimer.singleShot(0, cancel)
+        owner.change_covariate_type(owner.model.current_sheet.covariates[-1])
+        if observed != [True] or sheet_state(owner.model.current_sheet) != before_state:
+            raise RuntimeError("cancel did not preserve owner sheet after real preview edit")
+        return True
+    finally:
+        owner.workspace.mark_saved()
+        _delete_window(app, owner)
+
+
 def _observe_cancel_action(
     app: QtWidgets.QApplication,
     factory: SurfaceFactory,
@@ -1103,6 +1158,11 @@ def _observe_cancel_action(
             raise RuntimeError("accept-cancel surface has no cancel action")
         rejected: list[bool] = []
         reject_dialog.rejected.connect(lambda: rejected.append(True))
+        from rc_metastudio.covariate_type_dialog import CovariateTypeDialog
+        if isinstance(reject_dialog, CovariateTypeDialog):
+            owner_rollback = _observe_covariate_owner_cancel(app)
+        else:
+            owner_rollback = True
         before = _snapshot_edit_state(reject_dialog)
         cancel_visible = cancel.isVisible() and cancel.isEnabled()
         cancel.click()
@@ -1112,7 +1172,7 @@ def _observe_cancel_action(
             "cancel_visible_enabled": cancel_visible,
             "contract": "accept-cancel",
             "default_accept_visible_enabled": default_accept,
-            "reject_nonmutation": before == _snapshot_edit_state(reject_dialog),
+            "reject_nonmutation": owner_rollback and before == _snapshot_edit_state(reject_dialog),
             "rejected_observed": rejected == [True] and not reject_dialog.isVisible(),
         }
     finally:
@@ -1192,6 +1252,31 @@ def _observe_window_contract(window: QtWidgets.QWidget) -> dict[str, object]:
     }
 
 
+def _observe_capture_close(
+    app: QtWidgets.QApplication, window: QtWidgets.QWidget, surface_id: str
+) -> bool | dict[str, bool]:
+    window.close()
+    app.processEvents()
+    if surface_id != "import-progress":
+        return not window.isVisible()
+    from rc_metastudio import progress_dialog
+    # Import owns completion; user gestures must not release its modality.
+    close_blocked = window.isVisible() and app.activeModalWidget() is window
+    for event_type in (QtCore.QEvent.Type.KeyPress, QtCore.QEvent.Type.KeyRelease):
+        QtCore.QCoreApplication.sendEvent(window, QtGui.QKeyEvent(
+            event_type, QtCore.Qt.Key.Key_Escape, QtCore.Qt.KeyboardModifier.NoModifier
+        ))
+    app.processEvents()
+    escape_blocked = window.isVisible() and app.activeModalWidget() is window
+    progress_dialog.hide_once(window)
+    app.processEvents()
+    return {
+        "close_blocked": close_blocked,
+        "escape_blocked": escape_blocked,
+        "owner_completed": not window.isVisible(),
+    }
+
+
 def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None:
     from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
@@ -1205,6 +1290,8 @@ def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None
     qt6_resources.ensure_application_resources()
     from rc_metastudio import app_error_handler
 
+    QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
+    QtCore.QSettings.setPath(QtCore.QSettings.Format.IniFormat, QtCore.QSettings.Scope.UserScope, str(evidence_root / "settings" / uuid4().hex))
     app = app_error_handler.get_or_create_application([])
     # Evidence failures must terminate the gate, never block behind the app's
     # interactive unexpected-error dialog.
@@ -1264,8 +1351,7 @@ def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None
                 "width": round(frame.width() * dpr),
                 "height": round(frame.height() * dpr),
             }
-            window.close()
-            app.processEvents()
+            close_observation = _observe_capture_close(app, window, surface_id)
             # Finish the capture instance before action probes construct their
             # own top-level windows. Keeping a captured QWizard alive while two
             # more MainWizard trees were created caused an intermittent Windows
@@ -1282,7 +1368,7 @@ def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None
                 ],
                 "archetype": observed_contract["archetype"],
                 "capture": capture,
-                "close_semantics": not window.isVisible(),
+                "close_semantics": close_observation,
                 "device_pixel_ratio": dpr,
                 "first_use_behavior": observed_contract["first_use_behavior"],
                 "focus": focus,
@@ -1301,8 +1387,11 @@ def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None
                 None, QtCore.QEvent.Type.DeferredDelete
             )
             app.processEvents()
+    from scripts.validate_adaptive_layout_evidence import source_identity
     record = {
         "qpa": app.platformName(),
+        "run_id": os.environ["RCMS_NATIVE_RUN_ID"],
+        "source_identity": source_identity(),
         "scale_factor": scale,
         "surfaces": records,
         "tab_focus_behavior": tab_focus_behavior,
@@ -1315,7 +1404,19 @@ def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None
 
 
 def _run_scale(scale: float, evidence_root: Path) -> None:
+    # Retain interrupted/successful captures before this scale writes new pixels.
+    previous = [path for path in (_record_path(evidence_root, scale), evidence_root / ("scale-%s" % _scale_label(scale))) if path.exists()]
+    if previous:
+        archive = evidence_root / ".previous-attempts" / uuid4().hex
+        archive.mkdir(parents=True)
+        for path in previous:
+            path.rename(archive / path.name)
     environment = os.environ.copy()
+    environment.setdefault("RCMS_NATIVE_RUN_ID", uuid4().hex)
+    from scripts.validate_adaptive_layout_evidence import source_identity
+    environment.setdefault("RCMS_NATIVE_SOURCE", source_identity())
+    fragment_root = evidence_root / ".surface-records" / uuid4().hex
+    environment["RCMS_SURFACE_FRAGMENT_ROOT"] = str(fragment_root)
     for surface_id in _surface_capture_order():
         subprocess.run(
             [
@@ -1334,7 +1435,7 @@ def _run_scale(scale: float, evidence_root: Path) -> None:
         )
     fragments = [
         json.loads(
-            _surface_record_path(evidence_root, scale, surface_id).read_text(
+            (fragment_root / ("scale-%s-%s.json" % (_slug(scale), surface_id))).read_text(
                 encoding="utf-8"
             )
         )
@@ -1343,7 +1444,7 @@ def _run_scale(scale: float, evidence_root: Path) -> None:
     if not fragments:
         raise RuntimeError("remaining-surface inventory is empty")
     common = {
-        key: fragments[0][key] for key in ("qpa", "scale_factor", "tab_focus_behavior")
+        key: fragments[0][key] for key in ("qpa", "run_id", "source_identity", "scale_factor", "tab_focus_behavior")
     }
     if any(
         any(fragment[key] != value for key, value in common.items())
@@ -1360,9 +1461,6 @@ def _run_scale(scale: float, evidence_root: Path) -> None:
         json.dumps({**common, "surfaces": surfaces}, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
-    for surface_id in _surface_capture_order():
-        _surface_record_path(evidence_root, scale, surface_id).unlink()
-    _surface_record_path(evidence_root, scale, "placeholder").parent.rmdir()
 
 
 def _native_dpr() -> float:
@@ -1409,6 +1507,9 @@ def main() -> int:
         return 0
     if args.surface is not None:
         raise ValueError("surface requires scale")
+    os.environ["RCMS_NATIVE_RUN_ID"] = uuid4().hex
+    from scripts.validate_adaptive_layout_evidence import source_identity
+    os.environ["RCMS_NATIVE_SOURCE"] = source_identity()
     native_dpr = _native_dpr()
     if native_dpr <= 0:
         raise RuntimeError("native Qt reported an invalid device pixel ratio")

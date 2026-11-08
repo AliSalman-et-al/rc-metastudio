@@ -18,7 +18,7 @@ Users edit a study's raw inputs, inspect the derived effect preview, accept or c
 
 Preconditions: doctor passes; the matching committed sample supplies compatible raw inputs.
 
-- **Default-size visibility.** `calculator-binary` requires the count grid, SE/Z/P readout and OR/RR/RD table to fit fully in the visible content viewport without vertical scrolling. `ui-crawl` also checks both continuous pre/post arm tables and compact entered-estimate placement. Large-font overflow remains covered by the transactional calculator layout tests.
+- **Default-size visibility.** `calculator-binary` requires the count grid and OR/RR/RD table to fit fully in the visible content viewport without vertical scrolling. Its SE/Z/P readout must be visible inside the dialog above the button footer, outside the pane hidden by entered mode. `ui-crawl` also checks both continuous pre/post arm tables and compact entered-estimate placement. Large-font overflow remains covered by the transactional calculator layout tests.
 - **Binary.** Run `uv run python scripts/verify_rcms.py calculator-binary`. The row-header path opens `BinaryDataDialog`; `raw_data_table` accepts the first study's increased event count and corresponding total.
 - **Continuous.** Run `uv run python scripts/verify_rcms.py calculator-continuous`. `ContinuousDataDialog.simple_table` changes the first study mean by `1.5` using a comma decimal.
 - **Diagnostic.** Run `uv run python scripts/verify_rcms.py calculator-diagnostic`. `DiagnosticDataDialog.two_by_two_table` changes the first study TP count by one.
@@ -46,17 +46,30 @@ Run `uv run python scripts/verify_rcms.py calculator-mode-<suffix>`:
 
 | Suffix | Actual controls and independent expectations |
 | --- | --- |
-| `binary-metrics` | OR/RR/RD selector and count edit; independently calculated previews |
+| `binary-metrics` | OR/RR/RD selector and count edit; independently calculated previews; deleting a non-event count clears its derived total; impossible partial counts block OK and Clear recovers |
 | `continuous-metrics` | MD/SMD selector and mean edit; exact Hedges correction |
 | `diagnostic-metrics` | Sens/Spec selector and count edit; proportions from counts |
 | `onearm-proportion`, `onearm-mean` | Actual one-arm wizard, PR/mean calculator, accepted data and missing second arm |
 | `entered-binary`, `entered-continuous`, `entered-diagnostic` | Clear, entered estimate and both CI bounds; independent log/identity/logit storage; entered triplet survives Cancel, undo/redo and reopen |
-| `pre-post` | Both groups' pre/post tables; correlation 0 then .5 changes reconstructed SD; independent mean/variance |
+| `pre-post` | Mode switching preserves existing arm summaries; Clear recovers invalid input; both groups' pre/post tables, correlation 0 then .5, independent mean/variance; deleting a required mean clears its derived arm and preview |
 | `back-binary` | Independently known OR/CI and totals reconstruct a valid ambiguous count candidate; nested Cancel before candidate 1 |
 | `back-continuous` | MD/CI and partial N/mean/SD reconstruct the missing mean; nested Cancel before equal-SD candidate 1 |
 | `back-diagnostic` | Independently known Sens/Spec logit intervals and prevalence reconstruct [80,20,10,90] |
 
 Every mode uses the real row-header gesture, accepts, clears/cancels a subsequent draft, checks undo/redo and clean state, saves/reopens, and analyzes the accepted data with DL/z at six digits. Eight displayed pooled/inference/heterogeneity fields must match public `metafor::escalc`/`rma.uni`; entered variance is independently reconstructed from the entered interval. Diagnostic correction considers zeros in all four cells, even for a Sens analysis. Nested cancellation additionally preserves table cells, estimate/CI fields, metric parameter and button state.
+
+Entered binary and continuous drives also require the SE/Z/P readout to be visible
+and contained in the dialog after the raw-input pane is hidden. The generic-effect
+wizard drive opens the real calculator with existing SE 0.1 and zero, accepts
+unchanged, restores the original SE, saves/reopens and checks all six rows. Zero SE
+is displayed without undefined Z/P; support for fitting zero variance depends on
+the selected estimator. This is not a blanket positive-SE input requirement.
+
+The binary reconstruction drive observes the real table reset during acceptance:
+the accepted counts and displayed estimate/CI must already agree at that update,
+before save or undo can refresh a stale display. Its held interval describes both
+valid reconstructed count solutions. Subsequent Cancel, undo/redo and reopen
+continue to compare the accepted data and pooled analysis with their references.
 
 This does not prove RR/RD back-calculation, candidate 2, unequal SD, Cohen reconstruction, PLN/PLO/PAS/PFT previews, or every invalid partial-input combination. Drive the affected alternative after changing it; do not infer its pass from OR/Hedges coverage.
 
@@ -128,3 +141,9 @@ font and at +6 points on the existing reopen/Cancel pass.
 Entered continuous and binary mode drives retain the sample group data, exercise a pending continuous draft across a mode shortcut, switch back, and check the accepted grid/model source, undo/redo, reopen and independent R fit. Calculator source is persisted per metric/comparison; inactive group inputs remain available. These drives do not qualify native mouse-wheel behavior or every invalid draft.
 
 Batch-5 targeted xcb evidence (`artifacts/qa-r1/batch5/`) covers continuous summary invalid numeric/negative N, repeated Tab without a modal, disabled OK and correction recovery in light and dark/large font. The summary grid uses visible rows and compact content height; native proof does not cover every metric/pre-post input.
+
+The one-arm proportion drive also selects PFT and compares its preview with
+`metafor::transf.ipft` using the actual arm sample size before returning to PR.
+Effect-only PFT without a sample size remains unsupported. Entered binary and
+continuous drives compare the Wald readout with the selected source SE, including
+asymmetric entered intervals; the readout does not infer a second SE from CI width.

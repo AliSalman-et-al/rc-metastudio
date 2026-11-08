@@ -82,6 +82,79 @@ def release_identity_digest(manifest: dict) -> str:
     )
 
 
+def chain_identity_digest(manifest: dict) -> str:
+    # Promotion changes only channel/version. Reconstruct the initial identity
+    # from the recorded promotion, retaining every immutable source/policy field.
+    identity = dict(manifest)
+    for event in reversed(manifest["history"]):
+        if event["event"] == "promoted":
+            identity["channel"] = event["from"]
+            if "from_version" in event:
+                identity["version"] = event["from_version"]
+    return release_identity_digest(identity)
+
+
+def validate_record(record: dict, target: str, commit: str, previous: str) -> None:
+    if record["target"] != target or record["source_commit"] != commit:
+        raise ValueError("stage target or source does not match release set")
+    if record["input_digest"] != previous:
+        raise ValueError(
+            "stage input digest does not bind the preceding immutable state"
+        )
+    outputs = record.get("outputs")
+    if not isinstance(outputs, list) or not outputs:
+        raise ValueError("stage outputs must not be empty")
+    names = set()
+    for output in outputs:
+        name = output.get("name", "")
+        if not name or Path(name).name != name or name in names:
+            raise ValueError("invalid or duplicate stage output name")
+        names.add(name)
+        if (
+            not isinstance(output.get("size"), int)
+            or output["size"] <= 0
+            or re.fullmatch(r"[0-9a-f]{64}", output.get("sha256", "")) is None
+        ):
+            raise ValueError("invalid stage output size or digest")
+
+
+def check_output(record: dict, path: Path) -> None:
+    matches = [item for item in record["outputs"] if item["name"] == path.name]
+    if (
+        len(matches) != 1
+        or matches[0]["sha256"] != digest(path)
+        or matches[0]["size"] != path.stat().st_size
+    ):
+        raise ValueError(f"archive does not match stage output: {path.name}")
+
+
+def verify_archive(args: argparse.Namespace) -> None:
+    manifest = load(Path(args.manifest))
+    record = load(Path(args.result))
+    for actual, expected in (
+        (manifest["source"]["commit"], getattr(args, "source_sha", None)),
+        (manifest["source"]["repository"], getattr(args, "repository", None)),
+        (manifest["trust_profile"], getattr(args, "trust_profile", None)),
+        (manifest["version"], getattr(args, "version", None)),
+    ):
+        if expected is not None and actual != expected:
+            raise ValueError(
+                "candidate manifest does not match selected release identity"
+            )
+    extension = "tar.gz" if args.target == "linux-x64" else "zip"
+    if Path(args.archive).name != f"RCMetaStudio-{args.target}.{extension}":
+        raise ValueError("candidate archive name does not match target")
+    if record["stage"] != "assembled":
+        raise ValueError("candidate archive requires assembled record")
+    validate_record(
+        record,
+        args.target,
+        manifest["source"]["commit"],
+        chain_identity_digest(manifest),
+    )
+    check_output(record, Path(args.archive))
+
+
 def load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -252,6 +325,9 @@ def attach(args: argparse.Namespace) -> None:
         raise ValueError(
             "stage input digest does not bind the preceding immutable state"
         )
+    validate_record(
+        record, record["target"], manifest["source"]["commit"], expected_input
+    )
     stages.append(record)
     manifest["history"].append(
         {
@@ -273,7 +349,9 @@ def verify(args: argparse.Namespace) -> None:
         or set(selected) != set(SUPPORTED_RELEASE_TARGETS)
         or set(selected) != set(configured)
     ):
-        raise ValueError("release set must contain exactly the supported future targets")
+        raise ValueError(
+            "release set must contain exactly the supported future targets"
+        )
     if set(manifest["targets"]) != set(selected):
         raise ValueError("release set does not contain exactly its selected targets")
     for name in selected:
@@ -284,10 +362,32 @@ def verify(args: argparse.Namespace) -> None:
             item["source_commit"] != manifest["source"]["commit"] for item in stages
         ):
             raise ValueError(f"{name} contains a foreign source commit")
+        previous = chain_identity_digest(manifest)
+        for record in stages:
+            validate_record(record, name, manifest["source"]["commit"], previous)
+            previous = canonical_digest(record)
+        if getattr(args, "artifact_root", None):
+            extension = (
+                "dmg"
+                if name == "macos-arm64"
+                and manifest["trust_profile"] == "macos-trusted"
+                else ("tar.gz" if name == "linux-x64" else "zip")
+            )
+            check_output(
+                stages[-1],
+                Path(args.artifact_root) / f"RCMetaStudio-{name}.{extension}",
+            )
+            check_output(stages[-1], Path(args.artifact_root) / f"{name}.cdx.json")
+    if (
+        getattr(args, "repository", None)
+        and manifest["source"]["repository"] != args.repository
+    ):
+        raise ValueError("release source repository mismatch")
     print(canonical_digest(manifest))
 
 
 def promote(args: argparse.Namespace) -> None:
+    verify(argparse.Namespace(manifest=args.manifest))
     source = load(Path(args.manifest))
     expected = {"candidate": "rc", "rc": "stable"}
     if expected.get(source["channel"]) != args.channel:
@@ -295,6 +395,9 @@ def promote(args: argparse.Namespace) -> None:
     if args.channel == "stable" and source["trust_profile"] != "macos-trusted":
         raise ValueError("stable promotion requires the macos-trusted profile")
     source_digest = canonical_digest(source)
+    from_version = source["version"]
+    if args.from_channel != source["channel"]:
+        raise ValueError("promotion source channel mismatch")
     if args.version:
         if (
             args.channel != "stable"
@@ -307,6 +410,7 @@ def promote(args: argparse.Namespace) -> None:
         {
             "event": "promoted",
             "from": args.from_channel,
+            "from_version": from_version,
             "to": args.channel,
             "at": now(),
             "source_manifest_sha256": source_digest,
@@ -373,7 +477,15 @@ def parser() -> argparse.ArgumentParser:
     attach_parser.set_defaults(func=attach)
     verify_parser = commands.add_parser("verify")
     verify_parser.add_argument("--manifest", required=True)
+    verify_parser.add_argument("--artifact-root")
+    verify_parser.add_argument("--repository")
     verify_parser.set_defaults(func=verify)
+    archive_parser = commands.add_parser("verify-archive")
+    for option in ("manifest", "result", "target", "archive"):
+        archive_parser.add_argument("--" + option, required=True)
+    for option in ("source-sha", "repository", "trust-profile", "version"):
+        archive_parser.add_argument("--" + option)
+    archive_parser.set_defaults(func=verify_archive)
     promote_parser = commands.add_parser("promote")
     promote_parser.add_argument("--manifest", required=True)
     promote_parser.add_argument("--from-channel", required=True)

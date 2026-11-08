@@ -1,6 +1,7 @@
 """Apply only the ten hash-verified Windows presentation replacements."""
 from pathlib import Path
 import json,hashlib,shutil,subprocess,sys
+subprocess.run([sys.executable, str(Path(__file__).with_name('check_windows.py'))], check=True)
 root=Path.cwd();here=root/'artifacts/batch7-windows';capture=Path('/tmp/ci575-golden');work=root/'build/batch7-windows-updater';(work/'captures').mkdir(parents=True,exist_ok=True)
 report=json.loads((capture/'compatibility-report.json').read_text());drift=[r for r in report['comparison']['rows'] if r['classification']=='text_artifact_drift']
 assert len(drift)==10 and all(r['detail'].startswith('Artifact ') for r in drift)

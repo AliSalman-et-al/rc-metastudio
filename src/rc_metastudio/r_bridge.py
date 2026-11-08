@@ -619,10 +619,18 @@ def dataset_to_simple_continuous_r_object(
         standard_errors=standard_errors,
     )
 
+    raw_data = table_model.get_current_raw_data(only_these_studies=study_ids)
+    has_raw_data = len(raw_data) == len(studies) and all(
+        all(value not in EMPTY_VALS for value in (row[:2] if table_model.current_effect in ONE_ARM_METRICS else row))
+        for row in raw_data
+    ) and not any(
+        study.analysis_unit.calculator_source(table_model.current_effect, table_model.get_current_arm_key()) == "entered"
+        for study in studies
+    )
     # One-arm continuous models use only the estimate and standard error.
     if (
         table_model.current_effect not in ONE_ARM_METRICS
-    ) and table_model.included_studies_have_raw_data():
+    ) and has_raw_data:
         raw_data = table_model.get_current_raw_data(only_these_studies=study_ids)
         data_kwargs.update(
             {
@@ -669,7 +677,15 @@ def dataset_to_simple_binary_r_object(
     )
 
     # first try and construct an object with raw data
-    if include_raw_data and table_model.included_studies_have_raw_data():
+    raw_data = table_model.get_current_raw_data(only_these_studies=study_ids)
+    has_raw_data = len(raw_data) == len(studies) and all(
+        all(value not in EMPTY_VALS for value in (row[:2] if table_model.current_effect in ONE_ARM_METRICS else row))
+        for row in raw_data
+    ) and not any(
+        study.analysis_unit.calculator_source(table_model.current_effect, table_model.get_current_arm_key()) == "entered"
+        for study in studies
+    )
+    if include_raw_data and has_raw_data:
         # now figure out the raw data
         raw_data = table_model.get_current_raw_data(only_these_studies=study_ids)
 
@@ -1017,6 +1033,7 @@ def generate_small_study_effects_funnel(file_path, params_name="params"):
         _r_object_from_symbol("res"),
         _r_object_from_symbol(params_name),
         str(file_path),
+        dpi=600,
     )
 
 
@@ -1230,12 +1247,11 @@ def load_vars_for_plot(params_path, return_params_dict=False):
     is the base, data is stored in *.data, params in *.params
     and result in *.res.
     """
-    for var in ("data", "params", "res"):
-        cur_path = "%s.%s" % (params_path, var)
-        if os.path.exists(cur_path):
-            load_in_r(cur_path)
-        else:
-            return False
+    paths = ["%s.%s" % (params_path, var) for var in ("data", "params", "res")]
+    if not all(os.path.isfile(path) for path in paths):
+        return False
+    for path in paths:
+        load_in_r(path)
 
     if return_params_dict:
         r_object = execute_r_string("params")

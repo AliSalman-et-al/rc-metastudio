@@ -703,7 +703,7 @@ rcmetar.bmj.summary.effect <- function(bundle) {
         } else {
             scaled[finite.weights] <- 1.45
         }
-        summary$psize <- scaled
+        summary$psize <- scaled * rcmetar.point.size.multiplier(bundle$params)
     }
     summary
 }
@@ -726,6 +726,16 @@ rcmetar.draw.bmj.effects <- function(effect, rows, alim, color, psize) {
         return(invisible(NULL))
     }
     graphics::segments(pmin(pmax(ci.lb[finite], alim[[1]]), alim[[2]]), rows[finite], pmin(pmax(ci.ub[finite], alim[[1]]), alim[[2]]), rows[finite], col=color, lwd=1.5)
+    for (side in 1:2) {
+        clipped <- finite & if (side == 1) ci.lb < alim[[1]] else ci.ub > alim[[2]]
+        if (any(clipped)) {
+            edge <- alim[[side]]
+            direction <- if (side == 1) 1 else -1
+            graphics::arrows(edge + direction * diff(alim) * 0.025, rows[clipped],
+                             edge, rows[clipped], length=0.07, angle=35,
+                             col=color, lwd=1.5)
+        }
+    }
     inside <- yi[finite] >= alim[[1]] & yi[finite] <= alim[[2]]
     if (any(inside)) {
         graphics::points(yi[finite][inside], rows[finite][inside], pch=18, col="white", cex=psize[finite][inside] * 1.15)

@@ -93,21 +93,24 @@ def main():
     if args.compare_before:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
         compare(args.compare_before, args.output)
-        return
+        return 0
     runs = []
     for scenario in args.scenarios:
         directory = args.output.resolve() / scenario
         environment = dict(os.environ, RCMS_REPORT_AUDIT_DIR=str(directory), RCMS_E2E_REUSE_PASSED='0')
         command = [sys.executable, 'scripts/verify_rcms.py', scenario]
+        prior = set(directory.glob("*/audit.json"))
         result = subprocess.run(command, env=environment, capture_output=True, text=True)
         (args.output / (scenario + '.log')).write_text(result.stdout + result.stderr)
-        audits = [json.loads(p.read_text()) for p in directory.glob('*/audit.json')]
+        audits = [json.loads(p.read_text()) for p in directory.glob('*/audit.json') if p not in prior]
         runs.append(dict(scenario=scenario, command=command, exit_code=result.returncode,
                          results=len(audits), missing={surface: [cell for a in audits for cell in a['missing'][surface]]
                                                      for surface in ('copy', 'pdf', 'docx')}))
         (args.output / 'summary.json').write_text(json.dumps(runs, indent=2, ensure_ascii=False))
         print(scenario, 'results:', len(audits), 'missing:', {k: len(v) for k, v in runs[-1]['missing'].items()}, flush=True)
 
+    return 1 if not runs or any(r['exit_code'] != 0 or not r['results'] or any(r['missing'].values()) for r in runs) else 0
+
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

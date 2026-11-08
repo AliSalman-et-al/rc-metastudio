@@ -27,6 +27,17 @@ def test_load_params_rejects_invalid_r_result(monkeypatch):
         PlotService().load_params("forest")
 
 
+def test_funnel_export_stops_when_bundle_load_fails(tmp_path, monkeypatch):
+    rendered = []
+    monkeypatch.setattr(r_bridge, "load_vars_for_plot", lambda path: False)
+    monkeypatch.setattr(r_bridge, "generate_small_study_effects_funnel", rendered.append)
+    output = tmp_path / "export.png"
+    with pytest.raises(PlotServiceError, match="funnel"):
+        PlotService().export(regenerator="funnel", params_path="missing", output_path=str(output))
+    assert not rendered
+    assert not output.exists()
+
+
 def test_standard_plot_backup_failure_does_not_overwrite_originals(
     tmp_path, monkeypatch
 ):
@@ -116,8 +127,9 @@ def test_standard_plot_transaction_rolls_back_display_and_render_files(
     )] == ["old params", "old plotdata", "old image", "old display"]
 
 
+@pytest.mark.parametrize("restore_fails", [False, True])
 def test_standard_plot_transaction_restores_files_after_partial_promotion(
-    tmp_path, monkeypatch
+    tmp_path, monkeypatch, restore_fails
 ):
     params_path = tmp_path / "forest"
     persisted_params = Path(f"{params_path}.params")
@@ -164,8 +176,17 @@ def test_standard_plot_transaction_restores_files_after_partial_promotion(
         original_replace(source, target)
 
     monkeypatch.setattr(plot_service.os, "replace", fail_during_promotion)
+    if restore_fails:
+        copy_file = plot_service.shutil.copyfile
 
-    with pytest.raises(OSError, match="promotion failed"):
+        def fail_restore(source, target):
+            if Path(source).name == "backup-0":
+                raise OSError("restore unavailable")
+            return copy_file(source, target)
+
+        monkeypatch.setattr(plot_service.shutil, "copyfile", fail_restore)
+
+    with pytest.raises(OSError, match="promotion failed") as raised:
         PlotService().apply_edits(
             regenerator="forest",
             params_path=str(params_path),
@@ -177,7 +198,14 @@ def test_standard_plot_transaction_restores_files_after_partial_promotion(
         )
 
     assert replace_count == 2
-    assert {path: path.read_text() for path in originals} == originals
+    if restore_fails:
+        recovery = list(tmp_path.glob(".rcms-plot-*/backup-0"))
+        assert len(recovery) == 1
+        assert recovery[0].read_text() == originals[persisted_params]
+        assert any(str(recovery[0].parent) in note for note in raised.value.__notes__)
+    else:
+        assert {path: path.read_text() for path in originals} == originals
+        assert not list(tmp_path.glob(".rcms-plot-*"))
 
 
 def test_apply_funnel_edits_rolls_back_persisted_params_on_failure(tmp_path, monkeypatch):
@@ -212,7 +240,7 @@ def test_apply_funnel_edits_rolls_back_persisted_params_on_failure(tmp_path, mon
     assert persisted.read_text() == "original"
 
 
-def test_funnel_rollback_failure_keeps_original_render_error(tmp_path, monkeypatch):
+def test_funnel_rollback_failure_keeps_commit_error_and_recovery(tmp_path, monkeypatch):
     params_path = tmp_path / "funnel"
     Path(f"{params_path}.data").write_text("data")
     Path(f"{params_path}.res").write_text("res")
@@ -220,34 +248,28 @@ def test_funnel_rollback_failure_keeps_original_render_error(tmp_path, monkeypat
     persisted.write_text("original")
     bridge = plot_service.r_bridge
     original_copyfile = plot_service.shutil.copyfile
-    copy_count = 0
-
     def copyfile(source, target):
-        nonlocal copy_count
-        copy_count += 1
-        if copy_count == 4:
+        if Path(source).name == "params.backup":
             raise OSError("rollback failed")
         return original_copyfile(source, target)
 
     monkeypatch.setattr(
         "rc_metastudio.plot_service.shutil.copyfile", copyfile
     )
-    monkeypatch.setattr(
-        bridge,
-        "update_plot_params",
-        lambda _params, *, outpath, **_kwargs: Path(outpath).write_text("updated"),
-    )
+    def update(_params, *, outpath, **_kwargs):
+        Path(outpath).write_text("updated")
+        if Path(outpath) == persisted:
+            raise RuntimeError("commit failed")
 
-    def fail_to_regenerate(*_args, **_kwargs):
-        raise RuntimeError("render failed")
+    monkeypatch.setattr(bridge, "update_plot_params", update)
 
     monkeypatch.setattr(
         bridge,
         "regenerate_small_study_effects_funnel",
-        fail_to_regenerate,
+        lambda _base, *, output_path: Path(output_path).write_text("new image"),
     )
 
-    with pytest.raises(RuntimeError, match="render failed") as raised:
+    with pytest.raises(RuntimeError, match="commit failed") as raised:
         PlotService().apply_edits(
             regenerator="funnel",
             params_path=str(params_path),
@@ -255,4 +277,8 @@ def test_funnel_rollback_failure_keeps_original_render_error(tmp_path, monkeypat
             output_path=str(tmp_path / "edited.png"),
         )
 
-    assert raised.value.__notes__ == ["Plot parameter rollback failed: rollback failed"]
+    assert raised.value.__notes__[0] == "Plot parameter rollback failed: rollback failed"
+    recovery = list(tmp_path.glob(".rcms-funnel-*/params.backup"))
+    assert len(recovery) == 1
+    assert recovery[0].read_text() == "original"
+    assert any(str(recovery[0].parent) in note for note in raised.value.__notes__)

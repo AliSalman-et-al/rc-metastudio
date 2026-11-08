@@ -99,3 +99,58 @@ def test_frozen_linux_runtime_does_not_require_integration_kit(monkeypatch, tmp_
         None,
         None,
     )
+
+
+@pytest.mark.parametrize("variable,selector,child", [
+    ("RCMS_R_HOME", "home", "bin"),
+    ("RCMS_R_LIBS", "libs", "RCMetaR"),
+])
+def test_explicit_developer_runtime_override_rejects_bad_path_and_recovers(
+    tmp_path, monkeypatch, variable, selector, child
+):
+    fallback = tmp_path / "bundle" / "R"
+    (fallback / "bin").mkdir(parents=True)
+    (fallback / "library" / "RCMetaR").mkdir(parents=True)
+    monkeypatch.setattr(r_runtime.os, "environ", {variable: str(tmp_path / "missing")})
+    def configure():
+        if selector == "home":
+            return r_runtime._configure_r_home(str(fallback.parent), False)
+        return r_runtime._configure_r_libraries(str(fallback.parent), str(fallback), False)
+    with pytest.raises(RuntimeError, match=variable):
+        configure()
+    valid = tmp_path / "requested"
+    (valid / child).mkdir(parents=True)
+    monkeypatch.chdir(tmp_path)
+    r_runtime.os.environ[variable] = "requested"
+    assert configure() == str(valid)
+    del r_runtime.os.environ[variable]
+    assert configure() == str(fallback if selector == "home" else fallback / "library")
+
+
+def test_concurrent_private_directory_probes_preserve_existing_bytes(tmp_path, monkeypatch):
+    from concurrent.futures import ThreadPoolExecutor
+    from pathlib import Path
+    import tempfile
+    import threading
+
+    local = tmp_path / "user"
+    root = tmp_path / "install" / "app"
+    home = local / "RCMetaStudio" / "runtime" / "home"
+    home.mkdir(parents=True)
+    sentinel = home / ".write-probe"
+    sentinel.write_bytes(b"caller-owned bytes")
+    monkeypatch.setattr(r_runtime.os, "environ", {"LOCALAPPDATA": str(local)})
+    monkeypatch.setattr(tempfile, "tempdir", tempfile.tempdir)
+    barrier = threading.Barrier(2)
+    unlink = Path.unlink
+    def synchronized_unlink(path, *args, **kwargs):
+        if path.parent == home:
+            barrier.wait(timeout=10)
+        return unlink(path, *args, **kwargs)
+    monkeypatch.setattr(Path, "unlink", synchronized_unlink)
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        futures = [pool.submit(r_runtime._configure_private_runtime_directories, root) for _ in range(2)]
+        for future in futures:
+            future.result()
+    assert sentinel.read_bytes() == b"caller-owned bytes"
+    assert list(home.iterdir()) == [sentinel]

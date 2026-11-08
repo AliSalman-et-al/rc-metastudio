@@ -2,6 +2,26 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
+## 0.5.3 - Unreleased
+
+### Corrected
+
+- Corrected interval-midpoint reconstruction, singleton diagnostic Peto estimation, subgroup and regression inference, and validation of count-dependent proportion analyses.
+- Preserved study identity and excluded rows during table editing, covariate conversion and import; strengthened project validation and calculator acceptance, undo and reopen behavior.
+- Made participant counts, confidence levels, effect scales and continuity-correction explanations follow the data and model actually fitted.
+- Fixed manuscript zoom, plot bounds and color preservation, export format and resolution handling, wizard draft retention, covariate menus, analysis-dialog sizing and accidental setting changes while scrolling.
+- Fixed Windows embedded-R shutdown when the launching environment omits the processor architecture.
+- Hardened release provenance, archive binding, output ownership, retry paths and verification evidence.
+
+### Changed
+
+- Clarified reconstruction inputs and displayed calculator statistics; expanded numerical, persistence, export and failure-path verification.
+- Rerun affected subgroup and regression analyses, singleton diagnostic Peto analyses, and analyses using reconstructed interval midpoints; re-export reports with the earlier metadata or correction wording.
+
+### Known issues
+
+- An intermittent Windows calculator crash in Qt widget painting remains unresolved. Passing reconstruction runs have not reproduced its original trigger; this version is not a claim of exhaustive native UI qualification.
+
 ## 0.5.2 - 2026-11-05
 
 ### Changed

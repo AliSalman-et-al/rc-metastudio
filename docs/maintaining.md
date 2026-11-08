@@ -43,6 +43,8 @@ uv run python scripts/code_health.py --base 8b7796b --head HEAD `
 
 Use the stable rewrite baseline `8b7796b` for trend snapshots (as the CI
 workflow does) and use the PR or push base separately for changed-code gates.
+`--base` alone governs new cycles, forbidden imports and changed-function gates;
+`--baseline` never changes their pass/fail decision.
 CI passes the recorded baseline artifact with `--baseline`; this makes the
 final report compare directly with the evidence that was emitted for that
 baseline, rather than relying on a branch name or an implicit merge base.

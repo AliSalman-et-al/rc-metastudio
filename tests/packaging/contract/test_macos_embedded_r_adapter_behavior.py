@@ -130,16 +130,16 @@ def test_adapter_relocates_bridge_and_rejects_displaced_libr(tmp_path, monkeypat
 
     monkeypatch.setattr(adapter, "_run", run)
     output = tmp_path / "bridge.json"
-    adapter.relocate_bridge(framework, bridge, "arm64", output)
-    assert json.loads(output.read_text(encoding="utf-8"))["r_dependency"].startswith(
-        "@loader_path/"
-    )
     version_root = framework / "Versions/4.6-arm64"
     executable = version_root / "R"
     runtime_library = version_root / "Resources/lib/libR.dylib"
     executable.unlink()
     runtime_library.replace(executable)
     runtime_library.symlink_to(Path("../../R"))
+    adapter.relocate_bridge(framework, bridge, "arm64", output)
+    assert json.loads(output.read_text(encoding="utf-8"))["r_dependency"].startswith(
+        "@loader_path/"
+    )
     monkeypatch.setattr(adapter, "audit_symlinks", lambda _root: [])
     monkeypatch.setattr(
         adapter,
@@ -218,7 +218,8 @@ def test_unsigned_graph_fails_closed(tmp_path, monkeypatch):
         inspector.inspect_unsigned_native_graph(app)
 
 
-def test_host_r_isolation_state_machine_restores_exact_identity(tmp_path):
+@pytest.mark.parametrize("break_identity", [False, True])
+def test_host_r_isolation_state_machine_restores_exact_identity(tmp_path, break_identity):
     bash = shutil.which("bash") or r"C:\Program Files\Git\bin\bash.exe"
     if not Path(bash).is_file():
         pytest.skip("bash is unavailable")
@@ -231,15 +232,15 @@ source_path="$(to_posix "$SOURCE_FRAMEWORK")"
 export RCMS_HOST_R_USE_SUDO=0
 before="$(rcms_host_r_identity "$source_path")"
 rcms_isolate_host_r "$source_path"
-[ "$RCMS_HOST_R_STATE" = isolated ] && [ ! -e "$source_path" ] && [ -d "$RCMS_HOST_R_BACKUP" ]
+[ "$RCMS_HOST_R_STATE" = isolated ] && [ ! -e "$source_path" ] && [ -d "$RCMS_HOST_R_BACKUP" ] || exit 35
 mkdir "$source_path"
 if rcms_restore_host_r; then exit 31; fi
 rmdir "$source_path"
 rcms_restore_host_r
-[ "$RCMS_HOST_R_STATE" = idle ] && [ ! -e "$RCMS_HOST_R_BACKUP" ]
-[ "$(rcms_host_r_identity "$source_path")" = "$before" ]
+[ "$RCMS_HOST_R_STATE" = idle ] && [ ! -e "$RCMS_HOST_R_BACKUP" ] || exit 35
+[ "$(rcms_host_r_identity "$source_path")" = "$before" ] || exit 35
 ( rcms_isolate_host_r "$source_path" )
-[ -d "$source_path" ]
+[ -d "$source_path" ] || exit 35
 eval "$(declare -f rcms_host_r_identity | sed '1s/rcms_host_r_identity/rcms_real_host_r_identity/')"
 rcms_host_r_identity() {
   case "$1" in
@@ -248,13 +249,16 @@ rcms_host_r_identity() {
   esac
 }
 if rcms_isolate_host_r "$source_path"; then exit 32; fi
-[ "$RCMS_HOST_R_STATE" = isolated ] && [ ! -e "$source_path" ] && [ -d "$RCMS_HOST_R_BACKUP" ]
+[ "$RCMS_HOST_R_STATE" = isolated ] && [ ! -e "$source_path" ] && [ -d "$RCMS_HOST_R_BACKUP" ] || exit 35
 rcms_restore_host_r
-[ -d "$source_path" ] && [ "$(rcms_real_host_r_identity "$source_path")" = "$before" ]
+[ -d "$source_path" ] && [ "$(rcms_real_host_r_identity "$source_path")" = "$before" ] || exit 35
 if ( rcms_isolate_host_r "$source_path" ); then exit 33; fi
-[ -d "$source_path" ] && [ "$(rcms_real_host_r_identity "$source_path")" = "$before" ]
+[ -d "$source_path" ] && [ "$(rcms_real_host_r_identity "$source_path")" = "$before" ] || exit 35
 if compgen -G "${source_path}.rcms-isolated.*" >/dev/null; then exit 34; fi
 """
+    if break_identity:
+        script = script.replace('[ "$(rcms_host_r_identity "$source_path")" = "$before" ]',
+                                '[ injected-wrong-identity = "$before" ]')
     completed = subprocess.run(
         [bash],
         input=script,
@@ -262,7 +266,10 @@ if compgen -G "${source_path}.rcms-isolated.*" >/dev/null; then exit 34; fi
         capture_output=True,
         env={**os.environ, "HELPER": str(helper), "SOURCE_FRAMEWORK": str(framework)},
     )
-    assert completed.returncode == 0, completed.stderr
+    if break_identity:
+        assert completed.returncode == 35, completed.stderr
+    else:
+        assert completed.returncode == 0, completed.stderr
 
 
 def test_pkgutil_signature_parser_handles_certificate_chain_and_rejectable_team():

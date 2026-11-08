@@ -287,7 +287,7 @@ class DatasetTableModel(QAbstractTableModel):
     def _is_blank_study(self, study):
         return study is self._blank_study
 
-    def _sync_display_studies(self):
+    def _sync_display_studies(self, *, notify=False):
         canonical = list(self.current_sheet.rows) if self.current_sheet else []
         canonical_by_id = {study.id: study for study in canonical}
         visible = []
@@ -300,7 +300,13 @@ class DatasetTableModel(QAbstractTableModel):
         visible.extend(study for study in canonical if study.id not in seen)
         if self._blank_study is not None and self._blank_study.id not in canonical_by_id:
             visible.append(self._blank_study)
+        inserted = len(visible) - len(self._display_studies)
+        if notify and inserted > 0:
+            first = self.rowCount()
+            self.beginInsertRows(QModelIndex(), first, first + inserted - 1)
         self._display_studies = visible
+        if notify and inserted > 0:
+            self.endInsertRows()
 
     def set_current_metric(self, metric):
         self.current_effect = metric
@@ -728,7 +734,7 @@ class DatasetTableModel(QAbstractTableModel):
             added_study_id = self.current_sheet.rows[canonical_row].id
             self._blank_study = StudyRow(RowId(uuid.uuid4().hex), "", AnalysisUnit(self.current_sheet, arm_names=self.arm_names, arm_stable_ids=[a.id for a in self.current_sheet.arms]), include=False)
             self.study_auto_added = self._blank_study.id
-        self._sync_display_studies()
+        self._sync_display_studies(notify=True)
         edit = _EditTarget(
             study=(
                 self._study_for_row(index.row())
@@ -752,7 +758,7 @@ class DatasetTableModel(QAbstractTableModel):
             if index.row() < len(self._display_studies)
             else None
         )
-        is_blank_study = self._is_blank_study(visible_study)
+        is_blank_study = visible_study is None or self._is_blank_study(visible_study)
         study = None if is_blank_study else visible_study
         old_value = self.data(index, Qt.ItemDataRole.EditRole)
         if index.column() == self.INCLUDE_STUDY and study is not None:
@@ -1012,7 +1018,7 @@ class DatasetTableModel(QAbstractTableModel):
             return 0
         return self._get_col_count()
 
-    def get_covariate_for_column(self, table_col_index):
+    def get_covariate_for_column(self, table_col_index: int) -> dict | None:
         # Map the table column to a covariate index. Without an outcome, skip
         # the include, study-name, and year columns.
         covariate_index = (
@@ -1181,6 +1187,7 @@ class DatasetTableModel(QAbstractTableModel):
         if col > self.OUTCOMES[-1]:
             # Columns to the right of outcomes are covariates.
             cov = self.get_covariate_for_column(col)
+            assert cov is not None
             self._sort_studies_with_cmp(cov['name'], reverse)
         self.reset_model()
 

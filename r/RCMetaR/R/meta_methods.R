@@ -134,6 +134,8 @@ bootstrap.continuous <- function(fname, omdata, params, cond.means.data=FALSE) {
 }
 
 bootstrap <- function(fname, omdata, params, cond.means.data=FALSE) {
+    if (identical(as.character(params$bootstrap.type), "boot.meta.reg.cond.means"))
+        stop("Conditional means are not supported by this analysis interface.", call.=FALSE)
 
 
 	omdata.rows <- seq(1:length(omdata@y))
@@ -283,7 +285,7 @@ construct.boot.res.and.value.info.for.results <- function(results, boot.res, boo
 
 
 boot.ma.output.results <- function(boot.results, params, bootstrap.plot.path) {
-	conf.interval <- boot.ci(boot.out = boot.results, type = "norm")
+	conf.interval <- boot.ci(boot.out = boot.results, type = "norm", conf=validate.conf.level(params$conf.level)/100)
 	mean_boot <- mean(boot.results$t)
 
 	conf.interval.msg <- paste("The ", conf.interval$norm[1]*100, "% Confidence Interval: [", round(conf.interval$norm[2],digits=params$digits), ", ", round(conf.interval$norm[3],digits=params$digits), "]", sep="")
@@ -300,7 +302,7 @@ boot.ma.output.results <- function(boot.results, params, bootstrap.plot.path) {
 	results
 }
 
-calc.meta.reg.coeffs.and.cis <- function(boot.results) {
+calc.meta.reg.coeffs.and.cis <- function(boot.results, conf.level=95) {
 	dim.t <- dim(boot.results$t)
 	num.rows <- dim.t[1]
 	num.coeffs <- dim.t[2]
@@ -308,7 +310,7 @@ calc.meta.reg.coeffs.and.cis <- function(boot.results) {
 	coeffs.and.cis <- data.frame(b=c(), ci.lb=c(), ci.ub=c())
 	for (i in 1:num.coeffs) {
 		mean_coeff <- mean(boot.results$t[,i])
-		conf.interval <- boot.ci(boot.out = boot.results, type="norm", index=i)
+		conf.interval <- boot.ci(boot.out = boot.results, type="norm", index=i, conf=validate.conf.level(conf.level)/100)
 		new.result.row <- data.frame(b=mean_coeff, ci.lb=conf.interval$norm[2], ci.ub=conf.interval$norm[3])
 		coeffs.and.cis <- rbind(coeffs.and.cis, new.result.row)
 	}
@@ -316,7 +318,7 @@ calc.meta.reg.coeffs.and.cis <- function(boot.results) {
 }
 
 boot.meta.reg.output.results <- function(boot.results, params, bootstrap.plot.path, cov.data) {
-	coeffs.and.cis <- calc.meta.reg.coeffs.and.cis(boot.results)
+	coeffs.and.cis <- calc.meta.reg.coeffs.and.cis(boot.results, params$conf.level)
 
 
 	display.data <- cov.data$display.data
@@ -358,7 +360,7 @@ boot.meta.reg.output.results <- function(boot.results, params, bootstrap.plot.pa
 }
 
 boot.meta.reg.cond.means.output.results <- function(omdata, boot.results, params, bootstrap.plot.path, cov.data, cond.means.data) {
-	coeffs.and.cis <- calc.meta.reg.coeffs.and.cis(boot.results)
+	coeffs.and.cis <- calc.meta.reg.coeffs.and.cis(boot.results, params$conf.level)
 	cat.ref.var.and.levels <- cov.data$cat.ref.var.and.levels
 	chosen.cov.name = as.character(cond.means.data$chosen.cov.name)
 
@@ -522,8 +524,12 @@ cum.ma.continuous <- function(fname, cont.data, params){
                                 y=subset_effects, SE=subset_standard_errors,
                                 study.names=subset_study_names)
         }
-        current_result <- .rcmetar.call.method(fname, subset_continuous_data, suppressed_params)
-        current_overall <- .rcmetar.call.overall(fname, current_result)
+        if (i == 1L && rcmetar.inference.method(params) != "z") {
+            current_overall <- rcmetar.nonestimable.inference.row(i, params)
+        } else {
+            current_result <- .rcmetar.call.method(fname, subset_continuous_data, suppressed_params)
+            current_overall <- .rcmetar.call.overall(fname, current_result)
+        }
         cum.results[[i]] <- current_overall
     }
     study.names <- rcmetar.sequential.labels(rcmetar.study.labels(cont.data), "cumulative", FALSE)
@@ -541,7 +547,6 @@ cum.ma.continuous <- function(fname, cont.data, params){
     params.cum <- params
     params.cum$fp_col1_str <- "Study added"
     params.cum$fp_col2_str <- "Cumulative Estimate"
-    plot.data.cum <- create.plot.data.cum(om.data=cont.data, params.cum, res=cum.results)
     if (rcmetar.metafor.default.supported(params.cum)) {
         plot.data <- rcmetar.build.sequential.metafor.bundle(cont.data, params.cum, cum.results, "cumulative", study.names, has.overall=FALSE)
         changed.params <- plot.data$changed.params
@@ -562,6 +567,11 @@ cum.ma.continuous <- function(fname, cont.data, params){
 					"res"=construct.sequential.res.output(cum.results, value.info, replacements=list(estimate='b')),
 					"res.info"=list(summary.table=list(type="data.frame", description=""))
 			)
+    reasons <- vapply(seq_along(cum.results), function(i) {
+        reason <- cum.results[[i]]$reason
+        if (is.null(reason)) "" else paste(study.names[i], reason)
+    }, character(1))
+    if (any(nzchar(reasons))) results[["Non-estimable rows"]] <- paste(reasons[nzchar(reasons)], collapse="\n")
     results
 }
 
@@ -876,12 +886,12 @@ subgroup.ma.continuous <- function(fname, cont.data, params){
     for (i in subgroup.list){
       subset_continuous_data <- get.subgroup.data.cont(cont.data, i, cov.vals)
       grouped.data[[count]] <- subset_continuous_data
-      current_result <- .rcmetar.call.method(fname, subset_continuous_data, params)
+      current_result <- .rcmetar.call.method(fname, subset_continuous_data, suppressed_params)
       current_overall <- .rcmetar.call.overall(fname, current_result)
       subgroup.results[[count]] <- current_overall
       count <- count + 1
     }
-    res <- .rcmetar.call.method(fname, cont.data, params)
+    res <- .rcmetar.call.method(fname, cont.data, suppressed_params)
     res.overall <- .rcmetar.call.overall(fname, res)
     grouped.data[[count]] <- cont.data
     subgroup.results[[count]] <- res.overall

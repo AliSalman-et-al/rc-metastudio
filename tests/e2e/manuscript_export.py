@@ -212,7 +212,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
 
     # Derive boundary cases from real legacy bytes, then open through production IO.
     import copy, io, json, zipfile
-    legacy = subprocess.check_output(['git', 'show', '322ede26:sample_projects/amino.rcms'], cwd=root)
+    legacy = (root / 'tests/fixtures/legacy-projects/amino.rcms').read_bytes()
     with zipfile.ZipFile(io.BytesIO(legacy)) as archive:
         members = {name: archive.read(name) for name in archive.namelist()}
     project = json.loads(members['project.json'])
@@ -297,6 +297,37 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         assert window.open(str(root / 'sample_projects' / (sample + '.rcms')), raise_on_error=True)
         print(f"Manuscript analysis: {method}", file=sys.stderr, flush=True)
         view = analyze(app, window, method)
+        if sample == "amino":
+            figure_item = view.nav_tree.currentItem()
+            figure_zoom = view.zoom_control.value()
+            figure_transform = view.graphics_view.transform()
+            manuscript_item = view.nav_tree.findItems("Manuscript", QtCore.Qt.MatchFlag.MatchExactly)[0]
+            view.nav_tree.setCurrentItem(manuscript_item)
+            app.processEvents()
+            cursor = required(view.manuscript_text.document()).find(view.manuscript.methods[:40])
+            assert not cursor.isNull()
+            view.manuscript_text.setTextCursor(cursor)
+            before_height = view.manuscript_text.cursorRect(cursor).height()
+            view.zoom_control.setValue(150)
+            app.processEvents()
+            after_height = view.manuscript_text.cursorRect(cursor).height()
+            record("manuscript-visible-zoom", view, before_height=before_height,
+                   after_height=after_height, zoom=view.zoom_control.value())
+            assert after_height > before_height * 1.3, "Manuscript zoom did not enlarge rendered text"
+            assert view.graphics_view.transform() == figure_transform, "Manuscript zoom changed the hidden figure"
+            view.nav_tree.setCurrentItem(figure_item)
+            app.processEvents()
+            assert view.zoom_control.value() == figure_zoom
+            view.nav_tree.setCurrentItem(manuscript_item)
+            app.processEvents()
+            assert view.zoom_control.value() == 150
+            view.tables_action.trigger()
+            app.processEvents()
+            view.nav_tree.setCurrentItem(manuscript_item)
+            app.processEvents()
+            assert view.zoom_control.isEnabled(), "Manuscript inherited disabled table zoom controls"
+            assert not view.fit_width_action.isEnabled()
+            view.zoom_control.setValue(100)
         assert_manuscript_tables(view)
         for suffix in ('pdf', 'docx'):
             operation = f"{sample}-{suffix}"
@@ -365,7 +396,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
             if sample == 'amino':
                 assert view.manuscript.title == 'clinical failure: random-effects meta-analysis (odds ratio)'
                 assert 'The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, p = .267).' in view.manuscript.results
-                assert view.manuscript.results == '19 studies were included (1097 participants in Intervention, 1080 in Control). The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, p = .267). The confidence interval includes 1, so these data do not show a clear difference between Intervention and Control. Heterogeneity: Q = 33.360, df = 18, p = .015. I² = 46.0%, which may represent moderate heterogeneity (Cochrane Handbook ranges). Between-study variance was τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.', view.manuscript.results
+                assert view.manuscript.results == '19 studies were included (1097 participants in Intervention, 1080 in Control). 95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate. The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, p = .267). The confidence interval includes 1, so these data do not show a clear difference between Intervention and Control. Heterogeneity: Q = 33.360, df = 18, p = .015. I² = 46.0%, which may represent moderate heterogeneity (Cochrane Handbook ranges). Between-study variance was τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.', view.manuscript.results
                 assert view.manuscript.methods == f"Odds ratios were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance. Confidence intervals (95%) used the normal approximation. A continuity correction of 0.5 was applied to studies with any zero cell. 2 studies with no events in either arm were retained with this correction. Heterogeneity was assessed with Cochran's Q and I². Analyses were performed in RC MetaStudio {__version__}. R packages loaded for this analysis: metafor 5.0.1, meta 8.5-0."
                 assert '-0.262' in normalized
             if sample == 'continuous':

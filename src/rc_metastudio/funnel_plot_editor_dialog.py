@@ -4,13 +4,15 @@
 
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QFileDialog, QLabel, QLineEdit
+from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QFileDialog, QLabel, QLineEdit, QMessageBox
 
 from rc_metastudio import adaptive_window, app_error_handler, qt_text
+from rc_metastudio.qt_layout import protect_scroll_settings
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
     size_plot_text_editor,
@@ -122,6 +124,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self.button_box.clicked.connect(self._button_clicked)
         self._connect_dirty_signals()
         size_plot_text_editor(self)
+        self._scroll_settings_filter = protect_scroll_settings(self.content_scroll)
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
@@ -143,11 +146,11 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             self.sampling_confidence_spin: ("Sampling confidence level", "Choose the confidence level for the pseudo-confidence region."),
             self.include_tau2_check: ("Include between-study variance", "Include tau-squared, the estimated between-study variance, in the pseudo-confidence region."),
             self.sampling_region_check: ("Show pseudo-confidence region", "Show or hide the sampling-error pseudo-confidence region."),
-            self.contour_levels_edit: ("Null contour levels", "Enter comma-separated significance levels for contour lines."),
+            self.contour_levels_edit: ("Null contour levels", "Enter confidence percentages strictly between 0 and 100, for example 90,95,99."),
             self.x_label_edit: ("Funnel plot X-axis label", "Set the X-axis label or leave the default marker."),
             self.y_label_edit: ("Funnel plot Y-axis label", "Set the Y-axis label."),
-            self.x_lower_edit: ("X-axis lower bound", "Set an optional lower bound for the X-axis."),
-            self.x_upper_edit: ("X-axis upper bound", "Set an optional upper bound for the X-axis."),
+            self.x_lower_edit: ("X-axis lower bound", "Set both X-axis bounds, or leave both empty for automatic bounds."),
+            self.x_upper_edit: ("X-axis upper bound", "Set both X-axis bounds, or leave both empty for automatic bounds."),
             self.x_ticks_edit: ("X-axis ticks", "Set optional comma-separated X-axis tick values."),
             self.path_edit: ("Funnel plot save path", "Choose the file path where the edited funnel plot will be saved."),
             self.browse_button: ("Browse funnel plot save path", "Choose the file path where the edited funnel plot will be saved."),
@@ -179,6 +182,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
 
     def _connect_dirty_signals(self):
         for control in (
+            self.figure_caption,
             self.style_combo,
             self.label_policy_combo,
             self.point_symbol_combo,
@@ -224,6 +228,12 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             self._commit()
 
     def _commit(self):
+        try:
+            self.plot_params()
+        except ValueError as error:
+            self._allow_close = False
+            QMessageBox.warning(self, "Invalid funnel settings", str(error))
+            return
         self.applied.emit()
 
     def mark_commit_succeeded(self):
@@ -385,7 +395,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self.contour_levels_edit.setToolTip(
             "Available only for contour-enhanced funnels."
             if not contour
-            else "Null-centered contour significance levels, comma separated."
+            else "Null-centered contour confidence percentages strictly between 0 and 100, comma separated."
         )
         self.sampling_confidence_spin.setEnabled(not deeks)
         self.sampling_confidence_label.setEnabled(not deeks)
@@ -489,6 +499,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
 
     def plot_params(self):
         """Return the original run params plus presentation-only edits."""
+        self._validate_plot_ranges()
         params = dict(self._params)
         edits = {
             "plot_caption": self.figure_caption.text().strip(),
@@ -537,3 +548,31 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             else:
                 params[name] = value
         return params
+
+    def _validate_plot_ranges(self):
+        lower, upper = self.x_lower_edit.text().strip(), self.x_upper_edit.text().strip()
+        if bool(lower) != bool(upper):
+            raise ValueError("Enter both X-axis bounds, or leave both empty for automatic bounds.")
+        if lower:
+            try:
+                bounds = (float(lower), float(upper))
+            except ValueError as error:
+                raise ValueError("X-axis bounds must be finite numbers.") from error
+            if not all(math.isfinite(value) for value in bounds) or bounds[0] >= bounds[1]:
+                raise ValueError("X-axis bounds must be finite, with the lower bound less than the upper bound.")
+        if self.x_ticks_edit.text().strip():
+            self._finite_list(self.x_ticks_edit.text(), "X-axis ticks")
+        if self.contour_levels_edit.isEnabled():
+            levels = self._finite_list(self.contour_levels_edit.text(), "Contour levels")
+            if any(not 0 < value < 100 for value in levels):
+                raise ValueError("Contour levels must be percentages strictly between 0 and 100.")
+
+    @staticmethod
+    def _finite_list(text, label):
+        try:
+            values = [float(value.strip()) for value in text.split(",")]
+        except ValueError as error:
+            raise ValueError(f"{label} must be comma-separated finite numbers.") from error
+        if not all(math.isfinite(value) for value in values):
+            raise ValueError(f"{label} must be comma-separated finite numbers.")
+        return values

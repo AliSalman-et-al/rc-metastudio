@@ -24,7 +24,7 @@ diagnostic results; hillclimb T5 completes with both manuscript formats.
 Shared report observers compare the complete rows of Pooled effect, Model fit and
 Study results with held inputs, including sequential fit identities and diagnostic
 metric labels. Every original table row is also retained with its complete field labels and
-source section/table identity in the compact Supplementary Full-precision results table. Structured notes are retained verbatim as prose beneath their source tables.
+source section/table identity in the compact Supplementary Detailed results table. Structured notes are retained verbatim as prose beneath their source tables. Prediction-interval notes also accompany the main report prose and Model fit table; the Pooled effect table retains each row's producer SE scale so combined diagnostic metrics remain distinguishable.
 References are retained as a numbered prose section rather than a table.
 The manuscript export drive checks every prose paragraph in clipboard, PDF and DOCX
 and rejects developer-facing “Held” labels.
@@ -54,8 +54,10 @@ For a broader feature request, complete affected rows of [coverage.md](../refere
 `summary-of-findings` opens the real Analysis menu action on a derived
 amino/lymph/empty fixture, renders four rows, checks default certainty and empty
 reason, writes manuscript DOCX/PDF, checks extracted output and saves/reopens
-reviewer judgements. Evidence retains the derived project. Independent Run and
-metafor cell equality, data-edit refresh, diagnostic patient totals and Copy/export
-picker gestures remain unexercised; see `docs/ux-hill-climb/SLICE9.md`.
+reviewer judgements. It compares two binary results with direct metafor fits,
+checks data-edit refresh, and retains the derived project. Wheel scrolling over a
+focused certainty selector must scroll an overflowing table without changing the
+judgment; keyboard and popup edits remain available. Native picker gestures,
+participant-count definitions and remaining estimator combinations need targeted coverage.
 
 Every desktop driver checks the visibly disabled shell, wait cursor and explicit waiting status before the GUI-thread R startup timer runs, then enabled controls after real R is ready. This proves blocking-startup feedback, not responsive or asynchronous R initialization.

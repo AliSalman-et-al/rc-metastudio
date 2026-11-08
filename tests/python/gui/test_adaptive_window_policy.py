@@ -82,6 +82,7 @@ assert app is QtWidgets.QApplication.instance()
         capture_output=True,
         text=True,
         check=False,
+        timeout=30,
     )
 
     assert result.returncode == 0, result.stderr
@@ -424,3 +425,36 @@ def test_confidence_level_handles_representative_long_text_and_enlarged_font(qap
         assert dialog.button_box.geometry().bottom() <= dialog.rect().bottom()
     finally:
         dialog.close()
+
+
+def test_restore_frame_uses_saved_secondary_screen(qapp, monkeypatch):
+    from rc_metastudio import adaptive_window as policy
+    primary = FakeScreen(QtCore.QRect(0, 0, 800, 600))
+    secondary = FakeScreen(QtCore.QRect(800, 0, 800, 600))
+    monkeypatch.setattr(policy.QGuiApplication, "screens", lambda: [primary, secondary])
+    window = QtWidgets.QWidget()
+    controller = policy.AdaptiveWindowController(window, policy.WindowRole.RESULTS, screen_placer=lambda *_args: None)
+    saved = QtCore.QRect(900, 80, 400, 300)
+    controller.restore_frame_geometry(saved)
+    assert controller.normal_frame_geometry() == saved
+    assert window.frameGeometry() == saved
+
+
+def test_runtime_screen_prefers_dialog_handle_but_first_use_prefers_parent(qapp):
+    from rc_metastudio import adaptive_window as policy
+    parent_screen = FakeScreen(QtCore.QRect(0, 0, 800, 600))
+    own_screen = FakeScreen(QtCore.QRect(800, 0, 800, 600))
+    class Window:
+        def __init__(self, parent, screen):
+            self.parent = parent
+            self.handle = FakeWindowHandle(screen)
+        def parentWidget(self):
+            return self.parent
+        def window(self):
+            return self
+        def windowHandle(self):
+            return self.handle
+    parent = Window(None, parent_screen)
+    dialog = Window(parent, own_screen)
+    assert policy.first_use_screen(dialog, policy.WindowArchetype.TRANSACTIONAL) is parent_screen
+    assert policy.owning_screen(dialog) is own_screen

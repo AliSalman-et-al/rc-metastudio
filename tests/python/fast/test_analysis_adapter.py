@@ -164,3 +164,17 @@ def test_diagnostic_fallback_merges_references_in_stable_order():
     assert result.texts["References"] == (
         "1. Shared method reference\n2. Sensitivity reference\n3. DOR reference\n"
     )
+
+
+@pytest.mark.parametrize('missing', [None, '', '  '])
+def test_blank_factor_moderator_requires_exclusion_confirmation(missing):
+    from rc_metastudio import analysis_adapter, project_adapter
+    from rc_metastudio.dataset_table_model import DatasetTableModel
+    from tests.python.fast.test_project_adapter import _multi_arm_project
+    model = DatasetTableModel(dataset=project_adapter.project_to_dataset(_multi_arm_project('binary')), add_blank_study=False)
+    row = model.current_sheet.rows[0]
+    row.include = True
+    row.covariate_values['moderator'] = missing
+    result = analysis_adapter.select_studies_for_covariates(model, [{'id': 'moderator', 'name': 'Region', 'type': 'factor'}])
+    assert result.has_missing_values
+    assert not result.studies

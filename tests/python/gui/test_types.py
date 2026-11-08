@@ -12,8 +12,8 @@ these casts describe their actual QWidget overload signatures.
 from collections.abc import Callable
 from typing import TypeVar, cast
 
-from PyQt6 import QtCore, QtTest
-from PyQt6.QtWidgets import QWidget
+from PyQt6 import QtCore, QtGui, QtTest
+from PyQt6.QtWidgets import QApplication, QWidget
 
 T = TypeVar("T")
 
@@ -79,3 +79,14 @@ def mouse_press(widget: QWidget, button: QtCore.Qt.MouseButton, pos: QtCore.QPoi
 def mouse_move(widget: QWidget, pos: QtCore.QPoint, delay: int = -1) -> None:
     """Move through the runtime QWidget overload."""
     cast(Callable[[QWidget, QtCore.QPoint, int], None], QtTest.QTest.mouseMove)(widget, pos, delay)
+
+
+def wheel_scroll(widget: QWidget, delta: int = -120) -> None:
+    center = widget.rect().center()
+    event = QtGui.QWheelEvent(
+        QtCore.QPointF(center), QtCore.QPointF(widget.mapToGlobal(center)),
+        QtCore.QPoint(), QtCore.QPoint(0, delta),
+        QtCore.Qt.MouseButton.NoButton, QtCore.Qt.KeyboardModifier.NoModifier,
+        QtCore.Qt.ScrollPhase.NoScrollPhase, False,
+    )
+    QApplication.sendEvent(widget, event)

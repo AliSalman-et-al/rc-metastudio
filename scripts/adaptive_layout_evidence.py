@@ -43,8 +43,32 @@ def _requested_scale_factor():
     )
 
 
+def _archive_previous_evidence(output):
+    """Keep previous captures while invalidating their success before startup."""
+    from uuid import uuid4
+    paths = [output / name for name in ("manifest.json", "invocation.json", "screenshots", "intrinsic-ratio-evidence.png", "HUMAN_REVIEW.md")]
+    present = [path for path in paths if path.exists()]
+    if present:
+        archive = output.parent / (output.name + "-previous-" + uuid4().hex)
+        archive.mkdir()
+        for path in present:
+            path.rename(archive / path.name)
+
+
+def _write_invocation(output):
+    from uuid import uuid4
+    from scripts.validate_adaptive_layout_evidence import source_identity
+    identity = {"run_id": uuid4().hex, "source_identity": source_identity()}
+    output.mkdir(parents=True, exist_ok=True)
+    (output / "invocation.json").write_text(json.dumps(identity), encoding="utf-8")
+    return identity
+
+
 def configure_isolated_evidence_settings(output_dir):
     """Keep package verification from reading or overwriting user geometry."""
+    output = Path(output_dir).resolve()
+    _archive_previous_evidence(output)
+    _write_invocation(output)
     settings_root = Path(output_dir).resolve() / "settings"
     settings_root.mkdir(parents=True, exist_ok=True)
     QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
@@ -96,6 +120,8 @@ def validate_native_platform(platform_plugin=None, system=None, machine=None):
 def run_native_adaptive_layout_evidence(app, main_window, sample_path, output_dir):
     """Exercise representative native surfaces and write screenshots + manifest."""
     output = Path(output_dir).resolve()
+    _archive_previous_evidence(output)
+    identity = _write_invocation(output)
     screenshots = output / "screenshots"
     screenshots.mkdir(parents=True, exist_ok=True)
     plugin = validate_native_platform()
@@ -166,6 +192,7 @@ def run_native_adaptive_layout_evidence(app, main_window, sample_path, output_di
         records,
         unavailable_scenarios,
     )
+    manifest.update(identity)
     (output / "manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
@@ -569,11 +596,16 @@ def _exercise_main_workspace(window):
 
 
 def _exercise_runtime_resize(app, window):
+    window.showNormal()
+    window.resize(640, 480)
+    _flush(app)
     before = _rect_record(window.frameGeometry())
     # layout-audit: allow=verification-layout-fixture; reason=native evidence verifies user-owned runtime resizing
     window.resize(800, 600)
     _flush(app)
     after = _rect_record(window.frameGeometry())
+    if (before["width"], before["height"]) == (after["width"], after["height"]):
+        raise RuntimeError("Runtime resize did not change frame size")
     if (
         window.tableView.viewport().width() < 1
         or window.tableView.viewport().height() < 1

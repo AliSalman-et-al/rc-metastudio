@@ -294,7 +294,7 @@ fillin.missing.effect.quantity <- function(est=NA, low=NA, high=NA) {
 		difference <- est - low
 
 	if (is.na(est))
-		est <- (high-low)/2.0
+		est <- (high+low)/2.0
 
 	if (is.na(low))
 		low <- est - difference
@@ -774,7 +774,7 @@ rescale.effect.and.ci.conf.level <- function(data_arguments) {
 	}
 
 	if (is.na(est)) {
-		est <- (high-low)/2.0
+		est <- (high+low)/2.0
 	}
 
 	if (is.na(low)) {

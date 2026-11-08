@@ -27,7 +27,7 @@ else:
 
 from rc_metastudio import plot_editor_dialog, plot_service
 
-REPO_ROOT = os.getcwd()
+REPO_ROOT = str(Path(__file__).resolve().parents[3])
 
 
 def _sample_project_path(name):
@@ -299,7 +299,6 @@ def test_open_project_preserves_main_window_state_without_duplicate_windows(
         _mark_workspace_saved(window)
         window.close()
         app.processEvents()
-        os.chdir(REPO_ROOT)
 
 
 @pytest.mark.parametrize(
@@ -327,7 +326,6 @@ def test_main_data_grid_leaves_spare_width_outside_data_columns(
     finally:
         window.close()
         app.processEvents()
-        os.chdir(REPO_ROOT)
 
 
 @pytest.mark.parametrize(
@@ -356,6 +354,14 @@ def test_startup_smoke_opens_positional_project_without_wizard(monkeypatch, tmp_
     from rc_metastudio import launch
 
     sample_project = _sample_project_path("amino.rcms")
+    invocation = tmp_path / "invocation"
+    appdata = tmp_path / "appdata"
+    invocation.mkdir()
+    appdata.mkdir()
+    (invocation / "relative.rcms").write_bytes(Path(sample_project).read_bytes())
+    (appdata / "relative.rcms").write_bytes(b"wrong project")
+    monkeypatch.chdir(invocation)
+    sample_project = str(invocation / "relative.rcms")
     completion_marker = tmp_path / "launchservices-completion.json"
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     platform_plugin = QtWidgets.QApplication.platformName().lower()
@@ -391,6 +397,7 @@ def test_startup_smoke_opens_positional_project_without_wizard(monkeypatch, tmp_
 
         def open(self, project_path):
             assert self.workspace.saved
+            assert Path(project_path).read_bytes() == Path(sample_project).read_bytes()
             opened.append(project_path)
             return True
 
@@ -411,9 +418,12 @@ def test_startup_smoke_opens_positional_project_without_wizard(monkeypatch, tmp_
         launch, "_resolve_startup_argv",
         lambda: ["RCMetaStudio.app", "--automation-startup-project-smoke",
                  "--automation-startup-completion-marker", str(completion_marker),
-                 sample_project],
+                 "relative.rcms"],
     )
-    monkeypatch.setattr(launch, "compose_application", lambda **kwargs: (app, Window()))
+    def compose(**kwargs):
+        os.chdir(appdata)
+        return app, Window()
+    monkeypatch.setattr(launch, "compose_application", compose)
     monkeypatch.setattr(
         automation,
         "dispatch",
@@ -432,10 +442,9 @@ def test_startup_smoke_opens_positional_project_without_wizard(monkeypatch, tmp_
         "schema_version": 1,
         "pid": os.getpid(),
         "platform_plugin": platform_plugin,
-        "project": "amino.rcms",
+        "project": "relative.rcms",
         "post_close": True,
     }
-    os.chdir(REPO_ROOT)
 
 
 def test_meantime_sample_project_loads_native_factor_covariate():
@@ -564,7 +573,6 @@ def test_change_covariate_type_model_returns_native_values_and_accepts_native_ed
         _mark_workspace_saved(window)
         window.close()
         app.processEvents()
-        os.chdir(REPO_ROOT)
 
 
 def test_factor_covariate_edits_render_as_native_paint_text():
@@ -595,7 +603,6 @@ def test_factor_covariate_edits_render_as_native_paint_text():
         _mark_workspace_saved(window)
         window.close()
         app.processEvents()
-        os.chdir(REPO_ROOT)
 
 
 def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypatch):
@@ -665,7 +672,6 @@ def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypa
     finally:
         window.close()
         app.processEvents()
-        os.chdir(REPO_ROOT)
 
 
 def test_method_parameters_dialog_stays_stable_when_method_description_changes(
@@ -777,8 +783,11 @@ def test_method_parameters_dialog_stays_stable_when_method_description_changes(
 
         specs.resize(stable_width + 300, stable_height + 200)
         app.processEvents()
-        assert specs.width() == stable_width + 300
-        assert specs.height() == stable_height + 200
+        assert stable_width < specs.width() <= stable_width + 300
+        assert stable_height < specs.height() <= stable_height + 200
+        screen = specs.screen()
+        assert screen is not None
+        assert screen.availableGeometry().contains(specs.frameGeometry())
         stable_width = specs.width()
         stable_height = specs.height()
 
@@ -815,7 +824,6 @@ def test_method_parameters_dialog_stays_stable_when_method_description_changes(
     finally:
         window.close()
         app.processEvents()
-        os.chdir(REPO_ROOT)
 
 
 def test_meta_regression_action_stays_disabled_without_covariates_when_data_are_enabled():
@@ -833,7 +841,6 @@ def test_meta_regression_action_stays_disabled_without_covariates_when_data_are_
     finally:
         window.close()
         app.processEvents()
-        os.chdir(REPO_ROOT)
 
 
 def test_diagnostic_metric_dialog_fits_checkbox_group_labels():
@@ -859,7 +866,6 @@ def test_diagnostic_metric_dialog_fits_checkbox_group_labels():
             form.close()
         window.close()
         app.processEvents()
-        os.chdir(REPO_ROOT)
 
 
 def test_advanced_analysis_actions_require_dataset_readiness_and_covariates():
@@ -883,7 +889,6 @@ def test_advanced_analysis_actions_require_dataset_readiness_and_covariates():
         _mark_workspace_saved(window)
         window.close()
         app.processEvents()
-        os.chdir(REPO_ROOT)
 
 
 def test_deleting_last_covariate_refreshes_advanced_analysis_actions():
@@ -912,7 +917,6 @@ def test_deleting_last_covariate_refreshes_advanced_analysis_actions():
         _mark_workspace_saved(window)
         window.close()
         app.processEvents()
-        os.chdir(REPO_ROOT)
 
 
 def test_subgroup_dialog_disables_ok_and_does_not_run_without_factor_covariates(
@@ -963,7 +967,6 @@ def test_subgroup_dialog_disables_ok_and_does_not_run_without_factor_covariates(
         _mark_workspace_saved(window)
         window.close()
         app.processEvents()
-        os.chdir(REPO_ROOT)
 
 
 def test_analysis_opens_results_window_maximized_and_fits_svg_plot(tmp_path):
@@ -1014,7 +1017,6 @@ def test_analysis_opens_results_window_maximized_and_fits_svg_plot(tmp_path):
             result_window.close()
         window.close()
         app.processEvents()
-        os.chdir(REPO_ROOT)
 
 
 def test_results_window_refits_svg_plots_and_reflows_sections_on_resize(tmp_path):
@@ -1559,11 +1561,13 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
             }
         )
     )
+    def load_selected_params(path, return_params_dict=False):
+        assert path == params_path
+        assert return_params_dict is True
+        return {"fp_col1_str": "Study"}
+
     monkeypatch.setattr(
-        plot_service.r_bridge,
-        "load_vars_for_plot",
-        lambda path, return_params_dict=False: {"fp_col1_str": "Study"},
-        raising=False,
+        plot_service.r_bridge, "load_vars_for_plot", load_selected_params, raising=False
     )
     def update_plot_params(_params, *, outpath=None, **_kwargs):
         assert outpath is not None
@@ -2841,7 +2845,6 @@ def test_open_existing_dialog_starts_in_sample_projects_even_when_cwd_is_app_dat
     finally:
         window.close()
         app.processEvents()
-        os.chdir(REPO_ROOT)
 
 
 def test_welcome_wizard_open_existing_dialog_starts_in_sample_projects_when_no_recent_project(
@@ -2875,7 +2878,6 @@ def test_welcome_wizard_open_existing_dialog_starts_in_sample_projects_when_no_r
     finally:
         wizard.close()
         app.processEvents()
-        os.chdir(REPO_ROOT)
 
 
 def test_about_legal_and_welcome_links_show_current_project_information():
@@ -2930,7 +2932,6 @@ def test_about_legal_and_welcome_links_show_current_project_information():
             wizard.close()
         window.close()
         app.processEvents()
-        os.chdir(REPO_ROOT)
 
 
 def test_add_covariate_dialog_fields_and_buttons_fill_fitted_width():
@@ -2960,7 +2961,6 @@ def test_add_covariate_dialog_fields_and_buttons_fill_fitted_width():
         dialog.close()
         window.close()
         app.processEvents()
-        os.chdir(REPO_ROOT)
 
 
 @pytest.mark.parametrize(
@@ -3027,3 +3027,69 @@ def _assert_sample_projects_open_directory(directory):
     assert os.path.basename(directory) == "sample_projects"
     assert os.path.exists(os.path.join(directory, "amino.rcms"))
     assert os.path.normcase(directory) != os.path.normcase(os.getcwd())
+
+
+
+def test_storage_boundary_conversion_preserves_all_row_identities(tmp_path):
+    import copy
+    from PyQt6.QtWidgets import QApplication
+    from rc_metastudio.covariate_type_dialog import CovariateTypeDialog
+    from rc_metastudio.project_adapter import project_to_dataset, dataset_to_project, document_to_runtime_project
+    from rc_metastudio.project_format import save_project, load_project
+    from tests.python.fast.test_project_format import _group_project
+    app = QApplication.instance() or QApplication([])
+    project = _group_project("binary", None, [[1, 10], [2, 10]])
+    sheet = project["sheets"][0]
+    sheet["covariates"] = [dict(id="dose", name="Dose", data_type=1)]
+    original = sheet["rows"][0]
+    sheet["rows"] = []
+    for i, value in enumerate([10, 20, 30]):
+        row = copy.deepcopy(original)
+        row.update(id=f"row-{i}", label="Duplicate" if i < 2 else "Excluded", include=i != 2, manually_excluded=i == 2, covariates={"dose": value})
+        sheet["rows"].append(row)
+    dataset = project_to_dataset(project)
+    live = dataset.sheets[0]
+    dialog = CovariateTypeDialog(live, live.covariates[0])
+    preview = dialog.cov_model
+    assert preview.rowCount() == 3
+    assert preview.orig_cov_list[:3] == [10, 20, 30]
+    assert preview.new_cov_list == ["a", "b", "c"]
+    assert preview.setData(preview.index(2, preview.NEW_VAL), "Excluded category")
+    dialog.accept()
+    new_id = preview.new_covariate["id"]
+    path = tmp_path / "converted.rcms"
+    save_project(path, dataset_to_project(dataset), dict(schema_version=3, current_sheet_id=live.id))
+    reopened = document_to_runtime_project(load_project(path)).dataset.sheets[0]
+    assert [(r.id, r.include, r.manually_excluded, r.covariate_values["dose"], r.covariate_values[new_id]) for r in reopened.rows] == [
+        ("row-0", True, False, 10, "a"), ("row-1", True, False, 20, "b"), ("row-2", False, True, 30, "Excluded category")]
+    dialog.close()
+
+
+@pytest.mark.parametrize("included", [0, 1, 2])
+def test_r_ready_preserves_model_driven_analysis_eligibility(tmp_path, monkeypatch, qapp, included):
+    from rc_metastudio import launch, r_bridge, r_runtime
+
+    monkeypatch.setattr(launch.settings, "get_base_path", lambda **kwargs: str(tmp_path / "appdata"))
+    monkeypatch.setenv("RCMS_ANALYSIS_SCRATCH_DIR", str(tmp_path / "scratch"))
+    monkeypatch.setattr(r_bridge, "reset_r_working_directory", lambda: None)
+    monkeypatch.setattr(r_runtime, "_READY", False)
+    app, window = launch.compose_application(app=qapp, r_loader=lambda *_: None)
+    try:
+        assert window.open(_sample_project_path("amino.rcms"))
+        rows = window.model.current_sheet.rows
+        for index, row in enumerate(rows):
+            row.manually_excluded = index >= included
+        app.processEvents()
+        assert r_runtime.is_ready()
+        assert window.action_go.isEnabled() is (included >= 2)
+        for index, row in enumerate(rows):
+            row.manually_excluded = index >= 2
+        window.tableView.cell_content_changed(None)
+        assert window.action_go.isEnabled()
+        window.model.current_sheet.rows[1].manually_excluded = True
+        window.tableView.cell_content_changed(None)
+        assert not window.action_go.isEnabled()
+    finally:
+        _mark_workspace_saved(window)
+        window.close()
+        launch.dispose_qobjects(app, (window,))

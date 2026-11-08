@@ -277,3 +277,10 @@ rcmetar.inference.method.references <- function(params) {
 rcmetar.unique.references <- function(references) {
   unique(as.character(references))
 }
+
+rcmetar.nonestimable.inference.row <- function(k, params) {
+  list(b=NA_real_, se=NA_real_, ci.lb=NA_real_, ci.ub=NA_real_,
+       pval=NA_real_, zval=NA_real_, k=k, tau2=NA_real_, QE=NA_real_,
+       QEp=NA_real_, I2=NA_real_, test=rcmetar.inference.method(params),
+       reason="Non-estimable: selected inference requires positive residual degrees of freedom.")
+}

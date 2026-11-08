@@ -132,3 +132,31 @@ def test_xlsx_unmapped_date_year(tmp_path: Path) -> None:
     result = parse_csv(path, expected_headers=["Study", "Year"],
                        has_headers=True, from_excel=True)
     assert result.rows == (("Alpha", "2022"),)
+
+
+@pytest.mark.parametrize("mapping", [None, (0, 1)])
+def test_storage_boundary_csv_rejects_fields_beyond_header(tmp_path, mapping):
+    path = tmp_path / "width.csv"
+    path.write_text("Study,Year,Dose\nA,2024,10,extra\n", encoding="utf-8")
+    with pytest.raises(CsvImportError, match="row 2.*3.*columns"):
+        parse_csv(path, expected_headers=["Study", "Year"], has_headers=True,
+                  from_excel=False, column_mapping=mapping)
+
+
+@pytest.mark.parametrize("mapping", [None, (0, 1)])
+def test_storage_boundary_csv_retains_missing_trailing_covariates(tmp_path, mapping):
+    path = tmp_path / "trailing.csv"
+    path.write_text("Study,Year,Dose\nA,2024\nB,2025,10\n", encoding="utf-8")
+    result = parse_csv(path, expected_headers=["Study", "Year"], has_headers=True,
+                       from_excel=False, column_mapping=mapping)
+    assert result.rows == (("A", "2024", ""), ("B", "2025", "10"))
+    assert result.covariate_types == ("continuous",)
+
+
+def test_storage_boundary_csv_missing_numeric_and_verbatim_categories(tmp_path):
+    path = tmp_path / "missing.csv"
+    path.write_text("Study,Year,Dose,Region,Empty\nA,2024,10,North,\nB,2024,, South ,\nC,2024,20,NA,\n", encoding="utf-8")
+    result = parse_csv(path, expected_headers=["Study", "Year"], has_headers=True, from_excel=False)
+    assert result.covariate_types == ("continuous", "factor", "continuous")
+    assert [row[2] for row in result.rows] == ["10", "", "20"]
+    assert [row[3] for row in result.rows] == ["North", " South ", "NA"]

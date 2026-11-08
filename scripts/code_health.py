@@ -228,6 +228,7 @@ def _scan_r_string(source: str, index: int, line: int) -> tuple[int, int]:
     while index < len(source):
         char = source[index]
         if char == "\\":
+            line += source[index:index + 2].count("\n")
             index += 2
             continue
         index += 1
@@ -251,9 +252,10 @@ def _r_tokens(source: str) -> list[tuple[str, int]]:
     index = 0
     line = 1
     while index < len(source):
+        token_line = line
         token, index, line = _next_r_token(source, index, line)
         if token is not None:
-            tokens.append((token, line))
+            tokens.append((token, token_line))
     return tokens
 
 
@@ -263,9 +265,8 @@ def _next_r_token(source: str, index: int, line: int) -> tuple[str | None, int, 
     if simple is not None:
         return simple
     if char in "'\"`":
-        start_line = line
         index, line = _scan_r_string(source, index, line)
-        return "<string>", index, start_line
+        return "<string>", index, line
     if char == "%":
         end = source.find("%", index + 1)
         if end >= 0 and "\n" not in source[index:end]:
@@ -1023,7 +1024,7 @@ def changed_lines(root: Path, base: str, head: str) -> dict[str, set[int]]:
                 start, count = int(start_text), int(count_text)
             else:
                 start, count = int(marker), 1
-            changed[current].update(range(start, start + count))
+            changed[current].update(range(max(1, start), start + count) if count else [max(1, start)])
     return changed
 
 
@@ -1154,17 +1155,6 @@ def build_evidence(
     baseline_paths = tracked_paths(root, config, base)
     baseline_graph, baseline_forbidden = python_import_graph(root, baseline_paths, config, base)
     baseline_cycle_list = cycles(baseline_graph)
-    gate_baseline_cycles = baseline_cycle_list
-    gate_baseline_forbidden = baseline_forbidden
-    if baseline_data is not None:
-        recorded_cycles = baseline_data.get("cycles")
-        if isinstance(recorded_cycles, list):
-            gate_baseline_cycles = cast(list[list[str]], recorded_cycles)
-        recorded_gate = baseline_data.get("gate")
-        if isinstance(recorded_gate, dict):
-            recorded_forbidden = cast(dict[str, object], recorded_gate).get("forbidden_imports")
-            if isinstance(recorded_forbidden, list):
-                gate_baseline_forbidden = cast(list[str], recorded_forbidden)
     file_metrics = []
     for path in paths:
         try:
@@ -1214,9 +1204,9 @@ def build_evidence(
             changed,
             config,
             cycle_list,
-            gate_baseline_cycles,
+            baseline_cycle_list,
             forbidden,
-            gate_baseline_forbidden,
+            baseline_forbidden,
             runtime_changed,
         ),
     }

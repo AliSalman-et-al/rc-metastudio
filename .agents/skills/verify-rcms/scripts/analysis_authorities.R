@@ -37,7 +37,8 @@ params <- function(metric) list(
   fp_show_summary_line=TRUE, fp_xlabel="[default]", fp_plot_lb="[default]", fp_plot_ub="[default]", fp_xticks="[default]"
 )
 check <- function(data, method, p, reference, id) {
-  result <- get(method, asNamespace("RCMetaR"))(data, p)
+  prepared <- RCMetaR::rcmetar.prepare.analysis.data(data, p)
+  result <- get(method, asNamespace("RCMetaR"))(prepared, p)
   actual <- get(paste0(method, ".overall"), asNamespace("RCMetaR"))(result)
   fields <- c("b", "se", "pval", "ci.lb", "ci.ub", "QE", "QEp", "k")
   if (!is.null(reference$tau2)) fields <- c(fields, "tau2", "I2")
@@ -57,7 +58,7 @@ for (metric in c("OR","RD","RR","AS","YUQ","YUY","PR","PLN","PLO","PAS","PFT")) 
   effects <- if (one) metafor::escalc(metric, xi=a, ni=a+b, add=0, to="none") else
     metafor::escalc(metric, ai=a, bi=b, ci=c, di=d, add=0, to="none")
   data <- methods::new("BinaryData", g1O1=a, g1O2=b, g2O1=if(one) numeric() else c,
-    g2O2=if(one) numeric() else d, y=effects$yi, SE=sqrt(effects$vi), study.names=names)
+    g2O2=if(one) numeric() else d, y=effects$yi + 2, SE=sqrt(effects$vi) * 3, study.names=names)
   p <- params(metric)
   reconstructed <- RCMetaR:::compute.for.one.bin.study(data, p)
   close(reconstructed$yi, effects$yi, paste(metric,"reconstructed effects"))
@@ -81,7 +82,7 @@ zero.a[1:2] <- 0; zero.c[2] <- 0
 for (target in c("only0","all","if0all")) {
   effects <- metafor::escalc("OR",ai=zero.a,bi=b,ci=zero.c,di=d,add=.5,to=target,drop00=FALSE)
   data <- methods::new("BinaryData",g1O1=zero.a,g1O2=b,g2O1=zero.c,g2O2=d,
-    y=effects$yi,SE=sqrt(effects$vi),study.names=names)
+    y=effects$yi + 2,SE=sqrt(effects$vi) * 3,study.names=names)
   p <- params("OR"); p$to <- target
   reconstructed <- RCMetaR:::compute.for.one.bin.study(data,p)
   close(reconstructed$yi,effects$yi,paste(target,"zero-cell effects"))
@@ -98,7 +99,7 @@ for (metric in c("MD","SMD","TXMean","entered-estimates")) {
     metafor::escalc(metric,n1i=n1,n2i=n2,m1i=m1,m2i=m2,sd1i=s1,sd2i=s2)
   data <- methods::new("ContinuousData", N1=n1, mean1=m1, sd1=s1,
     N2=if(one) numeric() else n2, mean2=if(one) numeric() else m2,
-    sd2=if(one) numeric() else s2, y=effects$yi, SE=sqrt(effects$vi), study.names=names[1:6])
+    sd2=if(one) numeric() else s2, y=effects$yi + 2, SE=sqrt(effects$vi) * 3, study.names=names[1:6])
   if (startsWith(metric,"entered")) {
     effects <- data.frame(yi=c(.2,.4,-.1,.6,.3,.1),vi=c(.04,.09,.16,.04,.12,.06))
     data <- methods::new("ContinuousData",y=effects$yi,SE=sqrt(effects$vi),study.names=names[1:6])
@@ -130,7 +131,7 @@ for (metric in c("Sens","Spec","PLR","NLR","DOR")) {
     NLR=metafor::escalc("RR",ai=FN,bi=TP,ci=TN,di=FP,add=0,to="none"),
     DOR=metafor::escalc("OR",ai=TP,bi=FN,ci=FP,di=TN,add=0,to="none"))
   data <- methods::new("DiagnosticData",TP=TP,FN=FN,FP=FP,TN=TN,
-    y=effects$yi,SE=sqrt(effects$vi),study.names=names)
+    y=effects$yi + 2,SE=sqrt(effects$vi) * 3,study.names=names)
   p <- params(metric)
   reconstructed <- RCMetaR:::compute.diag.point.estimates(data,p)
   close(reconstructed@y,effects$yi,paste(metric,"reconstructed effects"))
@@ -151,7 +152,7 @@ for (metric in c("Sens","Spec","PLR","NLR","DOR")) {
 }
 # Exercise the entire heterogeneity/inference selector domain on an actual fit.
 effects <- metafor::escalc("OR",ai=a,bi=b,ci=c,di=d,add=0,to="none")
-data <- methods::new("BinaryData",g1O1=a,g1O2=b,g2O1=c,g2O2=d,y=effects$yi,SE=sqrt(effects$vi),study.names=names)
+data <- methods::new("BinaryData",g1O1=a,g1O2=b,g2O1=c,g2O2=d,y=effects$yi + 2,SE=sqrt(effects$vi) * 3,study.names=names)
 for (heterogeneity in c("HE","DL","HS","HSk","SJ","ML","REML","EB","PM","PMM")) {
   for (inference in c("z","t","knha","adhoc")) {
     p <- params("OR"); p$rm.method <- heterogeneity; p$inference.method <- inference
@@ -172,6 +173,12 @@ for (method in c("binary.fixed.inv.var", "binary.fixed.mh", "binary.fixed.peto",
   result <- RCMetaR:::subgroup.ma.binary(method, data, p)
   e <- new.env(); load(paste0(result$plot_params_paths[[1]], ".plotdata"), envir=e)
   actual <- e$plot.data$subgroups$difference_test
+  if (method == "binary.fixed.mh") {
+    if (!is.null(actual)) stop("MH subgroup difference test must be omitted")
+    rows[[length(rows)+1L]] <- list(case=paste(method,"subgroup"), passed=TRUE,
+      type="inference availability", actual="omitted", expected="omitted")
+    next
+  }
   authority <- meta::metabin(a,a+b,c,c+d, subgroup=group, sm="OR",
     method=switch(method, binary.fixed.mh="MH", binary.fixed.peto="Peto", "Inverse"),
     method.tau="DL", tau.common=FALSE)

@@ -141,6 +141,7 @@ rcmetar.revman.ilab.for.data <- function(om.data, params, res=NULL) {
             units <- unique(as.character(om.data@unit))
             time.header <- if (length(units) == 1) paste0("Person-time\n(", units, ")") else "Person-time (unit)"
             for (arm in 1:2) {
+                if (!rcmetar.param.is.true(params, paste0("fp_show_col", arm + 2), TRUE)) next
                 events <- slot(om.data, paste0("x", arm))
                 exposure <- slot(om.data, paste0("t", arm))
                 times <- rcmetar.format.metafor.raw(exposure)
@@ -416,13 +417,15 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
     }
     if (show.headers) {
         header <- paste(metric, paste0(method, ","), paste0(bundle$params$conf.level, "% CI"), sep="\n")
-        rcmetar.draw.forest.effect.header(layout$annotation.xpos, k + 1, header, adj=1)
+        if (rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE))
+            rcmetar.draw.forest.effect.header(layout$annotation.xpos, k + 1, header, adj=1)
         rcmetar.draw.forest.effect.header(layout$plot.header.xpos, k + 1, header)
     }
 
     graphics::rect(layout$annotation.xpos, -1.5, layout$ilab.xpos[[length(layout$ilab.xpos)]], -0.5, col="white", border=NA)
     graphics::segments(rcmetar.forest.study.x(layout), 0, layout$xlim[[2]], 0, lwd=0.6, col="#b8b8b8")
-    graphics::text(layout$annotation.xpos, -1, summary$label, pos=2)
+    if (rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE))
+        graphics::text(layout$annotation.xpos, -1, summary$label, pos=2)
     rcmetar.draw.revman.summary.diamond(rcmetar.forest.axis.effect(bundle, summary), -1, rcmetar.forest.accent.color(bundle$params), layout$alim)
     graphics::par(cex=1, font=1)
     rcmetar.draw.revman.axis(bundle, layout, plot.info$cex)
@@ -580,7 +583,7 @@ rcmetar.revman.summary.effect <- function(bundle) {
         ci.lb=as.numeric(res$ci.lb),
         ci.ub=as.numeric(res$ci.ub),
         weights=weights,
-        psize=psize,
+        psize=psize * rcmetar.point.size.multiplier(bundle$params),
         label=paste0(
             rcmetar.revman.format.effect.number(pred[[1]], bundle$params$digits, max(abs(pred))),
             " [",
@@ -602,6 +605,7 @@ rcmetar.revman.display.ilab <- function(bundle, weights) {
 }
 
 rcmetar.draw.revman.study.effect.labels <- function(bundle, effect, layout, rows, cex) {
+    if (!rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE)) return(invisible(NULL))
     transform <- rcmetar.bundle.transform(bundle)
     labels <- rep("Not estimable", length(effect$yi))
     finite <- is.finite(effect$yi) & is.finite(effect$ci.lb) & is.finite(effect$ci.ub)

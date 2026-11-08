@@ -103,9 +103,14 @@ def set_parameter(app, dialog, key, value):
         return
 
     plot_controls = {"bp_plot_lb": dialog.plot_lb_le, "bp_plot_ub": dialog.plot_ub_le,
-                     "fp_plot_lb": dialog.plot_lb_le, "fp_plot_ub": dialog.plot_ub_le}
+                     "fp_plot_lb": dialog.plot_lb_le, "fp_plot_ub": dialog.plot_ub_le,
+                     "fp_show_col3": dialog.show_3, "fp_show_col4": dialog.show_4}
     if key in plot_controls:
-        plot_controls[key].setText(str(value))
+        control = plot_controls[key]
+        if isinstance(control, QtWidgets.QCheckBox):
+            control.setChecked(str(value).upper() == "TRUE")
+        else:
+            control.setText(str(value))
         app.processEvents()
         return
     label = parameter_display_label(key, dialog.param_d.get(key))
@@ -238,6 +243,19 @@ def run(
         report = app.clipboard().text()
         from tests.e2e.report_retention import assert_report
         assert_report(view)
+        if (scenario in {"analysis-data-onearm-mean", "analysis-data-onearm-proportion",
+                         "analysis-data-reg-coef", "analysis-data-generic-effect"}
+                and group_names is None and prepare is None
+                and metric_override is None and workflow == "standard"):
+            text = view.report_text.toPlainText()
+            manuscript = view.manuscript_text.toPlainText()
+            record("onearm-participant-scope", view, report=text, manuscript=manuscript)
+            assert "Other group" not in manuscript, manuscript
+            assert "Group: Group" in manuscript, manuscript
+            if scenario in {"analysis-data-onearm-mean", "analysis-data-onearm-proportion"}:
+                assert re.search(r"Participants in Group\s+135\b", text), text
+            else:
+                assert re.search(r"Participants\s+Not available", text), text
         if scenario.startswith("analysis-diagnostic-regression"):
             assert "Image Order" not in view.texts
             assert "diagnostic.reitsma.sensitivity.coefficients" not in view.report_text.toPlainText()
@@ -258,9 +276,11 @@ def run(
                                 ["Mean", "SD", "Total", "Mean", "SD", "Total", "Weight"])
             assert headers == expected_headers, headers
         if any(section.plot_kind == "subgroup_forest" for section in view.results.sections):
-            assert any(table.title == "Test of subgroup differences"
-                       for section in view.results.sections for table in section.tables), dict(view.texts)
-            assert "Test of subgroup differences" in view.report_text.toPlainText()
+            expected_test = not method.endswith(".mh")
+            observed_test = any(table.title == "Test of subgroup differences"
+                                for section in view.results.sections for table in section.tables)
+            assert observed_test == expected_test, (method, dict(view.texts))
+            assert ("Test of subgroup differences" in view.report_text.toPlainText()) == expected_test
         for path in (view.results.display_images or view.results.images).values():
             assert (
                 QSvgRenderer(str(path)).isValid()
@@ -348,10 +368,36 @@ def run(
                     )
                     combo.setCurrentIndex(index)
                     click(wizard.button(QtWidgets.QWizard.WizardButton.NextButton))
-                wizard.currentPage().outcome_name_LineEdit.setText(
-                    "Verification outcome"
-                )
                 page = wizard.currentPage()
+                assert isinstance(page, main_wizard.OutcomeNamePage), type(page)
+                finish = wizard.button(QtWidgets.QWizard.WizardButton.FinishButton)
+                assert not page.outcome_name_LineEdit.text() and not finish.isEnabled()
+                outcome_name = "Verification outcome Δ"
+                page.outcome_name_LineEdit.setText(outcome_name)
+                click(wizard.button(QtWidgets.QWizard.WizardButton.BackButton))
+                previous = wizard.currentPage()
+                click(wizard.button(QtWidgets.QWizard.WizardButton.NextButton))
+                page = wizard.currentPage()
+                record("data-name-back-next", wizard, data_type=name,
+                       expected=outcome_name, observed=page.outcome_name_LineEdit.text())
+                assert page.outcome_name_LineEdit.text() == outcome_name, "Back/Next cleared the outcome name"
+                assert finish.isEnabled()
+                if isinstance(previous, main_wizard.ChooseMetricPage):
+                    click(wizard.button(QtWidgets.QWizard.WizardButton.BackButton))
+                    combo = previous.metric_cbo_box
+                    alternate = next((i for i in range(combo.count()) if combo.itemData(i) != metric), None)
+                    if alternate is not None:
+                        combo.setCurrentIndex(alternate)
+                        click(wizard.button(QtWidgets.QWizard.WizardButton.NextButton))
+                        page = wizard.currentPage()
+                        assert page.outcome_name_LineEdit.text() == outcome_name
+                        record("data-name-metric-change", wizard, data_type=name,
+                               name=page.outcome_name_LineEdit.text(), metric=combo.currentData())
+                        click(wizard.button(QtWidgets.QWizard.WizardButton.BackButton))
+                    combo.setCurrentIndex(combo.findData(metric))
+                    click(wizard.button(QtWidgets.QWizard.WizardButton.NextButton))
+                    page = wizard.currentPage()
+                    assert page.outcome_name_LineEdit.text() == outcome_name
                 record("data-outcome-naming", wizard, data_type=name)
                 if group_names is not None:
                     if page.first_group_name.isVisible():
@@ -380,6 +426,7 @@ def run(
         assert window.model.get_current_outcome_type() == family
         assert window.model.get_current_outcome_subtype() == subtype
         assert window.model.current_effect == metric
+        assert window.model.current_outcome_name == "Verification outcome Δ"
         model = window.model
         if deferred_name and deferred_name != model.arm_names[0]:
             from advanced_workflows import modal
@@ -434,6 +481,7 @@ def run(
         assert window.save()
         assert window.open(window.out_path, raise_on_error=True)
         assert window.model.current_effect == metric
+        assert window.model.current_outcome_name == "Verification outcome Δ"
         assert window.model.get_current_outcome_type() == family
         assert window.model.get_current_outcome_subtype() == subtype
         assert sum(s.include for s in window.model.current_sheet.rows) == 6
@@ -446,6 +494,36 @@ def run(
         ]
         assert after == before, (after, before)
         record("data-reopened", window, data_type=name, metric=metric, cells=after)
+        if name == "generic-effect":
+            from advanced_workflows import modal
+            from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
+            observations = []
+            for se in (.1, 0.0):
+                if se == 0:
+                    assert window.model.setData(window.model.index(0, window.model.OUTCOMES[1]), "0")
+
+                def inspect_calculator(dialog):
+                    bounds = QtCore.QRect(dialog.wald_readout.mapTo(dialog, QtCore.QPoint()), dialog.wald_readout.size())
+                    observations.append((se, dialog.wald_readout.text(), dialog.wald_readout.isVisible(), dialog.rect().contains(bounds)))
+                    record("generic-existing-uncertainty", dialog, se=se, readout=dialog.wald_readout.text(),
+                           visible=dialog.wald_readout.isVisible(), contained=dialog.rect().contains(bounds))
+                    click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+
+                header = window.tableView.verticalHeader()
+                modal(app, ContinuousDataDialog, inspect_calculator,
+                      lambda: QTest.mouseClick(header.viewport(), QtCore.Qt.MouseButton.LeftButton,
+                                               QtCore.Qt.KeyboardModifier.NoModifier,
+                                               QtCore.QPoint(header.viewport().width() // 2,
+                                                            header.sectionViewportPosition(0) + header.sectionSize(0) // 2)))
+            assert window.model.setData(window.model.index(0, window.model.OUTCOMES[1]), ".1")
+            assert window.save() and window.open(window.out_path, raise_on_error=True)
+            restored = [[str(window.model.data(window.model.index(row, column))) for column in columns] for row in range(6)]
+            assert restored == before, (restored, before)
+            for se, readout, shown, contained in observations:
+                assert shown and contained, observations
+                assert readout.startswith(f"SE: {se:.4f}"), observations
+                if se == 0:
+                    assert "Z:" not in readout and "Two-sided P" not in readout, readout
         workflow = "standard"
         method = family + ".random"
         metrics = ("sens", "spec") if family == "diagnostic" else ()
@@ -598,6 +676,11 @@ def run(
         workflow = workflow_override
     if metrics_override:
         metrics = metrics_override
+    if metric_override is not None:
+        if window.model.current_effect != metric_override:
+            window.tableView.set_metric_in_ui(metric_override)
+            expected = None
+        assert window.model.current_effect == metric_override, (window.model.current_effect, metric_override)
     if prepare:
         prepare(window)
     action = {

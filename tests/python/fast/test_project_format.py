@@ -1057,3 +1057,71 @@ def test_all_committed_samples_match_the_frozen_semantics_and_round_trip(
         save_project(round_trip, loaded.project, loaded.state)
         reopened = load_project(round_trip)
         assert reopened == loaded
+
+
+@pytest.mark.parametrize("bad_input", [{"unexpected": 1}, {"estimate": "bad"}, {"estimate": True}, {"confidence": None}, {"scale": "invalid"}, {"estimate": -1}, {"lower": 2, "upper": 1}])
+def test_storage_boundary_rejects_invalid_ratio_archive(tmp_path, bad_input):
+    project = _group_project("binary", None, [[1, 10], [2, 10]])
+    path = tmp_path / "ratio.rcms"
+    save_project(path, project, _minimal_state())
+    sheet = _first_sheet(project)
+    sheet["rows"][0]["ratio_inputs"] = [{"arms": [a["id"] for a in sheet["arms"]], "input": bad_input}]
+    _replace_json_member(path, "project.json", project)
+    with pytest.raises(ProjectFormatError, match="ratio"):
+        load_project(path)
+
+
+@pytest.mark.parametrize("kind", ["entered_effects", "ratio_inputs"])
+def test_storage_boundary_rejects_duplicate_hydration_keys(tmp_path, kind):
+    project = _group_project("binary", None, [[1, 10], [2, 10]])
+    path = tmp_path / "duplicate.rcms"
+    save_project(path, project, _minimal_state())
+    sheet = _first_sheet(project)
+    arms = [a["id"] for a in sheet["arms"]]
+    entry = dict(arms=arms, metric="OR", values={"est": 1.0}) if kind == "entered_effects" else dict(arms=arms, input={})
+    sheet["rows"][0][kind] = [entry, copy.deepcopy(entry)]
+    _replace_json_member(path, "project.json", project)
+    with pytest.raises(ProjectFormatError, match="duplicate"):
+        load_project(path)
+
+
+@pytest.mark.parametrize("covariate", [{"id": "cov"}, {"id": "cov", "name": 3, "data_type": 1}, {"id": "cov", "name": "Dose", "data_type": 77}])
+def test_storage_boundary_rejects_malformed_covariate(tmp_path, covariate):
+    project = _minimal_project()
+    path = tmp_path / "covariate.rcms"
+    save_project(path, project, _minimal_state())
+    _first_sheet(project)["covariates"] = [covariate]
+    _replace_json_member(path, "project.json", project)
+    with pytest.raises(ProjectFormatError, match="covariate"):
+        load_project(path)
+
+
+@pytest.mark.parametrize("arms", [None, 5, "tx", {}, [None], [["tx"]], ["missing"]])
+def test_storage_boundary_rejects_malformed_settings_arms(tmp_path, arms):
+    project = _minimal_project()
+    path = tmp_path / "arms.rcms"
+    save_project(path, project, _minimal_state())
+    _object(_first_sheet(project)["settings"])["arms"] = arms
+    _replace_json_member(path, "project.json", project)
+    with pytest.raises(ProjectFormatError, match="arms?|arm"):
+        load_project(path)
+
+
+@pytest.mark.parametrize("version", [1, 2])
+def test_storage_boundary_legacy_string_summary_reopens(tmp_path, version):
+    project = _legacy_group_project("binary", None, [[1, 10], [2, 10]])
+    state = _legacy_state()
+    project["schema_version"] = state["schema_version"] = version
+    _object(project["dataset"])["summary"] = "Original summary text"
+    # Construct a schema-valid legacy container, with authenticated members.
+    path = tmp_path / "legacy.rcms"
+    save_project(path, _minimal_project(), _minimal_state())
+    _replace_json_member(path, "project.json", project)
+    _replace_json_member(path, "state.json", state)
+    manifest = json.loads(_members(path)["manifest.json"])
+    manifest["format_version"] = version
+    _replace_json_member(path, "manifest.json", manifest)
+    document = load_project(path)
+    assert _object(_first_sheet(document.project)["settings"])["summary"] == "Original summary text"
+    save_project(path, document.project, document.state)
+    assert load_project(path) == document

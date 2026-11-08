@@ -168,7 +168,8 @@ def test_funnel_editor_apply_then_ok_does_not_regenerate_twice(qapp):
         dialog.close()
 
 
-def test_funnel_editor_ok_commits_new_change_and_closes(qapp):
+@pytest.mark.parametrize("caption_only", [False, True])
+def test_funnel_editor_ok_commits_new_change_and_closes(qapp, caption_only):
     dialog = FunnelPlotEditorDialog(
         _params("ordinary"), "ordinary.png", plot_type="funnel"
     )
@@ -177,12 +178,62 @@ def test_funnel_editor_ok_commits_new_change_and_closes(qapp):
         lambda: (applied.append(True), dialog.mark_commit_succeeded())
     )
     try:
-        dialog.point_size_spin.setValue(2.0)
+        if caption_only:
+            dialog.figure_caption.setText("Only the caption changed")
+        else:
+            dialog.point_size_spin.setValue(2.0)
         ok_button = dialog.button_box.button(QDialogButtonBox.StandardButton.Ok)
         assert ok_button is not None
         ok_button.click()
         assert len(applied) == 1
         assert dialog.result() == QDialog.DialogCode.Accepted
+    finally:
+        dialog.close()
+
+
+@pytest.mark.parametrize("kind,fields", [
+    ("ordinary", {"x_lower_edit": "0"}),
+    ("ordinary", {"x_lower_edit": "2", "x_upper_edit": "1"}),
+    ("ordinary", {"x_lower_edit": "NaN", "x_upper_edit": "2"}),
+    ("ordinary", {"x_ticks_edit": "0,wrong,2"}),
+    ("ordinary", {"x_ticks_edit": "0,Inf"}),
+    ("contour", {"contour_levels_edit": "90,wrong,99"}),
+    ("contour", {"contour_levels_edit": "0,95"}),
+    ("contour", {"contour_levels_edit": "100"}),
+    ("contour", {"contour_levels_edit": ""}),
+])
+def test_funnel_editor_rejects_ignored_numeric_edits(qapp, kind, fields):
+    dialog = FunnelPlotEditorDialog(_params(kind), "funnel.png", plot_type="contour_funnel" if kind == "contour" else "funnel")
+    try:
+        for name, value in fields.items():
+            getattr(dialog, name).setText(value)
+        with pytest.raises(ValueError):
+            dialog.plot_params()
+    finally:
+        dialog.close()
+
+
+def test_funnel_editor_invalid_ok_stays_open_and_recovers(qapp, monkeypatch):
+    from PyQt6.QtWidgets import QMessageBox
+
+    dialog = FunnelPlotEditorDialog(_params("ordinary"), "funnel.png", plot_type="funnel")
+    applied, warnings = [], []
+    dialog.applied.connect(lambda: (applied.append(dialog.plot_params()), dialog.mark_commit_succeeded()))
+    monkeypatch.setattr(QMessageBox, "warning", lambda *args: warnings.append(args[2]))
+    try:
+        dialog.show()
+        ok = dialog.button_box.button(QDialogButtonBox.StandardButton.Ok)
+        assert ok is not None
+        dialog.x_lower_edit.setText("0")
+        ok.click()
+        assert dialog.isVisible()
+        assert warnings and not applied
+        dialog.x_upper_edit.setText("2")
+        dialog.x_ticks_edit.setText("0,1,2")
+        ok.click()
+        assert dialog.result() == QDialog.DialogCode.Accepted
+        assert len(applied) == 1
+        assert applied[0]["funnel.xlim.lower"] == "0"
     finally:
         dialog.close()
 
@@ -272,6 +323,11 @@ def test_funnel_editor_failed_second_apply_preserves_last_good_artifacts(
     try:
         dialog.point_size_spin.setValue(2.0)
         window._apply_funnel_plot_edits(dialog, artifact, None)
+        assert regenerate_count == [1]
+        assert image_path.read_bytes() == b"first good image"
+        import ast
+        persisted = dict(ast.literal_eval(params_path.read_text(encoding="utf-8")))
+        assert float(persisted["funnel.point.size"]) == 2.0
         committed_params = params_path.read_bytes()
         committed_image = image_path.read_bytes()
         dialog.point_size_spin.setValue(3.0)

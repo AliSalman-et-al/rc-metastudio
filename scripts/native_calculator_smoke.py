@@ -139,6 +139,54 @@ def close_automation_window(
         app.setQuitOnLastWindowClosed(previous_auto_quit)
 
 
+def _validate_calculator_image(record: dict[str, object], image_path: Path, relative_text: str) -> None:
+    expected_size = record.get("image_size")
+    if not isinstance(expected_size, int) or expected_size <= 0:
+        raise ValueError("calculator image size must be a positive integer")
+    if image_path.stat().st_size != expected_size:
+        raise ValueError("calculator image size does not match: %s" % relative_text)
+    expected_hash = record.get("image_sha256")
+    if not isinstance(expected_hash, str) or len(expected_hash) != 64:
+        raise ValueError("calculator image SHA256 is invalid")
+    if _sha256(image_path) != expected_hash:
+        raise ValueError(
+            "calculator image SHA256 does not match: %s" % relative_text
+        )
+
+
+def _validate_calculator_capture(record: dict[str, object], evidence_root: Path) -> None:
+    if record.get("capture_method") not in {
+        "QScreen.grabWindow",
+        "QWidget.grab fallback",
+        "QWidget.render(QImage) fallback",
+    }:
+        raise ValueError("calculator capture method is invalid")
+    relative_text = record.get("image")
+    if not isinstance(relative_text, str) or not relative_text:
+        raise ValueError("calculator image path must be a non-empty string")
+    if "\\" in relative_text:
+        raise ValueError(
+            "calculator image path must use canonical POSIX separators"
+        )
+    relative = PurePosixPath(relative_text)
+    if (
+        relative.is_absolute()
+        or ".." in relative.parts
+        or "." in relative.parts
+        or str(relative) != relative_text
+    ):
+        raise ValueError("calculator image path must be relative and canonical")
+    image_path = (evidence_root / Path(*relative.parts)).resolve()
+    if not image_path.is_relative_to(evidence_root):
+        raise ValueError("calculator image path escapes the evidence root")
+    if not image_path.is_file():
+        raise ValueError("calculator image is missing: %s" % relative_text)
+    with image_path.open("rb") as image_handle:
+        if image_handle.read(8) != b"\x89PNG\r\n\x1a\n":
+            raise ValueError("calculator image is not a PNG: %s" % relative_text)
+    _validate_calculator_image(record, image_path, relative_text)
+
+
 def validate_evidence_bundle(evidence_root: Path) -> list[dict[str, object]]:
     """Validate a native calculator evidence bundle after download or relocation."""
     evidence_root = evidence_root.resolve()
@@ -147,56 +195,27 @@ def validate_evidence_bundle(evidence_root: Path) -> list[dict[str, object]]:
     if not isinstance(evidence, list):
         raise ValueError("native calculator evidence must be a JSON array")
 
-    calculator_records = [record for record in evidence if "calculator" in record]
-    if {record.get("calculator") for record in calculator_records} != {
-        "binary",
-        "continuous",
-        "diagnostic",
-    }:
-        raise ValueError("native calculator evidence must cover all calculators")
+    if any(not isinstance(record, dict) or "error" in record for record in evidence):
+        raise ValueError("native calculator evidence contains invalid or failed records")
+    calculator_records = evidence
+    expected = {
+        "binary": ("valid edit and accept", "accepted", [7, 21], False),
+        "continuous": ("comma-decimal edit and accept", "accepted", [10.0, 95.5, 2.0], False),
+        "diagnostic": ("invalid edit and cancel rollback", "rejected", [12, 3, 4, 21], True),
+    }
+    if len(calculator_records) != 3 or {record.get("calculator") for record in calculator_records} != set(expected):
+        raise ValueError("native calculator evidence must contain exactly three transactions")
+    for record in calculator_records:
+        action, outcome, model, nonmutation = expected[record["calculator"]]
+        if record.get("qpa") != "windows":
+            raise ValueError("native calculator evidence requires qwindows")
+        if (record.get("action"), record.get("expected_result"), record.get("model_after"), record.get("model_nonmutation")) != (action, outcome, model, nonmutation):
+            raise ValueError("native calculator transaction did not succeed")
+        if record.get("visible") is not True or record.get("default_accept") is not True:
+            raise ValueError("native calculator was not visible with default acceptance")
 
     for record in calculator_records:
-        if record.get("capture_method") not in {
-            "QScreen.grabWindow",
-            "QWidget.grab fallback",
-            "QWidget.render(QImage) fallback",
-        }:
-            raise ValueError("calculator capture method is invalid")
-        relative_text = record.get("image")
-        if not isinstance(relative_text, str) or not relative_text:
-            raise ValueError("calculator image path must be a non-empty string")
-        if "\\" in relative_text:
-            raise ValueError(
-                "calculator image path must use canonical POSIX separators"
-            )
-        relative = PurePosixPath(relative_text)
-        if (
-            relative.is_absolute()
-            or ".." in relative.parts
-            or "." in relative.parts
-            or str(relative) != relative_text
-        ):
-            raise ValueError("calculator image path must be relative and canonical")
-        image_path = (evidence_root / Path(*relative.parts)).resolve()
-        if not image_path.is_relative_to(evidence_root):
-            raise ValueError("calculator image path escapes the evidence root")
-        if not image_path.is_file():
-            raise ValueError("calculator image is missing: %s" % relative_text)
-        with image_path.open("rb") as image_handle:
-            if image_handle.read(8) != b"\x89PNG\r\n\x1a\n":
-                raise ValueError("calculator image is not a PNG: %s" % relative_text)
-        expected_size = record.get("image_size")
-        if not isinstance(expected_size, int) or expected_size <= 0:
-            raise ValueError("calculator image size must be a positive integer")
-        if image_path.stat().st_size != expected_size:
-            raise ValueError("calculator image size does not match: %s" % relative_text)
-        expected_hash = record.get("image_sha256")
-        if not isinstance(expected_hash, str) or len(expected_hash) != 64:
-            raise ValueError("calculator image SHA256 is invalid")
-        if _sha256(image_path) != expected_hash:
-            raise ValueError(
-                "calculator image SHA256 does not match: %s" % relative_text
-            )
+        _validate_calculator_capture(record, evidence_root)
     return evidence
 
 

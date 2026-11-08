@@ -218,22 +218,30 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._commit_error.show()
 
     def _commit(self):
-        for widget, label in (
-            (self.plot_lb_le, "Lower axis bound"),
-            (self.plot_ub_le, "Upper axis bound"),
-        ):
-            value = widget.text().strip()
-            if value and value != "[default]":
+        axes = [("X-axis", self.plot_lb_le, self.plot_ub_le)]
+        if self.plot_type == "sroc":
+            axes.append(("Y-axis", self.sroc_y_lower, self.sroc_y_upper))
+        for axis, lower, upper in axes:
+            values: list[float | None] = []
+            for widget, label in ((lower, "lower"), (upper, "upper")):
+                text = widget.text().strip()
+                if not text or text == "[default]":
+                    values.append(None)
+                    continue
                 try:
-                    valid = math.isfinite(float(value))
+                    value = float(text)
                 except ValueError:
-                    valid = False
-                if not valid:
-                    self.mark_commit_failed(
-                        f"{label} must be a finite number, or leave it blank for automatic limits."
-                    )
+                    value = math.nan
+                if not math.isfinite(value):
+                    self.mark_commit_failed(f"{axis} {label} bound must be a finite number, or leave it blank for automatic limits.")
                     widget.setFocus()
                     return
+                values.append(value)
+            low, high = values
+            if low is not None and high is not None and low >= high:
+                self.mark_commit_failed(f"{axis} lower bound must be less than the upper bound.")
+                lower.setFocus()
+                return
         if not self._validate_ticks():
             return
         self._commit_outcome = None
@@ -265,7 +273,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                     self.x_ticks_le.setFocus()
                 return False
             measure = str(self._scalar(self._params.get("measure", "")))
-            if measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"} and self.axis_scale.currentData() != "natural" and any(value <= 0 for value in values):
+            if self.plot_type not in {"regression", "sroc"} and measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"} and self.axis_scale.currentData() != "natural" and any(value <= 0 for value in values):
                 self.mark_commit_failed("X-axis ticks must be positive for a logarithmic effect axis.")
                 if focus:
                     self.x_ticks_le.setFocus()
@@ -485,7 +493,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                 self.sroc_marker_area.setCurrentIndex(1 if marker == "sample-size" else 0)
                 self.sroc_show_labels.setChecked(self._bool_param("fp_show_labels", False))
                 self.sroc_extrapolate.setChecked(self._bool_param("fp_extrapolate", False))
-                self._set_text(self.sroc_curve_color, self._params.get("fp_curve_color", "#2f5597"))
+                self._set_text(self.sroc_curve_color, self._params.get("fp_curve_color") or self._params.get("fp_accent_color") or "#2f5597")
                 self._set_text(self.sroc_confidence_color, self._params.get("fp_confidence_color", "#2f5597"))
                 self._set_text(self.sroc_prediction_color, self._params.get("fp_prediction_color", "#b45f06"))
                 self.sroc_curve_lty.setCurrentIndex(max(0, self._int_param("fp_curve_lty", 1) - 1))

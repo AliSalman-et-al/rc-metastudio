@@ -113,64 +113,83 @@ def _is_exact_window_registration(node: ast.AST, expected_role: str) -> bool:
     )
 
 
+def _registered_in(statements: list[ast.stmt], role: str, *, annotated: bool) -> bool:
+    for statement in statements:
+        if isinstance(statement, (ast.Return, ast.Raise)):
+            break
+        kinds = (ast.Expr, ast.Assign, ast.AnnAssign) if annotated else (ast.Expr, ast.Assign)
+        if isinstance(statement, kinds) and statement.value is not None and _is_exact_window_registration(statement.value, role):
+            return True
+    return False
+
+
+def _calls_configure(statement: ast.stmt) -> bool:
+    if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+        return False
+    func = statement.value.func
+    return (isinstance(func, ast.Attribute) and func.attr == "_configure_window"
+            and isinstance(func.value, ast.Name) and func.value.id == "self")
+
+
+def _class_registers(target: ast.ClassDef | None, role: str) -> bool:
+    if target is None:
+        return False
+    # Match the first definition, as the original scan did.
+    initializer = next((node for node in target.body if isinstance(node, ast.FunctionDef) and node.name == "__init__"), None)
+    configure = next((node for node in target.body if isinstance(node, ast.FunctionDef) and node.name == "_configure_window"), None)
+    if initializer is None:
+        return False
+    for statement in initializer.body:
+        if configure is not None and _calls_configure(statement) and _registered_in(configure.body, role, annotated=False):
+            return True
+        if isinstance(statement, (ast.Return, ast.Raise)):
+            break
+        if _registered_in([statement], role, annotated=True):
+            return True
+    return False
+
+
+def _parse_source(source: Path) -> ast.Module | None:
+    try:
+        return ast.parse(source.read_text(encoding="utf-8")) if source.exists() else None
+    except SyntaxError:
+        return None
+
+
+def _audit_registrations(source_dir: Path) -> list[OwnershipFinding]:
+    findings: list[OwnershipFinding] = []
+    parsed_sources: dict[Path, ast.Module | None] = {}
+    for form_name, registrations in TOP_LEVEL_FORM_INVENTORY.items():
+        for source_name, class_name, role in registrations:
+            source = source_dir / source_name
+            if source not in parsed_sources:
+                parsed_sources[source] = _parse_source(source)
+            tree = parsed_sources[source]
+            target = next((node for node in (tree.body if tree is not None else ())
+                           if isinstance(node, ast.ClassDef) and node.name == class_name), None)
+            if not _class_registers(target, role):
+                findings.append(OwnershipFinding(source, f"{class_name} for {form_name} does not explicitly register {role}"))
+    return findings
+
+
 def audit_top_level_form_ownership(
     forms_dir: Path, source_dir: Path
 ) -> tuple[OwnershipFinding, ...]:
     findings: list[OwnershipFinding] = []
     actual_top_levels: set[str] = set()
     for path in forms_dir.glob("*.ui"):
-        top = ET.parse(path).getroot().find("widget")
+        try:
+            top = ET.parse(path).getroot().find("widget")
+        except ET.ParseError:
+            continue
         if top is not None and top.get("class") in TOP_LEVEL_CLASSES:
             actual_top_levels.add(path.name)
 
     expected = set(TOP_LEVEL_FORM_INVENTORY)
     for missing in sorted(actual_top_levels - expected):
-        findings.append(
-            OwnershipFinding(
-                forms_dir / missing,
-                "top-level form has no authoritative inventory entry",
-            )
-        )
+        findings.append(OwnershipFinding(forms_dir / missing, "top-level form has no authoritative inventory entry"))
     for stale in sorted(expected - actual_top_levels):
-        findings.append(
-            OwnershipFinding(
-                forms_dir / stale,
-                "inventory entry is not a canonical top-level form",
-            )
-        )
+        findings.append(OwnershipFinding(forms_dir / stale, "inventory entry is not a canonical top-level form"))
 
-    parsed_sources: dict[Path, ast.Module | None] = {}
-    for form_name, registrations in TOP_LEVEL_FORM_INVENTORY.items():
-        for source_name, class_name, role in registrations:
-            source = source_dir / source_name
-            if source not in parsed_sources:
-                parsed_sources[source] = (
-                    ast.parse(source.read_text(encoding="utf-8"))
-                    if source.exists()
-                    else None
-                )
-            tree = parsed_sources[source]
-            target_class = next(
-                (
-                    node
-                    for node in (tree.body if tree is not None else ())
-                    if isinstance(node, ast.ClassDef) and node.name == class_name
-                ),
-                None,
-            )
-            exact_registration = (
-                any(
-                    _is_exact_window_registration(node, role)
-                    for node in ast.walk(target_class)
-                )
-                if target_class is not None
-                else False
-            )
-            if not exact_registration:
-                findings.append(
-                    OwnershipFinding(
-                        source,
-                        f"{class_name} for {form_name} does not explicitly register {role}",
-                    )
-                )
+    findings.extend(_audit_registrations(source_dir))
     return tuple(findings)

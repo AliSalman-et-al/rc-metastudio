@@ -26,6 +26,8 @@ def compare_golden_baseline(reference, current, exceptions=None, manifest=None):
     )
     reference_rows = reference.get("curated_golden_set", reference.get("results", []))
     reference_by_id = _by_id(reference_rows)
+    if not reference_rows:
+        raise ValueError("comparison requires nonempty reference and current cases")
     rows = []
     for missing_id in sorted(set(manifest_rows) - set(reference_by_id)):
         rows.append(
@@ -59,7 +61,7 @@ def compare_golden_baseline(reference, current, exceptions=None, manifest=None):
                 "Current capture contains a case absent from the frozen baseline.",
             )
         )
-    _apply_scoped_exceptions(rows, exceptions)
+    _apply_scoped_exceptions(rows, exceptions, reference_by_id, current_by_id)
     return {
         "mode": "analysis-regression-comparison",
         "rows": rows,
@@ -415,7 +417,7 @@ def _maybe_accepted(classification, exception):
     )
 
 
-def _apply_scoped_exceptions(rows, exceptions):
+def _apply_scoped_exceptions(rows, exceptions, reference_by_id, current_by_id):
     for row in rows:
         for exception in exceptions:
             if "accepted_details" not in exception:
@@ -430,9 +432,47 @@ def _apply_scoped_exceptions(rows, exceptions):
             classifications = exception.get("accepted_classifications", [])
             if classifications and row["classification"] not in classifications:
                 continue
+            detail = row["detail"]
+            if detail.startswith("Text section ") and detail.endswith(" changed."):
+                section = detail[len("Text section "):-len(" changed.")]
+            elif detail.startswith("Unexpected text section ") and detail.endswith(" was produced."):
+                section = detail[len("Unexpected text section "):-len(" was produced.")]
+            else:
+                continue
+            before = reference_by_id[row["id"]].get("texts", {}).get(section)
+            after = current_by_id[row["id"]].get("texts", {}).get(section)
+            binding = exception.get("accepted_texts", {}).get(section)
+            # The documented inference addition has one value for these default-z cases.
+            if exception.get("id") == "inference-method-output-section":
+                binding = {"before": None, "after": "Normal approximation"}
+            bound = binding is not None and binding == {"before": before, "after": after}
+            reviewed_labels = (exception.get("id") == "meta-regression-output-improvements"
+                               and section == "Summary"
+                               and _reviewed_scale_labels(before, after, row["id"]))
+            if not bound and not reviewed_labels:
+                continue
             row["classification"] = ACCEPTED_EXCEPTION
             row["exception"] = exception.get("reason", "")
             break
+
+
+def _reviewed_scale_labels(before, after, case_id):
+    if not isinstance(before, str) or not isinstance(after, str):
+        return False
+    scales = {"amino-binary-meta-regression": ("Odds Ratio", "Odds ratio", "log"),
+              "continuous-meta-regression": ("Standardized Mean Difference", "Standardized mean difference", "standardized")}
+    if case_id not in scales:
+        return False
+    old_metric, new_metric, scale = scales[case_id]
+    reviewed = before.replace("Metric: " + old_metric, "Metric: " + new_metric)
+    reviewed = reviewed.replace("Std. error", "SE (" + scale + " scale)")
+    for old, new in (("Residual heterogeneity (t²)", "Residual heterogeneity (τ²)"),
+                     ("SE of t²", "SE of τ²"),
+                     ("Residual heterogeneity (t)", "Residual heterogeneity (τ)")):
+        reviewed = reviewed.replace(old, new)
+    # Wider labels realign the same printed table cells; retain line order,
+    # every scientific token and every number, including non-oracle prose.
+    return [line.split() for line in reviewed.splitlines()] == [line.split() for line in after.splitlines()]
 
 
 def _row(bundle, classification, detail, exception=None):
@@ -450,7 +490,15 @@ def _row(bundle, classification, detail, exception=None):
 
 
 def _by_id(items):
-    return dict((item["id"], item) for item in items)
+    result = {}
+    for item in items:
+        if item["id"] in result:
+            raise ValueError("duplicate case identity: %s" % item["id"])
+        labels = [artifact["label"] for artifact in item.get("artifacts", [])]
+        if len(labels) != len(set(labels)):
+            raise ValueError("duplicate artifact identity: %s" % item["id"])
+        result[item["id"]] = item
+    return result
 
 
 def _manifest_rows(manifest):

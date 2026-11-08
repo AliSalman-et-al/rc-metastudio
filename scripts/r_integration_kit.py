@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 import hashlib
 import importlib.metadata
 import json
@@ -13,6 +14,8 @@ import platform
 import shutil
 import subprocess
 import sys
+import tempfile
+from collections.abc import Iterator
 from typing import cast
 from urllib.parse import urlparse
 
@@ -31,6 +34,41 @@ OFFICIAL_R_URLS = {
     "windows-x64": "https://cloud.r-project.org/bin/windows/base/R-4.6.1-win.exe",
     "macos-arm64": "https://cloud.r-project.org/bin/macosx/sonoma-arm64/base/R-4.6.1-arm64.pkg",
 }
+# Package identities shipped by the pinned official R distribution. DESCRIPTION
+# Priority is supplied by the package itself and is not provenance authority.
+OFFICIAL_R_PACKAGES = frozenset(
+    {
+        "base",
+        "compiler",
+        "datasets",
+        "graphics",
+        "grDevices",
+        "grid",
+        "methods",
+        "parallel",
+        "splines",
+        "stats",
+        "stats4",
+        "tcltk",
+        "tools",
+        "utils",
+        "boot",
+        "class",
+        "cluster",
+        "codetools",
+        "foreign",
+        "KernSmooth",
+        "lattice",
+        "MASS",
+        "Matrix",
+        "mgcv",
+        "nlme",
+        "nnet",
+        "rpart",
+        "spatial",
+        "survival",
+    }
+)
 WINDOWS_R_SHA256 = "c5424c40cd70ef85765a55d2ff96bb602b5f30ed536938ff004f14db5db3c2df"
 WINDOWS_R_SIGNER_SUBJECT = "CN=Martyn Plummer, O=Martyn Plummer, S=West Midlands, C=GB"
 WINDOWS_R_SIGNER_THUMBPRINT = "f356fc6cd245d722f4a82697473da5995cb42975"
@@ -526,8 +564,7 @@ def _unclaimed_installed_packages(
     unclaimed = sorted(
         record["name"]
         for record in installed
-        if record.get("priority") not in {"base", "recommended"}
-        and record["name"] not in claims
+        if record["name"] not in OFFICIAL_R_PACKAGES and record["name"] not in claims
     )
     return unclaimed
 
@@ -1212,6 +1249,25 @@ def _build_manifest(
     return manifest
 
 
+@contextmanager
+def _staged_output(destination: Path) -> Iterator[Path]:
+    if destination.exists():
+        raise KitError(f"integration-kit destination already exists: {destination}")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    staging = Path(
+        tempfile.mkdtemp(prefix=f".{destination.name}-", dir=destination.parent)
+    )
+    try:
+        yield staging
+        staging.rename(destination)
+    except BaseException:
+        print(
+            f"Incomplete integration-kit evidence retained at {staging}",
+            file=sys.stderr,
+        )
+        raise
+
+
 def build(args: argparse.Namespace) -> dict[str, object]:
     target = args.target
     _, architecture, minimum_os = _validate_build_target(
@@ -1221,41 +1277,48 @@ def build(args: argparse.Namespace) -> dict[str, object]:
     runtime, library, bridge, provenance, library_relative = _build_inputs(args, target)
     _validate_staged_r_version(runtime, library, target)
     output = args.output.resolve()
-    if output.exists():
-        raise KitError(f"integration-kit output already exists: {output}")
-    (output / "runtime").parent.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(runtime, output / "runtime", symlinks=True)
-    (output / "bridge").mkdir()
-    shutil.copy2(bridge, output / "bridge" / bridge.name)
-    if target.startswith("macos-"):
-        relocate_macos_api_bridge(output, output / "bridge" / bridge.name)
-    rpy2 = _record_mapping(provenance, "rpy2", "provenance")
-    rpy2["built_bridge_sha256"] = rpy2["bridge_sha256"]
-    rpy2["bridge_sha256"] = sha256_file(output / "bridge" / bridge.name)
-    source_payload = copy_source_payload(
-        args.source_payload.resolve(strict=True), provenance, output / "source-archives"
-    )
-    _copy_python_cache(args, output)
-    if target.startswith("windows-"):
-        _copy_windows_python_runtime(output)
-    copied_library = output / "runtime" / library_relative
-    copy_license_inventory(output / "runtime", copied_library, output / "licenses")
-    (output / "licenses" / "README.txt").write_text(
-        "Copied license texts are retained here; package metadata is in sources.json.\n",
-        encoding="utf-8",
-    )
-    installed_packages = installed_package_inventory(library)
-    validate_installed_provenance(installed_packages, provenance)
-    _write_sources(output, args, provenance, source_payload, installed_packages)
-    if target.startswith("macos-"):
-        if args.runtime_profile is None or not args.runtime_profile.is_file():
-            raise KitError("macOS integration kit requires runtime-profile evidence")
-        (output / "evidence").mkdir()
-        shutil.copy2(args.runtime_profile, output / "evidence" / "runtime-profile.json")
-    _write_native_inventory(output, target, architecture)
-    return _build_manifest(
-        output, target, architecture, minimum_os, library_relative, bridge, args
-    )
+    with _staged_output(output) as output:
+        shutil.copytree(runtime, output / "runtime", symlinks=True)
+        (output / "bridge").mkdir()
+        shutil.copy2(bridge, output / "bridge" / bridge.name)
+        if target.startswith("macos-"):
+            relocate_macos_api_bridge(output, output / "bridge" / bridge.name)
+        rpy2 = _record_mapping(provenance, "rpy2", "provenance")
+        rpy2["built_bridge_sha256"] = rpy2["bridge_sha256"]
+        rpy2["bridge_sha256"] = sha256_file(output / "bridge" / bridge.name)
+        provenance["rpy2"] = rpy2
+        source_payload = copy_source_payload(
+            args.source_payload.resolve(strict=True),
+            provenance,
+            output / "source-archives",
+        )
+        _copy_python_cache(args, output)
+        if target.startswith("windows-"):
+            _copy_windows_python_runtime(output)
+        copied_library = output / "runtime" / library_relative
+        copy_license_inventory(output / "runtime", copied_library, output / "licenses")
+        (output / "licenses" / "README.txt").write_text(
+            "Copied license texts are retained here; package metadata is in sources.json.\n",
+            encoding="utf-8",
+        )
+        installed_packages = installed_package_inventory(library)
+        validate_installed_provenance(installed_packages, provenance)
+        _write_sources(output, args, provenance, source_payload, installed_packages)
+        if target.startswith("macos-"):
+            if args.runtime_profile is None or not args.runtime_profile.is_file():
+                raise KitError(
+                    "macOS integration kit requires runtime-profile evidence"
+                )
+            (output / "evidence").mkdir()
+            shutil.copy2(
+                args.runtime_profile, output / "evidence" / "runtime-profile.json"
+            )
+        _write_native_inventory(output, target, architecture)
+        manifest = _build_manifest(
+            output, target, architecture, minimum_os, library_relative, bridge, args
+        )
+
+    return manifest
 
 
 def _manifest_versions_valid(manifest: dict[str, object]) -> bool:
@@ -1437,10 +1500,9 @@ def verify(root: Path, *, target: str | None = None) -> dict[str, object]:
 def consume(args: argparse.Namespace) -> dict[str, object]:
     manifest = verify(args.kit, target=args.target)
     destination = args.destination.resolve()
-    if destination.exists():
-        raise KitError(f"integration-kit destination already exists: {destination}")
-    shutil.copytree(args.kit.resolve(), destination, symlinks=True)
-    verify(destination, target=args.target)
+    with _staged_output(destination) as staging:
+        shutil.copytree(args.kit.resolve(), staging, symlinks=True, dirs_exist_ok=True)
+        verify(staging, target=args.target)
     return manifest
 
 

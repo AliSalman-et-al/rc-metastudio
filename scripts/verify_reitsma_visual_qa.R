@@ -161,25 +161,41 @@ qa_row <- function(case, family, kind, workflow, scenario, image, error=NA_chara
              sha256=sha256, pdf_contract=pdf.contract, error=error, stringsAsFactors=FALSE)
 }
 
+qa_check_export <- function(image, labels, colors) {
+  extension <- tolower(tools::file_ext(image))
+  if (extension %in% c("svg", "svgz")) qa_svg_semantics(image, labels, colors)
+  else {
+    qa_binary_export(image, extension)
+    if (identical(extension, "pdf")) {
+      contract <- qa_pdf_contract(image)
+      if (!identical(contract$pages, 1L) || !isTRUE(contract$has_xref_or_xref_stream) || !isTRUE(contract$has_eof))
+        stop("PDF failed the normalized one-page/trailer contract: ", image, call.=FALSE)
+    }
+  }
+}
+
+qa_retain_reports <- function(root) {
+  for (name in c("manifest.csv", "descriptor-contract.json")) {
+    previous <- file.path(root, name)
+    if (file.exists(previous) && !file.copy(previous, tempfile(paste0(name, "-previous-"), tmpdir=root)))
+      stop("Could not retain previous visual QA report", call.=FALSE)
+  }
+}
+
 qa_render <- function(output.root=root) {
   root <- normalizePath(output.root, winslash="/", mustWork=FALSE)
   dir.create(root, recursive=TRUE, showWarnings=FALSE)
+  report.root <- root
+  qa_retain_reports(report.root)
+  root <- tempfile("attempt-", tmpdir=report.root)
+  if (!dir.create(root)) stop("Could not create fresh visual QA output", call.=FALSE)
   qa_load_reitsma()
   data <- qa_data(); rows <- list()
   add <- function(case, family, kind, workflow, scenario, image, labels, colors=character(), draw=function(path) invisible(path)) {
     err <- NA_character_
     tryCatch({
       draw(image)
-      extension <- tolower(tools::file_ext(image))
-      if (extension %in% c("svg", "svgz")) qa_svg_semantics(image, labels, colors)
-      else {
-        qa_binary_export(image, extension)
-        if (identical(extension, "pdf")) {
-          contract <- qa_pdf_contract(image)
-          if (!identical(contract$pages, 1L) || !isTRUE(contract$has_xref_or_xref_stream) || !isTRUE(contract$has_eof))
-            stop("PDF failed the normalized one-page/trailer contract: ", image, call.=FALSE)
-        }
-      }
+      qa_check_export(image, labels, colors)
     }, error=function(e) err <<- conditionMessage(e))
     rows[[length(rows)+1L]] <<- qa_row(case, family, kind, workflow, scenario, image, err)
   }
@@ -237,8 +253,8 @@ qa_render <- function(output.root=root) {
   }
   manifest <- do.call(rbind, rows)
   if (!requireNamespace("jsonlite", quietly=TRUE)) stop("jsonlite is required for descriptor QA.", call.=FALSE)
-  jsonlite::write_json(descriptor.contract, file.path(root, "descriptor-contract.json"), auto_unbox=TRUE, pretty=TRUE)
-  utils::write.csv(manifest, file.path(root, "manifest.csv"), row.names=FALSE)
+  jsonlite::write_json(descriptor.contract, file.path(report.root, "descriptor-contract.json"), auto_unbox=TRUE, pretty=TRUE)
+  utils::write.csv(manifest, file.path(report.root, "manifest.csv"), row.names=FALSE)
   if (any(!is.na(manifest$error) & nzchar(manifest$error))) stop("Reitsma visual QA failures.", call.=FALSE)
   manifest
 }

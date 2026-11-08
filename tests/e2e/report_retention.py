@@ -7,6 +7,7 @@ import subprocess
 from pathlib import Path
 import sys
 import unicodedata
+from uuid import uuid4
 import xml.etree.ElementTree as ET
 
 from docx import Document
@@ -139,12 +140,8 @@ def capture(view, directory):
                  for s in view.manuscript.sections for t in s.tables]
     key = hashlib.sha256(json.dumps([held, held_text, held_notes, presented, view.manuscript.title,
                                     view.manuscript.methods, view.manuscript.results], sort_keys=True).encode()).hexdigest()[:16]
-    target = directory / key
+    target = directory / (key + "-" + uuid4().hex[:8])
     view._copy_report()
-    if (target / 'audit.json').exists():
-        data = json.loads((target / 'audit.json').read_text(encoding="utf-8"))
-        data['directory'] = str(target)
-        return data
     target.mkdir(exist_ok=True)
     report = view.manuscript
     (target / 'copy.html').write_text(required(required(QApplication.clipboard(), 'clipboard').mimeData(), 'copied report').html(), encoding="utf-8")
@@ -226,8 +223,9 @@ def expected_effect_values(values, headers, low, high, metric, vertical, title, 
         context = next((row[h] for h in headers if h.startswith(('Study added', 'Study omitted'))), title if vertical else metric)
         label = row.get('Term', row.get('Subgroups', context))
         statistic = next((row.get(h, overall.get(h)) for h in ('t', 'z', 'Z', 'z-value', 't-value') if h in row or h in overall), '—')
-        se = next((value for key, value in {**calculation, **row}.items() if key.startswith('SE')), '—')
-        rows.append((label[:1].upper() + label[1:], row['Estimate'], row[low] + ' to ' + row[high], se, statistic, expected_p(row.get('p-value', overall.get('p-value', '')))))
+        se_header, se = next(((key, value) for key, value in {**calculation, **row}.items() if key.startswith('SE')), ('SE', '—'))
+        se_scale = se_header.removeprefix('SE').strip() or '—'
+        rows.append((label[:1].upper() + label[1:], row['Estimate'], row[low] + ' to ' + row[high], se, se_scale, statistic, expected_p(row.get('p-value', overall.get('p-value', '')))))
     return rows
 
 
@@ -251,6 +249,7 @@ def expected_fit(result):
         return tuple((s.title, s.value) for s in result.sections if s.title in ('Data and eligibility', 'Tests'))
     rows = list(result.manuscript_model_info)
     for section in result.sections:
+        rows.extend(('Prediction interval note (' + section.title + ')', note) for note in section.paragraphs if 'prediction' in note.casefold())
         for table in section.tables:
             rows.extend(expected_fit_table(result, section, table))
     return tuple(rows)
@@ -328,7 +327,7 @@ def presentation_rows(rows, digits):
 
 def assert_retained_table(view, section, source):
     title = source.title if section.title == source.title else section.title + ' — ' + source.title
-    tables = [table for table in view._report_tables if table.title == 'Full-precision results']
+    tables = [table for table in view._report_tables if table.title == 'Detailed results']
     assert len(tables) == 1, [table.title for table in view._report_tables]
     expected = tuple((title, '\n'.join(f'{h}: {v}' for h, v in zip(source.headers, row))) for row in source.rows)
     observed = tuple(row for row in tables[0].rows if row[0] == title)
@@ -341,6 +340,10 @@ def assert_report(view):
     pooled = next((table for table in tables if table.title == 'Pooled effect'), None)
     fit = next((table for table in tables if table.title == 'Model fit'), None)
     studies = next((t for t in tables if t.title == 'Study results'), None)
+    for section in view.results.sections:
+        for note in section.paragraphs:
+            if 'prediction' in note.casefold():
+                assert note in view.manuscript.results, (section.title, note)
     structured = any(s.tables for s in view.results.sections)
     expected_rows = expected_pooled(view.results) if structured else tuple(
         (s.title, s.value) for s in view.results.sections
@@ -350,7 +353,7 @@ def assert_report(view):
     if structured and expected_rows:
         assert pooled is not None
         level = next(header for header in pooled.headers if header.endswith('% CI'))
-        indexes = [i for i in range(6) if any(row[i] not in ('', '—', 'NA') for row in expected_rows)]
+        indexes = [i for i in range(7) if any(row[i] not in ('', '—', 'NA') for row in expected_rows)]
         statistic = 'z'
         for section in view.results.sections:
             for source in section.tables:
@@ -359,7 +362,7 @@ def assert_report(view):
                 statistic = 't'
                 if 'df' in source.headers:
                     statistic = f"t (df = {source.rows[-1][source.headers.index('df')]})"
-        full_headers = [('Effect', 'Estimate', level, 'SE', statistic, 'p')]
+        full_headers = [('Effect', 'Estimate', level, 'SE', 'SE scale', statistic, 'p')]
         assert pooled.headers in [tuple(headers[i] for i in indexes) for headers in full_headers]
         expected_rows = presentation_rows(expected_rows, view.results.manuscript_digits)
         assert pooled.rows == tuple(tuple(row[i] for i in indexes) for row in expected_rows), (pooled.rows, expected_rows, indexes)
@@ -389,7 +392,7 @@ def assert_report(view):
     for section in view.results.sections:
         for source in section.tables:
             title = source.title if section.title == source.title else section.title + ' — ' + source.title
-            retained = next(t for t in tables if t.title == 'Full-precision results')
+            retained = next(t for t in tables if t.title == 'Detailed results')
             expected = tuple((title, '\n'.join(f'{h}: {v}' for h, v in zip(source.headers, row))) for row in source.rows)
             assert tuple(row for row in retained.rows if row[0] == title) == expected, title
         if section.tables and section.paragraphs:
@@ -405,7 +408,7 @@ def assert_report(view):
                                  for n, line in enumerate(filter(None, section.value.splitlines()), 1))
                 assert references[0].paragraphs == expected
             else:
-                retained = next(t for t in tables if t.title == 'Full-precision results')
+                retained = next(t for t in tables if t.title == 'Detailed results')
                 assert tuple(row for row in retained.rows if row[0] == section.title) == tuple((section.title, line) for line in section.value.splitlines())
     data = capture(view, Path(sys.argv[2]) / 'report-retention')
     assert_exports(view, data)
