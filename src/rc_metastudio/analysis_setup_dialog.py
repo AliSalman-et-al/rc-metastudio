@@ -1120,18 +1120,22 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         context += "."
         return context + self._correction_context(applied_parameters)
 
-    def _correction_context(self, applied_parameters):
-        if self.data_type not in ("binary", "diagnostic") or not applied_parameters.get("adjust"):
-            return ""
+    def _correction_raw_data(self):
         raw = self._manuscript_raw_data()
         if self.data_type == "binary":
             if any(study.analysis_unit.calculator_source(
                 self.model.current_effect, self.model.get_current_arm_key()
             ) == "entered" for study in self._manuscript_studies()):
-                return ""
+                return []
             if self.model.current_effect in ONE_ARM_METRICS:
                 raw = [row[:2] for row in raw]
-        if not raw or not all(raw_data_is_complete(row) for row in raw):
+        return raw if all(raw_data_is_complete(row) for row in raw) else []
+
+    def _correction_context(self, applied_parameters):
+        if self.data_type not in ("binary", "diagnostic") or not applied_parameters.get("adjust"):
+            return ""
+        raw = self._correction_raw_data()
+        if not raw:
             return ""
         policy = applied_parameters.get("correction.policy", applied_parameters.get("to", "only0"))
         zero = self._has_zero_cell(raw)
