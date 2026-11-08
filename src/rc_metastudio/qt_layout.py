@@ -7,13 +7,13 @@ no root-fitting, coordinate inference, or descendant-repair surface.
 
 from PyQt6.QtCore import QEvent, QObject, QSize, Qt
 from PyQt6.QtGui import QIcon, QFont, QPalette, QColor
-from PyQt6.QtWidgets import QApplication, QAbstractSpinBox, QComboBox, QHeaderView, QProxyStyle, QScrollArea, QSizePolicy, QStyle, QToolButton, QStyleOption, QWidget
+from PyQt6.QtWidgets import QApplication, QAbstractScrollArea, QAbstractSpinBox, QComboBox, QHeaderView, QProxyStyle, QSizePolicy, QStyle, QToolButton, QStyleOption, QWidget
 
 
 class _ScrollSettingsFilter(QObject):
     """Route form scrolling past settings; arrows and popup selection still edit."""
 
-    def __init__(self, scroll_area: QScrollArea):
+    def __init__(self, scroll_area: QAbstractScrollArea):
         super().__init__(scroll_area)
         self.viewport = scroll_area.viewport()
 
@@ -26,7 +26,7 @@ class _ScrollSettingsFilter(QObject):
         return super().eventFilter(watched, event)
 
 
-def protect_scroll_settings(scroll_area: QScrollArea) -> QObject:
+def protect_scroll_settings(scroll_area: QAbstractScrollArea) -> QObject:
     policy = _ScrollSettingsFilter(scroll_area)
     for control in (*scroll_area.findChildren(QComboBox), *scroll_area.findChildren(QAbstractSpinBox)):
         control.installEventFilter(policy)
