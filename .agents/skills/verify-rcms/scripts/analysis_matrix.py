@@ -243,6 +243,19 @@ def run(
         report = app.clipboard().text()
         from tests.e2e.report_retention import assert_report
         assert_report(view)
+        if (scenario in {"analysis-data-onearm-mean", "analysis-data-onearm-proportion",
+                         "analysis-data-reg-coef", "analysis-data-generic-effect"}
+                and group_names is None and prepare is None
+                and metric_override is None and workflow == "standard"):
+            text = view.report_text.toPlainText()
+            manuscript = view.manuscript_text.toPlainText()
+            record("onearm-participant-scope", view, report=text, manuscript=manuscript)
+            assert "Other group" not in manuscript, manuscript
+            assert "Group: Group" in manuscript, manuscript
+            if scenario in {"analysis-data-onearm-mean", "analysis-data-onearm-proportion"}:
+                assert re.search(r"Participants in Group\s+135\b", text), text
+            else:
+                assert re.search(r"Participants\s+Not available", text), text
         if scenario.startswith("analysis-diagnostic-regression"):
             assert "Image Order" not in view.texts
             assert "diagnostic.reitsma.sensitivity.coefficients" not in view.report_text.toPlainText()
@@ -481,6 +494,36 @@ def run(
         ]
         assert after == before, (after, before)
         record("data-reopened", window, data_type=name, metric=metric, cells=after)
+        if name == "generic-effect":
+            from advanced_workflows import modal
+            from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
+            observations = []
+            for se in (.1, 0.0):
+                if se == 0:
+                    assert window.model.setData(window.model.index(0, window.model.OUTCOMES[1]), "0")
+
+                def inspect_calculator(dialog):
+                    bounds = QtCore.QRect(dialog.wald_readout.mapTo(dialog, QtCore.QPoint()), dialog.wald_readout.size())
+                    observations.append((se, dialog.wald_readout.text(), dialog.wald_readout.isVisible(), dialog.rect().contains(bounds)))
+                    record("generic-existing-uncertainty", dialog, se=se, readout=dialog.wald_readout.text(),
+                           visible=dialog.wald_readout.isVisible(), contained=dialog.rect().contains(bounds))
+                    click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+
+                header = window.tableView.verticalHeader()
+                modal(app, ContinuousDataDialog, inspect_calculator,
+                      lambda: QTest.mouseClick(header.viewport(), QtCore.Qt.MouseButton.LeftButton,
+                                               QtCore.Qt.KeyboardModifier.NoModifier,
+                                               QtCore.QPoint(header.viewport().width() // 2,
+                                                            header.sectionViewportPosition(0) + header.sectionSize(0) // 2)))
+            assert window.model.setData(window.model.index(0, window.model.OUTCOMES[1]), ".1")
+            assert window.save() and window.open(window.out_path, raise_on_error=True)
+            restored = [[str(window.model.data(window.model.index(row, column))) for column in columns] for row in range(6)]
+            assert restored == before, (restored, before)
+            for se, readout, shown, contained in observations:
+                assert shown and contained, observations
+                assert readout.startswith(f"SE: {se:.4f}"), observations
+                if se == 0:
+                    assert "Z:" not in readout and "Two-sided P" not in readout, readout
         workflow = "standard"
         method = family + ".random"
         metrics = ("sens", "spec") if family == "diagnostic" else ()
@@ -633,6 +676,11 @@ def run(
         workflow = workflow_override
     if metrics_override:
         metrics = metrics_override
+    if metric_override is not None:
+        if window.model.current_effect != metric_override:
+            window.tableView.set_metric_in_ui(metric_override)
+            expected = None
+        assert window.model.current_effect == metric_override, (window.model.current_effect, metric_override)
     if prepare:
         prepare(window)
     action = {

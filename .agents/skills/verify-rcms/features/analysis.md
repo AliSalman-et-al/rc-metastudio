@@ -11,7 +11,10 @@ for those checks.
 
 `options-zero-cells` checks the applied correction explanation in both the Text
 report and manuscript Methods for zero-cell-only and all-study policies. It also
-exercises a PFT analysis with the same explanation; raw grid previews can differ
+asserts the selected PFT metric and compares its pooled display and calculation-scale
+SE with an independent metafor fit and harmonic-mean inversion. The PFT report
+includes only the active Intervention arm's participant total and group heading;
+raw grid previews can differ
 from fitted study estimates when the selected analysis applies a correction.
 `rm5-import` checks that entered-only generic-IV fits omit this explanation in
 both report surfaces, including when complete counts remain stored but the
@@ -68,6 +71,12 @@ Covariate injection constructs a controlled fixture; these drives do not establi
 ## Dataset/metric matrix
 
 `analysis-data-*` starts **Dataset > New Dataset** through `action_new_dataset`, clicks the real data-type button, advances the metric/name pages, finishes, populates study cells through validated table edits, saves/reopens `typed.rcms`, then analyzes. It does not bypass wizard type selection.
+
+The standard untouched one-arm proportion and mean fixtures require their active
+Group total of 135 in the report and a single Group manuscript heading. Entered-only
+coefficient and generic fixtures require unavailable participant totals. Stored
+inactive arms remain available for metric switching. Custom names, prepared study
+subsets and alternate workflows need their own explicit participant expectations.
 
 | Scenario suffix | Arms/type | Default metric | Supported metric domain to verify after shared reconstruction changes |
 | --- | --- | --- | --- |

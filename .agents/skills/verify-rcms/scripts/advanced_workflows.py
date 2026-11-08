@@ -145,8 +145,8 @@ def authority(
     metric = metric or window.model.current_effect
     if family == "binary":
         expression = (
-            f'metafor::escalc("PR", xi={vector(0)}, ni={vector(1)})'
-            if metric == "PR"
+            f'metafor::escalc("{metric}", xi={vector(0)}, ni={vector(1)}, add=.5, to="{correction}")'
+            if metric in {"PR", "PLN", "PLO", "PAS", "PFT"}
             else f'metafor::escalc("{metric}", ai={vector(0)}, n1i={vector(1)}, ci={vector(2)}, n2i={vector(3)}, add=.5, to="{correction}", drop00=FALSE)'
         )
     elif family == "continuous":
@@ -167,6 +167,12 @@ def authority(
         if entered is None
         else f"e$yi[1] <- {entered[0]}; e$vi[1] <- {entered[1] ** 2}; "
     )
+    point, lower, upper = "as.numeric(f$b)", "f$ci.lb", "f$ci.ub"
+    if metric == "PFT":
+        point, lower, upper = (
+            f"metafor::transf.ipft.hm({value}, targs=list(ni={vector(1)}))"
+            for value in (point, lower, upper)
+        )
     result = r_bridge.execute_r_string(
         "{ e <- "
         + expression
@@ -178,7 +184,7 @@ def authority(
         + inference
         + '", level='
         + str(confidence)
-        + "); jsonlite::toJSON(list(estimate=as.numeric(f$b), lower_bound=f$ci.lb, upper_bound=f$ci.ub, standard_error=f$se, p_value=f$pval, q=f$QE, heterogeneity_p_value=f$QEp, tau_squared=f$tau2), auto_unbox=TRUE, digits=16) }"
+        + f"); jsonlite::toJSON(list(estimate={point}, lower_bound={lower}, upper_bound={upper}, standard_error=f$se, p_value=f$pval, q=f$QE, heterogeneity_p_value=f$QEp, tau_squared=f$tau2), auto_unbox=TRUE, digits=16) }}"
     )
     return json.loads(str(result[0]))
 
@@ -197,7 +203,7 @@ def compare_authority(view, expected, family, record, metric=None):
     for key, value in expected.items():
         observed_key = (
             "calculation_scale." + key
-            if (family == "diagnostic" or (family == "binary" and metric != "PR"))
+            if (family == "diagnostic" or (family == "binary" and metric not in {"PR", "PFT"}))
             and key in ("estimate", "lower_bound", "upper_bound", "standard_error")
             else key
         )
@@ -390,10 +396,18 @@ def zero_cells(app, window, record):
     view = matrix(app, window, "analysis-amino-binary-cumulative", record,
                   keep_results=True, workflow_override="standard", metric_override="PFT",
                   parameters={"to": "only0", "adjust": .5, "digits": 6, "rm.method": "DL"})
+    assert window.model.current_effect == "PFT", window.model.current_effect
+    compare_authority(view, authority(window, "binary", "DL", "z", 95, "only0"), "binary", record, metric="PFT")
     note = "A continuity correction of 0.5 was applied to studies with any zero cell."
     assert note in view.report_text.toPlainText()
     assert note in view.manuscript.methods
     record("pft-correction-report", view, correction_note=note, texts=dict(view.texts))
+    report = view.report_text.toPlainText()
+    manuscript = view.manuscript_text.toPlainText()
+    assert "Participants in Control" not in report, report
+    assert "1097" in report and "Participants in Intervention" in report, report
+    assert "Comparison: Intervention / Control" not in manuscript, manuscript
+    assert "Group: Intervention" in manuscript, manuscript
     view.close()
     window.workspace.mark_saved()
 
@@ -1397,7 +1411,11 @@ def calculators(app, window, mode, record):
                 expected_se = (upper - point) / z
                 assert f"{expected_se:.4f}" in dialog.wald_readout.text(), dialog.wald_readout.text()
                 record("asymmetric-entered-wald-source", dialog, estimate=point, lower=lower,
-                       upper=upper, source_se=expected_se, readout=dialog.wald_readout.text())
+                       upper=upper, source_se=expected_se, readout=dialog.wald_readout.text(),
+                       readout_visible=dialog.wald_readout.isVisible())
+                assert dialog.wald_readout.isVisible(), "Entered estimate hides the SE/Z/P readout"
+                bounds = QtCore.QRect(dialog.wald_readout.mapTo(dialog, QtCore.QPoint()), dialog.wald_readout.size())
+                assert dialog.rect().contains(bounds), (dialog.rect(), bounds)
             actual_entered = dialog.analysis_unit.get_entered_effect_and_ci(
                 dialog.current_effect, dialog.arm_key
             )

@@ -14,6 +14,7 @@ from PIL import Image
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtWidgets import (
     QDialog,
+    QDialogButtonBox,
     QHeaderView,
     QLabel,
     QLineEdit,
@@ -1348,7 +1349,9 @@ def test_asymmetric_entered_readout_uses_analysis_se(qapp):
             self.analysis_unit, self.arm_names = unit, ['A', 'B']
             self.current_effect, self.arm_key, self.confidence_multiplier = 'MD', 'A-B', multiplier
             self._active_input_mode = 'estimate'
-            self.content_layout = QVBoxLayout(self)
+            self.dialog_layout = QVBoxLayout(self)
+            self.buttonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok, self)
+            self.dialog_layout.addWidget(self.buttonBox)
             self.effect_text_box, self.lower_text_box, self.upper_text_box = QLineEdit(), QLineEdit(), QLineEdit()
     dialog = ReadoutDialog()
     calculator_routines.update_calculator_readout(dialog, 'continuous')

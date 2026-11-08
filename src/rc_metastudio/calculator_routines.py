@@ -519,21 +519,19 @@ def set_current_effect_from_value(
 
 
 def _wald_summary(data_type, current_effect, est, se) -> str:
-    summary = ""
-    if est is not None and se is not None:
-        if se > 0:
-            z = est / se
-            p = math.erfc(abs(z) / math.sqrt(2))
-            log_scale = current_effect in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR", "PLN"}
-            scale = ""
-            if log_scale:
-                scale = " (log scale)"
-            elif current_effect in {"Sens", "Spec", "PLO"}:
-                scale = " (logit scale)"
-            summary = f"SE{scale}: {se:.4f}"
-            if data_type != "diagnostic":
-                p_text = "<0.001" if p < 0.001 else f"{p:.3f}"
-                summary += f"    Z: {z:.4f}    Two-sided P: {p_text}"
+    if est is None or se is None:
+        return ""
+    scale = ""
+    if current_effect in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR", "PLN"}:
+        scale = " (log scale)"
+    elif current_effect in {"Sens", "Spec", "PLO"}:
+        scale = " (logit scale)"
+    summary = f"SE{scale}: {se:.4f}"
+    if data_type != "diagnostic" and se > 0:
+        z = est / se
+        p = math.erfc(abs(z) / math.sqrt(2))
+        p_text = "<0.001" if p < 0.001 else f"{p:.3f}"
+        summary += f"    Z: {z:.4f}    Two-sided P: {p_text}"
     return summary
 
 
@@ -602,12 +600,13 @@ def update_calculator_readout(dialog, data_type):
     if not hasattr(dialog, "wald_readout"):
         dialog.wald_readout = QLabel(dialog)
         dialog.wald_readout.setObjectName("calculator_wald")
+        dialog.wald_readout.setWordWrap(True)
         for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
             field.editingFinished.connect(lambda: update_calculator_readout(dialog, data_type))
         if data_type == "diagnostic":
             dialog.effect_layout.addWidget(dialog.wald_readout, 2, 0, 1, 6)
         else:
-            dialog.content_layout.addWidget(dialog.wald_readout)
+            dialog.dialog_layout.insertWidget(dialog.dialog_layout.indexOf(dialog.buttonBox), dialog.wald_readout)
     se = analysis_unit.get_se(source, current_effect, arm_key, confidence_multiplier)
     summary = _wald_summary(data_type, current_effect, est, se)
     dialog.wald_readout.setText(summary)

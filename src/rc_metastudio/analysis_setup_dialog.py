@@ -1058,15 +1058,20 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             methods += " " + correction
             details += "\n" + correction
         model_info = self._manuscript_model_info()
+        arms = self._manuscript_arms()
         return replace(result, identity=identity, details=details, software=software,
                        manuscript_context=context.split(". ")[0].rstrip(".") + ".",
                        manuscript_digits=int(applied_parameters.get("digits", 3)),
                        manuscript_title=title, manuscript_methods=methods,
-                       manuscript_metric=metric, manuscript_arms=tuple(self.model.arm_names),
+                       manuscript_metric=metric, manuscript_arms=tuple(arms),
                        manuscript_favours=tuple(label.removeprefix("Favours ").strip() for label in
-                           self.model.current_sheet.settings.get("favours_labels", ["Favours " + name for name in self.model.arm_names])),
+                           self.model.current_sheet.settings.get("favours_labels", ["Favours " + name for name in arms])[:len(arms)]),
                        manuscript_model_info=tuple(model_info),
-                       manuscript_comparison="Comparison: " + " / ".join(self.model.arm_names))
+                       manuscript_comparison=("Group: " if self.model.current_effect in ONE_ARM_METRICS else "Comparison: ") + " / ".join(arms))
+
+    def _manuscript_arms(self) -> list[str]:
+        names = self.model.arm_names
+        return names[:1] if self.model.current_effect in ONE_ARM_METRICS else names
 
     def _manuscript_studies(self):
         return getattr(self, "_executed_studies", self.model.get_studies())
@@ -1079,17 +1084,27 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _manuscript_model_info(self):
         model_info = [("Studies (k)", str(len(self._manuscript_studies())))]
-        raw = self._manuscript_raw_data()
-        if self.data_type in ("binary", "continuous") and len(self.model.arm_names) == 2 and raw and all(
-            len(row) == (4 if self.data_type == "binary" else 6) and all(isinstance(v, (int, float)) for v in row) for row in raw
-        ):
-            model_info.extend((f"Participants in {name}", f"{sum(row[index] for row in raw):g}")
-                              for name, index in zip(self.model.arm_names, (1, 3) if self.data_type == "binary" else (0, 3)))
+        model_info.extend((f"Participants in {name}", f"{total:g}")
+                          for name, total in self._manuscript_participants())
         if self.data_type == "diagnostic":
-            model_info.extend(self._diagnostic_participants(raw))
+            model_info.extend(self._diagnostic_participants(self._manuscript_raw_data()))
         if len(model_info) == 1:
             model_info.append(("Participants", "Not available"))
         return model_info
+
+    def _manuscript_participants(self) -> list[tuple[str, float]]:
+        if self.data_type not in ("binary", "continuous"):
+            return []
+        arms = self._manuscript_arms()
+        raw = self._manuscript_raw_data()
+        if not arms or not raw:
+            return []
+        indices = ((1, 3) if self.data_type == "binary" else (0, 3))[:len(arms)]
+        if any(len(row) <= index or not isinstance(row[index], (int, float))
+               or not math.isfinite(row[index]) for row in raw for index in indices):
+            return []
+        return [(name, sum(row[index] for row in raw))
+                for name, index in zip(arms, indices, strict=True)]
 
     @staticmethod
     def _diagnostic_participants(raw):
@@ -1112,11 +1127,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         context = f"{included} studies were included"
         if excluded:
             context += f" ({excluded} studies were excluded)"
-        if self.data_type in ('binary', 'continuous'):
-            raw = self._manuscript_raw_data()
-            if len(self.model.arm_names) == 2 and raw and all(len(row) == (4 if self.data_type == "binary" else 6) and all(isinstance(v, (int, float)) for v in row) for row in raw):
-                totals = [sum(row[i] for row in raw) for i in ((1, 3) if self.data_type == "binary" else (0, 3))]
-                context += f" ({totals[0]:g} participants in {self.model.arm_names[0]}, {totals[1]:g} in {self.model.arm_names[1]})"
+        participants = self._manuscript_participants()
+        if participants:
+            (name, total), *others = participants
+            context += f" ({total:g} participants in {name}"
+            context += "".join(f", {total:g} in {name}" for name, total in others) + ")"
         context += "."
         return context + self._correction_context(applied_parameters)
 

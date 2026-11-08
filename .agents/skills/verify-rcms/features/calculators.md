@@ -58,6 +58,13 @@ Run `uv run python scripts/verify_rcms.py calculator-mode-<suffix>`:
 
 Every mode uses the real row-header gesture, accepts, clears/cancels a subsequent draft, checks undo/redo and clean state, saves/reopens, and analyzes the accepted data with DL/z at six digits. Eight displayed pooled/inference/heterogeneity fields must match public `metafor::escalc`/`rma.uni`; entered variance is independently reconstructed from the entered interval. Diagnostic correction considers zeros in all four cells, even for a Sens analysis. Nested cancellation additionally preserves table cells, estimate/CI fields, metric parameter and button state.
 
+Entered binary and continuous drives also require the SE/Z/P readout to be visible
+and contained in the dialog after the raw-input pane is hidden. The generic-effect
+wizard drive opens the real calculator with existing SE 0.1 and zero, accepts
+unchanged, restores the original SE, saves/reopens and checks all six rows. Zero SE
+is displayed without undefined Z/P; support for fitting zero variance depends on
+the selected estimator. This is not a blanket positive-SE input requirement.
+
 This does not prove RR/RD back-calculation, candidate 2, unequal SD, Cohen reconstruction, PLN/PLO/PAS/PFT previews, or every invalid partial-input combination. Drive the affected alternative after changing it; do not infer its pass from OR/Hedges coverage.
 
 Entered diagnostic acceptance must retain study inclusion. Require Sens enabled and the unavailable Spec/DOR/LR choices disabled after clearing counts and entering only Sens. Check the included count before acceptance and after reopen, then compare the mixed entered/raw pooled fit. An analyzable result that silently omits the edited study fails this contract. Finally accept Clear without replacement, undo, accept partial counts alongside the stored interval, and undo again: both unusable inputs must exclude the study, and both undos must restore the included entered-only data.
