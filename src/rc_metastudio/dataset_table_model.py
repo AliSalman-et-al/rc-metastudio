@@ -1018,7 +1018,7 @@ class DatasetTableModel(QAbstractTableModel):
             return 0
         return self._get_col_count()
 
-    def get_covariate_for_column(self, table_col_index):
+    def get_covariate_for_column(self, table_col_index: int) -> dict | None:
         # Map the table column to a covariate index. Without an outcome, skip
         # the include, study-name, and year columns.
         covariate_index = (
@@ -1187,6 +1187,7 @@ class DatasetTableModel(QAbstractTableModel):
         if col > self.OUTCOMES[-1]:
             # Columns to the right of outcomes are covariates.
             cov = self.get_covariate_for_column(col)
+            assert cov is not None
             self._sort_studies_with_cmp(cov['name'], reverse)
         self.reset_model()
 

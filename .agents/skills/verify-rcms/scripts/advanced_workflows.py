@@ -1837,6 +1837,9 @@ def table_covariates(app, window, record):
         s.id: (s.label, dict(s.covariate_values), s.include)
         for s in model.current_sheet.rows
     }
+    from tests.e2e.covariate_menu import check_sort_and_rename, header_action
+    check_sort_and_rename(app, window, dose_id, record)
+    model = window.model
     table.scrollTo(window.model.index(0, window.model.NAME))
     app.processEvents()
     # A real header context event reaches sorting, including identity preservation.
@@ -1998,17 +2001,22 @@ def table_covariates(app, window, record):
     sheet_id = window.model.current_sheet_id
     other_sheet = window.model.dataset.sheets[1]
     other_before = [(r.id, dict(r.covariate_values)) for r in other_sheet.rows], list(other_sheet.covariates)
-    dose = next(c for c in window.model.current_sheet.covariates if c["id"] == dose_id)
     def convert(dialog):
         assert dialog.cov_model.rowCount() == 19
         assert dialog.cov_model.setData(dialog.cov_model.index(0, 2), "Low")
         dialog.accept()
-    modal(app, CovariateTypeDialog, convert, lambda: window.change_covariate_type(dose))
+    modal(app, CovariateTypeDialog, convert,
+          lambda: header_action(app, window, dose_id, "Create category copy of Dose…", record))
     converted = window.model.current_sheet.covariates[-1]
     assert converted["name"] == "Dose (category)"
     assert window.model.current_sheet.rows[0].covariate_values[converted["id"]] == "Low"
-    window._commit_model_operation(lambda: window.model.rename_covariate("Dose (category)", "Dose category"))
-    window.delete_covariate(converted)
+    from rc_metastudio.edit_name_dialogs import EditCovariateNameDialog
+    def rename_copy(dialog):
+        dialog.group_name_le.setText("Dose category")
+        dialog.accept()
+    modal(app, EditCovariateNameDialog, rename_copy,
+          lambda: header_action(app, window, converted["id"], "Rename covariate Dose (category)…", record))
+    header_action(app, window, converted["id"], "Delete covariate Dose category…", record)
     assert converted["id"] not in [c["id"] for c in window.model.current_sheet.covariates]
     window.undo()
     assert converted["id"] in [c["id"] for c in window.model.current_sheet.covariates]

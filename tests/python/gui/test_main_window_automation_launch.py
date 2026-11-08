@@ -783,8 +783,11 @@ def test_method_parameters_dialog_stays_stable_when_method_description_changes(
 
         specs.resize(stable_width + 300, stable_height + 200)
         app.processEvents()
-        assert specs.width() == stable_width + 300
-        assert specs.height() == stable_height + 200
+        assert stable_width < specs.width() <= stable_width + 300
+        assert stable_height < specs.height() <= stable_height + 200
+        screen = specs.screen()
+        assert screen is not None
+        assert screen.availableGeometry().contains(specs.frameGeometry())
         stable_width = specs.width()
         stable_height = specs.height()
 

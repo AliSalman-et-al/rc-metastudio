@@ -373,26 +373,27 @@ class DatasetTableView(QtWidgets.QTableView):
             context_menu.addAction(action_sort)
         elif column_clicked in covariate_columns:
             cov = self.model().get_covariate_for_column(column_clicked)
+            assert cov is not None
 
-            action_sort = QAction("Sort studies by %s" % cov.name, self)
+            action_sort = QAction("Sort studies by %s" % cov["name"], self)
             _connect_action(action_sort, lambda: self.sort_by_col(column_clicked))
             context_menu.addAction(action_sort)
 
-            action_ren = QAction("Rename covariate %s…" % cov.name, self)
+            action_ren = QAction("Rename covariate %s…" % cov["name"], self)
             _connect_action(action_ren, lambda: self._main_gui().rename_covariate(cov))
             context_menu.addAction(action_ren)
 
             # allow deletion of covariate
-            action_del = QAction("Delete covariate %s…" % cov.name, self)
+            action_del = QAction("Delete covariate %s…" % cov["name"], self)
             _connect_action(action_del, lambda: self._main_gui().delete_covariate(cov))
             context_menu.addAction(action_del)
 
             convert_to_str = "numeric"
-            if cov.data_type == CONTINUOUS:
+            if cov["data_type"] == CONTINUOUS:
                 convert_to_str = "category"
 
             action_change = QAction(
-                "Create %s copy of %s…" % (convert_to_str, cov.name), self
+                "Create %s copy of %s…" % (convert_to_str, cov["name"]), self
             )
             _connect_action(
                 action_change, lambda: self._main_gui().change_covariate_type(cov)

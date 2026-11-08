@@ -55,6 +55,15 @@ These are source-backed targeted recipes, not claims that the ordinary editing s
 - **Structure:** `action_edit` opens `EditDialog`: `outcome_list`, `follow_up_list`, `group_list`, `study_list`, `covariate_list` with corresponding add/remove buttons. Add/rename/remove items, cancel a second draft, accept, undo/redo, and reopen. Assert retained study identity/data across multiple outcomes/follow-ups/groups. Deletion must be confirmed and undoable where supported.
 - **Navigation:** `nav_up_btn`/`nav_down_btn` choose dimension, `nav_right_btn`/`nav_left_btn` choose item, `nav_add_btn` adds one. Add dialogs use `outcome_name_le`, `datatype_cbo_box`, `group_name_le`, `follow_up_name_le`. Bounds disable the appropriate controls; switching back must restore the original data and metric.
 - **Covariates:** `action_add_covariate` opens `AddCovariateDialog.covariate_name_le`/`datatype_cbo_box`. Header context choices rename/delete or create a factor/continuous copy. Compare values, types and identity, undo/redo and reopen. Use the covariate in subgroup/regression to prove it crosses the analysis boundary.
+
+`project-table-covariates` exercises the actual header menu for numeric sorting,
+rename Cancel/accept/undo/redo, category copy, and copy rename/delete/undo before
+save/reopen. It retains study identities, raw data and covariate values; direct
+metafor regression/subgroup comparisons remain part of that workflow.
+`project-structure` also checks that selecting sheets leaves a saved project clean,
+Open requires no save prompt after navigation, deliberate data edits remain dirty
+across navigation, undo/redo restores that state, and explicit Save remembers the
+selected sheet. These paths use isolated settings and owned output files.
 - **Table:** inclusion checkbox, header Include All/Exclude All, row deletion confirmation, sorting, rectangular copy/paste and clear. Trigger `action_copy`/`action_paste`; assert clipboard/live values, trailing-row expansion and one undo transaction. Invalid bulk data must roll back the whole operation. Sorting must retain values, covariates and inclusion attached to study IDs, not row positions. Auto-fit must not alter data.
 - **Confidence:** `action_change_confidence_level` → `ConfidenceLevelDialog.confidence_level_spinbox` → `button_box` OK. Check `cl_label`, actual analysis intervals, undo/redo, save/reopen and inherited parameters.
 - **Dirty actions:** Open/New/Import/Close/Quit on an unsaved project: Cancel preserves live project and destination; No proceeds; Yes proceeds only after successful save. Cancelled/failed Save As must preserve the unsaved project. Use test-owned files and record the actual prompt/action/recovered state.

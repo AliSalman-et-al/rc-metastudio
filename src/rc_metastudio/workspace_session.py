@@ -36,8 +36,9 @@ def _copy_runtime(runtime: RuntimeProject) -> RuntimeProject:
 
 
 def _document_digest(document: ProjectDocument) -> str:
+    # The active sheet is persisted navigation, not a document edit.
     payload = json.dumps(
-        {"project": document.project, "state": document.state},
+        document.project,
         sort_keys=True,
         separators=(",", ":"),
         ensure_ascii=False,

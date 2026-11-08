@@ -432,6 +432,8 @@ def analysis_dialog(app, window):
         assert toggle.text().startswith("▸ Advanced · ") and toggle.text().endswith(" changed")
         assert toggle.width() >= toggle.fontMetrics().horizontalAdvance(toggle.text()) + 12
         record_step("advanced-collapsed", form, sample=sample, summary=toggle.text(), changed_options=toggle.toolTip())
+        from tests.e2e.analysis_layout import check as check_tab_layout
+        check_tab_layout(app, form, sample, record_step)
 
         mouse_click(required(form.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)), QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
@@ -845,6 +847,8 @@ def sheets_legacy(app, window):
 
 def sheets(app, window):
     from rc_metastudio import r_bridge
+    from tests.e2e.sheet_navigation import check as check_navigation
+    check_navigation(app, window, ROOT, WORK, record_step)
     # Non-unit sampling variance exposes variance/SE confusion in raw IRR previews.
     code = 'local({e <- metafor::escalc("IRR", x1i=4, t1i=100, x2i=9, t2i=120, add=.5, to="only0", drop00=TRUE); c(e$yi, e$yi-qnorm(.975)*sqrt(e$vi), e$yi+qnorm(.975)*sqrt(e$vi))})'
     expected = [float(x) for x in r_bridge.execute_r_string(code)]

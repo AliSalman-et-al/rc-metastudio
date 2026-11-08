@@ -327,6 +327,9 @@ class AdaptiveWindowController(QObject):
         if (watched is window and self.role == WindowRole.MAIN and window.isMaximized()
                 and event.type() in (QEvent.Type.Move, QEvent.Type.Resize)):
             self.request_runtime_clamp()
+        if (watched is window and self.role == WindowRole.TRANSACTIONAL
+                and event.type() == QEvent.Type.Resize):
+            self.request_runtime_clamp()
         if watched is window and event.type() == QEvent.Type.Show:
             if self._first_show_pending:
                 self.apply_first_use_geometry()

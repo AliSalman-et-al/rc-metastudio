@@ -2,6 +2,13 @@
 
 Users select included studies, choose a statistical method and parameters, run the analysis, and read package-authoritative numerical results and plots.
 
+`analysis-dialog` measures Method-to-Plots growth near the working area's lower
+edge for binary, continuous, HR and diagnostic forms. It requires the full frame
+and both fixed button centers inside the available screen geometry, including
+after scrolling plot settings. Offscreen geometry does not establish native
+monitor placement or physical button reachability; use a rebuilt native drive
+for those checks.
+
 ## Sub-features
 
 - `analysis-binary`: amino project, binary random-effects analysis.
