@@ -47,6 +47,7 @@ from rc_metastudio.analysis_method_labels import (
     parameter_value_display_label,
 )
 from rc_metastudio.plot_defaults import apply_default_forest_arm_labels
+from rc_metastudio.dataset_analysis_domain import raw_data_is_complete
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
     plot_parameter_text_value,
@@ -1123,6 +1124,15 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if self.data_type not in ("binary", "diagnostic") or not applied_parameters.get("adjust"):
             return ""
         raw = self._manuscript_raw_data()
+        if self.data_type == "binary":
+            if any(study.analysis_unit.calculator_source(
+                self.model.current_effect, self.model.get_current_arm_key()
+            ) == "entered" for study in self._manuscript_studies()):
+                return ""
+            if self.model.current_effect in ONE_ARM_METRICS:
+                raw = [row[:2] for row in raw]
+        if not raw or not all(raw_data_is_complete(row) for row in raw):
+            return ""
         policy = applied_parameters.get("correction.policy", applied_parameters.get("to", "only0"))
         zero = self._has_zero_cell(raw)
         if policy in ("none", "None") or not (zero or policy in ("all", "All studies")):

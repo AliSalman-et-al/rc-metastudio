@@ -16,16 +16,20 @@ def run(app, window, ROOT, WORK, record_step):
     from rc_metastudio.rm5_import import read_rm5
     from rc_metastudio.project_adapter import dataset_to_project
     # Exercise existing entered-only paths before deciding their import mapping.
-    for index, metric, method in ((0, 'OR', 'binary.fixed.inv.var'), (1, 'MD', 'continuous.fixed')):
+    for index, metric, method, keep_raw in ((0, 'OR', 'binary.fixed.inv.var', False),
+                                          (0, 'OR', 'binary.fixed.inv.var', True),
+                                          (1, 'MD', 'continuous.fixed', False)):
         dataset = read_rm5(ROOT / 'tests/fixtures/rm5/Fleiss1993.rm5').dataset
         sheet = dataset.sheets[index]
         sheet.settings['metric'] = metric
-        sheet.settings['analysis'] = dict(method=method, parameters={}, fixed_effects=True, covariates=[])
+        sheet.settings['analysis'] = dict(method=method, parameters={'to': 'all'} if keep_raw else {}, fixed_effects=True, covariates=[])
         for row in sheet.rows:
             unit = row.analysis_unit
-            for arm in unit.arms.values():
-                arm.raw_data = [None] * len(arm.raw_data)
+            if not keep_raw:
+                for arm in unit.arms.values():
+                    arm.raw_data = [None] * len(arm.raw_data)
             unit.set_effect_for_source('entered', metric, tuple(a.id for a in sheet.arms), -.1, standard_error=.2)
+            unit.set_calculator_source(metric, tuple(a.id for a in sheet.arms), 'entered')
         window.set_model(dataset)
         window.sheet_tabs.setCurrentIndex(index)
         window.action_go.trigger()
@@ -35,7 +39,12 @@ def run(app, window, ROOT, WORK, record_step):
         setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
         app.processEvents()
         view = next(w for w in app.topLevelWidgets() if isinstance(w, ResultsWindow) and w.isVisible())
-        record_step('rm5-entered-only-probe', view, metric=metric, method=method)
+        record_step('rm5-entered-only-probe', view, metric=metric, method=method,
+                    stored_raw_counts=keep_raw, details=view.results.details,
+                    manuscript_methods=view.manuscript.methods)
+        assert 'A continuity correction' not in view.report_text.toPlainText(), view.results.details
+        assert 'A continuity correction' not in view.manuscript.methods
+        assert abs(float(r_bridge.execute_r_string('result$res$b[1]')[0]) + .1) < 1e-12
         view.close()
     tree = ET.parse(ROOT / 'tests/fixtures/rm5/generic-derived.rm5')
     study = tree.find('.//STUDY')
@@ -121,6 +130,8 @@ def run(app, window, ROOT, WORK, record_step):
         ref = refs[index]
         expected = [float(ref[k]) for k in ('estimate', 'lower', 'upper')] + [100 * float(ref['I2'])]
         record_step('rm5-giv-results', view, metric=sheet.settings['metric'], actual=actual, expected=expected)
+        assert 'A continuity correction' not in view.report_text.toPlainText(), view.results.details
+        assert 'A continuity correction' not in view.manuscript.methods
         assert all(abs(a-b) <= 1e-6 for a,b in zip(actual, expected)), (actual, expected)
         view.close()
     expected = dataset_to_project(window.model.dataset)

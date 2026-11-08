@@ -13,6 +13,10 @@ for those checks.
 report and manuscript Methods for zero-cell-only and all-study policies. It also
 exercises a PFT analysis with the same explanation; raw grid previews can differ
 from fitted study estimates when the selected analysis applies a correction.
+`rm5-import` checks that entered-only generic-IV fits omit this explanation in
+both report surfaces, including when complete counts remain stored but the
+calculator explicitly selects entered effects. It compares the actual fitted
+coefficient and the imported HR/OR/MD results with their independent references.
 
 ## Sub-features
 

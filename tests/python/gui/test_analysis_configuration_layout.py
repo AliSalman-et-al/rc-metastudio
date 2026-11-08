@@ -1400,10 +1400,15 @@ def test_plot_bound_zero_survives_selected_configuration(qapp, monkeypatch, work
 
 
 def test_manuscript_counts_and_correction_describe_only_fitted_studies(qapp, monkeypatch):
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio import analysis_setup_dialog, meta_globals
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)
     model = _AnalysisModel("binary")
-    kept, missing = SimpleNamespace(id="kept"), SimpleNamespace(id="missing")
+    sheet = analysis_dataset.Sheet(SheetId("counts"), "Outcome", meta_globals.BINARY)
+    kept, missing = (
+        analysis_dataset.StudyRow(RowId(name), name, AnalysisUnit(sheet))
+        for name in ("kept", "missing")
+    )
+    monkeypatch.setattr(model, "get_current_arm_key", lambda: tuple(kept.analysis_unit.arms_by_id), raising=False)
     monkeypatch.setattr(model, "get_studies", lambda only_if_included=True: [kept, missing])
     def raw(only_these_studies=None):
         return [[1, 20, 2, 30]] if only_these_studies == [kept.id] else [[1, 20, 2, 30], [0, 100, 0, 200]]
