@@ -378,9 +378,24 @@ def zero_cells(app, window, record):
         compare_authority(
             view, authority(window, "binary", "DL", "z", 95, policy), "binary", record
         )
+        note = "A continuity correction of 0.5 was applied to " + {
+            "only0": "studies with any zero cell.", "all": "all studies."
+        }[policy]
+        assert note in view.report_text.toPlainText(), (policy, view.report_text.toPlainText())
+        assert note in view.manuscript.methods
         assert len(view.texts["Weights"].strip().splitlines()) == 20
         view.close()
         window.workspace.mark_saved()
+
+    view = matrix(app, window, "analysis-amino-binary-cumulative", record,
+                  keep_results=True, workflow_override="standard", metric_override="PFT",
+                  parameters={"to": "only0", "adjust": .5, "digits": 6, "rm.method": "DL"})
+    note = "A continuity correction of 0.5 was applied to studies with any zero cell."
+    assert note in view.report_text.toPlainText()
+    assert note in view.manuscript.methods
+    record("pft-correction-report", view, correction_note=note, texts=dict(view.texts))
+    view.close()
+    window.workspace.mark_saved()
 
     # One participant per group leaves no residual degrees of freedom for SMD.
     assert window.open(str(ROOT / "sample_projects/continuous.rcms"), raise_on_error=True)

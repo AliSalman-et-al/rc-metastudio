@@ -9,6 +9,11 @@ after scrolling plot settings. Offscreen geometry does not establish native
 monitor placement or physical button reachability; use a rebuilt native drive
 for those checks.
 
+`options-zero-cells` checks the applied correction explanation in both the Text
+report and manuscript Methods for zero-cell-only and all-study policies. It also
+exercises a PFT analysis with the same explanation; raw grid previews can differ
+from fitted study estimates when the selected analysis applies a correction.
+
 ## Sub-features
 
 - `analysis-binary`: amino project, binary random-effects analysis.

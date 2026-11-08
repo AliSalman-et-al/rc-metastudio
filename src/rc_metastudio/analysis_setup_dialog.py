@@ -1055,6 +1055,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         correction = context.partition(". ")[2]
         if correction:
             methods += " " + correction
+            details += "\n" + correction
         model_info = self._manuscript_model_info()
         return replace(result, identity=identity, details=details, software=software,
                        manuscript_context=context.split(". ")[0].rstrip(".") + ".",
