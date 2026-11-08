@@ -76,7 +76,8 @@ output_work="$(mktemp -d "$output_parent/.rcms-trust.XXXXXX")"
 tmp_output="$output_work/artifact.dmg"
 attached_points=()
 cleanup() {
-  for point in "${attached_points[@]}"; do
+  # Bash 3.2 treats an empty array as unset under nounset.
+  for point in ${attached_points[@]+"${attached_points[@]}"}; do
     hdiutil detach "$point" >/dev/null 2>&1 || true
   done
   rm -rf "$work_root" "$output_work"

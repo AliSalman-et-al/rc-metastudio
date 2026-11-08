@@ -329,7 +329,12 @@ jobs:
             --signing-identity "$RCMS_SIGNING_IDENTITY" \
             --signing-inventory "submitted/evidence/$TARGET.signing-inventory.json" \
             --submission-result "submitted/evidence/$TARGET.notarization-submission.json"
-          (cd submitted && shasum -a 256 "$ARTIFACT" > "$ARTIFACT.sha256")
+      - name: Record preserved signed bytes digest
+        if: ${{ always() && hashFiles('submitted/*.dmg') != '' }}
+        shell: bash
+        env:
+          ARTIFACT: ${{ matrix.artifact }}
+        run: (cd submitted && shasum -a 256 "$ARTIFACT" > "$ARTIFACT.sha256")
       - name: Upload submission diagnostics
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -340,6 +345,7 @@ jobs:
           retention-days: 30
           compression-level: 0
       - name: Preserve exact signed bytes and submission ID
+        if: ${{ always() && hashFiles('submitted/*.dmg') != '' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: submitted-${{ matrix.target }}
