@@ -294,8 +294,28 @@ def _configure_r_libraries(root, r_home, frozen):
     return r_libs
 
 
+def _set_windows_processor_architecture():
+    if os.environ.get("PROCESSOR_ARCHITECTURE"):
+        return
+    # cli's Windows shutdown code expects this even with a minimal caller environment.
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    query = kernel32.IsWow64Process2
+    query.argtypes = [
+        ctypes.c_void_p, ctypes.POINTER(ctypes.c_ushort), ctypes.POINTER(ctypes.c_ushort)
+    ]
+    query.restype = ctypes.c_int
+    process_machine = ctypes.c_ushort()
+    native_machine = ctypes.c_ushort()
+    if not query(ctypes.c_void_p(-1), ctypes.byref(process_machine), ctypes.byref(native_machine)):
+        raise OSError(ctypes.get_last_error(), "IsWow64Process2 failed")
+    os.environ["PROCESSOR_ARCHITECTURE"] = {
+        0x014C: "x86", 0x8664: "AMD64", 0xAA64: "ARM64"
+    }[native_machine.value]
+
+
 def _set_r_environment():
     if sys.platform == "win32":
+        _set_windows_processor_architecture()
         for name in (
             "LC_ALL",
             "LC_COLLATE",
