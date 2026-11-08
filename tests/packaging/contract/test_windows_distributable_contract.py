@@ -6,12 +6,65 @@ import shutil
 import subprocess
 import sys
 import tomllib
+import zipfile
 from pathlib import Path
 
 import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows ZIP producer shells")
+@pytest.mark.parametrize("shell", ["powershell", "pwsh"])
+def test_windows_zip_producer_preserves_normalized_names_and_payloads(tmp_path, shell):
+    executable = shutil.which(shell)
+    if executable is None:
+        pytest.skip(f"{shell} unavailable")
+    source = tmp_path / "source with spaces"
+    payloads = {
+        "LaunchRCMetaStudio.bat": b"@echo off\r\n",
+        "R/library/RCMetaR/DESCRIPTION": b"Package: RCMetaR\n",
+        "nested/report \u0394.txt": "Unicode payload \u0394\n".encode(),
+        "_internal/.private": bytes(range(256)),
+    }
+    for relative, payload in payloads.items():
+        path = source / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(payload)
+    (source / "empty directory").mkdir()
+    archive = tmp_path / "package.zip"
+    stage = tmp_path / "archive staging"
+    root = "RCMetaStudio-test-windows-x64"
+    quote = lambda value: "'" + str(value).replace("'", "''") + "'"
+    script = tmp_path / "create-archive.ps1"
+    script.write_text("\n".join([
+        '$ErrorActionPreference = "Stop"',
+        "$tokens = $null; $parseErrors = $null",
+        "$ast = [System.Management.Automation.Language.Parser]::ParseFile(" +
+        quote(ROOT / "scripts/build-windows-package.ps1") + ", [ref]$tokens, [ref]$parseErrors)",
+        "if ($parseErrors.Count) { throw 'Builder parse failed' }",
+        "$names = @('Assert-PathExists', 'Copy-DirectoryTree', 'Compress-AppDirectory')",
+        "$ast.FindAll({param($node) $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -in $names}, $false) | ForEach-Object { Invoke-Expression $_.Extent.Text }",
+        "$tmpZipPath = " + quote(str(archive) + ".tmp"),
+        "Compress-AppDirectory -SourceDirectory " + quote(source) +
+        " -ArchiveStagingRoot " + quote(stage) +
+        " -ArchiveRootDirectory " + quote(stage / root) +
+        " -DestinationPath " + quote(archive),
+    ]), encoding="utf-8-sig")
+    command = [executable, "-NoProfile", "-NonInteractive", "-File", str(script)]
+    result = subprocess.run(command, cwd=ROOT, text=True, capture_output=True, timeout=60)
+    (tmp_path / "command.json").write_text(json.dumps(command))
+    (tmp_path / "stdout.log").write_text(result.stdout)
+    (tmp_path / "stderr.log").write_text(result.stderr)
+    assert result.returncode == 0, result.stderr
+    inspector = _load_windows_deployment_inspector()
+    with zipfile.ZipFile(archive) as bundle:
+        names = inspector._archive_names(bundle, root + "/")
+        assert set(names) == {root + "/" + relative for relative in payloads}
+        for relative, payload in payloads.items():
+            assert bundle.read(root + "/" + relative) == payload
+        assert root + "/empty directory/" in bundle.namelist()
 
 
 def _load_source_provenance():

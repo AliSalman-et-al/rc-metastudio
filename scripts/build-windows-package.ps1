@@ -351,13 +351,27 @@ function Invoke-PackagedAppSmokeTest {
 
 function Compress-AppDirectory {
     param([string]$SourceDirectory, [string]$ArchiveStagingRoot, [string]$ArchiveRootDirectory, [string]$DestinationPath)
+    Add-Type -AssemblyName System.IO.Compression
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     if (Test-Path $DestinationPath) { Remove-Item -LiteralPath $DestinationPath -Force }
     if (Test-Path $tmpZipPath) { Remove-Item -LiteralPath $tmpZipPath -Force }
     if (Test-Path $ArchiveStagingRoot) { Remove-Item -LiteralPath $ArchiveStagingRoot -Recurse -Force }
     New-Item -ItemType Directory -Force -Path $ArchiveStagingRoot | Out-Null
     Copy-DirectoryTree -Source $SourceDirectory -Destination $ArchiveRootDirectory
-    [System.IO.Compression.ZipFile]::CreateFromDirectory($ArchiveStagingRoot, $tmpZipPath, [System.IO.Compression.CompressionLevel]::Optimal, $false)
+    $archivePrefix = (Resolve-Path -LiteralPath $ArchiveStagingRoot).ProviderPath.TrimEnd('\') + '\'
+    $zip = [System.IO.Compression.ZipFile]::Open($tmpZipPath, [System.IO.Compression.ZipArchiveMode]::Create)
+    try {
+        foreach ($item in Get-ChildItem -LiteralPath $ArchiveStagingRoot -Recurse -Force) {
+            $entryName = $item.FullName.Substring($archivePrefix.Length).Replace('\', '/')
+            if ($item.PSIsContainer) {
+                $zip.CreateEntry("$entryName/") | Out-Null
+            }
+            else {
+                [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $item.FullName, $entryName, [System.IO.Compression.CompressionLevel]::Optimal) | Out-Null
+            }
+        }
+    }
+    finally { $zip.Dispose() }
     Move-Item -LiteralPath $tmpZipPath -Destination $DestinationPath -Force
 }
 
