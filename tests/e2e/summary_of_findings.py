@@ -138,7 +138,8 @@ def run(app, window, work, root, record, analyze):
     assert observed_cells == [list(expected_table.headers), *map(list, expected_table.rows)], ('summary exported cells', observed_cells, expected_table)
     record('summary-of-findings', dialog, rows=report.sections[0].tables[0].rows)
     import subprocess
-    pdf_text = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', str(work / 'summary.pdf'), '-'], text=True, encoding='utf-8')
+    # Preserve literal hyphens at wrapped line endings in estimator names.
+    pdf_text = subprocess.check_output(['pdftotext', '-raw', '-enc', 'UTF-8', str(work / 'summary.pdf'), '-'], text=True, encoding='utf-8')
     import unicodedata
     pdf_text = unicodedata.normalize('NFKC', pdf_text)
     assert not {'Methods', 'Results'} & set(pdf_text.splitlines())
