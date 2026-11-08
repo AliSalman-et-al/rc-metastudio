@@ -613,8 +613,8 @@ class DatasetTableView(QtWidgets.QTableView):
                 self.model().set_current_analysis_unit_for_study(
                     study_index, form.analysis_unit
                 )
-                self.model().reset_model()
                 self.model().try_to_update_outcomes()
+                self.model().reset_model()
                 self._enable_analysis_menus_if_appropriate()
                 self.synchronize_column_widths()
                 self.dataDirtied.emit()

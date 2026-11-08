@@ -18,7 +18,7 @@ Users edit a study's raw inputs, inspect the derived effect preview, accept or c
 
 Preconditions: doctor passes; the matching committed sample supplies compatible raw inputs.
 
-- **Default-size visibility.** `calculator-binary` requires the count grid, SE/Z/P readout and OR/RR/RD table to fit fully in the visible content viewport without vertical scrolling. `ui-crawl` also checks both continuous pre/post arm tables and compact entered-estimate placement. Large-font overflow remains covered by the transactional calculator layout tests.
+- **Default-size visibility.** `calculator-binary` requires the count grid and OR/RR/RD table to fit fully in the visible content viewport without vertical scrolling. Its SE/Z/P readout must be visible inside the dialog above the button footer, outside the pane hidden by entered mode. `ui-crawl` also checks both continuous pre/post arm tables and compact entered-estimate placement. Large-font overflow remains covered by the transactional calculator layout tests.
 - **Binary.** Run `uv run python scripts/verify_rcms.py calculator-binary`. The row-header path opens `BinaryDataDialog`; `raw_data_table` accepts the first study's increased event count and corresponding total.
 - **Continuous.** Run `uv run python scripts/verify_rcms.py calculator-continuous`. `ContinuousDataDialog.simple_table` changes the first study mean by `1.5` using a comma decimal.
 - **Diagnostic.** Run `uv run python scripts/verify_rcms.py calculator-diagnostic`. `DiagnosticDataDialog.two_by_two_table` changes the first study TP count by one.
@@ -64,6 +64,12 @@ wizard drive opens the real calculator with existing SE 0.1 and zero, accepts
 unchanged, restores the original SE, saves/reopens and checks all six rows. Zero SE
 is displayed without undefined Z/P; support for fitting zero variance depends on
 the selected estimator. This is not a blanket positive-SE input requirement.
+
+The binary reconstruction drive observes the real table reset during acceptance:
+the accepted counts and displayed estimate/CI must already agree at that update,
+before save or undo can refresh a stale display. Its held interval describes both
+valid reconstructed count solutions. Subsequent Cancel, undo/redo and reopen
+continue to compare the accepted data and pooled analysis with their references.
 
 This does not prove RR/RD back-calculation, candidate 2, unequal SD, Cohen reconstruction, PLN/PLO/PAS/PFT previews, or every invalid partial-input combination. Drive the affected alternative after changing it; do not infer its pass from OR/Hedges coverage.
 

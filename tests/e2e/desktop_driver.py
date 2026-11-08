@@ -1827,9 +1827,15 @@ def calculator(app, window, family):
             app.processEvents()
             if family == "binary":
                 viewport = dialog.content_scroll.viewport()
-                for widget in (dialog.raw_data_table, dialog.wald_readout, dialog.metric_readout):
+                for widget in (dialog.raw_data_table, dialog.metric_readout):
                     assert widget.isVisible()
                     assert viewport.rect().contains(QtCore.QRect(widget.mapTo(viewport, QtCore.QPoint()), widget.size())), (widget.objectName(), widget.geometry(), viewport.size())
+                readout_bounds = QtCore.QRect(dialog.wald_readout.mapTo(dialog, QtCore.QPoint()), dialog.wald_readout.size())
+                footer_bounds = QtCore.QRect(dialog.buttonBox.mapTo(dialog, QtCore.QPoint()), dialog.buttonBox.size())
+                record_step("calculator-readout-layout", dialog, readout_bounds=str(readout_bounds), footer_bounds=str(footer_bounds))
+                assert dialog.wald_readout.isVisible()
+                assert dialog.rect().contains(readout_bounds), (dialog.rect(), readout_bounds)
+                assert readout_bounds.bottom() < footer_bounds.top(), (readout_bounds, footer_bounds)
                 assert dialog.content_scroll.verticalScrollBar().maximum() == 0
                 assert dialog.raw_data_table.verticalScrollBar().maximum() == 0
                 assert "SE" in dialog.wald_readout.text() and "Two-sided P" in dialog.wald_readout.text()

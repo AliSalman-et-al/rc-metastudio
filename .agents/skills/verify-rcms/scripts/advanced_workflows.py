@@ -1209,6 +1209,7 @@ def calculators(app, window, mode, record):
                     math.exp(math.log(effect) - z * se),
                     math.exp(math.log(effect) + z * se),
                 )
+                observed["reconstruction_interval"] = values
             elif family == "continuous":
                 dialog.effect_combo_box.setCurrentIndex(
                     dialog.effect_combo_box.findData("MD")
@@ -1621,7 +1622,30 @@ def calculators(app, window, mode, record):
         )
         QTest.mouseClick(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=point)
 
-    modal(app, kind, drive, launch)
+    acceptance_notifications = []
+
+    def observe_acceptance():
+        model = window.model
+        unit = model.get_current_analysis_unit_for_study(0)
+        acceptance_notifications.append({
+            "raw": list(unit.get_raw_data_for_arms(model.arm_names)),
+            "effect_cells": [str(model.data(model.index(0, column))) for column in model.OUTCOMES[:3]],
+        })
+
+    if mode == "back-binary":
+        window.model.modelReset.connect(observe_acceptance)
+    try:
+        modal(app, kind, drive, launch)
+    finally:
+        if mode == "back-binary":
+            window.model.modelReset.disconnect(observe_acceptance)
+    if mode == "back-binary":
+        record("calculator-acceptance-notifications", window, notifications=acceptance_notifications,
+               expected_interval=observed["reconstruction_interval"])
+        accepted = [state for state in acceptance_notifications if state["raw"] == observed["accepted_raw"]]
+        assert accepted, acceptance_notifications
+        expected_cells = [str(window.model.format_float(value)) for value in observed["reconstruction_interval"]]
+        assert all(state["effect_cells"] == expected_cells for state in accepted), (accepted, expected_cells)
     assert window.model.get_studies(False)[0].include
     assert (
         sum(study.include for study in window.model.get_studies(False)) == included_before
