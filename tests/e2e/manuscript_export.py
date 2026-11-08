@@ -212,7 +212,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
 
     # Derive boundary cases from real legacy bytes, then open through production IO.
     import copy, io, json, zipfile
-    legacy = subprocess.check_output(['git', 'show', '322ede26:sample_projects/amino.rcms'], cwd=root)
+    legacy = (root / 'tests/fixtures/legacy-projects/amino.rcms').read_bytes()
     with zipfile.ZipFile(io.BytesIO(legacy)) as archive:
         members = {name: archive.read(name) for name in archive.namelist()}
     project = json.loads(members['project.json'])

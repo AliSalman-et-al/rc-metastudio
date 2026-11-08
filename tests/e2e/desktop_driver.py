@@ -823,13 +823,12 @@ def sheets_swap(app, window):
 
 def sheets_legacy(app, window):
     import hashlib
-    import subprocess
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections
     baseline = json.loads((ROOT / "tests/e2e/fixtures/sheets-original-numerics.json").read_text())
     for filename in dict.fromkeys(row["file"] for row in baseline):
         window.workspace.mark_saved()
         source = WORK / filename
-        source.write_bytes(subprocess.check_output(["git", "show", "322ede26:sample_projects/" + filename], cwd=ROOT))
+        source.write_bytes((ROOT / "tests/fixtures/legacy-projects" / filename).read_bytes())
         digest = hashlib.sha256(source.read_bytes()).hexdigest()
         assert window.open(str(source), raise_on_error=True)
         rows = [row for row in baseline if row["file"] == filename]
