@@ -355,10 +355,36 @@ def run(
                     )
                     combo.setCurrentIndex(index)
                     click(wizard.button(QtWidgets.QWizard.WizardButton.NextButton))
-                wizard.currentPage().outcome_name_LineEdit.setText(
-                    "Verification outcome"
-                )
                 page = wizard.currentPage()
+                assert isinstance(page, main_wizard.OutcomeNamePage), type(page)
+                finish = wizard.button(QtWidgets.QWizard.WizardButton.FinishButton)
+                assert not page.outcome_name_LineEdit.text() and not finish.isEnabled()
+                outcome_name = "Verification outcome Δ"
+                page.outcome_name_LineEdit.setText(outcome_name)
+                click(wizard.button(QtWidgets.QWizard.WizardButton.BackButton))
+                previous = wizard.currentPage()
+                click(wizard.button(QtWidgets.QWizard.WizardButton.NextButton))
+                page = wizard.currentPage()
+                record("data-name-back-next", wizard, data_type=name,
+                       expected=outcome_name, observed=page.outcome_name_LineEdit.text())
+                assert page.outcome_name_LineEdit.text() == outcome_name, "Back/Next cleared the outcome name"
+                assert finish.isEnabled()
+                if isinstance(previous, main_wizard.ChooseMetricPage):
+                    click(wizard.button(QtWidgets.QWizard.WizardButton.BackButton))
+                    combo = previous.metric_cbo_box
+                    alternate = next((i for i in range(combo.count()) if combo.itemData(i) != metric), None)
+                    if alternate is not None:
+                        combo.setCurrentIndex(alternate)
+                        click(wizard.button(QtWidgets.QWizard.WizardButton.NextButton))
+                        page = wizard.currentPage()
+                        assert page.outcome_name_LineEdit.text() == outcome_name
+                        record("data-name-metric-change", wizard, data_type=name,
+                               name=page.outcome_name_LineEdit.text(), metric=combo.currentData())
+                        click(wizard.button(QtWidgets.QWizard.WizardButton.BackButton))
+                    combo.setCurrentIndex(combo.findData(metric))
+                    click(wizard.button(QtWidgets.QWizard.WizardButton.NextButton))
+                    page = wizard.currentPage()
+                    assert page.outcome_name_LineEdit.text() == outcome_name
                 record("data-outcome-naming", wizard, data_type=name)
                 if group_names is not None:
                     if page.first_group_name.isVisible():
@@ -387,6 +413,7 @@ def run(
         assert window.model.get_current_outcome_type() == family
         assert window.model.get_current_outcome_subtype() == subtype
         assert window.model.current_effect == metric
+        assert window.model.current_outcome_name == "Verification outcome Δ"
         model = window.model
         if deferred_name and deferred_name != model.arm_names[0]:
             from advanced_workflows import modal
@@ -441,6 +468,7 @@ def run(
         assert window.save()
         assert window.open(window.out_path, raise_on_error=True)
         assert window.model.current_effect == metric
+        assert window.model.current_outcome_name == "Verification outcome Δ"
         assert window.model.get_current_outcome_type() == family
         assert window.model.get_current_outcome_subtype() == subtype
         assert sum(s.include for s in window.model.current_sheet.rows) == 6

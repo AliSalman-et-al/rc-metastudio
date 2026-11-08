@@ -1586,8 +1586,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         patterns = " ".join("*" + suffix for suffix in suffixes if allow_svgz or suffix != ".svgz")
         name_filter = f"{export_format.label} ({patterns})"
 
-        if not unscaled_image:
-            regenerator = artifact.capability.regenerator
+        regenerator = artifact.capability.regenerator
+        if unscaled_image:
+            default_path = self._export_name(artifact.title, "png")
+        else:
             default_path = {
                 "forest": "forest_plot",
                 "regression": "regression",
@@ -1596,46 +1598,29 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             }[regenerator]
             default_path = self._export_name(default_path, export_format.extension)
 
-            # where to save the graphic?
-            file_path, _selected_filter = QFileDialog.getSaveFileName(
-                self,
-                "Save Plot As",
-                default_path,
-                name_filter,
-            )
-
-            # now we re-generate it, unless they canceled, of course
-            if file_path != "":
-                destination = _path_with_export_extension(
-                    file_path, export_format, allow_svgz=allow_svgz
-                )
-                if not self._confirm_export_destination(file_path, destination):
-                    return
-                file_path = destination
-                self.plot_service.export(
-                    regenerator=regenerator,
-                    params_path=artifact.params_path,
-                    output_path=file_path,
-                )
+        file_path, _selected_filter = QFileDialog.getSaveFileName(
+            self,
+            "Save Plot As",
+            default_path,
+            name_filter,
+        )
+        if not file_path:
+            return
+        destination = _path_with_export_extension(
+            file_path, export_format, allow_svgz=allow_svgz
+        )
+        if not self._confirm_export_destination(file_path, destination):
+            return
+        if unscaled_image:
+            if not unscaled_image.save(destination, export_format.qt_format):
+                raise OSError(f"Could not save plot: {destination}")
         else:
-            default_path = self._export_name(artifact.title, "png")
-            file_path, _selected_filter = QFileDialog.getSaveFileName(
-                self,
-                "Save Plot As",
-                default_path,
-                name_filter,
+            self.plot_service.export(
+                regenerator=regenerator,
+                params_path=artifact.params_path,
+                output_path=destination,
             )
-            if file_path != "":
-                destination = _path_with_export_extension(
-                    file_path, export_format, allow_svgz=allow_svgz
-                )
-                if not self._confirm_export_destination(file_path, destination):
-                    return
-                file_path = destination
-                if not unscaled_image.save(file_path, export_format.qt_format):
-                    raise OSError(f"Could not save plot: {file_path}")
-        if file_path:
-            self.statusbar.showMessage(f"Saved {export_format.extension.upper()} plot: {Path(file_path).resolve()}")
+        self.statusbar.showMessage(f"Saved {export_format.extension.upper()} plot: {Path(destination).resolve()}")
 
     def position(self):
         return QPointF(float(self.x_coord), float(self.y_coord))

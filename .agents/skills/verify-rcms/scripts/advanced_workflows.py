@@ -549,9 +549,13 @@ def plots(app, window, family, record, *, view=None):
             record("funnel-wheel-preserves-confidence", dialog,
                    before=original_confidence, after=spinner.value())
             assert spinner.value() == original_confidence, "Scrolling changed the sampling confidence"
-            key_click(spinner, QtCore.Qt.Key.Key_Up)
-            assert spinner.value() > original_confidence, "Keyboard confidence editing stopped working"
-            spinner.setValue(original_confidence)
+            if family == "deeks":
+                assert not spinner.isEnabled(), "Deeks does not use sampling confidence"
+            else:
+                assert spinner.isEnabled()
+                key_click(spinner, QtCore.Qt.Key.Key_Up)
+                assert spinner.value() > original_confidence, "Keyboard confidence editing stopped working"
+                spinner.setValue(original_confidence)
         if family in {"regression", "sroc"}:
             if family == "sroc":
                 import re
