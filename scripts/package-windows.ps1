@@ -291,7 +291,7 @@ function Stage-AuthenticatedOfficialR {
             $ErrorActionPreference = "Continue"
             & uv run --locked python (Join-Path $repoRoot "scripts/run_with_timeout.py") `
                 --timeout-seconds 900 --label "Official R private staging installer" -- `
-                $rInstaller @installerArgs 2>&1 | Tee-Object -FilePath "$rStage-watchdog.log"
+                $rInstaller @installerArgs 2>&1 | Tee-Object -FilePath "$rStage-watchdog.log" | Out-Host
             $installerExitCode = $LASTEXITCODE
         }
         finally { $ErrorActionPreference = $previousErrorActionPreference }
