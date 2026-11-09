@@ -52,5 +52,6 @@ src/RCMetaStudio*.spec
 !.agents/skills/verify-rcms/
 .codex/
 .claude/
+.impeccable/
 .codex-tmp/
 /.scratch/
