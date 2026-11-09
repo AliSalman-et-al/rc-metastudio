@@ -22,7 +22,7 @@ def start_automation(phase_callback=None):
     """Construct the ordinary application composition for tests and packaging."""
     from rc_metastudio.launch import compose_application
 
-    return compose_application(phase_callback=phase_callback)
+    return compose_application(phase_callback=phase_callback, interactive=True)
 
 
 def _start_package_application(phase_callback=None):

@@ -1511,7 +1511,7 @@ def start_shell_failure_smoke(stage):
                 raise AssertionError("Analysis enabled before R startup")
             super().toggle_menu_options_that_require_dataset(enable)
 
-        def _show_analysis_backend_error(self, exception):
+        def _show_analysis_backend_error(self, exception, *, startup=False):
             errors.append(exception)
 
     def meta_factory():
@@ -1534,7 +1534,7 @@ def start_shell_failure_smoke(stage):
         app.processEvents()
         if stage != "r-load" or len(errors) != 1 or not isinstance(errors[0], _InjectedStartupFailure):
             raise SystemExit("Injected startup failure did not fire: %s" % stage)
-        if not window.isVisible() or window.statusBar().currentMessage() != "R failed to start":
+        if not window.isVisible() or not window.isEnabled() or window.action_go.isEnabled():
             raise SystemExit("R startup failure did not leave a visible failed shell")
         dispose_qobjects(app, (window,))
 

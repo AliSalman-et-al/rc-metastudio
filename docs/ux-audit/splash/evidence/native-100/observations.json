@@ -1,0 +1,56 @@
+[
+  {
+    "phase": "splash:visible",
+    "message": "Starting R\u2026",
+    "dpr": 1.0,
+    "size": [
+      960,
+      600
+    ],
+    "statistics_line": "Statistics by R, metafor, meta, mada, and RCMetaR.",
+    "statistics_line_width": 312.0,
+    "clip_width": 344
+  },
+  {
+    "phase": "r-library:metafor:start",
+    "message": "Loading metafor\u2026",
+    "dpr": 1.0,
+    "size": [
+      960,
+      600
+    ],
+    "statistics_line": "Statistics by R, metafor, meta, mada, and RCMetaR.",
+    "statistics_line_width": 312.0,
+    "clip_width": 344
+  },
+  {
+    "phase": "r-library:RCMetaR:start",
+    "message": "Loading RCMetaR\u2026",
+    "dpr": 1.0,
+    "size": [
+      960,
+      600
+    ],
+    "statistics_line": "Statistics by R, metafor, meta, mada, and RCMetaR.",
+    "statistics_line_width": 312.0,
+    "clip_width": 344
+  },
+  {
+    "phase": "r-library:grid:start",
+    "message": "Loading grid\u2026",
+    "dpr": 1.0,
+    "size": [
+      960,
+      600
+    ],
+    "statistics_line": "Statistics by R, metafor, meta, mada, and RCMetaR.",
+    "statistics_line_width": 312.0,
+    "clip_width": 344
+  },
+  {
+    "enabled": true,
+    "analysis_enabled": true,
+    "rows": 39,
+    "errors": []
+  }
+]
