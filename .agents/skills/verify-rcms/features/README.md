@@ -60,4 +60,4 @@ focused certainty selector must scroll an overflowing table without changing the
 judgment; keyboard and popup edits remain available. Native picker gestures,
 participant-count definitions and remaining estimator combinations need targeted coverage.
 
-Every desktop driver checks the visibly disabled shell, wait cursor and explicit waiting status before the GUI-thread R startup timer runs, then enabled controls after real R is ready. This proves blocking-startup feedback, not responsive or asynchronous R initialization.
+Every desktop driver observes the visible splash and live package status before the main window exists, then the enabled shell with an empty status bar after real R is ready. `tests/e2e/startup_splash_driver.py` adds native scale 1/2 captures, Windows taskbar style and late-package failure with the real error dialog and editable project. R still loads on the GUI thread.

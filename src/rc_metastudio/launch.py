@@ -4,12 +4,10 @@
 import json
 import os
 import sys
-import time
 from pathlib import Path
 
 from PyQt6 import QtCore, QtWidgets
-from PyQt6.QtCore import QThread
-from PyQt6.QtGui import QIcon, QPixmap
+from PyQt6.QtGui import QColor, QFont, QFontMetricsF, QIcon, QPainter, QPixmap
 from PyQt6.QtWidgets import QSplashScreen
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
@@ -25,7 +23,6 @@ from rc_metastudio import (
     settings,
 )
 
-SPLASH_DISPLAY_TIME = 0  # Keep startup smoke tests fast; packaged builds may override.
 APPLICATION_ICON_PATH = ":/misc/meta.png"
 
 
@@ -61,19 +58,65 @@ def screen_bounded_splash_pixmap(source, available_logical_size):
     return bounded
 
 
-def create_startup_splash() -> QSplashScreen:
+class StartupSplash(QSplashScreen):
+    """Paint runtime text in the approved card's logical coordinate system."""
+
+    def drawContents(self, painter: QPainter | None) -> None:
+        if painter is None:
+            return
+        painter.save()
+        painter.scale(self.width() / 960, self.height() / 600)
+        family = "Segoe UI" if sys.platform == "win32" else QtWidgets.QApplication.font().family()
+        lines = [
+            (200, 14, 20, QFont.Weight.Normal, "#4f5a76", "Version " + meta_globals.VERSION),
+            (266, 13.5, 21, QFont.Weight.Normal, "#4f5a76", "© 2026 Ali Salman and RC MetaStudio contributors."),
+            (287, 13.5, 21, QFont.Weight.Normal, "#4f5a76", "Released under GPL-3.0-or-later."),
+            (352, 15, 20, QFont.Weight.Medium, "#1f2a44", self.message()),
+            (462, 13.5, 21, QFont.Weight.Normal, "#4f5a76", "Statistics by R, metafor, meta, mada, and RCMetaR."),
+            (483, 13.5, 21, QFont.Weight.Normal, "#4f5a76", "Built with Python, Qt, and rpy2."),
+        ]
+        painter.setClipRect(QtCore.QRectF(56, 0, 344, 600))
+        for top, size, height, weight, color, text in lines:
+            font = QFont(family)
+            font.setPointSizeF(size * 72 / self.logicalDpiY())
+            font.setWeight(weight)
+            painter.setFont(font)
+            painter.setPen(QColor(color))
+            metrics = QFontMetricsF(font)
+            baseline = top + (height - metrics.height()) / 2 + metrics.ascent()
+            painter.drawText(QtCore.QPointF(56, baseline), text)
+        painter.restore()
+
+
+def create_startup_splash() -> StartupSplash:
     """Build the startup Transient Window from high-DPI-capable resources."""
     qt6_resources.ensure_application_resources()
     splash_pixmap = QPixmap(":/misc/splash.png")
     screen = QtWidgets.QApplication.primaryScreen()
     if screen is not None:
+        # QPixmap's file constructor does not select the @2x resource itself.
+        if screen.devicePixelRatio() > 1:
+            splash_pixmap = QPixmap(":/misc/splash@2x.png")
+            splash_pixmap.setDevicePixelRatio(2)
         splash_pixmap = screen_bounded_splash_pixmap(
             splash_pixmap, screen.availableGeometry().size()
         )
-    splash = QSplashScreen(splash_pixmap)
-    adaptive_window.register_adaptive_window(
-        splash, adaptive_window.WindowRole.TRANSIENT
-    )
+    splash = StartupSplash(splash_pixmap)
+    splash.setWindowFlags(QtCore.Qt.WindowType.Window | QtCore.Qt.WindowType.FramelessWindowHint
+                          | QtCore.Qt.WindowType.WindowStaysOnTopHint)
+    splash.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
+    splash.setWindowIcon(QIcon(APPLICATION_ICON_PATH))
+    splash.setWindowTitle(meta_globals.APPLICATION_DISPLAY_NAME)
+    if os.name == "nt":
+        import ctypes
+        # Native splash/tool windows are omitted from the Windows taskbar.
+        handle = int(splash.winId())
+        user32 = ctypes.windll.user32
+        style = user32.GetWindowLongW(handle, -20)
+        user32.SetWindowLongW(handle, -20, (style | 0x40000) & ~0x80)
+    adaptive_window.register_adaptive_window(splash, adaptive_window.WindowRole.TRANSIENT)
+    if screen is not None:
+        splash.move(screen.availableGeometry().center() - splash.rect().center())
     return splash
 
 
@@ -176,19 +219,17 @@ def load_R_libraries(app, splash=None, phase_callback=None):
     _emit_automation_phase(phase_callback, "r-library-paths:complete")
     rloader = r_bridge.RLibraryLoader()
 
-    _status("Loading R libraries\n..")
-
-    _status("Loading metafor\n....")
+    _status("Loading metafor…")
     _emit_automation_phase(phase_callback, "r-library:metafor:start")
     rloader.load_metafor()
     _emit_automation_phase(phase_callback, "r-library:metafor:complete")
 
-    _status("Loading RCMetaR\n........")
+    _status("Loading RCMetaR…")
     _emit_automation_phase(phase_callback, "r-library:RCMetaR:start")
     rloader.load_rcmetar()
     _emit_automation_phase(phase_callback, "r-library:RCMetaR:complete")
 
-    _status("Loading grid\n................")
+    _status("Loading grid…")
     _emit_automation_phase(phase_callback, "r-library:grid:start")
     rloader.load_grid()
     _emit_automation_phase(phase_callback, "r-library:grid:complete")
@@ -322,44 +363,23 @@ def compose_application(
                 if os.environ.get(name):
                     os.environ[name] = os.path.abspath(os.environ[name])
         settings.setup_directories()
-        meta = _finish_composition(app, main_window, splash=None)
+        runtime_error = None
+        try:
+            splash = _load_composition_runtime(
+                app, interactive=interactive, phase_callback=phase_callback, r_loader=r_loader
+            )
+        except Exception as error:
+            if not interactive:
+                raise
+            runtime_error = error
+        meta = _finish_composition(app, main_window, splash=splash)
         # Windows cannot remove an application base directory while it is cwd.
         meta.destroyed.connect(lambda: os.chdir(previous_directory))
-        meta.toggle_menu_options_that_require_dataset(False)
-        meta.setEnabled(False)
-        if sys.platform != "darwin":
-            meta.setCursor(QtCore.Qt.CursorShape.WaitCursor)
-        meta._update_project_identity("Starting…")
-        meta.statusBar().showMessage("Starting R…")
-        app.processEvents()
         _emit_automation_phase(phase_callback, "window:visible")
-
-        def start_r():
-            try:
-                _invoke_r_loader(r_loader or load_R_libraries, app, None, phase_callback)
-                from rc_metastudio import r_bridge
-                r_bridge.reset_r_working_directory()
-                r_backend.mark_ready()
-                meta.model.set_confidence_level(meta.model.get_confidence_level())
-                meta.model_updated()
-                meta.tableView._enable_analysis_menus_if_appropriate()
-                meta.setEnabled(True)
-                if sys.platform != "darwin":
-                    meta.unsetCursor()
-                meta._update_project_identity()
-                meta.statusBar().clearMessage()
-            except Exception as error:
-                meta.setEnabled(True)
-                if sys.platform != "darwin":
-                    meta.unsetCursor()
-                meta._update_project_identity("R failed to start")
-                meta.statusBar().showMessage("R failed to start")
-                meta._show_analysis_backend_error(error)
-
-        startup_timer = QtCore.QTimer(meta)
-        startup_timer.setSingleShot(True)
-        startup_timer.timeout.connect(start_r)
-        startup_timer.start(0)
+        if runtime_error is not None:
+            meta.toggle_menu_options_that_require_dataset(False)
+            app.processEvents()
+            meta._show_analysis_backend_error(runtime_error, startup=True)
         return app, meta
     except BaseException:
         _dispose_new_top_levels(app, baseline_ids, (splash,))
@@ -378,20 +398,25 @@ def _prepare_composition(app, main_window_loader):
 def _load_composition_runtime(
     app, *, interactive, phase_callback, r_loader
 ):
-    loader = r_loader or load_R_libraries
-    if not interactive:
-        if os.environ.get("RCMS_REQUIRE_IN_PROCESS_RPY2") == "1":
-            _invoke_r_loader(loader, app, None, phase_callback)
+    if not interactive and r_loader is None and os.environ.get("RCMS_REQUIRE_IN_PROCESS_RPY2") != "1":
         return None
-
-    splash = create_startup_splash()
-    splash.show()
-    splash_starttime = time.time()
-    _invoke_r_loader(loader, app, splash, phase_callback)
-    time_elapsed = time.time() - splash_starttime
-    if time_elapsed < SPLASH_DISPLAY_TIME:
-        QThread.msleep(max(0, round((SPLASH_DISPLAY_TIME - time_elapsed) * 1000)))
-    return splash
+    splash = create_startup_splash() if interactive else None
+    try:
+        if splash is not None:
+            splash.showMessage("Starting R…")
+            splash.show()
+            app.processEvents()
+            _emit_automation_phase(phase_callback, "splash:visible")
+        _invoke_r_loader(r_loader or load_R_libraries, app, splash, phase_callback)
+        from rc_metastudio import r_bridge
+        r_bridge.reset_r_working_directory()
+        r_backend.mark_ready()
+        return splash
+    except BaseException:
+        from rc_metastudio import r_runtime
+        r_runtime.mark_unavailable()
+        dispose_qobjects(app, (splash,))
+        raise
 
 
 def _invoke_r_loader(loader, app, splash, phase_callback):
@@ -403,11 +428,10 @@ def _invoke_r_loader(loader, app, splash, phase_callback):
 
 def _finish_composition(app, main_window, *, splash):
     meta = main_window.MainWindow()
-    if splash is not None:
-        splash.finish(meta)
     meta.workspace.mark_saved()
     _show_main_window(meta)
     if splash is not None:
+        splash.finish(meta)
         dispose_qobjects(app, (splash,))
     return meta
 

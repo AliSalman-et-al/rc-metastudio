@@ -24,6 +24,11 @@ def mark_ready() -> None:
     _READY = True
 
 
+def mark_unavailable() -> None:
+    global _READY
+    _READY = False
+
+
 _DLL_DIRECTORY_HANDLES = []
 _RUNTIME_IDENTITY = None
 _BOOTSTRAP_THREAD_ID = None

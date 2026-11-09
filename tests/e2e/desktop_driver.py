@@ -2300,29 +2300,25 @@ base_path_patch = patch(
 base_path_patch.start()
 try:
     _startup_phases["composition:start"] = time.time()
-    app, window = automation.start_automation(
-        phase_callback=lambda phase: _startup_phases.update({phase: time.time()})
-    )
-    assert "rpy2.robjects" not in sys.modules, "R imported before the window appeared"
-    assert window.isVisible()
-    assert not window.action_go.isEnabled()
-    assert not window.isEnabled(), "startup shell looks ready before R is usable"
-    if sys.platform == "darwin":
-        assert window.cursor().shape() != QtCore.Qt.CursorShape.WaitCursor
-    else:
-        assert window.cursor().shape() == QtCore.Qt.CursorShape.WaitCursor
-    assert window.statusBar().currentMessage() == "Starting R…"
-    assert window.dataset_file_lbl.text() == "Starting… · Untitled dataset"
-    from rc_metastudio import r_bridge, r_backend
-    try:
-        r_bridge.execute_r_string("1 + 1")
-    except r_backend.AnalysisBackendUnavailableError as error:
-        assert str(error) == "R is still starting", str(error)
-    else:
-        raise AssertionError("pre-ready R request succeeded")
-    app.processEvents()
+    def observe_startup(phase):
+        _startup_phases[phase] = time.time()
+        if phase == "splash:visible" or phase.startswith("r-library:") and phase.endswith(":start"):
+            splashes = [w for w in QtWidgets.QApplication.topLevelWidgets()
+                        if isinstance(w, QtWidgets.QSplashScreen) and w.isVisible()]
+            assert len(splashes) == 1
+            assert splashes[0].message() in {"Starting R…", "Loading metafor…", "Loading RCMetaR…", "Loading grid…"}
+            assert not any(isinstance(w, QtWidgets.QMainWindow) and w.isVisible()
+                           for w in QtWidgets.QApplication.topLevelWidgets())
+            if EVIDENCE is not None:
+                splashes[0].grab().save(str(EVIDENCE / (phase.replace(":", "-") + ".png")))
+
+    app, window = automation.start_automation(phase_callback=observe_startup)
+    from rc_metastudio import r_backend
     assert r_backend.is_ready()
-    assert window.isEnabled()
+    assert window.isVisible() and window.isEnabled()
+    assert not any(isinstance(w, QtWidgets.QSplashScreen) and w.isVisible()
+                   for w in app.topLevelWidgets())
+    assert window.statusBar().currentMessage() == ""
     assert window.cursor().shape() != QtCore.Qt.CursorShape.WaitCursor
     assert window.dataset_file_lbl.text() == "Ready to create or open a dataset · Untitled dataset"
     if EVIDENCE is not None and os.environ.get("RCMS_DRIVE_STARTED"):

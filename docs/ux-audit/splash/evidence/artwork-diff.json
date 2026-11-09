@@ -1,0 +1,24 @@
+{
+  "command": "uv run python docs/ux-audit/splash/compare_artwork.py",
+  "reference_crop": [
+    80,
+    80,
+    2000,
+    1280
+  ],
+  "artwork_size": [
+    1920,
+    1200
+  ],
+  "excluded": "runtime text rectangles and 3 physical pixel border affected by presentation shadow",
+  "mean_absolute_RGB": [
+    0.054914055149970976,
+    0.054973153255686046,
+    0.049717711225685184
+  ],
+  "different_pixels": 201712,
+  "compared_pixels": 2098206,
+  "max_channel_difference": 48,
+  "svg_identical_to_approved_html": true,
+  "svg_sha256": "18aa361a41483bbb1d459de8eeee683bfcb84b51e0881a0e6d7987da3c56b9c9"
+}

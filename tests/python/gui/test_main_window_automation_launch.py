@@ -3079,6 +3079,7 @@ def test_r_ready_preserves_model_driven_analysis_eligibility(tmp_path, monkeypat
         rows = window.model.current_sheet.rows
         for index, row in enumerate(rows):
             row.manually_excluded = index >= included
+        window.tableView.cell_content_changed(None)
         app.processEvents()
         assert r_runtime.is_ready()
         assert window.action_go.isEnabled() is (included >= 2)

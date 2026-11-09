@@ -981,12 +981,18 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         else:
             self._show_analysis_preparation_error(exception)
 
-    def _show_analysis_backend_error(self, exception):
-        message = (
-            "The analysis backend could not be reached, so "
-            "RC MetaStudio cannot build the Method & Parameters dialog.\n\n"
-            "Details: %s: %s" % (exception.__class__.__name__, exception)
-        )
+    def _show_analysis_backend_error(self, exception, *, startup=False):
+        if startup:
+            message = (
+                "The analysis backend (R) could not start. "
+                "Install or repair the pinned R/RCMetaR runtime, then restart RC MetaStudio."
+            )
+        else:
+            message = (
+                "The analysis backend could not be reached, so "
+                "RC MetaStudio cannot build the Method & Parameters dialog."
+            )
+        message += "\n\nDetails: %s: %s" % (exception.__class__.__name__, exception)
         QMessageBox.critical(self, "Analysis Backend Unavailable", message)
 
     def _show_analysis_preparation_error(self, exception):
