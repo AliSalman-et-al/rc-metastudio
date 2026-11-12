@@ -116,6 +116,10 @@ class AnalysisUnit:
     def arms(self):
         return {arm.name: arm for arm in self._arms_by_id.values()}
 
+    def copy_for_edit(self) -> "AnalysisUnit":
+        """Copy measurements without copying their owning sheet and its rows."""
+        return copy.deepcopy(self, {id(self.sheet): self.sheet})
+
     def adopt_calculated_state(self, candidate: "AnalysisUnit") -> None:
         """Publish a validated candidate while preserving this unit's identity.
 
@@ -125,7 +129,6 @@ class AnalysisUnit:
         ``__dict__`` restoration.
         """
         self.is_diagnostic = candidate.is_diagnostic
-        self.sheet = candidate.sheet
         self.stable_id = candidate.stable_id
         self.raw_data_length = candidate.raw_data_length
         existing_arms = self._arms_by_id

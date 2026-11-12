@@ -13,6 +13,7 @@ from typing import Callable, Protocol, cast
 
 from rc_metastudio import r_bridge
 from rc_metastudio.analysis_results import PlotRegenerator
+from rc_metastudio.r_call_serialization import serialized_r_call
 
 
 class PlotServiceError(RuntimeError):
@@ -61,6 +62,7 @@ class PlotService:
     def __init__(self, bridge: PlotBackend | None = None) -> None:
         self.bridge = bridge if bridge is not None else cast(PlotBackend, r_bridge)
 
+    @serialized_r_call
     def load_params(self, params_path: str) -> dict[str, object] | None:
         """Load persisted plot parameters, returning ``None`` when unavailable."""
         params = self.bridge.load_vars_for_plot(params_path, return_params_dict=True)
@@ -75,6 +77,7 @@ class PlotService:
             result[key] = value
         return result
 
+    @serialized_r_call
     def apply_edits(
         self,
         *,
@@ -127,6 +130,7 @@ class PlotService:
             return
         raise PlotServiceError("Plot is not editable: %s" % regenerator)
 
+    @serialized_r_call
     def export(
         self, *, regenerator: PlotRegenerator, params_path: str, output_path: str
     ) -> None:
@@ -162,6 +166,8 @@ class PlotService:
         output_param: str,
         display_param: str,
     ) -> None:
+        if bridge.load_vars_for_plot(params_path) is False:
+            raise PlotServiceError(f"Stored plot bundle is incomplete: {params_path}")
         target_path = Path(output_path)
         transaction_dir = Path(
             tempfile.mkdtemp(prefix=".rcms-plot-", dir=str(target_path.parent))

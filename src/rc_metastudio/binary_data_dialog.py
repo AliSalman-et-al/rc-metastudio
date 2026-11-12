@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Binary outcome data entry dialog."""
 
-import copy
 from contextlib import ExitStack
 from functools import partial
 from itertools import product
@@ -851,7 +850,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
     def restore_analysis_unit(self, old_analysis_unit):
         """Restores the analysis_unit data and resets the form"""
-        self.analysis_unit = copy.deepcopy(old_analysis_unit)
+        self.analysis_unit = old_analysis_unit.copy_for_edit()
 
         self.initialize_form()  # clear form first
         self._update_raw_data()
@@ -899,7 +898,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             col = required(col, "edited count column")
             old_table[row][col] = (old_value, old_table[row][col][1])
 
-        old_analysis_unit = copy.deepcopy(analysis_unit)
+        old_analysis_unit = analysis_unit.copy_for_edit()
         return old_analysis_unit, old_table
 
     def cell_changed(self, row, col):

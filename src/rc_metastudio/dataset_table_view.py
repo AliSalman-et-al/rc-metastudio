@@ -60,6 +60,7 @@ class MainWindowProtocol(Protocol):
     twoArmMetricMenu: QMenu
 
     def data_dirtied(self) -> None: ...
+    def _commit_model_operation(self, operation) -> None: ...
     def data_error(self, message: str) -> None: ...
     def delete_study(self, study, *, study_index: int) -> None: ...
     def edit_group_name(self, group: str) -> None: ...
@@ -487,13 +488,11 @@ class DatasetTableView(QtWidgets.QTableView):
             return False
 
         owner = self._main_gui()
-        owner.workspace.begin_change()
-        try:
+        def clear():
             for index in editable_indexes:
                 model.setData(index, "")
             model.reset_model()
-        finally:
-            owner.workspace.end_change()
+        owner._commit_model_operation(clear)
         self._enable_analysis_menus_if_appropriate()
         return True
 
@@ -506,8 +505,7 @@ class DatasetTableView(QtWidgets.QTableView):
             return
         columns = sorted({index.column() for index in indexes})
         owner = self._main_gui()
-        owner.workspace.begin_change()
-        try:
+        def fill():
             model = self.model()
             for column in columns:
                 rows = sorted(index.row() for index in indexes if index.column() == column)
@@ -516,8 +514,7 @@ class DatasetTableView(QtWidgets.QTableView):
                     index = model.index(row, column)
                     if model.flags(index) & Qt.ItemFlag.ItemIsEditable:
                         model.setData(index, value)
-        finally:
-            owner.workspace.end_change()
+        owner._commit_model_operation(fill)
 
     def _move_current_index_vertically(self, row_delta):
         self._move_index_vertically_from(self.currentIndex(), row_delta)
@@ -570,9 +567,7 @@ class DatasetTableView(QtWidgets.QTableView):
             # dispatch on the data type
             form = None
             study_index = row
-            analysis_unit = copy.deepcopy(
-                self.model().get_current_analysis_unit_for_study(study_index)
-            )
+            analysis_unit = self.model().get_current_analysis_unit_for_study(study_index).copy_for_edit()
             arm_names = self.model().arm_names
             current_effect = self.model().current_effect
             arm_key = self.model().get_current_arm_key()

@@ -1,5 +1,6 @@
 from rc_metastudio.project_domain import SheetId
 import os
+import copy
 from pathlib import Path
 from typing import cast
 from types import SimpleNamespace
@@ -24,6 +25,9 @@ prepare_generated_ui_imports()
 
 
 class FakeContinuousAnalysisUnit:
+    def copy_for_edit(self):
+        return copy.deepcopy(self)
+
     def calculator_source(self, effect, arm_key):
         return getattr(self, "selected_source", None)
 

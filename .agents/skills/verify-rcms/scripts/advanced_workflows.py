@@ -2066,6 +2066,7 @@ def table_covariates(app, window, record):
           lambda: header_action(app, window, dose_id, "Create category copy of Dose…", record))
     converted = window.model.current_sheet.covariates[-1]
     assert converted["name"] == "Dose (category)"
+    assert all(row.analysis_unit.sheet is window.model.current_sheet for row in window.model.current_sheet.rows)
     assert window.model.current_sheet.rows[0].covariate_values[converted["id"]] == "Low"
     from rc_metastudio.edit_name_dialogs import EditCovariateNameDialog
     def rename_copy(dialog):

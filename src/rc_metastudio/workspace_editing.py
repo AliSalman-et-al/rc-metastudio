@@ -614,7 +614,8 @@ class WorkspaceEditingService:
         if error:
             return AppliedWorkspaceEdit(error=error)
         unit = self._analysis_unit(dataset, study, context)
-        old_unit = copy.deepcopy(unit)
+        # The sheet owns this unit; it is not part of the editable measurements.
+        old_values = copy.deepcopy(unit.__dict__, {id(unit.sheet): unit.sheet})
         try:
             position = context.raw_columns.index(target.column)
             per_group = len(unit.get_raw_data_for_arm(context.arm_names[0]))
@@ -628,7 +629,7 @@ class WorkspaceEditingService:
                 recalculate(target.row)
         except Exception as exc:
             unit.__dict__.clear()
-            unit.__dict__.update(copy.deepcopy(old_unit.__dict__))
+            unit.__dict__.update(old_values)
             return AppliedWorkspaceEdit(error=f"Could not compute study effects from the edited raw data: {exc}")
         return AppliedWorkspaceEdit()
 

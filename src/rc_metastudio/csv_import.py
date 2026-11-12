@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import csv
+from contextlib import ExitStack
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -64,7 +65,7 @@ def read_rows(
     if suffix == ".xls":
         raise CsvImportError("Save this workbook as .xlsx before importing it.")
     if suffix == ".xlsx":
-        headers, rows, _names, _selected = read_xlsx(path, worksheet, year_column=year_column, numeric_columns=numeric_columns, notices=notices)
+        headers, rows, _names, _selected = read_xlsx(path, worksheet, has_headers=has_headers, year_column=year_column, numeric_columns=numeric_columns, notices=notices)
     else:
         with Path(path).open(encoding="utf-8-sig", newline="") as stream:
             reader = (
@@ -102,8 +103,6 @@ def parse_csv(
         numeric_columns=column_mapping[1:] if column_mapping else range(1, len(expected_headers)),
         notices=notices,
     )
-    if Path(path).suffix.lower() == ".xlsx":
-        has_headers = True
     if has_headers and headers:
         for row_number, row in enumerate(rows, start=2):
             if len(row) > len(headers):
@@ -258,39 +257,49 @@ def _covariate_type(values: Iterable[str]) -> str:
     return "continuous"
 
 
+MAX_IMPORT_ROWS = 100_000
+MAX_IMPORT_COLUMNS = 512
+MAX_IMPORT_CELLS = 1_000_000
+
+
+def _xlsx_check_extent(sheet):
+    rows, columns = sheet.max_row or 0, sheet.max_column or 0
+    if rows > MAX_IMPORT_ROWS or columns > MAX_IMPORT_COLUMNS or rows * columns > MAX_IMPORT_CELLS:
+        raise CsvImportError("Worksheet exceeds the import limit: 100,000 rows, 512 columns and 1,000,000 cells.")
+
+
 def _xlsx_metadata(path, sheet, selected, row_numbers, columns, notices):
     from zipfile import ZipFile
-    from xml.etree import ElementTree
-    # Streaming worksheets omit merge and visibility metadata. Inspect the XML
-    # first, opening a normal workbook only when that metadata is present.
-    with ZipFile(path) as archive:
-        xml = archive.read(sheet._worksheet_path)
-    root = ElementTree.fromstring(xml)
-    ns = {"s": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
-    metadata = root.find("s:mergeCells", ns) is not None or any(e.get("hidden") == "1" for e in root.iter())
-    if metadata:
-        _xlsx_visible_metadata(path, selected, row_numbers, columns, notices)
+    from xml.parsers import expat
+    from openpyxl.utils.cell import range_boundaries
 
+    imported_rows = set(row_numbers)
+    hidden_rows = set()
+    hidden_columns = set()
 
-def _xlsx_visible_metadata(path, selected, row_numbers, columns, notices):
-    from openpyxl import load_workbook
-    normal = load_workbook(path, read_only=False, data_only=False)
-    try:
-        full = normal[selected]
-        for merged in full.merged_cells.ranges:
-            if merged.min_row <= row_numbers[-1] and merged.max_row >= row_numbers[0] and merged.min_col <= columns[-1]+1 and merged.max_col >= columns[0]+1:
-                raise CsvImportError(f"{selected}!{merged} intersects the data; unmerge these cells first.")
-        _xlsx_hidden_notices(full, row_numbers, columns, notices)
-    finally:
-        normal.close()
+    def inspect_element(name, attrs):
+        tag = name.rsplit("}", 1)[-1]
+        if tag == "mergeCell":
+            left, top, right, bottom = range_boundaries(attrs["ref"])
+            if top <= row_numbers[-1] and bottom >= row_numbers[0] and left <= columns[-1] + 1 and right >= columns[0] + 1:
+                raise CsvImportError(f"{selected}!{attrs['ref']} intersects the data; unmerge these cells first.")
+        if attrs.get("hidden") not in ("1", "true"):
+            return
+        if tag == "row" and int(attrs["r"]) in imported_rows:
+            hidden_rows.add(int(attrs["r"]))
+        elif tag == "col":
+            hidden_columns.update(i for i in columns if int(attrs["min"]) <= i + 1 <= int(attrs["max"]))
 
-def _xlsx_hidden_notices(full, row_numbers, columns, notices):
-    hidden_rows = sum(bool(full.row_dimensions[number].hidden) for number in row_numbers)
-    hidden_cols = sum(1 for i in columns if any(d.hidden and d.min <= i+1 <= d.max for d in full.column_dimensions.values()))
-    if notices is not None and (hidden_rows or hidden_cols):
-        for count, label in ((hidden_rows, "row"), (hidden_cols, "column")):
+    # Event parsing retains no worksheet XML tree or second normal workbook.
+    parser = expat.ParserCreate(namespace_separator="}")
+    parser.StartElementHandler = inspect_element
+    with ZipFile(path) as archive, archive.open(sheet._worksheet_path) as stream:
+        parser.ParseFile(stream)
+    if notices is not None:
+        for count, label in ((len(hidden_rows), "row"), (len(hidden_columns), "column")):
             if count:
                 notices.append(f"{count} hidden {label}{' was' if count == 1 else 's were'} imported.")
+
 
 def _xlsx_cell_value(cell, cached, selected, row_index, output_column, year_column, numeric_columns, dates):
     from datetime import date, datetime
@@ -298,7 +307,7 @@ def _xlsx_cell_value(cell, cached, selected, row_index, output_column, year_colu
     value = cell.value
     location = f"{selected}!{cell.coordinate}" if value is not None else ""
     if cell.data_type == "f":
-        value = cached.get((cell.row, cell.column))
+        value = cached.value if cached is not None else None
         if value is None:
             raise CsvImportError(f"{location} has a formula with no saved value. Open and save it in Excel first.")
         formula = 1
@@ -326,17 +335,23 @@ def _xlsx_select_sheet(book, worksheet):
 
 
 def _xlsx_has_values(sheet):
+    _xlsx_check_extent(sheet)
     return any(any(cell.value is not None for cell in row) for row in sheet.iter_rows())
 
 
-def _xlsx_cells(sheet):
-    cells = [list(row) for row in sheet.iter_rows() if any(cell.value is not None for cell in row)]
-    if not cells:
-        return [], [], []
-    row_numbers = [next(cell.row for cell in row if cell.value is not None) for row in cells]
-    columns = [i for i in range(max(map(len, cells)))
-               if any(i < len(row) and row[i].value is not None for row in cells)]
-    return cells, row_numbers, columns
+def _xlsx_extent(sheet):
+    _xlsx_check_extent(sheet)
+    row_numbers, columns = [], set()
+    formulas = False
+    for row_index, row in enumerate(sheet.iter_rows(), start=1):
+        if row_index > MAX_IMPORT_ROWS or len(row) > MAX_IMPORT_COLUMNS or row_index * len(row) > MAX_IMPORT_CELLS:
+            raise CsvImportError("Worksheet exceeds the import cell limit.")
+        populated = [i for i, cell in enumerate(row) if cell.value is not None]
+        if populated:
+            row_numbers.append(row_index)
+            columns.update(populated)
+            formulas = formulas or any(row[i].data_type == "f" for i in populated)
+    return row_numbers, sorted(columns), formulas
 
 
 def xlsx_worksheets(path):
@@ -352,31 +367,37 @@ def xlsx_worksheets(path):
         book.close()
 
 
-def read_xlsx(path, worksheet=None, *, year_column=None, numeric_columns=(), notices=None):
-    """Read stored worksheet cells; preserve coordinates for actionable errors."""
+def read_xlsx(path, worksheet=None, *, has_headers=True, year_column=None, numeric_columns=(), notices=None):
+    """Read bounded worksheet rows, preserving coordinates for actionable errors."""
     from openpyxl import load_workbook
 
-    try:
-        book = load_workbook(path, read_only=True, data_only=False)
-        saved = load_workbook(path, read_only=True, data_only=True)
-    except Exception as exc:
-        raise CsvImportError("Could not read this workbook; use an unprotected .xlsx file.") from exc
-    try:
+    with ExitStack() as cleanup:
+        def open_book(data_only):
+            try:
+                book = load_workbook(path, read_only=True, data_only=data_only)
+            except Exception as exc:
+                raise CsvImportError("Could not read this workbook; use an unprotected .xlsx file.") from exc
+            cleanup.callback(book.close)
+            return book
+
+        book = open_book(False)
         names, selected = _xlsx_select_sheet(book, worksheet)
         sheet = book[selected]
-        cells, row_numbers, columns = _xlsx_cells(sheet)
-        if not cells:
+        row_numbers, columns, has_formulas = _xlsx_extent(sheet)
+        if not row_numbers:
             return [], [], names, selected
         _xlsx_metadata(path, sheet, selected, row_numbers, columns, notices)
-        cached = {(c.row, c.column): c.value for row in saved[selected].iter_rows() for c in row if c.value is not None}
-        formulas = 0
-        dates = []
-        result = []
-        for row_index, row in enumerate(cells):
+        cached_rows = iter(open_book(True)[selected].iter_rows()) if has_formulas else None
+        formulas, dates, result = 0, [], []
+        for row in sheet.iter_rows():
+            cached = next(cached_rows, ()) if cached_rows is not None else ()
+            if not any(cell.value is not None for cell in row):
+                continue
             values = []
             for output_column, i in enumerate(columns):
                 value, formula = _xlsx_cell_value(
-                    row[i], cached, selected, row_index, output_column,
+                    row[i], cached[i] if i < len(cached) else None, selected,
+                    len(result) + int(not has_headers), output_column,
                     year_column, numeric_columns, dates)
                 formulas += formula
                 values.append(value)
@@ -386,7 +407,4 @@ def read_xlsx(path, worksheet=None, *, year_column=None, numeric_columns=(), not
                 notices.append(f"{formulas} formula cells use their saved values.")
             if dates:
                 notices.append("Dates use their year: " + ", ".join(dates) + ".")
-        return result[0], result[1:], names, selected
-    finally:
-        book.close()
-        saved.close()
+        return (result[0], result[1:], names, selected) if has_headers else ([], result, names, selected)

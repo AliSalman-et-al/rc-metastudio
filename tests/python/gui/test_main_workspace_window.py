@@ -236,8 +236,7 @@ def test_added_covariate_keeps_identity_and_width_through_undo_redo(qapp):
     window = main_window.MainWindow()
     try:
         _create_sheet(window)
-        command = window._make_add_covariate_command("Age", "continuous")
-        window._commit_model_operation(command.redo)
+        window._commit_model_operation(lambda: window._add_new_covariate("Age", "continuous"))
         column = window.model.columnCount() - 1
         identity_before = window.model.headerData(
             column, QtCore.Qt.Orientation.Horizontal, WORKSPACE_COLUMN_IDENTITY_ROLE
@@ -253,6 +252,37 @@ def test_added_covariate_keeps_identity_and_width_through_undo_redo(qapp):
         )
         assert identity_after == identity_before
         assert window.tableView.columnWidth(column) == 277
+    finally:
+        window.hide()
+        window.deleteLater()
+        qapp.processEvents()
+
+
+def test_failed_workspace_operation_restores_model_and_existing_history(qapp):
+    # A late failure must restore data, history and adapter binding, and a
+    # later successful operation must remain undoable.
+    from rc_metastudio import main_window
+
+    window = main_window.MainWindow()
+    try:
+        _create_sheet(window)
+        window.workspace.mark_saved()
+        before = window.workspace.document
+
+        def fail():
+            window.model.dataset.title = "partial mutation"
+            window._add_new_covariate("Partial", "continuous")
+            raise OSError("late operation failure")
+
+        with pytest.raises(OSError, match="late operation failure"):
+            window._commit_model_operation(fail)
+        assert window.workspace.document == before
+        assert window.model.dataset is required(window.workspace.runtime, "workspace runtime").dataset
+        assert not window.workspace.is_dirty
+        assert "Partial" not in window.model.get_covariate_names()
+        window._commit_model_operation(lambda: window._add_new_covariate("Kept", "continuous"))
+        window.undo()
+        assert window.workspace.document == before
     finally:
         window.hide()
         window.deleteLater()

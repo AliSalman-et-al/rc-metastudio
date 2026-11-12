@@ -9,8 +9,92 @@ import pytest
 from rc_metastudio import project_format
 from rc_metastudio.project_format import load_project
 from rc_metastudio.workspace_session import WorkspaceSession
+from rc_metastudio.runtime_types import required
 
 ROOT = Path(__file__).resolve().parents[3]
+
+
+def test_abort_restores_nested_edit_without_consuming_existing_redo():
+    # Failure modes: partial mutations survive, redo disappears, nested close
+    # commits an aborted graph, or the next operation inherits stale depth.
+    session = WorkspaceSession(load_project(ROOT / "sample_projects/amino.rcms"))
+    required(session.runtime, "workspace runtime").dataset.title = "first edit"
+    session.checkpoint()
+    assert session.undo()
+    before = session.document
+    session.begin_change()
+    required(session.runtime, "workspace runtime").dataset.title = "partial outer"
+    session.begin_change()
+    required(session.runtime, "workspace runtime").dataset.notes = "partial inner"
+    session.abort_change()
+    session.end_change()
+    session.end_change()
+    assert session.document == before
+    assert session.can_redo and not session.can_undo
+    assert not session.is_dirty
+    session.begin_change()
+    required(session.runtime, "workspace runtime").dataset.title = "recovered"
+    session.end_change()
+    assert session.undo() and session.document == before
+    assert session.redo() and required(session.runtime, "workspace runtime").dataset.title == "recovered"
+
+
+def test_history_retention_does_not_alias_live_edits():
+    session = WorkspaceSession(load_project(ROOT / "sample_projects/amino.rcms"))
+    for index in range(105):
+        required(session.runtime, "workspace runtime").dataset.title = f"edit {index}"
+        session.checkpoint()
+    undos = 0
+    while session.undo():
+        undos += 1
+    assert undos == 100
+    assert required(session.runtime, "workspace runtime").dataset.title == "edit 4"
+    for _ in range(100):
+        assert session.redo()
+    assert required(session.runtime, "workspace runtime").dataset.title == "edit 104"
+    required(session.runtime, "workspace runtime").dataset.title = "new branch"
+    session.checkpoint()
+    assert session.undo() and required(session.runtime, "workspace runtime").dataset.title == "edit 104"
+
+
+def test_failed_transaction_serialization_remains_abortable():
+    session = WorkspaceSession(load_project(ROOT / "sample_projects/amino.rcms"))
+    before = session.document
+    session.begin_change()
+    required(session.runtime, "workspace runtime").dataset.sheets[0].settings["bad"] = float("nan")
+    with pytest.raises(ValueError):
+        session.end_change()
+    assert session.abort_change() is not None
+    assert session.document == before
+    assert not session.can_undo and not session.is_dirty
+
+
+def test_save_cannot_publish_a_half_finished_transaction(tmp_path):
+    session = WorkspaceSession(load_project(ROOT / "sample_projects/amino.rcms"))
+    session.begin_change()
+    required(session.runtime, "workspace runtime").dataset.title = "unfinished"
+    target = tmp_path / "unfinished.rcms"
+    with pytest.raises(RuntimeError, match="transaction"):
+        session.save(target)
+    assert not target.exists()
+    session.abort_change()
+    assert not session.is_dirty
+
+
+@pytest.mark.parametrize("committed_sheet", [0, 1])
+def test_redo_restores_committed_sheet_after_unrelated_navigation(committed_sheet):
+    session = WorkspaceSession(load_project(ROOT / "sample_projects/amino.rcms"))
+    runtime = required(session.runtime, "workspace runtime")
+    selected = runtime.dataset.sheets[committed_sheet].id
+    runtime.dataset.title = "changed"
+    session.select_sheet(selected)
+    session.checkpoint()
+    session.select_sheet(runtime.dataset.sheets[1 - committed_sheet].id)
+    assert session.undo()
+    assert required(session.runtime, "workspace runtime").model_state["current_sheet_id"] == selected
+    session.select_sheet(runtime.dataset.sheets[1 - committed_sheet].id)
+    assert session.redo()
+    assert required(session.runtime, "workspace runtime").model_state["current_sheet_id"] == selected
 
 
 def test_nested_transactions_publish_one_history_entry() -> None:

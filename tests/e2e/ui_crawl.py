@@ -30,10 +30,13 @@ def analysis_setup(driver, capture, missing):
         driver.csv_import(driver.app, driver.window)
     finally:
         driver.record_step = original_record
+    # The CSV drive ends on its effects-only example, which has no moderators.
+    driver.window.workspace.mark_saved()
+    assert driver.window.open(str(driver.WORK / "imported.rcms"), raise_on_error=True)
     for detail, action in (("subgroup", driver.window.action_subgroup_ma),
                            ("regression", driver.window.action_meta_regression)):
         if not action.isEnabled():
-            missing.append(f"E {detail}: amino has no eligible moderator; action disabled")
+            missing.append(f"E {detail}: imported CSV fixture has no eligible moderator; action disabled")
             continue
         action.trigger()
         driver.app.processEvents()
@@ -418,9 +421,7 @@ def shell(driver, capture, missing):
     capture("A-inline-rename", driver.window)
     driver.window._finish_sheet_rename(cancel=True)
     for number in range(19):
-        driver.window._add_sheet()
-        driver.window.sheet_name_edit.setText(f"Outcome {number + 2}")
-        driver.window._finish_sheet_rename()
+        driver.add_named_sheet(driver.app, driver.window, f"Outcome {number + 2}")
     assert driver.window.sheet_tabs.count() == 20
     capture("A-20-tab-overflow", driver.window)
     driver.window.resize(1024, 700)
@@ -494,12 +495,20 @@ def calculators(driver, capture, missing, prefix="D", families=None):
             for index in range(1 if prefix == "J" else form.input_mode_combo.count()):
                 form.input_mode_combo.setCurrentIndex(index)
                 driver.app.processEvents()
+                wait(100)
                 mode = form.input_mode_combo.currentData()
                 if prefix == "D" and isinstance(form, ContinuousDataDialog) and mode == "pre-post":
                     viewport = required(form.content_scroll.viewport())
-                    for table in (form.g1_pre_post_table, form.g2_pre_post_table):
-                        assert viewport.rect().contains(QtCore.QRect(table.mapTo(viewport, QtCore.QPoint()), table.size()))
-                    assert required(form.content_scroll.verticalScrollBar()).maximum() == 0
+                    # Calculator content deliberately scrolls on bounded screens.
+                    # Prove each grid is reachable, rather than requiring both
+                    # grids to fit in the viewport at the same time.
+                    for arm, table in enumerate((form.g1_pre_post_table, form.g2_pre_post_table), start=1):
+                        form.content_scroll.ensureWidgetVisible(table, 0, 0)
+                        driver.app.processEvents()
+                        wait(100)
+                        rect = QtCore.QRect(table.mapTo(viewport, QtCore.QPoint()), table.size())
+                        capture(f"{prefix}-calculator-continuous-pre-post-arm-{arm}", form)
+                        assert viewport.rect().contains(rect), (table.objectName(), rect, viewport.rect())
                 if prefix == "D" and mode == "estimate":
                     effect_group = form.groupBox if isinstance(form, BinaryDataDialog) else form.effect_group
                     assert effect_group.y() < form.input_mode_combo.geometry().bottom() + form.fontMetrics().lineSpacing() * 4

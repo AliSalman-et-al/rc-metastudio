@@ -1948,6 +1948,7 @@ def calculator(app, window, family):
     mouse_click(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=first_row)
     assert not callback_errors, callback_errors
     assert raw() == expected, (raw(), expected)
+    assert all(row.analysis_unit.sheet is window.model.current_sheet for row in window.model.current_sheet.rows)
     assert window.workspace.is_dirty
     original_font = QtGui.QFont(app.font())
     large_font = QtGui.QFont(original_font)

@@ -8,6 +8,36 @@ from rc_metastudio import plot_service, r_bridge
 from rc_metastudio.plot_service import PlotService, PlotServiceError
 
 
+def test_edit_loads_its_own_bundle_after_another_plot_was_loaded(tmp_path, monkeypatch):
+    # Failure modes: edits use another plot's ambient data, or a missing bundle
+    # reaches rendering and overwrites a last-good image.
+    bundle = tmp_path / "A"
+    output = tmp_path / "A.png"
+    output.write_text("last good")
+    Path(f"{bundle}.data").write_text("A data")
+    loaded = {"data": "B data"}
+
+    def load(path):
+        data = Path(f"{path}.data")
+        if not data.exists():
+            return False
+        loaded["data"] = data.read_text()
+        return True
+
+    monkeypatch.setattr(r_bridge, "load_vars_for_plot", load)
+    monkeypatch.setattr(r_bridge, "update_plot_params", lambda params, **kw: Path(kw["outpath"]).write_text("params"))
+    monkeypatch.setattr(r_bridge, "regenerate_plot_data", lambda: None)
+    monkeypatch.setattr(r_bridge, "generate_forest_plot", lambda path: Path(path).write_text(loaded["data"]))
+    monkeypatch.setattr(r_bridge, "write_out_plot_data", lambda path: Path(f"{path}.plotdata").write_text(loaded["data"]))
+    PlotService().apply_edits(regenerator="forest", params_path=str(bundle),
+                             updated_params={"fp_outpath": str(output)}, output_path=str(output))
+    assert output.read_text() == "A data"
+    with pytest.raises(PlotServiceError, match="incomplete"):
+        PlotService().apply_edits(regenerator="forest", params_path=str(tmp_path / "missing"),
+                                 updated_params={}, output_path=str(output))
+    assert output.read_text() == "A data"
+
+
 def test_load_params_returns_none_when_artifact_is_missing(monkeypatch):
     monkeypatch.setattr(
         "rc_metastudio.plot_service.r_bridge.load_vars_for_plot",
@@ -41,6 +71,7 @@ def test_funnel_export_stops_when_bundle_load_fails(tmp_path, monkeypatch):
 def test_standard_plot_backup_failure_does_not_overwrite_originals(
     tmp_path, monkeypatch
 ):
+    monkeypatch.setattr(r_bridge, "load_vars_for_plot", lambda path: True)
     params_path = tmp_path / "forest"
     persisted_params = Path(f"{params_path}.params")
     persisted_plotdata = Path(f"{params_path}.plotdata")
@@ -74,6 +105,7 @@ def test_standard_plot_backup_failure_does_not_overwrite_originals(
 def test_standard_plot_transaction_rolls_back_display_and_render_files(
     tmp_path, monkeypatch
 ):
+    monkeypatch.setattr(r_bridge, "load_vars_for_plot", lambda path: True)
     params_path = tmp_path / "forest"
     persisted_params = Path(f"{params_path}.params")
     persisted_plotdata = Path(f"{params_path}.plotdata")
@@ -131,6 +163,7 @@ def test_standard_plot_transaction_rolls_back_display_and_render_files(
 def test_standard_plot_transaction_restores_files_after_partial_promotion(
     tmp_path, monkeypatch, restore_fails
 ):
+    monkeypatch.setattr(r_bridge, "load_vars_for_plot", lambda path: True)
     params_path = tmp_path / "forest"
     persisted_params = Path(f"{params_path}.params")
     persisted_plotdata = Path(f"{params_path}.plotdata")

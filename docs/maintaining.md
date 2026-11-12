@@ -129,6 +129,15 @@ Other Linux distributions are not part of the release qualification baseline.
 
 ## Work with generated Qt code
 
+Workspace history retains the latest 100 committed edits. An operation that raises
+restores its pre-operation snapshot; selecting a sheet does not create an edit or
+change the sheet restored by Redo. History stores one snapshot per step.
+
+XLSX import accepts worksheet extents up to 100,000 rows, 512 columns and
+1,000,000 cells. This includes distant formatted cells in the workbook's declared
+extent. Trim unused worksheet rows/columns before importing a file above those
+limits. Formula imports use saved values and still require saving in Excel first.
+
 Files under `src/rc_metastudio/forms/*.ui` are the editable form sources. Generated Python modules belong under the selected build directory and must not be committed. `scripts/build_qt6.py generate` compiles forms and resources before tests, typing, or packaging.
 
 ## Repository layout

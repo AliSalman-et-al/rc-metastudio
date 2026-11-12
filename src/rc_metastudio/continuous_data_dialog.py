@@ -7,7 +7,6 @@
 #
 # This dialog edits the analysis unit directly because most displayed fields
 # are transient imputation inputs rather than stored raw data.
-import copy
 from contextlib import ExitStack
 from functools import partial
 from typing import TYPE_CHECKING, TypeGuard, cast
@@ -968,7 +967,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
     def restore_analysis_unit(self, old_analysis_unit):
         """Restores the analysis_unit data and resets the form"""
-        self.analysis_unit = copy.deepcopy(old_analysis_unit)
+        self.analysis_unit = old_analysis_unit.copy_for_edit()
 
         self.initialize_form()  # clear form first
         self.update_raw_data()
@@ -1032,7 +1031,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             old_cell = old_tables_data[self._get_index_of_table(table)][row][col]
             old_tables_data[self._get_index_of_table(table)][row][col] = (old_value, old_cell[1], old_cell[2])
 
-        old_analysis_unit = copy.deepcopy(analysis_unit)
+        old_analysis_unit = analysis_unit.copy_for_edit()
         return old_analysis_unit, old_tables_data
 
     def _get_index_of_table(self, table):
@@ -1310,7 +1309,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
     def _capture_dialog_state(self):
         return {
-            "analysis_unit": copy.deepcopy(self.analysis_unit),
+            "analysis_unit": self.analysis_unit.copy_for_edit(),
             "tables": self.save_tables_data(),
             "correlation": self.correlation_pre_post.text(),
             "metric_parameter": self.metric_parameter,
@@ -1325,7 +1324,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
     def _restore_dialog_state(self, state):
         """Restore directly without invoking R, imputation, or calculator setters."""
-        self.analysis_unit = copy.deepcopy(state["analysis_unit"])
+        self.analysis_unit = state["analysis_unit"].copy_for_edit()
         for table, rows in zip(self.tables, state["tables"]):
             blocked = table.blockSignals(True)
             try:

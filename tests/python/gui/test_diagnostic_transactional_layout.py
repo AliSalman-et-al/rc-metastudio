@@ -1,4 +1,5 @@
 import os
+import copy
 from pathlib import Path
 from typing import cast
 
@@ -23,6 +24,9 @@ AVAILABLE = QtCore.QRect(20, 30, 800, 600)
 
 
 class FakeDiagnosticAnalysisUnit:
+    def copy_for_edit(self):
+        return copy.deepcopy(self)
+
     def __init__(self, raw_data=None, effects=None):
         self.raw_data = list(raw_data or [12, 3, 4, 21])
         self.effects = dict(effects or {})

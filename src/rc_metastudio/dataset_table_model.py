@@ -251,8 +251,6 @@ class DatasetTableModel(QAbstractTableModel):
             self._display_studies.append(self._blank_study)
 
 
-        self.update_current_group_names()
-
         self.update_column_indices()
 
         # Default binary effect until the active outcome selection provides one.
@@ -315,12 +313,6 @@ class DatasetTableModel(QAbstractTableModel):
 
     def update_current_outcome(self):
         self.set_current_sheet(self.current_sheet_id or (self.dataset.sheets[0].id if self.dataset.sheets else None))
-
-    def update_current_time_points(self):
-        pass
-
-    def update_current_group_names(self):
-        pass
 
     def update_column_indices(self):
         current_data_type = self.get_current_outcome_type()
@@ -1460,6 +1452,7 @@ class DatasetTableModel(QAbstractTableModel):
         )
 
     def set_current_analysis_unit_for_study(self, study_index, new_analysis_unit):
+        new_analysis_unit.sheet = self.current_sheet
         self._study_for_row(study_index).analysis_unit = new_analysis_unit
 
     def get_current_analysis_unit_for_study(self, study_index):

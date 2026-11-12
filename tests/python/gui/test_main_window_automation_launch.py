@@ -1563,8 +1563,7 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
     )
     def load_selected_params(path, return_params_dict=False):
         assert path == params_path
-        assert return_params_dict is True
-        return {"fp_col1_str": "Study"}
+        return {"fp_col1_str": "Study"} if return_params_dict else True
 
     monkeypatch.setattr(
         plot_service.r_bridge, "load_vars_for_plot", load_selected_params, raising=False
@@ -2014,6 +2013,7 @@ def test_edit_regression_plot_dialog_shows_only_bubble_options():
 def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
     tmp_path, monkeypatch
 ):
+    monkeypatch.setattr(plot_service.r_bridge, "load_vars_for_plot", lambda path: True)
     from rc_metastudio import r_backend
 
     r_backend.install_r_backend()

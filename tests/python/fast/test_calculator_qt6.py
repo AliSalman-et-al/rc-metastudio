@@ -3,6 +3,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import copy
 import shutil
 import sys
 from pathlib import Path
@@ -577,6 +578,9 @@ def test_row_header_signals_are_restored_when_calculator_opening_raises(
 
 
 class FakeAnalysisUnit:
+    def copy_for_edit(self):
+        return copy.deepcopy(self)
+
     def get_se(self, source, effect, arm_key, confidence_multiplier):
         est, lower, upper = self.get_effect_and_ci_for_source(source, effect, arm_key, confidence_multiplier)
         return None if est is None or upper is None else (upper - est) / confidence_multiplier
@@ -1189,6 +1193,9 @@ def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
 
 
 class FakeDiagnosticAnalysisUnit:
+    def copy_for_edit(self):
+        return copy.deepcopy(self)
+
     def get_se(self, source, effect, arm_key, confidence_multiplier):
         est, lower, upper = self.get_effect_and_ci_for_source(source, effect, arm_key, confidence_multiplier)
         return None if est is None or upper is None else (upper - est) / confidence_multiplier
@@ -1272,6 +1279,9 @@ def test_diagnostic_calculator_grid_columns_fill_expanded_table_width(
 
 
 class FakeContinuousAnalysisUnit:
+    def copy_for_edit(self):
+        return copy.deepcopy(self)
+
     def get_se(self, source, effect, arm_key, confidence_multiplier):
         est, lower, upper = self.get_effect_and_ci_for_source(source, effect, arm_key, confidence_multiplier)
         return None if est is None or upper is None else (upper - est) / confidence_multiplier

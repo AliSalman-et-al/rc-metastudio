@@ -201,6 +201,36 @@ def test_raw_data_edit_on_placeholder_row_emits_study_name_error():
     assert errors == ["Please enter a study name before entering study data."]
 
 
+def test_failed_raw_preview_restores_values_and_keeps_sheet_ownership(monkeypatch):
+    # A failed preview must restore the cells without replacing the unit's
+    # owner with a deep-copied sheet (or retaining that sheet's copied rows).
+    model = _diagnostic_model_with_empty_cells()
+    sheet = model.current_sheet
+    unit = sheet.rows[0].analysis_unit
+    before = list(unit.get_raw_data_for_arms(model.arm_names))
+
+    def fail_preview(_row):
+        raise RuntimeError("preview failed")
+
+    monkeypatch.setattr(model, "update_outcome_if_possible", fail_preview)
+    assert not model.setData(model.index(0, model.RAW_DATA[0]), "1")
+    assert unit.get_raw_data_for_arms(model.arm_names) == before
+    assert unit.sheet is sheet
+
+
+def test_accepting_study_data_keeps_canonical_sheet_confidence():
+    import copy
+    model = _diagnostic_model_with_empty_cells()
+    sheet = model.current_sheet
+    candidate = copy.deepcopy(sheet.rows[0].analysis_unit)
+    model.set_current_analysis_unit_for_study(0, candidate)
+    sheet.settings["confidence_level"] = 90
+    assert candidate.sheet is sheet
+    assert candidate.sheet.settings["confidence_level"] == 90
+    candidate.adopt_calculated_state(copy.deepcopy(candidate))
+    assert candidate.sheet is sheet
+
+
 def test_direct_effect_edit_on_unnamed_study_emits_study_name_error(monkeypatch):
     model = _binary_model_with_blank_study()
     errors = []

@@ -7,7 +7,7 @@
 
 import os
 import math
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from typing import TypeVar, overload
 
 from PyQt6.QtGui import QColor
@@ -310,25 +310,6 @@ def is_nan(value: object) -> bool:
     """Return whether ``value`` has IEEE NaN comparison behavior."""
 
     return value != value
-
-
-class CallbackCommand:
-    """Execute paired redo and undo callbacks."""
-
-    def __init__(
-        self,
-        redo_f: Callable[[], None],
-        undo_f: Callable[[], None],
-        description: str = "",
-    ) -> None:
-        self.redo_f = redo_f
-        self.undo_f = undo_f
-
-    def redo(self) -> None:
-        self.redo_f()
-
-    def undo(self) -> None:
-        self.undo_f()
 
 
 @overload

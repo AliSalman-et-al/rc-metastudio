@@ -861,13 +861,17 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.workspace.begin_change()
         try:
             operation()
-        finally:
+            self.data_dirtied()
             self.workspace.end_change()
-
-    def _undo_clean_changed(self, is_clean):
-        """Keep project dirty state aligned with the active undo history."""
-        if not is_clean:
-            self._notify_user_that_data_is_unsaved()
+        except BaseException as error:
+            runtime = self.workspace.abort_change()
+            self._sheet_dragging = False
+            if runtime is not None:
+                try:
+                    self._install_workspace_runtime(runtime)
+                except Exception as restore_error:
+                    error.add_note(f"Workspace adapter restoration also failed: {restore_error}")
+            raise
 
     def meta_subgroup_get_cov(self):
         form = subgroup_analysis_dialog.SubgroupAnalysisDialog(self.model, parent=self)
@@ -1203,14 +1207,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 QMessageBox.warning(self, "Warning", str(exc))
                 return
 
-            def redo_f():
-                return self.model.rename_group(orig_group_name, new_group_name)
-
-            def undo_f():
-                return self.model.rename_group(new_group_name, orig_group_name)
-
-            rename_group_command = meta_globals.CallbackCommand(redo_f, undo_f)
-            self._commit_model_operation(rename_group_command.redo)
+            self._commit_model_operation(lambda: self.model.rename_group(orig_group_name, new_group_name))
 
     def add_covariate(self):
         form = add_new_dialogs.AddCovariateDialog(self, existing_names=self.model.get_covariate_names())
@@ -1228,26 +1225,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             # Covariate names must remain unique.
             new_covariate_type = str(form.datatype_cbo_box.currentData())
             self._commit_model_operation(
-                self._make_add_covariate_command(
-                    new_covariate_name, new_covariate_type
-                ).redo
+                lambda: self._add_new_covariate(new_covariate_name, new_covariate_type)
             )
-
-    def _make_add_covariate_command(self, covariate_name, covariate_type):
-        state = {"stable_id": None}
-
-        def redo():
-            covariate = self._add_new_covariate(
-                covariate_name, covariate_type, stable_id=state["stable_id"]
-            )
-            state["stable_id"] = covariate["id"]
-
-        def undo():
-            self._undo_add_new_covariate(covariate_name)
-
-        return meta_globals.CallbackCommand(
-            redo, undo, description="Add covariate %s" % covariate_name
-        )
 
     def _add_new_covariate(self, covariate_name, covariate_type, stable_id=None):
         covariate = self.model.add_covariate(
@@ -1256,16 +1235,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.synchronize_column_widths()
         self._refresh_advanced_analysis_actions()
         return covariate
-
-    def _undo_add_new_covariate(self, covariate_name):
-        self.model.remove_covariate(covariate_name)
-        self.tableView.synchronize_column_widths()
-        self._refresh_advanced_analysis_actions()
-
-
-    def _update_navigation_controls(self):
-        pass
-
 
 
     def open(self, file_path=None, raise_on_error=False):
@@ -1343,13 +1312,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model = model
         self.tableView.restore_model(model)
         self._setup_connections(menu_actions=False)
-        if len(model.get_studies(False)) >= 2:
-            self.enable_menu_options_that_require_dataset()
-        else:
-            self.disable_menu_options_that_require_dataset()
+        self.tableView._enable_analysis_menus_if_appropriate()
         self._refresh_advanced_analysis_actions()
         self.populate_metrics_menu(metric_to_check=model.current_effect)
-        self.update_outcome_lbl()
         selection_model = required(
             self.tableView.selectionModel(), "workspace selection model"
         )
@@ -1364,14 +1329,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             )
 
     def delete_study(self, study, study_index=None):
-        def undo_f():
-            return self._add_study(study, study_index=study_index)
-
-        def redo_f():
-            return self._remove_study(study)
-
-        delete_command = meta_globals.CallbackCommand(redo_f, undo_f)
-        self._commit_model_operation(delete_command.redo)
+        self._commit_model_operation(lambda: self._remove_study(study))
 
     def change_covariate_type(self, covariate):
         sheet = copy.deepcopy(self.model.current_sheet)
@@ -1379,7 +1337,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if change_type_form.exec():
             def apply():
                 self.model.current_sheet.covariates = sheet.covariates
-                self.model.current_sheet.rows = sheet.rows
+                converted_values = {row.id: row.covariate_values for row in sheet.rows}
+                for row in self.model.current_sheet.rows:
+                    row.covariate_values = converted_values[row.id]
                 self.model._sync_display_studies()
                 self.model.reset_model()
             self._commit_model_operation(apply)
@@ -1406,15 +1366,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 QMessageBox.warning(self, "Warning", str(exc))
                 return
 
-            # The model owns the actual covariate rename and undo operation.
-            def redo_f():
-                return self.model.rename_covariate(orig_cov_name, new_cov)
-
-            def undo_f():
-                return self.model.rename_covariate(new_cov, orig_cov_name)
-
-            rename_cov_command = meta_globals.CallbackCommand(redo_f, undo_f)
-            self._commit_model_operation(rename_cov_command.redo)
+            self._commit_model_operation(lambda: self.model.rename_covariate(orig_cov_name, new_cov))
 
     def delete_covariate(self, covariate):
         # Synchronize direct model edits made by an adapter before publishing
@@ -1426,11 +1378,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _refresh_advanced_analysis_actions(self):
         self._enable_action_meta_regression()
         self._enable_action_subgroup_ma()
-
-    def _add_study(self, study, study_index=None):
-        self.model.current_sheet.rows.insert(study_index if study_index is not None else len(self.model.current_sheet.rows), study)
-        self.model.reset_model()
-        self.data_dirtied()
 
     def _remove_study(self, study):
         self.model.current_sheet.rows.remove(study)
@@ -1469,13 +1416,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         )
 
         self._disconnect_model_signals()
-        if bool(data_model.sheets and len(data_model.sheets[0].rows) >= 2):
-            self.enable_menu_options_that_require_dataset()
-        else:
-            self.disable_menu_options_that_require_dataset()
-
-        self._enable_action_meta_regression(bool(data_model.sheets and len(data_model.sheets[0].rows) >= 2))
-
         self.tableView.setModel(self.model)
 
         # Restore view state only after replacing the model.
@@ -1505,6 +1445,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model.reset_model()
         self._update_confidence_level_label()
         self._refresh_sheet_tabs()
+        self.tableView._enable_analysis_menus_if_appropriate()
 
     def _update_swap_arms_enabled(self):
         sheet = self.model.current_sheet
@@ -1770,9 +1711,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.data_dirtied()
         self._commit_model_operation(move)
 
-    def update_outcome_lbl(self):
-        pass
-
     def quit(self):
         self.close()
 
@@ -1885,29 +1823,17 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         elif path == "csv_import":
             csv_data = wizard_data["csv_data"]
 
-            previous_workspace = self.workspace
-            previous_runtime = previous_workspace.runtime
-            previous_path = self.out_path
-            self.workspace = WorkspaceSession(previous_workspace.document)
-            self.workspace.start_new_document()
-            self.out_path = None
-            try:
-                def import_csv() -> None:
-                    self._make_new_dataset_and_setup_spreadsheet(dataset_info)
-                    ImportCsvCommand(
-                        imported_data=csv_data["data"],
-                        main_form=self,
-                        covariate_names=csv_data["covariate_names"],
-                        covariate_types=csv_data["covariate_types"],
-                    ).redo()
+            def import_csv() -> None:
+                self._make_new_dataset_and_setup_spreadsheet(dataset_info)
+                ImportCsvCommand(
+                    imported_data=csv_data["data"],
+                    main_form=self,
+                    covariate_names=csv_data["covariate_names"],
+                    covariate_types=csv_data["covariate_types"],
+                ).redo()
 
-                self._commit_model_operation(import_csv)
-            except Exception:
-                self.workspace = previous_workspace
-                if previous_runtime is not None:
-                    self._install_workspace_runtime(previous_runtime)
-                self.out_path = previous_path
-                raise
+            self._commit_model_operation(import_csv)
+            self.workspace.start_new_document(keep_last_change=True)
             self.out_path = None
             self._notify_user_that_data_is_unsaved()
 
