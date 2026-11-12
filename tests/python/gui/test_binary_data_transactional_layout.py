@@ -17,7 +17,7 @@ os.environ.setdefault(
 )
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
-from test_types import key_click, mouse_click, required
+from qt_test_support import key_click, mouse_click, required
 
 prepare_generated_ui_imports()
 AVAILABLE = QtCore.QRect(20, 30, 1024, 640)

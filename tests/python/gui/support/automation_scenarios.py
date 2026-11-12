@@ -4,7 +4,7 @@
 """Verification and automation workflows for RC MetaStudio."""
 
 from __future__ import annotations
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 from rc_metastudio.automation import start_automation
 
 import faulthandler
@@ -22,13 +22,7 @@ from typing import Protocol, TypedDict, cast
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtGui import QIcon, QPixmap
 
-from rc_metastudio import (
-    adaptive_window,
-    app_error_handler,
-    meta_globals,
-    qt6_resources,
-    settings,
-)
+from rc_metastudio import adaptive_window, app_error_handler, application_metadata, qt6_resources, settings
 from rc_metastudio.cocoa_accessibility import (
     bounded_error_message,
     find_accessibility_element,
@@ -1564,8 +1558,8 @@ def start_adaptive_layout_evidence(output_dir, sample_path):
 def start_wizard_layout_smoke():
     app_error_handler.install_global_exception_handler()
     app = app_error_handler.get_or_create_application(sys.argv)
-    app.setApplicationName(meta_globals.APPLICATION_NAME)
-    app.setOrganizationName(meta_globals.ORGANIZATION_NAME)
+    app.setApplicationName(application_metadata.APPLICATION_NAME)
+    app.setOrganizationName(application_metadata.ORGANIZATION_NAME)
     _set_application_icon(app)
     settings.setup_directories()
 

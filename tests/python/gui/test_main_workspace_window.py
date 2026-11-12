@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[3]
 os.environ.setdefault("RCMS_QT6_BUILD_ROOT", str(ROOT / "build" / "qt6-verification"))
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 from rc_metastudio.qt6_resources import ensure_application_resources
-from test_types import required
+from qt_test_support import required
 
 prepare_generated_ui_imports()
 ensure_application_resources()
@@ -100,7 +100,7 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
 def test_direct_table_view_mutation_is_checkpointed_for_one_undo(qapp):
     from rc_metastudio import analysis_dataset, dataset_table_model
     from rc_metastudio import main_window, project_adapter, workspace_session
-    from rc_metastudio.meta_globals import BINARY
+    from rc_metastudio.analysis_catalog import BINARY
 
     from rc_metastudio.analysis_unit import AnalysisUnit
     sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", BINARY, arms=[

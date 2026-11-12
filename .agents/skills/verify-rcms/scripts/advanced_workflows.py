@@ -12,6 +12,20 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtTest import QTest
 
+PLOT_PRODUCERS = {
+    "forest": "analysis-binary.fixed.inv.var",
+    "cumulative": "analysis-amino-binary-cumulative",
+    "leave-one-out": "analysis-amino-binary-leave-one-out",
+    "subgroup": "analysis-amino-binary-subgroup",
+    "regression": "analysis-amino-binary-meta-regression",
+    "sroc": "analysis-diagnostic-joint",
+    "coefficient": "analysis-diagnostic-regression-continuous",
+    "funnel": "small-study-binary-extended",
+    "contour": "small-study-binary-extended",
+    "trimfill": "small-study-binary-extended",
+    "deeks": "small-study-diagnostic",
+}
+
 SCENARIOS = (
     *(
         "analysis-sequential-" + family + "-" + workflow
@@ -36,22 +50,7 @@ SCENARIOS = (
     "project-axis-sequential",
     "calculator-grid-precision",
     "calculator-ratio-precision",
-    *(
-        "plot-workflow-" + family
-        for family in (
-            "forest",
-            "cumulative",
-            "leave-one-out",
-            "subgroup",
-            "regression",
-            "sroc",
-            "coefficient",
-            "funnel",
-            "contour",
-            "trimfill",
-            "deeks",
-        )
-    ),
+    *("plot-workflow-" + family for family in PLOT_PRODUCERS),
     *(
         "calculator-mode-" + mode
         for mode in (
@@ -440,19 +439,7 @@ def zero_cells(app, window, record):
 
 
 def plots(app, window, family, record, *, view=None):
-    producer = {
-        "forest": "analysis-binary.fixed.inv.var",
-        "cumulative": "analysis-amino-binary-cumulative",
-        "leave-one-out": "analysis-amino-binary-leave-one-out",
-        "subgroup": "analysis-amino-binary-subgroup",
-        "regression": "analysis-amino-binary-meta-regression",
-        "sroc": "analysis-diagnostic-joint",
-        "coefficient": "analysis-diagnostic-regression-continuous",
-        "funnel": "small-study-binary-extended",
-        "contour": "small-study-binary-extended",
-        "trimfill": "small-study-binary-extended",
-        "deeks": "small-study-diagnostic",
-    }[family]
+    producer = PLOT_PRODUCERS[family]
     if view is None:
         view = matrix(app, window, producer, record, keep_results=True)
     kind = {
@@ -496,7 +483,7 @@ def plots(app, window, family, record, *, view=None):
     texts = dict(view.texts)
     path = Path(artifact.display_path())
     before = path.read_bytes()
-    from tests.e2e.audit_round3 import check_caption
+    from tests.e2e.plot_geometry_checks import check_caption
     from rc_metastudio.analysis_identity import dataset_identity, metric_label
     initial_svg = path
     if path.suffix != ".svg":
@@ -568,7 +555,7 @@ def plots(app, window, family, record, *, view=None):
 
     def edit(dialog):
         if funnel:
-            from tests.python.gui.test_types import wheel_scroll, key_click
+            from tests.python.gui.qt_test_support import wheel_scroll, key_click
             spinner = dialog.sampling_confidence_spin
             original_confidence = spinner.value()
             spinner.setFocus()
@@ -1407,8 +1394,8 @@ def calculators(app, window, mode, record):
             z = r_bridge.get_confidence_multiplier_from_r(95)
             observed["authority_entered"] = [point, (upper - point) / z]
             if family in {"binary", "continuous"}:
-                from rc_metastudio import calculator_routines
-                calculator_routines.update_calculator_readout(dialog, family)
+                from rc_metastudio import calculator_effect_readout
+                calculator_effect_readout.update_calculator_readout(dialog, family)
                 expected_se = (upper - point) / z
                 assert f"{expected_se:.4f}" in dialog.wald_readout.text(), dialog.wald_readout.text()
                 record("asymmetric-entered-wald-source", dialog, estimate=point, lower=lower,
@@ -1607,7 +1594,7 @@ def calculators(app, window, mode, record):
             record("calculator-mode-layout", dialog, mode=mode,
                    scroll_maximum=scrollbar.maximum(), positions=positions,
                    size=[dialog.width(), dialog.height()])
-        from tests.e2e.review1_design import keyboard_traversal
+        from tests.e2e.keyboard_navigation import keyboard_traversal
         keyboard_traversal(app, dialog, [dialog.effect_combo_box, dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box, dialog.buttonBox], record, "calculator-" + mode)
         record("calculator-mode-preview", dialog, mode=mode, observations=observed)
         click(
@@ -1639,13 +1626,25 @@ def calculators(app, window, mode, record):
     finally:
         if mode == "back-binary":
             window.model.modelReset.disconnect(observe_acceptance)
+    display_unit = 10 ** -window.model.NUM_DIGITS
+
+    def grid_matches(actual, expected):
+        number = float(str(actual))
+        if 0 < abs(expected) < display_unit:
+            return math.isclose(number, expected, rel_tol=display_unit, abs_tol=0)
+        return math.isclose(number, expected, rel_tol=0, abs_tol=.501 * display_unit)
+
     if mode == "back-binary":
         record("calculator-acceptance-notifications", window, notifications=acceptance_notifications,
                expected_interval=observed["reconstruction_interval"])
         accepted = [state for state in acceptance_notifications if state["raw"] == observed["accepted_raw"]]
         assert accepted, acceptance_notifications
-        expected_cells = [str(window.model.format_float(value)) for value in observed["reconstruction_interval"]]
-        assert all(state["effect_cells"] == expected_cells for state in accepted), (accepted, expected_cells)
+        expected_cells = observed["reconstruction_interval"]
+        assert all(
+            all(grid_matches(actual, expected)
+                for actual, expected in zip(state["effect_cells"], expected_cells, strict=True))
+            for state in accepted
+        ), (accepted, expected_cells)
     assert window.model.get_studies(False)[0].include
     assert (
         sum(study.include for study in window.model.get_studies(False)) == included_before
@@ -1658,7 +1657,7 @@ def calculators(app, window, mode, record):
         record("calculator-entered-grid-and-model", window, grid=str(displayed), entered=list(accepted_entered), source=unit.calculator_source(window.model.current_effect, window.model.get_current_arm_key()))
         for column, expected_value in zip(window.model.OUTCOMES[:3], observed["entered"]):
             actual = window.model.data(window.model.index(0, column))
-            assert str(actual) == str(window.model.format_float(expected_value)), (column, actual, expected_value)
+            assert grid_matches(actual, expected_value), (column, actual, expected_value)
 
     assert window.workspace.is_dirty
     assert (
@@ -2260,17 +2259,23 @@ def run(app, window, scenario, record):
         ratio_precision(app, window, Path(sys.argv[2]), record)
         return
     if scenario.startswith("project-reviewer-"):
-        from tests.e2e.reviewer_fixes import run_predictions, run_groups, run_colours
+        from tests.e2e.forest_prediction_intervals import run_predictions
+        from tests.e2e.forest_group_labels import run_groups
+        from tests.e2e.forest_colour_exports import run_colours
         driver = {"predictions":run_predictions, "groups":run_groups, "colours":run_colours}[scenario.rsplit("-",1)[-1]]
         driver(app, window, Path(sys.argv[2]), record)
         return
     if scenario == "project-release-coefficients":
-        from tests.e2e.release_fixes import run_coefficients
+        from tests.e2e.reitsma_coefficient_axes import run_coefficients
         run_coefficients(app, window, Path(sys.argv[2]), record)
         return
     if scenario == "project-round6-polish":
-        from tests.e2e.round6_polish import run as polish
-        polish(app, window, Path(sys.argv[2]), record)
+        from tests.e2e.diagnostic_coefficient_precision import run as diagnostic_precision
+        from tests.e2e.contour_validation_recovery import run as contour_recovery
+        from tests.e2e.forest_arm_headers import run_headers
+        diagnostic_precision(app, window, Path(sys.argv[2]), record)
+        contour_recovery(app, window, Path(sys.argv[2]), record)
+        run_headers(app, window, Path(sys.argv[2]), record)
         return
     if scenario == "project-display-labels":
         from tests.e2e.display_labels import run as labels

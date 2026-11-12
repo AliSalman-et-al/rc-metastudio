@@ -2,7 +2,7 @@
 import re
 import math
 from xml.etree import ElementTree as ET
-from tests.python.gui.test_types import required
+from tests.python.gui.qt_test_support import required
 
 
 def check_headers(source, names):

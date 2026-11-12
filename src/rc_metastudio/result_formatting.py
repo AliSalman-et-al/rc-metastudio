@@ -1,10 +1,15 @@
-"""Boundary formatting for references and R identifier labels."""
+"""Result numbers, reference lists, identifier labels and plain-text tables."""
 
 from __future__ import annotations
 
 import math
 import re
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
+from typing import overload
+
+
+NUM_DIGITS = 2
+PERCENTAGE_DISPLAY_DIGITS = 1
 
 
 def format_references(references: object) -> str:
@@ -128,3 +133,62 @@ def sentence_case_title(title: str) -> str:
                 or (len(head) == 1 and head.isupper()))  # I-squared, H-squared
     return " ".join(word if index == 0 or keep(word) else word.lower()
                     for index, word in enumerate(str(title).split()))
+
+
+@overload
+def tabulate(
+    lists: Sequence[Sequence[object]],
+    sep: str = " | ",
+    return_col_widths: bool = False,
+    align: Sequence[str] | None = None,
+) -> str: ...
+
+
+@overload
+def tabulate(
+    lists: Sequence[Sequence[object]],
+    sep: str,
+    return_col_widths: bool,
+    align: Sequence[str] | None = None,
+) -> str | tuple[str, list[int]]: ...
+
+
+def tabulate(
+    lists: Sequence[Sequence[object]],
+    sep: str = " | ",
+    return_col_widths: bool = False,
+    align: Sequence[str] | None = None,
+) -> str | tuple[str, list[int]]:
+    """Render equally sized columns as a plain-text table."""
+    column_alignments = list(align) if align is not None else []
+    if len(column_alignments) != len(lists):
+        column_alignments = ["L"] * len(lists)
+
+    # covert lists in args to string lists
+    string_lists = []
+    for arg in lists:
+        str_arg = [str(x) for x in arg]
+        string_lists.append(str_arg)
+
+    # get max length of each element in each column
+    max_lengths = []
+    for arg in string_lists:
+        max_len = max([len(x) for x in arg])
+        max_lengths.append(max_len)
+
+    data = zip(*string_lists)
+    out = []
+    for row in data:
+        row_str = [
+            "{0:{align}{width}}".format(
+                x, width=width, align="<" if row_alignment == "L" else ">"
+            )
+            for x, width, row_alignment in zip(row, max_lengths, column_alignments)
+        ]
+        row_str = sep.join(row_str)
+        out.append(row_str)
+    out_str = "\n".join(out)
+
+    if return_col_widths:
+        return (out_str, max_lengths)
+    return out_str

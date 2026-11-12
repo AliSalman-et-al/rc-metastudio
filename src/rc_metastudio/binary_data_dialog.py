@@ -27,20 +27,13 @@ from rc_metastudio.calculator_service import (
     CalculatorService,
     Numeric,
 )
-from rc_metastudio.meta_globals import (
-    BINARY_METRIC_NAMES,
-    BINARY_ONE_ARM_METRICS,
-    BINARY_TWO_ARM_METRICS,
-    EMPTY_VALS,
-    DEFAULT_GROUP_NAMES,
-    is_nan,
-    is_empty,
-)
-from rc_metastudio import calculator_routines as calc_fncs
+from rc_metastudio.analysis_catalog import BINARY_METRIC_NAMES, BINARY_ONE_ARM_METRICS, BINARY_TWO_ARM_METRICS, DEFAULT_GROUP_NAMES
+from rc_metastudio.analysis_validation import EMPTY_VALS, is_nan, is_empty
+from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
 
 from rc_metastudio import app_error_handler
 from rc_metastudio import adaptive_window
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 
 if TYPE_CHECKING:
     import ui_binary_back_calculation_dialog as _ui_binary_back_calculation_dialog
@@ -111,7 +104,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self._configure_readable_ci_label()
         self.initialize_form()  # initialize all cell to empty items
         self.setup_back_calculation_feedback()
-        self._field_history = calc_fncs.TransientEditHistory()
+        self._field_history = calculator_edit_history.TransientEditHistory()
 
         self.raw_data_table.setVerticalHeaderLabels([str(name) for name in self.arm_names] + ["Total"])
         self.raw_data_table.setAccessibleDescription("Whole-number study counts for " + " and ".join(self.arm_names) + ".")
@@ -140,7 +133,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
     def _input_mode_changed(self):
         previous = getattr(self, "_active_input_mode", "counts")
-        if not calc_fncs.commit_calculator_edits(self):
+        if not calculator_controls.commit_calculator_edits(self):
             with QSignalBlocker(self.input_mode_combo):
                 self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(previous))
             return
@@ -449,7 +442,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             use_old_value=False,
         )
 
-        calc_fncs.push_field_edit(
+        calculator_edit_history.push_field_edit(
             self._field_history,
             owner=self,
             restore_state=self.restore_analysis_unit_and_table,
@@ -511,7 +504,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         with QSignalBlocker(self.raw_data_table):
             for row in range(self.raw_data_table.rowCount()):
                 for col in range(self.raw_data_table.columnCount()):
-                    calc_fncs.set_table_item_editable(
+                    calculator_controls.set_table_item_editable(
                         self.raw_data_table.item(row, col),
                         self._raw_count_cell_is_editable(row, col),
                     )
@@ -636,19 +629,19 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             lower=self.lower_text_box,
             upper=self.upper_text_box,
         )
-        calc_fncs.set_current_effect_from_value(
+        calculator_effect_readout.set_current_effect_from_value(
             analysis_unit=self.analysis_unit,
             txt_boxes=txt_boxes,
             current_effect=self.current_effect,
             arm_key=self.arm_key,
             data_type="binary",
             confidence_multiplier=self.confidence_multiplier,
-            source=calc_fncs.calculator_effect_source(
+            source=calculator_effect_readout.calculator_effect_source(
                 self.analysis_unit, self.arm_names, self.current_effect, self.arm_key,
                 self.confidence_multiplier, input_mode=self._active_input_mode,
             ),
         )
-        calc_fncs.update_calculator_readout(self, "binary")
+        calculator_effect_readout.update_calculator_readout(self, "binary")
 
         self.change_row_color_according_to_metric()
 
@@ -687,7 +680,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             with ExitStack() as signal_blockers:
                 for widget in self.entry_widgets:
                     signal_blockers.enter_context(QSignalBlocker(widget))
-                display_scale_val = calc_fncs.evaluate(
+                display_scale_val = calculator_controls.evaluate(
                     new_text=new_text,
                     analysis_unit=self.analysis_unit,
                     current_effect=self.current_effect,
@@ -700,7 +693,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                     parent=self,
                     confidence_multiplier=self.confidence_multiplier,
                     ci_param=ci_param,
-                    source=calc_fncs.calculator_effect_source(
+                    source=calculator_effect_readout.calculator_effect_source(
                 self.analysis_unit, self.arm_names, self.current_effect, self.arm_key,
                 self.confidence_multiplier, input_mode=self._active_input_mode,
             ),
@@ -719,7 +712,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         return None  # Unknown value key.
 
     def accept(self):
-        if not getattr(self, "_validation_failed", False) and calc_fncs.commit_calculator_edits(self):
+        if not getattr(self, "_validation_failed", False) and calculator_controls.commit_calculator_edits(self):
             self.analysis_unit.set_calculator_source(self.current_effect, self.arm_key, "entered" if self.input_mode_combo.currentData() == "estimate" else "derived_preview")
             super().accept()
 
@@ -795,7 +788,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             use_old_value=False,
         )
 
-        calc_fncs.push_field_edit(
+        calculator_edit_history.push_field_edit(
             self._field_history,
             owner=self,
             restore_state=self.restore_analysis_unit_and_table,
@@ -833,11 +826,11 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
     def _cell_data_not_valid(self, celldata_string):
         # ignore blank entries
-        if calc_fncs.cell_text_is_blank(celldata_string):
+        if calculator_controls.cell_text_is_blank(celldata_string):
             return None
 
         try:
-            value = calc_fncs.numeric_value(celldata_string)
+            value = calculator_controls.numeric_value(celldata_string)
         except ValueError:
             return "Raw data needs to be numeric."
 
@@ -954,7 +947,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             use_old_value=False,
         )
 
-        calc_fncs.push_field_edit(
+        calculator_edit_history.push_field_edit(
             self._field_history,
             owner=self,
             restore_state=self.restore_analysis_unit_and_table,
@@ -1034,7 +1027,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                     self.raw_data_table.item(row, col),
                     f"binary table cell ({row}, {col})",
                 ).setText(str_val)
-            calc_fncs.set_table_item_editable(
+            calculator_controls.set_table_item_editable(
                 self.raw_data_table.item(row, col),
                 self._raw_count_cell_is_editable(row, col),
             )
@@ -1043,7 +1036,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         """Fill in 2x2 table from other entries in the table"""
         with QSignalBlocker(self.raw_data_table):
             params = self._get_table_values()
-            computed_params = calc_fncs.compute_2x2_table_from_inner_counts(params)
+            computed_params = calculator_controls.compute_2x2_table_from_inner_counts(params)
             for total_name in ("r1sum", "r2sum"):
                 row = 0 if total_name == "r1sum" else 1
                 total_item = required(self.raw_data_table.item(row, 2), "arm total")
@@ -1075,7 +1068,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             try:
                 val = int(text)
             except ValueError:
-                val = int(calc_fncs.numeric_value(text))
+                val = int(calculator_controls.numeric_value(text))
             return val
         else:
             return None  # its good to be explicit
@@ -1176,7 +1169,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             use_old_value=False,
         )
 
-        calc_fncs.push_field_edit(
+        calculator_edit_history.push_field_edit(
             self._field_history,
             owner=self,
             restore_state=self.restore_analysis_unit_and_table,

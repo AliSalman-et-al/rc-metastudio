@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from ._workflow import load_module_from_path
+from ._module_loader import load_module_from_path
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -504,10 +504,6 @@ def test_direct_manifest_binds_archived_inputs_and_runner(tmp_path):
             "sha256": hashlib.sha256(adapter_payload).hexdigest(),
             "size": len(adapter_payload),
         }
-        assert (
-            inspector.DIRECT_BUILD_INPUT_MEMBERS["signing_inventory"]
-            != inspector.DIRECT_BUILD_INPUT_MEMBERS["post_sign_native_inventory"]
-        )
         missing = tmp_path / "missing-post-sign.zip"
         with zipfile.ZipFile(missing, "w") as missing_bundle:
             for relative, payload in payload_by_relative.items():

@@ -79,7 +79,7 @@ from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
 from rc_metastudio.plot_editor_dialog import EditPlotDialog
 from rc_metastudio.plot_service import PlotService
 from rc_metastudio.qt_geometry import logical_extent_to_physical_pixels
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 from rc_metastudio.settings import (
     load_plot_export_format,
     save_plot_export_format,

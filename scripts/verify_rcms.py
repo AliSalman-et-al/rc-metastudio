@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.verification_evidence import passed_evidence, remember_evidence, source_digest
 sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
-from advanced_workflows import SCENARIOS as ADVANCED_SCENARIOS
+from advanced_workflows import PLOT_PRODUCERS, SCENARIOS as ADVANCED_SCENARIOS
 from analysis_matrix import SCENARIOS as ANALYSIS_SCENARIOS
 from ratio_workflows import SCENARIOS as RATIO_SCENARIOS
 
@@ -62,6 +62,15 @@ SCENARIOS = (
     *ANALYSIS_SCENARIOS,
     *ADVANCED_SCENARIOS,
     *RATIO_SCENARIOS,
+)
+
+
+# Plot workflows execute the full producer proof; exact CLI aliases run once.
+QUALIFICATION_SCENARIOS = tuple(
+    scenario for scenario in SCENARIOS
+    if scenario not in {
+        "doctor", "ui-crawl", "results-window", "project-structure", *PLOT_PRODUCERS.values()
+    }
 )
 
 

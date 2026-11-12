@@ -16,7 +16,7 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
 from rc_metastudio import adaptive_window
-from test_types import key_click, mouse_click, required
+from qt_test_support import key_click, mouse_click, required
 
 
 def _page(wizard: QtWidgets.QWizard, page_id: int, page_type):
@@ -152,6 +152,7 @@ def test_workflow_path_matrix_is_bounded_stable_and_scrollable(
     try:
         _show(wizard, qapp)
         initial_geometry = _frame_tuple(wizard)
+        assert wizard.wizardStyle() == QtWidgets.QWizard.WizardStyle.ModernStyle
         assert initial_geometry[2] <= int(available.width() * 0.9)
         assert initial_geometry[3] <= int(available.height() * 0.9)
 

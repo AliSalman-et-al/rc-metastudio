@@ -4,7 +4,7 @@ from pathlib import Path
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 from rc_metastudio import app_error_handler, qt_layout
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 
 
 class _RecentPathLabel(QtWidgets.QLabel):

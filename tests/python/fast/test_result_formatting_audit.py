@@ -29,27 +29,6 @@ def _result(**overrides):
     return result
 
 
-def test_audit_accepts_representative_publication_bias_result_and_reports_inventory():
-    from scripts.audit_result_formatting import audit_records
-
-    report = audit_records([_result()])
-
-    assert report["summary"] == {"errors": 0, "warnings": 0, "sources": 1}
-    assert report["inventory"]["covered"] == [
-        "continuous",
-        "failures",
-        "publication-bias",
-    ]
-    assert report["inventory"]["missing"] == [
-        "binary",
-        "cumulative",
-        "diagnostic",
-        "leave-one-out",
-        "meta-regression",
-        "subgroup",
-    ]
-
-
 @pytest.mark.parametrize(
     ("bad_text", "code"),
     [
@@ -57,6 +36,10 @@ def test_audit_accepts_representative_publication_bias_result_and_reports_invent
         ("$estimate\n[1] 0.42", "unsafe-list-repr"),
         ("Model Results\n Estimate  Lower bound\n 0.42      0.10", "malformed-table"),
         ("res.info\nPackage: meta", "internal-heading"),
+        ("Package: meta\nCall: meta::metabias(...)", "internal-dump"),
+        ("geometry: c(0.1, 0.2, 0.3)", "internal-dump"),
+        ("prepared.effects: c(0.1, 0.2, 0.3)", "internal-key"),
+        ("Estimate  Lower bound  Upper bound\n0.1234567  0.1  0.2", "excessive-precision"),
     ],
 )
 def test_audit_flags_known_display_hazards(bad_text, code):
@@ -85,24 +68,6 @@ def test_audit_flags_duplicate_titles_and_ordering():
 
     assert "duplicate-title" in codes
     assert "section-order" in codes
-
-
-@pytest.mark.parametrize(
-    ("text", "code"),
-    [
-        ("Package: meta\nCall: meta::metabias(...)", "internal-dump"),
-        ("geometry: c(0.1, 0.2, 0.3)", "internal-dump"),
-        ("prepared.effects: c(0.1, 0.2, 0.3)", "internal-key"),
-        ("Estimate  Lower bound  Upper bound\n0.1234567  0.1  0.2", "excessive-precision"),
-    ],
-)
-def test_audit_flags_backend_dumps_and_unrounded_values(text, code):
-    from scripts.audit_result_formatting import audit_records
-
-    report = audit_records([_result(texts={"Summary": text})])
-    codes = {finding["code"] for finding in report["findings"]}
-
-    assert code in codes
 
 
 def test_curated_publication_method_details_allow_package_and_call():
@@ -155,7 +120,10 @@ def test_cli_reads_capture_and_emits_structured_output(tmp_path, suffix):
 
     assert completed.returncode == 0, completed.stderr
     report = json.loads(completed.stdout)
-    assert report["summary"]["sources"] == 1
+    assert report["summary"] == {"errors": 0, "warnings": 0, "sources": 1}
+    assert report["inventory"]["missing"] == [
+        "binary", "cumulative", "diagnostic", "leave-one-out", "meta-regression", "subgroup"
+    ]
     assert report["inventory"]["covered"] == [
         "continuous",
         "failures",

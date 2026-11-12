@@ -1,4 +1,4 @@
-from tests.python.gui.test_types import required
+from tests.python.gui.qt_test_support import required
 """Drive the all-outcome summary through the Analysis menu."""
 from PyQt6 import QtCore, QtWidgets
 from docx import Document
@@ -76,7 +76,7 @@ def run(app, window, work, root, record, analyze):
     assert dialog.grab().save(str(screens / 'slice9-sof-dark.png'))
     app.setPalette(original)
     dialog.table.cellWidget(0, 4).setCurrentText('Moderate')
-    from tests.python.gui.test_types import key_click, wheel_scroll
+    from tests.python.gui.qt_test_support import key_click, wheel_scroll
     certainty = dialog.table.cellWidget(0, 4)
     table_height = dialog.table.maximumHeight()
     dialog.table.setMaximumHeight(128)

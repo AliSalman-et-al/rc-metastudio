@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from PyQt6 import QtCore, QtWidgets
-from tests.python.gui.test_types import key_click, key_clicks, mouse_click
+from tests.python.gui.qt_test_support import key_click, key_clicks, mouse_click
 
 
 def run(app, window, record):
@@ -53,7 +53,7 @@ def run(app, window, record):
     assert window.save() and window.open(str(destination), raise_on_error=True)
     for row, value in enumerate(expected):
         assert window.model.get_current_analysis_unit_for_study(row).get_raw_data_for_arms(window.model.arm_names)[2] == value
-    from tests.e2e.audit_round3 import analyze_existing
+    from tests.e2e.analysis_presentation_workflows import analyze_existing
     view = analyze_existing(app, window, "standard", "continuous.random", record, parameters={"digits": 6, "rm.method": "DL", "inference.method": "z"})
     # analyze's default is DL/z; independent public metafor rebuilds from reopened raw values.
     compare_authority(view, authority(window, 'continuous', 'DL', 'z', 95), 'continuous', record)

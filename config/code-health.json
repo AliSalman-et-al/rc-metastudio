@@ -59,7 +59,7 @@
     "src/rc_metastudio/project_adapter.py": {
       "project_to_dataset": "decodes and validates every released dataset family before live mutation"
     },
-    "src/rc_metastudio/publication_bias.py": {
+    "src/rc_metastudio/small_study_effects.py": {
       "__post_init__": "validates the immutable small-study request's cross-field contract"
     },
     "src/rc_metastudio/automation.py": {
@@ -114,7 +114,7 @@
     "src/rc_metastudio/r_bridge.py": {
       "_r_param_value": "the R boundary preserves nested vectors and recursively validates foreign parameter values"
     },
-    "r/RCMetaR/R/meta_methods.R": {
+    "r/RCMetaR/R/repeated_analyses.R": {
       "bootstrap": "statistical resampling has independent method, seed, and result-shape branches"
     },
     "r/RCMetaR/R/plotting.R": {

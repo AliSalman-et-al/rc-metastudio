@@ -18,7 +18,7 @@ from rc_metastudio.plot_text import (
     size_plot_text_editor,
     plot_text_value,
 )
-from rc_metastudio.publication_bias import (
+from rc_metastudio.small_study_effects import (
     FUNNEL_STYLE_LABELS,
     FUNNEL_STYLE_PRESETS,
     FunnelStyle,

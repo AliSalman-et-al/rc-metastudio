@@ -54,26 +54,10 @@ from rc_metastudio.plot_text import (
     plot_text_value,
     set_plot_text_value,
 )
-from rc_metastudio.meta_globals import (
-    ALL_METRIC_NAMES,
-    ANALYSIS_DIGITS_MAX,
-    ANALYSIS_DIGITS_MIN,
-    ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS,
-    ANALYSIS_NUMERIC_MAX,
-    ANALYSIS_NUMERIC_MIN,
-    CONFIDENCE_LEVEL_DISPLAY_MAX,
-    CONTINUOUS,
-    DIAGNOSTIC_METRIC_GROUPS,
-    ONE_ARM_METRICS,
-    check_plot_bound,
-    seems_sane,
-    validate_analysis_digits,
-    validate_analysis_float,
-    validate_confidence_level,
-    validate_correction_factor,
-)
+from rc_metastudio.analysis_catalog import ALL_METRIC_NAMES, CONTINUOUS, DIAGNOSTIC_METRIC_GROUPS, ONE_ARM_METRICS
+from rc_metastudio.analysis_validation import ANALYSIS_DIGITS_MAX, ANALYSIS_DIGITS_MIN, ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS, ANALYSIS_NUMERIC_MAX, ANALYSIS_NUMERIC_MIN, CONFIDENCE_LEVEL_DISPLAY_MAX, check_plot_bound, seems_sane, validate_analysis_digits, validate_analysis_float, validate_confidence_level, validate_correction_factor
 from rc_metastudio.settings import analysis_output_path
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 
 if TYPE_CHECKING:
     from ui_analysis_setup_dialog import Ui_AnalysisSetupDialog

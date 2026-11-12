@@ -123,7 +123,7 @@ _DRIVER = textwrap.dedent(
         methods::new("CovariateValues", cov.name="threshold", cov.vals=threshold,
           cov.type="continuous", ref.var="")
       ))
-    formula <- RCMetaR:::rcmetar.reitsma.formula(c("quality", "threshold"))
+    formula <- cbind(tsens, tfpr) ~ quality + threshold
     public_reg_fit <- mada::reitsma(reg_data, formula=formula, correction=.5,
       correction.control="all", method="reml")
     reg_actual <- RCMetaR:::diagnostic.reitsma.meta.regression(reg_diagnostic,
@@ -173,7 +173,7 @@ _HEADLESS_ADAPTER_DRIVER = textwrap.dedent(
     r_backend.install_r_backend()
     try:
         from tests.analysis_regression.golden.support import headless_analysis
-        from rc_metastudio import meta_globals, r_bridge
+        from rc_metastudio import analysis_catalog, r_bridge
         try:
             r_bridge.RLibraryLoader().load_rcmetar()
         except Exception:
@@ -196,7 +196,7 @@ _HEADLESS_ADAPTER_DRIVER = textwrap.dedent(
     }
     case = headless_analysis.HeadlessAnalysisCase(
         sample, ["diagnostic.reitsma"], [parameters], metric="Sens",
-        data_type=meta_globals.DIAGNOSTIC,
+        data_type=analysis_catalog.DIAGNOSTIC,
     )
     standard = headless_analysis.run_headless_analysis(case)
     point = standard.texts["Summary operating point"]
@@ -272,7 +272,7 @@ _HEADLESS_ADAPTER_DRIVER = textwrap.dedent(
     threshold_values = {study.label: index + 1 for index, study in enumerate(studies)}
     regression_case = headless_analysis.HeadlessAnalysisCase(
         sample, "diagnostic.reitsma", parameters, metric="Sens",
-        data_type=meta_globals.DIAGNOSTIC, analysis_type="meta_regression", covariates=[
+        data_type=analysis_catalog.DIAGNOSTIC, analysis_type="meta_regression", covariates=[
             {"name": "quality", "type": "factor", "values": quality_values},
             {"name": "threshold", "type": "continuous", "values": threshold_values},
         ],

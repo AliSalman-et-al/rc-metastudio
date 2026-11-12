@@ -6,7 +6,7 @@ from PyQt6 import QtCore, QtWidgets
 from collections.abc import Iterable
 from typing import cast
 from xml.etree import ElementTree as ET
-from tests.python.gui.test_types import mouse_click, required
+from tests.python.gui.qt_test_support import mouse_click, required
 
 
 def run(app, window, root, record, analyze):

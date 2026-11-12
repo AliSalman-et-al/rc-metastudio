@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from tests.packaging.contract.test_clean_slate_delivery_contract import load_delivery
+from tests.packaging.contract.test_delivery_state_machine import load_delivery
 
 ROOT = Path(__file__).resolve().parents[3]
 BASH = shutil.which("bash") or "C:/Program Files/Git/bin/bash.exe"

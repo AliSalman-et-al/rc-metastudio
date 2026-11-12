@@ -69,13 +69,22 @@ For a shared analysis, data-type, inference, or R dependency change, run the ful
 uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full
 ```
 
-This runs the current-source R-stack lane (covering every desktop scenario), independent authority comparisons and doctor. It requires `RCMS_R_HOME` and `RCMS_R_LIBS` from Launch. The R lane installs a temporary library; doctor and later targeted drives still use the configured warm library. After changing RCMetaR, install the changed source into a persistent test-owned library and select it before desktop driving; version equality alone is insufficient. Record installed-source provenance. The full profile does not repeat the desktop registry after pytest has already proved it. Desktop matrices reuse passed evidence only when source, fixtures, generated forms, installed Python/R runtime bytes, fonts, startup profiles and relevant environment match; the manifest and every retained artifact hash must still match. Failed or damaged evidence reruns. Reuse is printed in the transcript and retains the original manifest and runtime provenance. `--fresh` on `verify_all.py` or E2E pytest disables reuse for qualification. No process is shared between scenarios.
+This runs the current-source R-stack lane (covering every distinct desktop qualification obligation), independent authority comparisons and doctor. It requires `RCMS_R_HOME` and `RCMS_R_LIBS` from Launch. The R lane installs a temporary library; doctor and later targeted drives still use the configured warm library. After changing RCMetaR, install the changed source into a persistent test-owned library and select it before desktop driving; version equality alone is insufficient. Record installed-source provenance. The full profile does not repeat the desktop registry after pytest has already proved it. Desktop matrices reuse passed evidence only when source, fixtures, generated forms, installed Python/R runtime bytes, fonts, startup profiles and relevant environment match; the manifest and every retained artifact hash must still match. Failed or damaged evidence reruns. Reuse is printed in the transcript and retains the original manifest and runtime provenance. `--fresh` on `verify_all.py` or E2E pytest disables reuse for qualification. No process is shared between scenarios.
 
 The matrix includes all eight original New Dataset paths plus the HR/IRR metric variants, fixed estimator selection, binary/continuous cumulative/leave-one-out/subgroup/regression with frozen contracts, diagnostic sequential/subgroup/joint/combined metrics and three moderator shapes, extended binary/continuous small-study procedures, and diagnostic Deeks. The feature maps state each drive's proof strength and remaining checks.
 
 The 37 advanced workflows in `scripts/advanced_workflows.py` add nondefault inference/heterogeneity/CI choices with public numerical references, zero cells and inclusion changes, twelve calculator modes with persistence and independent post-reopen analysis, eleven plot editors with four decoded exports each, and structure/covariate/shell transactions. Run these through the same evidence helper, for example `options-binary`, `calculator-mode-back-continuous`, `plot-workflow-sroc`, and `project-table-covariates`. Never replace numerical comparisons with nonempty text or a render-only check.
 
 The same scenarios are part of the R-stack CI E2E selection. Pytest calls the evidence helper too, so every run retains its inputs, transcript and manifest:
+
+Qualification runs each distinct analysis obligation through its strongest
+workflow. Nine standalone analyses are already executed in full by their plot
+workflows before editing and exporting; pytest omits those duplicate standalone
+runs. `PLOT_PRODUCERS` defines the actual producer calls and the derived
+`QUALIFICATION_SCENARIOS` selection. Standalone CLI names remain available for
+targeted debugging. See `docs/testing.md` for the mapping.
+Exact CLI aliases also run once: `results-window` through `ux-improvements`,
+and `project-structure` through `sheets`.
 
 ```powershell
 uv run python -m pytest tests/e2e -n auto -q

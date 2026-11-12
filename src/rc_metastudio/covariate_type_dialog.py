@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSignal
 from PyQt6.QtWidgets import QDialog, QMessageBox
 
-from rc_metastudio.meta_globals import CONTINUOUS, FACTOR
+from rc_metastudio.analysis_catalog import CONTINUOUS, FACTOR
 from rc_metastudio import app_error_handler
 from rc_metastudio import adaptive_window
 

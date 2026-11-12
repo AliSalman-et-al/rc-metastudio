@@ -50,7 +50,7 @@ SMOKE_TESTS = (
     "tests/python/fast/test_project_format.py::"
     "test_failed_atomic_replace_preserves_the_previous_project",
     "tests/python/fast/test_qt6_build_slice.py::"
-    "test_binary_resource_registers_and_exposes_icon_and_svg",
+    "test_minimal_qt6_window_reports_resources_and_exits_cleanly",
 )
 
 

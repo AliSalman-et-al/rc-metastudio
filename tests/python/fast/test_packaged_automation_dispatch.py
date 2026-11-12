@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import sys
@@ -102,7 +103,8 @@ def test_developer_assembly_emits_evidence_accepted_by_both_inspectors(
     assert (output.with_suffix(".plots") / "0-forest.svg").read_bytes() == (tmp_path / "forest.svg").read_bytes()
     assert (output.with_suffix(".plots") / "1-locale-forest.svg").read_bytes() == locale_svg.read_bytes()
     assert (output.with_suffix(".plots") / "2-locale-forest.svg").read_bytes() == locale_svg.read_bytes()
-    expected = evidence["workflows"]["normalized_summary_sha256"]
+    expected = hashlib.sha256(b"Binary Random-Effects Model Estimate 1").hexdigest()
+    assert evidence["workflows"]["normalized_summary_sha256"] == expected
     monkeypatch.setitem(inspect_macos_deployment.EXPECTED_SUMMARY_SHA256_BY_SAMPLE, "BCG.rcms", expected)
     inspect_macos_deployment.validate_packaged_workflow_evidence(evidence)
     log = tmp_path / "smoke.log"

@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 from PyQt6 import QtGui
 
-from ._workflow import load_module_from_path
+from ._module_loader import load_module_from_path
 
 
 ROOT = Path(__file__).resolve().parents[3]

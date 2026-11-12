@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -53,7 +56,7 @@ def test_arm64_framework_component_is_selected_by_its_real_package_identifier(
     )
 
 
-def test_arm64_launcher_adapter_rejects_intel_build_metadata():
+def test_arm64_launcher_adapter_rejects_intel_build_metadata(tmp_path):
     spec = importlib.util.spec_from_file_location(
         "configure_macos_r_launchers",
         ROOT / "scripts/configure_macos_r_launchers.py",
@@ -62,7 +65,34 @@ def test_arm64_launcher_adapter_rejects_intel_build_metadata():
     launchers = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(launchers)
 
-    wrapper = launchers.private_config("arm64")
-    assert wrapper.count("-L/opt/R/arm64/lib") == 1
-    assert "-framework R -lpcre2-8" in wrapper
-    assert "/opt/R/x86_64/lib" not in wrapper
+    bash = shutil.which("bash") or "C:/Program Files/Git/bin/bash.exe"
+    if not Path(bash).is_file():
+        pytest.skip("bash is required to execute the generated launcher")
+    binary = tmp_path / "bin"
+    binary.mkdir()
+    (binary / "config").write_text(launchers.private_config("arm64"), newline="\n")
+    upstream = binary / "config.real"
+    upstream.write_text('#!/bin/sh\nprintf "%s\\n" "$UPSTREAM_FLAGS"\n', newline="\n")
+    upstream.chmod(0o755)
+    flags = (
+        "-Wl,-headerpad_max_install_names -L/opt/R/arm64/lib "
+        "-F/Library/Frameworks/R.framework/.. -framework R "
+        "-lpcre2-8 -lbz2 -lz -licucore -ldl -lm -liconv"
+    )
+    environment = {**os.environ, "R_HOME": ".", "UPSTREAM_FLAGS": flags}
+    accepted = subprocess.run(
+        [bash, "bin/config", "--ldflags"], cwd=tmp_path, env=environment,
+        text=True, capture_output=True, check=True,
+    )
+    assert accepted.stdout.strip() == (
+        "-Wl,-headerpad_max_install_names -L./lib -lR "
+        "-lbz2 -lz -licucore -ldl -lm -liconv"
+    )
+    environment["UPSTREAM_FLAGS"] = flags.replace("/arm64/", "/x86_64/")
+    rejected = subprocess.run(
+        [bash, "bin/config", "--ldflags"], cwd=tmp_path, env=environment,
+        text=True, capture_output=True, check=False,
+    )
+    assert rejected.returncode != 0
+    assert rejected.stdout == ""
+    assert "Unexpected upstream" in rejected.stderr

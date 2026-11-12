@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
 )
 
 from rc_metastudio import adaptive_window, qt_text
-from rc_metastudio.meta_globals import ALL_METRIC_NAMES
+from rc_metastudio.analysis_catalog import ALL_METRIC_NAMES
 
 
 class RatioDataDialog(QDialog):

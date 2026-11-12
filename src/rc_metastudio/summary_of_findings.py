@@ -1,5 +1,5 @@
 """Reviewers' cross-outcome summary, recalculated on every opening."""
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 import copy
 from rc_metastudio import app_error_handler, qt_layout
 from PyQt6 import QtCore, QtWidgets

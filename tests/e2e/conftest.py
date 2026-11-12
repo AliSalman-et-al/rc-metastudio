@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.verification_resources import desktop_resources
+from scripts.desktop_worker_capacity import desktop_resources
 from scripts.verification_evidence import verification_context
 
 

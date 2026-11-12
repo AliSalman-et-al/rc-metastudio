@@ -506,11 +506,12 @@ test_that("binary OR routes Harbord at low tau and Rucker AS+RE above the rule o
   expect_match(low.result$tests.data$peters$call, "prepared.OR.model\\$seTE <- prepared.standard.errors")
   expect_equal(low.result$tests.data$harbord$routing.effects, params$`prepared.effects`)
   expect_equal(low.result$tests.data$harbord$routing.standard.errors, params$`prepared.standard.errors`)
-  routing <- RCMetaR:::.small.study.prepared.model(
-    params$`prepared.effects`, params$`prepared.standard.errors`, low@study.names, "OR"
-  )
-  expect_equal(routing$TE, params$`prepared.effects`)
-  expect_equal(routing$seTE, params$`prepared.standard.errors`)
+  expected.effects <- log((low@g1O1 * low@g2O2) / (low@g1O2 * low@g2O1))
+  expected.se <- sqrt(1/low@g1O1 + 1/low@g1O2 + 1/low@g2O1 + 1/low@g2O2)
+  routing <- meta::metagen(TE=expected.effects, seTE=expected.se,
+                           sm="OR", common=TRUE, random=TRUE, method.tau="REML")
+  expect_equal(params$`prepared.effects`, expected.effects)
+  expect_equal(params$`prepared.standard.errors`, expected.se)
   expect_equal(low.result$eligibility$`reml.tau2`, routing$tau2)
   expect_match(low.result$`Data and eligibility`, "Heterogeneity (REML tau-squared)", fixed=TRUE)
   expect_match(low.result$Extrapolation, "Peters test")

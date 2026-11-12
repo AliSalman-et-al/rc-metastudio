@@ -30,7 +30,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtTest import QTest
 
-from tests.python.gui.test_types import key_click, key_clicks, mouse_click, mouse_move, mouse_press, mouse_release, required
+from tests.python.gui.qt_test_support import key_click, key_clicks, mouse_click, mouse_move, mouse_press, mouse_release, required
 
 ROOT = Path(__file__).resolve().parents[2]
 WORK = Path(sys.argv[2])
@@ -378,7 +378,7 @@ def analysis_dialog(app, window):
         form.resize(631, 437)
         form.show()
         app.processEvents()
-        from tests.python.gui.test_types import wait
+        from tests.python.gui.qt_test_support import wait
         wait(100)
         assert form.method_lbl.isVisible()
         assert form.method_lbl.text().startswith("Analysis method:")
@@ -606,7 +606,7 @@ def sample_analysis(app, window, sample):
 
 
 def add_named_sheet(app, window, name, diagnostic=False):
-    from rc_metastudio import main_wizard, meta_globals
+    from rc_metastudio import main_wizard, analysis_catalog
     def finish():
         wizard = app.activeModalWidget()
         assert isinstance(wizard, main_wizard.MainWizard)
@@ -638,7 +638,7 @@ def add_named_sheet(app, window, name, diagnostic=False):
     mouse_click(window.add_sheet_button, QtCore.Qt.MouseButton.LeftButton)
     assert window.model.current_sheet.name == name
     assert window.sheet_tabs.tabText(window.sheet_tabs.currentIndex()) == name
-    assert window.model.current_sheet.data_type == (meta_globals.DIAGNOSTIC if diagnostic else meta_globals.CONTINUOUS)
+    assert window.model.current_sheet.data_type == (analysis_catalog.DIAGNOSTIC if diagnostic else analysis_catalog.CONTINUOUS)
     record_step("added-continuous-sheet", window)
 
 
@@ -1698,7 +1698,7 @@ def plot_edit(app, window):
 
 
 def small_study_effects(app, window):
-    from rc_metastudio.publication_bias_dialog import PublicationBiasDialog
+    from rc_metastudio.small_study_effects_dialog import PublicationBiasDialog
 
     assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
     callback_errors = []
@@ -1709,7 +1709,7 @@ def small_study_effects(app, window):
             QtCore.QTimer.singleShot(10, run)
             return
         try:
-            from tests.python.gui.test_types import wheel_scroll
+            from tests.python.gui.qt_test_support import wheel_scroll
             combo = dialog.correction_policy_combo
             original = combo.currentIndex()
             combo.setFocus()
@@ -1877,7 +1877,7 @@ def calculator(app, window, family):
             record_step("calculator-ci-label-fit", dialog, family=family, **sizes)
             assert text_width <= contents.width() and text_height <= contents.height(), sizes
             if accept:
-                from rc_metastudio.meta_globals import CALC_NUM_DIGITS
+                from rc_metastudio.calculator_controls import CALC_NUM_DIGITS
                 for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
                     assert len(field.text().partition(".")[2]) <= CALC_NUM_DIGITS, field.text()
                 if family == "continuous":
@@ -2077,7 +2077,7 @@ def hillclimb(app, window):
     from rc_metastudio import main_wizard, add_new_dialogs
     from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
     from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
-    from rc_metastudio.publication_bias_dialog import PublicationBiasDialog
+    from rc_metastudio.small_study_effects_dialog import PublicationBiasDialog
 
     measures = {}
     counts = {}
@@ -2435,18 +2435,18 @@ try:
         hillclimb(app, window)
     elif scenario.startswith("audit-round3-"):
         sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
-        from tests.e2e.audit_round3 import run
+        from tests.e2e.analysis_presentation_workflows import run
 
         run(app, window, WORK, record_step, scenario)
     elif scenario == "analysis-dialog":
         analysis_dialog(app, window)
     elif scenario == "review1-design":
         sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
-        from tests.e2e.review1_design import run
+        from tests.e2e.desktop_navigation_workflows import run
 
         run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario == "review-workflows":
-        from tests.e2e.review_workflows import run
+        from tests.e2e.analysis_settings_workflows import run
 
         run(app, window, ROOT, record_step, analyze)
     elif scenario in ("ux-improvements", "results-window"):

@@ -14,7 +14,7 @@ import traceback
 import zipfile
 
 from tests.analysis_regression.golden.support import headless_analysis
-from rc_metastudio import meta_globals
+from rc_metastudio import analysis_catalog, application_metadata
 from rc_metastudio import r_bridge
 from rc_metastudio.analysis_results import AnalysisResult
 from rc_metastudio.plot_defaults import FOREST_ARM_LABELS
@@ -282,7 +282,7 @@ def curated_golden_bundles(root_dir=None):
                 "binary.random",
                 binary_params,
                 metric="OR",
-                data_type=meta_globals.BINARY,
+                data_type=analysis_catalog.BINARY,
             ),
         },
         {
@@ -310,7 +310,7 @@ def curated_golden_bundles(root_dir=None):
                 "continuous.random",
                 continuous_params,
                 metric="SMD",
-                data_type=meta_globals.CONTINUOUS,
+                data_type=analysis_catalog.CONTINUOUS,
             ),
         },
         {
@@ -337,7 +337,7 @@ def curated_golden_bundles(root_dir=None):
                 sample("lymph.rcms"),
                 ["diagnostic.random"],
                 [diagnostic_params],
-                data_type=meta_globals.DIAGNOSTIC,
+                data_type=analysis_catalog.DIAGNOSTIC,
             ),
         },
         {
@@ -357,7 +357,7 @@ def curated_golden_bundles(root_dir=None):
                 "binary.random",
                 binary_cumulative_params,
                 metric="OR",
-                data_type=meta_globals.BINARY,
+                data_type=analysis_catalog.BINARY,
                 analysis_type="cumulative",
             ),
         },
@@ -376,7 +376,7 @@ def curated_golden_bundles(root_dir=None):
                 "binary.random",
                 binary_loo_params,
                 metric="OR",
-                data_type=meta_globals.BINARY,
+                data_type=analysis_catalog.BINARY,
                 analysis_type="leave-one-out",
             ),
         },
@@ -397,7 +397,7 @@ def curated_golden_bundles(root_dir=None):
                 "continuous.random",
                 continuous_cumulative_params,
                 metric="SMD",
-                data_type=meta_globals.CONTINUOUS,
+                data_type=analysis_catalog.CONTINUOUS,
                 analysis_type="cumulative",
             ),
         },
@@ -418,7 +418,7 @@ def curated_golden_bundles(root_dir=None):
                 "continuous.random",
                 continuous_loo_params,
                 metric="SMD",
-                data_type=meta_globals.CONTINUOUS,
+                data_type=analysis_catalog.CONTINUOUS,
                 analysis_type="leave-one-out",
             ),
         },
@@ -437,7 +437,7 @@ def curated_golden_bundles(root_dir=None):
                 "meta.regression",
                 binary_regression_params,
                 metric="OR",
-                data_type=meta_globals.BINARY,
+                data_type=analysis_catalog.BINARY,
                 analysis_type="meta_regression",
                 covariates=[
                     {"name": "golden_year", "type": "continuous", "values": amino_year}
@@ -459,7 +459,7 @@ def curated_golden_bundles(root_dir=None):
                 "meta.regression",
                 continuous_regression_params,
                 metric="SMD",
-                data_type=meta_globals.CONTINUOUS,
+                data_type=analysis_catalog.CONTINUOUS,
                 analysis_type="meta_regression",
                 covariates=[
                     {
@@ -485,7 +485,7 @@ def curated_golden_bundles(root_dir=None):
                 "binary.random",
                 binary_subgroup_params,
                 metric="OR",
-                data_type=meta_globals.BINARY,
+                data_type=analysis_catalog.BINARY,
                 analysis_type="subgroup",
                 covariates=[
                     {"name": "golden_group", "type": "factor", "values": amino_group}
@@ -509,7 +509,7 @@ def curated_golden_bundles(root_dir=None):
                 "continuous.random",
                 continuous_subgroup_params,
                 metric="SMD",
-                data_type=meta_globals.CONTINUOUS,
+                data_type=analysis_catalog.CONTINUOUS,
                 analysis_type="subgroup",
                 covariates=[
                     {
@@ -945,7 +945,7 @@ def _sha256(path):
 
 def _tool_versions():
     versions = {
-        "rc_metastudio": str(meta_globals.VERSION),
+        "rc_metastudio": str(application_metadata.VERSION),
         "python": sys.version.split()[0],
         "os": platform.system(),
         "platform": platform.platform(),

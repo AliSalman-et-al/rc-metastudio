@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Deliberate surface inventory; omissions remain a failing acceptance gate."""
 from PyQt6 import QtCore, QtGui, QtWidgets
-from tests.python.gui.test_types import required, wait
+from tests.python.gui.qt_test_support import required, wait
 
 
 def analysis_setup(driver, capture, missing):
@@ -57,7 +57,7 @@ def analysis_setup(driver, capture, missing):
     form.close()
     driver.window.workspace.mark_saved()
     assert driver.window.open(str(driver.ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
-    from rc_metastudio.publication_bias_dialog import PublicationBiasDialog
+    from rc_metastudio.small_study_effects_dialog import PublicationBiasDialog
     form = PublicationBiasDialog(driver.window.model, parent=driver.window,
                                  analysis_service=driver.window.small_study_effects_service)
     form.show()

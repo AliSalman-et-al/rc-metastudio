@@ -19,7 +19,7 @@ from PyQt6.QtGui import QColor
 from rc_metastudio import dataset_table_model
 from rc_metastudio import analysis_dataset
 from rc_metastudio.analysis_unit import AnalysisUnit
-from rc_metastudio import meta_globals
+from rc_metastudio import analysis_catalog
 from rc_metastudio import r_bridge
 
 
@@ -32,7 +32,7 @@ def _derived_effect_and_ci(analysis_unit, metric, arm_key):
 
 def test_workspace_numeric_edit_rejects_ambiguous_decimal_text_without_mutation():
     model = _diagnostic_model_with_empty_cells()
-    model.current_sheet.covariates.append({"id": "Dose", "name": "Dose", "data_type": meta_globals.CONTINUOUS})
+    model.current_sheet.covariates.append({"id": "Dose", "name": "Dose", "data_type": analysis_catalog.CONTINUOUS})
     model.current_sheet.rows[0].covariate_values["Dose"] = 5.5
     model.update_column_indices()
     index = model.index(0, model.columnCount() - 1)
@@ -127,8 +127,8 @@ def test_inclusion_edit_accepts_only_explicit_pyqt6_check_states_and_booleans():
 
 
 def _sheet_model(data_type, label="Alpha", add_blank_study=False):
-    diagnostic = data_type == meta_globals.DIAGNOSTIC
-    names = ["test 1"] if diagnostic else list(meta_globals.DEFAULT_GROUP_NAMES)
+    diagnostic = data_type == analysis_catalog.DIAGNOSTIC
+    names = ["test 1"] if diagnostic else list(analysis_catalog.DEFAULT_GROUP_NAMES)
     arms = [analysis_dataset.Arm(ArmId(f"arm:{i}"), name) for i, name in enumerate(names)]
     sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", data_type,
         family={0: "binary", 1: "continuous", 2: "diagnostic"}[data_type], arms=arms)
@@ -139,11 +139,11 @@ def _sheet_model(data_type, label="Alpha", add_blank_study=False):
 
 
 def _diagnostic_model_with_empty_cells():
-    return _sheet_model(meta_globals.DIAGNOSTIC, add_blank_study=True)
+    return _sheet_model(analysis_catalog.DIAGNOSTIC, add_blank_study=True)
 
 
 def _binary_model_with_blank_study():
-    return _sheet_model(meta_globals.BINARY, label="")
+    return _sheet_model(analysis_catalog.BINARY, label="")
 
 
 def _model_with_real_study_and_empty_new_entry_row(data_type):
@@ -151,7 +151,7 @@ def _model_with_real_study_and_empty_new_entry_row(data_type):
 
 
 def test_blank_entry_row_stays_out_of_the_durable_dataset_until_named():
-    model = _model_with_real_study_and_empty_new_entry_row(meta_globals.BINARY)
+    model = _model_with_real_study_and_empty_new_entry_row(analysis_catalog.BINARY)
 
     assert len(model.current_sheet.rows) == 1
     blank_row = len(model.current_sheet.rows)
@@ -167,7 +167,7 @@ def test_blank_entry_row_stays_out_of_the_durable_dataset_until_named():
 
 
 def _continuous_model_with_named_study():
-    return _sheet_model(meta_globals.CONTINUOUS)
+    return _sheet_model(analysis_catalog.CONTINUOUS)
 
 
 def test_outcome_cells_use_neutral_background_and_inherit_theme_text():
@@ -304,7 +304,7 @@ def test_empty_existing_study_name_emits_study_name_error():
 
 def test_invalid_continuous_covariate_edit_emits_error_and_preserves_value():
     model = _diagnostic_model_with_empty_cells()
-    model.current_sheet.covariates.append({"id": "Dose", "name": "Dose", "data_type": meta_globals.CONTINUOUS})
+    model.current_sheet.covariates.append({"id": "Dose", "name": "Dose", "data_type": analysis_catalog.CONTINUOUS})
     model.current_sheet.rows[0].covariate_values["Dose"] = 5.5
     model.update_column_indices()
     errors = []
@@ -349,7 +349,7 @@ def test_diagnostic_partial_raw_count_edit_clears_all_derived_metrics(monkeypatc
     analysis_unit = model.get_current_analysis_unit_for_study(0)
     arm_key = model.get_current_arm_key()
     analysis_unit.arms[model.arm_names[0]].raw_data = [19.0, 10.0, 1.0, 81.0]
-    for metric in meta_globals.DIAGNOSTIC_METRICS:
+    for metric in analysis_catalog.DIAGNOSTIC_METRICS:
         analysis_unit.set_effect_and_ci(
             metric,
             arm_key,
@@ -378,7 +378,7 @@ def test_diagnostic_partial_raw_count_edit_clears_all_derived_metrics(monkeypatc
 
     assert analysis_unit.arms[model.arm_names[0]].raw_data == [19.0, 10.0, "", 81.0]
     assert model.current_sheet.rows[0].include is False
-    for metric in meta_globals.DIAGNOSTIC_METRICS:
+    for metric in analysis_catalog.DIAGNOSTIC_METRICS:
         assert analysis_unit.get_entered_effect_and_ci(metric, arm_key) == (
             None,
             None,

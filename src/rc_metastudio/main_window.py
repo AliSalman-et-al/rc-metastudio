@@ -35,8 +35,8 @@ else:
     from rc_metastudio import ui_main_window as _ui_main_window
 from rc_metastudio import dataset_table_view
 from rc_metastudio import dataset_table_model
-from rc_metastudio import meta_globals
-from rc_metastudio.meta_globals import DEFAULT_DATASET_NAME
+from rc_metastudio import analysis_catalog, analysis_validation
+
 from rc_metastudio import analysis_dataset
 from rc_metastudio import analysis_adapter
 from rc_metastudio import analysis_identity
@@ -63,12 +63,12 @@ from rc_metastudio.settings import (
     save_settings,
     update_setting,
 )
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 
 from rc_metastudio import add_new_dialogs
 from rc_metastudio import results_window, analysis_setup_dialog
-from rc_metastudio import publication_bias_dialog
-from rc_metastudio import publication_bias
+from rc_metastudio import small_study_effects_dialog
+from rc_metastudio import small_study_effects
 from rc_metastudio import diagnostic_metrics_dialog
 from rc_metastudio import subgroup_analysis_dialog
 from rc_metastudio import edit_name_dialogs
@@ -80,6 +80,9 @@ from rc_metastudio import about_legal_dialog
 
 from rc_metastudio.analysis_results import AnalysisResult
 from rc_metastudio.workspace_session import WorkspaceSession
+
+
+DEFAULT_DATASET_NAME = "untitled_dataset"
 
 
 def _qt_item_text(value):
@@ -308,7 +311,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.analysis_service = analysis_adapter.AnalysisService()
-        self.small_study_effects_service = publication_bias.SmallStudyEffectsService()
+        self.small_study_effects_service = small_study_effects.SmallStudyEffectsService()
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.setupUi(self)
         qt_layout.configure_analysis_menu(self.menuAnalysis)
@@ -376,7 +379,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.restore_column_widths(load_main_column_widths())
 
         self.cl_label = ElidingStatusLabel(
-            _format_confidence_level_status(meta_globals.DEFAULT_CONFIDENCE_LEVEL)
+            _format_confidence_level_status(analysis_validation.DEFAULT_CONFIDENCE_LEVEL)
         )
         self.cl_label.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.statusbar.addWidget(self.cl_label, 1)
@@ -590,7 +593,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         has_factor_covariates = bool(
             self.model
             and any(
-                cov['data_type'] == meta_globals.FACTOR
+                cov['data_type'] == analysis_catalog.FACTOR
                 for cov in (self.model.current_sheet.covariates if self.model.current_sheet else [])
             )
         )
@@ -792,7 +795,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             _connect_action(self.action_add_covariate, self.add_covariate)
 
             _connect_action(self.action_meta_regression, self.meta_reg)
-            _connect_action(self.action_publication_bias, self.publication_bias)
+            _connect_action(self.action_publication_bias, self.small_study_effects)
             _connect_action(self.action_subgroup_ma, self.meta_subgroup_get_cov)
 
             _connect_action(self.action_about_legal, self.show_about_legal)
@@ -831,8 +834,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             return
         form.show()
 
-    def publication_bias(self):
-        form = publication_bias_dialog.PublicationBiasDialog(
+    def small_study_effects(self):
+        form = small_study_effects_dialog.PublicationBiasDialog(
             self.model,
             parent=self,
             analysis_service=self.small_study_effects_service,
@@ -1056,7 +1059,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         if self.model.get_current_outcome_type() == "binary":
             self.add_binary_metrics(metric_to_check=metric_to_check)
-            self.metric_menu_is_set_for = meta_globals.BINARY
+            self.metric_menu_is_set_for = analysis_catalog.BINARY
 
         elif self.model.get_current_outcome_type() in ("time_to_event", "event_rates"):
             metric = "HR" if self.model.get_current_outcome_type() == "time_to_event" else "IRR"
@@ -1064,25 +1067,25 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.metric_menu_is_set_for = self.model.get_current_outcome_type(get_str=False)
         elif self.model.get_current_outcome_type() == "continuous":
             self.add_continuous_metrics(metric_to_check=metric_to_check)
-            self.metric_menu_is_set_for = meta_globals.CONTINUOUS
+            self.metric_menu_is_set_for = analysis_catalog.CONTINUOUS
 
         else:
             # diagnostic data; deactive metrics option
             # we always show sens. + spec. for diag. data.
             self.menuMetric.setDisabled(True)
-            self.metric_menu_is_set_for = meta_globals.DIAGNOSTIC
+            self.metric_menu_is_set_for = analysis_catalog.DIAGNOSTIC
 
     def add_binary_metrics(self, metric_to_check=None):
         self.add_metrics(
-            meta_globals.BINARY_ONE_ARM_METRICS,
-            meta_globals.BINARY_TWO_ARM_METRICS,
+            analysis_catalog.BINARY_ONE_ARM_METRICS,
+            analysis_catalog.BINARY_TWO_ARM_METRICS,
             metric_to_check=metric_to_check,
         )
 
     def add_continuous_metrics(self, metric_to_check=None):
         self.add_metrics(
-            meta_globals.CONTINUOUS_ONE_ARM_METRICS,
-            meta_globals.CONTINUOUS_TWO_ARM_METRICS,
+            analysis_catalog.CONTINUOUS_ONE_ARM_METRICS,
+            analysis_catalog.CONTINUOUS_TWO_ARM_METRICS,
             metric_to_check=metric_to_check,
         )
 
@@ -1138,7 +1141,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def deselect_all_metrics(self):
         data_type = self.tableView.model().get_current_outcome_type(get_str=False)
-        if data_type in (meta_globals.BINARY, meta_globals.CONTINUOUS, *meta_globals.RATIO_DATA_TYPES):
+        if data_type in (analysis_catalog.BINARY, analysis_catalog.CONTINUOUS, *analysis_catalog.RATIO_DATA_TYPES):
             for menu_action in self.menuMetric.actions():
                 sub_menu = menu_action.menu()
                 if sub_menu is None:
@@ -1449,11 +1452,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _update_swap_arms_enabled(self):
         sheet = self.model.current_sheet
-        self.action_swap_arms.setEnabled(bool(sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2 and self.model.current_effect not in meta_globals.ONE_ARM_METRICS))
+        self.action_swap_arms.setEnabled(bool(sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2 and self.model.current_effect not in analysis_catalog.ONE_ARM_METRICS))
 
     def _swap_sheet_arms(self):
         sheet = self.model.current_sheet
-        if sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2 and self.model.current_effect not in meta_globals.ONE_ARM_METRICS:
+        if sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2 and self.model.current_effect not in analysis_catalog.ONE_ARM_METRICS:
             def swap():
                 sheet.arms.reverse()
                 if "favours_labels" in sheet.settings:
@@ -1790,8 +1793,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _sheet_from_dataset_info(dataset_info):
         import uuid
         from rc_metastudio.analysis_dataset import Sheet, Arm
-        data_type = meta_globals.STR_TO_TYPE_DICT[dataset_info['data_type']]
-        groups = dataset_info.get('groups') or meta_globals.default_group_names(data_type, dataset_info.get('sub_type'))
+        data_type = analysis_catalog.STR_TO_TYPE_DICT[dataset_info['data_type']]
+        groups = dataset_info.get('groups') or analysis_catalog.default_group_names(data_type, dataset_info.get('sub_type'))
         sheet = Sheet(SheetId(uuid.uuid4().hex), dataset_info['name'], data_type, dataset_info.get('sub_type'), dataset_info['data_type'], [Arm(ArmId(uuid.uuid4().hex), name) for name in groups], settings={'metric': dataset_info.get('effect')})
         return sheet
 

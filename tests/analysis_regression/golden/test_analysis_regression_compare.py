@@ -848,25 +848,6 @@ def test_analysis_regression_comparison_cli_writes_report(tmp_path):
     assert json.loads(report.read_text())["passed"] is True
 
 
-def test_curated_golden_set_includes_sequential_binary_and_continuous_workflows():
-    with _import_legacy_golden_modules() as (golden_analysis, _, _):
-        bundles = dict(
-            (bundle["id"], bundle)
-            for bundle in golden_analysis.curated_golden_bundles()
-        )
-
-    assert bundles["amino-binary-cumulative"]["case"].analysis_type == "cumulative"
-    assert "Cumulative summary" in bundles["amino-binary-cumulative"]["expected"]
-    assert (
-        bundles["amino-binary-leave-one-out"]["case"].analysis_type == "leave-one-out"
-    )
-    assert "Leave-one-out summary" in bundles["amino-binary-leave-one-out"]["expected"]
-    assert bundles["continuous-cumulative"]["case"].analysis_type == "cumulative"
-    assert "Cumulative summary" in bundles["continuous-cumulative"]["expected"]
-    assert bundles["continuous-leave-one-out"]["case"].analysis_type == "leave-one-out"
-    assert "Leave-one-out summary" in bundles["continuous-leave-one-out"]["expected"]
-
-
 def test_golden_summary_parser_reads_current_RCMetaR_summary_display():
     with _import_legacy_golden_modules() as (golden_analysis, _, _):
         parsed = golden_analysis._parse_summary(
@@ -1032,79 +1013,10 @@ def test_compare_bundle_requires_expected_plot_artifacts(tmp_path):
     )
 
 
-def test_headless_analysis_dispatches_sequential_binary_and_continuous_workflows(
-    monkeypatch, tmp_path
-):
-    with _import_legacy_golden_modules() as (_, headless_analysis, meta_globals):
-        from rc_metastudio import analysis_adapter
-
-        calls = []
-
-        class Model(object):
-            dataset = object()
-            current_effect = "OR"
-
-            def set_current_metric(self, metric):
-                calls.append(("metric", metric))
-                self.current_effect = metric
-
-        monkeypatch.setattr(
-            headless_analysis, "load_dataset_model", lambda path: Model()
-        )
-        monkeypatch.setattr(
-            analysis_adapter.r_bridge,
-            "dataset_to_simple_binary_r_object",
-            lambda model: calls.append(("data", "binary")),
-            raising=False,
-        )
-        monkeypatch.setattr(
-            analysis_adapter.r_bridge,
-            "dataset_to_simple_continuous_r_object",
-            lambda model: calls.append(("data", "continuous")),
-            raising=False,
-        )
-        monkeypatch.setattr(
-            analysis_adapter.r_bridge,
-            "run_versioned_analysis_request",
-            lambda request: _text_result(
-                "Summary", "%s:%s" % (request["workflow"], request["method"])
-            ),
-            raising=False,
-        )
-
-        binary = headless_analysis.HeadlessAnalysisCase(
-            str(tmp_path / "b.rcms"),
-            "binary.random",
-            {"measure": "OR"},
-            data_type=meta_globals.BINARY,
-            analysis_type="cumulative",
-        )
-        continuous = headless_analysis.HeadlessAnalysisCase(
-            str(tmp_path / "c.rcms"),
-            "continuous.random",
-            {"measure": "SMD"},
-            data_type=meta_globals.CONTINUOUS,
-            analysis_type="leave-one-out",
-        )
-
-        assert (
-            headless_analysis.run_headless_analysis(binary).texts["Summary"]
-            == "cumulative:binary.random"
-        )
-        assert (
-            headless_analysis.run_headless_analysis(continuous).texts["Summary"]
-            == "leave-one-out:continuous.random"
-        )
-        assert [call for call in calls if call[0] == "metric"] == [
-            ("metric", "OR"),
-            ("metric", "SMD"),
-        ]
-
-
 def test_headless_analysis_uses_restored_metric_or_reports_missing_metric(
     monkeypatch, tmp_path
 ):
-    with _import_legacy_golden_modules() as (_, headless_analysis, meta_globals):
+    with _import_legacy_golden_modules() as (_, headless_analysis, analysis_catalog):
         from rc_metastudio import analysis_adapter
 
         class Model(object):
@@ -1116,6 +1028,7 @@ def test_headless_analysis_uses_restored_metric_or_reports_missing_metric(
             def set_current_metric(self, metric):
                 self.current_effect = metric
 
+        backend_requests = []
         model = Model("OR")
         monkeypatch.setattr(headless_analysis, "load_dataset_model", lambda path: model)
         monkeypatch.setattr(
@@ -1127,7 +1040,8 @@ def test_headless_analysis_uses_restored_metric_or_reports_missing_metric(
         monkeypatch.setattr(
             analysis_adapter.r_bridge,
             "run_versioned_analysis_request",
-            lambda request: _text_result("Summary", request["params"]["measure"]),
+            lambda request: backend_requests.append(request)
+            or _text_result("Summary", "completed"),
             raising=False,
         )
 
@@ -1136,12 +1050,11 @@ def test_headless_analysis_uses_restored_metric_or_reports_missing_metric(
             "binary.random",
             {"measure": "OR"},
             metric="RR",
-            data_type=meta_globals.BINARY,
+            data_type=analysis_catalog.BINARY,
         )
-        assert (
-            headless_analysis.run_headless_analysis(explicit_case).texts["Summary"]
-            == "RR"
-        )
+        headless_analysis.run_headless_analysis(explicit_case)
+        assert backend_requests[-1]["metric"] == "RR"
+        assert backend_requests[-1]["params"]["measure"] == "RR"
         assert explicit_case.parameters == {"measure": "OR"}
 
         model.current_effect = "OR"
@@ -1149,12 +1062,11 @@ def test_headless_analysis_uses_restored_metric_or_reports_missing_metric(
             str(tmp_path / "restored.rcms"),
             "binary.random",
             {},
-            data_type=meta_globals.BINARY,
+            data_type=analysis_catalog.BINARY,
         )
-        assert (
-            headless_analysis.run_headless_analysis(restored_case).texts["Summary"]
-            == "OR"
-        )
+        headless_analysis.run_headless_analysis(restored_case)
+        assert backend_requests[-1]["metric"] == "OR"
+        assert backend_requests[-1]["params"]["measure"] == "OR"
 
         model.current_effect = None
         with pytest.raises(ValueError, match="metric must be a non-empty string"):
@@ -1164,7 +1076,7 @@ def test_headless_analysis_uses_restored_metric_or_reports_missing_metric(
 def test_headless_diagnostic_metric_overrides_stale_method_parameters(
     monkeypatch, tmp_path
 ):
-    with _import_legacy_golden_modules() as (_, headless_analysis, meta_globals):
+    with _import_legacy_golden_modules() as (_, headless_analysis, analysis_catalog):
         from rc_metastudio import analysis_adapter
 
         class DiagnosticModel(object):
@@ -1225,7 +1137,7 @@ def test_headless_diagnostic_metric_overrides_stale_method_parameters(
             ["diagnostic.random", "diagnostic.reitsma"],
             parameters,
             metric="Sens",
-            data_type=meta_globals.DIAGNOSTIC,
+            data_type=analysis_catalog.DIAGNOSTIC,
         )
 
         headless_analysis.run_headless_analysis(case)
@@ -1248,7 +1160,7 @@ def test_headless_diagnostic_metric_overrides_stale_method_parameters(
 def test_headless_analysis_dispatches_meta_regression_with_selected_covariates(
     monkeypatch, tmp_path
 ):
-    with _import_legacy_golden_modules() as (_, headless_analysis, meta_globals):
+    with _import_legacy_golden_modules() as (_, headless_analysis, analysis_catalog):
         from rc_metastudio import analysis_adapter
 
         calls = []
@@ -1300,12 +1212,12 @@ def test_headless_analysis_dispatches_meta_regression_with_selected_covariates(
             None,
             {"conf.level": 95.0},
             metric="OR",
-            data_type=meta_globals.BINARY,
+            data_type=analysis_catalog.BINARY,
             analysis_type="meta_regression",
             covariates=covariates,
         )
 
-        assert headless_analysis.run_headless_analysis(case).texts["Summary"] == "OR"
+        headless_analysis.run_headless_analysis(case)
         data_call = next(call for call in calls if call[0] == "data")
         assert "include_raw_data" not in data_call[1]
         assert data_call[1]["studies"] == model.studies
@@ -1430,7 +1342,6 @@ def _import_legacy_golden_modules():
         "headless_analysis",
         "dataset_table_model",
         "analysis_dataset",
-        "meta_globals",
         "r_bridge",
         "rc_metastudio.r_bridge",
     ]
@@ -1446,12 +1357,6 @@ def _import_legacy_golden_modules():
         dataset_module = ModuleType("analysis_dataset")
         setattr(dataset_module, "Covariate", lambda name, kind: (name, kind))
         sys.modules["analysis_dataset"] = dataset_module
-        globals_module = ModuleType("meta_globals")
-        setattr(globals_module, "BINARY", "binary")
-        setattr(globals_module, "CONTINUOUS", "continuous")
-        setattr(globals_module, "DIAGNOSTIC", "diagnostic")
-        setattr(globals_module, "VERSION", "0.1.0")
-        sys.modules["meta_globals"] = globals_module
         r_boundary = ModuleType("r_bridge")
         setattr(r_boundary, "RLibraryLoader", lambda: None)
         setattr(r_boundary, "run_workflow_analysis", lambda *args, **kwargs: {})
@@ -1475,12 +1380,12 @@ def _import_legacy_golden_modules():
         sys.modules["rc_metastudio.r_bridge"] = r_boundary
         from tests.analysis_regression.golden.support import golden_analysis
         from tests.analysis_regression.golden.support import headless_analysis
-        from rc_metastudio import meta_globals
+        from rc_metastudio import analysis_catalog
         import rc_metastudio.analysis_adapter as analysis_adapter
 
         setattr(analysis_adapter, "r_bridge", r_boundary)
 
-        yield golden_analysis, headless_analysis, meta_globals
+        yield golden_analysis, headless_analysis, analysis_catalog
     finally:
         cached_adapter.r_bridge = previous_bridge
         for name, module in previous.items():

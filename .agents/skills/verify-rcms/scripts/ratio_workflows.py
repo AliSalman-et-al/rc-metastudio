@@ -20,7 +20,7 @@ def run(app, window, scenario, record):
     from PyQt6.QtSvg import QSvgRenderer
     from rc_metastudio import main_wizard, analysis_setup_dialog, results_window, r_bridge, analysis_dataset
     from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
-    from rc_metastudio.publication_bias_dialog import PublicationBiasDialog
+    from rc_metastudio.small_study_effects_dialog import PublicationBiasDialog
     from rc_metastudio.ratio_data_dialog import RatioDataDialog
     from analysis_matrix import set_parameter
     from advanced_workflows import modal, plots
@@ -32,7 +32,7 @@ def run(app, window, scenario, record):
 
     def click(widget):
         assert widget.isEnabled(), widget.objectName()
-        from tests.python.gui.test_types import mouse_click
+        from tests.python.gui.qt_test_support import mouse_click
         mouse_click(widget, QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
 
@@ -497,7 +497,7 @@ def verify_bundled_sample(app, window, hazard, record):
     from rc_metastudio import analysis_setup_dialog, results_window, r_bridge
     from rc_metastudio.project_format import load_project
     from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
-    from rc_metastudio.publication_bias_dialog import PublicationBiasDialog
+    from rc_metastudio.small_study_effects_dialog import PublicationBiasDialog
     from analysis_matrix import set_parameter
     from advanced_workflows import modal
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections, _parse_result_table, _result_row_key

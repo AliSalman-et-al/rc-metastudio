@@ -3,7 +3,7 @@ import sys
 import tomllib
 from pathlib import Path
 
-from ._workflow import load_module_from_path
+from ._module_loader import load_module_from_path
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -43,7 +43,7 @@ def test_version_bump_script_updates_all_release_version_surfaces(tmp_path, monk
         "uv.lock",
         "CHANGELOG.md",
         "src/rc_metastudio/__init__.py",
-        "src/rc_metastudio/meta_globals.py",
+        "src/rc_metastudio/application_metadata.py",
         "r/RCMetaR/DESCRIPTION",
     ]
     for relative_path in paths_to_copy:
@@ -60,7 +60,7 @@ def test_version_bump_script_updates_all_release_version_surfaces(tmp_path, monk
         "bump_version_for_release_contract", ROOT / "scripts" / "bump_version.py"
     )
     result = bump_version.main(
-        [next_version, "--root", str(tmp_path), "--date", "2026-08-09"]
+        [next_version, "--root", str(tmp_path), "--date", "2024-02-29"]
     )
 
     assert result == 0
@@ -69,9 +69,9 @@ def test_version_bump_script_updates_all_release_version_surfaces(tmp_path, monk
         "rc_metastudio_after_bump", tmp_path / "src" / "rc_metastudio" / "__init__.py"
     )
     monkeypatch.setitem(sys.modules, "rc_metastudio", package)
-    meta_globals = load_module(
-        "meta_globals_after_bump",
-        tmp_path / "src" / "rc_metastudio" / "meta_globals.py",
+    application_metadata = load_module(
+        "application_metadata_after_bump",
+        tmp_path / "src" / "rc_metastudio" / "application_metadata.py",
     )
     rcmetar_fields = read_description_fields(tmp_path / "r" / "RCMetaR" / "DESCRIPTION")
     lockfile = (tmp_path / "uv.lock").read_text("utf-8")
@@ -79,8 +79,8 @@ def test_version_bump_script_updates_all_release_version_surfaces(tmp_path, monk
 
     assert pyproject["project"]["version"] == next_version
     assert package.__version__ == next_version
-    assert meta_globals.VERSION == next_version
+    assert application_metadata.VERSION == next_version
     assert rcmetar_fields["Version"] == next_version
-    assert rcmetar_fields["Date"] == "2026-08-09"
+    assert rcmetar_fields["Date"] == "2024-02-29"
     assert f'name = "rc-metastudio"\nversion = "{next_version}"' in lockfile
     assert f"## {next_version} - Unreleased" in changelog

@@ -1,5 +1,5 @@
 """Manuscript content taken exclusively from an executed result."""
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 from dataclasses import dataclass, replace
 from decimal import Decimal
 import re

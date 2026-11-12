@@ -9,22 +9,10 @@ sys.path.insert(0, os.path.abspath("src"))
 import pytest
 from rc_metastudio import automation
 from PyQt6.QtWidgets import QDialog, QApplication
-from test_types import key_click, required
+from qt_test_support import key_click, required
 
 
 REPO_ROOT = os.getcwd()
-
-
-@pytest.mark.parametrize("case", ["sorted-paste", "sparse-fill", "quoted-copy", "sparse-copy", "invalid-paste"])
-def test_table_editing_transactions(case, tmp_path):
-    from pathlib import Path
-    from tests.e2e.ux_workflows import table_editing_case
-
-    app, window = automation.start_automation()
-    try:
-        table_editing_case(app, window, tmp_path, Path(REPO_ROOT), lambda *args, **kwargs: None, case)
-    finally:
-        _close_without_prompt(app, window)
 
 
 def _derived_effect_and_ci(analysis_unit, metric, arm_key):
@@ -376,7 +364,7 @@ def test_diagnostic_complete_paste_recomputes_sens_spec_confidence_intervals(
 def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
     monkeypatch,
 ):
-    from rc_metastudio import meta_globals
+    from rc_metastudio import analysis_catalog
 
     app, window = automation.start_automation()
     try:
@@ -388,7 +376,7 @@ def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
         analysis_unit = model.get_current_analysis_unit_for_study(1)
         arm_key = model.get_current_arm_key()
         analysis_unit.arms[model.get_arm_names()[0]].raw_data = [15.0, 11.0, 16.0, 49.0]
-        for metric in meta_globals.DIAGNOSTIC_METRICS:
+        for metric in analysis_catalog.DIAGNOSTIC_METRICS:
             analysis_unit.set_effect_and_ci(
                 metric,
                 arm_key,

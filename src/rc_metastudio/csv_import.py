@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TypedDict
 
-from rc_metastudio import tabular_data
+from rc_metastudio import row_padding
 
 
 class CsvImportError(ValueError):
@@ -202,7 +202,7 @@ def normalize_import_rows(
     rows: list[list[str]] | tuple[tuple[str, ...], ...], *, minimum_width: int = 0
 ) -> list[list[str]]:
     """Return mutable, rectangular rows for insertion into the Qt model."""
-    return tabular_data.normalize_rows(
+    return row_padding.normalize_rows(
         [list(row) for row in rows], minimum_width=minimum_width
     )
 

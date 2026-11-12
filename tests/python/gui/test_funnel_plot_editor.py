@@ -168,24 +168,30 @@ def test_funnel_editor_apply_then_ok_does_not_regenerate_twice(qapp):
         dialog.close()
 
 
-@pytest.mark.parametrize("caption_only", [False, True])
-def test_funnel_editor_ok_commits_new_change_and_closes(qapp, caption_only):
+@pytest.mark.parametrize("change", ["point-size", "caption", "label-policy"])
+def test_funnel_editor_ok_commits_new_change_and_closes(qapp, change):
     dialog = FunnelPlotEditorDialog(
         _params("ordinary"), "ordinary.png", plot_type="funnel"
     )
     applied = []
     dialog.applied.connect(
-        lambda: (applied.append(True), dialog.mark_commit_succeeded())
+        lambda: (applied.append(dialog.plot_params()), dialog.mark_commit_succeeded())
     )
     try:
-        if caption_only:
+        if change == "caption":
             dialog.figure_caption.setText("Only the caption changed")
+            key, expected = "plot_caption", "Only the caption changed"
+        elif change == "label-policy":
+            dialog.label_policy_combo.setCurrentText("All")
+            key, expected = "funnel.label.policy", "all"
         else:
             dialog.point_size_spin.setValue(2.0)
+            key, expected = "funnel.point.size", 2.0
         ok_button = dialog.button_box.button(QDialogButtonBox.StandardButton.Ok)
         assert ok_button is not None
         ok_button.click()
         assert len(applied) == 1
+        assert applied[0][key] == expected
         assert dialog.result() == QDialog.DialogCode.Accepted
     finally:
         dialog.close()
@@ -234,26 +240,6 @@ def test_funnel_editor_invalid_ok_stays_open_and_recovers(qapp, monkeypatch):
         assert dialog.result() == QDialog.DialogCode.Accepted
         assert len(applied) == 1
         assert applied[0]["funnel.xlim.lower"] == "0"
-    finally:
-        dialog.close()
-
-
-def test_funnel_editor_ok_commits_combo_only_change(qapp):
-    dialog = FunnelPlotEditorDialog(
-        _params("ordinary"), "ordinary.png", plot_type="funnel"
-    )
-    applied = []
-    dialog.applied.connect(
-        lambda: (applied.append(dialog.plot_params()), dialog.mark_commit_succeeded())
-    )
-    try:
-        dialog.label_policy_combo.setCurrentText("All")
-        ok_button = dialog.button_box.button(QDialogButtonBox.StandardButton.Ok)
-        assert ok_button is not None
-        ok_button.click()
-        assert len(applied) == 1
-        assert applied[0]["funnel.label.policy"] == "all"
-        assert dialog.result() == QDialog.DialogCode.Accepted
     finally:
         dialog.close()
 

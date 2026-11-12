@@ -41,7 +41,7 @@ TOP_LEVEL_FORM_INVENTORY = {
         ("continuous_data_dialog.py", "ContinuousDataDialog", "TRANSACTIONAL"),
     ),
     "publication_bias_dialog.ui": (
-        ("publication_bias_dialog.py", "PublicationBiasDialog", "TRANSACTIONAL"),
+        ("small_study_effects_dialog.py", "PublicationBiasDialog", "TRANSACTIONAL"),
     ),
     "subgroup_analysis_dialog.ui": (
         ("subgroup_analysis_dialog.py", "SubgroupAnalysisDialog", "TRANSACTIONAL"),

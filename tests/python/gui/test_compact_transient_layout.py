@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[3]
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 os.environ.setdefault("RCMS_QT6_BUILD_ROOT", str(ROOT / "build" / "qt6-verification"))
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
-from test_types import key_click, required
+from qt_test_support import key_click, required
 
 prepare_generated_ui_imports()
 LONG_VALUE = "A representative translated value with complete required content " * 20

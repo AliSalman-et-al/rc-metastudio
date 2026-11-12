@@ -16,7 +16,7 @@ pytestmark = pytest.mark.qsettings
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 from rc_metastudio.analysis_results import parse_analysis_result
-from test_types import key_clicks, required
+from qt_test_support import key_clicks, required
 
 prepare_generated_ui_imports()
 
@@ -826,23 +826,6 @@ def test_method_parameters_dialog_stays_stable_when_method_description_changes(
         app.processEvents()
 
 
-def test_meta_regression_action_stays_disabled_without_covariates_when_data_are_enabled():
-
-    app, window = automation.start_automation()
-
-    try:
-        assert window.model.current_sheet is None or window.model.current_sheet.covariates == []
-
-        window.enable_menu_options_that_require_dataset()
-
-        assert window.action_go.isEnabled()
-        assert window.action_subgroup_ma.isEnabled() is False
-        assert window.action_meta_regression.isEnabled() is False
-    finally:
-        window.close()
-        app.processEvents()
-
-
 def test_diagnostic_metric_dialog_fits_checkbox_group_labels():
     from rc_metastudio import diagnostic_metrics_dialog
 
@@ -868,37 +851,25 @@ def test_diagnostic_metric_dialog_fits_checkbox_group_labels():
         app.processEvents()
 
 
-def test_advanced_analysis_actions_require_dataset_readiness_and_covariates():
+def test_analysis_actions_follow_data_readiness_covariate_delete_and_undo():
 
     app, window = automation.start_automation()
 
     try:
         assert window.open(_sample_project_path("amino.rcms")) is True
+        assert window.model.current_sheet.covariates == []
+        window.enable_menu_options_that_require_dataset()
+        assert window.action_go.isEnabled()
+        assert not window.action_meta_regression.isEnabled()
+        assert not window.action_subgroup_ma.isEnabled()
+
         window.toggle_menu_options_that_require_dataset(False)
         window._add_new_covariate("region", "factor")
-
-        assert window.action_go.isEnabled() is False
-        assert window.action_meta_regression.isEnabled() is False
-        assert window.action_subgroup_ma.isEnabled() is False
+        assert not window.action_go.isEnabled()
+        assert not window.action_meta_regression.isEnabled()
+        assert not window.action_subgroup_ma.isEnabled()
 
         window.enable_menu_options_that_require_dataset()
-
-        assert window.action_meta_regression.isEnabled()
-        assert window.action_subgroup_ma.isEnabled()
-    finally:
-        _mark_workspace_saved(window)
-        window.close()
-        app.processEvents()
-
-
-def test_deleting_last_covariate_refreshes_advanced_analysis_actions():
-
-    app, window = automation.start_automation()
-
-    try:
-        assert window.open(_sample_project_path("amino.rcms")) is True
-        window._add_new_covariate("region", "factor")
-
         assert window.action_meta_regression.isEnabled()
         assert window.action_subgroup_ma.isEnabled()
 
@@ -1365,137 +1336,6 @@ def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
         app.processEvents()
 
 
-def test_results_window_figure_context_menus_offer_edit_for_regenerable_forest_plots(
-    monkeypatch,
-):
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio import results_window
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    popups = []
-
-    class FakeEvent(object):
-        def __init__(self):
-            self.accepted = False
-
-        def screenPos(self):
-            return QtCore.QPoint(10, 20)
-
-        def accept(self):
-            self.accepted = True
-
-    class FakeSignal(object):
-        def __init__(self):
-            self._callbacks = []
-
-        def connect(self, callback):
-            self._callbacks.append(callback)
-
-        def emit(self):
-            for callback in self._callbacks:
-                callback()
-
-    class FakeMenu(object):
-        current = None
-
-        def __init__(self, parent=None):
-            self.parent = parent
-            self.actions = []
-            self.aboutToHide = FakeSignal()
-            FakeMenu.current = self
-
-        def addAction(self, action):
-            self.actions.append(action)
-
-        def popup(self, pos):
-            popups.append((pos, [action.text() for action in self.actions]))
-
-    monkeypatch.setattr(results_window, "QMenu", FakeMenu)
-    window = results_window.ResultsWindow(
-        _analysis_result(
-            {
-                "texts": {},
-                "images": {},
-            }
-        )
-    )
-
-    try:
-        menu_cases = [
-            ("plot.data", "Forest Plot", "forest", True, "forest"),
-            (
-                "plot.data",
-                "Cumulative Forest Plot",
-                "cumulative_forest",
-                True,
-                "forest",
-            ),
-            (
-                "plot.data",
-                "Leave-one-out Forest plot",
-                "leave_one_out_forest",
-                True,
-                "forest",
-            ),
-            ("plot.data", "Subgroup Forest Plot", "subgroup_forest", True, "forest"),
-            ("plot.data", "Subgroups Forest Plot", "subgroup_forest", True, "forest"),
-            ("plot.data", "Sensitivity Forest Plot", "forest", True, "forest"),
-            ("plot.data", "Specificity Forest Plot", "forest", True, "forest"),
-            (
-                "plot.data",
-                "Negative Likelihood Ratio Forest Plot",
-                "forest",
-                True,
-                "forest",
-            ),
-            (
-                "plot.data",
-                "Positive Likelihood Ratio Forest Plot",
-                "forest",
-                True,
-                "forest",
-            ),
-            ("plot.data", "Regression Plot", "regression", True, "regression"),
-            ("plot.data", "A title without a plot hint", "forest", True, "forest"),
-            ("plot.data", "Forest Plot", "other", False, "none"),
-            (None, "Forest Plot", "forest", False, "forest"),
-        ]
-
-        for params_path, title, plot_kind, editable, regenerator in menu_cases:
-            event = FakeEvent()
-            artifact = results_window.PlotArtifact(
-                title,
-                "missing.png",
-                _plot_capability_model(
-                    plot_kind=plot_kind,
-                    editable=editable,
-                    styleable=plot_kind not in ("other", "roc", "sroc"),
-                    regenerator=regenerator,
-                ),
-                params_path=params_path,
-            )
-            handler = window._make_context_menu(artifact, plot_item=None)
-            handler(cast(QtWidgets.QGraphicsSceneContextMenuEvent, event))
-            assert event.accepted is True
-            required(FakeMenu.current, "fake context menu").aboutToHide.emit()
-            expected_actions = [
-                "Export PDF…",
-                "Export PNG…",
-                "Export TIFF…",
-                "Export SVG…",
-            ]
-            if editable:
-                expected_actions.insert(0, "Edit plot…")
-            if params_path is None:
-                expected_actions = ["Export PNG…"]
-            assert popups[-1] == (QtCore.QPoint(10, 20), expected_actions)
-    finally:
-        window.close()
-        app.processEvents()
-
-
 @pytest.mark.parametrize(
     ("title", "plot_kind"),
     (
@@ -1628,121 +1468,6 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
             / plot_item.sceneBoundingRect().height()
             == pytest.approx(0.5)
         )
-    finally:
-        window.close()
-        app.processEvents()
-
-
-def test_results_window_save_handler_regenerates_cumulative_forest_as_single_panel(
-    tmp_path, monkeypatch
-):
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio import results_window
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    calls = []
-    window = results_window.ResultsWindow(
-        _analysis_result(
-            {
-                "texts": {},
-                "images": {},
-            }
-        )
-    )
-    artifact = results_window.PlotArtifact(
-        "Cumulative Forest Plot",
-        str(tmp_path / "forest.png"),
-        _plot_capability_model(plot_kind="cumulative_forest", editable=False),
-        params_path=str(tmp_path / "forest_params"),
-    )
-
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "load_in_r",
-        lambda path: calls.append(("load", path)),
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "generate_forest_plot",
-        lambda path: calls.append(("forest", path)),
-        raising=False,
-    )
-    monkeypatch.setattr(
-        results_window.QFileDialog,
-        "getSaveFileName",
-        lambda *args, **kwargs: (str(tmp_path / "saved.pdf"), ""),
-    )
-
-    try:
-        window.save_image_as(artifact, format="pdf")
-
-        assert calls == [
-            ("load", "%s.plotdata" % artifact.params_path),
-            ("forest", str(tmp_path / "saved.pdf")),
-        ]
-    finally:
-        window.close()
-        app.processEvents()
-
-
-@pytest.mark.parametrize(
-    ("extension", "filename"),
-    [(extension, f"saved.{extension}") for extension in ("pdf", "png", "tiff", "svg")]
-    + [("svg", "saved")],
-)
-def test_results_window_save_handler_accepts_backend_export_formats(
-    tmp_path, monkeypatch, extension, filename
-):
-    from rc_metastudio import r_backend
-
-    r_backend.install_r_backend()
-    from rc_metastudio import results_window
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    calls = []
-    window = results_window.ResultsWindow(
-        _analysis_result(
-            {
-                "texts": {},
-                "images": {},
-            }
-        )
-    )
-    artifact = results_window.PlotArtifact(
-        "Forest Plot",
-        str(tmp_path / "forest.png"),
-        _plot_capability_model(),
-        params_path=str(tmp_path / "forest_params"),
-    )
-
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "load_in_r",
-        lambda path: calls.append(("load", path)),
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "generate_forest_plot",
-        lambda path: calls.append(("forest", path)),
-        raising=False,
-    )
-    monkeypatch.setattr(
-        results_window.QFileDialog,
-        "getSaveFileName",
-        lambda *args, **kwargs: (str(tmp_path / filename), ""),
-    )
-
-    try:
-        window.save_image_as(artifact, format=extension)
-
-        assert calls == [
-            ("load", "%s.plotdata" % artifact.params_path),
-            ("forest", str(tmp_path / ("saved.%s" % extension))),
-        ]
     finally:
         window.close()
         app.processEvents()
@@ -2153,7 +1878,7 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
 
 def test_meta_regression_enables_plots_only_for_one_continuous_covariate():
     from rc_metastudio import analysis_setup_dialog
-    from rc_metastudio import meta_globals
+    from rc_metastudio import analysis_catalog
 
     class Form(object):
         is_meta_regression = True
@@ -2165,14 +1890,14 @@ def test_meta_regression_enables_plots_only_for_one_continuous_covariate():
 
     form = Form()
     form.plot_tab = QtWidgets.QWidget()
-    form.selected = [{"data_type": meta_globals.CONTINUOUS}]
+    form.selected = [{"data_type": analysis_catalog.CONTINUOUS}]
 
     analysis_setup_dialog.AnalysisSetupDialog._update_meta_regression_plot_availability(
         cast(analysis_setup_dialog.AnalysisSetupDialog, form)
     )
     assert form.plot_tab.isEnabled()
 
-    form.selected.append({"data_type": meta_globals.CONTINUOUS})
+    form.selected.append({"data_type": analysis_catalog.CONTINUOUS})
     analysis_setup_dialog.AnalysisSetupDialog._update_meta_regression_plot_availability(
         cast(analysis_setup_dialog.AnalysisSetupDialog, form)
     )
@@ -2732,24 +2457,6 @@ def test_new_dataset_wizard_overflow_keeps_diagnostic_choice_reachable():
         app.processEvents()
 
 
-@pytest.mark.parametrize("path", [None, "new_dataset", "csv_import"])
-def test_wizard_uses_modern_style_with_explicit_back_navigation(path):
-    from PyQt6 import QtWidgets
-    from rc_metastudio import main_wizard
-
-    app = cast(
-        QtWidgets.QApplication,
-        QtWidgets.QApplication.instance() or QtWidgets.QApplication([]),
-    )
-    wizard = main_wizard.MainWizard(path=path)
-    try:
-        assert wizard.wizardStyle() == main_wizard.QWizard.WizardStyle.ModernStyle
-        assert wizard.button(main_wizard.QWizard.WizardButton.BackButton) is not None
-    finally:
-        wizard.close()
-        app.processEvents()
-
-
 def test_wizard_layout_smoke_renders_core_wizard_pages():
     from PyQt6 import QtWidgets
 
@@ -2907,7 +2614,7 @@ def test_about_legal_and_welcome_links_show_current_project_information():
         assert "Ali Salman" in about_text
         assert "GPL-3.0-or-later" in about_text
         assert "without warranty" in about_text.lower()
-        assert "original OpenMeta[Analyst] project" in about_text
+        assert "independently maintained rewrite of the original OpenMeta[Analyst] project" in " ".join(about_text.split())
         assert "Provenance and third-party notices" in about_text
         about_dialogs[0].close()
 

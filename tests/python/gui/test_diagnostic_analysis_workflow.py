@@ -321,7 +321,7 @@ def test_per_metric_diagnostic_merge_preserves_display_artifacts(monkeypatch):
     from rc_metastudio import analysis_adapter
     from rc_metastudio.analysis_errors import DiagnosticExecutionError
 
-    def run_backend(_workflow, _methods, parameter_values):
+    def run_backend(_module_loader, _methods, parameter_values):
         if len(_methods) > 1:
             raise DiagnosticExecutionError(
                 "combined execution is intentionally unavailable"
@@ -401,7 +401,7 @@ def test_unexpected_combined_diagnostic_error_is_not_retried(monkeypatch):
 
     calls = []
 
-    def run_backend(_workflow, _methods, _parameter_values):
+    def run_backend(_module_loader, _methods, _parameter_values):
         calls.append("combined")
         raise ValueError("programming error")
 

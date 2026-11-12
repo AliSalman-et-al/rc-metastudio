@@ -5,7 +5,7 @@ import sys
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
-from test_types import required
+from qt_test_support import required
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -395,6 +395,7 @@ def test_confidence_level_is_a_compact_transactional_dialog(qapp):
         assert not dialog.findChildren(QtWidgets.QScrollArea)
         assert available.contains(dialog.frameGeometry())
         assert dialog.confidence_level_spinbox.value() == 95.0
+        assert dialog.minimumWidth() < dialog.sizeHint().width()
     finally:
         dialog.close()
         parent.close()

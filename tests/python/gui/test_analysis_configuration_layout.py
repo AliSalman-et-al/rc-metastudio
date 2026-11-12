@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[3]
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 os.environ.setdefault("RCMS_QT6_BUILD_ROOT", str(ROOT / "build" / "qt6-verification"))
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
-from test_types import key_click, required, wait
+from qt_test_support import key_click, required, wait
 
 prepare_generated_ui_imports()
 
@@ -811,7 +811,7 @@ def test_subgroup_and_covariate_selectors_use_transactional_layouts(qapp, monkey
     from rc_metastudio import adaptive_window
     from rc_metastudio import covariate_type_dialog
     from rc_metastudio import subgroup_analysis_dialog
-    from rc_metastudio.meta_globals import FACTOR
+    from rc_metastudio.analysis_catalog import FACTOR
 
     long_name = "A factor covariate " + ("complete-value-" * 80)
     available = QtCore.QRect(100, 50, 800, 600)
@@ -1400,10 +1400,10 @@ def test_plot_bound_zero_survives_selected_configuration(qapp, monkeypatch, work
 
 
 def test_manuscript_counts_and_correction_describe_only_fitted_studies(qapp, monkeypatch):
-    from rc_metastudio import analysis_setup_dialog, meta_globals
+    from rc_metastudio import analysis_setup_dialog, analysis_catalog
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)
     model = _AnalysisModel("binary")
-    sheet = analysis_dataset.Sheet(SheetId("counts"), "Outcome", meta_globals.BINARY)
+    sheet = analysis_dataset.Sheet(SheetId("counts"), "Outcome", analysis_catalog.BINARY)
     kept, missing = (
         analysis_dataset.StudyRow(RowId(name), name, AnalysisUnit(sheet))
         for name in ("kept", "missing")

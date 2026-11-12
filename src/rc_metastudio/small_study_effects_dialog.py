@@ -11,9 +11,9 @@ from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLayout, QSizePolicy
 
 from rc_metastudio import adaptive_window, app_error_handler
 from rc_metastudio.qt_layout import protect_scroll_settings
-from rc_metastudio.meta_globals import ONE_ARM_METRICS
-from rc_metastudio.runtime_types import required
-from rc_metastudio.publication_bias import (
+from rc_metastudio.analysis_catalog import ONE_ARM_METRICS
+from rc_metastudio.qt_object_guard import required
+from rc_metastudio.small_study_effects import (
     CorrectionPolicy,
     FunnelKind,
     FunnelStyle,

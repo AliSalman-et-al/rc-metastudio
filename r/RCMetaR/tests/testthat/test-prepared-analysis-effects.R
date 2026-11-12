@@ -33,11 +33,6 @@ run_prepared_binary <- function(method, target, workflow="standard") {
 }
 
 
-
-
-
-
-
 test_that("direct diagnostic reconstruction preserves entered effects", {
   raw <- new("DiagnosticData", TP=c(0, 8, 12), FN=c(10, 2, 4),
               TN=c(20, 18, 16), FP=c(2, 1, 3),
@@ -47,7 +42,10 @@ test_that("direct diagnostic reconstruction preserves entered effects", {
                  digits=3, rm.method="REML", supress.output=TRUE,
                  create.plot=FALSE, write.to.file=FALSE)
   prepared <- rcmetar.prepare.analysis.data(raw, params)
-  expect_false(isTRUE(all.equal(prepared@y, raw@y)))
+  expected <- metafor::escalc(measure="OR", ai=c(0, 8, 12), bi=c(10, 2, 4),
+                              ci=c(2, 1, 3), di=c(20, 18, 16), add=.5, to="only0")
+  expect_equal(prepared@y, as.numeric(expected$yi), tolerance=1e-12)
+  expect_equal(prepared@SE, sqrt(as.numeric(expected$vi)), tolerance=1e-12)
 
   entered <- new("DiagnosticData", y=c(.2, .3, .4), SE=c(.1, .2, .15),
                  study.names=c("a", "b", "c"), years=as.integer(2011:2013))
@@ -63,8 +61,8 @@ test_that("single diagnostic execution uses reconstructed or entered DOR", {
   raw <- new("DiagnosticData", TP=0, FN=10, TN=20, FP=2,
               y=99, SE=.001, study.names="zero", years=2011L)
   raw.result <- rcmetar.run.analysis(raw, list(version=1, method="diagnostic.fixed.inv.var", params=params))
-  expected <- rcmetar.prepare.analysis.data(raw, params)
-  expect_equal(raw.result$Summary$MAResults$b[[1]], expected@y[[1]], tolerance=1e-12)
+  expected <- log((.5 * 20.5) / (10.5 * 2.5))
+  expect_equal(raw.result$Summary$MAResults$b[[1]], expected, tolerance=1e-12)
 
   entered <- new("DiagnosticData", y=.7, SE=.2, study.names="entered", years=2011L)
   entered.result <- rcmetar.run.analysis(entered, list(version=1, method="diagnostic.fixed.inv.var", params=params))
@@ -95,7 +93,13 @@ test_that("wrapped binary workflows consume the prepared base effects", {
 
 test_that("Peto remains count-native and entered effect-only data stay unchanged", {
   native <- run_prepared_binary("binary.fixed.peto", "only0")
-  expect_true(is.finite(native$res$b[[1]]))
+  expected <- metafor::rma.peto(
+    ai=c(0, 8, 3, 12), bi=c(20, 12, 17, 8),
+    ci=c(5, 6, 4, 9), di=c(15, 14, 16, 11),
+    add=c(.5, 0), to=c("only0", "none"), drop00=FALSE
+  )
+  expect_equal(native$res$b, expected$b, tolerance=1e-12)
+  expect_equal(native$res$se, expected$se, tolerance=1e-12)
 
   entered <- new("BinaryData", y=.2, SE=.1,
                  study.names="a", years=2011L)
@@ -113,7 +117,14 @@ test_that("display correction labels map to the established correction targets",
   labeled.params <- binary_preparation_params("only0")
   labeled.params$correction.policy <- "All studies if any zero exists"
   labeled <- rcmetar.prepare.analysis.data(data, labeled.params)
-  expect_equal(labeled@y, old@y, tolerance=1e-12)
+  expected <- metafor::escalc(
+    measure="OR", ai=c(0, 8, 3, 12), bi=c(20, 12, 17, 8),
+    ci=c(5, 6, 4, 9), di=c(15, 14, 16, 11), add=.5, to="if0all"
+  )
+  for (prepared in list(old, labeled)) {
+    expect_equal(as.numeric(prepared@y), as.numeric(expected$yi), tolerance=1e-12)
+    expect_equal(prepared@SE, sqrt(as.numeric(expected$vi)), tolerance=1e-12)
+  }
 })
 
 test_that("one-arm raw preparation ignores absent group-two cells", {

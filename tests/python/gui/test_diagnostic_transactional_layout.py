@@ -15,7 +15,7 @@ os.environ.setdefault(
 )
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
-from test_types import key_click, required
+from qt_test_support import key_click, required
 
 prepare_generated_ui_imports()
 
@@ -528,7 +528,7 @@ def test_direct_effect_validation_is_complete_and_reachable_with_large_font(
     )
     warnings = []
     monkeypatch.setattr(
-        diagnostic_data_dialog.calc_fncs.QMessageBox,
+        diagnostic_data_dialog.calculator_controls.QMessageBox,
         "warning",
         lambda _parent, _title, message: warnings.append(message),
     )

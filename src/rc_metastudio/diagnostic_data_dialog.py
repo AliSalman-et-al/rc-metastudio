@@ -25,17 +25,11 @@ from PyQt6.QtWidgets import (
 from rc_metastudio.calculator_service import CalculatorService
 from rc_metastudio import app_error_handler
 from rc_metastudio import adaptive_window
-from rc_metastudio import tabular_data
-from rc_metastudio.meta_globals import (
-    DIAGNOSTIC_METRICS,
-    DIAG_FIELDS_TO_RAW_INDICES,
-    EMPTY_VALS,
-    is_nan,
-    is_a_float,
-    is_empty,
-)
-from rc_metastudio import calculator_routines as calc_fncs
-from rc_metastudio.runtime_types import required
+from rc_metastudio import row_padding
+from rc_metastudio.analysis_catalog import DIAGNOSTIC_METRICS, DIAG_FIELDS_TO_RAW_INDICES
+from rc_metastudio.analysis_validation import EMPTY_VALS, is_nan, is_a_float, is_empty
+from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
+from rc_metastudio.qt_object_guard import required
 
 if TYPE_CHECKING:
     import ui_diagnostic_data_dialog as _ui_diagnostic_data_dialog
@@ -102,7 +96,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         self._configure_readable_ci_label()
         self.initialize_form()
         self.setup_back_calculation_feedback()
-        self._field_history = calc_fncs.TransientEditHistory()
+        self._field_history = calculator_edit_history.TransientEditHistory()
 
         self._update_raw_data()  # analysis_unit -> table
         for field in (self.lower_text_box, self.upper_text_box, self.effect_text_box, self.prevalence_text_box):
@@ -393,7 +387,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                 try:
                     int_val = int(text)
                 except ValueError:
-                    int_val = int(calc_fncs.numeric_value(text))
+                    int_val = int(calculator_controls.numeric_value(text))
                 return int_val
         except (ArithmeticError, TypeError, ValueError) as exc:
             msg = "Could not convert %s to integer" % self.two_by_two_table.item(i, j)
@@ -404,11 +398,11 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
     def cell_data_invalid(self, celldata_string):
         # ignore blank entries
-        if calc_fncs.cell_text_is_blank(celldata_string):
+        if calculator_controls.cell_text_is_blank(celldata_string):
             return None
 
         try:
-            value = calc_fncs.numeric_value(celldata_string)
+            value = calculator_controls.numeric_value(celldata_string)
         except ValueError:
             return "Raw data needs to be numeric."
 
@@ -436,7 +430,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                     self.two_by_two_table.item(row, col),
                     f"diagnostic table cell ({row}, {col})",
                 ).setText(str_val)
-            calc_fncs.set_table_item_editable(
+            calculator_controls.set_table_item_editable(
                 self.two_by_two_table.item(row, col),
                 self._raw_count_cell_is_editable(row, col),
             )
@@ -522,7 +516,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         )
         new_prevalence = self._get_prevalence_str()
 
-        calc_fncs.push_field_edit(
+        calculator_edit_history.push_field_edit(
             self._field_history,
             owner=self,
             restore_state=self.restore_analysis_unit_and_table,
@@ -540,7 +534,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         self.update_back_calculation_button()
 
     def restore_table(self, old_table_data):
-        old_table_data = tabular_data.normalize_rows(old_table_data)
+        old_table_data = row_padding.normalize_rows(old_table_data)
         if not old_table_data:
             return
         nrows = min(len(old_table_data), self.two_by_two_table.rowCount())
@@ -568,7 +562,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         old_value=None,
         use_old_value=True,
     ):
-        old_table = calc_fncs.save_table_data(table)
+        old_table = calculator_controls.save_table_data(table)
         if use_old_value:
             old_table[row][col] = old_value
 
@@ -708,10 +702,10 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                 options = {}
                 if is_prevalence:
                     options = {
-                        "opt_cmp_fn": lambda x: 0 <= calc_fncs.numeric_value(x) <= 1,
+                        "opt_cmp_fn": lambda x: 0 <= calculator_controls.numeric_value(x) <= 1,
                         "opt_cmp_msg": "Prevalence must be between 0 and 1.",
                     }
-                display_scale_val = calc_fncs.evaluate(
+                display_scale_val = calculator_controls.evaluate(
                     new_text=new_text,
                     analysis_unit=self.analysis_unit,
                     current_effect=self.current_effect,
@@ -724,7 +718,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                     parent=self,
                     confidence_multiplier=self.confidence_multiplier,
                     ci_param=ci_param,
-                    source=calc_fncs.calculator_effect_source(
+                    source=calculator_effect_readout.calculator_effect_source(
                         self.analysis_unit,
                         self.arm_names,
                         self.current_effect,
@@ -831,7 +825,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         )
         new_prevalence = self._get_prevalence_str()
 
-        calc_fncs.push_field_edit(
+        calculator_edit_history.push_field_edit(
             self._field_history,
             owner=self,
             restore_state=self.restore_analysis_unit_and_table,
@@ -851,7 +845,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         }
         label = labels.get(val_str, "Entered value")
         try:
-            value = calc_fncs.numeric_value(new_text)
+            value = calculator_controls.numeric_value(new_text)
         except ValueError:
             return "{} must be numeric.".format(label)
         if val_str == "prevalence" and not 0 <= value <= 1:
@@ -862,7 +856,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             "lower": self.lower_text_box.text(),
             "upper": self.upper_text_box.text(),
         }
-        good, message = calc_fncs.between_bounds(
+        good, message = calculator_controls.between_bounds(
             est=values["est"], low=values["lower"], high=values["upper"]
         )
         if not good and message:
@@ -895,7 +889,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         # Back-calculation is currently supported for sensitivity/specificity.
         effects = BACK_CALCULATABLE_DIAGNOSTIC_EFFECTS
         with QSignalBlocker(self.effect_combo_box):
-            from rc_metastudio.meta_globals import DIAGNOSTIC_METRIC_LABELS
+            from rc_metastudio.analysis_catalog import DIAGNOSTIC_METRIC_LABELS
             for effect in effects:
                 self.effect_combo_box.addItem(DIAGNOSTIC_METRIC_LABELS[effect], effect)
             self.effect_combo_box.setCurrentIndex(0)
@@ -907,14 +901,14 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             lower=self.lower_text_box,
             upper=self.upper_text_box,
         )
-        calc_fncs.set_current_effect_from_value(
+        calculator_effect_readout.set_current_effect_from_value(
             analysis_unit=self.analysis_unit,
             txt_boxes=txt_boxes,
             current_effect=self.current_effect,
             arm_key=self.arm_key,
             data_type="diagnostic",
             confidence_multiplier=self.confidence_multiplier,
-            source=calc_fncs.calculator_effect_source(
+            source=calculator_effect_readout.calculator_effect_source(
                 self.analysis_unit,
                 self.arm_names,
                 self.current_effect,
@@ -922,7 +916,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                 self.confidence_multiplier,
             ),
         )
-        calc_fncs.update_calculator_readout(self, "diagnostic")
+        calculator_effect_readout.update_calculator_readout(self, "diagnostic")
 
     def _update_data_table(self):
         """Try to calculate rest of 2x2 table from existing cells"""
@@ -930,7 +924,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             for widget in self.entry_widgets:
                 signal_blockers.enter_context(QSignalBlocker(widget))
             params = self._get_table_values()
-            computed_params = calc_fncs.compute_2x2_table_from_inner_counts(params)
+            computed_params = calculator_controls.compute_2x2_table_from_inner_counts(params)
             if computed_params:
                 self._set_vals(computed_params)  # computed --> table widget
 
@@ -978,7 +972,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         with QSignalBlocker(self.prevalence_text_box):
             self.prevalence_text_box.setText("")
 
-        calc_fncs.set_table_cells_editable(
+        calculator_controls.set_table_cells_editable(
             self.two_by_two_table, DIAGNOSTIC_RAW_COUNT_CELLS
         )
 
@@ -989,7 +983,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         )
         new_prevalence = self._get_prevalence_str()
 
-        calc_fncs.push_field_edit(
+        calculator_edit_history.push_field_edit(
             self._field_history,
             owner=self,
             restore_state=self.restore_analysis_unit_and_table,
@@ -1035,7 +1029,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
             x = self.prevalence_text_box.text()
             try:
-                d["prev"] = calc_fncs.numeric_value(x)
+                d["prev"] = calculator_controls.numeric_value(x)
             except ValueError:
                 d["prev"] = None
 
@@ -1099,7 +1093,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         )
         new_prevalence = self._get_prevalence_str()
 
-        calc_fncs.push_field_edit(
+        calculator_edit_history.push_field_edit(
             self._field_history,
             owner=self,
             restore_state=self.restore_analysis_unit_and_table,

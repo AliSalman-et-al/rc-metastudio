@@ -74,7 +74,7 @@ def visible_label_inventory(widget, user_names=()):
 def run(app, window, record):
     from analysis_matrix import DATA_TYPES, run as matrix
     from advanced_workflows import modal
-    from tests.e2e.audit_round3 import analyze_existing
+    from tests.e2e.analysis_presentation_workflows import analyze_existing
     from rc_metastudio.binary_data_dialog import BinaryDataDialog
     from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
     from rc_metastudio.diagnostic_data_dialog import DiagnosticDataDialog

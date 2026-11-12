@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from rc_metastudio.result_sections import sentence_case_title
+from rc_metastudio.result_formatting import sentence_case_title
 
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass

@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 from PyQt6 import QtCore, QtGui, QtWidgets, QtTest
 
-from tests.python.gui.test_types import mouse_click, key_click, required, wait
+from tests.python.gui.qt_test_support import mouse_click, key_click, required, wait
 
 
 def table_editing_case(app, window, work, root, record, case):
@@ -41,10 +41,26 @@ def table_editing_case(app, window, work, root, record, case):
         expected = dict(before, **{ordered[0]: 2001, ordered[1]: 2002})
         assert {row.id: row.year for row in window.model.current_sheet.rows} == expected
         assert window.model.get_ordered_study_ids() == ordered
+        assert [row.id for row in window.model.current_sheet.rows] == canonical
         window.undo()
         assert {row.id: row.year for row in window.model.current_sheet.rows} == before
         window.redo()
         assert {row.id: row.year for row in window.model.current_sheet.rows} == expected
+        window.model.sort_studies(window.model.NAME, True)
+        if window.model.get_ordered_study_ids() == canonical:
+            window.model.sort_studies(window.model.NAME, False)
+        ordered = window.model.get_ordered_study_ids()
+        assert ordered != canonical
+        labels = {row.id: row.label for row in window.model.current_sheet.rows}
+        name = window.model.index(0, window.model.NAME)
+        assert window.model.setData(name, "Sorted study renamed")
+        renamed = dict(labels, **{ordered[0]: "Sorted study renamed"})
+        assert {row.id: row.label for row in window.model.current_sheet.rows} == renamed
+        assert [row.id for row in window.model.current_sheet.rows] == canonical
+        window.undo()
+        assert {row.id: row.label for row in window.model.current_sheet.rows} == labels
+        window.redo()
+        assert {row.id: row.label for row in window.model.current_sheet.rows} == renamed
     elif case == "sparse-fill":
         year, name = window.model.YEAR, window.model.NAME
         assert table.paste_contents(window.model.index(0, year), [["1991"], ["1992"], ["1993"]])

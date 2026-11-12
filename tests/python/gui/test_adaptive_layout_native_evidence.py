@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 from rc_metastudio import automation
 
-from test_types import required
+from qt_test_support import required
 
 
 ROOT = Path(__file__).resolve().parents[3]

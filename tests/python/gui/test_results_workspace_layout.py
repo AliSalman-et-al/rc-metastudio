@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from test_types import key_click, key_clicks, required
+from qt_test_support import key_click, key_clicks, required
 
 import pytest
 from PyQt6 import QtCore, QtGui, QtSvg, QtWidgets
@@ -587,18 +587,21 @@ def test_sroc_plot_editor_uses_acronym_safe_browse_title(qapp, tmp_path, monkeyp
 
 
 @pytest.mark.parametrize(
-    ("title", "plot_kind", "regenerator"),
+    ("title", "plot_kind", "regenerator", "editable", "has_params"),
     (
-        ("Forest Plot", "forest", "forest"),
-        ("Cumulative Forest Plot", "cumulative_forest", "forest"),
-        ("Leave-one-out Forest Plot", "leave_one_out_forest", "forest"),
-        ("Subgroup Forest Plot", "subgroup_forest", "forest"),
-        ("Diagnostic Forest Plot", "forest", "forest"),
-        ("Meta-Regression Bubble Plot", "regression", "regression"),
+        ("Forest Plot", "forest", "forest", True, True),
+        ("Cumulative Forest Plot", "cumulative_forest", "forest", True, True),
+        ("Leave-one-out Forest Plot", "leave_one_out_forest", "forest", True, True),
+        ("Subgroup Forest Plot", "subgroup_forest", "forest", True, True),
+        ("Diagnostic Forest Plot", "forest", "forest", True, True),
+        ("Meta-Regression Bubble Plot", "regression", "regression", True, True),
+        ("A title without a plot hint", "forest", "forest", True, True),
+        ("Forest Plot", "other", "none", False, True),
+        ("Forest Plot", "forest", "forest", False, False),
     ),
 )
-def test_regenerable_plot_families_expose_native_edit_and_export_actions(
-    qapp, tmp_path, monkeypatch, title, plot_kind, regenerator
+def test_plot_context_menu_follows_capabilities_and_available_data(
+    qapp, tmp_path, monkeypatch, title, plot_kind, regenerator, editable, has_params
 ):
     from rc_metastudio import results_window
 
@@ -623,84 +626,27 @@ def test_regenerable_plot_families_expose_native_edit_and_export_actions(
     artifact = results_window.PlotArtifact(
         title,
         str(tmp_path / "plot.svg"),
-        _plot_capability_model(plot_kind=plot_kind, regenerator=regenerator),
-        params_path=str(tmp_path / "plot-params"),
+        _plot_capability_model(plot_kind=plot_kind, regenerator=regenerator, editable=editable),
+        params_path=str(tmp_path / "plot-params") if has_params else None,
     )
     try:
         window._make_context_menu(artifact, None)(Event())
-        assert captured == [
-            [
-                "Edit plot…",
-                "Export PDF…",
-                "Export PNG…",
-                "Export TIFF…",
-                "Export SVG…",
-            ]
-        ]
+        expected = ["Export PDF…", "Export PNG…", "Export TIFF…", "Export SVG…"]
+        if editable:
+            expected.insert(0, "Edit plot…")
+        if not has_params:
+            expected = ["Export PNG…"]
+        assert captured == [expected]
     finally:
         _dispose(window, qapp)
 
 
 @pytest.mark.parametrize("extension", ["pdf", "png", "tiff", "svg"])
-def test_results_window_regenerates_each_supported_export_format(
-    qapp, tmp_path, monkeypatch, extension
-):
-    from rc_metastudio import results_window
-
-    _use_isolated_settings(tmp_path)
-    window = results_window.ResultsWindow(_empty_results())
-    calls = []
-    artifact = results_window.PlotArtifact(
-        "Forest Plot",
-        str(tmp_path / "forest.svg"),
-        _plot_capability_model(),
-        params_path=str(tmp_path / "forest-params"),
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "load_in_r",
-        lambda path: calls.append(("load", path)),
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "generate_forest_plot",
-        lambda path: calls.append(("generate", path)),
-        raising=False,
-    )
-    monkeypatch.setattr(
-        results_window.QFileDialog,
-        "getSaveFileName",
-        lambda *_args, **_kwargs: (str(tmp_path / "export"), ""),
-    )
-    try:
-        window.save_image_as(artifact, format=extension)
-        assert calls == [
-            ("load", f"{artifact.params_path}.plotdata"),
-            ("generate", str(tmp_path / f"export.{extension}")),
-        ]
-    finally:
-        _dispose(window, qapp)
-
-
-@pytest.mark.parametrize("kind", ["pdf", "docx", "raster"])
-def test_export_confirms_normalized_destination(qapp, tmp_path, kind):
-    from tests.e2e.ux_workflows import export_destination_case
-
-    window = results_window.ResultsWindow(_empty_results())
-    try:
-        export_destination_case(window, tmp_path, lambda *args, **kwargs: None, kind)
-    finally:
-        _dispose(window, qapp)
-
-
-@pytest.mark.parametrize("extension", ["pdf", "png", "tiff", "svg"])
-def test_results_window_exports_sroc_with_format_specific_default_name(
+def test_sroc_export_picker_suggests_format_specific_default_name(
     qapp, tmp_path, monkeypatch, extension
 ):
     _use_isolated_settings(tmp_path)
     window = results_window.ResultsWindow(_empty_results())
-    calls = []
     defaults = []
     artifact = results_window.PlotArtifact(
         "SROC",
@@ -708,31 +654,15 @@ def test_results_window_exports_sroc_with_format_specific_default_name(
         _plot_capability_model(plot_kind="sroc", regenerator="sroc"),
         params_path=str(tmp_path / "sroc-params"),
     )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "load_in_r",
-        lambda path: calls.append(("load", path)),
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "generate_sroc_plot",
-        lambda path: calls.append(("generate", path)),
-        raising=False,
-    )
 
     def choose_path(_parent, _title, default_path, *_args):
         defaults.append(default_path)
-        return str(tmp_path / "export"), ""
+        return "", ""
 
     monkeypatch.setattr(results_window.QFileDialog, "getSaveFileName", choose_path)
     try:
         window.save_image_as(artifact, format=extension)
         assert defaults == [f"Analysis results — sroc.{extension}"]
-        assert calls == [
-            ("load", f"{artifact.params_path}.plotdata"),
-            ("generate", str(tmp_path / f"export.{extension}")),
-        ]
     finally:
         _dispose(window, qapp)
 

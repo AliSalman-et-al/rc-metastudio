@@ -2,6 +2,8 @@
 
 RC MetaStudio supports evidence synthesis and the interpretation of meta-analysis results.
 
+RC MetaStudio is an independently maintained rewrite of the original OpenMeta[Analyst] project. This describes the maintained product; original-work attribution and licensing are documented in [NOTICE.md](NOTICE.md).
+
 ## Language
 
 **Sheet**:

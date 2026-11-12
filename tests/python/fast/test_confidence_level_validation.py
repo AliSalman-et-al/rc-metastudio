@@ -7,13 +7,7 @@ import pytest
 
 sys.path.insert(0, os.path.abspath("src"))
 
-from rc_metastudio.meta_globals import (
-    normalize_confidence_level_params,
-    seems_sane,
-    validate_analysis_digits,
-    validate_correction_factor,
-    validate_confidence_level,
-)
+from rc_metastudio.analysis_validation import normalize_confidence_level_params, seems_sane, validate_analysis_digits, validate_correction_factor, validate_confidence_level
 
 
 def test_plot_ticks_accept_only_comma_separated_finite_numbers():

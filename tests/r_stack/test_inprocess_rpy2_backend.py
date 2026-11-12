@@ -31,7 +31,7 @@ _DRIVER = textwrap.dedent(
     r_backend.install_r_backend()
     try:
         from rc_metastudio import r_bridge
-        from rc_metastudio.meta_globals import FACTOR
+        from rc_metastudio.analysis_catalog import FACTOR
         try:
             r_bridge.RLibraryLoader().load_rcmetar()
         except Exception:
@@ -132,12 +132,12 @@ _DRIVER = textwrap.dedent(
                 },
             )
             from types import SimpleNamespace
-            from rc_metastudio import meta_globals
+            from rc_metastudio import analysis_catalog
             from rc_metastudio.analysis_unit import AnalysisUnit
             sheet = SimpleNamespace(data_type={
-                "binary": meta_globals.BINARY,
-                "continuous": meta_globals.CONTINUOUS,
-                "diagnostic": meta_globals.DIAGNOSTIC,
+                "binary": analysis_catalog.BINARY,
+                "continuous": analysis_catalog.CONTINUOUS,
+                "diagnostic": analysis_catalog.DIAGNOSTIC,
             }[data_type], sub_type=None)
             for study in self._studies:
                 study.analysis_unit = AnalysisUnit(sheet)

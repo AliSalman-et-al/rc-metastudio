@@ -1,13 +1,13 @@
 from rc_metastudio.project_domain import ArmId, RowId, SheetId
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
-from rc_metastudio import analysis_dataset, meta_globals
+from rc_metastudio import analysis_dataset, analysis_catalog
 from rc_metastudio.analysis_unit import AnalysisUnit
 
 
 def test_editable_labels_do_not_change_domain_identities():
     arm = analysis_dataset.Arm(ArmId("arm"), "Intervention")
-    sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", meta_globals.CONTINUOUS, arms=[arm])
+    sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", analysis_catalog.CONTINUOUS, arms=[arm])
     unit = AnalysisUnit(sheet, arm_names=[arm.name], arm_stable_ids=[arm.id])
     row = analysis_dataset.StudyRow(RowId("row"), "Study", unit)
     sheet.rows.append(row)
@@ -25,7 +25,7 @@ def test_editable_labels_do_not_change_domain_identities():
 
 
 def _unit():
-    sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", meta_globals.CONTINUOUS)
+    sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", analysis_catalog.CONTINUOUS)
     return AnalysisUnit(sheet, arm_names=["group 1"], arm_stable_ids=["arm"])
 
 

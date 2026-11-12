@@ -33,7 +33,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 os.environ.setdefault("RCMS_QT6_BUILD_ROOT", str(ROOT / "build" / "qt6-verification"))
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
-from rc_metastudio import calculator_service, meta_globals
+from rc_metastudio import calculator_service, analysis_catalog, calculator_controls
 
 prepare_generated_ui_imports()
 
@@ -395,22 +395,22 @@ def test_native_calculator_evidence_is_relocatable_and_tamper_evident(tmp_path):
 
 
 def test_calculator_numeric_input_uses_unambiguous_dot_or_comma_decimal():
-    from rc_metastudio import calculator_routines
+    from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
 
     for text in ("12.5", "12,5"):
-        assert calculator_routines.numeric_value(text) == 12.5
+        assert calculator_controls.numeric_value(text) == 12.5
 
 
 def test_calculator_numeric_input_rejects_grouping_and_non_finite_values():
-    from rc_metastudio import calculator_routines
+    from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
 
     for text in ("1,234.5", "1.234,5", "1,2,3", "nan", "inf"):
         with pytest.raises(ValueError, match="unambiguous finite number"):
-            calculator_routines.numeric_value(text)
+            calculator_controls.numeric_value(text)
 
 
 def test_field_edit_command_replays_captured_states_once(qapp):
-    from rc_metastudio import calculator_routines as calc_fncs
+    from rc_metastudio import calculator_controls, calculator_controls, calculator_edit_history, calculator_effect_readout
 
     restored = []
     refreshes = []
@@ -422,8 +422,8 @@ def test_field_edit_command_replays_captured_states_once(qapp):
     def restore_state(*state):
         restored.append(state)
 
-    history = calc_fncs.TransientEditHistory()
-    calc_fncs.push_field_edit(
+    history = calculator_edit_history.TransientEditHistory()
+    calculator_edit_history.push_field_edit(
         history,
         owner=Owner(),
         restore_state=restore_state,
@@ -592,10 +592,7 @@ class FakeAnalysisUnit:
         self.selected_source = source
 
     def __init__(self):
-        from rc_metastudio.meta_globals import (
-            BINARY_ONE_ARM_METRICS,
-            BINARY_TWO_ARM_METRICS,
-        )
+        from rc_metastudio.analysis_catalog import BINARY_ONE_ARM_METRICS, BINARY_TWO_ARM_METRICS
 
         self.effects = {
             metric: {} for metric in BINARY_ONE_ARM_METRICS + BINARY_TWO_ARM_METRICS
@@ -688,7 +685,7 @@ def test_continuous_metric_switch_does_not_reuse_effect_se_as_arm_se(
     )
 
     unit = analysis_dataset.AnalysisUnit(
-        analysis_dataset.Sheet(SheetId("sheet"), "Outcome", meta_globals.CONTINUOUS),
+        analysis_dataset.Sheet(SheetId("sheet"), "Outcome", analysis_catalog.CONTINUOUS),
         raw_data=[[60, 94, 22], [60, 92, 20]],
         arm_names=["Group 1", "Group 2"],
     )
@@ -718,7 +715,7 @@ def test_continuous_metric_switch_does_not_reuse_effect_se_as_arm_se(
 
 
 def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatch):
-    from rc_metastudio import analysis_dataset, continuous_data_dialog, meta_globals
+    from rc_metastudio import analysis_dataset, continuous_data_dialog, analysis_catalog, calculator_controls
 
     monkeypatch.setattr(
         calculator_service.r_bridge,
@@ -786,7 +783,7 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
         calculator_service.r_bridge, "impute_pre_post_continuous_data", prepost
     )
     unit = analysis_dataset.AnalysisUnit(
-        analysis_dataset.Sheet(SheetId("sheet"), "Outcome", meta_globals.CONTINUOUS),
+        analysis_dataset.Sheet(SheetId("sheet"), "Outcome", analysis_catalog.CONTINUOUS),
         raw_data=[[None, None, None], [60, 92, 20]],
         arm_names=["Group 1", "Group 2"],
     )
@@ -848,7 +845,7 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
     ("data_type", "groups", "raw_data", "metric", "arm_key", "partial"),
     [
         (
-            meta_globals.BINARY,
+            analysis_catalog.BINARY,
             ["Group 1", "Group 2"],
             [[6, 20], [8, 22]],
             "OR",
@@ -856,7 +853,7 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
             [6, ""],
         ),
         (
-            meta_globals.CONTINUOUS,
+            analysis_catalog.CONTINUOUS,
             ["Group 1", "Group 2"],
             [[10, 5, 1], [12, 4, 1.5]],
             "MD",
@@ -864,7 +861,7 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
             [10, 5, ""],
         ),
         (
-            meta_globals.DIAGNOSTIC,
+            analysis_catalog.DIAGNOSTIC,
             ["test 1"],
             [[1, 2, 3, 4]],
             "Sens",
@@ -877,7 +874,7 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
 def test_calculator_effect_source_preserves_entered_partial_and_empty_data(
     data_type, groups, raw_data, metric, arm_key, partial
 ):
-    from rc_metastudio import analysis_dataset, calculator_routines
+    from rc_metastudio import analysis_dataset, calculator_controls, calculator_edit_history, calculator_effect_readout
 
     unit = analysis_dataset.AnalysisUnit(
         analysis_dataset.Sheet(SheetId("sheet"), "Outcome", data_type),
@@ -887,21 +884,21 @@ def test_calculator_effect_source_preserves_entered_partial_and_empty_data(
     args = (unit, groups, metric, arm_key, 1.96)
 
     unit.set_effect_for_source("entered", metric, arm_key, 0.5, 0.4, 0.6)
-    assert calculator_routines.calculator_effect_source(*args) == "entered"
+    assert calculator_effect_readout.calculator_effect_source(*args) == "entered"
 
     unit.set_effect_for_source(
         "derived_preview", metric, arm_key, 0.6, 0.5, 0.7
     )
-    assert calculator_routines.calculator_effect_source(*args) == "derived_preview"
+    assert calculator_effect_readout.calculator_effect_source(*args) == "derived_preview"
 
     unit.set_raw_data_for_arm(groups[0], partial)
     unit.set_effect_for_source(
         "derived_preview", metric, arm_key, 0.6, 0.5, 0.7
     )
-    assert calculator_routines.calculator_effect_source(*args) == "entered"
+    assert calculator_effect_readout.calculator_effect_source(*args) == "entered"
 
     unit.set_raw_data_for_arms(groups, [[""] * len(values) for values in raw_data])
-    assert calculator_routines.calculator_effect_source(*args) == "entered"
+    assert calculator_effect_readout.calculator_effect_source(*args) == "entered"
 
 
 def test_binary_calculator_table_layout_uses_real_headers_and_visible_total_row(
@@ -1050,16 +1047,16 @@ def test_calculator_effect_ci_fields_fit_valid_domain_samples(qapp, monkeypatch)
 def test_continuous_effect_fields_fit_metric_domain_samples(
     qapp, monkeypatch, metric, representative
 ):
-    from rc_metastudio import calculator_routines
+    from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
 
     monkeypatch.setattr(
-        calculator_routines.r_bridge,
+        calculator_effect_readout.r_bridge,
         "continuous_convert_scale",
         lambda value, *args, **kwargs: value,
     )
     unit = FakeContinuousAnalysisUnit()
     fields = {name: QLineEdit() for name in ("effect", "lower", "upper")}
-    calculator_routines.set_current_effect_from_value(
+    calculator_effect_readout.set_current_effect_from_value(
         unit,
         fields,
         metric,
@@ -1119,10 +1116,10 @@ def test_binary_calculator_grid_columns_fill_expanded_table_width(qapp, monkeypa
 
 
 def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
-    from rc_metastudio import calculator_routines
+    from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
 
     monkeypatch.setattr(
-        calculator_routines.r_bridge,
+        calculator_effect_readout.r_bridge,
         "binary_convert_scale",
         lambda value, *args, **kwargs: value,
     )
@@ -1130,7 +1127,7 @@ def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
     widths = {}
     for metric in ("OR", "RD", "PR", "PLO", "AS"):
         fields = {name: QLineEdit() for name in ("effect", "lower", "upper")}
-        calculator_routines.set_current_effect_from_value(
+        calculator_effect_readout.set_current_effect_from_value(
             FakeAnalysisUnit(),
             fields,
             metric,
@@ -1144,7 +1141,7 @@ def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
         frame = _required(field.style()).pixelMetric(
             QStyle.PixelMetric.PM_DefaultFrameWidth, None, field
         )
-        for sample in calculator_routines.binary_effect_display_samples(metric):
+        for sample in calculator_controls.binary_effect_display_samples(metric):
             required = (
                 field.fontMetrics().horizontalAdvance(sample)
                 + margins.left()
@@ -1160,10 +1157,10 @@ def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
 
     maximum_rendered_ratio = "1.798e+308"
     assert (
-        calculator_routines.format_calculator_display_value(sys.float_info.max)
+        calculator_controls.format_calculator_display_value(sys.float_info.max)
         == maximum_rendered_ratio
     )
-    assert maximum_rendered_ratio in calculator_routines.binary_effect_display_samples(
+    assert maximum_rendered_ratio in calculator_controls.binary_effect_display_samples(
         "OR"
     )
     ratio_field = QLineEdit()
@@ -1171,7 +1168,7 @@ def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
         name: ratio_field if name == "effect" else QLineEdit()
         for name in ("effect", "lower", "upper")
     }
-    calculator_routines.set_current_effect_from_value(
+    calculator_effect_readout.set_current_effect_from_value(
         FakeAnalysisUnit(),
         ratio_fields,
         "OR",
@@ -1347,8 +1344,8 @@ class FakeContinuousAnalysisUnit:
 
 
 def test_asymmetric_entered_readout_uses_analysis_se(qapp):
-    from rc_metastudio import analysis_dataset, calculator_routines
-    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', meta_globals.CONTINUOUS), arm_names=['A', 'B'])
+    from rc_metastudio import analysis_dataset, calculator_controls, calculator_edit_history, calculator_effect_readout
+    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', analysis_catalog.CONTINUOUS), arm_names=['A', 'B'])
     unit.set_effect_for_source('entered', 'MD', 'A-B', 1, 0, 3)
     unit.set_upper('MD', 'A-B', 3)
     from statistics import NormalDist
@@ -1364,22 +1361,22 @@ def test_asymmetric_entered_readout_uses_analysis_se(qapp):
             self.dialog_layout.addWidget(self.buttonBox)
             self.effect_text_box, self.lower_text_box, self.upper_text_box = QLineEdit(), QLineEdit(), QLineEdit()
     dialog = ReadoutDialog()
-    calculator_routines.update_calculator_readout(dialog, 'continuous')
+    calculator_effect_readout.update_calculator_readout(dialog, 'continuous')
     se = unit.get_se('entered', 'MD', 'A-B', 1.96)
     assert f'SE: {se:.4f}' in _required(dialog.findChild(QLabel, 'calculator_wald')).text()
 
 
 def test_pft_display_passes_actual_arm_sample_size(qapp, monkeypatch):
-    from rc_metastudio import analysis_dataset, calculator_routines
-    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', meta_globals.BINARY), raw_data=[[4, 40]], arm_names=['A'])
+    from rc_metastudio import analysis_dataset, calculator_controls, calculator_edit_history, calculator_effect_readout
+    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', analysis_catalog.BINARY), raw_data=[[4, 40]], arm_names=['A'])
     arm_key = (unit.arms['A'].stable_id,)
     unit.set_effect_for_source('derived_preview', 'PFT', arm_key, .3, .2, .4)
     seen = []
     def convert(x, metric, convert_to='display.scale', n1=None):
         seen.append(n1)
         return x
-    monkeypatch.setattr(calculator_routines.r_bridge, 'binary_convert_scale', convert)
-    calculator_routines.set_current_effect_from_value(unit, {k: QLineEdit() for k in ('effect', 'lower', 'upper')}, 'PFT', arm_key, 'binary', 1.96, source='derived_preview')
+    monkeypatch.setattr(calculator_effect_readout.r_bridge, 'binary_convert_scale', convert)
+    calculator_effect_readout.set_current_effect_from_value(unit, {k: QLineEdit() for k in ('effect', 'lower', 'upper')}, 'PFT', arm_key, 'binary', 1.96, source='derived_preview')
     assert seen == [40, 40, 40]
 
 
@@ -1388,7 +1385,7 @@ def test_diagnostic_clear_refreshes_existing_back_calculation_availability(qapp,
     monkeypatch.setattr(calculator_service.r_bridge, 'get_confidence_multiplier_from_r', lambda conf: 1.96)
     monkeypatch.setattr(calculator_service.r_bridge, 'diagnostic_convert_scale', lambda x, *args, **kwargs: x)
     monkeypatch.setattr(calculator_service.r_bridge, 'impute_diagnostic_data', lambda data: {'TP': None, 'FP': None, 'FN': None, 'TN': None})
-    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', meta_globals.DIAGNOSTIC), raw_data=[['', '', '', '']], arm_names=['Test'])
+    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', analysis_catalog.DIAGNOSTIC), raw_data=[['', '', '', '']], arm_names=['Test'])
     form = diagnostic_data_dialog.DiagnosticDataDialog(unit, ['Test'], 'Test', confidence_level=95)
     form.back_calculate_button.setEnabled(True)
     form.clear_form()

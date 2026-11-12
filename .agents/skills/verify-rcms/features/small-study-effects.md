@@ -32,7 +32,7 @@ Preconditions: doctor passes; `sample_projects/amino.rcms` has sufficient includ
 
 ## Procedures and eligibility routes
 
-Source owners: `publication_bias_dialog.py:_preview_request`, `_update_controls`, `_request`, `run`; `r/RCMetaR/R/publication_bias.R`. The UI has no per-test selector: R eligibility selects all available methods. Configure the dataset/metric to reach each required route rather than inventing a checkbox.
+Source owners: `small_study_effects_dialog.py:_preview_request`, `_update_controls`, `_request`, `run`; `r/RCMetaR/R/small_study_effects.R`. The UI has no per-test selector: R eligibility selects all available methods. Configure the dataset/metric to reach each required route rather than inventing a checkbox.
 
 | Data/metric | Required automatic route |
 | --- | --- |
@@ -58,7 +58,7 @@ Invalid contour levels must keep the modal recoverable, show `failure_label`, re
 
 ## Statistical oracle requirements
 
-`test-publication-bias.R` and the R-stack test procedure identity, routing, preparation and regeneration. They are not independent numerical oracles for all procedures. When statistical behavior changes, construct inputs separately and compare test statistic, coefficient/SE, p, df, interval, k and corrections to pinned `meta::metabias`/`metafor::regtest`/`metafor::ranktest` calls as appropriate. For trim-and-fill compare package fit and augmented inputs; for extrapolation compare the fitted regression and target prediction. For Deeks independently check ESS=`4*nDiseased*nNonDiseased/(nDiseased+nNonDiseased)` and its inverse-square-root predictor. Record exact calls/package versions and tolerances; agreement of two RCMS helper calls is not an independent oracle.
+`test-small-study-effects.R` and the R-stack test procedure identity, routing, preparation and regeneration. They are not independent numerical oracles for all procedures. When statistical behavior changes, construct inputs separately and compare test statistic, coefficient/SE, p, df, interval, k and corrections to pinned `meta::metabias`/`metafor::regtest`/`metafor::ranktest` calls as appropriate. For trim-and-fill compare package fit and augmented inputs; for extrapolation compare the fitted regression and target prediction. For Deeks independently check ESS=`4*nDiseased*nNonDiseased/(nDiseased+nNonDiseased)` and its inverse-square-root predictor. Record exact calls/package versions and tolerances; agreement of two RCMS helper calls is not an independent oracle.
 
 
 ## HR and IRR

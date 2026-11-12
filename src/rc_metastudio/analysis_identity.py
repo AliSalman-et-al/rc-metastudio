@@ -1,6 +1,6 @@
 """Presentation labels for the selected dataset; backend metric keys stay intact."""
 
-from rc_metastudio import meta_globals
+from rc_metastudio import analysis_catalog
 from rc_metastudio.analysis_method_labels import parameter_value_display_label
 
 
@@ -61,7 +61,7 @@ def metric_label(model, metric=None):
     metric = metric or model.current_effect
     if metric == "TX Mean":
         return {"mean": "Mean", "reg_coef": "Regression coefficient", "generic_effect": "Entered effect"}.get(subtype, "Mean")
-    return meta_globals.ALL_METRIC_NAMES.get(metric, metric)
+    return analysis_catalog.ALL_METRIC_NAMES.get(metric, metric)
 
 
 def dataset_label(model):
@@ -75,7 +75,7 @@ def dataset_label(model):
 
 
 def dataset_identity(model, metric=None):
-    comparison = model.current_effect in meta_globals.TWO_ARM_METRICS
+    comparison = model.current_effect in analysis_catalog.TWO_ARM_METRICS
     groups = " / ".join(model.arm_names if comparison else model.arm_names[:1])
     group_label = "Comparison" if comparison else "Group"
     labels = [model.current_sheet.name, dataset_label(model)]

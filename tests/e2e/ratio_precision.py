@@ -5,14 +5,14 @@ from dataclasses import asdict
 from pathlib import Path
 
 from PyQt6 import QtCore, QtWidgets
-from tests.python.gui.test_types import key_click, key_clicks
+from tests.python.gui.qt_test_support import key_click, key_clicks
 
 
 def run(app, window, work, record):
     from advanced_workflows import modal, click
     from rc_metastudio import r_bridge
     from rc_metastudio.ratio_data_dialog import RatioDataDialog
-    from tests.e2e.audit_round3 import analyze_existing
+    from tests.e2e.analysis_presentation_workflows import analyze_existing
     root = Path(__file__).resolve().parents[2]
     for metric, sample, modes in (
         ('HR','Pignon2000-HR', ('ratio','log')),
@@ -106,7 +106,7 @@ def run(app, window, work, record):
                 view.close()
             if mode in ('raw', 'ratio'):
                 from xml.etree import ElementTree as ET
-                from tests.e2e.audit_round3 import check_annotation_spacing
+                from tests.e2e.plot_geometry_checks import check_annotation_spacing
                 for style in ('revman', 'bmj'):
                     view = analyze_existing(app, window, 'standard', 'time_to_event.random' if metric == 'HR' else 'event_rates.random', record,
                                             parameters={'digits':6,'rm.method':'DL','inference.method':'z','fp_style':style})

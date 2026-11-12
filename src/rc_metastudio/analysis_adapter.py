@@ -12,7 +12,7 @@ from typing import Literal, Protocol, TypeAlias, cast, runtime_checkable
 
 from rc_metastudio import r_bridge
 from rc_metastudio import analysis_dataset
-from rc_metastudio import result_sections
+from rc_metastudio import result_formatting
 from rc_metastudio.analysis_results import AnalysisResult, parse_analysis_result
 from rc_metastudio.analysis_errors import DiagnosticExecutionError
 from rc_metastudio.r_backend import AnalysisBackendUnavailableError
@@ -421,7 +421,7 @@ def _execute_diagnostic_request(
 
 def execute_small_study_effects_request(model, request):
     """Execute the dedicated immutable small-study effects request boundary."""
-    from rc_metastudio.publication_bias import execute_small_study_effects
+    from rc_metastudio.small_study_effects import execute_small_study_effects
 
     return execute_small_study_effects(model, request)
 
@@ -714,8 +714,8 @@ def _merge_reference_texts(existing, incoming):
     references = _reference_entries(existing) + _reference_entries(incoming)
     if not references:
         return ""
-    return result_sections.format_references(
-        result_sections.dedupe_references_preserving_order(references)
+    return result_formatting.format_references(
+        result_formatting.dedupe_references_preserving_order(references)
     )
 
 

@@ -2,7 +2,7 @@ import os
 
 from rc_metastudio import dataset_table_model
 from rc_metastudio import analysis_dataset
-from rc_metastudio import meta_globals
+from rc_metastudio import analysis_catalog
 from rc_metastudio import analysis_adapter
 from rc_metastudio import project_adapter
 from rc_metastudio import project_format
@@ -67,9 +67,9 @@ def run_headless_analysis(case):
         else model.get_current_outcome_type(get_str=False)
     )
     family = {
-        meta_globals.BINARY: "binary",
-        meta_globals.CONTINUOUS: "continuous",
-        meta_globals.DIAGNOSTIC: "diagnostic",
+        analysis_catalog.BINARY: "binary",
+        analysis_catalog.CONTINUOUS: "continuous",
+        analysis_catalog.DIAGNOSTIC: "diagnostic",
     }.get(data_type)
     if family is None:
         raise ValueError(

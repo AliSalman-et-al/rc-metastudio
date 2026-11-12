@@ -1,7 +1,7 @@
 import pytest
 
 from rc_metastudio import r_bridge
-from rc_metastudio.publication_bias import (
+from rc_metastudio.small_study_effects import (
     EligibilityReport,
     FunnelKind,
     FunnelPlotSpec,

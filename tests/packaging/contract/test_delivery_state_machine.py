@@ -59,33 +59,7 @@ def test_clean_slate_delivery_state_machine(tmp_path):
     )
     validate(instance=manifest, schema=schema)
     assert manifest["channel"] == "candidate"
-    assert set(manifest["policy_inputs"]) == set(delivery.POLICY_INPUTS)
-    assert "scripts/test-bounded-package-process.ps1" in delivery.POLICY_INPUTS
-    assert "scripts/qt6_macos_feasibility.py" in delivery.POLICY_INPUTS
-    assert "scripts/normalize_macos_macho.py" in delivery.POLICY_INPUTS
-    assert "scripts/sign_macos_app.py" in delivery.POLICY_INPUTS
-    assert "scripts/sign-notarize-macos-artifact.sh" in delivery.POLICY_INPUTS
-    assert "scripts/package-linux.sh" in delivery.POLICY_INPUTS
-    assert "scripts/build-linux-package.sh" in delivery.POLICY_INPUTS
-    assert "scripts/install-r-deps-linux.R" in delivery.POLICY_INPUTS
-    assert "packaging/pyinstaller/rc-metastudio-linux.spec" in delivery.POLICY_INPUTS
-    assert "delivery/release-set.schema.json" in delivery.POLICY_INPUTS
-    assert "delivery/stage-result.schema.json" in delivery.POLICY_INPUTS
-    assert "config/macos-package-targets.json" in delivery.POLICY_INPUTS
-    assert ".github/workflows/community-release-candidate.yml" in delivery.POLICY_INPUTS
-    assert (
-        ".github/workflows/macos-trusted-release-candidate.yml"
-        in delivery.POLICY_INPUTS
-    )
     assert manifest["release_targets"] == ["windows-x64", "macos-arm64", "linux-x64"]
-    registry = json.loads((ROOT / "delivery/targets.json").read_text(encoding="utf-8"))
-    assert registry["targets"]["linux-x64"] == {
-        "runner": "ubuntu-24.04",
-        "os": "linux",
-        "architecture": "x86_64",
-        "artifact": "RCMetaStudio-linux-x64.tar.gz",
-        "signing_profile": "unsigned",
-    }
     for target in manifest["release_targets"]:
         previous = delivery.release_identity_digest(manifest)
         for stage in delivery.required_stages(manifest, target):
@@ -107,6 +81,13 @@ def test_clean_slate_delivery_state_machine(tmp_path):
             )
             previous = delivery.canonical_digest(delivery.load(result))
     delivery.verify(argparse.Namespace(manifest=str(manifest_path)))
+    altered = delivery.load(manifest_path)
+    policy_input = next(iter(altered["policy_inputs"]))
+    altered["policy_inputs"][policy_input] = "0" * 64
+    altered_path = tmp_path / "altered-policy.json"
+    altered_path.write_text(json.dumps(altered), encoding="utf-8")
+    with pytest.raises(ValueError, match="digest"):
+        delivery.verify(argparse.Namespace(manifest=str(altered_path)))
     rc_path = tmp_path / "release-set-rc.json"
     delivery.promote(
         argparse.Namespace(

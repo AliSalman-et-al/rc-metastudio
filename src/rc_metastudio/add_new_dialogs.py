@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLabel
 
 from rc_metastudio import adaptive_controls
 from rc_metastudio import adaptive_window
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 
 if TYPE_CHECKING:
     import ui_new_covariate_dialog as _ui_new_covariate_dialog

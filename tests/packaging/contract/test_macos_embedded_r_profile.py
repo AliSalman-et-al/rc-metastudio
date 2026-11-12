@@ -164,25 +164,8 @@ def test_profile_removes_exact_surfaces_and_records_evidence(monkeypatch, tmp_pa
     ]
     assert not (root / "library/tcltk").exists()
     assert len(data["excluded_surfaces"]) == 4
-
-
-def test_two_phase_profile_round_trips_through_its_schema_owner(monkeypatch, tmp_path):
-    profile = load_profile()
-    root = fixture_runtime(tmp_path)
-    configure_machos(monkeypatch, profile, root)
-    quarantine = tmp_path / "quarantine.json"
-    evidence = tmp_path / "profile.json"
-
-    profile.quarantine(root, quarantine, "4.6.1", "arm64")
-    profile.finalize(root, evidence, tmp_path / "manifest.json", quarantine)
-    payload = json.loads(evidence.read_text(encoding="utf-8"))
     profile.validate_profile_evidence(
-        payload, expected_r_version="4.6.1", expected_architecture="arm64"
-    )
-
-    assert payload["policy"] == profile.PROFILE_POLICY
-    assert payload["post_profile_exclusions"] == sorted(
-        relative for relative, _ in profile.EXCLUSIONS
+        data, expected_r_version="4.6.1", expected_architecture="arm64"
     )
 
 

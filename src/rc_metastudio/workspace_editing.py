@@ -19,9 +19,9 @@ from dataclasses import dataclass, field
 from statistics import NormalDist
 from typing import Callable, Protocol
 
-from rc_metastudio import calculator_routines, name_validation, qt_text
+from rc_metastudio import calculator_controls, name_validation, qt_text
 from rc_metastudio import r_backend, r_bridge
-from rc_metastudio.meta_globals import RATIO_DATA_TYPES, EVENT_RATES
+from rc_metastudio.analysis_catalog import RATIO_DATA_TYPES, EVENT_RATES
 from rc_metastudio.ratio_data import RATIO_FIELDS
 
 from rc_metastudio.analysis_dataset import Dataset, StudyRow
@@ -37,16 +37,8 @@ from rc_metastudio.dataset_analysis_domain import (
     make_display_scale_converter,
     to_calculation_scale,
 )
-from rc_metastudio.meta_globals import (
-    BINARY_ONE_ARM_METRICS,
-    CONTINUOUS_ONE_ARM_METRICS,
-    DIAGNOSTIC_METRICS,
-    FACTOR,
-    is_a_float,
-    is_an_int,
-    is_empty,
-    validate_confidence_level,
-)
+from rc_metastudio.analysis_catalog import BINARY_ONE_ARM_METRICS, CONTINUOUS_ONE_ARM_METRICS, DIAGNOSTIC_METRICS, FACTOR
+from rc_metastudio.analysis_validation import is_a_float, is_an_int, is_empty, validate_confidence_level
 
 
 @dataclass(frozen=True, slots=True)
@@ -596,7 +588,7 @@ class WorkspaceEditingService:
             return None
         candidate = list(previous_display)
         candidate[outcome_index] = number
-        ok, message = calculator_routines.between_bounds(
+        ok, message = calculator_controls.between_bounds(
             est=candidate[0], low=candidate[1], high=candidate[2]
         )
         return None if ok else message

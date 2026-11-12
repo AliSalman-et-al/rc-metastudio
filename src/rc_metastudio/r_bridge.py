@@ -21,8 +21,8 @@ from rc_metastudio.analysis_method_labels import (
     method_display_label,
     normalize_available_method_labels,
 )
-from rc_metastudio import result_sections
-from rc_metastudio.result_sections import sentence_case_title as _sentence_case_title
+from rc_metastudio import result_formatting
+from rc_metastudio.result_formatting import sentence_case_title as _sentence_case_title
 from rc_metastudio.analysis_errors import DiagnosticExecutionError
 from rc_metastudio.analysis_results import AnalysisResult, parse_analysis_result
 from rc_metastudio.study_effect_shapes import (
@@ -31,19 +31,9 @@ from rc_metastudio.study_effect_shapes import (
     normalize_effect_result,
 )
 from rc_metastudio.r_call_serialization import require_r_transaction, serialized_r_call as _serialized_r_call
-from rc_metastudio.meta_globals import (
-    BINARY,
-    CONTINUOUS,
-    EMPTY_VALS,
-    INVALID_CONFIDENCE_LEVEL_MESSAGE,
-    ONE_ARM_METRICS,
-    PERCENTAGE_DISPLAY_DIGITS,
-    TWO_ARM_METRICS,
-    TYPE_TO_STR_DICT,
-    normalize_confidence_level_params,
-    tabulate,
-    validate_confidence_level,
-)
+from rc_metastudio.analysis_catalog import BINARY, CONTINUOUS, ONE_ARM_METRICS, TWO_ARM_METRICS, TYPE_TO_STR_DICT
+from rc_metastudio.analysis_validation import EMPTY_VALS, INVALID_CONFIDENCE_LEVEL_MESSAGE, normalize_confidence_level_params, validate_confidence_level
+from rc_metastudio.result_formatting import PERCENTAGE_DISPLAY_DIGITS, tabulate
 
 _P = ParamSpec("_P")
 _T = TypeVar("_T")
@@ -1431,7 +1421,7 @@ def _insert_held_effects(fields, display, rows, *, digits=None):
     digits = int(digits) if digits is not None else 4
     for index, row in zip(display_indices, rows):
         values = [list(display[key])[index] for key in ("y.disp", "lb.disp", "ub.disp")]
-        effects = [result_sections.format_effect_number(value, digits)
+        effects = [result_formatting.format_effect_number(value, digits)
                    if isinstance(value, (float, int)) and math.isfinite(value)
                    else _format_r_table_cell(value)
                    for value in values]
@@ -1664,7 +1654,7 @@ _RESULT_METADATA_KEYS = frozenset(
 def _add_result_text(texts, name, value, result, study_names):
     title = _display_section_name(name)
     if name == "References":
-        texts[title] = result_sections.format_references(value)
+        texts[title] = result_formatting.format_references(value)
         return
     if name in ("weights", "Weights"):
         texts["Weights"] = make_weights_str(result)
@@ -2224,7 +2214,7 @@ def _format_summary_label(name):
     # Keep one label policy for section titles and nested result values.  The
     # shared helper expands R's dotted/underscored identifiers and diagnostic
     # abbreviations without changing numeric/statistical content.
-    return result_sections.normalize_identifier_label(raw_name)
+    return result_formatting.normalize_identifier_label(raw_name)
 
 
 def _summary_section_name(parent_name, child_name):
@@ -2390,7 +2380,7 @@ def _matrix_row_names(row_names, nrow, study_names):
     if len(names) < nrow:
         names.extend(str(index + 1) for index in range(len(names), nrow))
     names = _display_row_names(names, study_names)
-    return [result_sections.normalize_identifier_label(name) for name in names]
+    return [result_formatting.normalize_identifier_label(name) for name in names]
 
 
 def _display_row_names(row_names, study_names):
@@ -2480,7 +2470,7 @@ def _format_r_table_header(value):
         return "Upper bound"
     if compact == "median estimate":
         return "Median estimate"
-    return result_sections.normalize_identifier_label(normalized)
+    return result_formatting.normalize_identifier_label(normalized)
 
 
 def _format_result_text(text):

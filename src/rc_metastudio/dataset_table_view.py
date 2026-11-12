@@ -33,17 +33,12 @@ from rc_metastudio import continuous_data_dialog
 from rc_metastudio import diagnostic_data_dialog
 from rc_metastudio import app_error_handler
 from rc_metastudio import qt_layout
-from rc_metastudio import meta_globals
+from rc_metastudio import analysis_validation
 from rc_metastudio import qt_text
-from rc_metastudio import tabular_data
+from rc_metastudio import row_padding
 from rc_metastudio.analysis_dataset import StudyRow
-from rc_metastudio.meta_globals import (
-    BINARY_ONE_ARM_METRICS,
-    CONTINUOUS,
-    CONTINUOUS_ONE_ARM_METRICS,
-    TWO_ARM_METRICS,
-)
-from rc_metastudio.runtime_types import required
+from rc_metastudio.analysis_catalog import BINARY_ONE_ARM_METRICS, CONTINUOUS, CONTINUOUS_ONE_ARM_METRICS, TWO_ARM_METRICS
+from rc_metastudio.qt_object_guard import required
 from rc_metastudio.qt_workspace_columns import WorkspaceColumnWidthController
 
 if TYPE_CHECKING:
@@ -628,7 +623,7 @@ class DatasetTableView(QtWidgets.QTableView):
         if hasattr(old, "include") or hasattr(new, "include"):
             return old == new
 
-        blank_vals = meta_globals.EMPTY_VALS
+        blank_vals = analysis_validation.EMPTY_VALS
 
         # transform into normal string:
         if old is not None:
@@ -888,7 +883,7 @@ class DatasetTableView(QtWidgets.QTableView):
         return list(csv.reader(io.StringIO(text, newline=""), delimiter=col_delimiter))
 
     def _normalize_matrix_rows(self, matrix):
-        return tabular_data.normalize_rows(matrix)
+        return row_padding.normalize_rows(matrix)
 
     def _is_blank_row(self, r):
         return len(r) == 1 and r[0] == ""

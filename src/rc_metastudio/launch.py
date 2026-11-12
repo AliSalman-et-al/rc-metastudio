@@ -14,14 +14,7 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
 
-from rc_metastudio import (
-    adaptive_window,
-    app_error_handler,
-    meta_globals,
-    qt6_resources,
-    r_backend,
-    settings,
-)
+from rc_metastudio import adaptive_window, app_error_handler, application_metadata, qt6_resources, r_backend, settings
 
 APPLICATION_ICON_PATH = ":/misc/meta.png"
 
@@ -68,7 +61,7 @@ class StartupSplash(QSplashScreen):
         painter.scale(self.width() / 960, self.height() / 600)
         family = "Segoe UI" if sys.platform == "win32" else QtWidgets.QApplication.font().family()
         lines = [
-            (200, 14, 20, QFont.Weight.Normal, "#4f5a76", "Version " + meta_globals.VERSION),
+            (200, 14, 20, QFont.Weight.Normal, "#4f5a76", "Version " + application_metadata.VERSION),
             (266, 13.5, 21, QFont.Weight.Normal, "#4f5a76", "© 2026 Ali Salman and RC MetaStudio contributors."),
             (287, 13.5, 21, QFont.Weight.Normal, "#4f5a76", "Released under GPL-3.0-or-later."),
             (352, 15, 20, QFont.Weight.Medium, "#1f2a44", self.message()),
@@ -106,7 +99,7 @@ def create_startup_splash() -> StartupSplash:
                           | QtCore.Qt.WindowType.WindowStaysOnTopHint)
     splash.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
     splash.setWindowIcon(QIcon(APPLICATION_ICON_PATH))
-    splash.setWindowTitle(meta_globals.APPLICATION_DISPLAY_NAME)
+    splash.setWindowTitle(application_metadata.APPLICATION_DISPLAY_NAME)
     if os.name == "nt":
         import ctypes
         # Native splash/tool windows are omitted from the Windows taskbar.
@@ -479,11 +472,11 @@ def _set_application_icon(app):
 
 def configure_application(app):
     """Apply the complete process-wide application identity exactly once."""
-    app.setApplicationName(meta_globals.APPLICATION_NAME)
-    app.setApplicationDisplayName(meta_globals.APPLICATION_DISPLAY_NAME)
-    app.setApplicationVersion(meta_globals.VERSION)
-    app.setOrganizationName(meta_globals.ORGANIZATION_NAME)
-    app.setOrganizationDomain(meta_globals.ORGANIZATION_DOMAIN)
+    app.setApplicationName(application_metadata.APPLICATION_NAME)
+    app.setApplicationDisplayName(application_metadata.APPLICATION_DISPLAY_NAME)
+    app.setApplicationVersion(application_metadata.VERSION)
+    app.setOrganizationName(application_metadata.ORGANIZATION_NAME)
+    app.setOrganizationDomain(application_metadata.ORGANIZATION_DOMAIN)
     _set_application_icon(app)
     from rc_metastudio.qt_layout import configure_application_controls
     configure_application_controls(app)

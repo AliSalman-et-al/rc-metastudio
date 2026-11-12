@@ -23,7 +23,7 @@ _REQUIRED = os.getenv("RCMS_R_STACK_REQUIRED") == "1"
 RCMETAR_BOOTSTRAP = textwrap.dedent(
     r"""
     repo <- normalizePath(__REPO_ROOT__, winslash = "/")
-    suppressPackageStartupMessages(source(file.path(repo, "r/RCMetaR/R/classes.R")))
+    suppressPackageStartupMessages(source(file.path(repo, "r/RCMetaR/R/analysis_data_classes.R")))
     suppressPackageStartupMessages(source(file.path(repo, "r/RCMetaR/R/analysis_contracts.R")))
     suppressPackageStartupMessages(source(file.path(repo, "r/RCMetaR/R/analysis_output.R")))
     suppressPackageStartupMessages(source(file.path(repo, "r/RCMetaR/R/display.R")))

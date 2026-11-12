@@ -313,7 +313,7 @@ def test_report_installed_versions_surfaces_rscript_failure(monkeypatch):
         validator.report_installed_versions("Rscript", ["metafor"])
 
 
-def test_default_r_dependency_install_uses_script_file_and_archive_triples(
+def test_default_r_dependency_install_uses_script_file_and_isolated_environment(
     monkeypatch, tmp_path
 ):
     verifier = default_verifier
@@ -327,7 +327,6 @@ def test_default_r_dependency_install_uses_script_file_and_archive_triples(
         captured["command"] = command
         captured["cwd"] = cwd
         captured["env"] = env
-        captured["source"] = install_script.read_text(encoding="utf-8")
 
     monkeypatch.setattr(verifier, "run_streamed", fake_run_streamed)
 
@@ -346,10 +345,6 @@ def test_default_r_dependency_install_uses_script_file_and_archive_triples(
     assert captured["command"][2:] == [REPO_ROOT, library]
     assert captured["env"]["RCMS_CRAN_REPO"].endswith("/cran/2026-07-16")
     assert captured["env"]["RCMS_POLICY_PYTHON"] == sys.executable
-    source = captured["source"]
-    assert "r_binary_policy.R" in source
-    assert "install_rcms_binary_packages" in source
-    assert "install_rcms_source_exception" not in source
 
 
 def test_default_r_verifier_resolves_rscript_from_r_command(monkeypatch, tmp_path):

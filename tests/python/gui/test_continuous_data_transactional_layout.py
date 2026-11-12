@@ -10,7 +10,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 
 from rc_metastudio import adaptive_window, calculator_service
 from rc_metastudio.analysis_dataset import Sheet
-from rc_metastudio.meta_globals import CONTINUOUS
+from rc_metastudio.analysis_catalog import CONTINUOUS
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -19,7 +19,7 @@ os.environ.setdefault(
 )
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
-from test_types import key_click, key_clicks, mouse_click, required
+from qt_test_support import key_click, key_clicks, mouse_click, required
 
 prepare_generated_ui_imports()
 

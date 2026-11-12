@@ -529,7 +529,7 @@ def run(
         metrics = ("sens", "spec") if family == "diagnostic" else ()
         expected = None
     elif scenario.startswith("small-study-"):
-        from rc_metastudio.publication_bias_dialog import PublicationBiasDialog
+        from rc_metastudio.small_study_effects_dialog import PublicationBiasDialog
 
         sample = {
             "small-study-binary-extended": "amino",

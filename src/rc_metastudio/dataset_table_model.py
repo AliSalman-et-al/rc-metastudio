@@ -10,7 +10,7 @@ from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSignal
 from PyQt6.QtGui import QColor, QIcon
 
 from rc_metastudio import analysis_identity, name_validation, qt_text, workspace_editing
-from rc_metastudio.meta_globals import TIME_TO_EVENT, EVENT_RATES, RATIO_DATA_TYPES
+from rc_metastudio.analysis_catalog import TIME_TO_EVENT, EVENT_RATES, RATIO_DATA_TYPES
 from rc_metastudio.ratio_data import RATIO_FIELDS, RATIO_HEADERS
 
 from rc_metastudio.analysis_dataset import Dataset, StudyRow
@@ -23,22 +23,9 @@ from rc_metastudio.dataset_analysis_domain import (
     raw_data_is_complete,
     raw_data_is_empty,
 )
-from rc_metastudio.meta_globals import (
-    ALL_METRIC_NAMES,
-    BINARY,
-    BINARY_METRIC_NAMES,
-    CONTINUOUS,
-    CONTINUOUS_METRIC_NAMES,
-    DEFAULT_CONFIDENCE_LEVEL,
-    default_group_names,
-    DIAGNOSTIC,
-    DIAGNOSTIC_METRIC_LABELS,
-    EMPTY_VALS,
-    NUM_DIGITS,
-    ONE_ARM_METRICS,
-    OTHER,
-    validate_confidence_level,
-)
+from rc_metastudio.analysis_catalog import ALL_METRIC_NAMES, BINARY, BINARY_METRIC_NAMES, CONTINUOUS, CONTINUOUS_METRIC_NAMES, default_group_names, DIAGNOSTIC, DIAGNOSTIC_METRIC_LABELS, ONE_ARM_METRICS, OTHER
+from rc_metastudio.analysis_validation import DEFAULT_CONFIDENCE_LEVEL, EMPTY_VALS, validate_confidence_level
+from rc_metastudio.result_formatting import NUM_DIGITS
 from rc_metastudio.workspace_column_identity import (
     WORKSPACE_COLUMN_IDENTITY_ROLE,
     WorkspaceColumnIdentity,
@@ -353,7 +340,7 @@ class DatasetTableModel(QAbstractTableModel):
         """This method assumes the input can be cast to a float!"""
         float_var = float(float_var)
         precision = self.NUM_DIGITS if num_digits is None else num_digits
-        from rc_metastudio.result_sections import format_effect_number
+        from rc_metastudio.result_formatting import format_effect_number
         return format_effect_number(float_var, precision)
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):

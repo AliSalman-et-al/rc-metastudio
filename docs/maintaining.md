@@ -142,6 +142,9 @@ Files under `src/rc_metastudio/forms/*.ui` are the editable form sources. Genera
 
 ## Repository layout
 
+See [file names and ownership](file-ownership.md) for responsibility boundaries,
+the internal rename ledger and the contracts retained during migration.
+
 - `src/rc_metastudio`: application code and packaged resources
 - `r/RCMetaR`: bundled statistical package
 - `sample_projects`: user-facing example projects
