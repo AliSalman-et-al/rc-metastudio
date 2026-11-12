@@ -20,7 +20,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 
 from rc_metastudio.qt6_resources import ensure_application_resources
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 from rc_metastudio.workspace_session import WorkspaceSession
 
 
@@ -359,16 +359,10 @@ def _run_main() -> int:
             )
             model = window.model
             table_view = window.tableView
-            from rc_metastudio.analysis_dataset import StudyRow, AnalysisUnit
-            from rc_metastudio.project_domain import RowId
-
             sheet = required(model.current_sheet, "calculator smoke sheet")
-            window._add_study(StudyRow(
-                RowId("native-calculator-study"),
-                "Native calculator study",
-                AnalysisUnit(sheet, arm_names=model.arm_names,
-                             arm_stable_ids=[arm.id for arm in sheet.arms]),
-            ))
+            assert model.setData(
+                model.index(0, model.NAME), "Native calculator study"
+            )
             assert len(sheet.rows) == 1
             unit = model.get_current_analysis_unit_for_study(0)
             if data_type == "binary":

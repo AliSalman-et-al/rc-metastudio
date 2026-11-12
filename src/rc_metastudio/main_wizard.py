@@ -51,14 +51,14 @@ from PyQt6.QtWidgets import (
     QTableWidget,
     QTabWidget,
 )
-from rc_metastudio import meta_globals
+from rc_metastudio import analysis_catalog
 from rc_metastudio import app_error_handler
 from rc_metastudio import adaptive_window
 from rc_metastudio import qt_layout
 from rc_metastudio import qt_text
 from rc_metastudio import csv_import
 from rc_metastudio import name_validation
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 from rc_metastudio.dataset_table_model import DatasetTableModel
 from rc_metastudio.settings import (
     get_default_open_directory,
@@ -259,7 +259,6 @@ class DataTypePage(MainWizardPage, _ui_data_type_page.Ui_DataTypePage):
         super(DataTypePage, self).__init__(parent)
         self.setupUi(self)
 
-        self.selected_datatype = None
         self.summary: DatasetInfo = dict(
             arms=None,
             data_type=None,
@@ -369,44 +368,44 @@ class DataTypePage(MainWizardPage, _ui_data_type_page.Ui_DataTypePage):
             self.summary["data_type"] = "binary"
             self.summary["sub_type"] = "proportion"
             self.summary["effect"] = "PR"  # default effect
-            self.summary["metric_choices"] = meta_globals.BINARY_ONE_ARM_METRICS
+            self.summary["metric_choices"] = analysis_catalog.BINARY_ONE_ARM_METRICS
         elif button == self.onearm_mean_Button:
             self.summary["arms"] = "one"
             self.summary["data_type"] = "continuous"
             self.summary["sub_type"] = "mean"
-            self.summary["effect"] = meta_globals.DEFAULT_CONTINUOUS_ONE_ARM
-            self.summary["metric_choices"] = meta_globals.CONTINUOUS_ONE_ARM_METRICS
+            self.summary["effect"] = analysis_catalog.DEFAULT_CONTINUOUS_ONE_ARM
+            self.summary["metric_choices"] = analysis_catalog.CONTINUOUS_ONE_ARM_METRICS
         elif button == self.onearm_single_reg_coef_Button:
             self.summary["arms"] = "one"
             self.summary["data_type"] = "continuous"
             self.summary["sub_type"] = "reg_coef"
-            self.summary["effect"] = meta_globals.DEFAULT_CONTINUOUS_ONE_ARM
-            self.summary["metric_choices"] = meta_globals.CONTINUOUS_ONE_ARM_METRICS
+            self.summary["effect"] = analysis_catalog.DEFAULT_CONTINUOUS_ONE_ARM
+            self.summary["metric_choices"] = analysis_catalog.CONTINUOUS_ONE_ARM_METRICS
         elif button == self.onearm_generic_effect_size_Button:
             self.summary["arms"] = "one"
             self.summary["data_type"] = "continuous"
             self.summary["sub_type"] = "generic_effect"
-            self.summary["effect"] = meta_globals.DEFAULT_CONTINUOUS_ONE_ARM
-            self.summary["metric_choices"] = meta_globals.CONTINUOUS_ONE_ARM_METRICS
+            self.summary["effect"] = analysis_catalog.DEFAULT_CONTINUOUS_ONE_ARM
+            self.summary["metric_choices"] = analysis_catalog.CONTINUOUS_ONE_ARM_METRICS
         # twoarm
         elif button == self.twoarm_proportions_Button:
             self.summary["arms"] = "two"
             self.summary["data_type"] = "binary"
             self.summary["sub_type"] = "proportions"
             self.summary["effect"] = "OR"
-            self.summary["metric_choices"] = meta_globals.BINARY_TWO_ARM_METRICS
+            self.summary["metric_choices"] = analysis_catalog.BINARY_TWO_ARM_METRICS
         elif button == self.twoarm_means_Button:
             self.summary["arms"] = "two"
             self.summary["data_type"] = "continuous"
             self.summary["sub_type"] = "means"
             self.summary["effect"] = "MD"
-            self.summary["metric_choices"] = meta_globals.CONTINUOUS_TWO_ARM_METRICS
+            self.summary["metric_choices"] = analysis_catalog.CONTINUOUS_TWO_ARM_METRICS
         elif button == self.twoarm_smds_Button:
             self.summary["arms"] = "two"
             self.summary["data_type"] = "continuous"
             self.summary["sub_type"] = "smd"
             self.summary["effect"] = "SMD"
-            self.summary["metric_choices"] = meta_globals.CONTINUOUS_TWO_ARM_METRICS
+            self.summary["metric_choices"] = analysis_catalog.CONTINUOUS_TWO_ARM_METRICS
         elif button == self.time_rates_Button:
             self.summary.update(arms="two", data_type="time_to_event",
                 sub_type="hazard_ratio", effect="HR", metric_choices=["HR", "IRR"])
@@ -456,11 +455,11 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
         if data_type != "diagnostic":
             self.metric_cbo_box.blockSignals(True)
             for metric in metric_choices:
-                metric_pretty_name = meta_globals.ALL_METRIC_NAMES[metric]
-                if metric == "TX Mean":
+                metric_pretty_name = analysis_catalog.ALL_METRIC_NAMES[metric]
+                if metric == "Mean":
                     metric_pretty_name = {"generic_effect": "Entered effect", "reg_coef": "Regression coefficient"}.get(dataset_info["sub_type"], "Mean")
                 self.metric_cbo_box.addItem(
-                    ({"PR": "Proportion", "OR": "Odds ratio (OR)", "RR": "Risk ratio (RR)", "RD": "Risk difference (RD)", "MD": "Mean difference", "SMD": "Standardized mean difference (SMD)"}.get(metric, metric_pretty_name[:1] + metric_pretty_name[1:].lower())) if metric != "TX Mean" else metric_pretty_name, userData=str(metric)
+                    ({"PR": "Proportion", "OR": "Odds ratio (OR)", "RR": "Risk ratio (RR)", "RD": "Risk difference (RD)", "MD": "Mean difference", "SMD": "Standardized mean difference (SMD)"}.get(metric, metric_pretty_name[:1] + metric_pretty_name[1:].lower())) if metric != "Mean" else metric_pretty_name, userData=str(metric)
                 )
             index_of_default = self.metric_cbo_box.findData(str(default_effect))
             if index_of_default < 0:
@@ -477,14 +476,12 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
             self.metric_cbo_box.blockSignals(False)
 
     def _metric_choice_changed(self, newindex):
-        self.wizard().set_effect(_qt_item_text(self.metric_cbo_box.itemData(newindex)))
+        self.wizard().set_effect(qt_text.to_native_text(self.metric_cbo_box.itemData(newindex)))
 
     def nextId(self):
         return Page_OutcomeName
 
 
-def _qt_item_text(value):
-    return qt_text.to_native_text(value)
 
 
 class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
@@ -893,6 +890,9 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         for old, current in zip(self._get_required_header_labels(legacy=True), self.required_header_labels, strict=True):
             old = old.casefold()
             aliases[old] = current
+            if old == "mean":
+                for name in analysis_catalog.LEGACY_MEAN_METRIC_NAMES:
+                    aliases[name.casefold()] = current
             words = old.replace("#evts", "events").replace("#total", "total")
             aliases[words] = current
             for value in (old, words):
@@ -922,16 +922,16 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         for col in model_cols:
             col_name = DatasetTableModel._basic_horizontal_header_data(
                 section=col,
-                data_type=meta_globals.STR_TO_TYPE_DICT[data_type],
+                data_type=analysis_catalog.STR_TO_TYPE_DICT[data_type],
                 sub_type=data_subtype,
                 raw_columns=raw_cols,
                 outcome_columns=outcome_cols,
                 current_effect=effect,
                 groups=(["Tx A", "Tx B"] if legacy else dataset_info.get("groups") or
-                        meta_globals.default_group_names(meta_globals.STR_TO_TYPE_DICT[data_type], data_subtype)),
+                        analysis_catalog.default_arm_names(analysis_catalog.STR_TO_TYPE_DICT[data_type], data_subtype)),
                 csv_schema=legacy,
             )
-            col_name = _qt_item_text(col_name)
+            col_name = qt_text.to_native_text(col_name)
             header_labels.append(col_name)
         return header_labels
 
@@ -969,7 +969,7 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
-        self._naming_defaults = list(meta_globals.DEFAULT_GROUP_NAMES)
+        self._naming_defaults = list(analysis_catalog.DEFAULT_ARM_NAMES)
         self._comparative = True
         self._name_attempted = False
         self.registerField("outcomeName*", self.outcome_name_LineEdit)
@@ -978,10 +978,10 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
 
     def initializePage(self):
         info = self.wizard().require_dataset_info()
-        self._comparative = info["effect"] in meta_globals.TWO_ARM_METRICS
-        data_type = meta_globals.STR_TO_TYPE_DICT[info["data_type"]]
-        self._naming_defaults = meta_globals.default_group_names(data_type, info["sub_type"])
-        metric = "Mean" if info["effect"] == "TX Mean" else meta_globals.ALL_METRIC_NAMES.get(info["effect"], info["effect"] or "")
+        self._comparative = info["effect"] in analysis_catalog.TWO_ARM_METRICS
+        data_type = analysis_catalog.STR_TO_TYPE_DICT[info["data_type"]]
+        self._naming_defaults = analysis_catalog.default_arm_names(data_type, info["sub_type"])
+        metric = "Mean" if info["effect"] == "Mean" else analysis_catalog.ALL_METRIC_NAMES.get(info["effect"], info["effect"] or "")
         metric = {"PR": "Proportion", "SMD": "Standardized mean difference (SMD)"}.get(info["effect"], metric[:1] + metric[1:].lower())
         task = self.wizard().task_label
         kind = {"binary": "Two-arm binary" if self._comparative else "Single-arm proportion",
@@ -990,17 +990,17 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         if info["sub_type"] in {"reg_coef", "generic_effect"}:
             kind = {"reg_coef": "Regression coefficient", "generic_effect": "Generic effect size"}[info["sub_type"]]
             metric = ""
-        self.outcome_name_LineEdit.setPlaceholderText("For example, disease detection" if data_type == meta_globals.DIAGNOSTIC else "For example, outcome")
+        self.outcome_name_LineEdit.setPlaceholderText("For example, disease detection" if data_type == analysis_catalog.DIAGNOSTIC else "For example, outcome")
         self.setSubTitle(f"<p>{task} · {kind}" + (f" · {metric}" if metric else "") + "</p>")
         self.setTitle("Outcome and arms" if self._comparative else "Outcome")
-        first_label = "Intervention name" if self._comparative else "Index test name" if data_type == meta_globals.DIAGNOSTIC else "Arm name"
+        first_label = "Intervention name" if self._comparative else "Index test name" if data_type == analysis_catalog.DIAGNOSTIC else "Arm name"
         self.first_group_label.setText(first_label)
         self.first_group_name.setAccessibleName(first_label)
         self.first_group_name.setPlaceholderText(self._naming_defaults[0])
         self.second_group_label.setVisible(self._comparative)
         self.second_group_name.setVisible(self._comparative)
-        self.first_group_label.setVisible(self._comparative or data_type == meta_globals.DIAGNOSTIC)
-        self.first_group_name.setVisible(self._comparative or data_type == meta_globals.DIAGNOSTIC)
+        self.first_group_label.setVisible(self._comparative or data_type == analysis_catalog.DIAGNOSTIC)
+        self.first_group_name.setVisible(self._comparative or data_type == analysis_catalog.DIAGNOSTIC)
         self.name_note.hide()
         for field in (self.first_group_name, self.second_group_name):
             field.setAccessibleDescription("Optional. Leave blank to use " + field.placeholderText() + ".")
@@ -1015,7 +1015,7 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         # QWizard's default resets registered fields on Back; keep the user's draft.
         pass
 
-    def group_names(self):
+    def arm_names(self):
         names = list(self._naming_defaults)
         names[0] = self.first_group_name.text().strip() or names[0]
         if self._comparative:
@@ -1032,7 +1032,7 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         if self.outcome_name_LineEdit.text().strip() in self.wizard().existing_outcome_names:
             self.validation_label.setText("Choose a unique outcome name.")
             return False
-        names = self.group_names()
+        names = self.arm_names()
         if self._comparative and names[0].casefold() == names[1].casefold():
             self.validation_label.setText("The two arms need different names.")
             return False
@@ -1043,7 +1043,7 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         self._name_attempted = True
         if not self.isComplete():
             return False
-        self.wizard().require_dataset_info()["groups"] = self.group_names()
+        self.wizard().require_dataset_info()["groups"] = self.arm_names()
         return True
 
     def nextId(self):
@@ -1237,9 +1237,6 @@ class MainWizard(QWizard):
         if effect_name in ("HR", "IRR"):
             info["data_type"] = "time_to_event" if effect_name == "HR" else "event_rates"
             info["sub_type"] = "hazard_ratio" if effect_name == "HR" else "incidence_rate_ratio"
-
-    def get_effect(self):
-        return self.require_dataset_info()["effect"]
 
     def set_csv_data(self, csv_data):
         if csv_data is None:

@@ -18,7 +18,7 @@ Users reach guided small-study effects analysis through the Publication Bias UI 
 Preconditions: doctor passes; `sample_projects/amino.rcms` has sufficient included raw study data.
 
 - **Counts.** The amino configuration asserts 19 included and 17 eligible studies, with an explanation that two studies with no events in either arm are ineligible for odds-ratio asymmetry tests.
-- **Configure.** Run `uv run python scripts/verify_rcms.py small-study-effects`. Trigger `action_publication_bias`; the visible modal is `PublicationBiasDialog`. Enable `ordinary_funnel_check`, record `small-study-configured`, then click the actual OK button.
+- **Configure.** Run `uv run python scripts/verify_rcms.py small-study-effects`. Trigger `action_publication_bias`; the visible modal is `SmallStudyEffectsDialog`. Enable `ordinary_funnel_check`, record `small-study-configured`, then click the actual OK button.
 - **Observe.** Require the failure label to remain hidden, a Results window with a rendered real funnel, and Harbord or Rücker package-method report text. `small-study-results` preserves the report, original plot paths, and retained artifact paths. Its funnel is copied directly into the evidence directory before R removes its session temporary files.
 - **Extended procedures.** Run `small-study-binary-extended`, `small-study-continuous-extended`, and `small-study-diagnostic`. The continuous fixture duplicates the six sample studies into a controlled 12-study dataset to reach the >=10-study asymmetry threshold; it is not a clinical dataset. These drives require contour/trim-and-fill/extrapolation result sections or Deeks output and hidden or disabled inapplicable diagnostic controls. Supplement with the R numerical/eligibility lane; these UI assertions are not full independent asymmetry numerical proof.
 
@@ -32,7 +32,7 @@ Preconditions: doctor passes; `sample_projects/amino.rcms` has sufficient includ
 
 ## Procedures and eligibility routes
 
-Source owners: `publication_bias_dialog.py:_preview_request`, `_update_controls`, `_request`, `run`; `r/RCMetaR/R/publication_bias.R`. The UI has no per-test selector: R eligibility selects all available methods. Configure the dataset/metric to reach each required route rather than inventing a checkbox.
+Source owners: `small_study_effects_dialog.py:_preview_request`, `_update_controls`, `_request`, `run`; `r/RCMetaR/R/small_study_effects.R`. The UI has no per-test selector: R eligibility selects all available methods. Configure the dataset/metric to reach each required route rather than inventing a checkbox.
 
 | Data/metric | Required automatic route |
 | --- | --- |
@@ -58,7 +58,7 @@ Invalid contour levels must keep the modal recoverable, show `failure_label`, re
 
 ## Statistical oracle requirements
 
-`test-publication-bias.R` and the R-stack test procedure identity, routing, preparation and regeneration. They are not independent numerical oracles for all procedures. When statistical behavior changes, construct inputs separately and compare test statistic, coefficient/SE, p, df, interval, k and corrections to pinned `meta::metabias`/`metafor::regtest`/`metafor::ranktest` calls as appropriate. For trim-and-fill compare package fit and augmented inputs; for extrapolation compare the fitted regression and target prediction. For Deeks independently check ESS=`4*nDiseased*nNonDiseased/(nDiseased+nNonDiseased)` and its inverse-square-root predictor. Record exact calls/package versions and tolerances; agreement of two RCMS helper calls is not an independent oracle.
+`test-small-study-effects.R` and the R-stack test procedure identity, routing, preparation and regeneration. They are not independent numerical oracles for all procedures. When statistical behavior changes, construct inputs separately and compare test statistic, coefficient/SE, p, df, interval, k and corrections to pinned `meta::metabias`/`metafor::regtest`/`metafor::ranktest` calls as appropriate. For trim-and-fill compare package fit and augmented inputs; for extrapolation compare the fitted regression and target prediction. For Deeks independently check ESS=`4*nDiseased*nNonDiseased/(nDiseased+nNonDiseased)` and its inverse-square-root predictor. Record exact calls/package versions and tolerances; agreement of two RCMS helper calls is not an independent oracle.
 
 
 ## HR and IRR

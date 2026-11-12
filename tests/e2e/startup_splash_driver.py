@@ -7,7 +7,7 @@ import sys
 from unittest.mock import patch
 
 from PyQt6 import QtCore, QtGui, QtWidgets
-from rc_metastudio import app_error_handler, launch, r_backend
+from rc_metastudio import app_error_handler, launch, r_runtime
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--output", type=Path, required=True)
@@ -126,7 +126,7 @@ with patch.object(launch.settings, "get_base_path", return_value=str(output / "a
         assert window.isEnabled() and window.isVisible()
         assert not any(isinstance(w, QtWidgets.QSplashScreen) and w.isVisible() for w in app.topLevelWidgets())
         assert window.statusBar().currentMessage() == ""
-        assert r_backend.is_ready() is not args.failure
+        assert r_runtime.is_ready() is not args.failure
         assert bool(errors) is args.failure
         assert window.open(str(Path(__file__).resolve().parents[2] / "sample_projects/amino.rcms"))
         assert window.model.rowCount() > 0

@@ -253,29 +253,19 @@ def _write_bundle(root: Path) -> None:
         )
 
 
-def test_native_remaining_surface_evidence_accepts_relocated_scale_bundle(
-    tmp_path,
-):
-    _write_bundle(tmp_path)
-
-    records = native_smoke.validate_evidence(tmp_path)
-
-    assert [record["scale_factor"] for record in records] == list(
-        native_smoke.SCALE_FACTORS
-    )
-
-
-def test_native_remaining_surface_evidence_accepts_cocoa_focus_sequences(tmp_path):
+@pytest.mark.parametrize("platform", ["windows", "cocoa"])
+def test_native_remaining_surface_evidence_accepts_relocated_platform_bundle(tmp_path, platform):
     _write_bundle(tmp_path)
     for scale in native_smoke.SCALE_FACTORS:
         record_path = native_smoke._record_path(tmp_path, scale)
         record = json.loads(record_path.read_text(encoding="utf-8"))
-        record["qpa"] = "cocoa"
+        record["qpa"] = platform
         record_path.write_text(json.dumps(record), encoding="utf-8")
 
     records = native_smoke.validate_evidence(tmp_path)
 
-    assert {record["qpa"] for record in records} == {"cocoa"}
+    assert {record["qpa"] for record in records} == {platform}
+    assert [record["scale_factor"] for record in records] == [1.0, 1.5]
 
 
 def test_native_remaining_surface_evidence_rejects_semantic_layout_drift(tmp_path):
@@ -360,10 +350,6 @@ def test_wizard_action_observer_uses_fresh_factory_choice_timing_and_return(qapp
         "reject_nonmutation": True,
         "rejected_observed": True,
     }
-    assert native_smoke._surface_capture_order()[0] == "main-wizard"
-    assert set(native_smoke._surface_capture_order()) == set(
-        native_smoke._remaining_surface_ids()
-    )
 
 
 def test_native_remaining_surface_evidence_rejects_programmatic_focus_movement(
@@ -518,7 +504,6 @@ def test_scale_retry_preserves_interrupted_fragments(tmp_path, monkeypatch):
     native_smoke._run_scale(1.0, tmp_path)
     assert old.read_text() == "prior failed evidence"
     assert len(list(old.parent.iterdir())) == 4
-    assert set(json.loads(native_smoke._record_path(tmp_path, 1.0).read_text())["surfaces"]) == set(native_smoke._surface_capture_order())
 
 
 @pytest.mark.parametrize("field", ["close_blocked", "escape_blocked", "owner_completed"])

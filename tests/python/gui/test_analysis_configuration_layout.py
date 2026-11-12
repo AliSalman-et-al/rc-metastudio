@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[3]
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 os.environ.setdefault("RCMS_QT6_BUILD_ROOT", str(ROOT / "build" / "qt6-verification"))
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
-from test_types import key_click, required, wait
+from qt_test_support import key_click, required, wait
 
 prepare_generated_ui_imports()
 
@@ -34,7 +34,7 @@ class _AnalysisModel(object):
 
     arm_names = ["A", "B"]
 
-    def get_current_outcome_subtype(self):
+    def get_current_data_subtype(self):
         return None
 
     def __init__(self, data_type, covariates=()):
@@ -45,7 +45,7 @@ class _AnalysisModel(object):
         self.dataset.sheets.append(self.current_sheet)
         self.current_sheet_id = self.current_sheet.id
 
-    def get_current_outcome_type(self):
+    def get_current_data_type(self):
         return self._data_type
 
     def included_studies_have_raw_data(self):
@@ -115,14 +115,6 @@ def _install_analysis_backend(monkeypatch, analysis_setup_dialog):
             ],
             {},
         ),
-    )
-    monkeypatch.setattr(
-        backend,
-        "method_description",
-        lambda _self, method: (
-            "A long method description that wraps locally. " * 8
-        )
-        + method,
     )
     monkeypatch.setattr(
         backend, "prepare_method_dataset", lambda *_args, **_kwargs: None
@@ -336,12 +328,6 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
     )
     monkeypatch.setattr(
         backend,
-        "get_method_description",
-        lambda _method: "Count-based joint Reitsma model",
-        raising=False,
-    )
-    monkeypatch.setattr(
-        backend,
         "get_analysis_plot_capabilities",
         lambda *_args, **_kwargs: [],
         raising=False,
@@ -380,9 +366,6 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
         assert dialog.method_lbl.mapTo(dialog.methods_tab, QtCore.QPoint()).x() >= page_margin
         assert not dialog.lr_dor_method_lbl.isVisible()
         assert dialog.current_method == "diagnostic.reitsma"
-        assert dialog.diagnostic_regression_group.isHidden() is (
-            analysis_type == "meta-regression"
-        )
         assert dialog.regression_model_group.isHidden() is (
             analysis_type == "meta-regression"
         )
@@ -504,9 +487,6 @@ def test_diagnostic_reitsma_meta_regression_hides_legacy_controls_for_factor_and
         raising=False,
     )
     monkeypatch.setattr(
-        backend, "get_method_description", lambda _method: "Reitsma", raising=False
-    )
-    monkeypatch.setattr(
         backend, "get_analysis_plot_capabilities", lambda *_args, **_kwargs: [
             {"plot_kind": "forest", "styleable": True}
         ], raising=False
@@ -520,7 +500,6 @@ def test_diagnostic_reitsma_meta_regression_hides_legacy_controls_for_factor_and
     )
     try:
         assert dialog.regression_model_group.isHidden()
-        assert dialog.diagnostic_regression_group.isHidden()
         assert not dialog.fixed_effects_radio.isVisible()
         assert len(dialog.covs_and_check_boxes) == 2
         # A factor moderator cannot use the bubble-plot controls. Selecting it
@@ -760,12 +739,6 @@ def test_meta_regression_estimator_stays_inside_viewport(
 
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)
     backend = analysis_setup_dialog.analysis_adapter.AnalysisService
-    monkeypatch.setattr(
-        backend,
-        "method_description",
-        lambda _self, _method: "A deliberately long method description that must reflow. "
-        * 8,
-    )
     covariate = {'id': 'latitude', 'name': 'latitude', 'data_type': 0}
     dialog = analysis_setup_dialog.AnalysisSetupDialog(
         _AnalysisModel("continuous", (covariate,)),
@@ -811,7 +784,7 @@ def test_subgroup_and_covariate_selectors_use_transactional_layouts(qapp, monkey
     from rc_metastudio import adaptive_window
     from rc_metastudio import covariate_type_dialog
     from rc_metastudio import subgroup_analysis_dialog
-    from rc_metastudio.meta_globals import FACTOR
+    from rc_metastudio.analysis_catalog import FACTOR
 
     long_name = "A factor covariate " + ("complete-value-" * 80)
     available = QtCore.QRect(100, 50, 800, 600)
@@ -829,7 +802,7 @@ def test_subgroup_and_covariate_selectors_use_transactional_layouts(qapp, monkey
         current_sheet = SimpleNamespace(covariates=[{'id': long_name, 'name': long_name, 'data_type': FACTOR}], rows=[study])
 
 
-        def get_current_outcome_type(self):
+        def get_current_data_type(self):
             return "binary"
 
         def get_studies(self, only_if_included=False):
@@ -1145,14 +1118,12 @@ class Model:
     current_outcome_name = "Outcome"
     current_effect = "OR"
     arm_names = ["A", "B"]
-    def get_current_outcome_subtype(self):
+    def get_current_data_subtype(self):
         return None
-    def get_current_follow_up_name(self):
-        return "first"
     current_sheet = SimpleNamespace(name="Outcome", settings={}, covariates=[])
     current_sheet_id = "sheet"
     dataset = SimpleNamespace(sheets=[current_sheet])
-    def get_current_outcome_type(self):
+    def get_current_data_type(self):
         return "binary"
     def included_studies_have_raw_data(self):
         return True
@@ -1164,7 +1135,6 @@ backend.get_available_methods = lambda **kwargs: {"Random": "binary.random"}
 backend.get_params = lambda method: (
     {"conf.level": "float"}, {"conf.level": 95.0}, ["conf.level"], {}
 )
-backend.get_method_description = lambda method: "Random-effects analysis"
 backend.get_analysis_plot_capabilities = lambda *args, **kwargs: []
 
 app = app_error_handler.get_or_create_application([])
@@ -1400,10 +1370,10 @@ def test_plot_bound_zero_survives_selected_configuration(qapp, monkeypatch, work
 
 
 def test_manuscript_counts_and_correction_describe_only_fitted_studies(qapp, monkeypatch):
-    from rc_metastudio import analysis_setup_dialog, meta_globals
+    from rc_metastudio import analysis_setup_dialog, analysis_catalog
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)
     model = _AnalysisModel("binary")
-    sheet = analysis_dataset.Sheet(SheetId("counts"), "Outcome", meta_globals.BINARY)
+    sheet = analysis_dataset.Sheet(SheetId("counts"), "Outcome", analysis_catalog.BINARY)
     kept, missing = (
         analysis_dataset.StudyRow(RowId(name), name, AnalysisUnit(sheet))
         for name in ("kept", "missing")

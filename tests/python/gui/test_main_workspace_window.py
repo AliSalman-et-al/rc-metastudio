@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[3]
 os.environ.setdefault("RCMS_QT6_BUILD_ROOT", str(ROOT / "build" / "qt6-verification"))
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 from rc_metastudio.qt6_resources import ensure_application_resources
-from test_types import required
+from qt_test_support import required
 
 prepare_generated_ui_imports()
 ensure_application_resources()
@@ -100,7 +100,7 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
 def test_direct_table_view_mutation_is_checkpointed_for_one_undo(qapp):
     from rc_metastudio import analysis_dataset, dataset_table_model
     from rc_metastudio import main_window, project_adapter, workspace_session
-    from rc_metastudio.meta_globals import BINARY
+    from rc_metastudio.analysis_catalog import BINARY
 
     from rc_metastudio.analysis_unit import AnalysisUnit
     sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", BINARY, arms=[
@@ -112,7 +112,7 @@ def test_direct_table_view_mutation_is_checkpointed_for_one_undo(qapp):
     initial = project_adapter.RuntimeProject(
         dataset=model.dataset,
         model_state=model.get_state(),
-        restored_selection=True,
+        restored_active_sheet=True,
     )
 
     class BoundaryOwner:
@@ -236,8 +236,7 @@ def test_added_covariate_keeps_identity_and_width_through_undo_redo(qapp):
     window = main_window.MainWindow()
     try:
         _create_sheet(window)
-        command = window._make_add_covariate_command("Age", "continuous")
-        window._commit_model_operation(command.redo)
+        window._commit_model_operation(lambda: window._add_new_covariate("Age", "continuous"))
         column = window.model.columnCount() - 1
         identity_before = window.model.headerData(
             column, QtCore.Qt.Orientation.Horizontal, WORKSPACE_COLUMN_IDENTITY_ROLE
@@ -253,6 +252,37 @@ def test_added_covariate_keeps_identity_and_width_through_undo_redo(qapp):
         )
         assert identity_after == identity_before
         assert window.tableView.columnWidth(column) == 277
+    finally:
+        window.hide()
+        window.deleteLater()
+        qapp.processEvents()
+
+
+def test_failed_workspace_operation_restores_model_and_existing_history(qapp):
+    # A late failure must restore data, history and adapter binding, and a
+    # later successful operation must remain undoable.
+    from rc_metastudio import main_window
+
+    window = main_window.MainWindow()
+    try:
+        _create_sheet(window)
+        window.workspace.mark_saved()
+        before = window.workspace.document
+
+        def fail():
+            window.model.dataset.title = "partial mutation"
+            window._add_new_covariate("Partial", "continuous")
+            raise OSError("late operation failure")
+
+        with pytest.raises(OSError, match="late operation failure"):
+            window._commit_model_operation(fail)
+        assert window.workspace.document == before
+        assert window.model.dataset is required(window.workspace.runtime, "workspace runtime").dataset
+        assert not window.workspace.is_dirty
+        assert "Partial" not in window.model.get_covariate_names()
+        window._commit_model_operation(lambda: window._add_new_covariate("Kept", "continuous"))
+        window.undo()
+        assert window.workspace.document == before
     finally:
         window.hide()
         window.deleteLater()
@@ -315,9 +345,9 @@ QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
 QtCore.QSettings.setPath(QtCore.QSettings.Format.IniFormat, QtCore.QSettings.Scope.UserScope, os.environ["RCMS_TEST_SETTINGS"])
 from rc_metastudio import automation
 from scripts.local_r_test_backend import create
-from rc_metastudio import r_backend, r_bridge
+from rc_metastudio import r_bridge
 
-r_backend.install_r_backend = lambda: r_bridge
+r_bridge.initialize_r = lambda: None
 for name, implementation in vars(create()).items():
     setattr(r_bridge, name, implementation)
 

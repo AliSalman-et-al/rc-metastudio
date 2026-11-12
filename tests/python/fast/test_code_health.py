@@ -8,7 +8,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-from complexipy import code_complexity
 import pytest
 
 from scripts.code_health import (
@@ -237,12 +236,8 @@ def test_python_metrics_uses_complexipy_at_each_revision(tmp_path: Path) -> None
 
     baseline_metric = python_metrics(tmp_path, ["src/pkg.py"], baseline)[0]
     head_metric = python_metrics(tmp_path, ["src/pkg.py"], head)[0]
-    baseline_source = _git(tmp_path, "show", f"{baseline}:src/pkg.py")
-    head_source = _git(tmp_path, "show", f"{head}:src/pkg.py")
-
-    assert baseline_metric.cognitive == code_complexity(baseline_source).functions[0].complexity
-    assert head_metric.cognitive == code_complexity(head_source).functions[0].complexity
-    assert head_metric.cognitive > baseline_metric.cognitive
+    assert baseline_metric.cognitive == 0
+    assert head_metric.cognitive == 3
 
 
 def test_typing_measurement_reads_the_named_revision(tmp_path: Path) -> None:

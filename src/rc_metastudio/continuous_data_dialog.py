@@ -7,7 +7,6 @@
 #
 # This dialog edits the analysis unit directly because most displayed fields
 # are transient imputation inputs rather than stored raw data.
-import copy
 from contextlib import ExitStack
 from functools import partial
 from typing import TYPE_CHECKING, TypeGuard, cast
@@ -28,7 +27,7 @@ from PyQt6.QtWidgets import (
     QWidget,
     QWIDGETSIZE_MAX,
 )
-from rc_metastudio import calculator_routines as calc_fncs
+from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
 
 from rc_metastudio import app_error_handler
 from rc_metastudio import adaptive_window
@@ -36,15 +35,9 @@ from rc_metastudio.calculator_service import (
     CalculatorService,
     ContinuousValues,
 )
-from rc_metastudio.meta_globals import (
-    CONTINUOUS_METRIC_NAMES,
-    CONTINUOUS_ONE_ARM_METRICS,
-    CONTINUOUS_TWO_ARM_METRICS,
-    EMPTY_VALS,
-    is_nan,
-    is_empty,
-)
-from rc_metastudio.runtime_types import required
+from rc_metastudio.analysis_catalog import CONTINUOUS_METRIC_NAMES, CONTINUOUS_ONE_ARM_METRICS, CONTINUOUS_TWO_ARM_METRICS
+from rc_metastudio.analysis_validation import EMPTY_VALS, is_nan, is_empty
+from rc_metastudio.qt_object_guard import required
 
 if TYPE_CHECKING:
     import ui_continuous_back_calculation_dialog as _ui_continuous_back_calculation_dialog
@@ -88,9 +81,6 @@ class _BackCalculationCancelled(Exception):
     """Internal control flow for a nested choice that rejects the transaction."""
 
 
-# The R backend represents logical results as strings.
-def _is_true(x):
-    return x == "TRUE"
 
 
 def is_list(x: object) -> TypeGuard[list[float | int | None] | tuple[float | int | None, ...]]:
@@ -167,14 +157,14 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.g2_pre_post_table,
         ]
         self.group_one_label.setText(str(self.arm_names[0]))
-        self.group_two_label.setText(str(self.arm_names[1]))
+        self.group_two_label.setText(str(self.arm_names[1]) if len(self.arm_names) > 1 else "")
         for table, group in zip((self.g1_pre_post_table, self.g2_pre_post_table), self.arm_names):
             table.setAccessibleName(f"{group} pre/post summaries")
             table.setAccessibleDescription(f"Pre-treatment and post-treatment summary values for {group}.")
 
         self.setup_clear_button_palettes()  # Color for clear_button_pallette
         self.initialize_form()  # initialize cells to empty items
-        self._field_history = calc_fncs.TransientEditHistory()
+        self._field_history = calculator_edit_history.TransientEditHistory()
 
         self._active_input_mode = "estimate" if self.analysis_unit.sheet.sub_type in {"reg_coef", "generic_effect"} or self.analysis_unit.calculator_source(self.current_effect, self.arm_key) == "entered" else "summary"
         self.update_raw_data()
@@ -216,7 +206,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         mode_changed = mode != getattr(self, "_active_input_mode", None)
         previous_mode = getattr(self, "_active_input_mode", None)
         if mode_changed and previous_mode is not None:
-            if not calc_fncs.commit_calculator_edits(self):
+            if not calculator_controls.commit_calculator_edits(self):
                 with QSignalBlocker(self.input_mode_combo):
                     self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(previous_mode))
                 return
@@ -233,7 +223,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         if mode == "estimate":
             self.set_current_effect()
             return
-        self.analysis_unit.set_effect_and_ci(
+        self.analysis_unit.set_derived_effect_preview(
             self.current_effect, self.arm_key, None, None, None,
             confidence_multiplier=self.confidence_multiplier,
         )
@@ -257,8 +247,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.g2_pre_post_table,
         ):
             # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
-            if not isinstance(table.itemDelegate(), calc_fncs.NumericSummaryDelegate):
-                table.setItemDelegate(calc_fncs.NumericSummaryDelegate(table))
+            if not isinstance(table.itemDelegate(), calculator_controls.NumericSummaryDelegate):
+                table.setItemDelegate(calculator_controls.NumericSummaryDelegate(table))
             table.setMinimumWidth(0)
             table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -583,9 +573,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     def _text_box_value_is_between_bounds(self, val_str, new_text):
         if is_empty(new_text):
             return True, ""
-        ci_param = {"est": "est", "lower": "low", "upper": "high"}.get(val_str)
+        confidence_bound = {"est": "est", "lower": "low", "upper": "high"}.get(val_str)
         is_correlation = val_str == "correlation_pre_post"
-        if ci_param is None and not is_correlation:
+        if confidence_bound is None and not is_correlation:
             return True, ""
         try:
             with ExitStack() as signal_blockers:
@@ -594,22 +584,22 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 options = {}
                 if is_correlation:
                     options = {
-                        "opt_cmp_fn": lambda x: -1 <= calc_fncs.numeric_value(x) <= 1,
-                        "opt_cmp_msg": "Correlation must be between -1 and +1",
+                        "additional_validator": lambda x: -1 <= calculator_controls.numeric_value(x) <= 1,
+                        "validation_message": "Correlation must be between -1 and +1",
                     }
-                display_scale_val = calc_fncs.evaluate(
+                display_scale_val = calculator_controls.validate_calculator_input(
                     new_text=new_text,
                     analysis_unit=self.analysis_unit,
                     current_effect=self.current_effect,
                     arm_key=self.arm_key,
-                    conv_to_disp_scale=partial(
+                    to_display_scale=partial(
                         self.calculator.continuous_convert_scale,
                         metric_name=self.current_effect,
                         convert_to="display.scale",
                     ),
                     parent=self,
                     confidence_multiplier=self.confidence_multiplier,
-                    ci_param=ci_param,
+                    confidence_bound=confidence_bound,
                     source="entered" if getattr(self, "_active_input_mode", "estimate") == "estimate" else "derived_preview",
                     **options,
                 )
@@ -629,7 +619,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         return None  # Unknown value key.
 
     def accept(self):
-        if not getattr(self, "_validation_failed", False) and calc_fncs.commit_calculator_edits(self):
+        if not getattr(self, "_validation_failed", False) and calculator_controls.commit_calculator_edits(self):
             self.analysis_unit.set_calculator_source(self.current_effect, self.arm_key, "entered" if self._active_input_mode == "estimate" else "derived_preview")
             self._refresh_active_inputs()
             super().accept()
@@ -727,7 +717,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         )
         new_correlation = self._get_correlation_str()
 
-        calc_fncs.push_field_edit(
+        calculator_edit_history.push_field_edit(
             self._field_history,
             owner=self,
             restore_state=self.restore_analysis_unit_and_tables,
@@ -745,7 +735,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.update_clear_button_color()
 
     def update_clear_button_color(self):
-        if calc_fncs._input_fields_disabled(
+        if calculator_controls.calculator_inputs_disabled(
             self.simple_table,
             [self.effect_text_box, self.lower_text_box, self.upper_text_box],
         ):
@@ -759,16 +749,16 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             lower=self.lower_text_box,
             upper=self.upper_text_box,
         )
-        calc_fncs.set_current_effect_from_value(
+        calculator_effect_readout.populate_effect_ci_fields(
             analysis_unit=self.analysis_unit,
-            txt_boxes=txt_boxes,
+            effect_fields=txt_boxes,
             current_effect=self.current_effect,
             arm_key=self.arm_key,
             data_type="continuous",
             confidence_multiplier=self.confidence_multiplier,
             source="derived_preview" if getattr(self, "_active_input_mode", "estimate") != "estimate" else "entered",
         )
-        calc_fncs.update_calculator_readout(self, "continuous")
+        calculator_effect_readout.update_calculator_readout(self, "continuous")
 
         self.change_row_color_according_to_metric()
 
@@ -791,11 +781,11 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
     def _cell_data_not_valid(self, celldata_string, cell_header=None):
         # ignore blank entries
-        if calc_fncs.cell_text_is_blank(celldata_string):
+        if calculator_controls.cell_text_is_blank(celldata_string):
             return None
 
         try:
-            value = calc_fncs.numeric_value(celldata_string)
+            value = calculator_controls.numeric_value(celldata_string)
         except ValueError:
             return "Raw data needs to be numeric."
 
@@ -897,7 +887,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         )
         new_correlation = self._get_correlation_str()
 
-        calc_fncs.push_field_edit(
+        calculator_edit_history.push_field_edit(
             self._field_history,
             owner=self,
             restore_state=self.restore_analysis_unit_and_tables,
@@ -933,28 +923,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             if supplied is not None or not str_val:
                 item.setData(Qt.ItemDataRole.UserRole, bool(supplied and str_val))
 
-    def _disable_row_if_filled(self, table, row, col):
-        with QSignalBlocker(table):
-            column_count = table.columnCount()
-
-            if self._table_row_filled(table, row):
-                for col in range(column_count):
-                    self._disable_cell(table, row, col)
-
-    def _disable_cell(self, table, row, col):
-        with QSignalBlocker(table):
-            item = table.item(row, col)
-            newflags = item.flags() & ~Qt.ItemFlag.ItemIsEditable
-            item.setFlags(newflags)
-
-    def _table_row_filled(self, table, row):
-        column_count = table.columnCount()
-        row_filled = True
-        for col in range(column_count):
-            item = table.item(row, col)
-            if item is None or item.text() == "":
-                row_filled = False
-        return row_filled
 
     def _copy_raw_data_from_table_to_analysis_unit(self):
         for row_index, group_name in enumerate(self.arm_names):
@@ -968,7 +936,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
     def restore_analysis_unit(self, old_analysis_unit):
         """Restores the analysis_unit data and resets the form"""
-        self.analysis_unit = copy.deepcopy(old_analysis_unit)
+        self.analysis_unit = old_analysis_unit.copy_for_edit()
 
         self.initialize_form()  # clear form first
         self.update_raw_data()
@@ -1032,7 +1000,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             old_cell = old_tables_data[self._get_index_of_table(table)][row][col]
             old_tables_data[self._get_index_of_table(table)][row][col] = (old_value, old_cell[1], old_cell[2])
 
-        old_analysis_unit = copy.deepcopy(analysis_unit)
+        old_analysis_unit = analysis_unit.copy_for_edit()
         return old_analysis_unit, old_tables_data
 
     def _get_index_of_table(self, table):
@@ -1111,7 +1079,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
         results_from_r = self.calculator.impute_pre_post_continuous_data(
             params_dict,
-            calc_fncs.numeric_value(self.correlation_pre_post.text()),
+            calculator_controls.numeric_value(self.correlation_pre_post.text()),
             self.confidence_level_to_alpha(),
         )
 
@@ -1192,7 +1160,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             )
             new_correlation = self._get_correlation_str()
 
-            calc_fncs.push_field_edit(
+            calculator_edit_history.push_field_edit(
                 self._field_history,
                 owner=self,
                 restore_state=self.restore_analysis_unit_and_tables,
@@ -1253,7 +1221,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         if item is None:
             return None
         try:
-            return calc_fncs.numeric_value(item.text())
+            return calculator_controls.numeric_value(item.text())
         except ValueError:
             return None
 
@@ -1261,14 +1229,17 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         return x is None or x == ""
 
     def update_effect_from_raw_data(self):
-        n1, m1, sd1, n2, m2, sd2 = self.analysis_unit.get_raw_data_for_arms(
-            self.arm_names
-        )
-        se1, se2 = self._get_float(0, 3), self._get_float(1, 3)
-
-        if not self._has_complete_raw_effect_data(n1, m1, sd1, n2, m2, sd2, se1, se2):
-            return
+        raw_data = self.analysis_unit.get_raw_data_for_arms(self.arm_names)
+        n1, m1, sd1 = raw_data[:3]
         if self.current_effect in CONTINUOUS_TWO_ARM_METRICS:
+            n2, m2, sd2 = raw_data[3:]
+            se1, se2 = self._get_float(0, 3), self._get_float(1, 3)
+            complete_summaries = not any(self._is_empty_value(value) for value in raw_data)
+            complete_mean_se = self.current_effect == "MD" and not any(
+                self._is_empty_value(value) for value in (m1, se1, m2, se2)
+            )
+            if not (complete_summaries or complete_mean_se):
+                return
             est_and_ci_d = self.calculator.continuous_effect_for_study(
                     n1,
                     m1,
@@ -1283,6 +1254,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                     confidence_level=self.confidence_level,
                 )
         else:
+            if any(self._is_empty_value(value) for value in (n1, m1, sd1)):
+                return
             est_and_ci_d = self.calculator.continuous_effect_for_study(
                 n1, m1, sd1, two_arm=False, metric=self.current_effect,
                 confidence_level=self.confidence_level,
@@ -1290,27 +1263,15 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         est, low, high = self.calculator.effect_triplet(
             est_and_ci_d, "calc_scale", metric=self.current_effect
         )
-        self.analysis_unit.set_effect_and_ci(
+        self.analysis_unit.set_derived_effect_preview(
             self.current_effect, self.arm_key, est, low, high,
             confidence_multiplier=self.confidence_multiplier,
         )
         self.set_current_effect()
 
-    def _has_complete_raw_effect_data(self, n1, m1, sd1, n2, m2, sd2, se1, se2):
-        two_arm = [n1, m1, sd1, n2, m2, sd2]
-        mean_se = [m1, se1, m2, se2]
-        one_arm = [n1, m1, sd1]
-        return (
-            not any(self._is_empty_value(value) for value in two_arm)
-            or self.current_effect == "MD"
-            and not any(self._is_empty_value(value) for value in mean_se)
-            or self.current_effect in CONTINUOUS_ONE_ARM_METRICS
-            and not any(self._is_empty_value(value) for value in one_arm)
-        )
-
     def _capture_dialog_state(self):
         return {
-            "analysis_unit": copy.deepcopy(self.analysis_unit),
+            "analysis_unit": self.analysis_unit.copy_for_edit(),
             "tables": self.save_tables_data(),
             "correlation": self.correlation_pre_post.text(),
             "metric_parameter": self.metric_parameter,
@@ -1325,7 +1286,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
     def _restore_dialog_state(self, state):
         """Restore directly without invoking R, imputation, or calculator setters."""
-        self.analysis_unit = copy.deepcopy(state["analysis_unit"])
+        self.analysis_unit = state["analysis_unit"].copy_for_edit()
         for table, rows in zip(self.tables, state["tables"]):
             blocked = table.blockSignals(True)
             try:
@@ -1536,12 +1497,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
         # Choose one of the values if multiple ones were returned in the output
         keys_to_names = {
-            "n1": f"{self.arm_names[0]} sample size",
-            "n2": f"{self.arm_names[1]} sample size",
-            "sd1": f"{self.arm_names[0]} standard deviation",
-            "sd2": f"{self.arm_names[1]} standard deviation",
-            "mean1": f"{self.arm_names[0]} mean",
-            "mean2": f"{self.arm_names[1]} mean",
+            f"{field}{index}": f"{name} {label}"
+            for index, name in enumerate(self.arm_names, start=1)
+            for field, label in (("n", "sample size"), ("sd", "standard deviation"), ("mean", "mean"))
         }
         for key, value in imputed.items():
             # The R imputation code can theoretically yield up to four values
@@ -1594,7 +1552,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.back_calculate_button.setEnabled(False)
         new_state = self._capture_dialog_state()
 
-        command = calc_fncs.make_field_edit_command(
+        command = calculator_edit_history.make_field_edit_command(
             owner=self,
             restore_state=self._restore_dialog_state,
             old_state=(transaction_state,),
@@ -1655,7 +1613,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         )
         new_correlation = self._get_correlation_str()
 
-        calc_fncs.push_field_edit(
+        calculator_edit_history.push_field_edit(
             self._field_history,
             owner=self,
             restore_state=self.restore_analysis_unit_and_tables,
@@ -1668,7 +1626,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         return effects
 
     def _effect_display_label(self, effect):
-        if effect == "TX Mean":
+        if effect == "Mean":
             return {"reg_coef": "Coefficient", "generic_effect": "Entered effect"}.get(self.analysis_unit.sheet.sub_type, "Mean")
         return "%s (%s)" % (CONTINUOUS_METRIC_NAMES.get(effect, effect), effect)
 
@@ -1694,7 +1652,7 @@ class ContinuousBackCalculationDialog(
     _ui_continuous_back_calculation_dialog.Ui_ContinuousBackCalculationDialog,
 ):
     def __init__(
-        self, info_text, op1_txt, op2_txt, parent=None, op3_txt=None, op4_txt=None
+        self, info_text, op1_txt, op2_txt, parent=None
     ):
         super(ContinuousBackCalculationDialog, self).__init__(parent)
         self.setupUi(self)

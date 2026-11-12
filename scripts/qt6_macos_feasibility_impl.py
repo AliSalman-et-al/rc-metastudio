@@ -17,7 +17,7 @@ import subprocess
 import sys
 from typing import Callable, cast
 
-from scripts.macos_evidence import (
+from scripts.macos_feasibility_evidence import (
     EXPECTED_VERSIONS,
     _archs as _evidence_archs,
     MAX_DEPLOYMENT_BYTES,

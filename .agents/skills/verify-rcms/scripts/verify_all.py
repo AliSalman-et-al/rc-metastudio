@@ -12,7 +12,6 @@ from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(ROOT))
-from scripts.verify_rcms import SCENARIOS
 
 
 def main():
@@ -61,7 +60,7 @@ def main():
                     ],
                 ]
             )
-        # The full R-stack lane already exercises every desktop scenario via pytest.
+        # The full R-stack lane already exercises the desktop qualification selection via pytest.
         # Keep doctor here; repeating the whole registry doubles the expensive work.
         if not args.full:
             commands.append([sys.executable, "-m", "pytest", "tests/e2e", "-n", "auto", "--durations=10"])

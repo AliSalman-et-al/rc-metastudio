@@ -3,7 +3,7 @@
 import copy
 
 from PyQt6 import QtCore, QtGui, QtWidgets
-from tests.python.gui.test_types import mouse_click, wait
+from tests.python.gui.qt_test_support import mouse_click, wait
 
 def header_action(app, window, covariate_id, label, record):
     table = window.tableView

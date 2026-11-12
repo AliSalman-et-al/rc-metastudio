@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, size.policy="export") {
+    bundle$params$measure <- .rcmetar.canonical.metric(bundle$params$measure)
     style <- if (is.null(style) || length(style) == 0) "default" else as.character(style[[1]])
     if (identical(style, "revman") &&
             inherits(bundle$res, "rma") &&

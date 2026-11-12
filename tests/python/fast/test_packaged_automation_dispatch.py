@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import sys
@@ -42,8 +43,8 @@ def test_atomic_project_hooks_report_failed_open_without_using_blank_workspace(
         def save(self):
             raise AssertionError("a failed open must not save the blank workspace")
 
-    from rc_metastudio import r_backend
-    monkeypatch.setattr(r_backend, "is_ready", lambda: True)
+    from rc_metastudio import r_runtime
+    monkeypatch.setattr(r_runtime, "is_ready", lambda: True)
     written = {}
     monkeypatch.setattr(automation, "start_automation", lambda phase_callback=None: (qapp, Window()))
     monkeypatch.setattr(automation, "_configure_package_locale", lambda: None)
@@ -102,7 +103,8 @@ def test_developer_assembly_emits_evidence_accepted_by_both_inspectors(
     assert (output.with_suffix(".plots") / "0-forest.svg").read_bytes() == (tmp_path / "forest.svg").read_bytes()
     assert (output.with_suffix(".plots") / "1-locale-forest.svg").read_bytes() == locale_svg.read_bytes()
     assert (output.with_suffix(".plots") / "2-locale-forest.svg").read_bytes() == locale_svg.read_bytes()
-    expected = evidence["workflows"]["normalized_summary_sha256"]
+    expected = hashlib.sha256(b"Binary Random-Effects Model Estimate 1").hexdigest()
+    assert evidence["workflows"]["normalized_summary_sha256"] == expected
     monkeypatch.setitem(inspect_macos_deployment.EXPECTED_SUMMARY_SHA256_BY_SAMPLE, "BCG.rcms", expected)
     inspect_macos_deployment.validate_packaged_workflow_evidence(evidence)
     log = tmp_path / "smoke.log"

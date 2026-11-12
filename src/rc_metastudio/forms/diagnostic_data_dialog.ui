@@ -82,5 +82,5 @@
   <connection><sender>buttonBox</sender><signal>accepted()</signal><receiver>DiagnosticDataDialog</receiver><slot>accept()</slot><hints/></connection>
   <connection><sender>buttonBox</sender><signal>rejected()</signal><receiver>DiagnosticDataDialog</receiver><slot>reject()</slot><hints/></connection>
  </connections>
-<customwidgets><customwidget><class>PrevalenceEdit</class><extends>QLineEdit</extends><header>rc_metastudio.calculator_routines</header></customwidget></customwidgets>
+<customwidgets><customwidget><class>PrevalenceEdit</class><extends>QLineEdit</extends><header>rc_metastudio.calculator_controls</header></customwidget></customwidgets>
 </ui>

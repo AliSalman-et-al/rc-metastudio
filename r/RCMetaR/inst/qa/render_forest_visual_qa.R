@@ -164,7 +164,7 @@ qa_make_continuous_one_arm <- function(n, stress) {
     study.names = qa_long_labels("One-arm Continuous", n, stress),
     years = as.integer(2010 + seq_len(n))
   )
-  params <- qa_base_params("TXMean", tempfile(fileext = ".png"), "default", qa_scenario_settings()$base)
+  params <- qa_base_params("Mean", tempfile(fileext = ".png"), "default", qa_scenario_settings()$base)
   effect <- compute.for.one.cont.study(data, params)
   data@y <- effect$yi
   data@SE <- sqrt(effect$vi)
@@ -252,7 +252,7 @@ qa_measure_for <- function(kind) {
     binary_two_arm = "OR",
     binary_one_arm = "PLO",
     continuous_two_arm = "MD",
-    continuous_one_arm = "TXMean",
+    continuous_one_arm = "Mean",
     diagnostic = "Sens"
   )
 }

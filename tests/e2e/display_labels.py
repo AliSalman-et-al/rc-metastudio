@@ -6,7 +6,7 @@ from xml.etree import ElementTree as ET
 from PyQt6 import QtCore, QtWidgets
 
 FORBIDDEN = re.compile(r'Default \(metafor\)|\b(?:TX|Tx|tx)(?:\s*Mean)?\b|\[default\]|\b(?:rm\.method|inference\.method|conf\.level|fp_\w+|bp_\w+|intrcpt|tsens|tfpr|pval)\b')
-METRICS = {'OR','RR','RD','AS','YUQ','YUY','PR','PLN','PLO','PAS','PFT','MD','SMD','Sens','Spec','DOR','PLR','NLR','HR','IRR','TX Mean'}
+ABBREVIATED_METRICS = {'OR','RR','RD','AS','YUQ','YUY','PR','PLN','PLO','PAS','PFT','MD','SMD','Sens','Spec','DOR','PLR','NLR','HR','IRR'}
 
 
 def check_label(text, surface, user_names=()):
@@ -14,7 +14,7 @@ def check_label(text, surface, user_names=()):
     for name in user_names:
         text = text.replace(name, '')
     assert not FORBIDDEN.search(text), (surface, text)
-    assert text not in METRICS, ('metric needs a readable name', surface, text)
+    assert text not in ABBREVIATED_METRICS, ('metric needs a readable name', surface, text)
     return dict(surface=surface, text=text) if text else None
 
 
@@ -74,7 +74,7 @@ def visible_label_inventory(widget, user_names=()):
 def run(app, window, record):
     from analysis_matrix import DATA_TYPES, run as matrix
     from advanced_workflows import modal
-    from tests.e2e.audit_round3 import analyze_existing
+    from tests.e2e.analysis_presentation_workflows import analyze_existing
     from rc_metastudio.binary_data_dialog import BinaryDataDialog
     from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
     from rc_metastudio.diagnostic_data_dialog import DiagnosticDataDialog
@@ -90,7 +90,7 @@ def run(app, window, record):
             if name not in {'Group', 'Intervention', 'Control'}:
                 text = text.replace(name, '')
         assert not FORBIDDEN.search(text), (surface, text)
-        assert text not in METRICS, ('metric needs a readable name', surface, text)
+        assert text not in ABBREVIATED_METRICS, ('metric needs a readable name', surface, text)
         if text:
             inventory.append(dict(surface=surface, text=text))
 
@@ -129,7 +129,7 @@ def run(app, window, record):
             record('display-metric-popup', menu, family=family,
                    capture_surface='desktop-composite', labels=[action.text() for action in menu.actions()])
             menu.hide()
-        kind = (BinaryDataDialog if window.model.get_current_outcome_type() == 'binary' else
+        kind = (BinaryDataDialog if window.model.get_current_data_type() == 'binary' else
                 DiagnosticDataDialog if window.model.is_diagnostic() else
                 RatioDataDialog if family in {'hr','irr'} else ContinuousDataDialog)
         def calculator(dialog):

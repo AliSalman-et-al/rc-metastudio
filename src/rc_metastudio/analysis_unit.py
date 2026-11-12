@@ -11,11 +11,11 @@ from typing import Literal, NewType
 from rc_metastudio.project_domain import ArmId
 import uuid
 
-from rc_metastudio import meta_globals
+from rc_metastudio import analysis_catalog, analysis_validation
 
-BINARY = meta_globals.BINARY
-CONTINUOUS = meta_globals.CONTINUOUS
-DIAGNOSTIC = meta_globals.DIAGNOSTIC
+BINARY = analysis_catalog.BINARY
+CONTINUOUS = analysis_catalog.CONTINUOUS
+DIAGNOSTIC = analysis_catalog.DIAGNOSTIC
 StableIdentity = NewType("StableIdentity", str)
 EffectSource = Literal["entered", "derived_preview", "analysis"]
 
@@ -57,7 +57,7 @@ class AnalysisUnit:
         self.stable_id = stable_id or _new_identity()
 
         if arm_names is None:
-            arm_names = meta_globals.default_group_names(sheet.data_type, sheet.sub_type)
+            arm_names = analysis_catalog.default_arm_names(sheet.data_type, sheet.sub_type)
 
         # Arm IDs keep effect entries stable when users rename arms.
         self._arms_by_id = {}
@@ -65,9 +65,9 @@ class AnalysisUnit:
         self.raw_data_length = 0
         if sheet.data_type == BINARY:
             self.raw_data_length = 2
-        elif sheet.data_type == meta_globals.TIME_TO_EVENT:
+        elif sheet.data_type == analysis_catalog.TIME_TO_EVENT:
             self.raw_data_length = 0
-        elif sheet.data_type == meta_globals.EVENT_RATES:
+        elif sheet.data_type == analysis_catalog.EVENT_RATES:
             self.raw_data_length = 2
         elif sheet.data_type == CONTINUOUS:
             self.raw_data_length = 3
@@ -85,23 +85,23 @@ class AnalysisUnit:
 
         if self.sheet.data_type == BINARY:
             for effect in (
-                meta_globals.BINARY_TWO_ARM_METRICS
-                + meta_globals.BINARY_ONE_ARM_METRICS
+                analysis_catalog.BINARY_TWO_ARM_METRICS
+                + analysis_catalog.BINARY_ONE_ARM_METRICS
             ):
                 self.entered_effects[effect] = {}
         elif self.sheet.data_type == CONTINUOUS:
             # Continuous display effects are limited to the implemented mean
             # difference and standardized mean difference metrics.
             for effect in (
-                meta_globals.CONTINUOUS_TWO_ARM_METRICS
-                + meta_globals.CONTINUOUS_ONE_ARM_METRICS
+                analysis_catalog.CONTINUOUS_TWO_ARM_METRICS
+                + analysis_catalog.CONTINUOUS_ONE_ARM_METRICS
             ):
                 self.entered_effects[effect] = {}
         elif self.sheet.data_type == DIAGNOSTIC:
-            for effect in meta_globals.DIAGNOSTIC_METRICS:
+            for effect in analysis_catalog.DIAGNOSTIC_METRICS:
                 self.entered_effects[effect] = {}
-        elif self.sheet.data_type in meta_globals.RATIO_DATA_TYPES:
-            self.entered_effects["HR" if self.sheet.data_type == meta_globals.TIME_TO_EVENT else "IRR"] = {}
+        elif self.sheet.data_type in analysis_catalog.RATIO_DATA_TYPES:
+            self.entered_effects["HR" if self.sheet.data_type == analysis_catalog.TIME_TO_EVENT else "IRR"] = {}
 
         identities = arm_stable_ids or [None] * len(arm_names)
         for i, arm in enumerate(arm_names):
@@ -116,6 +116,10 @@ class AnalysisUnit:
     def arms(self):
         return {arm.name: arm for arm in self._arms_by_id.values()}
 
+    def copy_for_edit(self) -> "AnalysisUnit":
+        """Copy measurements without copying their owning sheet and its rows."""
+        return copy.deepcopy(self, {id(self.sheet): self.sheet})
+
     def adopt_calculated_state(self, candidate: "AnalysisUnit") -> None:
         """Publish a validated candidate while preserving this unit's identity.
 
@@ -125,7 +129,6 @@ class AnalysisUnit:
         ``__dict__`` restoration.
         """
         self.is_diagnostic = candidate.is_diagnostic
-        self.sheet = candidate.sheet
         self.stable_id = candidate.stable_id
         self.raw_data_length = candidate.raw_data_length
         existing_arms = self._arms_by_id
@@ -139,7 +142,6 @@ class AnalysisUnit:
             if arm is None:
                 arm = copy.deepcopy(candidate_arm)
             else:
-                arm.id = candidate_arm.id
                 arm.name = candidate_arm.name
                 arm.stable_id = candidate_arm.stable_id
                 arm.raw_data[:] = copy.deepcopy(candidate_arm.raw_data)
@@ -195,7 +197,7 @@ class AnalysisUnit:
         self,
         source: EffectSource,
         effect: str,
-        arm_comparison: str | tuple[str, ...],
+        arm_comparison: tuple[str, ...],
         estimate: float | None,
         lower: float | None = None,
         upper: float | None = None,
@@ -224,13 +226,13 @@ class AnalysisUnit:
             "analysis": self.analysis_effects,
         }[source]
 
-    def _entry(self, source: EffectSource, effect: str, arm_comparison: str | tuple[str, ...]):
+    def _entry(self, source: EffectSource, effect: str, arm_comparison: tuple[str, ...]):
         return self._store(source).setdefault(effect, {}).setdefault(
             arm_comparison, self._new_effect_entry()
         )
 
     def get_effect_for_source(
-        self, source: EffectSource, effect: str, arm_comparison: str | tuple[str, ...]
+        self, source: EffectSource, effect: str, arm_comparison: tuple[str, ...]
     ) -> EffectEstimate:
         entry = self._store(source).get(effect, {}).get(arm_comparison, {})
         return EffectEstimate(
@@ -242,11 +244,11 @@ class AnalysisUnit:
 
     def _add_effect_entries_for_arm(self, identity):
         metric_sets = {
-            meta_globals.TIME_TO_EVENT: (["HR"], []),
-            meta_globals.EVENT_RATES: (["IRR"], []),
-            BINARY: (meta_globals.BINARY_TWO_ARM_METRICS, meta_globals.BINARY_ONE_ARM_METRICS),
-            CONTINUOUS: (meta_globals.CONTINUOUS_TWO_ARM_METRICS, meta_globals.CONTINUOUS_ONE_ARM_METRICS),
-            DIAGNOSTIC: ([], meta_globals.DIAGNOSTIC_METRICS),
+            analysis_catalog.TIME_TO_EVENT: (["HR"], []),
+            analysis_catalog.EVENT_RATES: (["IRR"], []),
+            BINARY: (analysis_catalog.BINARY_TWO_ARM_METRICS, analysis_catalog.BINARY_ONE_ARM_METRICS),
+            CONTINUOUS: (analysis_catalog.CONTINUOUS_TWO_ARM_METRICS, analysis_catalog.CONTINUOUS_ONE_ARM_METRICS),
+            DIAGNOSTIC: ([], analysis_catalog.DIAGNOSTIC_METRICS),
         }
         two_arm, one_arm = metric_sets[self.sheet.data_type]
         for metric in two_arm:
@@ -322,8 +324,6 @@ class AnalysisUnit:
             .5 + float(self.sheet.settings.get("confidence_level", 95)) / 200
         )
 
-    def set_standard_error(self, effect, arm_comparison, se):
-        self.entered_effects[effect][arm_comparison]["SE"] = se
 
     def set_display_effect_for_source(
         self, source: EffectSource, effect, arm_comparison, value
@@ -447,7 +447,7 @@ class AnalysisUnit:
         display_confidence_level = self._entry(
             source, effect, arm_comparison
         ).get("display_conf_level")
-        return display_confidence_level is None or not meta_globals.equal_close_enough(
+        return display_confidence_level is None or not analysis_validation.within_absolute_tolerance(
             display_confidence_level, confidence_level
         )
 
@@ -513,7 +513,7 @@ class AnalysisUnit:
             source=source,
         )
 
-    def set_effect_and_ci(
+    def set_derived_effect_preview(
         self, effect, arm_comparison, est, lower, upper, confidence_multiplier
     ):
         # Raw-data calculations are previews.  They must not overwrite values
@@ -575,27 +575,17 @@ class AnalysisUnit:
         )
 
     def get_entered_effect_and_ci(self, effect, arm_comparison):
-        entry = self.entered_effects[effect][arm_comparison]
-        return (
-            entry["est"],
-            entry["lower"],
-            entry["upper"],
-        )
+        entry = self.get_effect_for_source("entered", effect, arm_comparison)
+        return entry.estimate, entry.lower, entry.upper
 
-    def get_arm_strings(self, effect):
-        return list(self.entered_effects[effect].keys())
 
     def get_effect_names(self):
         return list(self.entered_effects.keys())
 
     def add_arm(self, name, raw_data=None, stable_id=None):
-        if not self.arms:
-            arm_id = 0
-        else:
-            arm_id = max(arm.id for arm in self._arms_by_id.values()) + 1
         if raw_data is None:
             raw_data = [""] * self.raw_data_length
-        arm = Arm(arm_id, name, raw_data, stable_id=stable_id)
+        arm = StudyArmData(name, raw_data, stable_id=stable_id)
         self._add_effect_entries_for_arm(arm.stable_id)
         self._arms_by_id[arm.stable_id] = arm
 
@@ -640,9 +630,8 @@ class AnalysisUnit:
         return [arm.name for arm in self._arms_by_id.values()]
 
 
-class Arm:
-    def __init__(self, id, name, raw_data, stable_id=None):
-        self.id = id
+class StudyArmData:
+    def __init__(self, name, raw_data, stable_id=None):
         self.name = name
         self.raw_data = raw_data
         self.stable_id = ArmId(stable_id or str(_new_identity()))

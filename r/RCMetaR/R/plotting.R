@@ -649,6 +649,7 @@ rcmetar.display.metric.name <- function(params) {
 
 pretty.metric.name <- function(metric, label=NULL) {
   if (!is.null(label) && length(label) == 1L && nzchar(label)) return(as.character(label))
+  metric <- .rcmetar.canonical.metric(metric)
   metric.names <- list(
     HR = "Hazard ratio", IRR = "Incidence rate ratio",
     OR = "Odds ratio",
@@ -673,7 +674,7 @@ pretty.metric.name <- function(metric, label=NULL) {
     PLR = "Positive likelihood ratio",
     NLR = "Negative likelihood ratio",
     DOR = "Diagnostic odds ratio",
-    TXMean = "Mean",
+    Mean = "Mean",
     GEN = "Generic effect")
 
   metric.key <- gsub("[[:space:].]+", "", trimws(metric))

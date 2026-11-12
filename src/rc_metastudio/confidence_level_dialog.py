@@ -6,10 +6,7 @@ from typing import TYPE_CHECKING
 
 from PyQt6.QtWidgets import QDialog, QLabel
 
-from rc_metastudio.meta_globals import (
-    DEFAULT_CONFIDENCE_LEVEL,
-    CONFIDENCE_LEVEL_DISPLAY_MAX,
-)
+from rc_metastudio.analysis_validation import DEFAULT_CONFIDENCE_LEVEL, CONFIDENCE_LEVEL_DISPLAY_MAX
 from rc_metastudio import adaptive_window
 
 if TYPE_CHECKING:

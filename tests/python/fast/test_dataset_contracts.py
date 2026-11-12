@@ -4,7 +4,7 @@ import copy
 
 from rc_metastudio.analysis_dataset import Dataset, Sheet, StudyRow
 from rc_metastudio.analysis_unit import AnalysisUnit
-from rc_metastudio.meta_globals import BINARY
+from rc_metastudio.analysis_catalog import BINARY
 
 
 def _dataset():

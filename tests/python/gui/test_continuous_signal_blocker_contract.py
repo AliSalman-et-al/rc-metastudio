@@ -16,7 +16,7 @@ os.environ.setdefault(
 )
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
-from test_types import required
+from qt_test_support import required
 
 prepare_generated_ui_imports()
 

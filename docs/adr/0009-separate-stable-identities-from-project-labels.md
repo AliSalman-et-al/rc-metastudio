@@ -8,3 +8,10 @@ v1 format, using its historical labels. Current domain vocabulary is defined in
 and intervention/control columns are arms. The proposed sheet migration in
 [PLAN.md](../ux-hill-climb/PLAN.md) reopens the v1 persistence choice; it has not
 yet changed the format or the stable-identity requirement.
+
+Implementation clarification (2026-11-11): the sheet migration is now implemented
+in version 3. Sheets own independent study rows and use stable sheet, row, arm
+and covariate identities; state stores the selected sheet. The reader retains
+version 1/2 schemas and migrates their structured content at the read seam.
+The stable-identity decision remains in force. See
+[the current format reference](../project-format.md) for the implemented contract.

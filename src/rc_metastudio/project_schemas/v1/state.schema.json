@@ -15,7 +15,7 @@
       "items": {"type": "string", "minLength": 1}
     },
     "active_effect": {
-      "enum": ["OR", "RD", "RR", "AS", "YUQ", "YUY", "PR", "PLN", "PLO", "PAS", "PFT", "MD", "SMD", "TX Mean", "Sens", "Spec", "PLR", "NLR", "DOR", null]
+      "enum": ["OR", "RD", "RR", "AS", "YUQ", "YUY", "PR", "PLN", "PLO", "PAS", "PFT", "MD", "SMD", "Mean", "TX Mean", "TXMean", "TX.Mean", "Sens", "Spec", "PLR", "NLR", "DOR", null]
     },
     "confidence_level": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 100}
   }

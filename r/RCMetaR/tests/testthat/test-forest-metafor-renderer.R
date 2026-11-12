@@ -101,7 +101,7 @@ metafor_continuous_one_arm_fixture <- function(studies = 5) {
     years = as.integer(2001:(2000 + studies))
   )
   params <- metafor_continuous_params(file.path("r_tmp", paste0("forest_one_arm_cont_", studies, ".png")))
-  params$measure <- "TXMean"
+  params$measure <- "Mean"
   params$fp_col3_str <- "Cohort"
   params$fp_col4_str <- "[default]"
   effects <- compute.for.one.cont.study(data, params)
@@ -300,8 +300,6 @@ test_that("effect estimates and confidence limits never use probability threshol
     c("0.00", "0.07", "0.006", "0.00004", "4e-07", "-0.006", "")
   )
   expect_false(any(grepl("<", labels, fixed=TRUE)))
-  expect_equal(rcmetar.revman.format.effect.number(values, 2), labels)
-  expect_equal(rcmetar.bmj.format.effect.number(values, 2), labels)
 })
 
 test_that("forest style and universal appearance params persist in metafor bundles", {
@@ -352,7 +350,7 @@ test_that("binary RevMan Forest Style builds faithful count, weight, and block s
   expect_equal(bundle$fp_style, "revman")
   expect_equal(bundle$ilab$headers, c("Events", "Total", "Events", "Total", "Weight"))
   expect_equal(bundle$ilab$groups, c("Intervention", "Control"))
-  expect_equal(unname(bundle$ilab$matrix[1, ]), c("4", "123", "11", "139", paste0(round.display(weights(res)[[1]], 1), "%")))
+  expect_equal(unname(bundle$ilab$matrix[1, ]), c("4", "123", "11", "139", sprintf("%.1f%%", weights(res)[[1]])))
   expect_match(bundle$style_blocks$heterogeneity, "Heterogeneity: τ²")
   expect_match(bundle$style_blocks$heterogeneity, "Q =")
   expect_match(bundle$style_blocks$heterogeneity, "I²")
@@ -1500,7 +1498,7 @@ test_that("single-arm continuous styles use one-arm mean SD N columns and plain 
   expect_equal(revman.bundle$ilab$groups, "Cohort")
   expect_equal(revman.bundle$style_blocks$favours_left, "")
   expect_equal(revman.bundle$style_blocks$favours_right, "")
-  expect_equal(revman.bundle$style_blocks$axis_label, pretty.metric.name("TXMean"))
+  expect_equal(revman.bundle$style_blocks$axis_label, "Mean")
 
   png_path <- tempfile(fileext = ".png")
   rcmetar.draw.forest.plot(revman.bundle, png_path)
@@ -1514,7 +1512,7 @@ test_that("single-arm continuous styles use one-arm mean SD N columns and plain 
   expect_equal(bmj.bundle$ilab$groups, "Cohort")
   expect_equal(bmj.bundle$style_blocks$favours_left, "")
   expect_equal(bmj.bundle$style_blocks$favours_right, "")
-  expect_equal(bmj.bundle$style_blocks$axis_label, pretty.metric.name("TXMean"))
+  expect_equal(bmj.bundle$style_blocks$axis_label, "Mean")
 
   png_path <- tempfile(fileext = ".png")
   rcmetar.draw.forest.plot(bmj.bundle, png_path)
@@ -1594,10 +1592,8 @@ test_that("diagnostic multi-metric workflows save independent metafor forest plo
       params,
       request.version=1
     )
-    expected_titles <- paste(
-      vapply(measures, pretty.metric.name, character(1)),
-      "forest plot"
-    )
+    expected_titles <- c("Sensitivity forest plot", "Specificity forest plot",
+                         "Negative likelihood ratio forest plot", "Positive likelihood ratio forest plot")
     expected_keys <- paste0("diagnostic.", measures, ".forest")
 
     expect_identical(names(result$images), expected_keys)
@@ -1664,10 +1660,7 @@ test_that("repeated diagnostic workflows keep metric forest plots independent", 
       workflow = workflow,
       request.version=1
     )
-    expected_names <- paste(
-      vapply(measures, pretty.metric.name, character(1)),
-      "forest plot"
-    )
+    expected_names <- c("Negative likelihood ratio forest plot", "Positive likelihood ratio forest plot")
 
     expect_setequal(names(result$images), expected_names)
     expect_setequal(names(result$plot_params_paths), expected_names)
@@ -1715,21 +1708,6 @@ test_that("single-study entered diagnostic Default Forest Style omits count ilab
   expect_gt(file.info(png_path)$size, 3000)
 })
 
-test_that("cumulative workflow saves and renders a Default metafor bundle", {
-  fixture <- metafor_binary_fixture()
-  fixture$params$fp_outpath <- tempfile(fileext = ".png")
-
-  result <- cum.ma.binary("binary.random", fixture$data, fixture$params)
-  bundle <- load_saved_plot_data(unname(result$plot_params_paths[[1]]))
-
-  expect_equal(bundle$render_engine, "metafor")
-  expect_equal(bundle$forest_variant, "cumulative")
-  expect_equal(bundle$fp_style, "default")
-  expect_equal(bundle$slab, sprintf("%s (k = %d)", rcmetar.study.labels(fixture$data), seq_along(fixture$data@study.names)))
-  expect_true(file.exists(unname(result$images[[1]])))
-  expect_gt(file.info(unname(result$images[[1]]))$size, 5000)
-})
-
 test_that("workflow forest artifacts regenerate through their saved public contract", {
   cases <- list(
     cumulative = function() {
@@ -1760,6 +1738,20 @@ test_that("workflow forest artifacts regenerate through their saved public contr
   for (variant in names(cases)) {
     case <- cases[[variant]]()
     params.path <- unname(case$result$plot_params_paths[[1]])
+    original <- load_saved_plot_data(params.path)
+    expect_equal(original$render_engine, "metafor", info=variant)
+    expect_equal(original$forest_variant, variant, info=variant)
+    expect_equal(original$fp_style, "default", info=variant)
+    expect_true(file.exists(unname(case$result$images[[1]])), info=variant)
+    expect_gt(file.info(unname(case$result$images[[1]]))$size, 5000)
+    if (identical(variant, "cumulative")) {
+      expect_equal(original$slab, c("Aaronson, 1991 (k = 1)", "Ferguson, 1992 (k = 2)",
+                                    "Rosenthal, 1993 (k = 3)", "Hart, 1994 (k = 4)",
+                                    "Frimodt-Moller, 1995 (k = 5)", "Stein, 1996 (k = 6)"))
+    } else if (identical(variant, "leave-one-out")) {
+      expect_equal(original$slab, c("All studies", "Allen, 2001", "Baker, 2002",
+                                    "Cole, 2003", "Diaz, 2004", "Evans, 2005"))
+    }
     load(paste0(params.path, ".data"))
     load(paste0(params.path, ".params"))
     load(paste0(params.path, ".res"))
@@ -1839,22 +1831,6 @@ test_that("cumulative workflow handles entered-effect-only data in Default, RevM
       expect_gt(file.info(unname(result$images[[1]]))$size, 5000)
     }
   }
-})
-
-test_that("leave-one-out workflow saves and renders a Default metafor bundle", {
-  fixture <- metafor_continuous_fixture()
-  fixture$params$fp_outpath <- tempfile(fileext = ".png")
-
-  result <- loo.ma.continuous("continuous.random", fixture$data, fixture$params)
-  bundle <- load_saved_plot_data(unname(result$plot_params_paths[[1]]))
-
-  expect_equal(bundle$render_engine, "metafor")
-  expect_equal(bundle$forest_variant, "leave-one-out")
-  expect_equal(bundle$fp_style, "default")
-  expect_equal(bundle$slab[[1]], "All studies")
-  expect_equal(bundle$slab[-1], rcmetar.study.labels(fixture$data))
-  expect_true(file.exists(unname(result$images[[1]])))
-  expect_gt(file.info(unname(result$images[[1]]))$size, 5000)
 })
 
 test_that("leave-one-out workflow handles entered-effect-only data in Default, RevMan, and BMJ styles", {

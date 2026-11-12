@@ -31,6 +31,7 @@ from typing import TYPE_CHECKING, Literal
 
 from rc_metastudio import (
     adaptive_controls,
+    analysis_catalog,
     analysis_identity,
     adaptive_window,
     analysis_adapter,
@@ -54,26 +55,10 @@ from rc_metastudio.plot_text import (
     plot_text_value,
     set_plot_text_value,
 )
-from rc_metastudio.meta_globals import (
-    ALL_METRIC_NAMES,
-    ANALYSIS_DIGITS_MAX,
-    ANALYSIS_DIGITS_MIN,
-    ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS,
-    ANALYSIS_NUMERIC_MAX,
-    ANALYSIS_NUMERIC_MIN,
-    CONFIDENCE_LEVEL_DISPLAY_MAX,
-    CONTINUOUS,
-    DIAGNOSTIC_METRIC_GROUPS,
-    ONE_ARM_METRICS,
-    check_plot_bound,
-    seems_sane,
-    validate_analysis_digits,
-    validate_analysis_float,
-    validate_confidence_level,
-    validate_correction_factor,
-)
+from rc_metastudio.analysis_catalog import ALL_METRIC_NAMES, CONTINUOUS, DIAGNOSTIC_METRIC_GROUPS, ONE_ARM_METRICS
+from rc_metastudio.analysis_validation import ANALYSIS_DIGITS_MAX, ANALYSIS_DIGITS_MIN, ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS, ANALYSIS_NUMERIC_MAX, ANALYSIS_NUMERIC_MIN, CONFIDENCE_LEVEL_DISPLAY_MAX, parse_plot_bound, is_valid_plot_tick_list, validate_analysis_digits, validate_analysis_float, validate_confidence_level, validate_correction_factor
 from rc_metastudio.settings import analysis_output_path
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 
 if TYPE_CHECKING:
     from ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
@@ -269,7 +254,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         external_params=None,
         diagnostic_metrics=None,
         diagnostic_analysis_details=None,
-        fp_specs_only=False,
         confidence_level=None,
         analysis_service=None,
         initial_settings=None,
@@ -346,8 +330,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.content_scroll_layout.insertWidget(0, self.analysis_error_panel)
         if (
             not self.is_meta_regression
-            and self.model.current_effect == "TX Mean"
-            and self.x_lbl_le.text() in {"", "[default]", "TX Mean"}
+            and self.model.current_effect == "Mean"
+            and analysis_catalog.canonical_metric_name(self.x_lbl_le.text()) in {"", "[default]", "Mean"}
         ):
             self.x_lbl_le.setText(analysis_identity.metric_label(self.model))
         if self.analysis_type in {"cumulative", "leave-one-out"}:
@@ -438,7 +422,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _initialize_controls(self, external_params, analysis_type):
         self._hide_internal_plot_path_controls()
-        # Method descriptions must reflow inside the adaptive viewport. An
+        # Method controls must fit inside the adaptive viewport. An
         # outer horizontal scrollbar would hide the estimator control on
         # narrow first-use dialog sizes.
         self.content_scroll_area.setHorizontalScrollBarPolicy(
@@ -498,7 +482,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if confidence_level is None:
             raise ValueError("CONFIDENCE LEVEL MUST BE SPECIFIED")
         self.confidence_level = validate_confidence_level(confidence_level)
-        self.data_type = self.model.get_current_outcome_type()
+        self.data_type = self.model.get_current_data_type()
         self.current_widgets = []
         self.current_method = ""
         self.current_params: dict[str, object] = {}
@@ -705,7 +689,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.moderator_values_note = QLabel(self.covariate_group_box)
         self.moderator_values_note.setWordWrap(True)
         self.covariates_layout.addWidget(self.moderator_values_note, len(self.covs_and_check_boxes), 0)
-        self.diagnostic_regression_group.setVisible(self.data_type == "diagnostic")
         self.image_path.setText(analysis_output_path("reg.png"))
         self._update_meta_regression_ok()
         self._update_meta_regression_plot_availability()
@@ -856,11 +839,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         return choice != QMessageBox.StandardButton.No
 
     def _meta_regression_metric(self):
-        if self.data_type != "diagnostic":
-            return self.model.current_effect
-        if self.is_meta_regression or self.sensitivity_radio.isChecked():
-            return "Sens"
-        return "Spec" if self.specificity_radio.isChecked() else "DOR"
+        return "Sens" if self.data_type == "diagnostic" else self.model.current_effect
 
     def _meta_regression_request(self):
         metric = self._meta_regression_metric()
@@ -1281,7 +1260,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.available_method_d = normalize_available_method_labels(
             self.available_method_d
         )
-        if self.data_type == "continuous" and metric == "TX Mean":
+        if self.data_type == "continuous" and metric == "Mean":
             family = analysis_identity.metric_label(self.model)
             self.available_method_d = {label.replace("Continuous", family, 1): key
                                        for label, key in self.available_method_d.items()}
@@ -1365,7 +1344,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             widget.deleteLater()
             widget = None
 
-    def ui_for_params(self, adjust_root=True, excluded_names=()):
+    def ui_for_params(self, excluded_names=()):
         self._configure_plot_option_groups()
         parameter_layout = self._parameter_layout()
         self._add_parameter_controls(
@@ -1576,12 +1555,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             index = self._find_enum_item_index(control, spec.default)
             if index >= 0:
                 control.setCurrentIndex(index)
-            target[spec.name] = self._enum_item_value(control.currentData())
+            target[spec.name] = qt_text.to_native_text(control.currentData())
         combo = control
         control.currentIndexChanged[int].connect(
             app_error_handler.safe_slot(
                 lambda index: target.__setitem__(
-                    spec.name, self._enum_item_value(combo.itemData(index))
+                    spec.name, qt_text.to_native_text(combo.itemData(index))
                 ),
                 parent=self,
             )
@@ -1649,14 +1628,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _find_enum_item_index(self, cbo_box, value):
         for index in range(cbo_box.count()):
-            if self._enum_item_value(cbo_box.itemData(index)) == str(value):
+            if qt_text.to_native_text(cbo_box.itemData(index)) == str(value):
                 return index
         return -1
 
-    def _enum_item_value(self, item_data):
-        if hasattr(item_data, "value"):
-            item_data = item_data.value()
-        return qt_text.to_native_text(item_data)
 
 
     def _configure_value_control(self, widget):
@@ -1948,14 +1923,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         # Reflect the selected method in the dialog labels.
         window_title = ""
         if self.is_meta_regression:
-            # Diagnostic Reitsma meta-regression always models both sides.
-            # The legacy univariate effect radios would otherwise advertise a
-            # DOR request that still dispatches to the joint model.
-            self.diagnostic_regression_group.hide()
-            # Reitsma meta-regression estimates its joint random-effects model
-            # directly.  The legacy fixed/random-effects selector is not a
-            # parameter of this model and must not remain visible or imply
-            # that fixed effects can be requested.
+            # Reitsma estimates the joint random-effects model directly.
             self.regression_model_group.hide()
             window_title = "Reitsma meta-regression"
         elif self._combined_diagnostic:
@@ -2051,17 +2019,17 @@ def add_plot_params(specs_form):
 
     plot_lb = _text_value(specs_form.plot_lb_le)
     specs_form.current_param_vals["fp_plot_lb"] = "[default]"
-    if plot_lb != "[default]" and check_plot_bound(plot_lb) is not False:
+    if plot_lb != "[default]" and parse_plot_bound(plot_lb) is not False:
         specs_form.current_param_vals["fp_plot_lb"] = plot_lb
 
     plot_ub = _text_value(specs_form.plot_ub_le)
     specs_form.current_param_vals["fp_plot_ub"] = "[default]"
-    if plot_ub != "[default]" and check_plot_bound(plot_ub) is not False:
+    if plot_ub != "[default]" and parse_plot_bound(plot_ub) is not False:
         specs_form.current_param_vals["fp_plot_ub"] = plot_ub
 
     xticks = _text_value(specs_form.x_ticks_le)
     specs_form.current_param_vals["fp_xticks"] = "[default]"
-    if xticks != "[default]" and seems_sane(xticks):
+    if xticks != "[default]" and is_valid_plot_tick_list(xticks):
         specs_form.current_param_vals["fp_xticks"] = xticks
 
     specs_form.current_param_vals["fp_show_summary_line"] = (
@@ -2086,12 +2054,12 @@ def add_plot_params(specs_form):
 
 def _validated_plot_bound(widget):
     value = _text_value(widget)
-    return value if value != "[default]" and check_plot_bound(value) is not False else "[default]"
+    return value if value != "[default]" and parse_plot_bound(value) is not False else "[default]"
 
 
 def _validated_plot_ticks(widget):
     value = _text_value(widget)
-    return value if value != "[default]" and seems_sane(value) else "[default]"
+    return value if value != "[default]" and is_valid_plot_tick_list(value) else "[default]"
 
 
 def _plot_axis_label_value(widget):

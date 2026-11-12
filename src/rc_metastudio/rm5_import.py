@@ -1,5 +1,5 @@
 """Read RevMan XML at the import boundary, without changing the live project."""
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 from rc_metastudio.project_domain import ArmId, RowId, SheetId
 from dataclasses import dataclass
 import math
@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 
 from rc_metastudio.analysis_dataset import Dataset, Sheet, Arm, StudyRow
 from rc_metastudio.analysis_unit import AnalysisUnit
-from rc_metastudio import meta_globals
+from rc_metastudio import analysis_catalog
 
 
 @dataclass
@@ -106,7 +106,7 @@ def _append_diagnostic_tests(root, dataset, studies, not_imported):
             name = f'{base_name} ({suffix})'
             suffix += 1
         arm = Arm(ArmId(uuid.uuid4().hex), 'Index test')
-        sheet = Sheet(SheetId(uuid.uuid4().hex), name, meta_globals.DIAGNOSTIC,
+        sheet = Sheet(SheetId(uuid.uuid4().hex), name, analysis_catalog.DIAGNOSTIC,
                       family='diagnostic', arms=[arm])
         for record in records:
             _append_diagnostic_row(sheet, record, studies, name)
@@ -127,13 +127,13 @@ def _append_diagnostic_row(sheet, record, studies, name):
 
 def _outcome_format(outcome, metric):
     if outcome.tag == 'DICH_OUTCOME' and metric in ('OR', 'RR', 'RD'):
-        return 'binary', meta_globals.BINARY, 'DICH_DATA', ('EVENTS', 'TOTAL')
+        return 'binary', analysis_catalog.BINARY, 'DICH_DATA', ('EVENTS', 'TOTAL')
     elif outcome.tag == 'CONT_OUTCOME' and metric in ('MD', 'SMD'):
-        return 'continuous', meta_globals.CONTINUOUS, 'CONT_DATA', ('MEAN', 'SD', 'TOTAL')
+        return 'continuous', analysis_catalog.CONTINUOUS, 'CONT_DATA', ('MEAN', 'SD', 'TOTAL')
     elif outcome.tag == 'IV_OUTCOME' and metric in ('HR', 'OR', 'MD'):
-        family, data_type = {'HR': ('time_to_event', meta_globals.TIME_TO_EVENT),
-                             'OR': ('binary', meta_globals.BINARY),
-                             'MD': ('continuous', meta_globals.CONTINUOUS)}[metric]
+        family, data_type = {'HR': ('time_to_event', analysis_catalog.TIME_TO_EVENT),
+                             'OR': ('binary', analysis_catalog.BINARY),
+                             'MD': ('continuous', analysis_catalog.CONTINUOUS)}[metric]
         return family, data_type, 'IV_DATA', ()
     return None
 

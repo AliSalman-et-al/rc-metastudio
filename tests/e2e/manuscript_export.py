@@ -9,7 +9,7 @@ from rc_metastudio import __version__
 from docx import Document
 from PyQt6 import QtWidgets, QtCore, QtTest, sip
 from rc_metastudio import automation
-from tests.python.gui.test_types import mouse_click, required
+from tests.python.gui.qt_test_support import mouse_click, required
 
 
 from tests.e2e.report_retention import assert_report as assert_manuscript_tables
@@ -465,7 +465,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     close_result(view)
 
     sys.path.insert(0, str(root / ".agents/skills/verify-rcms/scripts"))
-    from tests.e2e.audit_round3 import analyze_existing
+    from tests.e2e.analysis_presentation_workflows import analyze_existing
     for workflow in ('subgroup', 'meta-regression'):
         window.workspace.mark_saved()
         assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
@@ -503,18 +503,18 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         close_result(view)
 
     from PyQt6.QtCore import QTimer
-    from rc_metastudio.publication_bias_dialog import PublicationBiasDialog
+    from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
     from rc_metastudio.results_window import ResultsWindow
     window.workspace.mark_saved()
     assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
     errors = []
     def run_small_study():
         dialog = app.activeModalWidget()
-        if not isinstance(dialog, PublicationBiasDialog) or not dialog.isVisible():
+        if not isinstance(dialog, SmallStudyEffectsDialog) or not dialog.isVisible():
             QTimer.singleShot(10, run_small_study)
             return
         try:
-            assert isinstance(dialog, PublicationBiasDialog)
+            assert isinstance(dialog, SmallStudyEffectsDialog)
             dialog.run()
             assert not dialog.failure_label.isVisible(), dialog.failure_label.text()
         except Exception as error:

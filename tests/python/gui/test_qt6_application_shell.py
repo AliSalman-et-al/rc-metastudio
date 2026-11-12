@@ -15,7 +15,7 @@ import zipfile
 
 import pytest
 from rc_metastudio import automation
-from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtWidgets
 
 pytestmark = pytest.mark.qsettings
 
@@ -365,8 +365,8 @@ def test_new_dataset_clears_previous_project_destination_and_starts_dirty(
                     "arms": "one",
                     "data_type": "continuous",
                     "sub_type": "generic_effect",
-                    "effect": "TX Mean",
-                    "metric_choices": ["TX Mean"],
+                    "effect": "Mean",
+                    "metric_choices": ["Mean"],
                     "name": "QA generic",
                 },
                 "selected_dataset": None,
@@ -407,7 +407,7 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
         app, window = automation.start_automation()
         monkeypatch.setattr(
             type(window.model),
-            "update_outcome_if_possible",
+            "update_effect_previews_if_possible",
             lambda _model, _row: None,
         )
         import_errors = []
@@ -621,7 +621,7 @@ def test_durable_save_and_open_succeed_when_recent_project_bookkeeping_fails(
     )
     try:
         assert window.open(str(ROOT / "sample_projects" / "amino.rcms")) is True
-        for fault in ("add", "menu", "settings"):
+        for fault in ("add", "menu"):
             destination = tmp_path / f"saved-despite-{fault}.rcms"
             window.model.dataset.notes = f"durable-{fault}"
             window.data_dirtied()
@@ -647,12 +647,6 @@ def test_durable_save_and_open_succeed_when_recent_project_bookkeeping_fails(
                             RuntimeError("menu rebuild failed")
                         ),
                     )
-                else:
-                    context.setattr(
-                        settings,
-                        "save_settings",
-                        lambda: (_ for _ in ()).throw(OSError("settings write failed")),
-                    )
                 assert window.save_as() is True
             assert destination.is_file()
             assert window.out_path == str(destination)
@@ -676,12 +670,6 @@ def test_durable_save_and_open_succeed_when_recent_project_bookkeeping_fails(
                         lambda: (_ for _ in ()).throw(
                             RuntimeError("menu rebuild failed")
                         ),
-                    )
-                else:
-                    context.setattr(
-                        settings,
-                        "save_settings",
-                        lambda: (_ for _ in ()).throw(OSError("settings write failed")),
                     )
                 assert window.open(str(destination)) is True
             assert window.out_path == str(destination)

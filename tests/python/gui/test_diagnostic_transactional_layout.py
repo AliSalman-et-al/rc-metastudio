@@ -1,4 +1,5 @@
 import os
+import copy
 from pathlib import Path
 from typing import cast
 
@@ -14,7 +15,7 @@ os.environ.setdefault(
 )
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
-from test_types import key_click, required
+from qt_test_support import key_click, required
 
 prepare_generated_ui_imports()
 
@@ -23,6 +24,9 @@ AVAILABLE = QtCore.QRect(20, 30, 800, 600)
 
 
 class FakeDiagnosticAnalysisUnit:
+    def copy_for_edit(self):
+        return copy.deepcopy(self)
+
     def __init__(self, raw_data=None, effects=None):
         self.raw_data = list(raw_data or [12, 3, 4, 21])
         self.effects = dict(effects or {})
@@ -55,11 +59,11 @@ class FakeDiagnosticAnalysisUnit:
     def set_effect_for_source(
         self, _source, metric, arm_key, est, low=None, high=None, **kwargs
     ):
-        self.set_effect_and_ci(
+        self.set_derived_effect_preview(
             metric, arm_key, est, low, high, **kwargs
         )
 
-    def set_effect_and_ci(self, metric, _group, est, low, high, **_kwargs):
+    def set_derived_effect_preview(self, metric, _group, est, low, high, **_kwargs):
         self.effects[metric] = (est, low, high)
 
     def set_effect(self, metric, _group, value, **_kwargs):
@@ -524,7 +528,7 @@ def test_direct_effect_validation_is_complete_and_reachable_with_large_font(
     )
     warnings = []
     monkeypatch.setattr(
-        diagnostic_data_dialog.calc_fncs.QMessageBox,
+        diagnostic_data_dialog.calculator_controls.QMessageBox,
         "warning",
         lambda _parent, _title, message: warnings.append(message),
     )

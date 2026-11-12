@@ -8,9 +8,9 @@ import pytest
 from collections.abc import Mapping
 from typing import TypedDict
 
-from rc_metastudio import r_backend
+from rc_metastudio import r_bridge
 
-r_backend.install_r_backend()
+r_bridge.initialize_r()
 
 from rc_metastudio.analysis_adapter import make_analysis_request
 
@@ -99,7 +99,7 @@ def test_diagnostic_metric_conversion_failure_does_not_discard_other_metrics(
     monkeypatch.setattr(
         analysis_adapter,
         "_run_diagnostic_backend",
-        lambda _workflow, _methods, parameter_values: _raw_result(
+        lambda _module_loader, _methods, parameter_values: _raw_result(
             {"Spec Summary": parameter_values[0]["measure"]}, "diagnostic.spec"
         ),
     )

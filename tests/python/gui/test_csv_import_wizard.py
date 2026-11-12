@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import os
 
+import pytest
+
 from PyQt6 import QtCore
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -37,7 +39,7 @@ def _new_csv_wizard():
 def _write_csv(path, *, quoted_study=False):
     study = '"Alpha, study"' if quoted_study else "Alpha"
     path.write_text(
-        "Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total,OR,Lower,Upper\n"
+        "Study Name,Year,Intervention events,Intervention total,Control events,Control total,OR,Lower,Upper\n"
         f"{study},2020,1,10,2,12,,,\n",
         encoding="utf-8",
     )
@@ -87,65 +89,45 @@ def test_csv_preview_keeps_readable_columns_and_owns_overflow(
         qapp.processEvents()
 
 
-def test_csv_input_changes_clear_stale_payload_until_reparse(tmp_path, monkeypatch, qapp):
+@pytest.mark.parametrize(
+    "control, invalid, valid",
+    [("delimter_le", ";", ","), ("quotechar_le", "'", '"')],
+    ids=["delimiter", "quote"],
+)
+def test_csv_selection_cancel_dialect_invalidation_and_recovery(
+    tmp_path, monkeypatch, qapp, control, invalid, valid
+):
     from rc_metastudio import main_wizard
 
-    csv_path = tmp_path / "studies.csv"
-    _write_csv(csv_path)
+    csv_path = tmp_path / "quoted-studies.csv"
+    _write_csv(csv_path, quoted_study=True)
     wizard, page = _new_csv_wizard()
-    shown = []
-    monkeypatch.setattr(
-        main_wizard.QFileDialog,
-        "getOpenFileName",
-        lambda **_kwargs: (str(csv_path), "csv files (*.csv)"),
-    )
-    monkeypatch.setattr(
-        main_wizard.QMessageBox,
-        "warning",
-        lambda *args, **_kwargs: shown.append(args),
-    )
+    selections = iter(((str(csv_path), "csv files (*.csv)"), ("", "csv files (*.csv)")))
+    monkeypatch.setattr(main_wizard.QFileDialog, "getOpenFileName", lambda **_kwargs: next(selections))
+    monkeypatch.setattr(main_wizard.QMessageBox, "warning", lambda *_args, **_kwargs: None)
     try:
         page._select_file()
         assert page.isComplete()
-        assert wizard.get_csv_data() is not None
+        payload = wizard.get_csv_data()
+        assert payload is not None
+        assert page.preview_table.item(0, 0).text() == "Alpha, study"
 
-        page.delimter_le.setText(";")
+        page._select_file()
+        assert page.isComplete()
+        assert wizard.get_csv_data() == payload
+        assert page.preview_table.rowCount() == 1
+        assert page.preview_table.item(0, 0).text() == "Alpha, study"
 
+        getattr(page, control).setText(invalid)
         assert page.import_status.text()
         assert not page.isComplete()
         assert wizard.get_csv_data() is None
         assert wizard.get_results()["csv_data"] is None
 
-        page.delimter_le.setText(",")
+        getattr(page, control).setText(valid)
         assert page.isComplete()
-        assert wizard.get_csv_data() is not None
-    finally:
-        wizard.close()
-        qapp.processEvents()
-
-
-def test_csv_file_selection_cancel_preserves_previous_payload(tmp_path, monkeypatch, qapp):
-    from rc_metastudio import main_wizard
-
-    csv_path = tmp_path / "studies.csv"
-    _write_csv(csv_path)
-    wizard, page = _new_csv_wizard()
-    selections = iter(((str(csv_path), "csv files (*.csv)"), ("", "csv files (*.csv)")))
-    monkeypatch.setattr(
-        main_wizard.QFileDialog,
-        "getOpenFileName",
-        lambda **_kwargs: next(selections),
-    )
-    try:
-        page._select_file()
-        assert page.isComplete()
-        assert wizard.get_csv_data() is not None
-
-        page._select_file()
-
-        assert page.isComplete()
-        assert wizard.get_csv_data() is not None
-        assert page.preview_table.rowCount() == 1
+        assert wizard.get_csv_data() == payload
+        assert page.preview_table.item(0, 0).text() == "Alpha, study"
     finally:
         wizard.close()
         qapp.processEvents()
@@ -170,40 +152,6 @@ def test_csv_excel_mode_disables_custom_dialect_controls(qapp):
         assert page.quotechar_le.isEnabled()
         assert page.delimiter_label.isEnabled()
         assert page.label_2.isEnabled()
-    finally:
-        wizard.close()
-        qapp.processEvents()
-
-
-def test_csv_quote_change_reparses_and_invalidates_payload(
-    tmp_path, monkeypatch, qapp
-):
-    from rc_metastudio import main_wizard
-
-    csv_path = tmp_path / "quoted-studies.csv"
-    _write_csv(csv_path, quoted_study=True)
-    wizard, page = _new_csv_wizard()
-    shown = []
-    monkeypatch.setattr(
-        main_wizard.QFileDialog,
-        "getOpenFileName",
-        lambda **_kwargs: (str(csv_path), "csv files (*.csv)"),
-    )
-    monkeypatch.setattr(
-        main_wizard.QMessageBox,
-        "warning",
-        lambda *args, **_kwargs: shown.append(args),
-    )
-    try:
-        page._select_file()
-        assert page.isComplete()
-        assert wizard.get_csv_data() is not None
-
-        page.quotechar_le.setText("'")
-
-        assert page.import_status.text()
-        assert not page.isComplete()
-        assert wizard.get_csv_data() is None
     finally:
         wizard.close()
         qapp.processEvents()

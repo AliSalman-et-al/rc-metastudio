@@ -108,6 +108,11 @@ def _empty_bundled_row(row):
 
 def _check_bundled(path, document):
     bundled = load_project(path)
+    manifest = json.loads((ROOT / "sample_projects/manifest.json").read_text(encoding="utf-8"))
+    replacements = next(item for item in manifest["projects"] if item["file"] == path.name).get("arm_labels", {})
+    for sheet in document.project["sheets"]:
+        for arm in sheet["arms"]:
+            arm["name"] = replacements.get(arm["name"], arm["name"])
     # Bundled v3 archives retain the historical empty entry row; legacy import omits it.
     for sheet, converted in zip(cast(list[dict], bundled.project['sheets']), document.project['sheets'], strict=True):
         ids = {r['id'] for r in converted['rows']}
@@ -148,7 +153,8 @@ def _check_file(path):
 def check():
     print('| file | pairs → sheets | equal |')
     print('| --- | --- | --- |')
-    for path in sorted((ROOT / 'sample_projects').glob('*.rcms')):
+    for legacy in sorted((ROOT / 'tests/fixtures/legacy-projects').glob('*.rcms')):
+        path = ROOT / 'sample_projects' / legacy.name
         _check_file(path)
 
 

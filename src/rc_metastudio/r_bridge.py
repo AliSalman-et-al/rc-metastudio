@@ -21,8 +21,7 @@ from rc_metastudio.analysis_method_labels import (
     method_display_label,
     normalize_available_method_labels,
 )
-from rc_metastudio import result_sections
-from rc_metastudio.result_sections import sentence_case_title as _sentence_case_title
+from rc_metastudio import result_formatting
 from rc_metastudio.analysis_errors import DiagnosticExecutionError
 from rc_metastudio.analysis_results import AnalysisResult, parse_analysis_result
 from rc_metastudio.study_effect_shapes import (
@@ -31,19 +30,9 @@ from rc_metastudio.study_effect_shapes import (
     normalize_effect_result,
 )
 from rc_metastudio.r_call_serialization import require_r_transaction, serialized_r_call as _serialized_r_call
-from rc_metastudio.meta_globals import (
-    BINARY,
-    CONTINUOUS,
-    EMPTY_VALS,
-    INVALID_CONFIDENCE_LEVEL_MESSAGE,
-    ONE_ARM_METRICS,
-    PERCENTAGE_DISPLAY_DIGITS,
-    TWO_ARM_METRICS,
-    TYPE_TO_STR_DICT,
-    normalize_confidence_level_params,
-    tabulate,
-    validate_confidence_level,
-)
+from rc_metastudio.analysis_catalog import CONTINUOUS, ONE_ARM_METRICS, TWO_ARM_METRICS, TYPE_TO_STR_DICT
+from rc_metastudio.analysis_validation import EMPTY_VALS, INVALID_CONFIDENCE_LEVEL_MESSAGE, normalize_confidence_level_params, validate_confidence_level
+from rc_metastudio.result_formatting import PERCENTAGE_DISPLAY_DIGITS, tabulate
 
 _P = ParamSpec("_P")
 _T = TypeVar("_T")
@@ -74,6 +63,16 @@ def serialized_r_call(function: Callable[_P, _T]) -> Callable[_P, _T]:
 
 def initialize_r():
     """Initialize embedded R explicitly, after the application shell is visible."""
+    try:
+        _initialize_rpy2()
+    except Exception as error:
+        raise r_runtime.AnalysisBackendUnavailableError(
+            "Unable to start the embedded R runtime. Install the pinned R/RCMetaR "
+            "runtime or repair the packaged integration kit, then restart RC MetaStudio."
+        ) from error
+
+
+def _initialize_rpy2():
     global _INITIALIZATION_ERROR, ro, rpy2, RRuntimeError, _rpy2_conversion, _rpy2_rchar_to_str
     if "ro" in globals():
         return
@@ -227,8 +226,6 @@ class RLibraryLoader:
     def __init__(self):
         initialize_r()
 
-    def load_meta(self):
-        return self._load_r_lib("meta", expected_version="8.5-0")
 
     def load_metafor(self):
         return self._load_r_lib("metafor")
@@ -547,9 +544,6 @@ def get_available_methods(
     return normalize_available_method_labels(r_object_to_python(methods))
 
 
-@serialized_r_call
-def get_method_description(method_name):
-    return execute_r_function("rcmetar.method.description", str(method_name))[0]
 
 
 @serialized_r_call
@@ -742,7 +736,6 @@ def dataset_to_simple_diagnostic_r_object(
     var_name="tmp_obj",
     metric="Sens",
     covs_to_include=None,
-    effects_on_disp_scale=False,
     studies=None,
 ):
     """This converts a DatasetTableModel to an RCMetaR OMData object. We use type DatasetTableModel
@@ -880,63 +873,8 @@ def _cov_ref_value(values):
     return ""
 
 
-def _r_source_string_literal(value):
-    text = str(value)
-    text = text.replace("\\", "\\\\")
-    text = text.replace("'", "\\'")
-    text = text.replace("\r", "\\r")
-    text = text.replace("\n", "\\n")
-    text = text.replace("\t", "\\t")
-    text = "".join(
-        (
-            "\\u%04x" % ord(character)
-            if ord(character) <= 0xFFFF
-            else "\\U%08x" % ord(character)
-        )
-        if ord(character) > 0x7F
-        else character
-        for character in text
-    )
-    return "'%s'" % text
 
 
-def covariate_to_r_expression(
-    cov, study_ids, dataset, named_list=True, return_covariate_values=False
-):
-    """The string is constructed so that the covariate
-    values are in the same order as the 'study_names'
-    list.
-    """
-    covariate_expression = None
-    if named_list:
-        covariate_expression = "%s=c(" % cov["name"]
-    else:
-        covariate_expression = "c("
-
-    covariate_values_by_study = {row.id: row.covariate_values.get(cov["id"]) for row in dataset.rows}
-
-    # get the study ids in the same order as the names
-    covariate_values = []
-
-    for study_id in study_ids:
-        if cov["data_type"] == CONTINUOUS:
-            if study_id in covariate_values_by_study:
-                covariate_values.append("%s" % covariate_values_by_study[study_id])
-            else:
-                covariate_values.append("NA")
-        else:
-            if study_id in covariate_values_by_study:
-                # factor; note the string.
-                covariate_values.append(
-                    _r_source_string_literal(covariate_values_by_study[study_id])
-                )
-            else:
-                covariate_values.append("NA")
-    covariate_expression += ",".join(covariate_values) + ")"
-
-    if return_covariate_values:
-        return (covariate_expression, covariate_values)
-    return covariate_expression
 
 
 @overload
@@ -1417,7 +1355,6 @@ def _regression_summary(fit, reports):
     return {"paragraphs": [], "tables": tables}
 
 
-
 def _insert_held_effects(fields, display, rows, *, digits=None):
     groups = fields.get("study_groups", ())
     display_indices = []
@@ -1431,7 +1368,7 @@ def _insert_held_effects(fields, display, rows, *, digits=None):
     digits = int(digits) if digits is not None else 4
     for index, row in zip(display_indices, rows):
         values = [list(display[key])[index] for key in ("y.disp", "lb.disp", "ub.disp")]
-        effects = [result_sections.format_effect_number(value, digits)
+        effects = [result_formatting.format_effect_number(value, digits)
                    if isinstance(value, (float, int)) and math.isfinite(value)
                    else _format_r_table_cell(value)
                    for value in values]
@@ -1664,7 +1601,7 @@ _RESULT_METADATA_KEYS = frozenset(
 def _add_result_text(texts, name, value, result, study_names):
     title = _display_section_name(name)
     if name == "References":
-        texts[title] = result_sections.format_references(value)
+        texts[title] = result_formatting.format_references(value)
         return
     if name in ("weights", "Weights"):
         texts["Weights"] = make_weights_str(result)
@@ -2224,7 +2161,7 @@ def _format_summary_label(name):
     # Keep one label policy for section titles and nested result values.  The
     # shared helper expands R's dotted/underscored identifiers and diagnostic
     # abbreviations without changing numeric/statistical content.
-    return result_sections.normalize_identifier_label(raw_name)
+    return result_formatting.normalize_identifier_label(raw_name)
 
 
 def _summary_section_name(parent_name, child_name):
@@ -2235,8 +2172,6 @@ def _summary_section_name(parent_name, child_name):
 
 def _display_section_name(name):
     return method_display_label(str(name))
-
-
 
 
 def _is_r_string_vector(r_object):
@@ -2390,7 +2325,7 @@ def _matrix_row_names(row_names, nrow, study_names):
     if len(names) < nrow:
         names.extend(str(index + 1) for index in range(len(names), nrow))
     names = _display_row_names(names, study_names)
-    return [result_sections.normalize_identifier_label(name) for name in names]
+    return [result_formatting.normalize_identifier_label(name) for name in names]
 
 
 def _display_row_names(row_names, study_names):
@@ -2480,7 +2415,7 @@ def _format_r_table_header(value):
         return "Upper bound"
     if compact == "median estimate":
         return "Median estimate"
-    return result_sections.normalize_identifier_label(normalized)
+    return result_formatting.normalize_identifier_label(normalized)
 
 
 def _format_result_text(text):

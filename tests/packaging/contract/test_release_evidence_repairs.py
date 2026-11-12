@@ -107,12 +107,6 @@ def test_bump_write_failure_restores_bytes(tmp_path, monkeypatch):
     assert {p: p.read_bytes() for p in before} == before
 
 
-def test_bump_success(tmp_path):
-    version_tree(tmp_path)
-    assert load('bump_version').main(['9.8.7', '--root', str(tmp_path), '--date', '2024-02-29']) == 0
-    assert 'Version: 9.8.7' in (tmp_path / 'r/RCMetaR/DESCRIPTION').read_text()
-
-
 @pytest.mark.parametrize('defect', ['aggregate', 'observation'])
 def test_exact_windows_smoke_rejects_sample_failure(defect):
     inspector = load('inspect_windows_deployment')
@@ -170,7 +164,7 @@ def test_kit_probe_digest_must_match_manifest(monkeypatch):
 
 
 def test_retained_symlink_escape(tmp_path):
-    module = load('macos_evidence')
+    module = load('macos_feasibility_evidence')
     root = tmp_path / 'evidence'
     root.mkdir()
     outside = tmp_path / 'outside'
@@ -188,7 +182,7 @@ def test_retained_symlink_escape(tmp_path):
 @pytest.mark.parametrize('diagnostic', ['packaged_phases', 'packaged_smoke', 'packaged_r_graph', 'r_profile_quarantine'])
 def test_standalone_diagnostics_reject_unrelated_contents(tmp_path, diagnostic):
     from tests.python.fast.test_qt6_macos_feasibility import _valid_evidence, _materialize_retained_evidence
-    module = load('macos_evidence')
+    module = load('macos_feasibility_evidence')
     evidence = _valid_evidence()
     _materialize_retained_evidence(evidence, tmp_path)
     module.validate_evidence(evidence, 'macos-arm64', evidence_dir=tmp_path,

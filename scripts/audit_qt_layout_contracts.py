@@ -13,9 +13,9 @@ from typing import TypeAlias, TypeVar
 import xml.etree.ElementTree as ET
 
 if __package__:
-    from scripts import qt_window_ownership
+    from scripts import qt_form_ownership_audit
 else:
-    import qt_window_ownership
+    import qt_form_ownership_audit
 
 
 LEGACY_HELPERS = (
@@ -116,7 +116,7 @@ SOURCE_EXCEPTION_RULES = {
     },
     "numeric-domain-control": {
         "paths": {
-            "calculator_routines.py",
+            "calculator_controls.py",
             "continuous_data_dialog.py",
             "diagnostic_data_dialog.py",
         },
@@ -869,7 +869,7 @@ def audit_repository(root: Path) -> list[Finding]:
     findings.extend(_audit_sources(source_dir))
     findings.extend(
         Finding(finding.path, "window-archetype", finding.detail)
-        for finding in qt_window_ownership.audit_top_level_form_ownership(
+        for finding in qt_form_ownership_audit.audit_top_level_form_ownership(
             forms_dir, source_dir
         )
     )

@@ -19,9 +19,9 @@ from dataclasses import dataclass, field
 from statistics import NormalDist
 from typing import Callable, Protocol
 
-from rc_metastudio import calculator_routines, name_validation, qt_text
-from rc_metastudio import r_backend, r_bridge
-from rc_metastudio.meta_globals import RATIO_DATA_TYPES, EVENT_RATES
+from rc_metastudio import calculator_controls, name_validation, qt_text
+from rc_metastudio import r_runtime, r_bridge
+from rc_metastudio.analysis_catalog import RATIO_DATA_TYPES, EVENT_RATES
 from rc_metastudio.ratio_data import RATIO_FIELDS
 
 from rc_metastudio.analysis_dataset import Dataset, StudyRow
@@ -37,16 +37,8 @@ from rc_metastudio.dataset_analysis_domain import (
     make_display_scale_converter,
     to_calculation_scale,
 )
-from rc_metastudio.meta_globals import (
-    BINARY_ONE_ARM_METRICS,
-    CONTINUOUS_ONE_ARM_METRICS,
-    DIAGNOSTIC_METRICS,
-    FACTOR,
-    is_a_float,
-    is_an_int,
-    is_empty,
-    validate_confidence_level,
-)
+from rc_metastudio.analysis_catalog import BINARY_ONE_ARM_METRICS, CONTINUOUS_ONE_ARM_METRICS, DIAGNOSTIC_METRICS, FACTOR
+from rc_metastudio.analysis_validation import is_float_convertible, is_an_int, is_empty, validate_confidence_level
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,7 +74,7 @@ class WorkspaceEditingContext:
     current_effect: str | None
     data_type: object
     outcome_subtype: str | None
-    arm_key: str
+    arm_key: tuple[str, ...]
     raw_columns: tuple[int, ...]
     outcome_columns: tuple[int, ...]
     include_column: int
@@ -170,7 +162,7 @@ class WorkspaceEditingService:
 
     def confidence_settings(self, level: object) -> ConfidenceSettings:
         validated = validate_confidence_level(level)
-        if r_backend.is_ready():
+        if r_runtime.is_ready():
             multiplier = self.bridge.get_confidence_multiplier_from_r(validated)
         else:
             tail = (1.0 + validated / 100.0) / 2.0
@@ -178,7 +170,7 @@ class WorkspaceEditingService:
         return ConfidenceSettings(float(validated), float(multiplier))
 
     def set_backend_confidence_level(self, level: float) -> None:
-        if r_backend.is_ready():
+        if r_runtime.is_ready():
             self.bridge.set_confidence_level(level)
 
     def preview_raw_effects(
@@ -208,7 +200,7 @@ class WorkspaceEditingService:
         effect: str | None,
         n1: object = None,
     ):
-        if not r_backend.is_ready():
+        if not r_runtime.is_ready():
             return lambda value: None
         return make_display_scale_converter(self.bridge, data_type, effect, n1)
 
@@ -451,7 +443,7 @@ class WorkspaceEditingService:
             return "Raw data needs to be numeric."
         if qt_text.is_blank(text):
             return None
-        if not is_a_float(text):
+        if not is_float_convertible(text):
             return "Raw data needs to be numeric."
         position = context.raw_columns.index(target.column)
         if context.data_type == EVENT_RATES:
@@ -544,7 +536,7 @@ class WorkspaceEditingService:
             return "Outcomes must be numeric."
         if qt_text.is_blank(text):
             return None
-        if not is_a_float(text):
+        if not is_float_convertible(text):
             return "Outcomes must be numeric."
         unit = self._analysis_unit(dataset, study, context)
         previous_display = self._previous_display_outcome(
@@ -596,7 +588,7 @@ class WorkspaceEditingService:
             return None
         candidate = list(previous_display)
         candidate[outcome_index] = number
-        ok, message = calculator_routines.between_bounds(
+        ok, message = calculator_controls.validate_confidence_interval_order(
             est=candidate[0], low=candidate[1], high=candidate[2]
         )
         return None if ok else message
@@ -614,7 +606,8 @@ class WorkspaceEditingService:
         if error:
             return AppliedWorkspaceEdit(error=error)
         unit = self._analysis_unit(dataset, study, context)
-        old_unit = copy.deepcopy(unit)
+        snapshot = unit.copy_for_edit()
+        included_before_edit = study.include
         try:
             position = context.raw_columns.index(target.column)
             per_group = len(unit.get_raw_data_for_arm(context.arm_names[0]))
@@ -623,12 +616,12 @@ class WorkspaceEditingService:
                 "" if qt_text.is_blank(value) else float(qt_text.normalize_decimal_text(value)[0])
             )
             if recalculate is None:
-                self.update_outcome_if_possible(dataset, study.id, context)
+                self.update_effect_previews_if_possible(dataset, study.id, context)
             else:
                 recalculate(target.row)
         except Exception as exc:
-            unit.__dict__.clear()
-            unit.__dict__.update(copy.deepcopy(old_unit.__dict__))
+            unit.adopt_calculated_state(snapshot)
+            study.include = included_before_edit
             return AppliedWorkspaceEdit(error=f"Could not compute study effects from the edited raw data: {exc}")
         return AppliedWorkspaceEdit()
 
@@ -740,7 +733,7 @@ class WorkspaceEditingService:
         except ValueError:
             return None, False
 
-    def update_outcome_if_possible(
+    def update_effect_previews_if_possible(
         self,
         dataset: Dataset,
         row_id: str,
@@ -759,24 +752,24 @@ class WorkspaceEditingService:
         complete = self._raw_data_is_complete_for_context(raw_data, context)
         if update_inclusion and self._should_clear_inclusion(unit, context):
             study.include = False
-        if complete and not r_backend.is_ready():
+        if complete and not r_runtime.is_ready():
             if update_inclusion:
                 study.include = not study.manually_excluded
             return
         if complete:
-            self._calculate_complete_outcome(
+            self._calculate_complete_effect_previews(
                 study, unit, raw_data, context, update_inclusion=update_inclusion
             )
         elif not raw_data_is_empty(raw_data):
-            self._clear_incomplete_outcome(unit, context)
+            self._clear_incomplete_effect_previews(unit, context)
 
     def _update_ratio_outcome(self, study, unit, raw_data, context, update_inclusion):
         self._clear_effect_and_display_ci(unit, context.current_effect, context)
         record = unit.ratio_input(context.arm_names)
         ready = record.ready(raw_data, metric=context.current_effect)
-        if ready and record.selected_source(raw_data, metric=context.current_effect) == "raw" and r_backend.is_ready():
+        if ready and record.selected_source(raw_data, metric=context.current_effect) == "raw" and r_runtime.is_ready():
             est, lower, upper = r_bridge.incidence_rate_effect_preview(raw_data, context.confidence_level)
-            self._set_calculated(unit, context.current_effect, context, est, lower, upper)
+            self._store_derived_effect_preview(unit, context.current_effect, context, est, lower, upper)
         if update_inclusion:
             study.include = not study.manually_excluded and ready
 
@@ -803,7 +796,7 @@ class WorkspaceEditingService:
             )
         return not self._has_point_estimate(unit, context)
 
-    def _calculate_complete_outcome(
+    def _calculate_complete_effect_previews(
         self, study, unit, raw_data, context, *, update_inclusion=True
     ) -> None:
         if update_inclusion and not study.manually_excluded:
@@ -815,14 +808,14 @@ class WorkspaceEditingService:
             if not isinstance(calculated, dict):
                 raise TypeError("diagnostic effects must be a metric mapping")
             for metric, (est, lower, upper) in calculated.items():
-                self._set_calculated(unit, metric, context, est, lower, upper)
+                self._store_derived_effect_preview(unit, metric, context, est, lower, upper)
             return
         if not isinstance(calculated, tuple):
             raise TypeError("non-diagnostic effects must be a result tuple")
         (est, lower, upper), n1 = calculated
-        self._set_calculated(unit, context.current_effect, context, est, lower, upper, n1)
+        self._store_derived_effect_preview(unit, context.current_effect, context, est, lower, upper, n1)
 
-    def _clear_incomplete_outcome(self, unit, context) -> None:
+    def _clear_incomplete_effect_previews(self, unit, context) -> None:
         metrics = (
             DIAGNOSTIC_METRICS
             if context.data_type == DIAGNOSTIC
@@ -840,13 +833,13 @@ class WorkspaceEditingService:
             context.confidence_multiplier,
         )
 
-    def _set_calculated(
+    def _store_derived_effect_preview(
         self, unit: AnalysisUnit, metric: str | None, context: WorkspaceEditingContext,
         estimate: object, lower: object, upper: object, n1: object = None,
     ) -> None:
         if metric is None:
             return
-        unit.set_effect_and_ci(metric, context.arm_key, estimate, lower, upper, confidence_multiplier=context.confidence_multiplier)
+        unit.set_derived_effect_preview(metric, context.arm_key, estimate, lower, upper, confidence_multiplier=context.confidence_multiplier)
         unit.calculate_display_effect_and_ci(
             metric,
             context.arm_key,

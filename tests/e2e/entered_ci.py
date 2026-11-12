@@ -6,7 +6,7 @@ def check(app, window, kind, launch, text, family, record):
     from advanced_workflows import modal, click
     from rc_metastudio import r_bridge
     from rc_metastudio.confidence_level_dialog import ConfidenceLevelDialog
-    from tests.e2e.audit_round3 import analyze_existing
+    from tests.e2e.analysis_presentation_workflows import analyze_existing
 
     def confidence(level):
         def change(dialog):

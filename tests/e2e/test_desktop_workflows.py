@@ -9,14 +9,14 @@ from pathlib import Path
 
 import pytest
 
-from scripts.verify_rcms import SCENARIOS
+from scripts.verify_rcms import QUALIFICATION_SCENARIOS
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
 @pytest.mark.parametrize(
     "scenario",
-    [scenario for scenario in SCENARIOS if scenario not in {"doctor", "ui-crawl"}],
+    QUALIFICATION_SCENARIOS,
 )
 def test_desktop_workflow(scenario):
     # The same launcher owns timeouts, isolation and durable evidence in CI.

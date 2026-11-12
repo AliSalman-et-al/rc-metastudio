@@ -19,8 +19,8 @@ _DRIVER = textwrap.dedent(
     os.environ["RCMS_REQUIRE_IN_PROCESS_RPY2"] = "1"
     sys.path.insert(0, os.path.join(repo_root, "src"))
 
-    from rc_metastudio import r_backend
-    r_backend.install_r_backend()
+    from rc_metastudio import r_bridge
+    r_bridge.initialize_r()
     try:
         from rc_metastudio import r_bridge
         from rc_metastudio.r_call_serialization import r_transaction

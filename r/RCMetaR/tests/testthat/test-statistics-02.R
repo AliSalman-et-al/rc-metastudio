@@ -1,4 +1,4 @@
-s2_params <- function(measure="TXMean", ...) modifyList(list(measure=measure,
+s2_params <- function(measure="Mean", ...) modifyList(list(measure=measure,
  conf.level=90, digits=8, rm.method="FE", inference.method="z", supress.output=TRUE,
  create.plot=FALSE, write.to.file=FALSE,
  fp_xticks="[default]",fp_plot_lb="[default]",fp_plot_ub="[default]",fp_xlabel="[default]",

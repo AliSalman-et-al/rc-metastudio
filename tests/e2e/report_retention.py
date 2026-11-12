@@ -14,7 +14,7 @@ from docx import Document
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QTextCursor, QTextDocument, QTextTable
 from rc_metastudio.manuscript_report import write_docx, write_pdf
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 
 
 def numeric_tokens(text):

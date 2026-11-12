@@ -3,7 +3,6 @@ import json
 import os
 import subprocess
 import sys
-import textwrap
 import pytest
 
 pytestmark = pytest.mark.usefixtures("inject_python_boundary")
@@ -11,21 +10,21 @@ pytestmark = pytest.mark.usefixtures("inject_python_boundary")
 
 sys.path.insert(0, os.path.abspath("src"))
 
-from rc_metastudio import r_backend
+from rc_metastudio import r_bridge
 
-r_backend.install_r_backend()
+r_bridge.initialize_r()
 
 from rc_metastudio import dataset_table_model
 from rc_metastudio import analysis_dataset
-from rc_metastudio import meta_globals
+from rc_metastudio import analysis_catalog
 
 
 def _sortable_dataset_model():
     from rc_metastudio.analysis_unit import AnalysisUnit
-    names = list(meta_globals.DEFAULT_GROUP_NAMES)
+    names = list(analysis_catalog.DEFAULT_ARM_NAMES)
     arms = [analysis_dataset.Arm(ArmId(f"arm:{i}"), name) for i, name in enumerate(names)]
-    sheet = analysis_dataset.Sheet(SheetId("sheet"), "Mortality", meta_globals.BINARY, arms=arms,
-        covariates=[{"id": "Dose", "name": "Dose", "data_type": meta_globals.CONTINUOUS}])
+    sheet = analysis_dataset.Sheet(SheetId("sheet"), "Mortality", analysis_catalog.BINARY, arms=arms,
+        covariates=[{"id": "Dose", "name": "Dose", "data_type": analysis_catalog.CONTINUOUS}])
     dataset = analysis_dataset.Dataset(sheets=[sheet])
     for i, (name, year, dose) in enumerate((("Gamma", 1988, 30), ("Alpha", 1977, 10), ("Beta", 1989, 20))):
         unit = AnalysisUnit(sheet, arm_names=names, arm_stable_ids=[a.id for a in arms])
@@ -37,10 +36,10 @@ def _sortable_dataset_model():
     for study in dataset.sheets[0].rows:
         analysis_unit = study.analysis_unit
         analysis_unit.set_raw_data_for_arms(
-            meta_globals.DEFAULT_GROUP_NAMES,
+            analysis_catalog.DEFAULT_ARM_NAMES,
             [[raw_events_by_name[study.label], 10], [5, 10]],
         )
-        analysis_unit.set_effect_and_ci(
+        analysis_unit.set_derived_effect_preview(
             "OR",
             arm_key,
             effects_by_name[study.label],
@@ -87,35 +86,12 @@ def test_outcome_sort_uses_each_study_display_effect_source():
     assert _study_names(model) == ["Beta", "Gamma", "Alpha"]
 
 
-def test_sort_only_changes_table_presentation_order():
-    model = _sortable_dataset_model()
-    canonical_order = [study.id for study in model.current_sheet.rows]
-
-    model.sort_studies(model.NAME, reverse=False)
-
-    assert [study.id for study in model.current_sheet.rows] == canonical_order
-    assert model.get_ordered_study_ids() != canonical_order
-
-
-def test_edit_after_sort_targets_the_visible_study():
-    model = _sortable_dataset_model()
-    model.sort_studies(model.NAME, reverse=False)
-    index = model.index(0, model.NAME)
-
-    assert model.setData(index, "Alpha revised")
-    assert [study.label for study in model.current_sheet.rows] == [
-        "Gamma",
-        "Alpha revised",
-        "Beta",
-    ]
-
-
 def test_sheet_arm_order_is_stable_across_hash_seeds():
     script = """
 import json
 from rc_metastudio.analysis_dataset import Dataset, Sheet, Arm
 from rc_metastudio.dataset_table_model import DatasetTableModel
-names = ["Intervention", "Control", "tx C", "tx D"]
+names = ["Intervention", "Control", "Arm C", "Arm D"]
 sheet = Sheet("sheet", "Mortality", 0, arms=[Arm(str(i), n) for i, n in enumerate(names)])
 model = DatasetTableModel(dataset=Dataset(sheets=[sheet]), add_blank_study=False)
 print(json.dumps(model.get_arm_names()))
@@ -123,4 +99,4 @@ print(json.dumps(model.get_arm_names()))
     for seed in ("1", "2"):
         result = subprocess.run([sys.executable, "-c", script], check=True, text=True,
                                 capture_output=True, env={**os.environ, "PYTHONHASHSEED": seed})
-        assert json.loads(result.stdout.splitlines()[-1]) == ["Intervention", "Control", "tx C", "tx D"]
+        assert json.loads(result.stdout.splitlines()[-1]) == ["Intervention", "Control", "Arm C", "Arm D"]

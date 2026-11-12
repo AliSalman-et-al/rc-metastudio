@@ -33,10 +33,6 @@ def protect_scroll_settings(scroll_area: QAbstractScrollArea) -> QObject:
     return policy
 
 
-OUTCOME_NAVIGATION_ICON_EXTENT = 24
-OUTCOME_NAVIGATION_CONTROL_EXTENT = 32
-ICON_ONLY_ACTION_ICON_EXTENT = 24
-ICON_ONLY_ACTION_CONTROL_EXTENT = 32
 PRIMARY_ACTION_ICON_EXTENT = 24
 PRIMARY_ACTION_CONTROL_HEIGHT = 36
 TOOLBAR_ICON_EXTENT = 28
@@ -80,37 +76,6 @@ def configure_analysis_action_icon(action, icon_name):
     action.setIcon(icon)
 
 
-def configure_navigation_tool_buttons(buttons):
-    """Give outcome-navigation controls a coherent cross-platform scale."""
-    for button in buttons:
-        button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        # layout-audit: allow=semantic-icon-control; reason=outcome navigation uses a surface-specific optical icon size
-        button.setIconSize(
-            QSize(OUTCOME_NAVIGATION_ICON_EXTENT, OUTCOME_NAVIGATION_ICON_EXTENT)
-        )
-        # layout-audit: allow=semantic-icon-control; reason=outcome navigation requires a reliable compact click target
-        button.setMinimumSize(
-            QSize(OUTCOME_NAVIGATION_CONTROL_EXTENT, OUTCOME_NAVIGATION_CONTROL_EXTENT)
-        )
-        button.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-
-
-def configure_structure_action_buttons(buttons, icon_name):
-    """Give structural changes visible names and dependable targets."""
-    for button, target in buttons:
-        button.setIcon(QIcon(":/icons/actions/{}.svg".format(icon_name)))
-        button.setText(icon_name.title())
-        button.setAccessibleName(f"{icon_name.title()} {target}")
-        button.setToolTip(f"{icon_name.title()} {target}")
-        # layout-audit: allow=semantic-icon-control; reason=dataset action icons use a surface-specific optical size beside their text
-        button.setIconSize(
-            QSize(ICON_ONLY_ACTION_ICON_EXTENT, ICON_ONLY_ACTION_ICON_EXTENT)
-        )
-        # layout-audit: allow=semantic-icon-control; reason=dataset actions need a reliable click target that fits the visible label
-        button.setMinimumHeight(ICON_ONLY_ACTION_CONTROL_EXTENT)
-        button.setMinimumWidth(button.sizeHint().width())
-
-
 def configure_primary_action_buttons(buttons):
     """Give text-and-icon workflow actions an optically useful icon size."""
     for button in buttons:
@@ -146,37 +111,6 @@ def configure_context_label(label):
     policy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
     policy.setHeightForWidth(True)
     label.setSizePolicy(policy)
-
-
-def configure_compact_table(table, stretch_columns=False, fill_available_width=False):
-    """Fit a compact Transactional table once; native scrolling owns overflow."""
-    if table is None:
-        return
-
-    table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-    # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
-    table.setMinimumWidth(0)
-    header = table.horizontalHeader()
-    header.setStretchLastSection(False)
-
-    if stretch_columns:
-        header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-    else:
-        header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
-        table.resizeColumnsToContents()
-        header.setStretchLastSection(fill_available_width)
-
-    table.resizeRowsToContents()
-    header_height = 0 if header.isHidden() else header.sizeHint().height()
-    table_height = (
-        header_height
-        + sum(table.rowHeight(row) for row in range(table.rowCount()))
-        + 2 * table.frameWidth()
-    )
-    # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
-    table.setMinimumHeight(table_height)
-    # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
-    table.setMaximumHeight(table_height)
 
 
 def configure_spreadsheet_table_view(table_view):

@@ -8,7 +8,6 @@ import os
 import shutil
 import subprocess
 import sys
-import textwrap
 import tempfile
 from pathlib import Path
 from uuid import uuid4
@@ -19,28 +18,6 @@ import pytest
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 _REQUIRED = os.getenv("RCMS_R_STACK_REQUIRED") == "1"
-
-RCMETAR_BOOTSTRAP = textwrap.dedent(
-    r"""
-    repo <- normalizePath(__REPO_ROOT__, winslash = "/")
-    suppressPackageStartupMessages(source(file.path(repo, "r/RCMetaR/R/classes.R")))
-    suppressPackageStartupMessages(source(file.path(repo, "r/RCMetaR/R/analysis_contracts.R")))
-    suppressPackageStartupMessages(source(file.path(repo, "r/RCMetaR/R/analysis_output.R")))
-    suppressPackageStartupMessages(source(file.path(repo, "r/RCMetaR/R/display.R")))
-    suppressPackageStartupMessages(source(file.path(repo, "r/RCMetaR/R/results_display.R")))
-    suppressPackageStartupMessages(source(file.path(repo, "r/RCMetaR/R/rcmetar-core.R")))
-    suppressPackageStartupMessages(source(file.path(repo, "r/RCMetaR/R/diagnostic_methods.R")))
-    """
-).strip()
-
-
-def build_r_driver(driver: str) -> str:
-    """Expand the canonical direct-source bootstrap into an R driver."""
-
-    bootstrap = RCMETAR_BOOTSTRAP.replace(
-        "__REPO_ROOT__", repr(REPO_ROOT).replace("\\", "/")
-    )
-    return textwrap.dedent(driver).replace("__RCMETAR_BOOTSTRAP__", bootstrap)
 
 
 def run_r_driver(driver: str) -> None:

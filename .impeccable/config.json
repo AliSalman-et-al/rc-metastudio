@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "docs/ux-audit/splash/direction.html"
+        ],
+        "createdAt": "2026-11-09T10:48:42.975Z",
+        "reason": "Claude: design reference mock; panel text is absolutely positioned with 56px left and 40px right insets inside a 440px panel, so no text sits near an edge"
+      }
+    ]
+  }
+}

@@ -134,6 +134,72 @@ def test_xlsx_unmapped_date_year(tmp_path: Path) -> None:
     assert result.rows == (("Alpha", "2022"),)
 
 
+def test_headerless_xlsx_keeps_first_study_and_converts_its_year(tmp_path: Path) -> None:
+    # Failure modes: consuming a study as a header, and skipping first-row
+    # date/error handling because worksheet row zero is assumed to be a header.
+    from datetime import datetime
+    from openpyxl import Workbook
+
+    path = tmp_path / "headerless.xlsx"
+    workbook = Workbook()
+    sheet = workbook.active
+    assert sheet is not None
+    sheet.append(["Alpha", datetime(2022, 1, 1)])
+    sheet.append(["Beta", 2023])
+    workbook.save(path)
+    workbook.close()
+
+    result = parse_csv(path, expected_headers=["Study", "Year"],
+                       has_headers=False, from_excel=True)
+    assert result.headers == ()
+    assert result.rows == (("Alpha", "2022"), ("Beta", "2023"))
+
+
+def test_xlsx_second_open_failure_closes_first_workbook(tmp_path, monkeypatch):
+    # A second open may fail after the formula workbook acquired a ZIP handle.
+    import openpyxl
+    from rc_metastudio.csv_import import read_xlsx
+
+    path = tmp_path / "formula.xlsx"
+    workbook = openpyxl.Workbook()
+    workbook.active.append(["Study", "Year"])
+    workbook.active.append(["Alpha", "=2020+1"])
+    workbook.save(path)
+    workbook.close()
+    load = openpyxl.load_workbook
+    closed = []
+
+    def opening(*args, **kwargs):
+        if kwargs.get("data_only"):
+            raise OSError("second open failed")
+        book = load(*args, **kwargs)
+        close = book.close
+        def closing():
+            closed.append(True)
+            close()
+        book.close = closing
+        return book
+
+    monkeypatch.setattr(openpyxl, "load_workbook", opening)
+    with pytest.raises(CsvImportError, match="Could not read"):
+        read_xlsx(path)
+    assert closed == [True]
+
+
+def test_xlsx_rejects_excessive_worksheet_extent_before_materializing(tmp_path):
+    # Formatting or one distant cell must not allocate a giant rectangular grid.
+    from openpyxl import Workbook
+    from rc_metastudio.csv_import import read_xlsx
+
+    path = tmp_path / "extent.xlsx"
+    workbook = Workbook()
+    workbook.active["A100001"] = "too far"
+    workbook.save(path)
+    workbook.close()
+    with pytest.raises(CsvImportError, match="limit"):
+        read_xlsx(path)
+
+
 @pytest.mark.parametrize("mapping", [None, (0, 1)])
 def test_storage_boundary_csv_rejects_fields_beyond_header(tmp_path, mapping):
     path = tmp_path / "width.csv"

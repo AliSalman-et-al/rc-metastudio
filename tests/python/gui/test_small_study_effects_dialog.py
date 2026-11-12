@@ -1,0 +1,378 @@
+from __future__ import annotations
+from types import SimpleNamespace
+
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QStyle
+
+from rc_metastudio.qt6_ui import prepare_generated_ui_imports
+from qt_test_support import required
+
+prepare_generated_ui_imports()
+
+from rc_metastudio import small_study_effects, small_study_effects_dialog, r_bridge
+
+
+class _Model:
+    def __init__(self, data_type, metric, confidence_level=95.0):
+        self._data_type = data_type
+        self.current_effect = metric
+        self._confidence_level = confidence_level
+        self.studies = [SimpleNamespace(include=True), SimpleNamespace(include=False)]
+
+    def get_studies(self):
+        return [study for study in self.studies if study.include]
+
+    def get_current_raw_data(self):
+        return []
+
+    def get_current_data_type(self):
+        return self._data_type
+
+    def get_current_data_subtype(self):
+        return None
+
+    def get_confidence_level(self):
+        return self._confidence_level
+
+
+def _method(method, available, role="none", reason=""):
+    return {
+        "method": method,
+        "available": available,
+        "reason": reason,
+        "usable.studies": 10,
+        "required.inputs": [],
+        "warnings": [],
+        "role": role,
+    }
+
+
+def _report(data_type, metric, methods, raw_data_available=True, warnings=None):
+    return {
+        "data.type": data_type,
+        "metric": metric,
+        "usable.studies": 10,
+        "raw.data.available": raw_data_available,
+        "standard.error.range": [0.1, 0.4],
+        "package.versions": {"meta": "8.5-0", "metafor": "5.0-1"},
+        "warnings": [] if warnings is None else warnings,
+        "methods": methods,
+    }
+
+
+def test_small_study_effect_options_explain_jargon_and_have_label_buddies(
+    qapp, monkeypatch
+):
+    report = _report("binary", "OR", [_method("classical-egger", True, "primary")])
+    monkeypatch.setattr(
+        r_bridge,
+        "run_small_study_effects",
+        lambda *args, **kwargs: report,
+    )
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("binary", "OR"))
+    try:
+        for control in (
+            dialog.sampling_confidence_combo,
+            dialog.contour_levels_edit,
+            dialog.trim_fill_estimator_combo,
+            dialog.trim_fill_side_combo,
+            dialog.trim_fill_model_combo,
+            dialog.style_combo,
+            dialog.point_size_spin,
+            dialog.label_policy_combo,
+        ):
+            assert control.accessibleName()
+            assert control.accessibleDescription()
+            assert control.toolTip()
+
+        assert (
+            dialog.sampling_confidence_label.buddy()
+            is dialog.sampling_confidence_combo
+        )
+        assert dialog.contour_levels_label.buddy() is dialog.contour_levels_edit
+        assert (
+            dialog.trim_fill_estimator_label.buddy()
+            is dialog.trim_fill_estimator_combo
+        )
+        assert dialog.trim_fill_side_label.buddy() is dialog.trim_fill_side_combo
+        assert dialog.trim_fill_model_label.buddy() is dialog.trim_fill_model_combo
+        assert dialog.style_label.buddy() is dialog.style_combo
+        assert dialog.point_size_label.buddy() is dialog.point_size_spin
+        assert dialog.label_policy_label.buddy() is dialog.label_policy_combo
+
+        assert "tau-squared" in dialog.include_tau2_check.toolTip()
+        assert "established" in dialog.trim_fill_estimator_combo.toolTip()
+        assert "left or right" in dialog.trim_fill_side_combo.toolTip()
+        assert "common-effect" in dialog.trim_fill_model_combo.toolTip()
+        assert "large-study limit" in dialog.extrapolation_check.toolTip()
+    finally:
+        dialog.close()
+
+
+def test_dialog_keeps_researcher_labels_readable_at_high_dpi(qapp, monkeypatch):
+    report = _report(
+        "binary",
+        "OR",
+        [_method("classical-egger", True, "primary")],
+    )
+    monkeypatch.setattr(
+        r_bridge,
+        "run_small_study_effects",
+        lambda *args, **kwargs: report,
+    )
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("binary", "OR"))
+    try:
+        dialog.show()
+        qapp.processEvents()
+        assert dialog.minimumWidth() >= small_study_effects_dialog.SMALL_STUDY_EFFECTS_MIN_WIDTH
+        assert dialog.width() >= small_study_effects_dialog.SMALL_STUDY_EFFECTS_MIN_WIDTH
+        assert dialog.width() >= min(
+            small_study_effects_dialog.SMALL_STUDY_EFFECTS_PREFERRED_WIDTH,
+            required(dialog.screen(), "dialog screen").availableGeometry().width(),
+        )
+        assert dialog.automatic_test_label.wordWrap()
+    finally:
+        dialog.close()
+
+
+def test_dialog_form_surfaces_never_introduce_horizontal_scrollbars(
+    qapp, monkeypatch
+):
+    report = _report("binary", "OR", [_method("classical-egger", True, "primary")])
+    monkeypatch.setattr(
+        r_bridge,
+        "run_small_study_effects",
+        lambda *args, **kwargs: report,
+    )
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("binary", "OR"))
+    try:
+        dialog.show()
+        qapp.processEvents()
+        dialog._layout_controller.request_content_refit()
+        qapp.processEvents()
+        dialog.tabs.setCurrentWidget(dialog.plots_tab)
+        qapp.processEvents()
+        for scroll_area in (dialog.methods_scroll, dialog.plots_scroll):
+            assert (
+                scroll_area.horizontalScrollBarPolicy()
+                == Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+            )
+            assert required(
+                scroll_area.horizontalScrollBar(), "horizontal scrollbar"
+            ).maximum() == 0
+
+        # The long tau² option is a useful sentinel for the original defect:
+        # it must remain wholly reachable in the content viewport.
+        checkbox = dialog.include_tau2_check
+        style = required(checkbox.style(), "checkbox style")
+        indicator_width = style.pixelMetric(
+            QStyle.PixelMetric.PM_IndicatorWidth, None, checkbox
+        )
+        label_spacing = style.pixelMetric(
+            QStyle.PixelMetric.PM_CheckBoxLabelSpacing, None, checkbox
+        )
+        required_width = (
+            indicator_width
+            + label_spacing
+            + checkbox.fontMetrics().horizontalAdvance(checkbox.text())
+        )
+        assert checkbox.width() >= required_width
+        methods_viewport = required(
+            dialog.methods_scroll.viewport(), "methods viewport"
+        )
+        assert methods_viewport.width() >= required_width
+        dialog.methods_scroll.ensureWidgetVisible(dialog.include_tau2_check)
+        qapp.processEvents()
+        top_left = dialog.include_tau2_check.mapTo(
+            methods_viewport, dialog.include_tau2_check.rect().topLeft()
+        )
+        bottom_right = dialog.include_tau2_check.mapTo(
+            methods_viewport, dialog.include_tau2_check.rect().bottomRight()
+        )
+        assert top_left.x() >= 0
+        assert bottom_right.x() < methods_viewport.width()
+    finally:
+        dialog.close()
+
+
+def test_diagnostic_request_does_not_select_unavailable_deeks(qapp, monkeypatch):
+    report = _report(
+        "diagnostic",
+        "DOR",
+        [_method("deeks", False, reason="Complete TP/FN/FP/TN counts are required.")],
+        raw_data_available=False,
+    )
+    monkeypatch.setattr(
+        r_bridge,
+        "run_small_study_effects",
+        lambda *args, **kwargs: report,
+    )
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("diagnostic", "DOR"))
+    try:
+        assert dialog._request().to_mapping()["tests"] == []
+        assert dialog._request().to_mapping()["funnels"] == ["deeks"]
+        assert dialog.sensitivity_group.isHidden()
+    finally:
+        dialog.close()
+
+
+def test_correction_policy_refreshes_authoritative_or_routing(qapp, monkeypatch):
+    policies = []
+
+    def preview(_model, request, preview=False):
+        policy = request.get("correction.policy")
+        policies.append(policy)
+        primary = "rucker-as-re" if policy == "All studies" else "harbord"
+        return _report(
+            "binary",
+            "OR",
+            [_method(primary, True, "primary")],
+        )
+
+    monkeypatch.setattr(
+        r_bridge, "run_small_study_effects", preview
+    )
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("binary", "OR"))
+    try:
+        assert dialog.automatic_test_label.text() == "Primary: Harbord"
+        dialog.correction_policy_combo.setCurrentText("All studies")
+        assert dialog.automatic_test_label.text() == "Primary: Rücker AS+RE"
+        assert "All studies" in policies
+    finally:
+        dialog.close()
+
+
+def test_context_is_compact_and_distinguishes_included_and_eligible_counts(
+    qapp, monkeypatch
+):
+    report = _report("continuous", "MD", [_method("classical-egger", True, "primary")])
+    monkeypatch.setattr(
+        r_bridge,
+        "run_small_study_effects",
+        lambda *args, **kwargs: report,
+    )
+    model = _Model("continuous", "MD")
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(model)
+    try:
+        assert dialog.context_label.text() == (
+            "Continuous  ·  Mean difference  ·  1 included  ·  10 eligible"
+        )
+    finally:
+        dialog.close()
+
+
+def test_singleton_r_warning_is_accepted_at_dialog_boundary(qapp, monkeypatch):
+    report = _report(
+        "continuous",
+        "MD",
+        [_method("classical-egger", True, "primary")],
+        warnings="Observed standard-error range",
+    )
+    monkeypatch.setattr(
+        r_bridge,
+        "run_small_study_effects",
+        lambda *args, **kwargs: report,
+    )
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("continuous", "MD"))
+    try:
+        assert dialog.automatic_test_label.text() == "Primary: Classical Egger"
+    finally:
+        dialog.close()
+
+
+def test_correction_group_is_hidden_without_raw_count_eligibility(qapp, monkeypatch):
+    report = _report(
+        "continuous", "MD", [_method("classical-egger", True)], raw_data_available=False
+    )
+    monkeypatch.setattr(
+        r_bridge,
+        "run_small_study_effects",
+        lambda *args, **kwargs: report,
+    )
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("continuous", "MD"))
+    try:
+        assert dialog.correction_group.isHidden()
+        assert not dialog.correction_policy_combo.isEnabled()
+    finally:
+        dialog.close()
+
+
+def test_correction_group_is_hidden_for_one_arm_proportion(qapp, monkeypatch):
+    report = _report("binary", "PR", [], raw_data_available=True)
+    captured = []
+
+    def preview(_model, request, preview=False):
+        captured.append(request)
+        return report
+
+    monkeypatch.setattr(
+        r_bridge, "run_small_study_effects", preview
+    )
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("binary", "PR"))
+    try:
+        assert dialog.correction_group.isHidden()
+        assert not dialog.correction_policy_combo.isEnabled()
+        assert captured
+        assert all("correction.policy" not in request for request in captured)
+        assert "correction.policy" not in dialog._request().to_mapping()
+    finally:
+        dialog.close()
+
+
+def test_failure_is_reported_in_dedicated_label(qapp, monkeypatch):
+    report = _report("continuous", "MD", [_method("classical-egger", True)])
+    monkeypatch.setattr(
+        r_bridge,
+        "run_small_study_effects",
+        lambda *args, **kwargs: report,
+    )
+    monkeypatch.setattr(
+        small_study_effects,
+        "execute_small_study_effects",
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("run failed")),
+    )
+    monkeypatch.setattr(
+        small_study_effects_dialog.app_error_handler,
+        "handle_exception",
+        lambda *args, **kwargs: None,
+    )
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("continuous", "MD"))
+    try:
+        dialog.run()
+        assert dialog.failure_label.text() == "run failed"
+        assert not dialog.failure_label.isHidden()
+    finally:
+        dialog.close()
+
+
+def test_output_confidence_and_unique_sensitivity_choices(qapp, monkeypatch):
+    monkeypatch.setattr(r_bridge, "run_small_study_effects", lambda *a, **k:
+        _report("continuous", "MD", [_method("classical-egger", True, "primary")]))
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("continuous", "MD", 90))
+    try:
+        dialog.sampling_confidence_combo.setCurrentText("99")
+        request = dialog._request().to_mapping()
+        assert request["conf.level"] == 90
+        assert request["funnel.sampling.conf.level"] == [99.0]
+        for combo in (dialog.trim_fill_estimator_combo, dialog.trim_fill_side_combo, dialog.trim_fill_model_combo):
+            choices = [combo.itemText(i) for i in range(combo.count())]
+            assert len(choices) == len(set(choices))
+    finally:
+        dialog.close()
+
+
+def test_preview_failure_blocks_silent_primary_only_request_and_allows_retry(qapp, monkeypatch):
+    import pytest
+    def failed(*args, **kwargs):
+        raise RuntimeError("preview unavailable")
+    monkeypatch.setattr(r_bridge, "run_small_study_effects", failed)
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("continuous", "MD"))
+    try:
+        with pytest.raises(ValueError, match="availability"):
+            dialog._request()
+        monkeypatch.setattr(r_bridge, "run_small_study_effects", lambda *a, **k:
+            _report("continuous", "MD", [_method("classical-egger", True, "primary"), _method("begg-mazumdar", True, "exploratory")]))
+        dialog._refresh_eligibility()
+        assert dialog._request().to_mapping()["tests"] == ["classical-egger", "begg-mazumdar"]
+    finally:
+        dialog.close()

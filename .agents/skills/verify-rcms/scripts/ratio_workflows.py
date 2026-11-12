@@ -20,7 +20,7 @@ def run(app, window, scenario, record):
     from PyQt6.QtSvg import QSvgRenderer
     from rc_metastudio import main_wizard, analysis_setup_dialog, results_window, r_bridge, analysis_dataset
     from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
-    from rc_metastudio.publication_bias_dialog import PublicationBiasDialog
+    from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
     from rc_metastudio.ratio_data_dialog import RatioDataDialog
     from analysis_matrix import set_parameter
     from advanced_workflows import modal, plots
@@ -32,7 +32,7 @@ def run(app, window, scenario, record):
 
     def click(widget):
         assert widget.isEnabled(), widget.objectName()
-        from tests.python.gui.test_types import mouse_click
+        from tests.python.gui.qt_test_support import mouse_click
         mouse_click(widget, QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
 
@@ -71,7 +71,7 @@ def run(app, window, scenario, record):
 
     modal(app, main_wizard.MainWizard, create, window.action_new_dataset.trigger)
     model = window.model
-    assert model.get_current_outcome_type() == family
+    assert model.get_current_data_type() == family
     assert model.current_effect == metric
     assert [c for c in model.OUTCOMES if not window.tableView.isColumnHidden(c)] == model.OUTCOMES[:3]
     ys, ses = [], []
@@ -116,7 +116,7 @@ def run(app, window, scenario, record):
                 assert model.setData(model.index(i, model.OUTCOMES[6]), "reported")
                 assert model.setData(model.index(i, model.OUTCOMES[7]), "person-months")
         assert model.current_sheet.rows[i].include
-    model.try_to_update_outcomes()
+    model.update_all_effect_previews()
     if not hazard:
         assert [model.data(model.index(2, column)) for column in model.OUTCOMES[:3]] == [
             "Not estimable", "\u2014", "\u2014"
@@ -437,7 +437,7 @@ def run(app, window, scenario, record):
         record("ratio-small-study-configured", dialog, context=dialog.context_label.text())
         click(dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
         assert not dialog.failure_label.isVisible(), dialog.failure_label.text()
-    modal(app, PublicationBiasDialog, bias, window.action_publication_bias.trigger)
+    modal(app, SmallStudyEffectsDialog, bias, window.action_publication_bias.trigger)
     view = visible(results_window.ResultsWindow)
     assert any("contour" in key for key in view.results.images)
     record("ratio-small-study-results", view, texts=dict(view.texts), plots=dict(view.results.display_images or view.results.images))
@@ -497,7 +497,7 @@ def verify_bundled_sample(app, window, hazard, record):
     from rc_metastudio import analysis_setup_dialog, results_window, r_bridge
     from rc_metastudio.project_format import load_project
     from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
-    from rc_metastudio.publication_bias_dialog import PublicationBiasDialog
+    from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
     from analysis_matrix import set_parameter
     from advanced_workflows import modal
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections, _parse_result_table, _result_row_key
@@ -516,7 +516,7 @@ def verify_bundled_sample(app, window, hazard, record):
     def check_inputs():
         model = window.model
         assert len(model.current_sheet.rows) == len(rows)
-        assert model.current_effect == metric and model.get_current_outcome_type() == family
+        assert model.current_effect == metric and model.get_current_data_type() == family
         assert all(study.include for study in model.current_sheet.rows)
         for i, row in enumerate(rows):
             study = model.current_sheet.rows[i]
@@ -606,7 +606,7 @@ def verify_bundled_sample(app, window, hazard, record):
             record("bundled-irr-nine-study-eligibility", dialog, context=dialog.context_label.text(), eligibility={"usable_studies": report.usable_studies, "methods": [item.to_mapping() for item in report.methods]})
             dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click(); app.processEvents()
             assert not dialog.failure_label.isVisible(), dialog.failure_label.text()
-        modal(app, PublicationBiasDialog, descriptive_bias, window.action_publication_bias.trigger)
+        modal(app, SmallStudyEffectsDialog, descriptive_bias, window.action_publication_bias.trigger)
         view = visible(results_window.ResultsWindow)
         assert any("contour" in key for key in view.results.images)
         assert "requires at least 10 usable studies" in "\n".join(view.texts.values())

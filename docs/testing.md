@@ -1,5 +1,98 @@
 # Test coverage decisions
 
+## Test value and consolidation
+
+Keep a test when it detects a distinct failure. Delete duplicated obligations
+already exercised by stronger coverage, merge repeated setup without losing
+diagnostics, and replace weak happy-path checks with real workflows. Retain fast
+checks for failures that are difficult to reproduce through E2E, particularly
+data loss, numerical errors, invalid inputs, rollback, concurrency and platform
+boundaries. Test count and file length alone do not establish value.
+
+This pass identifies these obligations before changing the tests:
+
+| Consolidation | Retained proof |
+| --- | --- |
+| Table-editing and export destination GUI wrappers | `ux-improvements` runs the exact same helpers with durable action/result evidence |
+| Sorting and editing the visible study | `sorted-paste` checks canonical identity, year and name editing, undo/redo and save/reopen |
+| CSV dialect and picker setup | Named delimiter/quote cases drive valid → cancelled picker → invalid → recovered data and preview |
+| Analysis action enablement | One transition sequence covers no covariates, unavailable data, added/deleted covariate and undo |
+| Context-menu family inventories | Real QAction menu observation covers supported families, title independence, read-only plots and absent regeneration data |
+| Confidence-dialog layout overlap | Existing compact-dialog check retains the minimum-width behavior alongside layout, bounds and value assertions |
+| Wizard style inventory and nonblank-page smoke | Existing bounded workflow matrix checks ModernStyle and reachable Back actions for every entry path; real dataset-creation workflows operate those fields |
+| Funnel OK edit variants | Named numeric/caption/combo cases assert the committed parameters and acceptance |
+| Release-version happy paths | The complete version-surface test includes the leap-day date |
+| Embedded R profile happy paths | One quarantine/finalize drive checks removed files, exclusion evidence and schema validation |
+| Sequential forest render smoke | Saved-contract regeneration cases retain original labels, default style and image checks before regenerating |
+| Resource registration happy path | The real Qt smoke process registers, decodes PNG/SVG, unregisters and exits cleanly |
+| Formatting-auditor setup | One named defect matrix retains all eight hazards; JSON/ZIP CLI cases retain summary and inventory proof |
+| Platform evidence acceptance | Named Windows/Cocoa cases each check platform and both scale records |
+
+Qualification omits nine standalone producer runs already executed in full by
+the plot workflows below. Their CLI commands remain available for targeted
+debugging. `PLOT_PRODUCERS` owns both the actual producer used by each plot drive
+and the qualification selection, so the two cannot drift independently.
+
+| Standalone producer | Qualification workflow |
+| --- | --- |
+| `analysis-binary.fixed.inv.var` | `plot-workflow-forest` |
+| `analysis-amino-binary-cumulative` | `plot-workflow-cumulative` |
+| `analysis-amino-binary-leave-one-out` | `plot-workflow-leave-one-out` |
+| `analysis-amino-binary-subgroup` | `plot-workflow-subgroup` |
+| `analysis-amino-binary-meta-regression` | `plot-workflow-regression` |
+| `analysis-diagnostic-joint` | `plot-workflow-sroc` |
+| `analysis-diagnostic-regression-continuous` | `plot-workflow-coefficient` |
+| `small-study-binary-extended` | `plot-workflow-funnel`, `plot-workflow-contour`, `plot-workflow-trimfill` |
+| `small-study-diagnostic` | `plot-workflow-deeks` |
+
+The exact CLI aliases `results-window` and `project-structure` are qualified
+through `ux-improvements` and `sheets`, respectively. Each pair dispatches the
+same function with the same inputs. Targeted CLI names remain available.
+The sorted-name edit explicitly sorts the restored model after undo/redo:
+presentation sorting is transient and is reset when history rebuilds the model.
+
+Workspace-safety helper cases remain in the GUI suite: that helper has no
+registered desktop caller. CSV dialect changes, failed plot commits, native
+geometry, hostile archives and independent numerical oracles also remain when
+their exact failures are absent from desktop coverage. Consolidating setup does
+not justify deleting a distinct failure merely because a nearby happy path runs.
+
+## Independent expectations
+
+The November 2026 audit treats a check as circular when its expected answer comes
+from the same implementation, a configured mock return, or a declaration that
+the test merely repeats. A mock is still useful for injecting failure or observing
+a boundary request. Round trips remain useful when they verify persisted data,
+ownership, or regenerated artifacts against the original inputs.
+
+The replacement obligations were identified before editing the tests:
+
+| Failure to detect | Independent proof |
+| --- | --- |
+| Wrong zero-cell DOR reconstruction or correction-label mapping | Corrected-count arithmetic and public `metafor::escalc` on original counts |
+| Peto accidentally consumes stale entered effects | Public `metafor::rma.peto` on original counts |
+| Wrong small-study routing heterogeneity | Public `meta::metagen` on count-derived log odds ratios and standard errors |
+| Wrong Reitsma moderator formula | Public `mada::reitsma` with an explicit two-moderator formula |
+| Wrong packaged-summary normalization or digest | Literal normalized text hashed independently with the standard library |
+| Policy evidence changed after stages were recorded | Reject a modified policy digest in the completed release chain |
+| Wrong revision complexity | Literal cognitive counts for a straight return and two nested conditions |
+| Incorrect plot labels | Literal fixture labels, independent of production formatters |
+| Ratio reversal silently becomes a no-op | Reciprocal bounds on the ratio scale and negated, swapped bounds on the log scale |
+| Apple Silicon launcher accepts Intel linker flags | Execute the generated shell adapter with supported and Intel upstream metadata |
+| Calculator grid displays a different estimate or interval | Compare numeric cells with the entered interval at the configured precision; small values must also retain their sign and relative accuracy, without calling the grid formatter |
+
+This pass removes declaration inventories, generated-source spelling checks, unused workflow
+parsing helpers, and echoed headless/export success checks. Real frozen headless
+comparisons and desktop cumulative/forest/SROC workflows retain the execution and
+decoded-export proof. Retained checks cover explicit/restored metric precedence as an observed
+backend request, missing-metric rejection, and SROC file-picker default names.
+Frozen release oracles and historical audit evidence remain unchanged.
+Sequential plot alignment compares SVG row positions with the observed report
+cells, without asking the renderer's own label formatter for an expected answer.
+Numerical correctness remains covered by frozen/public-package comparisons.
+
+## Desktop coverage
+
 The desktop E2E suite uses a fresh Python process, the normal application
 composition, generated Qt forms, the production rpy2 bridge, and an installed
 RCMetaR package. It runs in the required Full R Stack Evidence lane. Missing
@@ -36,7 +129,7 @@ The remaining smaller tests need a concrete failure the desktop scenarios miss:
 | Analysis boundaries and R transactions | Invalid requests/results, partial diagnostic success, Unicode/NULL/typed-NA conversion (including literal "NA" labels), nested transactions, and concurrent calls are outside ordinary sequential desktop workflows |
 | Statistical calculations and golden comparison | Zero cells, partial raw data, entered effect estimates, unavailable statistics, unusual measures, Reitsma variants, and oracle tampering require independent numerical and rejection checks |
 | Workspace and plot rollback | Failed calculations, partially promoted plot files, and failed saves must preserve the previous usable state |
-| GUI edge cases | Invalid inputs, partial diagnostic failure, long labels, fractional scale factors, narrow viewports, keyboard focus, remaining calculator alternatives, and failure recovery exceed the 84 desktop workflows |
+| GUI edge cases | Invalid inputs, partial diagnostic failure, long labels, fractional scale factors, narrow viewports, keyboard focus, remaining calculator alternatives, and failure recovery exceed standard desktop workflows |
 | Packaging and evidence validators | Wrong architectures, unresolved imports, forged hashes, symlink escapes, absent provenance, and relocation failures require deliberately invalid artifacts |
 | Verification tools | Revision-bound Git metrics, unsafe output directories, installer failure handling, and timeout cleanup have their own observable failure modes |
 

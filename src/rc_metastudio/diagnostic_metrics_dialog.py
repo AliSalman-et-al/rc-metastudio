@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QDialog, QMessageBox, QWidget
 from rc_metastudio import app_error_handler
 from rc_metastudio import analysis_setup_dialog
 from rc_metastudio import adaptive_window
-from rc_metastudio.meta_globals import DIAGNOSTIC_METRIC_GROUPS
+from rc_metastudio.analysis_catalog import DIAGNOSTIC_METRIC_GROUPS
 
 if TYPE_CHECKING:
     import ui_diagnostic_metrics_dialog as _ui_diagnostic_metrics_dialog

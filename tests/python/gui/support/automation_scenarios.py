@@ -4,7 +4,7 @@
 """Verification and automation workflows for RC MetaStudio."""
 
 from __future__ import annotations
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 from rc_metastudio.automation import start_automation
 
 import faulthandler
@@ -22,13 +22,7 @@ from typing import Protocol, TypedDict, cast
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtGui import QIcon, QPixmap
 
-from rc_metastudio import (
-    adaptive_window,
-    app_error_handler,
-    meta_globals,
-    qt6_resources,
-    settings,
-)
+from rc_metastudio import adaptive_window, app_error_handler, application_metadata, qt6_resources, settings
 from rc_metastudio.cocoa_accessibility import (
     bounded_error_message,
     find_accessibility_element,
@@ -1564,8 +1558,8 @@ def start_adaptive_layout_evidence(output_dir, sample_path):
 def start_wizard_layout_smoke():
     app_error_handler.install_global_exception_handler()
     app = app_error_handler.get_or_create_application(sys.argv)
-    app.setApplicationName(meta_globals.APPLICATION_NAME)
-    app.setOrganizationName(meta_globals.ORGANIZATION_NAME)
+    app.setApplicationName(application_metadata.APPLICATION_NAME)
+    app.setOrganizationName(application_metadata.ORGANIZATION_NAME)
     _set_application_icon(app)
     settings.setup_directories()
 
@@ -1829,46 +1823,6 @@ def start_startup_wizard_smoke(evidence_path, sample_path):
         return exit_code
     finally:
         _dispose_new_top_levels(app, baseline_ids)
-
-
-def assert_opened_project_for_startup_smoke(
-    app, meta, sample_path, opened, completion_marker=None
-):
-    try:
-        if not opened:
-            raise SystemExit("Could not open startup project: %s" % sample_path)
-        app.processEvents()
-        model = meta.tableView.model()
-        if model is None or model.rowCount() < 1:
-            raise SystemExit(
-                "Startup project opened without table rows: %s" % sample_path
-            )
-        _force_table_paint(app, meta)
-        _write_automation_smoke_log("startup-project:normal-entry-point-passed")
-    finally:
-        meta.close()
-        app.processEvents()
-    completion_marker = completion_marker or os.environ.get(
-        "RCMS_STARTUP_COMPLETION_MARKER"
-    )
-    if completion_marker:
-        Path(completion_marker).write_text(
-            json.dumps(
-                {
-                    "schema_version": 1,
-                    "pid": os.getpid(),
-                    "platform_plugin": app.platformName().lower(),
-                    "project": Path(sample_path).name,
-                    "post_close": True,
-                },
-                indent=2,
-                sort_keys=True,
-            )
-            + "\n",
-            encoding="utf-8",
-        )
-        _write_automation_smoke_log("startup-project:launchservices-completion-written")
-    return 0
 
 
 def _assert_standard_binary_summary_is_formatted(meta):

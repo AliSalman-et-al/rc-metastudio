@@ -33,19 +33,19 @@ DATA_TYPES = {
         "PR",
         [4, 20],
     ),
-    "onearm-mean": ("onearm_mean_Button", "continuous", "mean", "TX Mean", [20, 4, 2]),
+    "onearm-mean": ("onearm_mean_Button", "continuous", "mean", "Mean", [20, 4, 2]),
     "reg-coef": (
         "onearm_single_reg_coef_Button",
         "continuous",
         "reg_coef",
-        "TX Mean",
+        "Mean",
         None,
     ),
     "generic-effect": (
         "onearm_generic_effect_size_Button",
         "continuous",
         "generic_effect",
-        "TX Mean",
+        "Mean",
         None,
     ),
     "twoarm-proportion": (
@@ -164,6 +164,13 @@ def run(
     )
 
     root = Path(__file__).resolve().parents[4]
+    exercise_mean_sample = (
+        scenario == "analysis-data-onearm-mean"
+        and group_names is None
+        and workflow_override is None
+        and parameters is None
+        and metric_override is None
+    )
     work = Path(__import__("sys").argv[2])
 
     def click(widget):
@@ -249,11 +256,12 @@ def run(
                 and metric_override is None and workflow == "standard"):
             text = view.report_text.toPlainText()
             manuscript = view.manuscript_text.toPlainText()
+            participant_arm = window.model.arm_names[0]
             record("onearm-participant-scope", view, report=text, manuscript=manuscript)
             assert "Other group" not in manuscript, manuscript
-            assert "Group: Group" in manuscript, manuscript
+            assert f"Group: {participant_arm}" in manuscript, manuscript
             if scenario in {"analysis-data-onearm-mean", "analysis-data-onearm-proportion"}:
-                assert re.search(r"Participants in Group\s+135\b", text), text
+                assert re.search(rf"Participants in {re.escape(participant_arm)}\s+135\b", text), text
             else:
                 assert re.search(r"Participants\s+Not available", text), text
         if scenario.startswith("analysis-diagnostic-regression"):
@@ -423,21 +431,21 @@ def run(
         QtCore.QTimer.singleShot(0, create)
         window.action_new_dataset.trigger()
         assert not callback_errors, callback_errors
-        assert window.model.get_current_outcome_type() == family
-        assert window.model.get_current_outcome_subtype() == subtype
+        assert window.model.get_current_data_type() == family
+        assert window.model.get_current_data_subtype() == subtype
         assert window.model.current_effect == metric
         assert window.model.current_outcome_name == "Verification outcome Δ"
         model = window.model
         if deferred_name and deferred_name != model.arm_names[0]:
             from advanced_workflows import modal
-            from rc_metastudio.edit_name_dialogs import EditGroupNameDialog
+            from rc_metastudio.edit_name_dialogs import EditArmNameDialog
 
             def rename(dialog):
                 dialog.group_name_le.setText(group_names[0])
                 record('single-arm-rename-editor', dialog, name=deferred_name)
                 click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
 
-            modal(app, EditGroupNameDialog, rename, lambda: window.edit_group_name(model.arm_names[0]))
+            modal(app, EditArmNameDialog, rename, lambda: window.edit_arm_name(model.arm_names[0]))
             model = window.model
             assert model.arm_names[0] == deferred_name
         for row in range(6):
@@ -479,11 +487,14 @@ def run(
             for row in range(6)
         ]
         assert window.save()
+        if name == "generic-effect":
+            from tests.e2e.mean_metric_migration import reopen_legacy_mean_project
+            reopen_legacy_mean_project(app, window, record)
         assert window.open(window.out_path, raise_on_error=True)
         assert window.model.current_effect == metric
         assert window.model.current_outcome_name == "Verification outcome Δ"
-        assert window.model.get_current_outcome_type() == family
-        assert window.model.get_current_outcome_subtype() == subtype
+        assert window.model.get_current_data_type() == family
+        assert window.model.get_current_data_subtype() == subtype
         assert sum(s.include for s in window.model.current_sheet.rows) == 6
         after = [
             [
@@ -494,6 +505,9 @@ def run(
         ]
         assert after == before, (after, before)
         record("data-reopened", window, data_type=name, metric=metric, cells=after)
+        if exercise_mean_sample:
+            from tests.e2e.mean_metric_migration import open_mean_sample
+            open_mean_sample(app, window, record, root, work)
         if name == "generic-effect":
             from advanced_workflows import modal
             from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
@@ -529,7 +543,7 @@ def run(
         metrics = ("sens", "spec") if family == "diagnostic" else ()
         expected = None
     elif scenario.startswith("small-study-"):
-        from rc_metastudio.publication_bias_dialog import PublicationBiasDialog
+        from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
 
         sample = {
             "small-study-binary-extended": "amino",
@@ -552,7 +566,7 @@ def run(
 
         def configure():
             dialog = app.activeModalWidget()
-            if not isinstance(dialog, PublicationBiasDialog):
+            if not isinstance(dialog, SmallStudyEffectsDialog):
                 QtCore.QTimer.singleShot(10, configure)
                 return
             try:
@@ -616,7 +630,7 @@ def run(
             assert window.open(
                 str(root / "sample_projects" / bundle["dataset"]), raise_on_error=True
             )
-            workflow = bundle["case"].analysis_type.replace("_", "-")
+            workflow = bundle["case"].requests[0].workflow
             method = bundle["method"]
             for cov in bundle["case"].covariates:
                 covariate(cov["name"], cov["type"], cov["values"])
@@ -701,7 +715,7 @@ def run(
         assert subgroup.covariate_combo_box.count() == 1
         click(subgroup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     if (
-        window.model.get_current_outcome_type() == "diagnostic"
+        window.model.get_current_data_type() == "diagnostic"
         and workflow != "meta-regression"
     ):
         dialog = visible(DiagnosticMetricsDialog)
@@ -749,7 +763,7 @@ def run(
         "digits",
         2 if expected is not None and workflow == "meta-regression" else 3,
     )
-    if expected is not None:
+    if expected is not None or exercise_mean_sample:
         set_parameter(app, dialog, "rm.method", "DL")
     for key, value in (parameters or {}).items():
         set_parameter(app, dialog, key, value)
@@ -766,6 +780,9 @@ def run(
     )
     click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     view = observe()
+    if exercise_mean_sample:
+        from tests.e2e.mean_metric_migration import compare_mean_sample_analysis
+        compare_mean_sample_analysis(view, record)
     if scenario.startswith("analysis-category-"):
         view.close()
         return

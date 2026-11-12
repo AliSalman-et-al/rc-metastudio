@@ -5,7 +5,7 @@ import json
 import math
 from pathlib import Path
 
-from rc_metastudio.project_format import load_project, save_project, migrate_to_latest
+from rc_metastudio.project_format import load_project, save_project
 
 ROOT = Path(__file__).resolve().parents[1]
 SAMPLES = ROOT / "sample_projects"
@@ -21,8 +21,20 @@ def study_inputs(row, hazard):
     return record, covariates
 
 
-def study_groups(row, hazard, groups):
-    return sorted([dict(id=i, name=group, raw_data=[] if hazard else [row[f"x{i+1}i"], row[f"t{i+1}i"]]) for i, group in enumerate(groups)], key=lambda group: group["name"])
+def study_row(index, row, hazard, arms, covariates, name):
+    identifier = row["id"] if hazard else row["study"]
+    record, values = study_inputs(row, hazard)
+    return dict(
+        id=f"sheet:0:row:{index}", label=row["trial"] if hazard else row["authors"],
+        year=None if hazard else int(row["year"]), include=True,
+        manually_excluded=False, sample_size=None,
+        notes=f"metadat {name}; original study ID {identifier}",
+        covariates={cov["id"]: values[cov["name"]] for cov in covariates},
+        entered_effects=[],
+        raw_data={arm["id"]: [] if hazard else [row[f"x{i+1}i"], row[f"t{i+1}i"]]
+                  for i, arm in enumerate(arms)},
+        ratio_inputs=[dict(arms=[arm["id"] for arm in arms], input=record)],
+    )
 
 
 def build(name, hazard, source):
@@ -33,41 +45,30 @@ def build(name, hazard, source):
     )
     outcome = "Mortality" if hazard else "Catheter-related bloodstream infection"
     groups = ["Locoregional treatment plus chemotherapy", "Locoregional treatment alone"] if hazard else ["Anti-infective catheter", "Standard catheter"]
-    studies = []
-    for index, row in enumerate(rows, 1):
-        identifier = row["id"] if hazard else row["study"]
-        record, covariates = study_inputs(row, hazard)
-        studies.append(dict(
-            id=index, name=row["trial"] if hazard else row["authors"],
-            year=None if hazard else int(row["year"]), include=True,
-            manually_excluded=False, sample_size=None,
-            notes=f"metadat {name}; original study ID {identifier}",
-            covariates=covariates,
-            analysis_units=[dict(
-                outcome=outcome, follow_up="first", entered_effects={},
-                groups=study_groups(row, hazard, groups),
-                ratio_inputs=[dict(groups=groups, input=record)],
-            )],
-        ))
+    arms = [dict(id=f"sheet:0:arm:{i}", name=group) for i, group in enumerate(groups)]
+    covariates = [dict(id=f"sheet:0:cov:{i}", name=label, data_type=kind, stable_id=stable)
+                  for i, (label, kind, stable) in enumerate((
+                      ("Original study ID", 1, "pignon2000-id"),
+                      ("Chemotherapy timing", 4, "pignon2000-timing"),
+                      ("Observed minus expected deaths", 1, "pignon2000-ome"),
+                      ("Log-rank variance", 1, "pignon2000-variance"),
+                  ))] if hazard else []
+    studies = [study_row(index, row, hazard, arms, covariates, name)
+               for index, row in enumerate(rows)]
     notes = f"Source: metadat::{name}. Documentation: {source['documentation']}. Original publication: {source['doi']}. "
     notes += "HR input is log(HR)=OmE/V and SE=sqrt(1/V). Trial years are unavailable and left blank. Chemotherapy timing is the original grp classification." if hazard else "IRR uses original event counts and catheter-days. Group 1 is anti-infective catheter; group 2 is standard catheter. Nine studies are available, below the ten-study threshold for asymmetry tests."
-    dataset = dict(
-        analysis_family=family, title="Pignon 2000 — Head and neck cancer" if hazard else "Niel-Weise 2008 — Catheter infections",
-        notes=notes, is_diagnostic=False, studies=studies,
-        covariates=[dict(name=label, data_type=kind, stable_id=stable) for label, kind, stable in (
-            ("Original study ID", 1, "pignon2000-id"),
-            ("Chemotherapy timing", 4, "pignon2000-timing"),
-            ("Observed minus expected deaths", 1, "pignon2000-ome"),
-            ("Log-rank variance", 1, "pignon2000-variance"),
-        )] if hazard else [],
-        outcomes=[dict(name=outcome, data_type=data_type, sub_type=subtype, follow_ups=["first"])],
-        summary=dict(arms="two", data_type=family, effect=metric, metric_choices=[metric], name=outcome, sub_type=subtype),
-    )
-    project = dict(schema_version=2, dataset=dataset)
-    state = dict(schema_version=2, active_outcome=outcome, active_follow_up="first", active_groups=groups, active_effect=metric, confidence_level=95.0)
+    summary = dict(arms="two", data_type=family, effect=metric, metric_choices=[metric], name=outcome, sub_type=subtype)
+    settings = dict(summary, summary=summary.copy(), metric=metric, active_effect=metric,
+                    confidence_level=95.0)
+    settings["arms"] = [arm["id"] for arm in arms]
+    project = dict(schema_version=3,
+                   title="Pignon 2000 — Head and neck cancer" if hazard else "Niel-Weise 2008 — Catheter infections",
+                   notes=notes, sheets=[dict(id="sheet:0", name=outcome, family=family,
+                       data_type=data_type, sub_type=subtype, arms=arms, covariates=covariates,
+                       settings=settings, rows=studies)])
+    state = dict(schema_version=3, current_sheet_id="sheet:0")
     filename = "Pignon2000-HR.rcms" if hazard else "NielWeise2008-IRR.rcms"
     path = SAMPLES / filename
-    project, state = migrate_to_latest(2, project, state)
     save_project(path, project, state)
     loaded = load_project(path)
     assert loaded.project == project and loaded.state == state
@@ -75,7 +76,7 @@ def build(name, hazard, source):
         file=filename, format_version=3, sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
         semantic_sha256=hashlib.sha256((json.dumps(loaded.project, sort_keys=True, ensure_ascii=False, allow_nan=False, separators=(",", ":")) + "\n").encode("utf-8")).hexdigest(),
         analysis_evidence="ratios-samples",
-        scientific_name=dataset["title"], analysis_family=family, study_count=len(rows),
+        scientific_name=project["title"], analysis_family=family, study_count=len(rows),
         provenance=f"metadat::{name}; original data retained in sources/metadat-ratios.json",
         source_url=source["documentation"], source_doi=source["doi"],
         source_sha256=hashlib.sha256(SOURCE.read_bytes()).hexdigest(),

@@ -1,6 +1,6 @@
 """Presentation labels for the selected dataset; backend metric keys stay intact."""
 
-from rc_metastudio import meta_globals
+from rc_metastudio import analysis_catalog
 from rc_metastudio.analysis_method_labels import parameter_value_display_label
 
 
@@ -28,7 +28,7 @@ def result_identity(model, workflow, metric, model_label, parameters, confidence
     if workflow == "cumulative":
         details.append("Order: dataset row order; each row adds a study to the preceding studies.")
     elif workflow == "leave-one-out":
-        if model.get_current_outcome_type() in {"time_to_event", "event_rates"}:
+        if model.get_current_data_type() in {"time_to_event", "event_rates"}:
             details.append("Omission-only fits: each row omits the named study. No all-studies fit is included.")
         else:
             details.append("Each row omits the named study; compare with the all-studies estimate.")
@@ -36,7 +36,7 @@ def result_identity(model, workflow, metric, model_label, parameters, confidence
         details.append(f"Subgroups by {parameters.get('cov_name', 'selected covariate')}. Use the test of subgroup differences to compare groups.")
     elif workflow == "meta-regression":
         details.append("Moderators: " + ", ".join(moderators))
-        if model.get_current_outcome_type() != "diagnostic":
+        if model.get_current_data_type() != "diagnostic":
             details.append("Bubble size increases with model weight; sizes are rescaled for legibility and do not show exact relative weights.")
     effect = model.current_effect
     if effect in {"OR", "RR", "HR", "IRR"}:
@@ -57,11 +57,11 @@ def result_identity(model, workflow, metric, model_label, parameters, confidence
 
 
 def metric_label(model, metric=None):
-    subtype = model.get_current_outcome_subtype()
+    subtype = model.get_current_data_subtype()
     metric = metric or model.current_effect
-    if metric == "TX Mean":
+    if metric == "Mean":
         return {"mean": "Mean", "reg_coef": "Regression coefficient", "generic_effect": "Entered effect"}.get(subtype, "Mean")
-    return meta_globals.ALL_METRIC_NAMES.get(metric, metric)
+    return analysis_catalog.ALL_METRIC_NAMES.get(metric, metric)
 
 
 def dataset_label(model):
@@ -71,16 +71,16 @@ def dataset_label(model):
         "smd": "Two-arm continuous", "reg_coef": "Regression coefficient",
         "generic_effect": "Generic entered effect", "hazard_ratio": "Time-to-event",
         "incidence_rate_ratio": "Event rates",
-    }.get(model.get_current_outcome_subtype(), str(model.get_current_outcome_type() or "Dataset").title())
+    }.get(model.get_current_data_subtype(), str(model.get_current_data_type() or "Dataset").title())
 
 
 def dataset_identity(model, metric=None):
-    comparison = model.current_effect in meta_globals.TWO_ARM_METRICS
+    comparison = model.current_effect in analysis_catalog.TWO_ARM_METRICS
     groups = " / ".join(model.arm_names if comparison else model.arm_names[:1])
     group_label = "Comparison" if comparison else "Group"
     labels = [model.current_sheet.name, dataset_label(model)]
     quantity = metric or metric_label(model)
-    if quantity and model.current_effect != "TX Mean" and quantity.casefold() != labels[-1].casefold():
+    if quantity and model.current_effect != "Mean" and quantity.casefold() != labels[-1].casefold():
         labels.append(quantity)
     context = []
     if comparison or groups != "Group":

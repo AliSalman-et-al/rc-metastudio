@@ -40,11 +40,9 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
         current_outcome_name = "Outcome"
         arm_names = ["A", "B"]
 
-        def get_current_outcome_subtype(self):
+        def get_current_data_subtype(self):
             return None
 
-        def get_current_follow_up_name(self):
-            return "first"
 
         def get_studies(self, only_if_included=True):
             return []
@@ -56,7 +54,7 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
         current_sheet_id = "sheet"
         dataset = SimpleNamespace(sheets=[current_sheet])
 
-        def get_current_outcome_type(self):
+        def get_current_data_type(self):
             return "binary"
 
         def included_studies_have_raw_data(self):
@@ -71,9 +69,6 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
         backend, "get_available_methods", lambda **_kwargs: {"Random": "binary.random"}
     )
     monkeypatch.setattr(backend, "get_params", lambda _method: ({}, {}, [], {}))
-    monkeypatch.setattr(
-        backend, "get_method_description", lambda _method: "Random-effects"
-    )
     monkeypatch.setattr(
         backend,
         "get_analysis_plot_capabilities",
@@ -148,7 +143,6 @@ def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(mo
         for name in (
             "get_available_methods",
             "get_params",
-            "get_method_description",
             "dataset_to_simple_binary_r_object",
             "run_versioned_analysis_request",
             "reset_r_working_directory",
@@ -173,9 +167,6 @@ def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(mo
         )
         _set_backend(
             monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
-        )
-        _set_backend(
-            monkeypatch, backend, "get_method_description", lambda method: "stub method"
         )
         monkeypatch.setattr(
             backend,
@@ -232,7 +223,6 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
         for name in (
             "get_available_methods",
             "get_params",
-            "get_method_description",
             "dataset_to_simple_continuous_r_object",
             "run_versioned_analysis_request",
             "reset_r_working_directory",
@@ -271,9 +261,6 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
         )
         _set_backend(
             monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
-        )
-        _set_backend(
-            monkeypatch, backend, "get_method_description", lambda method: "stub method"
         )
         monkeypatch.setattr(
             backend,
@@ -329,7 +316,6 @@ def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
         for name in (
             "get_available_methods",
             "get_params",
-            "get_method_description",
             "dataset_to_simple_diagnostic_r_object",
         )
     }
@@ -367,9 +353,6 @@ def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
         )
         _set_backend(
             monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
-        )
-        _set_backend(
-            monkeypatch, backend, "get_method_description", lambda method: "stub method"
         )
         monkeypatch.setattr(
             backend,

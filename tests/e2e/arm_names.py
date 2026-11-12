@@ -5,13 +5,14 @@ from unittest.mock import patch
 from xml.etree import ElementTree as ET
 
 from PyQt6 import QtCore, QtWidgets
-from tests.python.gui.test_types import required
+from tests.python.gui.qt_test_support import required
 
 
 def run(app, window, work, record):
     from analysis_matrix import DATA_TYPES, run as matrix
     from advanced_workflows import click, modal
-    from tests.e2e.audit_round3 import analyze_existing, check_report
+    from tests.e2e.analysis_presentation_workflows import analyze_existing
+    from tests.e2e.analysis_result_checks import check_report
     from rc_metastudio import main_wizard
     from rc_metastudio.binary_data_dialog import BinaryDataDialog
     from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
@@ -46,7 +47,7 @@ def run(app, window, work, record):
                 view = analyze_existing(app, window, "standard", DATA_TYPES[family][1]+".random", record, {"fp_style":style})
             check_report(app, view, work, record)
             text = view.report_text.toPlainText()
-            assert "TX Mean" not in text and "[default]" not in text, text
+            assert "[default]" not in text, text
             if family.startswith("twoarm"):
                 assert comparison in view.results.identity, view.results.identity
                 assert comparison in app.clipboard().text(), app.clipboard().text()

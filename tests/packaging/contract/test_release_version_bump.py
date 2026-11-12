@@ -1,0 +1,86 @@
+import shutil
+import sys
+import tomllib
+from pathlib import Path
+
+from ._module_loader import load_module_from_path
+
+
+ROOT = Path(__file__).resolve().parents[3]
+
+
+def read_text(*parts):
+    return ROOT.joinpath(*parts).read_text(encoding="utf-8")
+
+
+def read_description_fields(path):
+    fields = {}
+    current_key = None
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        if line[0].isspace() and current_key is not None:
+            fields[current_key] += " " + line.strip()
+            continue
+        key, value = line.split(":", 1)
+        current_key = key
+        fields[key] = value.strip()
+    return fields
+
+
+def load_module(name, path):
+    module = load_module_from_path(name, path)
+    sys.modules[name] = module
+    return module
+
+
+def test_version_bump_script_updates_all_release_version_surfaces(tmp_path, monkeypatch):
+    current_version = tomllib.loads(read_text("pyproject.toml"))["project"]["version"]
+    major, minor, patch = map(int, current_version.split("."))
+    next_version = f"{major}.{minor}.{patch + 1}"
+    paths_to_copy = [
+        "pyproject.toml",
+        "uv.lock",
+        "CHANGELOG.md",
+        "src/rc_metastudio/__init__.py",
+        "src/rc_metastudio/application_metadata.py",
+        "r/RCMetaR/DESCRIPTION",
+    ]
+    for relative_path in paths_to_copy:
+        source = ROOT / relative_path
+        target = tmp_path / relative_path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
+
+    description_path = tmp_path / "r/RCMetaR/DESCRIPTION"
+    description = description_path.read_text(encoding="utf-8")
+    description_path.write_bytes(description.replace("\n", "\r\n").encode("utf-8"))
+
+    bump_version = load_module(
+        "bump_version_for_release_contract", ROOT / "scripts" / "bump_version.py"
+    )
+    result = bump_version.main(
+        [next_version, "--root", str(tmp_path), "--date", "2024-02-29"]
+    )
+
+    assert result == 0
+    pyproject = tomllib.loads((tmp_path / "pyproject.toml").read_text("utf-8"))
+    package = load_module(
+        "rc_metastudio_after_bump", tmp_path / "src" / "rc_metastudio" / "__init__.py"
+    )
+    monkeypatch.setitem(sys.modules, "rc_metastudio", package)
+    application_metadata = load_module(
+        "application_metadata_after_bump",
+        tmp_path / "src" / "rc_metastudio" / "application_metadata.py",
+    )
+    rcmetar_fields = read_description_fields(tmp_path / "r" / "RCMetaR" / "DESCRIPTION")
+    lockfile = (tmp_path / "uv.lock").read_text("utf-8")
+    changelog = (tmp_path / "CHANGELOG.md").read_text("utf-8")
+
+    assert pyproject["project"]["version"] == next_version
+    assert package.__version__ == next_version
+    assert application_metadata.VERSION == next_version
+    assert rcmetar_fields["Version"] == next_version
+    assert rcmetar_fields["Date"] == "2024-02-29"
+    assert f'name = "rc-metastudio"\nversion = "{next_version}"' in lockfile
+    assert f"## {next_version} - Unreleased" in changelog

@@ -2,7 +2,7 @@
 
 RC MetaStudio is open-source desktop software for advanced meta-analysis, developed and maintained by Research Consultancy (RC).
 
-RC MetaStudio is an independently maintained product derived from the original OpenMeta[Analyst] software.
+RC MetaStudio is an independently maintained rewrite of the original OpenMeta[Analyst] project.
 
 The original OpenMeta[Analyst] project was created and maintained by Byron C. Wallace, George Dietz, and Paul Trow through Brown University, Tufts Medical Center, and CEBM/CEBM@Brown. Copyright in original portions remains with the applicable original copyright holders.
 

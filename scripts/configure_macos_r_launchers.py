@@ -78,9 +78,6 @@ exec "$real" "$@"
 """
 
 
-PRIVATE_CONFIG = private_config("arm64")
-
-
 def _safe_file(path: Path) -> None:
     if path.is_symlink() or any(parent.is_symlink() for parent in path.parents):
         raise RuntimeError(

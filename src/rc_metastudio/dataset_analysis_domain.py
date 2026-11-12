@@ -3,22 +3,15 @@
 """Domain operations shared by the dataset table adapter."""
 
 import math
-from rc_metastudio.meta_globals import RATIO_DATA_TYPES
+from rc_metastudio.analysis_catalog import RATIO_DATA_TYPES
 
 from collections.abc import Callable, Mapping, Sequence
 from typing import Protocol, TypeAlias, runtime_checkable
 
 from rc_metastudio.analysis_dataset import Dataset, StudyRow
 from rc_metastudio.analysis_unit import AnalysisUnit
-from rc_metastudio.meta_globals import (
-    BINARY,
-    BINARY_TWO_ARM_METRICS,
-    CONTINUOUS,
-    CONTINUOUS_TWO_ARM_METRICS,
-    DIAGNOSTIC,
-    DIAGNOSTIC_METRICS,
-    EMPTY_VALS,
-)
+from rc_metastudio.analysis_catalog import BINARY, BINARY_TWO_ARM_METRICS, CONTINUOUS, CONTINUOUS_TWO_ARM_METRICS, DIAGNOSTIC, DIAGNOSTIC_METRICS
+from rc_metastudio.analysis_validation import EMPTY_VALS
 
 Scalar: TypeAlias = float | int | str | None
 
@@ -123,8 +116,9 @@ def _binary_raw_effect(
     raw_data: Sequence[object],
     confidence_level: float,
 ) -> tuple[tuple[Scalar, Scalar, Scalar], object]:
-    e1, n1, e2, n2 = raw_data
+    e1, n1 = raw_data[:2]
     if effect in BINARY_TWO_ARM_METRICS:
+        e2, n2 = raw_data[2:]
         result = checked.effect_for_study(e1, n1, e2, n2, metric=effect, confidence_level=confidence_level)
     else:
         result = checked.effect_for_study(e1, n1, two_arm=False, metric=effect, confidence_level=confidence_level)
@@ -137,8 +131,9 @@ def _continuous_raw_effect(
     raw_data: Sequence[object],
     confidence_level: float,
 ) -> tuple[tuple[Scalar, Scalar, Scalar], object]:
-    n1, m1, sd1, n2, m2, sd2 = raw_data
+    n1, m1, sd1 = raw_data[:3]
     if effect in CONTINUOUS_TWO_ARM_METRICS:
+        n2, m2, sd2 = raw_data[3:]
         result = checked.continuous_effect_for_study(
             n1, m1, sd1, n2=n2, m2=m2, sd2=sd2, metric=effect, confidence_level=confidence_level
         )

@@ -1,5 +1,6 @@
 from rc_metastudio.project_domain import SheetId
 import os
+import copy
 from pathlib import Path
 from typing import cast
 from types import SimpleNamespace
@@ -9,7 +10,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 
 from rc_metastudio import adaptive_window, calculator_service
 from rc_metastudio.analysis_dataset import Sheet
-from rc_metastudio.meta_globals import CONTINUOUS
+from rc_metastudio.analysis_catalog import CONTINUOUS
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -18,12 +19,15 @@ os.environ.setdefault(
 )
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
-from test_types import key_click, key_clicks, mouse_click, required
+from qt_test_support import key_click, key_clicks, mouse_click, required
 
 prepare_generated_ui_imports()
 
 
 class FakeContinuousAnalysisUnit:
+    def copy_for_edit(self):
+        return copy.deepcopy(self)
+
     def calculator_source(self, effect, arm_key):
         return getattr(self, "selected_source", None)
 
@@ -40,7 +44,7 @@ class FakeContinuousAnalysisUnit:
         self.arms = {name: SimpleNamespace(stable_id=name) for name in self.raw_data}
 
     def get_effect_names(self):
-        return ["MD", "SMD", "TX Mean"]
+        return ["MD", "SMD", "Mean"]
 
     def get_raw_data_for_arm(self, group):
         return self.raw_data[group]
@@ -69,11 +73,11 @@ class FakeContinuousAnalysisUnit:
     def set_effect_for_source(
         self, _source, metric, arm_key, est, low=None, high=None, **kwargs
     ):
-        self.set_effect_and_ci(
+        self.set_derived_effect_preview(
             metric, arm_key, est, low, high, **kwargs
         )
 
-    def set_effect_and_ci(self, metric, _group, est, low, high, **_kwargs):
+    def set_derived_effect_preview(self, metric, _group, est, low, high, **_kwargs):
         self.effects[metric] = (est, low, high)
 
     def set_effect(self, metric, _group, value, **_kwargs):
@@ -557,11 +561,11 @@ def test_continuous_metric_transition_does_not_resize_visible_root(monkeypatch):
         _close(app, dialog)
 
 
-@pytest.mark.parametrize("variant", ["md_simple", "smd_pre_post", "tx_mean"])
+@pytest.mark.parametrize("variant", ["md_simple", "smd_pre_post", "one_arm_mean"])
 def test_continuous_major_variant_behavior_matrix(monkeypatch, variant):
     available = QtCore.QRect(20, 30, 800, 600)
     recorder = {}
-    initial_metric = "TX Mean" if variant == "tx_mean" else "MD"
+    initial_metric = "Mean" if variant == "one_arm_mean" else "MD"
     app, dialog = _open_continuous_dialog(
         monkeypatch, available, metric=initial_metric, recorder=recorder
     )
@@ -620,7 +624,7 @@ def test_continuous_major_variant_behavior_matrix(monkeypatch, variant):
         assert edited_table.item(0, 1).text() == (
             "" if variant == "smd_pre_post" else "95"
         )
-        assert dialog.simple_table.isRowHidden(1) is (variant == "tx_mean")
+        assert dialog.simple_table.isRowHidden(1) is (variant == "one_arm_mean")
     finally:
         _close(app, dialog)
 

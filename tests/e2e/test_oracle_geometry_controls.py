@@ -1,6 +1,6 @@
 """Deliberate malformed rendered-output controls; no statistical backend stand-in."""
 import pytest
-from tests.e2e.audit_round3 import check_interval_caps
+from tests.e2e.plot_geometry_checks import check_interval_caps
 from tests.e2e.axis_conventions import check_endpoints
 from tests.e2e.header_geometry import check_headers
 

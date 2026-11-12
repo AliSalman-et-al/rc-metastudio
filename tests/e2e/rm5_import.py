@@ -5,10 +5,10 @@ import csv
 import subprocess
 from unittest.mock import patch
 from PyQt6 import QtCore, QtWidgets
-from tests.python.gui.test_types import mouse_click
+from tests.python.gui.qt_test_support import mouse_click
 
 from rc_metastudio.project_adapter import dataset_to_project
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 from scripts.r_verification_support import resolve_rscript
 
 

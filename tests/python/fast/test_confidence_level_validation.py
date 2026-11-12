@@ -7,20 +7,14 @@ import pytest
 
 sys.path.insert(0, os.path.abspath("src"))
 
-from rc_metastudio.meta_globals import (
-    normalize_confidence_level_params,
-    seems_sane,
-    validate_analysis_digits,
-    validate_correction_factor,
-    validate_confidence_level,
-)
+from rc_metastudio.analysis_validation import normalize_confidence_level_params, is_valid_plot_tick_list, validate_analysis_digits, validate_correction_factor, validate_confidence_level
 
 
 def test_plot_ticks_accept_only_comma_separated_finite_numbers():
-    assert seems_sane("-1.5, 0, 2e3")
-    assert not seems_sane("1")
-    assert not seems_sane("1, inf")
-    assert not seems_sane("1, __import__('os').getcwd()")
+    assert is_valid_plot_tick_list("-1.5, 0, 2e3")
+    assert not is_valid_plot_tick_list("1")
+    assert not is_valid_plot_tick_list("1, inf")
+    assert not is_valid_plot_tick_list("1, __import__('os').getcwd()")
 
 
 def test_validate_confidence_level_rejects_endpoints_and_non_finite_values():

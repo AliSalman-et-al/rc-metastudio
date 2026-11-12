@@ -27,6 +27,24 @@ uv run python scripts/verify.py fast
 uv run python scripts/verify.py r-stack
 ```
 
+Use the pinned development tool to review unused Python code:
+
+```powershell
+uv run vulture
+```
+
+The configured scan includes product code, scripts, tests and verification
+helpers. Review findings against callers before deleting code. Qt overrides,
+Designer custom widgets, pytest hooks and fixtures, schema declarations and
+subprocess entry points may be invoked implicitly. Fixture arguments can be
+required for setup and teardown even when their values are unused. Vulture's
+confidence is not a deletion decision. Exit code 3 means findings remain; see
+the [Vulture documentation](https://pypi.org/project/vulture/).
+
+After removing a confirmed unused owner, rerun the scan to find newly orphaned
+helpers and imports. Preserve meaningful tests and durable settings migrations.
+Avoid blanket suppressions or generating a whitelist from every finding.
+
 For deterministic complexity, dependency, churn, and hotspot evidence, run the
 locked code-health command against a comparison commit. Both snapshots are
 measured from their named revisions: history is bounded at the measured head,
@@ -129,9 +147,21 @@ Other Linux distributions are not part of the release qualification baseline.
 
 ## Work with generated Qt code
 
+Workspace history retains the latest 100 committed edits. An operation that raises
+restores its pre-operation snapshot; selecting a sheet does not create an edit or
+change the sheet restored by Redo. History stores one snapshot per step.
+
+XLSX import accepts worksheet extents up to 100,000 rows, 512 columns and
+1,000,000 cells. This includes distant formatted cells in the workbook's declared
+extent. Trim unused worksheet rows/columns before importing a file above those
+limits. Formula imports use saved values and still require saving in Excel first.
+
 Files under `src/rc_metastudio/forms/*.ui` are the editable form sources. Generated Python modules belong under the selected build directory and must not be committed. `scripts/build_qt6.py generate` compiles forms and resources before tests, typing, or packaging.
 
 ## Repository layout
+
+See [file names and ownership](file-ownership.md) for responsibility boundaries,
+the internal rename ledger and the contracts retained during migration.
 
 - `src/rc_metastudio`: application code and packaged resources
 - `r/RCMetaR`: bundled statistical package

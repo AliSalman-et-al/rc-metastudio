@@ -8,7 +8,7 @@ The retained Aminoglycosides, blood pressure and Death examples do not identify 
 
 ## Metafor HR and IRR examples
 
-These datasets are distributed in `metadat`, the companion dataset package used by metafor. The source tables are retained in [sources/metadat-ratios.json](sources/metadat-ratios.json), exported from **metadat 1.6-0** (GPL ≥ 2). The projects use RCMS format 2; the older samples retain format 1.
+These datasets are distributed in `metadat`, the companion dataset package used by metafor. The source tables are retained in [sources/metadat-ratios.json](sources/metadat-ratios.json), exported from **metadat 1.6-0** (GPL ≥ 2). Bundled projects use RCMS format 3, with independent sheets and stable arm identifiers.
 
 | Project | Data | Preserved inputs |
 | --- | --- | --- |
@@ -18,6 +18,10 @@ These datasets are distributed in `metadat`, the companion dataset package used 
 For HR, the comparison is **locoregional treatment plus chemotherapy / locoregional treatment alone**. Study years are absent in the source and remain blank. The original order is retained; a cumulative analysis in that order is not a chronological analysis. The **Chemotherapy timing** factor supports subgroup analysis (adjuvant, neoadjuvant, concomitant). RCMS uses sequential internal study IDs while retaining the original IDs, including `26.1` and `26.2`, as a covariate and in study notes. Original numeric inputs remain available through the study dialog; the table displays HR and its calculated interval.
 
 For IRR, the comparison is **anti-infective catheter / standard catheter** and the exposure unit is **catheter-days**. Inverse-variance fixed/random analyses and raw-data Mantel–Haenszel are available. This example has nine eligible studies, below RCMS's ten-study threshold for asymmetry tests. The upstream help page's opening description says 18 studies, but its displayed table, detailed description and installed dataset contain nine; the bundled project uses those nine rows without additions. Neither source example contains a double-zero IRR row; they should not be modified to manufacture a “Not estimable” demonstration.
+
+## Illustrative one-arm Mean
+
+[Illustrative-Mean.rcms](Illustrative-Mean.rcms) contains six synthetic study means, sample sizes and standard deviations for learning the one-arm workflow. These values have no clinical interpretation and are not published research. Rebuild it with `uv run python scripts/build_mean_sample.py`. The `analysis-data-onearm-mean` desktop workflow opens it, saves and reopens a copy, and compares displayed pooling with public metafor calculations.
 
 ## Sources and citation
 

@@ -14,7 +14,7 @@ import traceback
 import zipfile
 
 from tests.analysis_regression.golden.support import headless_analysis
-from rc_metastudio import meta_globals
+from rc_metastudio import analysis_adapter, application_metadata
 from rc_metastudio import r_bridge
 from rc_metastudio.analysis_results import AnalysisResult
 from rc_metastudio.plot_defaults import FOREST_ARM_LABELS
@@ -279,10 +279,15 @@ def curated_golden_bundles(root_dir=None):
             "artifacts": {"Forest plot": binary_params["fp_outpath"]},
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("amino.rcms"),
-                "binary.random",
-                binary_params,
-                metric="OR",
-                data_type=meta_globals.BINARY,
+                (
+                    analysis_adapter.make_analysis_request(
+                        data_type='binary',
+                        workflow='standard',
+                        method="binary.random",
+                        metric="OR",
+                        parameters=binary_params,
+                    ),
+                ),
             ),
         },
         {
@@ -307,10 +312,15 @@ def curated_golden_bundles(root_dir=None):
             "artifacts": {"Forest plot": continuous_params["fp_outpath"]},
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("continuous.rcms"),
-                "continuous.random",
-                continuous_params,
-                metric="SMD",
-                data_type=meta_globals.CONTINUOUS,
+                (
+                    analysis_adapter.make_analysis_request(
+                        data_type='continuous',
+                        workflow='standard',
+                        method="continuous.random",
+                        metric="SMD",
+                        parameters=continuous_params,
+                    ),
+                ),
             ),
         },
         {
@@ -335,9 +345,15 @@ def curated_golden_bundles(root_dir=None):
             "artifacts": {"Diagnostic odds ratio forest plot": diagnostic_params["fp_outpath"]},
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("lymph.rcms"),
-                ["diagnostic.random"],
-                [diagnostic_params],
-                data_type=meta_globals.DIAGNOSTIC,
+                (
+                    analysis_adapter.make_analysis_request(
+                        data_type='diagnostic',
+                        workflow='standard',
+                        method="diagnostic.random",
+                        metric="DOR",
+                        parameters=diagnostic_params,
+                    ),
+                ),
             ),
         },
         {
@@ -354,11 +370,15 @@ def curated_golden_bundles(root_dir=None):
             },
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("amino.rcms"),
-                "binary.random",
-                binary_cumulative_params,
-                metric="OR",
-                data_type=meta_globals.BINARY,
-                analysis_type="cumulative",
+                (
+                    analysis_adapter.make_analysis_request(
+                        data_type='binary',
+                        workflow='cumulative',
+                        method="binary.random",
+                        metric="OR",
+                        parameters=binary_cumulative_params,
+                    ),
+                ),
             ),
         },
         {
@@ -373,11 +393,15 @@ def curated_golden_bundles(root_dir=None):
             "artifacts": {"Leave-one-out forest plot": binary_loo_params["fp_outpath"]},
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("amino.rcms"),
-                "binary.random",
-                binary_loo_params,
-                metric="OR",
-                data_type=meta_globals.BINARY,
-                analysis_type="leave-one-out",
+                (
+                    analysis_adapter.make_analysis_request(
+                        data_type='binary',
+                        workflow='leave-one-out',
+                        method="binary.random",
+                        metric="OR",
+                        parameters=binary_loo_params,
+                    ),
+                ),
             ),
         },
         {
@@ -394,11 +418,15 @@ def curated_golden_bundles(root_dir=None):
             },
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("continuous.rcms"),
-                "continuous.random",
-                continuous_cumulative_params,
-                metric="SMD",
-                data_type=meta_globals.CONTINUOUS,
-                analysis_type="cumulative",
+                (
+                    analysis_adapter.make_analysis_request(
+                        data_type='continuous',
+                        workflow='cumulative',
+                        method="continuous.random",
+                        metric="SMD",
+                        parameters=continuous_cumulative_params,
+                    ),
+                ),
             ),
         },
         {
@@ -415,11 +443,15 @@ def curated_golden_bundles(root_dir=None):
             },
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("continuous.rcms"),
-                "continuous.random",
-                continuous_loo_params,
-                metric="SMD",
-                data_type=meta_globals.CONTINUOUS,
-                analysis_type="leave-one-out",
+                (
+                    analysis_adapter.make_analysis_request(
+                        data_type='continuous',
+                        workflow='leave-one-out',
+                        method="continuous.random",
+                        metric="SMD",
+                        parameters=continuous_loo_params,
+                    ),
+                ),
             ),
         },
         {
@@ -434,14 +466,18 @@ def curated_golden_bundles(root_dir=None):
             "artifacts": {"Regression Plot": _analysis_output_path("reg.png")},
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("amino.rcms"),
-                "meta.regression",
-                binary_regression_params,
-                metric="OR",
-                data_type=meta_globals.BINARY,
-                analysis_type="meta_regression",
-                covariates=[
+                (
+                    analysis_adapter.make_analysis_request(
+                        data_type='binary',
+                        workflow='meta-regression',
+                        method="meta.regression",
+                        metric="OR",
+                        parameters={**binary_regression_params, "measure": "OR"},
+                    ),
+                ),
+                covariates=tuple([
                     {"name": "golden_year", "type": "continuous", "values": amino_year}
-                ],
+                ]),
             ),
         },
         {
@@ -456,18 +492,22 @@ def curated_golden_bundles(root_dir=None):
             "artifacts": {"Regression Plot": _analysis_output_path("reg.png")},
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("continuous.rcms"),
-                "meta.regression",
-                continuous_regression_params,
-                metric="SMD",
-                data_type=meta_globals.CONTINUOUS,
-                analysis_type="meta_regression",
-                covariates=[
+                (
+                    analysis_adapter.make_analysis_request(
+                        data_type='continuous',
+                        workflow='meta-regression',
+                        method="meta.regression",
+                        metric="SMD",
+                        parameters={**continuous_regression_params, "measure": "SMD"},
+                    ),
+                ),
+                covariates=tuple([
                     {
                         "name": "golden_year",
                         "type": "continuous",
                         "values": continuous_year,
                     }
-                ],
+                ]),
             ),
         },
         {
@@ -482,14 +522,18 @@ def curated_golden_bundles(root_dir=None):
             "artifacts": {"Subgroup forest plot": binary_subgroup_params["fp_outpath"]},
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("amino.rcms"),
-                "binary.random",
-                binary_subgroup_params,
-                metric="OR",
-                data_type=meta_globals.BINARY,
-                analysis_type="subgroup",
-                covariates=[
+                (
+                    analysis_adapter.make_analysis_request(
+                        data_type='binary',
+                        workflow='subgroup',
+                        method="binary.random",
+                        metric="OR",
+                        parameters=binary_subgroup_params,
+                    ),
+                ),
+                covariates=tuple([
                     {"name": "golden_group", "type": "factor", "values": amino_group}
-                ],
+                ]),
             ),
         },
         {
@@ -506,18 +550,22 @@ def curated_golden_bundles(root_dir=None):
             },
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("continuous.rcms"),
-                "continuous.random",
-                continuous_subgroup_params,
-                metric="SMD",
-                data_type=meta_globals.CONTINUOUS,
-                analysis_type="subgroup",
-                covariates=[
+                (
+                    analysis_adapter.make_analysis_request(
+                        data_type='continuous',
+                        workflow='subgroup',
+                        method="continuous.random",
+                        metric="SMD",
+                        parameters=continuous_subgroup_params,
+                    ),
+                ),
+                covariates=tuple([
                     {
                         "name": "golden_group",
                         "type": "factor",
                         "values": continuous_group,
                     }
-                ],
+                ]),
             ),
         },
     ]
@@ -945,7 +993,7 @@ def _sha256(path):
 
 def _tool_versions():
     versions = {
-        "rc_metastudio": str(meta_globals.VERSION),
+        "rc_metastudio": str(application_metadata.VERSION),
         "python": sys.version.split()[0],
         "os": platform.system(),
         "platform": platform.platform(),

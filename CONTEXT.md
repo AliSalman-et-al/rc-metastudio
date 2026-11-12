@@ -2,6 +2,8 @@
 
 RC MetaStudio supports evidence synthesis and the interpretation of meta-analysis results.
 
+RC MetaStudio is an independently maintained rewrite of the original OpenMeta[Analyst] project. This describes the maintained product; original-work attribution and licensing are documented in [NOTICE.md](NOTICE.md).
+
 ## Language
 
 **Sheet**:
@@ -21,6 +23,12 @@ Data recording whether an event occurred in each participant.
 
 **Continuous data**:
 Data describing a measured quantity, such as a mean with its uncertainty.
+
+**Mean**:
+The mean continuous outcome for one study arm. It is distinct from a mean
+difference between arms. Entered coefficients and generic estimates retain
+their own descriptive labels.
+_Avoid_: Treatment-specific mean
 
 **Diagnostic data**:
 Data describing an index test's performance against a reference standard.

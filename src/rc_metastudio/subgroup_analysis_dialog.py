@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QMessageBox
 from rc_metastudio import adaptive_controls
 from rc_metastudio import adaptive_window
 from rc_metastudio import app_error_handler
-from rc_metastudio.meta_globals import FACTOR
+from rc_metastudio.analysis_catalog import FACTOR
 
 if TYPE_CHECKING:
     import ui_subgroup_analysis_dialog as _ui_subgroup_analysis_dialog

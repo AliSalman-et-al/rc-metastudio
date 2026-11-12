@@ -110,7 +110,7 @@
         "r/RCMetaR/R/binary_methods.R: rma.uni(...) and related metafor analysis calls",
         "r/RCMetaR/R/continuous_methods.R: rma.uni(...) and related metafor analysis calls",
         "r/RCMetaR/R/diagnostic_methods.R: rma.uni(...) and related metafor analysis calls",
-        "r/RCMetaR/R/meta_reg.R: rma.uni(...) and related metafor analysis calls"
+        "r/RCMetaR/R/meta_regression.R: rma.uni(...) and related metafor analysis calls"
       ],
       "reason": "Core binary, continuous, diagnostic, and meta-regression methods call metafor analysis functions.",
       "installed_version": "5.0-1"
@@ -120,7 +120,7 @@
       "source": "cran",
       "scope": ["runtime"],
       "declared_in": ["r/RCMetaR/DESCRIPTION"],
-      "evidence": ["r/RCMetaR/R/publication_bias.R: meta::metabias(...) and meta::trimfill(...)"],
+      "evidence": ["r/RCMetaR/R/small_study_effects.R: meta::metabias(...) and meta::trimfill(...)"],
       "reason": "Pinned meta 8.5-0 owns the supported classical small-study effects methods and trim-and-fill behavior.",
       "installed_version": "8.5-0"
     },
@@ -173,7 +173,7 @@
       "source": "base-runtime",
       "scope": ["runtime"],
       "declared_in": ["r/RCMetaR/DESCRIPTION"],
-      "evidence": ["r/RCMetaR/R/classes.R: setClass(...)"],
+      "evidence": ["r/RCMetaR/R/analysis_data_classes.R: setClass(...)"],
       "reason": "RCMetaR defines S4 data and analysis specification classes with methods::setClass.",
       "installed_version": "4.6.0"
     },
@@ -183,8 +183,8 @@
       "scope": ["runtime"],
       "declared_in": ["r/RCMetaR/DESCRIPTION"],
       "evidence": [
-        "r/RCMetaR/R/meta_methods.R: bootstrap analysis uses boot(...)",
-        "r/RCMetaR/R/meta_reg.R: boot(...) and boot.ci(...)"
+        "r/RCMetaR/R/repeated_analyses.R: bootstrap analysis uses boot(...)",
+        "r/RCMetaR/R/meta_regression.R: boot(...) and boot.ci(...)"
       ],
       "reason": "Bootstrap analysis workflows use boot resampling and confidence interval helpers.",
       "installed_version": "1.3-32"

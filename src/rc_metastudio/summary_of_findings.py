@@ -1,5 +1,5 @@
 """Reviewers' cross-outcome summary, recalculated on every opening."""
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 import copy
 from rc_metastudio import app_error_handler, qt_layout
 from PyQt6 import QtCore, QtWidgets
@@ -7,6 +7,7 @@ from rc_metastudio.analysis_results import ResultSection, ResultTable
 from rc_metastudio.manuscript_report import ManuscriptReport, write_docx, write_pdf
 from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
 from rc_metastudio.dataset_table_model import DatasetTableModel
+from rc_metastudio.analysis_dataset import Dataset
 from rc_metastudio.progress_dialog import AnalysisProgressDialog
 
 
@@ -51,13 +52,15 @@ def _sheet_values(parent, window, sheet):
     values = [sheet.name, '–', '–', 'No analysable data']
     setup = None
     try:
-        model = DatasetTableModel(dataset=copy.deepcopy(window.model.dataset), add_blank_study=False)
+        model = DatasetTableModel(dataset=Dataset(
+            title=window.model.dataset.title, notes=window.model.dataset.notes,
+            sheets=[copy.deepcopy(sheet)]), add_blank_study=False)
         model.set_current_sheet(sheet.id)
         if len(model.get_studies()) < 2:
             raise ValueError('Too little data: at least two studies are needed')
         setup = AnalysisSetupDialog(model, analysis_service=window.analysis_service,
                                     confidence_level=model.get_confidence_level(),
-                                    diagnostic_metrics=("sens", "spec") if model.get_current_outcome_type() == "diagnostic" else None, parent=parent)
+                                    diagnostic_metrics=("sens", "spec") if model.get_current_data_type() == "diagnostic" else None, parent=parent)
         result = setup._with_result_identity(window.analysis_service.execute(model, setup.analysis_requests()))
         effects = _effect_labels(result, model.current_effect)
         effect = '; '.join(effects)

@@ -4,7 +4,7 @@ from PyQt6 import QtCore, QtWidgets
 
 
 def check(app, form, sample, record):
-    from tests.python.gui.test_types import mouse_click, wait
+    from tests.python.gui.qt_test_support import mouse_click, wait
 
     screen = form.screen()
     assert screen is not None

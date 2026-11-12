@@ -28,8 +28,8 @@ def start_automation(phase_callback=None):
 def _start_package_application(phase_callback=None):
     app, window = start_automation(phase_callback=phase_callback)
     app.processEvents()
-    from rc_metastudio import r_backend
-    if not r_backend.is_ready():
+    from rc_metastudio import r_runtime
+    if not r_runtime.is_ready():
         raise RuntimeError("Packaged application R startup failed")
     return app, window
 

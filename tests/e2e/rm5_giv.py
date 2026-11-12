@@ -5,7 +5,7 @@ import subprocess
 import locale
 import xml.etree.ElementTree as ET
 from PyQt6 import QtCore, QtWidgets
-from rc_metastudio.runtime_types import required
+from rc_metastudio.qt_object_guard import required
 from scripts.r_verification_support import resolve_rscript
 from rc_metastudio import r_bridge
 from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog

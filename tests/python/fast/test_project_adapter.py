@@ -8,6 +8,27 @@ from rc_metastudio.workspace_session import WorkspaceSession
 from tests.python.fast.test_project_format import _group_project, _legacy_state
 
 
+def test_raw_values_added_to_omitted_arms_are_dirty_and_survive_reopen(tmp_path):
+    from rc_metastudio.project_format import load_project
+    from rc_metastudio.qt_object_guard import required
+
+    project = _group_project("binary", None, [[1, 10], [2, 20]])
+    project["sheets"][0]["rows"][0]["raw_data"] = {}
+    document = ProjectDocument(3, project, dict(schema_version=3, current_sheet_id=project["sheets"][0]["id"]))
+    session = WorkspaceSession(document)
+    runtime = required(session.runtime, "workspace runtime")
+    unit = runtime.dataset.sheets[0].rows[0].analysis_unit
+    assert not project_adapter.dataset_to_project(runtime.dataset)["sheets"][0]["rows"][0]["raw_data"]
+    for arm, cells in zip(unit.arms_by_id.values(), ([1, 10], [2, 20]), strict=True):
+        arm.raw_data[:] = cells
+    session.checkpoint()
+    assert session.is_dirty and session.can_undo
+    target = tmp_path / "new-raw.rcms"
+    session.save(target)
+    restored = project_adapter.document_to_runtime_project(load_project(target))
+    assert [arm.raw_data for arm in restored.dataset.sheets[0].rows[0].analysis_unit.arms_by_id.values()] == [[1, 10], [2, 20]]
+
+
 def _legacy_multi_arm_project(family: str) -> JsonObject:
     data_type = {"binary": 0, "continuous": 1}[family]
     subtype = {"binary": "proportions", "continuous": "means"}[family]
@@ -39,7 +60,7 @@ def _legacy_multi_arm_project(family: str) -> JsonObject:
                             "groups": [
                                 {
                                     "id": index,
-                                    "name": f"Tx {index + 1}",
+                                    "name": f"Arm {index + 1}",
                                     "raw_data": raw,
                                 }
                                 for index, raw in enumerate(raw_values)
@@ -74,7 +95,7 @@ def test_adapter_round_trip_preserves_every_multi_arm_group(family):
     project = _multi_arm_project(family)
     dataset = project_adapter.project_to_dataset(copy.deepcopy(project))
     assert project_adapter.dataset_to_project(dataset) == project
-    assert list(dataset.sheets[0].rows[0].analysis_unit.arms) == ["Tx 1", "Tx 2", "Tx 3"]
+    assert list(dataset.sheets[0].rows[0].analysis_unit.arms) == ["Arm 1", "Arm 2", "Arm 3"]
 
 
 def _identities(dataset):
@@ -101,21 +122,21 @@ def test_entered_effect_edits_survive_history_and_save(tmp_path):
     assert runtime is not None
     unit = runtime.dataset.sheets[0].rows[0].analysis_unit
     key = (sheet["arms"][0]["id"],)
-    unit.set_effect_for_source("entered", "TX Mean", key, 1.5, None, None)
+    unit.set_effect_for_source("entered", "Mean", key, 1.5, None, None)
     session.checkpoint()
     assert session.is_dirty and session.can_undo
-    unit.set_effect_for_source("entered", "TX Mean", key, 1.5, None, None, .2)
+    unit.set_effect_for_source("entered", "Mean", key, 1.5, None, None, .2)
     session.checkpoint()
     runtime.dataset.sheets[0].rows[0].include = False
     session.checkpoint()
     assert session.undo()
     assert session.runtime is not None
     restored = session.runtime.dataset.sheets[0].rows[0].analysis_unit
-    assert restored.get_effect_for_source("entered", "TX Mean", key).standard_error == .2
+    assert restored.get_effect_for_source("entered", "Mean", key).standard_error == .2
     assert session.undo()
     assert session.runtime is not None
     restored = session.runtime.dataset.sheets[0].rows[0].analysis_unit
-    effect = restored.get_effect_for_source("entered", "TX Mean", key)
+    effect = restored.get_effect_for_source("entered", "Mean", key)
     assert effect.estimate == 1.5 and effect.standard_error is None
     assert session.redo()
     destination = tmp_path / "entered.rcms"
@@ -123,7 +144,7 @@ def test_entered_effect_edits_survive_history_and_save(tmp_path):
     reopened = WorkspaceSession()
     reopened.open(destination)
     assert reopened.runtime is not None
-    effect = reopened.runtime.dataset.sheets[0].rows[0].analysis_unit.get_effect_for_source("entered", "TX Mean", key)
+    effect = reopened.runtime.dataset.sheets[0].rows[0].analysis_unit.get_effect_for_source("entered", "Mean", key)
     assert effect.estimate == 1.5 and effect.standard_error == .2
 
 
@@ -143,7 +164,7 @@ def test_document_to_runtime_project_reconstructs_state_and_selection():
     assert [s.name for s in runtime.dataset.sheets] == ["Outcome"]
     assert runtime.model_state == {"current_sheet_id": "sheet"}
     assert runtime.dataset.sheets[0].settings == project["sheets"][0]["settings"]
-    assert runtime.restored_selection is True
+    assert runtime.restored_active_sheet is True
 
 
 

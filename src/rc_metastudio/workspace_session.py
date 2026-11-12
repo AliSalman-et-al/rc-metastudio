@@ -23,12 +23,14 @@ RuntimeProject = project_adapter.RuntimeProject
 InstallRuntime = Callable[[RuntimeProject], None]
 
 
-@dataclass(frozen=True, slots=True)
-class WorkspaceChange:
-    """One complete before/after replacement in the durable workspace."""
+MAX_UNDO_CHANGES = 100
 
+
+@dataclass(slots=True)
+class WorkspaceTransaction:
     before: RuntimeProject
-    after: RuntimeProject
+    forced_dirty: bool
+    depth: int = 1
 
 
 def _copy_runtime(runtime: RuntimeProject) -> RuntimeProject:
@@ -60,11 +62,10 @@ class WorkspaceSession:
         self._runtime = _validated_runtime(document) if document is not None else None
         self._checkpoint = _copy_runtime(self._runtime) if self._runtime else None
         self._path = Path(path) if path is not None else None
-        self._history: list[WorkspaceChange] = []
-        self._redo: list[WorkspaceChange] = []
+        self._history: list[RuntimeProject] = []
+        self._redo: list[RuntimeProject] = []
         self._forced_dirty = False
-        self._transaction_checkpoint: RuntimeProject | None = None
-        self._transaction_depth = 0
+        self._transaction: WorkspaceTransaction | None = None
         document = self.document
         self._saved_digest = _document_digest(document) if document else None
 
@@ -119,57 +120,71 @@ class WorkspaceSession:
             return
         if expected_digest is not None and expected_digest == self._saved_digest:
             self._saved_digest = current_digest
-        if self._transaction_checkpoint is not None:
+        if self._transaction is not None:
             return
         assert self._checkpoint is not None
         if current_digest == self._checkpoint_digest():
             return
-        before = _copy_runtime(self._checkpoint)
-        after = _copy_runtime(self._runtime)
-        self._history.append(WorkspaceChange(before, after))
-        self._redo.clear()
+        self._record_before(RuntimeProject(
+            self._checkpoint.dataset, dict(self._runtime.model_state),
+            self._runtime.restored_active_sheet,
+        ))
         self._checkpoint = _copy_runtime(self._runtime)
+
+    def _record_before(self, before: RuntimeProject) -> None:
+        self._history.append(before)
+        del self._history[:-MAX_UNDO_CHANGES]
+        self._redo.clear()
+
+    def _require_idle(self) -> None:
+        if self._transaction is not None:
+            raise RuntimeError("cannot replace, save or navigate history during a transaction")
 
     def select_sheet(self, sheet_id) -> None:
         """Selection is navigation, not a separate undoable edit."""
-        for runtime in (self._runtime, self._checkpoint):
-            if runtime is not None:
-                runtime.model_state["current_sheet_id"] = sheet_id
+        if self._runtime is not None:
+            self._runtime.model_state["current_sheet_id"] = sheet_id
 
     def begin_change(self) -> None:
         """Start one atomic UI operation."""
         if self._runtime is None:
             raise ValueError("cannot edit an empty workspace")
-        if self._transaction_depth == 0:
-            self._transaction_checkpoint = _copy_runtime(self._runtime)
-        self._transaction_depth += 1
+        if self._transaction is None:
+            self._transaction = WorkspaceTransaction(
+                _copy_runtime(self._runtime), self._forced_dirty
+            )
+        else:
+            self._transaction.depth += 1
+
+    def abort_change(self) -> RuntimeProject | None:
+        """Abort the entire nested operation; return the graph to reinstall."""
+        transaction = self._transaction
+        if transaction is None:
+            return None
+        self._transaction = None
+        self._runtime = transaction.before
+        self._checkpoint = _copy_runtime(self._runtime)
+        self._forced_dirty = transaction.forced_dirty
+        return self._runtime
 
     def end_change(self) -> None:
         """Publish the current graph as one history entry."""
-        if self._transaction_depth == 0:
+        transaction = self._transaction
+        if transaction is None:
             return
-        self._transaction_depth -= 1
-        if self._transaction_depth:
+        transaction.depth -= 1
+        if transaction.depth:
             return
-        checkpoint = self._transaction_checkpoint
-        self._transaction_checkpoint = None
-        if checkpoint is None or self._runtime is None:
-            return
-        try:
-            current_digest = self._runtime_digest()
-            checkpoint_digest = _document_digest(
-                project_adapter.runtime_project_to_document(checkpoint)
-            )
-        except project_adapter.ProjectAdapterError:
-            self._forced_dirty = True
-            self._checkpoint = _copy_runtime(self._runtime)
-            return
-        if checkpoint_digest == current_digest:
-            self._checkpoint = _copy_runtime(self._runtime)
-            return
-        self._history.append(WorkspaceChange(checkpoint, _copy_runtime(self._runtime)))
-        self._redo.clear()
+        checkpoint = transaction.before
+        current_digest = self._runtime_digest()
+        checkpoint_digest = _document_digest(
+            project_adapter.runtime_project_to_document(checkpoint)
+        )
+        assert self._runtime is not None
         self._checkpoint = _copy_runtime(self._runtime)
+        if checkpoint_digest != current_digest:
+            self._record_before(checkpoint)
+        self._transaction = None
 
     def _runtime_digest(self) -> str:
         assert self._runtime is not None
@@ -219,10 +234,8 @@ class WorkspaceSession:
     ) -> None:
         """Validate all replacement data before changing the live workspace."""
         candidate = _validated_runtime(document)
-        previous = self._runtime
-        if previous is not None and record_history:
-            self._history.append(WorkspaceChange(_copy_runtime(previous), candidate))
-            self._redo.clear()
+        if self._runtime is not None and record_history and self._transaction is None:
+            self._record_before(_copy_runtime(self._runtime))
         self._runtime = candidate
         self._checkpoint = _copy_runtime(candidate)
         if path is not None:
@@ -234,7 +247,7 @@ class WorkspaceSession:
         state: Mapping[str, JsonValue],
     ) -> None:
         """Publish one validated project/state pair as one undoable change."""
-        self.replace(ProjectDocument(1, dict(project), dict(state)))
+        self.replace(ProjectDocument(project_format.CURRENT_FORMAT_VERSION, dict(project), dict(state)))
 
     def open(
         self, path: str | Path, *, install: InstallRuntime | None = None
@@ -245,15 +258,14 @@ class WorkspaceSession:
         candidate in another representation before this session commits it.
         If installation fails, this session remains untouched.
         """
+        self._require_idle()
         candidate = _validated_runtime(project_format.load_project(path))
         if install is not None:
             previous_runtime = self._runtime
-            previous_checkpoint = (
-                _copy_runtime(self._checkpoint) if self._checkpoint else None
-            )
+            previous_checkpoint = self._checkpoint
             previous_path = self._path
-            previous_history = copy.deepcopy(self._history)
-            previous_redo = copy.deepcopy(self._redo)
+            previous_history = list(self._history)
+            previous_redo = list(self._redo)
             previous_saved_digest = self._saved_digest
             previous_forced_dirty = self._forced_dirty
             try:
@@ -273,7 +285,6 @@ class WorkspaceSession:
         self._history.clear()
         self._redo.clear()
         self._saved_digest = self._runtime_digest()
-        self._checkpoint = _copy_runtime(self._runtime)
         self._forced_dirty = False
         loaded = self.document
         if loaded is None:
@@ -283,6 +294,7 @@ class WorkspaceSession:
         return loaded
 
     def new(self, document: ProjectDocument, path: str | Path | None = None) -> None:
+        self._require_idle()
         candidate = _validated_runtime(document)
         self._runtime = candidate
         self._checkpoint = _copy_runtime(candidate)
@@ -292,14 +304,14 @@ class WorkspaceSession:
         self._saved_digest = self._runtime_digest()
         self._forced_dirty = False
 
-    def start_new_document(self) -> None:
+    def start_new_document(self, *, keep_last_change: bool = False) -> None:
         """Start an unnamed document while preserving the live runtime identity."""
         if self._runtime is None:
             raise ValueError("cannot start a new document in an empty workspace")
-        if self._transaction_depth:
+        if self._transaction is not None:
             raise RuntimeError("cannot start a new document during a transaction")
         self._path = None
-        self._history.clear()
+        self._history[:] = self._history[-1:] if keep_last_change else []
         self._redo.clear()
         self._checkpoint = _copy_runtime(self._runtime)
         self._saved_digest = None
@@ -310,6 +322,7 @@ class WorkspaceSession:
         path: str | Path | None = None,
     ) -> Path:
         """Persist the canonical live runtime without changing its identity."""
+        self._require_idle()
         current = self._runtime
         if current is None:
             raise ValueError("cannot save an empty workspace")
@@ -333,6 +346,7 @@ class WorkspaceSession:
         return destination
 
     def mark_saved(self) -> None:
+        self._require_idle()
         if self._runtime is None:
             raise ValueError("cannot mark an empty workspace as saved")
         self._saved_digest = self._runtime_digest()
@@ -344,26 +358,24 @@ class WorkspaceSession:
         self._forced_dirty = True
 
     def undo(self) -> bool:
+        self._require_idle()
         if not self._history or self._runtime is None:
             return False
-        change = self._history.pop()
-        self._redo.append(
-            WorkspaceChange(_copy_runtime(change.after), _copy_runtime(self._runtime))
-        )
-        self._runtime = _copy_runtime(change.before)
-        self._checkpoint = _copy_runtime(self._runtime)
+        assert self._checkpoint is not None
+        self._redo.append(self._checkpoint)
+        self._checkpoint = self._history.pop()
+        self._runtime = _copy_runtime(self._checkpoint)
         self._forced_dirty = False
         return True
 
     def redo(self) -> bool:
+        self._require_idle()
         if not self._redo or self._runtime is None:
             return False
-        change = self._redo.pop()
-        self._history.append(
-            WorkspaceChange(_copy_runtime(self._runtime), _copy_runtime(change.before))
-        )
-        self._runtime = _copy_runtime(change.before)
-        self._checkpoint = _copy_runtime(self._runtime)
+        assert self._checkpoint is not None
+        self._history.append(self._checkpoint)
+        self._checkpoint = self._redo.pop()
+        self._runtime = _copy_runtime(self._checkpoint)
         self._forced_dirty = False
         return True
 

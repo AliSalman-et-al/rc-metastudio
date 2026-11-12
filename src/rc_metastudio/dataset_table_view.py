@@ -11,7 +11,6 @@ from PyQt6 import QtCore, QtWidgets, QtGui
 from PyQt6.QtCore import (
     QEvent,
     QObject,
-    QRegularExpression,
     QSignalBlocker,
     Qt,
     pyqtSignal,
@@ -33,17 +32,10 @@ from rc_metastudio import continuous_data_dialog
 from rc_metastudio import diagnostic_data_dialog
 from rc_metastudio import app_error_handler
 from rc_metastudio import qt_layout
-from rc_metastudio import meta_globals
 from rc_metastudio import qt_text
-from rc_metastudio import tabular_data
-from rc_metastudio.analysis_dataset import StudyRow
-from rc_metastudio.meta_globals import (
-    BINARY_ONE_ARM_METRICS,
-    CONTINUOUS,
-    CONTINUOUS_ONE_ARM_METRICS,
-    TWO_ARM_METRICS,
-)
-from rc_metastudio.runtime_types import required
+from rc_metastudio import row_padding
+from rc_metastudio.analysis_catalog import BINARY_ONE_ARM_METRICS, CONTINUOUS, CONTINUOUS_ONE_ARM_METRICS, TWO_ARM_METRICS
+from rc_metastudio.qt_object_guard import required
 from rc_metastudio.qt_workspace_columns import WorkspaceColumnWidthController
 
 if TYPE_CHECKING:
@@ -60,9 +52,10 @@ class MainWindowProtocol(Protocol):
     twoArmMetricMenu: QMenu
 
     def data_dirtied(self) -> None: ...
+    def _commit_model_operation(self, operation) -> None: ...
     def data_error(self, message: str) -> None: ...
     def delete_study(self, study, *, study_index: int) -> None: ...
-    def edit_group_name(self, group: str) -> None: ...
+    def edit_arm_name(self, current_arm_name: str) -> None: ...
     def rename_covariate(self, covariate) -> None: ...
     def delete_covariate(self, covariate) -> None: ...
     def change_covariate_type(self, covariate) -> None: ...
@@ -75,7 +68,7 @@ class MainWindowProtocol(Protocol):
     def redo(self) -> None: ...
 
 
-_newlines_re = QRegularExpression("\r\n?")
+
 
 
 def _connect_action(action, callback):
@@ -85,27 +78,6 @@ def _connect_action(action, callback):
     )
 
 
-def _to_text(value):
-    return qt_text.to_native_text(value)
-
-
-def _restore_table_selection(table, selected_cells, current_cell):
-    model = table.model()
-    selection_model = table.selectionModel()
-    if model is None or selection_model is None:
-        return
-    selection_model.clearSelection()
-    select = QtCore.QItemSelectionModel.SelectionFlag.Select
-    for row, column in selected_cells:
-        index = model.index(row, column)
-        if index.isValid():
-            selection_model.select(index, select)
-    if current_cell is not None:
-        index = model.index(*current_cell)
-        if index.isValid():
-            selection_model.setCurrentIndex(
-                index, QtCore.QItemSelectionModel.SelectionFlag.NoUpdate
-            )
 
 
 class DatasetTableView(QtWidgets.QTableView):
@@ -113,7 +85,6 @@ class DatasetTableView(QtWidgets.QTableView):
 
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
-        self._batch_editing = False
         self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.DoubleClicked | QtWidgets.QAbstractItemView.EditTrigger.EditKeyPressed | QtWidgets.QAbstractItemView.EditTrigger.AnyKeyPressed)
         self.setAccessibleName("Study data")
         self.setAccessibleDescription("Study rows and input columns. Gold marks the effect size and confidence interval columns. Press Enter to edit a cell or use the row calculator. Ctrl+Tab leaves the grid.")
@@ -234,8 +205,8 @@ class DatasetTableView(QtWidgets.QTableView):
 
     def _hide_ratio_input_details(self):
         model = self.model()
-        details = model.OUTCOMES[3:] if model.get_current_outcome_type() in ("time_to_event", "event_rates") else []
-        subtype = model.get_current_outcome_subtype()
+        details = model.OUTCOMES[3:] if model.get_current_data_type() in ("time_to_event", "event_rates") else []
+        subtype = model.get_current_data_subtype()
         if subtype == "proportion":
             details += model.RAW_DATA[2:]
         elif subtype == "mean":
@@ -307,7 +278,7 @@ class DatasetTableView(QtWidgets.QTableView):
         raw_data_columns = self.model().RAW_DATA
         outcomes_columns = self.model().OUTCOMES
 
-        data_type = self.model().get_current_outcome_type()
+        data_type = self.model().get_current_data_type()
 
         context_menu = QMenu(self)
 
@@ -337,19 +308,19 @@ class DatasetTableView(QtWidgets.QTableView):
             context_menu.addAction(action_sort)
 
         elif column_clicked in raw_data_columns and not data_type == "diagnostic":
-            columns_per_group = 3 if data_type == "continuous" else 2
-            group_index = raw_data_columns.index(column_clicked) // columns_per_group
-            corresponding_group = self.model().arm_names[group_index]
+            columns_per_arm = 3 if data_type == "continuous" else 2
+            arm_index = raw_data_columns.index(column_clicked) // columns_per_arm
+            arm_name = self.model().arm_names[arm_index]
 
             # renaming
-            action_rename = QAction("Rename group %s…" % corresponding_group, self)
+            action_rename = QAction("Rename group %s…" % arm_name, self)
             _connect_action(
                 action_rename,
-                lambda: self._main_gui().edit_group_name(corresponding_group),
+                lambda: self._main_gui().edit_arm_name(arm_name),
             )
             context_menu.addAction(action_rename)
             # sorting
-            col_name = _to_text(
+            col_name = qt_text.to_native_text(
                 self.model().headerData(column_clicked, Qt.Orientation.Horizontal)
             )
             action_sort = QAction("Sort studies by %s" % col_name, self)
@@ -357,7 +328,7 @@ class DatasetTableView(QtWidgets.QTableView):
             context_menu.addAction(action_sort)
         elif column_clicked in raw_data_columns and data_type == "diagnostic":
             # sorting
-            col_name = _to_text(
+            col_name = qt_text.to_native_text(
                 self.model().headerData(column_clicked, Qt.Orientation.Horizontal)
             )
             action_sort = QAction("Sort studies by %s" % col_name, self)
@@ -365,7 +336,7 @@ class DatasetTableView(QtWidgets.QTableView):
             context_menu.addAction(action_sort)
         elif column_clicked in outcomes_columns:
             # sorting
-            col_name = _to_text(
+            col_name = qt_text.to_native_text(
                 self.model().headerData(column_clicked, Qt.Orientation.Horizontal)
             )
             action_sort = QAction("Sort studies by %s" % col_name, self)
@@ -487,13 +458,11 @@ class DatasetTableView(QtWidgets.QTableView):
             return False
 
         owner = self._main_gui()
-        owner.workspace.begin_change()
-        try:
+        def clear():
             for index in editable_indexes:
                 model.setData(index, "")
             model.reset_model()
-        finally:
-            owner.workspace.end_change()
+        owner._commit_model_operation(clear)
         self._enable_analysis_menus_if_appropriate()
         return True
 
@@ -506,8 +475,7 @@ class DatasetTableView(QtWidgets.QTableView):
             return
         columns = sorted({index.column() for index in indexes})
         owner = self._main_gui()
-        owner.workspace.begin_change()
-        try:
+        def fill():
             model = self.model()
             for column in columns:
                 rows = sorted(index.row() for index in indexes if index.column() == column)
@@ -516,8 +484,7 @@ class DatasetTableView(QtWidgets.QTableView):
                     index = model.index(row, column)
                     if model.flags(index) & Qt.ItemFlag.ItemIsEditable:
                         model.setData(index, value)
-        finally:
-            owner.workspace.end_change()
+        owner._commit_model_operation(fill)
 
     def _move_current_index_vertically(self, row_delta):
         self._move_index_vertically_from(self.currentIndex(), row_delta)
@@ -557,8 +524,8 @@ class DatasetTableView(QtWidgets.QTableView):
         self._enable_analysis_menus_if_appropriate()
 
     def row_header_clicked(self, row):
-        from rc_metastudio import r_backend
-        if not r_backend.is_ready():
+        from rc_metastudio import r_runtime
+        if not r_runtime.is_ready():
             return
         if row > len(self.model().get_studies(False)) - 1:
             return
@@ -570,13 +537,11 @@ class DatasetTableView(QtWidgets.QTableView):
             # dispatch on the data type
             form = None
             study_index = row
-            analysis_unit = copy.deepcopy(
-                self.model().get_current_analysis_unit_for_study(study_index)
-            )
+            analysis_unit = self.model().get_current_analysis_unit_for_study(study_index).copy_for_edit()
             arm_names = self.model().arm_names
             current_effect = self.model().current_effect
             arm_key = self.model().get_current_arm_key()
-            data_type = self.model().get_current_outcome_type()
+            data_type = self.model().get_current_data_type()
 
             if data_type == "binary":
                 form = binary_data_dialog.BinaryDataDialog(
@@ -607,13 +572,13 @@ class DatasetTableView(QtWidgets.QTableView):
                     confidence_level=self.model().get_confidence_level(),
                     parent=self,
                 )
-            study_name = _to_text(self.model().data(self.model().index(row, self.model().NAME)))
+            study_name = qt_text.to_native_text(self.model().data(self.model().index(row, self.model().NAME)))
             form.setWindowTitle(f"Study data — {study_name}")
             if form.exec():
                 self.model().set_current_analysis_unit_for_study(
                     study_index, form.analysis_unit
                 )
-                self.model().try_to_update_outcomes()
+                self.model().update_all_effect_previews()
                 self.model().reset_model()
                 self._enable_analysis_menus_if_appropriate()
                 self.synchronize_column_widths()
@@ -628,23 +593,6 @@ class DatasetTableView(QtWidgets.QTableView):
         # the only durable history.
         self._enable_analysis_menus_if_appropriate()
 
-    def _new_eq_old(self, old, new):
-        """None and "" are the same for table-edit comparisons."""
-        if hasattr(old, "include") or hasattr(new, "include"):
-            return old == new
-
-        blank_vals = meta_globals.EMPTY_VALS
-
-        # transform into normal string:
-        if old is not None:
-            old = _to_text(old)
-        if new is not None:
-            new = _to_text(new)
-
-        if old in blank_vals and new in blank_vals:
-            return True
-
-        return old == new
 
     def change_metric_if_appropriate(self):
         """if:
@@ -661,7 +609,7 @@ class DatasetTableView(QtWidgets.QTableView):
         original_metric = self.model().current_effect
 
         if len(self.model().get_studies(False)) > 2:
-            data_type = self.model().get_current_outcome_type()
+            data_type = self.model().get_current_data_type()
             if data_type == "binary" or data_type == "continuous":
                 default_metric = {
                     "binary": BINARY_ONE_ARM_METRICS[0],
@@ -698,10 +646,8 @@ class DatasetTableView(QtWidgets.QTableView):
         self.reverse_column_sorts[column] = not self.reverse_column_sorts[column]
         self.dataDirtied.emit()
 
-    def _normalize_newlines(self, qstr_text):
-        if isinstance(qstr_text, str):
-            return qstr_text.replace("\r\n", "\n").replace("\r", "\n")
-        return qstr_text.replace(_newlines_re, "\n")
+    def _normalize_newlines(self, text: str) -> str:
+        return text.replace("\r\n", "\n").replace("\r", "\n")
 
     def paste_from_clipboard(self, upper_left_index):
         """Pastes the data in the clipboard starting at the currently selected cell."""
@@ -724,7 +670,6 @@ class DatasetTableView(QtWidgets.QTableView):
 
         if not self.paste_contents(upper_left_index, new_content):
             return False
-        self._last_paste_committed = True
         active_model = self.model()
         self.setCurrentIndex(active_model.index(*origin))
         return True
@@ -761,7 +706,7 @@ class DatasetTableView(QtWidgets.QTableView):
                 current_index = self.model().createIndex(row, col)
                 cur_data = self.model().data(current_index, Qt.ItemDataRole.EditRole)
                 if cur_data is not None:
-                    cur_str = _to_text(cur_data)
+                    cur_str = qt_text.to_native_text(cur_data)
                     current_row.append(cur_str)
                 else:
                     current_row.append("")
@@ -801,7 +746,7 @@ class DatasetTableView(QtWidgets.QTableView):
                     index = candidate.createIndex(
                         origin_row + src_row, columns[src_col]
                     )
-                    if candidate.get_current_outcome_type() in ("time_to_event", "event_rates") and columns[src_col] in candidate.OUTCOMES[:3] and not candidate.flags(index) & Qt.ItemFlag.ItemIsEditable:
+                    if candidate.get_current_data_type() in ("time_to_event", "event_rates") and columns[src_col] in candidate.OUTCOMES[:3] and not candidate.flags(index) & Qt.ItemFlag.ItemIsEditable:
                         raise ValueError("Calculated ratios cannot be pasted over. Click the study row number to edit its original inputs.")
                     if not candidate.setData(index, value):
                         error = getattr(candidate, "last_data_error", None) or "Clipboard value cannot be used"
@@ -882,18 +827,13 @@ class DatasetTableView(QtWidgets.QTableView):
                 num_included += 1
         return num_included
 
-    def _add_new_row(self):
-        """Add a row beneath the existing rows."""
-        model = self.model()
-        cur_row_count = model.rowCount()
-        model.insertRow(cur_row_count)
 
     def _str_to_matrix(self, text, col_delimiter="\t", row_delimiter="\n"):
         """Transforms raw text (e.g., from the clipboard) to a structured matrix"""
         return list(csv.reader(io.StringIO(text, newline=""), delimiter=col_delimiter))
 
     def _normalize_matrix_rows(self, matrix):
-        return tabular_data.normalize_rows(matrix)
+        return row_padding.normalize_rows(matrix)
 
     def _is_blank_row(self, r):
         return len(r) == 1 and r[0] == ""
@@ -973,4 +913,4 @@ class StudyDelegate(QItemDelegate):
     def setEditorData(self, editor, index):
         # used to be Qt.DisplayRole
         text = index.model().data(index, Qt.ItemDataRole.EditRole)
-        editor.setText(_to_text(text))
+        editor.setText(qt_text.to_native_text(text))

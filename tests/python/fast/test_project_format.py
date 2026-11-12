@@ -77,7 +77,7 @@ def _legacy_group_project(
                             "groups": [
                                 {
                                     "id": index,
-                                    "name": f"Tx {index + 1}",
+                                    "name": f"Arm {index + 1}",
                                     "raw_data": raw,
                                 }
                                 for index, raw in enumerate(raw_values)
@@ -102,7 +102,7 @@ def _legacy_group_project(
 
 
 def _group_project(family, subtype, raw_values):
-    arms = [{"id": f"arm:{i}", "name": f"Tx {i + 1}"} for i in range(len(raw_values))]
+    arms = [{"id": f"arm:{i}", "name": f"Arm {i + 1}"} for i in range(len(raw_values))]
     return {"schema_version": CURRENT_FORMAT_VERSION, "title": "Group contract", "notes": "",
             "sheets": [{"id": "sheet", "name": "Outcome", "family": family,
                         "data_type": {"binary": 0, "continuous": 1, "diagnostic": 2}[family],

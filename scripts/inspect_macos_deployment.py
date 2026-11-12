@@ -1435,9 +1435,8 @@ def _inventory_directory(
         folded[key] = relative
         if path.is_symlink():
             record = _inventory_symlink(path, app_root)
-            is_native = False
         else:
-            record, is_native = _inventory_file(
+            record, _ = _inventory_file(
                 path, app_root, architecture, minimum_macos, r_delivery_kind
             )
         records.append(record)
