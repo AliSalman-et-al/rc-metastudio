@@ -42,6 +42,26 @@ def test_workspace_numeric_edit_rejects_ambiguous_decimal_text_without_mutation(
         assert model.current_sheet.rows[0].covariate_values["Dose"] == 5.5
 
 
+@pytest.mark.parametrize("data_type,subtype,fields", [
+    (analysis_catalog.BINARY, "proportion", ("events", "total")),
+    (analysis_catalog.CONTINUOUS, "mean", ("N", "mean", "SD")),
+])
+@pytest.mark.parametrize("role", [Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.ToolTipRole])
+def test_single_arm_headers_are_safe_before_view_hides_reserved_columns(data_type, subtype, fields, role):
+    # Qt queries all headers when attaching a model, before columns are hidden.
+    # Preserve real arm labels and leave the absent arm's reserved columns blank.
+    sheet = analysis_dataset.Sheet(SheetId("single"), "Measurement", data_type,
+        sub_type=subtype, arms=[analysis_dataset.Arm(ArmId("participants"), "Participants")])
+    model = dataset_table_model.DatasetTableModel(
+        dataset=analysis_dataset.Dataset(sheets=[sheet]), add_blank_study=False)
+    headers = [model.headerData(column, Qt.Orientation.Horizontal, role) for column in model.RAW_DATA]
+    assert headers[len(fields):] == [""] * len(fields)
+    if role == Qt.ItemDataRole.DisplayRole:
+        assert headers[:len(fields)] == [f"Participants {field}" for field in fields]
+    else:
+        assert all("Participants" in text for text in headers[:len(fields)])
+
+
 def test_diagnostic_raw_header_tooltips_keep_single_group_safe():
     model = _diagnostic_model_with_empty_cells()
 

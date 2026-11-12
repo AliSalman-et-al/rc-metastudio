@@ -779,7 +779,11 @@ class DatasetTableModel(QAbstractTableModel):
             fields = ("#evts", "#total") if csv_schema else ("Events", "Total")
         else:
             return None
-        group = groups[position // len(fields)]
+        arm_index = position // len(fields)
+        # Qt asks for reserved second-arm headers before the view hides them.
+        if arm_index >= len(groups):
+            return ""
+        group = groups[arm_index]
         return _raw_data_display_label(group, fields[position % len(fields)])
 
     def _raw_header_tooltip(self, section, outcome_type, outcome_subtype):
@@ -791,7 +795,10 @@ class DatasetTableModel(QAbstractTableModel):
         suffix = "\nSort on this column by right-clicking the column header and selecting 'sort studies by <column>'"
         if outcome_type == DIAGNOSTIC:
             return ("# True Positives", "# False Negatives", "# False Positives", "# True Negatives")[position] + suffix
-        group = self.arm_names[position // (2 if outcome_type == BINARY else 3)]
+        arm_index = position // (2 if outcome_type == BINARY else 3)
+        if arm_index >= len(self.arm_names):
+            return ""
+        group = self.arm_names[arm_index]
         if outcome_type == BINARY:
             label = ("Events in {0} (numerator)", "Total participants in {0} (denominator)")[position % 2]
         else:
