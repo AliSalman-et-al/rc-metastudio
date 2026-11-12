@@ -17,13 +17,13 @@ sys.path.insert(0, str(ROOT))
 
 def _install_local_backend() -> None:
     """Keep shell checks independent of an installed R runtime."""
-    from rc_metastudio import app_error_handler, r_runtime, r_bridge
+    from rc_metastudio import app_error_handler, r_bridge
     from scripts.local_r_test_backend import create
 
     backend = create()
     for name, implementation in vars(backend).items():
         setattr(r_bridge, name, implementation)
-    setattr(r_runtime, "install_r_runtime", lambda: r_bridge)
+    setattr(r_bridge, "initialize_r", lambda: None)
     setattr(app_error_handler, "install_global_exception_handler", lambda: None)
 
 

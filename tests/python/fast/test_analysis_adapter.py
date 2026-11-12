@@ -8,9 +8,9 @@ import pytest
 from collections.abc import Mapping
 from typing import TypedDict
 
-from rc_metastudio import r_runtime
+from rc_metastudio import r_bridge
 
-r_runtime.install_r_runtime()
+r_bridge.initialize_r()
 
 from rc_metastudio.analysis_adapter import make_analysis_request
 

@@ -27,8 +27,8 @@ _DRIVER = textwrap.dedent(
     from rc_metastudio.qt6_ui import prepare_generated_ui_imports
     prepare_generated_ui_imports()
 
-    from rc_metastudio import r_runtime
-    r_runtime.install_r_runtime()
+    from rc_metastudio import r_bridge
+    r_bridge.initialize_r()
     try:
         from rc_metastudio import r_bridge
         from rc_metastudio.analysis_catalog import FACTOR
@@ -494,8 +494,8 @@ _NULL_RESULT_DRIVER = textwrap.dedent(
     os.environ["RCMS_REQUIRE_IN_PROCESS_RPY2"] = "1"
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     sys.path.insert(0, os.path.join(__REPO_ROOT__, "src"))
-    from rc_metastudio import r_runtime
-    r_runtime.install_r_runtime()
+    from rc_metastudio import r_bridge
+    r_bridge.initialize_r()
     try:
         from rc_metastudio import r_bridge
     except Exception as exc:
@@ -572,8 +572,8 @@ _RCHAR_UTF8_DRIVER = textwrap.dedent(
     sys.path.insert(0, os.path.join(repo_root, "src"))
     sys.path.insert(0, os.path.join(repo_root, "tests", "python", "fast"))
 
-    from rc_metastudio import r_runtime
-    r_runtime.install_r_runtime()
+    from rc_metastudio import r_bridge
+    r_bridge.initialize_r()
     try:
         from rc_metastudio import r_bridge
     except Exception as exc:
@@ -650,8 +650,8 @@ _SUMMARY_PRINT_DRIVER = textwrap.dedent(
     sys.path.insert(0, os.path.join(repo_root, "src"))
     sys.path.insert(0, os.path.join(repo_root, "tests", "python", "fast"))
 
-    from rc_metastudio import r_runtime
-    r_runtime.install_r_runtime()
+    from rc_metastudio import r_bridge
+    r_bridge.initialize_r()
     try:
         from rc_metastudio import r_bridge
         r_bridge.RLibraryLoader().load_rcmetar()

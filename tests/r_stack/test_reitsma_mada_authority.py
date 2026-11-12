@@ -169,8 +169,8 @@ _HEADLESS_ADAPTER_DRIVER = textwrap.dedent(
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     os.environ.setdefault("RCMS_QT6_BUILD_ROOT", os.path.join(repo_root, "build", "qt6-verification"))
     sys.path.insert(0, os.path.join(repo_root, "src"))
-    from rc_metastudio import r_runtime
-    r_runtime.install_r_runtime()
+    from rc_metastudio import r_bridge
+    r_bridge.initialize_r()
     try:
         from tests.analysis_regression.golden.support import headless_analysis
         from rc_metastudio import analysis_adapter, r_bridge

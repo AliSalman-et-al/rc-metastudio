@@ -440,25 +440,3 @@ def _private_windows_dll_directories(r_home):
             key=lambda value: str(value).casefold(),
         )
     ]
-
-
-_REAL_BACKEND = None
-
-
-def install_r_runtime():
-    """Configure and return the one real in-process embedded-R backend."""
-    global _REAL_BACKEND
-    if _REAL_BACKEND is not None:
-        return _REAL_BACKEND
-    try:
-        configure_bundled_r_environment()
-        from rc_metastudio import r_bridge
-
-        r_bridge.initialize_r()
-        _REAL_BACKEND = r_bridge
-        return _REAL_BACKEND
-    except Exception as error:
-        raise AnalysisBackendUnavailableError(
-            "Unable to start the embedded R runtime. Install the pinned R/RCMetaR "
-            "runtime or repair the packaged integration kit, then restart RC MetaStudio."
-        ) from error

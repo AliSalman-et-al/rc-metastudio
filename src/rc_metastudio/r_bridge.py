@@ -63,6 +63,16 @@ def serialized_r_call(function: Callable[_P, _T]) -> Callable[_P, _T]:
 
 def initialize_r():
     """Initialize embedded R explicitly, after the application shell is visible."""
+    try:
+        _initialize_rpy2()
+    except Exception as error:
+        raise r_runtime.AnalysisBackendUnavailableError(
+            "Unable to start the embedded R runtime. Install the pinned R/RCMetaR "
+            "runtime or repair the packaged integration kit, then restart RC MetaStudio."
+        ) from error
+
+
+def _initialize_rpy2():
     global _INITIALIZATION_ERROR, ro, rpy2, RRuntimeError, _rpy2_conversion, _rpy2_rchar_to_str
     if "ro" in globals():
         return

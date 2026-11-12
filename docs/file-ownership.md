@@ -108,7 +108,7 @@ owner, with explicit display precision. Live rpy2 object inspection must stay
 inside the existing R transaction, with one session owner. Numerical and report
 contracts need fresh proof before changing that seam.
 
-`r_runtime` owns runtime installation and readiness; `r_bridge.initialize_r`
+`r_runtime` owns environment configuration and readiness; `r_bridge.initialize_r`
 owns the embedded interpreter. Launch publishes readiness after library loading
 and working-directory initialization complete. Runtime bootstrap failure clears
 readiness. A restart remains necessary after embedded-R initialization failure.
@@ -173,7 +173,7 @@ the harness does not inject shadow modules or obsolete execution methods.
 | Removed compensation | Ownership that makes it unnecessary |
 | --- | --- |
 | QVariant/QString and file-dialog shape wrappers | Qt6 supplies native values and documented tuples directly |
-| R-backend forwarding module and duplicate cache owner | `r_runtime` configures, initializes and publishes readiness |
+| R-backend forwarding module and duplicate cache owner | `r_runtime` configures the environment and readiness; `r_bridge` initializes R once |
 | Numeric IDs alongside stable arm identities | Study arm measurements use the persisted `ArmId` |
 | Raw `__dict__` rollback | The existing edit snapshot restores measurements and inclusion |
 | Unconditional reads of a second arm | Calculators select the metric's arity before reading arm data |

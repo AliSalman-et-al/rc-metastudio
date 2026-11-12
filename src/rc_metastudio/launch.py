@@ -199,8 +199,8 @@ def _emit_automation_phase(phase_callback, phase):
 
 def load_R_libraries(app, splash=None, phase_callback=None):
     """Loads the R libraries while updating the splash screen"""
-    r_runtime.install_r_runtime()
     from rc_metastudio import r_bridge
+    r_bridge.initialize_r()
 
     def _status(message):
         if splash is not None:

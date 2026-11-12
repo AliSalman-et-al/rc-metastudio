@@ -9,9 +9,9 @@ pytestmark = pytest.mark.usefixtures("inject_python_boundary")
 
 sys.path.insert(0, os.path.abspath("src"))
 
-from rc_metastudio import r_runtime
+from rc_metastudio import r_bridge
 
-r_runtime.install_r_runtime()
+r_bridge.initialize_r()
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor
