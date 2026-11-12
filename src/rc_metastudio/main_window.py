@@ -858,11 +858,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         except BaseException as error:
             runtime = self.workspace.abort_change()
             self._sheet_dragging = False
-            if runtime is not None:
-                try:
-                    self._install_workspace_runtime(runtime)
-                except Exception as restore_error:
-                    error.add_note(f"Workspace adapter restoration also failed: {restore_error}")
+            if runtime is None:
+                raise
+            try:
+                self._install_workspace_runtime(runtime)
+            except Exception as restore_error:
+                error.add_note(f"Workspace adapter restoration also failed: {restore_error}")
             raise
 
     def meta_subgroup_get_cov(self):

@@ -21,6 +21,22 @@ def study_inputs(row, hazard):
     return record, covariates
 
 
+def study_row(index, row, hazard, arms, covariates, name):
+    identifier = row["id"] if hazard else row["study"]
+    record, values = study_inputs(row, hazard)
+    return dict(
+        id=f"sheet:0:row:{index}", label=row["trial"] if hazard else row["authors"],
+        year=None if hazard else int(row["year"]), include=True,
+        manually_excluded=False, sample_size=None,
+        notes=f"metadat {name}; original study ID {identifier}",
+        covariates={cov["id"]: values[cov["name"]] for cov in covariates},
+        entered_effects=[],
+        raw_data={arm["id"]: [] if hazard else [row[f"x{i+1}i"], row[f"t{i+1}i"]]
+                  for i, arm in enumerate(arms)},
+        ratio_inputs=[dict(arms=[arm["id"] for arm in arms], input=record)],
+    )
+
+
 def build(name, hazard, source):
     rows = source["rows"]
     family, metric, subtype, data_type = (
@@ -37,21 +53,8 @@ def build(name, hazard, source):
                       ("Observed minus expected deaths", 1, "pignon2000-ome"),
                       ("Log-rank variance", 1, "pignon2000-variance"),
                   ))] if hazard else []
-    studies = []
-    for index, row in enumerate(rows):
-        identifier = row["id"] if hazard else row["study"]
-        record, values = study_inputs(row, hazard)
-        studies.append(dict(
-            id=f"sheet:0:row:{index}", label=row["trial"] if hazard else row["authors"],
-            year=None if hazard else int(row["year"]), include=True,
-            manually_excluded=False, sample_size=None,
-            notes=f"metadat {name}; original study ID {identifier}",
-            covariates={cov["id"]: values[cov["name"]] for cov in covariates},
-            entered_effects=[],
-            raw_data={arm["id"]: [] if hazard else [row[f"x{i+1}i"], row[f"t{i+1}i"]]
-                      for i, arm in enumerate(arms)},
-            ratio_inputs=[dict(arms=[arm["id"] for arm in arms], input=record)],
-        ))
+    studies = [study_row(index, row, hazard, arms, covariates, name)
+               for index, row in enumerate(rows)]
     notes = f"Source: metadat::{name}. Documentation: {source['documentation']}. Original publication: {source['doi']}. "
     notes += "HR input is log(HR)=OmE/V and SE=sqrt(1/V). Trial years are unavailable and left blank. Chemotherapy timing is the original grp classification." if hazard else "IRR uses original event counts and catheter-days. Group 1 is anti-infective catheter; group 2 is standard catheter. Nine studies are available, below the ten-study threshold for asymmetry tests."
     summary = dict(arms="two", data_type=family, effect=metric, metric_choices=[metric], name=outcome, sub_type=subtype)

@@ -295,10 +295,11 @@ def _xlsx_metadata(path, sheet, selected, row_numbers, columns, notices):
     parser.StartElementHandler = inspect_element
     with ZipFile(path) as archive, archive.open(sheet._worksheet_path) as stream:
         parser.ParseFile(stream)
-    if notices is not None:
-        for count, label in ((len(hidden_rows), "row"), (len(hidden_columns), "column")):
-            if count:
-                notices.append(f"{count} hidden {label}{' was' if count == 1 else 's were'} imported.")
+    if notices is None:
+        return
+    for count, label in ((len(hidden_rows), "row"), (len(hidden_columns), "column")):
+        if count:
+            notices.append(f"{count} hidden {label}{' was' if count == 1 else 's were'} imported.")
 
 
 def _xlsx_cell_value(cell, cached, selected, row_index, output_column, year_column, numeric_columns, dates):
@@ -311,7 +312,8 @@ def _xlsx_cell_value(cell, cached, selected, row_index, output_column, year_colu
         if value is None:
             raise CsvImportError(f"{location} has a formula with no saved value. Open and save it in Excel first.")
         formula = 1
-    if row_index and output_column in numeric_columns and (cell.data_type == "e" or isinstance(value, str) and value.startswith(("#DIV/0!", "#N/A"))):
+    excel_error = cell.data_type == "e" or str(value).startswith(("#DIV/0!", "#N/A"))
+    if row_index and output_column in numeric_columns and excel_error:
         raise CsvImportError(f"{location} contains an Excel error value.")
     if isinstance(value, (datetime, date)):
         if row_index and output_column == year_column:
