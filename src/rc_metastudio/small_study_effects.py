@@ -27,9 +27,7 @@ class CorrectionPolicy(str, Enum):
     ALL_STUDIES_IF_ANY_ZERO_EXISTS = "All studies if any zero exists"
 
 
-class TestMethod(str, Enum):
-    __test__ = False
-
+class AsymmetryTestMethod(str, Enum):
     CLASSICAL_EGGER = "classical-egger"
     MIXED_EFFECTS_EGGER = "mixed-effects-egger"
     BEGG_MAZUMDAR = "begg-mazumdar"
@@ -174,11 +172,11 @@ class FunnelPlotSpec:
 class AsymmetryTestSpec:
     """Explicit asymmetry procedure selected by RCMetaR eligibility."""
 
-    method: TestMethod
+    method: AsymmetryTestMethod
 
     def __post_init__(self) -> None:
-        if not isinstance(self.method, TestMethod):
-            raise TypeError("asymmetry method must use TestMethod")
+        if not isinstance(self.method, AsymmetryTestMethod):
+            raise TypeError("asymmetry method must use AsymmetryTestMethod")
 
 
 @dataclass(frozen=True)
@@ -255,10 +253,10 @@ def _float(value: object, field_name: str) -> float:
         raise ValueError(f"{field_name} must be numeric") from error
 
 
-def _test_method(value: str | TestMethod) -> TestMethod:
-    raw = value.value if isinstance(value, TestMethod) else value
+def _test_method(value: str | AsymmetryTestMethod) -> AsymmetryTestMethod:
+    raw = value.value if isinstance(value, AsymmetryTestMethod) else value
     try:
-        return TestMethod(raw)
+        return AsymmetryTestMethod(raw)
     except (TypeError, ValueError) as error:
         raise ValueError(f"unsupported small-study effects test: {raw!r}") from error
 
@@ -407,7 +405,7 @@ class SmallStudyEffectsRequest:
         if self.data_type == "diagnostic":
             if any(spec.kind is not FunnelKind.DEEKS for spec in self.plot_specs):
                 raise ValueError("diagnostic requests use only the Deeks funnel")
-            if any(spec.method is not TestMethod.DEEKS for spec in self.test_specs):
+            if any(spec.method is not AsymmetryTestMethod.DEEKS for spec in self.test_specs):
                 raise ValueError("diagnostic requests use only the Deeks test")
             if any(
                 spec.trim_and_fill or spec.extrapolation
@@ -425,7 +423,7 @@ class SmallStudyEffectsRequest:
         metric: str,
         confidence_level: float = 95.0,
         correction_policy: CorrectionPolicy | str | None = None,
-        selected_tests: Sequence[str | TestMethod] = (),
+        selected_tests: Sequence[str | AsymmetryTestMethod] = (),
         selected_funnels: Sequence[str | FunnelKind] = (FunnelKind.ORDINARY.value,),
         label_policy: LabelPolicy | str = LabelPolicy.NONE,
         sampling_confidence_level: float = 95.0,
@@ -685,11 +683,6 @@ class EligibilityReport:
             package_versions=tuple((key, str(item)) for key, item in package_versions),
         )
 
-    @property
-    def primary_method(self) -> EligibilityMethod | None:
-        return next(
-            (method for method in self.methods if method.role == "primary"), None
-        )
 
     def method(self, method_name: str) -> EligibilityMethod | None:
         return next((item for item in self.methods if item.method == method_name), None)
@@ -774,7 +767,7 @@ __all__ = [
     "PooledDisplaySpec",
     "SensitivitySpec",
     "SmallStudyEffectsRequest",
-    "TestMethod",
+    "AsymmetryTestMethod",
     "TrimAndFillEstimator",
     "TrimAndFillModel",
     "TrimAndFillSide",

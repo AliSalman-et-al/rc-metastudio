@@ -42,7 +42,7 @@ QtCore.QSettings.setPath(
 )
 QtCore.QStandardPaths.setTestModeEnabled(True)
 
-from rc_metastudio import r_backend
+from rc_metastudio import r_runtime
 
 
 
@@ -270,7 +270,7 @@ def analyze(app, window, method, *, digits=3):
     record_step("analysis-action", window, method=method)
     window.action_go.trigger()
     app.processEvents()
-    if window.model.get_current_outcome_type() == "diagnostic":
+    if window.model.get_current_data_type() == "diagnostic":
         metrics = next(
             w
             for w in app.topLevelWidgets()
@@ -570,7 +570,6 @@ def sample_analysis(app, window, sample):
     assert view.report_text.isVisible()
     rendered_text = view.report_text.toPlainText()
     if sample == "amino":
-        study_line = next(line for line in rendered_text.splitlines() if "Giamarellou" in line)
         import re
         study_values = rendered_text[rendered_text.index("Giamarellou"):].splitlines()[:8]
         assert any(re.search(r"0\.004\d*", value) for value in study_values), study_values
@@ -766,7 +765,7 @@ def sheets_swap(app, window):
         values = []
         for iteration in range(3):
             assert window.action_swap_arms.isEnabled()
-            view = analyze(app, window, model.get_current_outcome_type() + ".random")
+            view = analyze(app, window, model.get_current_data_type() + ".random")
             if metric in ("OR", "RD", "MD"):
                 from rc_metastudio import r_bridge
                 r_bridge.load_vars_for_plot(next(iter(view.results.image_params_paths.values())))
@@ -1303,7 +1302,7 @@ def xlsx_import(app, window):
     book = Workbook()
     book.active.title = "Empty"
     sheet = book.create_sheet("Binary")
-    sheet.append(["Study Name", "Year", "Tx A #evts", "Tx A #total", "Tx B #evts", "Tx B #total", "OR", "Lower", "Upper"])
+    sheet.append(["Study Name", "Year", "Intervention events", "Intervention total", "Control events", "Control total", "OR", "Lower", "Upper"])
     rows = [["Alpha", 2020, 1, 10, 2, 12, None, None, None], ["Beta", 2021, 3, 11, 4, 13, None, None, None]]
     for row in rows:
         sheet.append(row)
@@ -1492,7 +1491,7 @@ def csv_import(app, window):
 
     csv = WORK / "studies.csv"
     csv.write_text(
-        'Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total,Dose,Region\n"Alpha, München",2020,1,10,2,12,5.5,North\n , , , , , , , \nBeta,2021,3,11,4,13,7,South\nGamma,2022,2,20,5,20,8,West\n',
+        'Study Name,Year,Intervention events,Intervention total,Control events,Control total,Dose,Region\n"Alpha, München",2020,1,10,2,12,5.5,North\n , , , , , , , \nBeta,2021,3,11,4,13,7,South\nGamma,2022,2,20,5,20,8,West\n',
         encoding="utf-8-sig",
     )
     wizard = main_wizard.MainWizard(path="csv_import")
@@ -1698,14 +1697,14 @@ def plot_edit(app, window):
 
 
 def small_study_effects(app, window):
-    from rc_metastudio.small_study_effects_dialog import PublicationBiasDialog
+    from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
 
     assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
     callback_errors = []
 
     def run():
         dialog = app.activeModalWidget()
-        if not isinstance(dialog, PublicationBiasDialog):
+        if not isinstance(dialog, SmallStudyEffectsDialog):
             QtCore.QTimer.singleShot(10, run)
             return
         try:
@@ -2077,7 +2076,7 @@ def hillclimb(app, window):
     from rc_metastudio import main_wizard, add_new_dialogs
     from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
     from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
-    from rc_metastudio.small_study_effects_dialog import PublicationBiasDialog
+    from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
 
     measures = {}
     counts = {}
@@ -2251,7 +2250,7 @@ def hillclimb(app, window):
     regression.close()
 
     begin("T3")
-    modal(PublicationBiasDialog,
+    modal(SmallStudyEffectsDialog,
           lambda form: click(form.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)),
           lambda: action(window.action_publication_bias))
     bias = visible(results_window.ResultsWindow)
@@ -2314,8 +2313,8 @@ try:
                 splashes[0].grab().save(str(EVIDENCE / (phase.replace(":", "-") + ".png")))
 
     app, window = automation.start_automation(phase_callback=observe_startup)
-    from rc_metastudio import r_backend
-    assert r_backend.is_ready()
+    from rc_metastudio import r_runtime
+    assert r_runtime.is_ready()
     assert window.isVisible() and window.isEnabled()
     assert not any(isinstance(w, QtWidgets.QSplashScreen) and w.isVisible()
                    for w in app.topLevelWidgets())
@@ -2362,10 +2361,6 @@ try:
     elif scenario == "ui-crawl":
         from tests.e2e.ui_crawl import run
         run(sys.modules[__name__])
-    elif scenario == "sheets-baseline":
-        from tests.e2e.sheets_baseline import run
-
-        run(app, window, record_step, analyze)
     elif scenario == "grid-entry":
         grid_entry(app, window)
     elif scenario in {"subgroup-image", "subgroup-image-dark-large"}:

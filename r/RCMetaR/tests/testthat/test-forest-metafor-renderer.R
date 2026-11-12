@@ -101,7 +101,7 @@ metafor_continuous_one_arm_fixture <- function(studies = 5) {
     years = as.integer(2001:(2000 + studies))
   )
   params <- metafor_continuous_params(file.path("r_tmp", paste0("forest_one_arm_cont_", studies, ".png")))
-  params$measure <- "TXMean"
+  params$measure <- "Mean"
   params$fp_col3_str <- "Cohort"
   params$fp_col4_str <- "[default]"
   effects <- compute.for.one.cont.study(data, params)

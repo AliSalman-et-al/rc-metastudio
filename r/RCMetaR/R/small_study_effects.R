@@ -842,7 +842,7 @@ publication.bias.effects <- function(om.data, params) {
     n <- length(om.data@study.names)
     basic <- n > 0 && all(vapply(list(om.data@N1, om.data@mean1, om.data@sd1),
         function(x) length(x) == n && all(is.finite(x)), logical(1)))
-    if (identical(metric, "TXMean")) basic else basic &&
+    if (identical(metric, "Mean")) basic else basic &&
         all(vapply(list(om.data@N2, om.data@mean2, om.data@sd2),
             function(x) length(x) == n && all(is.finite(x)), logical(1)))
 }
@@ -1103,7 +1103,7 @@ publication.bias.effects <- function(om.data, params) {
 
 .small.study.standard.error.label <- function(params) {
     params$measure <- as.character(params$measure %||%
-        .small.study.plot.setting(params, "metric", .small.study.funnel.index(params), "TXMean"))
+        .small.study.plot.setting(params, "metric", .small.study.funnel.index(params), "Mean"))
     metric <- as.character(params$measure)
     metric.names <- c(OR="odds ratio", RR="risk ratio", HR="hazard ratio", IRR="incidence rate ratio")
     if (metric %in% names(metric.names)) return(paste("Standard error of log", metric.names[[metric]]))

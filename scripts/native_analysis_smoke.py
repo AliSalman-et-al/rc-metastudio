@@ -145,9 +145,6 @@ def main() -> int:
         ),
     )
     _install_backend_test_double(
-        backend, "get_method_description", lambda _method: "Random-effects analysis"
-    )
-    _install_backend_test_double(
         backend, "get_analysis_plot_capabilities", lambda *_args, **_kwargs: []
     )
 

@@ -112,7 +112,7 @@ def test_direct_table_view_mutation_is_checkpointed_for_one_undo(qapp):
     initial = project_adapter.RuntimeProject(
         dataset=model.dataset,
         model_state=model.get_state(),
-        restored_selection=True,
+        restored_active_sheet=True,
     )
 
     class BoundaryOwner:
@@ -345,9 +345,9 @@ QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
 QtCore.QSettings.setPath(QtCore.QSettings.Format.IniFormat, QtCore.QSettings.Scope.UserScope, os.environ["RCMS_TEST_SETTINGS"])
 from rc_metastudio import automation
 from scripts.local_r_test_backend import create
-from rc_metastudio import r_backend, r_bridge
+from rc_metastudio import r_runtime, r_bridge
 
-r_backend.install_r_backend = lambda: r_bridge
+r_runtime.install_r_runtime = lambda: r_bridge
 for name, implementation in vars(create()).items():
     setattr(r_bridge, name, implementation)
 

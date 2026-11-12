@@ -3,8 +3,8 @@ from dataclasses import dataclass, asdict
 import copy
 from rc_metastudio.analysis_dataset import Dataset, Sheet, StudyRow, Arm
 from rc_metastudio.analysis_unit import AnalysisUnit
-from rc_metastudio.project_domain import SheetId, RowId, ArmId, validate_project_semantics
-from rc_metastudio.project_format import ProjectDocument, is_empty_entry_row
+from rc_metastudio.project_domain import SheetId, RowId, ArmId
+from rc_metastudio.project_format import ProjectDocument, is_empty_entry_row, migrate_to_latest
 
 class ProjectAdapterError(ValueError):
     pass
@@ -13,10 +13,15 @@ class ProjectAdapterError(ValueError):
 class RuntimeProject:
     dataset: Dataset
     model_state: dict
-    restored_selection: bool
+    restored_active_sheet: bool
 
 
 def project_to_dataset(project):
+    project, _ = migrate_to_latest(3, project, {"schema_version": 3, "current_sheet_id": None})
+    return _dataset_from_canonical_project(project)
+
+
+def _dataset_from_canonical_project(project):
     dataset = Dataset(project['title'], project['notes'])
     for record in project['sheets']:
         sheet = Sheet(SheetId(record['id']), record['name'], record['data_type'], record['sub_type'], record['family'], [Arm(ArmId(a['id']), a['name']) for a in record['arms']], copy.deepcopy(record['covariates']), copy.deepcopy(record['settings']))
@@ -48,8 +53,6 @@ def dataset_to_project(dataset):
     return dict(schema_version=3, title=dataset.title, notes=dataset.notes, sheets=sheets)
 
 
-def model_to_state(model):
-    return dict(schema_version=3, current_sheet_id=model.current_sheet_id)
 
 
 def state_to_model_state(dataset, state):
@@ -61,6 +64,6 @@ def runtime_project_to_document(runtime):
 
 
 def document_to_runtime_project(document):
-    validate_project_semantics(document.project, document.state)
-    dataset = project_to_dataset(document.project)
-    return RuntimeProject(dataset, state_to_model_state(dataset, document.state), document.state['current_sheet_id'] is not None)
+    project, state = migrate_to_latest(document.format_version, document.project, document.state)
+    dataset = _dataset_from_canonical_project(project)
+    return RuntimeProject(dataset, state_to_model_state(dataset, state), state['current_sheet_id'] is not None)

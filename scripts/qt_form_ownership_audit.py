@@ -21,7 +21,7 @@ TOP_LEVEL_FORM_INVENTORY = {
         ("covariate_type_dialog.py", "CovariateTypeDialog", "TRANSACTIONAL"),
     ),
     "edit_name_dialog.ui": (
-        ("edit_name_dialogs.py", "EditGroupNameDialog", "TRANSACTIONAL"),
+        ("edit_name_dialogs.py", "EditArmNameDialog", "TRANSACTIONAL"),
         ("edit_name_dialogs.py", "EditCovariateNameDialog", "TRANSACTIONAL"),
     ),
     "binary_back_calculation_dialog.ui": (
@@ -41,7 +41,7 @@ TOP_LEVEL_FORM_INVENTORY = {
         ("continuous_data_dialog.py", "ContinuousDataDialog", "TRANSACTIONAL"),
     ),
     "publication_bias_dialog.ui": (
-        ("small_study_effects_dialog.py", "PublicationBiasDialog", "TRANSACTIONAL"),
+        ("small_study_effects_dialog.py", "SmallStudyEffectsDialog", "TRANSACTIONAL"),
     ),
     "subgroup_analysis_dialog.ui": (
         ("subgroup_analysis_dialog.py", "SubgroupAnalysisDialog", "TRANSACTIONAL"),

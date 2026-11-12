@@ -151,7 +151,7 @@ def authority(
     elif family == "continuous":
         expression = (
             f'metafor::escalc("MN", ni={vector(0)}, mi={vector(1)}, sdi={vector(2)})'
-            if metric == "TX Mean"
+            if metric == "Mean"
             else f'metafor::escalc("{metric}", n1i={vector(0)}, m1i={vector(1)}, sd1i={vector(2)}, n2i={vector(3)}, m2i={vector(4)}, sd2i={vector(5)})'
         )
     elif metric == "Sens":
@@ -1126,24 +1126,26 @@ def calculators(app, window, mode, record):
                 "PR": lambda: a / n,
             }[metric]()
         elif family == "continuous":
-            n, m, sd, n2, m2, sd2 = raw
-            if metric == "TX Mean":
+            n, m, sd = raw[:3]
+            if metric == "Mean":
                 expected = m
-            elif metric == "MD":
-                expected = m - m2
             else:
-                # Exact small-sample Hedges correction used by metafor.
-                df = n + n2 - 2
-                correction = math.exp(
-                    math.lgamma(df / 2)
-                    - 0.5 * math.log(df / 2)
-                    - math.lgamma((df - 1) / 2)
-                )
-                expected = (
-                    correction
-                    * (m - m2)
-                    / math.sqrt(((n - 1) * sd**2 + (n2 - 1) * sd2**2) / df)
-                )
+                n2, m2, sd2 = raw[3:]
+                if metric == "MD":
+                    expected = m - m2
+                else:
+                    # Exact small-sample Hedges correction used by metafor.
+                    df = n + n2 - 2
+                    correction = math.exp(
+                        math.lgamma(df / 2)
+                        - 0.5 * math.log(df / 2)
+                        - math.lgamma((df - 1) / 2)
+                    )
+                    expected = (
+                        correction
+                        * (m - m2)
+                        / math.sqrt(((n - 1) * sd**2 + (n2 - 1) * sd2**2) / df)
+                    )
         else:
             tp, fn, fp, tn = raw
             expected = tp / (tp + fn) if metric == "Sens" else tn / (tn + fp)
@@ -1458,7 +1460,7 @@ def calculators(app, window, mode, record):
             metrics = (
                 ["PR"]
                 if mode == "onearm-proportion"
-                else ["TX Mean"]
+                else ["Mean"]
                 if mode == "onearm-mean"
                 else {
                     "binary": ["OR", "RR", "RD"],
@@ -2128,7 +2130,7 @@ def shell(app, window, record):
     window.action_new_dataset.trigger()
     assert not guide_errors, guide_errors
     from rc_metastudio.about_legal_dialog import AboutLegalDialog
-    from rc_metastudio.launch import _show_main_window
+    from rc_metastudio.settings import restore_main_window_placement
     from rc_metastudio.settings import save_main_window_placement
 
     def wait_for_state(predicate):
@@ -2168,7 +2170,7 @@ def shell(app, window, record):
     wait_for_state(lambda: not window.isMaximized() and not window.isFullScreen() and window.size() == QtCore.QSize(700, 500))
     save_main_window_placement(window, window.tableView.column_width_state())
     remembered_size = window.size()
-    _show_main_window(window)
+    restore_main_window_placement(window)
     wait_for_state(lambda: window.isMaximized() and not window.isFullScreen())
     assert window.isMaximized() and not window.isFullScreen()
     record("startup-maximized-after-normal", window)
@@ -2181,7 +2183,7 @@ def shell(app, window, record):
     window.showFullScreen()
     wait_for_state(window.isFullScreen)
     save_main_window_placement(window, window.tableView.column_width_state())
-    _show_main_window(window)
+    restore_main_window_placement(window)
     wait_for_state(lambda: window.isMaximized() and not window.isFullScreen())
     assert window.isMaximized() and not window.isFullScreen()
     record("startup-maximized-after-full-screen", window)

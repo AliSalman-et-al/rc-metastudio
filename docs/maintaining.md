@@ -27,6 +27,24 @@ uv run python scripts/verify.py fast
 uv run python scripts/verify.py r-stack
 ```
 
+Use the pinned development tool to review unused Python code:
+
+```powershell
+uv run vulture
+```
+
+The configured scan includes product code, scripts, tests and verification
+helpers. Review findings against callers before deleting code. Qt overrides,
+Designer custom widgets, pytest hooks and fixtures, schema declarations and
+subprocess entry points may be invoked implicitly. Fixture arguments can be
+required for setup and teardown even when their values are unused. Vulture's
+confidence is not a deletion decision. Exit code 3 means findings remain; see
+the [Vulture documentation](https://pypi.org/project/vulture/).
+
+After removing a confirmed unused owner, rerun the scan to find newly orphaned
+helpers and imports. Preserve meaningful tests and durable settings migrations.
+Avoid blanket suppressions or generating a whitelist from every finding.
+
 For deterministic complexity, dependency, churn, and hotspot evidence, run the
 locked code-health command against a comparison commit. Both snapshots are
 measured from their named revisions: history is bounded at the measured head,

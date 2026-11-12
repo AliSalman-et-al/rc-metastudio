@@ -1825,46 +1825,6 @@ def start_startup_wizard_smoke(evidence_path, sample_path):
         _dispose_new_top_levels(app, baseline_ids)
 
 
-def assert_opened_project_for_startup_smoke(
-    app, meta, sample_path, opened, completion_marker=None
-):
-    try:
-        if not opened:
-            raise SystemExit("Could not open startup project: %s" % sample_path)
-        app.processEvents()
-        model = meta.tableView.model()
-        if model is None or model.rowCount() < 1:
-            raise SystemExit(
-                "Startup project opened without table rows: %s" % sample_path
-            )
-        _force_table_paint(app, meta)
-        _write_automation_smoke_log("startup-project:normal-entry-point-passed")
-    finally:
-        meta.close()
-        app.processEvents()
-    completion_marker = completion_marker or os.environ.get(
-        "RCMS_STARTUP_COMPLETION_MARKER"
-    )
-    if completion_marker:
-        Path(completion_marker).write_text(
-            json.dumps(
-                {
-                    "schema_version": 1,
-                    "pid": os.getpid(),
-                    "platform_plugin": app.platformName().lower(),
-                    "project": Path(sample_path).name,
-                    "post_close": True,
-                },
-                indent=2,
-                sort_keys=True,
-            )
-            + "\n",
-            encoding="utf-8",
-        )
-        _write_automation_smoke_log("startup-project:launchservices-completion-written")
-    return 0
-
-
 def _assert_standard_binary_summary_is_formatted(meta):
     from rc_metastudio import main_window
 

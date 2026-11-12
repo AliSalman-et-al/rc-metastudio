@@ -101,7 +101,6 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
         for name in (
             "get_available_methods",
             "get_params",
-            "get_method_description",
             "dataset_to_simple_diagnostic_r_object",
             "run_versioned_analysis_requests",
             "reset_r_working_directory",
@@ -128,9 +127,6 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
         )
         _set_backend(
             monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
-        )
-        _set_backend(
-            monkeypatch, backend, "get_method_description", lambda method: "stub method"
         )
         monkeypatch.setattr(
             backend,
@@ -187,7 +183,6 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
         for name in (
             "get_available_methods",
             "get_params",
-            "get_method_description",
             "dataset_to_simple_diagnostic_r_object",
             "run_versioned_analysis_requests",
             "reset_r_working_directory",
@@ -215,9 +210,6 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
         )
         _set_backend(
             monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
-        )
-        _set_backend(
-            monkeypatch, backend, "get_method_description", lambda method: "stub method"
         )
         monkeypatch.setattr(
             backend,
@@ -446,7 +438,6 @@ def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
         for name in (
             "get_available_methods",
             "get_params",
-            "get_method_description",
             "dataset_to_simple_diagnostic_r_object",
             "run_versioned_analysis_requests",
         )
@@ -476,9 +467,6 @@ def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
         )
         _set_backend(
             monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
-        )
-        _set_backend(
-            monkeypatch, backend, "get_method_description", lambda method: "stub method"
         )
         monkeypatch.setattr(
             backend,
@@ -615,7 +603,6 @@ def test_diagnostic_direct_effects_do_not_offer_count_based_methods(monkeypatch)
         for name in (
             "get_available_methods",
             "get_params",
-            "get_method_description",
             "dataset_to_simple_diagnostic_r_object",
         )
     }
@@ -649,9 +636,6 @@ def test_diagnostic_direct_effects_do_not_offer_count_based_methods(monkeypatch)
         )
         _set_backend(
             monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
-        )
-        _set_backend(
-            monkeypatch, backend, "get_method_description", lambda method: "stub method"
         )
         monkeypatch.setattr(
             backend,
@@ -697,7 +681,6 @@ def test_diagnostic_method_selector_exposes_full_choices_without_root_cap(monkey
         for name in (
             "get_available_methods",
             "get_params",
-            "get_method_description",
             "dataset_to_simple_diagnostic_r_object",
         )
     }
@@ -721,9 +704,6 @@ def test_diagnostic_method_selector_exposes_full_choices_without_root_cap(monkey
         )
         _set_backend(
             monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
-        )
-        _set_backend(
-            monkeypatch, backend, "get_method_description", lambda method: "stub method"
         )
         monkeypatch.setattr(
             backend,

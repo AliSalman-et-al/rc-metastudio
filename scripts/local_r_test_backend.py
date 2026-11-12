@@ -55,7 +55,6 @@ def create() -> SimpleNamespace:
     backend.dataset_to_simple_diagnostic_r_object = _unavailable
     backend.get_available_methods = _unavailable
     backend.get_params = _unavailable
-    backend.get_method_description = _unavailable
     backend.get_analysis_plot_capabilities = lambda *_args, **_kwargs: []
     backend.run_small_study_effects = _unavailable
     backend.regenerate_small_study_effects_funnel = _unavailable

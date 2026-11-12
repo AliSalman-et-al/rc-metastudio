@@ -108,11 +108,84 @@ owner, with explicit display precision. Live rpy2 object inspection must stay
 inside the existing R transaction, with one session owner. Numerical and report
 contracts need fresh proof before changing that seam.
 
-R startup also spans `r_bridge.initialize_r`, `r_backend.install_r_backend`,
-`r_runtime` readiness and launch composition. Module bindings, a saved exception,
-backend installation and a ready flag encode different lifecycle milestones.
-One lifecycle owner could make those phases explicit, publishing readiness only
-after the required initialization completes. Partial-startup failure and the
-retry-versus-restart policy require targeted evidence before this redesign.
+`r_runtime` owns runtime installation and readiness; `r_bridge.initialize_r`
+owns the embedded interpreter. Launch publishes readiness after library loading
+and working-directory initialization complete. Runtime bootstrap failure clears
+readiness. A restart remains necessary after embedded-R initialization failure.
 
 No directory restructuring is required for the changes above.
+
+## Code symbols
+
+Names describe the domain and the operation actually performed. An outcome is
+the endpoint; its sheet has a data type. Arms are intervention/control column
+groups; subgroup categories retain the term group. Derived effect previews are
+distinct from analysis effect estimates. `CONTEXT.md` remains the vocabulary
+owner; these internal renames introduce no new domain concepts.
+
+| Previous name | Current name | Meaning |
+| --- | --- | --- |
+| `get_current_outcome_type` / `get_current_outcome_subtype` | `get_current_data_type` / `get_current_data_subtype` | Sheet input data type and subtype |
+| `default_group_names` | `default_arm_names` | Intervention/control arm defaults |
+| `EditGroupNameDialog` / `edit_group_name` / `rename_group` | `EditArmNameDialog` / `edit_arm_name` / `rename_arm` | Rename an arm while retaining its identity |
+| `blank_all_studies` | `_set_all_studies_included` | Change inclusion flags without clearing study data |
+| `update_outcome_if_possible` | `update_effect_previews_if_possible` | Refresh transient raw-data effect previews |
+| `PublicationBiasDialog` | `SmallStudyEffectsDialog` | Configure small-study effects analysis |
+| `TestMethod` | `AsymmetryTestMethod` | Statistical asymmetry methods, independent of the test runner |
+| `seems_sane` | `is_valid_plot_tick_list` | Validate finite plot ticks |
+| `table_cells_editable` | `table_has_no_editable_cells` | True when no existing cell can be edited |
+| `evaluate` / `save_table_data` | `validate_calculator_input` / `snapshot_table_text` | Validate input or capture table text, without saving a project |
+| `just_created` / `_index` | `initial_redo_pending` / `_applied_command_count` | Already-applied edit publication and undo/redo boundary |
+| `restored_selection` | `restored_active_sheet` | Restore the active sheet, distinct from a row or cell selection |
+| `run_round5` | `run_long_figures_and_bubble_bounds` | Long-figure and bubble-plot proof |
+
+Callers, protocols, keyword arguments, tests and dynamic symbol references move
+together. Existing public commands, statistical method IDs, project/settings
+keys, Qt Designer identifiers, framework overrides, UI labels and historical
+evidence retain their contracts. Mathematical notation stays concise when its
+meaning is already clear. Confirmed unused definitions are deleted instead of
+renamed or retained behind compatibility aliases.
+
+Vulture is a review aid. A reported symbol needs a caller and contract review;
+an unused callback argument or pytest fixture is not sufficient evidence of dead
+code. Conversely, remove helpers reached only from a confirmed dead owner, then
+rescan. Keep persisted migration keys even when an obsolete window's state
+accessors are removed.
+
+## Retained legacy boundaries
+
+Legacy project v1/v2 schemas and conversion live at the archive read boundary.
+Existing user projects and saved forest bundles still open. Old Mean spellings
+normalize to `Mean`; old CSV headers are input aliases. Stored user arm names,
+notes and labels remain user data. No current sample builder writes the old
+outcome/follow-up graph.
+
+Qt6 provides native Python values and file-dialog tuples directly. Redundant
+Qt4 conversion wrappers, the R-backend forwarding module, numeric arm IDs, the
+unused two-way dictionary and the one-off pre-conversion capture are removed.
+Study effect comparisons use stable arm-ID tuples. Edit rollback restores
+measurements and inclusion explicitly through the study's edit snapshot.
+
+Golden execution consumes the same typed `AnalysisRequest` as production.
+Historical oracle metadata stays independent of executable request structure;
+the harness does not inject shadow modules or obsolete execution methods.
+
+| Removed compensation | Ownership that makes it unnecessary |
+| --- | --- |
+| QVariant/QString and file-dialog shape wrappers | Qt6 supplies native values and documented tuples directly |
+| R-backend forwarding module and duplicate cache owner | `r_runtime` configures, initializes and publishes readiness |
+| Numeric IDs alongside stable arm identities | Study arm measurements use the persisted `ArmId` |
+| Raw `__dict__` rollback | The existing edit snapshot restores measurements and inclusion |
+| Unconditional reads of a second arm | Calculators select the metric's arity before reading arm data |
+| Old outcome/follow-up graphs created only to migrate them | Sample builders write current sheets, rows and stable IDs |
+| Shadow modules translating obsolete test APIs | Golden cases contain explicit production analysis requests |
+
+Calculator metric choices still depend on entered-effect keys, then append the
+current metric when that history is absent. Saving a raw-only study can therefore
+narrow its calculator choices after reopening. A future change should derive
+choices from the metric catalog and an explicit input-capability policy. Review
+how switching metrics should behave for entered-only studies before changing
+those choices.
+
+The documented intermittent Windows widget-painting crash remains unreproduced;
+passing native source checks do not establish its original trigger or a fix.

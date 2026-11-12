@@ -47,7 +47,7 @@ def run(app, window, work, record):
                 view = analyze_existing(app, window, "standard", DATA_TYPES[family][1]+".random", record, {"fp_style":style})
             check_report(app, view, work, record)
             text = view.report_text.toPlainText()
-            assert "TX Mean" not in text and "[default]" not in text, text
+            assert "[default]" not in text, text
             if family.startswith("twoarm"):
                 assert comparison in view.results.identity, view.results.identity
                 assert comparison in app.clipboard().text(), app.clipboard().text()

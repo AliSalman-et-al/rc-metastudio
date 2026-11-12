@@ -6,7 +6,6 @@ from __future__ import annotations
 from rc_metastudio.project_domain import ArmId, SheetId
 
 import os
-from functools import cmp_to_key
 from typing import TYPE_CHECKING, cast
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
@@ -41,7 +40,7 @@ from rc_metastudio import analysis_dataset
 from rc_metastudio import analysis_adapter
 from rc_metastudio import analysis_identity
 from rc_metastudio import app_error_handler
-from rc_metastudio import r_backend
+from rc_metastudio import r_runtime
 from rc_metastudio import progress_dialog
 from rc_metastudio import qt_layout
 from rc_metastudio import adaptive_window
@@ -60,7 +59,6 @@ from rc_metastudio.settings import (
     load_settings,
     recent_file_display_name,
     save_main_window_placement,
-    save_settings,
     update_setting,
 )
 from rc_metastudio.qt_object_guard import required
@@ -85,8 +83,6 @@ from rc_metastudio.workspace_session import WorkspaceSession
 DEFAULT_DATASET_NAME = "untitled_dataset"
 
 
-def _qt_item_text(value):
-    return qt_text.to_native_text(value)
 
 
 def _resolve_open_file_path(file_path):
@@ -132,13 +128,8 @@ def _format_open_project_error(file_path, exception):
     )
 
 
-def _qt_dialog_path(value):
-    value = value[0] if isinstance(value, tuple) else value
-    return qt_text.to_native_text(value)
 
 
-def _qt_text(value):
-    return qt_text.to_native_text(value)
 
 
 def _connect_action(action, callback):
@@ -445,7 +436,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             return
         self._disconnect_model_signals()
         save_main_window_placement(self, self.tableView.column_width_state())
-        save_settings()
         event.accept()
 
     def _confirm_close(self):
@@ -524,7 +514,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         self.tableView.model().recalculate_display_scale()
 
-    def create_new_dataset(self, use_undo_framework=True):
+    def create_new_dataset(self, _checked=False):
         if not self._authorize_destructive_project_action():
             return
 
@@ -533,7 +523,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             wizard_data = wizard.get_results()
             self._handle_wizard_results(wizard_data)
 
-    def new_dataset(self, name=DEFAULT_DATASET_NAME, is_diagnostic=False, use_undo_framework=True):
+    def new_dataset(self, name=DEFAULT_DATASET_NAME, is_diagnostic=False, ):
         data_model = analysis_dataset.Dataset(title=name)
         self.model = dataset_table_model.DatasetTableModel(dataset=data_model)
         self.workspace.update_live_state(project_adapter.RuntimeProject(data_model, self.model.get_state(), False))
@@ -554,7 +544,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.dataset_file_lbl.setToolTip(path or "Save the dataset to choose a project file.")
 
     def toggle_menu_options_that_require_dataset(self, enable):
-        enable = enable and r_backend.is_ready()
+        enable = enable and r_runtime.is_ready()
         self.action_go.setEnabled(enable)
         self.action_cum_ma.setEnabled(enable)
         self.action_loo_ma.setEnabled(enable)
@@ -580,7 +570,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             dataset_analysis_enabled = self.action_go.isEnabled()
         has_covariates = bool(self.model and (self.model.current_sheet.covariates if self.model.current_sheet else []))
         self.action_meta_regression.setEnabled(
-            r_backend.is_ready() and dataset_analysis_enabled and has_covariates
+            r_runtime.is_ready() and dataset_analysis_enabled and has_covariates
         )
         self.action_meta_regression.setToolTip("Meta-regression" if has_covariates else "Add a covariate to run meta-regression.")
 
@@ -598,7 +588,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             )
         )
         self.action_subgroup_ma.setEnabled(
-            r_backend.is_ready() and dataset_analysis_enabled and has_factor_covariates
+            r_runtime.is_ready() and dataset_analysis_enabled and has_factor_covariates
         )
         self.action_subgroup_ma.setToolTip("Subgroup meta-analysis" if has_factor_covariates else "Add a categorical covariate to run subgroup analysis.")
 
@@ -658,7 +648,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _remove_recent_project(self, path):
         update_setting("recent_files", [entry for entry in get_recent_files() if entry != path])
-        save_settings()
         self.populate_open_recent_menu()
 
     def _locate_recent_project(self, path):
@@ -695,7 +684,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _import_rm5(self):
         from xml.etree.ElementTree import ParseError
         from rc_metastudio.rm5_import import review_rm5
-        path = _qt_dialog_path(QFileDialog.getOpenFileName(self, "Import RevMan review", "", "RevMan 5 (*.rm5)"))
+        path, _selected_filter = QFileDialog.getOpenFileName(self, "Import RevMan review", "", "RevMan 5 (*.rm5)")
         if not path:
             return
         try:
@@ -808,7 +797,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def go(self):
         form = None
-        if self.model.get_current_outcome_type() != "diagnostic":
+        if self.model.get_current_data_type() != "diagnostic":
             form = self._build_analysis_specs_dialog(
                 confidence_level=self.model.get_confidence_level()
             )
@@ -825,7 +814,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             "analysis_type": "meta-regression",
             "confidence_level": self.model.get_confidence_level(),
         }
-        if self.model.get_current_outcome_type() == "diagnostic":
+        if self.model.get_current_data_type() == "diagnostic":
             # Reitsma meta-regression is a single joint sensitivity/
             # specificity model. Keep that intent explicit at the UI seam.
             kwargs["diagnostic_metrics"] = ["sens", "spec"]
@@ -835,7 +824,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         form.show()
 
     def small_study_effects(self):
-        form = small_study_effects_dialog.PublicationBiasDialog(
+        form = small_study_effects_dialog.SmallStudyEffectsDialog(
             self.model,
             parent=self,
             analysis_service=self.small_study_effects_service,
@@ -847,7 +836,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             runtime = project_adapter.RuntimeProject(
                 dataset=self.model.dataset,
                 model_state=self.model.get_state(),
-                restored_selection=self.model.current_outcome_name is not None,
+                restored_active_sheet=self.model.current_outcome_name is not None,
             )
         except project_adapter.ProjectAdapterError:
             self.workspace.mark_dirty()
@@ -882,7 +871,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def cum_ma(self):
         form = None
-        if self.model.get_current_outcome_type() != "diagnostic":
+        if self.model.get_current_data_type() != "diagnostic":
             form = self._build_analysis_specs_dialog(
                 analysis_type="cumulative",
                 confidence_level=self.model.get_confidence_level(),
@@ -898,7 +887,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def loo_ma(self):
         form = None
-        if self.model.get_current_outcome_type() != "diagnostic":
+        if self.model.get_current_data_type() != "diagnostic":
             form = self._build_analysis_specs_dialog(
                 analysis_type="leave-one-out",
                 confidence_level=self.model.get_confidence_level(),
@@ -940,7 +929,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def meta_subgroup(self, selected_covariate):
         form = None
-        if self.model.get_current_outcome_type() != "diagnostic":
+        if self.model.get_current_data_type() != "diagnostic":
             form = self._build_analysis_specs_dialog(
                 analysis_type="subgroup",
                 external_params={"cov_name": selected_covariate},
@@ -983,7 +972,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             return None
 
     def _show_analysis_specs_error(self, exception):
-        if isinstance(exception, r_backend.AnalysisBackendUnavailableError):
+        if isinstance(exception, r_runtime.AnalysisBackendUnavailableError):
             self._show_analysis_backend_error(exception)
         else:
             self._show_analysis_preparation_error(exception)
@@ -1029,8 +1018,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._set_model_adapter(
             runtime.dataset,
             runtime.model_state,
-            preserve_state_selection=runtime.restored_selection,
-            recalculate_outcomes=False,
+            recalculate_effect_previews=False,
         )
         self.workspace.update_live_state(runtime)
         self.workspace.checkpoint(expected_digest=target_digest)
@@ -1057,15 +1045,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.menuMetric.clear()
         self.menuMetric.setDisabled(False)
 
-        if self.model.get_current_outcome_type() == "binary":
+        if self.model.get_current_data_type() == "binary":
             self.add_binary_metrics(metric_to_check=metric_to_check)
             self.metric_menu_is_set_for = analysis_catalog.BINARY
 
-        elif self.model.get_current_outcome_type() in ("time_to_event", "event_rates"):
-            metric = "HR" if self.model.get_current_outcome_type() == "time_to_event" else "IRR"
+        elif self.model.get_current_data_type() in ("time_to_event", "event_rates"):
+            metric = "HR" if self.model.get_current_data_type() == "time_to_event" else "IRR"
             self.add_metrics([], [metric], metric_to_check=metric)
-            self.metric_menu_is_set_for = self.model.get_current_outcome_type(get_str=False)
-        elif self.model.get_current_outcome_type() == "continuous":
+            self.metric_menu_is_set_for = self.model.get_current_data_type(get_str=False)
+        elif self.model.get_current_data_type() == "continuous":
             self.add_continuous_metrics(metric_to_check=metric_to_check)
             self.metric_menu_is_set_for = analysis_catalog.CONTINUOUS
 
@@ -1122,7 +1110,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def add_metric_action(self, metric, menu):
         label = analysis_identity.metric_label(self.model, metric)
-        text = label if metric == "TX Mean" else f"{label} ({metric})"
+        text = label if metric == "Mean" else f"{label} ({metric})"
         metric_action = QAction(text, self)
         metric_action.setToolTip(label)
         metric_action.setStatusTip(label)
@@ -1140,7 +1128,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         return metric_action
 
     def deselect_all_metrics(self):
-        data_type = self.tableView.model().get_current_outcome_type(get_str=False)
+        data_type = self.tableView.model().get_current_data_type(get_str=False)
         if data_type in (analysis_catalog.BINARY, analysis_catalog.CONTINUOUS, *analysis_catalog.RATIO_DATA_TYPES):
             for menu_action in self.menuMetric.actions():
                 sub_menu = menu_action.menu()
@@ -1155,7 +1143,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.deselect_all_metrics()
 
         for action in menu.actions():
-            action_data = _qt_item_text(action.data())
+            action_data = qt_text.to_native_text(action.data())
             if action_data == metric_name:
                 action.blockSignals(True)
                 action.setChecked(True)
@@ -1193,24 +1181,24 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         form.raise_()
         form.activateWindow()
 
-    def edit_group_name(self, cur_group_name):
-        orig_group_name = copy.copy(cur_group_name)
-        edit_group_form = edit_name_dialogs.EditGroupNameDialog(
-            cur_group_name, parent=self
+    def edit_arm_name(self, current_arm_name):
+        original_arm_name = copy.copy(current_arm_name)
+        arm_name_dialog = edit_name_dialogs.EditArmNameDialog(
+            current_arm_name, parent=self
         )
-        if edit_group_form.exec():
+        if arm_name_dialog.exec():
             try:
-                existing_groups = list(self.model.arm_names)
-                if orig_group_name in existing_groups:
-                    existing_groups.remove(orig_group_name)
-                new_group_name = name_validation.validate_unique_name(
-                    "group", edit_group_form.group_name_le.text(), existing_groups
+                existing_arm_names = list(self.model.arm_names)
+                if original_arm_name in existing_arm_names:
+                    existing_arm_names.remove(original_arm_name)
+                new_arm_name = name_validation.validate_unique_name(
+                    "group", arm_name_dialog.group_name_le.text(), existing_arm_names
                 )
             except ValueError as exc:
                 QMessageBox.warning(self, "Warning", str(exc))
                 return
 
-            self._commit_model_operation(lambda: self.model.rename_group(orig_group_name, new_group_name))
+            self._commit_model_operation(lambda: self.model.rename_arm(original_arm_name, new_arm_name))
 
     def add_covariate(self):
         form = add_new_dialogs.AddCovariateDialog(self, existing_names=self.model.get_covariate_names())
@@ -1252,13 +1240,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         # if no file path is provided, prompt the user.
         if file_path is None:
-            file_path = QFileDialog.getOpenFileName(
+            file_path, _selected_filter = QFileDialog.getOpenFileName(
                 parent=self,
                 caption="RCMetaStudio - Open Project",
                 directory=get_default_open_directory(),
                 filter="RC MetaStudio Project (*.rcms)",
             )
-            file_path = _qt_dialog_path(file_path)
 
             # if the user didn't select anything, we return false.
             if file_path == "":
@@ -1301,9 +1288,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self._set_model_adapter(
                 runtime.dataset,
                 runtime.model_state,
-                check_for_appropriate_metric=not runtime.restored_selection,
-                preserve_state_selection=runtime.restored_selection,
-                recalculate_outcomes=True,
+                check_for_appropriate_metric=not runtime.restored_active_sheet,
+                recalculate_effect_previews=True,
             )
         except Exception:
             self._restore_failed_open(previous_model, current_cell, selected_cells)
@@ -1350,10 +1336,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def rename_covariate(self, covariate):
         orig_cov_name = copy.copy(covariate['name'])
         # The group-name editor is also used for covariate labels.
-        edit_cov_form = edit_name_dialogs.EditCovariateNameDialog(
+        covariate_name_dialog = edit_name_dialogs.EditCovariateNameDialog(
             orig_cov_name, parent=self
         )
-        if edit_cov_form.exec():
+        if covariate_name_dialog.exec():
             # the field names are also poorly named, in this case. here we mean the
             # **covariate name**, of course.
             try:
@@ -1362,7 +1348,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                     existing_covariates.remove(orig_cov_name)
                 new_cov = name_validation.validate_unique_name(
                     "covariate",
-                    edit_cov_form.group_name_le.text(),
+                    covariate_name_dialog.group_name_le.text(),
                     existing_covariates,
                 )
             except ValueError as exc:
@@ -1392,15 +1378,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         data_model,
         state_dict=None,
         check_for_appropriate_metric=False,
-        preserve_state_selection=False,
-        recalculate_outcomes=True,
+        recalculate_effect_previews=True,
     ):
         self._set_model_adapter(
             data_model,
             state_dict=state_dict,
             check_for_appropriate_metric=check_for_appropriate_metric,
-            preserve_state_selection=preserve_state_selection,
-            recalculate_outcomes=recalculate_outcomes,
+            recalculate_effect_previews=recalculate_effect_previews,
         )
         self.data_dirtied()
 
@@ -1409,8 +1393,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         data_model,
         state_dict=None,
         check_for_appropriate_metric=False,
-        preserve_state_selection=False,
-        recalculate_outcomes=True,
+        recalculate_effect_previews=True,
     ):
         # An empty dataset starts with one editable blank row.
         add_blank_study = not data_model.sheets
@@ -1432,14 +1415,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.tableView.change_metric_if_appropriate()
 
         self.model_updated(
-            preserve_selection=preserve_state_selection,
-            recalculate_outcomes=recalculate_outcomes,
+            recalculate_effect_previews=recalculate_effect_previews,
         )
 
-    def model_updated(self, preserve_selection=False, recalculate_outcomes=True):
+    def model_updated(self, recalculate_effect_previews=True):
         if self.model.current_sheet:
             self.model.set_current_sheet(self.model.current_sheet_id)
-            if recalculate_outcomes:
+            if recalculate_effect_previews:
                 self.model.hydrate_derived_previews()
         self._disconnect_model_signals()
         self._setup_connections(menu_actions=False)
@@ -1748,13 +1730,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             else:
                 out_f = os.path.join(docs_path, self.model.get_name())
 
-            out_f = QFileDialog.getSaveFileName(
+            out_f, _selected_filter = QFileDialog.getSaveFileName(
                 parent=self,
                 caption="RCMetaStudio - Save Project",
                 directory=out_f,
                 filter="RC MetaStudio Project (*.rcms)",
             )
-            out_f = _qt_dialog_path(out_f)
             if out_f == "" or out_f is None:
                 return None
             destination = out_f
@@ -1794,7 +1775,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         import uuid
         from rc_metastudio.analysis_dataset import Sheet, Arm
         data_type = analysis_catalog.STR_TO_TYPE_DICT[dataset_info['data_type']]
-        groups = dataset_info.get('groups') or analysis_catalog.default_group_names(data_type, dataset_info.get('sub_type'))
+        groups = dataset_info.get('groups') or analysis_catalog.default_arm_names(data_type, dataset_info.get('sub_type'))
         sheet = Sheet(SheetId(uuid.uuid4().hex), dataset_info['name'], data_type, dataset_info.get('sub_type'), dataset_info['data_type'], [Arm(ArmId(uuid.uuid4().hex), name) for name in groups], settings={'metric': dataset_info.get('effect')})
         return sheet
 

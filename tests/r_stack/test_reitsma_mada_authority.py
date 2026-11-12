@@ -169,11 +169,11 @@ _HEADLESS_ADAPTER_DRIVER = textwrap.dedent(
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     os.environ.setdefault("RCMS_QT6_BUILD_ROOT", os.path.join(repo_root, "build", "qt6-verification"))
     sys.path.insert(0, os.path.join(repo_root, "src"))
-    from rc_metastudio import r_backend
-    r_backend.install_r_backend()
+    from rc_metastudio import r_runtime
+    r_runtime.install_r_runtime()
     try:
         from tests.analysis_regression.golden.support import headless_analysis
-        from rc_metastudio import analysis_catalog, r_bridge
+        from rc_metastudio import analysis_adapter, r_bridge
         try:
             r_bridge.RLibraryLoader().load_rcmetar()
         except Exception:
@@ -195,8 +195,9 @@ _HEADLESS_ADAPTER_DRIVER = textwrap.dedent(
         "correction.policy": "All studies if any zero exists", "create.plot": False,
     }
     case = headless_analysis.HeadlessAnalysisCase(
-        sample, ["diagnostic.reitsma"], [parameters], metric="Sens",
-        data_type=analysis_catalog.DIAGNOSTIC,
+        sample, (analysis_adapter.make_analysis_request(
+            data_type="diagnostic", workflow="standard", method="diagnostic.reitsma",
+            metric="Sens", parameters=parameters),),
     )
     standard = headless_analysis.run_headless_analysis(case)
     point = standard.texts["Summary operating point"]
@@ -271,11 +272,12 @@ _HEADLESS_ADAPTER_DRIVER = textwrap.dedent(
     quality_values = {study.label: ("A" if index % 2 == 0 else "B") for index, study in enumerate(studies)}
     threshold_values = {study.label: index + 1 for index, study in enumerate(studies)}
     regression_case = headless_analysis.HeadlessAnalysisCase(
-        sample, "diagnostic.reitsma", parameters, metric="Sens",
-        data_type=analysis_catalog.DIAGNOSTIC, analysis_type="meta_regression", covariates=[
+        sample, (analysis_adapter.make_analysis_request(
+            data_type="diagnostic", workflow="meta-regression", method="diagnostic.reitsma",
+            metric="Sens", parameters=parameters),), covariates=(
             {"name": "quality", "type": "factor", "values": quality_values},
             {"name": "threshold", "type": "continuous", "values": threshold_values},
-        ],
+        ),
     )
     regression = headless_analysis.run_headless_analysis(regression_case)
     sens_text = regression.texts["Sensitivity coefficients"]

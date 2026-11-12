@@ -4,9 +4,7 @@ from pathlib import Path
 import shutil
 import sys
 import types
-from contextlib import contextmanager
 from decimal import Decimal
-from types import ModuleType
 import zipfile
 
 import pytest
@@ -849,9 +847,9 @@ def test_analysis_regression_comparison_cli_writes_report(tmp_path):
 
 
 def test_golden_summary_parser_reads_current_RCMetaR_summary_display():
-    with _import_legacy_golden_modules() as (golden_analysis, _, _):
-        parsed = golden_analysis._parse_summary(
-            """
+    from tests.analysis_regression.golden.support import golden_analysis
+    parsed = golden_analysis._parse_summary(
+        """
 $model.title
 [1] "Binary Random-Effects Model\\n\\nMetric: Odds Ratio"
 
@@ -887,9 +885,9 @@ alt.col.vals   "-0.262"   "-0.724"      "0.200"       "0.236"
 
 
 def test_golden_summary_parser_reads_modern_plain_text_heterogeneity_table():
-    with _import_legacy_golden_modules() as (golden_analysis, _, _):
-        parsed = golden_analysis._parse_summary(
-            """Binary Random-Effects Model
+    from tests.analysis_regression.golden.support import golden_analysis
+    parsed = golden_analysis._parse_summary(
+        """Binary Random-Effects Model
 
 Metric: Odds Ratio
 
@@ -917,9 +915,9 @@ Heterogeneity
 
 
 def test_golden_summary_parser_reads_researcher_facing_confidence_headers():
-    with _import_legacy_golden_modules() as (golden_analysis, _, _):
-        parsed = golden_analysis._parse_summary(
-            """Continuous Random-Effects Model
+    from tests.analysis_regression.golden.support import golden_analysis
+    parsed = golden_analysis._parse_summary(
+        """Continuous Random-Effects Model
 
 Metric: Standardized Mean Difference
 
@@ -948,55 +946,55 @@ Heterogeneity
 
 
 def test_compare_bundle_requires_expected_plot_artifacts(tmp_path):
-    with _import_legacy_golden_modules() as (golden_analysis, _, _):
-        plot = tmp_path / "forest.png"
-        plot.write_bytes(b"png")
-        bundle = {
-            "expected": {"Summary": {}},
-            "artifacts": {"Forest Plot": str(plot)},
-            "tolerances": {},
-        }
+    from tests.analysis_regression.golden.support import golden_analysis
+    plot = tmp_path / "forest.png"
+    plot.write_bytes(b"png")
+    bundle = {
+        "expected": {"Summary": {}},
+        "artifacts": {"Forest Plot": str(plot)},
+        "tolerances": {},
+    }
 
-        def result_with_image(path):
-            return _typed_result(
-                texts={"Summary": "ok"},
-                images={"forest plot": str(path)},
-                capabilities={
-                    "forest plot": {
-                        "plot_kind": "forest",
-                        "editable": True,
-                        "styleable": True,
-                        "composition": "single",
-                        "regenerator": "forest",
-                    }
+    def result_with_image(path):
+        return _typed_result(
+            texts={"Summary": "ok"},
+            images={"forest plot": str(path)},
+            capabilities={
+                "forest plot": {
+                    "plot_kind": "forest",
+                    "editable": True,
+                    "styleable": True,
+                    "composition": "single",
+                    "regenerator": "forest",
+                }
+            },
+            image_params_paths={"forest plot": "plot-data"},
+            sections=[
+                {
+                    "id": "test.summary",
+                    "kind": "text",
+                    "order": 0,
+                    "title": "Summary",
+                    "source_key": "Summary",
                 },
-                image_params_paths={"forest plot": "plot-data"},
-                sections=[
-                    {
-                        "id": "test.summary",
-                        "kind": "text",
-                        "order": 0,
-                        "title": "Summary",
-                        "source_key": "Summary",
-                    },
-                    {
-                        "id": "test.forest",
-                        "kind": "image",
-                        "order": 1,
-                        "title": "Forest Plot",
-                        "source_key": "forest plot",
-                    },
-                ],
-            )
+                {
+                    "id": "test.forest",
+                    "kind": "image",
+                    "order": 1,
+                    "title": "Forest Plot",
+                    "source_key": "forest plot",
+                },
+            ],
+        )
 
-        comparisons = golden_analysis.compare_bundle(
-            bundle,
-            result_with_image(plot),
-        )
-        missing = golden_analysis.compare_bundle(
-            bundle,
-            result_with_image(tmp_path / "missing.png"),
-        )
+    comparisons = golden_analysis.compare_bundle(
+        bundle,
+        result_with_image(plot),
+    )
+    missing = golden_analysis.compare_bundle(
+        bundle,
+        result_with_image(tmp_path / "missing.png"),
+    )
 
     assert {
         "metric": "artifact_present",
@@ -1013,307 +1011,267 @@ def test_compare_bundle_requires_expected_plot_artifacts(tmp_path):
     )
 
 
-def test_headless_analysis_uses_restored_metric_or_reports_missing_metric(
+
+
+def test_headless_diagnostic_batch_preserves_per_request_confidence(
     monkeypatch, tmp_path
 ):
-    with _import_legacy_golden_modules() as (_, headless_analysis, analysis_catalog):
-        from rc_metastudio import analysis_adapter
+    from tests.analysis_regression.golden.support import headless_analysis
+    from rc_metastudio import analysis_catalog
+    from rc_metastudio import analysis_adapter
 
-        class Model(object):
-            dataset = object()
+    class DiagnosticModel(object):
+        dataset = object()
 
-            def __init__(self, current_effect):
-                self.current_effect = current_effect
+        def __init__(self):
+            self.current_metric = None
 
-            def set_current_metric(self, metric):
-                self.current_effect = metric
+        def included_studies_have_raw_data(self):
+            return True
 
-        backend_requests = []
-        model = Model("OR")
-        monkeypatch.setattr(headless_analysis, "load_dataset_model", lambda path: model)
-        monkeypatch.setattr(
-            analysis_adapter.r_bridge,
-            "dataset_to_simple_binary_r_object",
-            lambda model: None,
-            raising=False,
-        )
-        monkeypatch.setattr(
-            analysis_adapter.r_bridge,
-            "run_versioned_analysis_request",
-            lambda request: backend_requests.append(request)
-            or _text_result("Summary", "completed"),
-            raising=False,
-        )
+        def included_studies_have_point_estimates(self, effect):
+            return True
 
-        explicit_case = headless_analysis.HeadlessAnalysisCase(
-            str(tmp_path / "explicit.rcms"),
-            "binary.random",
-            {"measure": "OR"},
-            metric="RR",
-            data_type=analysis_catalog.BINARY,
-        )
-        headless_analysis.run_headless_analysis(explicit_case)
-        assert backend_requests[-1]["metric"] == "RR"
-        assert backend_requests[-1]["params"]["measure"] == "RR"
-        assert explicit_case.parameters == {"measure": "OR"}
+        def set_current_metric(self, metric):
+            self.current_metric = metric
 
-        model.current_effect = "OR"
-        restored_case = headless_analysis.HeadlessAnalysisCase(
-            str(tmp_path / "restored.rcms"),
-            "binary.random",
-            {},
-            data_type=analysis_catalog.BINARY,
-        )
-        headless_analysis.run_headless_analysis(restored_case)
-        assert backend_requests[-1]["metric"] == "OR"
-        assert backend_requests[-1]["params"]["measure"] == "OR"
+    class DiagnosticBackend(object):
+        def __init__(self):
+            self.conversions = []
+            self.runs = []
 
-        model.current_effect = None
-        with pytest.raises(ValueError, match="metric must be a non-empty string"):
-            headless_analysis.run_headless_analysis(restored_case)
+        def convert(self, model, **kwargs):
+            self.conversions.append((model, kwargs))
 
+        def run(self, requests):
+            method_names = [request["method"] for request in requests]
+            parameter_values = [request["params"] for request in requests]
+            self.runs.append((method_names, parameter_values))
+            return _empty_result()
 
-def test_headless_diagnostic_metric_overrides_stale_method_parameters(
-    monkeypatch, tmp_path
-):
-    with _import_legacy_golden_modules() as (_, headless_analysis, analysis_catalog):
-        from rc_metastudio import analysis_adapter
+    model = DiagnosticModel()
+    backend = DiagnosticBackend()
 
-        class DiagnosticModel(object):
-            dataset = object()
+    def load_model(path):
+        return model
 
-            def __init__(self):
-                self.current_metric = None
+    monkeypatch.setattr(headless_analysis, "load_dataset_model", load_model)
+    monkeypatch.setattr(
+        analysis_adapter.r_bridge,
+        "dataset_to_simple_diagnostic_r_object",
+        backend.convert,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        analysis_adapter.r_bridge,
+        "run_versioned_analysis_requests",
+        backend.run,
+        raising=False,
+    )
 
-            def included_studies_have_raw_data(self):
-                return True
+    parameters = [
+        {"measure": "Sens", "conf.level": 95.0},
+        {"measure": "Sens", "conf.level": 90.0},
+    ]
+    case = headless_analysis.HeadlessAnalysisCase(
+        str(tmp_path / "diagnostic.rcms"),
+        (
+            analysis_adapter.make_analysis_request(
+                data_type='diagnostic',
+                workflow='standard',
+                method="diagnostic.random",
+                metric="Sens",
+                parameters=parameters[0],
+            ),
+            analysis_adapter.make_analysis_request(
+                data_type='diagnostic',
+                workflow='standard',
+                method="diagnostic.reitsma",
+                metric="Sens",
+                parameters=parameters[1],
+            ),
+        ),
+    )
 
-            def included_studies_have_point_estimates(self, effect):
-                return True
+    headless_analysis.run_headless_analysis(case)
 
-            def set_current_metric(self, metric):
-                self.current_metric = metric
-
-        class DiagnosticBackend(object):
-            def __init__(self):
-                self.conversions = []
-                self.runs = []
-
-            def convert(self, model, **kwargs):
-                self.conversions.append((model, kwargs))
-
-            def run(self, requests):
-                method_names = [request["method"] for request in requests]
-                parameter_values = [request["params"] for request in requests]
-                self.runs.append((method_names, parameter_values))
-                return _empty_result()
-
-        model = DiagnosticModel()
-        backend = DiagnosticBackend()
-
-        def load_model(path):
-            return model
-
-        monkeypatch.setattr(headless_analysis, "load_dataset_model", load_model)
-        monkeypatch.setattr(
-            analysis_adapter.r_bridge,
-            "dataset_to_simple_diagnostic_r_object",
-            backend.convert,
-            raising=False,
-        )
-        monkeypatch.setattr(
-            analysis_adapter.r_bridge,
-            "run_versioned_analysis_requests",
-            backend.run,
-            raising=False,
-        )
-
-        parameters = [
-            {"measure": "DOR", "conf.level": 95.0},
-            {"measure": "PLR", "conf.level": 90.0},
-        ]
-        case = headless_analysis.HeadlessAnalysisCase(
-            str(tmp_path / "diagnostic.rcms"),
+    assert backend.runs == [
+        (
             ["diagnostic.random", "diagnostic.reitsma"],
-            parameters,
-            metric="Sens",
-            data_type=analysis_catalog.DIAGNOSTIC,
+            [
+                {"measure": "Sens", "conf.level": 95.0},
+                {"measure": "Sens", "conf.level": 90.0},
+            ],
         )
-
-        headless_analysis.run_headless_analysis(case)
-
-        assert backend.runs == [
-            (
-                ["diagnostic.random", "diagnostic.reitsma"],
-                [
-                    {"measure": "Sens", "conf.level": 95.0},
-                    {"measure": "Sens", "conf.level": 90.0},
-                ],
-            )
-        ]
-        assert parameters == [
-            {"measure": "DOR", "conf.level": 95.0},
-            {"measure": "PLR", "conf.level": 90.0},
-        ]
+    ]
+    assert parameters == [
+        {"measure": "Sens", "conf.level": 95.0},
+        {"measure": "Sens", "conf.level": 90.0},
+    ]
 
 
 def test_headless_analysis_dispatches_meta_regression_with_selected_covariates(
     monkeypatch, tmp_path
 ):
-    with _import_legacy_golden_modules() as (_, headless_analysis, analysis_catalog):
-        from rc_metastudio import analysis_adapter
+    from tests.analysis_regression.golden.support import headless_analysis
+    from rc_metastudio import analysis_catalog
+    from rc_metastudio import analysis_adapter
 
-        calls = []
-        backend_requests = []
+    calls = []
+    backend_requests = []
 
-        class Study(object):
-            id = 0
-            covariate_values = {"year": 1990}
+    class Study(object):
+        id = 0
+        covariate_values = {"year": 1990}
 
-        class Model(object):
-            def __init__(self):
-                self.studies = (Study(),)
-                self.current_sheet = __import__("types").SimpleNamespace(rows=self.studies)
+    class Model(object):
+        def __init__(self):
+            self.studies = (Study(),)
+            self.current_sheet = __import__("types").SimpleNamespace(rows=self.studies)
 
-            def get_studies(self, only_if_included=True):
-                assert only_if_included is True
-                return list(self.studies)
+        def get_studies(self, only_if_included=True):
+            assert only_if_included is True
+            return list(self.studies)
 
-            def add_covariate(self, name, kind, values):
-                covariate = {"id": "year", "name": name, "data_type": 1}
-                calls.append(("covariate", covariate, values))
-                return covariate
+        def add_covariate(self, name, kind, values):
+            covariate = {"id": "year", "name": name, "data_type": 1}
+            calls.append(("covariate", covariate, values))
+            return covariate
 
-            def set_current_metric(self, metric):
-                calls.append(("metric", metric))
+        def set_current_metric(self, metric):
+            calls.append(("metric", metric))
 
-        covariates = [
-            {"name": "golden_year", "type": "continuous", "values": {"Study A": 1990}}
-        ]
+    covariates = [
+        {"name": "golden_year", "type": "continuous", "values": {"Study A": 1990}}
+    ]
 
-        model = Model()
-        monkeypatch.setattr(headless_analysis, "load_dataset_model", lambda path: model)
-        monkeypatch.setattr(
-            analysis_adapter.r_bridge,
-            "dataset_to_simple_binary_r_object",
-            lambda model, **kwargs: calls.append(("data", kwargs)),
-            raising=False,
-        )
-        monkeypatch.setattr(
-            analysis_adapter.r_bridge,
-            "run_versioned_analysis_request",
-            lambda request: backend_requests.append(request)
-            or _text_result("Summary", request["metric"]),
-            raising=False,
-        )
+    model = Model()
+    monkeypatch.setattr(headless_analysis, "load_dataset_model", lambda path: model)
+    monkeypatch.setattr(
+        analysis_adapter.r_bridge,
+        "dataset_to_simple_binary_r_object",
+        lambda model, **kwargs: calls.append(("data", kwargs)),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        analysis_adapter.r_bridge,
+        "run_versioned_analysis_request",
+        lambda request: backend_requests.append(request)
+        or _text_result("Summary", request["metric"]),
+        raising=False,
+    )
 
-        case = headless_analysis.HeadlessAnalysisCase(
-            str(tmp_path / "b.rcms"),
-            None,
-            {"conf.level": 95.0},
-            metric="OR",
-            data_type=analysis_catalog.BINARY,
-            analysis_type="meta_regression",
-            covariates=covariates,
-        )
+    case = headless_analysis.HeadlessAnalysisCase(
+        str(tmp_path / "b.rcms"),
+        (
+            analysis_adapter.make_analysis_request(
+                data_type='binary',
+                workflow='meta-regression',
+                method='meta.regression',
+                metric="OR",
+                parameters={"conf.level": 95.0},
+            ),
+        ),
+        covariates=tuple(covariates),
+    )
 
-        headless_analysis.run_headless_analysis(case)
-        data_call = next(call for call in calls if call[0] == "data")
-        assert "include_raw_data" not in data_call[1]
-        assert data_call[1]["studies"] == model.studies
-        assert data_call[1]["covs_to_include"][0]["name"] == "golden_year"
-        added_covariate = next(call[1] for call in calls if call[0] == "covariate")
-        assert data_call[1]["covs_to_include"][0] is added_covariate
-        assert backend_requests[0]["method"] == "meta.regression"
-        assert backend_requests[0]["params"]["to"] == "only0"
-        assert backend_requests[0]["params"]["adjust"] == 0.5
+    headless_analysis.run_headless_analysis(case)
+    data_call = next(call for call in calls if call[0] == "data")
+    assert "include_raw_data" not in data_call[1]
+    assert data_call[1]["studies"] == model.studies
+    assert data_call[1]["covs_to_include"][0]["name"] == "golden_year"
+    added_covariate = next(call[1] for call in calls if call[0] == "covariate")
+    assert data_call[1]["covs_to_include"][0] is added_covariate
+    assert backend_requests[0]["method"] == "meta.regression"
+    assert backend_requests[0]["params"]["to"] == "only0"
+    assert backend_requests[0]["params"]["adjust"] == 0.5
 
 
 @pytest.mark.parametrize("rcmetar_version,authoritative", [(__version__, True), ("0.0.0", False)])
 def test_comprehensive_golden_baseline_capture_writes_reproducible_bundle(
     tmp_path, monkeypatch, rcmetar_version, authoritative
 ):
-    with _import_legacy_golden_modules() as (golden_analysis, _, _):
-        bundles = [
-            _capture_bundle("amino-binary-random", "amino.rcms", "binary.random"),
-            _capture_bundle(
-                "continuous-random", "continuous.rcms", "continuous.random"
-            ),
-        ]
-        plot = tmp_path / "plot.png"
-        plot.write_bytes(b"plot")
+    from tests.analysis_regression.golden.support import golden_analysis
+    bundles = [
+        _capture_bundle("amino-binary-random", "amino.rcms", "binary.random"),
+        _capture_bundle(
+            "continuous-random", "continuous.rcms", "continuous.random"
+        ),
+    ]
+    plot = tmp_path / "plot.png"
+    plot.write_bytes(b"plot")
 
-        monkeypatch.setattr(
-            golden_analysis, "curated_golden_bundles", lambda root_dir=None: bundles
-        )
-        monkeypatch.setattr(
-            golden_analysis.r_bridge,
-            "RLibraryLoader",
-            lambda: types.SimpleNamespace(load_rcmetar=lambda: None),
-        )
-        monkeypatch.setattr(golden_analysis, "_commit_sha", lambda: "abc123")
-        monkeypatch.setattr(golden_analysis, "_r_package_version", lambda package: {"RCMetaR": rcmetar_version, "meta": "8.5-0", "mada": "0.5.12", "metafor": "5.0.1"}[package])
-        monkeypatch.setattr(
-            golden_analysis,
-            "_tool_versions",
-            lambda: {
-                "rc_metastudio": __version__,
-                "python": "3.11.15",
-                "os": "Windows",
-                "r": "R version 4.6.1",
-                "rpy2": "3.6.7",
-                "rpy2-rinterface": "3.6.6",
-                "rpy2-robjects": "3.6.5",
-                "pyqt": "6.11.0",
+    monkeypatch.setattr(
+        golden_analysis, "curated_golden_bundles", lambda root_dir=None: bundles
+    )
+    monkeypatch.setattr(
+        golden_analysis.r_bridge,
+        "RLibraryLoader",
+        lambda: types.SimpleNamespace(load_rcmetar=lambda: None),
+    )
+    monkeypatch.setattr(golden_analysis, "_commit_sha", lambda: "abc123")
+    monkeypatch.setattr(golden_analysis, "_r_package_version", lambda package: {"RCMetaR": rcmetar_version, "meta": "8.5-0", "mada": "0.5.12", "metafor": "5.0.1"}[package])
+    monkeypatch.setattr(
+        golden_analysis,
+        "_tool_versions",
+        lambda: {
+            "rc_metastudio": __version__,
+            "python": "3.11.15",
+            "os": "Windows",
+            "r": "R version 4.6.1",
+            "rpy2": "3.6.7",
+            "rpy2-rinterface": "3.6.6",
+            "rpy2-robjects": "3.6.5",
+            "pyqt": "6.11.0",
+        },
+    )
+
+    def runner(case):
+        if case == "failing-case":
+            raise RuntimeError("RC MetaStudio baseline capture failed")
+        return _typed_result(
+            texts={
+                "Summary": "Estimate Lower bound Upper bound\n 1.0 0.5 1.5 0.02"
             },
+            images={"Forest Plot": str(plot)},
+            capabilities={
+                "Forest Plot": {
+                    "plot_kind": "forest",
+                    "editable": True,
+                    "styleable": True,
+                    "composition": "single",
+                    "regenerator": "forest",
+                }
+            },
+            image_params_paths={"Forest Plot": "plot-data"},
+            sections=[
+                {
+                    "id": "test.summary",
+                    "kind": "text",
+                    "order": 0,
+                    "title": "Summary",
+                    "source_key": "Summary",
+                },
+                {
+                    "id": "test.forest",
+                    "kind": "image",
+                    "order": 1,
+                    "title": "Forest Plot",
+                    "source_key": "Forest Plot",
+                },
+            ],
         )
 
-        def runner(case):
-            if case == "failing-case":
-                raise RuntimeError("RC MetaStudio baseline capture failed")
-            return _typed_result(
-                texts={
-                    "Summary": "Estimate Lower bound Upper bound\n 1.0 0.5 1.5 0.02"
-                },
-                images={"Forest Plot": str(plot)},
-                capabilities={
-                    "Forest Plot": {
-                        "plot_kind": "forest",
-                        "editable": True,
-                        "styleable": True,
-                        "composition": "single",
-                        "regenerator": "forest",
-                    }
-                },
-                image_params_paths={"Forest Plot": "plot-data"},
-                sections=[
-                    {
-                        "id": "test.summary",
-                        "kind": "text",
-                        "order": 0,
-                        "title": "Summary",
-                        "source_key": "Summary",
-                    },
-                    {
-                        "id": "test.forest",
-                        "kind": "image",
-                        "order": 1,
-                        "title": "Forest Plot",
-                        "source_key": "Forest Plot",
-                    },
-                ],
-            )
-
-        report = golden_analysis.capture_comprehensive_golden_baseline(
-            output_dir=str(tmp_path / "artifacts" / "golden-baseline"),
-            runner=runner,
-            timestamp="2026-06-23T00:00:00Z",
-            capture_mode="authoritative",
-            capture_command="capture command",
-            baseline_environment=dict(
-                golden_analysis.MODERN_BASELINE_ENVIRONMENT_EXPECTED
-            ),
-        )
+    report = golden_analysis.capture_comprehensive_golden_baseline(
+        output_dir=str(tmp_path / "artifacts" / "golden-baseline"),
+        runner=runner,
+        timestamp="2026-06-23T00:00:00Z",
+        capture_mode="authoritative",
+        capture_command="capture command",
+        baseline_environment=dict(
+            golden_analysis.MODERN_BASELINE_ENVIRONMENT_EXPECTED
+        ),
+    )
 
     capture_dir = tmp_path / "artifacts" / "golden-baseline" / "captures"
     archive_path = (
@@ -1335,64 +1293,6 @@ def test_comprehensive_golden_baseline_capture_writes_reproducible_bundle(
     )
 
 
-@contextmanager
-def _import_legacy_golden_modules():
-    names = [
-        "golden_analysis",
-        "headless_analysis",
-        "dataset_table_model",
-        "analysis_dataset",
-        "r_bridge",
-        "rc_metastudio.r_bridge",
-    ]
-    import rc_metastudio.analysis_adapter as cached_adapter
-    previous_bridge = cached_adapter.r_bridge
-    previous = dict((name, sys.modules.get(name)) for name in names)
-    try:
-        for name in ["golden_analysis", "headless_analysis"]:
-            sys.modules.pop(name, None)
-        model_module = ModuleType("dataset_table_model")
-        setattr(model_module, "DatasetTableModel", object)
-        sys.modules["dataset_table_model"] = model_module
-        dataset_module = ModuleType("analysis_dataset")
-        setattr(dataset_module, "Covariate", lambda name, kind: (name, kind))
-        sys.modules["analysis_dataset"] = dataset_module
-        r_boundary = ModuleType("r_bridge")
-        setattr(r_boundary, "RLibraryLoader", lambda: None)
-        setattr(r_boundary, "run_workflow_analysis", lambda *args, **kwargs: {})
-        def run_versioned(request):
-            params = request.get("params", {})
-            if request.get("workflow", "standard") == "standard":
-                runner = getattr(r_boundary, "run_binary_analysis", None)
-                if runner is None:
-                    runner = r_boundary.run_continuous_analysis
-                return runner(request["method"], params)
-            return r_boundary.run_workflow_analysis(
-                request["workflow"], request["method"], params
-            )
-
-        setattr(r_boundary, "run_versioned_analysis_request", run_versioned)
-        setattr(
-            r_boundary,
-            "run_versioned_analysis_requests",
-            lambda requests: {},
-        )
-        sys.modules["rc_metastudio.r_bridge"] = r_boundary
-        from tests.analysis_regression.golden.support import golden_analysis
-        from tests.analysis_regression.golden.support import headless_analysis
-        from rc_metastudio import analysis_catalog
-        import rc_metastudio.analysis_adapter as analysis_adapter
-
-        setattr(analysis_adapter, "r_bridge", r_boundary)
-
-        yield golden_analysis, headless_analysis, analysis_catalog
-    finally:
-        cached_adapter.r_bridge = previous_bridge
-        for name, module in previous.items():
-            if module is None:
-                sys.modules.pop(name, None)
-            else:
-                sys.modules[name] = module
 
 
 def _baseline():
@@ -1543,44 +1443,36 @@ def test_empty_comparison_is_not_success():
         compare_golden_baseline({"results": []}, {"results": []})
 
 
-def test_fake_bridge_context_restores_cached_adapter():
-    import rc_metastudio.analysis_adapter as adapter
-    original = adapter.r_bridge
-    for fail in (False, True):
-        try:
-            with _import_legacy_golden_modules():
-                assert adapter.r_bridge is not original
-                if fail:
-                    raise RuntimeError("body failure")
-        except RuntimeError:
-            pass
-        assert adapter.r_bridge is original
 
 
 def test_supplied_environment_cannot_manufacture_authority():
-    with _import_legacy_golden_modules() as (golden, _headless, _globals):
-        measured = {"os": "Linux", "python": "3.11.9", "pyqt": "6.11.0"}
-        observed = golden._baseline_environment(golden.MODERN_BASELINE_ENVIRONMENT_EXPECTED, measured)
-        assert observed["os"] == "Linux"
-        assert not observed["matches_expected"]
+    from tests.analysis_regression.golden.support import golden_analysis as golden
+    from tests.analysis_regression.golden.support import headless_analysis as _headless
+    from rc_metastudio import analysis_catalog as _globals
+    measured = {"os": "Linux", "python": "3.11.9", "pyqt": "6.11.0"}
+    observed = golden._baseline_environment(golden.MODERN_BASELINE_ENVIRONMENT_EXPECTED, measured)
+    assert observed["os"] == "Linux"
+    assert not observed["matches_expected"]
 
 
 def test_capture_rejects_stale_configured_plot_but_accepts_current_svg(tmp_path):
-    with _import_legacy_golden_modules() as (golden, _headless, _globals):
-        stale = tmp_path / "old.png"
-        stale.write_bytes(b"old plot")
-        bundle = {"artifacts": {"Forest Plot": str(stale)}}
-        missing = parse_analysis_result({"version": 1, "images": {}, "sections": []})
-        with pytest.raises(ValueError, match="current plot"):
-            golden._capture_artifacts(bundle, missing)
-        svg = tmp_path / "current.svg"
-        svg.write_text("<svg />")
-        current = parse_analysis_result({"version": 1, "images": {"forest": str(tmp_path / "absent.png")},
-            "plot_capabilities": {"forest": {"plot_kind": "forest", "editable": True, "styleable": True, "composition": "single", "regenerator": "forest"}},
-            "image_params_paths": {"forest": "params"},
-            "display_images": {"forest": str(svg)}, "sections": [{"id": "forest", "kind": "image", "order": 0,
-            "title": "Forest Plot", "source_key": "forest"}]})
-        assert golden._capture_artifacts(bundle, current)[0]["sha256"] == golden._sha256(svg)
+    from tests.analysis_regression.golden.support import golden_analysis as golden
+    from tests.analysis_regression.golden.support import headless_analysis as _headless
+    from rc_metastudio import analysis_catalog as _globals
+    stale = tmp_path / "old.png"
+    stale.write_bytes(b"old plot")
+    bundle = {"artifacts": {"Forest Plot": str(stale)}}
+    missing = parse_analysis_result({"version": 1, "images": {}, "sections": []})
+    with pytest.raises(ValueError, match="current plot"):
+        golden._capture_artifacts(bundle, missing)
+    svg = tmp_path / "current.svg"
+    svg.write_text("<svg />")
+    current = parse_analysis_result({"version": 1, "images": {"forest": str(tmp_path / "absent.png")},
+        "plot_capabilities": {"forest": {"plot_kind": "forest", "editable": True, "styleable": True, "composition": "single", "regenerator": "forest"}},
+        "image_params_paths": {"forest": "params"},
+        "display_images": {"forest": str(svg)}, "sections": [{"id": "forest", "kind": "image", "order": 0,
+        "title": "Forest Plot", "source_key": "forest"}]})
+    assert golden._capture_artifacts(bundle, current)[0]["sha256"] == golden._sha256(svg)
 
 
 @pytest.mark.parametrize("failure", [OSError, KeyboardInterrupt])
@@ -1620,24 +1512,26 @@ def test_scoped_text_exception_rejects_arbitrary_replacement(text):
 
 
 def test_standalone_extended_cases_require_frozen_numbers(monkeypatch):
-    with _import_legacy_golden_modules() as (golden, _headless, _globals):
-        contract = json.loads((ROOT / "tests/analysis_regression/baseline/numeric-contract.json").read_text())
-        by_id = {case["id"]: case for case in contract["cases"]}
-        with zipfile.ZipFile(ROOT / "tests/analysis_regression/baseline/observed-golden-baseline.zip") as archive:
-            frozen = json.loads(archive.read("manifest.json"))
-        for bundle in golden.curated_golden_bundles():
-            if bundle["id"] in {"amino-binary-random", "continuous-random", "lymph-diagnostic-random-dor"}:
-                continue
-            texts = next(case["texts"] for case in frozen["curated_golden_set"] if case["id"] == bundle["id"])
-            sections = [{"id": str(i), "kind": "text", "order": i, "title": section, "source_key": section} for i, section in enumerate(texts)]
-            result = _typed_result(texts=texts, sections=sections)
-            # Retain an independent numeric contract while isolating artifact IO.
-            bundle = {**bundle, "artifacts": {}}
-            comparisons = golden.compare_bundle(bundle, result)
-            assert len(comparisons) == sum(len(values) for values in by_id[bundle["id"]]["sections"].values())
-            assert all(item["passed"] for item in comparisons), (bundle["id"], comparisons)
-            damaged = _typed_result(texts={section: "No scientific results" for section in texts}, sections=sections)
-            assert not all(item["passed"] for item in golden.compare_bundle(bundle, damaged))
+    from tests.analysis_regression.golden.support import golden_analysis as golden
+    from tests.analysis_regression.golden.support import headless_analysis as _headless
+    from rc_metastudio import analysis_catalog as _globals
+    contract = json.loads((ROOT / "tests/analysis_regression/baseline/numeric-contract.json").read_text())
+    by_id = {case["id"]: case for case in contract["cases"]}
+    with zipfile.ZipFile(ROOT / "tests/analysis_regression/baseline/observed-golden-baseline.zip") as archive:
+        frozen = json.loads(archive.read("manifest.json"))
+    for bundle in golden.curated_golden_bundles():
+        if bundle["id"] in {"amino-binary-random", "continuous-random", "lymph-diagnostic-random-dor"}:
+            continue
+        texts = next(case["texts"] for case in frozen["curated_golden_set"] if case["id"] == bundle["id"])
+        sections = [{"id": str(i), "kind": "text", "order": i, "title": section, "source_key": section} for i, section in enumerate(texts)]
+        result = _typed_result(texts=texts, sections=sections)
+        # Retain an independent numeric contract while isolating artifact IO.
+        bundle = {**bundle, "artifacts": {}}
+        comparisons = golden.compare_bundle(bundle, result)
+        assert len(comparisons) == sum(len(values) for values in by_id[bundle["id"]]["sections"].values())
+        assert all(item["passed"] for item in comparisons), (bundle["id"], comparisons)
+        damaged = _typed_result(texts={section: "No scientific results" for section in texts}, sections=sections)
+        assert not all(item["passed"] for item in golden.compare_bundle(bundle, damaged))
 
 
 

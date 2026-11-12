@@ -68,8 +68,7 @@ from rc_metastudio import (
     adaptive_window,
     app_error_handler,
     plot_capabilities,
-    qt_layout,
-)
+    )
 from rc_metastudio.analysis_results import (
     AnalysisResult,
     PlotCapability,
@@ -92,7 +91,6 @@ if TYPE_CHECKING:
 else:
     from rc_metastudio.ui_results_window import Ui_ResultsWindow
 
-PageSize = (612, 792)
 padding = 25
 horizontal_padding = 75
 PlotExportFormat = namedtuple("PlotExportFormat", ["extension", "label", "qt_format"])
@@ -297,10 +295,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self, adaptive_window.WindowRole.RESULTS
         )
         restored_state = restore_results_window_state(self)
-        self.copied_item = QByteArray()
-        self.paste_offset = 5
         self.add_offset = 5
-        self.buffer_size = 2
         self.borders = []
         self.plot_service = plot_service or PlotService()
         self._change_settings = change_settings
@@ -874,7 +869,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         artifact = self.create_plot_artifact(title, image, params_path=params_path)
         qt_item = self.add_title(display_title)
         try:
-            img_shape, pos, plot_item = self.create_plot_item(artifact, self.position())
+            _, pos, plot_item = self.create_plot_item(artifact, self.position())
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
             self.add_title("Could not load plot. Text results are still available.")
@@ -1734,21 +1729,6 @@ def _report_interval_columns(headers, rows):
                 interval = f"[{row[index]},\u00a0{row[index + 1]}]"
                 row[start:index + 2] = [f"{row[start]} {interval}" if start < index else interval]
             break
-
-
-def _report_section_block(section):
-    tables = tuple(table for table in section.tables if not table.title.startswith("Calculation scale"))
-    difference = next((table for table in tables if table.title.endswith("Test of subgroup differences")), None)
-    if difference is not None:
-        ordered = [table for table in tables if table is not difference]
-        before = next((index for index, table in enumerate(ordered) if table.title.endswith("Prediction interval")), len(ordered))
-        ordered.insert(before, difference)
-        tables = tuple(ordered)
-    paragraphs = section.paragraphs if section.tables else (section.value,)
-    heading = section.title
-    if tables and section.title.endswith(("Summary", "summary")):
-        heading = tables[0].title if section.title == "Summary" else section.title.removesuffix("summary") + "results"
-    return section.semantic_id, heading, paragraphs, tables
 
 
 if __name__ == "__main__":

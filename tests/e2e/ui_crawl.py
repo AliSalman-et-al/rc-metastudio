@@ -57,8 +57,8 @@ def analysis_setup(driver, capture, missing):
     form.close()
     driver.window.workspace.mark_saved()
     assert driver.window.open(str(driver.ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
-    from rc_metastudio.small_study_effects_dialog import PublicationBiasDialog
-    form = PublicationBiasDialog(driver.window.model, parent=driver.window,
+    from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
+    form = SmallStudyEffectsDialog(driver.window.model, parent=driver.window,
                                  analysis_service=driver.window.small_study_effects_service)
     form.show()
     assert "19 included" in form.context_label.text(), form.context_label.text()
@@ -332,7 +332,7 @@ def imports(driver, capture, missing):
             page.select_file_btn.click()
         driver.app.processEvents()
     csv = driver.WORK / "crawl.csv"
-    csv.write_text("Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total,OR,Lower,Upper\nAlpha,2020,1,10,2,12,,,\nBeta,2021,3,11,4,13,,,\n", encoding="utf-8")
+    csv.write_text("Study Name,Year,Intervention events,Intervention total,Control events,Control total,OR,Lower,Upper\nAlpha,2020,1,10,2,12,,,\nBeta,2021,3,11,4,13,,,\n", encoding="utf-8")
     select(csv)
     assert page.isComplete(), page.import_status.text()
     capture("C-csv-preview", form)

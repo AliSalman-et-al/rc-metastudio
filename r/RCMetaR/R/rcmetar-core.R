@@ -272,7 +272,7 @@ rcmetar.prepare.analysis.data <- function(om.data, params) {
 
 .rcmetar.prepare.continuous.data <- function(om.data, params, study.count) {
     measure <- as.character(params$measure %||% "")
-    required <- if (identical(measure, "TXMean")) {
+    required <- if (identical(measure, "Mean")) {
         list(om.data@N1, om.data@mean1, om.data@sd1)
     } else {
         list(om.data@N1, om.data@mean1, om.data@sd1,
@@ -280,7 +280,7 @@ rcmetar.prepare.analysis.data <- function(om.data, params) {
     }
     has.raw <- .rcmetar.has.complete.raw.data(required, study.count)
     if (has.raw) has.raw <- all(om.data@N1 > 0)
-    if (has.raw && !identical(measure, "TXMean")) has.raw <- all(om.data@N2 > 0)
+    if (has.raw && !identical(measure, "Mean")) has.raw <- all(om.data@N2 > 0)
     if (isTRUE(has.raw) && !is.null(params$measure)) {
         effect <- compute.for.one.cont.study(om.data, params)
         om.data@y <- effect$yi
@@ -479,6 +479,7 @@ rcmetar.diagnostic.study.effects <- function(tp, fn, fp, tn, metrics=c("Spec", "
 }
 
 rcmetar.regenerate.plot.data <- function(om.data, res, params) {
+    params <- .rcmetar.as.params.list(params)
     reitsma <- .rcmetar.regenerate.reitsma.plot.data(om.data, res, params)
     if (!is.null(reitsma)) return(reitsma)
     sequential <- .rcmetar.regenerate.sequential.plot.data(om.data, res, params)
@@ -495,6 +496,7 @@ rcmetar.regenerate.plot.data <- function(om.data, res, params) {
 }
 
 rcmetar.regenerate.regression.plot.data <- function(om.data, res, params) {
+    params <- .rcmetar.as.params.list(params)
     if (!inherits(res, "rma")) {
         stop("Meta-regression bubble plots require a metafor rma result.", call.=FALSE)
     }
@@ -758,11 +760,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
     workflow <- .rcmetar.normalize.workflow(request$workflow)
     params <- .rcmetar.as.params.list(request$params)
     method <- as.character(request$method)
-    metric <- as.character(request$metric %||% params$measure %||% "")
-    if (length(metric) == 1L &&
-            identical(gsub("[[:space:].]+", "", trimws(metric)), "TXMean")) {
-        metric <- "TXMean"
-    }
+    metric <- .rcmetar.canonical.metric(as.character(request$metric %||% params$measure %||% ""))
     if (length(metric) != 1L || !nzchar(metric)) {
         stop("Analysis request must include one metric.", call.=FALSE)
     }
@@ -792,10 +790,6 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
     }
     if (!is.null(params$measure) && !nzchar(as.character(params$measure))) {
         stop("Parameter 'measure' must not be empty.", call.=FALSE)
-    }
-    if (!is.null(params$measure) &&
-            identical(gsub("[[:space:].]+", "", trimws(as.character(params$measure))), "TXMean")) {
-        params$measure <- "TXMean"
     }
 
     if (workflow == "subgroup") {
@@ -989,6 +983,9 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
     }
     if (is.null(names(params)) || any(!nzchar(names(params)))) {
         stop("Analysis parameters must be named.", call.=FALSE)
+    }
+    for (name in c("measure", "metric")) {
+        if (!is.null(params[[name]])) params[[name]] <- .rcmetar.canonical.metric(params[[name]])
     }
     params
 }

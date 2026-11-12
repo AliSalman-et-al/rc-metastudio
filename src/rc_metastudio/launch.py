@@ -14,7 +14,7 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
 
-from rc_metastudio import adaptive_window, app_error_handler, application_metadata, qt6_resources, r_backend, settings
+from rc_metastudio import adaptive_window, app_error_handler, application_metadata, qt6_resources, r_runtime, settings
 
 APPLICATION_ICON_PATH = ":/misc/meta.png"
 
@@ -199,7 +199,7 @@ def _emit_automation_phase(phase_callback, phase):
 
 def load_R_libraries(app, splash=None, phase_callback=None):
     """Loads the R libraries while updating the splash screen"""
-    r_backend.install_r_backend()
+    r_runtime.install_r_runtime()
     from rc_metastudio import r_bridge
 
     def _status(message):
@@ -403,10 +403,9 @@ def _load_composition_runtime(
         _invoke_r_loader(r_loader or load_R_libraries, app, splash, phase_callback)
         from rc_metastudio import r_bridge
         r_bridge.reset_r_working_directory()
-        r_backend.mark_ready()
+        r_runtime.mark_ready()
         return splash
     except BaseException:
-        from rc_metastudio import r_runtime
         r_runtime.mark_unavailable()
         dispose_qobjects(app, (splash,))
         raise
@@ -422,7 +421,7 @@ def _invoke_r_loader(loader, app, splash, phase_callback):
 def _finish_composition(app, main_window, *, splash):
     meta = main_window.MainWindow()
     meta.workspace.mark_saved()
-    _show_main_window(meta)
+    settings.restore_main_window_placement(meta)
     if splash is not None:
         splash.finish(meta)
         dispose_qobjects(app, (splash,))
@@ -455,15 +454,6 @@ def dispose_qobjects(app, objects):
         app.processEvents()
 
 
-def _show_main_window(window):
-    if hasattr(settings, "restore_main_window_placement") and hasattr(
-        window, "restoreGeometry"
-    ):
-        settings.restore_main_window_placement(window)
-    elif hasattr(window, "showMaximized"):
-        window.showMaximized()
-    else:
-        window.show()
 
 
 def _set_application_icon(app):

@@ -124,7 +124,7 @@
         "upper": {"type": "number"}
       }
     },
-    "metric": {"enum": ["OR", "RD", "RR", "AS", "YUQ", "YUY", "PR", "PLN", "PLO", "PAS", "PFT", "MD", "SMD", "TX Mean", "Sens", "Spec", "PLR", "NLR", "DOR"]},
+    "metric": {"enum": ["OR", "RD", "RR", "AS", "YUQ", "YUY", "PR", "PLN", "PLO", "PAS", "PFT", "MD", "SMD", "Mean", "TX Mean", "TXMean", "TX.Mean", "Sens", "Spec", "PLR", "NLR", "DOR"]},
     "nullable_metric": {
       "anyOf": [
         {"$ref": "#/$defs/metric"},

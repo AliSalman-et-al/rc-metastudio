@@ -71,6 +71,7 @@ dev = [
     "pyyaml==6.0.3",
     "radon>=6.0.1",
     "ty==0.0.18",
+    "vulture==2.16",
 ]
 
 [tool.ty.environment]
@@ -82,6 +83,17 @@ exclude = ["build", "src/rc_metastudio/forms/ui_*.py"]
 
 [tool.ty.rules]
 all = "error"
+
+[tool.vulture]
+paths = [
+    "src",
+    "scripts",
+    "tests",
+    ".agents/skills/verify-rcms/scripts",
+    "r/RCMetaR/inst/qa",
+]
+min_confidence = 60
+sort_by_size = true
 
 [tool.ruff.lint.per-file-ignores]
 "src/rc_metastudio/analysis_dataset.py" = ["E402"]

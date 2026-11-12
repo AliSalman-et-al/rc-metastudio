@@ -1,10 +1,8 @@
 from __future__ import annotations
-
-from collections.abc import Callable
 from types import SimpleNamespace
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QStyle, QWidget
+from PyQt6.QtWidgets import QStyle
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 from qt_test_support import required
@@ -27,18 +25,14 @@ class _Model:
     def get_current_raw_data(self):
         return []
 
-    def get_current_outcome_type(self):
+    def get_current_data_type(self):
         return self._data_type
 
-    def get_current_outcome_subtype(self):
+    def get_current_data_subtype(self):
         return None
 
     def get_confidence_level(self):
         return self._confidence_level
-
-
-class _Owner(QWidget):
-    analysis: Callable[[object], None]
 
 
 def _method(method, available, role="none", reason=""):
@@ -75,7 +69,7 @@ def test_small_study_effect_options_explain_jargon_and_have_label_buddies(
         "run_small_study_effects",
         lambda *args, **kwargs: report,
     )
-    dialog = small_study_effects_dialog.PublicationBiasDialog(_Model("binary", "OR"))
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("binary", "OR"))
     try:
         for control in (
             dialog.sampling_confidence_combo,
@@ -126,14 +120,14 @@ def test_dialog_keeps_researcher_labels_readable_at_high_dpi(qapp, monkeypatch):
         "run_small_study_effects",
         lambda *args, **kwargs: report,
     )
-    dialog = small_study_effects_dialog.PublicationBiasDialog(_Model("binary", "OR"))
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("binary", "OR"))
     try:
         dialog.show()
         qapp.processEvents()
-        assert dialog.minimumWidth() >= small_study_effects_dialog.PUBLICATION_BIAS_MIN_WIDTH
-        assert dialog.width() >= small_study_effects_dialog.PUBLICATION_BIAS_MIN_WIDTH
+        assert dialog.minimumWidth() >= small_study_effects_dialog.SMALL_STUDY_EFFECTS_MIN_WIDTH
+        assert dialog.width() >= small_study_effects_dialog.SMALL_STUDY_EFFECTS_MIN_WIDTH
         assert dialog.width() >= min(
-            small_study_effects_dialog.PUBLICATION_BIAS_PREFERRED_WIDTH,
+            small_study_effects_dialog.SMALL_STUDY_EFFECTS_PREFERRED_WIDTH,
             required(dialog.screen(), "dialog screen").availableGeometry().width(),
         )
         assert dialog.automatic_test_label.wordWrap()
@@ -150,7 +144,7 @@ def test_dialog_form_surfaces_never_introduce_horizontal_scrollbars(
         "run_small_study_effects",
         lambda *args, **kwargs: report,
     )
-    dialog = small_study_effects_dialog.PublicationBiasDialog(_Model("binary", "OR"))
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("binary", "OR"))
     try:
         dialog.show()
         qapp.processEvents()
@@ -213,7 +207,7 @@ def test_diagnostic_request_does_not_select_unavailable_deeks(qapp, monkeypatch)
         "run_small_study_effects",
         lambda *args, **kwargs: report,
     )
-    dialog = small_study_effects_dialog.PublicationBiasDialog(_Model("diagnostic", "DOR"))
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("diagnostic", "DOR"))
     try:
         assert dialog._request().to_mapping()["tests"] == []
         assert dialog._request().to_mapping()["funnels"] == ["deeks"]
@@ -238,7 +232,7 @@ def test_correction_policy_refreshes_authoritative_or_routing(qapp, monkeypatch)
     monkeypatch.setattr(
         r_bridge, "run_small_study_effects", preview
     )
-    dialog = small_study_effects_dialog.PublicationBiasDialog(_Model("binary", "OR"))
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("binary", "OR"))
     try:
         assert dialog.automatic_test_label.text() == "Primary: Harbord"
         dialog.correction_policy_combo.setCurrentText("All studies")
@@ -258,7 +252,7 @@ def test_context_is_compact_and_distinguishes_included_and_eligible_counts(
         lambda *args, **kwargs: report,
     )
     model = _Model("continuous", "MD")
-    dialog = small_study_effects_dialog.PublicationBiasDialog(model)
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(model)
     try:
         assert dialog.context_label.text() == (
             "Continuous  ·  Mean difference  ·  1 included  ·  10 eligible"
@@ -279,7 +273,7 @@ def test_singleton_r_warning_is_accepted_at_dialog_boundary(qapp, monkeypatch):
         "run_small_study_effects",
         lambda *args, **kwargs: report,
     )
-    dialog = small_study_effects_dialog.PublicationBiasDialog(_Model("continuous", "MD"))
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("continuous", "MD"))
     try:
         assert dialog.automatic_test_label.text() == "Primary: Classical Egger"
     finally:
@@ -295,7 +289,7 @@ def test_correction_group_is_hidden_without_raw_count_eligibility(qapp, monkeypa
         "run_small_study_effects",
         lambda *args, **kwargs: report,
     )
-    dialog = small_study_effects_dialog.PublicationBiasDialog(_Model("continuous", "MD"))
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("continuous", "MD"))
     try:
         assert dialog.correction_group.isHidden()
         assert not dialog.correction_policy_combo.isEnabled()
@@ -314,7 +308,7 @@ def test_correction_group_is_hidden_for_one_arm_proportion(qapp, monkeypatch):
     monkeypatch.setattr(
         r_bridge, "run_small_study_effects", preview
     )
-    dialog = small_study_effects_dialog.PublicationBiasDialog(_Model("binary", "PR"))
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("binary", "PR"))
     try:
         assert dialog.correction_group.isHidden()
         assert not dialog.correction_policy_combo.isEnabled()
@@ -342,7 +336,7 @@ def test_failure_is_reported_in_dedicated_label(qapp, monkeypatch):
         "handle_exception",
         lambda *args, **kwargs: None,
     )
-    dialog = small_study_effects_dialog.PublicationBiasDialog(_Model("continuous", "MD"))
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("continuous", "MD"))
     try:
         dialog.run()
         assert dialog.failure_label.text() == "run failed"
@@ -354,7 +348,7 @@ def test_failure_is_reported_in_dedicated_label(qapp, monkeypatch):
 def test_output_confidence_and_unique_sensitivity_choices(qapp, monkeypatch):
     monkeypatch.setattr(r_bridge, "run_small_study_effects", lambda *a, **k:
         _report("continuous", "MD", [_method("classical-egger", True, "primary")]))
-    dialog = small_study_effects_dialog.PublicationBiasDialog(_Model("continuous", "MD", 90))
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("continuous", "MD", 90))
     try:
         dialog.sampling_confidence_combo.setCurrentText("99")
         request = dialog._request().to_mapping()
@@ -372,7 +366,7 @@ def test_preview_failure_blocks_silent_primary_only_request_and_allows_retry(qap
     def failed(*args, **kwargs):
         raise RuntimeError("preview unavailable")
     monkeypatch.setattr(r_bridge, "run_small_study_effects", failed)
-    dialog = small_study_effects_dialog.PublicationBiasDialog(_Model("continuous", "MD"))
+    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("continuous", "MD"))
     try:
         with pytest.raises(ValueError, match="availability"):
             dialog._request()

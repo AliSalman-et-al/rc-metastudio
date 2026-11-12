@@ -27,7 +27,7 @@ from rc_metastudio import app_error_handler
 from rc_metastudio import adaptive_window
 from rc_metastudio import row_padding
 from rc_metastudio.analysis_catalog import DIAGNOSTIC_METRICS, DIAG_FIELDS_TO_RAW_INDICES
-from rc_metastudio.analysis_validation import EMPTY_VALS, is_nan, is_a_float, is_empty
+from rc_metastudio.analysis_validation import EMPTY_VALS, is_nan, is_float_convertible, is_empty
 from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
 from rc_metastudio.qt_object_guard import required
 
@@ -562,7 +562,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         old_value=None,
         use_old_value=True,
     ):
-        old_table = calculator_controls.save_table_data(table)
+        old_table = calculator_controls.snapshot_table_text(table)
         if use_old_value:
             old_table[row][col] = old_value
 
@@ -617,7 +617,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                 "calc_scale",
                 metric=metric,
             )
-            self.analysis_unit.set_effect_and_ci(
+            self.analysis_unit.set_derived_effect_preview(
                 metric,
                 self.arm_key,
                 est,
@@ -652,7 +652,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                     raw_data_index
                 ] = (
                     None
-                    if not is_a_float(imputed_dict[field])
+                    if not is_float_convertible(imputed_dict[field])
                     else float(imputed_dict[field])
                 )
 
@@ -691,9 +691,9 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
     def _text_box_value_is_between_bounds(self, val_str, new_text):
         if is_empty(new_text):
             return True, ""
-        ci_param = {"est": "est", "lower": "low", "upper": "high"}.get(val_str)
+        confidence_bound = {"est": "est", "lower": "low", "upper": "high"}.get(val_str)
         is_prevalence = val_str == "prevalence"
-        if ci_param is None and not is_prevalence:
+        if confidence_bound is None and not is_prevalence:
             return True, ""
         try:
             with ExitStack() as signal_blockers:
@@ -702,22 +702,22 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                 options = {}
                 if is_prevalence:
                     options = {
-                        "opt_cmp_fn": lambda x: 0 <= calculator_controls.numeric_value(x) <= 1,
-                        "opt_cmp_msg": "Prevalence must be between 0 and 1.",
+                        "additional_validator": lambda x: 0 <= calculator_controls.numeric_value(x) <= 1,
+                        "validation_message": "Prevalence must be between 0 and 1.",
                     }
-                display_scale_val = calculator_controls.evaluate(
+                display_scale_val = calculator_controls.validate_calculator_input(
                     new_text=new_text,
                     analysis_unit=self.analysis_unit,
                     current_effect=self.current_effect,
                     arm_key=self.arm_key,
-                    conv_to_disp_scale=partial(
+                    to_display_scale=partial(
                         self.calculator.diagnostic_convert_scale,
                         metric_name=self.current_effect,
                         convert_to="display.scale",
                     ),
                     parent=self,
                     confidence_multiplier=self.confidence_multiplier,
-                    ci_param=ci_param,
+                    confidence_bound=confidence_bound,
                     source=calculator_effect_readout.calculator_effect_source(
                         self.analysis_unit,
                         self.arm_names,
@@ -856,7 +856,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             "lower": self.lower_text_box.text(),
             "upper": self.upper_text_box.text(),
         }
-        good, message = calculator_controls.between_bounds(
+        good, message = calculator_controls.validate_confidence_interval_order(
             est=values["est"], low=values["lower"], high=values["upper"]
         )
         if not good and message:
@@ -901,9 +901,9 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             lower=self.lower_text_box,
             upper=self.upper_text_box,
         )
-        calculator_effect_readout.set_current_effect_from_value(
+        calculator_effect_readout.populate_effect_ci_fields(
             analysis_unit=self.analysis_unit,
-            txt_boxes=txt_boxes,
+            effect_fields=txt_boxes,
             current_effect=self.current_effect,
             arm_key=self.arm_key,
             data_type="diagnostic",
@@ -1008,13 +1008,13 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                     "entered", effect, self.arm_key, self.confidence_multiplier
                 )
 
-                def conv_to_disp_scale(x):
+                def to_display_scale(x):
                     return self.calculator.diagnostic_convert_scale(
                         x, effect, convert_to="display.scale"
                     )
 
                 display_estimate, display_lower, display_upper = [
-                    conv_to_disp_scale(x) for x in [est, lower, upper]
+                    to_display_scale(x) for x in [est, lower, upper]
                 ]
                 for i, r_subkey in enumerate(["", ".lb", ".ub"]):
                     try:
@@ -1025,7 +1025,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                         pass
 
             x = self.get_total_subjects()
-            d["total"] = float(x) if is_a_float(x) else None
+            d["total"] = float(x) if is_float_convertible(x) else None
 
             x = self.prevalence_text_box.text()
             try:

@@ -116,8 +116,9 @@ def _binary_raw_effect(
     raw_data: Sequence[object],
     confidence_level: float,
 ) -> tuple[tuple[Scalar, Scalar, Scalar], object]:
-    e1, n1, e2, n2 = raw_data
+    e1, n1 = raw_data[:2]
     if effect in BINARY_TWO_ARM_METRICS:
+        e2, n2 = raw_data[2:]
         result = checked.effect_for_study(e1, n1, e2, n2, metric=effect, confidence_level=confidence_level)
     else:
         result = checked.effect_for_study(e1, n1, two_arm=False, metric=effect, confidence_level=confidence_level)
@@ -130,8 +131,9 @@ def _continuous_raw_effect(
     raw_data: Sequence[object],
     confidence_level: float,
 ) -> tuple[tuple[Scalar, Scalar, Scalar], object]:
-    n1, m1, sd1, n2, m2, sd2 = raw_data
+    n1, m1, sd1 = raw_data[:3]
     if effect in CONTINUOUS_TWO_ARM_METRICS:
+        n2, m2, sd2 = raw_data[3:]
         result = checked.continuous_effect_for_study(
             n1, m1, sd1, n2=n2, m2=m2, sd2=sd2, metric=effect, confidence_level=confidence_level
         )

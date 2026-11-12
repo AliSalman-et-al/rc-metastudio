@@ -8,8 +8,6 @@ import json
 import re
 from pathlib import Path
 
-EXPECTED_TEAM_ID = "VZLD955F6P"
-
 
 def parse_pkgutil_signature(stdout: str, stderr: str, status: int) -> dict[str, object]:
     status_line = re.search(r"^\s*Status:\s*(.+)$", stdout, re.MULTILINE)

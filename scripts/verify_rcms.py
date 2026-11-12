@@ -137,7 +137,7 @@ def _scenario_timeout(scenario: str) -> int:
     timeout_seconds = 120
     if scenario in {"sheets-legacy", "sheets-swap"}:
         return 600
-    if scenario in {"sheets-baseline", "hillclimb", "manuscript-export", "manuscript-export-direct", "summary-of-findings", "results-window", "ux-improvements"}:
+    if scenario in {"hillclimb", "manuscript-export", "manuscript-export-direct", "summary-of-findings", "results-window", "ux-improvements"}:
         return 600
     if scenario in {"ratios-hr", "ratios-irr", "project-display-labels", "project-round6-polish", "project-release-coefficients", "project-reviewer-predictions", "project-reviewer-groups", "project-reviewer-colours", "calculator-ratio-precision", "project-axis-proportions", "project-axis-others", "project-axis-sequential"}:
         timeout_seconds = 600
@@ -199,8 +199,8 @@ def _compare_hillclimb(passed, args, evidence):
     measured = json.loads((evidence / "measures.json").read_text())
     if args.compare_measures:
         previous = json.loads(args.compare_measures.read_text())
-        stable = lambda data: {task: {k: v for k, v in values.items() if k != "wall_seconds"} for task, values in data.items()}
-        if stable(measured) != stable(previous):
+        without_wall_times = lambda data: {task: {k: v for k, v in values.items() if k != "wall_seconds"} for task, values in data.items()}
+        if without_wall_times(measured) != without_wall_times(previous):
             passed = False
             print("Hillclimb counts or numerical output changed", file=sys.stderr)
     print(json.dumps(measured, indent=2))
@@ -229,7 +229,7 @@ def _desktop_command(scenario, work):
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("scenario", choices=(*SCENARIOS, "sheets-baseline"))
+    parser.add_argument("scenario", choices=SCENARIOS)
     parser.add_argument(
         "--native",
         action="store_true",

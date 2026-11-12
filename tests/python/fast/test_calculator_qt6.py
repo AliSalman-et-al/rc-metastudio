@@ -11,6 +11,8 @@ from pathlib import Path
 import pytest
 
 pytestmark = pytest.mark.usefixtures("inject_calculator_boundary")
+
+
 from PIL import Image
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtWidgets import (
@@ -56,6 +58,27 @@ def _table_item(table: QTableWidget, row: int, column: int) -> QTableWidgetItem:
 def _required(value, message: str = "expected Qt object"):
     assert value is not None, message
     return value
+
+
+def test_single_arm_binary_calculator_preserves_its_only_arm(qapp, monkeypatch):
+    from rc_metastudio import analysis_catalog, analysis_dataset
+    from rc_metastudio.binary_data_dialog import BinaryDataDialog
+    from PyQt6.QtWidgets import QMessageBox
+
+    errors = []
+    monkeypatch.setattr(QMessageBox, "critical", lambda _parent, _title, message: errors.append(message))
+    monkeypatch.setattr(QMessageBox, "warning", lambda _parent, _title, message: errors.append(message))
+    unit = analysis_dataset.AnalysisUnit(
+        analysis_dataset.Sheet(SheetId("single"), "Proportion", analysis_catalog.BINARY),
+        raw_data=[[4, 20]], arm_names=["Participants"],
+    )
+    key = (unit.arms["Participants"].stable_id,)
+    dialog = BinaryDataDialog(unit, ["Participants"], key, "PR", confidence_level=95)
+    assert not errors, errors
+    assert dialog.raw_data_table.isRowHidden(1)
+    assert unit.get_arm_names() == ["Participants"]
+    assert unit.get_raw_data_for_arms(["Participants"]) == [4, 20]
+    dialog.reject()
 
 
 def test_native_calculator_capture_falls_back_when_screen_grab_is_null(tmp_path, qapp):
@@ -171,7 +194,7 @@ def test_native_calculator_creates_local_backend_without_loading_real_rpy2(monke
     assert "rpy2.rinterface" not in sys.modules
 
 
-def test_native_calculator_backend_contract_fails_closed_for_loaded_rpy2(monkeypatch):
+def test_native_calculator_runtime_contract_fails_closed_for_loaded_rpy2(monkeypatch):
     smoke = _load_native_calculator_smoke()
     monkeypatch.setitem(sys.modules, "rpy2.rinterface", object())
 
@@ -538,7 +561,7 @@ def test_row_header_signals_are_restored_when_calculator_opening_raises(
         def get_studies(self, only_if_included=True):
             return self.dataset
 
-        def get_current_outcome_subtype(self):
+        def get_current_data_subtype(self):
             return None
 
         def rowCount(self, parent=QtCore.QModelIndex()):
@@ -556,7 +579,7 @@ def test_row_header_signals_are_restored_when_calculator_opening_raises(
         def get_current_arm_key(self):
             return "Group 1-Group 2"
 
-        def get_current_outcome_type(self):
+        def get_current_data_type(self):
             return "continuous"
 
         def get_confidence_level(self):
@@ -606,8 +629,6 @@ class FakeAnalysisUnit:
     def get_effect_names(self):
         return list(self.effects.keys())
 
-    def get_effects(self):
-        return self.effects
 
     def get_raw_data_for_arm(self, group):
         return self.raw_data[group]
@@ -629,7 +650,7 @@ class FakeAnalysisUnit:
     def get_entered_effect_and_ci(self, effect, arm_key):
         return self.get_effect_and_ci(effect, arm_key, None)
 
-    def set_effect_and_ci(self, *args, **kwargs):
+    def set_derived_effect_preview(self, *args, **kwargs):
         pass
 
     def set_effect(self, *args, **kwargs):
@@ -690,13 +711,13 @@ def test_continuous_metric_switch_does_not_reuse_effect_se_as_arm_se(
         arm_names=["Group 1", "Group 2"],
     )
     unit.set_effect_for_source(
-        "entered", "SMD", "Group 1-Group 2", 0.1, -0.1, 0.3,
+        "entered", "SMD", tuple(arm.stable_id for arm in unit.arms.values()), 0.1, -0.1, 0.3,
         standard_error=0.1827,
     )
     dialog = continuous_data_dialog.ContinuousDataDialog(
         unit,
         ["Group 1", "Group 2"],
-        "Group 1-Group 2",
+        tuple(arm.stable_id for arm in unit.arms.values()),
         "SMD",
         confidence_level=95.0,
     )
@@ -788,12 +809,12 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
         arm_names=["Group 1", "Group 2"],
     )
     unit.set_effect_for_source(
-        "entered", "SMD", "Group 1-Group 2", 0.0945, -0.1, 0.29
+        "entered", "SMD", tuple(arm.stable_id for arm in unit.arms.values()), 0.0945, -0.1, 0.29
     )
     dialog = continuous_data_dialog.ContinuousDataDialog(
         unit,
         ["Group 1", "Group 2"],
-        "Group 1-Group 2",
+        tuple(arm.stable_id for arm in unit.arms.values()),
         "SMD",
         confidence_level=95.0,
     )
@@ -1041,8 +1062,8 @@ def test_calculator_effect_ci_fields_fit_valid_domain_samples(qapp, monkeypatch)
 
 @pytest.mark.parametrize(
     ("metric", "representative"),
-    [("MD", "-9999.9999"), ("SMD", "-10.9999"), ("TX Mean", "9999.9999")],
-    ids=["md", "smd", "tx_mean"],
+    [("MD", "-9999.9999"), ("SMD", "-10.9999"), ("Mean", "9999.9999")],
+    ids=["md", "smd", "one_arm_mean"],
 )
 def test_continuous_effect_fields_fit_metric_domain_samples(
     qapp, monkeypatch, metric, representative
@@ -1056,11 +1077,11 @@ def test_continuous_effect_fields_fit_metric_domain_samples(
     )
     unit = FakeContinuousAnalysisUnit()
     fields = {name: QLineEdit() for name in ("effect", "lower", "upper")}
-    calculator_effect_readout.set_current_effect_from_value(
+    calculator_effect_readout.populate_effect_ci_fields(
         unit,
         fields,
         metric,
-        "Group 1" if metric == "TX Mean" else "Group 1-Group 2",
+        "Group 1" if metric == "Mean" else "Group 1-Group 2",
         "continuous",
         confidence_multiplier=1.96,
     )
@@ -1127,7 +1148,7 @@ def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
     widths = {}
     for metric in ("OR", "RD", "PR", "PLO", "AS"):
         fields = {name: QLineEdit() for name in ("effect", "lower", "upper")}
-        calculator_effect_readout.set_current_effect_from_value(
+        calculator_effect_readout.populate_effect_ci_fields(
             FakeAnalysisUnit(),
             fields,
             metric,
@@ -1168,7 +1189,7 @@ def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
         name: ratio_field if name == "effect" else QLineEdit()
         for name in ("effect", "lower", "upper")
     }
-    calculator_effect_readout.set_current_effect_from_value(
+    calculator_effect_readout.populate_effect_ci_fields(
         FakeAnalysisUnit(),
         ratio_fields,
         "OR",
@@ -1219,7 +1240,7 @@ class FakeDiagnosticAnalysisUnit:
     ):
         return self.get_effect_and_ci(effect, arm_key, confidence_multiplier)
 
-    def set_effect_and_ci(self, *args, **kwargs):
+    def set_derived_effect_preview(self, *args, **kwargs):
         pass
 
     def set_effect(self, *args, **kwargs):
@@ -1330,7 +1351,7 @@ class FakeContinuousAnalysisUnit:
     def get_entered_effect_and_ci(self, effect, arm_key):
         return self.get_effect_and_ci(effect, arm_key)
 
-    def set_effect_and_ci(self, *args, **kwargs):
+    def set_derived_effect_preview(self, *args, **kwargs):
         pass
 
     def set_effect(self, *args, **kwargs):
@@ -1346,15 +1367,15 @@ class FakeContinuousAnalysisUnit:
 def test_asymmetric_entered_readout_uses_analysis_se(qapp):
     from rc_metastudio import analysis_dataset, calculator_controls, calculator_edit_history, calculator_effect_readout
     unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', analysis_catalog.CONTINUOUS), arm_names=['A', 'B'])
-    unit.set_effect_for_source('entered', 'MD', 'A-B', 1, 0, 3)
-    unit.set_upper('MD', 'A-B', 3)
+    unit.set_effect_for_source('entered', 'MD', tuple(arm.stable_id for arm in unit.arms.values()), 1, 0, 3)
+    unit.set_upper('MD', tuple(arm.stable_id for arm in unit.arms.values()), 3)
     from statistics import NormalDist
     multiplier = NormalDist().inv_cdf(.975)
     class ReadoutDialog(QDialog):
         def __init__(self):
             super().__init__()
             self.analysis_unit, self.arm_names = unit, ['A', 'B']
-            self.current_effect, self.arm_key, self.confidence_multiplier = 'MD', 'A-B', multiplier
+            self.current_effect, self.arm_key, self.confidence_multiplier = 'MD', tuple(arm.stable_id for arm in unit.arms.values()), multiplier
             self._active_input_mode = 'estimate'
             self.dialog_layout = QVBoxLayout(self)
             self.buttonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok, self)
@@ -1362,7 +1383,7 @@ def test_asymmetric_entered_readout_uses_analysis_se(qapp):
             self.effect_text_box, self.lower_text_box, self.upper_text_box = QLineEdit(), QLineEdit(), QLineEdit()
     dialog = ReadoutDialog()
     calculator_effect_readout.update_calculator_readout(dialog, 'continuous')
-    se = unit.get_se('entered', 'MD', 'A-B', 1.96)
+    se = unit.get_se('entered', 'MD', tuple(arm.stable_id for arm in unit.arms.values()), 1.96)
     assert f'SE: {se:.4f}' in _required(dialog.findChild(QLabel, 'calculator_wald')).text()
 
 
@@ -1376,7 +1397,7 @@ def test_pft_display_passes_actual_arm_sample_size(qapp, monkeypatch):
         seen.append(n1)
         return x
     monkeypatch.setattr(calculator_effect_readout.r_bridge, 'binary_convert_scale', convert)
-    calculator_effect_readout.set_current_effect_from_value(unit, {k: QLineEdit() for k in ('effect', 'lower', 'upper')}, 'PFT', arm_key, 'binary', 1.96, source='derived_preview')
+    calculator_effect_readout.populate_effect_ci_fields(unit, {k: QLineEdit() for k in ('effect', 'lower', 'upper')}, 'PFT', arm_key, 'binary', 1.96, source='derived_preview')
     assert seen == [40, 40, 40]
 
 

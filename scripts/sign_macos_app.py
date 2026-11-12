@@ -32,10 +32,6 @@ class SigningPlan:
     native_files: tuple[Path, ...]
     nested_bundles: tuple[Path, ...]
 
-    @property
-    def signing_targets(self) -> tuple[Path, ...]:
-        return (*self.native_files, *self.nested_bundles, self.app)
-
 
 def _fail(message: str) -> NoReturn:
     raise MacOSSigningError(message)

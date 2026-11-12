@@ -17,14 +17,14 @@ from rc_metastudio.calculator_controls import (
 )
 
 
-_ONE_ARM_REQUIRED_DATA = {
+_ONE_ARM_REQUIRED_VALUE_COUNTS = {
     **dict.fromkeys(BINARY_ONE_ARM_METRICS, 2),
     **dict.fromkeys(CONTINUOUS_ONE_ARM_METRICS, 3),
 }
 
 
 def calculator_effect_source(
-    analysis_unit, groups, effect, arm_key, confidence_multiplier, *, input_mode=None
+    analysis_unit, arm_names, effect, arm_key, confidence_multiplier, *, input_mode=None
 ):
     """Return the active calculator effect authority.
 
@@ -34,11 +34,11 @@ def calculator_effect_source(
     """
     if input_mode == "estimate":
         return "entered"
-    raw_data = analysis_unit.get_raw_data_for_arms(groups)
+    raw_data = analysis_unit.get_raw_data_for_arms(arm_names)
     if not any(value not in EMPTY_VALS for value in raw_data):
         return "entered"
-    required_data = _ONE_ARM_REQUIRED_DATA.get(effect, len(raw_data))
-    if any(value in EMPTY_VALS for value in raw_data[:required_data]):
+    required_value_count = _ONE_ARM_REQUIRED_VALUE_COUNTS.get(effect, len(raw_data))
+    if any(value in EMPTY_VALS for value in raw_data[:required_value_count]):
         return "entered"
     preview = analysis_unit.get_effect_and_ci_for_source(
         "derived_preview", effect, arm_key, confidence_multiplier
@@ -59,9 +59,9 @@ def _effect_values_on_display_scale(analysis_unit, current_effect, arm_key, data
     return converted
 
 
-def set_current_effect_from_value(
+def populate_effect_ci_fields(
     analysis_unit,
-    txt_boxes,
+    effect_fields,
     current_effect,
     arm_key,
     data_type,
@@ -83,7 +83,7 @@ def set_current_effect_from_value(
     except KeyError as exc:
         raise ValueError("data_type unrecognized") from exc
     effect_tbox, lower_tbox, upper_tbox = [
-        txt_boxes[box_name] for box_name in ("effect", "lower", "upper")
+        effect_fields[box_name] for box_name in ("effect", "lower", "upper")
     ]
 
     (est, lower, upper) = analysis_unit.get_effect_and_ci_for_source(

@@ -6,7 +6,7 @@ import sys
 from functools import partial
 from weakref import WeakKeyDictionary
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor, QPainter, QPaintEvent
+from PyQt6.QtGui import QPainter, QPaintEvent
 from PyQt6.QtWidgets import (
     QLineEdit,
     QMessageBox,
@@ -18,16 +18,13 @@ from PyQt6.QtWidgets import (
 )
 from rc_metastudio.analysis_validation import EMPTY_VALS
 from rc_metastudio import qt_text
-from rc_metastudio.qt_object_guard import required
 
 
 CALC_NUM_DIGITS = 4
 
 
-ERROR_COLOR = QColor("red")
 
 
-OK_COLOR = QColor("black")
 
 
 _EFFECT_CI_BASE_MINIMUM_WIDTHS = WeakKeyDictionary()
@@ -85,35 +82,32 @@ def numeric_value(value):
     return number
 
 
-def set_table_item_text_color(item, color):
-    if item is not None:
-        item.setForeground(color)
 
 
-def between_bounds(est=None, low=None, high=None):
-    def my_lt(a, b):
+def validate_confidence_interval_order(est=None, low=None, high=None):
+    def less_than_if_numeric(left, right):
         try:
-            return numeric_value(a) < numeric_value(b)
+            return numeric_value(left) < numeric_value(right)
         except ValueError:
             return None
 
-    good_result = my_lt(low, est)
-    okay = True if good_result is not None else False
-    if okay and not good_result:
-        msg = "The lower CI must be less than the point estimate!"
-        return False, msg
+    comparison_result = less_than_if_numeric(low, est)
+    comparison_is_available = True if comparison_result is not None else False
+    if comparison_is_available and not comparison_result:
+        error_message = "The lower CI must be less than the point estimate!"
+        return False, error_message
 
-    good_result = my_lt(est, high)
-    okay = True if good_result is not None else False
-    if okay and not good_result:
-        msg = "The higher CI must be greater than the point estimate!"
-        return False, msg
+    comparison_result = less_than_if_numeric(est, high)
+    comparison_is_available = True if comparison_result is not None else False
+    if comparison_is_available and not comparison_result:
+        error_message = "The higher CI must be greater than the point estimate!"
+        return False, error_message
 
-    good_result = my_lt(low, high)
-    okay = True if good_result is not None else False
-    if okay and not good_result:
-        msg = "The lower CI must be less than the higher CI!"
-        return False, msg
+    comparison_result = less_than_if_numeric(low, high)
+    comparison_is_available = True if comparison_result is not None else False
+    if comparison_is_available and not comparison_result:
+        error_message = "The lower CI must be less than the higher CI!"
+        return False, error_message
 
     return True, None
 
@@ -172,140 +166,6 @@ def set_table_cells_editable(table, editable_cells):
                 )
     finally:
         table.blockSignals(False)
-
-
-class ConsistencyChecker:
-    def __init__(self, fn_consistent=None, fn_inconsistent=None, table_2x2=None):
-        functions_passed = (fn_consistent is not None) and (fn_inconsistent is not None)
-        assert functions_passed, (
-            "Not enough functions passed to check_for_consistencies"
-        )
-        assert table_2x2 is not None, "No table argument passed."
-
-        self.inconsistent = False
-        self.inconsistent_action = required(fn_inconsistent, "inconsistency callback")
-        self.consistent_action = required(fn_consistent, "consistency callback")
-        self.table = table_2x2
-
-    def run(self):
-        msg = self.check_for_consistencies()
-
-        if not self.inconsistent:
-            self._color_all(color=OK_COLOR)
-        return msg
-
-    def check_for_consistencies(self):
-        self.inconsistent = False
-        rows_sum = self.check_that_rows_sum()  # also colors non-summing rows
-        cols_sum = self.check_that_cols_sum()
-        all_pos = self.check_that_values_positive()
-
-        if self.inconsistent:
-            self.inconsistent_action()
-        else:
-            self.consistent_action()
-
-        if not rows_sum:
-            return "Rows must sum!"
-        elif not cols_sum:
-            return "Columns must sum!"
-        elif not all_pos:
-            return "Counts must be positive!"
-        else:
-            return None
-
-    def check_that_rows_sum(self):
-        rows_sum = True
-        for row in range(3):
-            if self._row_is_populated(row):
-                row_sum = 0
-                for col in range(2):
-                    row_sum += self._get_int(row, col)
-                if not row_sum == self._get_int(row, 2):
-                    self._color_row(row)
-                    self.inconsistent = True
-                    rows_sum = False
-        return rows_sum
-
-    def _get_int(self, i, j):
-        """Get value from cell specified by row=i, col=j as an integer"""
-        if not self._is_empty_cell(i, j):
-            return int(float(self.table.item(i, j).text()))
-        else:
-            return None  # its good to be explicit
-
-    def check_that_cols_sum(self):
-        cols_sum = True
-        for col in range(3):
-            if self._col_is_populated(col):
-                col_sum = 0
-                for row in range(2):
-                    col_sum += self._get_int(row, col)
-                if not col_sum == self._get_int(2, col):
-                    self._color_col(col)
-                    self.inconsistent = True
-                    cols_sum = False
-        return cols_sum
-
-    def check_that_values_positive(self):
-        all_positive = True
-
-        for row in range(3):
-            for col in range(3):
-                value = self._get_int(row, col)
-                if value not in EMPTY_VALS:
-                    if value < 0:
-                        self.table.blockSignals(True)
-                        set_table_item_text_color(
-                            self.table.item(row, col), ERROR_COLOR
-                        )
-                        self.table.blockSignals(False)
-                        self.inconsistent = True
-                        all_positive = False
-        return all_positive
-
-    def _color_all(self, color=ERROR_COLOR):
-        self.table.blockSignals(True)
-        for row in range(3):
-            for col in range(3):
-                item = self.table.item(row, col)
-                if item is not None:
-                    set_table_item_text_color(item, color)
-        self.table.blockSignals(False)
-
-    def _color_row(self, row):
-        self.table.blockSignals(True)
-        for col in range(3):
-            set_table_item_text_color(self.table.item(row, col), ERROR_COLOR)
-        self.table.blockSignals(False)
-
-    def _color_col(self, col):
-        self.table.blockSignals(True)
-        for row in range(3):
-            set_table_item_text_color(self.table.item(row, col), ERROR_COLOR)
-        self.table.blockSignals(False)
-
-    def _row_is_populated(self, row):
-        return True not in [self._is_empty_cell(row, col) for col in range(3)]
-
-    def _col_is_populated(self, col):
-        return True not in [self._is_empty_cell(row, col) for row in range(3)]
-
-    def _is_empty_cell(self, i, j):
-        val = self.table.item(i, j)
-        return val is None or val.text() == ""
-
-
-def enable_txt_box_input(*args):
-    """Enable empty text boxes and disable populated text boxes."""
-    for text_box in args:
-        text_box.blockSignals(True)
-
-        text_box.setEnabled(False)
-        if text_box.text() in EMPTY_VALS:
-            text_box.setEnabled(True)
-
-        text_box.blockSignals(False)
 
 
 def fit_effect_ci_line_edits_to_contents(
@@ -421,82 +281,66 @@ def commit_calculator_edits(dialog):
     return not getattr(dialog, "_validation_failed", False)
 
 
-def save_table_data(table):
-    nrows, ncols = table.rowCount(), table.columnCount()
+def snapshot_table_text(table):
+    row_count, column_count = table.rowCount(), table.columnCount()
 
-    none_row = [None] * ncols
-    table_backup = []
-    for dummy in range(nrows):
-        table_backup.append(none_row[:])
+    empty_row = [None] * column_count
+    cell_texts = []
+    for _ in range(row_count):
+        cell_texts.append(empty_row[:])
 
-    for row in range(nrows):
-        for col in range(ncols):
+    for row in range(row_count):
+        for col in range(column_count):
             item = table.item(row, col)
-            contents = "" if item is None else item.text()
-            table_backup[row][col] = contents
-    return table_backup
+            cell_text = "" if item is None else item.text()
+            cell_texts[row][col] = cell_text
+    return cell_texts
 
 
-def block_signals(widgets, state):
-    for widget in widgets:
-        widget.blockSignals(state)
+def calculator_inputs_disabled(table, text_boxes):
+    table_is_read_only = table_has_no_editable_cells(table)
+    text_fields_are_disabled = all_text_fields_disabled(text_boxes)
 
-
-def get_raw_data(analysis_unit, groups):
-    raw_data_dict = {}
-    for group in groups:
-        raw_data = analysis_unit.get_raw_data_for_arm(group)
-        raw_data_dict[group] = raw_data
-    return raw_data_dict
-
-
-def _input_fields_disabled(table, text_boxes):
-    table_disabled = table_cells_editable(table)
-    txt_boxes_disabled = _txt_boxes_disabled(text_boxes)
-
-    if table_disabled and txt_boxes_disabled:
+    if table_is_read_only and text_fields_are_disabled:
         return True
     return False
 
 
-def table_cells_editable(table):
-    cells_uneditable = True
-    nrows = table.rowCount()
-    ncols = table.columnCount()
-    for row in range(nrows):
-        for col in range(ncols):
+def table_has_no_editable_cells(table):
+    no_editable_cells = True
+    row_count = table.rowCount()
+    column_count = table.columnCount()
+    for row in range(row_count):
+        for col in range(column_count):
             item = table.item(row, col)
             if item is None:
                 continue
             if (
                 item.flags() & Qt.ItemFlag.ItemIsEditable
             ) == Qt.ItemFlag.ItemIsEditable:
-                cells_uneditable = False
-    return cells_uneditable
+                no_editable_cells = False
+    return no_editable_cells
 
 
-def _txt_boxes_disabled(text_boxes):
+def all_text_fields_disabled(text_boxes):
     return not any([box.isEnabled() for box in text_boxes])
 
 
-def evaluate(
+def validate_calculator_input(
     new_text,
     analysis_unit,
     current_effect,
     arm_key,
-    conv_to_disp_scale,
-    ci_param=None,
+    to_display_scale,
+    confidence_bound=None,
     parent=None,
-    opt_cmp_fn=None,
-    opt_cmp_msg=None,
+    additional_validator=None,
+    validation_message=None,
     confidence_multiplier=None,
     *,
     source="entered",
 ):
-    """opt_cmp_fn i.e. 'Optional Compare Function' should return True when the
-    desired condition is met and False otherwise. It is a function of new_text:
-    opt_cmp_fn(new_text)
-    """
+    """Validate display-scale input against interval order or a field constraint."""
     if confidence_multiplier is None:
         raise ValueError("confidence multiplier must be specified")
 
@@ -504,25 +348,25 @@ def evaluate(
         source, current_effect, arm_key, confidence_multiplier
     )  # calc scale
     display_estimate, display_lower, display_upper = [
-        conv_to_disp_scale(x) for x in (est, lower, upper)
+        to_display_scale(x) for x in (est, lower, upper)
     ]
-    is_between_bounds = partial(
-        between_bounds, est=display_estimate, low=display_lower, high=display_upper
+    validate_updated_interval = partial(
+        validate_confidence_interval_order, est=display_estimate, low=display_lower, high=display_upper
     )
     try:
         parsed_value = numeric_value(new_text)
     except ValueError:
         QMessageBox.warning(parent, "Warning", "Must be numeric!")
         raise Exception("error")
-    if not opt_cmp_fn:  # est, lower, upper
-        if ci_param is None:
-            raise ValueError("ci_param is required for confidence-bound validation")
-        (good_result, msg) = is_between_bounds(**{ci_param: new_text})
-        if not good_result:
-            QMessageBox.warning(parent, "Warning", msg)
+    if not additional_validator:  # est, lower, upper
+        if confidence_bound is None:
+            raise ValueError("confidence_bound is required for confidence-bound validation")
+        (interval_is_valid, error_message) = validate_updated_interval(**{confidence_bound: new_text})
+        if not interval_is_valid:
+            QMessageBox.warning(parent, "Warning", error_message)
             raise Exception("error")
     else:  # something other than est, lower, upper (like correlation or prevalence)
-        if not opt_cmp_fn(new_text):
-            QMessageBox.warning(parent, "Warning", opt_cmp_msg)
+        if not additional_validator(new_text):
+            QMessageBox.warning(parent, "Warning", validation_message)
             raise Exception("error")
     return parsed_value  # display_scale_val

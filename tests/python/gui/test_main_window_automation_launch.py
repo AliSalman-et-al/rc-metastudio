@@ -10,13 +10,12 @@ import pytest
 from rc_metastudio import automation
 from tests.python.gui.support import automation_scenarios
 from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtWidgets import QHeaderView
 
 pytestmark = pytest.mark.qsettings
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 from rc_metastudio.analysis_results import parse_analysis_result
-from qt_test_support import key_clicks, required
+from qt_test_support import required
 
 prepare_generated_ui_imports()
 
@@ -134,68 +133,6 @@ def _result_sections(*items):
         }
         for index, (kind, title, source_key) in enumerate(items)
     ]
-
-
-def _assert_compact_table_fits_visible_cells(table):
-    owner = table.window()
-    owner.resize(owner.width() + 180, owner.height())
-    owner.show()
-    QtWidgets.QApplication.processEvents()
-    table_is_measurable = table.isVisible()
-    if not table_is_measurable:
-        header = table.horizontalHeader()
-        uses_stretch_layout = (
-            header.sectionResizeMode(0) == QHeaderView.ResizeMode.Stretch
-            or header.stretchLastSection()
-        )
-        uses_readable_scrolling_layout = all(
-            header.sectionResizeMode(column) == QHeaderView.ResizeMode.Interactive
-            and table.columnWidth(column)
-            >= max(header.sectionSizeHint(column), table.sizeHintForColumn(column))
-            for column in range(table.columnCount())
-        )
-        assert uses_stretch_layout or uses_readable_scrolling_layout
-
-    required_height = (
-        table.horizontalHeader().height()
-        + sum(table.rowHeight(row) for row in range(table.rowCount()))
-        + 2 * table.frameWidth()
-    )
-    assert table.maximumWidth() > table.minimumWidth()
-    assert table.minimumHeight() >= required_height
-    assert table.maximumHeight() >= required_height
-
-    content_widths = [
-        max(
-            table.horizontalHeader().sectionSizeHint(column),
-            table.sizeHintForColumn(column),
-        )
-        for column in range(table.columnCount())
-    ]
-    assert table.minimumWidth() == 0
-
-    if not table_is_measurable:
-        return
-
-    for column, content_width in enumerate(content_widths):
-        if (
-            table.horizontalHeader().sectionResizeMode(column)
-            != QHeaderView.ResizeMode.Stretch
-        ):
-            assert table.columnWidth(column) >= content_width
-        else:
-            assert table.columnWidth(column) > 0
-
-    section_width = sum(
-        table.horizontalHeader().sectionSize(column)
-        for column in range(table.columnCount())
-    )
-    header = table.horizontalHeader()
-    if header.sectionResizeMode(0) == QHeaderView.ResizeMode.Stretch:
-        assert section_width >= table.viewport().width() - 1
-    else:
-        assert header.sectionResizeMode(0) == QHeaderView.ResizeMode.Interactive
-        assert section_width >= sum(content_widths)
 
 
 def _assert_table_view_leaves_spare_width_outside_data_columns(table_view):
@@ -424,6 +361,7 @@ def test_startup_smoke_opens_positional_project_without_wizard(monkeypatch, tmp_
         os.chdir(appdata)
         return app, Window()
     monkeypatch.setattr(launch, "compose_application", compose)
+    monkeypatch.setattr(launch.settings, "restore_main_window_placement", lambda window: window.show())
     monkeypatch.setattr(
         automation,
         "dispatch",
@@ -448,9 +386,9 @@ def test_startup_smoke_opens_positional_project_without_wizard(monkeypatch, tmp_
 
 
 def test_meantime_sample_project_loads_native_factor_covariate():
-    from rc_metastudio import r_backend
+    from rc_metastudio import r_runtime
 
-    r_backend.install_r_backend()
+    r_runtime.install_r_runtime()
     from tests.analysis_regression.golden.support import headless_analysis
 
     model = headless_analysis.load_dataset_model(_sample_project_path("meantime.rcms"))
@@ -465,8 +403,6 @@ def test_meantime_sample_project_loads_native_factor_covariate():
     assert present_values
     assert all(type(value) is str for value in present_values)
     assert set(present_values) == {"1", "2", "3", "4"}
-
-
 
 
 def test_change_covariate_type_model_returns_native_values_and_accepts_native_edits():
@@ -642,12 +578,6 @@ def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypa
     )
     monkeypatch.setattr(
         r_bridge,
-        "get_method_description",
-        lambda method: "Random-effects analysis",
-        raising=False,
-    )
-    monkeypatch.setattr(
-        r_bridge,
         "dataset_to_simple_binary_r_object",
         lambda model, **kwargs: None,
         raising=False,
@@ -674,7 +604,7 @@ def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypa
         app.processEvents()
 
 
-def test_method_parameters_dialog_stays_stable_when_method_description_changes(
+def test_method_parameters_dialog_stays_stable_when_method_selection_changes(
     monkeypatch,
 ):
     from PyQt6 import QtCore, QtWidgets
@@ -686,14 +616,6 @@ def test_method_parameters_dialog_stays_stable_when_method_description_changes(
     method_map = {
         "binary.random": "binary.random",
         "binary.fixed.mh": "binary.fixed.mh",
-    }
-    descriptions = {
-        "binary.random": "Random-effects analysis",
-        "binary.fixed.mh": (
-            "Fixed-effect Mantel-Haenszel analysis with a long generated "
-            "description that should wrap inside the method panel instead of "
-            "widening the dialog while the user changes selections."
-        ),
     }
     params = {
         "binary.random": (
@@ -738,12 +660,6 @@ def test_method_parameters_dialog_stays_stable_when_method_description_changes(
         return dict(method_params), dict(defaults), list(var_order), pretty_names
 
     monkeypatch.setattr(r_bridge, "get_params", get_params, raising=False)
-    monkeypatch.setattr(
-        r_bridge,
-        "get_method_description",
-        lambda method: descriptions[method],
-        raising=False,
-    )
     monkeypatch.setattr(
         r_bridge,
         "dataset_to_simple_binary_r_object",
@@ -991,9 +907,9 @@ def test_analysis_opens_results_window_maximized_and_fits_svg_plot(tmp_path):
 
 
 def test_results_window_refits_svg_plots_and_reflows_sections_on_resize(tmp_path):
-    from rc_metastudio import r_backend
+    from rc_metastudio import r_runtime
 
-    r_backend.install_r_backend()
+    r_runtime.install_r_runtime()
     from rc_metastudio import results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -1108,9 +1024,9 @@ def test_results_window_refits_svg_plots_and_reflows_sections_on_resize(tmp_path
 
 
 def test_results_window_refits_svg_after_viewport_geometry_settles(tmp_path):
-    from rc_metastudio import r_backend
+    from rc_metastudio import r_runtime
 
-    r_backend.install_r_backend()
+    r_runtime.install_r_runtime()
     from rc_metastudio import results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -1181,9 +1097,9 @@ def test_results_window_refits_svg_after_viewport_geometry_settles(tmp_path):
 
 
 def test_results_window_refits_raster_fallback_from_original_source(tmp_path):
-    from rc_metastudio import r_backend
+    from rc_metastudio import r_runtime
 
-    r_backend.install_r_backend()
+    r_runtime.install_r_runtime()
     from rc_metastudio import results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -1255,9 +1171,9 @@ def test_results_window_refits_raster_fallback_from_original_source(tmp_path):
 
 
 def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
-    from rc_metastudio import r_backend
+    from rc_metastudio import r_runtime
 
-    r_backend.install_r_backend()
+    r_runtime.install_r_runtime()
     from rc_metastudio import results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -1347,9 +1263,9 @@ def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
 def test_results_window_applies_forest_edits_to_selected_variant_artifact(
     tmp_path, monkeypatch, title, plot_kind
 ):
-    from rc_metastudio import r_backend
+    from rc_metastudio import r_runtime
 
-    r_backend.install_r_backend()
+    r_runtime.install_r_runtime()
     from rc_metastudio import results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -1474,9 +1390,9 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
 
 
 def test_edit_plot_dialog_round_trips_style_and_appearance_params(monkeypatch):
-    from rc_metastudio import r_backend
+    from rc_metastudio import r_runtime
 
-    r_backend.install_r_backend()
+    r_runtime.install_r_runtime()
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     dialog = plot_editor_dialog.EditPlotDialog(
@@ -1525,12 +1441,10 @@ def test_edit_plot_dialog_round_trips_style_and_appearance_params(monkeypatch):
         app.processEvents()
 
 
-
-
 def test_sroc_plot_editor_round_trips_reitsma_style_contract():
-    from rc_metastudio import r_backend
+    from rc_metastudio import r_runtime
 
-    r_backend.install_r_backend()
+    r_runtime.install_r_runtime()
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     dialog = plot_editor_dialog.EditPlotDialog(
         {
@@ -1587,9 +1501,9 @@ def test_sroc_plot_editor_round_trips_reitsma_style_contract():
 
 
 def test_sroc_plot_editor_limits_marker_legend_to_sample_size_scaling():
-    from rc_metastudio import r_backend
+    from rc_metastudio import r_runtime
 
-    r_backend.install_r_backend()
+    r_runtime.install_r_runtime()
     from rc_metastudio import plot_editor_dialog
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -1619,9 +1533,9 @@ def test_sroc_plot_editor_limits_marker_legend_to_sample_size_scaling():
 
 
 def test_edit_plot_dialog_apply_stays_open_and_ok_applies_and_closes():
-    from rc_metastudio import r_backend
+    from rc_metastudio import r_runtime
 
-    r_backend.install_r_backend()
+    r_runtime.install_r_runtime()
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     dialog = plot_editor_dialog.EditPlotDialog({}, "forest.png")
     applied = []
@@ -1657,9 +1571,9 @@ def test_edit_plot_dialog_apply_stays_open_and_ok_applies_and_closes():
 
 
 def test_edit_plot_dialog_failed_ok_stays_open_with_error():
-    from rc_metastudio import r_backend
+    from rc_metastudio import r_runtime
 
-    r_backend.install_r_backend()
+    r_runtime.install_r_runtime()
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     dialog = plot_editor_dialog.EditPlotDialog({}, "forest.png")
     dialog.applied.connect(lambda: dialog.mark_commit_failed("render failed"))
@@ -1685,9 +1599,9 @@ def test_edit_plot_dialog_failed_ok_stays_open_with_error():
 
 
 def test_edit_regression_plot_dialog_shows_only_bubble_options():
-    from rc_metastudio import r_backend
+    from rc_metastudio import r_runtime
 
-    r_backend.install_r_backend()
+    r_runtime.install_r_runtime()
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     dialog = plot_editor_dialog.EditPlotDialog(
         {
@@ -1739,9 +1653,9 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
     tmp_path, monkeypatch
 ):
     monkeypatch.setattr(plot_service.r_bridge, "load_vars_for_plot", lambda path: True)
-    from rc_metastudio import r_backend
+    from rc_metastudio import r_runtime
 
-    r_backend.install_r_backend()
+    r_runtime.install_r_runtime()
     from rc_metastudio import results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -1914,9 +1828,9 @@ def test_meta_regression_enables_plots_only_for_one_continuous_covariate():
 def test_diagnostic_forest_methods_enable_pre_run_plots_tab(
     method_label, method_name, monkeypatch
 ):
-    from rc_metastudio import r_backend
+    from rc_metastudio import r_runtime
 
-    r_backend.install_r_backend()
+    r_runtime.install_r_runtime()
     from rc_metastudio import analysis_setup_dialog
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -1927,10 +1841,10 @@ def test_diagnostic_forest_methods_enable_pre_run_plots_tab(
         current_effect = "Sens"
         current_outcome_name = "Outcome"
         arm_names = ["Test"]
-        def get_current_outcome_subtype(self):
+        def get_current_data_subtype(self):
             return None
 
-        def get_current_outcome_type(self):
+        def get_current_data_type(self):
             return "diagnostic"
 
         def included_studies_have_raw_data(self):
@@ -1944,12 +1858,6 @@ def test_diagnostic_forest_methods_enable_pre_run_plots_tab(
     )
     monkeypatch.setattr(
         r_bridge, "get_params", lambda method: ({}, {}, None, {}), raising=False
-    )
-    monkeypatch.setattr(
-        r_bridge,
-        "get_method_description",
-        lambda method: "Diagnostic analysis with forest plot output",
-        raising=False,
     )
     monkeypatch.setattr(
         r_bridge,
@@ -1984,9 +1892,9 @@ def test_diagnostic_forest_methods_enable_pre_run_plots_tab(
 def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
     tmp_path, monkeypatch
 ):
-    from rc_metastudio import r_backend
+    from rc_metastudio import r_runtime
 
-    r_backend.install_r_backend()
+    r_runtime.install_r_runtime()
     from rc_metastudio import results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -2154,9 +2062,9 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
 
 
 def test_results_window_ignores_missing_image_order_entries():
-    from rc_metastudio import r_backend
+    from rc_metastudio import r_runtime
 
-    r_backend.install_r_backend()
+    r_runtime.install_r_runtime()
     from rc_metastudio import results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -2678,7 +2586,7 @@ def test_csv_import_wizard_reports_preview_errors(tmp_path, monkeypatch, preview
 
     csv_path = tmp_path / "empty.csv"
     csv_path.write_text(
-        "Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total,OR,Lower,Upper\n"
+        "Study Name,Year,Intervention events,Intervention total,Control events,Control total,OR,Lower,Upper\n"
         "Alpha,2020,1,10,2,12,,,\n" if preview_failure else ""
     )
     shown = []
@@ -2734,7 +2642,6 @@ def _assert_sample_projects_open_directory(directory):
     assert os.path.basename(directory) == "sample_projects"
     assert os.path.exists(os.path.join(directory, "amino.rcms"))
     assert os.path.normcase(directory) != os.path.normcase(os.getcwd())
-
 
 
 def test_storage_boundary_conversion_preserves_all_row_identities(tmp_path):

@@ -69,9 +69,6 @@ class ProjectDocument:
     state: JsonObject
 
 
-ProjectMigration: TypeAlias = Callable[
-    [JsonObject, JsonObject], tuple[JsonObject, JsonObject]
-]
 def legacy_pairs_with_data(source, outcome):
     """Discard placeholder pairs, retaining one sheet for an entirely empty outcome."""
     def has_data(unit):
@@ -453,11 +450,15 @@ def migrate_to_latest(
     except RecursionError as exc:
         raise ProjectFormatError("project migration input nesting is too deep") from exc
     try:
+        _validate(version, "project.json", migrated_project)
+        _validate(version, "state.json", migrated_state)
+        from rc_metastudio.project_metric_migration import normalize_project_metric_names
+        normalize_project_metric_names(migrated_project, migrated_state)
         if version in (1, 2):
             converter = convert_v1_to_sheet_project if version == 1 else convert_v2_to_sheet_project
             migrated_project, migrated_state = converter(migrated_project, migrated_state)
-        _validate(3, "project.json", migrated_project)
-        _validate(3, "state.json", migrated_state)
+            _validate(3, "project.json", migrated_project)
+            _validate(3, "state.json", migrated_state)
         validate_project_semantics(migrated_project, migrated_state)
     except (ProjectSemanticError, RecursionError) as exc:
         raise ProjectFormatError(f"project semantics: {exc}") from exc
@@ -494,7 +495,6 @@ def load_project(
         if expected.get("sha256") != hashlib.sha256(payload).hexdigest():
             raise ProjectFormatError(f"integrity digest mismatch for {member}")
         value = _decode_json(member, payload)
-        _validate(version, member, value)
         decoded[member] = value
 
     project, state = migrate_to_latest(
@@ -597,6 +597,8 @@ def save_project(
     _validate(CURRENT_FORMAT_VERSION, "project.json", project_value)
     _validate(CURRENT_FORMAT_VERSION, "state.json", state_value)
     try:
+        from rc_metastudio.project_metric_migration import normalize_project_metric_names
+        normalize_project_metric_names(project_value, state_value)
         validate_project_semantics(project_value, state_value)
     except (ProjectSemanticError, RecursionError) as exc:
         raise ProjectFormatError(f"project semantics: {exc}") from exc

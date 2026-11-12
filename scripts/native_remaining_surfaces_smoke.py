@@ -725,7 +725,7 @@ def _surface_factories() -> dict[str, SurfaceFactory]:
             "change-covariate-type",
         ),
         "edit-group-name": checked_factory(
-            lambda: edit_name_dialogs.EditGroupNameDialog("Treatment group"),
+            lambda: edit_name_dialogs.EditArmNameDialog("Treatment group"),
             "edit-group-name",
         ),
         "edit-covariate-name": checked_factory(

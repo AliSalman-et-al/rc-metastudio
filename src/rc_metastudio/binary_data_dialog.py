@@ -8,7 +8,7 @@ from itertools import product
 from typing import TYPE_CHECKING, cast
 
 from rc_metastudio.qt_layout import style_inline_error
-from PyQt6.QtCore import QEvent, QObject, QSignalBlocker, QTimer, Qt
+from PyQt6.QtCore import QEvent, QObject, QSignalBlocker, Qt
 from PyQt6.QtGui import QAction, QBrush, QColor, QKeySequence, QPalette
 from PyQt6.QtWidgets import (
     QDialog,
@@ -27,7 +27,7 @@ from rc_metastudio.calculator_service import (
     CalculatorService,
     Numeric,
 )
-from rc_metastudio.analysis_catalog import BINARY_METRIC_NAMES, BINARY_ONE_ARM_METRICS, BINARY_TWO_ARM_METRICS, DEFAULT_GROUP_NAMES
+from rc_metastudio.analysis_catalog import BINARY_METRIC_NAMES, BINARY_ONE_ARM_METRICS, BINARY_TWO_ARM_METRICS, DEFAULT_ARM_NAMES
 from rc_metastudio.analysis_validation import EMPTY_VALS, is_nan, is_empty
 from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
 
@@ -46,7 +46,6 @@ else:
 
 # this is the maximum size of a residual that we're willing to accept
 # when computing 2x2 data
-THRESHOLD = 1e-5
 BINARY_RAW_COUNT_CELLS = frozenset(((0, 0), (0, 1), (1, 0), (1, 1)))
 BINARY_ARM_TOTAL_CELLS = frozenset(((0, 2), (1, 2)))
 
@@ -298,13 +297,13 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                 self.confidence_multiplier,
             )
 
-            def conv_to_disp_scale(x):
+            def to_display_scale(x):
                 return self.calculator.binary_convert_scale(
                     x, self.current_effect, convert_to="display.scale"
                 )
 
             display_estimate, display_lower, display_upper = [
-                conv_to_disp_scale(x) for x in [est, lower, upper]
+                to_display_scale(x) for x in [est, lower, upper]
             ]
             for i, r_key in enumerate(["estimate", "lower", "upper"]):
                 try:
@@ -629,9 +628,9 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             lower=self.lower_text_box,
             upper=self.upper_text_box,
         )
-        calculator_effect_readout.set_current_effect_from_value(
+        calculator_effect_readout.populate_effect_ci_fields(
             analysis_unit=self.analysis_unit,
-            txt_boxes=txt_boxes,
+            effect_fields=txt_boxes,
             current_effect=self.current_effect,
             arm_key=self.arm_key,
             data_type="binary",
@@ -673,26 +672,26 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
     def _text_box_value_is_between_bounds(self, val_str, new_text):
         if is_empty(new_text):
             return True, ""
-        ci_param = {"est": "est", "lower": "low", "upper": "high"}.get(val_str)
-        if ci_param is None:
+        confidence_bound = {"est": "est", "lower": "low", "upper": "high"}.get(val_str)
+        if confidence_bound is None:
             return True, ""
         try:
             with ExitStack() as signal_blockers:
                 for widget in self.entry_widgets:
                     signal_blockers.enter_context(QSignalBlocker(widget))
-                display_scale_val = calculator_controls.evaluate(
+                display_scale_val = calculator_controls.validate_calculator_input(
                     new_text=new_text,
                     analysis_unit=self.analysis_unit,
                     current_effect=self.current_effect,
                     arm_key=self.arm_key,
-                    conv_to_disp_scale=partial(
+                    to_display_scale=partial(
                         self.calculator.binary_convert_scale,
                         metric_name=self.current_effect,
                         convert_to="display.scale",
                     ),
                     parent=self,
                     confidence_multiplier=self.confidence_multiplier,
-                    ci_param=ci_param,
+                    confidence_bound=confidence_bound,
                     source=calculator_effect_readout.calculator_effect_source(
                 self.analysis_unit, self.arm_names, self.current_effect, self.arm_key,
                 self.confidence_multiplier, input_mode=self._active_input_mode,
@@ -812,15 +811,13 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
     def _update_analysis_unit(self):
         """Copy the potentially imputed table values into the analysis unit."""
-        for row in range(2):
+        for row, arm_name in enumerate(self.arm_names):
             events = self._get_int(row, 0)
             no_events = self._get_int(row, 1)
             total = self._get_int(row, 2)
             if events not in EMPTY_VALS and no_events not in EMPTY_VALS:
                 total = events + no_events
-            raw_data = self.analysis_unit.get_raw_data_for_arm(
-                self.arm_names[row]
-            )
+            raw_data = self.analysis_unit.get_raw_data_for_arm(arm_name)
             raw_data[0] = events
             raw_data[1] = total
 
@@ -1077,48 +1074,29 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         return x is None or x == ""
 
     def update_effect_from_raw_data(self):
-        e1, n1, e2, n2 = self.analysis_unit.get_raw_data_for_arms(self.arm_names)
-
-        two_arm_raw_data_ok = not any([self._is_blank(x) for x in [e1, n1, e2, n2]])
-        one_arm_raw_data_ok = not any([self._is_blank(x) for x in [e1, n1]])
-        current_effect_is_one_arm = self.current_effect in BINARY_ONE_ARM_METRICS
-        current_effect_is_two_arm = self.current_effect in BINARY_TWO_ARM_METRICS
-
-        # Leave current effects untouched when raw data are incomplete.
-        if two_arm_raw_data_ok or (current_effect_is_one_arm and one_arm_raw_data_ok):
-            if current_effect_is_two_arm:
-                est_and_ci_d = self.calculator.effect_for_study(
-                    e1,
-                    n1,
-                    e2,
-                    n2,
-                    metric=self.current_effect,
-                    confidence_level=self.confidence_level,
-                )
-            else:
-                # binary, one-arm
-                est_and_ci_d = self.calculator.effect_for_study(
-                    e1,
-                    n1,
-                    two_arm=False,
-                    metric=self.current_effect,
-                    confidence_level=self.confidence_level,
-                )
-
-            est, low, high = self.calculator.effect_triplet(
-                est_and_ci_d,
-                "calc_scale",
-                metric=self.current_effect,
+        raw_data = self.analysis_unit.get_raw_data_for_arms(self.arm_names)
+        e1, n1 = raw_data[:2]
+        if self.current_effect in BINARY_TWO_ARM_METRICS:
+            e2, n2 = raw_data[2:]
+            if any(self._is_blank(value) for value in raw_data):
+                return
+            result = self.calculator.effect_for_study(
+                e1, n1, e2, n2, metric=self.current_effect,
+                confidence_level=self.confidence_level,
             )
-            self.analysis_unit.set_effect_and_ci(
-                self.current_effect,
-                self.arm_key,
-                est,
-                low,
-                high,
-                confidence_multiplier=self.confidence_multiplier,
+        else:
+            if any(self._is_blank(value) for value in (e1, n1)):
+                return
+            result = self.calculator.effect_for_study(
+                e1, n1, two_arm=False, metric=self.current_effect,
+                confidence_level=self.confidence_level,
             )
-            self.set_current_effect()
+        est, low, high = self.calculator.effect_triplet(result, "calc_scale", metric=self.current_effect)
+        self.analysis_unit.set_derived_effect_preview(
+            self.current_effect, self.arm_key, est, low, high,
+            confidence_multiplier=self.confidence_multiplier,
+        )
+        self.set_current_effect()
 
     def clear_form(self):
         self._validation_failed = False
@@ -1195,7 +1173,7 @@ class BinaryBackCalculationDialog(
         super(BinaryBackCalculationDialog, self).__init__(parent)
         self.setupUi(self)
         if group_names is None:
-            group_names = DEFAULT_GROUP_NAMES
+            group_names = DEFAULT_ARM_NAMES
         for widget in self.content_widget.findChildren(QWidget):
             widget.installEventFilter(self)
         adaptive_window.set_content_preferred_width(

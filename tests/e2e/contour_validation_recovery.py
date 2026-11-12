@@ -7,7 +7,7 @@ from PyQt6 import QtWidgets
 def run(app, window, work, record):
     from advanced_workflows import modal, click
     from rc_metastudio import results_window
-    from rc_metastudio.small_study_effects_dialog import PublicationBiasDialog
+    from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
     root = Path(__file__).resolve().parents[2]
     window.workspace.mark_saved()
     assert window.open(str(root / 'sample_projects/NielWeise2008-IRR.rcms'), raise_on_error=True)
@@ -26,7 +26,7 @@ def run(app, window, work, record):
                    failure=dialog.failure_label.text(), eligibility=explanation)
         dialog.contour_levels_edit.setText('90,95,99')
         click(app, dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
-    modal(app, PublicationBiasDialog, small_study, window.action_publication_bias.trigger)
+    modal(app, SmallStudyEffectsDialog, small_study, window.action_publication_bias.trigger)
     view = next(widget for widget in app.topLevelWidgets() if isinstance(widget, results_window.ResultsWindow) and widget.isVisible())
     assert any('contour' in title.lower() for title in view.results.images)
     record('contour-validation-recovered', view, texts=dict(view.texts), plots=dict(view.results.display_images))

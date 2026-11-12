@@ -21,10 +21,10 @@ _FAMILY_METRICS = {
     "binary": frozenset(
         {"OR", "RD", "RR", "AS", "YUQ", "YUY", "PR", "PLN", "PLO", "PAS", "PFT"}
     ),
-    "continuous": frozenset({"MD", "SMD", "TX Mean"}),
+    "continuous": frozenset({"MD", "SMD", "Mean"}),
     "diagnostic": frozenset({"Sens", "Spec", "PLR", "NLR", "DOR"}),
 }
-_ONE_ARM_METRICS = frozenset({"PR", "PLN", "PLO", "PAS", "PFT", "TX Mean"})
+_ONE_ARM_METRICS = frozenset({"PR", "PLN", "PLO", "PAS", "PFT", "Mean"})
 _FAMILY_SUBTYPES = {
     "time_to_event": frozenset({None, "hazard_ratio"}),
     "event_rates": frozenset({None, "incidence_rate_ratio"}),

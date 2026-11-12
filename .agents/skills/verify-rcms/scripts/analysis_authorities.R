@@ -93,7 +93,7 @@ for (target in c("only0","all","if0all")) {
 n1 <- c(60,65,40,200,50,85); n2 <- c(60,65,40,200,45,85)
 m1 <- c(94,98,98,94,98,96); m2 <- c(92,92,88,82,88,92)
 s1 <- c(22,21,28,19,21,21); s2 <- c(20,22,26,17,22,22)
-for (metric in c("MD","SMD","TXMean","entered-estimates")) {
+for (metric in c("MD","SMD","Mean","entered-estimates")) {
   one <- !metric %in% c("MD","SMD")
   effects <- if (one) data.frame(yi=m1, vi=s1^2/n1) else
     metafor::escalc(metric,n1i=n1,n2i=n2,m1i=m1,m2i=m2,sd1i=s1,sd2i=s2)
@@ -104,7 +104,7 @@ for (metric in c("MD","SMD","TXMean","entered-estimates")) {
     effects <- data.frame(yi=c(.2,.4,-.1,.6,.3,.1),vi=c(.04,.09,.16,.04,.12,.06))
     data <- methods::new("ContinuousData",y=effects$yi,SE=sqrt(effects$vi),study.names=names[1:6])
   }
-  p <- params(if(one) "TXMean" else metric)
+  p <- params(if(one) "Mean" else metric)
   if (!startsWith(metric,"entered")) {
     reconstructed <- RCMetaR:::compute.for.one.cont.study(data,p)
     close(reconstructed$yi,effects$yi,paste(metric,"reconstructed effects"))
@@ -117,7 +117,7 @@ for (metric in c("MD","SMD","TXMean","entered-estimates")) {
 }
 # Small k distinguishes t-based fixed continuous inference from z.
 for (inference in c("t", "knha", "adhoc")) {
-  p <- params("TXMean"); p$inference.method <- inference
+  p <- params("Mean"); p$inference.method <- inference
   ref <- metafor::rma.uni(effects$yi, vi=effects$vi, method="FE", test=inference, level=95)
   check(data, "continuous.fixed", p, ref, paste("entered continuous fixed", inference))
 }

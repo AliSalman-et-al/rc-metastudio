@@ -901,6 +901,7 @@ rcmetar.open.metafor_device <- function(outpath, size) {
 }
 
 rcmetar.draw.metafor.forest <- function(bundle, outpath) {
+    bundle$params$measure <- .rcmetar.canonical.metric(bundle$params$measure)
     renderer <- rcmetar.metafor.style.renderer(bundle$fp_style)
     if (!is.null(renderer)) {
         return(renderer(bundle, outpath))

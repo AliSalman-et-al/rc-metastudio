@@ -89,7 +89,7 @@ def run(app, window, work, root, record, analyze):
             record('review1-start-wizard-' + expected, wizard)
             wizard.reject()
         import_file = work / "review-import.csv"
-        import_file.write_text("Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total\nStudy,2020,5,20,8,20\n")
+        import_file.write_text("Study Name,Year,Intervention events,Intervention total,Control events,Control total\nStudy,2020,5,20,8,20\n")
         with patch.object(QtWidgets.QFileDialog, 'getOpenFileName', return_value=(str(import_file), '')):
             modal(app, main_wizard.MainWizard, cancel, lambda: mouse_click(button, QtCore.Qt.MouseButton.LeftButton))
         assert window.start_page.isVisible() and not window.workspace.is_dirty

@@ -2,9 +2,18 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 continuous.two.arm.metrics <- c("MD", "SMD")
-continuous.one.arm.metrics <- c("TXMean")
+continuous.one.arm.metrics <- c("Mean")
+
+.rcmetar.canonical.metric <- function(metric) {
+  if (length(metric) == 1L && !is.na(metric) &&
+      tolower(gsub("[[:space:].]+", "", as.character(metric))) %in% c("txmean", "mean")) {
+    return("Mean")
+  }
+  metric
+}
 
 compute.for.one.cont.study <- function(cont.data, params) {
+  params$measure <- .rcmetar.canonical.metric(params$measure)
   n1i <- cont.data@N1
   n2i <- cont.data@N2
   m1i <- cont.data@mean1
@@ -50,6 +59,7 @@ get.res.for.one.cont.study <- function(cont.data, params){
 }
 
 continuous.fixed <- function(cont.data, params){
+  params$measure <- .rcmetar.canonical.metric(params$measure)
   if (!("ContinuousData" %in% class(cont.data))) stop("Continuous data expected.")
 
   results <- NULL
@@ -140,6 +150,7 @@ continuous.fixed.overall <- function(results){
 }
 
 continuous.random <- function(cont.data, params) {
+  params$measure <- .rcmetar.canonical.metric(params$measure)
   if (!("ContinuousData" %in% class(cont.data)))
   stop("Continuous data expected.")
 

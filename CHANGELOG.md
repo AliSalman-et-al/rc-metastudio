@@ -6,6 +6,7 @@ All notable RC MetaStudio changes will be recorded in this file.
 
 ### Corrected
 
+- Fixed raw-only entered-effect reads, one-arm preview/calculator assumptions and inclusion rollback after a failed calculation.
 - Corrected interval-midpoint reconstruction, singleton diagnostic Peto estimation, subgroup and regression inference, and validation of count-dependent proportion analyses.
 - Preserved study identity and excluded rows during table editing, covariate conversion and import; strengthened project validation and calculator acceptance, undo and reopen behavior.
 - Made participant counts, confidence levels, effect scales and continuity-correction explanations follow the data and model actually fitted.
@@ -15,6 +16,7 @@ All notable RC MetaStudio changes will be recorded in this file.
 
 ### Changed
 
+- Standardized the one-arm metric as Mean, retaining readers for existing projects, CSV headers and saved forests; removed obsolete internal adapters and migration tooling.
 - Clarified reconstruction inputs and displayed calculator statistics; expanded numerical, persistence, export and failure-path verification.
 - Rerun affected subgroup and regression analyses, singleton diagnostic Peto analyses, and analyses using reconstructed interval midpoints; re-export reports with the earlier metadata or correction wording.
 
@@ -238,7 +240,7 @@ RC MetaStudio starts a fresh maintained-product changelog. Historical release hi
 
 ### Fixed
 
-- Normalized spaced and dotted `TX Mean` spellings before continuous analyses reach the RCMetaR measure dispatcher.
+- Normalized spaced and dotted `Mean` spellings before continuous analyses reach the RCMetaR measure dispatcher.
 - Strengthened downloaded release-candidate qualification on Windows and macOS with explicit sample projects, frozen runtime inputs, bounded native smoke execution, and retained diagnostics.
 
 ## 0.2.1 - 2026-07-20

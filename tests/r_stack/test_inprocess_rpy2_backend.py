@@ -27,8 +27,8 @@ _DRIVER = textwrap.dedent(
     from rc_metastudio.qt6_ui import prepare_generated_ui_imports
     prepare_generated_ui_imports()
 
-    from rc_metastudio import r_backend
-    r_backend.install_r_backend()
+    from rc_metastudio import r_runtime
+    r_runtime.install_r_runtime()
     try:
         from rc_metastudio import r_bridge
         from rc_metastudio.analysis_catalog import FACTOR
@@ -86,71 +86,48 @@ _DRIVER = textwrap.dedent(
         assert callbacks._CCHAR_ENCODING == locale.getpreferredencoding(False)
 
 
-    def FakeCovariate(name, data_type):
-        return {"id": name, "name": name, "data_type": data_type}
-
-    class FakeStudy:
-        def __init__(self, study_id, name, year):
-            self.id = study_id
-            self.label = name
-            self.year = year
-            self.include = True
-
-    class FakeDataset:
-        def __init__(self, covariates, values):
-            from rc_metastudio.analysis_dataset import StudyRow
-            self.covariates = covariates
-            ids = dict.fromkeys(i for entries in values.values() for i in entries)
-            self.rows = [StudyRow(i, "", None, covariate_values={
-                name: entries[i] for name, entries in values.items() if i in entries
-            }) for i in ids]
+    from rc_metastudio.analysis_dataset import Arm, Dataset, Sheet, StudyRow
+    from rc_metastudio.analysis_unit import AnalysisUnit
+    from rc_metastudio import analysis_catalog
 
     class FakeModel:
         def __init__(self, data_type, raw_data, effect="OR"):
             self.current_effect = effect
             self._raw_data = raw_data
             self._data_type = data_type
-            self._studies = [
-                FakeStudy(1, 'O\\'Brien "quote" \\\\back café τ', 1993),
-                FakeStudy(2, "Plain study", None),
+            arm_names = analysis_catalog.default_arm_names(
+                {"binary": analysis_catalog.BINARY,
+                 "continuous": analysis_catalog.CONTINUOUS,
+                 "diagnostic": analysis_catalog.DIAGNOSTIC}[data_type], None)
+            sheet = Sheet("bridge-sheet", "Transport", self._data_type_id(),
+                          family=data_type, arms=[Arm(f"arm:{i}", name)
+                                                 for i, name in enumerate(arm_names)])
+            sheet.covariates = [
+                {"id": "group", "name": 'Group "label" \\\\ café τ', "data_type": FACTOR},
+                {"id": "dose", "name": "Dose", "data_type": r_bridge.CONTINUOUS},
             ]
-            covariates = [
-                FakeCovariate('Group "label" \\\\ café τ', FACTOR),
-                FakeCovariate("Dose", r_bridge.CONTINUOUS),
-            ]
-            self.dataset = FakeDataset(
-                covariates,
-                {
-                    covariates[0]["name"]: {
-                        1: 'alpha "quoted" \\\\ café τ',
-                        2: "beta",
-                    },
-                    covariates[1]["name"]: {
-                        1: 1.5,
-                        2: 2.5,
-                    },
-                },
-            )
-            from types import SimpleNamespace
-            from rc_metastudio import analysis_catalog
-            from rc_metastudio.analysis_unit import AnalysisUnit
-            sheet = SimpleNamespace(data_type={
-                "binary": analysis_catalog.BINARY,
-                "continuous": analysis_catalog.CONTINUOUS,
-                "diagnostic": analysis_catalog.DIAGNOSTIC,
-            }[data_type], sub_type=None)
-            for study in self._studies:
-                study.analysis_unit = AnalysisUnit(sheet)
+            labels = ['O\\'Brien "quote" \\\\back café τ', "Plain study"]
+            for index, label in enumerate(labels):
+                unit = AnalysisUnit(sheet, arm_names=arm_names,
+                                    arm_stable_ids=[arm.id for arm in sheet.arms])
+                sheet.rows.append(StudyRow(str(index + 1), label, unit,
+                    year=1993 if index == 0 else None,
+                    covariate_values={"group": 'alpha "quoted" \\\\ café τ' if index == 0 else "O'Brien \\\\ north",
+                                      "dose": 1.5 + index}))
+            self.dataset = Dataset(sheets=[sheet])
+            self.current_sheet = sheet
+            self._studies = sheet.rows
 
-        @property
-        def current_sheet(self):
-            return self.dataset
+        def _data_type_id(self):
+            return {"binary": analysis_catalog.BINARY,
+                    "continuous": analysis_catalog.CONTINUOUS,
+                    "diagnostic": analysis_catalog.DIAGNOSTIC}[self._data_type]
 
         def get_studies(self, only_if_included=True):
             return self._studies
 
         def get_current_arm_key(self):
-            return self._studies[0].analysis_unit.get_arm_strings(self.current_effect)[0]
+            return tuple(arm.id for arm in self.current_sheet.arms)
 
         def get_current_estimates_and_standard_errors(self, **kwargs):
             return [-0.5596157879, -0.8295982833], [0.6172133998, 0.7152562329]
@@ -176,29 +153,11 @@ _DRIVER = textwrap.dedent(
         ]
         assert list(ro.r("%s@covariates[[1]]@cov.vals" % var_name)) == [
             'alpha "quoted" \\\\ café τ',
-            "beta",
+            "O'Brien \\\\ north",
         ]
         assert list(ro.r("%s@covariates[[1]]@ref.var" % var_name)) == [
             'alpha "quoted" \\\\ café τ'
         ]
-
-    quoted_values_str, quoted_values = r_bridge.covariate_to_r_expression(
-        FakeCovariate("region", FACTOR),
-        [1, 2],
-        FakeDataset(
-            [],
-            {
-                "region": {
-                    1: "control τ",
-                    2: "O'Brien \\\\ north",
-                }
-            },
-        ),
-        named_list=False,
-        return_covariate_values=True,
-    )
-    assert quoted_values == ["'control \\\\u03c4'", "'O\\\\'Brien \\\\\\\\ north'"]
-    assert list(ro.r(quoted_values_str)) == ["control τ", "O'Brien \\\\ north"]
 
     binary_model = FakeModel("binary", [[6, 27, 9, 27], [3, 59, 7, 64]])
     r_bridge.dataset_to_simple_binary_r_object(binary_model, var_name="issue146_binary")
@@ -390,29 +349,21 @@ _DRIVER = textwrap.dedent(
 
     from rc_metastudio import analysis_adapter
 
-    class FilteredDiagnosticDataset:
-        def __init__(self, covariate):
-            from rc_metastudio.analysis_dataset import StudyRow
-            self.covariates = [covariate]
-            self.rows = [StudyRow(i, "", None, covariate_values={covariate["id"]: float(i)}) for i in range(1, 6)]
-
     class FilteredDiagnosticModel:
         def __init__(self):
             self.current_effect = "Sens"
-            self._studies = [
-                FakeStudy(1, "Included 1", 1990),
-                FakeStudy(2, "Included 2", 1991),
-                FakeStudy(3, "Included 3", 1992),
-                FakeStudy(4, "Included 4", 1993),
-                FakeStudy(5, "Included 5", 1994),
-                FakeStudy(6, "Missing moderator", 1995),
-            ]
-            self.covariate = FakeCovariate("Moderator", r_bridge.CONTINUOUS)
-            self.dataset = FilteredDiagnosticDataset(self.covariate)
-
-        @property
-        def current_sheet(self):
-            return self.dataset
+            self.covariate = {"id": "moderator", "name": "Moderator", "data_type": r_bridge.CONTINUOUS}
+            sheet = Sheet("filtered-sheet", "Diagnostic", analysis_catalog.DIAGNOSTIC,
+                          family="diagnostic", arms=[Arm("index-test", "Index test")],
+                          covariates=[self.covariate])
+            for i in range(1, 7):
+                unit = AnalysisUnit(sheet, arm_names=["Index test"], arm_stable_ids=["index-test"])
+                sheet.rows.append(StudyRow(str(i), f"Included {i}" if i < 6 else "Missing moderator",
+                    unit, year=1989 + i,
+                    covariate_values={"moderator": float(i)} if i < 6 else {}))
+            self.dataset = Dataset(sheets=[sheet])
+            self.current_sheet = sheet
+            self._studies = sheet.rows
 
         def get_studies(self, only_if_included=True):
             assert only_if_included is True
@@ -435,7 +386,7 @@ _DRIVER = textwrap.dedent(
                 studies = [
                     study for study in studies if study.id in only_these_studies
                 ]
-            return tuple(zip(*(values[study.id] for study in studies)))
+            return tuple(zip(*(values[int(study.id)] for study in studies)))
 
         def included_studies_have_raw_data(self):
             return True
@@ -457,7 +408,7 @@ _DRIVER = textwrap.dedent(
                 studies = [
                     study for study in studies if study.id in only_these_studies
                 ]
-            return [values[study.id] for study in studies]
+            return [values[int(study.id)] for study in studies]
 
         def included_studies_have_point_estimates(self, effect=None):
             return False
@@ -543,8 +494,8 @@ _NULL_RESULT_DRIVER = textwrap.dedent(
     os.environ["RCMS_REQUIRE_IN_PROCESS_RPY2"] = "1"
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     sys.path.insert(0, os.path.join(__REPO_ROOT__, "src"))
-    from rc_metastudio import r_backend
-    r_backend.install_r_backend()
+    from rc_metastudio import r_runtime
+    r_runtime.install_r_runtime()
     try:
         from rc_metastudio import r_bridge
     except Exception as exc:
@@ -621,8 +572,8 @@ _RCHAR_UTF8_DRIVER = textwrap.dedent(
     sys.path.insert(0, os.path.join(repo_root, "src"))
     sys.path.insert(0, os.path.join(repo_root, "tests", "python", "fast"))
 
-    from rc_metastudio import r_backend
-    r_backend.install_r_backend()
+    from rc_metastudio import r_runtime
+    r_runtime.install_r_runtime()
     try:
         from rc_metastudio import r_bridge
     except Exception as exc:
@@ -699,8 +650,8 @@ _SUMMARY_PRINT_DRIVER = textwrap.dedent(
     sys.path.insert(0, os.path.join(repo_root, "src"))
     sys.path.insert(0, os.path.join(repo_root, "tests", "python", "fast"))
 
-    from rc_metastudio import r_backend
-    r_backend.install_r_backend()
+    from rc_metastudio import r_runtime
+    r_runtime.install_r_runtime()
     try:
         from rc_metastudio import r_bridge
         r_bridge.RLibraryLoader().load_rcmetar()

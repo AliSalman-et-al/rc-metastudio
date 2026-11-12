@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[3]
 TEXT = ["", " ", 'é漢字🙂\n\t"quoted"', "x" * 1024]
 KINDS = [
     ("binary", 0, [None, "proportion", "proportions"], ["OR", "RD", "RR", "AS", "YUQ", "YUY", "PR", "PLN", "PLO", "PAS", "PFT"]),
-    ("continuous", 1, [None, "mean", "means", "smd", "reg_coef", "generic_effect"], ["MD", "SMD", "TX Mean"]),
+    ("continuous", 1, [None, "mean", "means", "smd", "reg_coef", "generic_effect"], ["MD", "SMD", "Mean"]),
     ("diagnostic", 2, [None], ["Sens", "Spec", "PLR", "NLR", "DOR"]),
     ("time_to_event", 5, [None, "hazard_ratio"], ["HR"]),
     ("event_rates", 6, [None, "incidence_rate_ratio"], ["IRR"]),
@@ -53,7 +53,7 @@ def generate(rng, index, samples):
                 raw[arm["id"]] = ["" if rng.randrange(5) == 0 else v for v in values]
             pair = [a["id"] for a in arms[:2]]
             metric = rng.choice(metrics)
-            comparison = pair[:1] if metric in {"PR", "PLN", "PLO", "PAS", "PFT", "TX Mean"} or dtype == 2 else pair
+            comparison = pair[:1] if metric in {"PR", "PLN", "PLO", "PAS", "PFT", "Mean"} or dtype == 2 else pair
             ratio = []
             if dtype in (5, 6):
                 ratio = [dict(arms=pair, input=dict(estimate=2., lower=1., upper=3., se=.2,

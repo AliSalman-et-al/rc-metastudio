@@ -37,6 +37,16 @@ class Study:
     manually_excluded: bool = False
 
 
+def test_single_arm_binary_preview_needs_no_fabricated_control():
+    # A valid single-arm row must calculate without inventing control values;
+    # comparative metrics still require their complete second arm.
+    from rc_metastudio.dataset_analysis_domain import calculate_raw_effects
+
+    result, sample_size = calculate_raw_effects(FakeBridge(), 0, "PLO", [4, 20], 95)
+    assert result == (0.5, None, None)
+    assert sample_size == 20
+
+
 def test_study_rename_normalizes_and_rejects_blank_or_duplicate_names():
     dataset = Dataset()
     sheet = Sheet(SheetId("sheet"), "Outcome", 0)
@@ -48,7 +58,7 @@ def test_study_rename_normalizes_and_rejects_blank_or_duplicate_names():
         current_effect=None,
         data_type=None,
         outcome_subtype=None,
-        arm_key="",
+        arm_key=(),
         raw_columns=(),
         outcome_columns=(),
         include_column=0,
@@ -83,7 +93,7 @@ def test_new_study_rejects_whitespace_name_without_mutating_dataset():
         current_effect=None,
         data_type=None,
         outcome_subtype=None,
-        arm_key="",
+        arm_key=(),
         raw_columns=(),
         outcome_columns=(),
         include_column=0,

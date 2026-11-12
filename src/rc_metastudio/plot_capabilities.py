@@ -78,7 +78,6 @@ REGENERATORS: dict[str, _Regenerator] = {
     },
 }
 
-COMPOSITIONS = frozenset(("single",))
 
 
 def option_groups(plot_kind: str) -> frozenset[str]:

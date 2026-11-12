@@ -8,7 +8,7 @@ import math
 EMPTY_VALS = ("", None)  # these indicate an empty row/cell
 
 
-def equal_close_enough(x, y):
+def within_absolute_tolerance(x, y):
     threshold = 1e-4
     return abs(x - y) < threshold
 
@@ -119,7 +119,7 @@ def normalize_confidence_level_params(params):
     return normalized
 
 
-def seems_sane(xticks: str) -> bool:
+def is_valid_plot_tick_list(xticks: str) -> bool:
     """Return whether a comma-separated tick list contains only finite numbers."""
     raw_ticks = xticks.split(",")
     if len(raw_ticks) < 2:
@@ -131,7 +131,7 @@ def seems_sane(xticks: str) -> bool:
     return all(math.isfinite(tick) for tick in ticks)
 
 
-def check_plot_bound(bound: str | int | float | None) -> float | bool:
+def parse_plot_bound(bound: str | int | float | None) -> float | bool:
     if bound is None:
         return False
     try:
@@ -140,7 +140,7 @@ def check_plot_bound(bound: str | int | float | None) -> float | bool:
         return False
 
 
-def is_a_float(value: object) -> bool:
+def is_float_convertible(value: object) -> bool:
     try:
         float(value)  # type: ignore[arg-type] -- This predicate intentionally accepts user input of unknown type.
         return True

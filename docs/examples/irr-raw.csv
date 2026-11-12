@@ -1,4 +1,4 @@
-﻿Study Name,Year,Tx A Events,Tx A Person-time,Tx B Events,Tx B Person-time,IRR,Lower,Upper
+﻿Study Name,Year,Intervention Events,Intervention Person-time,Control Events,Control Person-time,IRR,Lower,Upper
 Study 1,2020,0.0,100.0,5.0,110.0,,,
 Study 2,2021,4.0,110.0,6.0,121.0,,,
 Study 3,2022,0.0,120.0,0.0,132.0,,,

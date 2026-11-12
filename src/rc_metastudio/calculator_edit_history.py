@@ -30,15 +30,15 @@ class FieldEditCommand:
         refresh_on_initial_redo: bool = True,
     ) -> None:
         self.owner = owner
-        self.just_created = True
+        self.initial_redo_pending = True
         self.restore_state = restore_state
         self.old_state = old_state
         self.new_state = new_state
         self.refresh_on_initial_redo = refresh_on_initial_redo
 
     def redo(self) -> None:
-        if self.just_created:
-            self.just_created = False
+        if self.initial_redo_pending:
+            self.initial_redo_pending = False
             if self.refresh_on_initial_redo:
                 self.owner.update_back_calculation_button()
         else:
@@ -53,23 +53,23 @@ class TransientEditHistory:
 
     def __init__(self) -> None:
         self._commands: list[FieldEditCommand] = []
-        self._index = 0
+        self._applied_command_count = 0
 
     def push(self, command: FieldEditCommand) -> None:
-        del self._commands[self._index :]
+        del self._commands[self._applied_command_count :]
         self._commands.append(command)
-        self._index += 1
+        self._applied_command_count += 1
         command.redo()
 
     def undo(self) -> None:
-        if self._index:
-            self._index -= 1
-            self._commands[self._index].undo()
+        if self._applied_command_count:
+            self._applied_command_count -= 1
+            self._commands[self._applied_command_count].undo()
 
     def redo(self) -> None:
-        if self._index < len(self._commands):
-            self._commands[self._index].redo()
-            self._index += 1
+        if self._applied_command_count < len(self._commands):
+            self._commands[self._applied_command_count].redo()
+            self._applied_command_count += 1
 
 
 def push_field_edit(

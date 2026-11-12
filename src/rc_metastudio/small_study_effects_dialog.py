@@ -49,8 +49,8 @@ _TEST_LABELS = {
 # facing prose.  Keep enough logical width for those labels at high DPI while
 # allowing the adaptive-window policy to clamp the preferred size to a small
 # screen.
-PUBLICATION_BIAS_MIN_WIDTH = 560
-PUBLICATION_BIAS_PREFERRED_WIDTH = 700
+SMALL_STUDY_EFFECTS_MIN_WIDTH = 560
+SMALL_STUDY_EFFECTS_PREFERRED_WIDTH = 700
 
 
 def _available_method_text(methods) -> str:
@@ -72,7 +72,7 @@ def _available_method_text(methods) -> str:
     return "\n".join(lines)
 
 
-class PublicationBiasDialog(
+class SmallStudyEffectsDialog(
     QDialog, _ui_publication_bias_dialog.Ui_PublicationBiasDialog
 ):
     """Configure methods and plots while RCMetaR chooses eligible tests."""
@@ -208,7 +208,7 @@ class PublicationBiasDialog(
             else "95"
         )
         self._eligibility_report = None
-        if str(self.model.get_current_outcome_type()) == "diagnostic":
+        if str(self.model.get_current_data_type()) == "diagnostic":
             self.correction_policy_combo.setCurrentText(
                 CorrectionPolicy.ALL_STUDIES_IF_ANY_ZERO_EXISTS.value
             )
@@ -238,8 +238,8 @@ class PublicationBiasDialog(
         # minimum across native QDialog's show-time adjustSize pass.
         adaptive_window.set_content_preferred_width(
             self,
-            PUBLICATION_BIAS_MIN_WIDTH,
-            PUBLICATION_BIAS_PREFERRED_WIDTH,
+            SMALL_STUDY_EFFECTS_MIN_WIDTH,
+            SMALL_STUDY_EFFECTS_PREFERRED_WIDTH,
         )
         self._layout_controller.request_content_refit()
 
@@ -263,7 +263,7 @@ class PublicationBiasDialog(
             )
 
     def _preview_request(self) -> SmallStudyEffectsRequest:
-        data_type = str(self.model.get_current_outcome_type())
+        data_type = str(self.model.get_current_data_type())
         metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
         correction_applicable = (
             data_type in {"binary", "diagnostic"} and metric not in ONE_ARM_METRICS
@@ -303,7 +303,7 @@ class PublicationBiasDialog(
         self.automatic_test_label.setText(_available_method_text(available))
 
     def _context_summary(self, report=None) -> str:
-        data_type = str(self.model.get_current_outcome_type())
+        data_type = str(self.model.get_current_data_type())
         metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
         included = len(self.model.get_studies())
         report = report or self._eligibility_report
@@ -329,7 +329,7 @@ class PublicationBiasDialog(
         self._update_controls()
 
     def _update_controls(self):
-        data_type = str(self.model.get_current_outcome_type())
+        data_type = str(self.model.get_current_data_type())
         metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
         deeks = data_type == "diagnostic"
         contour = self.contour_funnel_check.isChecked()
@@ -366,7 +366,7 @@ class PublicationBiasDialog(
             self._eligibility_report and self._eligibility_report.raw_data_available
         )
         correction_applicable = (
-            str(self.model.get_current_outcome_type())
+            str(self.model.get_current_data_type())
             in {
                 "binary",
                 "diagnostic",
@@ -392,7 +392,7 @@ class PublicationBiasDialog(
             )
             if control.isChecked()
         ]
-        data_type = str(self.model.get_current_outcome_type())
+        data_type = str(self.model.get_current_data_type())
         metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
         selected_tests = [
             item.method
@@ -488,7 +488,7 @@ class PublicationBiasDialog(
 
     def _with_report_identity(self, result):
         from rc_metastudio.analysis_identity import dataset_identity
-        result = replace(result, identity="Small-study effects — " + dataset_identity(self.model, "Diagnostic odds ratio" if self.model.get_current_outcome_type() == "diagnostic" else None))
+        result = replace(result, identity="Small-study effects — " + dataset_identity(self.model, "Diagnostic odds ratio" if self.model.get_current_data_type() == "diagnostic" else None))
         details = next((section.value for section in result.sections if section.title == "Method details"), "")
         procedures = [line for line in details.splitlines() if line and not line[0].isspace()
                       and line != "No formal method details are available."]

@@ -39,7 +39,7 @@ def _new_csv_wizard():
 def _write_csv(path, *, quoted_study=False):
     study = '"Alpha, study"' if quoted_study else "Alpha"
     path.write_text(
-        "Study Name,Year,Tx A #evts,Tx A #total,Tx B #evts,Tx B #total,OR,Lower,Upper\n"
+        "Study Name,Year,Intervention events,Intervention total,Control events,Control total,OR,Lower,Upper\n"
         f"{study},2020,1,10,2,12,,,\n",
         encoding="utf-8",
     )

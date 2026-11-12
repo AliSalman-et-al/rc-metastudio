@@ -20,13 +20,9 @@ else:
     )
 
 
-def _to_native_text(value):
-    return qt_text.to_native_text(value)
 
 
 def _to_double(value):
-    if hasattr(value, "toDouble"):
-        return value.toDouble()
     try:
         return float(value), True
     except (TypeError, ValueError):
@@ -35,8 +31,8 @@ def _to_double(value):
 
 def _new_covariate_value(covariate, value):
     if covariate["data_type"] == FACTOR:
-        return _to_native_text(value), True
-    if _to_native_text(value).strip() == "":
+        return qt_text.to_native_text(value), True
+    if qt_text.to_native_text(value).strip() == "":
         return None, True
     return _to_double(value)
 
@@ -188,11 +184,11 @@ class CovariateTypeModel(QAbstractTableModel):
                 return self.preview_rows[row].label
             elif column == self.ORIG_VAL:
                 if self.covariate["data_type"] == FACTOR:
-                    return _to_native_text(self.orig_cov_list[row])
+                    return qt_text.to_native_text(self.orig_cov_list[row])
                 return self.orig_cov_list[row]
             elif column == self.NEW_VAL:
                 if self.new_covariate["data_type"] == FACTOR:
-                    return _to_native_text(self.new_cov_list[row])
+                    return qt_text.to_native_text(self.new_cov_list[row])
                 return self.new_cov_list[row]
         elif role == Qt.ItemDataRole.TextAlignmentRole:
             return int(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)

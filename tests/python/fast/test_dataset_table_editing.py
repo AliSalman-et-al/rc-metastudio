@@ -9,9 +9,9 @@ pytestmark = pytest.mark.usefixtures("inject_python_boundary")
 
 sys.path.insert(0, os.path.abspath("src"))
 
-from rc_metastudio import r_backend
+from rc_metastudio import r_runtime
 
-r_backend.install_r_backend()
+r_runtime.install_r_runtime()
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor
@@ -128,7 +128,7 @@ def test_inclusion_edit_accepts_only_explicit_pyqt6_check_states_and_booleans():
 
 def _sheet_model(data_type, label="Alpha", add_blank_study=False):
     diagnostic = data_type == analysis_catalog.DIAGNOSTIC
-    names = ["test 1"] if diagnostic else list(analysis_catalog.DEFAULT_GROUP_NAMES)
+    names = ["test 1"] if diagnostic else list(analysis_catalog.DEFAULT_ARM_NAMES)
     arms = [analysis_dataset.Arm(ArmId(f"arm:{i}"), name) for i, name in enumerate(names)]
     sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", data_type,
         family={0: "binary", 1: "continuous", 2: "diagnostic"}[data_type], arms=arms)
@@ -180,7 +180,7 @@ def test_outcome_cells_use_neutral_background_and_inherit_theme_text():
 
 def test_one_arm_inactive_raw_data_cells_keep_disabled_background():
     model = _continuous_model_with_named_study()
-    model.current_effect = "TX Mean"
+    model.current_effect = "Mean"
 
     assert model.data(
         model.index(0, model.RAW_DATA[3]), Qt.ItemDataRole.BackgroundRole
@@ -212,7 +212,7 @@ def test_failed_raw_preview_restores_values_and_keeps_sheet_ownership(monkeypatc
     def fail_preview(_row):
         raise RuntimeError("preview failed")
 
-    monkeypatch.setattr(model, "update_outcome_if_possible", fail_preview)
+    monkeypatch.setattr(model, "update_effect_previews_if_possible", fail_preview)
     assert not model.setData(model.index(0, model.RAW_DATA[0]), "1")
     assert unit.get_raw_data_for_arms(model.arm_names) == before
     assert unit.sheet is sheet
@@ -321,7 +321,7 @@ def test_diagnostic_raw_count_edit_rejects_complete_all_zero_table(monkeypatch):
     model = _diagnostic_model_with_empty_cells()
     errors = []
     model.dataError.connect(errors.append)
-    monkeypatch.setattr(model, "update_outcome_if_possible", lambda _row: None)
+    monkeypatch.setattr(model, "update_effect_previews_if_possible", lambda _row: None)
 
     for column in model.RAW_DATA[:3]:
         assert model.setData(model.index(0, column), "0") is True
@@ -338,7 +338,7 @@ def test_diagnostic_raw_count_edit_rejects_complete_all_zero_table(monkeypatch):
 
 def test_diagnostic_raw_count_edit_allows_zero_cells_in_nonempty_table(monkeypatch):
     model = _diagnostic_model_with_empty_cells()
-    monkeypatch.setattr(model, "update_outcome_if_possible", lambda _row: None)
+    monkeypatch.setattr(model, "update_effect_previews_if_possible", lambda _row: None)
 
     for column, value in zip(model.RAW_DATA, ("0", "1", "0", "1")):
         assert model.setData(model.index(0, column), value) is True
@@ -350,7 +350,7 @@ def test_diagnostic_partial_raw_count_edit_clears_all_derived_metrics(monkeypatc
     arm_key = model.get_current_arm_key()
     analysis_unit.arms[model.arm_names[0]].raw_data = [19.0, 10.0, 1.0, 81.0]
     for metric in analysis_catalog.DIAGNOSTIC_METRICS:
-        analysis_unit.set_effect_and_ci(
+        analysis_unit.set_derived_effect_preview(
             metric,
             arm_key,
             0.75,
@@ -393,17 +393,18 @@ def test_diagnostic_partial_raw_count_edit_clears_all_derived_metrics(monkeypatc
         )
 
 
+@pytest.mark.parametrize("included_before_edit", [True, False])
 def test_diagnostic_raw_count_edit_rolls_back_when_effect_calculation_fails(
-    monkeypatch,
+    monkeypatch, included_before_edit,
 ):
     model = _diagnostic_model_with_empty_cells()
     analysis_unit = model.get_current_analysis_unit_for_study(0)
     arm_key = model.get_current_arm_key()
     analysis_unit.arms[model.arm_names[0]].raw_data = [19.0, 10.0, 1.0, 81.0]
-    analysis_unit.set_effect_and_ci(
+    analysis_unit.set_derived_effect_preview(
         "Sens", arm_key, 0.66, 0.50, 0.80, model.get_confidence_multiplier()
     )
-    model.current_sheet.rows[0].include = True
+    model.current_sheet.rows[0].include = included_before_edit
     errors = []
     model.dataError.connect(errors.append)
 
@@ -424,7 +425,7 @@ def test_diagnostic_raw_count_edit_rolls_back_when_effect_calculation_fails(
         0.50,
         0.80,
     )
-    assert model.current_sheet.rows[0].include is True
+    assert model.current_sheet.rows[0].include is included_before_edit
     assert errors == [
         "Could not compute study effects from the edited raw data: "
         "simulated diagnostic calculation failure"

@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath("src"))
 from rc_metastudio import r_call_serialization
 
 
-def test_r_backend_calls_are_serialized_across_threads():
+def test_r_runtime_calls_are_serialized_across_threads():
     entered_first_call = threading.Event()
     release_first_call = threading.Event()
     second_call_attempted = threading.Event()

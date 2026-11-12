@@ -28,17 +28,25 @@ BINARY_METRIC_NAMES = {
 CONTINUOUS_TWO_ARM_METRICS = ["MD", "SMD"]
 
 
-CONTINUOUS_ONE_ARM_METRICS = ["TX Mean"]
+CONTINUOUS_ONE_ARM_METRICS = ["Mean"]
+
+
+LEGACY_MEAN_METRIC_NAMES = ("TX Mean", "TXMean", "TX.Mean")
+
+
+def canonical_metric_name(metric: str) -> str:
+    """Resolve historical one-arm mean identifiers at input boundaries."""
+    return "Mean" if metric in LEGACY_MEAN_METRIC_NAMES else metric
 
 
 CONTINUOUS_METRIC_NAMES = {
     "MD": "Mean difference",
     "SMD": "Standardized mean difference",
-    "TX Mean": "Mean",
+    "Mean": "Mean",
 }
 
 
-DEFAULT_CONTINUOUS_ONE_ARM = "TX Mean"
+DEFAULT_CONTINUOUS_ONE_ARM = "Mean"
 
 
 ONE_ARM_METRICS = BINARY_ONE_ARM_METRICS + CONTINUOUS_ONE_ARM_METRICS
@@ -124,12 +132,12 @@ DIAGNOSTIC_METRIC_GROUPS = {
 DIAG_FIELDS_TO_RAW_INDICES = {"TP": 0, "FN": 1, "FP": 2, "TN": 3}
 
 
-DEFAULT_GROUP_NAMES = ["Intervention", "Control"]
+DEFAULT_ARM_NAMES = ["Intervention", "Control"]
 
 
-def default_group_names(data_type, sub_type=None):
+def default_arm_names(data_type, sub_type=None):
     if data_type == DIAGNOSTIC:
         return ["Index test"]
     if sub_type in {"proportion", "mean", "reg_coef", "generic_effect"}:
         return ["Group", "Other group"]
-    return list(DEFAULT_GROUP_NAMES)
+    return list(DEFAULT_ARM_NAMES)

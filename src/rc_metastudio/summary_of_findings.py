@@ -60,7 +60,7 @@ def _sheet_values(parent, window, sheet):
             raise ValueError('Too little data: at least two studies are needed')
         setup = AnalysisSetupDialog(model, analysis_service=window.analysis_service,
                                     confidence_level=model.get_confidence_level(),
-                                    diagnostic_metrics=("sens", "spec") if model.get_current_outcome_type() == "diagnostic" else None, parent=parent)
+                                    diagnostic_metrics=("sens", "spec") if model.get_current_data_type() == "diagnostic" else None, parent=parent)
         result = setup._with_result_identity(window.analysis_service.execute(model, setup.analysis_requests()))
         effects = _effect_labels(result, model.current_effect)
         effect = '; '.join(effects)

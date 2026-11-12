@@ -14,8 +14,8 @@ _DRIVER = textwrap.dedent(
     os.environ["RCMS_REQUIRE_IN_PROCESS_RPY2"] = "1"
     sys.path.insert(0, os.path.join(repo_root, "src"))
 
-    from rc_metastudio import r_backend
-    r_backend.install_r_backend()
+    from rc_metastudio import r_runtime
+    r_runtime.install_r_runtime()
     try:
         from rc_metastudio import r_bridge
     except Exception as exc:

@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import pytest
 
-from rc_metastudio import r_bridge, r_backend
-from rc_metastudio.r_backend import AnalysisBackendUnavailableError
+from rc_metastudio import r_bridge, r_runtime
+from rc_metastudio.r_runtime import AnalysisBackendUnavailableError
 from rc_metastudio.study_effect_shapes import (
     effect_triplet,
     normalize_diagnostic_effects,
@@ -53,8 +53,6 @@ class _TestObjects:
 
 
 class _TestLoader:
-    def load_meta(self) -> None:
-        pass
 
     def load_metafor(self) -> None:
         pass
@@ -69,7 +67,7 @@ class _TestLoader:
 @pytest.fixture
 def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
     """Inject a local, explicit test capability at the R boundary."""
-    monkeypatch.setattr(r_backend, "is_ready", lambda: True)
+    monkeypatch.setattr(r_runtime, "is_ready", lambda: True)
     functions = {
         "get_confidence_multiplier_from_r": _confidence,
         "set_confidence_level": lambda level: float(level),
@@ -106,7 +104,6 @@ def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
         "dataset_to_simple_diagnostic_r_object": _unavailable,
         "get_available_methods": _unavailable,
         "get_params": _unavailable,
-        "get_method_description": _unavailable,
         "run_small_study_effects": _unavailable,
         "regenerate_small_study_effects_funnel": _unavailable,
         "generate_small_study_effects_funnel": _unavailable,

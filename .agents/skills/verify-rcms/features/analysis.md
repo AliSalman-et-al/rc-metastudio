@@ -81,9 +81,9 @@ subsets and alternate workflows need their own explicit participant expectations
 | Scenario suffix | Arms/type | Default metric | Supported metric domain to verify after shared reconstruction changes |
 | --- | --- | --- | --- |
 | `onearm-proportion` | One arm binary proportion | PR | PR, PLN, PLO, PAS, PFT |
-| `onearm-mean` | One arm continuous mean | TX Mean | Mean with N/Mean/SD |
-| `reg-coef` | One arm regression coefficient | TX Mean | Entered coefficient and lower/upper confidence bounds |
-| `generic-effect` | One arm generic effect | TX Mean | Entered estimate and standard error; distinct from raw reconstructed effects |
+| `onearm-mean` | One arm continuous mean | Mean | Mean with N/Mean/SD |
+| `reg-coef` | One arm regression coefficient | Mean | Entered coefficient and lower/upper confidence bounds |
+| `generic-effect` | One arm generic effect | Mean | Entered estimate and standard error; distinct from raw reconstructed effects |
 | `twoarm-proportion` | Two arms binary | OR | OR, RR, RD, AS, YUQ, YUY |
 | `twoarm-mean` | Two arms continuous | MD | MD, SMD |
 | `twoarm-smd` | Two arms standardized mean difference | SMD | SMD, MD; calculator pre/post modes need their own drives |
@@ -219,6 +219,19 @@ and ad hoc inference directly with metafor, including p-values and CI bounds.
 The sample diagnostic drive checks that visible method-page labels and value controls stay within the horizontal scroll viewport after deferred form replacements are disposed.
 
 The standard binary MH/Peto fixed-estimator scenarios also assert the rendered SVG overall-effect heading has no zero odds-ratio null. On amino's two double-zero studies, MH report/figure rows agree on Not estimable; Peto retains finite corrected effects and zero weight, matching its explicit `drop00=FALSE` fit policy. Sequential rows show pooled subset fits, so omitting a double-zero study still shows the estimable pooled result; the study-level omission assertion does not apply.
+
+`Mean` is the canonical one-arm continuous metric. `analysis-data-generic-effect`
+opens and resaves a separate project containing the old `TX Mean` identifier,
+checks complete runtime preservation and continues through real analysis.
+The contextual CSV drive imports `Mean`, `TX Mean`, `TXMean` and `TX.Mean`
+headers through the actual wizard and retains each input/preview.
+`analysis-data-onearm-mean` also opens the synthetic bundled Mean example,
+checks its original measurements, saves/reopens a copy and compares displayed
+pooling with public `metafor::rma.uni` using independently constructed variances.
+It also opens the one-arm calculator, checks its original measurements and
+observes that Cancel leaves the project unchanged.
+Archive failure tests retain collision rejection and destination preservation;
+the R package tests cover old saved forests in Default/RevMan/BMJ.
 
 `plot-workflow-mh-rd` proves MH risk-difference double-zero rows remain estimable, all forest weights equal the report at plotted precision and sum to 100% within rounding, and switching to BMJ retains the fit's M–H, Fixed header. It also rejects a nonnumeric axis bound in the editor before rendering, retaining the current figure.
 

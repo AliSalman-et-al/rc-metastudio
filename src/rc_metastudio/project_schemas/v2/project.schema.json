@@ -404,7 +404,7 @@
         "PFT",
         "MD",
         "SMD",
-        "TX Mean",
+        "Mean", "TX Mean", "TXMean", "TX.Mean",
         "Sens",
         "Spec",
         "PLR",

@@ -503,18 +503,18 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         close_result(view)
 
     from PyQt6.QtCore import QTimer
-    from rc_metastudio.small_study_effects_dialog import PublicationBiasDialog
+    from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
     from rc_metastudio.results_window import ResultsWindow
     window.workspace.mark_saved()
     assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
     errors = []
     def run_small_study():
         dialog = app.activeModalWidget()
-        if not isinstance(dialog, PublicationBiasDialog) or not dialog.isVisible():
+        if not isinstance(dialog, SmallStudyEffectsDialog) or not dialog.isVisible():
             QTimer.singleShot(10, run_small_study)
             return
         try:
-            assert isinstance(dialog, PublicationBiasDialog)
+            assert isinstance(dialog, SmallStudyEffectsDialog)
             dialog.run()
             assert not dialog.failure_label.isVisible(), dialog.failure_label.text()
         except Exception as error:

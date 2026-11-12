@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath("src"))
 
 import pytest
 from rc_metastudio import automation
-from PyQt6.QtWidgets import QDialog, QApplication
+from PyQt6.QtWidgets import QApplication
 from qt_test_support import key_click, required
 
 
@@ -377,7 +377,7 @@ def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
         arm_key = model.get_current_arm_key()
         analysis_unit.arms[model.get_arm_names()[0]].raw_data = [15.0, 11.0, 16.0, 49.0]
         for metric in analysis_catalog.DIAGNOSTIC_METRICS:
-            analysis_unit.set_effect_and_ci(
+            analysis_unit.set_derived_effect_preview(
                 metric,
                 arm_key,
                 0.577,
@@ -567,24 +567,6 @@ def test_invalid_paste_reports_validation_error_when_model_signals_are_blocked(
         _close_without_prompt(app, window)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def test_metric_selection_and_confidence_level_are_preserved_in_model_state():
 
     app, window = automation.start_automation()
@@ -672,25 +654,6 @@ def _create_binary_dataset(window):
                 "effect": "OR",
                 "metric_choices": [],
                 "name": "Mortality",
-            },
-            "csv_data": None,
-            "selected_dataset": None,
-        }
-    )
-
-
-def _create_continuous_dataset(window):
-    QApplication.processEvents()
-    window._handle_wizard_results(
-        {
-            "path": "new_dataset",
-            "outcome_info": {
-                "arms": "two",
-                "data_type": "continuous",
-                "sub_type": "means",
-                "effect": "MD",
-                "metric_choices": [],
-                "name": "Recovery",
             },
             "csv_data": None,
             "selected_dataset": None,

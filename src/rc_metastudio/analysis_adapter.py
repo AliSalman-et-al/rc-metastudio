@@ -15,7 +15,7 @@ from rc_metastudio import analysis_dataset
 from rc_metastudio import result_formatting
 from rc_metastudio.analysis_results import AnalysisResult, parse_analysis_result
 from rc_metastudio.analysis_errors import DiagnosticExecutionError
-from rc_metastudio.r_backend import AnalysisBackendUnavailableError
+from rc_metastudio.r_runtime import AnalysisBackendUnavailableError
 
 
 AnalysisValue: TypeAlias = bool | int | float | str | None
@@ -35,17 +35,9 @@ _FAMILY_METRICS: Mapping[AnalysisFamily, frozenset[str]] = {
     "binary": frozenset(
         {"OR", "RD", "RR", "AS", "YUQ", "YUY", "PR", "PLN", "PLO", "PAS", "PFT"}
     ),
-    "continuous": frozenset({"MD", "SMD", "TX Mean"}),
+    "continuous": frozenset({"MD", "SMD", "Mean"}),
     "diagnostic": frozenset({"Sens", "Spec", "PLR", "NLR", "DOR"}),
 }
-
-
-class CovariateDataset(Protocol):
-    """Dataset operation required by covariate-qualified study selection."""
-
-    def get_covariate_values(
-        self, covariate: str, ids_for_keys: bool = False
-    ) -> Mapping[int, object]: ...
 
 
 class CovariateSelectionModel(Protocol):
@@ -176,8 +168,6 @@ class AnalysisService:
     def parameters(self, method: str):
         return _require_backend(lambda: r_bridge.get_params(method))
 
-    def method_description(self, method: str) -> str:
-        return _require_backend(lambda: r_bridge.get_method_description(method))
 
     def plot_capabilities(
         self, data_type: str, method: str, *, workflow: str
@@ -417,13 +407,6 @@ def _execute_diagnostic_request(
     if not isinstance(model, DiagnosticExecutionModel):
         raise TypeError("Diagnostic execution requires the diagnostic model queries.")
     return _run_diagnostic_analysis_isolating_metric_failures(model, requests)
-
-
-def execute_small_study_effects_request(model, request):
-    """Execute the dedicated immutable small-study effects request boundary."""
-    from rc_metastudio.small_study_effects import execute_small_study_effects
-
-    return execute_small_study_effects(model, request)
 
 
 def _conversion_kwargs(

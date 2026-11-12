@@ -1,6 +1,6 @@
 import pytest
 
-from rc_metastudio import r_bridge
+from rc_metastudio import r_bridge, result_formatting
 from rc_metastudio.small_study_effects import (
     EligibilityReport,
     FunnelKind,
@@ -152,4 +152,4 @@ def test_request_rejects_unknown_asymmetry_method():
     ("SROC", "SROC"),
 ])
 def test_result_section_titles_use_sentence_case_without_breaking_names(title, expected):
-    assert r_bridge._sentence_case_title(title) == expected
+    assert result_formatting.sentence_case_title(title) == expected

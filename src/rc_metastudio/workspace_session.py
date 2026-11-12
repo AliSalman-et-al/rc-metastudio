@@ -127,7 +127,7 @@ class WorkspaceSession:
             return
         self._record_before(RuntimeProject(
             self._checkpoint.dataset, dict(self._runtime.model_state),
-            self._runtime.restored_selection,
+            self._runtime.restored_active_sheet,
         ))
         self._checkpoint = _copy_runtime(self._runtime)
 

@@ -32,7 +32,6 @@ MAIN_WORKSPACE_GROUP = WORKSPACE_LAYOUT_GROUP + "/main"
 RESULTS_WORKSPACE_GROUP = WORKSPACE_LAYOUT_GROUP + "/results"
 EDIT_DATASET_WORKSPACE_GROUP = WORKSPACE_LAYOUT_GROUP + "/edit_dataset"
 DEFAULT_RESULTS_SPLITTER_PROPORTIONS = (0.18, 0.82)
-DEFAULT_EDIT_DATASET_SPLITTER_PROPORTIONS = (1.0 / 3.0,) * 3
 DEFAULT_SETTINGS = {
     "splash": True,
     "digits": 2,
@@ -131,14 +130,6 @@ class ResultsWorkspaceState(WorkspacePaneState):
     splitter_proportions: tuple
 
 
-@dataclass(frozen=True, eq=False)
-class EditDatasetWorkspaceState(WorkspacePaneState):
-    """Edit Dataset placement plus independently useful collection panes."""
-
-    placement: WorkspacePlacement
-    splitter_proportions: tuple[float, float, float]
-
-
 def update_setting(field, value):
     """Write one validated field using portable primitive storage."""
     spec = SETTING_SPECS[field]
@@ -169,10 +160,6 @@ def update_setting(field, value):
         raise TypeError("Unsupported settings codec for %s" % field)
     settings.remove(field)
     settings.setValue(field, encoded)
-
-
-def get_setting_type(field):
-    return SETTING_SPECS[field].value_type
 
 
 def get_setting(field):
@@ -222,8 +209,6 @@ def _get_setting_helper(field):
     raise TypeError("Unsupported settings codec for %s" % field)
 
 
-def save_settings():
-    """Mark completion after callers' setValue writes without forcing RegFlushKey."""
 
 
 def migrate_workspace_layout_settings():
@@ -590,52 +575,6 @@ def restore_results_window_state(window):
     return state
 
 
-def load_edit_dataset_window_state(available_geometries=None):
-    """Load independent Edit Dataset placement and collection pane shares."""
-    placement = load_workspace_placement(
-        EDIT_DATASET_WORKSPACE_GROUP,
-        available_geometries=available_geometries,
-        default_maximized=False,
-    )
-    settings = QSettings()
-    proportions = _read_splitter_proportions(
-        settings,
-        EDIT_DATASET_WORKSPACE_GROUP + "/splitter_proportions",
-        DEFAULT_EDIT_DATASET_SPLITTER_PROPORTIONS,
-    )
-    return EditDatasetWorkspaceState(
-        placement=placement,
-        splitter_proportions=proportions,
-    )
-
-
-def save_edit_dataset_window_state(window):
-    """Persist user-owned Edit Dataset geometry and collection pane shares."""
-    settings = save_workspace_placement(EDIT_DATASET_WORKSPACE_GROUP, window)
-    settings.setValue(
-        EDIT_DATASET_WORKSPACE_GROUP + "/splitter_proportions",
-        _encode_float_list(
-            _splitter_proportions(
-                window.dataset_structure_splitter.sizes(),
-                default=DEFAULT_EDIT_DATASET_SPLITTER_PROPORTIONS,
-            )
-        ),
-    )
-    settings.sync()
-
-
-def restore_edit_dataset_window_state(window):
-    """Restore Edit Dataset placement without displaying the modal dialog."""
-    state = load_edit_dataset_window_state()
-    restore_workspace_placement(
-        window,
-        state.placement,
-        default_maximized=False,
-        show_window=False,
-    )
-    return state
-
-
 def save_main_window_placement(window, column_widths=None):
     settings = save_workspace_placement(MAIN_WORKSPACE_GROUP, window)
     if column_widths is not None:
@@ -684,7 +623,6 @@ def load_settings():
         if not setting_present:
             update_setting(field, value)
 
-    save_settings()
     return settings
 
 
@@ -694,7 +632,6 @@ def reset_settings():
 
     for field, value in list(DEFAULT_SETTINGS.items()):
         update_setting(field, value)
-    save_settings()
 
 
 def add_file_to_recent_files(fpath):
@@ -712,7 +649,6 @@ def add_file_to_recent_files(fpath):
     recent_files = recent_files[-MAX_RECENT_FILES:]
 
     update_setting("recent_files", recent_files)
-    save_settings()
 
 
 def _canonical_recent_file(fpath):
@@ -751,7 +687,6 @@ def get_recent_files():
     recent_files = normalize_recent_files(stored)
     if recent_files != stored:
         update_setting("recent_files", recent_files)
-        save_settings()
     return recent_files
 
 

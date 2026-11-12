@@ -57,7 +57,7 @@ class AnalysisUnit:
         self.stable_id = stable_id or _new_identity()
 
         if arm_names is None:
-            arm_names = analysis_catalog.default_group_names(sheet.data_type, sheet.sub_type)
+            arm_names = analysis_catalog.default_arm_names(sheet.data_type, sheet.sub_type)
 
         # Arm IDs keep effect entries stable when users rename arms.
         self._arms_by_id = {}
@@ -142,7 +142,6 @@ class AnalysisUnit:
             if arm is None:
                 arm = copy.deepcopy(candidate_arm)
             else:
-                arm.id = candidate_arm.id
                 arm.name = candidate_arm.name
                 arm.stable_id = candidate_arm.stable_id
                 arm.raw_data[:] = copy.deepcopy(candidate_arm.raw_data)
@@ -198,7 +197,7 @@ class AnalysisUnit:
         self,
         source: EffectSource,
         effect: str,
-        arm_comparison: str | tuple[str, ...],
+        arm_comparison: tuple[str, ...],
         estimate: float | None,
         lower: float | None = None,
         upper: float | None = None,
@@ -227,13 +226,13 @@ class AnalysisUnit:
             "analysis": self.analysis_effects,
         }[source]
 
-    def _entry(self, source: EffectSource, effect: str, arm_comparison: str | tuple[str, ...]):
+    def _entry(self, source: EffectSource, effect: str, arm_comparison: tuple[str, ...]):
         return self._store(source).setdefault(effect, {}).setdefault(
             arm_comparison, self._new_effect_entry()
         )
 
     def get_effect_for_source(
-        self, source: EffectSource, effect: str, arm_comparison: str | tuple[str, ...]
+        self, source: EffectSource, effect: str, arm_comparison: tuple[str, ...]
     ) -> EffectEstimate:
         entry = self._store(source).get(effect, {}).get(arm_comparison, {})
         return EffectEstimate(
@@ -325,8 +324,6 @@ class AnalysisUnit:
             .5 + float(self.sheet.settings.get("confidence_level", 95)) / 200
         )
 
-    def set_standard_error(self, effect, arm_comparison, se):
-        self.entered_effects[effect][arm_comparison]["SE"] = se
 
     def set_display_effect_for_source(
         self, source: EffectSource, effect, arm_comparison, value
@@ -450,7 +447,7 @@ class AnalysisUnit:
         display_confidence_level = self._entry(
             source, effect, arm_comparison
         ).get("display_conf_level")
-        return display_confidence_level is None or not analysis_validation.equal_close_enough(
+        return display_confidence_level is None or not analysis_validation.within_absolute_tolerance(
             display_confidence_level, confidence_level
         )
 
@@ -516,7 +513,7 @@ class AnalysisUnit:
             source=source,
         )
 
-    def set_effect_and_ci(
+    def set_derived_effect_preview(
         self, effect, arm_comparison, est, lower, upper, confidence_multiplier
     ):
         # Raw-data calculations are previews.  They must not overwrite values
@@ -578,27 +575,17 @@ class AnalysisUnit:
         )
 
     def get_entered_effect_and_ci(self, effect, arm_comparison):
-        entry = self.entered_effects[effect][arm_comparison]
-        return (
-            entry["est"],
-            entry["lower"],
-            entry["upper"],
-        )
+        entry = self.get_effect_for_source("entered", effect, arm_comparison)
+        return entry.estimate, entry.lower, entry.upper
 
-    def get_arm_strings(self, effect):
-        return list(self.entered_effects[effect].keys())
 
     def get_effect_names(self):
         return list(self.entered_effects.keys())
 
     def add_arm(self, name, raw_data=None, stable_id=None):
-        if not self.arms:
-            arm_id = 0
-        else:
-            arm_id = max(arm.id for arm in self._arms_by_id.values()) + 1
         if raw_data is None:
             raw_data = [""] * self.raw_data_length
-        arm = Arm(arm_id, name, raw_data, stable_id=stable_id)
+        arm = StudyArmData(name, raw_data, stable_id=stable_id)
         self._add_effect_entries_for_arm(arm.stable_id)
         self._arms_by_id[arm.stable_id] = arm
 
@@ -643,9 +630,8 @@ class AnalysisUnit:
         return [arm.name for arm in self._arms_by_id.values()]
 
 
-class Arm:
-    def __init__(self, id, name, raw_data, stable_id=None):
-        self.id = id
+class StudyArmData:
+    def __init__(self, name, raw_data, stable_id=None):
         self.name = name
         self.raw_data = raw_data
         self.stable_id = ArmId(stable_id or str(_new_identity()))

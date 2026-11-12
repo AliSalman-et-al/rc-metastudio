@@ -9,21 +9,21 @@ else:
     from rc_metastudio.forms import ui_edit_name_dialog as _ui_edit_name_dialog
 
 
-class EditGroupNameDialog(QDialog, _ui_edit_name_dialog.Ui_EditNameDialog):
-    def __init__(self, cur_group_name, parent=None):
-        super(EditGroupNameDialog, self).__init__(parent)
+class EditArmNameDialog(QDialog, _ui_edit_name_dialog.Ui_EditNameDialog):
+    def __init__(self, current_arm_name, parent=None):
+        super(EditArmNameDialog, self).__init__(parent)
         self.setupUi(self)
-        self.group_name_le.setText(cur_group_name)
+        self.group_name_le.setText(current_arm_name)
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
 
 
 class EditCovariateNameDialog(QDialog, _ui_edit_name_dialog.Ui_EditNameDialog):
-    def __init__(self, cur_cov_name, parent=None):
+    def __init__(self, current_covariate_name, parent=None):
         super(EditCovariateNameDialog, self).__init__(parent)
         self.setupUi(self)
-        self.group_name_le.setText(cur_cov_name)
+        self.group_name_le.setText(current_covariate_name)
         self.field_lbl.setText("Covariate name:")
         self.setWindowTitle("Edit Covariate Name")
         adaptive_window.register_adaptive_window(

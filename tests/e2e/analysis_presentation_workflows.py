@@ -69,16 +69,16 @@ def analyze_existing(app, window, workflow, method, record, parameters=None):
 
 
 def run(app, window, work, record, scenario):
-    from analysis_matrix import DATA_TYPES, run as matrix
+    from analysis_matrix import DATA_TYPES, run as run_analysis_case
 
-    def prepare(target):
+    def add_subgroup_covariate(target):
         studies = target.model.get_studies(only_if_included=True)
         target.model.add_covariate("Group", "factor",
                                           {s.label: "A" if i % 2 else "B" for i, s in enumerate(studies)})
         target.model.reset_model()
         target.enable_menu_options_that_require_dataset()
 
-    def duplicate_names(target):
+    def prepare_duplicate_study_labels(target):
         studies = target.model.get_studies(only_if_included=True)
         studies[1].label = studies[0].label
         group = target.model.add_covariate("Group", "factor")
@@ -94,7 +94,7 @@ def run(app, window, work, record, scenario):
     if family_name == "irr-context":
         return run_irr_context(app, window, record)
     if family_name in {"round5", "bubble-metrics"}:
-        return run_round5(app, window, work, record, prepare, only_bubbles=family_name == "bubble-metrics")
+        return run_long_figures_and_bubble_bounds(app, window, work, record, add_subgroup_covariate, only_bubbles=family_name == "bubble-metrics")
     if family_name.startswith("presentation-"):
         from PyQt6 import QtCore
         selected_family = family_name.removeprefix("presentation-")
@@ -109,7 +109,7 @@ def run(app, window, work, record, scenario):
             for digits in ((3,) if metric else (3, 6)):
                 for style in ("default", "revman", "bmj"):
                     window.workspace.mark_saved()
-                    view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
+                    view = run_analysis_case(app, window, "analysis-data-" + family, record, keep_results=True,
                                   parameters={"digits": digits, "fp_style": style}, prepare=select_metric)
                     check_annotation_spacing(view, style=style)
                     if metric:
@@ -193,33 +193,35 @@ def run(app, window, work, record, scenario):
             from advanced_workflows import click
             wizard = main_wizard.MainWizard(path="csv_import")
             wizard.set_dataset_info(dict(arms="one", data_type="continuous", sub_type="generic_effect",
-                                         effect="TX Mean", metric_choices=[], name="Entered estimates"))
+                                         effect="Mean", metric_choices=[], name="Entered estimates"))
             wizard.setStartId(main_wizard.Page_CsvImport)
             wizard.restart()
             wizard.show()
             app.processEvents()
             page = wizard.currentPage()
             assert isinstance(page, main_wizard.CsvImportPage)
-            assert "Estimate" in page.required_header_labels and "TX Mean" not in page.required_header_labels, page.required_header_labels
-            source = work / "entered-estimate-alias.csv"
-            with source.open("w", newline="", encoding="utf-8") as stream:
-                writer = csv.writer(stream)
-                writer.writerow(["Study", "Year", "TX Mean", "SE"])
-                writer.writerow(["Entered row", 2026, .2, .1])
-            with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(source), "")):
-                click(app, page.select_file_btn)
-            assert page.isComplete(), page.import_status.text()
-            headers = [required(page.preview_table.horizontalHeaderItem(i)).text() for i in range(page.preview_table.columnCount())]
-            assert "Estimate" in headers and "TX Mean" not in headers, headers
-            record("round4-contextual-csv", wizard, headers=headers, input_headers=page.required_header_labels,
-                   exports={"csv": str(source)})
+            assert "Estimate" in page.required_header_labels and "Mean" not in page.required_header_labels, page.required_header_labels
+            from rc_metastudio.analysis_catalog import LEGACY_MEAN_METRIC_NAMES
+            for index, alias in enumerate(("Mean", *LEGACY_MEAN_METRIC_NAMES)):
+                source = work / f"entered-estimate-alias-{index}.csv"
+                with source.open("w", newline="", encoding="utf-8") as stream:
+                    writer = csv.writer(stream)
+                    writer.writerow(["Study", "Year", alias, "SE"])
+                    writer.writerow(["Entered row", 2026, .2, .1])
+                with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(source), "")):
+                    click(app, page.select_file_btn)
+                assert page.isComplete(), page.import_status.text()
+                headers = [required(page.preview_table.horizontalHeaderItem(i)).text() for i in range(page.preview_table.columnCount())]
+                assert "Estimate" in headers and alias not in headers, headers
+                record("round4-contextual-csv", wizard, headers=headers, input_headers=page.required_header_labels,
+                       source_metric=alias, exports={"csv": str(source)})
             wizard.reject()
             wizard.deleteLater()
             app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
         for family in ([selected_family] if selected_family in {"twoarm-proportion", "twoarm-mean"} else []):
             window.workspace.mark_saved()
-            view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
-                          workflow_override="subgroup", parameters={"digits": 6}, prepare=duplicate_names)
+            view = run_analysis_case(app, window, "analysis-data-" + family, record, keep_results=True,
+                          workflow_override="subgroup", parameters={"digits": 6}, prepare=prepare_duplicate_study_labels)
             check_subgroup(view, record)
             view.close()
             view.deleteLater()
@@ -227,7 +229,7 @@ def run(app, window, work, record, scenario):
         for workflow in (("cumulative", "leave-one-out") if selected_family == "sequential" else ()):
             for style in ("default", "revman", "bmj"):
                 window.workspace.mark_saved()
-                view = matrix(app, window, "analysis-data-twoarm-mean", record, keep_results=True,
+                view = run_analysis_case(app, window, "analysis-data-twoarm-mean", record, keep_results=True,
                               workflow_override=workflow, parameters={"digits": 6, "fp_style": style})
                 check_sequential(view, workflow, record)
                 from advanced_workflows import export_formats
@@ -248,7 +250,7 @@ def run(app, window, work, record, scenario):
                     assert model.setData(model.index(row, column), "")
                 for column, value in zip(model.OUTCOMES, values, strict=True):
                     assert model.setData(model.index(row, column), str(value))
-        view = matrix(app, window, "analysis-data-reg-coef", record, keep_results=True,
+        view = run_analysis_case(app, window, "analysis-data-reg-coef", record, keep_results=True,
                       parameters={"digits": 6}, prepare=lambda target: entered(target, (.2, 0, .4)))
         for path in view.results.display_images.values():
             nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
@@ -267,7 +269,7 @@ def run(app, window, work, record, scenario):
         record("round3-zero-bound-presentation", view, entered_bounds=[0, .4], plots=dict(view.results.display_images))
         view.close()
         window.workspace.mark_saved()
-        view = matrix(app, window, "analysis-data-generic-effect", record, keep_results=True,
+        view = run_analysis_case(app, window, "analysis-data-generic-effect", record, keep_results=True,
                       parameters={"digits": 6}, prepare=lambda target: entered(target, (1e-10, 1e-11)))
         reference = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('local({f <- metafor::rma.uni(yi=rep(1e-10,6), sei=rep(1e-11,6), method="DL"); jsonlite::toJSON(list(estimate=as.numeric(f$b),lower=f$ci.lb,upper=f$ci.ub,se=f$se),auto_unbox=TRUE,digits=16)})'))[0]))
         row = next(t for s in view.results.sections for t in s.tables if t.title == "Model Results").rows[0]
@@ -296,7 +298,7 @@ def run(app, window, work, record, scenario):
         view.close()
         window.workspace.mark_saved()
         for style in ("default", "revman", "bmj"):
-            view = matrix(app, window, "analysis-data-generic-effect", record, keep_results=True,
+            view = run_analysis_case(app, window, "analysis-data-generic-effect", record, keep_results=True,
                           parameters={"digits": 6, "fp_style": style},
                           prepare=lambda target: entered(target, (1, 1e-20)))
             assert view.results.display_images, "missing degenerate-axis figures"
@@ -344,7 +346,7 @@ def run(app, window, work, record, scenario):
                            raw=target.model.get_current_raw_data(),
                            effects=target.model.get_current_estimates_and_standard_errors(),
                            raw_complete=target.model.included_studies_have_raw_data())
-            view = matrix(app, window, "analysis-amino-binary-meta-regression" if metric == "OR" else "analysis-data-onearm-proportion" if metric == "PLO" else "analysis-data-generic-effect",
+            view = run_analysis_case(app, window, "analysis-amino-binary-meta-regression" if metric == "OR" else "analysis-data-onearm-proportion" if metric == "PLO" else "analysis-data-generic-effect",
                           record, keep_results=True, workflow_override="meta-regression",
                           parameters={"digits": 6}, prepare=select_metric)
             check_bubble_ticks(view, metric, record)
@@ -355,9 +357,9 @@ def run(app, window, work, record, scenario):
     for name in names:
         for workflow in ("cumulative", "leave-one-out", "subgroup"):
             window.workspace.mark_saved()
-            view = matrix(app, window, "analysis-data-" + name, record,
+            view = run_analysis_case(app, window, "analysis-data-" + name, record,
                           keep_results=True, workflow_override=workflow,
-                          parameters={"digits": 6}, prepare=prepare if workflow == "subgroup" else None)
+                          parameters={"digits": 6}, prepare=add_subgroup_covariate if workflow == "subgroup" else None)
             check_report(app, view, work, record)
             if workflow != "subgroup":
                 check_sequential(view, workflow, record)
@@ -376,7 +378,7 @@ def run(app, window, work, record, scenario):
     for family, sample in ([samples[family_name]] if family_name in samples else []):
         window.workspace.mark_saved()
         assert window.open(str(root / "sample_projects" / (sample + ".rcms")), raise_on_error=True)
-        duplicate_names(window)
+        prepare_duplicate_study_labels(window)
         model = window.model
         assert model.setData(model.index(1, model.INCLUDE_STUDY), QtCore.Qt.CheckState.Unchecked, QtCore.Qt.ItemDataRole.CheckStateRole)
         record("round3-ratio-excluded-study", window, family=family, excluded=model.get_studies(False)[1].label)
@@ -403,7 +405,7 @@ def run(app, window, work, record, scenario):
             view.close()
         window.workspace.mark_saved()
         assert window.open(str(root / "sample_projects" / (sample + ".rcms")), raise_on_error=True)
-        duplicate_names(window)
+        prepare_duplicate_study_labels(window)
         for workflow in ("cumulative", "leave-one-out", "subgroup"):
             view = analyze_existing(app, window, workflow, family + ".fixed", record)
             check_report(app, view, work, record)
@@ -454,15 +456,15 @@ def run(app, window, work, record, scenario):
     for scenario, method in (("analysis-binary.fixed.mh", "MH"), ("analysis-binary.fixed.peto", "PETO"),
                              ("analysis-diagnostic.fixed.mh", "MH"), ("analysis-diagnostic.fixed.peto", "PETO")):
         window.workspace.mark_saved()
-        view = matrix(app, window, scenario, record, keep_results=True)
+        view = run_analysis_case(app, window, scenario, record, keep_results=True)
         check_report(app, view, work, record)
         check_fixed_references(view, record, method)
         view.close()
     for scenario in ("analysis-binary.fixed.inv.var", "analysis-continuous.fixed", "analysis-diagnostic.fixed.inv.var"):
         for workflow in ("standard", "cumulative", "leave-one-out", "subgroup"):
             window.workspace.mark_saved()
-            view = matrix(app, window, scenario, record, keep_results=True, workflow_override=workflow,
-                          parameters={"digits": 6}, prepare=prepare if workflow == "subgroup" else None)
+            view = run_analysis_case(app, window, scenario, record, keep_results=True, workflow_override=workflow,
+                          parameters={"digits": 6}, prepare=add_subgroup_covariate if workflow == "subgroup" else None)
             check_report(app, view, work, record)
             check_fixed_references(view, record)
             if workflow == "standard":
@@ -470,14 +472,14 @@ def run(app, window, work, record, scenario):
             view.close()
     for family in ("amino-binary", "continuous"):
         window.workspace.mark_saved()
-        view = matrix(app, window, "analysis-" + family + "-meta-regression", record,
+        view = run_analysis_case(app, window, "analysis-" + family + "-meta-regression", record,
                       keep_results=True, parameters={"digits": 6}, fixed_effects=True)
         check_report(app, view, work, record)
         check_fixed_references(view, record)
         view.close()
     for scenario in ("analysis-amino-binary-subgroup", "analysis-continuous-subgroup", "analysis-diagnostic-combined"):
         window.workspace.mark_saved()
-        view = matrix(app, window, scenario, record, keep_results=True, parameters={"digits": 6})
+        view = run_analysis_case(app, window, scenario, record, keep_results=True, parameters={"digits": 6})
         check_report(app, view, work, record)
         if scenario.endswith("subgroup"):
             check_subgroup(view, record)
@@ -486,17 +488,17 @@ def run(app, window, work, record, scenario):
         view.close()
 
 
-def run_round5(app, window, work, record, prepare, only_bubbles=False):
+def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_dataset, only_bubbles=False):
     """Retain actual long figures and panel geometry through normal Qt/R routes."""
     from PyQt6 import QtCore
-    from analysis_matrix import DATA_TYPES, run as matrix
+    from analysis_matrix import DATA_TYPES, run as run_analysis_case
     from rc_metastudio import r_bridge
     root = Path(__file__).resolve().parents[2]
     measurements = []
     for style in (() if only_bubbles else ("default", "revman", "bmj")):
         window.workspace.mark_saved()
         assert window.open(str(root / "sample_projects/Pignon2000-HR.rcms"), raise_on_error=True)
-        prepare(window)
+        prepare_dataset(window)
         for workflow in ("standard", "subgroup"):
             view = analyze_existing(app, window, workflow, "time_to_event.random", record,
                                     parameters={"fp_style": style})
@@ -546,8 +548,8 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
             view.close()
     if not only_bubbles:
         window.workspace.mark_saved()
-        view = matrix(app, window, "analysis-data-twoarm-proportion", record, keep_results=True,
-                      workflow_override="subgroup", parameters={"fp_style":"bmj", "digits":6}, prepare=prepare)
+        view = run_analysis_case(app, window, "analysis-data-twoarm-proportion", record, keep_results=True,
+                      workflow_override="subgroup", parameters={"fp_style":"bmj", "digits":6}, prepare=prepare_dataset)
         check_report(app, view, work, record)
         check_subgroup(view, record)
         check_annotation_spacing(view, style="bmj")
@@ -565,7 +567,7 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
                                           {study.label: float(i) for i, study in enumerate(studies)})
         target.model.reset_model()
         target.enable_menu_options_that_require_dataset()
-    def check_panel(view, family, metric):
+    def check_bubble_panel_bounds(view, family, metric):
         assert not re.search(r"(?<![\d.eE])-0\.0+(?![\d.eE])", view.report_text.toPlainText()), view.report_text.toPlainText()
         paths = list(view.results.display_images.items())
         exported = {}
@@ -613,10 +615,10 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
                 next(action for action in menu.actions() if action.data() == metric).trigger()
                 app.processEvents()
             add_dose(target)
-        view = matrix(app, window, "analysis-data-" + family, record, keep_results=True,
+        view = run_analysis_case(app, window, "analysis-data-" + family, record, keep_results=True,
                       workflow_override="meta-regression", parameters={"digits":6, "bp_plot_lb":"1", "bp_plot_ub":"4"},
                       prepare=prepare_metric)
-        check_panel(view, family, metric or window.model.current_effect)
+        check_bubble_panel_bounds(view, family, metric or window.model.current_effect)
         view.close()
     for family, sample in (("time_to_event", "Pignon2000-HR"), ("event_rates", "NielWeise2008-IRR")):
         window.workspace.mark_saved()
@@ -626,7 +628,7 @@ def run_round5(app, window, work, record, prepare, only_bubbles=False):
                                 parameters={"bp_plot_lb":"1", "bp_plot_ub":"4"})
         view.report_action.setChecked(False)
         view._show_report(False)
-        check_panel(view, family, window.model.current_effect)
+        check_bubble_panel_bounds(view, family, window.model.current_effect)
         view.close()
     record("round5-bubble-metric-matrix", window, cases=len(cases)+2)
 

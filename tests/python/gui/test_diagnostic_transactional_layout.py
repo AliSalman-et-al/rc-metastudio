@@ -59,11 +59,11 @@ class FakeDiagnosticAnalysisUnit:
     def set_effect_for_source(
         self, _source, metric, arm_key, est, low=None, high=None, **kwargs
     ):
-        self.set_effect_and_ci(
+        self.set_derived_effect_preview(
             metric, arm_key, est, low, high, **kwargs
         )
 
-    def set_effect_and_ci(self, metric, _group, est, low, high, **_kwargs):
+    def set_derived_effect_preview(self, metric, _group, est, low, high, **_kwargs):
         self.effects[metric] = (est, low, high)
 
     def set_effect(self, metric, _group, value, **_kwargs):
