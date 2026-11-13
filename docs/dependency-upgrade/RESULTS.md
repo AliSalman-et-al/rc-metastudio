@@ -19,7 +19,44 @@ replace target copies whose versions differ. This updates bundled nlme from
 3.1-171 to 3.1-172 and development-library mgcv from 1.9-4 to 1.9-5. The final
 selected R library has no package behind the snapshot.
 
-## Evidence
+## Final local qualification before PR
+
+The fresh complete desktop command passes all **133 cases** in 3,484.84 seconds,
+then passes a fresh runtime doctor. This supersedes the earlier composed
+qualification below without changing or relabelling any failed attempt. All
+application, test and configuration inputs remained frozen at `eb94c2c1` during
+this run; subsequent edits only update this report and the decision trail.
+
+The controller retains exact commands, timestamps and exit codes in
+`artifacts/verification/dependency-upgrade-20261113/local-pr-qualification/results.json`.
+Its completed stages and final controls are below. Paths starting with
+`local-pr-qualification/` are relative to that evidence root.
+
+| Check | Observed result | Evidence |
+| --- | --- | --- |
+| Expanded strict typing, win32 target on Linux | Pass, including skill drivers, with warnings fatal | `artifacts/verification/typing/20261113T181519-f27f4db8/` |
+| Complete non-desktop Python suite | 1,083 passed, 21 platform skips; all ten real-R bridge tests exercised | `local-pr-qualification/python.log`, `local-pr-qualification/python.xml` |
+| Code health | Pass on committed source | `local-pr-qualification/code-health.log` |
+| R package build and check | Status OK; 2,228 assertions, four intentional reference-fit warnings, one optional visual skip | `local-pr-qualification/r-build/RCMetaR.Rcheck/` |
+| Optional forest visual matrix, run separately | Seven assertions pass, no warnings or skips; all 300 PNGs decoded and hashed | `local-pr-qualification/forest-300.log`, `local-pr-qualification/forest-retained-index.json` |
+| Fresh complete desktop matrix and doctor | 133 passed, zero failed; aggregate exit zero | `artifacts/verification/rcms/20261113T131814Z-b50b6d94-complete/summary.json`, `00.log`, `01.log` |
+| Independent statistical authorities and installed versions | 103 public-package comparisons pass; runtime and package pins match | `local-pr-qualification/authorities.json`, `local-pr-qualification/manifest-versions.log` |
+| Reitsma visual controls | 21 semantic cases pass twice with deterministic hashes | `local-pr-qualification/reitsma.log`, `local-pr-qualification/reitsma-visual-qa-{1,2}/` |
+| Fresh frozen numerical comparison | 11 cases, 475 comparisons, 416 numeric fields pass with unchanged oracle and tolerances | `build/qt6-verification/golden-compatibility-local-pr-qualification/capture/compatibility-report.json` |
+| Final evidence audit | 130 desktop workflows plus three geometry controls pass; 16,993 desktop artifacts and 300 forest image hashes verified | `local-pr-qualification/qualification-audit.json` |
+| Repository pre-push lane | All six stages pass: generation, typing, code health, fast/golden, GUI and packaging contracts | `local-pr-qualification/pre-push.log`, `local-pr-qualification/pre-push.json` |
+
+The Python/R stages completed before a turn interruption. The resumed controller
+retained only completed zero-exit stages with unchanged inputs, reran the
+interrupted optional forest stage, and ran the desktop matrix fresh. The partial
+forest artifacts and interruption record remain under `local-pr-qualification/`.
+Two golden-command setup attempts were rejected before capture: first for an
+output outside `build/qt6-verification`, then for omitting the required
+`golden-compatibility-` directory prefix. Their logs/results remain retained;
+the corrected command passes without source or oracle changes. See
+`local-pr-qualification/extra-results.json` and its linked prior attempts.
+
+## Earlier evidence and recovery history
 
 Unless explicitly rooted elsewhere, evidence paths below live under
 `artifacts/verification/dependency-upgrade-20261113/`. Earlier short filenames in
@@ -67,7 +104,7 @@ An existing unit fixture still expected alpha 110; it was updated to 80, the
 complete 1073-test Python selection passed, and the desktop controller restarted
 so all retained scenario signatures refer to that final source.
 
-That final matrix completed with 129 passes and four failures. Both manuscript
+That earlier matrix completed with 129 passes and four failures. Both manuscript
 drivers expected the old `metafor 5.0.1` citation; the application correctly
 reports 5.2.1. The XLSX driver treated the intended legacy `.xls` warning as
 unexpected. It now checks the exact warning, clicks OK and retains the existing
@@ -101,16 +138,18 @@ No application, runtime, statistical fixture or tolerance changed during this
 recovery. `fixture-recovery-delta.json` and `fixture-recovery.patch` bind the six
 changed test/driver files and prove unrelated driver functions byte-identical.
 The original full command remains failed; targeted success does not relabel it
-or rewrite its evidence/cache entries. Qualification consists of its 129 passes,
+or rewrite its evidence/cache entries. The earlier qualification consisted of its 129 passes,
 four successful targeted recoveries, the HR/funnel controls and fresh doctor.
 The audit verifies all 17,817 retained artifacts and confirms that the recovery
 runtime/environment matches the original matrix. All 133 distinct obligations
-have passing evidence; no single final full-matrix command is claimed green.
+had passing evidence at that point. The fresh final command above now passes all
+133 cases together.
 
 The four R test warnings come from intentionally incomplete direct reference
 fits in `test-statistics-02.R`. The old subset emits the same messages, among 48
-warnings; the full new suite emits only those four. The optional 300-image
-forest visual matrix remains skipped; the required 21-case Reitsma visual gate
+warnings; the full new suite emits only those four. That earlier run skipped the
+optional 300-image forest matrix, which the final local qualification exercises
+separately; the required 21-case Reitsma visual gate
 passed twice with deterministic hashes. See `r-warning-comparison.json` and the
 retained test transcript. The 99 authority cases with captured values have no
 version drift at the report’s retained precision; the other four cases retain

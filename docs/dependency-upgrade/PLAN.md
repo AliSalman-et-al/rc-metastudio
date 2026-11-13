@@ -41,14 +41,14 @@ lock updated. The original Python/R stack passes the frozen 11-case oracle,
 including all 416 numerical fields, and 103 independent authority comparisons.
 The final R scientific gates and unchanged frozen oracle pass. Opus 5.5 Medium
 approves the GUI. The expanded typing gate includes the skill drivers and passes;
-the rebuilt package passes. The final desktop matrix completed with 129 passes
-and four driver failures. All four failing paths pass targeted recovery; HR
-and funnel controls pass too. IRR completed in 610.46 seconds with a scoped
-1,200-second verification allowance after two 600-second timeouts. All 133
-desktop obligations have passing evidence, with 17,817 retained artifact hashes
-verified. The original full command remains failed; the composed qualification
-and native-platform/timing limits are recorded in RESULTS.md. Application and
-numerical behavior are unchanged by the driver recovery.
+the rebuilt package passes. The fresh final desktop command passes all 133
+cases, followed by a passing runtime doctor. The complete non-desktop Python
+suite passes 1,083 tests with 21 platform skips, and R CMD check reports Status
+OK. The optional forest matrix also passes with all 300 retained images decoded
+and hashed. Earlier failed and composed recovery runs remain historical evidence;
+the current local qualification and native-platform/timing limits are recorded
+in RESULTS.md. Application and numerical behavior are unchanged by the driver
+recovery.
 Frozen fixtures remain unchanged.
 
 User steering: follow Astral best practices. Remove all=error (which opts into
