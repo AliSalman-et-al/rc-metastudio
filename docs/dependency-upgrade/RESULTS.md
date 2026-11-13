@@ -101,8 +101,10 @@ evidence at `artifacts/verification/rcms/20261113T145418Z-50088324-project-shell
 Strict typing passes. Font proofs, captures and transcripts are retained in
 `ci-recovery-589/about-{before,after}.json`, `about-failing-proof.log`,
 `about-native/`, `about-native-1.5/` and `project-shell-native.log` under the
-dependency-upgrade evidence root. Opus 5.5 Medium must approve this GUI sizing
-correction before it is pushed.
+dependency-upgrade evidence root. Opus 5.5 Medium independently approved this
+GUI sizing correction with no blocking findings; its review is retained as
+`ci-recovery-589/about-opus-review.json`. Native Windows CI confirmation remains
+required before merge.
 
 ## Earlier evidence and recovery history
 
