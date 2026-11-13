@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Screen-bounded About dialog."""
 
+from math import ceil
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import Qt, QUrl
@@ -39,7 +40,8 @@ class AboutLegalDialog(QDialog, _ui_about_legal.Ui_AboutLegalDialog):
         required(self.content_scroll_area.viewport(), "About viewport").setAutoFillBackground(False)
         logo = QPixmap(":/misc/about-logo.png")
         logo = logo.copy(QRegion(logo.mask()).boundingRect())
-        required(self.content_scroll_area.document(), "About document").addResource(
+        document = required(self.content_scroll_area.document(), "About document")
+        document.addResource(
             QTextDocument.ResourceType.ImageResource, QUrl("rcms:about-logo"), logo
         )
         self.content_scroll_area.setHtml(
@@ -55,9 +57,19 @@ class AboutLegalDialog(QDialog, _ui_about_legal.Ui_AboutLegalDialog):
         close_button.setAccessibleName("Close About")
         close_button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.setTabOrder(self.content_scroll_area, close_button)
+        layout = required(self.layout(), "About layout")
+        margins = layout.contentsMargins()
+        preferred_width = max(360, self.fontMetrics().averageCharWidth() * 76)
+        # Measure independently of QTextBrowser's viewport-driven document width.
+        measured_document = required(document.clone(), "About measurement document")
+        measured_document.setTextWidth(preferred_width - margins.left() - margins.right())
+        content_height = (
+            ceil(measured_document.size().height()) + margins.top() + margins.bottom()
+            + layout.spacing() + self.buttonBox.sizeHint().height()
+        )
         adaptive_window.set_content_preferred_width(
-            self, 360, self.fontMetrics().averageCharWidth() * 76,
-            preferred_height=self.fontMetrics().lineSpacing() * 22,
+            self, 360, preferred_width,
+            preferred_height=max(self.fontMetrics().lineSpacing() * 22, content_height),
         )
         self._layout_controller = adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL

@@ -83,6 +83,27 @@ Evidence lives under
 installer, and `r-installer-verification.json`. CI must qualify the corrected
 Windows package and native contract suite before merge.
 
+The old head's Windows R-stack shard 3 also exposed About content overflowing
+at a small default font. A font matrix reproduced persistent overflow after
+layout settled, so this was a sizing defect rather than a driver race. The
+dialog now measures a cloned rich-text document at its preferred width and
+includes layout/footer space in its preferred height. The clone prevents
+QTextBrowser's viewport updates from changing the measurement. Existing larger
+preferences and screen-bounded scrolling remain in place.
+
+The same failing font proof passes after the correction: twelve combinations
+of DejaVu Sans/Liberation Sans at 7, 8, 9, 10, 12 and 16 points have no default
+vertical overflow. The two reproduced small-font failures gain eight and six
+pixels of height; the other ten sizes are unchanged. Native XCB light/dark,
+minimum-width, large-font scrolling and Close/keyboard checks pass at 1x and
+1.5x. The production real-R `project-shell --native` workflow passes, retaining
+evidence at `artifacts/verification/rcms/20261113T145418Z-50088324-project-shell/`.
+Strict typing passes. Font proofs, captures and transcripts are retained in
+`ci-recovery-589/about-{before,after}.json`, `about-failing-proof.log`,
+`about-native/`, `about-native-1.5/` and `project-shell-native.log` under the
+dependency-upgrade evidence root. Opus 5.5 Medium must approve this GUI sizing
+correction before it is pushed.
+
 ## Earlier evidence and recovery history
 
 Unless explicitly rooted elsewhere, evidence paths below live under
