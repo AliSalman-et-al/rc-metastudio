@@ -67,7 +67,7 @@ def run_groups(app, window, work, record):
     close(app,old_view)
     assert str(r_bridge.execute_r_string('as.character(packageVersion("RCMetaR"))')[0]) == __version__
     def about(dialog):
-        assert f'RC MetaStudio {__version__}' in dialog.content_scroll_area.toPlainText()
+        assert f'Version {__version__}' in dialog.content_scroll_area.toPlainText()
         record('reviewer-about-version', dialog, version=__version__)
         click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Close))
     modal(app, AboutLegalDialog, about, window.action_about_legal.trigger)

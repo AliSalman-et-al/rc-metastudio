@@ -29,9 +29,9 @@ R_MANIFEST_VALIDATOR = Path("scripts") / "validate_rcmetar_r_manifests.py"
 R_STACK_TESTS = (Path("tests") / "r_stack",)
 BRIDGE_TESTS = R_STACK_TESTS
 REQUIRED_RPY2_IDENTITIES = {
-    "rpy2": "3.6.7",
-    "rpy2-rinterface": "3.6.6",
-    "rpy2-robjects": "3.6.5",
+    "rpy2": "3.6.9",
+    "rpy2-rinterface": "3.6.7",
+    "rpy2-robjects": "3.6.6",
 }
 REITSMA_VISUAL_CASE_COUNT = 21
 REITSMA_VISUAL_DETERMINISTIC_EXTENSIONS = {"svg", "svgz", "png", "tif", "tiff"}

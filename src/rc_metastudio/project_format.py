@@ -445,8 +445,8 @@ def migrate_to_latest(
     if version > CURRENT_FORMAT_VERSION or version < 1:
         raise ProjectFormatError(f"unsupported project format version: {version}")
     try:
-        migrated_project = cast(JsonObject, copy.deepcopy(dict(project)))
-        migrated_state = cast(JsonObject, copy.deepcopy(dict(state)))
+        migrated_project = copy.deepcopy(dict(project))
+        migrated_state = copy.deepcopy(dict(state))
     except RecursionError as exc:
         raise ProjectFormatError("project migration input nesting is too deep") from exc
     try:
@@ -590,8 +590,8 @@ def save_project(
     """Validate and atomically replace an `.rcms` project on its filesystem."""
     selected_limits = limits or ProjectArchiveLimits()
     try:
-        project_value = cast(JsonObject, copy.deepcopy(dict(project)))
-        state_value = cast(JsonObject, copy.deepcopy(dict(state)))
+        project_value = copy.deepcopy(dict(project))
+        state_value = copy.deepcopy(dict(state))
     except RecursionError as exc:
         raise ProjectFormatError("project data nesting is too deep") from exc
     _validate(CURRENT_FORMAT_VERSION, "project.json", project_value)

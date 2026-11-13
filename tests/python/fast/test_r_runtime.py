@@ -8,6 +8,7 @@ from rc_metastudio import r_runtime
 
 def test_windows_r_environment_drops_unsupported_posix_utf8_locale(monkeypatch):
     environment = {
+        "PROCESSOR_ARCHITECTURE": "AMD64",
         "LC_ALL": "C.UTF-8",
         "LC_CTYPE": "C.utf8",
         "LANG": "C.UTF-8",
@@ -40,6 +41,7 @@ def test_non_windows_r_environment_preserves_posix_utf8_locale(monkeypatch):
 
 def test_windows_r_environment_preserves_supported_locale(monkeypatch):
     environment = {
+        "PROCESSOR_ARCHITECTURE": "AMD64",
         "LC_ALL": "English_United States.utf8",
         "LC_CTYPE": "de_DE.UTF-8",
         "LANG": "en_US.UTF-8",

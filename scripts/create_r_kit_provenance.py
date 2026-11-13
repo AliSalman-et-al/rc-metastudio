@@ -147,10 +147,10 @@ def main() -> int:
             ),
         ],
         "rpy2": {
-            "version": "3.6.7",
+            "version": "3.6.9",
             "sdist_distribution": "rpy2-rinterface",
-            "sdist_version": "3.6.6",
-            "robjects_version": "3.6.5",
+            "sdist_version": "3.6.7",
+            "robjects_version": "3.6.6",
             "sdist_url": args.rpy2_rinterface_sdist_url,
             "sdist_sha256": sha256(args.rpy2_rinterface_sdist.resolve(strict=True)),
             "toolchain": args.toolchain,
@@ -166,16 +166,16 @@ def main() -> int:
                     "license_files": archive_license_files(archive),
                 }
                 for distribution, version, archive, url in (
-                    ("rpy2", "3.6.7", args.rpy2_sdist, args.rpy2_sdist_url),
+                    ("rpy2", "3.6.9", args.rpy2_sdist, args.rpy2_sdist_url),
                     (
                         "rpy2-rinterface",
-                        "3.6.6",
+                        "3.6.7",
                         args.rpy2_rinterface_sdist,
                         args.rpy2_rinterface_sdist_url,
                     ),
                     (
                         "rpy2-robjects",
-                        "3.6.5",
+                        "3.6.6",
                         args.rpy2_robjects_sdist,
                         args.rpy2_robjects_sdist_url,
                     ),

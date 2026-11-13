@@ -1155,7 +1155,17 @@ def build_evidence(
     baseline_paths = tracked_paths(root, config, base)
     baseline_graph, baseline_forbidden = python_import_graph(root, baseline_paths, config, base)
     baseline_cycle_list = cycles(baseline_graph)
-    file_metrics = []
+    class FileMetric(TypedDict):
+        path: str
+        lines: int
+        churn: dict[str, int]
+        complexity: dict[str, int | float]
+        maintainability_index: float | None
+        language: str
+        hotspot_score: float
+        defect_history: int
+
+    file_metrics: list[FileMetric] = []
     for path in paths:
         try:
             source = run_git(root, "show", f"{head}:{path}")

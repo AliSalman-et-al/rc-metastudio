@@ -80,7 +80,7 @@ def main() -> int:
             "path": relative,
             "package": package,
             "version": version,
-            "archive_url": "https://packagemanager.posit.co/cran/2026-07-16/"
+            "archive_url": "https://packagemanager.posit.co/cran/2026-11-13/"
             + args.ppm_contrib_path.strip("/")
             + "/"
             + relative,
@@ -96,7 +96,7 @@ def main() -> int:
         json.dumps(
             {
                 "schema_version": 1,
-                "repository": "https://packagemanager.posit.co/cran/2026-07-16",
+                "repository": "https://packagemanager.posit.co/cran/2026-11-13",
                 "archives": archives,
             },
             indent=2,
@@ -115,7 +115,7 @@ def main() -> int:
             "url": args.official_r_url,
             "sha256": args.official_r_sha256,
         },
-        "ppm_snapshot": "https://packagemanager.posit.co/cran/2026-07-16",
+        "ppm_snapshot": "https://packagemanager.posit.co/cran/2026-11-13",
         "ppm_archives": archives,
         "rcmetar_source": {
             "name": "RCMetaR",

@@ -291,7 +291,7 @@ def test_native_remaining_surface_evidence_rejects_semantic_layout_drift(tmp_pat
 
 def test_focus_observer_does_not_accept_programmatic_fallback_after_consumed_tab(qapp):
     class TabConsumingDialog(QtWidgets.QDialog):
-        def event(  # ty: ignore[invalid-method-override] - PyQt6 test-double stub mismatch.
+        def event(
             self, event: QtCore.QEvent | None
         ) -> bool:
             if (

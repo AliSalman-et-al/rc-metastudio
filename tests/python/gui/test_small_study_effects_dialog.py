@@ -54,7 +54,7 @@ def _report(data_type, metric, methods, raw_data_available=True, warnings=None):
         "usable.studies": 10,
         "raw.data.available": raw_data_available,
         "standard.error.range": [0.1, 0.4],
-        "package.versions": {"meta": "8.5-0", "metafor": "5.0-1"},
+        "package.versions": {"meta": "8.5-0", "metafor": "5.2-1"},
         "warnings": [] if warnings is None else warnings,
         "methods": methods,
     }

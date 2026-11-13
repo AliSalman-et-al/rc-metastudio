@@ -167,6 +167,12 @@ def run(app, window, work, root, record, analyze):
             menu.close()
     QtCore.QTimer.singleShot(100, choose_analysis)
     mouse_click(window.analysis_button, QtCore.Qt.MouseButton.LeftButton)
+    deadline = QtCore.QDeadlineTimer(5000)
+    while not menu_errors and not deadline.hasExpired():
+        if any(isinstance(widget, AnalysisSetupDialog) and widget.isVisible()
+               for widget in app.topLevelWidgets()):
+            break
+        wait(10)
     assert not menu_errors, menu_errors
     app.processEvents()
     setup = next(widget for widget in app.topLevelWidgets() if isinstance(widget, AnalysisSetupDialog) and widget.isVisible())

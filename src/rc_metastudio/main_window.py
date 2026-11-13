@@ -20,7 +20,6 @@ from PyQt6.QtGui import (
 )
 from PyQt6.QtWidgets import (
     QApplication,
-    QDialog,
     QFileDialog,
     QLabel,
     QMessageBox,
@@ -158,7 +157,7 @@ class ElidingStatusLabel(QLabel):
         )
         self.setText(text)
 
-    def setText(  # ty: ignore[invalid-method-override] -- PyQt6's QLabel overload stubs conflict with this semantic text override.
+    def setText(
         self, text: str | None
     ) -> None:
         text = qt_text.to_native_text(text)
@@ -174,7 +173,7 @@ class ElidingStatusLabel(QLabel):
         """Return the semantic status text, not its width-dependent paint form."""
         return self._full_text
 
-    def resizeEvent(  # ty: ignore[invalid-method-override] -- PyQt6's QLabel and QWidget stubs conflict for this runtime-supported override.
+    def resizeEvent(
         self, event: QResizeEvent | None
     ) -> None:
         super(ElidingStatusLabel, self).resizeEvent(event)
@@ -307,9 +306,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.setupUi(self)
         qt_layout.configure_analysis_menu(self.menuAnalysis)
         self.menuAnalysis.setToolTipsVisible(True)
-        self.action_summary_of_findings = QAction("Summary of findings…", self)
-        self.menuAnalysis.addAction(self.action_summary_of_findings)
-        self.action_summary_of_findings.triggered.connect(self._show_summary_of_findings)
         for action, icon_name in (
             (self.action_go, "meta-analysis"),
             (self.action_cum_ma, "cumulative-analysis"),
@@ -336,21 +332,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.menu_bar.setStyleSheet("QMenuBar { color: palette(window-text); }")
         self.toolBar.setStyleSheet("QToolButton { color: palette(window-text); }")
         qt_layout.configure_main_toolbar(self.toolBar)
-        dataset_file_label = ElidingStatusLabel(
-            self.dataset_file_lbl.text(), self.centralwidget
-        )
-        self.verticalLayout_3.replaceWidget(self.dataset_file_lbl, dataset_file_label)
-        self.dataset_file_lbl.deleteLater()
-        self.dataset_file_lbl = dataset_file_label
+        self.dataset_file_lbl = ElidingStatusLabel(parent=self.statusbar)
+        self.dataset_file_lbl.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        self.statusbar.addWidget(self.dataset_file_lbl, 3)
         self.action_new_dataset.setText("Create dataset…")
-        self.action_import_rm5 = QAction("Import RevMan file (.rm5)…", self)
-        self.action_import_rm5.triggered.connect(self._import_rm5)
         self.start_page = start_page.StartPage(self.action_new_dataset, self.action_import_csv, self.action_open, self)
         self.verticalLayout_3.insertWidget(0, self.start_page)
         self.menu_file.clear()
         for action in (self.action_new_dataset, self.action_open,
-                       self.action_open_recent_2.menuAction(), self.action_import_csv,
-                       self.action_import_rm5):
+                       self.action_open_recent_2.menuAction(), self.action_import_csv):
             self.menu_file.addAction(action)
         self.menu_file.addSeparator()
         self.menu_file.addActions([self.action_save, self.action_save_as])
@@ -358,10 +348,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.menu_file.addAction(self.action_quit)
         self.action_publication_bias.setText("Small-study effects…")
         self.action_save_as.setShortcut(QKeySequence.StandardKey.SaveAs)
-        help_action = QAction("Quick start and shortcuts…", self)
-        help_action.setShortcut(QKeySequence.StandardKey.HelpContents)
-        help_action.triggered.connect(app_error_handler.safe_slot(self.show_quick_start, parent=self))
-        self.menuHelp.insertAction(self.action_about_legal, help_action)
         adaptive_window.register_adaptive_window(self, adaptive_window.WindowRole.MAIN)
         table_view = dataset_table_view.DatasetTableView(self.nav_frame)
         self.verticalLayout.replaceWidget(self.tableView, table_view)
@@ -372,7 +358,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.cl_label = ElidingStatusLabel(
             _format_confidence_level_status(analysis_validation.DEFAULT_CONFIDENCE_LEVEL)
         )
-        self.cl_label.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.cl_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         self.statusbar.addWidget(self.cl_label, 1)
 
         self.frame.hide()
@@ -426,7 +412,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.raise_()
         self.activateWindow()
 
-    def closeEvent(  # ty: ignore[invalid-method-override] -- PyQt6's QMainWindow and QWidget stubs conflict for this runtime-supported override.
+    def closeEvent(
         self, event: QCloseEvent | None
     ) -> None:
         if event is None:
@@ -598,7 +584,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def enable_menu_options_that_require_dataset(self):
         self.toggle_menu_options_that_require_dataset(True)
 
-    def keyPressEvent(  # ty: ignore[invalid-method-override] -- PyQt6's QMainWindow and QWidget stubs conflict for this runtime-supported override.
+    def keyPressEvent(
         self, event: QKeyEvent | None
     ) -> None:
         if event is None:
@@ -681,44 +667,21 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
             self._commit_model_operation(apply_confidence_level)
 
-    def _import_rm5(self):
-        from xml.etree.ElementTree import ParseError
-        from rc_metastudio.rm5_import import review_rm5
-        path, _selected_filter = QFileDialog.getOpenFileName(self, "Import RevMan review", "", "RevMan 5 (*.rm5)")
+    def _import_data(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Import data", "", main_wizard.IMPORT_FILE_FILTER
+        )
         if not path:
             return
+        wizard = main_wizard.MainWizard(parent=self)
         try:
-            dataset = review_rm5(path, self)
-        except (ValueError, KeyError, OSError, ParseError) as error:
-            QMessageBox.warning(self, "Could not import review", str(error))
-            return
-        if dataset is None or not self._authorize_destructive_project_action():
-            return
-        self.set_model(dataset)
-        self.workspace.start_new_document()
-        self.out_path = None
-        self._notify_user_that_data_is_unsaved()
-
-    def _import_csv(self):
-        """Import data from csv file"""
-        path, _ = QFileDialog.getOpenFileName(self, "Import data", "", "Data files (*.csv *.xlsx *.xls)")
-        if not path:
-            return
-        if os.path.splitext(path)[1].lower() not in (".csv", ".xlsx", ".xls"):
-            QMessageBox.information(self, "Import data", "Choose a CSV or Excel file. For .rm5 files, use File > Import RevMan file.")
-            return
-        if not self._authorize_destructive_project_action():
-            return
-        wizard = main_wizard.MainWizard(parent=self, path="csv_import")
-        wizard.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions", effect="OR", metric_choices=[], name="Imported data"))
-        wizard.setStartId(main_wizard.Page_CsvImport)
-        wizard.restart()
-        page = wizard.page(main_wizard.Page_CsvImport)
-        assert isinstance(page, main_wizard.CsvImportPage)
-        page.load_file(path)
-        if wizard.exec():
-            wizard_data = wizard.get_results()
-            self._handle_wizard_results(wizard_data)
+            if not wizard.import_file(path):
+                return
+            if wizard.get_wizard_path() == "rm5_import" or wizard.exec():
+                if self._authorize_destructive_project_action():
+                    self._handle_wizard_results(wizard.get_results())
+        finally:
+            wizard.deleteLater()
 
     def _setup_connections(self, menu_actions=True):
         """Signals & slots"""
@@ -789,7 +752,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
             _connect_action(self.action_about_legal, self.show_about_legal)
             _connect_action(self.action_change_confidence_level, self._change_global_ci)
-            _connect_action(self.action_import_csv, self._import_csv)
+            _connect_action(self.action_import_csv, self._import_data)
 
     def _update_confidence_level_label(self):
         confidence_level = self.model.get_confidence_level()
@@ -904,29 +867,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def show_about_legal(self):
         return about_legal_dialog.AboutLegalDialog(self).exec()
-
-    def show_quick_start(self):
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Quick start")
-        layout = QtWidgets.QVBoxLayout(dialog)
-        text = QtWidgets.QTextBrowser(dialog)
-        text.setPlainText(
-            "Create a dataset, import CSV/Excel data, or open a project.\n"
-            "Enter studies in the table; use the row calculator for study data.\n"
-            "Choose Analyses to run an analysis. Select a result to copy or export.\n\n"
-            "Shortcuts\nCtrl+N  Create dataset\nCtrl+O  Open\nCtrl+S  Save\n"
-            "Ctrl+Shift+S  Save As\nF1  Quick start\n\n"
-            "Results\nCtrl+T  Text/figure view\n"
-            "Ctrl+Shift+C  Copy report\nCtrl+Shift+E  Export selected plot"
-        )
-        layout.addWidget(text)
-        buttons = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.StandardButton.Ok, dialog)
-        buttons.accepted.connect(dialog.accept)
-        layout.addWidget(buttons)
-        available = required(self.screen(), "main window screen").availableGeometry()
-        dialog.resize(min(640, available.width()), min(520, available.height()))
-        dialog.setMaximumSize(available.size())
-        dialog.exec()
 
     def meta_subgroup(self, selected_covariate):
         form = None
@@ -1159,12 +1099,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model.reset_model()
         self.tableView.synchronize_column_widths()
         self.toggle_menu_options_that_require_dataset(self.action_go.isEnabled())
-
-    def _show_summary_of_findings(self):
-        from rc_metastudio.summary_of_findings import SummaryOfFindingsDialog
-        self.summary_of_findings_dialog = SummaryOfFindingsDialog(self)
-        self.summary_of_findings_dialog.setModal(True)
-        self.summary_of_findings_dialog.show()
 
     def analysis(self, results: AnalysisResult, *, change_settings=None):
         try:

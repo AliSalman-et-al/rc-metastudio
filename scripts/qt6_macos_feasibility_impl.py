@@ -10,6 +10,7 @@ from importlib import metadata
 import json
 import os
 from pathlib import Path
+from rc_metastudio.qt_object_guard import required
 import platform
 import re
 import shutil
@@ -129,8 +130,8 @@ def _dependency_versions() -> tuple[dict[str, str], float]:
     )
     versions = {
         "python": platform.python_version(),
-        "pyqt6": QtCore.PYQT_VERSION_STR,
-        "qt": QtCore.qVersion(),
+        "pyqt6": required(QtCore.PYQT_VERSION_STR, "PyQt version"),
+        "qt": required(QtCore.qVersion(), "Qt version"),
         "sip": metadata.version("PyQt6-sip"),
         "r": r_version,
         "rpy2": metadata.version("rpy2"),
@@ -351,7 +352,7 @@ def _maybe_archs(path: Path) -> list[str]:
 def _write_deployment_inventory(app_root: Path, destination: Path) -> dict[str, object]:
     root = app_root.resolve()
     files, total_bytes = _collect_deployment_files(root)
-    files.sort(key=lambda record: record["path"])
+    files.sort(key=lambda record: str(record["path"]))
     inventory = {
         "schema_version": 2,
         "file_count": len(files),
@@ -449,6 +450,7 @@ PACKAGED_ENTRY = r"""from __future__ import annotations
 import json
 import os
 from pathlib import Path
+from rc_metastudio.qt_object_guard import required
 import sys
 from importlib import metadata
 
@@ -496,8 +498,8 @@ report = {
     "rpy2_mode": openrlib.cffi_mode.name,
     "cocoa_plugin": str(cocoa),
     "dependencies": {
-        "pyqt6": QtCore.PYQT_VERSION_STR,
-        "qt": QtCore.qVersion(),
+        "pyqt6": required(QtCore.PYQT_VERSION_STR, "PyQt version"),
+        "qt": required(QtCore.qVersion(), "Qt version"),
         "r": str(ro.r("paste(R.version$major, R.version$minor, sep='.')")[0]),
         "rpy2": metadata.version("rpy2"),
     },

@@ -383,7 +383,7 @@ class DatasetTableView(QtWidgets.QTableView):
         self.model().exclude_all_studies()
         self.model().reset_model()
 
-    def keyPressEvent(  # ty: ignore[invalid-method-override] -- PyQt6's QTableView stub rejects this runtime-supported nullable event override.
+    def keyPressEvent(
         self, event: QKeyEvent | None
     ) -> None:
         if event is None:
@@ -864,7 +864,7 @@ class StudyDelegate(QItemDelegate):
     def __init__(self, parent=None):
         super(StudyDelegate, self).__init__(parent)
 
-    def eventFilter(  # ty: ignore[invalid-method-override] -- PyQt6's delegate stub rejects this runtime-supported QObject override.
+    def eventFilter(
         self, editor: QObject | None, event: QEvent | None
     ) -> bool:
         if (

@@ -154,7 +154,7 @@ def test_profile_removes_exact_surfaces_and_records_evidence(monkeypatch, tmp_pa
     root = fixture_runtime(tmp_path)
     evidence = tmp_path / "profile.json"
     configure_machos(monkeypatch, profile, root)
-    run_profile(profile, root, evidence, tmp_path / "manifest.json", "4.6.1", "arm64")
+    run_profile(profile, root, evidence, tmp_path / "manifest.json", "4.6.2", "arm64")
     data = json.loads(evidence.read_text())
     assert data["post_profile_exclusions"] == [
         "library/grDevices/libs/cairo.so",
@@ -165,7 +165,7 @@ def test_profile_removes_exact_surfaces_and_records_evidence(monkeypatch, tmp_pa
     assert not (root / "library/tcltk").exists()
     assert len(data["excluded_surfaces"]) == 4
     profile.validate_profile_evidence(
-        data, expected_r_version="4.6.1", expected_architecture="arm64"
+        data, expected_r_version="4.6.2", expected_architecture="arm64"
     )
 
 
@@ -180,7 +180,7 @@ def test_profile_rejects_unexpected_x11_owner(monkeypatch, tmp_path):
             root,
             tmp_path / "profile.json",
             tmp_path / "manifest.json",
-            "4.6.1",
+            "4.6.2",
             "arm64",
         )
 
@@ -190,7 +190,7 @@ def test_profile_allows_non_tcl_opt_r_for_relocation(monkeypatch, tmp_path):
     root = fixture_runtime(tmp_path)
     evidence = tmp_path / "profile.json"
     configure_machos(monkeypatch, profile, root, non_tcl_opt_r=True)
-    run_profile(profile, root, evidence, tmp_path / "manifest.json", "4.6.1", "arm64")
+    run_profile(profile, root, evidence, tmp_path / "manifest.json", "4.6.2", "arm64")
     assert (
         "library/extra/libs/extra.so"
         in json.loads(evidence.read_text())["allowed_non_tcl_opt_r_dependencies"]
@@ -234,7 +234,7 @@ def test_profile_rejects_changed_exclusion_dependency_family(
             root,
             tmp_path / "profile.json",
             tmp_path / "manifest.json",
-            "4.6.1",
+            "4.6.2",
             "arm64",
         )
 
@@ -278,7 +278,7 @@ def test_profile_rejects_non_thin_excluded_macho(monkeypatch, tmp_path):
             root,
             tmp_path / "profile.json",
             tmp_path / "manifest.json",
-            "4.6.1",
+            "4.6.2",
             "arm64",
         )
 
@@ -290,7 +290,7 @@ def test_profile_classifies_launcher_separately_from_canonical_lib_r(
     root = fixture_runtime(tmp_path)
     configure_machos(monkeypatch, profile, root)
     evidence = tmp_path / "profile.json"
-    run_profile(profile, root, evidence, tmp_path / "manifest.json", "4.6.1", "arm64")
+    run_profile(profile, root, evidence, tmp_path / "manifest.json", "4.6.2", "arm64")
     source = json.loads(evidence.read_text())["source_framework"]
     assert source["canonical_macho"]["relative_path"] == "lib/libR.dylib"
     assert source["canonical_macho"]["architectures"] == ["arm64"]
@@ -309,7 +309,7 @@ def test_profile_classifies_launcher_separately_from_canonical_lib_r(
         official_root,
         official_evidence,
         tmp_path / "manifest.json",
-        "4.6.1",
+        "4.6.2",
         "arm64",
         official_framework_layout=True,
     )
@@ -334,7 +334,7 @@ def test_profile_rejects_official_layout_without_canonical_lib_r(monkeypatch, tm
             root,
             tmp_path / "profile.json",
             tmp_path / "manifest.json",
-            "4.6.1",
+            "4.6.2",
             "arm64",
         )
 
@@ -383,7 +383,7 @@ def test_profile_rejects_reversed_launcher_and_executable_classification(
             root,
             tmp_path / "profile.json",
             tmp_path / "manifest.json",
-            "4.6.1",
+            "4.6.2",
             "arm64",
         )
 
@@ -398,7 +398,7 @@ def test_profile_rejects_reversed_launcher_and_executable_classification(
             official_root,
             tmp_path / "official-profile.json",
             tmp_path / "manifest.json",
-            "4.6.1",
+            "4.6.2",
             "arm64",
             official_framework_layout=True,
         )
@@ -424,7 +424,7 @@ def test_profile_does_not_send_java_classfiles_to_otool(monkeypatch, tmp_path):
             wrong_alias_root,
             tmp_path / "wrong-alias-profile.json",
             tmp_path / "manifest.json",
-            "4.6.1",
+            "4.6.2",
             "arm64",
             official_framework_layout=True,
         )
@@ -454,7 +454,7 @@ def test_profile_rejects_wrong_architecture_r_executable(monkeypatch, tmp_path):
             root,
             tmp_path / "profile.json",
             tmp_path / "manifest.json",
-            "4.6.1",
+            "4.6.2",
             "arm64",
         )
 
@@ -481,7 +481,7 @@ def test_profile_rejects_wrong_architecture_r_executable(monkeypatch, tmp_path):
             official_root,
             tmp_path / "official-profile.json",
             tmp_path / "manifest.json",
-            "4.6.1",
+            "4.6.2",
             "arm64",
             official_framework_layout=True,
         )

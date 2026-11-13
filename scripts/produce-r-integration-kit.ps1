@@ -54,7 +54,7 @@ $library = Join-Path $stage "library"
 $env:R_HOME = $stage
 $env:R_LIBS = $library
 $env:R_LIBS_USER = $library
-$env:RCMS_CRAN_REPO = "https://packagemanager.posit.co/cran/2026-07-16"
+$env:RCMS_CRAN_REPO = "https://packagemanager.posit.co/cran/2026-11-13"
 $env:RCMS_R_PACKAGE_ARCHIVE_DIR = $archives
 Invoke-NativeLogged -FilePath $rscript -ArgumentList @((Join-Path $repo "scripts\install-r-deps.R")) -LogPath (Join-Path $logs "r-packages.log") -FailureMessage "R binary/source dependency production failed"
 $commit = (& git -C $repo rev-parse HEAD).Trim()
@@ -72,8 +72,8 @@ Invoke-NativeLogged -FilePath "uv" -ArgumentList @("pip", "install", "--python",
 $platlib = (& $PythonExe -c "import sysconfig; print(sysconfig.get_paths()['platlib'])").Trim()
 $bridge = Get-ChildItem -LiteralPath $platlib -Recurse -File -Filter "_rinterface_cffi_api*.pyd" | Select-Object -First 1
 if ($null -eq $bridge) { throw "rpy2 API bridge was not built" }
-& $PythonExe (Join-Path $repo "scripts\index_r_binary_archives.py") --archives $archives --contrib-url "https://packagemanager.posit.co/cran/2026-07-16/bin/windows/contrib/4.6" --package-type win.binary --library $library --output (Join-Path $work "ppm-index.json")
-& $PythonExe (Join-Path $repo "scripts\create_r_kit_provenance.py") --target windows-x64 --official-r-artifact $OfficialRArtifact --official-r-url $OfficialRUrl --official-r-signature-identity $OfficialRSignatureIdentity --official-r-signer-thumbprint $OfficialRSignerThumbprint --official-r-signature-status $OfficialRSignatureStatus --official-r-timestamped --official-r-artifact-type installer --ppm-index (Join-Path $work "ppm-index.json") --ppm-archive-root $archives --rcmetar-archive $rcmetarArchive --rcmetar-url $rcmetarUrl --rcmetar-build-log (Join-Path $logs "rcmetar.log") --rpy2-sdist $Rpy2Sdist --rpy2-sdist-url $Rpy2SdistUrl --rpy2-rinterface-sdist $Rpy2RinterfaceSdist --rpy2-rinterface-sdist-url $Rpy2RinterfaceSdistUrl --rpy2-robjects-sdist $Rpy2RobjectsSdist --rpy2-robjects-sdist-url $Rpy2RobjectsSdistUrl --rpy2-build-log (Join-Path $logs "rpy2.log") --rpy2-api-bridge $bridge.FullName --toolchain "R 4.6.1; Python 3.11.9; uv; MSVC x64" --output $provenance
+& $PythonExe (Join-Path $repo "scripts\index_r_binary_archives.py") --archives $archives --contrib-url "https://packagemanager.posit.co/cran/2026-11-13/bin/windows/contrib/4.6" --package-type win.binary --library $library --output (Join-Path $work "ppm-index.json")
+& $PythonExe (Join-Path $repo "scripts\create_r_kit_provenance.py") --target windows-x64 --official-r-artifact $OfficialRArtifact --official-r-url $OfficialRUrl --official-r-signature-identity $OfficialRSignatureIdentity --official-r-signer-thumbprint $OfficialRSignerThumbprint --official-r-signature-status $OfficialRSignatureStatus --official-r-timestamped --official-r-artifact-type installer --ppm-index (Join-Path $work "ppm-index.json") --ppm-archive-root $archives --rcmetar-archive $rcmetarArchive --rcmetar-url $rcmetarUrl --rcmetar-build-log (Join-Path $logs "rcmetar.log") --rpy2-sdist $Rpy2Sdist --rpy2-sdist-url $Rpy2SdistUrl --rpy2-rinterface-sdist $Rpy2RinterfaceSdist --rpy2-rinterface-sdist-url $Rpy2RinterfaceSdistUrl --rpy2-robjects-sdist $Rpy2RobjectsSdist --rpy2-robjects-sdist-url $Rpy2RobjectsSdistUrl --rpy2-build-log (Join-Path $logs "rpy2.log") --rpy2-api-bridge $bridge.FullName --toolchain "R 4.6.2; Python 3.14.10; uv; MSVC x64" --output $provenance
 $sourcePayload = Join-Path $work "source-payload"
 New-Item -ItemType Directory -Force -Path $sourcePayload | Out-Null
 Copy-Item -LiteralPath $rcmetarArchive,$Rpy2Sdist,$Rpy2RinterfaceSdist,$Rpy2RobjectsSdist -Destination $sourcePayload

@@ -9,8 +9,8 @@ from pathlib import Path
 import sys
 
 
-POLICY_REPOSITORY = "https://packagemanager.posit.co/cran/2026-07-16"
-EXPECTED_R_VERSION = "4.6.1"
+POLICY_REPOSITORY = "https://packagemanager.posit.co/cran/2026-11-13"
+EXPECTED_R_VERSION = "4.6.2"
 EXPECTED_PLATFORMS = {
     "windows-x64": ("Windows", "x86_64", "win.binary", "bin/windows/contrib/4.6"),
     "macos-arm64": (
@@ -21,7 +21,7 @@ EXPECTED_PLATFORMS = {
     ),
 }
 EXPECTED_LINUX_BINARY = {
-    "repository": "https://packagemanager.posit.co/cran/__linux__/noble/2026-07-16",
+    "repository": "https://packagemanager.posit.co/cran/__linux__/noble/2026-11-13",
     "distribution": "noble",
     "r_version_series": "4.6",
     "r_arch": "x86_64",
@@ -58,8 +58,8 @@ def load_policy(manifest_path: Path) -> dict:
         )
     if policy.get("repository") != POLICY_REPOSITORY:
         raise PolicyError(f"normal R package repository must be {POLICY_REPOSITORY}")
-    if policy.get("snapshot") != "2026-07-16":
-        raise PolicyError("normal R package snapshot must be 2026-07-16")
+    if policy.get("snapshot") != "2026-11-13":
+        raise PolicyError("normal R package snapshot must be 2026-11-13")
     if (
         policy.get("normal_install_type") != "binary"
         or policy.get("source_fallback") is not False

@@ -28,6 +28,8 @@ if (linux$distribution != "noble" || linux$r_version_series != "4.6" ||
 repo <- linux$repository
 options(
   repos = c(CRAN = repo),
+  download.file.method = "curl",
+  download.file.extra = "--location --fail --retry 2",
   timeout = 1200,
   warn = 1,
   install.packages.check.source = "no",
@@ -54,7 +56,7 @@ visited <- character()
 binary_packages <- character()
 runtime <- utils::installed.packages()
 priority <- runtime[, "Priority"]
-runtime_packages <- rownames(runtime)[!is.na(priority) & priority %in% c("base", "recommended")]
+runtime_packages <- rownames(runtime)[!is.na(priority) & priority == "base"]
 while (length(queue)) {
   package <- queue[[1L]]
   queue <- queue[-1L]
@@ -82,10 +84,17 @@ while (length(queue)) {
     paste0(package, "_", record[1L, "Version"], ".tar.gz")
   }
   url <- paste0(repo, "/", linux$contrib_path, "/", filename)
-  headers <- tryCatch(base::curlGetHeaders(url, timeout = 120L), error = function(error) {
-    stop("Could not verify Linux package binary for ", package, ": ", conditionMessage(error))
-  })
-  response_status <- attr(headers, "status")
+  headers <- system2("curl", c(
+    "--fail", "--silent", "--show-error", "--location", "--head",
+    "--retry", "2", "--retry-all-errors", "--user-agent", shQuote(getOption("HTTPUserAgent")),
+    "--connect-timeout", "15",
+    "--max-time", "120", shQuote(url)
+  ), stdout = TRUE)
+  if (!is.null(attr(headers, "status"))) {
+    stop("Could not verify Linux package binary for ", package)
+  }
+  response_lines <- grep("^HTTP/", headers, value = TRUE)
+  response_status <- as.integer(strsplit(tail(response_lines, 1L), " +")[[1L]][[2L]])
   if (is.null(response_status) || response_status < 200L || response_status >= 300L) {
     stop("PPM did not return an archive for required package ", package)
   }
@@ -115,7 +124,13 @@ while (length(queue)) {
 message("Installing PPM Linux binaries only: ", paste(sort(binary_packages), collapse = ", "))
 cpu_count <- parallel::detectCores(logical = FALSE)
 if (is.na(cpu_count)) cpu_count <- 2L
-missing <- setdiff(binary_packages, rownames(utils::installed.packages(lib.loc = library)))
+missing_packages <- function() {
+  installed <- utils::installed.packages(lib.loc = library)
+  current <- intersect(binary_packages, rownames(installed))
+  current <- current[installed[current, "Version"] == database[current, "Version"]]
+  setdiff(binary_packages, current)
+}
+missing <- missing_packages()
 for (attempt in seq_len(3L)) {
   if (!length(missing)) break
   message("Linux binary install attempt ", attempt, ": ", paste(missing, collapse = ", "))
@@ -128,7 +143,7 @@ for (attempt in seq_len(3L)) {
     Ncpus = max(1L, cpu_count - 1L),
     quiet = FALSE
   )
-  missing <- setdiff(binary_packages, rownames(utils::installed.packages(lib.loc = library)))
+  missing <- missing_packages()
 }
 
 if (length(missing)) {

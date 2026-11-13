@@ -736,7 +736,7 @@ def test_safe_application_notify_reports_event_handler_exceptions(
     class RaisingWidget(QWidget):
         # PyQt's runtime dispatch accepts this exact override; the bundled
         # stubs expose an incompatible descriptor signature.
-        def event(self, event: QtCore.QEvent) -> bool:  # ty: ignore[invalid-method-override]
+        def event(self, event: QtCore.QEvent) -> bool:  # ty: ignore[incompatible-method-override]
             raise RuntimeError("event exploded")
 
     widget = RaisingWidget()

@@ -12,7 +12,7 @@ from pathlib import Path
 
 DEPENDENCY_MANIFEST = Path("config/r-dependencies.json")
 DRIFT_MANIFEST = Path("config/r-statistical-drift.json")
-EXPECTED_R_TARGET = "4.6.1"
+EXPECTED_R_TARGET = "4.6.2"
 
 DIRECT_DEPENDENCY_REQUIRED_FIELDS = {
     "name",

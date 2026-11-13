@@ -241,7 +241,8 @@ def run_typing(build_root: Path) -> None:
         "tests/python/gui",
     ):
         command += ["--extra-search-path", path]
-    command += ["src/rc_metastudio", "scripts", "tests", "r/RCMetaR/inst/qa"]
+    command += ["src/rc_metastudio", "scripts", "tests", "r/RCMetaR/inst/qa",
+                ".agents/skills/verify-rcms/scripts"]
     evidence = REPO_ROOT / "artifacts/verification/typing" / (datetime.now().strftime("%Y%m%dT%H%M%S") + "-" + uuid4().hex[:8])
     evidence.mkdir(parents=True)
     write_step("$ " + " ".join(command))

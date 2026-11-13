@@ -145,8 +145,10 @@ def _continuous_result(value: object, operation: str) -> ContinuousImputationRes
     if type(succeeded) is not bool:
         raise _boundary_error(operation, "succeeded must be boolean")
     result: ContinuousImputationResult = {"succeeded": succeeded}
-    result.update(_optional_continuous_fields(raw, ("output",), operation))
-    result.update(_optional_comment(raw, operation))
+    if "output" in raw:
+        result["output"] = _continuous_values(raw["output"], operation)
+    if "comment" in raw:
+        result["comment"] = _optional_comment(raw, operation)["comment"]
     _require_success_fields(
         succeeded, result, {"output"}, operation, "succeeded results require output"
     )
@@ -168,8 +170,14 @@ def _pre_post_result(value: object, operation: str) -> PrePostImputationResult:
     if type(succeeded) is not bool:
         raise _boundary_error(operation, "succeeded must be boolean")
     result: PrePostImputationResult = {"succeeded": succeeded}
-    result.update(_optional_continuous_fields(raw, ("output", "pre", "post"), operation))
-    result.update(_optional_comment(raw, operation))
+    if "output" in raw:
+        result["output"] = _continuous_values(raw["output"], operation)
+    if "pre" in raw:
+        result["pre"] = _continuous_values(raw["pre"], operation)
+    if "post" in raw:
+        result["post"] = _continuous_values(raw["post"], operation)
+    if "comment" in raw:
+        result["comment"] = _optional_comment(raw, operation)["comment"]
     _require_success_fields(
         succeeded,
         result,
@@ -193,16 +201,6 @@ def _check_result_fields(
     unknown = set(raw) - allowed
     if unknown:
         raise _boundary_error(operation, f"unexpected fields: {sorted(unknown)}")
-
-
-def _optional_continuous_fields(
-    raw: Mapping[str, object], fields: tuple[str, ...], operation: str
-) -> dict[str, ContinuousValues]:
-    return {
-        field: _continuous_values(raw[field], operation)
-        for field in fields
-        if field in raw
-    }
 
 
 def _optional_comment(

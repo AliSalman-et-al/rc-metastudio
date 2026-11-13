@@ -9,12 +9,12 @@ Users open an `.rcms` project, edit studies, undo or redo changes, save/reopen t
 - The same `sheets` drive opens a project with omitted raw arms, enters measurements, undoes/redoes and saves/reopens them. Calculator and covariate-conversion drives assert that accepted analysis units retain their canonical sheet owner. Workspace operations now abort on exceptions; CSV failure recovery uses the same owner rather than a second workspace. Undo retains the latest 100 committed changes, with one stored project snapshot per step.
 - XLSX import streams formula/value rows and merge/visibility metadata. It rejects worksheet extents above 100,000 rows, 512 columns or 1,000,000 cells before materializing the grid. Second-open failure cleanup and headerless first-row date handling have separate parser failure checks.
 - `project-table-covariates` creates numeric Dose and factor Region through their dialogs, pastes/copies a 19×2 clipboard rectangle, undoes/redoes once, sorts through the actual name-header context menu, and saves/reopens. Compare study identity, inclusion and attached covariates before/after. Sorting changes display order, not canonical dataset identity. Run the reopened Dose regression and Region subgroup with independent numerical fits. It also converts/edits a covariate type, renames/deletes/undoes it, reopens the saved result and checks the other sheet remains unchanged.
-- `project-shell` opens through the real Open action with a test-owned picker path, edits a name, cancels a dirty-open prompt, saves through Save As, opens the recent-file action, and reads the actual About/Legal dialog. The accepted name and clean state must survive.
+- `project-shell` opens through the real Open action with a test-owned picker path, edits a name, cancels a dirty-open prompt, saves through Save As, opens the recent-file action, and reads the actual About dialog. The accepted name and clean state must survive.
 - `ux-improvements` checks sorted paste by stable study identity, sparse fill/copy, quoted clipboard round trips and rejected-paste rollback. Sorted paste and sparse fill include undo/redo, selected-cell clearing and save/reopen. Its clipboard substitute isolates these checks from the user's clipboard.
 
 These add to `editing`, `csv`, and the eight original New Dataset workflows plus the HR/IRR metric variants. They do not establish structural deletion, every navigation state, all dirty-close responses, shortcuts, native picker interaction, earlier import pages, or Excel import. Use the targeted recipes below when those paths change.
 
-`project-shell` verifies Escape dismisses Quick start and cancels Create dataset; `sheets` verifies Escape discards an inline sheet rename.
+`project-shell` verifies Escape cancels Create dataset; `sheets` verifies Escape discards an inline sheet rename.
 
 ## Sub-features
 
@@ -54,7 +54,7 @@ Preconditions: doctor passes; `sample_projects/amino.rcms` is readable; no user 
 These are source-backed targeted recipes, not claims that the ordinary editing scenario exercised them. Owners: `main_window.py`, `main_wizard.py`, `dataset_table_view.py`, `edit_dialog.py`.
 
 - **Dataset creation:** `action_new_dataset` opens `MainWizard`; click a type button on `Page_DataType`, Next, choose `metric_cbo_box` by item data, Next, enter `outcome_name_LineEdit`, Finish. Eight automated cases are in analysis.md. Test Back/Cancel and invalid names when changing wizard flow. Empty and one-study states need explicit analysis availability/results checks.
-- **Import:** `action_import_csv` starts the data-type/metric/name/import sequence. On the import page use `select_file_btn`, `from_excel_chkbx`, `has_headers_chkbx`, `delimter_le` (actual spelling), `quotechar_le`, and `preview_table`. Malformed/schema-invalid input must leave completion disabled; corrected input must recover. Require correct raw columns and covariate types after reopening, not only preview rows.
+- **Import:** `action_import_csv` is the unified Import data action: pick CSV/XLSX/RM5, review in the matching wizard, then authorize project replacement on acceptance. The mapping page can select another supported file, including switching to RevMan review. On the import page use `select_file_btn`, `from_excel_chkbx`, `has_headers_chkbx`, `delimter_le` (actual spelling), `quotechar_le`, and `preview_table`. Malformed/schema-invalid input must leave completion disabled; corrected input must recover. Require correct raw columns and covariate types after reopening, not only preview rows.
 - **Structure:** `action_edit` opens `EditDialog`: `outcome_list`, `follow_up_list`, `group_list`, `study_list`, `covariate_list` with corresponding add/remove buttons. Add/rename/remove items, cancel a second draft, accept, undo/redo, and reopen. Assert retained study identity/data across multiple outcomes/follow-ups/groups. Deletion must be confirmed and undoable where supported.
 - **Navigation:** `nav_up_btn`/`nav_down_btn` choose dimension, `nav_right_btn`/`nav_left_btn` choose item, `nav_add_btn` adds one. Add dialogs use `outcome_name_le`, `datatype_cbo_box`, `group_name_le`, `follow_up_name_le`. Bounds disable the appropriate controls; switching back must restore the original data and metric.
 - **Covariates:** `action_add_covariate` opens `AddCovariateDialog.covariate_name_le`/`datatype_cbo_box`. Header context choices rename/delete or create a factor/continuous copy. Compare values, types and identity, undo/redo and reopen. Use the covariate in subgroup/regression to prove it crosses the analysis boundary.
@@ -70,7 +70,7 @@ selected sheet. These paths use isolated settings and owned output files.
 - **Table:** inclusion checkbox, header Include All/Exclude All, row deletion confirmation, sorting, rectangular copy/paste and clear. Trigger `action_copy`/`action_paste`; assert clipboard/live values, trailing-row expansion and one undo transaction. Invalid bulk data must roll back the whole operation. Sorting must retain values, covariates and inclusion attached to study IDs, not row positions. Auto-fit must not alter data.
 - **Confidence:** `action_change_confidence_level` → `ConfidenceLevelDialog.confidence_level_spinbox` → `button_box` OK. Check `cl_label`, actual analysis intervals, undo/redo, save/reopen and inherited parameters.
 - **Dirty actions:** Open/New/Import/Close/Quit on an unsaved project: Cancel preserves live project and destination; No proceeds; Yes proceeds only after successful save. Cancelled/failed Save As must preserve the unsaved project. Use test-owned files and record the actual prompt/action/recovered state.
-- **Entry and shell:** drive Open/Save actions with only picker paths substituted, their standard shortcuts, `action_open_recent_2.actions()` and QAction `.data()`, and the main start page `start_page.create_button` / `import_button` / `open_button` / recent-project buttons. Open `action_about_legal`, read tabs/links, close it, and confirm application still responds. Restore isolated settings/geometry; never use the user's preferences as fixtures.
+- **Entry and shell:** drive Open/Save actions with only picker paths substituted, their standard shortcuts, `action_open_recent_2.actions()` and QAction `.data()`, and the main start page `start_page.create_button` / `import_button` / `open_button` / recent-project buttons. Open `action_about_legal`, read the version and Credits and licenses link, close it, and confirm application still responds. Restore isolated settings/geometry; never use the user's preferences as fixtures.
 
 
 ## CSV entry and grid guidance
@@ -158,7 +158,7 @@ parameters must follow the arm order. Existing HR/IRR swap coverage remains.
 
 ### Slice 7 import evidence
 
-`xlsx-import` now exercises toolbar picker cancellation and immediate loaded-page
+`xlsx-import` now exercises unified picker cancellation and immediate loaded-page
 entry, multi-sheet selection, hidden rows/columns, protected/corrupt/formula/merged
 workbook rejection, one-step import undo/redo and normalized project equality with
 CSV. It asserts Preview first, the Import data title, hidden CSV options for XLSX

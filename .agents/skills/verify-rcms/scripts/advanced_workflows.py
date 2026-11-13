@@ -10,7 +10,9 @@ from unittest.mock import patch
 from analysis_matrix import run as matrix
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtSvg import QSvgRenderer
-from PyQt6.QtTest import QTest
+from typing import cast
+
+from tests.python.gui.qt_test_support import key_click, key_clicks, mouse_click, wait
 
 PLOT_PRODUCERS = {
     "forest": "analysis-binary.fixed.inv.var",
@@ -75,7 +77,7 @@ ROOT = Path(__file__).resolve().parents[4]
 
 def click(app, widget):
     assert widget.isEnabled(), widget.objectName()
-    QTest.mouseClick(widget, QtCore.Qt.MouseButton.LeftButton)
+    mouse_click(widget, QtCore.Qt.MouseButton.LeftButton)
     app.processEvents()
 
 
@@ -109,7 +111,7 @@ def modal(app, kind, drive, launch):
         launch()
         deadline = QtCore.QDeadlineTimer(5000)
         while not completed and not deadline.hasExpired():
-            QTest.qWait(10)
+            wait(10)
         assert completed, ("modal did not open", kind)
         assert not errors, errors
     finally:
@@ -275,7 +277,7 @@ def confidence_inclusion(app, window, record):
     model = window.model
     index = model.index(0, model.INCLUDE_STUDY)
     window.tableView.setCurrentIndex(index)
-    QTest.keyClick(window.tableView, QtCore.Qt.Key.Key_Space)
+    key_click(window.tableView, QtCore.Qt.Key.Key_Space)
     app.processEvents()
     assert not model.get_studies(False)[0].include
     assert sum(s.include for s in model.get_studies(False)) == 18
@@ -555,7 +557,7 @@ def plots(app, window, family, record, *, view=None):
 
     def edit(dialog):
         if funnel:
-            from tests.python.gui.qt_test_support import wheel_scroll, key_click
+            from tests.python.gui.qt_test_support import wheel_scroll
             spinner = dialog.sampling_confidence_spin
             original_confidence = spinner.value()
             spinner.setFocus()
@@ -644,7 +646,20 @@ def plots(app, window, family, record, *, view=None):
             control = getattr(dialog, heading, None)
             if control is not None and control.isVisible():
                 text = control.text() or control.placeholderText()
-                assert control.contentsRect().width() - 8 >= control.fontMetrics().horizontalAdvance(text), (heading, text, control.width())
+                if heading == "figure_caption":
+                    # Captions allow 1000 characters in a screen-bounded line edit.
+                    control.setFocus()
+                    key_click(control, QtCore.Qt.Key.Key_Home)
+                    assert control.cursorPosition() == 0
+                    key_click(control, QtCore.Qt.Key.Key_End)
+                    assert control.cursorPosition() == len(text)
+                    key_click(control, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
+                    assert control.selectedText() == text
+                    assert control.text() == text
+                    record("caption-keyboard-reachability", dialog, family=family, text=text,
+                           field_width=control.width(), text_width=control.fontMetrics().horizontalAdvance(text))
+                else:
+                    assert control.contentsRect().width() - 8 >= control.fontMetrics().horizontalAdvance(text), (heading, text, control.width())
         field.setText(label)
         assert dialog.figure_caption.isVisible(), "figure caption cannot be edited"
         assert dialog.figure_caption.text(), "standalone figure lacks context"
@@ -679,7 +694,7 @@ def plots(app, window, family, record, *, view=None):
             app.processEvents()
         dialog.content_scroll.ensureWidgetVisible(dialog.figure_caption)
         dialog.repaint()
-        QTest.qWait(250)
+        wait(250)
         record("family-editor-controls", dialog, family=family, capture_surface="desktop-composite")
         click(app, box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
         assert path.read_bytes() != before
@@ -772,7 +787,7 @@ def plots(app, window, family, record, *, view=None):
             plots={artifact.title: str(path)},
         )
         field.setText("Uncommitted draft")
-        QTest.mouseClick(
+        mouse_click(
             box.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel),
             QtCore.Qt.MouseButton.LeftButton,
         )
@@ -787,10 +802,10 @@ def plots(app, window, family, record, *, view=None):
                     self.count += 1
                 return False
         viewport = view.graphics_view.viewport()
-        QTest.qWait(50)
+        wait(50)
         probe = ResizeProbe(viewport)
         viewport.installEventFilter(probe)
-        QTest.qWait(100)
+        wait(100)
         viewport.removeEventFilter(probe)
         assert probe.count <= 2, ('figure fit keeps resizing its viewport', probe.count)
         record('figure-viewport-settled', view, resize_events=probe.count,
@@ -810,7 +825,7 @@ def plots(app, window, family, record, *, view=None):
                 return
             try:
                 action = next(a for a in menu.actions() if a.text() == action_text)
-                QTest.mouseClick(
+                mouse_click(
                     menu,
                     QtCore.Qt.MouseButton.LeftButton,
                     pos=menu.actionGeometry(action).center(),
@@ -830,7 +845,7 @@ def plots(app, window, family, record, *, view=None):
         )
         QtWidgets.QApplication.sendEvent(viewport, event)
         while not chosen and not errors and not deadline.hasExpired():
-            QTest.qWait(10)
+            wait(10)
         assert chosen and not errors, (action_text, errors)
 
     modal(
@@ -849,7 +864,7 @@ def plots(app, window, family, record, *, view=None):
         assert (dialog.x_label_edit if funnel else dialog.x_lbl_le).text() == label
         (dialog.x_label_edit if funnel else dialog.x_lbl_le).setText("Second draft")
         dialog.figure_caption.clear()
-        QTest.mouseClick(
+        mouse_click(
             (dialog.button_box if funnel else dialog.buttonBox).button(
                 QtWidgets.QDialogButtonBox.StandardButton.Cancel
             ),
@@ -1021,9 +1036,8 @@ def export_formats(app, view, directory, family, record, invoke=None):
                 assert (
                     min(
                         channel[0]
-                        for channel in image.resize((256, 256))
-                        .convert("RGB")
-                        .getextrema()
+                        for channel in cast(tuple[tuple[int, int], ...],
+                            image.resize((256, 256)).convert("RGB").getextrema())
                     )
                     < 200
                 )
@@ -1096,10 +1110,10 @@ def calculators(app, window, mode, record):
         app.processEvents()
         editor = next((field for field in table.findChildren(QtWidgets.QLineEdit) if field.isVisible()), None)
         assert editor is not None, (mode, row, column)
-        QTest.keyClick(editor, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
-        QTest.keyClick(editor, QtCore.Qt.Key.Key_Backspace)
-        QTest.keyClicks(editor, str(value))
-        QTest.keyClick(editor, QtCore.Qt.Key.Key_Tab)
+        key_click(editor, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
+        key_click(editor, QtCore.Qt.Key.Key_Backspace)
+        key_clicks(editor, str(value))
+        key_click(editor, QtCore.Qt.Key.Key_Tab)
         app.processEvents()
 
     def text(field, value):
@@ -1107,11 +1121,11 @@ def calculators(app, window, mode, record):
         field.setFocus()
         deadline = QtCore.QDeadlineTimer(5000)
         while not field.hasFocus() and not deadline.hasExpired():
-            QTest.qWait(10)
+            wait(10)
         assert field.hasFocus(), ("keyboard editor did not gain focus", mode, field.objectName())
-        QTest.keyClick(field, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
-        QTest.keyClicks(field, str(value))
-        QTest.keyClick(field, QtCore.Qt.Key.Key_Tab)
+        key_click(field, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
+        key_clicks(field, str(value))
+        key_click(field, QtCore.Qt.Key.Key_Tab)
         app.processEvents()
 
     def preview(dialog, metric):
@@ -1342,11 +1356,11 @@ def calculators(app, window, mode, record):
                 text(dialog.upper_text_box, 1)
                 text(dialog.lower_text_box, -1)
                 dialog.effect_text_box.setFocus()
-                QTest.keyClick(dialog.effect_text_box, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
-                QTest.keyClicks(dialog.effect_text_box, "0.5")
-                QTest.keyClick(dialog.input_mode_combo, QtCore.Qt.Key.Key_Home)
+                key_click(dialog.effect_text_box, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
+                key_clicks(dialog.effect_text_box, "0.5")
+                key_click(dialog.input_mode_combo, QtCore.Qt.Key.Key_Home)
                 app.processEvents()
-                QTest.keyClick(dialog.input_mode_combo, QtCore.Qt.Key.Key_End)
+                key_click(dialog.input_mode_combo, QtCore.Qt.Key.Key_End)
                 app.processEvents()
                 record("pending-estimate-roundtrip", dialog, estimate=dialog.effect_text_box.text())
                 assert float(dialog.effect_text_box.text()) == .5
@@ -1372,13 +1386,13 @@ def calculators(app, window, mode, record):
                 for mode_name in (("summary", "pre-post") if family == "continuous" else ("counts",)):
                     # A mode shortcut can arrive while the last editor still has focus.
                     dialog.effect_text_box.setFocus()
-                    QTest.keyClick(dialog.effect_text_box, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
-                    QTest.keyClicks(dialog.effect_text_box, str(values[0]))
-                    QTest.keyClick(dialog.input_mode_combo, QtCore.Qt.Key.Key_Home)
+                    key_click(dialog.effect_text_box, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
+                    key_clicks(dialog.effect_text_box, str(values[0]))
+                    key_click(dialog.input_mode_combo, QtCore.Qt.Key.Key_Home)
                     if mode_name == "pre-post":
-                        QTest.keyClick(dialog.input_mode_combo, QtCore.Qt.Key.Key_Down)
+                        key_click(dialog.input_mode_combo, QtCore.Qt.Key.Key_Down)
                     app.processEvents()
-                    QTest.keyClick(dialog.input_mode_combo, QtCore.Qt.Key.Key_End)
+                    key_click(dialog.input_mode_combo, QtCore.Qt.Key.Key_End)
                     app.processEvents()
                     actual = [float(field.text()) for field in
                               (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box)]
@@ -1429,11 +1443,11 @@ def calculators(app, window, mode, record):
             click(app, dialog.clear_button)
             combo = dialog.effect_combo_box
             combo.setCurrentIndex(combo.findData("MD"))
-            for table, values in (
+            for table, raw_values in (
                 (dialog.g1_pre_post_table, ((20, 10, 2), (20, 14, 3))),
                 (dialog.g2_pre_post_table, ((20, 9, 2), (20, 10, 2))),
             ):
-                for row, fields in enumerate(values):
+                for row, fields in enumerate(raw_values):
                     for column, value in enumerate(fields):
                         cell(table, row, column, value)
             raw_zero = dialog.analysis_unit.get_raw_data_for_arms(
@@ -1609,7 +1623,7 @@ def calculators(app, window, mode, record):
             header.viewport().width() // 2,
             header.sectionViewportPosition(0) + header.sectionSize(0) // 2,
         )
-        QTest.mouseClick(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=point)
+        mouse_click(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=point)
 
     acceptance_notifications = []
 
@@ -1923,7 +1937,7 @@ def table_covariates(app, window, record):
         action = next(
             a for a in menu.actions() if a.text() == "Sort studies by study name"
         )
-        QTest.mouseClick(
+        mouse_click(
             menu,
             QtCore.Qt.MouseButton.LeftButton,
             pos=menu.actionGeometry(action).center(),
@@ -2090,45 +2104,23 @@ def table_covariates(app, window, record):
 def shell(app, window, record):
     from rc_metastudio import main_wizard
 
-    guide_errors = []
-    def read_guide():
-        dialog = app.activeModalWidget()
-        try:
-            assert isinstance(dialog, QtWidgets.QDialog)
-            browser = dialog.findChild(QtWidgets.QTextBrowser)
-            assert browser is not None
-            guide = browser.toPlainText()
-            assert "Ctrl+Shift+S" in guide and "F1" in guide
-            assert dialog.screen().availableGeometry().contains(dialog.frameGeometry())
-            record("ux-quick-start", dialog, text=guide)
-            QTest.keyClick(dialog, QtCore.Qt.Key.Key_Escape)
-            assert not dialog.isVisible(), "Escape must close Quick start"
-            record("ux-quick-start-escape", window, closed=True)
-        except Exception as error:
-            guide_errors.append(str(error))
-        finally:
-            if dialog is not None:
-                dialog.reject()
-    QtCore.QTimer.singleShot(0, read_guide)
-    next(action for action in window.menuHelp.actions() if "Quick start" in action.text()).trigger()
-    assert not guide_errors, guide_errors
-
+    wizard_errors = []
     def cancel_wizard():
         dialog = app.activeModalWidget()
         try:
             assert isinstance(dialog, main_wizard.MainWizard)
             record("ux-create-dataset-before-escape", dialog)
-            QTest.keyClick(dialog, QtCore.Qt.Key.Key_Escape)
+            key_click(dialog, QtCore.Qt.Key.Key_Escape)
             assert not dialog.isVisible(), "Escape must cancel Create dataset"
             record("ux-create-dataset-escape", window, closed=True)
         except Exception as error:
-            guide_errors.append(str(error))
+            wizard_errors.append(str(error))
         finally:
             if dialog is not None:
                 dialog.reject()
     QtCore.QTimer.singleShot(0, cancel_wizard)
     window.action_new_dataset.trigger()
-    assert not guide_errors, guide_errors
+    assert not wizard_errors, wizard_errors
     from rc_metastudio.about_legal_dialog import AboutLegalDialog
     from rc_metastudio.settings import restore_main_window_placement
     from rc_metastudio.settings import save_main_window_placement
@@ -2144,7 +2136,7 @@ def shell(app, window, record):
                     return
             else:
                 stable.invalidate()
-            QTest.qWait(10)
+            wait(10)
         assert predicate(), "native window state did not settle within five seconds"
 
     def luminance(color):
@@ -2177,7 +2169,7 @@ def shell(app, window, record):
     window.showNormal()
     deadline = QtCore.QDeadlineTimer(5000)
     while window.size() != remembered_size and not deadline.hasExpired():
-        QTest.qWait(10)
+        wait(10)
     assert window.size() == remembered_size, (window.size(), remembered_size)
     record("startup-restored-normal-geometry", window, width=window.width(), height=window.height())
     window.showFullScreen()
@@ -2204,7 +2196,7 @@ def shell(app, window, record):
         assert message.button(QtWidgets.QMessageBox.StandardButton.Discard).text() == "Discard"
         assert message.escapeButton() == message.button(QtWidgets.QMessageBox.StandardButton.Cancel)
         record("dirty-open-prompt", message, message=message.text())
-        QTest.keyClick(message, QtCore.Qt.Key.Key_Escape)
+        key_click(message, QtCore.Qt.Key.Key_Escape)
 
     with patch.object(
         QtWidgets.QFileDialog,
@@ -2231,10 +2223,13 @@ def shell(app, window, record):
     def about(dialog):
         text = dialog.content_scroll_area.toPlainText()
         assert "RC MetaStudio" in text
+        assert dialog.windowTitle() == "About"
+        assert window.action_about_legal.text() == "About"
+        assert "Credits and licenses" in text
         app.processEvents()
         if dialog.screen().availableGeometry().height() >= 700:
             assert dialog.content_scroll_area.verticalScrollBar().maximum() == 0, ('About content hidden', dialog.size())
-        record("about-legal", dialog, text=text)
+        record("about", dialog, text=text)
         dialog.reject()
 
     modal(app, AboutLegalDialog, about, window.action_about_legal.trigger)

@@ -121,7 +121,7 @@ def test_r_verifiers_preserve_symlinked_python_identity(monkeypatch, tmp_path):
                 module,
                 "binary_dependency_policy",
                 lambda _root: {
-                    "repository": "https://packagemanager.posit.co/cran/2026-07-16"
+                    "repository": "https://packagemanager.posit.co/cran/2026-11-13"
                 },
             )
             if hasattr(module, "verify_rpy2_identities"):
@@ -335,7 +335,7 @@ def test_default_r_dependency_install_uses_script_file_and_isolated_environment(
         REPO_ROOT,
         Path("Rscript"),
         library,
-        "https://packagemanager.posit.co/cran/2026-07-16",
+        "https://packagemanager.posit.co/cran/2026-11-13",
         {"R_LIBS_USER": str(library)},
     )
 
@@ -343,7 +343,7 @@ def test_default_r_dependency_install_uses_script_file_and_isolated_environment(
     assert captured["env"]["R_LIBS_USER"] == str(library)
     assert captured["command"][0] == Path("Rscript")
     assert captured["command"][2:] == [REPO_ROOT, library]
-    assert captured["env"]["RCMS_CRAN_REPO"].endswith("/cran/2026-07-16")
+    assert captured["env"]["RCMS_CRAN_REPO"].endswith("/cran/2026-11-13")
     assert captured["env"]["RCMS_POLICY_PYTHON"] == sys.executable
 
 
@@ -422,10 +422,10 @@ def test_default_r_RCMetaR_install_preserves_dependency_libraries(
 def test_native_r_binary_policy_fails_closed_without_source_fallback(tmp_path):
     rscript = shutil.which("Rscript")
     if rscript is None and sys.platform == "win32":
-        candidate = Path("C:/Program Files/R/R-4.6.1/bin/Rscript.exe")
+        candidate = Path("C:/Program Files/R/R-4.6.2/bin/Rscript.exe")
         rscript = str(candidate) if candidate.is_file() else None
     assert rscript is not None, (
-        "Rscript 4.6.1 is required by the Fast verification environment"
+        "Rscript 4.6.2 is required by the Fast verification environment"
     )
 
     checked_installer = subprocess.run(
@@ -449,7 +449,7 @@ expect_error <- function(expression, pattern) {{
     stop("Expected error containing '", pattern, "'")
   }}
 }}
-expect_error(assert_rcms_binary_runtime(policy, r_version = "4.6.0"), "requires R 4.6.1")
+expect_error(assert_rcms_binary_runtime(policy, r_version = "4.6.0"), "requires R 4.6.2")
 expect_error(assert_rcms_binary_runtime(policy, arch = "unsupported"), "Unsupported R binary target")
 expect_error(assert_rcms_binary_runtime(policy, pkg_type = "source"), "Unexpected native R binary type")
 
@@ -579,7 +579,7 @@ Sys.unsetenv("RCMS_R_BINARY_EVIDENCE")
 """
     env = dict(os.environ)
     env["RCMS_POLICY_PYTHON"] = sys.executable
-    env["RCMS_CRAN_REPO"] = "https://packagemanager.posit.co/cran/2026-07-16"
+    env["RCMS_CRAN_REPO"] = "https://packagemanager.posit.co/cran/2026-11-13"
     policy_test = tmp_path / "native-binary-policy-test.R"
     policy_test.write_text(r_code, encoding="utf-8")
     result = subprocess.run(

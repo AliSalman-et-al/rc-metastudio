@@ -3,6 +3,8 @@
 """Numeric analysis parameters and input validation."""
 
 import math
+from collections.abc import Buffer
+from typing import SupportsFloat, SupportsIndex, SupportsInt, cast
 
 
 EMPTY_VALS = ("", None)  # these indicate an empty row/cell
@@ -142,7 +144,8 @@ def parse_plot_bound(bound: str | int | float | None) -> float | bool:
 
 def is_float_convertible(value: object) -> bool:
     try:
-        float(value)  # type: ignore[arg-type] -- This predicate intentionally accepts user input of unknown type.
+        # The conversion probes unknown user input and catches unsupported protocols.
+        float(cast(str | Buffer | SupportsFloat | SupportsIndex, value))
         return True
     except (TypeError, ValueError):
         return False
@@ -154,11 +157,11 @@ def is_empty(value: object | None) -> bool:
 
 def is_an_int(value: object) -> bool:
     try:
-        int(value)  # type: ignore[call-overload] -- This predicate intentionally accepts user input of unknown type.
+        int(cast(str | Buffer | SupportsInt | SupportsIndex, value))
         return True
     except (TypeError, ValueError):
         try:
-            numeric_value = float(value)  # type: ignore[arg-type] -- This predicate intentionally accepts user input of unknown type.
+            numeric_value = float(cast(str | Buffer | SupportsFloat | SupportsIndex, value))
             return numeric_value.is_integer()
         except (TypeError, ValueError):
             return False

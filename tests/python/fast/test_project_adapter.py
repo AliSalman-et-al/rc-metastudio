@@ -32,10 +32,10 @@ def test_raw_values_added_to_omitted_arms_are_dirty_and_survive_reopen(tmp_path)
 def _legacy_multi_arm_project(family: str) -> JsonObject:
     data_type = {"binary": 0, "continuous": 1}[family]
     subtype = {"binary": "proportions", "continuous": "means"}[family]
-    raw_values = {
+    raw_values: dict[str, list[JsonValue]] = {
         "binary": [[1, 10], [2, 20], [3, 30]],
         "continuous": [[10, 1.0, 0.5], [20, 2.0, 0.75], [30, 3.0, 1.0]],
-    }[family]
+    }
     return {
         "schema_version": 1,
         "dataset": {
@@ -63,7 +63,7 @@ def _legacy_multi_arm_project(family: str) -> JsonObject:
                                     "name": f"Arm {index + 1}",
                                     "raw_data": raw,
                                 }
-                                for index, raw in enumerate(raw_values)
+                                for index, raw in enumerate(raw_values[family])
                             ],
                             "outcome": "Outcome",
                         }
@@ -158,7 +158,7 @@ def test_reader_derives_repeatable_sheet_identities_for_legacy_projects():
 def test_document_to_runtime_project_reconstructs_state_and_selection():
     project = _multi_arm_project("binary")
     project["sheets"][0]["settings"] = {"metric": "OR", "confidence_level": 95., "arms": ["arm:0", "arm:1"]}
-    state = {"schema_version": 3, "current_sheet_id": "sheet"}
+    state: JsonObject = {"schema_version": 3, "current_sheet_id": "sheet"}
     runtime = project_adapter.document_to_runtime_project(ProjectDocument(3, project, state))
     assert isinstance(runtime, project_adapter.RuntimeProject)
     assert [s.name for s in runtime.dataset.sheets] == ["Outcome"]

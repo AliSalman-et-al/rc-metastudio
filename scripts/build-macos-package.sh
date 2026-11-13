@@ -210,7 +210,7 @@ pre_sign_graph_path="$qualification_root/pre-sign-native-graph.json"
 preflight_report_path="$qualification_root/macos-r-pyinstaller-toc-preflight.json"
 archive_inspection_path="$artifact_dir/$artifact_name-archive-inspection.json"
 qualification_evidence_path="$artifact_dir/$artifact_name-evidence.json"
-pinned_cran_repo="https://packagemanager.posit.co/cran/2026-07-16"
+pinned_cran_repo="https://packagemanager.posit.co/cran/2026-11-13"
 cran_repo="${RCMS_CRAN_REPO:-$pinned_cran_repo}"
 if [ "$cran_repo" != "$pinned_cran_repo" ]; then
   echo "RCMS_CRAN_REPO must match the manifest snapshot: $pinned_cran_repo" >&2
@@ -300,7 +300,7 @@ if [ "$skip_clean" -eq 0 ]; then
 fi
 rm -rf "$qualification_root"
 mkdir -p "$qualification_root"
-r_version="4.6.1"
+r_version="4.6.2"
 "$python_exe" - "$private_r_framework" "$r_version" <<'PY'
 from pathlib import Path
 import sys
@@ -382,10 +382,10 @@ archive_root_dir="$archive_staging_root/$archive_root_name"
 "$python_exe" - <<'PY'
 import PyInstaller
 import sys
-if sys.version_info[:2] != (3, 11):
-    raise SystemExit("macOS packaging requires Python 3.11.")
-if PyInstaller.__version__ != "6.21.0":
-    raise SystemExit("macOS packaging requires PyInstaller 6.21.0.")
+if sys.version_info[:2] != (3, 14):
+    raise SystemExit("macOS packaging requires Python 3.14.")
+if PyInstaller.__version__ != "6.22.3":
+    raise SystemExit("macOS packaging requires PyInstaller 6.22.3.")
 PY
 
 mkdir -p "$artifact_dir"
@@ -478,7 +478,7 @@ fi
 step "Building the target-native rpy2 API bridge against completed staged R"
 R_HOME="$r_home" PATH="$r_home/bin:$PATH" RPY2_CFFI_MODE=API uv pip install \
   --python "$python_exe" --reinstall --no-binary rpy2-rinterface \
-  "rpy2-rinterface==3.6.6"
+  "rpy2-rinterface==3.6.7"
 
 # Resolve the official fontconfig aliases while all runtime resources are intact.
 # The pruning gate checks every remaining symlink, including these runtime links.
@@ -739,7 +739,7 @@ from pathlib import Path
 Path(sys.argv[1]).write_text(json.dumps({
     "schema_version": 1,
     "source_commit": sys.argv[2],
-    "pyinstaller_version": "6.21.0",
+    "pyinstaller_version": "6.22.3",
     "system": "Darwin",
     "machine": __import__("platform").machine(),
     "aliases": {
@@ -959,7 +959,7 @@ step "Inspecting the coherent target-native macOS deployment"
   --python-version "$python_version" --pyqt6-version "$pyqt6_version" \
   --qt-version "$qt_version" --sip-version "$sip_version" \
   --sip-runtime-version "$sip_runtime_version" --r-version "$r_version" \
-  --rpy2-version "$rpy2_version" --pyinstaller-version 6.21.0
+  --rpy2-version "$rpy2_version" --pyinstaller-version 6.22.3
 
 step "Recording canonical direct target-native production provenance"
 cp "$repo_root/scripts/macos_embedded_r_adapter.py" "$qualification_root/embedded-r-adapter.py"
@@ -1155,7 +1155,7 @@ if [ "$skip_smoke" -eq 0 ]; then
     --locked-qt-root "$locked_qt_root" --python-version "$python_version" \
     --pyqt6-version "$pyqt6_version" --qt-version "$qt_version" \
     --sip-version "$sip_version" --sip-runtime-version "$sip_runtime_version" \
-    --r-version "$r_version" --rpy2-version "$rpy2_version" --pyinstaller-version 6.21.0
+    --r-version "$r_version" --rpy2-version "$rpy2_version" --pyinstaller-version 6.22.3
   "$python_exe" "$repo_root/scripts/inspect_macos_deployment.py" evidence \
     --target "macos-$architecture" --archive "$tmp_zip_path" \
     --deployment-manifest "$deployment_manifest_path" --signing-inventory "$signing_inventory_path" \

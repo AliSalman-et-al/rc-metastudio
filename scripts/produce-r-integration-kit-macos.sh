@@ -33,14 +33,14 @@ ditto "$framework" "$stage"
 staged_home="$stage/Resources"; library="$staged_home/library"; rscript="$staged_home/bin/Rscript"
 quarantine_profile="$work/runtime-quarantine.json"
 profile="$work/runtime-profile.json"
-"$python" "$repo/scripts/profile_macos_embedded_r_runtime.py" quarantine --resources "$staged_home" --evidence "$quarantine_profile" --dependency-manifest "$repo/config/r-dependencies.json" --r-version 4.6.1 --architecture "$arch" --source-resources "$r_home"
-export R_HOME="$staged_home" R_LIBS="$library" R_LIBS_USER="$library" MACOSX_DEPLOYMENT_TARGET="$deployment_target" RCMS_CRAN_REPO="https://packagemanager.posit.co/cran/2026-07-16" RCMS_R_PACKAGE_ARCHIVE_DIR="$archives"
+"$python" "$repo/scripts/profile_macos_embedded_r_runtime.py" quarantine --resources "$staged_home" --evidence "$quarantine_profile" --dependency-manifest "$repo/config/r-dependencies.json" --r-version 4.6.2 --architecture "$arch" --source-resources "$r_home"
+export R_HOME="$staged_home" R_LIBS="$library" R_LIBS_USER="$library" MACOSX_DEPLOYMENT_TARGET="$deployment_target" RCMS_CRAN_REPO="https://packagemanager.posit.co/cran/2026-11-13" RCMS_R_PACKAGE_ARCHIVE_DIR="$archives"
 "$rscript" "$repo/scripts/install-r-deps.R" 2>&1 | tee "$logs/r-packages.log"
 commit="$(git -C "$repo" rev-parse HEAD)"; rc_url="https://github.com/AliSalman-et-al/rc-metastudio/archive/$commit.tar.gz"; rc_archive="$work/rc-metastudio-$commit.tar.gz"
 curl --fail --location --proto '=https' --tlsv1.2 "$rc_url" --output "$rc_archive"
 mkdir "$work/rc-source"; tar -xzf "$rc_archive" -C "$work/rc-source"; rc_package="$(find "$work/rc-source" -path '*/r/RCMetaR/DESCRIPTION' -print -quit | xargs dirname)"
 "$rscript" "$repo/scripts/install-rcmetar-source.R" "$rc_package" "$library" 2>&1 | tee "$logs/rcmetar.log"
-"$python" "$repo/scripts/profile_macos_embedded_r_runtime.py" finalize --resources "$staged_home" --evidence "$profile" --dependency-manifest "$repo/config/r-dependencies.json" --r-version 4.6.1 --architecture "$arch" --quarantine-evidence "$quarantine_profile"
+"$python" "$repo/scripts/profile_macos_embedded_r_runtime.py" finalize --resources "$staged_home" --evidence "$profile" --dependency-manifest "$repo/config/r-dependencies.json" --r-version 4.6.2 --architecture "$arch" --quarantine-evidence "$quarantine_profile"
 "$python" "$repo/scripts/relocate_macos_r_kit.py" --framework "$stage" --source-resources "$r_home" --version 4.6
 "$python" - "$staged_home/bin/R" <<'PY'
 from pathlib import Path
@@ -80,8 +80,8 @@ fi
 export RPY2_CFFI_MODE=API
 uv pip install --python "$python" --reinstall "$rpy2_rinterface_sdist" 2>&1 | tee "$logs/rpy2.log"
 platlib="$("$python" -c 'import sysconfig; print(sysconfig.get_paths()["platlib"])')"; bridge="$(find "$platlib" -name '_rinterface_cffi_api*.so' -print -quit)"; test -n "$bridge"
-"$python" "$repo/scripts/index_r_binary_archives.py" --archives "$archives" --contrib-url "https://packagemanager.posit.co/cran/2026-07-16/$contrib" --package-type "$package_type" --library "$library" --output "$work/ppm-index.json"
-"$python" "$repo/scripts/create_r_kit_provenance.py" --target "$target" --official-r-artifact "$official_artifact" --official-r-url "$official_url" --official-r-signature-identity "$signature" --official-r-artifact-type pkg --ppm-index "$work/ppm-index.json" --ppm-archive-root "$archives" --rcmetar-archive "$rc_archive" --rcmetar-url "$rc_url" --rcmetar-build-log "$logs/rcmetar.log" --rpy2-sdist "$rpy2_sdist" --rpy2-sdist-url "$rpy2_url" --rpy2-rinterface-sdist "$rpy2_rinterface_sdist" --rpy2-rinterface-sdist-url "$rpy2_rinterface_url" --rpy2-robjects-sdist "$rpy2_robjects_sdist" --rpy2-robjects-sdist-url "$rpy2_robjects_url" --rpy2-build-log "$logs/rpy2.log" --rpy2-api-bridge "$bridge" --toolchain "R 4.6.1; clang; uv" --output "$work/provenance.json"
+"$python" "$repo/scripts/index_r_binary_archives.py" --archives "$archives" --contrib-url "https://packagemanager.posit.co/cran/2026-11-13/$contrib" --package-type "$package_type" --library "$library" --output "$work/ppm-index.json"
+"$python" "$repo/scripts/create_r_kit_provenance.py" --target "$target" --official-r-artifact "$official_artifact" --official-r-url "$official_url" --official-r-signature-identity "$signature" --official-r-artifact-type pkg --ppm-index "$work/ppm-index.json" --ppm-archive-root "$archives" --rcmetar-archive "$rc_archive" --rcmetar-url "$rc_url" --rcmetar-build-log "$logs/rcmetar.log" --rpy2-sdist "$rpy2_sdist" --rpy2-sdist-url "$rpy2_url" --rpy2-rinterface-sdist "$rpy2_rinterface_sdist" --rpy2-rinterface-sdist-url "$rpy2_rinterface_url" --rpy2-robjects-sdist "$rpy2_robjects_sdist" --rpy2-robjects-sdist-url "$rpy2_robjects_url" --rpy2-build-log "$logs/rpy2.log" --rpy2-api-bridge "$bridge" --toolchain "R 4.6.2; clang; uv" --output "$work/provenance.json"
 source_payload="$work/source-payload"; mkdir -p "$source_payload"
 cp "$rc_archive" "$rpy2_sdist" "$rpy2_rinterface_sdist" "$rpy2_robjects_sdist" "$source_payload/"
 lock="$("$python" "$repo/scripts/r_dependency_policy.py" --sha256 "$repo/config/r-dependencies.json")"

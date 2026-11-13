@@ -2288,7 +2288,7 @@ def test_data_type_page_reflows_buttons_without_horizontal_overflow():
             main_wizard.DataTypePage,
             required(wizard.page(main_wizard.Page_DataType), "data type page"),
         )
-        overflow = data_type_page.findChild(QtWidgets.QScrollArea, "pageScrollArea")
+        overflow = required(data_type_page.findChild(QtWidgets.QScrollArea, "pageScrollArea"), "data type scroll area")
         assert (
             required(overflow.horizontalScrollBar(), "overflow scrollbar").maximum()
             == 0
@@ -2350,7 +2350,7 @@ def test_new_dataset_wizard_overflow_keeps_diagnostic_choice_reachable():
         required(data_type_page.layout(), "data type layout").activate()
         app.processEvents()
 
-        overflow = data_type_page.findChild(QtWidgets.QScrollArea, "pageScrollArea")
+        overflow = required(data_type_page.findChild(QtWidgets.QScrollArea, "pageScrollArea"), "data type scroll area")
         diagnostic_button = data_type_page.diagnostic_Button
         overflow.ensureWidgetVisible(diagnostic_button)
         app.processEvents()
@@ -2501,7 +2501,7 @@ def test_about_legal_and_welcome_links_show_current_project_information():
     app, window = automation.start_automation()
 
     try:
-        assert window.action_about_legal.text() == "About and licenses…"
+        assert window.action_about_legal.text() == "About"
 
         from rc_metastudio import about_legal_dialog
 
@@ -2521,9 +2521,15 @@ def test_about_legal_and_welcome_links_show_current_project_information():
         assert "RC MetaStudio" in about_text
         assert "Ali Salman" in about_text
         assert "GPL-3.0-or-later" in about_text
-        assert "without warranty" in about_text.lower()
-        assert "independently maintained rewrite of the original OpenMeta[Analyst] project" in " ".join(about_text.split())
-        assert "Provenance and third-party notices" in about_text
+        assert "Credits and licenses" in about_text
+        dialog = about_dialogs[0]
+        assert dialog.windowTitle() == "About"
+        assert dialog.content_scroll_area.frameShape() == QtWidgets.QFrame.Shape.NoFrame
+        assert not QtGui.QImage(":/misc/about-logo.png").isNull()
+        assert dialog.content_scroll_area.openExternalLinks()
+        html = dialog.content_scroll_area.toHtml()
+        assert "https://github.com/AliSalman-et-al/rc-metastudio/issues" in html
+        assert "https://github.com/AliSalman-et-al/rc-metastudio/blob/master/NOTICE.md" in html
         about_dialogs[0].close()
 
         wizard = main_wizard.MainWizard()

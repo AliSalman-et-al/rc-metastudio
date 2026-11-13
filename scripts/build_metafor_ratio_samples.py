@@ -4,8 +4,9 @@ import hashlib
 import json
 import math
 from pathlib import Path
+from typing import cast
 
-from rc_metastudio.project_format import load_project, save_project
+from rc_metastudio.project_format import load_project, save_project, JsonObject
 
 ROOT = Path(__file__).resolve().parents[1]
 SAMPLES = ROOT / "sample_projects"
@@ -69,7 +70,7 @@ def build(name, hazard, source):
     state = dict(schema_version=3, current_sheet_id="sheet:0")
     filename = "Pignon2000-HR.rcms" if hazard else "NielWeise2008-IRR.rcms"
     path = SAMPLES / filename
-    save_project(path, project, state)
+    save_project(path, cast(JsonObject, project), state)
     loaded = load_project(path)
     assert loaded.project == project and loaded.state == state
     return dict(

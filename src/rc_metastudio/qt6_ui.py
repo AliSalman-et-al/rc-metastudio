@@ -46,7 +46,7 @@ def _validate_generated_forms(package_root: Path) -> None:
     for path in sorted(expected):
         source = path.read_text(encoding="utf-8")
         valid = (
-            "Created by: PyQt6 UI code generator 6.11.0" in source
+            "Created by: PyQt6 UI code generator 6.12.0" in source
             and "from PyQt6" in source
             and "PyQt5" not in source
             and "connectSlotsByName" not in source

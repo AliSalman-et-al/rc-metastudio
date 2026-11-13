@@ -214,6 +214,8 @@ def _validate_unavailable_scenario(
     record: dict[str, object], expected_scale: str
 ) -> None:
     name = record.get("name")
+    if not isinstance(name, str):
+        raise ValueError("scenario name must be text")
     _validate_unavailable_identity(record, name, expected_scale)
     expected_client = EXPECTED_SCENARIO_CONTRACTS[name][1]
     _validate_unavailable_request(record, name, expected_client)

@@ -4,11 +4,13 @@ Use this guide to set up, change, and verify the application. Keep temporary pla
 
 ## Set up the repository
 
-RC MetaStudio uses Python 3.11 and [uv](https://docs.astral.sh/uv/). From the repository root:
+RC MetaStudio uses Python 3.14 and [uv](https://docs.astral.sh/uv/). Use uv 0.13.8 or newer so its runtime catalog includes Python 3.14.10. From the repository root:
 
 ```powershell
 uv sync --locked
 ```
+
+Ty uses Astral’s default rules with warnings treated as failures. Avoid `all = "error"`, which enables optional, opinionated rules automatically.
 
 The lockfile is authoritative. Change dependencies in `pyproject.toml`, update `uv.lock`, and commit both files together.
 

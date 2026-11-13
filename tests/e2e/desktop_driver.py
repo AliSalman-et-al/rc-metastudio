@@ -1244,6 +1244,8 @@ def editing(app, window):
 
 
 def xlsx_import(app, window):
+    sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
+    from advanced_workflows import modal
     from rc_metastudio import main_wizard
     assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
     original_palette = app.palette()
@@ -1398,7 +1400,14 @@ def xlsx_import(app, window):
     for filename in ("old.xls", "corrupt.xlsx", "encrypted.xlsx"):
         candidate = WORK / filename
         candidate.write_bytes(bytes.fromhex("D0CF11E0A1B11AE1") if filename == "encrypted.xlsx" else b"not a workbook")
-        select(candidate)
+        if filename == "old.xls":
+            def legacy_warning(dialog: QtWidgets.QMessageBox):
+                assert dialog.text() == "Save this workbook as .xlsx before importing it."
+                record_step("legacy-xls-warning", dialog, message=dialog.text())
+                mouse_click(required(dialog.button(QtWidgets.QMessageBox.StandardButton.Ok)), QtCore.Qt.MouseButton.LeftButton)
+            modal(app, QtWidgets.QMessageBox, legacy_warning, lambda: select(candidate))
+        else:
+            select(candidate)
         assert not page.isComplete()
         assert dataset_to_project(window.model.dataset) == before
     # Excel stores cached formula values in the worksheet XML; openpyxl does
@@ -2447,9 +2456,6 @@ try:
     elif scenario in ("ux-improvements", "results-window"):
         from tests.e2e.ux_workflows import run
 
-        run(app, window, WORK, ROOT, record_step, analyze)
-    elif scenario == "summary-of-findings":
-        from tests.e2e.summary_of_findings import run
         run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario in ("manuscript-export", "manuscript-export-direct"):
         from tests.e2e.manuscript_export import run

@@ -161,6 +161,10 @@ def test_runtime_content_changes_do_not_resize_or_reposition_visible_main(qapp):
 
     try:
         assert window.frameGeometry() == before
+        project_center = window.dataset_file_lbl.mapToGlobal(window.dataset_file_lbl.rect().center()).y()
+        confidence_center = window.cl_label.mapToGlobal(window.cl_label.rect().center()).y()
+        assert abs(project_center - confidence_center) <= 1
+        assert window.statusbar.isAncestorOf(window.dataset_file_lbl)
         assert window.cl_label.toolTip().startswith("A very long runtime status")
         assert window.dataset_file_lbl.toolTip().startswith("Open Project: C:/")
         assert "<font" not in window.dataset_file_lbl.toolTip()

@@ -81,6 +81,7 @@ class WorkspacePlacement(Mapping):
         return NotImplemented
 
 
+@dataclass(frozen=True, eq=False)
 class WorkspacePaneState(Mapping):
     """Mapping-compatible placement and proportions shared by pane workspaces."""
 
@@ -126,7 +127,6 @@ class WorkspacePaneState(Mapping):
 class ResultsWorkspaceState(WorkspacePaneState):
     """Results placement plus its independently owned pane proportions."""
 
-    placement: WorkspacePlacement
     splitter_proportions: tuple
 
 

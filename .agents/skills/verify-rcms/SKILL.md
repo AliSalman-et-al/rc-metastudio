@@ -9,7 +9,7 @@ Prove the changed user behavior with the real application. Read the [feature ind
 
 ## Launch
 
-Run from the repository root using its locked Python 3.11 environment:
+Run from the repository root using its locked Python 3.14 environment:
 
 ```powershell
 uv sync --locked

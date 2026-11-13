@@ -4,7 +4,7 @@ import sys
 home = Path(sys.argv[1]).resolve()
 launcher = home / "bin" / "R"
 text = launcher.read_text(encoding="utf-8")
-marker = "R_HOME_DIR=\"/opt/R/4.6.1/lib/R\""
+marker = "R_HOME_DIR=\"/opt/R/4.6.2/lib/R\""
 if marker not in text:
     raise SystemExit("unexpected Posit R launcher; cannot make it relocatable")
 tail = text[text.index("usage=\"") :]

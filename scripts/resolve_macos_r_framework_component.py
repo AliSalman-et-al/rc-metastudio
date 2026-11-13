@@ -11,7 +11,7 @@ import xml.etree.ElementTree as ET
 
 IDENTIFIER = "org.R-project.arm64.R.fw.pkg"
 INSTALL_LOCATION = "/Library/Frameworks"
-LOCKED_VERSION = "4.6.1"
+LOCKED_VERSION = "4.6.2"
 MAX_PACKAGE_INFO_FILES = 128
 MAX_PACKAGE_INFO_BYTES = 64 * 1024
 MAX_XML_DEPTH = 8

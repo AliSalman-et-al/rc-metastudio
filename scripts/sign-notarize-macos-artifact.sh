@@ -133,7 +133,7 @@ qualify_signed_app() {
 
   env -u QT_QPA_PLATFORM RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
     RCMS_R_HOME="$r_home" RCMS_R_LIBS="$r_home/library" \
-    uv run --no-project --python 3.11.9 python \
+    uv run --no-project --python 3.14.10 python \
       "$repo_root/scripts/run_bounded_process.py" --timeout-seconds 900 \
       --stdout "$stdout_path" --stderr "$stderr_path" -- \
       "$executable" --automation-package-runtime-probe "$runtime_probe"
@@ -180,7 +180,7 @@ if [ "$mode" = "sign-and-submit" ]; then
   fi
   cp -R "$candidate_qualification/." "$qualification/"
 
-  PYTHONPATH="$repo_root/src" uv run --no-project --python 3.11.9 python \
+  PYTHONPATH="$repo_root/src" uv run --no-project --python 3.14.10 python \
     "$repo_root/scripts/sign_macos_app.py" "$app" \
     --identity "$signing_identity" \
     --inventory-output "$signing_inventory"

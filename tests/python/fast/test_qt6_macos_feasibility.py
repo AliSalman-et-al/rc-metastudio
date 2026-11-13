@@ -78,13 +78,13 @@ def _valid_evidence(target: str = "macos-arm64") -> dict:
             "runner_image": "macos-14" if machine == "arm64" else "macos-15-intel",
         },
         "dependencies": {
-            "python": "3.11.9",
-            "pyqt6": "6.11.0",
-            "qt": "6.11.1",
-            "sip": "13.11.1",
-            "r": "4.6.1",
-            "rpy2": "3.6.7",
-            "pyinstaller": "6.21.0",
+            "python": "3.14.10",
+            "pyqt6": "6.12.0",
+            "qt": "6.12.0",
+            "sip": "13.13.1",
+            "r": "4.6.2",
+            "rpy2": "3.6.9",
+            "pyinstaller": "6.22.3",
         },
         "source_smoke": {
             "qpa": "cocoa",
@@ -133,10 +133,10 @@ def _valid_evidence(target: str = "macos-arm64") -> dict:
                 "sha256": "0" * 64,
             },
             "dependencies": {
-                "pyqt6": "6.11.0",
-                "qt": "6.11.1",
-                "r": "4.6.1",
-                "rpy2": "3.6.7",
+                "pyqt6": "6.12.0",
+                "qt": "6.12.0",
+                "r": "4.6.2",
+                "rpy2": "3.6.9",
             },
         },
         "diagnostics": {
@@ -307,7 +307,7 @@ def _materialize_retained_evidence(evidence: dict, root: Path) -> None:
     inventory = {
         "schema_version": 2,
         "file_count": len(inventory_files),
-        "total_bytes": sum(record["size"] for record in inventory_files),
+        "total_bytes": sum(int(record["size"]) for record in inventory_files if isinstance(record["size"], int)),
         "files": inventory_files,
     }
     write_record(
@@ -344,7 +344,7 @@ def _materialize_retained_evidence(evidence: dict, root: Path) -> None:
             "framework_mach_o": [{"path": "Resources/lib/libR.dylib", "sha256": hashlib.sha256(b"libR").hexdigest(), "architectures": ["arm64"]}]}),
         "r_profile_quarantine": json.dumps({"schema_version": 1, "phase": "quarantine", "policy": PROFILE_POLICY,
             "post_profile_exclusions": sorted(PROFILE_EXCLUSION_PATHS),
-            "source_framework": {"version": "4.6.1", "expected_architecture": "arm64",
+            "source_framework": {"version": "4.6.2", "expected_architecture": "arm64",
                 "source_tree_identity_sha256": "a"*64, "pre_profile_tree_identity_sha256": "b"*64}}),
     }
     for name, payload in payloads.items():
@@ -536,7 +536,7 @@ def test_native_macos_evidence_fails_closed_on_incomplete_or_mismatched_proof(
 def test_macos_sdk_rcc_discovery_uses_qt6_libexec_layout_and_fails_ambiguous(
     tmp_path,
 ):
-    sdk_root = tmp_path / "6.11.1/macos"
+    sdk_root = tmp_path / "6.12.0/macos"
     libexec_rcc = sdk_root / "libexec/rcc"
     libexec_rcc.parent.mkdir(parents=True)
     libexec_rcc.write_bytes(b"official macOS rcc")
@@ -565,7 +565,7 @@ def test_macos_sdk_rcc_discovery_supports_every_allowlisted_layout(tmp_path):
         "bin/rcc.app/Contents/MacOS/rcc",
     ]
     for index, relative in enumerate(layouts):
-        sdk_root = tmp_path / str(index) / "6.11.1/macos"
+        sdk_root = tmp_path / str(index) / "6.12.0/macos"
         candidate = sdk_root / relative
         candidate.parent.mkdir(parents=True)
         candidate.write_bytes(relative.encode())
@@ -576,7 +576,7 @@ def test_macos_sdk_rcc_discovery_supports_every_allowlisted_layout(tmp_path):
 def test_macos_sdk_rcc_discovery_deduplicates_aliases_and_rejects_escape(
     tmp_path,
 ):
-    sdk_root = tmp_path / "sdk/6.11.1/macos"
+    sdk_root = tmp_path / "sdk/6.12.0/macos"
     libexec_rcc = sdk_root / "libexec/rcc"
     libexec_rcc.parent.mkdir(parents=True)
     libexec_rcc.write_bytes(b"one official rcc")

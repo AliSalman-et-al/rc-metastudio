@@ -83,6 +83,17 @@ def compare(before, after):
     print(json.dumps({item['scenario']: {k: len(v) for k, v in item['before_missing'].items()} for item in comparisons}, indent=2))
 
 
+from typing import TypedDict
+
+
+class AuditRun(TypedDict):
+    scenario: str
+    command: list[str]
+    exit_code: int
+    results: int
+    missing: dict[str, list[object]]
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, required=True)
@@ -94,7 +105,7 @@ def main():
         sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
         compare(args.compare_before, args.output)
         return 0
-    runs = []
+    runs: list[AuditRun] = []
     for scenario in args.scenarios:
         directory = args.output.resolve() / scenario
         environment = dict(os.environ, RCMS_REPORT_AUDIT_DIR=str(directory), RCMS_E2E_REUSE_PASSED='0')

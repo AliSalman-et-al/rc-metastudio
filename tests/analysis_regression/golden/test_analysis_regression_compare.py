@@ -722,16 +722,16 @@ def test_golden_comparison_uses_public_text_title_for_stable_source_key():
 
 def test_current_golden_manifest_requires_exact_rpy2_identities():
     expected = dict(verify_golden_compatibility.REQUIRED_RPY2_IDENTITIES)
-    case = {
+    case: verify_golden_compatibility.JsonObject = {
         "id": "case",
-        "tool_versions": dict(expected),
-        "package_versions": dict(expected),
+        "tool_versions": {name: version for name, version in expected.items()},
+        "package_versions": {name: version for name, version in expected.items()},
     }
     verify_golden_compatibility._validate_current_rpy2_identities(
         {"curated_golden_set": [case]}, expected
     )
 
-    case["package_versions"]["rpy2-robjects"] = "0.0.0"
+    verify_golden_compatibility._json_object(case["package_versions"], "package versions")["rpy2-robjects"] = "0.0.0"
     with pytest.raises(ValueError, match="locked runtime"):
         verify_golden_compatibility._validate_current_rpy2_identities(
             {"curated_golden_set": [case]}, expected
@@ -1210,19 +1210,19 @@ def test_comprehensive_golden_baseline_capture_writes_reproducible_bundle(
         lambda: types.SimpleNamespace(load_rcmetar=lambda: None),
     )
     monkeypatch.setattr(golden_analysis, "_commit_sha", lambda: "abc123")
-    monkeypatch.setattr(golden_analysis, "_r_package_version", lambda package: {"RCMetaR": rcmetar_version, "meta": "8.5-0", "mada": "0.5.12", "metafor": "5.0.1"}[package])
+    monkeypatch.setattr(golden_analysis, "_r_package_version", lambda package: {"RCMetaR": rcmetar_version, "meta": "8.5-0", "mada": "0.5.12", "metafor": "5.2.1"}[package])
     monkeypatch.setattr(
         golden_analysis,
         "_tool_versions",
         lambda: {
             "rc_metastudio": __version__,
-            "python": "3.11.15",
+            "python": "3.14.10",
             "os": "Windows",
-            "r": "R version 4.6.1",
-            "rpy2": "3.6.7",
-            "rpy2-rinterface": "3.6.6",
-            "rpy2-robjects": "3.6.5",
-            "pyqt": "6.11.0",
+            "r": "R version 4.6.2",
+            "rpy2": "3.6.9",
+            "rpy2-rinterface": "3.6.7",
+            "rpy2-robjects": "3.6.6",
+            "pyqt": "6.12.0",
         },
     )
 

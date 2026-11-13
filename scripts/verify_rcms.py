@@ -38,7 +38,6 @@ SCENARIOS = (
     "grid-entry",
     "ux-improvements",
     "results-window",
-    "summary-of-findings",
     "manuscript-export-direct",
     "manuscript-export",
     "amino",
@@ -134,16 +133,18 @@ def write_manifest(evidence: Path, record: dict[str, object]) -> None:
 def _scenario_timeout(scenario: str) -> int:
     if scenario == "ui-crawl":
         return 600
+    if scenario == "ratios-irr":
+        return 1200
     timeout_seconds = 120
     if scenario in {"sheets-legacy", "sheets-swap"}:
         return 600
-    if scenario in {"hillclimb", "manuscript-export", "manuscript-export-direct", "summary-of-findings", "results-window", "ux-improvements"}:
+    if scenario in {"hillclimb", "manuscript-export", "manuscript-export-direct", "results-window", "ux-improvements"}:
         return 600
-    if scenario in {"ratios-hr", "ratios-irr", "project-display-labels", "project-round6-polish", "project-release-coefficients", "project-reviewer-predictions", "project-reviewer-groups", "project-reviewer-colours", "calculator-ratio-precision", "project-axis-proportions", "project-axis-others", "project-axis-sequential"}:
+    if scenario in {"ratios-hr", "project-display-labels", "project-round6-polish", "project-release-coefficients", "project-reviewer-predictions", "project-reviewer-groups", "project-reviewer-colours", "calculator-ratio-precision", "project-axis-proportions", "project-axis-others", "project-axis-sequential"}:
         timeout_seconds = 600
     elif scenario.startswith("audit-round3-"):
         timeout_seconds = 600
-    elif scenario in {"rm5-import", "subgroup-image", "subgroup-image-dark-large"} or scenario.startswith("plot-workflow-"):
+    elif scenario in {"rm5-import", "review-workflows", "subgroup-image", "subgroup-image-dark-large"} or scenario.startswith("plot-workflow-"):
         timeout_seconds = 240
     return timeout_seconds
 

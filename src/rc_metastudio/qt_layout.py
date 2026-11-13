@@ -17,7 +17,7 @@ class _ScrollSettingsFilter(QObject):
         super().__init__(scroll_area)
         self.viewport = scroll_area.viewport()
 
-    def eventFilter(  # ty: ignore[invalid-method-override] -- PyQt6's QObject stub rejects this runtime-supported override.
+    def eventFilter(
         self, watched: QObject | None, event: QEvent | None
     ) -> bool:
         if event is not None and event.type() == QEvent.Type.Wheel:

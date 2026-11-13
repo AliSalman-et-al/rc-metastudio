@@ -1362,8 +1362,8 @@ def _exercise_packaged_project_workflow(app, meta, sample_path):
             }
         )
 
-    dot_project = project_format.load_project(variants[0]["path"]).project
-    comma_project = project_format.load_project(variants[1]["path"]).project
+    dot_project = project_format.load_project(save_root / "dot-decimal.rcms").project
+    comma_project = project_format.load_project(save_root / "comma-decimal.rcms").project
     if dot_project != comma_project:
         raise SystemExit("Dot/comma packaged inputs did not persist canonically.")
     if variants[0]["raw_summary_sha256"] != variants[1]["raw_summary_sha256"]:

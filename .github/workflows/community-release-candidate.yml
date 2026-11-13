@@ -72,7 +72,7 @@ jobs:
         shell: bash
         run: gh run download "$RUN_ID" --name candidate-linux-x64 --dir candidate
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
-      - run: uv python install 3.11.9
+      - run: uv python install 3.14.10
       - name: Bind downloaded archive to assembled state
         shell: pwsh
         env:

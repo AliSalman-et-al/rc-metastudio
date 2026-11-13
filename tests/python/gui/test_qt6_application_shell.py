@@ -471,7 +471,6 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
                 window.create_new_dataset,
                 lambda: window.open(target),
                 lambda: window.dataset_selected(target),
-                window._import_csv,
             ):
                 prompt_calls.clear()
                 save_as_calls.clear()
