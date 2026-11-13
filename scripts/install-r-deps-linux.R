@@ -26,18 +26,21 @@ if (linux$distribution != "noble" || linux$r_version_series != "4.6" ||
 }
 
 repo <- linux$repository
+user_agent <- sprintf(
+  "R/%s R (%s %s %s %s)", getRversion(), getRversion(),
+  R.version[["platform"]], R.version[["arch"]], R.version[["os"]]
+)
 options(
   repos = c(CRAN = repo),
   download.file.method = "curl",
-  download.file.extra = "--location --fail --retry 2",
+  # download.file(method="curl") does not forward HTTPUserAgent. PPM selects
+  # binaries using that header, so GET must identify R just like the HEAD probe.
+  download.file.extra = paste("--location --fail --retry 2 --user-agent", shQuote(user_agent)),
   timeout = 1200,
   warn = 1,
   install.packages.check.source = "no",
   install.packages.compile.from.source = "never",
-  HTTPUserAgent = sprintf(
-    "R/%s R (%s %s %s %s)", getRversion(), getRversion(),
-    R.version[["platform"]], R.version[["arch"]], R.version[["os"]]
-  )
+  HTTPUserAgent = user_agent
 )
 .libPaths(unique(c(library, .libPaths())))
 

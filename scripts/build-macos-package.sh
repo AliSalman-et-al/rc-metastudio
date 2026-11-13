@@ -220,7 +220,17 @@ export RCMS_CRAN_REPO="$pinned_cran_repo"
 
 if [ "$skip_dependency_install" -eq 0 ]; then
   step "Syncing locked verification environment"
-  (cd "$repo_root" && uv sync --locked)
+  # The 6.12.0 universal2 wheel is tagged 14.0 but QtWidgets was linked for
+  # 14.4. Rebuild the locked bindings with the official SDK and release floor;
+  # MACOSX_DEPLOYMENT_TARGET cannot change an already compiled wheel.
+  qt_qmake="${RCMS_QT6_QMAKE:-$repo_root/build/qt-sdk/6.12.0/macos/bin/qmake}"
+  [ -x "$qt_qmake" ] || { echo "Official Qt 6.12.0 qmake is required: $qt_qmake" >&2; exit 1; }
+  [ "$("$qt_qmake" -query QT_VERSION)" = "6.12.0" ] || { echo "Qt SDK must be 6.12.0." >&2; exit 1; }
+  (cd "$repo_root" && uv sync --locked --no-binary-package pyqt6 --reinstall-package pyqt6 \
+    --config-settings-package "pyqt6:--qmake=$qt_qmake" \
+    --config-settings-package "pyqt6:--qmake-settings=QMAKE_MACOSX_DEPLOYMENT_TARGET = $minimum_macos_version" \
+    --config-settings-package "pyqt6:--qmake-settings=QMAKE_APPLE_DEVICE_ARCHS = $architecture" \
+    --config-settings-package "pyqt6:--jobs=3")
   python_exe="$repo_root/.venv/bin/python"
 fi
 
