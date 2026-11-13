@@ -12,7 +12,7 @@ $rDownloadCache = Join-Path $repoRoot "artifacts\download-cache\windows-x64"
 $rInstaller = Join-Path $rDownloadCache "R-4.6.2-win.exe"
 $rStage = Join-Path $repoRoot "build\windows-package\staged-R-4.6.2"
 $rUrl = "https://cloud.r-project.org/bin/windows/base/old/4.6.2/R-4.6.2-win.exe"
-$rSha256 = "C5424C40CD70EF85765A55D2FF96BB602B5F30ED536938FF004F14DB5DB3C2DF"
+$rSha256 = "B0B0053BAA1963B6D8A28C9642D50107EF9CE2F41C8B9A90E952846C8918B38A"
 $rSigner = "CN=Martyn Plummer, O=Martyn Plummer, S=West Midlands, C=GB"
 $rThumbprint = "F356FC6CD245D722F4A82697473DA5995CB42975"
 

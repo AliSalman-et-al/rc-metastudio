@@ -25,7 +25,8 @@ The fresh complete desktop command passes all **133 cases** in 3,484.84 seconds,
 then passes a fresh runtime doctor. This supersedes the earlier composed
 qualification below without changing or relabelling any failed attempt. All
 application, test and configuration inputs remained frozen at `eb94c2c1` during
-this run; subsequent edits only update this report and the decision trail.
+this run. Subsequent Windows CI corrections are described below; they do not
+change application or statistical behavior.
 
 The controller retains exact commands, timestamps and exit codes in
 `artifacts/verification/dependency-upgrade-20261113/local-pr-qualification/results.json`.
@@ -55,6 +56,32 @@ output outside `build/qt6-verification`, then for omitting the required
 `golden-compatibility-` directory prefix. Their logs/results remain retained;
 the corrected command passes without source or oracle changes. See
 `local-pr-qualification/extra-results.json` and its linked prior attempts.
+
+## Windows PR qualification corrections
+
+PR #589's first CI run exposed two upgrade omissions that the Linux platform
+skips did not exercise. The public Windows packager and its cache key still
+contained R 4.6.1's SHA-256 after their version/URL moved to R 4.6.2. A fresh
+download of the official 91,363,600-byte R 4.6.2 installer hashes to
+`b0b0053baa1963b6d8a28c9642d50107ef9ce2f41c8b9a90e952846c8918b38a`,
+matching the already upgraded integration-kit pin. The Windows packager and
+cache key now use that value. Native Authenticode validation remains required.
+
+Two Qt rejection controls had also been changed to the valid new version during
+the upgrade, so they no longer created mismatches. Both now use `0.0.0` as an
+explicit invalid version. Running the existing full Windows deployment negative
+control function with real PE parsing on Linux reproduces the original failure,
+then passes after correction. This verifies portable inspector behavior, not
+native Windows execution. Strict typing passes; the locally runnable packaging
+suite reports 132 passed and 14 platform skips. No GUI or statistical code,
+oracle, or tolerance changed.
+
+Evidence lives under
+`artifacts/verification/dependency-upgrade-20261113/ci-recovery-589/`:
+`package.log`, `contract.log`, `controls-before.log`, `controls-after.log`,
+`typing.log`, `packaging-local.log`, `r-installer.headers`, the retained official
+installer, and `r-installer-verification.json`. CI must qualify the corrected
+Windows package and native contract suite before merge.
 
 ## Earlier evidence and recovery history
 

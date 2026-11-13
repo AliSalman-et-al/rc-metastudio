@@ -847,7 +847,7 @@ def test_windows_deployment_inspector_rejects_legacy_duplicate_and_wrong_archite
             )
 
     app = _windows_deployment_fixture(tmp_path / "stack-mismatch")
-    mismatched = dict(versions, qt="6.12.0")
+    mismatched = dict(versions, qt="0.0.0")
     with pytest.raises(
         inspector.DeploymentInspectionError, match="differs from the locked"
     ):
@@ -877,7 +877,7 @@ def test_windows_deployment_inspector_rejects_legacy_duplicate_and_wrong_archite
 
     app = _windows_deployment_fixture(tmp_path / "runtime-probe-mismatch")
     probe = _windows_runtime_probe(app)
-    probe["qt"]["runtime_qt_version"] = "6.12.0"
+    probe["qt"]["runtime_qt_version"] = "0.0.0"
     with pytest.raises(inspector.DeploymentInspectionError, match="frozen Qt runtime"):
         inspector.inspect_deployment(
             app,
