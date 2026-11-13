@@ -700,6 +700,7 @@ def test_final_windows_pe_closure_requires_app_local_msvc_and_tracks_delay_impor
         "_imports": [
             {"name": "VCRUNTIME140.dll", "kind": "delay"},
             {"name": "KERNEL32.dll", "kind": "normal"},
+            {"name": "mscms.dll", "kind": "normal"},
         ],
     }
     inspector._resolve_pe_closure([runtime, bridge])
@@ -712,6 +713,7 @@ def test_final_windows_pe_closure_requires_app_local_msvc_and_tracks_delay_impor
             "resolved_sha256": "d" * 64,
         },
         {"name": "KERNEL32.dll", "kind": "normal", "resolution": "system"},
+        {"name": "mscms.dll", "kind": "normal", "resolution": "system"},
     ]
 
 

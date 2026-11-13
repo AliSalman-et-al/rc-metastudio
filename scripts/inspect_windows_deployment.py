@@ -81,6 +81,7 @@ WINDOWS_SYSTEM_DLLS = {
     "icuuc.dll",
     "iphlpapi.dll",
     "kernel32.dll",
+    "mscms.dll",
     "msvcrt.dll",
     "ncrypt.dll",
     "netapi32.dll",

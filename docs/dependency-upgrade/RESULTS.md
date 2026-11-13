@@ -106,6 +106,30 @@ GUI sizing correction with no blocking findings; its review is retained as
 `ci-recovery-589/about-opus-review.json`. Native Windows CI confirmation remains
 required before merge.
 
+On head `15af011`, Windows packaging passed installer authentication and reached
+the PE closure inspection, which rejected `qwindows.dll -> mscms.dll`. Qt 6.12
+adds that Windows color-management import. Microsoft's
+[GetCMMInfo requirements](https://learn.microsoft.com/en-us/windows/win32/api/icm/nf-icm-getcmminfo)
+identify Mscms.dll as an operating-system library available since Windows 2000.
+The deployment inspector now recognizes that exact DLL as a system component;
+private runtime and unknown-import rejection remain enforced.
+
+The existing closure test was extended before the fix and reproduced the same
+rejection. It then passes, alongside the missing-private-DLL negative control
+and all 132 locally runnable packaging contracts (14 platform skips). Strict
+typing passes. A fresh official PyPI Windows Qt wheel was verified against its
+published SHA-256 and its PE imports parsed: all imports of the actual x64
+`qwindows.dll` now resolve to recognized Windows components or DLLs supplied by
+the pinned wheel. The broader 231-DLL scan retains optional modules' unresolved
+external imports as observations; those modules are not newly allowed by this
+fix. This is static binary evidence, not native loading qualification.
+
+Retained evidence under `ci-recovery-589/`: `package-15af011.log`,
+`mscms-{before,after}.log`, `mscms-typing.log`, `mscms-packaging.log`,
+`qt-windows-wheel.json`, the original wheel, `qt-windows-imports-before.json`,
+`qt-windows-imports.json` and `qwindows-import-closure.json`. No GUI or statistical
+code changed for this correction.
+
 ## Earlier evidence and recovery history
 
 Unless explicitly rooted elsewhere, evidence paths below live under
