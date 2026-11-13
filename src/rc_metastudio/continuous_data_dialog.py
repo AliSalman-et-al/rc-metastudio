@@ -318,7 +318,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         for widget in self.content_widget.findChildren(QWidget):
             widget.installEventFilter(self)
 
-    def eventFilter(  # ty: ignore[invalid-method-override] -- PyQt6's QDialog stub rejects this runtime-supported QObject override.
+    def eventFilter(
         self, watched: QObject | None, event: QEvent | None
     ) -> bool:
         if event is None:
@@ -1024,7 +1024,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             results_from_r = self.calculator.impute_continuous_data(current_values, alpha)
 
             if results_from_r["succeeded"]:
-                computed_vals = cast(ContinuousValues, results_from_r["output"])
+                computed_vals = results_from_r["output"]
                 for var_index, var_name in enumerate(var_names):
                     self._set_val(
                         row_index,
@@ -1095,7 +1095,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self._fit_tables_to_contents()
             return False
 
-        computed_vals = cast(ContinuousValues, results_from_r["output"])
+        computed_vals = results_from_r["output"]
 
         output_is_complete = not any(
             computed_vals[field_name] is None
@@ -1117,8 +1117,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.set_current_effect()
 
         # also update the pre/post tables
-        pre_vals = cast(ContinuousValues, results_from_r["pre"])
-        post_vals = cast(ContinuousValues, results_from_r["post"])
+        pre_vals = results_from_r["pre"]
+        post_vals = results_from_r["post"]
         for var_index, var_name in enumerate(var_names):
             field_name = self._imputation_field_name(var_name)
             pre_val = pre_vals[field_name]
@@ -1673,7 +1673,7 @@ class ContinuousBackCalculationDialog(
         self.info_label.setText(info_text)
         self._layout_controller.request_content_refit()
 
-    def eventFilter(  # ty: ignore[invalid-method-override] -- PyQt6's QDialog stub rejects this runtime-supported QObject override.
+    def eventFilter(
         self, watched: QObject | None, event: QEvent | None
     ) -> bool:
         if event is None:

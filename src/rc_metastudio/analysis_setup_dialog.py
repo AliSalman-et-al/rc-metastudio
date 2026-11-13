@@ -489,7 +489,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.current_defaults: dict[str, object] = {}
         self.param_d: dict[str, object] = {}
         self.var_order: list[str] | None = None
-        self.diagnostic_analysis_details = diagnostic_analysis_details or {}
+        self.diagnostic_analysis_details: dict[str, tuple[str, dict[str, object]] | None] = diagnostic_analysis_details or {}
         self.diagnostic_metrics = tuple(diagnostic_metrics or ())
         self._combined_diagnostic = False
         self._shared_diagnostic_param_specs = _shared_diagnostic_specs(
@@ -620,7 +620,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.adjustSize()
         self.move(position)
 
-    def showEvent(  # ty: ignore[invalid-method-override] -- PyQt6 multiple-inheritance stub mismatch
+    def showEvent(
         self, event: QShowEvent | None
     ) -> None:
         super(AnalysisSetupDialog, self).showEvent(event)
@@ -637,13 +637,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             app.focusChanged.connect(self._reveal_focused_control)
             self._focus_reveal_connected = True
 
-    def hideEvent(  # ty: ignore[invalid-method-override] -- PyQt6 multiple-inheritance stub mismatch
+    def hideEvent(
         self, event: QHideEvent | None
     ) -> None:
         self._disconnect_focus_reveal()
         super(AnalysisSetupDialog, self).hideEvent(event)
 
-    def closeEvent(  # ty: ignore[invalid-method-override] -- PyQt6 multiple-inheritance stub mismatch
+    def closeEvent(
         self, event: QCloseEvent | None
     ) -> None:
         self._release_owned_connections()
@@ -975,7 +975,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.done(QDialog.DialogCode.Accepted.value)
             self._deliver_result(result)
 
-    def done(  # ty: ignore[invalid-method-override] -- PyQt6 generated-form multiple inheritance
+    def done(
         self, result: int
     ) -> None:
         self._release_owned_connections()
@@ -1736,14 +1736,14 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             layout.addWidget(combo, combo_row, 0 if stacked else 1, 1, 2 if stacked else 1)
             layout.activate()
 
-    def resizeEvent(  # ty: ignore[invalid-method-override] -- PyQt6 multiple-inheritance stub mismatch
+    def resizeEvent(
         self, event: QResizeEvent | None
     ) -> None:
         super().resizeEvent(event)
         if hasattr(self, "_layout_reflow_timer"):
             self._schedule_local_reflow()
 
-    def changeEvent(  # ty: ignore[invalid-method-override] -- PyQt6 multiple-inheritance stub mismatch
+    def changeEvent(
         self, event: QtCore.QEvent | None
     ) -> None:
         super(AnalysisSetupDialog, self).changeEvent(event)

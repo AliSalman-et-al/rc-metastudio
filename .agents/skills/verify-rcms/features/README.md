@@ -49,15 +49,4 @@ Evidence is stored per run under `artifacts/verification/rcms/`, outside scratch
 
 For a broader feature request, complete affected rows of [coverage.md](../references/coverage.md), including the dataset/metric matrix. Numerical or packaging lanes cannot establish UI reachability by themselves. Record limitations explicitly. The complete desktop command runs the pytest workflow registry and the separate doctor check. Pytest excludes `ui-crawl`, a separate surface inventory; drive it explicitly when that inventory is needed. Ten original baselines alone are not an all-app verification pass.
 
-## Summary of findings (partial slice 9)
-
-`summary-of-findings` opens the real Analysis menu action on a derived
-amino/lymph/empty fixture, renders four rows, checks default certainty and empty
-reason, writes manuscript DOCX/PDF, checks extracted output and saves/reopens
-reviewer judgements. It compares two binary results with direct metafor fits,
-checks data-edit refresh, and retains the derived project. Wheel scrolling over a
-focused certainty selector must scroll an overflowing table without changing the
-judgment; keyboard and popup edits remain available. Native picker gestures,
-participant-count definitions and remaining estimator combinations need targeted coverage.
-
 Every desktop driver observes the visible splash and live package status before the main window exists, then the enabled shell with an empty status bar after real R is ready. `tests/e2e/startup_splash_driver.py` adds native scale 1/2 captures, Windows taskbar style and late-package failure with the real error dialog and editable project. R still loads on the GUI thread.

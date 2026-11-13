@@ -47,7 +47,7 @@ def test_linux_policy_emits_binary_only_noble_installer_configuration():
         for line in result.stdout.splitlines()
     }
 
-    assert fields["Linux-Binary-Repository"].endswith("/__linux__/noble/2026-07-16")
+    assert fields["Linux-Binary-Repository"].endswith("/__linux__/noble/2026-11-13")
     assert fields["Linux-Binary-R-Install-Type"] == "source"
     assert fields["Linux-Binary-Package-Type"] == "binary"
     assert fields["Linux-Binary-Tag"] == "4.6-noble"

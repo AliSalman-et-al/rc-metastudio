@@ -146,7 +146,7 @@ def _objects(value: JsonValue) -> list[JsonObject]:
 
     if not isinstance(value, list) or not all(isinstance(item, dict) for item in value):
         raise AssertionError("expected JSON object array")
-    return value
+    return cast(list[JsonObject], value)
 
 
 def _first_study(project: JsonObject) -> JsonObject:

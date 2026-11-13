@@ -109,7 +109,7 @@ if [ "$recreate_venv" -eq 1 ] && [ -d "$venv_root" ]; then
 fi
 
 step "Syncing the locked Python environment"
-uv python install 3.11.9
+uv python install 3.14.10
 uv sync --locked
 
 build_args=(

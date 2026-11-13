@@ -232,7 +232,7 @@ def _resolve_parent(parent):
 
 
 class SafeApplication(QApplication):
-    def notify(  # ty: ignore[invalid-method-override] -- PyQt6 exposes conflicting QApplication notify stubs across QtCore and QtWidgets.
+    def notify(
         self, receiver: QObject | None, event: QEvent | None
     ) -> bool:
         try:

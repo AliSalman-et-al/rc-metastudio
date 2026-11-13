@@ -3,7 +3,7 @@ name = "rc-metastudio"
 version = "0.5.3"
 description = "RC MetaStudio open-source desktop software for advanced meta-analysis."
 readme = "README.md"
-requires-python = ">=3.11,<3.12"
+requires-python = ">=3.14,<3.15"
 authors = [
     { name = "Ali Salman and RC MetaStudio contributors", email = "alisalman.et.al@gmail.com" },
 ]
@@ -11,14 +11,14 @@ maintainers = [
     { name = "Ali Salman", email = "alisalman.et.al@gmail.com" },
 ]
 dependencies = [
-    "PyQt6==6.11.0",
-    "jsonschema==4.25.1",
-    "openpyxl>=3.1.5",
-    "pyinstaller==6.21.0",
-    "pytest==9.1.1",
+    "PyQt6==6.12.0",
+    "jsonschema==4.26.0",
+    "openpyxl==3.1.5",
+    "pyinstaller==6.22.3",
+    "pytest==9.2.0",
     "pytest-xdist==3.8.0",
-    "python-docx>=1.2.0",
-    "rpy2==3.6.7",
+    "python-docx==1.2.0",
+    "rpy2==3.6.9",
 ]
 
 [project.scripts]
@@ -29,7 +29,7 @@ Homepage = "https://github.com/AliSalman-et-al/rc-metastudio"
 Issues = "https://github.com/AliSalman-et-al/rc-metastudio/issues"
 
 [build-system]
-requires = ["setuptools>=80"]
+requires = ["setuptools==84.2.1"]
 build-backend = "setuptools.build_meta"
 
 [tool.uv]
@@ -57,32 +57,33 @@ markers = [
 
 [dependency-groups]
 dev = [
+    "PyQt6-Pdf==6.140.0",
     "aqtinstall==3.3.0",
-    "complexipy>=7.0.1",
-    "coverage>=7.16.2",
-    "grimp>=3.16",
-    "libcst==1.8.6",
-    "matplotlib>=3.11.0",
-    "pefile==2023.2.7",
-    "pillow>=12.3.0",
+    "complexipy==9.0.0",
+    "coverage==7.17.3",
+    "grimp==3.19",
+    "libcst==1.9.0",
+    "matplotlib==3.11.2",
+    "pefile==2024.8.26",
+    "pillow==13.0.0",
     "psutil==7.2.2",
-    "py7zr==1.1.3",
-    "pyside6-essentials==6.11.1 ; sys_platform == 'linux'",
+    "py7zr==1.1.4",
+    "pyside6-essentials==6.12.0 ; sys_platform == 'linux'",
     "pyyaml==6.0.3",
-    "radon>=6.0.1",
-    "ty==0.0.18",
+    "radon==6.0.1",
+    "ty==0.0.102",
     "vulture==2.16",
 ]
 
 [tool.ty.environment]
-python-version = "3.11"
+python-version = "3.14"
 root = ["./src", ".", "./.agents/skills/verify-rcms/scripts"]
 
 [tool.ty.src]
 exclude = ["build", "src/rc_metastudio/forms/ui_*.py"]
 
-[tool.ty.rules]
-all = "error"
+[tool.ty.terminal]
+error-on-warning = true
 
 [tool.vulture]
 paths = [

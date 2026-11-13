@@ -1,5 +1,6 @@
 """Forest colour settings and decoded colour export workflows."""
 
+from rc_metastudio.qt_object_guard import required
 import os
 from pathlib import Path
 from xml.etree import ElementTree as ET
@@ -107,7 +108,7 @@ def run_colours(app, window, work, record):
                     document = QPdfDocument(view)
                     assert document.load(files[extension]) == QPdfDocument.Error.None_
                     raster = document.render(0,QtCore.QSize(1200,1200)).convertToFormat(QtGui.QImage.Format.Format_RGB888)
-                    image = Image.frombytes('RGB',(raster.width(),raster.height()),raster.bits().asstring(raster.sizeInBytes()),'raw','RGB',raster.bytesPerLine())
+                    image = Image.frombytes('RGB',(raster.width(),raster.height()),required(raster.bits(), "PDF raster pixels").asstring(raster.sizeInBytes()),'raw','RGB',raster.bytesPerLine())
                     document.close()
                 else:
                     with Image.open(files[extension]) as source:

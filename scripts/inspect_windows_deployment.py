@@ -33,14 +33,14 @@ REQUIRED_QT_LIBRARIES = {
     "qt6widgets.dll",
 }
 EXPECTED_VERSIONS = {
-    "python": "3.11.9",
-    "pyqt6": "6.11.0",
-    "qt": "6.11.1",
-    "sip": "13.11.1",
-    "sip_runtime": "6.15.2",
-    "r": "4.6.1",
-    "rpy2": "3.6.7",
-    "pyinstaller": "6.21.0",
+    "python": "3.14.10",
+    "pyqt6": "6.12.0",
+    "qt": "6.12.0",
+    "sip": "13.13.1",
+    "sip_runtime": "6.17.3",
+    "r": "4.6.2",
+    "rpy2": "3.6.9",
+    "pyinstaller": "6.22.3",
 }
 EXPECTED_SUMMARY_SHA256_BY_SAMPLE = {
     "amino.rcms": "16303526c7c3a40c8805b6245b8806fc765bf4efc2c269807c1a5d460060539d",
@@ -81,6 +81,7 @@ WINDOWS_SYSTEM_DLLS = {
     "icuuc.dll",
     "iphlpapi.dll",
     "kernel32.dll",
+    "mscms.dll",
     "msvcrt.dll",
     "ncrypt.dll",
     "netapi32.dll",
@@ -737,7 +738,7 @@ def _validate_windows_probe_qt(qt: dict, probe_path) -> None:
     library_paths = {probe_path(value) for value in qt.get("library_paths", [])}
     valid = all((
         qt.get("pyqt_version") == EXPECTED_VERSIONS["pyqt6"],
-        qt.get("compiled_qt_version") == "6.11.0",
+        qt.get("compiled_qt_version") == "6.12.0",
         qt.get("runtime_qt_version") == EXPECTED_VERSIONS["qt"],
         qt.get("sip_runtime_version") == EXPECTED_VERSIONS["sip_runtime"],
         qt.get("platform_plugin") == "windows",
@@ -769,8 +770,8 @@ def _validate_windows_probe_rpy2(rpy2: dict, probe_path, app_root: Path) -> None
         == {
             "distribution_version": EXPECTED_VERSIONS["rpy2"],
             "cffi_mode": "API",
-            "rinterface_distribution_version": "3.6.6",
-            "robjects_distribution_version": "3.6.5",
+            "rinterface_distribution_version": "3.6.7",
+            "robjects_distribution_version": "3.6.6",
             "loaded_cffi_mode": "API",
             "api_bridge_loaded": True,
         }

@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="misc">
+    <file alias="about-logo.png">RC_MetaStudio_Logo_4K_Transparent.png</file>
     <file alias="splash.png">splash/splash.png</file>
     <file alias="splash@2x.png">splash/splash@2x.png</file>
     <file alias="meta.ico">rc-metastudio-app-icon-rounded.ico</file>

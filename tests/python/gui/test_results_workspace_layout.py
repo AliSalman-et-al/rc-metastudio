@@ -352,7 +352,7 @@ def test_results_refit_does_not_dispatch_unrelated_layout_requests(
 
         # The Qt runtime dispatches this override correctly; the bundled
         # stubs expose an incompatible descriptor signature.
-        def event(self, event: QtCore.QEvent) -> bool:  # ty: ignore[invalid-method-override]
+        def event(self, event: QtCore.QEvent) -> bool:  # ty: ignore[incompatible-method-override]
             if event.type() == QtCore.QEvent.Type.LayoutRequest:
                 self.layout_requests += 1
             return super().event(event)

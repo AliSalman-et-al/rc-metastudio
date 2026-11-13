@@ -280,7 +280,7 @@ def test_pkgutil_signature_parser_handles_certificate_chain_and_rejectable_team(
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     payload = module.parse_pkgutil_signature(
-        "Package: R-4.6.1-arm64.pkg\n   Status: signed by a certificate trusted by macOS\n   1. Developer ID Installer: R for macOS (VZLD955F6P)\n   2. Developer ID Certification Authority\n",
+        "Package: R-4.6.2-arm64.pkg\n   Status: signed by a certificate trusted by macOS\n   1. Developer ID Installer: R for macOS (VZLD955F6P)\n   2. Developer ID Certification Authority\n",
         "",
         0,
     )
@@ -360,7 +360,7 @@ def test_direct_manifest_binds_archived_inputs_and_runner(tmp_path):
         {
             "schema_version": 1,
             "source_commit": "c" * 40,
-            "pyinstaller_version": "6.21.0",
+            "pyinstaller_version": "6.22.3",
             "system": "Darwin",
             "machine": "arm64",
             "aliases": {

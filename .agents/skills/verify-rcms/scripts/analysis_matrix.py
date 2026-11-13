@@ -6,6 +6,8 @@ Frozen contracts prove numerics; other cases prove execution and rendered output
 
 from pathlib import Path
 
+from tests.python.gui.qt_test_support import mouse_click, wait
+
 GOLDEN = (
     "amino-binary-cumulative",
     "amino-binary-leave-one-out",
@@ -154,7 +156,6 @@ def run(
 
     from PyQt6 import QtCore, QtGui, QtWidgets
     from PyQt6.QtSvg import QSvgRenderer
-    from PyQt6.QtTest import QTest
 
     from rc_metastudio import analysis_dataset, analysis_setup_dialog, results_window
     from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
@@ -175,7 +176,7 @@ def run(
 
     def click(widget):
         assert widget.isEnabled(), widget.objectName()
-        QTest.mouseClick(widget, QtCore.Qt.MouseButton.LeftButton)
+        mouse_click(widget, QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
 
     def visible(kind):
@@ -224,7 +225,7 @@ def run(
             bounds = view.graphics_view.mapFromScene(selected[1].sceneBoundingRect()).boundingRect()
             if not view._viewport_refit_pending and bounds.right() >= viewport.width() - 100:
                 break
-            QTest.qWait(25)
+            wait(25)
         plot_bounds = view.graphics_view.mapFromScene(selected[1].sceneBoundingRect()).boundingRect()
         assert 0 <= plot_bounds.left() and plot_bounds.right() < viewport.width(), plot_bounds
         native_width = selected[1].boundingRect().width()
@@ -441,6 +442,7 @@ def run(
             from rc_metastudio.edit_name_dialogs import EditArmNameDialog
 
             def rename(dialog):
+                assert group_names is not None
                 dialog.group_name_le.setText(group_names[0])
                 record('single-arm-rename-editor', dialog, name=deferred_name)
                 click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
@@ -525,8 +527,7 @@ def run(
 
                 header = window.tableView.verticalHeader()
                 modal(app, ContinuousDataDialog, inspect_calculator,
-                      lambda: QTest.mouseClick(header.viewport(), QtCore.Qt.MouseButton.LeftButton,
-                                               QtCore.Qt.KeyboardModifier.NoModifier,
+                      lambda: mouse_click(header.viewport(), QtCore.Qt.MouseButton.LeftButton,
                                                QtCore.QPoint(header.viewport().width() // 2,
                                                             header.sectionViewportPosition(0) + header.sectionSize(0) // 2)))
             assert window.model.setData(window.model.index(0, window.model.OUTCOMES[1]), ".1")

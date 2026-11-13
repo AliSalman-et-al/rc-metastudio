@@ -26,16 +26,16 @@ work_root="$build_root/work"
 dist_root="$build_root/dist"
 archive_root="$work_root/archive-root/$artifact_name"
 qualification_root="$work_root/qualification"
-r_deb_name="r-4.6.1_1_amd64.deb"
+r_deb_name="r-4.6.2_1_amd64.deb"
 r_deb_url="https://cdn.posit.co/r/ubuntu-2404/pkgs/$r_deb_name"
-r_deb_sha256="5af816371126c8e5895600de035153cd3a64b12f4beb43f291ee34bf24f8fd2d"
+r_deb_sha256="9cd22ded77ab8097a939ef4d8205f23404657879b30ef6ab8ceaedbb761bc4d7"
 cursor_deb_name="libxcb-cursor0_0.1.4-1build1_amd64.deb"
 cursor_deb_url="https://archive.ubuntu.com/ubuntu/pool/universe/x/xcb-util-cursor/$cursor_deb_name"
 cursor_deb_expected_sha256="137cf52479b5a9d8c5926d70d311af04be41941a32ee777340d704cc458c06d8"
 cursor_deb_sha256=""
 cursor_source=""
-cran_repo="https://packagemanager.posit.co/cran/2026-07-16"
-linux_cran_repo="https://packagemanager.posit.co/cran/__linux__/noble/2026-07-16"
+cran_repo="https://packagemanager.posit.co/cran/2026-11-13"
+linux_cran_repo="https://packagemanager.posit.co/cran/__linux__/noble/2026-11-13"
 r_home="$work_root/r-home"
 r_library="$r_home/library"
 ppm_archives="$qualification_root/ppm-archives"
@@ -98,15 +98,15 @@ download_pinned() {
 r_deb="$(download_pinned "$r_deb_name" "$r_deb_url" "$r_deb_sha256")"
 mkdir -p "$work_root/r-extract"
 dpkg-deb -x "$r_deb" "$work_root/r-extract"
-cp -a "$work_root/r-extract/opt/R/4.6.1/lib/R" "$r_home"
-[ -x "$r_home/bin/exec/R" ] || die "Pinned R archive does not contain the expected R 4.6.1 runtime."
+cp -a "$work_root/r-extract/opt/R/4.6.2/lib/R" "$r_home"
+[ -x "$r_home/bin/exec/R" ] || die "Pinned R archive does not contain the expected R 4.6.2 runtime."
 
 step "Making Posit R launchers relocatable"
 "$python_exe" "$repo_root/scripts/configure_linux_r_launchers.py" "$r_home"
 
 step "Checking the relocated private R runtime"
 R_HOME="$r_home" LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
-  "$r_home/bin/Rscript" -e 'stopifnot(as.character(getRversion()) == "4.6.1", normalizePath(R.home()) == normalizePath(Sys.getenv("R_HOME")))'
+  "$r_home/bin/Rscript" -e 'stopifnot(as.character(getRversion()) == "4.6.2", normalizePath(R.home()) == normalizePath(Sys.getenv("R_HOME")))'
 
 step "Building the locked rpy2 API bridge against private R"
 R_HOME="$r_home" \
@@ -115,7 +115,7 @@ R_LIBS_USER="$r_library" \
 LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
 PATH="$r_home/bin:$PATH" \
 RPY2_CFFI_MODE=API \
-uv pip install --python "$python_exe" --no-cache --no-deps --reinstall --no-binary rpy2-rinterface "rpy2-rinterface==3.6.6"
+uv pip install --python "$python_exe" --no-cache --no-deps --reinstall --no-binary rpy2-rinterface "rpy2-rinterface==3.6.7"
 R_HOME="$r_home" \
 LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
 RPY2_CFFI_MODE=API \

@@ -49,7 +49,7 @@ class DiagnosticMetricsDialog(
         for widget in self.content_widget.findChildren(QWidget):
             widget.installEventFilter(self)
 
-    def eventFilter(  # ty: ignore[invalid-method-override] -- PyQt6's QDialog stub rejects this runtime-supported QObject override.
+    def eventFilter(
         self, watched: QObject | None, event: QEvent | None
     ) -> bool:
         if (

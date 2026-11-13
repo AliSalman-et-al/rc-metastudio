@@ -194,7 +194,7 @@ def test_outcome_cells_use_neutral_background_and_inherit_theme_text():
     model = _continuous_model_with_named_study()
     outcome_index = model.index(0, model.OUTCOMES[0])
 
-    assert model.data(outcome_index, Qt.ItemDataRole.BackgroundRole) == QColor(214, 169, 58, 110)
+    assert model.data(outcome_index, Qt.ItemDataRole.BackgroundRole) == QColor(214, 169, 58, 80)
     assert model.data(outcome_index, Qt.ItemDataRole.ForegroundRole) is None
 
 

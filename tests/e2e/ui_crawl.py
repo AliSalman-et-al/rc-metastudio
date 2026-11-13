@@ -65,9 +65,6 @@ def analysis_setup(driver, capture, missing):
     assert "17 eligible" in form.context_label.text(), form.context_label.text()
     capture("E-small-study", form)
     form.close()
-    driver.window.action_summary_of_findings.trigger()
-    capture("E-summary-of-findings", driver.window.summary_of_findings_dialog)
-    driver.window.summary_of_findings_dialog.close()
     # The open setup can outlive the study selection in the model. Exercise the
     # real empty-selection failure rather than replacing the analysis service.
     form = AnalysisSetupDialog(driver.window.model, parent=driver.window, confidence_level=95)
@@ -146,12 +143,6 @@ def exports(driver, capture, missing, view):
         render(converted / "manuscript.pdf", "docx-page-1")
     except (OSError, subprocess.SubprocessError) as error:
         missing.append(f"I DOCX page 1: {error}; {getattr(error, 'stderr', b'')!r}")
-    driver.window.action_summary_of_findings.trigger()
-    form = driver.window.summary_of_findings_dialog
-    path = driver.WORK / "summary-of-findings.pdf"
-    write_pdf(form.report(), str(path))
-    render(path, "summary-of-findings")
-    form.close()
     title, image = next(iter(view.results.images.items()))
     artifact = view.create_plot_artifact(title, image, params_path=view.results.image_params_paths.get(title))
     path = driver.WORK / "plot.pdf"
@@ -386,14 +377,13 @@ def shell(driver, capture, missing):
     assert driver.window.menu_file.actions() == [
         driver.window.action_new_dataset, driver.window.action_open,
         driver.window.action_open_recent_2.menuAction(), driver.window.action_import_csv,
-        driver.window.action_import_rm5, driver.window.menu_file.actions()[5],
+        driver.window.menu_file.actions()[4],
         driver.window.action_save, driver.window.action_save_as,
-        driver.window.menu_file.actions()[8], driver.window.action_quit,
+        driver.window.menu_file.actions()[7], driver.window.action_quit,
     ]
-    assert driver.window.menu_file.actions()[5].isSeparator()
-    assert driver.window.menu_file.actions()[8].isSeparator()
+    assert driver.window.menu_file.actions()[4].isSeparator()
+    assert driver.window.menu_file.actions()[7].isSeparator()
     assert driver.window.action_quit.shortcut().toString() == "Ctrl+Q"
-    assert driver.window.action_summary_of_findings.text().endswith("…")
     driver.window.resize(1280, 800)
     capture("A-amino-grid", driver.window)
     bar = driver.window.menuBar()
@@ -592,9 +582,6 @@ def dark(driver, capture, missing):
         title, image = next(iter(view.results.images.items()))
         artifact = view.create_plot_artifact(title, image, params_path=view.results.image_params_paths.get(title))
         plot_editor(driver, capture, artifact, view, "plot-editor", prefix="J")
-        driver.window.action_summary_of_findings.trigger()
-        capture("J-summary-of-findings", driver.window.summary_of_findings_dialog)
-        driver.window.summary_of_findings_dialog.close()
         view.close()
     finally:
         driver.app.setPalette(original)

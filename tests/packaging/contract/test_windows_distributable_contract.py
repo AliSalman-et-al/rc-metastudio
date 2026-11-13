@@ -196,6 +196,7 @@ def test_frozen_windows_runtime_bootstraps_without_a_kit(monkeypatch, tmp_path):
         r_runtime, "_configure_private_runtime_directories", lambda _root: None
     )
     monkeypatch.setattr(r_runtime, "_set_windows_dll_policy", lambda: None)
+    monkeypatch.setattr(r_runtime, "_set_windows_processor_architecture", lambda: None)
     monkeypatch.setattr(r_runtime, "_prepend_path", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(r_runtime, "_add_dll_directories", lambda *_args: None)
     monkeypatch.setattr(r_runtime.os, "environ", dict(r_runtime.os.environ))
@@ -229,7 +230,7 @@ def _windows_deployment_fixture(tmp_path):
     app = tmp_path / "RCMetaStudio"
     qt = app / "_internal" / "PyQt6" / "Qt6"
     _write_pe(app / "RCMetaStudio.exe")
-    api_bridge = app / "_internal" / "_rinterface_cffi_api.cp311-win_amd64.pyd"
+    api_bridge = app / "_internal" / "_rinterface_cffi_api.cp314-win_amd64.pyd"
     _write_pe(api_bridge)
     r_dll = app / "R" / "bin" / "x64" / "R.dll"
     _write_pe(r_dll)
@@ -250,7 +251,7 @@ def _windows_deployment_fixture(tmp_path):
                 "kit_sha256": "a" * 64,
                 "files": [
                     {
-                        "path": "bridge/_rinterface_cffi_api.cp311-win_amd64.pyd",
+                        "path": "bridge/_rinterface_cffi_api.cp314-win_amd64.pyd",
                         "kind": "file",
                         "sha256": api_sha256,
                     },
@@ -272,7 +273,7 @@ def _windows_deployment_fixture(tmp_path):
                 "kit_sha256": "a" * 64,
                 "source": {
                     "api_bridge": {
-                        "path": "bridge/_rinterface_cffi_api.cp311-win_amd64.pyd",
+                        "path": "bridge/_rinterface_cffi_api.cp314-win_amd64.pyd",
                         "sha256": api_sha256,
                     },
                     "r_shared_library": {
@@ -337,22 +338,22 @@ def _windows_deployment_fixture(tmp_path):
 
 def _windows_runtime_probe(app):
     qt = app / "_internal" / "PyQt6" / "Qt6"
-    api_bridge = app / "_internal" / "_rinterface_cffi_api.cp311-win_amd64.pyd"
+    api_bridge = app / "_internal" / "_rinterface_cffi_api.cp314-win_amd64.pyd"
     r_dll = app / "R" / "bin" / "x64" / "R.dll"
     return {
         "schema_version": 1,
         "frozen": True,
         "python": {
-            "version": "3.11.9",
+            "version": "3.14.10",
             "executable": str(app / "RCMetaStudio.exe"),
             "architecture": "AMD64",
             "bundle_root": str(app / "_internal"),
         },
         "qt": {
-            "pyqt_version": "6.11.0",
-            "compiled_qt_version": "6.11.0",
-            "runtime_qt_version": "6.11.1",
-            "sip_runtime_version": "6.15.2",
+            "pyqt_version": "6.12.0",
+            "compiled_qt_version": "6.12.0",
+            "runtime_qt_version": "6.12.0",
+            "sip_runtime_version": "6.17.3",
             "platform_plugin": "windows",
             "plugins_path": str(qt / "plugins"),
             "library_paths": [str(qt / "plugins")],
@@ -361,10 +362,10 @@ def _windows_runtime_probe(app):
             "baseline_logical_dpi": 96.0,
         },
         "rpy2": {
-            "distribution_version": "3.6.7",
+            "distribution_version": "3.6.9",
             "cffi_mode": "API",
-            "rinterface_distribution_version": "3.6.6",
-            "robjects_distribution_version": "3.6.5",
+            "rinterface_distribution_version": "3.6.7",
+            "robjects_distribution_version": "3.6.6",
             "loaded_cffi_mode": "API",
             "api_bridge_loaded": True,
             "api_bridge_path": str(api_bridge),
@@ -375,7 +376,7 @@ def _windows_runtime_probe(app):
             "validated_members": ["manifest.json", "project.json", "state.json"],
         },
         "r": {
-            "version": "4.6.1",
+            "version": "4.6.2",
             "home": str(app / "R"),
             "library_paths": [str(app / "R" / "library")],
             "configured_home": str(app / "R"),
@@ -478,14 +479,14 @@ def test_windows_deployment_inspector_accepts_one_coherent_x64_qt6_stack(
     _write_pe(qt_root / "plugins" / "imageformats" / "qpdf.dll")
     _write_pe(app / "R" / "library" / "qpdf" / "libs" / "x64" / "qpdf.dll")
     versions = {
-        "python": "3.11.9",
-        "pyqt6": "6.11.0",
-        "qt": "6.11.1",
-        "sip": "13.11.1",
-        "sip_runtime": "6.15.2",
-        "r": "4.6.1",
-        "rpy2": "3.6.7",
-        "pyinstaller": "6.21.0",
+        "python": "3.14.10",
+        "pyqt6": "6.12.0",
+        "qt": "6.12.0",
+        "sip": "13.13.1",
+        "sip_runtime": "6.17.3",
+        "r": "4.6.2",
+        "rpy2": "3.6.9",
+        "pyinstaller": "6.22.3",
     }
 
     direct_runtime_probe = _windows_runtime_probe(app)
@@ -509,7 +510,7 @@ def test_windows_deployment_inspector_accepts_one_coherent_x64_qt6_stack(
     assert manifest["minimum_os"] == "Windows 10 version 1809"
     assert manifest["collector"] == {
         "name": "PyInstaller",
-        "version": "6.21.0",
+        "version": "6.22.3",
         "provenance": "build-time-only",
         "definition": "packaging/pyinstaller/rc-metastudio.spec",
     }
@@ -699,6 +700,7 @@ def test_final_windows_pe_closure_requires_app_local_msvc_and_tracks_delay_impor
         "_imports": [
             {"name": "VCRUNTIME140.dll", "kind": "delay"},
             {"name": "KERNEL32.dll", "kind": "normal"},
+            {"name": "mscms.dll", "kind": "normal"},
         ],
     }
     inspector._resolve_pe_closure([runtime, bridge])
@@ -711,6 +713,7 @@ def test_final_windows_pe_closure_requires_app_local_msvc_and_tracks_delay_impor
             "resolved_sha256": "d" * 64,
         },
         {"name": "KERNEL32.dll", "kind": "normal", "resolution": "system"},
+        {"name": "mscms.dll", "kind": "normal", "resolution": "system"},
     ]
 
 
@@ -738,14 +741,14 @@ def test_windows_deployment_inspector_rejects_legacy_duplicate_and_wrong_archite
 
     inspector = _load_windows_deployment_inspector()
     versions = {
-        "python": "3.11.9",
-        "pyqt6": "6.11.0",
-        "qt": "6.11.1",
-        "sip": "13.11.1",
-        "sip_runtime": "6.15.2",
-        "r": "4.6.1",
-        "rpy2": "3.6.7",
-        "pyinstaller": "6.21.0",
+        "python": "3.14.10",
+        "pyqt6": "6.12.0",
+        "qt": "6.12.0",
+        "sip": "13.13.1",
+        "sip_runtime": "6.17.3",
+        "r": "4.6.2",
+        "rpy2": "3.6.9",
+        "pyinstaller": "6.22.3",
     }
 
     app = _windows_deployment_fixture(tmp_path / "legacy")
@@ -846,7 +849,7 @@ def test_windows_deployment_inspector_rejects_legacy_duplicate_and_wrong_archite
             )
 
     app = _windows_deployment_fixture(tmp_path / "stack-mismatch")
-    mismatched = dict(versions, qt="6.11.0")
+    mismatched = dict(versions, qt="0.0.0")
     with pytest.raises(
         inspector.DeploymentInspectionError, match="differs from the locked"
     ):
@@ -876,7 +879,7 @@ def test_windows_deployment_inspector_rejects_legacy_duplicate_and_wrong_archite
 
     app = _windows_deployment_fixture(tmp_path / "runtime-probe-mismatch")
     probe = _windows_runtime_probe(app)
-    probe["qt"]["runtime_qt_version"] = "6.11.0"
+    probe["qt"]["runtime_qt_version"] = "0.0.0"
     with pytest.raises(inspector.DeploymentInspectionError, match="frozen Qt runtime"):
         inspector.inspect_deployment(
             app,

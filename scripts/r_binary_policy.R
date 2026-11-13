@@ -117,7 +117,7 @@ dependency_names <- function(value) {
 runtime_priority_packages <- function() {
   installed <- utils::installed.packages()
   priority <- installed[, "Priority"]
-  rownames(installed)[!is.na(priority) & priority %in% c("base", "recommended")]
+  rownames(installed)[!is.na(priority) & priority == "base"]
 }
 
 preflight_rcms_binary_closure <- function(
@@ -227,7 +227,11 @@ install_rcms_binary_packages <- function(
   database = NULL,
   install_binary = utils::install.packages,
   download_binary = utils::download.packages,
-  installed_in_target = function() rownames(utils::installed.packages(lib.loc = lib)),
+  installed_in_target = function() {
+    installed <- utils::installed.packages(lib.loc = lib)
+    common <- intersect(rownames(installed), rownames(database))
+    common[installed[common, "Version"] == database[common, "Version"]]
+  },
   package_loadable = function(package) target_package_loadable(package, lib)
 ) {
   platform <- assert_rcms_binary_runtime(policy)

@@ -2,23 +2,75 @@
   "manifest": "RCMetaR-r-dependencies",
   "schema_version": 2,
   "target_runtime": {
-    "r": "4.6.1",
-    "rpy2": "3.6.7",
+    "r": "4.6.2",
+    "rpy2": "3.6.9",
     "cran_policy": "dated-native-binary-only"
   },
   "binary_package_policy": {
     "provider": "Posit Public Package Manager",
-    "repository": "https://packagemanager.posit.co/cran/2026-07-16",
-    "snapshot": "2026-07-16",
+    "repository": "https://packagemanager.posit.co/cran/2026-11-13",
+    "snapshot": "2026-11-13",
     "normal_install_type": "binary",
     "source_fallback": false,
     "required_normal_packages": [
-      "mada", "metafor", "rsvg", "svglite", "png", "tiff", "xml2", "roxygen2", "testthat",
-      "quantreg", "ape", "Hmisc", "mice", "ggplot2", "RColorBrewer",
-      "Rcpp", "magrittr", "irlba", "minqa", "nloptr", "RcppEigen", "SparseM", "MatrixModels", "Formula",
-      "latticeExtra", "acepack", "gridExtra", "data.table", "htmlTable", "viridis", "htmltools", "viridisLite",
-      "htmlwidgets", "rmarkdown", "knitr", "stringr", "stringi", "colorspace", "gtable", "scales", "vctrs",
-      "rlang", "withr", "cli", "glue", "lifecycle", "S7", "labeling", "meta", "metabook", "CompQuadForm", "isoband", "farver", "mvtnorm", "ellipse", "mvmeta", "mixmeta"
+      "mada",
+      "metafor",
+      "rsvg",
+      "svglite",
+      "png",
+      "tiff",
+      "xml2",
+      "roxygen2",
+      "testthat",
+      "quantreg",
+      "ape",
+      "Hmisc",
+      "mice",
+      "ggplot2",
+      "mgcv",
+      "RColorBrewer",
+      "Rcpp",
+      "magrittr",
+      "irlba",
+      "minqa",
+      "nloptr",
+      "RcppEigen",
+      "SparseM",
+      "MatrixModels",
+      "Formula",
+      "latticeExtra",
+      "acepack",
+      "gridExtra",
+      "data.table",
+      "htmlTable",
+      "viridis",
+      "htmltools",
+      "viridisLite",
+      "htmlwidgets",
+      "rmarkdown",
+      "knitr",
+      "stringr",
+      "stringi",
+      "colorspace",
+      "gtable",
+      "scales",
+      "vctrs",
+      "rlang",
+      "withr",
+      "cli",
+      "glue",
+      "lifecycle",
+      "S7",
+      "labeling",
+      "meta",
+      "metabook",
+      "CompQuadForm",
+      "isoband",
+      "farver",
+      "mvtnorm",
+      "ellipse",
+      "mvmeta",
+      "mixmeta"
     ],
     "install_options": {
       "install.packages.check.source": "no",
@@ -39,7 +91,7 @@
       }
     },
     "linux_binary": {
-      "repository": "https://packagemanager.posit.co/cran/__linux__/noble/2026-07-16",
+      "repository": "https://packagemanager.posit.co/cran/__linux__/noble/2026-11-13",
       "distribution": "noble",
       "r_version_series": "4.6",
       "r_arch": "x86_64",
@@ -55,10 +107,19 @@
     "package": "RCMetaR",
     "description": "r/RCMetaR/DESCRIPTION",
     "dependency_fields": {
-      "runtime": ["Depends", "Imports"],
-      "build": ["LinkingTo"],
-      "test": ["Suggests"],
-      "documentation": ["Suggests"]
+      "runtime": [
+        "Depends",
+        "Imports"
+      ],
+      "build": [
+        "LinkingTo"
+      ],
+      "test": [
+        "Suggests"
+      ],
+      "documentation": [
+        "Suggests"
+      ]
     }
   },
   "empty_scope_rationale": {
@@ -68,44 +129,72 @@
     {
       "name": "R",
       "source": "base-runtime",
-      "scope": ["runtime"],
-      "declared_in": ["r/RCMetaR/DESCRIPTION"],
-      "evidence": ["r/RCMetaR/DESCRIPTION: Depends: R (>= 4.6.0)"],
+      "scope": [
+        "runtime"
+      ],
+      "declared_in": [
+        "r/RCMetaR/DESCRIPTION"
+      ],
+      "evidence": [
+        "r/RCMetaR/DESCRIPTION: Depends: R (>= 4.6.0)"
+      ],
       "reason": "RCMetaR is an R package and declares a minimum R runtime.",
-      "installed_version": "4.6.1"
+      "installed_version": "4.6.2"
     },
     {
       "name": "graphics",
       "source": "base-runtime",
-      "scope": ["runtime"],
-      "declared_in": ["r/RCMetaR/DESCRIPTION"],
-      "evidence": ["r/RCMetaR/R/rcmetar-package.R: @import graphics"],
+      "scope": [
+        "runtime"
+      ],
+      "declared_in": [
+        "r/RCMetaR/DESCRIPTION"
+      ],
+      "evidence": [
+        "r/RCMetaR/R/rcmetar-package.R: @import graphics"
+      ],
       "reason": "Diagnostic and plotting code relies on graphics behavior from the base R distribution.",
-      "installed_version": "4.6.1"
+      "installed_version": "4.6.2"
     },
     {
       "name": "grDevices",
       "source": "base-runtime",
-      "scope": ["runtime"],
-      "declared_in": ["r/RCMetaR/DESCRIPTION"],
-      "evidence": ["r/RCMetaR/R/plotting.R: forest and diagnostic plot functions call png(...), pdf(...), dev.off(...), and graphics.off(...)"],
+      "scope": [
+        "runtime"
+      ],
+      "declared_in": [
+        "r/RCMetaR/DESCRIPTION"
+      ],
+      "evidence": [
+        "r/RCMetaR/R/plotting.R: forest and diagnostic plot functions call png(...), pdf(...), dev.off(...), and graphics.off(...)"
+      ],
       "reason": "RCMetaR writes plot image/PDF devices and closes graphics devices through the base grDevices package.",
-      "installed_version": "4.6.1"
+      "installed_version": "4.6.2"
     },
     {
       "name": "mada",
       "source": "cran",
-      "scope": ["runtime"],
-      "declared_in": ["r/RCMetaR/DESCRIPTION"],
-      "evidence": ["r/RCMetaR/R/reitsma_methods.R: mada::reitsma(), SummaryPts(), AUC(), and SROC geometry"],
+      "scope": [
+        "runtime"
+      ],
+      "declared_in": [
+        "r/RCMetaR/DESCRIPTION"
+      ],
+      "evidence": [
+        "r/RCMetaR/R/reitsma_methods.R: mada::reitsma(), SummaryPts(), AUC(), and SROC geometry"
+      ],
       "reason": "mada 0.5.12 is the statistical authority for the count-based Reitsma bivariate model.",
       "installed_version": "0.5.12"
     },
     {
       "name": "metafor",
       "source": "cran",
-      "scope": ["runtime"],
-      "declared_in": ["r/RCMetaR/DESCRIPTION"],
+      "scope": [
+        "runtime"
+      ],
+      "declared_in": [
+        "r/RCMetaR/DESCRIPTION"
+      ],
       "evidence": [
         "r/RCMetaR/R/binary_methods.R: rma.uni(...) and related metafor analysis calls",
         "r/RCMetaR/R/continuous_methods.R: rma.uni(...) and related metafor analysis calls",
@@ -113,22 +202,32 @@
         "r/RCMetaR/R/meta_regression.R: rma.uni(...) and related metafor analysis calls"
       ],
       "reason": "Core binary, continuous, diagnostic, and meta-regression methods call metafor analysis functions.",
-      "installed_version": "5.0-1"
+      "installed_version": "5.2-1"
     },
     {
       "name": "meta",
       "source": "cran",
-      "scope": ["runtime"],
-      "declared_in": ["r/RCMetaR/DESCRIPTION"],
-      "evidence": ["r/RCMetaR/R/small_study_effects.R: meta::metabias(...) and meta::trimfill(...)"],
+      "scope": [
+        "runtime"
+      ],
+      "declared_in": [
+        "r/RCMetaR/DESCRIPTION"
+      ],
+      "evidence": [
+        "r/RCMetaR/R/small_study_effects.R: meta::metabias(...) and meta::trimfill(...)"
+      ],
       "reason": "Pinned meta 8.5-0 owns the supported classical small-study effects methods and trim-and-fill behavior.",
       "installed_version": "8.5-0"
     },
     {
       "name": "svglite",
       "source": "cran",
-      "scope": ["runtime"],
-      "declared_in": ["r/RCMetaR/DESCRIPTION"],
+      "scope": [
+        "runtime"
+      ],
+      "declared_in": [
+        "r/RCMetaR/DESCRIPTION"
+      ],
       "evidence": [
         "r/RCMetaR/R/plot_devices.R: rcmetar.open.svg_device renders canonical forest plot SVG files with svglite::svglite(...)"
       ],
@@ -138,8 +237,12 @@
     {
       "name": "rsvg",
       "source": "cran",
-      "scope": ["runtime"],
-      "declared_in": ["r/RCMetaR/DESCRIPTION"],
+      "scope": [
+        "runtime"
+      ],
+      "declared_in": [
+        "r/RCMetaR/DESCRIPTION"
+      ],
       "evidence": [
         "r/RCMetaR/R/plot_devices.R: rcmetar.export.svg_render converts canonical SVG files to PNG, PDF, and bitmap exports with rsvg"
       ],
@@ -149,8 +252,12 @@
     {
       "name": "png",
       "source": "cran",
-      "scope": ["runtime"],
-      "declared_in": ["r/RCMetaR/DESCRIPTION"],
+      "scope": [
+        "runtime"
+      ],
+      "declared_in": [
+        "r/RCMetaR/DESCRIPTION"
+      ],
       "evidence": [
         "r/RCMetaR/R/plot_devices.R: png::readPNG(..., native=TRUE) supplies packed raster data to the TIFF device"
       ],
@@ -160,8 +267,12 @@
     {
       "name": "tiff",
       "source": "cran",
-      "scope": ["test"],
-      "declared_in": ["r/RCMetaR/DESCRIPTION"],
+      "scope": [
+        "test"
+      ],
+      "declared_in": [
+        "r/RCMetaR/DESCRIPTION"
+      ],
       "evidence": [
         "r/RCMetaR/tests/testthat/test-plot-devices.R: tiff::readTIFF independently verifies exported pixels, alpha compositing and publication resolution"
       ],
@@ -171,17 +282,27 @@
     {
       "name": "methods",
       "source": "base-runtime",
-      "scope": ["runtime"],
-      "declared_in": ["r/RCMetaR/DESCRIPTION"],
-      "evidence": ["r/RCMetaR/R/analysis_data_classes.R: setClass(...)"],
+      "scope": [
+        "runtime"
+      ],
+      "declared_in": [
+        "r/RCMetaR/DESCRIPTION"
+      ],
+      "evidence": [
+        "r/RCMetaR/R/analysis_data_classes.R: setClass(...)"
+      ],
       "reason": "RCMetaR defines S4 data and analysis specification classes with methods::setClass.",
-      "installed_version": "4.6.0"
+      "installed_version": "4.6.2"
     },
     {
       "name": "boot",
       "source": "recommended",
-      "scope": ["runtime"],
-      "declared_in": ["r/RCMetaR/DESCRIPTION"],
+      "scope": [
+        "runtime"
+      ],
+      "declared_in": [
+        "r/RCMetaR/DESCRIPTION"
+      ],
       "evidence": [
         "r/RCMetaR/R/repeated_analyses.R: bootstrap analysis uses boot(...)",
         "r/RCMetaR/R/meta_regression.R: boot(...) and boot.ci(...)"
@@ -192,35 +313,58 @@
     {
       "name": "stats",
       "source": "base-runtime",
-      "scope": ["runtime"],
-      "declared_in": ["r/RCMetaR/DESCRIPTION"],
-      "evidence": ["r/RCMetaR/R: package-wide statistical helpers call base stats APIs implicitly"],
+      "scope": [
+        "runtime"
+      ],
+      "declared_in": [
+        "r/RCMetaR/DESCRIPTION"
+      ],
+      "evidence": [
+        "r/RCMetaR/R: package-wide statistical helpers call base stats APIs implicitly"
+      ],
       "reason": "RCMetaR relies on standard R statistical functions that are distributed with R.",
-      "installed_version": "4.6.0"
+      "installed_version": "4.6.2"
     },
     {
       "name": "utils",
       "source": "base-runtime",
-      "scope": ["runtime"],
-      "declared_in": ["r/RCMetaR/DESCRIPTION"],
-      "evidence": ["r/RCMetaR/R: package code calls capture.output(...) and write.csv(...)"],
+      "scope": [
+        "runtime"
+      ],
+      "declared_in": [
+        "r/RCMetaR/DESCRIPTION"
+      ],
+      "evidence": [
+        "r/RCMetaR/R: package code calls capture.output(...) and write.csv(...)"
+      ],
       "reason": "RCMetaR captures textual R summaries and writes CSV output through the base utils package.",
-      "installed_version": "4.6.0"
+      "installed_version": "4.6.2"
     },
     {
       "name": "roxygen2",
       "source": "cran",
-      "scope": ["documentation", "build"],
+      "scope": [
+        "documentation",
+        "build"
+      ],
       "declared_in": [],
-      "evidence": ["r/RCMetaR/R", "r/RCMetaR/NAMESPACE", "r/RCMetaR/man"],
+      "evidence": [
+        "r/RCMetaR/R",
+        "r/RCMetaR/NAMESPACE",
+        "r/RCMetaR/man"
+      ],
       "reason": "RCMetaR uses roxygen2 to generate its NAMESPACE and package reference files.",
-      "installed_version": "8.0.0"
+      "installed_version": "8.1.1"
     },
     {
       "name": "testthat",
       "source": "cran",
-      "scope": ["test"],
-      "declared_in": ["r/RCMetaR/DESCRIPTION"],
+      "scope": [
+        "test"
+      ],
+      "declared_in": [
+        "r/RCMetaR/DESCRIPTION"
+      ],
       "evidence": [
         "r/RCMetaR/DESCRIPTION",
         "r/RCMetaR/tests/testthat.R",
@@ -235,175 +379,242 @@
       "name": "Rcpp",
       "source": "cran",
       "reason": "Bundled to satisfy compiled CRAN dependency chains used by the maintained desktop R library.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "magrittr",
       "source": "cran",
       "reason": "Bundled as part of the app-level CRAN dependency closure.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "metabook",
       "source": "cran",
       "reason": "Bundled as a transitive dependency of the pinned meta 8.5-0 runtime, outside RCMetaR's direct package metadata.",
-      "evidence": ["meta 8.5-0 package dependency closure", "scripts/install-r-deps.R"]
+      "evidence": [
+        "meta 8.5-0 package dependency closure",
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "CompQuadForm",
       "source": "cran",
       "reason": "Bundled as a transitive dependency of the pinned meta 8.5-0 runtime, outside RCMetaR's direct package metadata.",
-      "evidence": ["meta 8.5-0 package dependency closure", "scripts/install-r-deps.R"]
+      "evidence": [
+        "meta 8.5-0 package dependency closure",
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "irlba",
       "source": "cran",
       "reason": "Bundled as part of the app-level CRAN dependency closure.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "minqa",
       "source": "cran",
       "reason": "Bundled as an optimizer dependency for app-level mixed-model packages.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "nloptr",
       "source": "cran",
       "reason": "Bundled as an optimizer dependency for app-level mixed-model packages.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "RcppEigen",
       "source": "cran",
       "reason": "Bundled to satisfy compiled dependencies for app-level mixed-model packages.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "SparseM",
       "source": "cran",
       "reason": "Bundled as part of the app-level CRAN dependency closure.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "MatrixModels",
       "source": "cran",
       "reason": "Bundled as part of the app-level CRAN dependency closure.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "Formula",
       "source": "cran",
       "reason": "Bundled as part of the app-level CRAN dependency closure.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "latticeExtra",
       "source": "cran",
       "reason": "Bundled as part of the app-level CRAN dependency closure.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "acepack",
       "source": "cran",
       "reason": "Bundled as part of the app-level CRAN dependency closure.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "gridExtra",
       "source": "cran",
       "reason": "Bundled as part of the app-level CRAN dependency closure.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "data.table",
       "source": "cran",
       "reason": "Bundled as part of the app-level CRAN dependency closure.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "htmlTable",
       "source": "cran",
       "reason": "Bundled as part of the app-level CRAN dependency closure.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "viridis",
       "source": "cran",
       "reason": "Bundled as part of the app-level CRAN dependency closure.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "htmltools",
       "source": "cran",
       "reason": "Bundled as part of the app-level CRAN dependency closure.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "quantreg",
       "source": "cran",
       "reason": "Bundled as part of the app-level CRAN dependency closure.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "ape",
       "source": "cran",
       "reason": "Bundled as an app-level dependency retained outside direct RCMetaR metadata; no direct RCMetaR call site has been identified in this slice.",
-      "evidence": ["r/RCMetaR/DESCRIPTION", "scripts/install-r-deps.R"]
+      "evidence": [
+        "r/RCMetaR/DESCRIPTION",
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "Hmisc",
       "source": "cran",
       "reason": "Bundled as an app-level dependency retained outside direct RCMetaR metadata; no direct RCMetaR call site has been identified in this slice.",
-      "evidence": ["r/RCMetaR/DESCRIPTION", "scripts/install-r-deps.R"]
+      "evidence": [
+        "r/RCMetaR/DESCRIPTION",
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "mice",
       "source": "cran",
       "reason": "Bundled as an app-level dependency retained outside direct RCMetaR metadata; no direct RCMetaR call site has been identified in this slice.",
-      "evidence": ["r/RCMetaR/DESCRIPTION", "scripts/install-r-deps.R"]
+      "evidence": [
+        "r/RCMetaR/DESCRIPTION",
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "ggplot2",
       "source": "cran",
       "reason": "Bundled as an app-level dependency retained outside direct RCMetaR metadata; no direct RCMetaR call site has been identified in this slice.",
-      "evidence": ["r/RCMetaR/DESCRIPTION", "scripts/install-r-deps.R"]
+      "evidence": [
+        "r/RCMetaR/DESCRIPTION",
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "RColorBrewer",
       "source": "cran",
       "reason": "Bundled as an app-level dependency retained outside direct RCMetaR metadata; no direct RCMetaR call site has been identified in this slice.",
-      "evidence": ["r/RCMetaR/DESCRIPTION", "scripts/install-r-deps.R"]
+      "evidence": [
+        "r/RCMetaR/DESCRIPTION",
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "lattice",
       "source": "recommended",
       "reason": "Bundled as part of the app-level CRAN dependency closure.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "MASS",
       "source": "recommended",
       "reason": "Bundled as part of the app-level CRAN dependency closure.",
-      "evidence": ["scripts/install-r-deps.R"]
+      "evidence": [
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "nlme",
       "source": "recommended",
       "reason": "Bundled as an app-level dependency retained outside direct RCMetaR metadata; no direct RCMetaR call site has been identified in this slice.",
-      "evidence": ["r/RCMetaR/DESCRIPTION", "scripts/install-r-deps.R"]
+      "evidence": [
+        "r/RCMetaR/DESCRIPTION",
+        "scripts/install-r-deps.R"
+      ]
     },
     {
       "name": "splines",
       "source": "base-runtime",
       "reason": "Retained outside direct RCMetaR metadata; no direct RCMetaR call site has been identified in this slice.",
-      "evidence": ["r/RCMetaR/DESCRIPTION"]
+      "evidence": [
+        "r/RCMetaR/DESCRIPTION"
+      ]
     },
     {
       "name": "survival",
       "source": "recommended",
       "reason": "Installed by the app bundle outside direct RCMetaR metadata; no direct RCMetaR call site has been identified in this slice.",
-      "evidence": ["r/RCMetaR/DESCRIPTION", "scripts/install-r-deps.R"]
+      "evidence": [
+        "r/RCMetaR/DESCRIPTION",
+        "scripts/install-r-deps.R"
+      ]
     }
   ],
   "validation": {

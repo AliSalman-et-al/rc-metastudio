@@ -197,7 +197,7 @@ def run(app, window, ROOT, WORK, record_step):
     window.model.setData(window.model.index(0, window.model.NAME), 'Dirty study', QtCore.Qt.ItemDataRole.EditRole)
     before = dataset_to_project(window.model.dataset)
     state = (window.out_path, window.workspace.is_dirty, tuple(window.workspace._history))
-    action = window.action_import_rm5
+    action = window.action_import_csv
     def review(accept):
         dialog = app.activeModalWidget()
         assert dialog.objectName() == 'rm5_review'
@@ -317,7 +317,7 @@ def run(app, window, ROOT, WORK, record_step):
         wizard = app.activeModalWidget()
         assert isinstance(wizard, MainWizard)
         QtCore.QTimer.singleShot(0, lambda: review(True))
-        wizard.currentPage().import_rm5_btn.click()
+        wizard.currentPage().import_csv_btn.click()
     with patch.object(QtWidgets.QFileDialog, 'getOpenFileName', return_value=(str(source), '')):
         QtCore.QTimer.singleShot(0, welcome)
         wizard = MainWizard(parent=window)

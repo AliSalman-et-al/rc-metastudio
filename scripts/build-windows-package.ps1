@@ -10,7 +10,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$pinnedCranRepo = "https://packagemanager.posit.co/cran/2026-07-16"
+$pinnedCranRepo = "https://packagemanager.posit.co/cran/2026-11-13"
 $artifactDir = Join-Path $repoRoot "artifacts"
 $distRoot = Join-Path $repoRoot "build\windows-package\dist"
 $workRoot = Join-Path $repoRoot "build\windows-package\work"
@@ -674,8 +674,8 @@ if ($LASTEXITCODE -ne 0) { throw "Bounded package process self-test failed." }
     -File (Join-Path $repoRoot "scripts\test-package-download-retry.ps1")
 if ($LASTEXITCODE -ne 0) { throw "Package download retry self-test failed." }
 
-& $PythonExe -c "import sys; raise SystemExit(0 if sys.version_info[:2] == (3, 11) else 1)"
-if ($LASTEXITCODE -ne 0) { throw "Windows packaging requires the locked Python 3.11 runtime." }
+& $PythonExe -c "import sys; raise SystemExit(0 if sys.version_info[:2] == (3, 14) else 1)"
+if ($LASTEXITCODE -ne 0) { throw "Windows packaging requires the locked Python 3.14 runtime." }
 
 $projectVersion = Get-ProjectVersion -PythonExe $PythonExe
 $artifactName = "RCMetaStudio-$projectVersion-windows-x64"
@@ -686,7 +686,7 @@ $archiveInspectionPath = Join-Path $artifactDir "$artifactName-archive-inspectio
 $tmpZipPath = "$zipPath.tmp"
 $archiveRootDir = Join-Path $archiveStagingRoot $archiveRootName
 
-$requiredPyInstallerVersion = "6.21.0"
+$requiredPyInstallerVersion = "6.22.3"
 $installedPyInstallerVersion = & $PythonExe -c "import PyInstaller; print(PyInstaller.__version__)" 2>$null
 if ($LASTEXITCODE -ne 0 -or $installedPyInstallerVersion.Trim() -ne $requiredPyInstallerVersion) {
     throw "Locked environment does not contain PyInstaller $requiredPyInstallerVersion. Run the package command without -SkipDependencyInstall so uv sync --locked can repair it."
@@ -700,7 +700,7 @@ if ($QualifyExistingArchive) {
     if ($existingName -ne $artifactName) { throw "Existing archive name '$existingName' does not match the project version-derived '$artifactName'." }
     $existingEvidence = Join-Path $artifactDir "$artifactName-evidence.json"
     $existingInspection = Join-Path $artifactDir "$artifactName-archive-inspection.json"
-    $versionEvidence = @{ python = "3.11.9"; pyqt6 = "6.11.0"; qt = "6.11.1"; sip = "13.11.1"; sip_runtime = "6.15.2"; r = "4.6.1"; rpy2 = "3.6.7"; pyinstaller = $requiredPyInstallerVersion }
+    $versionEvidence = @{ python = "3.14.10"; pyqt6 = "6.12.0"; qt = "6.12.0"; sip = "13.13.1"; sip_runtime = "6.17.3"; r = "4.6.2"; rpy2 = "3.6.9"; pyinstaller = $requiredPyInstallerVersion }
     $exactQualification = Expand-AndQualifyExactArchive -Archive $existingArchive -ArchiveRootName $artifactName -LockedQtRoot (Join-Path $repoRoot ".venv\Lib\site-packages\PyQt6\Qt6") -Versions $versionEvidence
     $input = $exactQualification.ArchiveInputs
     $archivedSourceProvenance = Get-Content -Raw -LiteralPath (Join-Path $input "source-provenance.json") | ConvertFrom-Json
@@ -738,7 +738,7 @@ Write-Step "Building the target-native rpy2 API bridge against staged R"
         $env:RPY2_CFFI_MODE = "API"
         & uv pip install --python $PythonExe --reinstall --no-binary rpy2-rinterface `
             "--config-settings=--global-option=build" `
-            "--config-settings=--global-option=--compiler=mingw32" "rpy2-rinterface==3.6.6"
+            "--config-settings=--global-option=--compiler=mingw32" "rpy2-rinterface==3.6.7"
         if ($LASTEXITCODE -ne 0) { throw "Target-native rpy2 API bridge build failed." }
     }
     finally {

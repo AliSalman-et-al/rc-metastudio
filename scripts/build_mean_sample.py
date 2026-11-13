@@ -5,8 +5,9 @@
 import hashlib
 import json
 from pathlib import Path
+from typing import cast
 
-from rc_metastudio.project_format import load_project, save_project
+from rc_metastudio.project_format import load_project, save_project, JsonObject
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -27,7 +28,7 @@ def main():
                        rows=rows)])
     state = dict(schema_version=3, current_sheet_id=sheet_id)
     path = ROOT / "sample_projects/Illustrative-Mean.rcms"
-    save_project(path, project, state)
+    save_project(path, cast(JsonObject, project), state)
     reopened = load_project(path)
     assert reopened.project == project and reopened.state == state
     manifest_path = ROOT / "sample_projects/manifest.json"

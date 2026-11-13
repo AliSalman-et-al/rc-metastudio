@@ -5,6 +5,7 @@ from pathlib import Path
 import shlex
 import shutil
 import subprocess
+import sys
 
 import pytest
 
@@ -121,6 +122,7 @@ def test_producer_profiles_in_order_with_distinct_evidence(tmp_path: Path, pytho
     assert (source / "sentinel").read_text() == "source unchanged"
 
 
+@pytest.mark.skipif(sys.platform != "darwin", reason="requires the staged macOS R runtime without X11")
 def test_staged_r_probe_emits_exact_marker_bytes(tmp_path: Path):
     rscript = shutil.which("Rscript")
     if not rscript:

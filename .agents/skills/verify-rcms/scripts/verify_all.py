@@ -95,7 +95,7 @@ def main():
                 }
             )
             if result.returncode:
-                print(f"Failed; inspect {evidence / rows[-1]['log']}", flush=True)
+                print(f"Failed; inspect {log}", flush=True)
                 return 1
         return 0
     except Exception as exc:

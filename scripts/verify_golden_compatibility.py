@@ -45,6 +45,11 @@ NUMERIC_CONTRACT_RELATIVE_PATH = (
     "tests/analysis_regression/baseline/numeric-contract.json"
 )
 REQUIRED_RPY2_IDENTITIES = {
+    "rpy2": "3.6.9",
+    "rpy2-rinterface": "3.6.7",
+    "rpy2-robjects": "3.6.6",
+}
+FROZEN_RPY2_IDENTITIES = {
     "rpy2": "3.6.7",
     "rpy2-rinterface": "3.6.6",
     "rpy2-robjects": "3.6.5",
@@ -256,13 +261,13 @@ def _required_string(record: JsonObject, name: str, message: str) -> str:
 def _json_object_list(value: JsonValue | None, message: str) -> list[JsonObject]:
     if not isinstance(value, list) or not all(isinstance(item, dict) for item in value):
         raise ValueError(message)
-    return value
+    return [_json_object(item, message) for item in value]
 
 
 def _json_object_map(value: JsonValue, message: str) -> dict[str, JsonObject]:
     if not isinstance(value, dict) or not all(isinstance(item, dict) for item in value.values()):
         raise ValueError(message)
-    return value
+    return {key: _json_object(item, message) for key, item in value.items()}
 
 
 def _load_capture_manifest(path: Path) -> CaptureManifest:
@@ -270,7 +275,7 @@ def _load_capture_manifest(path: Path) -> CaptureManifest:
     cases = record.get("curated_golden_set")
     if not isinstance(cases, list) or not all(isinstance(case, str) for case in cases):
         raise ValueError("capture manifest cases must contain strings")
-    return {"curated_golden_set": cases}
+    return {"curated_golden_set": [case for case in cases if isinstance(case, str)]}
 
 
 def _numeric_case(value: JsonValue) -> NumericCase:
@@ -425,10 +430,7 @@ def _validate_internal_case(value: JsonValue) -> GoldenCase:
         raise ValueError("frozen numeric contract is malformed")
     if len(artifacts) > 4:
         raise ValueError("frozen artifact contract is malformed")
-    return cast(
-        GoldenCase,
-        {**row, "texts": texts, "outputs": outputs, "artifacts": artifacts},
-    )
+    return {**row, "texts": texts, "outputs": outputs, "artifacts": artifacts}
 
 
 def _safe_case_id(value: str) -> bool:
@@ -441,10 +443,10 @@ def _text_sections(value: JsonValue | None) -> TextSections:
         for name, text in value.items()
     ):
         raise ValueError("frozen text contract is malformed")
-    return value
+    return {name: text for name, text in value.items() if isinstance(text, str)}
 
 
-def _numeric_sections(value: JsonValue | None) -> NumericSections:
+def _numeric_sections(value: JsonValue | NumericSections | None) -> NumericSections:
     if not isinstance(value, dict):
         raise ValueError("frozen numeric contract is malformed")
     sections: NumericSections = {}
@@ -466,10 +468,10 @@ def _validate_golden_artifacts(value: JsonValue | None) -> list[GoldenArtifact]:
         path = raw_artifact.get("path")
         sha256 = raw_artifact.get("sha256")
         label = raw_artifact.get("label")
-        if not all(
-            isinstance(field, str) and field
-            for field in (bundle_path, path, sha256, label)
-        ):
+        if not (isinstance(bundle_path, str) and bundle_path
+                and isinstance(path, str) and path
+                and isinstance(sha256, str) and sha256
+                and isinstance(label, str) and label):
             raise ValueError("frozen artifact contract is malformed")
         artifacts.append(
             {
@@ -686,7 +688,7 @@ def _copy_json_object(value: JsonValue) -> JsonObject:
     return copy.deepcopy(value)
 
 
-def _copy_numeric_sections(value: JsonValue) -> NumericSections:
+def _copy_numeric_sections(value: JsonValue | NumericSections) -> NumericSections:
     return copy.deepcopy(_numeric_sections(value))
 
 
@@ -784,7 +786,7 @@ def _numeric_case_coverage(
     coverage: JsonObject = {}
     for section, metrics in sections.items():
         _validate_numeric_section(section, metrics, frozen)
-        coverage[section] = sorted(metrics)
+        coverage[section] = [name for name in sorted(metrics)]
     return coverage
 
 
@@ -858,8 +860,8 @@ def _validate_rpy2_identities(root: Path) -> dict[str, str]:
         distribution: committed.get(distribution)
         for distribution in REQUIRED_RPY2_IDENTITIES
     }
-    if expected != REQUIRED_RPY2_IDENTITIES:
-        raise ValueError("committed rpy2 identity contract is missing or unexpected")
+    if expected != FROZEN_RPY2_IDENTITIES:
+        raise ValueError("committed oracle rpy2 capture identities are missing or unexpected")
     actual = {}
     for distribution, required in REQUIRED_RPY2_IDENTITIES.items():
         try:
@@ -920,7 +922,9 @@ def _compare_plot_row(
 
 def _plot_descriptors(current_case: JsonObject) -> list[JsonObject]:
     value = current_case.get("plot_descriptors", [])
-    return value if isinstance(value, list) and all(isinstance(item, dict) for item in value) else []
+    if not isinstance(value, list) or not all(isinstance(item, dict) for item in value):
+        return []
+    return [item for item in value if isinstance(item, dict)]
 
 
 def _descriptors_by_label(descriptors: list[JsonObject]) -> dict[str, JsonObject]:

@@ -94,7 +94,7 @@ def encode_capture_png(capture: QtGui.QPixmap | QtGui.QImage, path: Path) -> Non
     rgba = image.convertToFormat(QtGui.QImage.Format.Format_RGBA8888)
     if rgba.isNull():
         raise RuntimeError("failed to convert calculator capture to RGBA8888")
-    bits = rgba.bits()
+    bits = required(rgba.bits(), "capture pixel buffer")
     bits.setsize(rgba.sizeInBytes())
     raw_bytes = bits.asstring(rgba.sizeInBytes())
     encoded = Image.frombytes(

@@ -620,10 +620,7 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
                 continue
 
             enum_control = dialog.parameter_grp_box.findChild(QtWidgets.QComboBox)
-            enum_control = cast(
-                QtWidgets.QComboBox,
-                required(enum_control, "parameter combo"),
-            )
+            enum_control = required(enum_control, "parameter combo")
             assert enum_control.maximumWidth() == QtWidgets.QWIDGETSIZE_MAX
             complete_value_width = max(
                 enum_control.fontMetrics().horizontalAdvance(enum_control.itemText(i))
@@ -834,9 +831,7 @@ def test_subgroup_and_covariate_selectors_use_transactional_layouts(qapp, monkey
         assert subgroup.covariate_combo_box.currentText() == long_name
         choice = subgroup.covariate_combo_box
         subgroup.move(available.right() - 20, available.top() + 40)
-        choice_view = cast(
-            QtWidgets.QAbstractItemView, required(choice.view(), "choice view")
-        )
+        choice_view = required(choice.view(), "choice view")
         original_column_width = choice_view.sizeHintForColumn(0)
         enlarged = QtGui.QFont(choice.font())
         enlarged.setPointSize(enlarged.pointSize() + 6)

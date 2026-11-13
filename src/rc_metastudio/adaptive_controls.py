@@ -96,7 +96,7 @@ class ChoiceControlController(QObject):
         self.visible_characters = visible_characters
         self._invalidate_measurements()
 
-    def eventFilter(  # ty: ignore[invalid-method-override] -- PyQt6 stub rejects the binding's valid override
+    def eventFilter(
         self,
         watched: QObject | None,
         event: QEvent | None,

@@ -5,8 +5,8 @@
 import math
 from rc_metastudio.analysis_catalog import RATIO_DATA_TYPES
 
-from collections.abc import Callable, Mapping, Sequence
-from typing import Protocol, TypeAlias, runtime_checkable
+from collections.abc import Buffer, Callable, Mapping, Sequence
+from typing import Protocol, SupportsFloat, SupportsIndex, TypeAlias, cast, runtime_checkable
 
 from rc_metastudio.analysis_dataset import Dataset, StudyRow
 from rc_metastudio.analysis_unit import AnalysisUnit
@@ -43,7 +43,11 @@ def make_display_scale_converter(
 ) -> Callable[[object], object]:
     """Build the calculation-to-display conversion for one outcome family."""
     if data_type in RATIO_DATA_TYPES:
-        return lambda value: None if value in (None, "") else math.exp(float(value))
+        def ratio_to_display(value):
+            if value in (None, ""):
+                return None
+            return math.exp(float(cast(str | Buffer | SupportsFloat | SupportsIndex, value)))
+        return ratio_to_display
     checked = _checked_bridge(bridge)
     if data_type == BINARY:
         return lambda value: checked.binary_convert_scale(

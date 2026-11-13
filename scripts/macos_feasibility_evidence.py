@@ -19,13 +19,13 @@ from typing import Callable, NoReturn, cast
 from rc_metastudio.macos_macho import MachOError, architectures as _macho_architectures
 
 EXPECTED_VERSIONS = {
-    "python": "3.11.9",
-    "pyqt6": "6.11.0",
-    "qt": "6.11.1",
-    "sip": "13.11.1",
-    "r": "4.6.1",
-    "rpy2": "3.6.7",
-    "pyinstaller": "6.21.0",
+    "python": "3.14.10",
+    "pyqt6": "6.12.0",
+    "qt": "6.12.0",
+    "sip": "13.13.1",
+    "r": "4.6.2",
+    "rpy2": "3.6.9",
+    "pyinstaller": "6.22.3",
 }
 TARGET_MACHINES = {"macos-arm64": "arm64"}
 RUNNER_KEYS = {

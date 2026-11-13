@@ -247,7 +247,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         for widget in self.content_widget.findChildren(QWidget):
             widget.installEventFilter(self)
 
-    def eventFilter(  # ty: ignore[invalid-method-override] -- PyQt6's QDialog stub rejects this runtime-supported QObject override.
+    def eventFilter(
         self, watched: QObject | None, event: QEvent | None
     ) -> bool:
         if (
@@ -1211,7 +1211,7 @@ class BinaryBackCalculationDialog(
 
         self._layout_controller.request_content_refit()
 
-    def eventFilter(  # ty: ignore[invalid-method-override] -- PyQt6's QDialog stub rejects this runtime-supported QObject override.
+    def eventFilter(
         self, watched: QObject | None, event: QEvent | None
     ) -> bool:
         if (

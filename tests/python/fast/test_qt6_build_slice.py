@@ -51,7 +51,7 @@ def verified_qt6_output(tmp_path_factory) -> Path:
 
 @pytest.fixture(scope="module")
 def official_rcc(verified_qt6_output) -> Path:
-    official = ROOT / "build/qt-rcc/6.11.1/msvc2022_64/bin/rcc.exe"
+    official = ROOT / "build/qt-rcc/6.12.0/msvc2022_64/bin/rcc.exe"
     assert official.is_file()
     return official
 
@@ -112,7 +112,7 @@ def test_macos_official_rcc_requires_pinned_version_and_host_slice(tmp_path):
     rcc.parent.mkdir(parents=True)
     rcc.write_bytes(b"official macOS rcc fixture")
     responses = {
-        "version": "rcc 6.11.1",
+        "version": "rcc 6.12.0",
         "architectures": "arm64",
     }
 
@@ -151,7 +151,7 @@ def test_macos_official_rcc_requires_pinned_version_and_host_slice(tmp_path):
             rcc, command_runner=completed, host_machine=lambda: "arm64"
         )
 
-    responses["version"] = "rcc 6.11.1"
+    responses["version"] = "rcc 6.12.0"
     responses["architectures"] = "i386"
     with pytest.raises(RuntimeError, match="invalid architecture slices"):
         macos_feasibility.validate_macos_rcc(
@@ -163,7 +163,7 @@ def test_linux_rcc_is_pinned_to_official_pyside6_version(tmp_path, monkeypatch):
     rcc = tmp_path / "bin" / "pyside6-rcc"
     rcc.parent.mkdir()
     rcc.write_text("tool fixture", encoding="utf-8")
-    responses = {"version": "rcc 6.11.1"}
+    responses = {"version": "rcc 6.12.0"}
 
     def completed(
         command: list[str], **_kwargs: object
@@ -193,13 +193,13 @@ def test_linux_rcc_resolution_checks_selected_pyside_environment(
     monkeypatch.setattr(qt6_build.sys, "executable", str(python))
     monkeypatch.delenv("RCMS_QT6_RCC", raising=False)
     monkeypatch.setattr(
-        qt6_build.importlib.metadata, "version", lambda _name: "6.11.1"
+        qt6_build.importlib.metadata, "version", lambda _name: "6.12.0"
     )
     monkeypatch.setattr(
         qt6_build.subprocess,
         "run",
         lambda command, **_kwargs: subprocess.CompletedProcess(
-            command, 0, stdout="rcc 6.11.1", stderr=""
+            command, 0, stdout="rcc 6.12.0", stderr=""
         ),
     )
 
@@ -424,8 +424,8 @@ def test_minimal_qt6_window_reports_resources_and_exits_cleanly(verified_qt6_out
     )
     report = json.loads(completed.stdout)
 
-    assert report["pyqt"] == "6.11.0"
-    assert report["qt"] == "6.11.1"
+    assert report["pyqt"] == "6.12.0"
+    assert report["qt"] == "6.12.0"
     assert report["form"] == "AboutLegalDialog"
     assert report["app_icon"] is True
     assert report["svg_icon"] is True

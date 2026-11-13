@@ -90,8 +90,8 @@ def build_args(tmp_path: Path, kit=None) -> argparse.Namespace:
                 "schema_version": 1,
                 "target": "windows-x64",
                 "official_r": {
-                    "url": "https://cloud.r-project.org/bin/windows/base/R-4.6.1-win.exe",
-                    "sha256": "c5424c40cd70ef85765a55d2ff96bb602b5f30ed536938ff004f14db5db3c2df",
+                    "url": "https://cloud.r-project.org/bin/windows/base/R-4.6.2-win.exe",
+                    "sha256": "b0b0053baa1963b6d8a28c9642d50107ef9ce2f41c8b9a90e952846c8918b38a",
                     "signature_identity": (
                         "CN=Martyn Plummer, O=Martyn Plummer, S=West Midlands, C=GB"
                     ),
@@ -105,7 +105,7 @@ def build_args(tmp_path: Path, kit=None) -> argparse.Namespace:
                         "name": "metafor",
                         "version": "4.8-0",
                         "package_type": "win.binary",
-                        "url": "https://packagemanager.posit.co/cran/2026-07-16/bin/windows/contrib/4.6/metafor.zip",
+                        "url": "https://packagemanager.posit.co/cran/2026-11-13/bin/windows/contrib/4.6/metafor.zip",
                         "sha256": sha,
                         "license_files": [],
                         "license": "GPL-2",
@@ -131,10 +131,10 @@ def build_args(tmp_path: Path, kit=None) -> argparse.Namespace:
                     )
                 ],
                 "rpy2": {
-                    "version": "3.6.7",
+                    "version": "3.6.9",
                     "sdist_distribution": "rpy2-rinterface",
-                    "sdist_version": "3.6.6",
-                    "robjects_version": "3.6.5",
+                    "sdist_version": "3.6.7",
+                    "robjects_version": "3.6.6",
                     "sdist_url": "https://files.pythonhosted.org/rpy2-rinterface.tar.gz",
                     "sdist_sha256": payloads["rpy2-rinterface"],
                     "toolchain": "uv build",
@@ -152,9 +152,9 @@ def build_args(tmp_path: Path, kit=None) -> argparse.Namespace:
                             ],
                         }
                         for name, version in (
-                            ("rpy2", "3.6.7"),
-                            ("rpy2-rinterface", "3.6.6"),
-                            ("rpy2-robjects", "3.6.5"),
+                            ("rpy2", "3.6.9"),
+                            ("rpy2-rinterface", "3.6.7"),
+                            ("rpy2-robjects", "3.6.6"),
                         )
                     ],
                 },
@@ -194,7 +194,7 @@ def test_build_verify_and_consume_content_addressed_api_kit(monkeypatch, tmp_pat
         kit.subprocess,
         "run",
         lambda *_args, **_kwargs: types.SimpleNamespace(
-            returncode=0, stdout="4.6.1", stderr=""
+            returncode=0, stdout="4.6.2", stderr=""
         ),
     )
     args = build_args(tmp_path, kit)
@@ -224,7 +224,7 @@ def test_verification_rejects_tampering_and_abi_fallback(monkeypatch, tmp_path):
         kit.subprocess,
         "run",
         lambda *_args, **_kwargs: types.SimpleNamespace(
-            returncode=0, stdout="4.6.1", stderr=""
+            returncode=0, stdout="4.6.2", stderr=""
         ),
     )
     args = build_args(tmp_path, kit)
@@ -245,7 +245,7 @@ def test_builder_rejects_abi_bridge(monkeypatch, tmp_path):
         kit.subprocess,
         "run",
         lambda *_args, **_kwargs: types.SimpleNamespace(
-            returncode=0, stdout="4.6.1", stderr=""
+            returncode=0, stdout="4.6.2", stderr=""
         ),
     )
     args = build_args(tmp_path, kit)
@@ -265,7 +265,7 @@ def test_arm64_kit_requires_macos_14(monkeypatch, tmp_path):
         kit.subprocess,
         "run",
         lambda *_args, **_kwargs: types.SimpleNamespace(
-            returncode=0, stdout="4.6.1", stderr=""
+            returncode=0, stdout="4.6.2", stderr=""
         ),
     )
     args = build_args(tmp_path, kit)
@@ -276,14 +276,14 @@ def test_arm64_kit_requires_macos_14(monkeypatch, tmp_path):
     provenance["target"] = "macos-arm64"
     provenance["official_r"].update(
         {
-            "url": "https://cloud.r-project.org/bin/macosx/sonoma-arm64/base/R-4.6.1-arm64.pkg",
+            "url": "https://cloud.r-project.org/bin/macosx/sonoma-arm64/base/R-4.6.2-arm64.pkg",
             "signature_identity": "Developer ID Installer: Simon Urbanek (VZLD955F6P)",
             "artifact_type": "pkg",
         }
     )
     provenance["ppm_packages"][0]["package_type"] = "mac.binary"
     provenance["ppm_packages"][0]["url"] = (
-        "https://packagemanager.posit.co/cran/2026-07-16/bin/macosx/sonoma-arm64/contrib/4.6/metafor.tgz"
+        "https://packagemanager.posit.co/cran/2026-11-13/bin/macosx/sonoma-arm64/contrib/4.6/metafor.tgz"
     )
     provenance["rpy2"]["bridge_sha256"] = hashlib.sha256(
         args.api_bridge.read_bytes()
@@ -406,7 +406,7 @@ def test_provenance_rejects_pseudo_urls(tmp_path):
     kit = module()
     args = build_args(tmp_path, kit)
     provenance = json.loads(args.provenance_manifest.read_text(encoding="utf-8"))
-    provenance["official_r"]["url"] = "installed-cran-r://R-4.6.1"
+    provenance["official_r"]["url"] = "installed-cran-r://R-4.6.2"
     args.provenance_manifest.write_text(json.dumps(provenance), encoding="utf-8")
     with pytest.raises(kit.KitError, match="provenance"):
         kit.load_provenance(args.provenance_manifest, "windows-x64", args.api_bridge)
@@ -614,7 +614,7 @@ def test_unclaimed_priority_does_not_grant_provenance(priority):
     official = [
         {
             "name": x["name"],
-            "version": x.get("installed_version", "4.6.1"),
+            "version": x.get("installed_version", "4.6.2"),
             "priority": "base" if x["source"] == "base-runtime" else "recommended",
         }
         for x in policy["app_r_bundle_dependencies"]
@@ -625,6 +625,7 @@ def test_unclaimed_priority_does_not_grant_provenance(priority):
     )
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="requires the Windows Python DLL and runtime closure")
 def test_build_failure_retry_and_changed_bridge_contract(tmp_path, monkeypatch):
     kit = module()
     monkeypatch.setattr(kit.platform, "system", lambda: "Windows")
@@ -633,7 +634,7 @@ def test_build_failure_retry_and_changed_bridge_contract(tmp_path, monkeypatch):
     monkeypatch.setattr(
         kit.subprocess,
         "run",
-        lambda *a, **k: types.SimpleNamespace(returncode=0, stdout="4.6.1", stderr=""),
+        lambda *a, **k: types.SimpleNamespace(returncode=0, stdout="4.6.2", stderr=""),
     )
     args = build_args(tmp_path, kit)
     original = args.api_bridge.read_bytes()

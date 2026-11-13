@@ -9,7 +9,7 @@ import pytest
 
 from rc_metastudio import project_adapter
 from rc_metastudio.project_format import (
-    ProjectDocument, ProjectFormatError, load_project, migrate_to_latest, save_project,
+    JsonObject, JsonValue, ProjectDocument, ProjectFormatError, load_project, migrate_to_latest, save_project,
 )
 from tests.python.fast.test_project_format import (
     _first_sheet, _first_study, _group_project, _legacy_group_project, _legacy_state,
@@ -18,7 +18,7 @@ from tests.python.fast.test_project_format import (
 
 
 ALIASES = ("TX Mean", "TXMean", "TX.Mean")
-VALUES = {"est": 1.5, "lower": 1.1, "upper": 1.9, "SE": .2,
+VALUES: JsonObject = {"est": 1.5, "lower": 1.1, "upper": 1.9, "SE": .2,
           "display_est": 1.5, "display_lower": 1.1, "display_upper": 1.9,
           "display_se": .2}
 

@@ -9,10 +9,10 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $venvRoot = Join-Path $repoRoot ".venv"
 $rDownloadCache = Join-Path $repoRoot "artifacts\download-cache\windows-x64"
-$rInstaller = Join-Path $rDownloadCache "R-4.6.1-win.exe"
-$rStage = Join-Path $repoRoot "build\windows-package\staged-R-4.6.1"
-$rUrl = "https://cloud.r-project.org/bin/windows/base/old/4.6.1/R-4.6.1-win.exe"
-$rSha256 = "C5424C40CD70EF85765A55D2FF96BB602B5F30ED536938FF004F14DB5DB3C2DF"
+$rInstaller = Join-Path $rDownloadCache "R-4.6.2-win.exe"
+$rStage = Join-Path $repoRoot "build\windows-package\staged-R-4.6.2"
+$rUrl = "https://cloud.r-project.org/bin/windows/base/old/4.6.2/R-4.6.2-win.exe"
+$rSha256 = "B0B0053BAA1963B6D8A28C9642D50107EF9CE2F41C8B9A90E952846C8918B38A"
 $rSigner = "CN=Martyn Plummer, O=Martyn Plummer, S=West Midlands, C=GB"
 $rThumbprint = "F356FC6CD245D722F4A82697473DA5995CB42975"
 
@@ -192,7 +192,7 @@ function Save-CurrentUserRInstallerState {
     New-Item -ItemType Directory -Force -Path $BackupRoot | Out-Null
     $keys = @(
         @{ Name = "r-core"; Path = "HKCU\Software\R-core" },
-        @{ Name = "uninstall"; Path = "HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\R for Windows 4.6.1_is1" }
+        @{ Name = "uninstall"; Path = "HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\R for Windows 4.6.2_is1" }
     )
     $snapshots = @()
     foreach ($key in $keys) {
@@ -253,7 +253,7 @@ function Stage-AuthenticatedOfficialR {
     $cachedHash = if (Test-Path $rInstaller) { (Get-FileHash -Algorithm SHA256 -LiteralPath $rInstaller).Hash.ToUpperInvariant() } else { $null }
     if ($cachedHash -ne $rSha256) {
         if (Test-Path $rInstaller) { Remove-Item -LiteralPath $rInstaller -Force }
-        Write-Step "Downloading official R 4.6.1 into the immutable download cache"
+        Write-Step "Downloading official R 4.6.2 into the immutable download cache"
         Invoke-DownloadWithRetry -Uri $rUrl -PartialPath $partialInstaller
         $partialHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $partialInstaller).Hash.ToUpperInvariant()
         if ($partialHash -ne $rSha256) { throw "Official R download hash mismatch; partial download was not promoted into the cache." }
@@ -266,7 +266,7 @@ function Stage-AuthenticatedOfficialR {
     }
     if (Test-Path $rStage) { Remove-Item -LiteralPath $rStage -Recurse -Force }
     Write-Step "Staging authenticated official R privately for this build"
-    # R 4.6.1 documents /CURRENTUSER for non-elevated installation and /SP-
+    # R 4.6.2 documents /CURRENTUSER for non-elevated installation and /SP-
     # for suppressing Setup's initial consent prompt.  Keep all installed
     # output (including the installer log) under the disposable repository
     # staging root; never touch Program Files or a machine-wide R install.

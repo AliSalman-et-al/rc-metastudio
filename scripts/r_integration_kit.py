@@ -15,24 +15,24 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from collections.abc import Iterator
+from collections.abc import Generator
 from typing import cast
 from urllib.parse import urlparse
 
 
 SCHEMA_VERSION = 1
-R_VERSION = "4.6.1"
-RPY2_VERSION = "3.6.7"
-RPY2_RINTERFACE_VERSION = "3.6.6"
-RPY2_ROBJECTS_VERSION = "3.6.5"
-PYTHON_VERSION = "3.11.9"
+R_VERSION = "4.6.2"
+RPY2_VERSION = "3.6.9"
+RPY2_RINTERFACE_VERSION = "3.6.7"
+RPY2_ROBJECTS_VERSION = "3.6.6"
+PYTHON_VERSION = "3.14.10"
 TARGETS = {
     "windows-x64": ("Windows", "x86_64", None),
     "macos-arm64": ("Darwin", "arm64", "14.0"),
 }
 OFFICIAL_R_URLS = {
-    "windows-x64": "https://cloud.r-project.org/bin/windows/base/R-4.6.1-win.exe",
-    "macos-arm64": "https://cloud.r-project.org/bin/macosx/sonoma-arm64/base/R-4.6.1-arm64.pkg",
+    "windows-x64": "https://cloud.r-project.org/bin/windows/base/R-4.6.2-win.exe",
+    "macos-arm64": "https://cloud.r-project.org/bin/macosx/sonoma-arm64/base/R-4.6.2-arm64.pkg",
 }
 # Package identities shipped by the pinned official R distribution. DESCRIPTION
 # Priority is supplied by the package itself and is not provenance authority.
@@ -69,14 +69,14 @@ OFFICIAL_R_PACKAGES = frozenset(
         "survival",
     }
 )
-WINDOWS_R_SHA256 = "c5424c40cd70ef85765a55d2ff96bb602b5f30ed536938ff004f14db5db3c2df"
+WINDOWS_R_SHA256 = "b0b0053baa1963b6d8a28c9642d50107ef9ce2f41c8b9a90e952846c8918b38a"
 WINDOWS_R_SIGNER_SUBJECT = "CN=Martyn Plummer, O=Martyn Plummer, S=West Midlands, C=GB"
 WINDOWS_R_SIGNER_THUMBPRINT = "f356fc6cd245d722f4a82697473da5995cb42975"
 PPM_CONTRIB_PATHS = {
     "windows-x64": "bin/windows/contrib/4.6",
     "macos-arm64": "bin/macosx/sonoma-arm64/contrib/4.6",
 }
-PPM_REPOSITORY = "https://packagemanager.posit.co/cran/2026-07-16"
+PPM_REPOSITORY = "https://packagemanager.posit.co/cran/2026-11-13"
 WINDOWS_SYSTEM_DLLS = {
     "advapi32.dll",
     "bcrypt.dll",
@@ -392,7 +392,7 @@ def _validate_rpy2_archives(
     rpy2: dict[str, object], archives: list[dict[str, object]]
 ) -> None:
     expected_rpy2_archives = {
-        "rpy2": "3.6.7",
+        "rpy2": "3.6.9",
         "rpy2-rinterface": RPY2_RINTERFACE_VERSION,
         "rpy2-robjects": RPY2_ROBJECTS_VERSION,
     }
@@ -1130,9 +1130,9 @@ def _validate_staged_r_version(runtime: Path, library: Path, target: str) -> Non
 
 
 def _copy_windows_python_runtime(output: Path) -> None:
-    python_dll = Path(sys.base_prefix) / "python311.dll"
+    python_dll = Path(sys.base_prefix) / "python314.dll"
     if not python_dll.is_file():
-        raise KitError("Windows kit producer cannot locate python311.dll")
+        raise KitError("Windows kit producer cannot locate python314.dll")
     native = output / "native"
     native.mkdir()
     shutil.copy2(python_dll, native / python_dll.name)
@@ -1250,7 +1250,7 @@ def _build_manifest(
 
 
 @contextmanager
-def _staged_output(destination: Path) -> Iterator[Path]:
+def _staged_output(destination: Path) -> Generator[Path]:
     if destination.exists():
         raise KitError(f"integration-kit destination already exists: {destination}")
     destination.parent.mkdir(parents=True, exist_ok=True)

@@ -125,13 +125,6 @@
       </layout>
      </widget>
     </item>
-    <item>
-     <widget class="QLabel" name="dataset_file_lbl">
-      <property name="text">
-       <string />
-      </property>
-     </widget>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menu_bar">
@@ -412,7 +405,7 @@
      <normaloff>:/icons/actions/about-legal.svg</normaloff>:/icons/actions/about-legal.svg</iconset>
    </property>
    <property name="text">
-    <string>About and licenses…</string>
+    <string>About</string>
    </property>
   </action>
   <action name="action_change_confidence_level">

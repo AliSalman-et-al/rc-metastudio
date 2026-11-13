@@ -37,10 +37,10 @@ RCMetaR_R_PACKAGE = "RCMetaR"
 MODERN_BASELINE_ENVIRONMENT_EXPECTED = {
     "id": "rc-metastudio-python3-pyqt6-r4-RCMetaR",
     "os": "Windows",
-    "python": "3.11",
-    "pyqt": "6.11.0",
-    "r": "R version 4.6.1",
-    "rpy2": "3.6.7",
+    "python": "3.14",
+    "pyqt": "6.12.0",
+    "r": "R version 4.6.2",
+    "rpy2": "3.6.9",
     "package": RCMetaR_R_PACKAGE,
 }
 
@@ -743,7 +743,8 @@ def capture_bundle(
     requirements = json.loads((root / "config/r-dependencies.json").read_text(encoding="utf-8"))
     authority_versions = {entry["name"]: entry["installed_version"].replace("-", ".") for entry in requirements["direct_RCMetaR_dependencies"] if entry["name"] in {"meta", "mada", "metafor"}}
     source_version = next(line.split(":", 1)[1].strip() for line in (root / "r/RCMetaR/DESCRIPTION").read_text(encoding="utf-8").splitlines() if line.startswith("Version:"))
-    locked_python = json.loads((root / "tests/analysis_regression/baseline/manifest.json").read_text(encoding="utf-8"))["runtime_identities"]
+    from scripts.verify_rcmetar_r_stack import REQUIRED_RPY2_IDENTITIES
+    locked_python = REQUIRED_RPY2_IDENTITIES
     authoritative = (
         capture_mode == "authoritative" and baseline_environment["matches_expected"]
         and all(tool_versions.get(name) == version for name, version in locked_python.items() if name.startswith("rpy2"))

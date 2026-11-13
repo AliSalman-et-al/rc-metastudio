@@ -29,14 +29,14 @@ from rc_metastudio.macos_r_profile_schema import (
 from rc_metastudio.r_runtime import macos_r_framework_version
 
 EXPECTED_VERSIONS = {
-    "python": "3.11.9",
-    "pyqt6": "6.11.0",
-    "qt": "6.11.1",
-    "sip": "13.11.1",
-    "sip_runtime": "6.15.2",
-    "r": "4.6.1",
-    "rpy2": "3.6.7",
-    "pyinstaller": "6.21.0",
+    "python": "3.14.10",
+    "pyqt6": "6.12.0",
+    "qt": "6.12.0",
+    "sip": "13.13.1",
+    "sip_runtime": "6.17.3",
+    "r": "4.6.2",
+    "rpy2": "3.6.9",
+    "pyinstaller": "6.22.3",
 }
 EXPECTED_SUMMARY_SHA256_BY_SAMPLE = {
     "amino.rcms": "16303526c7c3a40c8805b6245b8806fc765bf4efc2c269807c1a5d460060539d",
@@ -60,11 +60,11 @@ DIRECT_R_MARKER_SHA256 = (
 )
 DIRECT_R_OFFICIAL_INPUTS = {
     "macos-arm64": {
-        "url": "https://cloud.r-project.org/bin/macosx/sonoma-arm64/base/R-4.6.1-arm64.pkg",
-        "sha256": "67f6eea4ced4ce48f0a0d4fa3a1cac43d1859a05a88993ee3dff7c52e7edbc4b",
+        "url": "https://cloud.r-project.org/bin/macosx/sonoma-arm64/base/R-4.6.2-arm64.pkg",
+        "sha256": "a678b4db1fcd71b1b1cc58edcfa4a8d36ee012a02659dde9eab9366e93571157",
     },
 }
-DIRECT_R_PPM_SNAPSHOT = "https://packagemanager.posit.co/cran/2026-07-16"
+DIRECT_R_PPM_SNAPSHOT = "https://packagemanager.posit.co/cran/2026-11-13"
 DIRECT_BUILD_INPUT_MEMBERS = {
     "adapter_script": "qualification/embedded-r-adapter.py",
     "pre_normalization_audit": "qualification/direct-r-pre-normalization-audit.json",
@@ -900,7 +900,7 @@ def _validate_qt_probe(probe: dict, frameworks: Path) -> None:
 def _qt_probe_versions_ok(qt: dict) -> bool:
     return (
         qt.get("pyqt_version") == EXPECTED_VERSIONS["pyqt6"]
-        and qt.get("compiled_qt_version") == "6.11.0"
+        and qt.get("compiled_qt_version") == "6.12.0"
         and qt.get("runtime_qt_version") == EXPECTED_VERSIONS["qt"]
         and qt.get("sip_runtime_version") == EXPECTED_VERSIONS["sip_runtime"]
         and qt.get("platform_plugin") == "cocoa"
@@ -924,8 +924,8 @@ def _validate_rpy2_probe(probe: dict, frameworks: Path) -> None:
     expected = {
         "distribution_version": EXPECTED_VERSIONS["rpy2"],
         "cffi_mode": "API",
-        "rinterface_distribution_version": "3.6.6",
-        "robjects_distribution_version": "3.6.5",
+        "rinterface_distribution_version": "3.6.7",
+        "robjects_distribution_version": "3.6.6",
         "loaded_cffi_mode": "API",
         "api_bridge_loaded": True,
     }
@@ -2215,7 +2215,7 @@ def _validate_preflight(preflight: dict, manifest: dict, target: str) -> None:
     expected = {
         "schema_version": 1,
         "source_commit": manifest["source_commit"],
-        "pyinstaller_version": "6.21.0",
+        "pyinstaller_version": "6.22.3",
         "system": "Darwin",
         "machine": TARGET_CONTRACTS[target]["architecture"],
         "aliases": {

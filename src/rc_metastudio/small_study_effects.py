@@ -320,7 +320,7 @@ def _plot_wire_value(spec: FunnelPlotSpec, field: str) -> object:
 def _plot_wire_mapping(
     specs: tuple[FunnelPlotSpec, ...],
 ) -> dict[str, object]:
-    result = {
+    result: dict[str, object] = {
         wire_name: [_plot_wire_value(spec, field) for spec in specs]
         for wire_name, field in _PLOT_WIRE_FIELDS
     }

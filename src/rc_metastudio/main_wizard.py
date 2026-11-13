@@ -112,18 +112,14 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
 
         self.recent_datasets = normalize_recent_files(recent_datasets)
         self.selected_dataset = None
-        self.import_rm5_btn = QPushButton("Import RevMan file (.rm5)…", self)
-        self.verticalLayout.insertWidget(2, self.import_rm5_btn)
         qt_layout.configure_primary_action_buttons(
             (
                 self.create_new_btn,
                 self.import_csv_btn,
-                self.import_rm5_btn,
                 self.open_recent_btn,
                 self.open_btn,
             )
         )
-        self.import_rm5_btn.clicked.connect(self.import_rm5)
         self._setup_connections()
 
     def initializePage(self):
@@ -152,7 +148,7 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
         self._setup_open_recent_btn()
         self.import_csv_btn.clicked.connect(
             app_error_handler.safe_slot(
-                lambda _checked=False: self.import_csv(), parent=self
+                lambda _checked=False: self.import_data(), parent=self
             )
         )
 
@@ -209,33 +205,10 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
             self.wizard().set_selected_dataset(self.selected_dataset)
             self.wizard().accept()
 
-    def import_rm5(self):
-        from rc_metastudio.rm5_import import review_rm5
-        from xml.etree.ElementTree import ParseError
-        path, _ = QFileDialog.getOpenFileName(self, "Import RevMan review", "", "RevMan 5 (*.rm5)")
-        if not path:
-            return
-        try:
-            dataset = review_rm5(path, self)
-        except (ValueError, KeyError, OSError, ParseError) as error:
-            QMessageBox.warning(self, "Could not import review", str(error))
-            return
-        if dataset is not None:
-            self.wizard().rm5_dataset = dataset
-            self.wizard().set_wizard_path("rm5_import")
-            self.wizard().accept()
-
-    def import_csv(self):
-        path, _ = QFileDialog.getOpenFileName(self, "Import data", "", "Data files (*.csv *.xlsx *.xls)")
-        if not path:
-            return
-        wizard = self.wizard()
-        wizard.set_wizard_path("csv_import")
-        wizard.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions", effect="OR", metric_choices=[], name="Imported data"))
-        wizard.setStartId(Page_CsvImport)
-        wizard.restart()
-        page = cast(CsvImportPage, required(wizard.page(Page_CsvImport), "CSV import page"))
-        page.load_file(path)
+    def import_data(self):
+        path, _ = QFileDialog.getOpenFileName(self, "Import data", "", IMPORT_FILE_FILTER)
+        if path:
+            self.wizard().import_file(path)
 
     def new_dataset(self):
         self.wizard().set_wizard_path("new_dataset")
@@ -307,7 +280,7 @@ class DataTypePage(MainWizardPage, _ui_data_type_page.Ui_DataTypePage):
         for current, following in zip(buttons, buttons[1:]):
             self.setTabOrder(current, following)
 
-    def eventFilter(  # ty: ignore[invalid-method-override] -- PyQt6 stub rejects the binding's valid override
+    def eventFilter(
         self,
         watched: QObject | None,
         event: QEvent | None,
@@ -445,7 +418,7 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
 
     def initializePage(self):
         dataset_info = self.wizard().require_dataset_info()
-        data_type = dataset_info["data_type"]
+        data_type = required(dataset_info["data_type"], "import data type")
         metric_choices = dataset_info["metric_choices"]
         default_effect = dataset_info["effect"]
         # Add metric choices to combo box
@@ -599,7 +572,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.data_type_combo.setItemText(8, "Hazard ratio")
         self.data_type_combo.addItem("Incidence rate ratio")
         info = self.wizard().require_dataset_info()
-        keys = [("binary", "proportion"), ("continuous", "mean"), ("continuous", "reg_coef"), ("continuous", "generic_effect"), ("binary", "proportions"), ("continuous", "means"), ("continuous", "smd"), ("diagnostic", None), ("time_to_event", "hazard_ratio"), ("event_rates", "incidence_rate_ratio")]
+        keys: list[tuple[str | None, str | None]] = [("binary", "proportion"), ("continuous", "mean"), ("continuous", "reg_coef"), ("continuous", "generic_effect"), ("binary", "proportions"), ("continuous", "means"), ("continuous", "smd"), ("diagnostic", None), ("time_to_event", "hazard_ratio"), ("event_rates", "incidence_rate_ratio")]
         key = (info["data_type"], info["sub_type"])
         self.data_type_combo.setCurrentIndex(keys.index(key) if key in keys else 8)
         self.data_type_combo.blockSignals(False)
@@ -647,18 +620,18 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             parent=self,
             caption="RCMetaStudio - Import data",
             directory=str(Path(self.file_path).parent) if self.file_path else QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DocumentsLocation),
-            filter="Data files (*.csv *.xlsx *.xls)",
+            filter=IMPORT_FILE_FILTER,
         )
         selected_path = (
             selected_file[0] if isinstance(selected_file, tuple) else selected_file
         )
         if not selected_path:
             return
-        self.load_file(selected_path)
+        self.wizard().import_file(selected_path)
 
     def load_file(self, selected_path):
         if Path(selected_path).suffix.lower() not in (".csv", ".xlsx", ".xls"):
-            QMessageBox.information(self, "Import data", "Choose a CSV or Excel file. For .rm5 files, use File > Import RevMan file.")
+            QMessageBox.information(self, "Import data", "Choose a CSV or Excel (.xlsx) file.")
             return
         self.file_path = qt_text.to_native_text(selected_path)
         self._mapping_key = None
@@ -906,7 +879,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         ** Must be updated if header_data() is dataset_table_model is changed
         """
         dataset_info = self.wizard().require_dataset_info()
-        data_type = dataset_info["data_type"]
+        data_type = required(dataset_info["data_type"], "import data type")
         data_subtype = dataset_info["sub_type"]
         effect = dataset_info["effect"]
         raw_cols, outcome_cols = DatasetTableModel.get_column_indices(
@@ -979,16 +952,16 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
     def initializePage(self):
         info = self.wizard().require_dataset_info()
         self._comparative = info["effect"] in analysis_catalog.TWO_ARM_METRICS
-        data_type = analysis_catalog.STR_TO_TYPE_DICT[info["data_type"]]
+        data_type = analysis_catalog.STR_TO_TYPE_DICT[required(info["data_type"], "data type")]
         self._naming_defaults = analysis_catalog.default_arm_names(data_type, info["sub_type"])
         metric = "Mean" if info["effect"] == "Mean" else analysis_catalog.ALL_METRIC_NAMES.get(info["effect"], info["effect"] or "")
-        metric = {"PR": "Proportion", "SMD": "Standardized mean difference (SMD)"}.get(info["effect"], metric[:1] + metric[1:].lower())
+        metric = {"PR": "Proportion", "SMD": "Standardized mean difference (SMD)"}.get(info["effect"] or "", metric[:1] + metric[1:].lower())
         task = self.wizard().task_label
         kind = {"binary": "Two-arm binary" if self._comparative else "Single-arm proportion",
                 "continuous": "Two-arm continuous" if self._comparative else "Single-arm continuous",
-                "diagnostic": "Diagnostic accuracy", "time_to_event": "Time-to-event", "event_rates": "Event rates"}[info["data_type"]]
+                "diagnostic": "Diagnostic accuracy", "time_to_event": "Time-to-event", "event_rates": "Event rates"}[required(info["data_type"], "data type")]
         if info["sub_type"] in {"reg_coef", "generic_effect"}:
-            kind = {"reg_coef": "Regression coefficient", "generic_effect": "Generic effect size"}[info["sub_type"]]
+            kind = {"reg_coef": "Regression coefficient", "generic_effect": "Generic effect size"}[required(info["sub_type"], "data subtype")]
             metric = ""
         self.outcome_name_LineEdit.setPlaceholderText("For example, disease detection" if data_type == analysis_catalog.DIAGNOSTIC else "For example, outcome")
         self.setSubTitle(f"<p>{task} · {kind}" + (f" · {metric}" if metric else "") + "</p>")
@@ -1050,6 +1023,11 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         return Page_CsvImport if self.wizard().get_wizard_path() == "csv_import" else -1
 
 
+IMPORT_FILE_FILTER = (
+    "Supported data (*.csv *.xlsx *.rm5);;CSV (*.csv);;Excel (*.xlsx);;RevMan 5 (*.rm5);;All files (*)"
+)
+
+
 Page_Welcome, Page_DataType, Page_ChooseMetric, Page_OutcomeName, Page_CsvImport = list(
     range(5)
 )
@@ -1108,6 +1086,39 @@ class MainWizard(QWizard):
                 raise RuntimeError(f"MainWizard is missing registered page {page_id}")
             page.completeChanged.connect(self._schedule_default_action_sync)
 
+    def import_file(self, path):
+        suffix = Path(path).suffix.lower()
+        if suffix == ".xls":
+            QMessageBox.information(self, "Import data", "Save this workbook as .xlsx before importing it.")
+            return False
+        if suffix == ".rm5":
+            from xml.etree.ElementTree import ParseError
+            from rc_metastudio.rm5_import import review_rm5
+
+            try:
+                dataset = review_rm5(path, self)
+            except (ValueError, KeyError, OSError, ParseError) as error:
+                QMessageBox.warning(self, "Could not import review", str(error))
+                return False
+            if dataset is None:
+                return False
+            self.rm5_dataset = dataset
+            self.set_wizard_path("rm5_import")
+            self.accept()
+            return True
+        if suffix not in (".csv", ".xlsx"):
+            QMessageBox.information(self, "Import data", "Choose a CSV, Excel (.xlsx), or RevMan (.rm5) file.")
+            return False
+        self.set_wizard_path("csv_import")
+        if self.get_dataset_info() is None:
+            self.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions", effect="OR", metric_choices=[], name="Imported data"))
+        if self.currentId() != Page_CsvImport:
+            self.setStartId(Page_CsvImport)
+            self.restart()
+        page = cast(CsvImportPage, required(self.page(Page_CsvImport), "CSV import page"))
+        page.load_file(path)
+        return True
+
     def sizeHint(self):
         hint = super().sizeHint()
         # The workflow needs space for choices and preview before the central
@@ -1116,7 +1127,7 @@ class MainWizard(QWizard):
         hint.setHeight(max(hint.height(), self.fontMetrics().lineSpacing() * 40))
         return hint
 
-    def showEvent(  # ty: ignore[invalid-method-override] -- PyQt6's QWizard and inherited QDialog stubs conflict for this runtime-supported override.
+    def showEvent(
         self, event: QShowEvent | None
     ) -> None:
         """Scope focus observation to the wizard's visible lifetime."""
@@ -1155,7 +1166,7 @@ class MainWizard(QWizard):
                 button.setDefault(True)
                 break
 
-    def hideEvent(  # ty: ignore[invalid-method-override] -- PyQt6's QWizard and inherited QWidget stubs conflict for this runtime-supported override.
+    def hideEvent(
         self, event: QHideEvent | None
     ) -> None:
         self._disconnect_focus_reveal()
@@ -1163,7 +1174,7 @@ class MainWizard(QWizard):
             return
         super(MainWizard, self).hideEvent(event)
 
-    def closeEvent(  # ty: ignore[invalid-method-override] -- PyQt6's QWizard and inherited QDialog stubs conflict for this runtime-supported override.
+    def closeEvent(
         self, event: QCloseEvent | None
     ) -> None:
         self._disconnect_focus_reveal()

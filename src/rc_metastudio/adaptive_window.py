@@ -309,7 +309,7 @@ class AdaptiveWindowController(QObject):
             window.setMinimumSize(minimum)
         window.installEventFilter(self)
 
-    def eventFilter(  # ty: ignore[invalid-method-override] -- PyQt6's QObject stub rejects this runtime-supported filter override.
+    def eventFilter(
         self, watched: QObject | None, event: QEvent | None
     ) -> bool:
         window = getattr(self, "window", None)

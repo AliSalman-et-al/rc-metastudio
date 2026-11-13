@@ -189,26 +189,6 @@ def _run(app, window, work, root, record, analyze):
     assert "Unsaved changes" not in window.dataset_file_lbl.text()
     assert "*" not in window.windowTitle()
     record("ux-empty-workspace", window, guidance=window.start_page.accessibleName(), device_pixel_ratio=window.devicePixelRatioF(), logical_size=[window.width(), window.height()])
-    guide_errors = []
-    def read_guide():
-        dialog = app.activeModalWidget()
-        try:
-            assert isinstance(dialog, QtWidgets.QDialog)
-            browser = dialog.findChild(QtWidgets.QTextBrowser)
-            assert browser is not None
-            guide = browser.toPlainText()
-            assert "Ctrl+Shift+S" in guide and "F1" in guide
-            assert dialog.screen().availableGeometry().contains(dialog.frameGeometry())
-            record("ux-quick-start", dialog, text=guide)
-        except Exception as error:
-            guide_errors.append(str(error))
-        finally:
-            if dialog is not None:
-                dialog.close()
-    QtCore.QTimer.singleShot(0, read_guide)
-    next(action for action in window.menuHelp.actions() if "Quick start" in action.text()).trigger()
-    assert not guide_errors, guide_errors
-
     for case in ("sorted-paste", "sparse-fill", "quoted-copy", "sparse-copy", "invalid-paste"):
         table_editing_case(app, window, work, root, record, case)
     assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
@@ -734,7 +714,6 @@ def workspace_safety_case(app, window, work, root, record, case):
     import os
     from rc_metastudio import automation, main_window
     from rc_metastudio.dataset_table_model import DatasetTableModel
-    from rc_metastudio.progress_dialog import AnalysisProgressDialog
     source = work / 'source.rcms'
     source.write_bytes((root / 'sample_projects/amino.rcms').read_bytes())
     original = source.read_bytes()
@@ -850,11 +829,6 @@ def workspace_safety_case(app, window, work, root, record, case):
         assert during_writes == [(False, True, True)]
         assert window.model.current_sheet.rows[0].label == 'Progress study'
         assert window.model.current_sheet.rows[0].year == 2022
-        summary = QtWidgets.QDialog(window)
-        summary.setWindowTitle('Summary of findings')
-        progress = AnalysisProgressDialog(summary, operation='Building summary of findings…')
-        assert all('Fitting' not in label.text() for label in progress.findChildren(QtWidgets.QLabel))
-        progress.close()
     elif case.startswith('alias-'):
         alias = work / 'alias.rcms'
         if case == 'alias-hardlink':

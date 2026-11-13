@@ -15,6 +15,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+from rc_metastudio.qt_object_guard import required
 import platform
 import shutil
 import struct
@@ -35,21 +36,21 @@ DEFAULT_BUILD_ROOT = ROOT / "build" / "qt6"
 
 # The PyQt6-Qt6 wheel intentionally contains the runtime and not the Qt SDK
 # command-line tools. This immutable official Qt package supplies matching rcc.
-QT_RCC_VERSION = "6.11.1"
+QT_RCC_VERSION = "6.12.0"
 QT_RCC_PACKAGE = (
-    "6.11.1-0-202605090529qtbase-Windows-Windows_11_24H2-MSVC2022-"
+    "6.12.0-0-202609280346qtbase-Windows-Windows_11_24H2-MSVC2022-"
     "Windows-Windows_11_24H2-X86_64.7z"
 )
 QT_RCC_PACKAGE_URL = (
     "https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/"
-    "qt6_6111/qt6_6111_msvc2022_64/qt.qt6.6111.win64_msvc2022_64/" + QT_RCC_PACKAGE
+    "qt6_6120/qt6_6120_msvc2022_64/qt.qt6.6120.win64_msvc2022_64/" + QT_RCC_PACKAGE
 )
-QT_RCC_PACKAGE_SIZE = 39_469_569
+QT_RCC_PACKAGE_SIZE = 40_184_745
 QT_RCC_PACKAGE_SHA256 = (
-    "7f97edc3937fec7383eb865e010ed5128155bf9c80a563abca450860f3e9bef5"
+    "219d1b86def3be418e31d704572bc4acc91b2ec373c65595c9fb12b42bf098dc"
 )
-QT_RCC_SHA256 = "912f4565e9486243200517be9e7e8dddc76ea63cd426278e944ba36ad8ff14e7"
-QT_RCC_CORE_SHA256 = "fae4778a42e93adc82b831c879c886a05147e9cc26760808d21116be5547259b"
+QT_RCC_SHA256 = "eb7fb68238a199bea3815d1bafc662bd2785db648ba1c9e00f2f8b9cb1d21c55"
+QT_RCC_CORE_SHA256 = "39175459c4837c8cc0f709a637fb6eadb25d696785109c8393559ec876f02703"
 WINDOWS_X64_PE_MACHINE = 0x8664
 
 
@@ -514,8 +515,8 @@ def smoke(
     if not owns_application:
         raise RuntimeError("Qt6 smoke requires ownership of its QApplication")
     return {
-        "pyqt": QtCore.PYQT_VERSION_STR,
-        "qt": QtCore.qVersion(),
+        "pyqt": required(QtCore.PYQT_VERSION_STR, "PyQt version"),
+        "qt": required(QtCore.qVersion(), "Qt version"),
         "form": dialog.objectName(),
         "app_icon": not app_icon_pixmap.isNull(),
         "resource_registered": True,

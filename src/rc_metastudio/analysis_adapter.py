@@ -10,6 +10,7 @@ import hashlib
 import json
 from typing import Literal, Protocol, TypeAlias, cast, runtime_checkable
 
+from rc_metastudio.qt_object_guard import required
 from rc_metastudio import r_bridge
 from rc_metastudio import analysis_dataset
 from rc_metastudio import result_formatting
@@ -43,7 +44,8 @@ _FAMILY_METRICS: Mapping[AnalysisFamily, frozenset[str]] = {
 class CovariateSelectionModel(Protocol):
     """Model operations required by covariate-qualified study selection."""
 
-    current_sheet: analysis_dataset.Sheet
+    @property
+    def current_sheet(self) -> analysis_dataset.Sheet | None: ...
 
     def get_studies(
         self, only_if_included: bool = True
@@ -246,8 +248,9 @@ def select_studies_for_covariates(
     selected_covariates: Sequence[dict],
 ) -> StudySelectionResult:
     """Select included studies with complete values for selected covariates."""
+    sheet = required(model.current_sheet, "active sheet")
     covariate_values = {
-        covariate['name']: {row.id:row.covariate_values[covariate['id']] for row in model.current_sheet.rows if row.covariate_values.get(covariate['id']) is not None and str(row.covariate_values[covariate['id']]).strip()}
+        covariate['name']: {row.id:row.covariate_values[covariate['id']] for row in sheet.rows if row.covariate_values.get(covariate['id']) is not None and str(row.covariate_values[covariate['id']]).strip()}
         for covariate in selected_covariates
     }
     studies = []
@@ -461,7 +464,7 @@ def execute_meta_regression_request(
 
 
 def _run_diagnostic_backend(workflow, method_names, parameter_values):
-    requests = [
+    requests: list[Mapping[str, object]] = [
         {
             "version": 1,
             "data_type": "diagnostic",

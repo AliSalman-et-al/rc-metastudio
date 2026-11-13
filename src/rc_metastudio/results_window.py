@@ -1129,7 +1129,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             finally:
                 self._viewport_width_override = None
 
-    def eventFilter(  # ty: ignore[invalid-method-override] -- PyQt6 generated-form multiple inheritance
+    def eventFilter(
         self, watched: QObject | None, event: QEvent | None
     ) -> bool:
         if (
@@ -1204,7 +1204,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             max(1, scene_bounds.bottom() + padding),
         )
 
-    def showEvent(  # ty: ignore[invalid-method-override] -- PyQt6 generated-form multiple inheritance
+    def showEvent(
         self, event: QShowEvent | None
     ) -> None:
         super(ResultsWindow, self).showEvent(event)
@@ -1229,13 +1229,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             ]
         )
 
-    def resizeEvent(  # ty: ignore[invalid-method-override] -- PyQt6 generated-form multiple inheritance
+    def resizeEvent(
         self, event: QResizeEvent | None
     ) -> None:
         super(ResultsWindow, self).resizeEvent(event)
         self._schedule_viewport_refit()
 
-    def closeEvent(  # ty: ignore[invalid-method-override] -- PyQt6 generated-form multiple inheritance
+    def closeEvent(
         self, event: QCloseEvent | None
     ) -> None:
         save_results_window_state(self)

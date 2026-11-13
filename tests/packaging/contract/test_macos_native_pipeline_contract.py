@@ -46,12 +46,12 @@ def test_arm64_framework_component_is_selected_by_its_real_package_identifier(
     framework.mkdir(parents=True)
     (component / "PackageInfo").write_text(
         '<pkg-info identifier="org.R-project.R.fw.pkg" '
-        'install-location="/Library/Frameworks" version="4.6.1"/>',
+        'install-location="/Library/Frameworks" version="4.6.2"/>',
         encoding="utf-8",
     )
 
     assert (
-        resolver.resolve_framework(tmp_path, "4.6.1", "org.R-project.R.fw.pkg")
+        resolver.resolve_framework(tmp_path, "4.6.2", "org.R-project.R.fw.pkg")
         == framework.resolve()
     )
 

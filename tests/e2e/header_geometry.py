@@ -1,8 +1,21 @@
 """Full device, caption and arm identity checks for actual forest SVGs."""
 import re
 import math
+from typing import TypedDict
 from xml.etree import ElementTree as ET
 from tests.python.gui.qt_test_support import required
+
+
+class HeaderMeasurement(TypedDict):
+    text: str
+    box: tuple[float, float, float, float]
+    caption: bool
+
+
+class FooterMeasurement(TypedDict):
+    text: str
+    box: tuple[float, float, float, float]
+    direction_ink_gap: float | None
 
 
 def check_headers(source, names):
@@ -27,7 +40,7 @@ def check_headers(source, names):
                     break
                 caption_nodes.add(continuation)
                 previous = continuation
-    measurements = []
+    measurements: list[HeaderMeasurement] = []
     for node in texts:
         x, y = float(node.attrib['x']), float(node.attrib['y'])
         if y >= first - 5:
@@ -118,7 +131,7 @@ def check_forest_footer(source, expected_directions=None):
     if not directions:
         return []  # Single-arm and diagnostic plots have no treatment direction.
     assert len({node.attrib['y'] for node in directions}) == 1, ('direction baselines', source)
-    measurements = []
+    measurements: list[FooterMeasurement] = []
     root = ET.parse(source).getroot()
     _, _, device_width, device_height = map(float, root.attrib['viewBox'].split())
     ink_gap = check_direction_ink_gap(source, directions, device_width, device_height) if len(directions) == 2 else None
