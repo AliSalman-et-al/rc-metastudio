@@ -2,7 +2,7 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
-## 0.5.3 - Unreleased
+## 0.5.4 - Unreleased
 
 ### Corrected
 
