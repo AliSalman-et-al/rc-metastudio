@@ -227,8 +227,10 @@ if [ "$skip_dependency_install" -eq 0 ]; then
   [ -x "$qt_qmake" ] || { echo "Official Qt 6.12.0 qmake is required: $qt_qmake" >&2; exit 1; }
   [ "$("$qt_qmake" -query QT_VERSION)" = "6.12.0" ] || { echo "Qt SDK must be 6.12.0." >&2; exit 1; }
   # Serialize C++ compilation on the hosted runner and stream backend diagnostics.
+  # Load the locked Qt wheel at runtime so PyInstaller cannot also collect the SDK.
   (cd "$repo_root" && uv sync --verbose --locked --no-binary-package pyqt6 --reinstall-package pyqt6 \
     --config-settings-package "pyqt6:--confirm-license=" \
+    --config-settings-package "pyqt6:--target-qt-dir=Qt6/lib" \
     --config-settings-package "pyqt6:--qmake=$qt_qmake" \
     --config-settings-package "pyqt6:--qmake-setting=QMAKE_MACOSX_DEPLOYMENT_TARGET=$minimum_macos_version" \
     --config-settings-package "pyqt6:--qmake-setting=QMAKE_APPLE_DEVICE_ARCHS=$architecture" \
