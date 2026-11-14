@@ -228,8 +228,8 @@ if [ "$skip_dependency_install" -eq 0 ]; then
   [ "$("$qt_qmake" -query QT_VERSION)" = "6.12.0" ] || { echo "Qt SDK must be 6.12.0." >&2; exit 1; }
   (cd "$repo_root" && uv sync --locked --no-binary-package pyqt6 --reinstall-package pyqt6 \
     --config-settings-package "pyqt6:--qmake=$qt_qmake" \
-    --config-settings-package "pyqt6:--qmake-settings=QMAKE_MACOSX_DEPLOYMENT_TARGET=$minimum_macos_version" \
-    --config-settings-package "pyqt6:--qmake-settings=QMAKE_APPLE_DEVICE_ARCHS=$architecture" \
+    --config-settings-package "pyqt6:--qmake-setting=QMAKE_MACOSX_DEPLOYMENT_TARGET=$minimum_macos_version" \
+    --config-settings-package "pyqt6:--qmake-setting=QMAKE_APPLE_DEVICE_ARCHS=$architecture" \
     --config-settings-package "pyqt6:--jobs=3")
   python_exe="$repo_root/.venv/bin/python"
 fi
