@@ -227,7 +227,7 @@ if [ "$skip_dependency_install" -eq 0 ]; then
   [ -x "$qt_qmake" ] || { echo "Official Qt 6.12.0 qmake is required: $qt_qmake" >&2; exit 1; }
   [ "$("$qt_qmake" -query QT_VERSION)" = "6.12.0" ] || { echo "Qt SDK must be 6.12.0." >&2; exit 1; }
   # Serialize C++ compilation on the hosted runner and stream backend diagnostics.
-  # Load the locked Qt wheel at runtime so PyInstaller cannot also collect the SDK.
+  # Keep binding rpaths relative to the single runtime tree collected by PyInstaller.
   (cd "$repo_root" && uv sync --verbose --locked --no-binary-package pyqt6 --reinstall-package pyqt6 \
     --config-settings-package "pyqt6:--confirm-license=" \
     --config-settings-package "pyqt6:--target-qt-dir=Qt6/lib" \
@@ -236,6 +236,13 @@ if [ "$skip_dependency_install" -eq 0 ]; then
     --config-settings-package "pyqt6:--qmake-setting=QMAKE_APPLE_DEVICE_ARCHS=$architecture" \
     --config-settings-package "pyqt6:--jobs=1")
   python_exe="$repo_root/.venv/bin/python"
+  # The wheel's plugins also require 14.4; replace the whole runtime, not individual
+  # binaries, with the same official SDK used to compile the bindings.
+  qt_sdk_root="$("$qt_qmake" -query QT_INSTALL_PREFIX)"
+  qt_runtime_root="$("$python_exe" -c 'from pathlib import Path; import PyQt6; print(Path(PyQt6.__file__).resolve().parent / "Qt6")')"
+  [ -d "$qt_sdk_root/lib/QtCore.framework" ] && [ -d "$qt_sdk_root/plugins" ] || { echo "Incomplete Qt SDK: $qt_sdk_root" >&2; exit 1; }
+  rm -rf "$qt_runtime_root"
+  ditto "$qt_sdk_root" "$qt_runtime_root"
 fi
 
 python_exe="${python_exe:-$repo_root/.venv/bin/python}"
