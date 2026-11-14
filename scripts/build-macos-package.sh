@@ -220,11 +220,36 @@ export RCMS_CRAN_REPO="$pinned_cran_repo"
 
 if [ "$skip_dependency_install" -eq 0 ]; then
   step "Syncing locked verification environment"
-  # The 6.12.0 universal2 wheel is tagged 14.0 but QtWidgets was linked for
-  # 14.4. Rebuild the locked bindings with the official SDK and release floor;
-  # MACOSX_DEPLOYMENT_TARGET cannot change an already compiled wheel.
-  qt_qmake="${RCMS_QT6_QMAKE:-$repo_root/build/qt-sdk/6.12.0/macos/bin/qmake}"
-  [ -x "$qt_qmake" ] || { echo "Official Qt 6.12.0 qmake is required: $qt_qmake" >&2; exit 1; }
+  # Both the wheel and official binary SDK were linked for 14.4. Build Qt
+  # itself at the package floor before building bindings against that runtime.
+  qt_build_root="$repo_root/build/macos-qt-source"
+  qt_sdk_root="$qt_build_root/install"
+  rm -rf "$qt_build_root"
+  mkdir -p "$qt_build_root"
+  for module in qtbase qtsvg; do
+    case "$module" in
+      qtbase) revision=025bdad181de241e81bf853c8a2d7bf3d19261a9 ;;
+      qtsvg) revision=883a58532078d003cefef0a549bfe9f885ce41f5 ;;
+    esac
+    git init "$qt_build_root/$module"
+    git -C "$qt_build_root/$module" fetch --depth 1 "https://github.com/qt/$module.git" "$revision"
+    git -C "$qt_build_root/$module" checkout --detach FETCH_HEAD
+    [ "$(git -C "$qt_build_root/$module" rev-parse HEAD)" = "$revision" ] || exit 1
+  done
+  mkdir -p "$qt_build_root/base-build" "$qt_build_root/svg-build"
+  (cd "$qt_build_root/base-build" && "$qt_build_root/qtbase/configure" \
+    -prefix "$qt_sdk_root" -release -opensource -confirm-license \
+    -nomake tests -nomake examples -- -G Ninja \
+    -DCMAKE_OSX_ARCHITECTURES="$architecture" \
+    -DCMAKE_OSX_DEPLOYMENT_TARGET="$minimum_macos_version")
+  cmake --build "$qt_build_root/base-build" --parallel 3
+  cmake --install "$qt_build_root/base-build"
+  (cd "$qt_build_root/svg-build" && "$qt_sdk_root/bin/qt-configure-module" "$qt_build_root/qtsvg" -- \
+    -G Ninja -DCMAKE_OSX_ARCHITECTURES="$architecture" \
+    -DCMAKE_OSX_DEPLOYMENT_TARGET="$minimum_macos_version")
+  cmake --build "$qt_build_root/svg-build" --parallel 3
+  cmake --install "$qt_build_root/svg-build"
+  qt_qmake="$qt_sdk_root/bin/qmake"
   [ "$("$qt_qmake" -query QT_VERSION)" = "6.12.0" ] || { echo "Qt SDK must be 6.12.0." >&2; exit 1; }
   # Serialize C++ compilation on the hosted runner and stream backend diagnostics.
   # Keep binding rpaths relative to the single runtime tree collected by PyInstaller.
@@ -236,8 +261,7 @@ if [ "$skip_dependency_install" -eq 0 ]; then
     --config-settings-package "pyqt6:--qmake-setting=QMAKE_APPLE_DEVICE_ARCHS=$architecture" \
     --config-settings-package "pyqt6:--jobs=1")
   python_exe="$repo_root/.venv/bin/python"
-  # The wheel's plugins also require 14.4; replace the whole runtime, not individual
-  # binaries, with the same official SDK used to compile the bindings.
+  # Replace the wheel runtime with the source-built SDK used for the bindings.
   qt_sdk_root="$("$qt_qmake" -query QT_INSTALL_PREFIX)"
   qt_runtime_root="$("$python_exe" -c 'from pathlib import Path; import PyQt6; print(Path(PyQt6.__file__).resolve().parent / "Qt6")')"
   [ -d "$qt_sdk_root/lib/QtCore.framework" ] && [ -d "$qt_sdk_root/plugins" ] || { echo "Incomplete Qt SDK: $qt_sdk_root" >&2; exit 1; }
