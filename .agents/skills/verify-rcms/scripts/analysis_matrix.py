@@ -279,7 +279,7 @@ def run(
             from rc_metastudio import r_bridge
             r_bridge.load_in_r(str(next(iter(view.params_paths.values()))) + ".plotdata")
             headers = r_bridge.r_object_to_python(r_bridge.ro.r("plot.data$ilab$headers"))
-            style = (parameters or {}).get("fp_style", "revman")
+            style = dialog.current_param_vals["fp_style"]
             expected_headers = (["Mean", "SD", "N", "Mean", "SD", "N"] if style == "default" else
                                 ["Total", "Mean", "SD", "Total", "Mean", "SD", "Weight (%)"] if style == "bmj" else
                                 ["Mean", "SD", "Total", "Mean", "SD", "Total", "Weight"])

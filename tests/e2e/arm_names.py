@@ -29,7 +29,8 @@ def run(app, window, work, record):
     ]
     for case, (family, entered, expected) in enumerate(cases):
         window.workspace.mark_saved()
-        view = matrix(app, window, "analysis-data-"+family, record, keep_results=True, group_names=entered)
+        view = matrix(app, window, "analysis-data-"+family, record, keep_results=True, group_names=entered,
+                      parameters={"fp_style": "revman"} if family.startswith("twoarm") else None)
         assert tuple(window.model.arm_names) == expected, window.model.arm_names
         assert set(window.model.arm_names) == set(expected), window.model.arm_names
         headers = [str(window.model.headerData(i, QtCore.Qt.Orientation.Horizontal)) for i in range(window.model.columnCount())]
@@ -42,8 +43,8 @@ def run(app, window, work, record):
         record("round5-arm-grid", window, case=case, groups=expected, headers=headers)
         view.show()
         comparison = "Comparison: " + " / ".join(expected)
-        for style in (("revman", "default", "bmj") if family.startswith("twoarm") else ("revman",)):
-            if style != "revman":
+        for style in (("revman", "default", "bmj") if family.startswith("twoarm") else ("initial",)):
+            if family.startswith("twoarm") and style != "revman":
                 view = analyze_existing(app, window, "standard", DATA_TYPES[family][1]+".random", record, {"fp_style":style})
             check_report(app, view, work, record)
             text = view.report_text.toPlainText()
