@@ -313,8 +313,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.analysis_error_details.setAccessibleName("Technical analysis error details")
         self.analysis_error_details.hide()
         error_layout.addWidget(self.analysis_error_details)
-        self.analysis_error_toggle.toggled.connect(self.analysis_error_details.setVisible)
-        self.analysis_error_toggle.toggled.connect(lambda checked: self.analysis_error_toggle.setArrowType(Qt.ArrowType.DownArrow if checked else Qt.ArrowType.RightArrow))
+        self.analysis_error_toggle.toggled.connect(self._expand_error_details)
         self.analysis_error_panel.hide()
         self.content_scroll_layout.insertWidget(0, self.analysis_error_panel)
         if (
@@ -957,12 +956,19 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         finally:
             _dispose_progress(bar)
         if not succeeded:
+            self._resize_on_reflow = True
             self._schedule_local_reflow()
             self.activateWindow()
             self.analysis_error_toggle.setFocus()
         if succeeded:
             self.done(QDialog.DialogCode.Accepted.value)
             self._deliver_result(result)
+
+    def _expand_error_details(self, expanded):
+        self.analysis_error_details.setVisible(expanded)
+        self.analysis_error_toggle.setArrowType(Qt.ArrowType.DownArrow if expanded else Qt.ArrowType.RightArrow)
+        self._resize_on_reflow = True
+        self._schedule_local_reflow()
 
     def done(
         self, result: int
@@ -1016,7 +1022,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         context = self._result_context(applied_parameters)
         from rc_metastudio.manuscript_report import methods_prose
         metric = self._result_metric_label().lower()
-        model = "random-effects" if "random" in model_label.lower() else "fixed-effect" if "fixed" in model_label.lower() else model_label.lower()
+        model = "random-effects" if "random" in model_label.lower() else "fixed-effect" if "fixed" in model_label.lower() else model_label
         title = f"{self.model.current_sheet.name}: {model} meta-analysis ({metric})"
         methods = methods_prose(metric, model, applied_parameters,
                                 applied_parameters.get("conf.level", self.confidence_level),
@@ -1123,7 +1129,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         zero = self._has_zero_cell(raw)
         if policy in ("none", "None") or not (zero or policy in ("all", "All studies")):
             return ""
-        label = {"only0": "studies with any zero cell", "all": "all studies", "if0all": "all studies if any zero exists"}.get(policy, policy)
+        label = {"only0": "studies with any zero cell", "all": "all studies",
+                 "if0all": "all studies if any zero exists"}.get(policy, policy[:1].lower() + policy[1:])
         if self.data_type == "binary":
             from rc_metastudio.manuscript_report import binary_correction_prose
             double_zero = sum(len(row) == 4 and row[0] == 0 and row[2] == 0 for row in raw)

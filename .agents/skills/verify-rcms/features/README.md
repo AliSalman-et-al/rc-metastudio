@@ -47,6 +47,11 @@ also retains its inputs and exports under the workflow's `report-retention/` fol
 
 ### UI surface inventory
 
+`ui-fable-polish` drives native About theme changes, continuous pre/post mode
+entry before scrolling, real empty-selection error disclosure, and an executed
+Reitsma title/correction description. It retains failed and corrected captures;
+it does not substitute for the complete desktop or release matrix.
+
 `uv run python scripts/verify_rcms.py ui-crawl --native` records an indexed
 visual inventory of the home/shell, menus, outcome management, calculators,
 analysis setup, results, plot editors, wizards and imports. Ordinary application

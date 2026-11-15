@@ -2480,6 +2480,9 @@ try:
         sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
         from tests.e2e.ui_fine_tuning import run
         run(app, window, WORK, ROOT, record_step, analyze)
+    elif scenario == "ui-fable-polish":
+        from tests.e2e.ui_fable_polish import run
+        run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario == "review1-design":
         sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
         from tests.e2e.desktop_navigation_workflows import run

@@ -6,7 +6,7 @@ from math import ceil
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import Qt, QUrl, QEvent, QTimer
-from PyQt6.QtGui import QPalette
+from PyQt6.QtGui import QPalette, QPainter
 from PyQt6.QtGui import QPixmap, QRegion, QTextDocument
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox
 
@@ -20,7 +20,7 @@ else:
     from rc_metastudio.forms import ui_about_legal as _ui_about_legal
 
 
-ABOUT_TEXT = """<table align="center" bgcolor="white" cellpadding="12" cellspacing="0">
+ABOUT_TEXT = """<table align="center" cellpadding="12" cellspacing="0">
 <tr><td><img src="rcms:about-logo" width="260" height="31" alt="RC MetaStudio"></td></tr>
 </table>
 <p>Version {version}</p>
@@ -39,15 +39,8 @@ class AboutLegalDialog(QDialog, _ui_about_legal.Ui_AboutLegalDialog):
         super(AboutLegalDialog, self).__init__(parent)
         self.setupUi(self)
         required(self.content_scroll_area.viewport(), "About viewport").setAutoFillBackground(False)
-        logo = QPixmap(":/misc/about-logo.png")
-        logo = logo.copy(QRegion(logo.mask()).boundingRect())
         document = required(self.content_scroll_area.document(), "About document")
-        document.addResource(
-            QTextDocument.ResourceType.ImageResource, QUrl("rcms:about-logo"), logo
-        )
-        self.content_scroll_area.setHtml(
-            ABOUT_TEXT.format(version=application_metadata.VERSION)
-        )
+        self._refresh_links()
         self.content_scroll_area.setAccessibleName("About RC MetaStudio")
         self.content_scroll_area.setOpenExternalLinks(True)
         self.content_scroll_area.setTabChangesFocus(True)
@@ -85,6 +78,15 @@ class AboutLegalDialog(QDialog, _ui_about_legal.Ui_AboutLegalDialog):
         browser = self.content_scroll_area
         scrollbar = required(browser.verticalScrollBar(), "About scrollbar")
         position = scrollbar.value()
+        logo = QPixmap(":/misc/about-logo.png")
+        logo = logo.copy(QRegion(logo.mask()).boundingRect())
+        if browser.palette().color(QPalette.ColorRole.Base).lightness() < 128:
+            painter = QPainter(logo)
+            painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceIn)
+            painter.fillRect(logo.rect(), browser.palette().color(QPalette.ColorRole.Text))
+            painter.end()
+        required(browser.document(), "About document").addResource(
+            QTextDocument.ResourceType.ImageResource, QUrl("rcms:about-logo"), logo)
         color = browser.palette().color(QPalette.ColorRole.Link).name()
         browser.setHtml(ABOUT_TEXT.format(version=application_metadata.VERSION).replace('<a href=', '<a style="color:' + color + '" href='))
         scrollbar.setValue(position)

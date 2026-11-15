@@ -217,6 +217,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         if mode_changed and previous_mode is not None:
             self._refresh_active_inputs()
         self._content_layout_changed(mode_changed=mode_changed)
+        if mode_changed:
+            QTimer.singleShot(0, lambda: required(self.content_scroll.verticalScrollBar(),
+                                                "continuous input scrollbar").setValue(0))
 
     def _refresh_active_inputs(self):
         mode = self.input_mode_combo.currentData()
@@ -346,7 +349,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
     def _request_content_refit(self, *, mode_changed=False):
         controller = self.__dict__.get("_layout_controller")
-        if controller is not None and not self.isVisible():
+        if controller is not None and (mode_changed or not self.isVisible()):
             height = self.dialog_layout.sizeHint().height()
             if not self.content_scroll.isHidden():
                 height += (
