@@ -219,3 +219,15 @@ Clinical conclusions, risk-of-bias judgments and certainty grading require data
 RCMS does not currently hold; the interface must not manufacture them.
 
 No GUI/statistical behavior changes are claimed by this design document.
+
+## Retained observations
+
+The research bundle under `artifacts/verification/results-design-2026-11-15/`
+retains [numeric observations](../artifacts/verification/results-design-2026-11-15/numeric-observations.json),
+[PDF geometry observations](../artifacts/verification/results-design-2026-11-15/pdf-observation.json)
+and [export observations](../artifacts/verification/results-design-2026-11-15/export-observations.json).
+The rounded-null example is a constructed code-path observation, not a fitted
+end-to-end analysis. The inspected PDF pages document the existing report's
+layout; they are not proof that the proposed pagination is implemented.
+Completed UI polish and its qualification are recorded separately in the
+[implementation report](ui-ux-implementation-2026-11-15.md).

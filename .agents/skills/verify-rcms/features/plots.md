@@ -339,9 +339,21 @@ size exceeds Qt's 256 MiB limit and no DPI was specified. They use at most 120 d
 and a 32 MiB decoded target. Explicit raster DPI is honored with or without a
 display SVG; exports to a separate destination retain the default 600 dpi. The two `subgroup-image`
 drives check a Qt-decodable analysis preview and the full-resolution user export.
+Export dimensions must agree with the actual SVG dimensions at 600 pixels per
+inch, allowing raster rounding; they must not assume a fixed width shared by
+all forest styles. The oversized-export check also verifies that Qt does not
+decode the publication raster for its preview.
 Cap-height checks require capped rows in Default and RevMan; BMJ intentionally
 uses uncapped intervals. The IRR context drive explicitly enables both arm columns
 before requiring their event and person-time headers.
+
+Default-style unavailable intervals have neither caps nor clipping arrows;
+infinite bounds still have directional arrows. The zero-display path in
+`audit-round3-references` exercises the unavailable Default intervals. Style-order
+checks compare canonical study indexes, including Default non-table ordering;
+printed weight-column checks explicitly select RevMan. The 15 November
+[implementation evidence](../../../../docs/ui-ux-implementation-2026-11-15.md)
+retains the current-source R checks and affected desktop reruns.
 
 Batch 7 direction labels retain the axis tick font size and extend outward from
 its null; preflight reserves extra device space for long labels. HR/IRR drives
