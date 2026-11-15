@@ -92,5 +92,13 @@ adjusted-means reference output retains the exact hash in its manifest; referenc
 recovery reconstructs effects from raw counts rather than the preview values,
 without changing any statistical oracle or tolerance.
 
-Final full-profile and corrected native outcomes are pending. Local Windows
-source evidence does not qualify macOS/Linux, fractional DPI or release artifacts.
+Final Windows results are recorded in the
+[UI verification closure](ui-fable-polish-2026-11-15.md#final-verification).
+All 136 desktop scenarios have passing evidence on the frozen application after
+targeted recovery of obsolete UI contracts. The source golden comparison passes
+11 cases and 475 comparisons; the values export passes 320 public comparisons.
+The raw full-profile command remains failed and retained; its later golden,
+authority and doctor stages were run separately. No baseline or tolerance changed.
+The final native tour passes 312 steps, including corrected popup captures.
+Selected About-logo checks cover native fractional DPR; macOS/Linux, release
+packages and exhaustive DPI/state or Word-page coverage remain unqualified.

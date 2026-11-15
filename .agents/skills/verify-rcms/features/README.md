@@ -73,6 +73,14 @@ surfaces have native light/dark pairs. Custom-palette J stress views remain dark
 exported pages are captured independently of the application theme. The strict
 typing gate still precedes GUI work.
 
+The tour asserts its requested window dimensions, including 900 × 700 for narrow
+Results. Native QMenu captures use the desktop composite while the popup is
+visible; popups are reopened after theme switches and are not activated before
+capture. Blank saved menu images fail verification. `ui-design-direction` also
+checks readable toolbar labels, native overflow and the grouped Zoom control at
+760 pixels. The final 16 November Windows evidence and recovery scope are in
+[the UI closure](../../../../docs/ui-fable-polish-2026-11-15.md#final-verification).
+
 `RCMS_UI_CRAWL_SECTIONS` can select sections for a targeted continuation:
 `A,D,J,E,F,G,B,C,S` is the full sequence; `E,S` captures analysis setup and
 current grid/context-menu/Add outcome management. F includes report exports and

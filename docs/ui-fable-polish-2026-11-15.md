@@ -3,8 +3,10 @@
 The authoritative whole-app brief is
 [Fable's design direction](ui-design-direction-2026-11-15.md): a quiet instrument,
 with paper-like data surfaces, native controls and one vocabulary. Its committed
-directions are being implemented in batches; its seven experiments remain gated
+directions are implemented and verified; its seven experiments remain gated
 by their stated prototype/observation criteria.
+
+Final Windows source verification is complete; see [Final verification](#final-verification).
 
 The aim is a coherent, polished and easy-to-use research application, with the
 existing features exposed clearly. Fable's screenshot review is input to this
@@ -337,3 +339,65 @@ The user's latest instruction supersedes the earlier monochrome dark wordmark:
 About uses the original coloured artwork in both themes. Smooth DPR-aware
 downsampling and the native aspect ratio remain. Fresh colour/DPI captures and
 the final frozen-source qualification follow this change.
+
+## Final verification
+
+Completed on 16 November. The application is frozen at `6b57b6dd`, version 0.5.5,
+on `ui/desktop-polish-and-icons`. Later commits change verification only. All 276
+tracked application/runtime-input files remain byte-identical to that freeze.
+Fable's final review findings and the Codex review findings are resolved; the
+user's coloured dark-mode logo and bottom-right CI placement take precedence
+over the earlier monochrome/strip proposals. E1–E7 remain gated experiments.
+
+| Check | Observed result |
+| --- | --- |
+| Strict Windows typing | Passed before GUI qualification and each recovery |
+| Python fast/GUI | 903 passed, 1 POSIX-only process-tree test skipped |
+| Desktop workflow coverage | All 136 registered scenarios passed across the frozen run and targeted recovery |
+| Native whole-app tour | 312 steps, 316 PNGs, no blank captures; all 492 manifest-listed files verified |
+| Narrow Results | Actual 900 × 700 capture; separate 760-pixel native overflow/Zoom/identity checks |
+| About artwork | Original coloured resource identical in both native palettes at DPR 1.25, 1.5625 and 2.5 |
+| R package/bridge | R CMD check OK; 10 bridge tests passed |
+| Statistical authorities | 103 cases passed; both deterministic 21-case Reitsma visual runs passed |
+| Exact values export | 320 independent public-package comparisons passed |
+| Frozen golden | 11 cases, 475 comparisons passed; unchanged 416-value numeric contract |
+| Installed R provenance | All 759 checked source functions match the selected installed RCMetaR |
+
+The original full-profile command at
+`20261115T192700Z-f3a3a6d9-complete` remains **failed**: its desktop phase ended
+122 passed and 17 failed. The failures exposed obsolete title/tab/menu/copy,
+significant-zero, fixed-pixel-width and diagnostic-selection assumptions in the
+driver. Recovery uses fresh doctor sessions and the affected real workflows,
+as prescribed for harness failures. Word checks now account for intentional
+nonbreaking interval spaces and verify alignment per cell, including mixed
+Model fit columns. A compact-caption check measures visible bounds rather than
+requiring a fixed percentage of a narrow viewport. Scientific numbers, frozen
+baselines, exceptions and tolerances were not changed.
+
+The full script stopped before its later commands; the golden comparison,
+independent authority run and doctor were therefore executed separately. No
+failed summary has been rewritten as passing. The combined audit verifies
+17,837 retained artifacts and a passing manifest for every registered scenario
+on the same application bytes:
+[desktop closure audit](../artifacts/verification/ui-fable-2026-11-15/desktop-closure-audit.json).
+
+The final standard native tour is
+`20261115T201609Z-096f8b58-ui-crawl`. Its menu capture path reopens popups after
+theme changes and captures the desktop before activation closes them. It guards
+against blank menu images. The 31 blank popup images in the earlier tour are
+excluded from visual proof; their failed/corrected diagnostic attempts remain
+retained. The final native hash audit confirms no blank images:
+[native audit](../artifacts/verification/ui-fable-2026-11-15/final-native-menu-hash-audit.json).
+
+Reviewable outputs:
+
+- [Interactive native screenshots](../artifacts/verification/ui-fable-2026-11-15/final-ui-preview.html)
+- [Complete final screenshot index](../artifacts/verification/rcms/20261115T201609Z-096f8b58-ui-crawl/ui-crawl-index.md)
+- [Fable's final review](../artifacts/verification/ui-fable-2026-11-15/fable-final-implementation-review.md)
+- [Codex review and resolution](../artifacts/verification/ui-fable-2026-11-15/codex-implementation-review.md)
+- [Retained golden comparison](../artifacts/verification/ui-fable-2026-11-15/golden-final/capture/compatibility-report.json)
+
+No unresolved product UI blocker was found in the reviewed Windows flows. This
+is source verification, not release-package or other-platform qualification.
+Native OS file pickers, every DPI/state combination and every exported Word page
+remain outside the inspected coverage.
