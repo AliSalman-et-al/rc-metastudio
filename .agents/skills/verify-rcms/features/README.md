@@ -13,6 +13,13 @@ Read the relevant feature before driving it. Start each scenario in the fresh ap
 
 ## UX effort scoreboard
 
+`ui-design-direction` exercises Ctrl+M and Ctrl+1, lossless ratio input,
+editor field alignment including Axes, rendered inactive Results selection,
+native toolbar overflow, clipboard feedback and Word typography/quantity
+retention. `ui-crawl` checks the selected-row paint in both themes and the field
+columns in visible forest/SROC editors; palette-slot equality alone is not proof
+of native selection rendering.
+
 `hillclimb` drives the five fixed tasks from PLAN.md through the shared desktop
 driver and records gesture counts, wall time and numerical/text receipts in
 measures.json. See [SCOREBOARD.md](../../../../docs/ux-hill-climb/SCOREBOARD.md)

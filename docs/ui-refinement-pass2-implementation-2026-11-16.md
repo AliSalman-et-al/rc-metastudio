@@ -53,3 +53,24 @@ Existing fast contract tests, real R/public-reference/golden comparisons,
 report-retention and split-figure E2E, calculator transaction E2E, and the native
 tour cover these obligations. Simplify the production functions; do not change
 code-health exceptions, statistical goldens or tolerances to obtain a pass.
+
+The simplification in `d3170cd1` passed the complete pre-push lane: unchanged
+code-health gate, 557 fast/contract checks (one platform skip), 401 GUI checks and
+144 packaging contracts (two platform skips). The native tour
+`20261115T212553Z-d5f03ac8-ui-crawl` passed 312 steps; its 492 artifact hashes
+match. The R package checks, deterministic Reitsma visual checks and ten bridge
+tests passed, but the full profile `20261115T212552Z-420c2cc7-complete` was
+interrupted during desktop qualification to fix two visual findings. It must not
+be reported as a completed full qualification.
+
+The parent visual review found an empty column in the editor Axes grid and a
+native Windows selection painter that ignored the inactive palette. The native
+acceptance was strengthened before the corrections: selected-row paint failed
+with 0 of 6750 pixels in the configured highlight colour. After a selection-only
+native-palette style, 6463 of 6750 pixels matched. The axis fields now occupy
+column 1 in a standard Axes group. `20261115T215440Z-710a24f4-ui-design-direction`
+passes the selection-paint and extended field-alignment checks. The full tour now
+checks these rendered states in both themes as well.
+
+Fable's first final-review attempt failed at its provider with HTTP 502 before
+returning a review. A new review is required; this failure is not an approval.

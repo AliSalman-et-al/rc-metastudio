@@ -396,6 +396,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.nav_tree.setTextElideMode(Qt.TextElideMode.ElideMiddle)
         self.nav_tree.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.nav_tree.setRootIsDecorated(False)
+        self.nav_tree.setStyleSheet('QTreeWidget::item:selected { background-color: palette(highlight); color: palette(highlighted-text); }')
         self._refresh_navigation_palette()
         navigation = []
         pages = {'Manuscript': self.manuscript_action, 'Text report': self.report_action, 'Tables': self.tables_action}

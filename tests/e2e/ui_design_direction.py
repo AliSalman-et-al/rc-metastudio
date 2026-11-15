@@ -12,6 +12,19 @@ from docx.oxml.ns import qn
 from tests.python.gui.qt_test_support import required, wait, key_click
 
 
+def navigation_selection_pixels(view):
+    from PyQt6.QtGui import QPalette
+    tree = view.nav_tree
+    item = required(tree.currentItem(), 'selected Results section')
+    image = required(tree.viewport()).grab().toImage()
+    rect = tree.visualItemRect(item).intersected(image.rect())
+    highlight = tree.palette().color(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Highlight)
+    count = sum(image.pixelColor(x, y).rgb() == highlight.rgb()
+                for y in range(rect.top(), rect.bottom() + 1)
+                for x in range(rect.left(), rect.right() + 1))
+    return count, rect.width() * rect.height(), highlight.name()
+
+
 def run(app, window, work, root, record, analyze):
     from rc_metastudio.main_wizard import MainWizard, DataTypePage, ChooseMetricPage, OutcomeNamePage
     from rc_metastudio.ratio_data_dialog import RatioDataDialog
@@ -147,6 +160,12 @@ def run(app, window, work, root, record, analyze):
         for role in (QPalette.ColorRole.Highlight, QPalette.ColorRole.HighlightedText):
             assert palette.color(QPalette.ColorGroup.Inactive, role) == palette.color(QPalette.ColorGroup.Active, role)
         record('direction-results-keyboard-navigation', view)
+        view.graphics_view.setFocus()
+        wait(100)
+        selection_pixels, selection_area, highlight = navigation_selection_pixels(view)
+        record('direction-results-visible-selection', view, pixels=selection_pixels,
+               area=selection_area, highlight=highlight)
+        assert selection_pixels > selection_area / 4, (selection_pixels, selection_area, highlight)
         view.showNormal()
         view.resize(760, 700)
         wait(100)
@@ -175,7 +194,8 @@ def run(app, window, work, root, record, analyze):
             def close_editor(dialog):
                 starts = [dialog.col1_str_edit.mapTo(dialog, QtCore.QPoint()).x(),
                           dialog.accent_color.mapTo(dialog, QtCore.QPoint()).x(),
-                          dialog.style_cbo.mapTo(dialog, QtCore.QPoint()).x()]
+                          dialog.style_cbo.mapTo(dialog, QtCore.QPoint()).x(),
+                          dialog.x_lbl_le.mapTo(dialog, QtCore.QPoint()).x()]
                 assert max(starts) - min(starts) <= 2, starts
                 if dialog.accent_color.maximumWidth() > dialog.accent_color.fontMetrics().height() * 6:
                     failures.append('Plot editor colour input stretches across the dialog')

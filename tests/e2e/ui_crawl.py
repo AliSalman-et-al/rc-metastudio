@@ -716,6 +716,14 @@ def run(driver):
                         widget.popup(widget.pos())
                         driver.app.processEvents()
                     assert (driver.app.palette().color(QtGui.QPalette.ColorRole.Window).lightness() > 128) == (theme == "light"), (step, theme)
+                    if hasattr(widget, 'nav_tree') and hasattr(widget, 'result_identity'):
+                        from tests.e2e.ui_design_direction import navigation_selection_pixels
+                        pixels, area, highlight = navigation_selection_pixels(widget)
+                        assert pixels > area / 4, (step, theme, pixels, area, highlight)
+                    if step.startswith('H-') and hasattr(widget, 'x_lbl_le'):
+                        fields = (widget.style_cbo, widget.accent_color, widget.col1_str_edit, widget.x_lbl_le)
+                        starts = [field.mapTo(widget, QtCore.QPoint()).x() for field in fields if field.isVisible()]
+                        assert max(starts) - min(starts) <= 2, (step, theme, starts)
                     themed_step = step + "-" + theme
                     original_record(themed_step, widget, theme=theme)
                     with index.open("a", encoding="utf-8") as stream:
