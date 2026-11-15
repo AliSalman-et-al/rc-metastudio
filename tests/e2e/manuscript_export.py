@@ -1,6 +1,8 @@
 from typing import Any, Callable, cast
 import sys
 import gc
+import math
+import re
 """Reopen real manuscript exports and compare with the executed result."""
 from unittest.mock import patch
 import subprocess
@@ -105,6 +107,14 @@ def run(app, window, work, root, record, analyze, *, direct_write=False):
 
 
 def _run(app, window, work, root, record, analyze, *, direct_write):
+    def numeric_export_cell(value):
+        parts = re.split(r'\s+to\s+|,\s*|\s*–\s*', value.replace('\u00a0', ' '))
+        try:
+            numbers = [float(part.strip().lstrip('<>≤≥').removesuffix('%').replace('−', '-').replace('∞', 'inf')) for part in parts]
+        except ValueError:
+            return False
+        return bool(numbers) and not any(math.isnan(number) for number in numbers)
+
     pending_close = None
     previous_dialog: QtWidgets.QFileDialog | None = None
     picker_number = 0
@@ -288,7 +298,6 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 doc = Document(path)
                 text = '\n'.join(p.text for p in doc.paragraphs) + '\n' + '\n'.join(c.text for t in doc.tables for r in t.rows for c in r.cells)
             assert ' '.join(expected.split()) in ' '.join(text.split())
-            import re
             assert not re.search(r"\b(?:NaN|Inf)\b", text), text
         record('manuscript-correction-' + method, view, methods=view.manuscript.methods)
         close_result(view)
@@ -345,19 +354,22 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                                    if (section.title == 'Supplementary details') == supplementary for table in section.tables]
                 assert len(doc.tables) == len(expected_tables)
                 for actual, expected_table in zip(doc.tables, expected_tables):
-                    assert tuple(tuple(cell.text for cell in row.cells) for row in actual.rows) == (expected_table.headers, *expected_table.rows)
+                    # Nonbreaking spaces keep each interval together in Word.
+                    actual_text = tuple(tuple(cell.text.replace('\u00a0', ' ') for cell in row.cells) for row in actual.rows)
+                    assert actual_text == (expected_table.headers, *expected_table.rows), expected_table.title
                 from docx.enum.text import WD_ALIGN_PARAGRAPH
                 for exported_table in doc.tables:
                     properties = exported_table.rows[0]._tr.trPr
                     assert properties is not None
                     assert properties.find('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tblHeader') is not None
                     for column in range(len(exported_table.columns)):
-                        values = [row.cells[column].text for row in exported_table.rows[1:]]
-                        import re
-                        numeric = bool(values) and all(not value or value in ('NA', '—', 'Not estimable') or re.match(r'^\s*(?:[<>]\s*)?[+−-]?(?:\d|\.\d)', value) for value in values)
-                        for row in exported_table.rows:
+                        missing = ('', 'NA', '—', 'Not estimable')
+                        values = [row.cells[column].text for row in exported_table.rows[1:] if row.cells[column].text not in missing]
+                        numeric = bool(values) and sum(numeric_export_cell(value) for value in values) >= len(values) / 2
+                        for row_index, row in enumerate(exported_table.rows):
                             cell = row.cells[column]
-                            assert cell.paragraphs[0].alignment == (WD_ALIGN_PARAGRAPH.RIGHT if numeric else WD_ALIGN_PARAGRAPH.LEFT)
+                            right = numeric if row_index == 0 or cell.text in missing else numeric_export_cell(cell.text)
+                            assert cell.paragraphs[0].alignment == (WD_ALIGN_PARAGRAPH.RIGHT if right else WD_ALIGN_PARAGRAPH.LEFT), (row_index, column, cell.text)
                 assert len(doc.inline_shapes) >= len(view.results.images)
                 assert all(round(s.width / 36000) in (85, 180) for s in doc.inline_shapes)
                 text = '\n'.join(p.text for p in doc.paragraphs) + '\n' + '\n'.join(c.text for t in doc.tables for r in t.rows for c in r.cells)
@@ -376,7 +388,6 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                             checked.append(content)
                             assert colours[line.attrib['font']] == '#000000', (content, colours)
                 assert 'Methods' in checked and any(line.startswith('Figure ') for line in checked), checked
-                import re
                 numbers = re.findall(r'Table (\d+)\.', text)
                 assert numbers and len(numbers) == len(set(numbers)), numbers
                 from xml.etree import ElementTree as ET
@@ -399,7 +410,6 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
             assert 'Methods' in text and 'RC MetaStudio' in ' '.join(text.split())
             normalized = ' '.join(unicodedata.normalize('NFKC', text).split())
             for prose in (view.manuscript.methods, view.manuscript.results):
-                import re
                 # A PDF line can wrap immediately after a hyphen or dash.
                 # Compare all ordered words, digits and punctuation independently
                 # of physical line breaks, as the complete-table observer does.

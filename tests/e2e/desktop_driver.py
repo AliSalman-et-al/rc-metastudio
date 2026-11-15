@@ -1185,7 +1185,8 @@ def verify_sheet_strip(app, window, screens):
     index = tabs.currentIndex()
     def move_menu():
         menu = app.activePopupWidget()
-        assert {action.text() for action in menu.actions()} == {"Rename", "Delete", "Move left", "Move right"}
+        assert {action.text() for action in menu.actions() if not action.isSeparator()} == {
+            "Rename", "Add outcome…", f'Delete “{tabs.tabText(index)}”…', "Move left", "Move right"}
         action = next(action for action in menu.actions() if action.text() == "Move left")
         mouse_click(menu, QtCore.Qt.MouseButton.LeftButton, menu.actionGeometry(action).center())
     QtCore.QTimer.singleShot(0, move_menu)
