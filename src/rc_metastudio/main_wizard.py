@@ -614,7 +614,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
     def initializePage(self):
         self.data_type_combo.blockSignals(True)
         self.data_type_combo.clear()
-        self.data_type_combo.addItems(["One-group proportion", "One-group mean", "Regression coefficient", "Entered effect", "Two-group proportions", "Two-group means", "Standardized mean difference", "Diagnostic accuracy", "Hazard ratio"])
+        self.data_type_combo.addItems(["Single-arm proportion", "Single-arm mean", "Regression coefficient", "Entered effect", "Two-arm proportions", "Two-arm means", "Standardized mean difference", "Diagnostic accuracy", "Hazard ratio"])
         self.data_type_combo.setItemText(8, "Hazard ratio")
         self.data_type_combo.addItem("Incidence rate ratio")
         info = self.wizard().require_dataset_info()
@@ -1044,7 +1044,7 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         if self._comparative:
             names[1] = self.second_group_name.text().strip() or names[1]
         elif len(names) == 2 and names[0].casefold() == names[1].casefold():
-            names[1] = "Additional group"
+            names[1] = "Additional arm"
         return names
 
     def isComplete(self):

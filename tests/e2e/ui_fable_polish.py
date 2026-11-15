@@ -140,12 +140,16 @@ def run(app, window, work, root, record, analyze):
     combined.show()
     combined.advanced_toggle.setChecked(True)
     wait(250)
-    fields = [field for field in combined.methods_tab.findChildren(QtWidgets.QWidget)
-              if field.isVisible() and isinstance(field, (QtWidgets.QComboBox, QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox))]
-    xs = [field.mapTo(combined, QtCore.QPoint()).x() for field in fields]
-    if max(xs) - min(xs) > 1:
-        failures.append('Combined diagnostic and Advanced fields do not share a column')
-    record('fable-combined-field-alignment', combined, field_xs=xs)
+    for theme, scheme in (("light", QtCore.Qt.ColorScheme.Light), ("dark", QtCore.Qt.ColorScheme.Dark)):
+        app.styleHints().setColorScheme(scheme)
+        wait(150)
+        fields = [field for field in combined.methods_tab.findChildren(QtWidgets.QWidget)
+                  if field.isVisible() and isinstance(field, (QtWidgets.QComboBox, QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox))]
+        xs = [field.mapTo(combined, QtCore.QPoint()).x() for field in fields]
+        if max(xs) - min(xs) > 1:
+            failures.append('Combined diagnostic and Advanced fields do not share a column')
+        record('fable-combined-field-alignment-' + theme, combined, field_xs=xs)
+    app.styleHints().setColorScheme(original_scheme)
     combined.reject()
     view = analyze(app, window, 'diagnostic.reitsma')
     strip = view.result_identity.text()

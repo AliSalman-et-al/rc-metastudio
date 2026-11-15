@@ -73,12 +73,12 @@ _KNOWN_PARAMETER_LABELS = {
     "conf.level": "Confidence Level",
     "digits": "Decimal Places",
     "adjust": "Continuity correction",
-    "drop00": "Exclude studies with zero events in both groups",
+    "drop00": "Exclude studies with zero events in both arms",
 }
 
 _DIAGNOSTIC_METRIC_GROUP_LABELS = {
-    "sens_spec": "Sensitivity and Specificity",
-    "lr_dor": "Likelihood Ratios and Diagnostic Odds Ratio",
+    "sens_spec": "Sensitivity and specificity",
+    "lr_dor": "Likelihood ratios and diagnostic odds ratio",
 }
 
 

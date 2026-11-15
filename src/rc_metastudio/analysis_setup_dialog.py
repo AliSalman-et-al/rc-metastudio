@@ -333,7 +333,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if self.data_type in {"binary", "continuous", "time_to_event", "event_rates"}:
             for field, name in zip((self.col3_str_edit, self.col4_str_edit), self.model.arm_names):
                 set_plot_text_value(field, name)
-        for checkbox, label in zip((self.show_1, self.show_2, self.show_3, self.show_4), ("study", "estimate", "first group", "second group")):
+        for checkbox, label in zip((self.show_1, self.show_2, self.show_3, self.show_4), ("study", "estimate", "first arm", "second arm")):
             checkbox.setAccessibleName(f"Show {label} column")
 
     def _restore_settings(self, saved):
@@ -1053,7 +1053,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                        manuscript_favours=tuple(label.removeprefix("Favours ").strip() for label in
                            self.model.current_sheet.settings.get("favours_labels", ["Favours " + name for name in arms])[:len(arms)]),
                        manuscript_model_info=tuple(model_info),
-                       manuscript_comparison=("Group: " if self.model.current_effect in ONE_ARM_METRICS else "Comparison: ") + " / ".join(arms))
+                       manuscript_comparison=("Arm: " if self.model.current_effect in ONE_ARM_METRICS else "Comparison: ") + " / ".join(arms))
 
     def _manuscript_arms(self) -> list[str]:
         names = self.model.arm_names
@@ -1173,7 +1173,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if self.is_meta_regression:
             return "Sensitivity and specificity"
         labels = {"sens": "Sensitivity", "spec": "Specificity", "lr": "Positive and negative likelihood ratios", "dor": "Diagnostic odds ratio"}
-        return ", ".join(labels[metric] for metric in self.diagnostic_metrics)
+        return ", ".join(labels[metric] for metric in self.diagnostic_metrics).capitalize()
 
     def analysis_requests(self):
         """Return typed requests represented by the current user configuration."""

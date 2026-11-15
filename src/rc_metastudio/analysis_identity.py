@@ -77,7 +77,7 @@ def dataset_label(model):
 def dataset_identity(model, metric=None):
     comparison = model.current_effect in analysis_catalog.TWO_ARM_METRICS
     groups = " / ".join(model.arm_names if comparison else model.arm_names[:1])
-    group_label = "Comparison" if comparison else "Group"
+    group_label = "Comparison" if comparison else "Arm"
     labels = [model.current_sheet.name, dataset_label(model)]
     quantity = metric or metric_label(model)
     if quantity and model.current_effect != "Mean" and quantity.casefold() != labels[-1].casefold():

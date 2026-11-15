@@ -316,7 +316,7 @@ class DatasetTableView(QtWidgets.QTableView):
             arm_name = self.model().arm_names[arm_index]
 
             # renaming
-            action_rename = QAction("Rename group %s…" % arm_name, self)
+            action_rename = QAction("Rename arm %s…" % arm_name, self)
             _connect_action(
                 action_rename,
                 lambda: self._main_gui().edit_arm_name(arm_name),

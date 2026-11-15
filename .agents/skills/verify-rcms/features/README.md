@@ -49,12 +49,14 @@ also retains its inputs and exports under the workflow's `report-retention/` fol
 
 `ui-design-direction` exercises the split Meta-analysis control and real Ctrl+R,
 metric guidance and final wizard action, lossless ratio/log input drafts,
-long outcome names and confidence-control placement, fixed Results identity,
+long outcome names and the right-hand confidence status control, fixed Results identity,
 figures-first navigation, initial zoom and Ctrl+0/Ctrl+E, compact colour controls,
 quiet result tables, status expiry and per-cell DOCX numeric alignment.
 `ui-fable-polish` additionally proves all three calculator interval-field
 alignments, upright continuous headings, compact regression first-tab sizing,
-shared method/parameter field columns and an eight-line error-details viewport.
+shared diagnostic/Advanced field columns in both themes and an eight-line quiet
+error-details viewport. Section-copy feedback, disabled Home analysis/Save and
+exact repeated-fit identity compaction are exercised through real controls.
 The default design drive runs all phases; its optional `numbers` phase supports
 a focused numeric-input/report-layout recovery only.
 

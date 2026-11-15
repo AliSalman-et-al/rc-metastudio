@@ -957,6 +957,8 @@ def test_results_window_refits_svg_plots_and_reflows_sections_on_resize(tmp_path
         app.processEvents()
         app.processEvents()
 
+        window.fit_width_action.trigger()
+        app.processEvents()
         svg_items = sorted(
             (
                 item
@@ -1221,6 +1223,8 @@ def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
             for item in window.scene.items()
             if isinstance(item, results_window._svg_item_class())
         )
+        window.fit_width_action.trigger()
+        app.processEvents()
         initial_width = plot_item.sceneBoundingRect().width()
         viewport_width = _viewport_width(window.graphics_view)
         assert initial_width >= viewport_width * 0.9
@@ -1777,6 +1781,8 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
         )
         assert plot_item.boundingRect().height() == pytest.approx(500)
 
+        window.fit_width_action.trigger()
+        app.processEvents()
         initial_width = plot_item.sceneBoundingRect().width()
         window_width = window.width()
         window.resize(window_width - 200, window.height())
@@ -2048,6 +2054,8 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
         )
         assert plot_item.boundingRect().height() == pytest.approx(500)
 
+        window.fit_width_action.trigger()
+        app.processEvents()
         initial_width = plot_item.sceneBoundingRect().width()
         window_width = window.width()
         window.resize(window_width - 200, window.height())
@@ -2547,7 +2555,7 @@ def test_about_legal_and_welcome_links_show_current_project_information():
         assert "github.com/AliSalman-et-al/rc-metastudio" in link_text
         assert welcome.how_to_citeLabel.isEnabled()
         assert welcome.how_to_citeLabel.openExternalLinks()
-        assert "jstatsoft.org/article/view/v049i05" in welcome.how_to_citeLabel.text()
+        assert "github.com/AliSalman-et-al/rc-metastudio/blob/master/CITATION.cff" in welcome.how_to_citeLabel.text()
     finally:
         if "wizard" in locals():
             wizard.close()

@@ -504,7 +504,7 @@ class DatasetTableModel(QAbstractTableModel):
         if source == "raw":
             raw = unit.get_raw_data_for_arms(self.arm_names)
             if len(raw) == 4 and raw[0] == 0 and raw[2] == 0:
-                return "Not estimable: zero events in both groups. The rate ratio is 0/0, so no individual IRR or confidence interval is shown. The default analysis omits this study's individual effect; analysis settings control zero-event handling. Click the study row number to edit."
+                return "Not estimable: zero events in both arms. The rate ratio is 0/0, so no individual IRR or confidence interval is shown. The default analysis omits this study's individual effect; analysis settings control zero-event handling. Click the study row number to edit."
             return f"Raw events/person-time ({record.unit}). Preview: {self.confidence_level:g}% CI, add 0.5 to zero-event studies, omit double-zero effects. Analysis settings are selected separately. Click the study row number to edit."
         return f"Reported {self.current_effect}; input scale: {record.scale}; original CI: {record.confidence:g}%. Click the study row number to edit input details."
 
@@ -807,7 +807,7 @@ class DatasetTableModel(QAbstractTableModel):
             label = ("Participants in {0}", "Mean for {0}", "Standard deviation for {0}")[position % 3]
             if position % 3 == 2:
                 return label.format(group)
-        rename = "\nRename group by right-clicking the column header and selecting 'rename group <name>'"
+        rename = "\nRename arm by right-clicking the column header and selecting 'Rename arm <name>'"
         return label.format(group) + rename + suffix
 
     def _outcome_header_tooltip(self, section, outcome_type, outcome_subtype):

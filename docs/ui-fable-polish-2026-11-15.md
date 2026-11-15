@@ -284,3 +284,26 @@ The first final profile failed an obsolete fixed-width-nav assertion; the bridge
 driver now proves drag-driven viewport refitting. Intentional sentence-case,
 colon-free and significant-zero expectations were updated without touching
 numerical oracles or tolerances. Full final qualification is still pending.
+
+### Vocabulary and exported captions — separate follow-up
+
+T7/T8/O1 are now addressed separately: diagnostic method/metric lists use sentence
+case; arm headers, tooltips, IRR options and import choices use Arm terminology.
+Single-arm identity and manuscript/SVG captions explicitly use “Arm:”; uploaded
+names and stored data remain unchanged. The native arm-name/export audit passed
+188 steps at `20261115T185612Z-4bca5df0-audit-round3-arm-names`, including blank and
+custom arm names, all three forest styles, reports and SVG exports. Both-theme
+combined diagnostic alignment and exact-pair identity checks passed at
+`20261115T184204Z-9848cc22-ui-fable-polish`.
+
+The broad Python/GUI run exposed eleven stale assertions, all for intentional
+accepted changes: colon-free SE copy, sentence case, removed Lower/Upper labels,
+explicit Fit width rather than automatic enlargement, and RCMS's own citation
+file rather than the historical software paper. The SVG resize/regeneration
+checks now explicitly select Fit width and keep all geometry assertions. The
+calculator accessibility contract checks the named limit editors and “to”
+separator. Fifteen focused recovery cases pass. Numerical values, goldens and
+tolerances are untouched. The first broad run was interrupted when buffered
+output obscured its progress; its output remains retained. The diagnostic rerun
+completed 892 passing cases and the eleven obsolete assertions. A clean full
+rerun follows these corrections.

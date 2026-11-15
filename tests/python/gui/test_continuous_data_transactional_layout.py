@@ -513,9 +513,9 @@ def test_continuous_variants_are_transactional_and_screen_bounded(monkeypatch, s
         assert not isinstance(dialog.effect_group, QtWidgets.QGroupBox)
         assert dialog.effect_metric_label.text() == "Effect metric"
         assert dialog.label_14.text() == "Estimate"
-        assert [dialog.label_15.text(), dialog.label_2.text()] == ["Lower", "Upper"]
-        assert dialog.label_15.buddy() is dialog.lower_text_box
-        assert dialog.label_2.buddy() is dialog.upper_text_box
+        assert dialog.lower_text_box.accessibleName() == "Lower confidence limit"
+        assert dialog.upper_text_box.accessibleName() == "Upper confidence limit"
+        assert dialog.interval_to_label.text() == "to"
         assert available.contains(dialog.frameGeometry())
         for table in (
             dialog.simple_table,

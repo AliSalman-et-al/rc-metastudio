@@ -1384,7 +1384,7 @@ def test_asymmetric_entered_readout_uses_analysis_se(qapp):
     dialog = ReadoutDialog()
     calculator_effect_readout.update_calculator_readout(dialog, 'continuous')
     se = unit.get_se('entered', 'MD', tuple(arm.stable_id for arm in unit.arms.values()), 1.96)
-    assert f'SE: {se:.4f}' in _required(dialog.findChild(QLabel, 'calculator_wald')).text()
+    assert f'SE {se:.4f}' in _required(dialog.findChild(QLabel, 'calculator_wald')).text()
 
 
 def test_pft_display_passes_actual_arm_sample_size(qapp, monkeypatch):

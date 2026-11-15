@@ -220,7 +220,7 @@ def test_configuration_controls_have_accessible_label_associations(
         (
             "diagnostic",
             ["lr", "dor"],
-            "Method & Parameters for Likelihood Ratios and Diagnostic Odds Ratio",
+            "Method & Parameters for Likelihood ratios and diagnostic odds ratio",
             "Analysis method",
         ),
     ),
@@ -246,7 +246,7 @@ def test_method_dialog_wording_is_scoped_to_its_analysis_family(
             "binary": "Outcome · Odds ratio",
             "continuous": "Outcome · Odds ratio",
             "hazard_ratio": "Outcome · Hazard ratio",
-            "diagnostic": "Outcome · Positive and negative likelihood ratios, Diagnostic odds ratio",
+            "diagnostic": "Outcome · Positive and negative likelihood ratios, diagnostic odds ratio",
         }[data_type]
         dialog.show()
         qapp.processEvents()
@@ -353,7 +353,7 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
         dialog.show()
         qapp.processEvents()
 
-        assert dialog.windowTitle() == ("Meta-regression · Outcome · Sensitivity and specificity" if analysis_type == "meta-regression" else "Outcome · Sensitivity, Specificity")
+        assert dialog.windowTitle() == ("Meta-regression · Outcome · Sensitivity and specificity" if analysis_type == "meta-regression" else "Outcome · Sensitivity, specificity")
         dialog.show()
         qapp.processEvents()
         assert dialog.method_lbl.text() == expected_method_label
