@@ -75,18 +75,11 @@ checks these rendered states in both themes as well.
 Fable's first final-review attempt failed at its provider with HTTP 502 before
 returning a review. A new review is required; this failure is not an approval.
 
-The ce135ae1 whole tour stopped at a newly added exact-RGB assertion after a
-dark/light transition. Its retained failure screenshot shows a clear native
-accent selection: Qt shaded the accent relative to the palette colour. The
-check now classifies each row pixel against the semantic Highlight and Base
-colours; the former faint gray state remains rejected. This changes no product
-colour and no statistical tolerance. Failed assertions retain their selection,
-focus, palette and screenshot receipt. The focused native Results/editor tour
-`20261115T220423Z-e09cd3d4-ui-crawl` passes 102 steps in both themes, including
-narrow Results, field alignment, all plot-editor families and rendered exports.
-The concurrent pre-push and full profile were interrupted during investigation;
-neither interrupted run is a completed qualification. All final gates rerun on
-the next clean revision.
+The ce135ae1 whole tour stopped at an exact-RGB assertion after a dark/light
+transition. An interim nearest-colour classifier accepted that state, but Fable
+correctly identified the cached brush as a real product defect. The intermediate
+runs and incorrect interpretation remain in their raw evidence. The final fix
+and exact-colour proof are described below; no failed run becomes a pass.
 
 ## Fable final review corrections
 
@@ -111,3 +104,58 @@ binary table style, a fixed-date recent project and an entered SE after clearing
 the continuous calculator. All 201 focused GUI checks pass. The scoped F drive
 passed its exact colour assertions but remains an incomplete tour because the
 subgroup capture is supplied by G; the complete native tour remains required.
+
+## Final qualification and review
+
+Executable source is frozen at `ac116e34c06719095d3a273f19ca85f06416dc5e`.
+The following documentation/screenshot receipt commit changes no executable
+source, test, fixture, package manifest or dependency. All runs below began and
+ended with a clean worktree.
+
+| Gate | Final result | Retained evidence |
+| --- | --- | --- |
+| Strict typing and pre-push | win32 typing, unchanged code-health rules, 557 fast/contract tests (1 platform skip), 401 GUI tests, 144 packaging contracts (2 platform skips) passed | `build/pass2-fable-final-pre-push.log` |
+| Native whole-app tour | 316 steps passed; 328 PNGs, all 497 artifact hashes verified | `artifacts/verification/rcms/20261115T222347Z-1433602f-ui-crawl/` |
+| Fresh full profile | R CMD check, current-source R/authority checks, deterministic Reitsma visual QA (21 cases twice), 10 bridge tests, 139 desktop tests, golden comparison, independent authority matrix and doctor all passed | `artifacts/verification/rcms/20261115T223308Z-a1959f91-complete/summary.json` |
+| Desktop artifact audit | All 136 scenario manifests pass on the tested revision; 17,839 file hashes match; no dirty runs | `artifacts/verification/ui-pass2-2026-11-16/codex-full-matrix-audit.json` |
+| Numerical presentation | Exact-value export: 320 public metafor/mada comparisons; golden: 11 cases / 475 comparisons; authority matrix: 103 cases | `20261115T225932Z-05d940be-results-values`, full-profile authority receipt, and `build/qt6-verification/golden-compatibility-r-stack-v2-1bff0fd7f0fb/capture/compatibility-report.json` |
+| SVG clipping / split figures | All five funnels have zero shaded pixels outside the plot at 1×/2×; two tall-forest PDF pages have zero pixels below their caption bands and zero embedded raster figures | `20261115T224937Z-11029aec-ui-fine-tuning` and `20261115T225849Z-0c8cd920-manuscript-split-figure` |
+
+Commands (using `build/ui-polish-env.ps1`, the locked Python environment and
+isolated test-owned R library):
+
+```powershell
+# Native Windows qwindows, QT_SCALE_FACTOR=0.8; strict typing runs first.
+uv run python scripts/verify_rcms.py ui-crawl --native
+# Offscreen with the test-owned Segoe UI font directory.
+uv run python scripts/verify.py pre-push
+uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full --fresh
+```
+
+Fable's final review is `artifacts/verification/ui-pass2-2026-11-16/fable-final-review.md`.
+Its D1–D7/P3 findings are resolved in the tested source. The implementing agent's
+resolution and final source/rendered review is `codex-final-review.md` in the
+same directory. This does not relabel Fable's earlier blocked verdict as an
+independent approval of the later source. The fresh clean profile above replaces
+the interrupted profiles as final qualification evidence; failures remain retained.
+
+### Selected native captures
+
+The before image is before this final refinement pass, not before the entire
+branch. [Capture provenance](design/ui-0.5.5/capture-provenance.json) records exact
+source paths and hashes. The local indexed tour contains the full surface set.
+
+| Before final refinement | After |
+| --- | --- |
+| ![Plot setup before](design/ui-0.5.5/plot-setup-before.png) | ![Aligned plot setup](design/ui-0.5.5/plot-setup-after.png) |
+
+![Workspace with right-hand confidence control](design/ui-0.5.5/workspace-dark.png)
+
+![Results table with aligned headers and raw-value export](design/ui-0.5.5/results-tables-light.png)
+
+![Original coloured About logo in dark mode](design/ui-0.5.5/about-dark.png)
+
+Runtime: Windows, Python 3.14.10, Qt/PyQt 6.12.0, R 4.6.2, RCMetaR 0.5.5.
+Native source and offscreen evidence do not qualify macOS/Linux, exact release
+packages, exhaustive DPI/accessibility states or native OS file pickers. No
+statistical oracle, tolerance, estimator or code-health exception was changed.
