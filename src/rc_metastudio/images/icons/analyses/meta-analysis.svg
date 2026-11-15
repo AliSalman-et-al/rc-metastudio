@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-<path d="M24 5v38" stroke="#596F7B" stroke-width="1.6"/>
-  <g stroke="#2B88D8" stroke-width="1.8" stroke-linecap="round" fill="#1769AA">
-    <path d="M6 10h28"/><rect x="17.5" y="7.5" width="5" height="5" rx=".6" stroke="none"/>
-    <path d="M11 19h30"/><rect x="27.5" y="16.5" width="5" height="5" rx=".6" stroke="none"/>
-    <path d="M5 28h31"/><rect x="19.5" y="25.5" width="5" height="5" rx=".6" stroke="none"/>
-  </g>
-  <path d="m24 35 6 4-6 4-6-4 6-4Z" fill="#1769AA"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <path d="M3 4.5H14" stroke="#738290" stroke-width="2" stroke-linecap="round"/>
+  <rect x="6.5" y="2.5" width="4" height="4" rx="0.6" fill="#2F7FC8"/>
+  <path d="M9 9.5H21" stroke="#738290" stroke-width="2" stroke-linecap="round"/>
+  <rect x="13" y="7.5" width="4" height="4" rx="0.6" fill="#2F7FC8"/>
+  <path d="M5 14.5H17" stroke="#738290" stroke-width="2" stroke-linecap="round"/>
+  <rect x="9" y="12.5" width="4" height="4" rx="0.6" fill="#2F7FC8"/>
+  <path d="M7 19.5L12 17L17 19.5L12 22Z" fill="#8466CC" stroke="#8466CC" stroke-width="1" stroke-linejoin="round"/>
 </svg>
