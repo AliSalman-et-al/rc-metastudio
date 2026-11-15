@@ -55,5 +55,42 @@ unless an RCMS run is named. Failures and recoveries are retained.
   `20261115T150350Z-092869b8-results-presentation/`, and
   `20261115T150350Z-9d16297d-manuscript-export-direct/`.
 
-Final full-profile, native and Opus review outcomes are pending. Local Windows
+## Opus review and corrections
+
+[Opus's final review](../artifacts/verification/results-implementation-2026-11-15/opus-final-review.md)
+found two blockers. Both have been corrected:
+
+- The overall-t lookup now excludes the between-subgroup comparison table. A
+  real Knapp–Hartung subgroup drive first reproduced the false `t (df = 1)`
+  heading (`opus-recovery-before.log`), then passed with an unqualified `t`
+  heading and no fabricated df sentence. The between-group statistic keeps its
+  own Q/F identity.
+- The diagnostic driver explicitly selects Sens/Spec/DOR, asserts the selected
+  and executed Reitsma method, and requires at least 18 Reitsma comparisons.
+  Every tested analysis must contribute public-reference comparisons. A DOR-only
+  run can no longer pass under the Reitsma label.
+
+The correction also describes the separate DOR model in combined diagnostic
+Methods, labels its PI by metric, uses “summary sensitivity/specificity,” removes
+placeholder/SE-scale noise from CSV row identities and guards unavailable
+regression heterogeneity fields. No estimates or inference choices changed.
+
+`opus-recovery-focused-final.log` records three passing real Qt/R scenarios.
+The expanded values drive has 320 public-package comparisons, now including
+adjusted means reconstructed from raw counts and t-inference subgroups, all
+within the original one-floating-point-step limit. It also checks the
+Freeman–Tukey PI fallback scale at the real R boundary. The GUI/contract lane
+passes 85 checks and the expanded R display lane passes 115 assertions.
+Evidence: `20261115T153319Z-e54b14ca-results-values`,
+`20261115T153207Z-affbd901-manuscript-export-direct`, and
+`20261115T153207Z-ee9273d9-results-presentation` under `artifacts/verification/rcms/`.
+
+The earlier full profile was deliberately interrupted before source edits
+(`interrupted-profile.json`). Its R package check passed; its complete profile
+did not pass. Its transcript and failures remain retained. The original failed
+adjusted-means reference output retains the exact hash in its manifest; reference
+recovery reconstructs effects from raw counts rather than the preview values,
+without changing any statistical oracle or tolerance.
+
+Final full-profile and corrected native outcomes are pending. Local Windows
 source evidence does not qualify macOS/Linux, fractional DPI or release artifacts.

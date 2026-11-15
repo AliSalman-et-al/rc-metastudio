@@ -34,6 +34,17 @@ def run(app, window, work, root, record, analyze):
     else:
         raise AssertionError('R accepted misaligned quantities')
     record('numeric-boundary-states', values=asdict(parsed[0]))
+    pft = r_bridge.ro.r('''local({
+      fit <- metafor::rma.uni(yi=c(.05, .4, 1.2, 1.5), sei=c(.1, .2, .2, .1), method="REML", level=90)
+      params <- list(measure="PFT", conf.level=90, digits=3)
+      transform <- RCMetaR:::rcmetar.transform.by.name("binary.transform.f", "PFT")
+      RCMetaR:::rcmetar.summary.prediction(fit, params, transform, NULL, 3)$interval
+    })''')
+    _, parsed_pft = _report_content({'paragraphs': [], 'tables': [r_bridge._structured_matrix('PFT prediction', pft, [], first_row_headers=True)]})
+    pft_quantities = [q for row in parsed_pft[0].quantities for cell in row for q in cell]
+    assert {q.role for q in pft_quantities} == {'pi_lower', 'pi_upper'}
+    assert all(q.scale == 'freeman-tukey' and q.level == 90.0 for q in pft_quantities)
+    record('numeric-pft-fallback-scale', values=asdict(parsed_pft[0]))
 
     def inspect(view, label):
         view.tables_action.trigger()
@@ -41,6 +52,18 @@ def run(app, window, work, root, record, analyze):
         source = [t for s in view.results.sections for t in s.tables]
         primary = view.manuscript.sections[0].tables[0]
         assert primary.quantities and primary.rows, label
+        if label == 'Reitsma':
+            assert view.results.analysis_method == 'diagnostic.reitsma', view.results.analysis_method
+            assert {'Sensitivity', 'Specificity', 'False-positive rate'} <= {t.title for t in source}
+            assert primary.title == 'Diagnostic summary'
+            assert 'The summary sensitivity was' in view.manuscript.results
+            assert 'Diagnostic odds ratio estimates were pooled using the Diagnostic Random-Effects method' in view.manuscript.methods
+        if label == 'subgroup-t':
+            assert 't' in primary.headers and not any('df =' in h for h in primary.headers), primary.headers
+            assert 'The overall effect was tested using t with' not in view.manuscript.methods
+            test = next(t for t in source if t.title == 'Test of subgroup differences')
+            statistic = 'F' if '(F)' in test.rows[0][0] else 'Q'
+            assert f'Test for subgroup differences: {statistic} =' in view.manuscript.results
         quantities = [q for t in source for row in t.quantities for cell in row for q in cell]
         intervals = [q for q in quantities if q.role in ('ci_lower', 'ci_upper', 'pi_lower', 'pi_upper')]
         assert intervals and all(q.level == 90.0 for q in intervals), (label, intervals)
@@ -56,6 +79,9 @@ def run(app, window, work, root, record, analyze):
         bundle = work / label
         bundle.mkdir()
         (bundle / 'tables.json').write_text(json.dumps([asdict(t) for t in source], indent=2), encoding='utf-8')
+        if label == 'adjusted-means':
+            r_bridge.ro.r['saveRDS'](r_bridge.ro.globalenv['result'], file=str(bundle/'result.rds'))
+            r_bridge.ro.r['saveRDS'](r_bridge.ro.globalenv['tmp_obj'], file=str(bundle/'input.rds'))
         for index, prefix in enumerate(view.params_paths.values()):
             for suffix in ('.data', '.params', '.res', '.plotdata'):
                 path = Path(str(prefix)+suffix)
@@ -76,7 +102,7 @@ def run(app, window, work, root, record, analyze):
         assert window.open(str(root / 'sample_projects' / (sample+'.rcms')), raise_on_error=True)
         inspect(analyze(app, window, method, confidence=90), label)
 
-    for workflow in ('cumulative', 'leave-one-out', 'subgroup', 'meta-regression', 'adjusted-means'):
+    for workflow in ('cumulative', 'leave-one-out', 'subgroup', 'subgroup-t', 'meta-regression', 'adjusted-means'):
         window.workspace.mark_saved()
         assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
         studies = window.model.get_studies()
@@ -84,8 +110,9 @@ def run(app, window, work, root, record, analyze):
         window.model.add_covariate('Dose', 'continuous', {s.label: float(i+1) for i, s in enumerate(studies)})
         window.model.reset_model()
         window.enable_menu_options_that_require_dataset()
-        inspect(analyze_existing(app, window, 'meta-regression' if workflow == 'adjusted-means' else workflow, 'binary.random', record,
-                                 parameters={'digits': 3, 'conf.level': 90},
+        underlying = 'meta-regression' if workflow == 'adjusted-means' else 'subgroup' if workflow == 'subgroup-t' else workflow
+        inspect(analyze_existing(app, window, underlying, 'binary.random', record,
+                                 parameters={'digits': 3, 'conf.level': 90, **({'inference.method': 'knha'} if workflow == 'subgroup-t' else {})},
                                  covariates=('Group',) if workflow == 'adjusted-means' else ('Dose',)), workflow)
     from scripts.r_verification_support import resolve_rscript
     rscript = resolve_rscript('Rscript')
@@ -96,6 +123,11 @@ def run(app, window, work, root, record, analyze):
     (work / 'public-reference.log').write_text(process.stdout, encoding='utf-8')
     assert process.returncode == 0, process.stdout
     references = json.loads((work / 'public-values-reference.json').read_text(encoding='utf-8'))
+    from collections import Counter
+    counts = Counter(row['analysis'] for row in references)
+    assert all(counts[label] > 0 for label in ('binary', 'continuous', 'HR', 'IRR', 'meta-regression',
+               'cumulative', 'leave-one-out', 'subgroup', 'subgroup-t', 'adjusted-means')), counts
+    assert counts['Reitsma'] >= 18, counts
     for observation in references:
         actual, expected = float(observation['actual']), float(observation['reference'])
         assert actual == expected or abs(actual-expected) <= max(math.ulp(actual), math.ulp(expected)), observation

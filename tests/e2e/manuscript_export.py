@@ -399,7 +399,13 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
             assert 'Methods' in text and 'RC MetaStudio' in ' '.join(text.split())
             normalized = ' '.join(unicodedata.normalize('NFKC', text).split())
             for prose in (view.manuscript.methods, view.manuscript.results):
-                assert ' '.join(unicodedata.normalize('NFKC', prose).split()) in normalized, (sample, suffix, prose, normalized)
+                import re
+                # A PDF line can wrap immediately after a hyphen or dash.
+                # Compare all ordered words, digits and punctuation independently
+                # of physical line breaks, as the complete-table observer does.
+                expected = re.findall(r'\w+|[^\w\s]', unicodedata.normalize('NFKC', prose))
+                actual = re.findall(r'\w+|[^\w\s]', normalized)
+                assert any(actual[i:i+len(expected)] == expected for i in range(len(actual)-len(expected)+1)), (sample, suffix, prose, normalized)
             assert view.manuscript.methods in view.manuscript_text.toPlainText()
             assert view.manuscript.results in view.manuscript_text.toPlainText()
             assert all(value not in text for value in ('executed settings', 'Project:', '.rcms'))

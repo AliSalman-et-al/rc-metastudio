@@ -40,8 +40,11 @@ The `subgroup-image` and `subgroup-image-dark-large` drives run meantime by trea
 
 - `results-presentation`: copy complete and rectangular result tables as HTML
   and TSV, including escaped Unicode; paste into real editable Qt table cells.
-- `results-values`: exercise exact numeric CSV actions across ten workflows at
-  90% output CI/PI, including combined diagnostics and adjusted means. Retain
+- `results-values`: exercise exact numeric CSV actions across eleven workflows at
+  90% output CI/PI, including combined diagnostics, adjusted means and a
+  Knapp–Hartung subgroup. Assert actual diagnostic method selection and a
+  positive comparison count per analysis, including at least 18 for Reitsma.
+  Retain
   formatted and raw table values, inputs and a public metafor/mada recomputation
   script; compare exact CSV doubles and public references within one floating
   point step. A missing numeric attribute fails the drive. Text-only tables

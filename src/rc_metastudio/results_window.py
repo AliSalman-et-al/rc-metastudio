@@ -660,7 +660,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             writer = csv.writer(stream, lineterminator='\n')
             writer.writerow(('Table', 'Row', 'Column', 'Quantity', 'Value', 'Scale', 'Level', 'Display'))
             for row, numbers in zip(table.rows, table.quantities):
-                identity = ' / '.join(cell for cell, qs in zip(row, numbers) if not qs and cell)
+                identity = ' / '.join(cell for header, cell, qs in zip(table.headers, row, numbers)
+                                      if not qs and cell not in ('', '—', 'NA', 'Not estimable') and header != 'SE scale')
                 for header, cell, quantities in zip(table.headers, row, numbers):
                     for q in quantities:
                         writer.writerow((table.title, identity, header, q.role, '' if q.value is None else repr(q.value),

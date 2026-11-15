@@ -25,6 +25,7 @@ def check_values_export(view, work, record, label):
                     for cell, quantities in zip(row, numbers) for q in quantities]
         assert len(rows) == len(expected)
         for exported, (cell, q) in zip(rows, expected):
+            assert '—' not in exported['Row'] and ' / (log scale)' not in exported['Row'], exported['Row']
             assert exported['Display'] == cell
             assert exported['Quantity'] == q.role
             assert exported['Scale'] == q.scale

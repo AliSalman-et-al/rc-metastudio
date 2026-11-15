@@ -37,6 +37,15 @@ def methods_prose(metric, model, parameters, confidence, workflow, details, fits
     parts = [sentence + '.']
     if any('reitsma' in method.lower() for _, method, _ in fits):
         parts = []
+        for label, method, fit_parameters in fits:
+            if 'reitsma' in method.lower():
+                continue
+            text = f'{label.capitalize()} estimates were pooled using the {method} method'
+            estimator = fit_parameters.get('rm.method')
+            if estimator and 'random' in method.lower():
+                name = parameter_value_display_label('rm.method', estimator).replace('DerSimonian-Laird', 'DerSimonian–Laird')
+                text += f' with the {name} estimator of between-study variance'
+            parts.append(text + '.')
     inference = parameters.get('inference.method')
     if inference in ('z', 'normal'):
         parts.append(f"Confidence intervals ({float(confidence):g}%) used the normal approximation.")
@@ -170,10 +179,10 @@ def _held_sections(result):
     return sections
 
 
-def _prediction_rows(table, lower, upper, ci_level, vertical, fit, summary):
+def _prediction_rows(table, lower, upper, ci_level, vertical, fit, summary, analysis_context=''):
     for index in range(len(table.rows)):
         values, quantities = _row(table, index)
-        context = values.get('Subgroups', table.title if vertical else '')
+        context = values.get('Subgroups', table.title if vertical else analysis_context)
         interval = values[lower] + ' to ' + values[upper]
         fit.append(((ci_level.replace(' PI', '') + ' prediction interval' + (' (' + context + ')' if context else ''), ()),
                     (interval, quantities[lower]+quantities[upper])))
@@ -204,7 +213,8 @@ def _pooled_prose(result, values, effect, effect_metric, coefficient, statistic,
         return
     lead = f"The pooled {effect_metric}"
     if result.analysis_method == 'diagnostic.reitsma':
-        lead = f"The {effect_metric}"
+        qualifier = "summary " if effect_metric in ("sensitivity", "specificity", "false-positive rate") else ""
+        lead = f"The {qualifier}{effect_metric}"
     if coefficient:
         lead = f"For {effect}, the coefficient"
     elif values.keys() & {"Subgroups", "Term", "Level"}:
@@ -274,7 +284,8 @@ def _heterogeneity_rows(table, fit, summary, residual=None):
 def _fit_table(table, fit, summary):
     if table.title == 'Test of subgroup differences' and table.rows:
         values, numbers = _row(table, 0)
-        summary.append(f"Test for subgroup differences: Q = {values['Statistic']}, df = {values['df']}, {_p_clause(p_value(values['p-value'], numbers.get('p-value', ())))}.")
+        test = 'F' if '(F)' in values['Test'] else 'Q'
+        summary.append(f"Test for subgroup differences: {test} = {values['Statistic']}, df = {values['df']}, {_p_clause(p_value(values['p-value'], numbers.get('p-value', ())))}.")
         fit.extend(((label, ()), (p_value(values[key], numbers.get(key, ())) if key == 'p-value' else values[key], numbers.get(key, ())))
                    for key, label in (("Test", "Between-group test"), ("Statistic", "Between-group statistic"), ("df", "Between-group degrees of freedom"), ("p-value", "Between-group p")))
         return True
@@ -317,7 +328,8 @@ def _report_table(result, section, table, summary, pooled, fit, level, statistic
         return level, statistic
     lower, upper, ci_level = _interval_fields(table)
     if lower and upper and ci_level.endswith(' PI'):
-        _prediction_rows(table, lower, upper, ci_level, vertical, fit, summary)
+        context = section.title.removesuffix(' summary') if ',' in result.manuscript_metric else ''
+        _prediction_rows(table, lower, upper, ci_level, vertical, fit, summary, context)
         return level, statistic
     if lower and upper and ci_level.endswith(' CI') and any(q.role == 'estimate' for row in table.quantities for cell in row for q in cell):
         level, statistic = _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overall, calculation, pooled, fit, summary, methods)
@@ -333,7 +345,7 @@ def _report_table(result, section, table, summary, pooled, fit, level, statistic
 
 
 def _section_statistics(section):
-    overall = next((_row(t, 0) for t in section.tables if len(t.rows) == 1 and
+    overall = next((_row(t, 0) for t in section.tables if t.title != 'Test of subgroup differences' and len(t.rows) == 1 and
                     any(q.role == 'statistic' for row in t.quantities for cell in row for q in cell) and
                     not any(q.role == 'estimate' for row in t.quantities for cell in row for q in cell)), ({}, {}))
     calculation = next((_row(t, 0) for t in section.tables if t.title.startswith('Calculation scale') and t.rows), ({}, {}))
@@ -394,8 +406,8 @@ def _available_columns(table):
 
 def _report_methods(result, pooled_methods):
     methods = " ".join(filter(None, (result.manuscript_methods, *dict.fromkeys(pooled_methods))))
-    if any(q.role == 'q' for s in result.sections for t in s.tables for row in t.quantities for cell in row for q in cell) and 'Reitsma' not in methods:
-        methods += " Heterogeneity was assessed with Cochran's Q and I²."
+    if any(q.role == 'q' for s in result.sections for t in s.tables for row in t.quantities for cell in row for q in cell):
+        methods += " Heterogeneity" + (" for the separate univariate fits" if 'Reitsma' in methods else '') + " was assessed with Cochran's Q and I²."
     methods += f' Analyses were performed in RC MetaStudio {__version__}.'
     packages = ', '.join(p.strip() for p in result.software.split(',') if not p.strip().startswith('RCMetaR'))
     if packages:

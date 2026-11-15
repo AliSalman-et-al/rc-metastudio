@@ -276,10 +276,13 @@ def analyze(app, window, method, *, digits=3, confidence=None):
             for w in app.topLevelWidgets()
             if isinstance(w, DiagnosticMetricsDialog) and w.isVisible()
         )
+        requested_metrics = {'sens', 'spec', 'dor'} if method == 'diagnostic.reitsma' else {'dor'}
         for metric in metrics.SELECTABLE_METRICS:
             checkbox = metrics._metric_checkbox(metric)
-            if checkbox.isChecked() != (metric == "dor"):
-                mouse_click(checkbox, QtCore.Qt.MouseButton.LeftButton)
+            if checkbox.isChecked() != (metric in requested_metrics):
+                checkbox.setFocus()
+                key_click(checkbox, QtCore.Qt.Key.Key_Space)
+            assert checkbox.isChecked() == (metric in requested_metrics), metric
         mouse_click(metrics.btn_ok, QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
     dialog = next(
@@ -290,6 +293,7 @@ def analyze(app, window, method, *, digits=3, confidence=None):
     label = next(
         label for label, key in dialog.available_method_d.items() if key == method
     )
+    assert dialog.method_cbo_box.findText(label) >= 0, (method, label)
     dialog.method_cbo_box.setCurrentText(label)
     app.processEvents()
     if confidence is not None:
@@ -315,6 +319,7 @@ def analyze(app, window, method, *, digits=3, confidence=None):
                 left = control.mapTo(viewport, QtCore.QPoint()).x()
                 assert left >= 0 and left + control.width() <= viewport.width(), (control.objectName(), left, control.width(), viewport.width(), control.text() if isinstance(control, QtWidgets.QLabel) else "")
     assert precision.value() == digits, ("configured precision", precision.value(), digits)
+    assert dialog.current_method == method, ('executed method', dialog.current_method, method)
     record_step("analysis-configured", dialog, method=method, digits=precision.value())
     button = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
     assert button.isEnabled()

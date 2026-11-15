@@ -22,7 +22,7 @@ refit <- function(data, original) {
   if (!is.null(moderators)) args$mods <- moderators
   do.call(metafor::rma.uni, args)
 }
-for (label in c('binary', 'continuous', 'HR', 'IRR', 'meta-regression', 'cumulative', 'leave-one-out', 'subgroup')) {
+for (label in c('binary', 'continuous', 'HR', 'IRR', 'meta-regression', 'cumulative', 'leave-one-out', 'subgroup', 'subgroup-t')) {
   directory <- file.path(root, label)
   env <- new.env()
   load(file.path(directory, '0.data'), env)
@@ -38,7 +38,7 @@ for (label in c('binary', 'continuous', 'HR', 'IRR', 'meta-regression', 'cumulat
       heterogeneity <- Filter(function(t) t$title == 'Heterogeneity', tables)[[1]]
       check(heterogeneity$quantities[[1]], reference, transform)
     }
-  } else if (label == 'subgroup') {
+  } else if (label %in% c('subgroup', 'subgroup-t')) {
     groups <- env$res$subgroup_data
     for (i in seq_along(groups$results)) check(table$quantities[[i]], refit(groups$grouped.data[[i]], groups$results[[i]]), transform)
   } else {
@@ -58,6 +58,24 @@ for (label in c('binary', 'continuous', 'HR', 'IRR', 'meta-regression', 'cumulat
       check(table$quantities[[i]], reference, transform)
     }
   }
+}
+label <- 'adjusted-means'
+directory <- file.path(root, label)
+result <- readRDS(file.path(directory, 'result.rds'))
+data <- readRDS(file.path(directory, 'input.rds'))
+effects <- metafor::escalc(measure='OR', ai=data@g1O1, bi=data@g1O2,
+  ci=data@g2O1, di=data@g2O2, add=.5, to='only0')
+data@y <- effects$yi
+data@SE <- sqrt(effects$vi)
+reference <- refit(data, result$res)
+tables <- jsonlite::read_json(file.path(directory, 'tables.json'), simplifyVector=FALSE)
+coefficients <- Filter(function(t) t$title == 'Regression coefficients', tables)[[1]]
+for (i in seq_along(coefficients$quantities)) check(coefficients$quantities[[i]], reference, identity, i)
+means <- Filter(function(t) t$title == 'Adjusted Means', tables)[[1]]
+predicted <- predict(reference, newmods=matrix(c(0, 1), ncol=1), level=90)
+for (i in seq_along(means$quantities)) {
+  values <- list(b=predicted$pred, ci.lb=predicted$ci.lb, ci.ub=predicted$ci.ub, se=predicted$se)
+  check(means$quantities[[i]], values, exp, i)
 }
 label <- 'Reitsma'
 directory <- file.path(root, label)
@@ -83,4 +101,7 @@ for (table in tables) {
       actual=sprintf('%.17g', q$value), reference=sprintf('%.17g', values[[q$role]]))
   }
 }
+counts <- table(vapply(observed, function(x) x$analysis, character(1)))
+required <- c('binary', 'continuous', 'HR', 'IRR', 'meta-regression', 'cumulative', 'leave-one-out', 'subgroup', 'subgroup-t', 'adjusted-means', 'Reitsma')
+stopifnot(all(required %in% names(counts)), all(counts[required] > 0), counts[['Reitsma']] >= 18L)
 jsonlite::write_json(observed, file.path(root, 'public-values-reference.json'), pretty=TRUE, auto_unbox=TRUE)

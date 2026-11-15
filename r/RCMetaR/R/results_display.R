@@ -475,14 +475,15 @@ create.regression.display <- function(res, params, display.data) {
     heterogeneity <- rcmetar.regression.summary.array(list(
       c("Residual heterogeneity (\u03c4\u00b2)", rcmetar.regression.display.value(res$tau2, result.digits)),
       c("SE of \u03c4\u00b2", rcmetar.regression.display.value(res$se.tau2, se.digits)),
-      c("Residual heterogeneity (\u03c4)", rcmetar.regression.display.value(sqrt(res$tau2), result.digits)),
+      c("Residual heterogeneity (\u03c4)", rcmetar.regression.display.value(sqrt(res$tau2 %||% NA_real_), result.digits)),
       c("Residual I\u00b2", rcmetar.regression.display.value(res$I2, 1L, percent=TRUE)),
       c("Residual H\u00b2", rcmetar.regression.display.value(res$H2, result.digits)),
       c("Heterogeneity explained (R\u00b2)", rcmetar.regression.display.value(res$R2, 1L, percent=TRUE))
     ))
     # Each row has a distinct meaning; keep these as supporting values.
     heterogeneity <- rcmetar.numeric.fields(heterogeneity, 2L, "value",
-      c(res$tau2, res$se.tau2, sqrt(res$tau2), res$I2, res$H2, res$R2),
+      c(res$tau2 %||% NA_real_, res$se.tau2 %||% NA_real_, sqrt(res$tau2 %||% NA_real_),
+        res$I2 %||% NA_real_, res$H2 %||% NA_real_, res$R2 %||% NA_real_),
       c(rep(rcmetar.analysis.scale(params), 3), "percent", "", "percent"))
     arrays <- c(arrays, list(heterogeneity))
     titles <- c(titles, "Residual heterogeneity")

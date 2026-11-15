@@ -281,7 +281,7 @@ def expected_fit_table(result, section, source):
     if low and high and low.partition('(')[2].removesuffix(')').strip().endswith(' PI'):
         level = low.partition('(')[2].removesuffix(')').strip()
         for row in data:
-            context = row.get('Subgroups', source.title if vertical else '')
+            context = row.get('Subgroups', source.title if vertical else section.title.removesuffix(' summary') if ',' in result.manuscript_metric else '')
             rows.append((level.removesuffix(' PI') + ' prediction interval' + (' (' + context + ')' if context else ''), row[low] + ' to ' + row[high]))
     elif 'Estimate' in headers and low and high and section.title != 'Marginal prediction':
         rows.extend(('Studies (k) (' + row['Subgroups'] + ')', row['k']) for row in data if 'k' in row and 'Subgroups' in row and row['Estimate'])
