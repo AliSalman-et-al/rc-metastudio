@@ -26,6 +26,7 @@ from PyQt6.QtCore import (
     QSignalBlocker,
     Qt,
     QSize,
+    QSettings,
 )
 from PyQt6.QtGui import (
     QAction,
@@ -91,6 +92,7 @@ from rc_metastudio.settings import (
     load_plot_export_format,
     save_plot_export_format,
     restore_results_window_state,
+    RESULTS_WORKSPACE_GROUP,
     save_results_window_state,
 )
 
@@ -342,6 +344,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.y_coord = 5.0
 
         self._restored_splitter_proportions = restored_state["splitter_proportions"]
+        self._has_saved_splitter = QSettings().contains(RESULTS_WORKSPACE_GROUP + "/splitter_proportions")
         self._splitter_restore_pending = True
 
         self.scene = QGraphicsScene(self)
@@ -383,7 +386,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         for title, anchor in entries:
             item = QTreeWidgetItem([title])
             self.nav_tree.addTopLevelItem(item)
-            item.setToolTip(0, "Read the report" if title == "Text report" else "Copy or export numerical tables" if title == "Tables" else "Inspect the executed model and settings")
+            item.setToolTip(0, {"Manuscript": "Read the manuscript report", "Text report": "Read the full text report", "Tables": "Copy or export numerical tables", "Settings": "Inspect the executed model and settings"}[title])
             item.setDisabled(title == "Tables" and not self._report_tables)
             self._report_nav_anchors[id(item)] = anchor
         self.nav_tree.currentItemChanged.connect(lambda item, _previous: self.item_clicked(item, 0) if item is not None else None)
@@ -417,12 +420,25 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         first, *rest = identity.partition(" — ")[2].splitlines() if " — " in identity else identity.splitlines()
         name, separator, description = first.partition(" · ")
         details = [description] if separator else []
-        details.extend(line for line in rest if line)
+        details.extend(line.removeprefix("Comparison: ").removeprefix("Group: ").removeprefix("Arm: ")
+                       for line in rest if line)
         study_count = dict(self.results.manuscript_model_info).get('Studies (k)')
         if study_count:
             details.append('k = ' + study_count)
-        details.extend(line.split(': ', 1)[1] for line in self.results.details.splitlines()
-                       if line.startswith(('Model: ', 'Estimator: ', 'Confidence level: ')))
+        models = []
+        confidence = []
+        for line in self.results.details.splitlines():
+            if line.startswith('Model: '):
+                models.append((line.removeprefix('Model: '), ''))
+            elif line.startswith('Estimator: ') and models:
+                model, estimator = models[-1]
+                value = line.removeprefix('Estimator: ')
+                models[-1] = (model, estimator + ', ' + value if estimator else value)
+            elif line.startswith('Confidence level: '):
+                confidence.append(line.removeprefix('Confidence level: ') + ' CI')
+        details.extend(model + (f' ({estimator})' if estimator else '')
+                       for model, estimator in dict.fromkeys(models))
+        details.extend(dict.fromkeys(confidence))
         self.result_identity.setText('<b>' + escape(name[:1].upper() + name[1:]) + '</b>'
                                      + ('  ·  ' + escape('  ·  '.join(details)) if details else ''))
         self.result_identity.setToolTip(identity + '\n' + self.results.details)
@@ -468,7 +484,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._refresh_manuscript_theme()
         if hasattr(self, "result_table"):
             header = required(self.result_table.horizontalHeader(), "result table header")
-            header.setStyleSheet("QHeaderView::section { border: 0; border-bottom: 1px solid palette(mid); }")
+            header.setStyleSheet("QHeaderView::section { border: 0; border-bottom: 1px solid palette(mid); padding: 0 0.5em; }")
         for item in (*self._svg_plot_items, *self._raster_plot_items):
             for child in item.childItems():
                 if isinstance(child, QGraphicsRectItem):
@@ -545,7 +561,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.result_table.setShowGrid(False)
         self.result_table.setWordWrap(False)
         header = required(self.result_table.horizontalHeader(), "result table column header")
-        header.setStyleSheet("QHeaderView::section { border: 0; border-bottom: 1px solid palette(mid); }")
+        header.setStyleSheet("QHeaderView::section { border: 0; border-bottom: 1px solid palette(mid); padding: 0 0.5em; }")
         header.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         header.setStretchLastSection(False)
         header.setResizeContentsPrecision(-1)
@@ -741,9 +757,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.copy_menu = QMenu(self)
         self.copy_menu.addAction(self.copy_report_action)
         for name, text in (("Methods", self.manuscript.methods), ("Results", self.manuscript.results)):
-            action = self.copy_menu.addAction('Copy ' + name)
+            action = self.copy_menu.addAction('Copy ' + name.lower() + ' section')
             required(action, 'copy manuscript action').triggered.connect(
-                lambda checked=False, text=text: required(QApplication.clipboard(), 'clipboard').setText(text))
+                lambda checked=False, name=name, text=text: self._copy_section(name, text))
             required(action, 'copy manuscript action').setEnabled(bool(text))
         self.copy_menu.addSeparator()
         self.copy_menu.addAction(self.copy_table_action)
@@ -787,6 +803,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.change_settings_action.setToolTip("Re-run this analysis with its original dataset and changed settings (Ctrl+Shift+R)." if self._change_settings else "This analysis cannot be re-run from here.")
         if self._change_settings is not None:
             self.change_settings_action.triggered.connect(app_error_handler.safe_slot(self._change_analysis_settings, parent=self))
+        for action in (self.export_plot_action, self.edit_plot_action, self.change_settings_action):
+            action.setStatusTip(action.toolTip())
         toolbar.addAction(self.change_settings_action)
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Zoom", self))
@@ -928,6 +946,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             yield f"manuscript:{index}", heading, section.paragraphs, section.tables
         if self.results.details:
             yield "model-configuration", "Model configuration", (self.results.details,), ()
+
+    def _copy_section(self, name, text):
+        required(QApplication.clipboard(), "clipboard").setText(text)
+        self.statusbar.showMessage(name + " copied", 4000)
 
     def _copy_report(self):
         from PyQt6.QtCore import QMimeData
@@ -1387,12 +1409,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _set_restored_splitter_sizes(self):
         splitter_extent = max(2, self.results_nav_splitter.width())
-        self.results_nav_splitter.setSizes(
-            [
-                max(1, int(splitter_extent * value))
-                for value in self._restored_splitter_proportions
-            ]
-        )
+        if self._has_saved_splitter:
+            sizes = [max(1, int(splitter_extent * value)) for value in self._restored_splitter_proportions]
+        else:
+            em = self.fontMetrics().height()
+            navigation = min(max(self.nav_tree.sizeHintForColumn(0) + 2 * em, 12 * em), int(splitter_extent * .18))
+            sizes = [navigation, splitter_extent - navigation]
+        self.results_nav_splitter.setSizes(sizes)
 
     def resizeEvent(
         self, event: QResizeEvent | None

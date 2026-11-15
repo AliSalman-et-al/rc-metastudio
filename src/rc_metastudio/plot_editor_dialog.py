@@ -112,8 +112,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         caption_label.setBuddy(self.figure_caption)
         caption_row = self.style_layout.rowCount()
         caption_columns = self.style_layout.columnCount()
-        self.style_layout.addWidget(caption_label, caption_row, 0, 1, caption_columns)
-        self.style_layout.addWidget(self.figure_caption, caption_row + 1, 0, 1, caption_columns)
+        self.style_layout.addWidget(caption_label, caption_row, 0)
+        self.style_layout.addWidget(self.figure_caption, caption_row, 1, 1, caption_columns - 1)
         self._sroc_group = None
         if self.plot_type == "sroc":
             self._build_sroc_controls()
@@ -123,6 +123,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
 
         self.accent_color.setMaximumWidth(self.accent_color.fontMetrics().height() * 6)
         self.color_btn.setText("Choose…")
+        self.color_btn.setMaximumWidth(self.fontMetrics().height() * 12)
         self.color_btn.clicked.connect(
             app_error_handler.safe_slot(self._choose_color, parent=self)
         )

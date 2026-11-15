@@ -23,6 +23,12 @@ def run(app, window, work, root, record, analyze):
     assert phase in ('all', 'numbers'), phase
     record('direction-phase', window, phase=phase)
     if phase == 'all':
+        assert not window.action_go.isEnabled(), 'Home must not run an empty analysis'
+        assert not window.action_save.isEnabled(), 'Home must not save an empty project'
+        key_click(window, QtCore.Qt.Key.Key_R, QtCore.Qt.KeyboardModifier.ControlModifier)
+        wait(100)
+        assert not any(widget.isVisible() and widget.objectName() == 'Dialog' for widget in app.topLevelWidgets() if isinstance(widget, QtWidgets.QDialog))
+        record('direction-home-disabled', window, reason=window.action_go.toolTip())
         assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
         window.showNormal()
         window.resize(1280, 800)
@@ -145,6 +151,11 @@ def run(app, window, work, root, record, analyze):
         if view.result_table.showGrid():
             failures.append('Results tables retain spreadsheet cell boxes')
         record('direction-results-table', view)
+        methods_copy = next(action for action in view.copy_menu.actions() if action.text() == 'Copy methods section')
+        methods_copy.trigger()
+        assert app.clipboard().text() == view.manuscript.methods
+        assert view.statusbar.currentMessage() == 'Methods copied'
+        record('direction-copy-section-feedback', view)
         view._copy_report()
         assert view.statusbar.currentMessage()
         wait(4200)

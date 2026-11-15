@@ -336,8 +336,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.sheet_tabs.tabBarDoubleClicked.connect(self._rename_sheet)
         self.sheet_tabs.customContextMenuRequested.connect(self._sheet_menu)
         self.add_sheet_button.clicked.connect(self._add_sheet)
+        self.menuView.addSeparator()
         self.outcome_navigation_actions = []
-        for label, sequence, delta in (("Next outcome", "Ctrl+PgDown", 1), ("Previous outcome", "Ctrl+PgUp", -1)):
+        for label, sequence, delta in (("Previous outcome", "Ctrl+PgUp", -1), ("Next outcome", "Ctrl+PgDown", 1)):
             action = QAction(label, self)
             action.setShortcut(QKeySequence(sequence))
             action.setToolTip(label + " (" + sequence + ")")
@@ -359,6 +360,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             action = QAction(label, self)
             action.triggered.connect(lambda _checked=False, url=url: QtGui.QDesktopServices.openUrl(QtCore.QUrl(url)))
             self.menuHelp.addAction(action)
+        self.menuHelp.removeAction(self.action_about_legal)
+        self.menuHelp.addSeparator()
+        self.menuHelp.addAction(self.action_about_legal)
+        self.menuDataset.addSeparator()
         self.action_swap_arms = QAction("Swap intervention and control", self)
         self.menuDataset.addAction(self.action_swap_arms)
         self.menuDataset.aboutToShow.connect(self._update_swap_arms_enabled)
@@ -388,6 +393,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.populate_open_recent_menu()
         self.workspace.mark_saved()
         self._update_project_identity()
+        self.disable_menu_options_that_require_dataset()
 
     def createPopupMenu(self):
         return None
@@ -537,6 +543,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _update_workspace_guidance(self):
         enable = hasattr(self, "model") and self.model.current_outcome_name is not None
+        self.action_save.setEnabled(enable)
+        self.action_save_as.setEnabled(enable)
+        self.action_save.setToolTip("Save project (Ctrl+S)" if enable else "Create or open a project to save it")
+        self.action_save.setStatusTip(self.action_save.toolTip())
         self.start_page.setVisible(not enable)
         self.nav_frame.setVisible(enable)
         self.confidence_button.setVisible(enable)
@@ -587,7 +597,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if event is None:
             return
         if event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier:
-            if event.key() == QtCore.Qt.Key.Key_S:
+            if event.key() == QtCore.Qt.Key.Key_S and self.action_save.isEnabled():
                 self.save()
             elif event.key() == QtCore.Qt.Key.Key_O:
                 self.open()

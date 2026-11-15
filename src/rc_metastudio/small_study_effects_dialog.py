@@ -54,22 +54,22 @@ SMALL_STUDY_EFFECTS_PREFERRED_WIDTH = 700
 
 
 def _available_method_text(methods) -> str:
-    primary = [
-        _TEST_LABELS.get(item.method, item.method)
-        for item in methods
-        if item.role == "primary"
-    ]
-    additional = [
-        _TEST_LABELS.get(item.method, item.method)
-        for item in methods
-        if item.role != "primary"
-    ]
-    lines = []
+    primary = []
+    additional = []
+    for item in methods:
+        label = _TEST_LABELS.get(item.method, item.method)
+        if item.role == "primary":
+            facts = ([f"{item.usable_studies} eligible studies"] if item.usable_studies is not None else [])
+            facts.extend(item.required_inputs)
+            primary.append(label + (" (" + "; ".join(facts) + ")" if facts else ""))
+        else:
+            additional.append(label)
+    clauses = []
     if primary:
-        lines.append("Primary test " + ", ".join(primary))
+        clauses.append(("Primary test " if len(primary) == 1 else "Primary tests ") + ", ".join(primary))
     if additional:
-        lines.append("Exploratory tests " + ", ".join(additional))
-    return " · ".join(lines)
+        clauses.append(("Exploratory test " if len(additional) == 1 else "Exploratory tests ") + ", ".join(additional))
+    return " · ".join(clauses)
 
 
 class SmallStudyEffectsDialog(
@@ -302,15 +302,7 @@ class SmallStudyEffectsDialog(
                     unavailable_reason(item) for item in report.methods if not item.available))
             )
             return
-        primary = [item for item in available if item.role == "primary"]
-        context = ""
-        if primary:
-            method = primary[0]
-            inputs = ", ".join(method.required_inputs)
-            context = f" · {method.usable_studies} eligible studies"
-            if inputs:
-                context += f" using {inputs}"
-        self.automatic_test_label.setText(_available_method_text(available) + context)
+        self.automatic_test_label.setText(_available_method_text(available))
 
     def _context_summary(self, report=None) -> str:
         data_type = str(self.model.get_current_data_type())

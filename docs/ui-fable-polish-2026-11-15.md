@@ -242,3 +242,45 @@ The probe retains the command, environment, Qt platform, script hash and resourc
 sizes. Earlier probe attempts lacked resource registration/application ordering;
 only the qualified captures establish the visual comparison. Strict typing and
 five compact-dialog layout checks passed. The probe is `build/about_logo_probe.py`.
+
+### Final reviewer punch list — interface recovery
+
+Fable's final implementation review found no blocker and supplied T1–T20 and
+three objections. Its full source-bound report is retained in the Fable bundle.
+The user's later CI-placement decision supersedes T16/the original strip rule.
+
+Fixed T1/T2/T9/T10/T17: header padding prevents SE/SE scale collisions; fixed
+identity collapses only exact model/estimator pairs, preserves full tooltips,
+removes redundant arm prefixes in the strip and ends with the explicit CI level.
+Section copies now give four-second feedback. Uncustomised Results navigation
+uses its content width; saved user splitter proportions still restore. Disabled
+Results verbs mirror their tooltips as status tips. The Manuscript tooltip now
+names its actual destination.
+
+Fixed T3/T4/T12/T15/T20 and O2: startup applies the real empty-project action
+state, including Save and Ctrl+S; Home cannot run an empty analysis and no longer
+shows its empty grid frame. Home's import link refreshes its explicit readable
+colour locally on theme changes. Menus use Previous/Next order and separate
+Help/arm actions. Freeman–Tukey keeps its proper name. The retained welcome
+page explains why Open recent is disabled.
+
+Fixed T5/T6/T11/T14/T19 and O3: both diagnostic methods, main parameters, shared
+parameters and Advanced share one bounded label column. Short method labels
+remain unwrapped. Small-study test facts form clear clauses with correct
+singular/plural wording. Swatch buttons are bounded to twelve em; setup colour
+fields follow the compact editor layout, and figure captions occupy the regular
+field column. Error Details uses the existing quiet disclosure control.
+
+T13 now has an open Results menu and 900-pixel Results capture in the native
+tour. T18 was explicitly acceptable and not required; the approved icon family
+is retained. T7/T8/O1 vocabulary/export-caption changes follow separately.
+
+Strict typing and 146 focused GUI checks passed. Native dialog recovery passed
+at `20261115T183654Z-1b50a150-ui-fable-polish` (including exact combined/Advanced
+field alignment and a single shared Reitsma identity). Native design recovery
+passed at `20261115T183903Z-d312425f-ui-design-direction`, including disabled Home
+keyboard analysis, section-copy feedback, precision and complete report rows.
+The first final profile failed an obsolete fixed-width-nav assertion; the bridge
+driver now proves drag-driven viewport refitting. Intentional sentence-case,
+colon-free and significant-zero expectations were updated without touching
+numerical oracles or tolerances. Full final qualification is still pending.

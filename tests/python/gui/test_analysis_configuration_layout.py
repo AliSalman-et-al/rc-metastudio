@@ -273,7 +273,7 @@ def test_method_dialog_wording_is_scoped_to_its_analysis_family(
         ),
         (
             None,
-            "Method & Parameters for Sensitivity and Specificity",
+            "Method & Parameters for Sensitivity and specificity",
             "Analysis method",
         ),
     ),
@@ -353,7 +353,7 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
         dialog.show()
         qapp.processEvents()
 
-        assert dialog.windowTitle() == ("Meta-regression · Outcome · Sensitivity and Specificity" if analysis_type == "meta-regression" else "Outcome · Sensitivity, Specificity")
+        assert dialog.windowTitle() == ("Meta-regression · Outcome · Sensitivity and specificity" if analysis_type == "meta-regression" else "Outcome · Sensitivity, Specificity")
         dialog.show()
         qapp.processEvents()
         assert dialog.method_lbl.text() == expected_method_label

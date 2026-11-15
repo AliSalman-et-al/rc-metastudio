@@ -302,13 +302,13 @@ _DRIVER = textwrap.dedent(
 
     before_splitter_width = result_window.graphics_view.viewportTransform().mapRect(plot_item.sceneBoundingRect()).width()
     navigation_width = result_window.nav_tree.width()
-    result_window.results_nav_splitter.moveSplitter(360, 1)
+    result_window.results_nav_splitter.moveSplitter(navigation_width + 80, 1)
     for _ in range(3):
         app.processEvents()
-    assert result_window.nav_tree.width() == navigation_width
+    assert result_window.nav_tree.width() > navigation_width
     after_splitter_width = result_window.graphics_view.viewportTransform().mapRect(plot_item.sceneBoundingRect()).width()
-    assert after_splitter_width == before_splitter_width, (
-        "moving the fixed-width navigation splitter changed the rendered plot width",
+    assert after_splitter_width < before_splitter_width, (
+        "moving the navigation splitter did not refit the plot to its new viewport",
         {"before": before_splitter_width, "after": after_splitter_width,
          "navigation_before": navigation_width, "navigation_after": result_window.nav_tree.width(),
          "viewport": result_window.graphics_view.viewport().width(), "qpa": app.platformName()},

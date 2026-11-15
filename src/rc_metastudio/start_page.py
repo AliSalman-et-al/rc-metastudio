@@ -99,6 +99,13 @@ class StartPage(QtWidgets.QScrollArea):
         outer.addStretch()
         self.setWidget(page)
 
+    def changeEvent(self, event: QtCore.QEvent | None) -> None:
+        super().changeEvent(event)
+        if event is not None and event.type() in (QtCore.QEvent.Type.PaletteChange, QtCore.QEvent.Type.ApplicationPaletteChange):
+            button = self.findChild(QtWidgets.QPushButton, 'empty_recent_import')
+            if button is not None:
+                button.setStyleSheet('QPushButton { color: ' + qt_layout.readable_link_color(self.palette()).name() + '; text-decoration: underline; }')
+
     def set_recent_projects(self, paths, open_project, locate_project=None, remove_project=None):
         while self.recent_layout.count():
             item = required(self.recent_layout.takeAt(0), "recent project row")
@@ -111,7 +118,8 @@ class StartPage(QtWidgets.QScrollArea):
             self.recent_layout.addWidget(QtWidgets.QLabel('Projects you open or save will appear here.', self.recent_projects))
             import_button = QtWidgets.QPushButton('Import data…', self.recent_projects)
             import_button.setFlat(True)
-            import_button.setStyleSheet('QPushButton { color: palette(link); text-decoration: underline; }')
+            import_button.setObjectName('empty_recent_import')
+            import_button.setStyleSheet('QPushButton { color: ' + qt_layout.readable_link_color(self.palette()).name() + '; text-decoration: underline; }')
             import_button.clicked.connect(self.import_button.click)
             self.recent_layout.addWidget(import_button, 1, 0, QtCore.Qt.AlignmentFlag.AlignLeft)
         for index, path in enumerate(reversed(paths)):

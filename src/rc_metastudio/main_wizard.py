@@ -184,6 +184,8 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
             self.open_recent_btn.setMenu(qm)
         else:
             self.open_recent_btn.setEnabled(False)
+            self.open_recent_btn.setToolTip("No recent projects.")
+            self.open_recent_btn.setStatusTip("No recent projects.")
 
     def dataset_selected(self, action_item=None):
         self.wizard().set_wizard_path("open")
@@ -451,7 +453,7 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
                 if metric == "Mean":
                     metric_pretty_name = {"generic_effect": "Entered effect", "reg_coef": "Regression coefficient"}.get(dataset_info["sub_type"], "Mean")
                 self.metric_cbo_box.addItem(
-                    ({"PR": "Proportion", "OR": "Odds ratio (OR)", "RR": "Risk ratio (RR)", "RD": "Risk difference (RD)", "MD": "Mean difference", "SMD": "Standardized mean difference (SMD)"}.get(metric, metric_pretty_name[:1] + metric_pretty_name[1:].lower())) if metric != "Mean" else metric_pretty_name, userData=str(metric)
+                    ({"PFT": "Freeman–Tukey double-arcsine transformed proportion", "PR": "Proportion", "OR": "Odds ratio (OR)", "RR": "Risk ratio (RR)", "RD": "Risk difference (RD)", "MD": "Mean difference", "SMD": "Standardized mean difference (SMD)"}.get(metric, metric_pretty_name[:1] + metric_pretty_name[1:].lower())) if metric != "Mean" else metric_pretty_name, userData=str(metric)
                 )
             index_of_default = self.metric_cbo_box.findData(str(default_effect))
             if index_of_default < 0:

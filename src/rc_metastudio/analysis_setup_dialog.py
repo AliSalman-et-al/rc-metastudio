@@ -304,11 +304,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         error_layout = QtWidgets.QVBoxLayout(self.analysis_error_panel)
         error_layout.setContentsMargins(0, 0, 0, 0)
         error_layout.addWidget(self.analysis_error_label)
-        self.analysis_error_toggle = QtWidgets.QToolButton(self.analysis_error_panel)
-        self.analysis_error_toggle.setText("Details")
-        self.analysis_error_toggle.setCheckable(True)
-        self.analysis_error_toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        self.analysis_error_toggle.setArrowType(Qt.ArrowType.RightArrow)
+        self.analysis_error_toggle = DisclosureButton("Details", self.analysis_error_panel)
         error_layout.addWidget(self.analysis_error_toggle, 0, Qt.AlignmentFlag.AlignLeft)
         self.analysis_error_details = QtWidgets.QPlainTextEdit(self.analysis_error_panel)
         self.analysis_error_details.setReadOnly(True)
@@ -459,6 +455,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         for combo in self.findChildren(QComboBox):
             self._configure_value_control(combo)
         configure_plot_text_inputs(self)
+        self.accent_color.setMaximumWidth(self.fontMetrics().height() * 6)
+        self.color_btn.setText("Choose…")
+        self.color_btn.setMaximumWidth(self.fontMetrics().height() * 12)
         apply_default_forest_arm_labels(self)
         if _text_value(self.image_path) == "":
             self.image_path.setText(analysis_output_path("forest.png"))
@@ -978,7 +977,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _expand_error_details(self, expanded):
         self.analysis_error_details.setVisible(expanded)
-        self.analysis_error_toggle.setArrowType(Qt.ArrowType.DownArrow if expanded else Qt.ArrowType.RightArrow)
         self._resize_on_reflow = True
         self._schedule_local_reflow()
 
@@ -1173,7 +1171,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if self.data_type != "diagnostic":
             return analysis_identity.metric_label(self.model)
         if self.is_meta_regression:
-            return "Sensitivity and Specificity"
+            return "Sensitivity and specificity"
         labels = {"sens": "Sensitivity", "spec": "Specificity", "lr": "Positive and negative likelihood ratios", "dor": "Diagnostic odds ratio"}
         return ", ".join(labels[metric] for metric in self.diagnostic_metrics)
 
@@ -1703,22 +1701,34 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if hasattr(self, "_lr_dor_method_row"):
             rows.append((self._lr_dor_method_row, self._lr_dor_method_layout,
                          self.lr_dor_method_lbl, self.lr_dor_method_cbo_box))
+        panels = [self.parameter_grp_box, self.advanced_panel]
+        if hasattr(self, "_lr_dor_method_row"):
+            panels.extend((self.lr_dor_parameter_grp_box, self.shared_diagnostic_params_box))
+        grids = [(panel, grid) for panel in panels if isinstance(grid := panel.layout(), QGridLayout)]
+        labels = [field for _, grid in grids for index in range(grid.count())
+                  if (item := grid.itemAt(index)) is not None and grid.getItemPosition(index)[1] == 0
+                  and isinstance(field := item.widget(), QLabel)]
+        label_cap = self.fontMetrics().height() * 18
+        label_width = min(label_cap, max([field.sizeHint().width() for field in labels]
+                                        + [label.minimumSizeHint().width() for _, _, label, _ in rows]))
+        leading = max(panel.mapTo(self.methods_tab, QtCore.QPoint()).x()
+                      + panel.contentsMargins().left() + grid.contentsMargins().left()
+                      for panel, grid in grids)
+        for panel, grid in grids:
+            margins = grid.contentsMargins()
+            left = leading - panel.mapTo(self.methods_tab, QtCore.QPoint()).x() - panel.contentsMargins().left()
+            grid.setContentsMargins(left, margins.top(), margins.right(), margins.bottom())
+            grid.setColumnMinimumWidth(0, label_width)
+        for field in labels:
+            field.setMaximumWidth(label_cap)
         for row_widget, layout, label, combo in rows:
+            label.setWordWrap(label.fontMetrics().horizontalAdvance(label.text()) > label_width)
+            label.setMaximumWidth(label_width)
+            label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+            left = leading - row_widget.mapTo(self.methods_tab, QtCore.QPoint()).x() - row_widget.contentsMargins().left()
+            layout.setContentsMargins(left, 0, 0, 0)
+            layout.setColumnMinimumWidth(0, label_width)
             layout.activate()
-            if row_widget is self._method_row:
-                parameters = self.parameter_grp_box.layout()
-                if isinstance(parameters, QGridLayout):
-                    widths = [field.sizeHint().width() for index in range(parameters.count())
-                              if (item := parameters.itemAt(index)) is not None
-                              and parameters.getItemPosition(index)[1] == 0
-                              and isinstance(field := item.widget(), QLabel)]
-                    label_width = max([label.sizeHint().width(), *widths])
-                    parameters.setColumnMinimumWidth(0, label_width)
-                    layout.setColumnMinimumWidth(0, label_width)
-                    inset = self.parameter_grp_box.contentsMargins()
-                    margins = parameters.contentsMargins()
-                    layout.setContentsMargins(inset.left() + margins.left(), 0, inset.right() + margins.right(), 0)
-                    layout.activate()
             option = QtWidgets.QStyleOptionComboBox()
             combo.initStyleOption(option)
             style = combo.style()
@@ -1729,7 +1739,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             )
             text_width = combo.fontMetrics().horizontalAdvance(combo.currentText())
             needed = max(
-                label.sizeHint().width() + text_width + combo.width() - field.width(),
+                label_width + text_width + combo.width() - field.width(),
                 label.minimumSizeHint().width() + combo.minimumSizeHint().width(),
             )
             # The scroll body may already have expanded to this row's unwrapped

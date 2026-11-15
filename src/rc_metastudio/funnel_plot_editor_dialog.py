@@ -110,6 +110,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         ):
             edit.setMaximumWidth(edit.fontMetrics().height() * 6)
             button.setText("Choose…")
+            button.setMaximumWidth(self.fontMetrics().height() * 12)
             edit.textChanged.connect(
                 lambda _text, color_edit=edit, color_button=button: (
                     self._update_color_button(color_edit, color_button)

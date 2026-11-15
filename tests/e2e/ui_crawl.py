@@ -97,6 +97,17 @@ def results(driver, capture, missing):
         view = driver.analyze(driver.app, driver.window, "binary.random")
     finally:
         driver.record_step = original
+    menu = required(view.menubar.actions()[0].menu())
+    menu.popup(view.menubar.mapToGlobal(QtCore.QPoint(0, view.menubar.height())))
+    capture("F-results-menu", menu)
+    menu.close()
+    view.showNormal()
+    view.resize(900, 700)
+    driver.app.processEvents()
+    capture("F-results-narrow", view)
+    assert view.nav_tree.isVisible() and view.graphics_view.isVisible()
+    view.showMaximized()
+    driver.app.processEvents()
     for detail in ("Manuscript", "Text report", "Tables", "Settings"):
         item = view.nav_tree.findItems(detail, QtCore.Qt.MatchFlag.MatchExactly)[0]
         view.nav_tree.setCurrentItem(item)

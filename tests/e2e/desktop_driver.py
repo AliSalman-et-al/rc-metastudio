@@ -387,7 +387,7 @@ def analysis_dialog(app, window):
             texts = [str(window.model.data(window.model.index(row, column))) for column in window.model.OUTCOMES[:3]]
             decimals = [len(text.split(".")[1]) for text in texts if "." in text and text.replace(".", "", 1).replace("-", "", 1).isdigit() and (float(text) == 0 or abs(float(text)) >= .01)]
             if sample == "amino" and "Giamarellou" in str(window.model.data(window.model.index(row, window.model.NAME))):
-                assert texts == ["0.08", "0.004", "1.44"], texts
+                assert texts == ["0.08", "0.0040", "1.44"], texts
             assert len(set(decimals)) <= 1, texts
         kwargs = {"diagnostic_metrics": ["dor"]} if sample == "lymph" else {}
         form = analysis_setup_dialog.AnalysisSetupDialog(
@@ -399,13 +399,13 @@ def analysis_dialog(app, window):
         from tests.python.gui.qt_test_support import wait
         wait(100)
         assert form.method_lbl.isVisible()
-        assert form.method_lbl.text().startswith("Analysis method:")
-        assert form.method_lbl.width() >= form.method_lbl.fontMetrics().horizontalAdvance("Analysis method:")
+        assert form.method_lbl.text().startswith("Analysis method")
+        assert form.method_lbl.width() >= form.method_lbl.fontMetrics().horizontalAdvance("Analysis method")
         assert (form.method_lbl.mapTo(form, QtCore.QPoint(form.method_lbl.width(), 0)).x()
                 <= form.method_cbo_box.mapTo(form, QtCore.QPoint(0, 0)).x()), (sample, form.method_lbl.geometry(), form.method_cbo_box.geometry())
         if sample == "amino":
             giamarellou = next(row for row in range(window.model.rowCount()) if "Giamarellou" in str(window.model.data(window.model.index(row, window.model.NAME))))
-            assert str(window.model.data(window.model.index(giamarellou, window.model.OUTCOMES[1]))) == "0.004"
+            assert str(window.model.data(window.model.index(giamarellou, window.model.OUTCOMES[1]))) == "0.0040"
             assert window.model.format_float(0.000401, 3) == "0.000401"
             assert window.tableView.columnWidth(window.model.columnCount() - 1) < 250
             record_step("slice2c-main", window)
@@ -467,7 +467,7 @@ def assert_study_grid(app, window):
     model = window.model
     app.processEvents()
     assert model.headerData(0, QtCore.Qt.Orientation.Horizontal) == "Include"
-    assert model.headerData(model.NAME, QtCore.Qt.Orientation.Horizontal) == "Study Name"
+    assert model.headerData(model.NAME, QtCore.Qt.Orientation.Horizontal) == "Study name"
     index = model.index(0, model.NAME)
     assert index.data() == model.get_studies(False)[0].label
     rect = table.visualRect(index).adjusted(4, 4, -4, -4)

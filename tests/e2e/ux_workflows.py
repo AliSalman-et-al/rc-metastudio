@@ -523,7 +523,7 @@ def _run(app, window, work, root, record, analyze):
     with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(source), "")):
         mouse_click(page.select_file_btn, QtCore.Qt.MouseButton.LeftButton)
     assert not page.isComplete()
-    assert "Study Name" in page.import_status.text()
+    assert "study name" in page.import_status.text().casefold()
     record("ux-csv-invalid", wizard, message=page.import_status.text())
     for control, index in zip(page.mapping_controls, range(9)):
         control.setCurrentIndex(control.findData(index))

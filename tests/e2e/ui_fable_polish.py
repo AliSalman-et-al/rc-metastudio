@@ -136,7 +136,22 @@ def run(app, window, work, root, record, analyze):
 
     window.workspace.mark_saved()
     assert window.open(str(root / 'sample_projects/lymph.rcms'), raise_on_error=True)
+    combined = AnalysisSetupDialog(window.model, parent=window, confidence_level=95, diagnostic_metrics=['sens', 'spec', 'dor'])
+    combined.show()
+    combined.advanced_toggle.setChecked(True)
+    wait(250)
+    fields = [field for field in combined.methods_tab.findChildren(QtWidgets.QWidget)
+              if field.isVisible() and isinstance(field, (QtWidgets.QComboBox, QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox))]
+    xs = [field.mapTo(combined, QtCore.QPoint()).x() for field in fields]
+    if max(xs) - min(xs) > 1:
+        failures.append('Combined diagnostic and Advanced fields do not share a column')
+    record('fable-combined-field-alignment', combined, field_xs=xs)
+    combined.reject()
     view = analyze(app, window, 'diagnostic.reitsma')
+    strip = view.result_identity.text()
+    if strip.count('Reitsma bivariate model') != 1 or not strip.endswith('95% CI'):
+        failures.append('Diagnostic identity repeats a shared fit or omits the CI label')
+    assert view.result_identity.toolTip().count('Reitsma bivariate model') >= 2
     title = view.results.manuscript_title
     methods = view.results.manuscript_methods
     observations['diagnostic'] = dict(title=title, methods=methods)
