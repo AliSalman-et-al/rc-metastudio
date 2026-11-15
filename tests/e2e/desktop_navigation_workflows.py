@@ -13,9 +13,20 @@ def run(app, window, work, root, record, analyze):
 
     window.start()
     app.processEvents()
-    for card in window.start_page.findChildren(QtWidgets.QGroupBox):
-        for label in card.findChildren(QtWidgets.QLabel):
-            assert label.height() >= label.heightForWidth(label.width()), ("clipped start description", label.text(), label.size(), label.heightForWidth(label.width()), card.hasHeightForWidth())
+    original_size = window.size()
+    card_heights = []
+    for height in (480, 700):
+        window.resize(800, height)
+        app.processEvents()
+        cards = window.start_page.findChildren(QtWidgets.QGroupBox)
+        for card in cards:
+            for label in card.findChildren(QtWidgets.QLabel):
+                assert label.height() >= label.heightForWidth(label.width()), ("clipped start description", label.text(), label.size(), label.heightForWidth(label.width()), card.hasHeightForWidth())
+        card_heights.append([card.height() for card in cards])
+        record('review1-start-height-' + str(height), window)
+    assert card_heights[0] == card_heights[1], ("start cards stretched vertically", card_heights)
+    window.resize(original_size)
+    app.processEvents()
     record('review1-start-before-check', window)
     assert window.start_page.isVisible() and not window.tableView.isVisible()
     assert not app.activeModalWidget()
@@ -135,6 +146,13 @@ def run(app, window, work, root, record, analyze):
     window.showMaximized()
     for name, scheme in [('light', QtCore.Qt.ColorScheme.Light), ('dark', QtCore.Qt.ColorScheme.Dark)]:
         app.styleHints().setColorScheme(scheme)
+        palette = QtGui.QPalette(original_palette)
+        for role in (QtGui.QPalette.ColorRole.Window, QtGui.QPalette.ColorRole.Button):
+            palette.setColor(role, QtGui.QColor('#efefef' if name == 'light' else '#303238'))
+        for role in (QtGui.QPalette.ColorRole.WindowText, QtGui.QPalette.ColorRole.Text, QtGui.QPalette.ColorRole.ButtonText):
+            palette.setColor(role, QtGui.QColor('#202020' if name == 'light' else '#f0f0f0'))
+        palette.setColor(QtGui.QPalette.ColorRole.Base, QtGui.QColor('#ffffff' if name == 'light' else '#25272b'))
+        app.setPalette(palette)
         app.processEvents()
         header = table.horizontalHeader()
         expected_light = name == 'light'

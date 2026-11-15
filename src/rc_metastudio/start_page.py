@@ -75,7 +75,7 @@ class StartPage(QtWidgets.QScrollArea):
             label.setSizePolicy(label_policy)
             card_layout.addWidget(label)
             card_layout.addStretch()
-            policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Maximum)
+            policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
             policy.setHeightForWidth(True)
             card.setSizePolicy(policy)
             actions.addWidget(card, 1)
@@ -94,7 +94,7 @@ class StartPage(QtWidgets.QScrollArea):
         self.recent_layout.setColumnStretch(1, 1)
         layout.addWidget(self.recent_projects)
         layout.addStretch()
-        outer.addWidget(content, 1)
+        outer.addWidget(content, 1, QtCore.Qt.AlignmentFlag.AlignTop)
         outer.addStretch()
         self.setWidget(page)
 
