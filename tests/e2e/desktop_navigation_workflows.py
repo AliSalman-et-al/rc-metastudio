@@ -202,6 +202,8 @@ def run(app, window, work, root, record, analyze):
         record('polish-advanced-' + name, setup)
         setup.reject()
     app.styleHints().unsetColorScheme()
+    app.setPalette(original_palette)
+    app.processEvents()
     def luminance(color):
         values = [value / 12.92 if value <= .04045 else ((value + .055) / 1.055) ** 2.4
                   for value in (color.redF(), color.greenF(), color.blueF())]

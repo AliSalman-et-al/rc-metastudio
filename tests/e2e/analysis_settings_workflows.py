@@ -68,17 +68,17 @@ def run(app, window, root, record, analyze):
 
     # A result belongs to its original input even after the main window opens another project.
     assert window.open(str(root / "sample_projects/continuous.rcms"), raise_on_error=True)
-    for order in ("year", "effect", "weight", "table"):
+    for style, order in (("Default", "year"), ("RevMan", "year"), ("RevMan", "effect"), ("RevMan", "weight"), ("RevMan", "table")):
         view.change_settings_action.trigger()
         app.processEvents()
         dialog = setup()
         assert dialog.data_type == "binary" and dialog.model.current_outcome_name == "clinical failure"
         dialog.specs_tab.setCurrentWidget(dialog.plot_tab)
-        dialog.style_cbo.setCurrentText("RevMan")
+        dialog.style_cbo.setCurrentText(style)
         dialog.study_order.setCurrentIndex(dialog.study_order.findData(order))
         dialog.content_scroll_area.ensureWidgetVisible(dialog.study_order)
         app.processEvents()
-        record("review-study-order-" + order, dialog, order=order)
+        record("review-study-order-" + style.lower() + '-' + order, dialog, order=order, style=style)
         if order == "year":
             dialog.study_order.showPopup()
             app.processEvents()
@@ -91,7 +91,8 @@ def run(app, window, root, record, analyze):
         labels = list(cast(Iterable[str], r_bridge.ro.r("plot.data$slab[plot.data$display_order]")))
         display_order = [int(index) - 1 for index in r_bridge.ro.r("plot.data$display_order")]
         assert display_order == expected_orders[order], ('study order', order, display_order, expected_orders[order])
-        assert list(cast(Iterable[str], r_bridge.ro.r("plot.data$ilab$columns[[length(plot.data$ilab$columns)]]$key"))) == ["weight"]
+        last_column = list(cast(Iterable[str], r_bridge.ro.r("plot.data$ilab$columns[[length(plot.data$ilab$columns)]]$key")))
+        assert (last_column == ["weight"]) == (style == "RevMan"), (style, last_column)
         record("review-ordered-result-" + order, changed, labels=labels, numbers=baseline,
                plots=dict(changed.results.display_images))
         svg = ET.parse(next(iter(changed.results.display_images.values())))

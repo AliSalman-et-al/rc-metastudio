@@ -326,7 +326,7 @@ def mh_rd(app, window, record):
             assert model.setData(model.index(0, column), "0")
         target.tableView.set_metric_in_ui("RD")
     view = matrix(app, window, "analysis-binary.fixed.mh", record, keep_results=True,
-                  prepare=prepare_rd, parameters={"digits": 6})
+                  prepare=prepare_rd, parameters={"digits": 6, "fp_style": "revman"})
     artifact = next(iter(view._nav_plot_artifacts.values()))
     figure = " ".join("".join(n.itertext()) for n in ET.parse(artifact.display_path()).iter("{http://www.w3.org/2000/svg}text"))
     weight_nodes = [n for n in ET.parse(artifact.display_path()).iter("{http://www.w3.org/2000/svg}text")
