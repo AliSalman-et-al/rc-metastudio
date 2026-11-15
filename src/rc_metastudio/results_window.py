@@ -33,6 +33,7 @@ from PyQt6.QtGui import (
     QCloseEvent,
     QFont,
     QFontMetrics,
+    QKeySequence,
     QIcon,
     QImage,
     QPainter,
@@ -395,7 +396,29 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.nav_tree.setTextElideMode(Qt.TextElideMode.ElideMiddle)
         self.nav_tree.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.nav_tree.setRootIsDecorated(False)
+        self._refresh_navigation_palette()
+        navigation = []
+        pages = {'Manuscript': self.manuscript_action, 'Text report': self.report_action, 'Tables': self.tables_action}
+        for index in range(min(9, self.nav_tree.topLevelItemCount())):
+            item = required(self.nav_tree.topLevelItem(index), 'result navigation item')
+            action = pages.get(item.text(0))
+            if action is None:
+                action = QAction(item.text(0), self)
+                action.triggered.connect(lambda checked=False, item=item: self.nav_tree.setCurrentItem(item))
+            action.setShortcuts([*action.shortcuts(), QKeySequence(f'Ctrl+{index + 1}')])
+            action.setEnabled(not item.isDisabled())
+            self.addAction(action)
+            navigation.append(action)
+        self.results_menu.insertActions(self.copy_report_action, navigation)
+        self.results_menu.insertSeparator(self.copy_report_action)
         self._show_initial_result()
+
+    def _refresh_navigation_palette(self):
+        palette = QPalette()
+        inherited = self.palette()
+        for role in (QPalette.ColorRole.Highlight, QPalette.ColorRole.HighlightedText):
+            palette.setColor(QPalette.ColorGroup.Inactive, role, inherited.color(QPalette.ColorGroup.Active, role))
+        self.nav_tree.setPalette(palette)
 
     def _show_initial_result(self):
         self._fit_width_active = True
@@ -438,6 +461,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 confidence.append(line.removeprefix('Confidence level: ') + ' CI')
         details.extend(model + (f' ({estimator})' if estimator else '')
                        for model, estimator in dict.fromkeys(models))
+        details.extend(line for line in self.results.details.splitlines() if line.startswith('Moderators: '))
         details.extend(dict.fromkeys(confidence))
         self.result_identity.setText('<b>' + escape(name[:1].upper() + name[1:]) + '</b>'
                                      + ('  ·  ' + escape('  ·  '.join(details)) if details else ''))
@@ -479,6 +503,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         scrollbar.setValue(position)
 
     def _refresh_theme(self):
+        self._refresh_navigation_palette()
         for item in self._wrapped_text_items:
             item.setDefaultTextColor(self.palette().color(self.foregroundRole()))
         self._refresh_manuscript_theme()
@@ -655,6 +680,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 minimums.append(minimum)
             for column, minimum in enumerate(minimums):
                 table.setColumnWidth(column, minimum + 16)
+            table.setMaximumWidth(sum(table.columnWidth(column) for column in range(count)) + 2 * table.frameWidth()
+                                  + required(table.verticalScrollBar(), "table vertical scrollbar").sizeHint().width())
             table.resizeRowsToContents()
             scrollbar_height = (required(table.horizontalScrollBar(), "table scrollbar").sizeHint().height()
                                 if sum(table.columnWidth(column) for column in range(count)) > required(table.viewport(), "table viewport").width() else 0)
@@ -746,6 +773,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_action.setShortcut("Ctrl+T")
         self.report_action.toggled.connect(self._show_report)
         self.report_action.triggered.connect(self._activate_report)
+        self.manuscript_action = QAction('Manuscript', self)
+        self.manuscript_action.setShortcut('Ctrl+M')
+        self.manuscript_action.triggered.connect(lambda: self.nav_tree.setCurrentItem(self.nav_tree.findItems('Manuscript', Qt.MatchFlag.MatchExactly)[0]))
         self.tables_action = QAction("Tables", self)
         self.tables_action.setShortcut("Ctrl+Shift+T")
         self.tables_action.setEnabled(bool(self._report_tables))
@@ -774,6 +804,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.export_report_action = QAction("Export report…", self)
         self.export_report_action.setIcon(QIcon(':/icons/actions/export.svg'))
         self.export_report_action.setShortcut("Ctrl+Shift+S")
+        self.export_report_action.setToolTip('Export the manuscript, tables and figures to a Word document (DOCX)')
         self.export_report_action.triggered.connect(app_error_handler.safe_slot(self._export_report, parent=self))
         toolbar.addAction(self.export_report_action)
         self.export_plot_action = QAction("Export plot…", self)
@@ -787,7 +818,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.export_format_control.setAccessibleName("Plot export format")
         self.export_format_control.setToolTip("Export format; remembered for your next plot and analysis.")
         self.export_format_control.currentIndexChanged.connect(lambda _index: save_plot_export_format(self.export_format_control.currentData()) if self.export_format_control.currentData() else None)
-        toolbar.addWidget(self.export_format_control)
+        export_format_widget = QWidget(toolbar)
+        format_layout = QHBoxLayout(export_format_widget)
+        format_layout.setContentsMargins(0, 0, 0, 0)
+        format_layout.addWidget(QLabel('as', export_format_widget))
+        format_layout.addWidget(self.export_format_control)
+        toolbar.addWidget(export_format_widget)
         toolbar.addSeparator()
         self.edit_plot_action = QAction("Edit plot…", self)
         self.edit_plot_action.setIcon(QIcon(':/icons/actions/edit-plot.svg'))
@@ -857,11 +893,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.setTabOrder(self.nav_tree, self.graphics_view)
         self.setTabOrder(self.table_selector, self.result_table)
         self.setTabOrder(self.result_table, self.nav_tree)
-        menu = self.menubar.addMenu("&Results")
-        for action in (self.report_action, self.tables_action, self.copy_report_action, self.export_report_action, self.export_plot_action, self.edit_plot_action, self.change_settings_action, self.fit_page_action, self.fit_width_action):
-            required(menu, "Results menu").addAction(action)
-        required(menu, "Results menu").addSeparator()
-        required(menu, "Results menu").addActions(self.zoom_actions)
+        self.results_menu = required(self.menubar.addMenu("&Results"), 'Results menu')
+        for group in ((self.copy_report_action, self.export_report_action, self.export_plot_action),
+                      (self.edit_plot_action, self.change_settings_action),
+                      (self.fit_page_action, self.fit_width_action, *self.zoom_actions)):
+            if self.results_menu.actions():
+                self.results_menu.addSeparator()
+            self.results_menu.addActions(group)
 
     def _fit_page(self):
         if self.content_stack.currentWidget() is not self.figure_page:

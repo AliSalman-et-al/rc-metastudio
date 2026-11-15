@@ -83,6 +83,8 @@ class SmallStudyEffectsDialog(
         self.analysis_service = analysis_service or SmallStudyEffectsService()
         self.setupUi(self)
         self._configure_accessibility()
+        from rc_metastudio.qt_layout import configure_context_label
+        configure_context_label(self.automatic_test_label)
         self._configure_scroll_surfaces()
         self._configure_initial_values()
         self._populate_context()
@@ -490,7 +492,20 @@ class SmallStudyEffectsDialog(
 
     def _with_report_identity(self, result):
         from rc_metastudio.analysis_identity import dataset_identity
-        result = replace(result, identity="Small-study effects — " + dataset_identity(self.model, "Diagnostic odds ratio" if self.model.get_current_data_type() == "diagnostic" else None))
+        facts = [f"k = {len(self.model.get_studies())}"]
+        report = self._eligibility_report
+        if report is not None:
+            facts.append(f"{report.usable_studies} eligible")
+            for method in report.methods:
+                if method.available and method.role == 'primary':
+                    label = _TEST_LABELS.get(method.method, method.method)
+                    if method.method == 'deeks':
+                        version = dict(report.package_versions).get('meta')
+                        if version:
+                            label += f' (meta {version})'
+                    facts.append('Primary test ' + label)
+        facts.append(f"{self.model.get_confidence_level():g}% CI")
+        result = replace(result, identity="Small-study effects — " + dataset_identity(self.model, "Diagnostic odds ratio" if self.model.get_current_data_type() == "diagnostic" else None) + '\n' + ' · '.join(facts))
         details = next((section.value for section in result.sections if section.title == "Method details"), "")
         procedures = [line for line in details.splitlines() if line and not line[0].isspace()
                       and line != "No formal method details are available."]

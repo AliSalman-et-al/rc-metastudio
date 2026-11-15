@@ -11,7 +11,8 @@ from PyQt6.QtCore import QRectF, Qt
 from PyQt6.QtGui import QFont, QImage, QPainter, QPdfWriter, QTextDocument, QPageSize, QTextOption
 from PyQt6.QtSvg import QSvgRenderer
 from docx import Document
-from docx.shared import Mm, RGBColor
+from docx.shared import Mm, RGBColor, Pt
+from docx.oxml.ns import qn
 from rc_metastudio import __version__
 
 
@@ -553,12 +554,14 @@ def _docx_table(document, table):
             cell.width = widths[column]
             from docx.enum.text import WD_ALIGN_PARAGRAPH
             for paragraph in cell.paragraphs:
+                paragraph.paragraph_format.space_before = Pt(2)
+                paragraph.paragraph_format.space_after = Pt(2)
+                paragraph.paragraph_format.line_spacing = 1
                 right = numeric[column] if index == 0 else numeric_cell(value) or (value in ('', 'NA', '—', 'Not estimable') and numeric[column])
                 paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT if right else WD_ALIGN_PARAGRAPH.LEFT
                 if index == 0:
                     paragraph.paragraph_format.keep_with_next = True
                 for run in paragraph.runs:
-                    from docx.shared import Pt
                     run.font.size = Pt(10)
                     run.bold = index == 0
 
@@ -584,10 +587,12 @@ def _docx_sections(document, report, supplementary, table_number):
 
 def write_docx(report, path):
     document = Document()
-    from docx.shared import Pt
     document.styles['Normal'].font.size = Pt(11)
     for name in ('Normal', 'Title', 'Heading 1', 'Caption'):
         document.styles[name].font.name = 'Arial'
+        fonts = document.styles[name].element.rPr.rFonts
+        for attribute in ('asciiTheme', 'hAnsiTheme', 'eastAsiaTheme', 'cstheme'):
+            fonts.attrib.pop(qn('w:' + attribute), None)
         document.styles[name].font.color.rgb = RGBColor(0, 0, 0)
     section = document.sections[0]
     section.page_width = Mm(210)

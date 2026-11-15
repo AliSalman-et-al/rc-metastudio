@@ -29,7 +29,7 @@
           <item>
            <widget class="QTableWidget" name="raw_data_table">
             <property name="accessibleName"><string>Binary study counts</string></property>
-            <property name="accessibleDescription"><string>Enter event and non-event counts for each treatment group.</string></property>
+            <property name="accessibleDescription"><string>Enter event and non-event counts for each arm.</string></property>
             <property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Fixed"><horstretch>1</horstretch><verstretch>0</verstretch></sizepolicy></property>
             <property name="horizontalScrollBarPolicy"><enum>Qt::ScrollBarAsNeeded</enum></property>
             <property name="verticalScrollBarPolicy"><enum>Qt::ScrollBarAsNeeded</enum></property>
@@ -38,8 +38,8 @@
             <property name="columnCount"><number>3</number></property>
             <attribute name="horizontalHeaderHighlightSections"><bool>false</bool></attribute>
             <attribute name="verticalHeaderHighlightSections"><bool>false</bool></attribute>
-            <row><property name="text"><string>Group 1</string></property></row>
-            <row><property name="text"><string>Group 2</string></property></row>
+            <row><property name="text"><string>Arm 1</string></property></row>
+            <row><property name="text"><string>Arm 2</string></property></row>
             <row><property name="text"><string>Total</string></property></row>
             <column><property name="text"><string>Event</string></property></column>
             <column><property name="text"><string>No event</string></property></column>
@@ -82,7 +82,7 @@
         <layout class="QHBoxLayout" name="calculator_actions_layout">
          <item><widget class="QPushButton" name="clear_button"><property name="text"><string>Clear inputs</string></property></widget></item>
          <item><spacer name="calculator_actions_spacer"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property></spacer></item>
-         <item><widget class="QPushButton" name="back_calculate_button"><property name="enabled"><bool>false</bool></property><property name="text"><string>Reconstruct group data</string></property><property name="toolTip"><string>Uses the entered estimate and confidence interval with the available group data. Review these inputs in Entered estimate mode.</string></property><property name="accessibleDescription"><string>Uses the entered estimate and confidence interval with the available group data. Review these inputs in Entered estimate mode.</string></property></widget></item>
+         <item><widget class="QPushButton" name="back_calculate_button"><property name="enabled"><bool>false</bool></property><property name="text"><string>Reconstruct arm data</string></property><property name="toolTip"><string>Uses the entered estimate and confidence interval with the available arm data. Review these inputs in Entered estimate mode.</string></property><property name="accessibleDescription"><string>Uses the entered estimate and confidence interval with the available arm data. Review these inputs in Entered estimate mode.</string></property></widget></item>
         </layout>
        </item>
    <item><widget class="QDialogButtonBox" name="buttonBox"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="standardButtons"><set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set></property></widget></item>

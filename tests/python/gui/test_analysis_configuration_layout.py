@@ -204,7 +204,7 @@ def test_configuration_controls_have_accessible_label_associations(
 
         metric_page = main_wizard.ChooseMetricPage()
         assert metric_page.label.buddy() is metric_page.metric_cbo_box
-        assert metric_page.metric_cbo_box.accessibleName() == "Effect metric"
+        assert metric_page.metric_cbo_box.accessibleName() == metric_page.label.text()
         assert metric_page.metric_cbo_box.accessibleDescription()
         metric_page.deleteLater()
     finally:

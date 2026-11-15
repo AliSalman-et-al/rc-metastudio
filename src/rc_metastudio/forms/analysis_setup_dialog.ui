@@ -179,24 +179,19 @@
            <property name="buddy"><cstring>accent_color</cstring></property>
            </widget>
           </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="accent_color">
+          <item row="0" column="1" colspan="2"><layout class="QHBoxLayout" name="accent_color_layout"><item><widget class="QLineEdit" name="accent_color">
             <property name="text">
              <string>#2f5597</string>
             </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-          <widget class="QPushButton" name="color_btn">
+           </widget></item><item><widget class="QPushButton" name="color_btn">
             <property name="text">
              <string>Choose color…</string>
             </property>
             <property name="accessibleName"><string>Choose plot accent color</string></property>
             <property name="accessibleDescription"><string>Open a color picker for the plot accent color.</string></property>
             <property name="toolTip"><string>Choose the plot accent color</string></property>
-           </widget>
-          </item>
-          <item row="1" column="0">
+           </widget></item></layout></item>
+<item row="1" column="0">
            <widget class="QLabel" name="point_size_label">
             <property name="text">
              <string>Point size multiplier</string>
@@ -293,7 +288,7 @@
                <string>Text for column title that appears on forest plot</string>
               </property>
               <property name="text">
-               <string>First group heading</string>
+               <string>First arm heading</string>
               </property>
              </widget>
             </item>
@@ -307,7 +302,7 @@
             <item row="2" column="2">
              <widget class="QCheckBox" name="show_3">
               <property name="text">
-               <string>Show first group data</string>
+               <string>Show first arm data</string>
               </property>
               <property name="checked">
                <bool>true</bool>
@@ -320,7 +315,7 @@
                <string>Text for column title that appears on forest plot</string>
               </property>
               <property name="text">
-               <string>Second group heading</string>
+               <string>Second arm heading</string>
               </property>
              </widget>
             </item>
@@ -334,7 +329,7 @@
             <item row="3" column="2">
              <widget class="QCheckBox" name="show_4">
               <property name="text">
-               <string>Show second group data</string>
+               <string>Show second arm data</string>
               </property>
               <property name="checked">
                <bool>true</bool>
@@ -355,7 +350,7 @@
           <item row="0" column="1">
            <widget class="QCheckBox" name="show_raw_counts">
             <property name="text">
-             <string>Show group data columns</string>
+             <string>Arm data columns</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -365,7 +360,7 @@
           <item row="1" column="0">
            <widget class="QLabel" name="headers_label">
             <property name="text">
-             <string>Show headers</string>
+             <string>Show</string>
             </property>
            </widget>
           </item>
@@ -382,7 +377,7 @@
           <item row="2" column="1">
            <widget class="QCheckBox" name="show_annotation">
             <property name="text">
-             <string>Show annotation</string>
+             <string>Annotation</string>
             </property>
             <property name="checked">
              <bool>true</bool>

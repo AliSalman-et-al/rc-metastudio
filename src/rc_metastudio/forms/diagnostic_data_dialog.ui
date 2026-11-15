@@ -17,6 +17,7 @@
        <property name="topMargin"><number>0</number></property>
        <property name="rightMargin"><number>0</number></property>
        <property name="bottomMargin"><number>0</number></property>
+       <item><widget class="QGroupBox" name="counts_group"><property name="title"><string>Test counts</string></property><layout class="QVBoxLayout" name="counts_layout">
        <item>
         <widget class="QTableWidget" name="two_by_two_table">
          <property name="accessibleName"><string>Diagnostic two by two counts</string></property><property name="accessibleDescription"><string>Enter true-positive, false-positive, false-negative, and true-negative counts.</string></property>
@@ -36,21 +37,15 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="table_actions_layout">
-         <item><widget class="QPushButton" name="clear_button"><property name="text"><string>Clear inputs</string></property></widget></item>
-         <item><spacer name="table_actions_spacer"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property></spacer></item>
-         <item><widget class="QPushButton" name="back_calculate_button"><property name="enabled"><bool>false</bool></property><property name="text"><string>Reconstruct group data</string></property><property name="toolTip"><string>Enter sensitivity or specificity with its interval and available totals to reconstruct counts.</string></property></widget></item>
-        </layout>
-       </item>
-       <item>
         <layout class="QFormLayout" name="diagnostic_fields_layout">
          <property name="fieldGrowthPolicy"><enum>QFormLayout::ExpandingFieldsGrow</enum></property>
           <item row="0" column="0"><widget class="QLabel" name="prevalence_lbl"><property name="text"><string>Prevalence (0–1)</string></property><property name="buddy"><cstring>prevalence_text_box</cstring></property></widget></item>
          <item row="0" column="1"><widget class="PrevalenceEdit" name="prevalence_text_box"><property name="accessibleName"><string>Prevalence</string></property><property name="accessibleDescription"><string>Enter disease prevalence from zero to one.</string></property></widget></item>
-         <item row="1" column="0"><widget class="QLabel" name="effect_metric_label"><property name="text"><string>Metric</string></property><property name="buddy"><cstring>effect_combo_box</cstring></property></widget></item>
+         <item row="1" column="0"><widget class="QLabel" name="effect_metric_label"><property name="text"><string>Effect measure</string></property><property name="buddy"><cstring>effect_combo_box</cstring></property></widget></item>
          <item row="1" column="1"><widget class="QComboBox" name="effect_combo_box"><property name="accessibleName"><string>Diagnostic effect metric</string></property><property name="accessibleDescription"><string>Select the diagnostic effect measure.</string></property><property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Fixed"><horstretch>1</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="sizeAdjustPolicy"><enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum></property></widget></item>
         </layout>
        </item>
+       </layout></widget></item>
        <item>
         <widget class="QGroupBox" name="effect_group">
          <property name="title"><string>Entered effect estimate</string></property>
@@ -68,6 +63,13 @@
          </layout>
         </widget>
        </item>
+       <item>
+        <layout class="QHBoxLayout" name="table_actions_layout">
+         <item><widget class="QPushButton" name="clear_button"><property name="text"><string>Clear inputs</string></property></widget></item>
+         <item><spacer name="table_actions_spacer"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property></spacer></item>
+         <item><widget class="QPushButton" name="back_calculate_button"><property name="enabled"><bool>false</bool></property><property name="text"><string>Reconstruct counts</string></property><property name="toolTip"><string>Enter sensitivity or specificity with its interval and available totals to reconstruct counts.</string></property></widget></item>
+        </layout>
+       </item>
        <item><widget class="QLabel" name="inconsistencyLabel"><property name="font"><font><weight>75</weight><bold>true</bold></font></property><property name="text"><string>Check the study values</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
        <item><spacer name="content_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>0</height></size></property></spacer></item>
       </layout>
@@ -78,7 +80,7 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>two_by_two_table</tabstop><tabstop>clear_button</tabstop><tabstop>back_calculate_button</tabstop><tabstop>prevalence_text_box</tabstop><tabstop>effect_combo_box</tabstop><tabstop>effect_text_box</tabstop><tabstop>lower_text_box</tabstop><tabstop>upper_text_box</tabstop><tabstop>buttonBox</tabstop>
+  <tabstop>two_by_two_table</tabstop><tabstop>prevalence_text_box</tabstop><tabstop>effect_combo_box</tabstop><tabstop>effect_text_box</tabstop><tabstop>lower_text_box</tabstop><tabstop>upper_text_box</tabstop><tabstop>clear_button</tabstop><tabstop>back_calculate_button</tabstop><tabstop>buttonBox</tabstop>
  </tabstops>
  <resources><include location="../images/icons.qrc"/></resources>
  <connections>

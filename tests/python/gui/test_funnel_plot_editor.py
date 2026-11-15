@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import QDialog, QDialogButtonBox
+from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLabel
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
@@ -74,7 +74,9 @@ def test_funnel_editor_supports_visual_presets_symbols_and_color_picker(
         assert params["funnel.style"] == "bmj"
         assert params["funnel.point.symbol"] == 18
         assert params["funnel.background.color"] == "#AABBCC"
-        assert "background-color" in dialog.background_color_button.styleSheet()
+        swatch = next(label for label in dialog.findChildren(QLabel) if label.accessibleName() == 'Funnel plot background color swatch')
+        rendered = swatch.grab().toImage()
+        assert rendered.pixelColor(rendered.width() // 2, rendered.height() // 2) == QColor('#AABBCC')
     finally:
         dialog.close()
 

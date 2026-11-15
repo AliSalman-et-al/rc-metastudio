@@ -83,6 +83,20 @@ def _connect_action(action, callback):
 class DatasetTableView(QtWidgets.QTableView):
     dataDirtied = pyqtSignal()
 
+    def paintEvent(self, event: QtGui.QPaintEvent | None) -> None:
+        super().paintEvent(event)
+        if self.main_gui is None or self.main_gui.model.current_outcome_name is None or self.main_gui.model.get_studies():
+            return
+        viewport = required(self.viewport(), 'study grid viewport')
+        rect = viewport.rect().adjusted(24, self.rowHeight(0) * 3, -24, -24)
+        if rect.height() < self.fontMetrics().height() * 3:
+            return
+        painter = QtGui.QPainter(viewport)
+        painter.setPen(self.palette().color(QtGui.QPalette.ColorRole.PlaceholderText))
+        painter.drawText(rect, Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop | Qt.TextFlag.TextWordWrap,
+                         'Type a study name in row 1, paste rows from a spreadsheet, or use Import data.')
+        painter.end()
+
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.DoubleClicked | QtWidgets.QAbstractItemView.EditTrigger.EditKeyPressed | QtWidgets.QAbstractItemView.EditTrigger.AnyKeyPressed)

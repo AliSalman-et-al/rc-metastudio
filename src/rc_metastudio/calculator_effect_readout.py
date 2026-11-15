@@ -211,10 +211,7 @@ def update_calculator_readout(dialog, data_type):
         dialog.wald_readout.setWordWrap(True)
         for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
             field.editingFinished.connect(lambda: update_calculator_readout(dialog, data_type))
-        if data_type == "diagnostic":
-            dialog.effect_layout.addRow(dialog.wald_readout)
-        else:
-            dialog.dialog_layout.insertWidget(dialog.dialog_layout.indexOf(dialog.buttonBox), dialog.wald_readout)
+        dialog.dialog_layout.insertWidget(dialog.dialog_layout.indexOf(dialog.buttonBox), dialog.wald_readout)
     se = analysis_unit.get_se(source, current_effect, arm_key, confidence_multiplier)
     summary = _wald_summary(data_type, current_effect, est, se)
     dialog.wald_readout.setText(summary)

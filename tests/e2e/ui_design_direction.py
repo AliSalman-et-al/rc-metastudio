@@ -8,6 +8,7 @@ from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtGui import QAction
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml.ns import qn
 from tests.python.gui.qt_test_support import required, wait, key_click
 
 
@@ -63,11 +64,13 @@ def run(app, window, work, root, record, analyze):
         wait(100)
         page = required(wizard.currentPage())
         assert isinstance(page, DataTypePage)
+        assert page.subTitle(), 'Wizard context must persist across every page'
         page.twoarm_proportions_Button.click()
         wizard.next()
         wait(100)
         metric = wizard.currentPage()
         assert isinstance(metric, ChooseMetricPage)
+        assert metric.title() == 'Effect measure' and metric.subTitle()
         explanations = [label.text() for label in metric.findChildren(QtWidgets.QLabel)
                         if 'divided by' in label.text().lower()]
         if not explanations:
@@ -132,6 +135,18 @@ def run(app, window, work, root, record, analyze):
         if view.zoom_control.value() > 100:
             failures.append('Automatic first plot zoom exceeds 100%')
         record('direction-results-first-display', view, first=first.text(0), zoom=view.zoom_control.value())
+        view.activateWindow()
+        key_click(view, QtCore.Qt.Key.Key_M, QtCore.Qt.KeyboardModifier.ControlModifier)
+        wait(100)
+        assert view.content_stack.currentWidget() is view.manuscript_page
+        key_click(view, QtCore.Qt.Key.Key_1, QtCore.Qt.KeyboardModifier.ControlModifier)
+        wait(100)
+        assert view.content_stack.currentWidget() is view.figure_page
+        from PyQt6.QtGui import QPalette
+        palette = view.nav_tree.palette()
+        for role in (QPalette.ColorRole.Highlight, QPalette.ColorRole.HighlightedText):
+            assert palette.color(QPalette.ColorGroup.Inactive, role) == palette.color(QPalette.ColorGroup.Active, role)
+        record('direction-results-keyboard-navigation', view)
         view.showNormal()
         view.resize(760, 700)
         wait(100)
@@ -158,6 +173,10 @@ def run(app, window, work, root, record, analyze):
             from advanced_workflows import modal
             from rc_metastudio.plot_editor_dialog import EditPlotDialog
             def close_editor(dialog):
+                starts = [dialog.col1_str_edit.mapTo(dialog, QtCore.QPoint()).x(),
+                          dialog.accent_color.mapTo(dialog, QtCore.QPoint()).x(),
+                          dialog.style_cbo.mapTo(dialog, QtCore.QPoint()).x()]
+                assert max(starts) - min(starts) <= 2, starts
                 if dialog.accent_color.maximumWidth() > dialog.accent_color.fontMetrics().height() * 6:
                     failures.append('Plot editor colour input stretches across the dialog')
                 record('direction-edit-plot-keyboard', dialog)
@@ -186,6 +205,9 @@ def run(app, window, work, root, record, analyze):
     path = work / 'subgroup-design.docx'
     write_docx(view.manuscript, str(path))
     document = Document(path)
+    for name in ('Normal', 'Title', 'Heading 1', 'Caption'):
+        fonts = document.styles[name].element.rPr.rFonts
+        assert all(fonts.get(qn('w:' + attr)) is None for attr in ('asciiTheme', 'hAnsiTheme', 'eastAsiaTheme', 'cstheme'))
     fit = document.tables[1]
     rows = {row.cells[0].text: row for row in fit.rows[1:]}
     assert all(row.cells[0].paragraphs[0].alignment == WD_ALIGN_PARAGRAPH.LEFT for row in rows.values()), 'Statistic names, including 95% interval labels, must remain left-aligned'
@@ -194,6 +216,7 @@ def run(app, window, work, root, record, analyze):
     if study_value.paragraphs[0].alignment != WD_ALIGN_PARAGRAPH.RIGHT:
         failures.append('Numeric cells in a mixed Model fit column are not right-aligned')
     assert test_value.paragraphs[0].alignment == WD_ALIGN_PARAGRAPH.LEFT
+    assert all(paragraph.paragraph_format.space_after.pt == 2 for row in fit.rows for cell in row.cells for paragraph in cell.paragraphs)
     record('direction-mixed-report-table', view, numeric_alignment=str(study_value.paragraphs[0].alignment),
            text_alignment=str(test_value.paragraphs[0].alignment), exported=str(path))
     view.close()

@@ -7,7 +7,7 @@ no root-fitting, coordinate inference, or descendant-repair surface.
 
 from PyQt6.QtCore import QEvent, QObject, QSize, Qt, QTimer
 from PyQt6.QtGui import QIcon, QFont, QPalette, QColor, QKeyEvent
-from PyQt6.QtWidgets import QApplication, QAbstractScrollArea, QAbstractSpinBox, QComboBox, QCommonStyle, QHeaderView, QMenu, QProxyStyle, QSizePolicy, QStyle, QStyleOptionToolButton, QStylePainter, QToolButton, QStyleOption, QWidget
+from PyQt6.QtWidgets import QApplication, QAbstractScrollArea, QAbstractSpinBox, QComboBox, QCommonStyle, QGridLayout, QFormLayout, QHeaderView, QLabel, QMenu, QProxyStyle, QSizePolicy, QStyle, QStyleOptionToolButton, QStylePainter, QToolButton, QStyleOption, QWidget
 
 
 class _ScrollSettingsFilter(QObject):
@@ -31,6 +31,49 @@ def protect_scroll_settings(scroll_area: QAbstractScrollArea) -> QObject:
     for control in (*scroll_area.findChildren(QComboBox), *scroll_area.findChildren(QAbstractSpinBox)):
         control.installEventFilter(policy)
     return policy
+
+
+def align_field_columns(layouts):
+    """Give related group boxes one measured label column."""
+    labels = []
+    for layout in layouts:
+        for index in range(layout.count()):
+            item = layout.itemAt(index)
+            widget = item.widget() if item is not None else None
+            column = layout.getItemPosition(index)[1]
+            span = layout.getItemPosition(index)[3] if isinstance(layout, QGridLayout) else 1
+            if column == 0 and span == 1 and isinstance(widget, QLabel):
+                labels.append(widget)
+    if not labels:
+        return
+    width = min(max(label.sizeHint().width() for label in labels), labels[0].fontMetrics().height() * 18)
+    for label in labels:
+        label.setWordWrap(True)
+        label.setFixedWidth(width)
+    for layout in layouts:
+        if isinstance(layout, QGridLayout):
+            layout.setColumnMinimumWidth(0, width)
+            layout.setColumnStretch(0, 0)
+            layout.setColumnStretch(1, 1)
+        elif isinstance(layout, QFormLayout):
+            layout.setRowWrapPolicy(QFormLayout.RowWrapPolicy.DontWrapRows)
+            layout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
+
+
+def add_color_swatch(edit, layout):
+    swatch = QLabel(edit.parentWidget())
+    swatch.setFixedSize(QSize(1, 1) * round(edit.fontMetrics().height() * 1.5))
+    swatch.setAccessibleName(edit.accessibleName() + ' swatch')
+    def refresh():
+        text = edit.text()
+        color = QColor(text)
+        swatch.setStyleSheet('QLabel { border: 1px solid palette(mid); background-color: ' + (color.name() if color.isValid() else 'transparent') + '; }')
+        swatch.setAccessibleDescription(text if color.isValid() else 'Invalid color')
+        swatch.setToolTip(text if color.isValid() else 'Invalid color')
+    edit.textChanged.connect(refresh)
+    layout.insertWidget(1, swatch)
+    layout.addStretch()
+    refresh()
 
 
 PRIMARY_ACTION_ICON_EXTENT = 24

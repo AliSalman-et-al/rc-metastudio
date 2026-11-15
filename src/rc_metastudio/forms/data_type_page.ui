@@ -45,7 +45,7 @@
       </font>
      </property>
      <property name="text">
-      <string>One group per study</string>
+      <string>One arm per study</string>
      </property>
      <property name="wordWrap"><bool>true</bool></property>
     </widget>
@@ -194,7 +194,7 @@
    <item>
     <widget class="QLabel" name="label_4">
      <property name="text">
-      <string>Two or more groups per study</string>
+      <string>Two arms per study</string>
      </property>
      <property name="wordWrap"><bool>true</bool></property>
     </widget>

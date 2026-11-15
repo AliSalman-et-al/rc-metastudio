@@ -261,6 +261,7 @@ class DataTypePage(MainWizardPage, _ui_data_type_page.Ui_DataTypePage):
         self._configure_data_type_buttons()
 
     def initializePage(self):
+        self.setSubTitle(self.wizard().task_label)
         self.setFocus()
 
     def _data_type_buttons(self):
@@ -442,6 +443,7 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
         data_type = required(dataset_info["data_type"], "import data type")
         metric_choices = dataset_info["metric_choices"]
         default_effect = dataset_info["effect"]
+        self.setSubTitle(self.wizard().task_label + " · " + {"binary": "Two-arm binary" if dataset_info["arms"] == "two" else "Single-arm proportion", "continuous": "Continuous", "diagnostic": "Diagnostic accuracy", "time_to_event": "Time-to-event", "event_rates": "Event rates"}[data_type])
         # Add metric choices to combo box
         self.metric_cbo_box.blockSignals(True)
         self.metric_cbo_box.clear()
@@ -579,6 +581,8 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.verticalLayout_2.addWidget(self.template_btn)
         self.verticalLayout_2.setStretchFactor(self.import_tabs, 1)
         self.preview_grp_box.setTitle("")
+        self.preview_grp_box.setFlat(True)
+        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.data_type_combo = QComboBox(self)
         self.data_type_combo.setAccessibleName("Data type")
         self.data_type_label = QLabel("Data type", self)

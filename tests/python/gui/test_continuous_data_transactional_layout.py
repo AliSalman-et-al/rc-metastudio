@@ -422,7 +422,7 @@ def test_continuous_data_keyboard_and_accessibility_contract(monkeypatch):
         assert dialog.effect_metric_label.buddy() is dialog.effect_combo_box
         assert dialog.label_14.buddy() is dialog.effect_text_box
         assert dialog.label.buddy() is dialog.correlation_pre_post
-        assert dialog.simple_table.accessibleName() == "Continuous group summary data"
+        assert dialog.simple_table.accessibleName() == "Continuous arm summary data"
 
         dialog.effect_combo_box.setFocus()
         key_click(dialog.effect_combo_box, QtCore.Qt.Key.Key_Tab)
@@ -509,8 +509,8 @@ def test_continuous_variants_are_transactional_and_screen_bounded(monkeypatch, s
         assert isinstance(dialog.content_scroll, QtWidgets.QScrollArea)
         assert dialog.content_scroll.widgetResizable()
         assert not dialog.content_scroll.isAncestorOf(dialog.buttonBox)
-        assert not isinstance(dialog.simple_group, QtWidgets.QGroupBox)
-        assert not isinstance(dialog.effect_group, QtWidgets.QGroupBox)
+        assert dialog.simple_group.title() == "Arm summaries"
+        assert dialog.effect_group.title() == "Effect estimate"
         assert dialog.effect_metric_label.text() == "Effect metric"
         assert dialog.label_14.text() == "Estimate"
         assert dialog.lower_text_box.accessibleName() == "Lower confidence limit"

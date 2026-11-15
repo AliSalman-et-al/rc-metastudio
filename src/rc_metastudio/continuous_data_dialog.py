@@ -175,7 +175,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.update_back_calculation_button()
 
         if self.analysis_unit.sheet.sub_type not in {"reg_coef", "generic_effect"}:
-            self.input_mode_combo.addItem("Group summaries", "summary")
+            self.input_mode_combo.addItem("Arm summaries", "summary")
         self.input_mode_combo.addItem("Entered estimate", "estimate")
         self.input_mode_combo.setAccessibleName("Study input method")
         self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: group data or an entered effect estimate.")
@@ -903,7 +903,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                     table.item(row, col), f"continuous table cell ({row}, {col})"
                 ).setText(str_val)
             item = required(table.item(row, col), "summary cell")
-            item.setToolTip(str_val)
+            item.setToolTip(str_val + (" · Computed from the entered values" if str_val and supplied is False else ""))
             if supplied is not None or not str_val:
                 item.setData(Qt.ItemDataRole.UserRole, bool(supplied and str_val))
 

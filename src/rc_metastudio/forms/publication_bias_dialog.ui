@@ -18,14 +18,7 @@
          <property name="widgetResizable"><bool>true</bool></property>
          <widget class="QWidget" name="methods_scroll_content">
           <layout class="QVBoxLayout" name="methods_scroll_layout">
-           <item>
-            <widget class="QGroupBox" name="automatic_test_group">
-             <property name="title"><string>Small-study effects tests</string></property>
-             <layout class="QVBoxLayout" name="automatic_test_layout">
-              <item><widget class="QLabel" name="automatic_test_label"><property name="wordWrap"><bool>true</bool></property><property name="text"><string>Tests are selected automatically for the current effect measure.</string></property></widget></item>
-             </layout>
-           </widget>
-           </item>
+           <item><widget class="QLabel" name="automatic_test_label"><property name="wordWrap"><bool>true</bool></property><property name="text"><string>Tests are selected automatically for the current effect measure.</string></property></widget></item>
            <item>
             <widget class="QGroupBox" name="plot_selection_group">
              <property name="title"><string>Funnel plot methods</string></property>

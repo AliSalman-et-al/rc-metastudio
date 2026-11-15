@@ -75,7 +75,7 @@ class RatioDataDialog(QDialog):
         for arm_name in self.arm_names:
             for label, value in zip(("Events", "Person-time"), self.analysis_unit.get_raw_data_for_arm(arm_name)):
                 field = QLineEdit("" if value in (None, "") else str(value))
-                self.form.addRow(f"{arm_name}: {label}", field)
+                self.form.addRow(f"{arm_name} {label.lower()}", field)
                 self.raw_fields.append(field)
 
     def _add_reported_fields(self, record):

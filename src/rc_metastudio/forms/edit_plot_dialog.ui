@@ -76,15 +76,11 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="accent_color">
+      <item row="0" column="1" colspan="2"><layout class="QHBoxLayout" name="accent_color_layout"><item><widget class="QLineEdit" name="accent_color">
         <property name="text">
          <string>#2f5597</string>
         </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-      <widget class="QPushButton" name="color_btn">
+       </widget></item><item><widget class="QPushButton" name="color_btn">
         <property name="toolTip">
          <string>Choose the plot accent color</string>
         </property>
@@ -97,9 +93,8 @@
         <property name="text">
          <string>Choose color…</string>
         </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
+       </widget></item></layout></item>
+<item row="1" column="0">
        <widget class="QLabel" name="point_size_label">
         <property name="text">
          <string>Point size multiplier</string>
@@ -131,7 +126,7 @@
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Column labels</string>
+      <string>Column headings</string>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
@@ -187,7 +182,7 @@
         <item row="2" column="0">
          <widget class="QLabel" name="label_5">
           <property name="text">
-           <string>First group heading</string>
+           <string>First arm heading</string>
           </property>
          </widget>
         </item>
@@ -201,7 +196,7 @@
         <item row="2" column="2">
          <widget class="QCheckBox" name="show_3">
           <property name="text">
-           <string>Show first group data</string>
+           <string>Show first arm data</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -211,7 +206,7 @@
         <item row="3" column="0">
          <widget class="QLabel" name="label_6">
           <property name="text">
-           <string>Second group heading</string>
+           <string>Second arm heading</string>
           </property>
          </widget>
         </item>
@@ -225,7 +220,7 @@
         <item row="3" column="2">
          <widget class="QCheckBox" name="show_4">
           <property name="text">
-           <string>Show second group data</string>
+           <string>Show second arm data</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -246,7 +241,7 @@
       <item row="0" column="1">
        <widget class="QCheckBox" name="show_raw_counts">
         <property name="text">
-         <string>Show group data columns</string>
+         <string>Arm data columns</string>
         </property>
         <property name="checked">
          <bool>true</bool>

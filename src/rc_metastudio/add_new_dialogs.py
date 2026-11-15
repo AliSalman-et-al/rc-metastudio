@@ -18,6 +18,7 @@ class AddStudyDialog(QDialog, _ui_new_study_dialog.Ui_new_study_dialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
+        required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "add study button").setText("Add study")
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )

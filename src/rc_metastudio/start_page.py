@@ -1,6 +1,7 @@
 """The main window's starting surface, using the ordinary project actions."""
 
 from pathlib import Path
+from datetime import datetime
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 from rc_metastudio import app_error_handler, qt_layout
@@ -65,9 +66,9 @@ class StartPage(QtWidgets.QScrollArea):
             action.changed.connect(lambda b=button, text=caption: b.setText(text))
             button.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
             qt_layout.configure_primary_action_buttons((button,))
-            button.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
+            button.setSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
             buttons.append(button)
-            card_layout.addWidget(button, 0, QtCore.Qt.AlignmentFlag.AlignTop)
+            card_layout.addWidget(button, 0, QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignTop)
             label = QtWidgets.QLabel(description, card)
             qt_layout.configure_context_label(label)
             label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
@@ -130,6 +131,14 @@ class StartPage(QtWidgets.QScrollArea):
             button.clicked.connect(app_error_handler.safe_slot(lambda _checked=False, path=path: open_project(path), parent=self))
             self.recent_layout.addWidget(button, index, 0)
             self.recent_layout.addWidget(_RecentPathLabel(str(path), self.recent_projects), index, 1)
+            if exists:
+                try:
+                    modified = datetime.fromtimestamp(Path(path).stat().st_mtime).strftime('%d %b %Y')
+                except OSError:
+                    modified = ''
+                date_label = QtWidgets.QLabel('Modified ' + modified if modified else '', self.recent_projects)
+                date_label.setForegroundRole(QtGui.QPalette.ColorRole.PlaceholderText)
+                self.recent_layout.addWidget(date_label, index, 2)
             if not exists:
                 self.recent_layout.addWidget(QtWidgets.QLabel('Missing file', self.recent_projects), index, 2)
                 for column, (caption, callback) in enumerate((("Locate…", locate_project), ("Remove from list", remove_project)), 3):

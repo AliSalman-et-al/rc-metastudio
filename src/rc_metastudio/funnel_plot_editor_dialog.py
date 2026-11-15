@@ -12,7 +12,7 @@ from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QLabel, QLineEdit, QMessageBox
 
 from rc_metastudio import adaptive_window, app_error_handler, qt_text
-from rc_metastudio.qt_layout import protect_scroll_settings
+from rc_metastudio.qt_layout import protect_scroll_settings, align_field_columns, add_color_swatch
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
     size_plot_text_editor,
@@ -69,8 +69,8 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         caption_label.setBuddy(self.figure_caption)
         caption_row = self.appearance_layout.rowCount()
         caption_columns = self.appearance_layout.columnCount()
-        self.appearance_layout.addWidget(caption_label, caption_row, 0, 1, caption_columns)
-        self.appearance_layout.addWidget(self.figure_caption, caption_row + 1, 0, 1, caption_columns)
+        self.appearance_layout.addWidget(caption_label, caption_row, 0)
+        self.appearance_layout.addWidget(self.figure_caption, caption_row, 1, 1, caption_columns - 1)
         self._dirty = False
         self._pending_ok = False
         self._allow_close = True
@@ -111,19 +111,16 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             edit.setMaximumWidth(edit.fontMetrics().height() * 6)
             button.setText("Choose…")
             button.setMaximumWidth(self.fontMetrics().height() * 12)
-            edit.textChanged.connect(
-                lambda _text, color_edit=edit, color_button=button: (
-                    self._update_color_button(color_edit, color_button)
-                )
-            )
+            color_layout = getattr(self, edit.objectName().replace("_edit", "_layout"))
+            add_color_swatch(edit, color_layout)
             button.clicked.connect(
                 lambda _checked=False, color_edit=edit, color_button=button, dialog_title=title: (
                     self._choose_color(color_edit, color_button, dialog_title)
                 )
             )
-            self._update_color_button(edit, button)
         self.button_box.clicked.connect(self._button_clicked)
         self._connect_dirty_signals()
+        align_field_columns((self.appearance_layout, self.confidence_layout, self.axis_layout))
         size_plot_text_editor(self)
         self._scroll_settings_filter = protect_scroll_settings(self.content_scroll)
         adaptive_window.register_adaptive_window(
@@ -451,16 +448,6 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         )
         if color.isValid():
             edit.setText(color.name(QColor.NameFormat.HexRgb).upper())
-            self._update_color_button(edit, button)
-
-    @staticmethod
-    def _update_color_button(edit, button):
-        color = QColor(qt_text.to_native_text(edit.text()))
-        if not color.isValid():
-            button.setStyleSheet("")
-            return
-        foreground = "#000000" if color.lightness() > 150 else "#FFFFFF"
-        button.setStyleSheet(f"background-color: {color.name()}; color: {foreground};")
 
     @staticmethod
     def _scalar(value):

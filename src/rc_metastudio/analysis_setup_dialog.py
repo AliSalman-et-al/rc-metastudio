@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Method-selection dialog and analysis specification builder."""
 
-from rc_metastudio.qt_layout import DisclosureButton, style_inline_error
+from rc_metastudio.qt_layout import DisclosureButton, style_inline_error, add_color_swatch
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QResizeEvent, QCloseEvent, QColor, QHideEvent, QShowEvent
@@ -761,6 +761,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         row = self.style_layout.rowCount()
         self.style_layout.addWidget(self.study_order_label, row, 0)
         self.style_layout.addWidget(self.study_order, row, 1)
+        add_color_swatch(self.accent_color, self.accent_color_layout)
         self.color_btn.clicked.connect(
             app_error_handler.safe_slot(self._choose_plot_color, parent=self)
         )
@@ -932,7 +933,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _set_plot_accent_color(self, color):
         text = str(color or PLOT_STYLE_DEFAULT_COLORS["default"])
         self.accent_color.setText(text)
-        self.color_btn.setStyleSheet("background-color: %s; color: %s;" % (text, "white" if QColor(text).lightness() < 128 else "black"))
 
     def run_ma(self):
         self._run_analysis(
@@ -1497,6 +1497,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         label = QLabel(parameter_display_label(spec.name, spec.metadata))
         label.setWordWrap(True)
         description = parameter_description(spec.name, spec.metadata)
+        if spec.name == "rm.method":
+            description = "Between-study variance (heterogeneity) estimator"
         if spec.name == "estimator" and description == "No description provided.":
             description = "REML: restricted maximum likelihood; ML: maximum likelihood."
         label.setToolTip(description)
