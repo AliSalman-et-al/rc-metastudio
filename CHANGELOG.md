@@ -2,6 +2,18 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
+## 0.5.5 - Unreleased
+
+### Added
+
+- Added exact numeric values CSV export and editable Results table copying.
+
+### Changed
+
+- Refined desktop themes, spreadsheet headers, outcome tabs, analysis icons and confidence-level controls.
+- Improved Results wording, preserved producer precision and clarified diagnostic summaries, subgroup comparisons and analysis scales.
+- Kept funnel plots as SVG with corrected Qt clipping and improved PDF and DOCX report layout.
+
 ## 0.5.4 - Unreleased
 
 ### Corrected
