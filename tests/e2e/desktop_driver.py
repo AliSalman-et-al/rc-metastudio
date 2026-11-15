@@ -263,7 +263,7 @@ def doctor(app, window):
     record_step("ready", window, runtime=identity)
 
 
-def analyze(app, window, method, *, digits=3):
+def analyze(app, window, method, *, digits=3, confidence=None):
     from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
 
     assert window.action_go.isEnabled()
@@ -292,6 +292,10 @@ def analyze(app, window, method, *, digits=3):
     )
     dialog.method_cbo_box.setCurrentText(label)
     app.processEvents()
+    if confidence is not None:
+        sys.path.insert(0, str(ROOT / '.agents/skills/verify-rcms/scripts'))
+        from analysis_matrix import set_parameter
+        set_parameter(app, dialog, 'conf.level', confidence)
     def precision_control():
         return next(control for control in [*dialog.current_widgets, *dialog._shared_diagnostic_widgets]
                     if isinstance(control, QtWidgets.QSpinBox)
@@ -2493,6 +2497,9 @@ try:
         run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario == "results-presentation":
         from tests.e2e.results_presentation import run
+        run(app, window, WORK, ROOT, record_step, analyze)
+    elif scenario == 'results-values':
+        from tests.e2e.results_values import run
         run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario in ("amino", "continuous", "lymph"):
         sample_analysis(app, window, scenario)

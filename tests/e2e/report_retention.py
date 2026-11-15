@@ -213,6 +213,10 @@ def expected_effect_rows(result, section, overall, calculation):
         if table.title != 'Regression coefficients' and metric.endswith('transformed proportion'):
             metric = 'proportion'
         effects = expected_effect_values(values, headers, low, high, metric, vertical, table.title, overall, calculation)
+        if table.title == 'Regression coefficients':
+            scale = next((q.scale for line in table.quantities for cell in line for q in cell if q.role == 'se'), '')
+            if scale:
+                effects = [(*row[:4], '(' + ('outcome' if scale == 'display' else scale) + ' scale)', *row[5:]) for row in effects]
         if ',' in result.manuscript_metric and table.title != 'Regression coefficients':
             effects = tuple((metric.capitalize() + ': ' + row[0], *row[1:]) if row[0].lower() != metric else row for row in effects)
         rows.extend(effects)
@@ -229,6 +233,7 @@ def expected_effect_values(values, headers, low, high, metric, vertical, title, 
         statistic = next((row.get(h, overall.get(h)) for h in ('t', 'z', 'Z', 'z-value', 't-value') if h in row or h in overall), '—')
         se_header, se = next(((key, value) for key, value in {**calculation, **row}.items() if key.startswith('SE')), ('SE', '—'))
         se_scale = se_header.removeprefix('SE').strip() or '—'
+
         rows.append((label[:1].upper() + label[1:], row['Estimate'], row[low] + ' to ' + row[high], se, se_scale, statistic, expected_p(row.get('p-value', overall.get('p-value', '')))))
     return rows
 
@@ -282,6 +287,9 @@ def expected_fit_table(result, section, source):
         rows.extend(('Studies (k) (' + row['Subgroups'] + ')', row['k']) for row in data if 'k' in row and 'Subgroups' in row and row['Estimate'])
     elif source.title.endswith('Heterogeneity') or source.title == 'Residual heterogeneity':
         labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity p', 'I²': 'I²', 'τ²': 'Between-study variance (τ²)'}
+        scale = next((q.scale for line in source.quantities for cell in line for q in cell if q.role == 'tau2'), '')
+        if scale not in ('', 'display'):
+            labels['τ²'] += ' (squared ' + scale + ' scale)'
         for row in data:
             context = (' (' + row['Subgroups'] + ')' if 'Subgroups' in row else '')
             if ',' in result.manuscript_metric:

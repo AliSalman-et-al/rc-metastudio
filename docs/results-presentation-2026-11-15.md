@@ -1,6 +1,7 @@
 # Results presentation design — 15 November 2026
 
-Status: research and a reviewable design study, not a completed application redesign.
+Status: reconciled batches A–D implemented; qualification is tracked in
+[the implementation report](results-implementation-2026-11-15.md).
 This extends the desktop polish work on `ui/desktop-polish-and-icons`.
 
 ## Reconciled decisions after Opus review
@@ -38,8 +39,10 @@ navigation. This section supersedes the initial implementation ordering below.
    identify that scale. z is dimensionless; it is not itself a log-scale value.
    τ² is a variance, so its units are the square of the model's analysis scale.
 7. **Then improve paper tables and rich copying; finally add numeric roles.**
-   A minimal versioned boundary change should carry raw values, column roles,
-   scales, interval levels and missing/bounded status. No second report engine,
+   The existing v1 boundary gains optional per-cell quantities: raw values,
+   roles, scales and interval levels. Missingness uses None; producer display
+   text retains bounds and missing-value reasons. Results are not persisted and
+   R/Python qualify together, so no version bump is needed. No second report engine,
    new web stack or journal-style selector is justified for this work.
 
 The diagnostic partial-denominator concern is a source-level lead, not a proven

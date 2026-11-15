@@ -23,7 +23,7 @@ from tests.e2e.plot_geometry_checks import (
 )
 
 
-def analyze_existing(app, window, workflow, method, record, parameters=None):
+def analyze_existing(app, window, workflow, method, record, parameters=None, *, covariates=('Dose',)):
     from PyQt6 import QtCore, QtWidgets
     from rc_metastudio import analysis_setup_dialog, results_window
     from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
@@ -45,7 +45,7 @@ def analyze_existing(app, window, workflow, method, record, parameters=None):
     dialog = visible(analysis_setup_dialog.AnalysisSetupDialog)
     if workflow == "meta-regression":
         for covariate, checkbox in dialog.covs_and_check_boxes:
-            checkbox.setChecked(covariate["name"] == "Dose")
+            checkbox.setChecked(covariate["name"] in covariates)
     else:
         dialog.method_cbo_box.setCurrentText(next(label for label, key in dialog.available_method_d.items() if key == method))
     app.processEvents()

@@ -2,12 +2,51 @@
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from tests.python.gui.qt_test_support import key_click
+from unittest.mock import patch
+import csv
+
+
+def check_values_export(view, work, record, label):
+    source = [t for s in view.results.sections for t in s.tables]
+    for table in source:
+        if any(h.startswith('Lower bound') and h.endswith('% CI)') for h in table.headers) or table.title == 'Heterogeneity':
+            assert table.quantities, (label, table.title, 'numeric attributes lost')
+    for index, table in enumerate(view._report_tables):
+        view.table_selector.setCurrentIndex(index)
+        assert view.export_values_action.isEnabled() == bool(table.quantities)
+        if not table.quantities:
+            continue
+        path = work / f'{label}-{index}-values.csv'
+        with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', return_value=(str(path), 'csv')):
+            view.export_values_action.trigger()
+        with path.open(encoding='utf-8-sig', newline='') as stream:
+            rows = list(csv.DictReader(stream))
+        expected = [(cell, q) for row, numbers in zip(table.rows, table.quantities)
+                    for cell, quantities in zip(row, numbers) for q in quantities]
+        assert len(rows) == len(expected)
+        for exported, (cell, q) in zip(rows, expected):
+            assert exported['Display'] == cell
+            assert exported['Quantity'] == q.role
+            assert exported['Scale'] == q.scale
+            assert (float(exported['Value']) if exported['Value'] else None) == q.value
+            assert (float(exported['Level']) if exported['Level'] else None) == q.level
+        record('results-values-export', view, analysis=label, table=table.title, path=str(path), values=rows)
+    # Renaming presentation labels must not affect primary-row routing.
+    from dataclasses import replace
+    from rc_metastudio.manuscript_report import ManuscriptReport
+    renamed = replace(view.results, sections=tuple(replace(s, tables=tuple(
+        replace(t, headers=tuple('Renamed estimate' if h == 'Estimate' else 'Renamed interval '+str(i)
+                                if h.startswith(('Lower bound', 'Upper bound')) else h for i, h in enumerate(t.headers)))
+        for t in s.tables)) for s in view.results.sections))
+    report = ManuscriptReport.from_result(renamed)
+    assert report.sections[0].tables[0].rows == view.manuscript.sections[0].tables[0].rows
 
 
 def run(app, window, work, root, record, analyze):
     assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
     assert window.model.setData(window.model.index(0, window.model.NAME), 'Gonzalez <α> & colleagues')
     view = analyze(app, window, 'binary.random')
+    check_values_export(view, work, record, 'binary')
     view.tables_action.trigger()
     index = next(i for i, table in enumerate(view._report_tables) if table.title == 'Study results')
     view.table_selector.setCurrentIndex(index)

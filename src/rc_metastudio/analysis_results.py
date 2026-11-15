@@ -9,7 +9,8 @@ from rc_metastudio.result_formatting import sentence_case_title
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Literal, TypedDict
+from typing import Literal, TypedDict, get_args
+import math
 
 
 PlotKind = Literal[
@@ -54,11 +55,44 @@ class RawAnalysisResult(TypedDict, total=False):
     sections: list[dict[str, object]]
 
 
+QuantityRole = Literal['estimate', 'ci_lower', 'ci_upper', 'pi_lower', 'pi_upper',
+                       'se', 'statistic', 'df', 'df2', 'p', 'q', 'i2', 'tau2', 'k', 'weight', 'value']
+QuantityScale = Literal['display', 'log', 'logit', 'arcsine', 'freeman-tukey', 'percent', 'proportion', '']
+
+
+@dataclass(frozen=True, slots=True)
+class Quantity:
+    role: QuantityRole
+    value: float | None
+    scale: QuantityScale = ''
+    level: float | None = None
+
+    def __post_init__(self) -> None:
+        if self.role not in get_args(QuantityRole) or self.scale not in get_args(QuantityScale):
+            raise ValueError('unknown result quantity role or scale')
+        if self.value is not None and (type(self.value) is not float or math.isnan(self.value)):
+            raise ValueError('result quantity must be a float or None; NaN is not a missing value')
+        interval = self.role in ('ci_lower', 'ci_upper', 'pi_lower', 'pi_upper')
+        if interval:
+            if type(self.level) is not float or not 0 < self.level < 100:
+                raise ValueError('interval quantity needs a confidence level in percent')
+        elif self.level is not None:
+            raise ValueError('only interval quantities have a confidence level')
+
+
 @dataclass(frozen=True, slots=True)
 class ResultTable:
     title: str
     headers: tuple[str, ...]
     rows: tuple[tuple[str, ...], ...]
+    quantities: tuple[tuple[tuple[Quantity, ...], ...], ...] = ()
+
+    def __post_init__(self) -> None:
+        if self.quantities and (len(self.quantities) != len(self.rows) or any(
+                len(row) != len(self.headers) or any(
+                    not isinstance(cell, tuple) or any(not isinstance(q, Quantity) for q in cell)
+                    for cell in row) for row in self.quantities)):
+            raise ValueError('result quantity shape must match the displayed table')
 
 
 @dataclass(frozen=True, slots=True)
@@ -186,6 +220,9 @@ def _report_content(value: object) -> tuple[tuple[str, ...], tuple[ResultTable, 
         raise ValueError("report tables must be a list")
     tables = []
     for entry in entries:
+        if isinstance(entry, ResultTable):
+            tables.append(entry)
+            continue
         if not isinstance(entry, Mapping):
             raise ValueError("report table must be a mapping")
         table_fields: dict[str, object] = {}
@@ -203,7 +240,20 @@ def _report_content(value: object) -> tuple[tuple[str, ...], tuple[ResultTable, 
             if cells is None or len(cells) != len(headers):
                 raise ValueError("report row width must match its headers")
             parsed_rows.append(tuple(cells))
-        tables.append(ResultTable(title, tuple(headers), tuple(parsed_rows)))
+        quantities = table_fields.get('quantities', ())
+        if not isinstance(quantities, (tuple, list)):
+            raise ValueError('report quantities must be nested sequences')
+        parsed_quantities = []
+        for row in quantities:
+            if not isinstance(row, (tuple, list)):
+                raise ValueError('report quantity row must be a sequence')
+            cells = []
+            for cell in row:
+                if not isinstance(cell, (tuple, list)) or any(not isinstance(q, Quantity) for q in cell):
+                    raise ValueError('report quantity cell must contain Quantity values')
+                cells.append(tuple(cell))
+            parsed_quantities.append(tuple(cells))
+        tables.append(ResultTable(title, tuple(headers), tuple(parsed_rows), tuple(parsed_quantities)))
     return tuple(paragraphs or ()), tuple(tables)
 
 

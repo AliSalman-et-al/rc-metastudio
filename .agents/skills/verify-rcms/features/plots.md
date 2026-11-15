@@ -38,6 +38,16 @@ The `subgroup-image` and `subgroup-image-dark-large` drives run meantime by trea
 
 ## Sub-features
 
+- `results-presentation`: copy complete and rectangular result tables as HTML
+  and TSV, including escaped Unicode; paste into real editable Qt table cells.
+- `results-values`: exercise exact numeric CSV actions across ten workflows at
+  90% output CI/PI, including combined diagnostics and adjusted means. Retain
+  formatted and raw table values, inputs and a public metafor/mada recomputation
+  script; compare exact CSV doubles and public references within one floating
+  point step. A missing numeric attribute fails the drive. Text-only tables
+  disable numeric export. Separate Microsoft Word consumer evidence is linked
+  from `docs/results-implementation-2026-11-15.md`.
+
 - `results-render`: actual summary text and valid rendered analysis plots. The sample analysis driver also asserts that Run analysis activates Results before screenshot capture, manual zoom restores the horizontal origin, and the text report has no duplicate Supplementary details or References headings.
 - `plot-apply`: changed axis label regenerates the real R plot and saved parameters.
 - `plot-cancel`: Cancel discards the draft after an applied change.

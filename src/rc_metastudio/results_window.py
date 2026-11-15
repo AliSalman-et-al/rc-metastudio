@@ -533,9 +533,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         copy_shortcut.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
         copy_shortcut.triggered.connect(self._copy_table)
         self.result_table.addAction(copy_shortcut)
-        self.export_table_action = QAction("Export table CSV…", self)
+        self.export_table_action = QAction("Export formatted CSV…", self)
         self.export_table_action.triggered.connect(app_error_handler.safe_slot(self._export_table, parent=self))
-        for action in (self.copy_table_action, self.export_table_action):
+        self.export_values_action = QAction("Export values CSV…", self)
+        self.export_values_action.triggered.connect(app_error_handler.safe_slot(self._export_values, parent=self))
+        for action in (self.copy_table_action, self.export_table_action, self.export_values_action):
             controls.addAction(action)
         layout.addWidget(controls)
         layout.addStretch()
@@ -547,6 +549,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if not 0 <= index < len(self._report_tables):
             return
         table = self._report_tables[index]
+        self.export_values_action.setEnabled(bool(table.quantities))
+        self.export_values_action.setStatusTip('Export exact producer values, scales and interval levels' if table.quantities else 'This table holds formatted output only')
+        self.export_values_action.setToolTip(self.export_values_action.statusTip())
         self.result_table.clear()
         self.result_table.setColumnCount(len(table.headers))
         self.result_table.setRowCount(len(table.rows))
@@ -643,6 +648,24 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             with Path(path).open("w", encoding="utf-8-sig", newline="") as stream:
                 stream.write(self._table_payload(","))
             self.statusbar.showMessage(f"Saved table: {Path(path).resolve()}")
+
+    def _export_values(self):
+        table = self._report_tables[self.table_selector.currentIndex()]
+        if not table.quantities:
+            return
+        path, _filter = QFileDialog.getSaveFileName(self, 'Export numeric result values', self._export_name(table.title + '-values', 'csv'), 'CSV values (*.csv)')
+        if not path:
+            return
+        with Path(path).open('w', encoding='utf-8-sig', newline='') as stream:
+            writer = csv.writer(stream, lineterminator='\n')
+            writer.writerow(('Table', 'Row', 'Column', 'Quantity', 'Value', 'Scale', 'Level', 'Display'))
+            for row, numbers in zip(table.rows, table.quantities):
+                identity = ' / '.join(cell for cell, qs in zip(row, numbers) if not qs and cell)
+                for header, cell, quantities in zip(table.headers, row, numbers):
+                    for q in quantities:
+                        writer.writerow((table.title, identity, header, q.role, '' if q.value is None else repr(q.value),
+                                         q.scale, '' if q.level is None else f'{q.level:g}', cell))
+        self.statusbar.showMessage(f'Saved values: {Path(path).resolve()}')
 
     def _show_tables(self):
         self.report_action.blockSignals(True)

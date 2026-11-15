@@ -666,9 +666,7 @@ def _merge_diagnostic_sections(
                 "order": len(merged_sections),
                 "title": section.title,
                 "source_key": section.source_key,
-                "report": {"paragraphs": list(section.paragraphs), "tables": [
-                    {"title": table.title, "headers": list(table.headers),
-                     "rows": [list(row) for row in table.rows]} for table in section.tables]},
+                "report": {"paragraphs": list(section.paragraphs), "tables": list(section.tables)},
             }
         )
     if "References" in merged_texts and not any(
