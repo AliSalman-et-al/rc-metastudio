@@ -19,7 +19,12 @@ def navigation_selection_pixels(view):
     image = required(tree.viewport()).grab().toImage()
     rect = tree.visualItemRect(item).intersected(image.rect())
     highlight = tree.palette().color(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Highlight)
-    count = sum(image.pixelColor(x, y).rgb() == highlight.rgb()
+    base = tree.palette().color(QPalette.ColorRole.Base)
+    def distance(pixel, color):
+        return sum((left - right) ** 2 for left, right in zip(pixel.getRgb()[:3], color.getRgb()[:3]))
+    # Native theme transitions can shade the accent. Classify the painted row
+    # against its semantic highlight/base colours instead of requiring byte equality.
+    count = sum(distance(pixel := image.pixelColor(x, y), highlight) < distance(pixel, base)
                 for y in range(rect.top(), rect.bottom() + 1)
                 for x in range(rect.left(), rect.right() + 1))
     return count, rect.width() * rect.height(), highlight.name()

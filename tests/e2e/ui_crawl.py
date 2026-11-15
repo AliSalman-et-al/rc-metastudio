@@ -719,6 +719,14 @@ def run(driver):
                     if hasattr(widget, 'nav_tree') and hasattr(widget, 'result_identity'):
                         from tests.e2e.ui_design_direction import navigation_selection_pixels
                         pixels, area, highlight = navigation_selection_pixels(widget)
+                        if pixels <= area / 4:
+                            tree = widget.nav_tree
+                            palette = tree.palette()
+                            original_record('selection-paint-failure', widget,
+                                            selected=required(tree.currentItem()).isSelected(),
+                                            tree_focused=tree.hasFocus(), window_active=widget.isActiveWindow(),
+                                            highlight_active=palette.color(QtGui.QPalette.ColorGroup.Active, QtGui.QPalette.ColorRole.Highlight).name(),
+                                            highlight_inactive=highlight, pixels=pixels, area=area)
                         assert pixels > area / 4, (step, theme, pixels, area, highlight)
                     if step.startswith('H-') and hasattr(widget, 'x_lbl_le'):
                         fields = (widget.style_cbo, widget.accent_color, widget.col1_str_edit, widget.x_lbl_le)

@@ -74,3 +74,16 @@ checks these rendered states in both themes as well.
 
 Fable's first final-review attempt failed at its provider with HTTP 502 before
 returning a review. A new review is required; this failure is not an approval.
+
+The ce135ae1 whole tour stopped at a newly added exact-RGB assertion after a
+dark/light transition. Its retained failure screenshot shows a clear native
+accent selection: Qt shaded the accent relative to the palette colour. The
+check now classifies each row pixel against the semantic Highlight and Base
+colours; the former faint gray state remains rejected. This changes no product
+colour and no statistical tolerance. Failed assertions retain their selection,
+focus, palette and screenshot receipt. The focused native Results/editor tour
+`20261115T220423Z-e09cd3d4-ui-crawl` passes 102 steps in both themes, including
+narrow Results, field alignment, all plot-editor families and rendered exports.
+The concurrent pre-push and full profile were interrupted during investigation;
+neither interrupted run is a completed qualification. All final gates rerun on
+the next clean revision.
