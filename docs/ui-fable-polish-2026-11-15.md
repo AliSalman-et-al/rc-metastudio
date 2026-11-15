@@ -196,3 +196,27 @@ field alignment, error disclosure and actual Reitsma output. The focused GUI
 suite passed 146 checks (`direction-dialogs-columns-gui.log`). The earlier C/D/E
 tour proves both-theme import, calculator and small-study rendering; its old
 regression capture is superseded by the compact regression drive.
+
+### Outcome strip, Results tables and plot editors
+
+Sheet confidence now sits beside Add outcome. Outcome tabs allow up to 28 em
+when space permits and use a 12 em cap during overflow; custom tab navigation
+and the grid's shared horizontal scrollbar remain separate controls. Results
+tables retain aligned bold headings and alternating rows, with cell boxes
+removed and a palette-based header rule. The selector keeps its content width.
+Colour fields in forest, funnel and SROC editors are bounded to six em and
+picker buttons use “Choose…”. Existing disabled funnel-setting explanations
+already name the enabling plot kind. A cosmetic palette-Mid outline marks
+preview paper without changing exported artifacts. The progress dialog already
+has an indeterminate bar; no duplicate progress control was added.
+
+The preimplementation drive reproduced four failures. Strict win32 typing,
+146 focused GUI checks and native `ui-design-direction` now pass at
+`20261115T180649Z-f1818136-ui-design-direction`. The long outcome label, confidence
+control, Results table and compact plot-editor controls are captured there.
+Native overflow/grid-scroll behavior remains part of final shell qualification.
+
+All eight committed design batches are implemented. E1–E7 remain explicitly
+gated experiments; no opinion-only change to forest label colours, docking,
+statistical output, caption removal or coefficient height was adopted.
+Final qualification and external design review are pending.

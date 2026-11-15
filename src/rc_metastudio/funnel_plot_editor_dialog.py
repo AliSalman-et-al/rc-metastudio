@@ -108,6 +108,8 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
                 "Choose plot background color",
             ),
         ):
+            edit.setMaximumWidth(edit.fontMetrics().height() * 6)
+            button.setText("Choose…")
             edit.textChanged.connect(
                 lambda _text, color_edit=edit, color_button=button: (
                     self._update_color_button(color_edit, color_button)

@@ -47,6 +47,18 @@ also retains its inputs and exports under the workflow's `report-retention/` fol
 
 ### UI surface inventory
 
+`ui-design-direction` exercises the split Meta-analysis control and real Ctrl+R,
+metric guidance and final wizard action, lossless ratio/log input drafts,
+long outcome names and confidence-control placement, fixed Results identity,
+figures-first navigation, initial zoom and Ctrl+0/Ctrl+E, compact colour controls,
+quiet result tables, status expiry and per-cell DOCX numeric alignment.
+`ui-fable-polish` additionally proves all three calculator interval-field
+alignments, upright continuous headings, compact regression first-tab sizing,
+shared method/parameter field columns and an eight-line error-details viewport.
+The default design drive runs all phases; its optional `numbers` phase supports
+a focused numeric-input/report-layout recovery only.
+
+
 `ui-fable-polish` drives native About theme changes, continuous pre/post mode
 entry before scrolling, real empty-selection error disclosure, and an executed
 Reitsma title/correction description. It retains failed and corrected captures;

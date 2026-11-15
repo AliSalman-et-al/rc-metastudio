@@ -28,6 +28,21 @@ def run(app, window, work, root, record, analyze):
         window.resize(1280, 800)
         window.activateWindow()
         wait(150)
+        if not window.sheet_strip.isAncestorOf(window.confidence_button):
+            failures.append('Sheet confidence control is detached from the outcomes')
+        original_name = window.model.current_sheet.name
+        long_name = 'Catheter-related bloodstream infections'
+        window.model.current_sheet.name = long_name
+        window._refresh_sheet_tabs()
+        wait(150)
+        width = window.sheet_tabs.tabRect(0).width()
+        wanted = min(window.sheet_tabs.fontMetrics().horizontalAdvance(long_name) + 24,
+                     window.sheet_tabs.fontMetrics().height() * 28)
+        if width < wanted:
+            failures.append('Outcome names are truncated despite spare strip width')
+        record('direction-outcome-strip', window, long_tab_width=width, wanted=wanted)
+        window.model.current_sheet.name = original_name
+        window._refresh_sheet_tabs()
         observations['run_shortcut'] = window.action_go.shortcut().toString()
         if observations['run_shortcut'] != 'Ctrl+R':
             failures.append('Meta-analysis has no discoverable Ctrl+R shortcut')
@@ -120,10 +135,16 @@ def run(app, window, work, root, record, analyze):
             from advanced_workflows import modal
             from rc_metastudio.plot_editor_dialog import EditPlotDialog
             def close_editor(dialog):
+                if dialog.accent_color.maximumWidth() > dialog.accent_color.fontMetrics().height() * 6:
+                    failures.append('Plot editor colour input stretches across the dialog')
                 record('direction-edit-plot-keyboard', dialog)
                 dialog.reject()
             modal(app, EditPlotDialog, close_editor,
                   lambda: key_click(view, QtCore.Qt.Key.Key_E, QtCore.Qt.KeyboardModifier.ControlModifier))
+        view.tables_action.trigger()
+        if view.result_table.showGrid():
+            failures.append('Results tables retain spreadsheet cell boxes')
+        record('direction-results-table', view)
         view._copy_report()
         assert view.statusbar.currentMessage()
         wait(4200)

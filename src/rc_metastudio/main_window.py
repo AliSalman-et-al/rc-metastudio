@@ -167,6 +167,7 @@ class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
 
 class SheetTabBar(QtWidgets.QTabBar):
     _updating_palette: bool = False
+    _tab_width_limit: int = 0
 
     def changeEvent(self, a0: QtCore.QEvent | None) -> None:
         super().changeEvent(a0)
@@ -197,6 +198,7 @@ class SheetTabBar(QtWidgets.QTabBar):
             QTabBar {{ background: {window_color.name()}; border: 0; }}
             QTabBar::tab {{ background: {window_color.name()}; color: {muted};
                 font-weight: normal; padding: 4px 12px;
+                max-width: {(self._tab_width_limit or self.fontMetrics().height() * 28)}px;
                 border: 0; border-top: 1px solid {rule};
                 border-left: 1px solid transparent; border-right: 1px solid {rule};
                 border-bottom: 2px solid transparent; }}
@@ -239,7 +241,8 @@ class SheetTabBar(QtWidgets.QTabBar):
 
     def tabSizeHint(self, index):
         size = super().tabSizeHint(index)
-        size.setWidth(min(200, max(64, size.width())))
+        size.setWidth(min((self._tab_width_limit or self.fontMetrics().height() * 28),
+                          max(self.fontMetrics().height() * 4, size.width())))
         return size
 
     def resizeEvent(self, a0: QResizeEvent | None) -> None:
@@ -323,7 +326,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.confidence_button.setAccessibleName("Sheet confidence level, 95%")
         self.confidence_button.setToolTip("Interval level for table effects and new analyses on this sheet. An individual analysis can override it.")
         self.confidence_button.clicked.connect(self.action_change_confidence_level.trigger)
-        self.statusbar.addPermanentWidget(self.confidence_button)
         self.confidence_button.hide()
 
         self.frame.hide()
@@ -1426,6 +1428,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             strip.addWidget(button)
         strip.addWidget(self.sheet_tab_scroll, 3)
         strip.addWidget(self.add_sheet_button)
+        strip.addSpacing(self.fontMetrics().height())
+        strip.addWidget(self.confidence_button)
         strip.addStretch(0)
         self.sheet_grid_scrollbar = QtWidgets.QScrollBar(Qt.Orientation.Horizontal, self.sheet_strip)
         strip.addWidget(self.sheet_grid_scrollbar, 2)
@@ -1459,6 +1463,16 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _update_sheet_strip(self):
         extent = max(self.sheet_tabs.fontMetrics().height() + 10, self.sheet_tabs.sizeHint().height())
         self.add_sheet_button.setFixedSize(extent, extent)
+        em = self.sheet_tabs.fontMetrics().height()
+        natural_width = sum(min(28 * em, self.sheet_tabs.fontMetrics().horizontalAdvance(self.sheet_tabs.tabText(index)) + 24)
+                            for index in range(self.sheet_tabs.count()))
+        reserved = extent + self.confidence_button.sizeHint().width() + em
+        if self.sheet_grid_scrollbar.isVisible():
+            reserved += 16 * em
+        limit = (28 if natural_width <= self.sheet_strip.width() - reserved else 12) * em
+        if getattr(self.sheet_tabs, "_tab_width_limit", None) != limit:
+            self.sheet_tabs._tab_width_limit = limit
+            self.sheet_tabs._apply_tab_palette(QtWidgets.QApplication.palette())
         self.sheet_tabs.setMinimumSize(self.sheet_tabs.sizeHint())
         self.sheet_tab_content.resize(self.sheet_tab_content.sizeHint())
         self.sheet_tab_scroll.setFixedHeight(self.sheet_tab_content.sizeHint().height())

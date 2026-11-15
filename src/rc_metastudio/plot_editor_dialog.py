@@ -121,6 +121,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
 
         self.x_ticks_le.textChanged.connect(self._ticks_changed)
 
+        self.accent_color.setMaximumWidth(self.accent_color.fontMetrics().height() * 6)
+        self.color_btn.setText("Choose…")
         self.color_btn.clicked.connect(
             app_error_handler.safe_slot(self._choose_color, parent=self)
         )
@@ -326,6 +328,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.sroc_curve_color = QLineEdit(self._sroc_group)
         self.sroc_confidence_color = QLineEdit(self._sroc_group)
         self.sroc_prediction_color = QLineEdit(self._sroc_group)
+        for field in (self.sroc_curve_color, self.sroc_confidence_color, self.sroc_prediction_color):
+            field.setMaximumWidth(field.fontMetrics().height() * 6)
         self.sroc_curve_lty = QComboBox(self._sroc_group)
         self.sroc_confidence_lty = QComboBox(self._sroc_group)
         self.sroc_prediction_lty = QComboBox(self._sroc_group)

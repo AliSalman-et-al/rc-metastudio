@@ -35,6 +35,8 @@ from PyQt6.QtGui import (
     QIcon,
     QImage,
     QPainter,
+    QPen,
+    QPalette,
     QPixmap,
     QResizeEvent,
     QShowEvent,
@@ -46,6 +48,7 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QGraphicsItem,
     QGraphicsPixmapItem,
+    QGraphicsRectItem,
     QGraphicsScene,
     QGraphicsTextItem,
     QMainWindow,
@@ -463,6 +466,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         for item in self._wrapped_text_items:
             item.setDefaultTextColor(self.palette().color(self.foregroundRole()))
         self._refresh_manuscript_theme()
+        if hasattr(self, "result_table"):
+            header = required(self.result_table.horizontalHeader(), "result table header")
+            header.setStyleSheet("QHeaderView::section { border: 0; border-bottom: 1px solid palette(mid); }")
+        for item in (*self._svg_plot_items, *self._raster_plot_items):
+            for child in item.childItems():
+                if isinstance(child, QGraphicsRectItem):
+                    pen = QPen(self.palette().color(QPalette.ColorRole.Mid))
+                    pen.setCosmetic(True)
+                    child.setPen(pen)
 
     def changeEvent(self, event: QEvent | None) -> None:
         super().changeEvent(event)
@@ -530,8 +542,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.result_table.setTabKeyNavigation(False)
         self.result_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.result_table.setAlternatingRowColors(True)
+        self.result_table.setShowGrid(False)
         self.result_table.setWordWrap(False)
         header = required(self.result_table.horizontalHeader(), "result table column header")
+        header.setStyleSheet("QHeaderView::section { border: 0; border-bottom: 1px solid palette(mid); }")
         header.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         header.setStretchLastSection(False)
         header.setResizeContentsPrecision(-1)
@@ -1429,6 +1443,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         self.scene.clearSelection()
         self.scene.addItem(item)
+        self._outline_plot_paper(item)
         self._raster_plot_items.append(item)
         self._layout_items.append(item)
         item.setPos(position)
@@ -1438,6 +1453,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         item.contextMenuEvent = self._make_context_menu(artifact, item)
 
         return (item.boundingRect().size(), position, item)
+
+    def _outline_plot_paper(self, item):
+        outline = QGraphicsRectItem(item.boundingRect().adjusted(.5, .5, -.5, -.5), item)
+        pen = QPen(self.palette().color(QPalette.ColorRole.Mid))
+        pen.setCosmetic(True)
+        outline.setPen(pen)
+        outline.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
 
     def create_plot_item(self, artifact, position):
         if artifact.has_vector_display():
@@ -1482,6 +1504,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         self.scene.clearSelection()
         self.scene.addItem(item)
+        self._outline_plot_paper(item)
         self._svg_plot_items.append(item)
         self._layout_items.append(item)
         item.setPos(position)
