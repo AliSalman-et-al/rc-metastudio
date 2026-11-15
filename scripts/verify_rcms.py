@@ -31,6 +31,7 @@ SCENARIOS = (
     "review1-design",
     "ui-fine-tuning",
     "ui-fable-polish",
+    "ui-design-direction",
     "review-workflows",
     "subgroup-image",
     "subgroup-image-dark-large",
@@ -136,7 +137,7 @@ def write_manifest(evidence: Path, record: dict[str, object]) -> None:
 
 
 def _scenario_timeout(scenario: str) -> int:
-    if scenario == "ui-fine-tuning":
+    if scenario in {"ui-fine-tuning", "ui-design-direction"}:
         return 240
     if scenario == "ui-crawl":
         return 600

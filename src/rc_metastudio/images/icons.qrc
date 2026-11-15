@@ -14,6 +14,11 @@
     <file alias="calculator.svg">icons/actions/calculator.svg</file>
     <file alias="confidence-level.svg">icons/actions/confidence-level.svg</file>
     <file alias="copy.svg">icons/actions/copy.svg</file>
+    <file alias="export.svg">icons/actions/export.svg</file>
+    <file alias="edit-plot.svg">icons/actions/edit-plot.svg</file>
+    <file alias="settings.svg">icons/actions/settings.svg</file>
+    <file alias="fit-page.svg">icons/actions/fit-page.svg</file>
+    <file alias="fit-width.svg">icons/actions/fit-width.svg</file>
     <file alias="edit-dataset.svg">icons/actions/edit-dataset.svg</file>
     <file alias="import-csv.svg">icons/actions/import-csv.svg</file>
     <file alias="navigation-down.svg">icons/actions/navigation-down.svg</file>

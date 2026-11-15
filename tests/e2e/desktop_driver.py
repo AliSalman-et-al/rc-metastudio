@@ -263,12 +263,18 @@ def doctor(app, window):
     record_step("ready", window, runtime=identity)
 
 
-def analyze(app, window, method, *, digits=3, confidence=None):
+def analyze(app, window, method, *, digits=3, confidence=None, via_shortcut=False):
     from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
 
     assert window.action_go.isEnabled()
     record_step("analysis-action", window, method=method)
-    window.action_go.trigger()
+    if via_shortcut:
+        window.activateWindow()
+        window.tableView.setFocus()
+        cast(Callable[[int], None], QTest.qWait)(100)
+        key_click(window, QtCore.Qt.Key.Key_R, QtCore.Qt.KeyboardModifier.ControlModifier)
+    else:
+        window.action_go.trigger()
     app.processEvents()
     if window.model.get_current_data_type() == "diagnostic":
         metrics = next(
@@ -339,7 +345,10 @@ def analyze(app, window, method, *, digits=3, confidence=None):
     if selected is not None and not view.report_action.isChecked():
         viewport = required(view.graphics_view.viewport(), "figure viewport")
         plot_width = selected[1].sceneBoundingRect().width() * view.graphics_view.transform().m11()
-        assert plot_width >= viewport.width() * .9, (plot_width, viewport.width(), view.zoom_control.value())
+        intrinsic_width = selected[1].boundingRect().width()
+        record_step('analysis-initial-fit', view, width=plot_width, viewport=viewport.width(), zoom=view.zoom_control.value())
+        assert view.zoom_control.value() <= 100, view.zoom_control.value()
+        assert plot_width >= min(intrinsic_width, viewport.width()) * .9, (plot_width, intrinsic_width, viewport.width(), view.zoom_control.value())
     if selected is not None and not view.report_action.isChecked():
         original_zoom = view.zoom_control.value()
         view.zoom_control.setValue(original_zoom + 50)
@@ -2483,6 +2492,10 @@ try:
         run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario == "ui-fable-polish":
         from tests.e2e.ui_fable_polish import run
+        run(app, window, WORK, ROOT, record_step, analyze)
+    elif scenario == "ui-design-direction":
+        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
+        from tests.e2e.ui_design_direction import run
         run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario == "review1-design":
         sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))

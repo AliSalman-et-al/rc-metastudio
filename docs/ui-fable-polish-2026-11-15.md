@@ -152,3 +152,19 @@ observer rejected intentional nonbreaking whitespace; it now normalizes only
 that layout character, preserving all digits and punctuation. The original
 failed output is retained. The existing GUI/quantity suite passed 78 checks.
 No statistical oracle or tolerance changed.
+
+### Results workspace and zoom
+
+Results now has one icon toolbar with grouped copy/export, edit/settings and zoom
+actions. Figures lead the resizable navigation pane. The executed analysis
+identity stays above the content stack when scrolling or zooming. Fit page
+(Ctrl+0), Fit width (Ctrl+Shift+0), edit and zoom keys are discoverable; automatic
+forest scaling caps at 100% before the existing readable-text floor.
+
+Strict win32 typing passed (`typing/20261115T224359-e64e8d74`). The focused GUI
+suite passed 134 checks. The complete native `ui-design-direction` drive passed
+at `rcms/20261115T174400Z-2f93304b-ui-design-direction`, including actual keyboard
+analysis, Fit page and plot editing, ratio round trips, status expiry and report
+number retention. Visually inspected `12-0-direction-results-first-display.png`: 
+all plot labels fit at 100%, with fixed context and the grouped toolbar visible.
+Final frozen qualification remains pending.

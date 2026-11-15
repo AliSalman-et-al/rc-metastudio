@@ -27,7 +27,7 @@ def run(app, window, root, record, analyze):
 
     assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
     view = analyze(app, window, "binary.random")
-    assert not hasattr(view, "identity_label")
+    assert view.result_identity.isVisible()
     assert view.windowTitle() == "clinical failure — Meta-analysis"
     report = view.report_text.toPlainText()
     from tests.e2e.report_retention import assert_report

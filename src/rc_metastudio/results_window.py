@@ -11,6 +11,7 @@ from html import escape
 from pathlib import Path
 from rc_metastudio.svg_rendering import svg_bytes_for_qt
 from rc_metastudio.result_formatting import numeric_cell as _numeric_cell, numeric_columns
+from rc_metastudio import qt_layout
 from collections import Counter, namedtuple
 from dataclasses import replace
 from types import MappingProxyType
@@ -24,12 +25,14 @@ from PyQt6.QtCore import (
     QTimer,
     QSignalBlocker,
     Qt,
+    QSize,
 )
 from PyQt6.QtGui import (
     QAction,
     QCloseEvent,
     QFont,
     QFontMetrics,
+    QIcon,
     QImage,
     QPainter,
     QPixmap,
@@ -60,6 +63,7 @@ from PyQt6.QtWidgets import (
     QTableWidgetItem,
     QWidget,
     QVBoxLayout,
+    QHBoxLayout,
     QToolBar,
     QAbstractItemView,
 )
@@ -373,17 +377,18 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         entries = [("Manuscript", "manuscript"), ("Text report", ""), ("Tables", None)]
         if self.results.details:
             entries.append(("Settings", "model-configuration"))
-        for index, (title, anchor) in enumerate(entries):
+        for title, anchor in entries:
             item = QTreeWidgetItem([title])
-            if title == "Settings":
-                index = 2 + sum(section.kind == "text" and section.source_key != "Weights" and section.semantic_id != "text:references" for section in self.results.sections)
-            self.nav_tree.insertTopLevelItem(index, item)
+            self.nav_tree.addTopLevelItem(item)
             item.setToolTip(0, "Read the report" if title == "Text report" else "Copy or export numerical tables" if title == "Tables" else "Inspect the executed model and settings")
             item.setDisabled(title == "Tables" and not self._report_tables)
             self._report_nav_anchors[id(item)] = anchor
         self.nav_tree.currentItemChanged.connect(lambda item, _previous: self.item_clicked(item, 0) if item is not None else None)
-        self.nav_tree.resizeColumnToContents(0)
-        self.nav_tree.setFixedWidth(self.nav_tree.sizeHintForColumn(0) + 12)
+        self.nav_tree.setMinimumWidth(min(self.nav_tree.sizeHintForColumn(0) + 12, self.fontMetrics().height() * 12))
+        required(self.nav_tree.header(), "Results navigation header").setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.nav_tree.setTextElideMode(Qt.TextElideMode.ElideMiddle)
+        self.nav_tree.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.nav_tree.setRootIsDecorated(False)
         self._show_initial_result()
 
     def _show_initial_result(self):
@@ -405,10 +410,25 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         identity = self.results.identity or "Analysis results"
         parent = self.parent()
         self._source_sheet = model.current_sheet if (model := getattr(parent, "model", None)) is not None else None
-        sheet_name = self._source_sheet.name if self._source_sheet else "Results"
-        self.setWindowTitle(sheet_name + " — " + identity.split(" — ")[0])
-        self.verticalLayout.setContentsMargins(6, 6, 6, 6)
-        self.verticalLayout.setSpacing(4)
+        self.setWindowTitle(identity.splitlines()[0])
+        first, *rest = identity.partition(" — ")[2].splitlines() if " — " in identity else identity.splitlines()
+        name, separator, description = first.partition(" · ")
+        details = [description] if separator else []
+        details.extend(line for line in rest if line)
+        study_count = dict(self.results.manuscript_model_info).get('Studies (k)')
+        if study_count:
+            details.append('k = ' + study_count)
+        details.extend(line.split(': ', 1)[1] for line in self.results.details.splitlines()
+                       if line.startswith(('Model: ', 'Estimator: ', 'Confidence level: ')))
+        self.result_identity.setText('<b>' + escape(name[:1].upper() + name[1:]) + '</b>'
+                                     + ('  ·  ' + escape('  ·  '.join(details)) if details else ''))
+        self.result_identity.setToolTip(identity + '\n' + self.results.details)
+        page_margin = round(self.fontMetrics().height() * 1.5)
+        self.result_identity.setContentsMargins(page_margin, 0, page_margin, 0)
+        self.results_body_layout.setSpacing(round(self.fontMetrics().height() * .5))
+        margin = round(self.fontMetrics().height() * .75)
+        self.verticalLayout.setContentsMargins(margin, margin, margin, margin)
+        self.verticalLayout.setSpacing(round(self.fontMetrics().height() * .5))
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
 
     def _setup_manuscript_page(self):
@@ -416,13 +436,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.manuscript = ManuscriptReport.from_result(self.results)
         self.manuscript_page = QWidget(self.content_stack)
         layout = QVBoxLayout(self.manuscript_page)
-        actions = QToolBar("Manuscript text", self.manuscript_page)
-        actions.setMovable(False)
-        for name, text in (("Methods", self.manuscript.methods), ("Results", self.manuscript.results)):
-            action = QAction('Copy ' + name, actions)
-            action.triggered.connect(lambda checked=False, value=text: required(QApplication.clipboard(), "clipboard").setText(value))
-            actions.addAction(action)
-        layout.addWidget(actions)
         self.manuscript_text = QTextBrowser(self.manuscript_page)
         self._manuscript_base_font = QFont(self.font())
         self._manuscript_base_font.setPointSizeF(max(11.0, self.font().pointSizeF()))
@@ -507,7 +520,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         for section in self.manuscript.sections:
             for table in section.tables:
                 self.table_selector.addItem(_report_heading(table.title if table.title == section.title or section.title.endswith(("Summary", "summary")) else section.title + " — " + table.title))
-        layout.addWidget(self.table_selector)
+        self.table_selector.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
+        self.table_selector.setMinimumWidth(0)
+        self.table_header_layout = QHBoxLayout()
+        self.table_header_layout.addWidget(self.table_selector)
+        self.table_header_layout.addStretch()
+        layout.addLayout(self.table_header_layout)
         self.result_table = QTableWidget(self.tables_page)
         self.result_table.setTabKeyNavigation(False)
         self.result_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -524,9 +542,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.result_table.setAccessibleDescription("Read-only result cells with column headers. Ctrl+C copies selected cells, or the entire table when no cells are selected. Tab moves to the next control.")
         required(self.result_table.verticalHeader(), "result table row header").hide()
         layout.addWidget(self.result_table)
-        controls = self.table_controls = QToolBar("Table actions", self.tables_page)
-        controls.setMovable(False)
-        controls.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
         self.copy_table_action = QAction("Copy table", self)
         self.copy_table_action.triggered.connect(self._copy_table)
         copy_shortcut = QAction(self.result_table)
@@ -538,9 +553,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.export_table_action.triggered.connect(app_error_handler.safe_slot(self._export_table, parent=self))
         self.export_values_action = QAction("Export values CSV…", self)
         self.export_values_action.triggered.connect(app_error_handler.safe_slot(self._export_values, parent=self))
-        for action in (self.copy_table_action, self.export_table_action, self.export_values_action):
-            controls.addAction(action)
-        layout.addWidget(controls)
+        for action in (self.export_table_action, self.export_values_action):
+            action.setIcon(QIcon(':/icons/actions/export.svg'))
+            button = QToolButton(self.tables_page)
+            button.setDefaultAction(action)
+            button.setAutoRaise(True)
+            button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+            self.table_header_layout.addWidget(button)
         layout.addStretch()
         self.table_selector.currentIndexChanged.connect(self._select_result_table)
         self.content_stack.addWidget(self.tables_page)
@@ -691,6 +710,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _setup_results_actions(self):
         toolbar = required(self.addToolBar("Results actions"), "results toolbar")
         toolbar.setMovable(False)
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         self.report_action = QAction("Text report", self)
         self.report_action.setCheckable(True)
         self.report_action.setShortcut("Ctrl+T")
@@ -701,14 +721,34 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.tables_action.setEnabled(bool(self._report_tables))
         self.tables_action.triggered.connect(self._show_tables)
         self.copy_report_action = QAction("Copy report", self)
+        self.copy_report_action.setIcon(QIcon(':/icons/actions/copy.svg'))
         self.copy_report_action.setShortcut("Ctrl+Shift+C")
         self.copy_report_action.triggered.connect(self._copy_report)
-        toolbar.addAction(self.copy_report_action)
+        self.copy_menu = QMenu(self)
+        self.copy_menu.addAction(self.copy_report_action)
+        for name, text in (("Methods", self.manuscript.methods), ("Results", self.manuscript.results)):
+            action = self.copy_menu.addAction('Copy ' + name)
+            required(action, 'copy manuscript action').triggered.connect(
+                lambda checked=False, text=text: required(QApplication.clipboard(), 'clipboard').setText(text))
+            required(action, 'copy manuscript action').setEnabled(bool(text))
+        self.copy_menu.addSeparator()
+        self.copy_menu.addAction(self.copy_table_action)
+        self.copy_menu.aboutToShow.connect(lambda: self.copy_table_action.setVisible(
+            self.content_stack.currentWidget() is self.tables_page))
+        self.copy_button = QToolButton(toolbar)
+        self.copy_button.setDefaultAction(self.copy_report_action)
+        self.copy_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.copy_button.setPopupMode(QToolButton.ToolButtonPopupMode.MenuButtonPopup)
+        self.copy_button.setMenu(self.copy_menu)
+        toolbar.addWidget(self.copy_button)
         self.export_report_action = QAction("Export report…", self)
+        self.export_report_action.setIcon(QIcon(':/icons/actions/export.svg'))
         self.export_report_action.setShortcut("Ctrl+Shift+S")
         self.export_report_action.triggered.connect(app_error_handler.safe_slot(self._export_report, parent=self))
         toolbar.addAction(self.export_report_action)
         self.export_plot_action = QAction("Export plot…", self)
+        self.export_plot_action.setIcon(QIcon(':/icons/actions/export.svg'))
+        self.export_plot_action.setToolTip("Select a plot to export (Ctrl+Shift+E)")
         self.export_plot_action.setShortcut("Ctrl+Shift+E")
         self.export_plot_action.setEnabled(False)
         self.export_plot_action.triggered.connect(app_error_handler.safe_slot(self._export_selected_plot, parent=self))
@@ -718,18 +758,24 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.export_format_control.setToolTip("Export format; remembered for your next plot and analysis.")
         self.export_format_control.currentIndexChanged.connect(lambda _index: save_plot_export_format(self.export_format_control.currentData()) if self.export_format_control.currentData() else None)
         toolbar.addWidget(self.export_format_control)
+        toolbar.addSeparator()
         self.edit_plot_action = QAction("Edit plot…", self)
+        self.edit_plot_action.setIcon(QIcon(':/icons/actions/edit-plot.svg'))
+        self.edit_plot_action.setShortcut('Ctrl+E')
+        self.edit_plot_action.setToolTip('Select a plot to edit (Ctrl+E)')
         self.edit_plot_action.setEnabled(False)
         self.edit_plot_action.triggered.connect(app_error_handler.safe_slot(self._edit_selected_plot, parent=self))
         toolbar.addAction(self.edit_plot_action)
         self.change_settings_action = QAction("Change settings…", self)
+        self.change_settings_action.setIcon(QIcon(':/icons/actions/settings.svg'))
+        self.change_settings_action.setShortcut('Ctrl+Shift+R')
         self.change_settings_action.setEnabled(self._change_settings is not None)
-        self.change_settings_action.setToolTip("Re-run this analysis with its original dataset and changed settings.")
+        self.change_settings_action.setToolTip("Re-run this analysis with its original dataset and changed settings (Ctrl+Shift+R)." if self._change_settings else "This analysis cannot be re-run from here.")
         if self._change_settings is not None:
             self.change_settings_action.triggered.connect(app_error_handler.safe_slot(self._change_analysis_settings, parent=self))
         toolbar.addAction(self.change_settings_action)
         toolbar.addSeparator()
-        toolbar.addWidget(QLabel("Zoom:", self))
+        toolbar.addWidget(QLabel("Zoom", self))
         self.zoom_control = QSpinBox(self)
         self.zoom_control.setAccessibleName("Result zoom")
         self.zoom_control.setRange(10, 400)
@@ -738,9 +784,31 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.zoom_control.setValue(100)
         self.zoom_control.valueChanged.connect(self._set_zoom)
         toolbar.addWidget(self.zoom_control)
+        self.fit_page_action = QAction(QIcon(':/icons/actions/fit-page.svg'), 'Fit page', self)
+        self.fit_page_action.setShortcut('Ctrl+0')
+        self.fit_page_action.setToolTip('Fit the plot while keeping text readable (Ctrl+0)')
+        self.fit_page_action.triggered.connect(self._fit_page)
+        toolbar.addAction(self.fit_page_action)
         self.fit_width_action = QAction("Fit width", self)
+        self.fit_width_action.setIcon(QIcon(':/icons/actions/fit-width.svg'))
+        self.fit_width_action.setShortcut('Ctrl+Shift+0')
+        self.fit_width_action.setToolTip('Fill the available plot width (Ctrl+Shift+0)')
         self.fit_width_action.triggered.connect(self._fit_width)
         toolbar.addAction(self.fit_width_action)
+        self.fit_width_action.changed.connect(lambda: self.fit_page_action.setEnabled(self.fit_width_action.isEnabled()))
+        self.zoom_actions = []
+        for text, shortcut, delta in (('Zoom in', 'Ctrl+=', 25), ('Zoom out', 'Ctrl+-', -25)):
+            action = QAction(text, self)
+            action.setShortcut(shortcut)
+            action.triggered.connect(lambda checked=False, delta=delta: self.zoom_control.setValue(self.zoom_control.value() + delta) if self.zoom_control.isEnabled() else None)
+            self.addAction(action)
+            self.zoom_actions.append(action)
+        qt_layout.configure_main_toolbar(toolbar)
+        self.copy_button.setIconSize(QSize(qt_layout.TOOLBAR_ICON_EXTENT, qt_layout.TOOLBAR_ICON_EXTENT))
+        for action in (self.fit_page_action, self.fit_width_action):
+            button = toolbar.widgetForAction(action)
+            if isinstance(button, QToolButton):
+                button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
         for button in toolbar.findChildren(QToolButton):
             action = button.defaultAction()
             if action is not None:
@@ -751,8 +819,17 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.setTabOrder(self.table_selector, self.result_table)
         self.setTabOrder(self.result_table, self.nav_tree)
         menu = self.menubar.addMenu("&Results")
-        for action in (self.report_action, self.tables_action, self.copy_report_action, self.export_report_action, self.export_plot_action, self.edit_plot_action, self.change_settings_action, self.fit_width_action):
+        for action in (self.report_action, self.tables_action, self.copy_report_action, self.export_report_action, self.export_plot_action, self.edit_plot_action, self.change_settings_action, self.fit_page_action, self.fit_width_action):
             required(menu, "Results menu").addAction(action)
+        required(menu, "Results menu").addSeparator()
+        required(menu, "Results menu").addActions(self.zoom_actions)
+
+    def _fit_page(self):
+        if self.content_stack.currentWidget() is not self.figure_page:
+            return
+        self._explicit_fit_width = False
+        self._fit_width_active = True
+        self._apply_fit_width()
 
     def _fit_width(self):
         if self.content_stack.currentWidget() is not self.figure_page:
@@ -1009,6 +1086,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _automatic_plot_scale(self, item, target_scale, height, body_pixels):
         if self._explicit_fit_width:
             return target_scale
+        target_scale = min(target_scale, 1.0)
         kind = item.data(0)
         if kind and not str(kind).endswith('forest'):
             index = self._layout_items.index(item) if item in self._layout_items else len(self._layout_items)
