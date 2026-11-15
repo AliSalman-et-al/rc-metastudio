@@ -6,7 +6,7 @@ from math import ceil
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import Qt, QUrl, QEvent, QTimer
-from PyQt6.QtGui import QPalette, QPainter
+from PyQt6.QtGui import QPalette
 from PyQt6.QtGui import QPixmap, QRegion, QTextDocument
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox
 
@@ -85,11 +85,6 @@ class AboutLegalDialog(QDialog, _ui_about_legal.Ui_AboutLegalDialog):
         ratio = self.devicePixelRatioF()
         logo = logo.scaledToWidth(round(260 * ratio), Qt.TransformationMode.SmoothTransformation)
         logo.setDevicePixelRatio(ratio)
-        if browser.palette().color(QPalette.ColorRole.Base).lightness() < 128:
-            painter = QPainter(logo)
-            painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceIn)
-            painter.fillRect(logo.rect(), browser.palette().color(QPalette.ColorRole.Text))
-            painter.end()
         required(browser.document(), "About document").addResource(
             QTextDocument.ResourceType.ImageResource, QUrl("rcms:about-logo"), logo)
         color = qt_layout.readable_link_color(browser.palette()).name()
