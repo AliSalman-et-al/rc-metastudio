@@ -5,7 +5,7 @@
 from rc_metastudio.qt_layout import DisclosureButton, style_inline_error
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QResizeEvent, QKeyEvent, QCloseEvent, QColor, QHideEvent, QShowEvent
+from PyQt6.QtGui import QResizeEvent, QCloseEvent, QColor, QHideEvent, QShowEvent
 from PyQt6.QtWidgets import (
     QComboBox,
     QCheckBox,

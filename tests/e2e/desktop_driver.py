@@ -1761,7 +1761,11 @@ def small_study_effects(app, window):
     assert selected is not None
     figure_width = selected[1].sceneBoundingRect().width() * view.graphics_view.transform().m11()
     viewport_width = view.graphics_view.viewport().width()
-    assert figure_width >= viewport_width * .90, (figure_width, viewport_width)
+    body_px = selected[1].data(1) * selected[1].scale()
+    assert body_px >= 12, body_px
+    if body_px > 12.01:
+        assert figure_width <= viewport_width, (figure_width, viewport_width)
+        assert selected[1].sceneBoundingRect().height() < view.graphics_view.viewport().height()
     assert view._figure_zoom_percent >= 50, view._figure_zoom_percent
     assert all(item.textWidth() >= viewport_width * .90 for item in view._wrapped_text_items)
     assert view.results.images, dict(view.texts)
@@ -2445,6 +2449,10 @@ try:
         run(app, window, WORK, record_step, scenario)
     elif scenario == "analysis-dialog":
         analysis_dialog(app, window)
+    elif scenario == "ui-fine-tuning":
+        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
+        from tests.e2e.ui_fine_tuning import run
+        run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario == "review1-design":
         sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
         from tests.e2e.desktop_navigation_workflows import run

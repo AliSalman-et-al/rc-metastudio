@@ -181,16 +181,12 @@ def _held_section_content(section):
 
 def _held_sections(result):
     sections = []
-    full_rows = []
     for section in result.sections:
         if section.kind != 'text':
             continue
         tables, paragraphs = _held_section_content(section)
-        for table in tables:
-            full_rows.extend((table.title, '\n'.join((f'{h}: {v}' if h else v) for h, v in zip(table.headers, row))) for row in table.rows)
-        sections.append(replace(section, title='Supplementary details', value='', paragraphs=paragraphs, tables=()))
-    if full_rows:
-        sections.insert(0, replace(sections[0], source_key='', paragraphs=(), tables=(ResultTable('Detailed results', ('Source', 'Results'), tuple(full_rows)),)))
+        sections.append(replace(section, title='Supplementary details', value='',
+                                paragraphs=tuple(note for note in paragraphs if 'prediction' not in note.casefold()), tables=tables))
     return sections
 
 
@@ -407,10 +403,6 @@ def _report_sections(result, summary, methods):
         if section.kind != 'text':
             continue
         overall, calculation = _section_statistics(section)
-        for note in section.paragraphs:
-            if 'prediction' in note.casefold():
-                summary.append(note)
-                fit.append(('Prediction interval note (' + section.title + ')', note))
         for table in section.tables:
             level, statistic = _report_table(result, section, table, summary, pooled, fit, level, statistic, overall, calculation, methods)
     return _primary_sections(result, text_sections, pooled, fit, level, statistic), _held_sections(result)
@@ -418,17 +410,24 @@ def _report_sections(result, summary, methods):
 
 def _primary_sections(result, text_sections, pooled, fit, level, statistic):
     template = text_sections[0]
+    prediction_notes = {}
+    for section in text_sections:
+        for note in section.paragraphs:
+            if 'prediction' in note.casefold():
+                prediction_notes.setdefault(note, []).append(section.title)
+    notes = tuple((' / '.join(dict.fromkeys(titles)) + ': ' + note) if len(prediction_notes) > 1 else note
+                  for note, titles in prediction_notes.items())
     sections = [replace(template, title='Pooled effect', paragraphs=(() if pooled else
                          ('No structured pooled estimates are available for this workflow; the complete output is in Supplementary details.',)),
                         tables=(ResultTable('Pooled effect', ('Effect', 'Estimate', level, 'SE', 'SE scale', statistic, 'p'), _presentation_rows(pooled, result.manuscript_digits)),)),
-                replace(template, title='Model fit', paragraphs=(),
+                replace(template, title='Model fit', paragraphs=notes,
                         tables=(ResultTable('Model fit', ('Statistic', 'Value'), _presentation_rows(fit, result.manuscript_digits)),)),
                 _study_results(_presentation_result(result), template, level)]
     if not any(section.tables for section in text_sections):
         comparisons = [s for s in text_sections if s.title in ('Pooled comparison', 'Extrapolation') or s.title.startswith('Trim-and-fill')]
         sections[0] = replace(template, title='Pooled effect', paragraphs=('Model comparisons and sensitivity analyses.',),
                               tables=(ResultTable('Pooled effect', ('Analysis', 'Output'), tuple((s.title, s.value) for s in comparisons)),))
-        sections[1] = replace(template, title='Model fit', paragraphs=(),
+        sections[1] = replace(template, title='Model fit', paragraphs=sections[1].paragraphs,
                               tables=(ResultTable('Model fit', ('Statistic', 'Value'), tuple((s.title, _presentation_cell(s.value, result.manuscript_digits)) for s in text_sections if s.title in ('Data and eligibility', 'Tests'))),))
     return [replace(section, tables=tuple(_available_columns(table) for table in section.tables if table.rows)) for section in sections]
 

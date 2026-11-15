@@ -29,6 +29,7 @@ from ratio_workflows import SCENARIOS as RATIO_SCENARIOS
 SCENARIOS = (
     *("audit-round3-" + family for family in ("onearm-proportion", "onearm-mean", "reg-coef", "generic-effect", "twoarm-proportion", "twoarm-mean", "twoarm-smd", "diagnostic", "hr", "irr", "references", "precision", "round5", "bubble-metrics", "irr-context", "arm-names", *("presentation-" + family for family in ("diagnostic", "onearm-proportion", "twoarm-proportion", "twoarm-mean", "twoarm-smd", "reg-coef", "generic-effect", "sequential", "transforms")))),
     "review1-design",
+    "ui-fine-tuning",
     "review-workflows",
     "subgroup-image",
     "subgroup-image-dark-large",
@@ -131,6 +132,8 @@ def write_manifest(evidence: Path, record: dict[str, object]) -> None:
 
 
 def _scenario_timeout(scenario: str) -> int:
+    if scenario == "ui-fine-tuning":
+        return 240
     if scenario == "ui-crawl":
         return 600
     if scenario == "ratios-irr":

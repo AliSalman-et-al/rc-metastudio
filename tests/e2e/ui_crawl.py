@@ -7,7 +7,8 @@ from tests.python.gui.qt_test_support import required, wait
 def analysis_setup(driver, capture, missing):
     from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
     for family, sample in (("binary", "amino"), ("continuous", "continuous"),
-                           ("diagnostic", "lymph"), ("hr", "Pignon2000-HR")):
+                           ("diagnostic", "lymph"), ("hr", "Pignon2000-HR"),
+                           ("irr", "NielWeise2008-IRR")):
         driver.window.workspace.mark_saved()
         assert driver.window.open(str(driver.ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
         kwargs = {"diagnostic_metrics": ["dor"]} if family == "diagnostic" else {}
@@ -272,6 +273,8 @@ def plot_editor(driver, capture, artifact, view, detail, prefix="H"):
     form = kind(view.plot_service.load_params(artifact.params_path), artifact.image_path,
                           parent=view, plot_type=artifact.plot_kind)
     form.show()
+    if isinstance(form, FunnelPlotEditorDialog):
+        assert all(not control.isVisible() for control in (form.path_label, form.path_edit, form.browse_button))
     capture(f"{prefix}-{detail}-top", form)
     for area in form.findChildren(QtWidgets.QScrollArea):
         scrollbar = required(area.verticalScrollBar(), "plot editor scrollbar")
@@ -587,7 +590,53 @@ def dark(driver, capture, missing):
         driver.app.setPalette(original)
 
 
+def structure(driver, capture, missing):
+    from rc_metastudio import main_wizard as wizard
+    from rc_metastudio.edit_name_dialogs import EditArmNameDialog
+    driver.window.workspace.mark_saved()
+    assert driver.window.open(str(driver.ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    table = driver.window.tableView
+    driver.window.model.add_covariate("Dose", "continuous")
+    table.synchronize_column_widths()
+    for detail, column in (("include", 0), ("study", 1), ("arm", driver.window.model.RAW_DATA[0]),
+                           ("effect", driver.window.model.OUTCOMES[0]),
+                           ("covariate", driver.window.model.columnCount() - 1)):
+        table.scrollTo(driver.window.model.index(0, column))
+        driver.app.processEvents()
+        table.header_context_menu(QtCore.QPoint(table.columnViewportPosition(column) + 3, 5))
+        driver.app.processEvents()
+        menu = driver.app.activePopupWidget()
+        assert isinstance(menu, QtWidgets.QMenu), detail
+        capture("A-grid-context-" + detail, menu)
+        menu.close()
+    position = table.visualRect(driver.window.model.index(0, driver.window.model.NAME)).center()
+    event = QtGui.QContextMenuEvent(QtGui.QContextMenuEvent.Reason.Mouse, position,
+                                   required(table.viewport()).mapToGlobal(position))
+    table.contextMenuEvent(event)
+    driver.app.processEvents()
+    menu = driver.app.activePopupWidget()
+    assert isinstance(menu, QtWidgets.QMenu)
+    capture("A-grid-context-row", menu)
+    menu.close()
+    form = EditArmNameDialog(driver.window.model.arm_names[0], parent=driver.window)
+    form.show()
+    capture("D-rename-arm", form)
+    form.close()
+    form = wizard.MainWizard(path="new_dataset", parent=driver.window,
+                             existing_outcome_names=[sheet.name for sheet in driver.window.model.dataset.sheets])
+    form.show()
+    capture("B-add-outcome-data-type", form)
+    types = form.page(wizard.Page_DataType)
+    assert isinstance(types, wizard.DataTypePage)
+    types._button_selected(types._data_type_buttons()[0])
+    form.setStartId(wizard.Page_OutcomeName)
+    form.restart()
+    capture("B-add-outcome-name", form)
+    form.close()
+
+
 def run(driver):
+    import os
     index = driver.EVIDENCE / "ui-crawl-index.md"
     index.write_text("# UI crawl\n\n", encoding="utf-8")
     original_record = driver.record_step
@@ -631,21 +680,40 @@ def run(driver):
         if rendered_page:
             original_record(step, artifacts={"Rendered page": f"{driver.STEP + 1:02d}-0-{step}.png"})
             assert image.save(str(driver.EVIDENCE / f"{driver.STEP:02d}-0-{step}.png"))
+            with index.open("a", encoding="utf-8") as stream:
+                stream.write(f"{driver.STEP:02d}-0-{step}.png | {step} | Rendered page\n")
         else:
-            original_record(step, widget)
+            original_palette = driver.app.palette()
+            original_scheme = driver.app.styleHints().colorScheme()
+            try:
+                themes = (("dark", None),) if step.startswith("J-") else (("light", QtCore.Qt.ColorScheme.Light), ("dark", QtCore.Qt.ColorScheme.Dark))
+                for theme, scheme in themes:
+                    if scheme is not None:
+                        driver.app.styleHints().setColorScheme(scheme)
+                        driver.app.processEvents()
+                    assert (driver.app.palette().color(QtGui.QPalette.ColorRole.Window).lightness() > 128) == (theme == "light"), (step, theme)
+                    themed_step = step + "-" + theme
+                    original_record(themed_step, widget, theme=theme)
+                    with index.open("a", encoding="utf-8") as stream:
+                        stream.write(f"{driver.STEP:02d}-0-{themed_step}.png | {themed_step} | {type(widget).__name__}\n")
+            finally:
+                driver.app.styleHints().setColorScheme(original_scheme)
+                driver.app.setPalette(original_palette)
+                driver.app.processEvents()
         captured.add(step)
-        with index.open("a", encoding="utf-8") as stream:
-            stream.write(f"{driver.STEP:02d}-0-{step}.png | {step} | {type(widget).__name__}\n")
 
+    sections = {"A": shell, "D": dialogs, "J": dark, "E": analysis_setup,
+                "F": results, "G": plots, "B": create_dataset, "C": imports, "S": structure}
+    requested = os.environ.get("RCMS_UI_CRAWL_SECTIONS", ",".join(sections)).split(",")
+    assert set(requested) <= sections.keys(), requested
+    with index.open("a", encoding="utf-8") as stream:
+        stream.write("Sections requested: " + ", ".join(requested) + "\n\n")
     try:
-        shell(driver, capture, missing)
-        dialogs(driver, capture, missing)
-        dark(driver, capture, missing)
-        analysis_setup(driver, capture, missing)
-        results(driver, capture, missing)
-        plots(driver, capture, missing)
-        create_dataset(driver, capture, missing)
-        imports(driver, capture, missing)
+        if "A" in requested:
+            driver.window.start()
+            capture("A-home", driver.window)
+        for key in requested:
+            sections[key](driver, capture, missing)
     finally:
         with index.open("a", encoding="utf-8") as stream:
             stream.write("\nNOT CAPTURED:\n" + "\n".join("- " + item for item in missing) + "\n")

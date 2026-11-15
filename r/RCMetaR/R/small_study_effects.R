@@ -1159,7 +1159,7 @@ publication.bias.effects <- function(om.data, params) {
     run.params$funnel.ylab <- as.character(
         .small.study.plot.setting(params, "funnel.ylab", 1L, .small.study.standard.error.label(params)))
     key <- paste0("small-study.trim-and-fill.", tolower(name))
-    path <- tempfile(pattern="small-study-trimfill-", fileext=".svg")
+    path <- tempfile(pattern="small-study-trimfill-", fileext=".png")
     .small.study.plot.artifact(
         key, name, "trimfill", path, augmented, scenario$fit, run.params,
         paste0(name, " plot"))
@@ -1517,12 +1517,30 @@ rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.p
     keep <- is.finite(y) & is.finite(se) & se > 0
     settings <- .small.study.funnel.settings(params)
     size <- list(width=1000/120, height=800/120, dpi=dpi, bg=settings$background.color)
+    # QtSvg ignores the clipping used by funnel regions. Keep previews and
+    # reports on the clipping-aware raster path; SVG export remains available.
+    png.preview <- identical(rcmetar.plot.file.extension(path), "png")
+    svg.path <- if (png.preview) tempfile(fileext=".svg") else NULL
+    if (png.preview) on.exit(unlink(svg.path), add=TRUE)
     rcmetar.render.plot_file(path, size, function() {
         if (identical(settings$kind, "deeks") && is(om.data, "DiagnosticData"))
             .small.study.draw.deeks(om.data, params, settings, y, se, keep)
         else if (identical(settings$kind, "contour"))
             .small.study.draw.contour.funnel(om.data, res, params, settings, y, se, keep)
         else .small.study.draw.standard.funnel(om.data, res, params, settings, y, se, keep)
-    }, caption=params$plot_caption)
+    }, display.path=svg.path, caption=params$plot_caption)
+    if (png.preview) {
+        document <- xml2::read_xml(svg.path)
+        styles <- xml2::xml_attr(xml2::xml_find_all(document, ".//*[local-name()='text']"), "style")
+        sizes <- suppressWarnings(as.numeric(sub(".*font-size:[[:space:]]*([0-9.]+)px.*", "\\1", styles)))
+        sizes <- sizes[is.finite(sizes) & sizes > 0]
+        if (length(sizes)) {
+            body.size <- as.numeric(names(which.max(table(sizes))))
+            viewbox <- as.numeric(strsplit(xml2::xml_attr(document, "viewBox"), "[[:space:]]+")[[1L]])
+            image <- png::readPNG(path, native=TRUE)
+            png::writePNG(image, path, dpi=dpi,
+                text=c(RCMSBodyTextPx=format(body.size * ncol(image) / viewbox[[3L]], digits=16)))
+        }
+    }
     path
 }

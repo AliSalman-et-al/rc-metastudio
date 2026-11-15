@@ -24,7 +24,7 @@ diagnostic results; hillclimb T5 completes with both manuscript formats.
 Shared report observers compare the complete rows of Pooled effect, Model fit and
 Study results with held inputs, including sequential fit identities and diagnostic
 metric labels. Every original table row is also retained with its complete field labels and
-source section/table identity in the compact Supplementary Detailed results table. Structured notes are retained verbatim as prose beneath their source tables. Prediction-interval notes also accompany the main report prose and Model fit table; the Pooled effect table retains each row's producer SE scale so combined diagnostic metrics remain distinguishable.
+source section/table identity in the original structured Supplementary tables. Structured notes remain prose beneath their source tables; prediction-interval explanations appear once beneath Model fit, outside Results prose and statistic rows. The Pooled effect table retains each row's producer SE scale so combined diagnostic metrics remain distinguishable.
 References are retained as a numbered prose section rather than a table.
 The manuscript export drive checks every prose paragraph in clipboard, PDF and DOCX
 and rejects developer-facing “Held” labels.
@@ -42,6 +42,29 @@ results and writes per-surface before/after loss inventories; each observed repo
 also retains its inputs and exports under the workflow's `report-retention/` folder.
 
 ## Proof conventions
+
+### UI surface inventory
+
+`uv run python scripts/verify_rcms.py ui-crawl --native` records an indexed
+visual inventory of the home/shell, menus, outcome management, calculators,
+analysis setup, results, plot editors, wizards and imports. Ordinary application
+surfaces have native light/dark pairs. Custom-palette J stress views remain dark;
+exported pages are captured independently of the application theme. The strict
+typing gate still precedes GUI work.
+
+`RCMS_UI_CRAWL_SECTIONS` can select sections for a targeted continuation:
+`A,D,J,E,F,G,B,C,S` is the full sequence; `E,S` captures analysis setup and
+current grid/context-menu/Add outcome management. F includes report exports and
+G includes plot editors. The index retains requested sections and missing paths.
+Missing external DOCX rendering (LibreOffice) still fails the completeness gate;
+retained screenshots do not turn that command into a pass. This is a surface
+inventory, not the complete statistical or release qualification matrix.
+
+The 15 November 2026 review bundle and its coverage notes are under
+`artifacts/verification/ui-ux-audit-2026-11-15/`. Its 267 indexed Windows captures
+include IRR setup and a corrected supplemental outcome-management pass. Native
+OS file pickers, external DOCX page rendering, other platforms and exhaustive
+DPI/state combinations remain outside that bundle.
 
 Pair a user action with its observed result and independent side effect. Menu and toolbar items sharing a QAction are separate entry points when a change touches their reachability. The automated scenarios use the handles documented in each feature; do not claim an unexercised shortcut or native picker is covered.
 

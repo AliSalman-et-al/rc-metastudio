@@ -46,8 +46,7 @@ The `subgroup-image` and `subgroup-image-dark-large` drives run meantime by trea
 ## How to get to it (user POV)
 
 - Run an analysis to open the Results window.
-- Results open on the first figure, fitted to the viewport width, or the summary
-when no figure exists. Ctrl+T opens the selectable Text report. Ctrl+C copies
+- Results open on the first figure or the summary when no figure exists. Forest plots fit the viewport width; other vector charts fit the whole plot when that preserves at least 9 pt body text. All funnel families use clipping-aware PNG previews with measured body-text metadata; SVG publication export remains available. This avoids QtSvg ignoring the plot-region clip in the application and manuscript figures. Ctrl+T opens the selectable Text report. Ctrl+C copies
   its selection; Ctrl+Shift+C copies the whole report and Ctrl+Shift+S exports
   it. Select a plot for Export plot (Ctrl+Shift+E), its format selector, or Edit
   plot. Fit width resets manual zoom and horizontal scrolling using the measured

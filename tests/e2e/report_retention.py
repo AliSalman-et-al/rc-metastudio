@@ -249,7 +249,6 @@ def expected_fit(result):
         return tuple((s.title, s.value) for s in result.sections if s.title in ('Data and eligibility', 'Tests'))
     rows = list(result.manuscript_model_info)
     for section in result.sections:
-        rows.extend(('Prediction interval note (' + section.title + ')', note) for note in section.paragraphs if 'prediction' in note.casefold())
         for table in section.tables:
             rows.extend(expected_fit_table(result, section, table))
     return tuple(rows)
@@ -327,11 +326,11 @@ def presentation_rows(rows, digits):
 
 def assert_retained_table(view, section, source):
     title = source.title if section.title == source.title else section.title + ' — ' + source.title
-    tables = [table for table in view._report_tables if table.title == 'Detailed results']
+    tables = [table for s in view.manuscript.sections if s.title == 'Supplementary details'
+              for table in s.tables if table.title == title]
     assert len(tables) == 1, [table.title for table in view._report_tables]
-    expected = tuple((title, '\n'.join(f'{h}: {v}' for h, v in zip(source.headers, row))) for row in source.rows)
-    observed = tuple(row for row in tables[0].rows if row[0] == title)
-    assert observed == expected, (title, observed, expected)
+    assert tables[0].headers == source.headers, title
+    assert tables[0].rows == source.rows, title
     return tables[0]
 
 
@@ -343,7 +342,9 @@ def assert_report(view):
     for section in view.results.sections:
         for note in section.paragraphs:
             if 'prediction' in note.casefold():
-                assert note in view.manuscript.results, (section.title, note)
+                assert note not in view.manuscript.results, (section.title, note)
+                model_fit = next(s for s in view.manuscript.sections if s.title == 'Model fit')
+                assert any(note in paragraph for paragraph in model_fit.paragraphs), (section.title, note)
     structured = any(s.tables for s in view.results.sections)
     expected_rows = expected_pooled(view.results) if structured else tuple(
         (s.title, s.value) for s in view.results.sections
@@ -391,12 +392,9 @@ def assert_report(view):
         assert studies.rows == expected
     for section in view.results.sections:
         for source in section.tables:
-            title = source.title if section.title == source.title else section.title + ' — ' + source.title
-            retained = next(t for t in tables if t.title == 'Detailed results')
-            expected = tuple((title, '\n'.join(f'{h}: {v}' for h, v in zip(source.headers, row))) for row in source.rows)
-            assert tuple(row for row in retained.rows if row[0] == title) == expected, title
+            assert_retained_table(view, section, source)
         if section.tables and section.paragraphs:
-            assert any(s.paragraphs == section.paragraphs for s in view.manuscript.sections
+            assert any(s.paragraphs == tuple(note for note in section.paragraphs if 'prediction' not in note.casefold()) for s in view.manuscript.sections
                        if s.title == 'Supplementary details'), section.title
         if section.kind == 'text' and not section.tables and section.value:
             if section.source_key == 'References':
@@ -408,8 +406,10 @@ def assert_report(view):
                                  for n, line in enumerate(filter(None, section.value.splitlines()), 1))
                 assert references[0].paragraphs == expected
             else:
-                retained = next(t for t in tables if t.title == 'Detailed results')
-                assert tuple(row for row in retained.rows if row[0] == section.title) == tuple((section.title, line) for line in section.value.splitlines())
+                retained = next(t for s in view.manuscript.sections if s.title == 'Supplementary details'
+                                for t in s.tables if t.title == section.title)
+                assert retained.headers == ('',)
+                assert retained.rows == tuple((line,) for line in section.value.splitlines())
     data = capture(view, Path(sys.argv[2]) / 'report-retention')
     assert_exports(view, data)
     document = QTextDocument()

@@ -435,9 +435,27 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         option = manuscript_document.defaultTextOption()
         option.setWrapMode(QTextOption.WrapMode.WordWrap)
         manuscript_document.setDefaultTextOption(option)
-        self.manuscript_text.setHtml((self.manuscript.html() + self.manuscript.html(supplementary=True)).replace('solid black', 'solid ' + self.manuscript_text.palette().color(self.manuscript_text.foregroundRole()).name()).replace(' to ', '\u00a0to\u00a0'))
+        self._refresh_manuscript_theme()
         layout.addWidget(self.manuscript_text)
         self.content_stack.addWidget(self.manuscript_page)
+
+    def _refresh_manuscript_theme(self):
+        scrollbar = required(self.manuscript_text.verticalScrollBar(), "manuscript scrollbar")
+        position = scrollbar.value()
+        color = self.manuscript_text.palette().color(self.manuscript_text.foregroundRole()).name()
+        self.manuscript_text.setHtml((self.manuscript.html() + self.manuscript.html(supplementary=True))
+                                     .replace('solid black', 'solid ' + color).replace(' to ', '\u00a0to\u00a0'))
+        scrollbar.setValue(position)
+
+    def _refresh_theme(self):
+        for item in self._wrapped_text_items:
+            item.setDefaultTextColor(self.palette().color(self.foregroundRole()))
+        self._refresh_manuscript_theme()
+
+    def changeEvent(self, event: QEvent | None) -> None:
+        super().changeEvent(event)
+        if event is not None and event.type() in (QEvent.Type.PaletteChange, QEvent.Type.ApplicationPaletteChange) and hasattr(self, "manuscript_text"):
+            QTimer.singleShot(0, self._refresh_theme)
 
     def _setup_report_document(self):
         self.report_text = QTextBrowser(self.content_stack)
@@ -545,6 +563,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 if _numeric_cell(cell):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
                 self.result_table.setItem(row_index, column_index, item)
+        header_font = QFont(self.result_table.font())
+        header_font.setBold(True)
+        required(self.result_table.horizontalHeader(), "result table header").setFont(header_font)
+        for column_index in range(len(table.headers)):
+            values = [row[column_index] for row in table.rows if row[column_index] not in ('', '—', 'NA')]
+            alignment = Qt.AlignmentFlag.AlignRight if values and all(_numeric_cell(value) for value in values) else Qt.AlignmentFlag.AlignLeft
+            required(self.result_table.horizontalHeaderItem(column_index), "result column header").setTextAlignment(alignment | Qt.AlignmentFlag.AlignVCenter)
         self._size_result_table_columns()
 
     def _size_result_table_columns(self):
@@ -563,7 +588,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             for column, item in enumerate(headers):
                 minimum = max(
                     header.minimumSectionSize(),
-                    max(metrics.horizontalAdvance(line) for line in required(item, "table header").text().splitlines()) + 8,
+                    max((metrics.horizontalAdvance(line) for line in required(item, "table header").text().splitlines()), default=0) + 8,
                     table.sizeHintForColumn(column),
                 )
                 for row in range(table.rowCount()):
@@ -575,12 +600,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     minimum = max(minimum, max((cell_metrics.horizontalAdvance(line)
                                                for line in cell.text().splitlines()), default=0) + 8)
                 minimums.append(minimum)
-            spare, remainder = divmod(max(0, required(table.viewport(), "table viewport").width() - sum(minimums)), count)
             for column, minimum in enumerate(minimums):
-                table.setColumnWidth(column, minimum + spare + (column < remainder))
+                table.setColumnWidth(column, minimum + 16)
             table.resizeRowsToContents()
             scrollbar_height = (required(table.horizontalScrollBar(), "table scrollbar").sizeHint().height()
-                                if sum(minimums) > required(table.viewport(), "table viewport").width() else 0)
+                                if sum(table.columnWidth(column) for column in range(count)) > required(table.viewport(), "table viewport").width() else 0)
             table.setMaximumHeight(header.sizeHint().height()
                                    + sum(table.rowHeight(row) for row in range(table.rowCount()))
                                    + 2 * table.frameWidth() + scrollbar_height)
@@ -942,13 +966,26 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         renderer = svg_item.renderer()
         text_size = renderer.property("body_text_size")
         text_pixels = text_size * item_width / renderer.viewBoxF().width() if text_size else 0
-        if not self._explicit_fit_width and text_pixels:
-            # Automatic sizing preserves 9 pt body text; explicit Fit width may shrink it.
-            target_scale = max(target_scale, math.nextafter(9 * 96 / 72 / text_pixels, math.inf))
-            scaled_width, scaled_height = item_width * target_scale, item_height * target_scale
+        target_scale = self._automatic_plot_scale(svg_item, target_scale, item_height, text_pixels)
+        scaled_width, scaled_height = item_width * target_scale, item_height * target_scale
         if target_scale != svg_item.scale():
             svg_item.setScale(target_scale)
         return scaled_width, scaled_height
+
+    def _automatic_plot_scale(self, item, target_scale, height, body_pixels):
+        if self._explicit_fit_width:
+            return target_scale
+        kind = item.data(0)
+        if kind and not str(kind).endswith('forest'):
+            index = self._layout_items.index(item) if item in self._layout_items else len(self._layout_items)
+            heading = self._layout_items[index - 1] if index else None
+            heading_height = heading.boundingRect().height() if isinstance(heading, QGraphicsTextItem) else 0
+            available = self.graphics_view.maximumViewportSize().height() - heading_height - SECTION_SPACING - 2 * padding
+            target_scale = min(target_scale, max(1, available) / height)
+        if body_pixels:
+            # Preview metadata measures the rendered text, including raster funnels.
+            target_scale = max(target_scale, math.nextafter(12 / body_pixels, math.inf))
+        return target_scale
 
     def _plot_viewport_width(self):
         viewport_width = self._layout_viewport_width()
@@ -969,6 +1006,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def add_title(self, title):
         text = QGraphicsTextItem(str(title))
+        text.setDefaultTextColor(self.palette().color(self.foregroundRole()))
         title_font = QFont(self.font())
         title_font.setBold(True)
         text.setFont(title_font)
@@ -1178,7 +1216,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 logical_width, logical_height
             )
             item.setPixmap(source)
-            item.setScale(float(scaled_width) / float(logical_width) if self._fit_width_active else 1)
+            scale = self._automatic_plot_scale(item, float(scaled_width) / float(logical_width), logical_height, item.data(1) or 0)
+            item.setScale(scale if self._fit_width_active else 1)
 
     def _relayout_sections(self):
         """Place every result item from its current measured size and stored order."""
@@ -1256,6 +1295,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     ):
         artifact = self.create_plot_artifact(title, image_path, params_path=params_path)
         item = ResponsivePixmapItem(QPixmap(image_path))
+        item.setData(0, artifact.plot_kind)
+        item.setData(1, float(QImage(image_path).text("RCMSBodyTextPx") or 0))
         item.source_path = image_path
         item.setPixmap(pixmap)
         item.setToolTip(
@@ -1309,6 +1350,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if not renderer.isValid():
             return None
         item = _svg_item_class()()
+        item.setData(0, artifact.plot_kind)
         item.setSharedRenderer(renderer)
 
         item.setToolTip(
@@ -1564,6 +1606,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 source_pixmap = QPixmap(outpath)
                 if not source_pixmap.isNull():
                     plot_item.replace_source(source_pixmap)
+                    plot_item.setData(1, float(QImage(outpath).text("RCMSBodyTextPx") or 0))
                     plot_item.source_path = outpath
                     self._schedule_viewport_refit()
 

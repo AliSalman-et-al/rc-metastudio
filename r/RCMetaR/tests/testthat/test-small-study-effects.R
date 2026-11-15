@@ -233,6 +233,9 @@ test_that("ordinary and contour funnels persist their prepared geometry", {
     regenerated <- tempfile(fileext=".png")
     expect_true(file.exists(rcmetar.regenerate.small.study.funnel(om.data, res, params, regenerated)))
     expect_gt(file.info(regenerated)$size, 0)
+    preview <- png::readPNG(regenerated, native=TRUE, info=TRUE)
+    text.pixels <- as.numeric(attr(preview, "info")$text[["RCMSBodyTextPx"]])
+    expect_true(is.finite(text.pixels) && text.pixels > 0)
     expect_identical(
       unname(tools::md5sum(regenerated)),
       unname(tools::md5sum(result$images[[title]]))
@@ -675,8 +678,8 @@ test_that("trim-and-fill uses native L0/R0 controls and persists augmented plots
   expect_identical(params$`funnel.index`, 1L)
   load(paste0(path, ".data"))
   load(paste0(path, ".res"))
-  # Compare the persisted vector image with the same export format.
-  regenerated <- tempfile(fileext=".svg")
+  # Compare the persisted raster preview with the same export format.
+  regenerated <- tempfile(fileext=".png")
   expect_true(file.exists(rcmetar.regenerate.small.study.funnel(om.data, res, params, regenerated)))
   expect_gt(file.info(regenerated)$size, 0)
   trimfill.title <- grep("Trim-and-fill", names(result$images), value=TRUE)[[1L]]
