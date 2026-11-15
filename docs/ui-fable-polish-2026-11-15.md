@@ -271,8 +271,9 @@ singular/plural wording. Swatch buttons are bounded to twelve em; setup colour
 fields follow the compact editor layout, and figure captions occupy the regular
 field column. Error Details uses the existing quiet disclosure control.
 
-T13 now has an open Results menu and 900-pixel Results capture in the native
-tour. T18 was explicitly acceptable and not required; the approved icon family
+T13 has an open Results menu. The first purported 900-pixel capture was enlarged
+by the shared tour helper and is not narrow-window proof; see the exact-width
+recovery below. T18 was explicitly acceptable and not required; the approved icon family
 is retained. T7/T8/O1 vocabulary/export-caption changes follow separately.
 
 Strict typing and 146 focused GUI checks passed. Native dialog recovery passed
@@ -307,3 +308,32 @@ tolerances are untouched. The first broad run was interrupted when buffered
 output obscured its progress; its output remains retained. The diagnostic rerun
 completed 892 passing cases and the eleven obsolete assertions. A clean full
 rerun follows these corrections.
+
+### Exact-width review and final logo colour decision — 16 November
+
+The 903-pass Python/GUI rerun and 312-step native tour completed at `3c734637`.
+The full profile passed R CMD check, the 103-case statistical authority matrix,
+both 21-case Reitsma visual runs and all ten R bridge tests. It was stopped before
+source edits after desktop failures and a narrow-window visual review; it did
+not pass. Its transcript and `final-profile-interruption.json` are retained.
+
+A separate native probe asserted actual 900- and 760-pixel widths in both themes
+for figures, tables and manuscript pages. It exposed squeezed toolbar captions.
+Results now preserves whole button labels and uses native overflow. Zoom's label
+and spin control share one layout item so they cannot separate at overflow.
+The native design drive at `20261115T192511Z-2723d645-ui-design-direction` passes,
+including readable button widths, overflow, the identity strip, keyboard plotting,
+precision and report checks. The tour helper now preserves its requested width.
+
+The desktop harness still expected the intentionally removed SE colon and Group
+caption; those exact text expectations now match the approved UI, retaining all
+numerical checks. The compact table check now supplies enough space to prove
+columns do not stretch, then checks that a narrow scrollbar cannot cover the last
+row. Recovery at `20261115T192521Z-c5355117-ui-fine-tuning` passes, including theme
+transitions, inline errors, tables and SVG funnels. Six affected analysis drives
+also passed before the final toolbar grouping. No golden or tolerance changed.
+
+The user's latest instruction supersedes the earlier monochrome dark wordmark:
+About uses the original coloured artwork in both themes. Smooth DPR-aware
+downsampling and the native aspect ratio remain. Fresh colour/DPI captures and
+the final frozen-source qualification follow this change.

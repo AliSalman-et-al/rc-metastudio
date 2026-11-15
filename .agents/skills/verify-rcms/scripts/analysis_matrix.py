@@ -261,7 +261,7 @@ def run(
             participant_arm = window.model.arm_names[0]
             record("onearm-participant-scope", view, report=text, manuscript=manuscript)
             assert "Other group" not in manuscript, manuscript
-            assert f"Group: {participant_arm}" in manuscript, manuscript
+            assert f"Arm: {participant_arm}" in manuscript, manuscript
             if scenario in {"analysis-data-onearm-mean", "analysis-data-onearm-proportion"}:
                 assert re.search(rf"Participants in {re.escape(participant_arm)}\s+135\b", text), text
             else:
@@ -537,9 +537,9 @@ def run(
             assert restored == before, (restored, before)
             for se, readout, shown, contained in observations:
                 assert shown and contained, observations
-                assert readout.startswith(f"SE: {se:.4f}"), observations
+                assert readout.startswith(f"SE {se:.4f}"), observations
                 if se == 0:
-                    assert "Z:" not in readout and "Two-sided P" not in readout, readout
+                    assert "z " not in readout and "two-sided p" not in readout, readout
         workflow = "standard"
         method = family + ".random"
         metrics = ("sens", "spec") if family == "diagnostic" else ()

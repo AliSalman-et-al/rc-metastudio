@@ -132,6 +132,23 @@ def run(app, window, work, root, record, analyze):
         if view.zoom_control.value() > 100:
             failures.append('Automatic first plot zoom exceeds 100%')
         record('direction-results-first-display', view, first=first.text(0), zoom=view.zoom_control.value())
+        view.showNormal()
+        view.resize(760, 700)
+        wait(100)
+        toolbar = view.findChildren(QtWidgets.QToolBar)[0]
+        buttons = [button for button in toolbar.findChildren(QtWidgets.QToolButton)
+                   if button.isVisible() and button.defaultAction() is not None]
+        assert buttons and all(button.width() >= button.sizeHint().width() for button in buttons), [
+            (button.text(), button.width(), button.sizeHint().width()) for button in buttons]
+        overflow = required(toolbar.findChild(QtWidgets.QToolButton, 'qt_toolbar_ext_button'))
+        assert overflow.isVisible(), 'Narrow Results must expose toolbar overflow'
+        zoom_label = next(label for label in toolbar.findChildren(QtWidgets.QLabel) if label.text() == 'Zoom')
+        assert zoom_label.isVisible() == view.zoom_control.isVisible(), 'Zoom label is detached from its control'
+        assert view.result_identity.height() >= view.result_identity.fontMetrics().height(), view.result_identity.geometry()
+        record('direction-results-narrow-toolbar', view, width=view.width(),
+               buttons=[button.text() for button in buttons])
+        view.resize(1280, 800)
+        wait(100)
         if fit_page is not None:
             view.activateWindow()
             view._set_zoom(150)

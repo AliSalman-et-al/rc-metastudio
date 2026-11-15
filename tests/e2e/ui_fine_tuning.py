@@ -199,10 +199,21 @@ def run(app, window, work, root, record, analyze):
         record('polish-supplementary-' + name, view)
         view.tables_action.trigger()
         view.table_selector.setCurrentIndex(0)
+        wait(100)
         table = view.result_table
         assert table.horizontalHeader().font().bold()
+        widths = [table.columnWidth(i) for i in range(table.columnCount())]
+        original_size = view.size()
+        view.resize(max(view.width(), sum(widths) + view.nav_tree.width() + 100), view.height())
+        wait(100)
+        assert widths == [table.columnWidth(i) for i in range(table.columnCount())], 'Result columns stretch with the window'
         assert sum(table.columnWidth(i) for i in range(table.columnCount())) < table.viewport().width(), 'compact summary fills viewport'
         record('polish-tables-' + name, view)
+        view.resize(original_size)
+        wait(100)
+        if table.horizontalScrollBar().isVisible():
+            last = table.model().index(table.rowCount() - 1, 0)
+            assert table.visualRect(last).bottom() < table.viewport().height(), 'Scrollbar covers the last result row'
     view.close()
     from analysis_matrix import run as matrix
     for scenario in ('small-study-binary-extended', 'analysis-amino-binary-subgroup', 'analysis-diagnostic-joint', 'small-study-diagnostic'):

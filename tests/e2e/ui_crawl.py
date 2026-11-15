@@ -666,14 +666,15 @@ def run(driver):
     def capture(step, widget):
         assert step not in captured, step
         rendered_page = isinstance(widget, QtGui.QImage)
+        expected = {"A-grid-1024": QtCore.QSize(1024, 700),
+                    "F-results-narrow": QtCore.QSize(900, 700)}.get(step, QtCore.QSize(1280, 800))
         if not rendered_page and (widget is driver.window or widget.metaObject().className() == "ResultsWindow"):
             widget.showNormal()
-            widget.resize(1024, 700) if step == "A-grid-1024" else widget.resize(1280, 800)
+            widget.resize(expected)
         driver.app.processEvents()
         wait(100)
         if not rendered_page:
             if widget is driver.window or widget.metaObject().className() == "ResultsWindow":
-                expected = QtCore.QSize(1024, 700) if step == "A-grid-1024" else QtCore.QSize(1280, 800)
                 assert widget.size() == expected, (step, widget.size(), expected)
             assert widget.isVisible(), step
         if step == "J-grid-tabs":
