@@ -1,9 +1,8 @@
-"""Match preview pixels and exported marker geometry to an independent fit."""
+"""Match vector preview geometry and exported markers to an independent fit."""
 import re
 import gzip
 import sys
 from pathlib import Path
-from PyQt6.QtGui import QImage
 from typing import cast
 from rpy2.robjects.functions import SignatureTranslatedFunction
 from xml.etree import ElementTree as ET
@@ -33,15 +32,8 @@ def check_trimfill(view, record):
         k0 = int(fit.rx2('k0')[0])
         payload = path.read_bytes()
         root = ET.fromstring(gzip.decompress(payload) if payload.startswith(b'\x1f\x8b') else payload)
-        preview = QImage(image).convertToFormat(QImage.Format.Format_RGBA8888)
-        raster = path.with_suffix('.png')
-        render = cast(SignatureTranslatedFunction, ro.r('function(svg, out, width, height) rsvg::rsvg_png(svg, out, width=width, height=height)'))
-        render(str(path), str(raster), preview.width(), preview.height())
-        reference = QImage(str(raster)).convertToFormat(QImage.Format.Format_RGBA8888)
-        assert preview.size() == reference.size()
-        preview_pixels, reference_pixels = preview.constBits(), reference.constBits()
-        assert preview_pixels is not None and reference_pixels is not None
-        assert preview_pixels.asstring(preview.sizeInBytes()) == reference_pixels.asstring(reference.sizeInBytes()), 'Preview differs from its exported geometry'
+        assert Path(image).suffix == '.svg'
+        assert ET.canonicalize(from_file=image) == ET.canonicalize(from_file=path), 'Preview differs from its exported geometry'
         circles = list(root.iter('{http://www.w3.org/2000/svg}circle'))
         hollow = [node for node in circles if node.attrib.get('fill') == 'none' or 'fill: none' in node.attrib.get('style', '')]
         assert len(observed) == 17, len(observed)
@@ -50,6 +42,6 @@ def check_trimfill(view, record):
         assert len(hollow) == k0, (title, len(hollow), k0)
         assert ('No studies imputed' in ''.join(root.itertext())) == (k0 == 0)
         record('trimfill-marker-count', view, title=title, observed=len(observed), k0=k0,
-               markers=len(circles), hollow=len(hollow), geometry_svg=str(path), preview_pixels_match=True)
+               markers=len(circles), hollow=len(hollow), geometry_svg=str(path), preview_geometry_matches=True)
 
     assert checked == 2, checked

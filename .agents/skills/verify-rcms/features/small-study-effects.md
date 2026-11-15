@@ -20,6 +20,11 @@ Preconditions: doctor passes; `sample_projects/amino.rcms` has sufficient includ
 - **Counts.** The amino configuration asserts 19 included and 17 eligible studies, with an explanation that two studies with no events in either arm are ineligible for odds-ratio asymmetry tests.
 - **Configure.** Run `uv run python scripts/verify_rcms.py small-study-effects`. Trigger `action_publication_bias`; the visible modal is `SmallStudyEffectsDialog`. Enable `ordinary_funnel_check`, record `small-study-configured`, then click the actual OK button.
 - **Observe.** Require the failure label to remain hidden, a Results window with a rendered real funnel, and Harbord or Rücker package-method report text. `small-study-results` preserves the report, original plot paths, and retained artifact paths. Its funnel is copied directly into the evidence directory before R removes its session temporary files.
+- **Vector clipping.** Ordinary, contour, both trim-and-fill scenarios and Deeks
+  must use SVG Results artifacts. `ui-fine-tuning` checks their rendered clipping
+  through both production Qt loaders at two scales. The dedicated
+  [SVG evidence](../../../../docs/funnel-svg-rendering-2026-11-15.md) also covers
+  narrow axes, nonwhite backgrounds and vector-only high-resolution PDF painting.
 - **Extended procedures.** Run `small-study-binary-extended`, `small-study-continuous-extended`, and `small-study-diagnostic`. The continuous fixture duplicates the six sample studies into a controlled 12-study dataset to reach the >=10-study asymmetry threshold; it is not a clinical dataset. These drives require contour/trim-and-fill/extrapolation result sections or Deeks output and hidden or disabled inapplicable diagnostic controls. Supplement with the R numerical/eligibility lane; these UI assertions are not full independent asymmetry numerical proof.
 
 ## Gotchas

@@ -4,6 +4,7 @@ from dataclasses import dataclass, replace
 from decimal import Decimal
 import re
 from rc_metastudio.analysis_results import ResultTable
+from rc_metastudio.svg_rendering import svg_bytes_for_qt
 from html import escape
 import io
 from PyQt6.QtCore import QRectF, Qt
@@ -534,9 +535,9 @@ class ManuscriptReport:
         return ''.join(parts)
 
 
-def figure_source(path):
-    if str(path).lower().endswith('.svg'):
-        svg = QSvgRenderer(str(path))
+def figure_source(path, clip_bounds=None):
+    if str(path).lower().endswith(('.svg', '.svgz')):
+        svg = QSvgRenderer(svg_bytes_for_qt(path, clip_bounds))
         size = svg.defaultSize()
         return svg, size.width() / size.height()
     image = QImage(str(path))
@@ -699,7 +700,16 @@ def write_pdf(report, path):
             painter.save()
             painter.setClipRect(QRectF(0, 0, page.width(), available))
             rect = QRectF((page.width() - w) / 2, -part * available, w, h)
-            paint_figure(painter, source, rect)
+            page_source = source
+            if isinstance(source, QSvgRenderer):
+                # Qt's symbol viewport replaces the painter clip. Intersect the
+                # SVG groups themselves with this page's slice to preserve it.
+                bounds = source.viewBoxF()
+                page_source, _ = figure_source(path_, (
+                    bounds.x(), bounds.y() + part * available * bounds.height() / h,
+                    bounds.width(), min(available, h - part * available) * bounds.height() / h,
+                ))
+            paint_figure(painter, page_source, rect)
             painter.restore()
             painter.save()
             painter.scale(scale, scale)

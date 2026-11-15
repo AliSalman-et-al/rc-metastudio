@@ -20,6 +20,8 @@ for fixtures, starting states, repeat comparison and baseline. This is offscreen
 effort evidence with QAction activations; native menu traversal and human timing
 remain unmeasured. `manuscript-export` verifies PDF/DOCX report export for amino, continuous and
 diagnostic results; hillclimb T5 completes with both manuscript formats.
+`manuscript-split-figure` adds a real 95-study forest, split PDF page renders,
+clear caption bands, vector-only PDF figures and empty-viewport checks.
 
 Shared report observers compare the complete rows of Pooled effect, Model fit and
 Study results with held inputs, including sequential fit identities and diagnostic

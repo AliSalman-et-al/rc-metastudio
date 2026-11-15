@@ -3,13 +3,13 @@
 """Render and export meta-analysis results."""
 
 import textwrap
-import gzip
 import math
 import csv
 import io
 import re
 from html import escape
 from pathlib import Path
+from rc_metastudio.svg_rendering import svg_bytes_for_qt
 from collections import Counter, namedtuple
 from dataclasses import replace
 from types import MappingProxyType
@@ -224,9 +224,7 @@ def _pixmap_with_white_background(pixmap):
 
 
 def _svg_bytes_with_white_background(path):
-    opener = gzip.open if str(path).lower().endswith(".svgz") else open
-    with opener(path, "rb") as svg_file:
-        svg = svg_file.read()
+    svg = svg_bytes_for_qt(path)
     root = re.search(rb"<svg\b[^>]*>", svg, flags=re.IGNORECASE)
     if root is None:
         return svg
@@ -983,7 +981,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             available = self.graphics_view.maximumViewportSize().height() - heading_height - SECTION_SPACING - 2 * padding
             target_scale = min(target_scale, max(1, available) / height)
         if body_pixels:
-            # Preview metadata measures the rendered text, including raster funnels.
+            # Keep measured SVG body text at least 9 pt in automatic fitting.
             target_scale = max(target_scale, math.nextafter(12 / body_pixels, math.inf))
         return target_scale
 
@@ -1216,7 +1214,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 logical_width, logical_height
             )
             item.setPixmap(source)
-            scale = self._automatic_plot_scale(item, float(scaled_width) / float(logical_width), logical_height, item.data(1) or 0)
+            scale = self._automatic_plot_scale(item, float(scaled_width) / float(logical_width), logical_height, 0)
             item.setScale(scale if self._fit_width_active else 1)
 
     def _relayout_sections(self):
@@ -1296,7 +1294,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         artifact = self.create_plot_artifact(title, image_path, params_path=params_path)
         item = ResponsivePixmapItem(QPixmap(image_path))
         item.setData(0, artifact.plot_kind)
-        item.setData(1, float(QImage(image_path).text("RCMSBodyTextPx") or 0))
         item.source_path = image_path
         item.setPixmap(pixmap)
         item.setToolTip(
@@ -1606,7 +1603,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 source_pixmap = QPixmap(outpath)
                 if not source_pixmap.isNull():
                     plot_item.replace_source(source_pixmap)
-                    plot_item.setData(1, float(QImage(outpath).text("RCMSBodyTextPx") or 0))
                     plot_item.source_path = outpath
                     self._schedule_viewport_refit()
 

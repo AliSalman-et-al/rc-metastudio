@@ -12,7 +12,7 @@ commits; publication is outside this change.
 | UI-2 | Prediction-interval explanations appear once beneath Model fit, outside Results prose and statistic rows. Transform caveats remain verbatim. |
 | UI-3 | Funnel-family editors hide internal render paths. Apply/Cancel remain editing operations; user export remains in Results. |
 | UI-4 | Supplementary results preserve original structured tables, complete headers/cells and source titles. References remain prose; unstructured output retains every line. |
-| UI-5 | Non-forest vector plots initially fit both dimensions when that preserves at least 9 pt body text. Forest plots and explicit Fit width keep width fitting. All funnel families use clipping-aware PNG previews; PNG metadata retains measured body-text geometry from the source SVG so the 9 pt floor also applies to these previews. SVG publication export remains available. |
+| UI-5 | Non-forest vector plots initially fit both dimensions when that preserves at least 9 pt body text. Forest plots and explicit Fit width keep width fitting. All funnel families now display SVGs with native Qt vector clipping; the [SVG follow-up](funnel-svg-rendering-2026-11-15.md) supersedes the temporary PNG workaround and its text metadata. |
 | UI-6 | Diagnostic metrics use sentence case and place Next before Cancel. |
 | UI-7 | Plot-editor field labels use consistent punctuation and sentence case. |
 | UI-8 | Results/calculator tables use bold, data-aligned headers. Results columns stay near their contents rather than spreading across the viewport. |

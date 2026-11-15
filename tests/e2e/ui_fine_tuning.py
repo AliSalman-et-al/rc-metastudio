@@ -2,6 +2,7 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 import re
 import gzip
+from pathlib import Path
 from xml.etree import ElementTree as ET
 from tests.python.gui.qt_test_support import wait, mouse_click
 
@@ -28,15 +29,18 @@ def rendered_text(widget, rect):
 
 
 def funnel_clip_evidence(view, artifact, work):
-    svg = work / (artifact.plot_kind + '-clip-reference.svg')
-    view.plot_service.export(regenerator='funnel', params_path=artifact.params_path, output_path=str(svg))
+    from rc_metastudio.results_window import _opaque_svg_renderer
+    from rc_metastudio.manuscript_report import figure_source
+
+    svg = Path(artifact.display_path())
+    assert svg.suffix == '.svg', 'Funnels must use vector Results artifacts'
     payload = svg.read_bytes()
     root = ET.fromstring(gzip.decompress(payload) if payload.startswith(b'\x1f\x8b') else payload)
+    assert not list(root.iter('{http://www.w3.org/2000/svg}image')), 'Embedded raster in funnel SVG'
     rectangles = [node for clip in root.iter('{http://www.w3.org/2000/svg}clipPath')
                   for node in clip if node.tag.endswith('rect')]
     clip = min(rectangles, key=lambda node: float(node.attrib['width']) * float(node.attrib['height']))
     vx, vy, vw, vh = map(float, root.attrib['viewBox'].split())
-    image = QtGui.QImage(artifact.image_path)
     colors = set()
     for node in root.iter():
         match = re.search(r'fill:\s*(#[0-9A-Fa-f]{6})', node.attrib.get('style', ''))
@@ -45,15 +49,36 @@ def funnel_clip_evidence(view, artifact, work):
             channels = color.red(), color.green(), color.blue()
             if min(channels) >= 100 and max(channels) - min(channels) > 2:
                 colors.add(color.rgb())
-    left = (float(clip.attrib['x']) - vx) * image.width() / vw
-    top = (float(clip.attrib['y']) - vy) * image.height() / vh
-    right = left + float(clip.attrib['width']) * image.width() / vw
-    bottom = top + float(clip.attrib['height']) * image.height() / vh
-    outside = sum(image.pixel(x, y) in colors for y in range(image.height()) for x in range(image.width())
-                  if x < left - 2 or x > right + 2 or y < top - 2 or y > bottom + 2)
-    assert outside == 0, (artifact.title, outside, [left, top, right, bottom])
-    return dict(outside_region_pixels=outside, source_pixels=[image.width(), image.height()],
-                plot_clip=[left, top, right, bottom])
+    measurements = []
+    for surface, renderer in [('results', _opaque_svg_renderer(str(svg), None)),
+                              ('manuscript', figure_source(svg)[0])]:
+        assert renderer.isValid()
+        for scale in (1, 2):
+            image = QtGui.QImage(round(vw * scale), round(vh * scale), QtGui.QImage.Format.Format_RGB32)
+            image.fill(QtCore.Qt.GlobalColor.white)
+            painter = QtGui.QPainter(image)
+            renderer.render(painter)
+            painter.end()
+            left = (float(clip.attrib['x']) - vx) * image.width() / vw
+            top = (float(clip.attrib['y']) - vy) * image.height() / vh
+            right = left + float(clip.attrib['width']) * image.width() / vw
+            bottom = top + float(clip.attrib['height']) * image.height() / vh
+            outside = inside = 0
+            for y in range(image.height()):
+                for x in range(image.width()):
+                    if image.pixel(x, y) in colors:
+                        if x < left - 2 or x > right + 2 or y < top - 2 or y > bottom + 2:
+                            outside += 1
+                        else:
+                            inside += 1
+            assert outside == 0, (artifact.title, surface, scale, outside)
+            if colors:
+                assert inside > 1000 * scale * scale, (artifact.title, surface, inside)
+            retained = work / (svg.stem + f'-{surface}-{scale}x.png')
+            assert image.save(str(retained))
+            measurements.append(dict(surface=surface, scale=scale, outside_region_pixels=outside,
+                                     inside_region_pixels=inside, rendered_path=str(retained)))
+    return dict(vector_path=str(svg), measurements=measurements)
 
 
 def run(app, window, work, root, record, analyze):
@@ -217,13 +242,10 @@ def run(app, window, work, root, record, analyze):
                 if text_pt and text_pt > 9.01 and not str(item.data(0)).endswith('forest'):
                     assert rect.height() <= viewport.height() - 20, (nav.text(0), rect, viewport.size())
             else:
-                body_pixels = item.data(1)
-                assert body_pixels and body_pixels > 0
-                text_pt = body_pixels * item.scale() * 72 / 96
-                assert text_pt >= 9
-                if text_pt > 9.01:
-                    assert rect.height() <= viewport.height() - 20
-                artifact = view._nav_plot_artifacts[nav_id]
+                raise AssertionError('Expected a vector plot for ' + nav.text(0))
+            artifact = view._nav_plot_artifacts[nav_id]
+            if artifact.capability.regenerator == 'funnel':
+                assert item in view._svg_plot_items
                 record('polish-funnel-region-clip', view, title=nav.text(0), **funnel_clip_evidence(view, artifact, work))
             record('polish-initial-square-' + scenario, view, title=nav.text(0),
                    plot_bounds=[rect.width(), rect.height()], viewport=[viewport.width(), viewport.height()], body_text_pt=text_pt)

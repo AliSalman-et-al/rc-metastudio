@@ -46,7 +46,7 @@ The `subgroup-image` and `subgroup-image-dark-large` drives run meantime by trea
 ## How to get to it (user POV)
 
 - Run an analysis to open the Results window.
-- Results open on the first figure or the summary when no figure exists. Forest plots fit the viewport width; other vector charts fit the whole plot when that preserves at least 9 pt body text. All funnel families use clipping-aware PNG previews with measured body-text metadata; SVG publication export remains available. This avoids QtSvg ignoring the plot-region clip in the application and manuscript figures. Ctrl+T opens the selectable Text report. Ctrl+C copies
+- Results open on the first figure or the summary when no figure exists. Forest plots fit the viewport width; other vector charts, including every funnel family, fit the whole plot when that preserves at least 9 pt body text. Results and manuscript figures adapt R's rectangular SVG clip groups to symbol viewports in memory, using Qt's native vector clipping. Saved SVG exports keep the original clip paths. Ctrl+T opens the selectable Text report. Ctrl+C copies
   its selection; Ctrl+Shift+C copies the whole report and Ctrl+Shift+S exports
   it. Select a plot for Export plot (Ctrl+Shift+E), its format selector, or Edit
   plot. Fit width resets manual zoom and horizontal scrolling using the measured
@@ -57,8 +57,8 @@ The `subgroup-image` and `subgroup-image-dark-large` drives run meantime by trea
   snapshot, method, metric, inference and display settings. Running creates a new
   result with its own plot files; Cancel preserves the original. This also works
   after opening another project in the main window. No persistent history is kept.
-- New forest analyses default to RevMan, including weights and available raw arm
-  totals, model/test lines and reported prediction intervals. **Study order** in
+- New forest analyses use Default; saved style choices are preserved. RevMan
+  includes weights and available raw arm totals. **Study order** in
   setup and the forest editor changes only row positions: table order, year,
   effect or weight. Subgroups keep their groups; omission keeps All studies first.
   Cumulative analysis keeps the input sequence and explains how to change it.
@@ -138,7 +138,25 @@ Supplement with `tests/python/fast/test_plot_service.py`, affected GUI layout/ed
 
 Require every selected family-specific parameter and point size to persist and reappear in the editor. Capture display and parameter/data/result bytes immediately after Apply, then require both Cancel paths to preserve that snapshot. A label-only change cannot prove another control worked.
 
-Each offered PDF/PNG/TIFF/SVG context action exports a test-owned file. Decode PDF page/render, both raster dimensions and white corner, and SVG rendering; require visible nonwhite plot content in each format. Cancel another save and preserve the plot/text and persisted files. Ordinary/contour/trimfill/Deeks use raster display artifacts, so decode their PNG rather than passing it to QSvgRenderer. TIFF-specific R coverage independently checks white and half-transparent colored pixels plus DPI tags; a white-corner assertion alone misses incorrect colored compositing.
+Each offered PDF/PNG/TIFF/SVG context action exports a test-owned file. Decode PDF page/render, both raster dimensions and white corner, and SVG rendering; require visible nonwhite plot content in each format. Cancel another save and preserve the plot/text and persisted files. Ordinary/contour/trimfill/Deeks display SVGs. Test their visible clipping through the production Qt SVG loader, not an unadapted QSvgRenderer that ignores clipPath. TIFF-specific R coverage independently checks white and half-transparent colored pixels plus DPI tags; a white-corner assertion alone misses incorrect colored compositing.
+
+`ui-fine-tuning` requires all five funnel variants to be vector Results items and
+renders them through both Results and manuscript loaders at 1× and 2×. It checks
+zero region-colour pixels outside the plot rectangle and retained interior fill,
+plus the automatic 9 pt floor and explicit Fit width. `trimfill_geometry` compares
+the preview and exported SVG geometry before checking observed/imputed marker
+counts against a separately constructed metafor fit. Pixel identity between Qt
+and librsvg is not required: font rasterization and antialiasing differ. See the
+[SVG clipping report](../../../../docs/funnel-svg-rendering-2026-11-15.md) for
+narrow-axis, nonwhite-background and high-resolution vector PDF evidence.
+
+`manuscript-split-figure` derives a 95-study project from the sample, fits it
+through the application, and exports the actual manuscript PDF. It requires
+multiple figure pages, renders those pages to check the area below each caption
+is clear, and rejects embedded raster images. It also derives empty SVG viewports
+from the resulting plot and requires blank Qt output. PDF rendering intersects
+the SVG viewports with the visible page slice because Qt symbol clipping replaces
+an existing painter clip.
 
 These workflows have a 240-second process limit for publication-resolution raster exports; full HR/IRR scenarios retain 600 seconds for six editors and 24 exports, and ordinary scenarios retain 120 seconds. TIFF conversion uses a packed native raster to bound memory while preserving every decoded export and its 600 dpi dimensions. `family-export-decoded` records each completed format to locate slow/failing exports. Remaining controls, parameterless PNG, failed regeneration/promotion and native layout still require the targeted recipes above.
 

@@ -1762,7 +1762,10 @@ def small_study_effects(app, window):
     assert selected is not None
     figure_width = selected[1].sceneBoundingRect().width() * view.graphics_view.transform().m11()
     viewport_width = view.graphics_view.viewport().width()
-    body_px = selected[1].data(1) * selected[1].scale()
+    assert selected[1] in view._svg_plot_items
+    renderer = selected[1].renderer()
+    body_px = (renderer.property('body_text_size') * selected[1].boundingRect().width()
+               / renderer.viewBoxF().width() * selected[1].scale())
     assert body_px >= 12, body_px
     if body_px > 12.01:
         assert figure_width <= viewport_width, (figure_width, viewport_width)
@@ -2485,6 +2488,9 @@ try:
         from tests.e2e.manuscript_export import run
         run(app, window, WORK, ROOT, record_step, analyze,
             direct_write=scenario == "manuscript-export-direct")
+    elif scenario == "manuscript-split-figure":
+        from tests.e2e.manuscript_split_figure import run
+        run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario in ("amino", "continuous", "lymph"):
         sample_analysis(app, window, scenario)
     elif scenario == "rm5-import":
