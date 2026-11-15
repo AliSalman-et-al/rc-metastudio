@@ -1028,6 +1028,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         model_info = self._manuscript_model_info()
         arms = self._manuscript_arms()
         return replace(result, identity=identity, details=details, software=software,
+                       analysis_method=self.current_method,
                        manuscript_context=context.split(". ")[0].rstrip(".") + ".",
                        manuscript_digits=int(applied_parameters.get("digits", 3)),
                        manuscript_title=title, manuscript_methods=methods,
@@ -1056,8 +1057,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                           for name, total in self._manuscript_participants())
         if self.data_type == "diagnostic":
             model_info.extend(self._diagnostic_participants(self._manuscript_raw_data()))
-        if len(model_info) == 1:
-            model_info.append(("Participants", "Not available"))
         return model_info
 
     def _manuscript_participants(self) -> list[tuple[str, float]]:
@@ -1079,7 +1078,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         complete = [row for row in raw if len(row) == 4 and all(
             isinstance(v, (int, float)) and math.isfinite(v) for v in row
         )]
-        return [("Participants", f"{sum(sum(row) for row in complete):g}")] if complete else []
+        return [("Participants", f"{sum(sum(row) for row in complete):g}")] if complete and len(complete) == len(raw) else []
 
     def _applied_parameters(self):
         definitions, _, _, _ = self.analysis_service.parameters(self.current_method)

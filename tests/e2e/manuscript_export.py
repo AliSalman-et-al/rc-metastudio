@@ -346,6 +346,18 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 assert len(doc.tables) == len(expected_tables)
                 for actual, expected_table in zip(doc.tables, expected_tables):
                     assert tuple(tuple(cell.text for cell in row.cells) for row in actual.rows) == (expected_table.headers, *expected_table.rows)
+                from docx.enum.text import WD_ALIGN_PARAGRAPH
+                for exported_table in doc.tables:
+                    properties = exported_table.rows[0]._tr.trPr
+                    assert properties is not None
+                    assert properties.find('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tblHeader') is not None
+                    for column in range(len(exported_table.columns)):
+                        values = [row.cells[column].text for row in exported_table.rows[1:]]
+                        import re
+                        numeric = bool(values) and all(not value or value in ('NA', '—', 'Not estimable') or re.match(r'^\s*(?:[<>]\s*)?[+−-]?(?:\d|\.\d)', value) for value in values)
+                        for row in exported_table.rows:
+                            cell = row.cells[column]
+                            assert cell.paragraphs[0].alignment == (WD_ALIGN_PARAGRAPH.RIGHT if numeric else WD_ALIGN_PARAGRAPH.LEFT)
                 assert len(doc.inline_shapes) >= len(view.results.images)
                 assert all(round(s.width / 36000) in (85, 180) for s in doc.inline_shapes)
                 text = '\n'.join(p.text for p in doc.paragraphs) + '\n' + '\n'.join(c.text for t in doc.tables for r in t.rows for c in r.cells)
@@ -488,9 +500,10 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         prose = view.manuscript.results
         if workflow == 'subgroup':
             assert 'In Subgroup A, the pooled odds ratio was' in prose and 'In Subgroup B, the pooled odds ratio was' in prose
-            assert 'In Subgroup B, the pooled odds ratio was 0.623 (95% CI [0.271, 1.434], z = -1.113, P = 0.266).' in prose
-            assert 'In Subgroup A, the pooled odds ratio was 0.827 (95% CI [0.476, 1.438], z = -0.673, P = 0.501).' in prose
+            assert 'In Subgroup B, the pooled odds ratio was 0.623 (95% CI [0.271, 1.434]).' in prose
+            assert 'In Subgroup A, the pooled odds ratio was 0.827 (95% CI [0.476, 1.438]).' in prose
             assert 'Test for subgroup differences: Q = 0.307, df = 1, P = 0.579.' in prose
+            assert prose.index('Test for subgroup differences') < prose.index('In Subgroup')
         else:
             assert 'coefficient' in prose and '95% CI' in prose and ', P = ' in prose, (prose, [(s.title, s.tables) for s in view.results.sections if s.kind == 'text'])
             assert 'For Intercept' not in prose

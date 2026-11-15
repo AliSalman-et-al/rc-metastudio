@@ -42,6 +42,7 @@ SCENARIOS = (
     "manuscript-export-direct",
     "manuscript-export",
     "manuscript-split-figure",
+    "results-presentation",
     "amino",
     "sheets",
     "ui-crawl",

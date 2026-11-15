@@ -609,20 +609,31 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         finally:
             self._sizing_result_table = False
 
-    def _table_payload(self, delimiter, selected=False):
+    def _table_rows(self, selected=False):
         table = self._report_tables[self.table_selector.currentIndex()]
-        rows = [table.headers, *table.rows]
+        headers, rows = table.headers, table.rows
         indexes = self.result_table.selectedIndexes() if selected else []
         if indexes:
             top, bottom = min(item.row() for item in indexes), max(item.row() for item in indexes)
             left, right = min(item.column() for item in indexes), max(item.column() for item in indexes)
-            rows = [row[left:right + 1] for row in table.rows[top:bottom + 1]]
+            headers = ()
+            rows = tuple(row[left:right + 1] for row in table.rows[top:bottom + 1])
+        return headers, rows
+
+    def _table_payload(self, delimiter, selected=False):
+        headers, rows = self._table_rows(selected)
         stream = io.StringIO(newline="")
-        csv.writer(stream, delimiter=delimiter, lineterminator="\n").writerows(rows)
+        csv.writer(stream, delimiter=delimiter, lineterminator="\n").writerows([headers, *rows] if headers else rows)
         return stream.getvalue()
 
     def _copy_table(self):
-        required(QApplication.clipboard(), "system clipboard").setText(self._table_payload("\t", selected=True))
+        from PyQt6.QtCore import QMimeData
+        from rc_metastudio.result_formatting import table_html
+        headers, rows = self._table_rows(selected=True)
+        mime = QMimeData()
+        mime.setText(self._table_payload("\t", selected=True))
+        mime.setHtml(table_html(headers, rows))
+        required(QApplication.clipboard(), "system clipboard").setMimeData(mime)
         self.statusbar.showMessage("Table copied")
 
     def _export_table(self):

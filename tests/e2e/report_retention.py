@@ -85,7 +85,7 @@ def _restore_header_units(words: list[ET.Element], visible: list[ET.Element],
     del visible[:len(continuation)]
 
 
-def _ordered_pdf_text(bbox: str) -> str:
+def _ordered_pdf_text(bbox: str, table_headers=()) -> str:
     words = []
     previous_page = []
     previous_height = 0.0
@@ -100,6 +100,14 @@ def _ordered_pdf_text(bbox: str) -> str:
                 clipped.append(word)
         _restore_page_cell(words, visible, clipped)
         _restore_header_units(words, visible, previous_page, previous_height)
+        # A printed table repeats its complete header at a continuation page.
+        # Remove only an exact page-prefix header already seen on an earlier page.
+        history = ' '.join(word.text or '' for word in words)
+        for headers in sorted(table_headers, key=lambda row: len(' '.join(row)), reverse=True):
+            expected = ' '.join(headers).split()
+            if expected and [word.text for word in visible[:len(expected)]] == expected and ' '.join(expected) in history:
+                del visible[:len(expected)]
+                break
         words.extend(visible)
         previous_page, previous_height = visible, height
     text = []
@@ -118,12 +126,12 @@ def _ordered_pdf_text(bbox: str) -> str:
     return ' '.join(text)
 
 
-def visible_pdf_text(path):
+def visible_pdf_text(path, table_headers=()):
     raw = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', '-raw', str(path), '-'], text=True, encoding="utf-8")
     path.with_name('pdf-raw.txt').write_text(raw, encoding="utf-8")
     bbox = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', '-raw', '-bbox', str(path), '-'], text=True, encoding="utf-8")
     path.with_name('pdf-bbox.xhtml').write_text(bbox, encoding="utf-8")
-    return _ordered_pdf_text(bbox)
+    return _ordered_pdf_text(bbox, table_headers)
 
 
 
@@ -149,7 +157,7 @@ def capture(view, directory):
     write_pdf(report, target / 'report.pdf')
     doc = Document(str(target / 'report.docx'))
     doc_tables = [[[c.text for c in row.cells] for row in table.rows] for table in doc.tables]
-    pdf = visible_pdf_text(target / 'report.pdf')
+    pdf = visible_pdf_text(target / 'report.pdf', [table.headers for section in report.sections for table in section.tables])
     surfaces = {
         'copy': required(QApplication.clipboard(), 'clipboard').text(),
         'pdf': pdf,
@@ -246,6 +254,12 @@ def expected_fit(result):
     rows = list(result.manuscript_model_info)
     for section in result.sections:
         for table in section.tables:
+            if table.title == 'Test of subgroup differences':
+                rows.extend(expected_fit_table(result, section, table))
+    for section in result.sections:
+        for table in section.tables:
+            if table.title == 'Test of subgroup differences':
+                continue
             rows.extend(expected_fit_table(result, section, table))
     return tuple(rows)
 
@@ -325,7 +339,7 @@ def assert_report(view):
                     'which may represent', 'evidence of small-study effects'):
         assert verdict not in report_text, verdict
     tables = [table for section in view.manuscript.sections for table in section.tables]
-    pooled = next((table for table in tables if table.title == 'Pooled effect'), None)
+    pooled = next((table for table in tables if table.title in ('Pooled effect', 'Diagnostic summary')), None)
     fit = next((table for table in tables if table.title == 'Model fit'), None)
     studies = next((t for t in tables if t.title == 'Study results'), None)
     for section in view.results.sections:

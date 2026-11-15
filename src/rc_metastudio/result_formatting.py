@@ -4,12 +4,43 @@ from __future__ import annotations
 
 import math
 import re
+from html import escape
 from collections.abc import Iterable, Mapping, Sequence
 from typing import overload
 
 
 NUM_DIGITS = 2
 PERCENTAGE_DISPLAY_DIGITS = 1
+
+
+def numeric_columns(rows: Sequence[Sequence[str]]) -> tuple[bool, ...]:
+    if not rows:
+        return ()
+    return tuple(all(not row[index] or row[index] in ('NA', '—', 'Not estimable')
+                     or re.match(r'^\s*(?:[<>]\s*)?[+−-]?(?:\d|\.\d)', row[index])
+                     for row in rows) for index in range(len(rows[0])))
+
+
+def table_html(headers: Sequence[str], rows: Sequence[Sequence[str]]) -> str:
+    """Editable, content-sized table for clipboard and manuscript surfaces."""
+    numeric = numeric_columns(rows)
+    parts = ['<table border="0" cellspacing="0" cellpadding="5">']
+    if headers:
+        parts.append('<thead><tr>')
+        for index, header in enumerate(headers):
+            align = 'right' if numeric and numeric[index] else 'left'
+            parts.append(f'<th align="{align}" style="font-weight:bold; border-top:1px solid black; border-bottom:1px solid black;">{escape(header)}</th>')
+        parts.append('</tr></thead>')
+    parts.append('<tbody>')
+    for index, row in enumerate(rows):
+        parts.append('<tr>')
+        for column, value in enumerate(row):
+            align = 'right' if numeric[column] else 'left'
+            border = 'border-bottom:1px solid black;' if index == len(rows) - 1 else ''
+            parts.append(f'<td align="{align}" style="white-space:pre-wrap; {border}">{escape(value).replace(chr(10), "<br>")}</td>')
+        parts.append('</tr>')
+    parts.append('</tbody></table>')
+    return ''.join(parts)
 
 
 def format_references(references: object) -> str:

@@ -2491,6 +2491,9 @@ try:
     elif scenario == "manuscript-split-figure":
         from tests.e2e.manuscript_split_figure import run
         run(app, window, WORK, ROOT, record_step, analyze)
+    elif scenario == "results-presentation":
+        from tests.e2e.results_presentation import run
+        run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario in ("amino", "continuous", "lymph"):
         sample_analysis(app, window, scenario)
     elif scenario == "rm5-import":

@@ -5,6 +5,7 @@ from decimal import Decimal
 import re
 from rc_metastudio.analysis_results import ResultTable
 from rc_metastudio.svg_rendering import svg_bytes_for_qt
+from rc_metastudio.result_formatting import numeric_columns, table_html
 from html import escape
 import io
 from PyQt6.QtCore import QRectF, Qt
@@ -176,13 +177,16 @@ def _pooled_prose(result, values, effect, effect_metric, coefficient, statistic,
     if coefficient and effect == 'Intercept':
         return
     lead = f"The pooled {effect_metric}"
+    if result.analysis_method == 'diagnostic.reitsma':
+        lead = f"The {effect_metric}"
     if coefficient:
         lead = f"For {effect}, the coefficient"
     elif values.keys() & {"Subgroups", "Term", "Level"}:
         lead = f"In {effect}, the pooled {effect_metric}"
         if effect.lower() == "overall":
             lead = f"Overall, the pooled {effect_metric}"
-    inference = (f", {statistic} = {test}" if test != '—' else '') + (', ' + _p_clause(p) if p != '—' else '')
+    within_subgroup = 'Subgroups' in values and values['Subgroups'].casefold() != 'overall'
+    inference = '' if within_subgroup else (f", {statistic} = {test}" if test != '—' else '') + (', ' + _p_clause(p) if p != '—' else '')
     summary.append(f"{lead} was {values['Estimate']} ({level} [{values[lower]}, {values[upper]}]{inference}).")
 
 
@@ -324,17 +328,24 @@ def _report_sections(result, summary, methods):
         return [], []
     pooled, fit = [], list(result.manuscript_model_info)
     level, statistic = '95% CI', 'z'
+    for section in text_sections:
+        for table in section.tables:
+            if table.title == 'Test of subgroup differences':
+                _fit_table(table, fit, summary)
     for section in result.sections:
         if section.kind != 'text':
             continue
         overall, calculation = _section_statistics(section)
         for table in section.tables:
+            if table.title == 'Test of subgroup differences':
+                continue
             level, statistic = _report_table(result, section, table, summary, pooled, fit, level, statistic, overall, calculation, methods)
     return _primary_sections(result, text_sections, pooled, fit, level, statistic), _held_sections(result)
 
 
 def _primary_sections(result, text_sections, pooled, fit, level, statistic):
     template = text_sections[0]
+    primary_title = 'Diagnostic summary' if result.analysis_method == 'diagnostic.reitsma' else 'Pooled effect'
     prediction_notes = {}
     for section in text_sections:
         for note in section.paragraphs:
@@ -342,9 +353,9 @@ def _primary_sections(result, text_sections, pooled, fit, level, statistic):
                 prediction_notes.setdefault(note, []).append(section.title)
     notes = tuple((' / '.join(dict.fromkeys(titles)) + ': ' + note) if len(prediction_notes) > 1 else note
                   for note, titles in prediction_notes.items())
-    sections = [replace(template, title='Pooled effect', paragraphs=(() if pooled else
+    sections = [replace(template, title=primary_title, paragraphs=(() if pooled else
                          ('No structured pooled estimates are available for this workflow; the complete output is in Supplementary details.',)),
-                        tables=(ResultTable('Pooled effect', ('Effect', 'Estimate', level, 'SE', 'SE scale', statistic, 'p'), tuple(pooled)),)),
+                        tables=(ResultTable(primary_title, ('Effect', 'Estimate', level, 'SE', 'SE scale', statistic, 'p'), tuple(pooled)),)),
                 replace(template, title='Model fit', paragraphs=notes,
                         tables=(ResultTable('Model fit', ('Statistic', 'Value'), tuple(fit)),)),
                 _study_results(result, template, level)]
@@ -375,16 +386,7 @@ def _report_methods(result, pooled_methods):
 
 
 def _table_html(table, table_number):
-    parts = []
-    parts.append(f'<p><b>Table {table_number}. {escape(table.title)}</b></p><table width="100%" border="0" cellspacing="0" cellpadding="5">')
-    for index, row in enumerate((table.headers, *table.rows)):
-        tag = 'th' if index == 0 else 'td'
-        border = 'border-top: 1px solid black;' if index == 0 else ''
-        if index == len(table.rows):
-            border += 'border-bottom: 1px solid black;'
-        parts.append('<tr>' + ''.join(f'<{tag} align="left" style="text-align:left; white-space:pre-wrap; {border}">' + escape(c).replace('\n', '<br>') + f'</{tag}>' for c in row) + '</tr>')
-    parts.append('</table>')
-    return ''.join(parts)
+    return f'<p style="page-break-after:avoid;"><b>Table {table_number}. {escape(table.title)}</b></p>' + table_html(table.headers, table.rows)
 
 
 @dataclass(frozen=True)
@@ -504,12 +506,18 @@ def _docx_table(document, table):
         rule.set(qn('w:sz'), '6')
         borders.append(rule)
     target._tbl.tblPr.append(borders)
-    for row, values in zip([target.rows[0], *[target.add_row() for _ in table.rows]], (table.headers, *table.rows)):
-        for cell, value in zip(row.cells, values):
+    target.rows[0]._tr.get_or_add_trPr().append(OxmlElement('w:tblHeader'))
+    numeric = numeric_columns(table.rows) or (False,) * len(table.headers)
+    for index, (row, values) in enumerate(zip([target.rows[0], *[target.add_row() for _ in table.rows]], (table.headers, *table.rows))):
+        for column, (cell, value) in enumerate(zip(row.cells, values)):
             cell.text = value
             from docx.enum.text import WD_ALIGN_PARAGRAPH
             for paragraph in cell.paragraphs:
-                paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT if numeric[column] else WD_ALIGN_PARAGRAPH.LEFT
+                for run in paragraph.runs:
+                    from docx.shared import Pt
+                    run.font.size = Pt(10)
+                    run.bold = index == 0
 
 
 def _docx_sections(document, report, supplementary, table_number):
@@ -522,7 +530,8 @@ def _docx_sections(document, report, supplementary, table_number):
             document.add_heading('References', 1)
         for table in section.tables:
             table_number += 1
-            document.add_paragraph(f'Table {table_number}. {table.title}', style='Caption')
+            caption = document.add_paragraph(f'Table {table_number}. {table.title}', style='Caption')
+            caption.paragraph_format.keep_with_next = True
             _docx_table(document, table)
             document.add_paragraph()
         for paragraph in section.paragraphs:
@@ -532,6 +541,8 @@ def _docx_sections(document, report, supplementary, table_number):
 
 def write_docx(report, path):
     document = Document()
+    from docx.shared import Pt
+    document.styles['Normal'].font.size = Pt(11)
     for name in ('Normal', 'Title', 'Heading 1', 'Caption'):
         document.styles[name].font.color.rgb = RGBColor(0, 0, 0)
     section = document.sections[0]
@@ -571,7 +582,7 @@ def write_docx(report, path):
 
 def _print_document():
     document = QTextDocument()
-    document.setDefaultFont(QFont('Arial', 9))
+    document.setDefaultFont(QFont('Arial', 11))
     # Qt's default print palette inherits the application's text colour.
     # Exported pages are white even when the application uses a dark palette.
     document.setDefaultStyleSheet('* { color: #000000; background-color: #ffffff; }')

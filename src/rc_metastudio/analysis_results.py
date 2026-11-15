@@ -94,6 +94,7 @@ class AnalysisResult:
     identity: str = ""
     details: str = ""
     software: str = ""
+    analysis_method: str = ""
     manuscript_digits: int = 3
     manuscript_context: str = ""
     manuscript_title: str = ""
