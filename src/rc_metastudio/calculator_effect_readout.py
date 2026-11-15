@@ -212,7 +212,7 @@ def update_calculator_readout(dialog, data_type):
         for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
             field.editingFinished.connect(lambda: update_calculator_readout(dialog, data_type))
         if data_type == "diagnostic":
-            dialog.effect_layout.addWidget(dialog.wald_readout, 2, 0, 1, 6)
+            dialog.effect_layout.addRow(dialog.wald_readout)
         else:
             dialog.dialog_layout.insertWidget(dialog.dialog_layout.indexOf(dialog.buttonBox), dialog.wald_readout)
     se = analysis_unit.get_se(source, current_effect, arm_key, confidence_multiplier)
@@ -228,3 +228,4 @@ def update_calculator_readout(dialog, data_type):
         _update_binary_metric_table(dialog, raw)
     if hasattr(dialog, "metric_readout"):
         dialog.metric_readout.setVisible(complete_binary)
+

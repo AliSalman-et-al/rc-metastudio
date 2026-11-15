@@ -175,8 +175,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
     def _configure_readable_ci_label(self):
         """Keep the confidence heading on one line at normal scaling."""
         self.ci_label.setWordWrap(False)
-        # layout-audit: allow=content-overflow-control; reason=confidence heading remains readable inside the scrollable dialog content
-        self.ci_label.setMinimumWidth(self.ci_label.sizeHint().width())
 
     def _set_content_preferred_width(self):
         """Give dense content room before the outer policy applies its cap."""

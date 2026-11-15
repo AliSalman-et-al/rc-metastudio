@@ -53,6 +53,15 @@ class CovariateTypeDialog(QDialog, _ui_covariate_type_dialog.Ui_CovariateTypeDia
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
+        table = self.covariate_preview_table
+        preferred_rows = sum(table.rowHeight(row) for row in range(min(8, self.cov_model.rowCount())))
+        header = table.horizontalHeader()
+        assert header is not None
+        preferred_height = (self.sizeHint().height() - table.sizeHint().height()
+                            + preferred_rows + header.height() + 2 * table.frameWidth())
+        adaptive_window.set_content_preferred_width(
+            self, self.minimumSizeHint().width(), self.sizeHint().width(), preferred_height=preferred_height,
+        )
 
     def data_error(self, msg):
         QMessageBox.warning(self, "Warning", msg)

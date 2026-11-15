@@ -278,8 +278,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     def _configure_readable_ci_label(self):
         """Keep the confidence heading on one line at normal scaling."""
         self.ci_label.setWordWrap(False)
-        # layout-audit: allow=content-overflow-control; reason=confidence heading remains readable inside the scrollable dialog content
-        self.ci_label.setMinimumWidth(self.ci_label.sizeHint().width())
 
     def _configure_semantic_fields(self):
         # layout-audit: allow=content-overflow-control; reason=required content may consume available layout width
@@ -297,25 +295,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         effect_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self._effect_popup = required(effect_view.window(), "continuous metric popup")
         self._effect_popup.installEventFilter(self)
-        correlation_width = (
-            self.correlation_pre_post.fontMetrics().horizontalAdvance("-1.0000")
-            + self.correlation_pre_post.textMargins().left()
-            + self.correlation_pre_post.textMargins().right()
-            + 2
-            * required(
-                self.correlation_pre_post.style(), "correlation field style"
-            ).pixelMetric(
-                QStyle.PixelMetric.PM_DefaultFrameWidth, None, self.correlation_pre_post
-            )
-            + 12
-        )
-        # layout-audit: allow=numeric-domain-control; reason=editor width follows representative values from its numeric domain
-        self.correlation_pre_post.setMinimumWidth(correlation_width)
-        # layout-audit: allow=numeric-domain-control; reason=editor width follows representative values from its numeric domain
-        self.correlation_pre_post.setMaximumWidth(QWIDGETSIZE_MAX)
-        self.correlation_pre_post.setSizePolicy(
-            QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed
-        )
+        correlation_width = self.correlation_pre_post.fontMetrics().height() * 10
+        self.correlation_pre_post.setFixedWidth(correlation_width)
 
     def _configure_focus_revelation(self):
         for widget in self.content_widget.findChildren(QWidget):

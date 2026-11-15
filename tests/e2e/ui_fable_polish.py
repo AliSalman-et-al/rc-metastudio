@@ -1,7 +1,7 @@
 """Real dialog and executed-report checks for Fable's concrete findings."""
 import json
 
-from PyQt6 import QtCore
+from PyQt6 import QtCore, QtWidgets
 from tests.python.gui.qt_test_support import required, wait
 
 
@@ -9,6 +9,8 @@ def run(app, window, work, root, record, analyze):
     from rc_metastudio.about_legal_dialog import AboutLegalDialog
     from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
     from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
+    from rc_metastudio.binary_data_dialog import BinaryDataDialog
+    from rc_metastudio.diagnostic_data_dialog import DiagnosticDataDialog
 
     observations = {}
     failures = []
@@ -59,18 +61,65 @@ def run(app, window, work, root, record, analyze):
         failures.append('Pre/post second arm is clipped despite available screen height')
     calculator.reject()
 
+    for project in ('amino', 'continuous', 'lymph'):
+        window.workspace.mark_saved()
+        assert window.open(str(root / f'sample_projects/{project}.rcms'), raise_on_error=True)
+        model = window.model
+        args = (model.get_current_analysis_unit_for_study(0), model.arm_names, model.get_current_arm_key())
+        if project == 'lymph':
+            calculator = DiagnosticDataDialog(*args, confidence_level=95, parent=window)
+        elif project == 'amino':
+            calculator = BinaryDataDialog(*args, model.current_effect, confidence_level=95, parent=window)
+        else:
+            calculator = ContinuousDataDialog(*args, model.current_effect, confidence_level=95, parent=window)
+        calculator.show()
+        wait(150)
+        estimate = calculator.effect_text_box
+        lower = calculator.lower_text_box
+        upper = calculator.upper_text_box
+        x = lambda field: field.mapTo(calculator, QtCore.QPoint()).x()
+        if abs(x(estimate) - x(lower)) > 1 or lower.y() != upper.y():
+            failures.append(project + ' calculator interval does not share the estimate field column')
+        if abs(lower.width() - upper.width()) > 2:
+            failures.append(project + ' calculator interval fields have unequal widths')
+        if isinstance(calculator, ContinuousDataDialog) and any(label.font().italic() for label in
+                (calculator.group_one_label, calculator.group_two_label)):
+            failures.append('Continuous arm headings are italic')
+        record('fable-calculator-alignment-' + project, calculator,
+               estimate_x=x(estimate), lower_x=x(lower), upper_x=x(upper))
+        calculator.reject()
+
     window.workspace.mark_saved()
     assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
+    window.model.add_covariate('Dose', 'continuous')
+    regression = AnalysisSetupDialog(window.model, parent=window, confidence_level=95, analysis_type='meta-regression')
+    regression.show()
+    wait(150)
+    active = required(regression.specs_tab.currentWidget())
+    active_layout = required(active.layout())
+    if regression.height() > active_layout.sizeHint().height() + regression.fontMetrics().height() * 12:
+        failures.append('Regression first tab retains space for a taller hidden tab')
+    record('fable-regression-first-tab', regression, height=regression.height(), content_height=active_layout.sizeHint().height())
+    regression.reject()
     setup = AnalysisSetupDialog(window.model, parent=window, confidence_level=95)
     setup.show()
     setup.advanced_toggle.setChecked(False)
     wait(150)
+    parameter_layout = required(setup.parameter_grp_box.layout())
+    assert isinstance(parameter_layout, QtWidgets.QGridLayout)
+    field = required(required(parameter_layout.itemAtPosition(0, 1)).widget())
+    method_x = setup.method_cbo_box.mapTo(setup, QtCore.QPoint()).x()
+    parameter_x = field.mapTo(setup, QtCore.QPoint()).x()
+    if abs(method_x - parameter_x) > 1:
+        failures.append('Analysis method and parameter fields do not share a column')
     for row in range(len(window.model.get_studies(False))):
         assert window.model.setData(window.model.index(row, window.model.INCLUDE_STUDY),
             QtCore.Qt.CheckState.Unchecked.value, QtCore.Qt.ItemDataRole.CheckStateRole)
     setup.run_ma()
     wait(200)
     assert setup.analysis_error_panel.isVisible()
+    if setup.specs_tab.tabText(setup.specs_tab.indexOf(setup.plot_tab)) != 'Forest plot':
+        failures.append('Forest-only setup has a generic Plots tab')
     for expanded in (False, True):
         setup.analysis_error_toggle.setChecked(expanded)
         wait(200)
@@ -79,6 +128,8 @@ def run(app, window, work, root, record, analyze):
         state = dict(height=setup.height(), viewport=viewport.height(), advanced=advanced.getRect())
         observations['error-' + str(expanded)] = state
         record('fable-analysis-error-' + str(expanded), setup, **state)
+        if expanded and setup.analysis_error_details.height() > setup.analysis_error_details.fontMetrics().lineSpacing() * 8 + 2 * setup.analysis_error_details.frameWidth() + 8:
+            failures.append('Technical error details occupy more than eight lines')
         if not viewport.rect().contains(advanced):
             failures.append('Method controls are clipped after analysis error, expanded=' + str(expanded))
     setup.reject()
@@ -97,3 +148,4 @@ def run(app, window, work, root, record, analyze):
     view.close()
     (work / 'fable-observations.json').write_text(json.dumps(observations, indent=2), encoding='utf-8')
     assert not failures, failures
+

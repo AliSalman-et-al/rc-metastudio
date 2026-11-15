@@ -234,9 +234,9 @@ def test_correction_policy_refreshes_authoritative_or_routing(qapp, monkeypatch)
     )
     dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("binary", "OR"))
     try:
-        assert dialog.automatic_test_label.text() == "Primary: Harbord"
+        assert dialog.automatic_test_label.text().startswith("Primary test Harbord")
         dialog.correction_policy_combo.setCurrentText("All studies")
-        assert dialog.automatic_test_label.text() == "Primary: Rücker AS+RE"
+        assert dialog.automatic_test_label.text().startswith("Primary test Rücker AS+RE")
         assert "All studies" in policies
     finally:
         dialog.close()
@@ -275,7 +275,7 @@ def test_singleton_r_warning_is_accepted_at_dialog_boundary(qapp, monkeypatch):
     )
     dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("continuous", "MD"))
     try:
-        assert dialog.automatic_test_label.text() == "Primary: Classical Egger"
+        assert dialog.automatic_test_label.text().startswith("Primary test Classical Egger")
     finally:
         dialog.close()
 

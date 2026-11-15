@@ -66,10 +66,10 @@ def _available_method_text(methods) -> str:
     ]
     lines = []
     if primary:
-        lines.append("Primary: " + ", ".join(primary))
+        lines.append("Primary test " + ", ".join(primary))
     if additional:
-        lines.append("Additional: " + ", ".join(additional))
-    return "\n".join(lines)
+        lines.append("Exploratory tests " + ", ".join(additional))
+    return " · ".join(lines)
 
 
 class SmallStudyEffectsDialog(
@@ -240,6 +240,8 @@ class SmallStudyEffectsDialog(
             self,
             SMALL_STUDY_EFFECTS_MIN_WIDTH,
             SMALL_STUDY_EFFECTS_PREFERRED_WIDTH,
+            preferred_height=self.sizeHint().height()
+            + max(self.methods_scroll_content.sizeHint().height() - self.methods_scroll.sizeHint().height(), 0),
         )
         self._layout_controller.request_content_refit()
 
@@ -300,7 +302,15 @@ class SmallStudyEffectsDialog(
                     unavailable_reason(item) for item in report.methods if not item.available))
             )
             return
-        self.automatic_test_label.setText(_available_method_text(available))
+        primary = [item for item in available if item.role == "primary"]
+        context = ""
+        if primary:
+            method = primary[0]
+            inputs = ", ".join(method.required_inputs)
+            context = f" · {method.usable_studies} eligible studies"
+            if inputs:
+                context += f" using {inputs}"
+        self.automatic_test_label.setText(_available_method_text(available) + context)
 
     def _context_summary(self, report=None) -> str:
         data_type = str(self.model.get_current_data_type())

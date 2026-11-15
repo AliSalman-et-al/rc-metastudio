@@ -266,6 +266,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self._finish_combined_diagnostic_ui()
         self.content_scroll_area.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self._setup_result_context()
+        if self.data_type != "diagnostic" and not self.is_meta_regression:
+            self.specs_tab.setTabText(self.specs_tab.indexOf(self.plot_tab), "Forest plot")
         self.specs_tab.currentChanged.connect(self._fit_active_tab_contents)
         self._fit_active_tab_contents(self.specs_tab.currentIndex())
         adaptive_window.register_adaptive_window(
@@ -310,6 +312,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         error_layout.addWidget(self.analysis_error_toggle, 0, Qt.AlignmentFlag.AlignLeft)
         self.analysis_error_details = QtWidgets.QPlainTextEdit(self.analysis_error_panel)
         self.analysis_error_details.setReadOnly(True)
+        self.analysis_error_details.setFixedHeight(
+            self.analysis_error_details.fontMetrics().lineSpacing() * 8
+            + 2 * self.analysis_error_details.frameWidth() + 8
+        )
         self.analysis_error_details.setAccessibleName("Technical analysis error details")
         self.analysis_error_details.hide()
         error_layout.addWidget(self.analysis_error_details)
@@ -586,6 +592,19 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.content_scroll_area.setMinimumHeight(max(0, min(content_height + 2, body_height)))
         layout.activate()
 
+    def _active_content_height(self):
+        # QTabWidget's hint includes hidden pages, even when their size policy
+        # is Ignored. Measure the selected layout instead of the entire stack.
+        page = required(self.specs_tab.currentWidget(), "active analysis tab")
+        layout = required(page.layout(), "active analysis layout")
+        height = (layout.totalHeightForWidth(page.width()) if layout.hasHeightForWidth()
+                  else layout.totalSizeHint().height())
+        height += required(self.specs_tab.tabBar(), "analysis tabs").sizeHint().height()
+        height += 2 * required(self.specs_tab.style(), "analysis tab style").pixelMetric(QtWidgets.QStyle.PixelMetric.PM_DefaultFrameWidth)
+        if hasattr(self, "analysis_error_panel") and not self.analysis_error_panel.isHidden():
+            height += self.analysis_error_panel.sizeHint().height() + self.content_scroll_layout.spacing()
+        return height
+
     def _fit_active_tab_contents(self, current):
         # Hidden plot controls must not force the method page to scroll.
         for index in range(self.specs_tab.count()):
@@ -596,14 +615,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.specs_tab.updateGeometry()
         active_page = self.specs_tab.currentWidget()
         assert active_page is not None
-        content_height = self.content_scroll_area_widget.sizeHint().height()
-        page_layout = active_page.layout()
-        tab_bar = self.specs_tab.tabBar()
-        assert tab_bar is not None
-        if page_layout is not None and page_layout.hasHeightForWidth():
-            content_height = max(content_height, page_layout.totalHeightForWidth(active_page.width())
-                                 + tab_bar.sizeHint().height() + 2 * self.content_scroll_area.frameWidth())
-        self._set_scroll_body_height(content_height)
+        self._set_scroll_body_height(self._active_content_height())
         position = self.pos()
         self.adjustSize()
         self.move(position)
@@ -1666,13 +1678,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.specs_tab.updateGeometry()
         active_page = self.specs_tab.currentWidget()
         assert active_page is not None
-        content_height = self.content_scroll_area_widget.sizeHint().height()
-        page_layout = active_page.layout()
-        tab_bar = self.specs_tab.tabBar()
-        assert tab_bar is not None
-        if page_layout is not None and page_layout.hasHeightForWidth():
-            content_height = max(content_height, page_layout.totalHeightForWidth(active_page.width())
-                                 + tab_bar.sizeHint().height() + 2 * self.content_scroll_area.frameWidth())
+        content_height = self._active_content_height()
         # Method changes stay inside the scroll body. Explicit disclosure of
         # Advanced controls may grow the dialog while preserving its placement.
         if not self.isVisible() or resize_window:
@@ -1684,7 +1690,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 available_height = int(adaptive_window.available_geometry_for_window(self).height() * policy.maximum_screen_fraction)
                 frame_height = max(0, self.frameGeometry().height() - self.height())
                 self.resize(previous_size.width(), min(available_height - frame_height,
-                            max(previous_size.height(), self.sizeHint().height())))
+                            self.sizeHint().height()))
             else:
                 self.adjustSize()
             self.move(position)
@@ -1699,6 +1705,20 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                          self.lr_dor_method_lbl, self.lr_dor_method_cbo_box))
         for row_widget, layout, label, combo in rows:
             layout.activate()
+            if row_widget is self._method_row:
+                parameters = self.parameter_grp_box.layout()
+                if isinstance(parameters, QGridLayout):
+                    widths = [field.sizeHint().width() for index in range(parameters.count())
+                              if (item := parameters.itemAt(index)) is not None
+                              and parameters.getItemPosition(index)[1] == 0
+                              and isinstance(field := item.widget(), QLabel)]
+                    label_width = max([label.sizeHint().width(), *widths])
+                    parameters.setColumnMinimumWidth(0, label_width)
+                    layout.setColumnMinimumWidth(0, label_width)
+                    inset = self.parameter_grp_box.contentsMargins()
+                    margins = parameters.contentsMargins()
+                    layout.setContentsMargins(inset.left() + margins.left(), 0, inset.right() + margins.right(), 0)
+                    layout.activate()
             option = QtWidgets.QStyleOptionComboBox()
             combo.initStyleOption(option)
             style = combo.style()
@@ -2164,3 +2184,5 @@ def _diagnostic_pending_requests(specs_form):
     pending = [("Sens", joint)] if joint is not None else []
     pending.extend((metric, specs_form.diagnostic_analysis_details[metric]) for metric in configured)
     return joint, pending
+
+

@@ -78,7 +78,7 @@
             <string>Analysis method</string>
            </property>
            <property name="alignment">
-            <set>Qt::AlignCenter</set>
+            <set>Qt::AlignLeft|Qt::AlignVCenter</set>
            </property>
           </widget>
          </item>
@@ -102,7 +102,7 @@
           <widget class="QLabel" name="lr_dor_method_lbl">
            <property name="visible"><bool>false</bool></property>
            <property name="text"><string>Likelihood ratios and diagnostic odds ratio</string></property>
-           <property name="alignment"><set>Qt::AlignCenter</set></property>
+           <property name="alignment"><set>Qt::AlignLeft|Qt::AlignVCenter</set></property>
           </widget>
          </item>
          <item row="0" column="3">

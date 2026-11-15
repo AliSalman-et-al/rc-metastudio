@@ -168,3 +168,31 @@ analysis, Fit page and plot editing, ratio round trips, status expiry and report
 number retention. Visually inspected `12-0-direction-results-first-display.png`: 
 all plot labels fit at 100%, with fixed context and the grouped toolbar visible.
 Final frozen qualification remains pending.
+
+### Dialog content sizing and calculator fields
+
+Interval edits now share the Estimate field column with equally sized lower and
+upper fields separated by “to”. Accessible limit names remain explicit.
+Continuous arm headings are bold and upright; correlation is ten em wide.
+Diagnostic reconstruction has an explanatory tooltip. Error details own an
+eight-line viewport. Forest-only setup names its plot tab “Forest plot”.
+
+Regression's initial empty space was reproduced in the native C/D/E tour
+`20261115T175650Z-ec7b70e4-ui-crawl`. QTabWidget includes hidden-page hints despite
+Ignored policies. The existing fit path now measures the active layout and
+permits explicit refits to shrink. Method and parameter rows share label widths
+and insets. Small-study setup accounts for scroll-content height and describes
+automatically selected tests using the producer's eligibility/input metadata;
+it adds no statistical selection rules. Covariate conversion prefers eight
+rows within the screen policy. RevMan review right-aligns study counts and
+separates bold headings from unchanged explanatory text.
+
+The preimplementation native baseline reproduced six presentation failures.
+Intermediate runs retained a diagnostic-layout call-site failure and a
+preinitialisation timer failure; both were fixed and re-driven. Final strict
+win32 typing and native `ui-fable-polish` passed at
+`20261115T180331Z-b8cb6f35-ui-fable-polish`, including compact regression, exact
+field alignment, error disclosure and actual Reitsma output. The focused GUI
+suite passed 146 checks (`direction-dialogs-columns-gui.log`). The earlier C/D/E
+tour proves both-theme import, calculator and small-study rendering; its old
+regression capture is superseded by the compact regression drive.
