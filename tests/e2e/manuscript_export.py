@@ -564,7 +564,12 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     app.processEvents()
     app.processEvents()
     assert view._figure_zoom_percent >= 50, view._figure_zoom_percent
-    assert all(item.textWidth() >= view.graphics_view.viewport().width() * .9 for item in view._wrapped_text_items)
+    viewport = view.graphics_view.viewport().rect()
+    caption_bounds = [view.graphics_view.mapFromScene(item.sceneBoundingRect()).boundingRect()
+                      for item in view._wrapped_text_items]
+    assert caption_bounds and all(bounds.left() >= viewport.left()
+                                  and 0 <= viewport.right() - bounds.right() <= view.fontMetrics().height() * 2
+                                  for bounds in caption_bounds), (viewport, caption_bounds)
     record('manuscript-small-study-methods', view, methods=view.manuscript.methods,
            settled_zoom_percent=view._figure_zoom_percent)
     close_result(view)
