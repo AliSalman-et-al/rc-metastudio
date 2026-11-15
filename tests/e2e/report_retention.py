@@ -103,9 +103,10 @@ def _ordered_pdf_text(bbox: str, table_headers=()) -> str:
         # A printed table repeats its complete header at a continuation page.
         # Remove only an exact page-prefix header already seen on an earlier page.
         history = ' '.join(word.text or '' for word in words)
+        current_table = re.split(r'\bTable\s+\d+\.\s', history)[-1]
         for headers in sorted(table_headers, key=lambda row: len(' '.join(row)), reverse=True):
             expected = ' '.join(headers).split()
-            if expected and [word.text for word in visible[:len(expected)]] == expected and ' '.join(expected) in history:
+            if expected and [word.text for word in visible[:len(expected)]] == expected and ' '.join(expected) in current_table:
                 del visible[:len(expected)]
                 break
         words.extend(visible)
