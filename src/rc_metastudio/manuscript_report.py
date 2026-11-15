@@ -8,7 +8,7 @@ from rc_metastudio.result_formatting import numeric_columns, table_html
 from html import escape
 import io
 from PyQt6.QtCore import QRectF, Qt
-from PyQt6.QtGui import QFont, QImage, QPainter, QPdfWriter, QTextDocument, QPageSize
+from PyQt6.QtGui import QFont, QImage, QPainter, QPdfWriter, QTextDocument, QPageSize, QTextOption
 from PyQt6.QtSvg import QSvgRenderer
 from docx import Document
 from docx.shared import Mm, RGBColor
@@ -613,6 +613,9 @@ def write_docx(report, path):
 def _print_document():
     document = QTextDocument()
     document.setDefaultFont(QFont('Arial', 11))
+    option = document.defaultTextOption()
+    option.setWrapMode(QTextOption.WrapMode.WordWrap)
+    document.setDefaultTextOption(option)
     # Qt's default print palette inherits the application's text colour.
     # Exported pages are white even when the application uses a dark palette.
     document.setDefaultStyleSheet('* { color: #000000; background-color: #ffffff; }')

@@ -140,7 +140,16 @@ def exports(driver, capture, missing, view):
         program = str(Path(executable).resolve().parent)
         conversion_env["LD_LIBRARY_PATH"] = program + os.pathsep + conversion_env.get("LD_LIBRARY_PATH", "")
     try:
-        subprocess.run(["soffice", "-env:UserInstallation=" + (driver.WORK / "soffice-profile").as_uri(), "--headless", "--convert-to", "pdf", "--outdir", str(converted), str(docx)], check=True, capture_output=True, timeout=45, env=conversion_env)
+        if sys.platform == 'win32' and not shutil.which('soffice'):
+            command = [shutil.which('pwsh') or 'powershell', '-NoProfile', '-File',
+                       str(driver.ROOT / '.agents/skills/verify-rcms/scripts/render_word_pdf.ps1'),
+                       '-InputPath', str(docx), '-OutputPath', str(converted / 'manuscript.pdf')]
+        else:
+            command = ["soffice", "-env:UserInstallation=" + (driver.WORK / "soffice-profile").as_uri(), "--headless", "--convert-to", "pdf", "--outdir", str(converted), str(docx)]
+        conversion = subprocess.run(command, check=True, capture_output=True, timeout=45, env=conversion_env)
+        import json
+        (driver.WORK / 'docx-render-command.json').write_text(json.dumps(command), encoding='utf-8')
+        (driver.WORK / 'docx-render.log').write_bytes(conversion.stdout + conversion.stderr)
         render(converted / "manuscript.pdf", "docx-page-1")
     except (OSError, subprocess.SubprocessError) as error:
         missing.append(f"I DOCX page 1: {error}; {getattr(error, 'stderr', b'')!r}")

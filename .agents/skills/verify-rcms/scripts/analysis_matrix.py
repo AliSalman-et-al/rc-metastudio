@@ -207,7 +207,8 @@ def run(
             report = view.report_text.toPlainText()
             first_section = min(view.results.sections, key=lambda section: section.order)
             assert first_section.source_key == "Clinical interpretation", first_section
-            assert report.startswith("Pooled effect\n"), report
+            primary_heading = "Diagnostic summary" if view.results.analysis_method == "diagnostic.reitsma" else "Pooled effect"
+            assert report.startswith(primary_heading + "\n"), report
             assert report.index(first_section.value.splitlines()[0]) < report.index("Model configuration"), report
         assert view.content_stack.currentWidget() is (view.report_text if clinical else view.figure_page)
         if clinical:
@@ -264,7 +265,7 @@ def run(
             if scenario in {"analysis-data-onearm-mean", "analysis-data-onearm-proportion"}:
                 assert re.search(rf"Participants in {re.escape(participant_arm)}\s+135\b", text), text
             else:
-                assert re.search(r"Participants\s+Not available", text), text
+                assert 'Participants' not in text, text
         if scenario.startswith("analysis-diagnostic-regression"):
             assert "Image Order" not in view.texts
             assert "diagnostic.reitsma.sensitivity.coefficients" not in view.report_text.toPlainText()
