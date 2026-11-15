@@ -206,6 +206,8 @@ def _create_binary_metric_table(dialog):
     table = QTableWidget(3, 4, dialog)
     dialog.metric_readout = table
     table.setObjectName("calculator_metrics")
+    table.setShowGrid(False)
+    table.setAlternatingRowColors(True)
     table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
     table.setHorizontalHeaderLabels(["Metric", "Estimate", "Lower CI", "Upper CI"])
     vertical_header = table.verticalHeader()
@@ -219,6 +221,7 @@ def _create_binary_metric_table(dialog):
     font = QFont(horizontal_header.font())
     font.setBold(True)
     horizontal_header.setFont(font)
+    horizontal_header.setStyleSheet("QHeaderView::section { border: 0; border-bottom: 1px solid palette(mid); padding: 0 0.5em; }")
     for column in range(4):
         item = table.horizontalHeaderItem(column)
         assert item is not None

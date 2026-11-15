@@ -396,7 +396,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.nav_tree.setTextElideMode(Qt.TextElideMode.ElideMiddle)
         self.nav_tree.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.nav_tree.setRootIsDecorated(False)
-        self.nav_tree.setStyleSheet('QTreeWidget::item:selected { background-color: palette(highlight); color: palette(highlighted-text); }')
         self._refresh_navigation_palette()
         navigation = []
         pages = {'Manuscript': self.manuscript_action, 'Text report': self.report_action, 'Tables': self.tables_action}
@@ -416,10 +415,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._show_initial_result()
 
     def _refresh_navigation_palette(self):
-        palette = QPalette()
-        inherited = self.palette()
+        palette = QPalette(QApplication.palette())
+        highlight = palette.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight)
+        text = palette.color(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText)
+        self.nav_tree.setStyleSheet(f'QTreeWidget::item:selected {{ background-color: {highlight.name()}; color: {text.name()}; }}')
         for role in (QPalette.ColorRole.Highlight, QPalette.ColorRole.HighlightedText):
-            palette.setColor(QPalette.ColorGroup.Inactive, role, inherited.color(QPalette.ColorGroup.Active, role))
+            palette.setColor(QPalette.ColorGroup.Inactive, role, palette.color(QPalette.ColorGroup.Active, role))
         self.nav_tree.setPalette(palette)
 
     def _show_initial_result(self):
@@ -527,6 +528,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def changeEvent(self, event: QEvent | None) -> None:
         super().changeEvent(event)
         if event is not None and event.type() in (QEvent.Type.PaletteChange, QEvent.Type.ApplicationPaletteChange) and hasattr(self, "manuscript_text"):
+            self._refresh_navigation_palette()
             QTimer.singleShot(0, self._refresh_theme)
 
     def _setup_report_document(self):

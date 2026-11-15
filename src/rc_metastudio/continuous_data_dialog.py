@@ -178,7 +178,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.input_mode_combo.addItem("Arm summaries", "summary")
         self.input_mode_combo.addItem("Entered estimate", "estimate")
         self.input_mode_combo.setAccessibleName("Study input method")
-        self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: group data or an entered effect estimate.")
+        self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: arm data or an entered effect estimate.")
         self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(self._active_input_mode))
         self.input_mode_combo.currentIndexChanged.connect(self._input_mode_changed)
         self._update_input_modes()

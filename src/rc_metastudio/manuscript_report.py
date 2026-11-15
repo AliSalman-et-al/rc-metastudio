@@ -554,6 +554,11 @@ def write_docx(report, path):
         for attribute in ('asciiTheme', 'hAnsiTheme', 'eastAsiaTheme', 'cstheme'):
             fonts.attrib.pop(qn('w:' + attribute), None)
         document.styles[name].font.color.rgb = RGBColor(0, 0, 0)
+    title_properties = document.styles['Title'].element.pPr
+    if title_properties is not None:
+        border = title_properties.find(qn('w:pBdr'))
+        if border is not None:
+            title_properties.remove(border)
     section = document.sections[0]
     section.page_width = Mm(210)
     section.left_margin = section.right_margin = Mm(15)

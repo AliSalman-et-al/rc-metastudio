@@ -110,7 +110,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self.input_mode_combo.addItem("Study counts", "counts")
         self.input_mode_combo.addItem("Entered estimate", "estimate")
         self.input_mode_combo.setAccessibleName("Study input method")
-        self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: group data or an entered effect estimate.")
+        self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: arm data or an entered effect estimate.")
         self._active_input_mode = "estimate" if self.analysis_unit.calculator_source(self.current_effect, self.arm_key) == "entered" else "counts"
         self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(self._active_input_mode))
         self.input_mode_combo.currentIndexChanged.connect(self._input_mode_changed)

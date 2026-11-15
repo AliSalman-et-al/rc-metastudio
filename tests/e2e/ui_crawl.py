@@ -526,6 +526,15 @@ def calculators(driver, capture, missing, prefix="D", families=None):
                     effect_group = form.groupBox if isinstance(form, BinaryDataDialog) else form.effect_group
                     assert effect_group.y() < form.input_mode_combo.geometry().bottom() + form.fontMetrics().lineSpacing() * 4
                 capture(f"{prefix}-calculator-{family}-{mode}", form)
+            if prefix == 'D' and isinstance(form, ContinuousDataDialog):
+                form.input_mode_combo.setCurrentIndex(form.input_mode_combo.findData('summary'))
+                form.clear_button.click()
+                form.simple_table.setCurrentCell(0, 3)
+                entered = required(form.simple_table.item(0, 3))
+                entered.setText('0.2')
+                driver.app.processEvents()
+                assert entered.text() and entered.data(QtCore.Qt.ItemDataRole.UserRole) is True
+                capture('D-calculator-continuous-entered-se', form)
         else:
             capture(f"{prefix}-calculator-{family}-counts", form)
         form.close()
@@ -728,10 +737,21 @@ def run(driver):
                                             highlight_active=palette.color(QtGui.QPalette.ColorGroup.Active, QtGui.QPalette.ColorRole.Highlight).name(),
                                             highlight_inactive=highlight, pixels=pixels, area=area)
                         assert pixels > area / 4, (step, theme, pixels, area, highlight)
-                    if step.startswith('H-') and hasattr(widget, 'x_lbl_le'):
+                    if (step.startswith('H-') or (step.startswith('E-') and '-plots' in step)) and hasattr(widget, 'x_lbl_le'):
                         fields = (widget.style_cbo, widget.accent_color, widget.col1_str_edit, widget.x_lbl_le)
                         starts = [field.mapTo(widget, QtCore.QPoint()).x() for field in fields if field.isVisible()]
                         assert max(starts) - min(starts) <= 2, (step, theme, starts)
+                    if hasattr(widget, 'accent_color'):
+                        assert widget.accent_color.accessibleName() == 'Plot accent color'
+                    if step.startswith('H-sroc'):
+                        fields = (widget.sroc_curve_color, widget.sroc_confidence_color, widget.sroc_prediction_color,
+                                  widget.sroc_show_labels, widget.sroc_show_confidence, widget.sroc_show_prediction)
+                        starts = [field.mapTo(widget, QtCore.QPoint()).x() for field in fields]
+                        assert max(starts) - min(starts) <= 2, (step, starts)
+                        swatches = [label for label in widget.findChildren(QtWidgets.QLabel) if label.accessibleName().startswith('SROC') and label.accessibleName().endswith('swatch')]
+                        assert len(swatches) == 3
+                    if step.endswith('calculator-binary-counts'):
+                        assert not widget.metric_readout.showGrid()
                     themed_step = step + "-" + theme
                     original_record(themed_step, widget, theme=theme)
                     with index.open("a", encoding="utf-8") as stream:
@@ -752,6 +772,15 @@ def run(driver):
         if "A" in requested:
             driver.window.start()
             capture("A-home", driver.window)
+            import shutil
+            from datetime import datetime
+            recent = driver.WORK / 'Recent project.rcms'
+            shutil.copyfile(driver.ROOT / 'sample_projects/amino.rcms', recent)
+            modified = datetime(2026, 11, 5, 12).timestamp()
+            os.utime(recent, (modified, modified))
+            driver.window.start_page.set_recent_projects([str(recent)], driver.window.open)
+            assert any(label.text() == 'Modified 5 Nov 2026' for label in driver.window.start_page.findChildren(QtWidgets.QLabel))
+            capture('A-home-with-recents', driver.window)
         for key in requested:
             sections[key](driver, capture, missing)
     finally:

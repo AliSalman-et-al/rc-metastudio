@@ -17,8 +17,10 @@ from PyQt6.QtWidgets import (
     QDoubleSpinBox,
     QFileDialog,
     QFormLayout,
+    QHBoxLayout,
     QLabel,
     QLineEdit,
+    QPushButton,
     QWidget,
 )
 
@@ -389,15 +391,16 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         def add_field(label_text, control):
             label = QLabel(label_text, self._sroc_group)
             label.setBuddy(control)
-            layout.addRow(label, control)
+            field = self._sroc_color_row(control) if control in (self.sroc_curve_color, self.sroc_confidence_color, self.sroc_prediction_color) else control
+            layout.addRow(label, field)
 
         add_field("Y-axis label", self.sroc_ylabel)
         add_field("Y-axis lower bound", self.sroc_y_lower)
         add_field("Y-axis upper bound", self.sroc_y_upper)
         add_field("Y-axis ticks", self.sroc_y_ticks)
         add_field("Marker area", self.sroc_marker_area)
-        layout.addRow(self.sroc_show_labels)
-        layout.addRow(self.sroc_extrapolate)
+        layout.addRow('', self.sroc_show_labels)
+        layout.addRow('', self.sroc_extrapolate)
         add_field("Curve color", self.sroc_curve_color)
         add_field("Confidence color", self.sroc_confidence_color)
         add_field("Prediction color", self.sroc_prediction_color)
@@ -405,13 +408,31 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         add_field("Confidence line style", self.sroc_confidence_lty)
         add_field("Prediction line style", self.sroc_prediction_lty)
         add_field("Text size", self.sroc_text_cex)
-        layout.addRow(self.sroc_show_confidence)
-        layout.addRow(self.sroc_show_prediction)
-        layout.addRow(self.sroc_show_summary)
-        layout.addRow(self.sroc_show_auc)
-        layout.addRow(self.sroc_show_curve_legend)
-        layout.addRow(self.sroc_show_marker_legend)
+        layout.addRow('', self.sroc_show_confidence)
+        layout.addRow('', self.sroc_show_prediction)
+        layout.addRow('', self.sroc_show_summary)
+        layout.addRow('', self.sroc_show_auc)
+        layout.addRow('', self.sroc_show_curve_legend)
+        layout.addRow('', self.sroc_show_marker_legend)
         self.content_layout.addWidget(self._sroc_group)
+
+    def _sroc_color_row(self, edit):
+        row = QWidget(self._sroc_group)
+        layout = QHBoxLayout(row)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(edit)
+        button = QPushButton('Choose…', row)
+        button.setAccessibleName('Choose ' + edit.accessibleName())
+        button.clicked.connect(app_error_handler.safe_slot(
+            lambda checked=False: self._choose_sroc_color(edit), parent=self))
+        layout.addWidget(button)
+        add_color_swatch(edit, layout)
+        return row
+
+    def _choose_sroc_color(self, edit):
+        color = QColorDialog.getColor(QColor(edit.text()), self, edit.accessibleName())
+        if color.isValid():
+            edit.setText(color.name())
 
     def _load_params(self, image_path):
         self._loading_style = True

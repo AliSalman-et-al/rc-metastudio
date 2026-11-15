@@ -18,13 +18,9 @@ def navigation_selection_pixels(view):
     item = required(tree.currentItem(), 'selected Results section')
     image = required(tree.viewport()).grab().toImage()
     rect = tree.visualItemRect(item).intersected(image.rect())
-    highlight = tree.palette().color(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Highlight)
-    base = tree.palette().color(QPalette.ColorRole.Base)
-    def distance(pixel, color):
-        return sum((left - right) ** 2 for left, right in zip(pixel.getRgb()[:3], color.getRgb()[:3]))
-    # Native theme transitions can shade the accent. Classify the painted row
-    # against its semantic highlight/base colours instead of requiring byte equality.
-    count = sum(distance(pixel := image.pixelColor(x, y), highlight) < distance(pixel, base)
+    highlight = QtWidgets.QApplication.palette().color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight)
+    assert tree.palette().color(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Highlight) == highlight
+    count = sum(image.pixelColor(x, y).rgb() == highlight.rgb()
                 for y in range(rect.top(), rect.bottom() + 1)
                 for x in range(rect.left(), rect.right() + 1))
     return count, rect.width() * rect.height(), highlight.name()
@@ -230,6 +226,8 @@ def run(app, window, work, root, record, analyze):
     path = work / 'subgroup-design.docx'
     write_docx(view.manuscript, str(path))
     document = Document(path)
+    title_properties = document.styles['Title'].element.pPr
+    assert title_properties is None or title_properties.find(qn('w:pBdr')) is None
     for name in ('Normal', 'Title', 'Heading 1', 'Caption'):
         fonts = document.styles[name].element.rPr.rFonts
         assert all(fonts.get(qn('w:' + attr)) is None for attr in ('asciiTheme', 'hAnsiTheme', 'eastAsiaTheme', 'cstheme'))

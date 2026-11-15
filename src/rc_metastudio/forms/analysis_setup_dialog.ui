@@ -179,7 +179,7 @@
            <property name="buddy"><cstring>accent_color</cstring></property>
            </widget>
           </item>
-          <item row="0" column="1" colspan="2"><layout class="QHBoxLayout" name="accent_color_layout"><item><widget class="QLineEdit" name="accent_color">
+          <item row="0" column="1" colspan="2"><layout class="QHBoxLayout" name="accent_color_layout"><item><widget class="QLineEdit" name="accent_color"><property name="accessibleName"><string>Plot accent color</string></property>
             <property name="text">
              <string>#2f5597</string>
             </property>
@@ -388,6 +388,7 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="axis_group"><property name="title"><string>Axes</string></property>
        <layout class="QGridLayout" name="gridLayout_3">
          <item row="0" column="0">
           <widget class="QLabel" name="label_7">
@@ -396,7 +397,7 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="2">
+         <item row="0" column="1">
           <widget class="QLineEdit" name="x_lbl_le">
            <property name="text">
             <string>[default]</string>
@@ -410,7 +411,7 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="2">
+         <item row="4" column="1">
           <widget class="QLineEdit" name="x_ticks_le">
            <property name="text">
             <string>[default]</string>
@@ -424,7 +425,7 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="2">
+         <item row="1" column="1">
           <widget class="QLineEdit" name="plot_lb_le">
            <property name="text">
             <string>[default]</string>
@@ -438,7 +439,7 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="2">
+         <item row="2" column="1">
           <widget class="QLineEdit" name="plot_ub_le">
            <property name="text">
             <string>[default]</string>
@@ -452,7 +453,7 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="2">
+         <item row="5" column="1">
           <widget class="QCheckBox" name="show_summary_line">
            <property name="text">
             <string/>
@@ -463,15 +464,16 @@
           </widget>
          </item>
         </layout>
+        </widget>
        </item>
        <item>
         <widget class="QGroupBox" name="regression_group">
          <property name="title"><string>Regression options</string></property>
          <layout class="QGridLayout" name="regression_layout">
-          <item row="0" column="0"><widget class="QCheckBox" name="show_regression_line"><property name="text"><string>Show regression line</string></property><property name="checked"><bool>true</bool></property></widget></item>
-          <item row="1" column="0"><widget class="QCheckBox" name="show_confidence_band"><property name="text"><string>Show confidence band</string></property><property name="checked"><bool>true</bool></property></widget></item>
-          <item row="2" column="0"><widget class="QCheckBox" name="show_prediction_interval"><property name="text"><string>Show prediction interval</string></property></widget></item>
-          <item row="3" column="0"><widget class="QCheckBox" name="show_legend"><property name="text"><string>Show legend</string></property></widget></item>
+          <item row="0" column="1"><widget class="QCheckBox" name="show_regression_line"><property name="text"><string>Show regression line</string></property><property name="checked"><bool>true</bool></property></widget></item>
+          <item row="1" column="1"><widget class="QCheckBox" name="show_confidence_band"><property name="text"><string>Show confidence band</string></property><property name="checked"><bool>true</bool></property></widget></item>
+          <item row="2" column="1"><widget class="QCheckBox" name="show_prediction_interval"><property name="text"><string>Show prediction interval</string></property></widget></item>
+          <item row="3" column="1"><widget class="QCheckBox" name="show_legend"><property name="text"><string>Show legend</string></property></widget></item>
          </layout>
         </widget>
        </item>

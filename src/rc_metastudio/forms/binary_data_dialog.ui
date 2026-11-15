@@ -57,7 +57,7 @@
    </item>
        <item>
         <widget class="QGroupBox" name="groupBox">
-         <property name="title"><string>Effect estimate and confidence interval</string></property>
+         <property name="title"><string>Effect estimate</string></property>
          <layout class="QFormLayout" name="calculator_layout">
           <property name="fieldGrowthPolicy"><enum>QFormLayout::AllNonFixedFieldsGrow</enum></property>
           <property name="rowWrapPolicy"><enum>QFormLayout::WrapLongRows</enum></property>

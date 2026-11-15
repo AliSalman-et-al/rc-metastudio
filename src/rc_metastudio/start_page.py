@@ -136,7 +136,8 @@ class StartPage(QtWidgets.QScrollArea):
         self.recent_layout.addWidget(_RecentPathLabel(str(path), self.recent_projects), index, 1)
         if exists:
             try:
-                modified = datetime.fromtimestamp(Path(path).stat().st_mtime).strftime('%d %b %Y')
+                timestamp = datetime.fromtimestamp(Path(path).stat().st_mtime)
+                modified = f'{timestamp.day} {timestamp:%b %Y}'
             except OSError:
                 modified = ''
             date_label = QtWidgets.QLabel('Modified ' + modified if modified else '', self.recent_projects)

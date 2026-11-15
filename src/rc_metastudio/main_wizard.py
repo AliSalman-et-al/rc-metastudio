@@ -1028,7 +1028,6 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         self.second_group_name.setVisible(self._comparative)
         self.first_group_label.setVisible(self._comparative or data_type == analysis_catalog.DIAGNOSTIC)
         self.first_group_name.setVisible(self._comparative or data_type == analysis_catalog.DIAGNOSTIC)
-        self.name_note.hide()
         for field in (self.first_group_name, self.second_group_name):
             field.setAccessibleDescription("Optional. Leave blank to use " + field.placeholderText() + ".")
         self.completeChanged.emit()

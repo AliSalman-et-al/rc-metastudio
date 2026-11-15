@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Method-selection dialog and analysis specification builder."""
 
-from rc_metastudio.qt_layout import DisclosureButton, style_inline_error, add_color_swatch
+from rc_metastudio.qt_layout import DisclosureButton, style_inline_error, add_color_swatch, align_field_columns
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QResizeEvent, QCloseEvent, QColor, QHideEvent, QShowEvent
@@ -768,6 +768,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.style_cbo.currentTextChanged.connect(
             app_error_handler.safe_slot(self._plot_style_changed, parent=self)
         )
+
+        align_field_columns((self.style_layout, self.appearance_layout, self.gridLayout_2, self.default_layout, self.gridLayout_3, self.regression_layout))
 
     def _configure_plot_option_groups(self):
         workflow = self.analysis_type or "standard"

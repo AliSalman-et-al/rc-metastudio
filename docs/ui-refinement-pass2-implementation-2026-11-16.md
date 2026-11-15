@@ -87,3 +87,27 @@ narrow Results, field alignment, all plot-editor families and rendered exports.
 The concurrent pre-push and full profile were interrupted during investigation;
 neither interrupted run is a completed qualification. All final gates rerun on
 the next clean revision.
+
+## Fable final review corrections
+
+Fable's completed review is retained at
+`artifacts/verification/ui-pass2-2026-11-16/fable-final-review.md`. It correctly
+rejected the nearest-colour assertion: that would accept a cached brush from the
+previous theme. The correction refreshes the explicit stylesheet brush
+synchronously from the application palette, and restores exact rendered-colour
+checks against that palette. The raw failed/incomplete runs remain unchanged.
+
+The remaining review findings are implemented: setup plot fields share a column
+and Axes group; SROC colour fields have native chooser buttons and swatches with
+checkboxes in the field column; accent swatches have explicit accessible names;
+spoken descriptions say arm; dates omit a leading zero; calculator effect groups
+share a title; Word's blue template title border is removed; the binary readout
+uses quiet table rules; hidden naming-copy cruft is deleted. No statistical
+calculation, oracle or tolerance changed.
+
+Acceptance was extended before these corrections with exact selection paint,
+setup/editor geometry, SROC swatches, accessible names, title-border absence,
+binary table style, a fixed-date recent project and an entered SE after clearing
+the continuous calculator. All 201 focused GUI checks pass. The scoped F drive
+passed its exact colour assertions but remains an incomplete tour because the
+subgroup capture is supplied by G; the complete native tour remains required.
