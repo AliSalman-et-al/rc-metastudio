@@ -159,3 +159,29 @@ Runtime: Windows, Python 3.14.10, Qt/PyQt 6.12.0, R 4.6.2, RCMetaR 0.5.5.
 Native source and offscreen evidence do not qualify macOS/Linux, exact release
 packages, exhaustive DPI/accessibility states or native OS file pickers. No
 statistical oracle, tolerance, estimator or code-health exception was changed.
+
+## PR 599: default Windows font and small-screen recovery
+
+CI's RemainingSurfaces lane exposed a font-specific wizard defect that the
+Segoe-only local lane did not: with default Windows offscreen fonts enlarged by
+8 pt and 800 × 600 available space, the ModernStyle header's non-wrapping question
+forced a 754 px frame instead of the required maximum 720 px. The unchanged
+bounded-workflow test reproduced all three CI failures locally before the fix
+(`build/pr599-wizard-before.log`).
+
+The canonical data-type page now uses the short “Data type” heading and keeps
+“What type of data do you have?” as wrapping guidance in its scrolling content.
+This preserves Fable's question and the native context band without changing
+adaptive geometry, fonts, flow or test bounds. All 67 RemainingSurfaces tests now
+pass with the default fonts and no QT_QPA_FONTDIR override. Native captures and
+validation also pass for all 11 surfaces at 1.0 and 1.5 scale. Command:
+`./scripts/verify-qt6.ps1 -Section RemainingSurfaces`; transcript:
+`build/pr599-remaining-surfaces-after.log`. Copies of the native evidence are
+retained under `artifacts/verification/ui-pass2-2026-11-16/ci-wizard-recovery/`.
+The normal-size dark wizard was manually reviewed; full pre-push and targeted
+real Qt/R wizard/import flows will be recorded after their rerun.
+
+This recovery changes only one canonical UI form beyond the source qualified
+above; all analysis, numeric/report code, dependencies and scientific oracles
+remain byte-identical. The earlier full profile remains valid evidence of those
+unchanged paths, not a claim that it tested the new heading.
