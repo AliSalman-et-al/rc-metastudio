@@ -1926,7 +1926,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             window_title = "Method and parameters for %s" % metric_group_label
 
         self.setWindowTitle(QtCore.QCoreApplication.translate("Dialog", window_title))
-        self.method_lbl.setText("Analysis method:")
+        self.method_lbl.setText("Analysis method")
         self.method_lbl.setWordWrap(False)
 
 

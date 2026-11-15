@@ -20,7 +20,7 @@
    <string>WizardPage</string>
   </property>
   <property name="title">
-   <string>Start a review</string>
+   <string>Start a project</string>
   </property>
   <layout class="QVBoxLayout" name="workflowPageLayout">
    <property name="leftMargin"><number>0</number></property>
@@ -88,7 +88,7 @@
        <item>
         <widget class="QPushButton" name="open_btn">
          <property name="text">
-          <string>Open existing dataset…</string>
+          <string>Open project…</string>
          </property>
          <property name="icon">
           <iconset resource="../images/icons.qrc">

@@ -214,14 +214,14 @@ def test_configuration_controls_have_accessible_label_associations(
 @pytest.mark.parametrize(
     ("data_type", "diagnostic_metrics", "expected_title", "expected_method_label"),
     (
-        ("binary", None, "Method & Parameters", "Analysis method:"),
-        ("continuous", None, "Method & Parameters", "Analysis method:"),
-        ("hazard_ratio", None, "Method & Parameters", "Analysis method:"),
+        ("binary", None, "Method & Parameters", "Analysis method"),
+        ("continuous", None, "Method & Parameters", "Analysis method"),
+        ("hazard_ratio", None, "Method & Parameters", "Analysis method"),
         (
             "diagnostic",
             ["lr", "dor"],
             "Method & Parameters for Likelihood Ratios and Diagnostic Odds Ratio",
-            "Analysis method:",
+            "Analysis method",
         ),
     ),
 )
@@ -269,12 +269,12 @@ def test_method_dialog_wording_is_scoped_to_its_analysis_family(
         (
             "meta-regression",
             "Reitsma Meta-Regression",
-            "Analysis method:",
+            "Analysis method",
         ),
         (
             None,
             "Method & Parameters for Sensitivity and Specificity",
-            "Analysis method:",
+            "Analysis method",
         ),
     ),
     ids=["meta-regression", "standard"],

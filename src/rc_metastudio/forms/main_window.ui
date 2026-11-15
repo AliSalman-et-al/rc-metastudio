@@ -177,7 +177,7 @@
    </widget>
    <widget class="QMenu" name="menuDataset">
     <property name="title">
-     <string>Dataset</string>
+     <string>Project</string>
     </property>
     <addaction name="action_new_dataset" />
     <addaction name="separator" />

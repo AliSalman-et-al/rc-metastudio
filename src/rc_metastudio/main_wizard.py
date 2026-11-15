@@ -960,7 +960,10 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         if info["sub_type"] in {"reg_coef", "generic_effect"}:
             kind = {"reg_coef": "Regression coefficient", "generic_effect": "Generic effect size"}[required(info["sub_type"], "data subtype")]
             metric = ""
-        self.outcome_name_LineEdit.setPlaceholderText("For example, disease detection" if data_type == analysis_catalog.DIAGNOSTIC else "For example, outcome")
+        example = {"binary": "mortality at 30 days", "continuous": "pain score at 6 weeks",
+                   "diagnostic": "disease detection", "time_to_event": "overall survival",
+                   "event_rates": "catheter-related bloodstream infection"}[required(info["data_type"], "data type")]
+        self.outcome_name_LineEdit.setPlaceholderText("For example, " + example)
         self.setSubTitle(f"<p>{task} · {kind}" + (f" · {metric}" if metric else "") + "</p>")
         self.setTitle("Outcome and arms" if self._comparative else "Outcome")
         first_label = "Intervention name" if self._comparative else "Index test name" if data_type == analysis_catalog.DIAGNOSTIC else "Arm name"

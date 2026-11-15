@@ -629,6 +629,7 @@ def add_named_sheet(app, window, name, diagnostic=False):
         page = wizard.currentPage()
         assert isinstance(page, main_wizard.OutcomeNamePage)
         app.processEvents()
+        cast(Callable[[int], None], QTest.qWait)(100)
         edit = page.outcome_name_LineEdit
         assert edit.hasFocus()
         assert edit.selectedText() == edit.text()

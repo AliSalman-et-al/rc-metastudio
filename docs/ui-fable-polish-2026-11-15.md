@@ -54,3 +54,31 @@ HR/IRR source-field precision remains unchanged: the proposed six-significant-
 digit rounding would lose original scientific input. The pre/post screenshot's
 intentional scroll did not prove an initial defect, but a fresh native run did
 confirm that mode changes were not requesting a content refit.
+
+## Consistency sweep
+
+Project terminology now follows the domain glossary in the menu and welcome
+page. Outcome placeholders use concrete examples for each data family. Setup
+and SROC labels use the same no-trailing-colon convention.
+
+The native A/B/D/E/S tour passed with 188 recorded steps in
+`artifacts/verification/rcms/20261115T164415Z-69e6d2de-ui-crawl/`, covering the
+shell, outcome wizard/management, all calculator families and analysis/error
+dialogs in both themes. The earlier attempt exposed a native focus-settling
+race in the capture driver; it now waits for native activation before checking
+the focused outcome editor. The original focus assertions remain intact.
+The corrected wizard/setup/editor suite passed all 66 existing checks.
+
+### Review findings requiring qualification
+
+- `report-observations.json` under the Fable artifact directory confirms that
+  regression df and residual I² are present in the complete editable DOCX.
+  They continue beyond the first page. Mixed text/numeric Value-column
+  alignment is a separate confirmed presentation issue.
+- Whole-chart fitting and result-specific titles already exist. Earlier
+  post-Fit-width captures and missing window decorations do not prove broken
+  defaults. Verify initial-state behavior before changing it.
+- Empty outcome validation is already quiet before an attempted submission;
+  focus colouring from the operating system must not be treated as an error.
+- Keep the Text report, full plot settings, source-input precision and current
+  dialog archetypes. Larger reorganisations remain design proposals.
