@@ -712,6 +712,9 @@ def run(driver):
                     if scheme is not None:
                         driver.app.styleHints().setColorScheme(scheme)
                         driver.app.processEvents()
+                    if isinstance(widget, QtWidgets.QMenu) and not widget.isVisible():
+                        widget.popup(widget.pos())
+                        driver.app.processEvents()
                     assert (driver.app.palette().color(QtGui.QPalette.ColorRole.Window).lightness() > 128) == (theme == "light"), (step, theme)
                     themed_step = step + "-" + theme
                     original_record(themed_step, widget, theme=theme)

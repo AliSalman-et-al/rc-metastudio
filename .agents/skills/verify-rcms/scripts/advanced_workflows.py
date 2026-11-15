@@ -408,7 +408,7 @@ def zero_cells(app, window, record):
     assert "Participants in Control" not in report, report
     assert "1097" in report and "Participants in Intervention" in report, report
     assert "Comparison: Intervention / Control" not in manuscript, manuscript
-    assert "Group: Intervention" in manuscript, manuscript
+    assert "Arm: Intervention" in manuscript, manuscript
     view.close()
     window.workspace.mark_saved()
 
@@ -666,7 +666,7 @@ def plots(app, window, family, record, *, view=None):
         assert dialog.figure_caption.isVisible(), "figure caption cannot be edited"
         assert dialog.figure_caption.text(), "standalone figure lacks context"
         assert " · None" not in dialog.figure_caption.text(), dialog.figure_caption.text()
-        assert " · Comparison:" in dialog.figure_caption.text() or " · Group:" in dialog.figure_caption.text(), dialog.figure_caption.text()
+        assert " · Comparison:" in dialog.figure_caption.text() or " · Arm:" in dialog.figure_caption.text(), dialog.figure_caption.text()
         dialog.figure_caption.setText("Edited outcome / comparison / follow-up")
         if funnel:
             dialog.point_size_spin.setValue(1.8)

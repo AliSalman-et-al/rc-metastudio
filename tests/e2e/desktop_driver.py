@@ -104,11 +104,17 @@ def record_step(action, *widgets, **observations):
     for index, widget in enumerate(widgets):
         path = EVIDENCE / f"{STEP:02d}-{index}-{action}.png"
         if app.platformName() in {"windows", "xcb", "cocoa"}:
-            widget.raise_()
-            widget.activateWindow()
+            popup = isinstance(widget, QtWidgets.QMenu)
+            if popup:
+                assert widget.isVisible(), action
+            else:
+                widget.raise_()
+                widget.activateWindow()
             app.processEvents()
             cast(Callable[[int], None], QTest.qWait)(400)
-            if observations.get("capture_surface") == "desktop-composite":
+            # Activating a popup closes it; its layered window handle can also
+            # return black pixels on Windows. Capture the live desktop surface.
+            if popup or observations.get("capture_surface") == "desktop-composite":
                 capture = widget.screen().grabWindow(0)
                 ratio = capture.devicePixelRatio()
                 geometry = widget.frameGeometry()
@@ -120,6 +126,10 @@ def record_step(action, *widgets, **observations):
                 capture = widget.screen().grabWindow(int(widget.winId()))
         else:
             capture = widget.grab()
+        if isinstance(widget, QtWidgets.QMenu):
+            pixels = capture.toImage()
+            assert len({pixels.pixelColor(x, y).rgba() for x in range(0, pixels.width(), 4)
+                        for y in range(0, pixels.height(), 4)}) > 4, f"Blank menu capture: {action}"
         assert capture.save(str(path), "PNG"), path
         captures.append(path.name)
         if app.platformName() in {"windows", "xcb", "cocoa"} and action in {"analysis-results", "matrix-results", "small-study-results", "family-plot-cancelled"}:
@@ -263,7 +273,7 @@ def doctor(app, window):
     record_step("ready", window, runtime=identity)
 
 
-def analyze(app, window, method, *, digits=3, confidence=None, via_shortcut=False):
+def analyze(app, window, method, *, digits=3, confidence=None, via_shortcut=False, diagnostic_metrics=None):
     from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
 
     assert window.action_go.isEnabled()
@@ -282,7 +292,8 @@ def analyze(app, window, method, *, digits=3, confidence=None, via_shortcut=Fals
             for w in app.topLevelWidgets()
             if isinstance(w, DiagnosticMetricsDialog) and w.isVisible()
         )
-        requested_metrics = {'sens', 'spec', 'dor'} if method == 'diagnostic.reitsma' else {'dor'}
+        requested_metrics = (set(diagnostic_metrics) if diagnostic_metrics is not None else
+                             {'sens', 'spec', 'dor'} if method == 'diagnostic.reitsma' else {'dor'})
         for metric in metrics.SELECTABLE_METRICS:
             checkbox = metrics._metric_checkbox(metric)
             if checkbox.isChecked() != (metric in requested_metrics):
@@ -556,7 +567,7 @@ def sample_analysis(app, window, sample):
         small_view.report_action.setChecked(True)
         app.processEvents()
         small_text = small_view.report_text.toPlainText()
-        assert "0.004 to 1.44" in small_text and "0.00 to 1.44" not in small_text, small_text
+        assert "0.0040 to 1.44" in small_text and "0.00 to 1.44" not in small_text, small_text
         record_step("nonzero-report-limit", small_view, lower="0.004", digits=2)
         small_view.close()
     view = analyze(app, window, method)
@@ -855,7 +866,8 @@ def sheets_legacy(app, window):
         assert [window.sheet_tabs.tabText(i) for i in range(window.sheet_tabs.count())] == names
         for index, row in enumerate(rows):
             window.sheet_tabs.setCurrentIndex(index)
-            view = analyze(app, window, row["method"])
+            view = analyze(app, window, row["method"], diagnostic_metrics=("sens", "spec", "dor")
+                           if window.model.get_current_data_type() == "diagnostic" else None)
             actual = parsed_numeric_sections(view.results)
             assert actual == row["sections"], (filename, actual, row["sections"])
             record_step("legacy-original-numerics", view, file=filename, sha256=digest, sections=actual)
@@ -1016,7 +1028,7 @@ def sheets(app, window):
     index = tabs.currentIndex()
     def delete_menu():
         menu = app.activePopupWidget()
-        action = next(a for a in menu.actions() if a.text() == "Delete")
+        action = next(a for a in menu.actions() if a.text() == f'Delete “{tabs.tabText(index)}”…')
         QtCore.QTimer.singleShot(0, lambda: app.activeModalWidget().done(QtWidgets.QMessageBox.StandardButton.Yes))
         mouse_click(menu, QtCore.Qt.MouseButton.LeftButton, menu.actionGeometry(action).center())
     QtCore.QTimer.singleShot(0, delete_menu)
@@ -1872,7 +1884,7 @@ def calculator(app, window, family):
                 assert readout_bounds.bottom() < footer_bounds.top(), (readout_bounds, footer_bounds)
                 assert dialog.content_scroll.verticalScrollBar().maximum() == 0
                 assert dialog.raw_data_table.verticalScrollBar().maximum() == 0
-                assert "SE" in dialog.wald_readout.text() and "Two-sided P" in dialog.wald_readout.text()
+                assert "SE" in dialog.wald_readout.text() and "two-sided p" in dialog.wald_readout.text()
                 widths = [dialog.metric_readout.columnWidth(i) for i in range(4)]
                 header = required(dialog.metric_readout.horizontalHeader())
                 for col, width in enumerate(widths):
@@ -1979,6 +1991,7 @@ def calculator(app, window, family):
             )
             mouse_click(required(button), QtCore.Qt.MouseButton.LeftButton)
         except Exception as error:  # noqa: BLE001 - propagate Qt callback failures after the modal loop.
+            traceback.print_exc()
             callback_errors.append(error)
             dialog.reject()
 
