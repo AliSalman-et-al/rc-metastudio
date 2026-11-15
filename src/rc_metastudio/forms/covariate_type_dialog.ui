@@ -14,7 +14,7 @@
    <item>
     <widget class="QGroupBox" name="grp_box_preview">
      <property name="title">
-      <string>Values for New Covariate</string>
+      <string>Values for new covariate</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>

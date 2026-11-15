@@ -24,8 +24,8 @@ class EditCovariateNameDialog(QDialog, _ui_edit_name_dialog.Ui_EditNameDialog):
         super(EditCovariateNameDialog, self).__init__(parent)
         self.setupUi(self)
         self.group_name_le.setText(current_covariate_name)
-        self.field_lbl.setText("Covariate name:")
-        self.setWindowTitle("Edit Covariate Name")
+        self.field_lbl.setText("Covariate name")
+        self.setWindowTitle("Edit covariate name")
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )

@@ -125,12 +125,12 @@ def _wald_summary(data_type, current_effect, est, se) -> str:
         scale = " (log scale)"
     elif current_effect in {"Sens", "Spec", "PLO"}:
         scale = " (logit scale)"
-    summary = f"SE{scale}: {se:.4f}"
+    summary = f"SE{scale} {se:.4f}"
     if data_type != "diagnostic" and se > 0:
         z = est / se
         p = math.erfc(abs(z) / math.sqrt(2))
         p_text = "<0.001" if p < 0.001 else f"{p:.3f}"
-        summary += f"    Z: {z:.4f}    Two-sided P: {p_text}"
+        summary += f"  ·  z {z:.4f}  ·  two-sided p {p_text}"
     return summary
 
 

@@ -453,7 +453,7 @@ def dialogs(driver, capture, missing):
             if detail in {"add-covariate", "add-study", "rename"}:
                 assert field.alignment() & QtCore.Qt.AlignmentFlag.AlignLeft
         if isinstance(form, ConfidenceLevelDialog):
-            assert form.confidence_level_label.text() == "Confidence level:"
+            assert form.confidence_level_label.text() == "Confidence level"
         capture("D-" + detail, form)
         form.close()
     calculators(driver, capture, missing)

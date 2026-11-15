@@ -218,6 +218,13 @@ class _InlineErrorPaletteFilter(QObject):
         return False
 
     def refresh(self):
+        app = QApplication.instance()
+        if isinstance(app, QApplication):
+            palette = app.palette()
+            link = QColor("#80bfff" if palette.color(QPalette.ColorRole.Window).lightness() < 128 else "#1a5fb4")
+            if palette.color(QPalette.ColorRole.Link) != link:
+                palette.setColor(QPalette.ColorRole.Link, link)
+                app.setPalette(palette)
         for widget in QApplication.allWidgets():
             if widget.property("rcmsInlineError"):
                 _set_error_palette(widget)

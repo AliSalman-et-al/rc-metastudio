@@ -1,5 +1,11 @@
 # Fable UI/UX refinement
 
+The authoritative whole-app brief is
+[Fable's design direction](ui-design-direction-2026-11-15.md): a quiet instrument,
+with paper-like data surfaces, native controls and one vocabulary. Its committed
+directions are being implemented in batches; its seven experiments remain gated
+by their stated prototype/observation criteria.
+
 The aim is a coherent, polished and easy-to-use research application, with the
 existing features exposed clearly. Fable's screenshot review is input to this
 work, not proof that every suspected defect exists. Larger interaction changes
@@ -82,3 +88,29 @@ The corrected wizard/setup/editor suite passed all 66 existing checks.
   focus colouring from the operating system must not be treated as an error.
 - Keep the Text report, full plot settings, source-input precision and current
   dialog archetypes. Larger reorganisations remain design proposals.
+
+## Whole-app direction implementation
+
+The new `ui-design-direction` drive was written before these changes. The native
+baseline at `20261115T170614Z-2dc58343-ui-design-direction` reproduced thirteen
+interaction/presentation failures, including an accepted-double change after a
+ratio/log round trip. Earlier attempts retained their typing/utility failures;
+none is a qualification pass.
+
+### Copy and wizard guidance
+
+Finished the remaining code-side labels, small-dialog arm terminology, Study name
+display header, calculator readout separators, manuscript capitalisation and
+numeral-initial sentences. Copy/save messages now expire after four seconds.
+Links use a readable light-theme blue and retain the existing readable dark blue
+while following live theme changes. No scientific values were reformatted.
+
+Metric pages explain the selected measure and list alternatives. The final
+outcome page shows only its applicable forward action. The importer still
+constructs `MainWizard(path=None)` and dispatches the selected file before
+showing it; welcome-page removal remains a separately gated simplification.
+
+Strict win32 typing and 66 existing wizard/setup/editor checks passed. Native
+B/D/E captures passed 104 steps in
+`artifacts/verification/rcms/20261115T171146Z-a0ba6fa5-ui-crawl/`, including both
+themes, all calculator families, setup and error states.

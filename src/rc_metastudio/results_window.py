@@ -639,7 +639,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         mime.setText(self._table_payload("\t", selected=True))
         mime.setHtml(table_html(headers, rows))
         required(QApplication.clipboard(), "system clipboard").setMimeData(mime)
-        self.statusbar.showMessage("Table copied")
+        self.statusbar.showMessage("Table copied", 4000)
 
     def _export_table(self):
         table = self._report_tables[self.table_selector.currentIndex()]
@@ -647,7 +647,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if path:
             with Path(path).open("w", encoding="utf-8-sig", newline="") as stream:
                 stream.write(self._table_payload(","))
-            self.statusbar.showMessage(f"Saved table: {Path(path).resolve()}")
+            self.statusbar.showMessage(f"Saved table: {Path(path).resolve()}", 4000)
 
     def _export_values(self):
         table = self._report_tables[self.table_selector.currentIndex()]
@@ -666,7 +666,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     for q in quantities:
                         writer.writerow((table.title, identity, header, q.role, '' if q.value is None else repr(q.value),
                                          q.scale, '' if q.level is None else f'{q.level:g}', cell))
-        self.statusbar.showMessage(f'Saved values: {Path(path).resolve()}')
+        self.statusbar.showMessage(f'Saved values: {Path(path).resolve()}', 4000)
 
     def _show_tables(self):
         self.report_action.blockSignals(True)
@@ -845,7 +845,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         mime.setHtml(report.html() + report.html(supplementary=True))
         mime.setText(report.plain_text())
         required(QApplication.clipboard(), "system clipboard").setMimeData(mime)
-        self.statusbar.showMessage("Report copied")
+        self.statusbar.showMessage("Report copied", 4000)
 
     def _export_report(self):
         from rc_metastudio.manuscript_report import ManuscriptReport, write_docx, write_pdf
@@ -858,7 +858,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             path = destination
             report = ManuscriptReport.from_result(self.results)
             (write_docx if extension == "docx" else write_pdf)(report, path)
-            self.statusbar.showMessage(f"Saved report: {Path(path).resolve()}")
+            self.statusbar.showMessage(f"Saved report: {Path(path).resolve()}", 4000)
 
     def _confirm_export_destination(self, selected, destination):
         # The save dialog confirmed the entered name, before suffix normalization.
@@ -1689,7 +1689,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 params_path=artifact.params_path,
                 output_path=destination,
             )
-        self.statusbar.showMessage(f"Saved {export_format.extension.upper()} plot: {Path(destination).resolve()}")
+        self.statusbar.showMessage(f"Saved {export_format.extension.upper()} plot: {Path(destination).resolve()}", 4000)
 
     def position(self):
         return QPointF(float(self.x_coord), float(self.y_coord))

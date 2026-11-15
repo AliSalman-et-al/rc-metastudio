@@ -745,6 +745,8 @@ class DatasetTableModel(QAbstractTableModel):
     ):
         """Return basic header data without constructing a table model."""
         if section in (DatasetTableModel.INCLUDE_STUDY, DatasetTableModel.NAME, DatasetTableModel.YEAR):
+            if section == DatasetTableModel.NAME and not csv_schema:
+                return "Study name"
             return _display_label(DatasetTableModel.headers[section])
         if outcome_is_present and section in raw_columns:
             label = DatasetTableModel._raw_header_label(section, data_type, sub_type, raw_columns, groups, csv_schema)

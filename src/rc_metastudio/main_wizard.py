@@ -4,6 +4,7 @@
 from decimal import Decimal, InvalidOperation
 from typing import cast, TYPE_CHECKING, TypedDict
 import csv
+import re
 from pathlib import Path
 
 if TYPE_CHECKING:
@@ -80,16 +81,18 @@ class DatasetInfo(TypedDict, total=False):
 class MainWizardPage(QWizardPage):
     def __init__(self, parent=None):
         super().__init__(parent)
-        if self.palette().color(QPalette.ColorRole.Window).lightness() < 128:
-            palette = QPalette()
-            palette.setColor(QPalette.ColorRole.Link, QColor("#80bfff"))
-            self.setPalette(palette)
+
+    def changeEvent(self, event: QEvent | None) -> None:
+        super().changeEvent(event)
+        if event is not None and event.type() in (QEvent.Type.PaletteChange, QEvent.Type.ApplicationPaletteChange):
+            color = self.palette().color(QPalette.ColorRole.Link).name()
+            for label in self.findChildren(QLabel):
+                if '<a ' in label.text():
+                    text = re.sub(r'<a\s+style="[^"]*"', '<a', label.text())
+                    label.setText(text.replace('<a ', f'<a style="color: {color}" '))
 
     def style_link_button(self, button):
-        palette = QPalette(self.palette())
-        palette.setColor(QPalette.ColorRole.ButtonText, palette.color(QPalette.ColorRole.Link))
-        button.setPalette(palette)
-        button.setStyleSheet("QPushButton { text-decoration: underline; }")
+        button.setStyleSheet("QPushButton { color: palette(link); text-decoration: underline; }")
 
     def wizard(self) -> "MainWizard":
         wizard = super().wizard()
@@ -411,6 +414,14 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
     def __init__(self, parent=None):
         super(ChooseMetricPage, self).__init__(parent)
         self.setupUi(self)
+        self.definition_label = QLabel(self)
+        self.definition_label.setAccessibleName("Effect measure explanation")
+        qt_layout.configure_context_label(self.definition_label)
+        self.horizontalLayout.addWidget(self.definition_label)
+        self.alternatives_label = QLabel(self)
+        self.alternatives_label.setForegroundRole(QPalette.ColorRole.PlaceholderText)
+        qt_layout.configure_context_label(self.alternatives_label)
+        self.horizontalLayout.addWidget(self.alternatives_label)
 
         self.metric_cbo_box.currentIndexChanged[int].connect(
             app_error_handler.safe_slot(self._metric_choice_changed, parent=self)
@@ -447,9 +458,38 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
                 default_item_text += " (default)"
             self.metric_cbo_box.setItemText(index_of_default, default_item_text)
             self.metric_cbo_box.blockSignals(False)
+            self._update_metric_description()
 
     def _metric_choice_changed(self, newindex):
         self.wizard().set_effect(qt_text.to_native_text(self.metric_cbo_box.itemData(newindex)))
+        self._update_metric_description()
+
+    def _update_metric_description(self):
+        metric = self.metric_cbo_box.currentData()
+        definitions = {
+            "OR": "Odds in the intervention arm divided by odds in the control arm.",
+            "RR": "Risk in the intervention arm divided by risk in the control arm.",
+            "RD": "Risk in the intervention arm minus risk in the control arm.",
+            "PR": "The proportion of participants with the outcome in one arm.",
+            "PLN": "A single-arm proportion analyzed on the log scale.",
+            "PLO": "A single-arm proportion analyzed on the logit scale.",
+            "PAS": "A single-arm proportion analyzed with the arcsine transformation.",
+            "PFT": "A single-arm proportion analyzed with the Freeman–Tukey double-arcsine transformation.",
+            "MD": "Mean in the intervention arm minus mean in the control arm, in the original units.",
+            "SMD": "The difference between arm means, expressed in standard-deviation units.",
+            "Mean": "The mean outcome in one arm, with its uncertainty.",
+            "HR": "The event hazard in the intervention arm divided by that in the control arm.",
+            "IRR": "Events per unit of person-time in the intervention arm divided by the rate in the control arm.",
+        }
+        description = definitions.get(metric, "")
+        if metric == "Mean":
+            subtype = self.wizard().require_dataset_info()["sub_type"]
+            description = {"reg_coef": "A reported regression coefficient with its uncertainty.",
+                           "generic_effect": "A reported effect estimate with its uncertainty."}.get(subtype, description)
+        self.definition_label.setText(description)
+        alternatives = [self.metric_cbo_box.itemText(i).removesuffix(" (default)")
+                        for i in range(self.metric_cbo_box.count()) if i != self.metric_cbo_box.currentIndex()]
+        self.alternatives_label.setText("Also available: " + ", ".join(alternatives) if alternatives else "")
 
     def nextId(self):
         return Page_OutcomeName
@@ -1148,7 +1188,7 @@ class MainWizard(QWizard):
         self.setButtonText(QWizard.WizardButton.FinishButton, "Import" if self.get_wizard_path() == "csv_import" else "Add outcome" if self.existing_outcome_names else "Create")
         next_button = self.button(QWizard.WizardButton.NextButton)
         if next_button is not None:
-            next_button.setVisible(self.currentId() not in (Page_Welcome, Page_CsvImport))
+            next_button.setVisible(self.currentId() != Page_Welcome and self.nextId() != -1)
         forward_buttons = [
             self.button(QWizard.WizardButton.NextButton),
             self.button(QWizard.WizardButton.FinishButton),

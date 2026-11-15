@@ -153,7 +153,7 @@ class _DiagnosticMethodPanel(object):
         self.params = {}
         self.widgets = []
         self.label = label_widget
-        self.label.setText("Analysis method: " + label)
+        self.label.setText(label + " method")
         self.combo = combo
         self.param_box = param_box
         owner._configure_method_selector(self.combo)
@@ -1023,7 +1023,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         from rc_metastudio.manuscript_report import methods_prose
         metric = self._result_metric_label().lower()
         model = "random-effects" if "random" in model_label.lower() else "fixed-effect" if "fixed" in model_label.lower() else model_label
-        title = f"{self.model.current_sheet.name}: {model} meta-analysis ({metric})"
+        outcome = self.model.current_sheet.name
+        title = f"{outcome[:1].upper() + outcome[1:]}: {model} meta-analysis ({metric})"
         methods = methods_prose(metric, model, applied_parameters,
                                 applied_parameters.get("conf.level", self.confidence_level),
                                 self.analysis_type, details, fits)
@@ -1097,7 +1098,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _result_context(self, applied_parameters):
         included = len(self._manuscript_studies())
         excluded = len(self.model.get_studies(only_if_included=False)) - included
-        context = f"{included} studies were included"
+        context = f"In total, {included} studies were included"
         if excluded:
             context += f" ({excluded} studies were excluded)"
         participants = self._manuscript_participants()
@@ -1783,7 +1784,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _finish_combined_diagnostic_ui(self):
         self.setWindowTitle("Method and parameters")
-        self.method_lbl.setText("Analysis method: " + diagnostic_metric_group_display_label("sens_spec"))
+        self.method_lbl.setText(diagnostic_metric_group_display_label("sens_spec") + " method")
 
         # Stack the method panels while keeping labels beside their selectors.
         for widget in (self.lr_dor_method_lbl, self.lr_dor_method_cbo_box,
