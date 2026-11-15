@@ -51,22 +51,17 @@ def methods_prose(metric, model, parameters, confidence, workflow, details, fits
 
 
 def p_value(value):
-    """Presentation only: the producer's held p-value or bound is authoritative."""
-    if not value or value in ("NA", "—"):
+    """Preserve producer precision and bounds; use the app's leading zero."""
+    if not value or value in ("NA", "—", "Not estimable"):
         return "—"
-    if value.strip().startswith("<"):
-        bound = Decimal(value.strip().removeprefix("<").strip())
-        return "< .001" if bound <= Decimal('.001') else "< " + f"{bound:.3f}".removeprefix("0")
+    if value.strip().startswith(("<", ">")):
+        return value.strip()
     number = Decimal(value)
-    if not number.is_finite():
-        return f"{float(value):.3f}"
-    if number < Decimal('.001'):
-        return "< .001"
-    return f"{number:.3f}".removeprefix("0")
+    return "< 0.001" if number.is_finite() and number < Decimal('.001') else value
 
 
 def _p_clause(value):
-    return "p " + (value if value.startswith("<") else "= " + value)
+    return "P " + (value if value.startswith(("<", ">")) else "= " + value)
 
 
 def _interval_fields(headers):
@@ -74,38 +69,6 @@ def _interval_fields(headers):
     upper = next((h for h in headers if h.startswith("Upper bound")), None)
     level = lower.partition("(")[2].removesuffix(")").strip() if lower else "95% CI"
     return lower, upper, level or "95% CI"
-
-
-def _interval_meaning(lower, upper, metric, arms, *, coefficient=False):
-    if lower in (None, "", "NA") or upper in (None, "", "NA"):
-        return ""
-    ratio = metric in ("odds ratio", "risk ratio", "hazard ratio", "incidence rate ratio") and not coefficient
-    if not coefficient and not ratio and metric not in ("mean difference", "standardized mean difference", "risk difference"):
-        return ""
-    if not coefficient and len(arms) != 2:
-        return ""
-    null = 1 if ratio else 0
-    lo, hi = float(lower), float(upper)
-    if lo <= null <= hi:
-        return _included_interval(null, arms, coefficient)
-    if coefficient:
-        return f"The confidence interval is entirely {'above' if lo > 0 else 'below'} 0."
-    quantity = {
-        "odds ratio": "odds of the outcome",
-        "risk ratio": "risk",
-        "risk difference": "risk",
-        "mean difference": "mean values",
-        "standardized mean difference": "mean values",
-        "hazard ratio": "hazard",
-        "incidence rate ratio": "event rate",
-    }[metric]
-    direction = "lower" if hi < null else "higher"
-    return f"The confidence interval excludes {null}, with {direction} {quantity} in {arms[0]} than in {arms[1]}."
-
-
-def _included_interval(null, arms, coefficient):
-    comparison = f" between {arms[0]} and {arms[1]}" if len(arms) == 2 and not coefficient else " from zero" if coefficient else ""
-    return f"The confidence interval includes {null}, so these data do not show a clear difference{comparison}."
 
 
 def _heterogeneity_sentence(values, prefix=""):
@@ -119,14 +82,7 @@ def _heterogeneity_sentence(values, prefix=""):
         parts.append(prefix + "Heterogeneity: " + test + ".")
     if values.get('I²') and values['I²'] not in ("NA", "NaN"):
         value = values['I²']
-        number = float(value.rstrip('%'))
-        descriptions = []
-        if number <= 40:
-            descriptions.append("heterogeneity that might not be important")
-        for low, high, label in ((30, 60, "moderate"), (50, 90, "substantial"), (75, 100, "considerable")):
-            if low <= number <= high:
-                descriptions.append(label + " heterogeneity")
-        parts.append(prefix + f"I² = {value}, which may represent " + ("moderate to substantial heterogeneity" if descriptions == ["moderate heterogeneity", "substantial heterogeneity"] else " or ".join(descriptions)) + " (Cochrane Handbook ranges).")
+        parts.append(prefix + f"I² = {value}.")
     if 'τ²' in values:
         parts.append(prefix + f"Between-study variance was τ² = {values['τ²']}.")
     return parts
@@ -228,11 +184,6 @@ def _pooled_prose(result, values, effect, effect_metric, coefficient, statistic,
             lead = f"Overall, the pooled {effect_metric}"
     inference = (f", {statistic} = {test}" if test != '—' else '') + (', ' + _p_clause(p) if p != '—' else '')
     summary.append(f"{lead} was {values['Estimate']} ({level} [{values[lower]}, {values[upper]}]{inference}).")
-    meaning = _interval_meaning(values[lower], values[upper], effect_metric, result.manuscript_arms, coefficient=coefficient)
-    if coefficient and meaning and 'includes 0' in meaning:
-        meaning = f"The confidence interval includes 0, so these data do not show a clear association with {effect}."
-    if meaning and ('Subgroups' not in values or effect.lower() == 'overall'):
-        summary.append(meaning)
 
 
 def _effect_metric(metric, section, table, vertical, coefficient):
@@ -367,40 +318,13 @@ def _section_statistics(section):
     return overall, calculation
 
 
-def _presentation_cell(value, digits, *, zero_noise=False):
-    if zero_noise and re.fullmatch(r"[+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?", value) and 0 < abs(Decimal(value)) < Decimal("1e-10"):
-        return f"{0:.{digits}f}"
-    def format_match(match):
-        text = match[0]
-        if text.endswith("%"):
-            return f"{Decimal(text[:-1]):.1f}%"
-        number = Decimal(text)
-        rounded = f"{number:.{digits}f}"
-        # R's shared effect formatter already preserves small nonzero limits.
-        return text if number and not Decimal(rounded) else rounded
-
-    return re.sub(r"(?<![\w.])-?\d+\.\d+%?(?![\w.])", format_match, value)
-
-
-def _presentation_rows(rows, digits):
-    return tuple(tuple(_presentation_cell(value, digits) for value in row) for row in rows)
-
-
-def _presentation_result(result):
-    return replace(result, sections=tuple(
-        replace(section, tables=tuple(replace(table, rows=tuple(
-            tuple(value if (table.title == "Study weights" and header in ("Effect", "Lower bound", "Upper bound")) or header == 'p-value' or (table.headers == ('Statistic', 'Value') and row[0] == 'p-value') else _presentation_cell(value, result.manuscript_digits, zero_noise=header == 'Q' or (header == 'Statistic' and row[0].endswith('(Q)')))
-                  for header, value in zip(table.headers, row)) for row in table.rows))
-            for table in section.tables)) for section in result.sections))
-
-
 def _report_sections(result, summary, methods):
     text_sections = [section for section in result.sections if section.kind == 'text']
     if not text_sections:
         return [], []
     pooled, fit = [], list(result.manuscript_model_info)
     level, statistic = '95% CI', 'z'
-    for section in _presentation_result(result).sections:
+    for section in result.sections:
         if section.kind != 'text':
             continue
         overall, calculation = _section_statistics(section)
@@ -420,16 +344,16 @@ def _primary_sections(result, text_sections, pooled, fit, level, statistic):
                   for note, titles in prediction_notes.items())
     sections = [replace(template, title='Pooled effect', paragraphs=(() if pooled else
                          ('No structured pooled estimates are available for this workflow; the complete output is in Supplementary details.',)),
-                        tables=(ResultTable('Pooled effect', ('Effect', 'Estimate', level, 'SE', 'SE scale', statistic, 'p'), _presentation_rows(pooled, result.manuscript_digits)),)),
+                        tables=(ResultTable('Pooled effect', ('Effect', 'Estimate', level, 'SE', 'SE scale', statistic, 'p'), tuple(pooled)),)),
                 replace(template, title='Model fit', paragraphs=notes,
-                        tables=(ResultTable('Model fit', ('Statistic', 'Value'), _presentation_rows(fit, result.manuscript_digits)),)),
-                _study_results(_presentation_result(result), template, level)]
+                        tables=(ResultTable('Model fit', ('Statistic', 'Value'), tuple(fit)),)),
+                _study_results(result, template, level)]
     if not any(section.tables for section in text_sections):
         comparisons = [s for s in text_sections if s.title in ('Pooled comparison', 'Extrapolation') or s.title.startswith('Trim-and-fill')]
         sections[0] = replace(template, title='Pooled effect', paragraphs=('Model comparisons and sensitivity analyses.',),
                               tables=(ResultTable('Pooled effect', ('Analysis', 'Output'), tuple((s.title, s.value) for s in comparisons)),))
         sections[1] = replace(template, title='Model fit', paragraphs=sections[1].paragraphs,
-                              tables=(ResultTable('Model fit', ('Statistic', 'Value'), tuple((s.title, _presentation_cell(s.value, result.manuscript_digits)) for s in text_sections if s.title in ('Data and eligibility', 'Tests'))),))
+                              tables=(ResultTable('Model fit', ('Statistic', 'Value'), tuple((s.title, s.value) for s in text_sections if s.title in ('Data and eligibility', 'Tests'))),))
     return [replace(section, tables=tuple(_available_columns(table) for table in section.tables if table.rows)) for section in sections]
 
 

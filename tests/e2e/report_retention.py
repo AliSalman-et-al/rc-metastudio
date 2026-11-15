@@ -171,15 +171,11 @@ def capture(view, directory):
 
 
 def expected_p(value):
-    from decimal import Decimal
     if not value or value in ('NA', '—'):
         return '—'
-    if value.startswith('<'):
-        bound = Decimal(value.removeprefix('<').strip())
-        return '< .001' if bound <= Decimal('.001') else '< ' + f'{bound:.3f}'.removeprefix('0')
-    if Decimal(value) < Decimal('.001'):
-        return '< .001'
-    return f'{Decimal(value):.3f}'.removeprefix('0')
+    if value.strip().startswith(('<', '>')):
+        return value.strip()
+    return '< 0.001' if float(value) < .001 else value
 
 
 def expected_pooled(result):
@@ -273,15 +269,11 @@ def expected_fit_table(result, section, source):
     elif source.title.endswith('Heterogeneity') or source.title == 'Residual heterogeneity':
         labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity p', 'I²': 'I²', 'τ²': 'Between-study variance (τ²)'}
         for row in data:
-            if row.get('Q') not in (None, '', 'NA') and 0 < abs(float(row['Q'])) < 1e-10:
-                row['Q'] = f'{0:.{result.manuscript_digits}f}'
             context = (' (' + row['Subgroups'] + ')' if 'Subgroups' in row else '')
             if ',' in result.manuscript_metric:
                 context += ' (' + section.title.removesuffix(' summary') + ')'
             rows.extend((labels[h] + context, expected_p(v) if h == 'p-value' else v) for h, v in row.items() if h in labels)
     elif source.title == 'Test of subgroup differences' and data:
-        if data[0]['Test'].endswith('(Q)') and 0 < abs(float(data[0]['Statistic'])) < 1e-10:
-            data[0]['Statistic'] = f'{0:.{result.manuscript_digits}f}'
         rows.extend((label, expected_p(data[0][key]) if key == 'p-value' else data[0][key]) for key, label in (
             ('Test', 'Between-group test'), ('Statistic', 'Between-group statistic'), ('df', 'Between-group degrees of freedom'), ('p-value', 'Between-group p')))
     elif source.title in ('Model overview', 'Residual model fit') and source.headers == ('Statistic', 'Value'):
@@ -317,13 +309,6 @@ def assert_exports(view, data):
         cursor = start + len(tokens)
 
 
-def presentation_rows(rows, digits):
-    from decimal import Decimal
-    return tuple(tuple(re.sub(r"(?<![\w.])-?\d+\.\d+%?(?![\w.])",
-                             lambda m: f"{Decimal(m[0][:-1]):.1f}%" if m[0].endswith("%") else f"{Decimal(m[0]):.{digits}f}", cell)
-                       for cell in row) for row in rows)
-
-
 def assert_retained_table(view, section, source):
     title = source.title if section.title == source.title else section.title + ' — ' + source.title
     tables = [table for s in view.manuscript.sections if s.title == 'Supplementary details'
@@ -335,6 +320,10 @@ def assert_retained_table(view, section, source):
 
 
 def assert_report(view):
+    report_text = view.manuscript.plain_text().casefold()
+    for verdict in ('so these data do not show a clear', 'the confidence interval excludes',
+                    'which may represent', 'evidence of small-study effects'):
+        assert verdict not in report_text, verdict
     tables = [table for section in view.manuscript.sections for table in section.tables]
     pooled = next((table for table in tables if table.title == 'Pooled effect'), None)
     fit = next((table for table in tables if table.title == 'Model fit'), None)
@@ -365,14 +354,13 @@ def assert_report(view):
                     statistic = f"t (df = {source.rows[-1][source.headers.index('df')]})"
         full_headers = [('Effect', 'Estimate', level, 'SE', 'SE scale', statistic, 'p')]
         assert pooled.headers in [tuple(headers[i] for i in indexes) for headers in full_headers]
-        expected_rows = presentation_rows(expected_rows, view.results.manuscript_digits)
         assert pooled.rows == tuple(tuple(row[i] for i in indexes) for row in expected_rows), (pooled.rows, expected_rows, indexes)
         assert all(any(row[i] not in ('', '—', 'NA') for row in pooled.rows) for i in range(len(pooled.headers)))
     elif expected_rows:
         assert pooled is not None
         assert pooled.headers == ('Analysis', 'Output')
         assert pooled.rows == expected_rows
-    expected_model_fit = presentation_rows(expected_fit(view.results), view.results.manuscript_digits)
+    expected_model_fit = expected_fit(view.results)
     assert (fit is not None) == bool(expected_model_fit), (fit, expected_model_fit)
     if fit is not None:
         assert fit.headers == ('Statistic', 'Value')

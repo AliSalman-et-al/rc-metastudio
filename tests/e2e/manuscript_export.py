@@ -400,15 +400,15 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 model_fit = next(section for section in view.manuscript.sections if section.title == "Model fit")
                 assert prediction_note in model_fit.paragraphs
                 assert view.manuscript.plain_text().count(prediction_note) == 1
-                assert 'The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, p = .267).' in view.manuscript.results
-                assert view.manuscript.results == '19 studies were included (1097 participants in Intervention, 1080 in Control). The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, p = .267). The confidence interval includes 1, so these data do not show a clear difference between Intervention and Control. Heterogeneity: Q = 33.360, df = 18, p = .015. I² = 46.0%, which may represent moderate heterogeneity (Cochrane Handbook ranges). Between-study variance was τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.', view.manuscript.results
+                assert 'The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, P = 0.267).' in view.manuscript.results
+                assert view.manuscript.results == '19 studies were included (1097 participants in Intervention, 1080 in Control). The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, P = 0.267). Heterogeneity: Q = 33.360, df = 18, P = 0.015. I² = 46.0%. Between-study variance was τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.', view.manuscript.results
                 assert view.manuscript.methods == f"Odds ratios were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance. Confidence intervals (95%) used the normal approximation. A continuity correction of 0.5 was applied to studies with any zero cell. 2 studies with no events in either arm were retained with this correction. Heterogeneity was assessed with Cochran's Q and I². Analyses were performed in RC MetaStudio {__version__}. R packages loaded for this analysis: metafor 5.2.1, meta 8.5-0."
                 assert '-0.262' in normalized
             if sample == 'continuous':
                 assert '500 participants in Intervention, 495 in Control' in view.manuscript.results
-                assert 'The pooled standardized mean difference was 0.358 (95% CI [0.152, 0.565], z = 3.400, p < .001).' in view.manuscript.results
-                assert 'The confidence interval excludes 0, with higher mean values in Intervention than in Control.' in view.manuscript.results
-                assert 'I² = 58.0%, which may represent moderate to substantial heterogeneity (Cochrane Handbook ranges).' in view.manuscript.results
+                assert 'The pooled standardized mean difference was 0.358 (95% CI [0.152, 0.565], z = 3.400, P < 0.001).' in view.manuscript.results
+                assert 'The confidence interval excludes' not in view.manuscript.results
+                assert 'I² = 58.0%.' in view.manuscript.results
 
             record('manuscript-export-' + sample + '-' + suffix, view, exported=str(path))
         (work / (sample + '-prose.txt')).write_text('Methods\n' + view.manuscript.methods + '\n\nResults\n' + view.manuscript.results, encoding='utf-8')
@@ -458,9 +458,9 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     window.action_swap_arms.trigger()
     view = analyze(app, window, 'continuous.random')
     assert_manuscript_tables(view)
-    expected_swap = 'The pooled standardized mean difference was -0.358 (95% CI [-0.565, -0.152], z = -3.400, p < .001).'
+    expected_swap = 'The pooled standardized mean difference was -0.358 (95% CI [-0.565, -0.152], z = -3.400, P < 0.001).'
     assert expected_swap in view.manuscript.results, view.manuscript.results
-    assert 'The confidence interval excludes 0, with lower mean values in Control than in Intervention.' in view.manuscript.results
+    assert 'The confidence interval excludes' not in view.manuscript.results
     assert view.results.manuscript_favours == ('Intervention', 'Control')
     assert view.results.manuscript_arms == ('Control', 'Intervention')
     for suffix in ('pdf', 'docx'):
@@ -488,15 +488,15 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         prose = view.manuscript.results
         if workflow == 'subgroup':
             assert 'In Subgroup A, the pooled odds ratio was' in prose and 'In Subgroup B, the pooled odds ratio was' in prose
-            assert 'In Subgroup B, the pooled odds ratio was 0.623 (95% CI [0.271, 1.434], z = -1.113, p = .266).' in prose
-            assert 'In Subgroup A, the pooled odds ratio was 0.827 (95% CI [0.476, 1.438], z = -0.673, p = .501).' in prose
-            assert 'Test for subgroup differences: Q = 0.307, df = 1, p = .579.' in prose
+            assert 'In Subgroup B, the pooled odds ratio was 0.623 (95% CI [0.271, 1.434], z = -1.113, P = 0.266).' in prose
+            assert 'In Subgroup A, the pooled odds ratio was 0.827 (95% CI [0.476, 1.438], z = -0.673, P = 0.501).' in prose
+            assert 'Test for subgroup differences: Q = 0.307, df = 1, P = 0.579.' in prose
         else:
-            assert 'coefficient' in prose and '95% CI' in prose and ', p = ' in prose, (prose, [(s.title, s.tables) for s in view.results.sections if s.kind == 'text'])
+            assert 'coefficient' in prose and '95% CI' in prose and ', P = ' in prose, (prose, [(s.title, s.tables) for s in view.results.sections if s.kind == 'text'])
             assert 'For Intercept' not in prose
-            assert 'For Dose, the coefficient was 0.063 (95% CI [-0.026, 0.151], z = 1.384, p = .166).' in prose
+            assert 'For Dose, the coefficient was 0.063 (95% CI [-0.026, 0.151], z = 1.384, P = 0.166).' in prose
             assert 'Residual heterogeneity: Q = ' in prose
-            assert 'The confidence interval includes 0, so these data do not show a clear association with Dose.' in prose
+            assert 'The confidence interval includes 0' not in prose
             assert any(t.title == 'Pooled effect' for section in view.manuscript.sections for t in section.tables)
         exported = Document(work / (workflow + '.docx'))
         captions = [p.text for p in exported.paragraphs]
