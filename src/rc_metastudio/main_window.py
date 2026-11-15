@@ -282,10 +282,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         ):
             qt_layout.configure_analysis_action_icon(action, icon_name)
         self.analysis_button = QtWidgets.QToolButton(self.toolBar)
-        self.analysis_button.setText("Analyses")
-        self.analysis_button.setIcon(self.action_go.icon())
+        self.analysis_button.setDefaultAction(self.action_go)
         self.analysis_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        self.analysis_button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.analysis_button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.MenuButtonPopup)
         self.analysis_button.setMenu(self.menuAnalysis)
         self.analysis_button.setAccessibleName("Analyses")
         self.analysis_button.setAccessibleDescription("Choose an analysis. Unavailable analyses explain their prerequisites in the menu.")
@@ -297,6 +296,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.toolBar.removeAction(action)
         self.action_new_dataset.setText("New project…")
         qt_layout.configure_main_toolbar(self.toolBar)
+        self.analysis_button.setAccessibleName("Analyses")
         self.start_page = start_page.StartPage(self.action_new_dataset, self.action_import_csv, self.action_open, self)
         self.verticalLayout_3.insertWidget(0, self.start_page)
         self.menu_file.clear()
@@ -333,11 +333,29 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.sheet_tabs.tabBarDoubleClicked.connect(self._rename_sheet)
         self.sheet_tabs.customContextMenuRequested.connect(self._sheet_menu)
         self.add_sheet_button.clicked.connect(self._add_sheet)
-        for sequence, delta in (("Ctrl+PgDown", 1), ("Ctrl+PgUp", -1)):
-            action = QAction(self)
+        self.outcome_navigation_actions = []
+        for label, sequence, delta in (("Next outcome", "Ctrl+PgDown", 1), ("Previous outcome", "Ctrl+PgUp", -1)):
+            action = QAction(label, self)
             action.setShortcut(QKeySequence(sequence))
+            action.setToolTip(label + " (" + sequence + ")")
             action.triggered.connect(lambda checked=False, delta=delta: self.sheet_tabs.setCurrentIndex((self.sheet_tabs.currentIndex() + delta) % max(1, self.sheet_tabs.count())))
             self.addAction(action)
+            self.menuView.addAction(action)
+            self.outcome_navigation_actions.append(action)
+        self.add_outcome_action = QAction("Add outcome…", self)
+        self.add_outcome_action.triggered.connect(self._add_sheet)
+        self.rename_outcome_action = QAction("Rename outcome…", self.sheet_tabs)
+        self.rename_outcome_action.setShortcut(QKeySequence("F2"))
+        self.rename_outcome_action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
+        self.sheet_tabs.addAction(self.rename_outcome_action)
+        self.rename_outcome_action.triggered.connect(lambda: self._rename_sheet(self.sheet_tabs.currentIndex()))
+        self.menuDataset.addSeparator()
+        self.menuDataset.addActions((self.add_outcome_action, self.rename_outcome_action))
+        for label, url in (("Project site", "https://github.com/AliSalman-et-al/rc-metastudio"),
+                           ("How to cite", "https://github.com/AliSalman-et-al/rc-metastudio/blob/master/CITATION.cff")):
+            action = QAction(label, self)
+            action.triggered.connect(lambda _checked=False, url=url: QtGui.QDesktopServices.openUrl(QtCore.QUrl(url)))
+            self.menuHelp.addAction(action)
         self.action_swap_arms = QAction("Swap intervention and control", self)
         self.menuDataset.addAction(self.action_swap_arms)
         self.menuDataset.aboutToShow.connect(self._update_swap_arms_enabled)
@@ -454,6 +472,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         ):
             action.setShortcut(QKeySequence(standard_key))
         self.action_quit.setShortcut(QKeySequence("Ctrl+Q"))
+        self.action_go.setShortcut(QKeySequence("Ctrl+R"))
+        for menu in (self.menu_file, self.menuEdit, self.menuView, self.menuAnalysis, self.menuDataset, self.menuHelp):
+            menu.setTitle("&" + menu.title().replace("&", ""))
 
     def _model_about_to_be_reset(self):
         """Call all the functions here that should be called when the model is
@@ -505,6 +526,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         for action, label in ((self.action_go, "Meta-analysis"), (self.action_cum_ma, "Cumulative meta-analysis"),
                               (self.action_loo_ma, "Leave-one-out meta-analysis")):
             reason = label if enable else blocked
+            if action is self.action_go:
+                reason += " (Ctrl+R)"
             action.setToolTip(reason)
             action.setStatusTip(reason)
         self._update_workspace_guidance()
@@ -514,6 +537,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.start_page.setVisible(not enable)
         self.nav_frame.setVisible(enable)
         self.confidence_button.setVisible(enable)
+        self.add_outcome_action.setEnabled(enable)
+        self.rename_outcome_action.setEnabled(enable)
+        for action in self.outcome_navigation_actions:
+            action.setEnabled(enable and self.sheet_tabs.count() > 1)
 
     def _enable_action_meta_regression(self, dataset_analysis_enabled=None):
         """Enables action_meta_regression if analysis can run and covariates exist."""
@@ -524,6 +551,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             r_runtime.is_ready() and dataset_analysis_enabled and has_covariates
         )
         self.action_meta_regression.setToolTip("Meta-regression" if has_covariates else "Add a covariate to run meta-regression.")
+        self.action_meta_regression.setStatusTip(self.action_meta_regression.toolTip())
 
     def _enable_action_subgroup_ma(self, dataset_analysis_enabled=None):
         """Enables action_subgroup_ma if there are suitable covariate(s)
@@ -542,6 +570,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             r_runtime.is_ready() and dataset_analysis_enabled and has_factor_covariates
         )
         self.action_subgroup_ma.setToolTip("Subgroup meta-analysis" if has_factor_covariates else "Add a categorical covariate to run subgroup analysis.")
+        self.action_subgroup_ma.setStatusTip(self.action_subgroup_ma.toolTip())
 
     def disable_menu_options_that_require_dataset(self):
         self.toggle_menu_options_that_require_dataset(False)
@@ -1559,12 +1588,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             return
         menu = QtWidgets.QMenu(self)
         menu.addAction("Rename", lambda: self._rename_sheet(index))
-        delete = menu.addAction("Delete", lambda: self._delete_sheet(index))
-        assert delete is not None
-        delete.setEnabled(self.sheet_tabs.count() > 1)
+        menu.addAction("Add outcome…", self._add_sheet)
+        menu.addSeparator()
         for label, destination in (("Move left", index - 1), ("Move right", index + 1)):
             action = menu.addAction(label, lambda checked=False, destination=destination: self.sheet_tabs.moveTab(index, destination))
             required(action, "sheet move action").setEnabled(0 <= destination < self.sheet_tabs.count())
+        menu.addSeparator()
+        delete = required(menu.addAction(f'Delete “{self.sheet_tabs.tabText(index)}”…', lambda: self._delete_sheet(index)), "delete outcome action")
+        delete.setEnabled(self.sheet_tabs.count() > 1)
         menu.exec(self.sheet_tabs.mapToGlobal(position))
 
     def _delete_sheet(self, index):

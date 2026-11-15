@@ -49,12 +49,13 @@ class StartPage(QtWidgets.QScrollArea):
         actions = QtWidgets.QHBoxLayout()
         actions.setSpacing(16)
         buttons = []
-        for attribute, action, caption, description in (
-            ('create_button', create_action, 'New project', 'Start with your first outcome and effect measure, then enter study data.'),
-            ('import_button', import_action, 'Import data', 'Import Excel, CSV, or RevMan (.rm5) files and review the data before importing.'),
-            ('open_button', open_action, 'Open project', 'Continue working with a saved .rcms project.'),
+        for action, caption, description in (
+            (create_action, 'New project', 'Start with your first outcome and effect measure, then enter study data.'),
+            (import_action, 'Import data', 'Import Excel, CSV, or RevMan (.rm5) files and review the data before importing.'),
+            (open_action, 'Open project', 'Continue working with a saved .rcms project.'),
         ):
             card = QtWidgets.QGroupBox(content)
+            card.setFlat(True)
             card_layout = QtWidgets.QVBoxLayout(card)
             card_layout.setContentsMargins(16, 16, 16, 16)
             card_layout.setSpacing(12)
@@ -65,7 +66,6 @@ class StartPage(QtWidgets.QScrollArea):
             button.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
             qt_layout.configure_primary_action_buttons((button,))
             button.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
-            setattr(self, attribute, button)
             buttons.append(button)
             card_layout.addWidget(button, 0, QtCore.Qt.AlignmentFlag.AlignTop)
             label = QtWidgets.QLabel(description, card)
@@ -79,6 +79,7 @@ class StartPage(QtWidgets.QScrollArea):
             policy.setHeightForWidth(True)
             card.setSizePolicy(policy)
             actions.addWidget(card, 1)
+        self.create_button, self.import_button, self.open_button = buttons
         height = max(button.sizeHint().height() for button in buttons)
         for button in buttons:
             button.setFixedHeight(height)
@@ -108,6 +109,11 @@ class StartPage(QtWidgets.QScrollArea):
                 widget.deleteLater()
         if not paths:
             self.recent_layout.addWidget(QtWidgets.QLabel('Projects you open or save will appear here.', self.recent_projects))
+            import_button = QtWidgets.QPushButton('Import data…', self.recent_projects)
+            import_button.setFlat(True)
+            import_button.setStyleSheet('QPushButton { color: palette(link); text-decoration: underline; }')
+            import_button.clicked.connect(self.import_button.click)
+            self.recent_layout.addWidget(import_button, 1, 0, QtCore.Qt.AlignmentFlag.AlignLeft)
         for index, path in enumerate(reversed(paths)):
             exists = Path(path).is_file()
             button = QtWidgets.QPushButton(Path(path).name, self.recent_projects)
@@ -116,9 +122,8 @@ class StartPage(QtWidgets.QScrollArea):
             button.clicked.connect(app_error_handler.safe_slot(lambda _checked=False, path=path: open_project(path), parent=self))
             self.recent_layout.addWidget(button, index, 0)
             self.recent_layout.addWidget(_RecentPathLabel(str(path), self.recent_projects), index, 1)
-            state = QtWidgets.QLabel('Available' if exists else 'Missing file', self.recent_projects)
-            self.recent_layout.addWidget(state, index, 2)
             if not exists:
+                self.recent_layout.addWidget(QtWidgets.QLabel('Missing file', self.recent_projects), index, 2)
                 for column, (caption, callback) in enumerate((("Locate…", locate_project), ("Remove from list", remove_project)), 3):
                     if callback is None:
                         continue

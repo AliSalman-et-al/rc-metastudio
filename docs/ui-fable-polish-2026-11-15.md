@@ -114,3 +114,18 @@ Strict win32 typing and 66 existing wizard/setup/editor checks passed. Native
 B/D/E captures passed 104 steps in
 `artifacts/verification/rcms/20261115T171146Z-a0ba6fa5-ui-crawl/`, including both
 themes, all calculator families, setup and error states.
+
+### Shell and Home
+
+The analysis button is now a split control: one-click meta-analysis, with other
+analyses in its menu. Ctrl+R, visible previous/next outcome commands and scoped
+F2 outcome renaming improve keyboard discoverability without taking F2 from
+spreadsheet cell editing. Project and Help expose outcome management and the
+repository's actual citation file. Home uses flat card frames, removes redundant
+Available labels, and offers an import action in the empty recent-project list.
+
+The first native menu capture caught a delayed application-palette update closing
+menus. Link-colour refresh now stays on the relevant controls after initial app
+configuration. Its failed evidence remains retained. The corrected native shell
+tour passed at `20261115T171929Z-1e33c90c-ui-crawl`; strict typing and 73 existing
+GUI checks passed. Final frozen qualification remains pending.

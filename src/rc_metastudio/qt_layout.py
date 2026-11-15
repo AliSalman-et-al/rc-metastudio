@@ -176,6 +176,9 @@ def configure_application_controls(app):
     app.setStyle(_ControlStyle(app.style().objectName()))
     # Style polish installs class-specific system fonts unless the app font is reapplied.
     app.setFont(font)
+    palette = app.palette()
+    palette.setColor(QPalette.ColorRole.Link, readable_link_color(palette))
+    app.setPalette(palette)
     app._rcms_error_palette = _InlineErrorPaletteFilter(app)
     app.setProperty("rcms_controls_configured", True)
 
@@ -185,6 +188,10 @@ def configure_heading(label, scale=1.15):
     font.setBold(True)
     font.setPointSizeF(max(10, font.pointSizeF()) * scale)
     label.setFont(font)
+
+
+def readable_link_color(palette: QPalette) -> QColor:
+    return QColor("#80bfff" if palette.color(QPalette.ColorRole.Window).lightness() < 128 else "#1a5fb4")
 
 
 def _set_error_palette(label):
@@ -218,13 +225,6 @@ class _InlineErrorPaletteFilter(QObject):
         return False
 
     def refresh(self):
-        app = QApplication.instance()
-        if isinstance(app, QApplication):
-            palette = app.palette()
-            link = QColor("#80bfff" if palette.color(QPalette.ColorRole.Window).lightness() < 128 else "#1a5fb4")
-            if palette.color(QPalette.ColorRole.Link) != link:
-                palette.setColor(QPalette.ColorRole.Link, link)
-                app.setPalette(palette)
         for widget in QApplication.allWidgets():
             if widget.property("rcmsInlineError"):
                 _set_error_palette(widget)

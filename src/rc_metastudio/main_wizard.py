@@ -81,10 +81,18 @@ class DatasetInfo(TypedDict, total=False):
 class MainWizardPage(QWizardPage):
     def __init__(self, parent=None):
         super().__init__(parent)
+        palette = QPalette()
+        palette.setColor(QPalette.ColorRole.Link, qt_layout.readable_link_color(self.palette()))
+        self.setPalette(palette)
 
     def changeEvent(self, event: QEvent | None) -> None:
         super().changeEvent(event)
         if event is not None and event.type() in (QEvent.Type.PaletteChange, QEvent.Type.ApplicationPaletteChange):
+            target = qt_layout.readable_link_color(self.palette())
+            if self.palette().color(QPalette.ColorRole.Link) != target:
+                palette = QPalette()
+                palette.setColor(QPalette.ColorRole.Link, target)
+                self.setPalette(palette)
             color = self.palette().color(QPalette.ColorRole.Link).name()
             for label in self.findChildren(QLabel):
                 if '<a ' in label.text():

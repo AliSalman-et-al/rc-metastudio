@@ -10,7 +10,7 @@ from PyQt6.QtGui import QPalette, QPainter
 from PyQt6.QtGui import QPixmap, QRegion, QTextDocument
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox
 
-from rc_metastudio import adaptive_window
+from rc_metastudio import adaptive_window, qt_layout
 from rc_metastudio import application_metadata
 from rc_metastudio.qt_object_guard import required
 
@@ -87,6 +87,6 @@ class AboutLegalDialog(QDialog, _ui_about_legal.Ui_AboutLegalDialog):
             painter.end()
         required(browser.document(), "About document").addResource(
             QTextDocument.ResourceType.ImageResource, QUrl("rcms:about-logo"), logo)
-        color = browser.palette().color(QPalette.ColorRole.Link).name()
+        color = qt_layout.readable_link_color(browser.palette()).name()
         browser.setHtml(ABOUT_TEXT.format(version=application_metadata.VERSION).replace('<a href=', '<a style="color:' + color + '" href='))
         scrollbar.setValue(position)
