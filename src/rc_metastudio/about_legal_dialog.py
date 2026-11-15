@@ -5,7 +5,8 @@
 from math import ceil
 from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import Qt, QUrl
+from PyQt6.QtCore import Qt, QUrl, QEvent, QTimer
+from PyQt6.QtGui import QPalette
 from PyQt6.QtGui import QPixmap, QRegion, QTextDocument
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox
 
@@ -74,3 +75,16 @@ class AboutLegalDialog(QDialog, _ui_about_legal.Ui_AboutLegalDialog):
         self._layout_controller = adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
+
+    def changeEvent(self, event: QEvent | None) -> None:
+        super().changeEvent(event)
+        if event is not None and event.type() in (QEvent.Type.PaletteChange, QEvent.Type.ApplicationPaletteChange) and hasattr(self, "content_scroll_area"):
+            QTimer.singleShot(0, self._refresh_links)
+
+    def _refresh_links(self):
+        browser = self.content_scroll_area
+        scrollbar = required(browser.verticalScrollBar(), "About scrollbar")
+        position = scrollbar.value()
+        color = browser.palette().color(QPalette.ColorRole.Link).name()
+        browser.setHtml(ABOUT_TEXT.format(version=application_metadata.VERSION).replace('<a href=', '<a style="color:' + color + '" href='))
+        scrollbar.setValue(position)

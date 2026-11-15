@@ -37,7 +37,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="style_label">
         <property name="text">
-         <string>Style:</string>
+         <string>Style</string>
         </property>
        </widget>
       </item>
@@ -72,7 +72,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="accent_label">
         <property name="text">
-         <string>Accent color:</string>
+         <string>Accent color</string>
         </property>
        </widget>
       </item>
@@ -102,7 +102,7 @@
       <item row="1" column="0">
        <widget class="QLabel" name="point_size_label">
         <property name="text">
-         <string>Point size multiplier:</string>
+         <string>Point size multiplier</string>
         </property>
        </widget>
       </item>
@@ -139,7 +139,7 @@
         <item row="0" column="0">
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>Study / row heading:</string>
+           <string>Study / row heading</string>
           </property>
          </widget>
         </item>
@@ -163,7 +163,7 @@
         <item row="1" column="0">
          <widget class="QLabel" name="label_4">
           <property name="text">
-           <string>Estimate heading:</string>
+           <string>Estimate heading</string>
           </property>
          </widget>
         </item>
@@ -187,7 +187,7 @@
         <item row="2" column="0">
          <widget class="QLabel" name="label_5">
           <property name="text">
-           <string>First group heading:</string>
+           <string>First group heading</string>
           </property>
          </widget>
         </item>
@@ -211,7 +211,7 @@
         <item row="3" column="0">
          <widget class="QLabel" name="label_6">
           <property name="text">
-           <string>Second group heading:</string>
+           <string>Second group heading</string>
           </property>
          </widget>
         </item>
@@ -240,7 +240,7 @@
    <item>
     <widget class="QGroupBox" name="default_panel">
      <property name="title">
-      <string>Default Style Options</string>
+      <string>Default style options</string>
      </property>
      <layout class="QGridLayout" name="default_layout">
       <item row="0" column="1">
@@ -256,7 +256,7 @@
       <item row="1" column="0">
        <widget class="QLabel" name="headers_label">
         <property name="text">
-         <string>Show headers:</string>
+         <string>Show</string>
         </property>
        </widget>
       </item>
@@ -273,7 +273,7 @@
       <item row="2" column="1">
        <widget class="QCheckBox" name="show_annotation">
         <property name="text">
-         <string>Show annotation</string>
+         <string>Annotation</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -286,7 +286,7 @@
    <item>
     <widget class="QGroupBox" name="regression_group">
      <property name="title">
-      <string>Regression Options</string>
+      <string>Regression options</string>
      </property>
      <layout class="QGridLayout" name="regression_layout">
       <item row="0" column="0">
@@ -331,14 +331,14 @@
      <item row="0" column="0">
       <widget class="QLabel" name="label_12">
        <property name="text">
-        <string>X-axis label:</string>
+        <string>X-axis label</string>
        </property>
       </widget>
      </item>
      <item row="4" column="0">
       <widget class="QLabel" name="label_13">
        <property name="text">
-        <string>X-axis ticks:</string>
+        <string>X-axis ticks</string>
        </property>
       </widget>
      </item>
@@ -380,7 +380,7 @@
      <item row="5" column="0">
       <widget class="QLabel" name="label_16">
        <property name="text">
-        <string>Show summary line:</string>
+        <string>Show summary line</string>
        </property>
       </widget>
      </item>
@@ -408,7 +408,7 @@
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Save image to:</string>
+        <string>Save image to</string>
        </property>
       </widget>
      </item>

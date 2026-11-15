@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QFileDialog, QLabel, QLineEdit, QMessageBox
+from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QLabel, QLineEdit, QMessageBox
 
 from rc_metastudio import adaptive_window, app_error_handler, qt_text
 from rc_metastudio.qt_layout import protect_scroll_settings
@@ -34,7 +34,6 @@ else:
     Ui_FunnelPlotEditorDialog = _ui_funnel_plot_editor_dialog.Ui_FunnelPlotEditorDialog
 
 
-PLOT_EDITOR_SAVE_FILTER = "Plot images (*.pdf *.png *.tif *.tiff *.svg);;All files (*)"
 LABEL_VALUES = {
     "None": "none",
     "Outside pseudo-confidence region": "outside-pseudo-confidence-region",
@@ -66,7 +65,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self.figure_caption.setToolTip("Sheet and arm comparison. Edit or clear to remove from standalone figures.")
         self.figure_caption.setMaxLength(1000)
         self.figure_caption.setText(str(self._params.get("plot_caption", "") or "").replace("\n", " · "))
-        caption_label = QLabel("Figure caption:", self)
+        caption_label = QLabel("Figure caption", self)
         caption_label.setBuddy(self.figure_caption)
         caption_row = self.appearance_layout.rowCount()
         caption_columns = self.appearance_layout.columnCount()
@@ -85,6 +84,8 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self._validate_kind_descriptor()
         self.kind = self._kind_from_params()
         self._load_params(image_path)
+        for control in (self.path_label, self.path_edit, self.browse_button):
+            control.hide()
         self._configure_kind()
         self.setTabOrder(self.background_color_button, self.figure_caption)
         self.setTabOrder(self.figure_caption, self.x_label_edit)
@@ -118,9 +119,6 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
                 )
             )
             self._update_color_button(edit, button)
-        self.browse_button.clicked.connect(
-            app_error_handler.safe_slot(self._browse_image_path, parent=self)
-        )
         self.button_box.clicked.connect(self._button_clicked)
         self._connect_dirty_signals()
         size_plot_text_editor(self)
@@ -152,14 +150,11 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             self.x_lower_edit: ("X-axis lower bound", "Set both X-axis bounds, or leave both empty for automatic bounds."),
             self.x_upper_edit: ("X-axis upper bound", "Set both X-axis bounds, or leave both empty for automatic bounds."),
             self.x_ticks_edit: ("X-axis ticks", "Set optional comma-separated X-axis tick values."),
-            self.path_edit: ("Funnel plot save path", "Choose the file path where the edited funnel plot will be saved."),
-            self.browse_button: ("Browse funnel plot save path", "Choose the file path where the edited funnel plot will be saved."),
         }
         for control, (name, description) in controls.items():
             control.setAccessibleName(name)
             control.setAccessibleDescription(description)
-            if control is not self.path_edit:
-                control.setToolTip(description)
+            control.setToolTip(description)
         for label, control in (
             (self.style_label, self.style_combo),
             (self.label_policy_label, self.label_policy_combo),
@@ -409,7 +404,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self.include_tau2_check.setToolTip(
             "Not applicable to the Deeks effective-sample-size funnel."
             if deeks
-            else "Include tau² in the pseudo-confidence region."
+            else "Include τ² in the pseudo-confidence region."
         )
         self.pooled_overlay_check.setEnabled(not deeks)
         self.pooled_overlay_label.setEnabled(not deeks)
@@ -425,15 +420,6 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
                 "Rerun the analysis to change statistical settings."
             )
 
-    def _browse_image_path(self):
-        selected_path, _selected_filter = QFileDialog.getSaveFileName(
-            self,
-            "Save funnel plot image",
-            qt_text.to_native_text(self.path_edit.text()),
-            PLOT_EDITOR_SAVE_FILTER,
-        )
-        if selected_path:
-            self.path_edit.setText(selected_path)
 
     def _apply_style(self, style_name):
         style = next(

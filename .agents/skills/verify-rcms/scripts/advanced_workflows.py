@@ -557,6 +557,7 @@ def plots(app, window, family, record, *, view=None):
 
     def edit(dialog):
         if funnel:
+            assert all(not control.isVisible() for control in (dialog.path_label, dialog.path_edit, dialog.browse_button)), 'Internal render path is exposed as an export control'
             from tests.python.gui.qt_test_support import wheel_scroll
             spinner = dialog.sampling_confidence_spin
             original_confidence = spinner.value()

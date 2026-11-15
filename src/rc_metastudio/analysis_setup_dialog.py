@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Method-selection dialog and analysis specification builder."""
 
-from rc_metastudio.qt_layout import style_inline_error
-from PyQt6 import QtCore, QtWidgets
+from rc_metastudio.qt_layout import DisclosureButton, style_inline_error
+from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QResizeEvent, QKeyEvent, QCloseEvent, QColor, QHideEvent, QShowEvent
 from PyQt6.QtWidgets import (
@@ -232,17 +232,6 @@ class _DiagnosticMethodPanel(object):
 class _CompactDoubleSpinBox(QDoubleSpinBox):
     def textFromValue(self, v: float) -> str:
         return super().textFromValue(v).rstrip("0").rstrip(self.locale().decimalPoint())
-
-
-class _AdvancedButton(QtWidgets.QToolButton):
-    def keyPressEvent(self, e: QKeyEvent | None) -> None:
-        if e is None:
-            return
-        event = e
-        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-            self.click()
-        else:
-            super().keyPressEvent(event)
 
 
 class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
@@ -867,7 +856,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         try:
             prefix = "bp" if self.is_meta_regression else "fp"
             style = _normalized_plot_style(
-                self.current_param_vals.get("%s_style" % prefix, "default" if self.is_meta_regression else "revman")
+                self.current_param_vals.get("%s_style" % prefix, "default")
             )
             self.style_cbo.setCurrentText(PLOT_STYLE_LABELS[style])
             self._set_plot_accent_color(
@@ -1421,8 +1410,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             else:
                 text = str(value)
             changes.append(f"{parameter_display_label(spec.name, spec.metadata)} {text}")
-        self.advanced_toggle.setText(("▾ Advanced" if self.advanced_toggle.isChecked() else "▸ Advanced") + (f" · {len(changes)} changed" if changes else ""))
-        self.advanced_toggle.setMinimumWidth(self.advanced_toggle.fontMetrics().horizontalAdvance(self.advanced_toggle.text()) + 12)
+        self.advanced_toggle.setText("Advanced" + (f" · {len(changes)} changed" if changes else ""))
         self.advanced_toggle.setToolTip("\n".join(changes) or "Additional method options")
 
     def _place_parameter(self, layout, row, spec, label, control, target, default):
@@ -1450,12 +1438,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _add_parameter_controls(self, layout, definitions, excluded_names):
         if not hasattr(self, "advanced_toggle"):
             self._advanced_entries = []
-            self.advanced_toggle = _AdvancedButton(self)
-            self.advanced_toggle.setAutoRaise(True)
-            self.advanced_toggle.setStyleSheet("QToolButton { text-align: left; border: none; background: transparent; } QToolButton:focus { border: 1px solid palette(highlight); }")
-            self.advanced_toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
+            self.advanced_toggle = DisclosureButton("Advanced", self)
             self.advanced_toggle.setSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
-            self.advanced_toggle.setCheckable(True)
             self.advanced_panel = QtWidgets.QWidget()
             QGridLayout(self.advanced_panel)
             self.advanced_toggle.toggled.connect(self._expand_advanced)

@@ -394,7 +394,7 @@ def analysis_dialog(app, window):
             record_step("slice2c-analysis-collapsed", form)
         assert any(label.text() == "Effect measure" and label.isVisible() for label in form.findChildren(QtWidgets.QLabel))
         toggle = form.advanced_toggle
-        assert toggle.text().startswith("▸ Advanced")
+        assert toggle.text().startswith("Advanced") and toggle.arrowType() == QtCore.Qt.ArrowType.RightArrow
         assert isinstance(toggle, QtWidgets.QToolButton)
         assert not toggle.isChecked()
         collapsed_height = form.height()
@@ -405,7 +405,7 @@ def analysis_dialog(app, window):
         app.processEvents()
         assert form.height() > collapsed_height, (form.height(), collapsed_height)
         assert form.pos() == collapsed_position
-        assert toggle.text().startswith("▾ Advanced")
+        assert toggle.text().startswith("Advanced") and toggle.arrowType() == QtCore.Qt.ArrowType.DownArrow
         record_step("slice2c-analysis-expanded", form)
         form.hide()
         reopened = analysis_setup_dialog.AnalysisSetupDialog(
@@ -429,7 +429,7 @@ def analysis_dialog(app, window):
         assert digits.value() == 4
         assert "Decimal places 4" in toggle.toolTip()
         assert expected_inference in toggle.toolTip()
-        assert toggle.text().startswith("▸ Advanced · ") and toggle.text().endswith(" changed")
+        assert toggle.text().startswith("Advanced · ") and toggle.arrowType() == QtCore.Qt.ArrowType.RightArrow and toggle.text().endswith(" changed")
         assert toggle.width() >= toggle.fontMetrics().horizontalAdvance(toggle.text()) + 12
         record_step("advanced-collapsed", form, sample=sample, summary=toggle.text(), changed_options=toggle.toolTip())
         from tests.e2e.analysis_layout import check as check_tab_layout
@@ -611,7 +611,7 @@ def add_named_sheet(app, window, name, diagnostic=False):
         assert isinstance(wizard, main_wizard.MainWizard)
         page = wizard.currentPage()
         assert isinstance(page, main_wizard.DataTypePage)
-        assert wizard.windowTitle() == "Add Outcome"
+        assert wizard.windowTitle() == "Add outcome"
         record_step("add-sheet-data-type", wizard)
         mouse_click(page.diagnostic_Button if diagnostic else page.twoarm_means_Button, QtCore.Qt.MouseButton.LeftButton)
         wizard.next()
@@ -2329,7 +2329,8 @@ try:
                    for w in app.topLevelWidgets())
     assert window.statusBar().currentMessage() == ""
     assert window.cursor().shape() != QtCore.Qt.CursorShape.WaitCursor
-    assert window.dataset_file_lbl.text() == "Ready to create or open a dataset · Untitled dataset"
+    assert window.windowTitle() == "Untitled project — RC MetaStudio"
+    assert not window.confidence_button.isVisible()
     if EVIDENCE is not None and os.environ.get("RCMS_DRIVE_STARTED"):
         import time
         app.processEvents()

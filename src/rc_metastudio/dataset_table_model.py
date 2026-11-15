@@ -520,7 +520,7 @@ class DatasetTableModel(QAbstractTableModel):
             if tooltip is not None:
                 return tooltip
         if role == Qt.ItemDataRole.TextAlignmentRole:
-            return int((Qt.AlignmentFlag.AlignRight if index.column() in (self.YEAR, *self.RAW_DATA, *self.OUTCOMES) else Qt.AlignmentFlag.AlignLeft) | Qt.AlignmentFlag.AlignVCenter)
+            return self._column_alignment(index.column())
         if role == Qt.ItemDataRole.CheckStateRole:
             return self._check_state_data(index, study)
         if role == Qt.ItemDataRole.BackgroundRole:
@@ -859,10 +859,19 @@ class DatasetTableModel(QAbstractTableModel):
         if role == Qt.ItemDataRole.ToolTipRole:
             return self._horizontal_header_tooltip(section)
         if role == Qt.ItemDataRole.TextAlignmentRole:
-            return self._header_alignment()
+            return self._column_alignment(section)
         if role == Qt.ItemDataRole.DisplayRole:
             return self._horizontal_header_display(section)
         return None
+
+    def _column_alignment(self, column):
+        if column == self.INCLUDE_STUDY:
+            return int(Qt.AlignmentFlag.AlignCenter)
+        numeric = column in (self.YEAR, *self.RAW_DATA, *self.OUTCOMES)
+        if self._is_covariate_column(column):
+            covariate = self.get_covariate_for_column(column)
+            numeric = covariate is not None and covariate['data_type'] == CONTINUOUS
+        return int((Qt.AlignmentFlag.AlignRight if numeric else Qt.AlignmentFlag.AlignLeft) | Qt.AlignmentFlag.AlignVCenter)
 
     def _vertical_header_data(self, section, role):
         if role == Qt.ItemDataRole.ToolTipRole and self._study_has_entered_data(section):

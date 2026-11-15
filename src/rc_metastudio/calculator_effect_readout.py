@@ -3,6 +3,7 @@
 """Effect source selection and calculator readout presentation."""
 
 import math
+from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QAbstractItemView, QHeaderView, QLabel, QTableWidget, QTableWidgetItem
 from rc_metastudio import r_bridge
@@ -147,7 +148,14 @@ def _update_binary_metric_table(dialog, raw) -> None:
         table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         horizontal_header = table.horizontalHeader()
         assert horizontal_header is not None
-        horizontal_header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        horizontal_header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        font = QFont(horizontal_header.font())
+        font.setBold(True)
+        horizontal_header.setFont(font)
+        for column in range(4):
+            item = table.horizontalHeaderItem(column)
+            assert item is not None
+            item.setTextAlignment((Qt.AlignmentFlag.AlignLeft if column == 0 else Qt.AlignmentFlag.AlignRight) | Qt.AlignmentFlag.AlignVCenter)
         dialog.content_layout.addWidget(table)
         def select_metric(row, column):
             index = dialog.effect_combo_box.findData(("OR", "RR", "RD")[row])
@@ -165,7 +173,9 @@ def _update_binary_metric_table(dialog, raw) -> None:
             text = value if isinstance(value, str) else (
                 "" if value is None else format_calculator_display_value(value)
             )
-            dialog.metric_readout.setItem(row, column, QTableWidgetItem(text))
+            item = QTableWidgetItem(text)
+            item.setTextAlignment((Qt.AlignmentFlag.AlignLeft if column == 0 else Qt.AlignmentFlag.AlignRight) | Qt.AlignmentFlag.AlignVCenter)
+            dialog.metric_readout.setItem(row, column, item)
     table = dialog.metric_readout
     table.resizeColumnsToContents()
     table.resizeRowsToContents()

@@ -50,7 +50,7 @@ class StartPage(QtWidgets.QScrollArea):
         actions.setSpacing(16)
         buttons = []
         for attribute, action, caption, description in (
-            ('create_button', create_action, 'Create dataset', 'Choose an outcome and effect measure, then enter study data.'),
+            ('create_button', create_action, 'New project', 'Start with your first outcome and effect measure, then enter study data.'),
             ('import_button', import_action, 'Import data', 'Import Excel, CSV, or RevMan (.rm5) files and review the data before importing.'),
             ('open_button', open_action, 'Open project', 'Continue working with a saved .rcms project.'),
         ):
@@ -75,14 +75,14 @@ class StartPage(QtWidgets.QScrollArea):
             label.setSizePolicy(label_policy)
             card_layout.addWidget(label)
             card_layout.addStretch()
-            policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
+            policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Maximum)
             policy.setHeightForWidth(True)
             card.setSizePolicy(policy)
             actions.addWidget(card, 1)
         height = max(button.sizeHint().height() for button in buttons)
         for button in buttons:
             button.setFixedHeight(height)
-        layout.addLayout(actions)
+        layout.addLayout(actions, 0)
         heading = QtWidgets.QLabel('Recent projects', content)
         qt_layout.configure_heading(heading)
         layout.addWidget(heading)

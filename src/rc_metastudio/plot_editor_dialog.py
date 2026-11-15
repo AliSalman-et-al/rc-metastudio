@@ -108,7 +108,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.figure_caption.setAccessibleName("Figure caption")
         self.figure_caption.setToolTip("Sheet and arm comparison for standalone figures. Edit or clear to remove.")
         self.figure_caption.setMaxLength(1000)
-        caption_label = QLabel("Figure caption:", self)
+        caption_label = QLabel("Figure caption", self)
         caption_label.setBuddy(self.figure_caption)
         caption_row = self.style_layout.rowCount()
         caption_columns = self.style_layout.columnCount()

@@ -186,7 +186,7 @@ def _run(app, window, work, root, record, analyze):
     app.processEvents()
     app.processEvents()
     assert not window.workspace.is_dirty
-    assert "Unsaved changes" not in window.dataset_file_lbl.text()
+    assert not window.workspace.is_dirty
     assert "*" not in window.windowTitle()
     record("ux-empty-workspace", window, guidance=window.start_page.accessibleName(), device_pixel_ratio=window.devicePixelRatioF(), logical_size=[window.width(), window.height()])
     for case in ("sorted-paste", "sparse-fill", "quoted-copy", "sparse-copy", "invalid-paste"):

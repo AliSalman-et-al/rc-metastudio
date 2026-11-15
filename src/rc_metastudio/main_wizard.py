@@ -19,7 +19,7 @@ else:
     from rc_metastudio.forms import ui_outcome_name_page as _ui_outcome_name_page
     from rc_metastudio.forms import ui_welcome_page as _ui_welcome_page
 
-from rc_metastudio.qt_layout import style_inline_error
+from rc_metastudio.qt_layout import DisclosureButton, clear_inline_error, style_inline_error
 from PyQt6.QtCore import QEvent, QObject, QSize, Qt, QTimer, QStandardPaths
 from PyQt6.QtGui import (
     QColor,
@@ -521,11 +521,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.groupBox.setTitle("")
         self.verticalLayout_2.insertWidget(0, self.select_file_btn)
         self.file_path_lbl.hide()
-        self.csv_options_btn = QPushButton("▸ CSV options", self)
-        self.csv_options_btn.setCheckable(True)
-        self.csv_options_btn.setFlat(True)
-        self.csv_options_btn.setStyleSheet("QPushButton { text-align: left; border: none; background: transparent; }")
-        self.csv_options_btn.toggled.connect(lambda checked: self.csv_options_btn.setText("▾ CSV options" if checked else "▸ CSV options"))
+        self.csv_options_btn = DisclosureButton("CSV options", self)
         self.csv_options_btn.toggled.connect(self.groupBox.setVisible)
         self.verticalLayout_2.insertWidget(2, self.csv_options_btn)
         self.groupBox.hide()
@@ -777,7 +773,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
 
             self.imported_data_ok = True
             self.import_tabs.setCurrentWidget(self.preview_grp_box)
-            self.import_status.setStyleSheet("")
+            clear_inline_error(self.import_status)
             noun = "study" if num_rows == 1 else "studies"
             self.import_status.setText(f"Ready to import {num_rows} {noun}." + (" " + " ".join(notices) if notices else ""))
             self.completeChanged.emit()
@@ -855,6 +851,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         if path:
             with Path(path).open("w", encoding="utf-8-sig", newline="") as stream:
                 csv.writer(stream).writerow(self.required_header_labels)
+            clear_inline_error(self.import_status)
             self.import_status.setText(f"Saved template: {Path(path).resolve()}")
 
     def _legacy_header_aliases(self):
@@ -1073,7 +1070,7 @@ class MainWizard(QWizard):
             self.setWindowTitle("Import data")
         elif path == "new_dataset":
             self.setStartId(Page_DataType)
-            self.setWindowTitle("Add Outcome" if existing_outcome_names else "Create a New Dataset")
+            self.setWindowTitle("Add outcome" if existing_outcome_names else "New project")
 
         self._layout_controller = adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.WORKFLOW
@@ -1214,7 +1211,7 @@ class MainWizard(QWizard):
     def task_label(self) -> str:
         if self.existing_outcome_names:
             return "Add outcome"
-        return "Import data" if self.get_wizard_path() == "csv_import" else "Create dataset"
+        return "Import data" if self.get_wizard_path() == "csv_import" else "New project"
 
     def get_wizard_path(self):
         if "path" in self.info_d:

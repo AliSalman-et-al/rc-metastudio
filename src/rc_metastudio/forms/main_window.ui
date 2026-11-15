@@ -310,7 +310,7 @@
      <normaloff>:/icons/actions/new-dataset.svg</normaloff>:/icons/actions/new-dataset.svg</iconset>
    </property>
    <property name="text">
-    <string>New Dataset</string>
+    <string>New project…</string>
    </property>
   </action>
   <action name="action_meta_regression">

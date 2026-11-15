@@ -55,7 +55,7 @@
        <item>
         <widget class="QPushButton" name="create_new_btn">
          <property name="text">
-          <string>Create a new dataset</string>
+          <string>New project</string>
          </property>
          <property name="icon">
           <iconset resource="../images/icons.qrc">

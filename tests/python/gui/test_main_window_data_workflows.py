@@ -581,13 +581,13 @@ def test_metric_selection_and_confidence_level_are_preserved_in_model_state():
 
         assert window.model.current_effect == "RR"
         assert window.model.get_confidence_level() == 90.0
-        assert window.cl_label.text() == "Confidence level: 90%"
+        assert window.confidence_button.text() == "90% CI…"
 
         window.set_model(copy.deepcopy(window.model.dataset), state)
 
         assert window.model.current_effect == "RR"
         assert window.model.get_confidence_level() == 90.0
-        assert window.cl_label.text() == "Confidence level: 90%"
+        assert window.confidence_button.text() == "90% CI…"
         assert _metric_action(window, "RR").isChecked()
     finally:
         _close_without_prompt(app, window)

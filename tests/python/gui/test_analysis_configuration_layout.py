@@ -600,7 +600,7 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
             assert dialog.contentsRect().contains(dialog.buttonBox.geometry().center())
 
             toggle = dialog.advanced_toggle
-            assert toggle.toolButtonStyle() == QtCore.Qt.ToolButtonStyle.ToolButtonTextOnly
+            assert toggle.arrowType() == (QtCore.Qt.ArrowType.DownArrow if toggle.isChecked() else QtCore.Qt.ArrowType.RightArrow)
             assert toggle.width() >= toggle.fontMetrics().horizontalAdvance(toggle.text()) + 12
             assert "..." not in toggle.text() and "…" not in toggle.text()
             stable_geometry = QtCore.QRect(dialog.frameGeometry())

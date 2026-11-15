@@ -6,6 +6,10 @@ RC MetaStudio is an independently maintained rewrite of the original OpenMeta[An
 
 ## Language
 
+**Project**:
+A saved or unsaved evidence-synthesis workspace containing one or more outcome sheets. A `.rcms` file stores a project.
+_Avoid_: Dataset for the whole project
+
 **Sheet**:
 One outcome's data tab in a project. Each sheet holds its own study rows. Studies are not shared across sheets; the same trial may appear on several sheets with its own numbers.
 _Avoid_: Follow-up as a project dimension
