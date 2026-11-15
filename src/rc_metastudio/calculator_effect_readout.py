@@ -136,33 +136,7 @@ def _wald_summary(data_type, current_effect, est, se) -> str:
 
 def _update_binary_metric_table(dialog, raw) -> None:
     if not hasattr(dialog, "metric_readout"):
-        table = QTableWidget(3, 4, dialog)
-        dialog.metric_readout = table
-        table.setObjectName("calculator_metrics")
-        table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        table.setHorizontalHeaderLabels(["Metric", "Estimate", "Lower CI", "Upper CI"])
-        vertical_header = table.verticalHeader()
-        assert vertical_header is not None
-        vertical_header.hide()
-        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        horizontal_header = table.horizontalHeader()
-        assert horizontal_header is not None
-        horizontal_header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
-        font = QFont(horizontal_header.font())
-        font.setBold(True)
-        horizontal_header.setFont(font)
-        for column in range(4):
-            item = table.horizontalHeaderItem(column)
-            assert item is not None
-            item.setTextAlignment((Qt.AlignmentFlag.AlignLeft if column == 0 else Qt.AlignmentFlag.AlignRight) | Qt.AlignmentFlag.AlignVCenter)
-        dialog.content_layout.addWidget(table)
-        def select_metric(row, column):
-            index = dialog.effect_combo_box.findData(("OR", "RR", "RD")[row])
-            if index < 0:
-                index = dialog.effect_combo_box.findText(("OR", "RR", "RD")[row])
-            dialog.effect_combo_box.setCurrentIndex(index)
-        table.cellClicked.connect(select_metric)
+        _create_binary_metric_table(dialog)
     for row, metric in enumerate(("OR", "RR", "RD")):
         result = dialog.calculator.effect_for_study(
             *raw, metric=metric, confidence_level=dialog.confidence_level
@@ -226,3 +200,33 @@ def update_calculator_readout(dialog, data_type):
     if hasattr(dialog, "metric_readout"):
         dialog.metric_readout.setVisible(complete_binary)
 
+
+
+def _create_binary_metric_table(dialog):
+    table = QTableWidget(3, 4, dialog)
+    dialog.metric_readout = table
+    table.setObjectName("calculator_metrics")
+    table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    table.setHorizontalHeaderLabels(["Metric", "Estimate", "Lower CI", "Upper CI"])
+    vertical_header = table.verticalHeader()
+    assert vertical_header is not None
+    vertical_header.hide()
+    table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+    table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+    horizontal_header = table.horizontalHeader()
+    assert horizontal_header is not None
+    horizontal_header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+    font = QFont(horizontal_header.font())
+    font.setBold(True)
+    horizontal_header.setFont(font)
+    for column in range(4):
+        item = table.horizontalHeaderItem(column)
+        assert item is not None
+        item.setTextAlignment((Qt.AlignmentFlag.AlignLeft if column == 0 else Qt.AlignmentFlag.AlignRight) | Qt.AlignmentFlag.AlignVCenter)
+    dialog.content_layout.addWidget(table)
+    def select_metric(row, column):
+        index = dialog.effect_combo_box.findData(("OR", "RR", "RD")[row])
+        if index < 0:
+            index = dialog.effect_combo_box.findText(("OR", "RR", "RD")[row])
+        dialog.effect_combo_box.setCurrentIndex(index)
+    table.cellClicked.connect(select_metric)

@@ -1339,16 +1339,7 @@ def _regression_summary(fit, reports, scale):
     fields = dict(zip(list(fit.names), list(fit)))
     level = 100 * (1 - float(list(fields["level"])[0]))
     statistic_label = "t" if str(list(fields.get("test", ["z"]))[0]) in ("t", "knha", "adhoc") else "z"
-    coefficients = fields["b"]
-    names = _r_dimnames(coefficients)[0]
-    rows = [["Intercept" if str(name) == "intrcpt" else str(name), *[_format_r_table_cell(list(fields[key])[i], field_name=header)
-             for key, header in (("b", "Estimate"), ("ci.lb", "Lower bound"), ("ci.ub", "Upper bound"), ("se", "SE"), ("zval", statistic_label), ("pval", "p-value"))]]
-            for i, name in enumerate(names)]
-    tables: list[dict[str, object]] = [{"title": "Regression coefficients", "headers": ["Term", "Estimate", f"Lower bound ({level:g}% CI)", f"Upper bound ({level:g}% CI)", "SE", statistic_label, "p-value"], "rows": rows}]
-    tables[0]['quantities'] = [[(), *[(Quantity(role, _raw_number(list(fields[key])[i]), qscale, qlevel),)
-        for key, role, qscale, qlevel in (('b', 'estimate', scale, None), ('ci.lb', 'ci_lower', scale, level),
-            ('ci.ub', 'ci_upper', scale, level), ('se', 'se', scale, None), ('zval', 'statistic', '', None), ('pval', 'p', '', None))]]
-        for i in range(len(rows))]
+    tables = [_regression_coefficient_table(fields, scale, level, statistic_label)]
     residual = [(key, label) for key, label in (("QE", "Q"), ("QEp", "p-value"), ("tau2", "τ²")) if key in fields]
     if residual:
         tables.append({"title": "Residual heterogeneity", "headers": [label for _, label in residual],
@@ -1365,21 +1356,13 @@ def _regression_summary(fit, reports, scale):
 
 def _insert_held_effects(fields, display, rows, quantities, level, *, digits=None):
     groups = fields.get("study_groups", ())
-    display_indices = []
-    offset = 0
-    for index in range(len(rows)):
-        if groups and index and groups[index] != groups[index - 1]:
-            offset += 1
-        display_indices.append(index + offset)
+    display_indices = _study_display_indexes(groups, len(rows))
     if digits is None:
         digits = _RESULT_DISPLAY_DIGITS.get()
     digits = int(digits) if digits is not None else 4
     for index, row, numbers in zip(display_indices, rows, quantities):
         values = [list(display[key])[index] for key in ("y.disp", "lb.disp", "ub.disp")]
-        effects = [result_formatting.format_effect_number(value, digits)
-                   if isinstance(value, (float, int)) and math.isfinite(value)
-                   else _format_r_table_cell(value)
-                   for value in values]
+        effects = _display_effect_values(values, digits)
         row[1:1] = ["Not estimable", "—", "—"] if effects[0] == "NA" else effects
         numbers[1:1] = [(Quantity(role, _raw_number(value), 'display', level if role != 'estimate' else None),)
                        for role, value in zip(('estimate', 'ci_lower', 'ci_upper'), values)] if level is not None else [(), (), ()]
@@ -1405,28 +1388,14 @@ def _held_study_report(metadata, reports, *, digits=None, level=None):
     if not reports:
         return
     for prefix in metadata["image_params_paths"].values():
-        path = Path(str(prefix) + ".plotdata")
-        if not path.is_file():
+        data = _held_plot_data(prefix)
+        if data is None:
             continue
-        environment = ro.r["new.env"]()
-        ro.r["load"](str(path), envir=environment)
-        if "plot.data" not in environment:
-            continue
-        fields = _r_mapping_or_empty(environment["plot.data"])
-        display = fields.get("effect_display", {})
-        if not isinstance(display, Mapping):
-            continue
-        if not all(key in display for key in ("y.disp", "lb.disp", "ub.disp")):
-            continue
+        fields, display = data
         rows = _held_weight_rows(fields, weights)
         if rows is None:
             continue
-        if weights is not None:
-            quantities = weights['tables'][0].get('quantities', [[(), ()] for row in rows])
-        else:
-            quantities = [[(), (Quantity('weight', _raw_number(weight), 'percent'),)] for weight in fields.get('weights', ())]
-        if level is None:
-            quantities = [[(), ()] for row in rows]
+        quantities = _held_study_quantities(fields, weights, rows, level)
         _insert_held_effects(fields, display, rows, quantities, level, digits=digits)
         if level is None:
             quantities = []
@@ -1744,13 +1713,8 @@ def _structured_named_content(title, value, study_names):
             paragraphs.extend(nested["paragraphs"])
             tables.extend(nested["tables"])
         else:
-            text = _format_r_vector(child, field_name=name) if _is_r_iterable(child) else _format_r_table_cell(child, field_name=name)
-            if len(text) > 100:
-                paragraphs.append(label + ": " + text)
-            else:
-                rows.append([label, text])
-                raw = list(child)[0] if _is_r_iterable(child) and len(child) == 1 else child
-                quantities.append([(), fields[0][index] if fields else _automatic_quantity(raw)])
+            _append_named_scalar(name, child, label, fields, index, paragraphs, rows, quantities)
+
     if rows:
         tables.insert(0, {"title": title, "headers": ["Statistic", "Value"], "rows": rows, 'quantities': quantities if any(any(row) for row in quantities) else []})
     return {"paragraphs": paragraphs, "tables": tables}
@@ -1760,20 +1724,10 @@ def _structured_matrix(title, matrix, study_names, first_row_headers=False):
     nrow, ncol = _r_dims(matrix)
     values = _matrix_cell_values(list(matrix), nrow, ncol)
     dimnames = _r_dimnames(matrix)
-    if first_row_headers:
-        headers = [str(values[col * nrow]) for col in range(ncol)]
-        row_names = None
-    else:
-        headers = _matrix_column_names(dimnames[1] if len(dimnames) > 1 else None, ncol)
-        row_names = _matrix_row_names(dimnames[0] if dimnames else None, nrow, study_names)
+    headers, row_names = _structured_matrix_headers(values, dimnames, nrow, ncol, study_names, first_row_headers)
     if title in {"Sensitivity coefficients", "Specificity coefficients"}:
         _label_diagnostic_coefficients(headers, dimnames)
-    rows = [[_format_r_table_cell(values[row + col * nrow], field_name=headers[col])
-             for col in range(ncol)] for row in range(1 if first_row_headers else 0, nrow)]
-    quantities = _numeric_fields(matrix, len(rows), ncol)
-    if not quantities:
-        quantities = [[_automatic_quantity(values[row + col*nrow]) for col in range(ncol)]
-                      for row in range(1 if first_row_headers else 0, nrow)]
+    rows, quantities = _structured_matrix_rows(matrix, values, nrow, ncol, headers, first_row_headers)
     if row_names is not None:
         headers = ["Term"] + headers
         rows = [[name] + row for name, row in zip(row_names, rows)]
@@ -2807,3 +2761,92 @@ def _format_numeric_table_cell(value, field_name):
     if float(value).is_integer():
         return str(int(value))
     return "%.4g" % value
+
+
+def _regression_coefficient_table(fields, scale, level, statistic_label):
+    coefficients = fields["b"]
+    names = _r_dimnames(coefficients)[0]
+    rows = [["Intercept" if str(name) == "intrcpt" else str(name), *[_format_r_table_cell(list(fields[key])[i], field_name=header)
+             for key, header in (("b", "Estimate"), ("ci.lb", "Lower bound"), ("ci.ub", "Upper bound"), ("se", "SE"), ("zval", statistic_label), ("pval", "p-value"))]]
+            for i, name in enumerate(names)]
+    tables: list[dict[str, object]] = [{"title": "Regression coefficients", "headers": ["Term", "Estimate", f"Lower bound ({level:g}% CI)", f"Upper bound ({level:g}% CI)", "SE", statistic_label, "p-value"], "rows": rows}]
+    tables[0]['quantities'] = [[(), *[(Quantity(role, _raw_number(list(fields[key])[i]), qscale, qlevel),)
+        for key, role, qscale, qlevel in (('b', 'estimate', scale, None), ('ci.lb', 'ci_lower', scale, level),
+            ('ci.ub', 'ci_upper', scale, level), ('se', 'se', scale, None), ('zval', 'statistic', '', None), ('pval', 'p', '', None))]]
+        for i in range(len(rows))]
+    return tables[0]
+
+
+def _study_display_indexes(groups, count):
+    display_indices = []
+    offset = 0
+    for index in range(count):
+        if groups and index and groups[index] != groups[index - 1]:
+            offset += 1
+        display_indices.append(index + offset)
+    return display_indices
+
+
+def _display_effect_values(values, digits):
+    effects = [result_formatting.format_effect_number(value, digits)
+               if isinstance(value, (float, int)) and math.isfinite(value)
+               else _format_r_table_cell(value)
+               for value in values]
+    return effects
+
+
+def _held_plot_data(prefix):
+    path = Path(str(prefix) + ".plotdata")
+    if not path.is_file():
+        return None
+    environment = ro.r["new.env"]()
+    ro.r["load"](str(path), envir=environment)
+    if "plot.data" not in environment:
+        return None
+    fields = _r_mapping_or_empty(environment["plot.data"])
+    display = fields.get("effect_display", {})
+    if not isinstance(display, Mapping):
+        return None
+    if not all(key in display for key in ("y.disp", "lb.disp", "ub.disp")):
+        return None
+    return fields, display
+
+
+def _held_study_quantities(fields, weights, rows, level):
+    if weights is not None:
+        quantities = weights['tables'][0].get('quantities', [[(), ()] for row in rows])
+    else:
+        quantities = [[(), (Quantity('weight', _raw_number(weight), 'percent'),)] for weight in fields.get('weights', ())]
+    if level is None:
+        quantities = [[(), ()] for row in rows]
+    return quantities
+
+
+def _append_named_scalar(name, child, label, fields, index, paragraphs, rows, quantities):
+    text = _format_r_vector(child, field_name=name) if _is_r_iterable(child) else _format_r_table_cell(child, field_name=name)
+    if len(text) > 100:
+        paragraphs.append(label + ": " + text)
+    else:
+        rows.append([label, text])
+        raw = list(child)[0] if _is_r_iterable(child) and len(child) == 1 else child
+        quantities.append([(), fields[0][index] if fields else _automatic_quantity(raw)])
+
+
+def _structured_matrix_headers(values, dimnames, nrow, ncol, study_names, first_row_headers):
+    if first_row_headers:
+        headers = [str(values[col * nrow]) for col in range(ncol)]
+        row_names = None
+    else:
+        headers = _matrix_column_names(dimnames[1] if len(dimnames) > 1 else None, ncol)
+        row_names = _matrix_row_names(dimnames[0] if dimnames else None, nrow, study_names)
+    return headers, row_names
+
+
+def _structured_matrix_rows(matrix, values, nrow, ncol, headers, first_row_headers):
+    rows = [[_format_r_table_cell(values[row + col * nrow], field_name=headers[col])
+             for col in range(ncol)] for row in range(1 if first_row_headers else 0, nrow)]
+    quantities = _numeric_fields(matrix, len(rows), ncol)
+    if not quantities:
+        quantities = [[_automatic_quantity(values[row + col*nrow]) for col in range(ncol)]
+                      for row in range(1 if first_row_headers else 0, nrow)]
+    return rows, quantities

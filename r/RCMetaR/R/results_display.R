@@ -56,19 +56,20 @@ create.summary.disp <- function(om.data, params, res, model.title) {
   se <- rcmetar.format.effect.number(res$se, se.digits)
 
   random <- !res$method %in% c("FE", "EE", "CE", "MH", "PETO")
-  het.col.labels <- c("Q", "df", "p-value", "I\u00b2", if (random) "\u03c4\u00b2")
+  het.columns <- seq_len(4L + as.integer(random))
+  het.col.labels <- c("Q", "df", "p-value", "I\u00b2", "\u03c4\u00b2")[het.columns]
   het.col.vals <- c(QE, if (display.value.is.missing(res$QE)) "" else degf,
-                    QEp, I2, if (random) tau2)
+                    QEp, I2, tau2)[het.columns]
   het.array <- rbind(het.col.labels, het.col.vals)
   class(het.array) <- "summary.data"
   het.array <- rcmetar.numeric.fields(het.array, seq_along(het.col.labels),
-    c("q", "df", "p", "i2", if (random) "tau2"),
-    c(res$QE %||% NA_real_, if (display.value.is.missing(res$QE)) NA_real_ else degf, res$QEp %||% NA_real_, res$I2 %||% NA_real_, if (random) res$tau2 %||% NA_real_),
-    c("", "", "", "percent", if (random) analysis.scale))
+    c("q", "df", "p", "i2", "tau2")[het.columns],
+    c(res$QE %||% NA_real_, if (display.value.is.missing(res$QE)) NA_real_ else degf, res$QEp %||% NA_real_, res$I2 %||% NA_real_, res$tau2 %||% NA_real_)[het.columns],
+    c("", "", "", "percent", analysis.scale)[het.columns])
   het.title <- "Heterogeneity"
 
   calculation.table <- NULL
-  if (scale.str == "log" || scale.str == "logit" || scale.str == "arcsine") {
+  if (scale.str %in% c("log", "logit", "arcsine")) {
     res.col.labels <- c("Estimate", display.confidence.interval.labels(params), "p-value")
     res.col.vals <- c(y.disp, lb.disp, ub.disp, pVal)
     res.array <- rbind(res.col.labels, res.col.vals)

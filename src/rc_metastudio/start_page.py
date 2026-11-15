@@ -124,27 +124,30 @@ class StartPage(QtWidgets.QScrollArea):
             import_button.clicked.connect(self.import_button.click)
             self.recent_layout.addWidget(import_button, 1, 0, QtCore.Qt.AlignmentFlag.AlignLeft)
         for index, path in enumerate(reversed(paths)):
-            exists = Path(path).is_file()
-            button = QtWidgets.QPushButton(Path(path).name, self.recent_projects)
-            button.setEnabled(exists)
-            button.setToolTip(str(path) if exists else 'Missing file: ' + str(path))
-            button.clicked.connect(app_error_handler.safe_slot(lambda _checked=False, path=path: open_project(path), parent=self))
-            self.recent_layout.addWidget(button, index, 0)
-            self.recent_layout.addWidget(_RecentPathLabel(str(path), self.recent_projects), index, 1)
-            if exists:
-                try:
-                    modified = datetime.fromtimestamp(Path(path).stat().st_mtime).strftime('%d %b %Y')
-                except OSError:
-                    modified = ''
-                date_label = QtWidgets.QLabel('Modified ' + modified if modified else '', self.recent_projects)
-                date_label.setForegroundRole(QtGui.QPalette.ColorRole.PlaceholderText)
-                self.recent_layout.addWidget(date_label, index, 2)
-            if not exists:
-                self.recent_layout.addWidget(QtWidgets.QLabel('Missing file', self.recent_projects), index, 2)
-                for column, (caption, callback) in enumerate((("Locate…", locate_project), ("Remove from list", remove_project)), 3):
-                    if callback is None:
-                        continue
-                    action = QtWidgets.QPushButton(caption, self.recent_projects)
-                    action.setAccessibleName(caption + " " + Path(path).name)
-                    action.clicked.connect(app_error_handler.safe_slot(lambda _checked=False, path=path, callback=callback: callback(path), parent=self))
-                    self.recent_layout.addWidget(action, index, column)
+            self._add_recent_project(index, path, open_project, locate_project, remove_project)
+
+    def _add_recent_project(self, index, path, open_project, locate_project, remove_project):
+        exists = Path(path).is_file()
+        button = QtWidgets.QPushButton(Path(path).name, self.recent_projects)
+        button.setEnabled(exists)
+        button.setToolTip(str(path) if exists else 'Missing file: ' + str(path))
+        button.clicked.connect(app_error_handler.safe_slot(lambda _checked=False, path=path: open_project(path), parent=self))
+        self.recent_layout.addWidget(button, index, 0)
+        self.recent_layout.addWidget(_RecentPathLabel(str(path), self.recent_projects), index, 1)
+        if exists:
+            try:
+                modified = datetime.fromtimestamp(Path(path).stat().st_mtime).strftime('%d %b %Y')
+            except OSError:
+                modified = ''
+            date_label = QtWidgets.QLabel('Modified ' + modified if modified else '', self.recent_projects)
+            date_label.setForegroundRole(QtGui.QPalette.ColorRole.PlaceholderText)
+            self.recent_layout.addWidget(date_label, index, 2)
+        if not exists:
+            self.recent_layout.addWidget(QtWidgets.QLabel('Missing file', self.recent_projects), index, 2)
+            for column, (caption, callback) in enumerate((("Locate…", locate_project), ("Remove from list", remove_project)), 3):
+                if callback is None:
+                    continue
+                action = QtWidgets.QPushButton(caption, self.recent_projects)
+                action.setAccessibleName(caption + " " + Path(path).name)
+                action.clicked.connect(app_error_handler.safe_slot(lambda _checked=False, path=path, callback=callback: callback(path), parent=self))
+                self.recent_layout.addWidget(action, index, column)

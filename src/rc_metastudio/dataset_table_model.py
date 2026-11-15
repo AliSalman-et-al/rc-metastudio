@@ -753,18 +753,23 @@ class DatasetTableModel(QAbstractTableModel):
             return (label) if label is not None else None
         if section in outcome_columns:
             position = outcome_columns.index(section)
-            if data_type == CONTINUOUS and current_effect == "Mean" and not csv_schema:
-                current_effect = {"reg_coef": "Coefficient", "generic_effect": "Estimate"}.get(sub_type, "Mean")
-            if data_type == DIAGNOSTIC:
-                return (("Sens.", "Lower", "Upper", "Spec.", "Lower", "Upper") if csv_schema else ("Sensitivity", "Lower", "Upper", "Specificity", "Lower", "Upper"))[position]
-            if data_type in RATIO_DATA_TYPES:
-                headers = (current_effect, "Lower", "Upper", *RATIO_HEADERS[3:])
-            elif data_type == CONTINUOUS and sub_type == "generic_effect":
-                headers = (current_effect, "SE")
-            else:
-                headers = (current_effect, "Lower", "Upper")
+            headers = DatasetTableModel._effect_headers(data_type, sub_type, current_effect, csv_schema)
             return (headers[position]) if position < len(headers) else None
         return None
+
+    @staticmethod
+    def _effect_headers(data_type, sub_type, current_effect, csv_schema):
+        if data_type == CONTINUOUS and current_effect == "Mean" and not csv_schema:
+            current_effect = {"reg_coef": "Coefficient", "generic_effect": "Estimate"}.get(sub_type, "Mean")
+        if data_type == DIAGNOSTIC:
+            return (("Sens.", "Lower", "Upper", "Spec.", "Lower", "Upper") if csv_schema else ("Sensitivity", "Lower", "Upper", "Specificity", "Lower", "Upper"))
+        if data_type in RATIO_DATA_TYPES:
+            headers = (current_effect, "Lower", "Upper", *RATIO_HEADERS[3:])
+        elif data_type == CONTINUOUS and sub_type == "generic_effect":
+            headers = (current_effect, "SE")
+        else:
+            headers = (current_effect, "Lower", "Upper")
+        return headers
 
     @staticmethod
     def _raw_header_label(section, data_type, sub_type, raw_columns, groups, csv_schema=False):

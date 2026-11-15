@@ -218,43 +218,52 @@ def _report_content(value: object) -> tuple[tuple[str, ...], tuple[ResultTable, 
     entries = fields.get("tables")
     if not isinstance(entries, (list, tuple)):
         raise ValueError("report tables must be a list")
-    tables = []
-    for entry in entries:
-        if isinstance(entry, ResultTable):
-            tables.append(entry)
-            continue
-        if not isinstance(entry, Mapping):
-            raise ValueError("report table must be a mapping")
-        table_fields: dict[str, object] = {}
-        for key, field in entry.items():
-            if isinstance(key, str):
-                table_fields[key] = field
-        title = table_fields.get("title")
-        headers = _optional_string_list(table_fields.get("headers"), "report headers")
-        rows = table_fields.get("rows")
-        if not isinstance(title, str) or not title or not headers or not isinstance(rows, (list, tuple)):
-            raise ValueError("report table needs a title, headers and rows")
-        parsed_rows = []
-        for row in rows:
-            cells = _optional_string_list(row, "report cells")
-            if cells is None or len(cells) != len(headers):
-                raise ValueError("report row width must match its headers")
-            parsed_rows.append(tuple(cells))
-        quantities = table_fields.get('quantities', ())
-        if not isinstance(quantities, (tuple, list)):
-            raise ValueError('report quantities must be nested sequences')
-        parsed_quantities = []
-        for row in quantities:
-            if not isinstance(row, (tuple, list)):
-                raise ValueError('report quantity row must be a sequence')
-            cells = []
-            for cell in row:
-                if not isinstance(cell, (tuple, list)) or any(not isinstance(q, Quantity) for q in cell):
-                    raise ValueError('report quantity cell must contain Quantity values')
-                cells.append(tuple(cell))
-            parsed_quantities.append(tuple(cells))
-        tables.append(ResultTable(title, tuple(headers), tuple(parsed_rows), tuple(parsed_quantities)))
-    return tuple(paragraphs or ()), tuple(tables)
+    return tuple(paragraphs or ()), tuple(_report_table_entry(entry) for entry in entries)
+
+
+def _report_rows(rows, width):
+    parsed_rows = []
+    for row in rows:
+        cells = _optional_string_list(row, "report cells")
+        if cells is None or len(cells) != width:
+            raise ValueError("report row width must match its headers")
+        parsed_rows.append(tuple(cells))
+    return tuple(parsed_rows)
+
+
+def _report_quantities(quantities):
+    parsed_quantities = []
+    for row in quantities:
+        if not isinstance(row, (tuple, list)):
+            raise ValueError('report quantity row must be a sequence')
+        cells = []
+        for cell in row:
+            if not isinstance(cell, (tuple, list)) or any(not isinstance(q, Quantity) for q in cell):
+                raise ValueError('report quantity cell must contain Quantity values')
+            cells.append(tuple(cell))
+        parsed_quantities.append(tuple(cells))
+    return tuple(parsed_quantities)
+
+
+def _report_table_entry(entry):
+    if isinstance(entry, ResultTable):
+        return entry
+    if not isinstance(entry, Mapping):
+        raise ValueError("report table must be a mapping")
+    table_fields: dict[str, object] = {}
+    for key, field in entry.items():
+        if isinstance(key, str):
+            table_fields[key] = field
+    title = table_fields.get("title")
+    headers = _optional_string_list(table_fields.get("headers"), "report headers")
+    rows = table_fields.get("rows")
+    if not isinstance(title, str) or not title or not headers or not isinstance(rows, (list, tuple)):
+        raise ValueError("report table needs a title, headers and rows")
+    parsed_rows = _report_rows(rows, len(headers))
+    quantities = table_fields.get('quantities', ())
+    if not isinstance(quantities, (tuple, list)):
+        raise ValueError('report quantities must be nested sequences')
+    return ResultTable(title, tuple(headers), parsed_rows, _report_quantities(quantities))
 
 
 def _section_fields(

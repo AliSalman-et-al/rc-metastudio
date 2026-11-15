@@ -199,12 +199,7 @@ def _pooled_statistics(values, quantities, overall, calculation):
     if statistic == 't' and df:
         statistic += f' (df = {df})'
         method = f'The overall effect was tested using t with {df} degrees of freedom.'
-    se_header = next((h for h, qs in combined_qs.items() if any(q.role == 'se' for q in qs)), None)
-    se = (combined[se_header], combined_qs[se_header]) if se_header else ('—', ())
-    se_scale = se_header.removeprefix('SE').strip() or '—' if se_header else '—'
-    if se_header and se_scale == '—':
-        scale = next(q.scale for q in combined_qs[se_header] if q.role == 'se')
-        se_scale = f'({scale if scale != "display" else "outcome"} scale)' if scale else '—'
+    se, se_scale = _pooled_standard_error(combined, combined_qs)
     test = (combined.get(stat, '—'), combined_qs.get(stat, ())) if stat else ('—', ())
     p = (p_value(combined.get('p-value', ''), combined_qs.get('p-value', ())), combined_qs.get('p-value', ()))
     return statistic, se, se_scale, test, p, method
@@ -248,10 +243,7 @@ def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overa
         if 'k' in values and 'Subgroups' in values:
             fit.append((('Studies (k) (' + values['Subgroups'] + ')', ()), (values['k'], quantities.get('k', ()))))
         effect_metric = _effect_metric(metric, section, table, vertical, coefficient)
-        context = next((values[h] for h in table.headers if h.startswith(('Study added', 'Study omitted'))), table.title if vertical else effect_metric)
-        effect = values.get('Term', values.get('Covariate', values.get('Subgroups', values.get('Level', context))))
-        if not coefficient and ',' in metric and effect.casefold() != effect_metric.casefold():
-            effect = effect_metric.capitalize() + ': ' + effect
+        effect = _pooled_effect_label(values, table, vertical, effect_metric, coefficient, metric)
         statistic, se, se_scale, test, p, method = _pooled_statistics(values, quantities, overall, calculation)
         if not coefficient and not vertical and values.get("Subgroups", "Overall").casefold() == "overall":
             methods.append(method)
@@ -266,21 +258,11 @@ def _heterogeneity_rows(table, fit, summary, residual=None):
         prefix = values.get('Subgroups', '')
         prefix = prefix + ': ' if prefix else 'Residual ' if table.title == 'Residual heterogeneity' else ''
         if table.title == 'Residual heterogeneity':
-            combined = {**values, **(residual or {})}
-            summary.append("Residual heterogeneity: " + ", ".join(
-                _p_clause(p_value(combined[h], quantities.get(h, ()))) if h == 'p-value' else f"{h} = {combined[h]}"
-                for h in ('Q', 'df', 'p-value', 'τ²', 'I²') if h in combined) + ".")
+            summary.append(_residual_heterogeneity_sentence(values, quantities, residual))
         else:
             summary.extend(_heterogeneity_sentence(values, quantities, prefix))
-        labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity p', 'I²': 'I²', 'τ²': 'Between-study variance (τ²)'}
-        for h, label in labels.items():
-            if h not in values:
-                continue
-            qs = quantities.get(h, ())
-            if h == 'τ²' and qs and qs[0].scale not in ('', 'display'):
-                label += f' (squared {qs[0].scale} scale)'
-            label += ' (' + values['Subgroups'] + ')' if 'Subgroups' in values else ''
-            fit.append(((label, ()), (p_value(values[h], qs) if h == 'p-value' else values[h], qs)))
+        _heterogeneity_fit_rows(values, quantities, fit)
+
 
 def _fit_table(table, fit, summary):
     if table.title == 'Test of subgroup differences' and table.rows:
@@ -305,12 +287,12 @@ def _model_fit_table(table, fit, summary):
         return True
     if table.title == 'Model specification':
         return True
-    if table.rows and any(q.role == 'statistic' for row in table.quantities for cell in row for q in cell) and not any(q.role == 'estimate' for row in table.quantities for cell in row for q in cell):
+    if table.rows and 'statistic' in _table_roles(table) and not 'estimate' in _table_roles(table):
         return True
     return False
 
 def _horizontal_table(table):
-    vertical = table.headers == ('Statistic', 'Value') and any(q.role == 'estimate' for row in table.quantities for cell in row for q in cell)
+    vertical = table.headers == ('Statistic', 'Value') and 'estimate' in _table_roles(table)
     if vertical:
         table = _table(table.title, [row[0] for row in table.rows], [[_cells(table, i)[1] for i in range(len(table.rows))]])
     return table, vertical
@@ -332,10 +314,10 @@ def _report_table(result, section, table, summary, pooled, fit, level, statistic
         context = section.title.removesuffix(' summary') if ',' in result.manuscript_metric else ''
         _prediction_rows(table, lower, upper, ci_level, vertical, fit, summary, context)
         return level, statistic
-    if lower and upper and ci_level.endswith(' CI') and any(q.role == 'estimate' for row in table.quantities for cell in row for q in cell):
+    if lower and upper and ci_level.endswith(' CI') and 'estimate' in _table_roles(table):
         level, statistic = _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overall, calculation, pooled, fit, summary, methods)
         return level, statistic
-    if any(q.role == 'q' for row in table.quantities for cell in row for q in cell):
+    if 'q' in _table_roles(table):
         start = len(fit)
         _heterogeneity_rows(table, fit, summary, _residual_statistics(section))
         if ',' in result.manuscript_metric:
@@ -376,13 +358,7 @@ def _report_sections(result, summary, methods):
 def _primary_sections(result, text_sections, pooled, fit, level, statistic):
     template = text_sections[0]
     primary_title = 'Diagnostic summary' if result.analysis_method == 'diagnostic.reitsma' else 'Pooled effect'
-    prediction_notes = {}
-    for section in text_sections:
-        for note in section.paragraphs:
-            if 'prediction' in note.casefold():
-                prediction_notes.setdefault(note, []).append(section.title)
-    notes = tuple((' / '.join(dict.fromkeys(titles)) + ': ' + note) if len(prediction_notes) > 1 else note
-                  for note, titles in prediction_notes.items())
+    notes = _prediction_notes(text_sections)
     sections = [replace(template, title=primary_title, paragraphs=(() if pooled else
                          ('No structured pooled estimates are available for this workflow; the complete output is in Supplementary details.',)),
                         tables=(_table(primary_title, ('Effect', 'Estimate', level, 'SE', 'SE scale', statistic, 'p'), pooled),)),
@@ -531,10 +507,7 @@ def _docx_table(document, table):
     target.autofit = True
     section = document.sections[-1]
     available = section.page_width - section.left_margin - section.right_margin
-    lengths = [max(len(line) for row in (table.headers, *table.rows)
-                   for line in (row[column].splitlines() or [''])) for column in range(len(table.headers))]
-    weights = [max(5, min(45, length)) for length in lengths]
-    widths = [round(available * weight / sum(weights)) for weight in weights]
+    widths = _docx_column_widths(table, available)
     for column, width in zip(target.columns, widths):
         column.width = width
     from docx.oxml import OxmlElement
@@ -550,20 +523,7 @@ def _docx_table(document, table):
     numeric = numeric_columns(table.rows) or (False,) * len(table.headers)
     for index, (row, values) in enumerate(zip([target.rows[0], *[target.add_row() for _ in table.rows]], (table.headers, *table.rows))):
         for column, (cell, value) in enumerate(zip(row.cells, values)):
-            cell.text = value.replace(' to ', '\u00a0to\u00a0')
-            cell.width = widths[column]
-            from docx.enum.text import WD_ALIGN_PARAGRAPH
-            for paragraph in cell.paragraphs:
-                paragraph.paragraph_format.space_before = Pt(2)
-                paragraph.paragraph_format.space_after = Pt(2)
-                paragraph.paragraph_format.line_spacing = 1
-                right = numeric[column] if index == 0 else numeric_cell(value) or (value in ('', 'NA', '—', 'Not estimable') and numeric[column])
-                paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT if right else WD_ALIGN_PARAGRAPH.LEFT
-                if index == 0:
-                    paragraph.paragraph_format.keep_with_next = True
-                for run in paragraph.runs:
-                    run.font.size = Pt(10)
-                    run.bold = index == 0
+            _style_docx_cell(cell, value, widths[column], numeric[column], index == 0)
 
 
 def _docx_sections(document, report, supplementary, table_number):
@@ -650,25 +610,12 @@ def write_pdf(report, path):
     # QTextDocument prints paginated real tables; figures get their own pages so
     # long reports cannot overwrite a figure or split its caption.
     from PyQt6.QtCore import QSizeF
-    from PyQt6.QtGui import QAbstractTextDocumentLayout
     scale = writer.resolution() / 96
     page = writer.pageLayout().paintRectPixels(writer.resolution())
     width, height = page.width() / scale, page.height() / scale
     document.setPageSize(QSizeF(width, height))
     painter = QPainter(writer)
-    def print_pages(first_page=False):
-        for number in range(document.pageCount()):
-            if number or first_page:
-                writer.newPage()
-            painter.save()
-            painter.scale(scale, scale)
-            painter.setClipRect(QRectF(0, 0, width, height))
-            painter.translate(0, -number * height)
-            context = QAbstractTextDocumentLayout.PaintContext()
-            context.clip = QRectF(0, number * height, width, height)
-            required(document.documentLayout(), "report document layout").draw(painter, context)
-            painter.restore()
-    print_pages()
+    _print_pdf_pages(document, writer, painter, width, height, scale)
     for number, (title, path_) in enumerate(report.figures, 1):
         writer.newPage()
         source, ratio = figure_source(path_)
@@ -707,5 +654,97 @@ def write_pdf(report, path):
             painter.restore()
     if any(section.title == 'Supplementary details' for section in report.sections):
         document.setHtml(report.html(supplementary=True))
-        print_pages(first_page=True)
+        _print_pdf_pages(document, writer, painter, width, height, scale, first_page=True)
     painter.end()
+
+
+def _table_roles(table):
+    return {quantity.role for row in table.quantities for cell in row for quantity in cell}
+
+
+def _pooled_standard_error(combined, combined_qs):
+    se_header = next((h for h, qs in combined_qs.items() if any(q.role == 'se' for q in qs)), None)
+    se = (combined[se_header], combined_qs[se_header]) if se_header else ('—', ())
+    se_scale = se_header.removeprefix('SE').strip() or '—' if se_header else '—'
+    if se_header and se_scale == '—':
+        scale = next(q.scale for q in combined_qs[se_header] if q.role == 'se')
+        se_scale = f'({scale if scale != "display" else "outcome"} scale)' if scale else '—'
+    return se, se_scale
+
+
+def _pooled_effect_label(values, table, vertical, effect_metric, coefficient, metric):
+    context = next((values[h] for h in table.headers if h.startswith(('Study added', 'Study omitted'))), table.title if vertical else effect_metric)
+    effect = values.get('Term', values.get('Covariate', values.get('Subgroups', values.get('Level', context))))
+    if not coefficient and ',' in metric and effect.casefold() != effect_metric.casefold():
+        effect = effect_metric.capitalize() + ': ' + effect
+    return effect
+
+
+def _prediction_notes(text_sections):
+    prediction_notes = {}
+    for section in text_sections:
+        for note in section.paragraphs:
+            if 'prediction' in note.casefold():
+                prediction_notes.setdefault(note, []).append(section.title)
+    notes = tuple((' / '.join(dict.fromkeys(titles)) + ': ' + note) if len(prediction_notes) > 1 else note
+                  for note, titles in prediction_notes.items())
+    return notes
+
+
+def _heterogeneity_fit_rows(values, quantities, fit):
+    labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity p', 'I²': 'I²', 'τ²': 'Between-study variance (τ²)'}
+    for h, label in labels.items():
+        if h not in values:
+            continue
+        qs = quantities.get(h, ())
+        if h == 'τ²' and qs and qs[0].scale not in ('', 'display'):
+            label += f' (squared {qs[0].scale} scale)'
+        label += ' (' + values['Subgroups'] + ')' if 'Subgroups' in values else ''
+        fit.append(((label, ()), (p_value(values[h], qs) if h == 'p-value' else values[h], qs)))
+
+
+def _residual_heterogeneity_sentence(values, quantities, residual):
+    combined = {**values, **(residual or {})}
+    return "Residual heterogeneity: " + ", ".join(
+        _p_clause(p_value(combined[h], quantities.get(h, ()))) if h == 'p-value' else f"{h} = {combined[h]}"
+        for h in ('Q', 'df', 'p-value', 'τ²', 'I²') if h in combined) + "."
+
+
+def _docx_column_widths(table, available):
+    lengths = [max(len(line) for row in (table.headers, *table.rows)
+                   for line in (row[column].splitlines() or [''])) for column in range(len(table.headers))]
+    weights = [max(5, min(45, length)) for length in lengths]
+    widths = [round(available * weight / sum(weights)) for weight in weights]
+    return widths
+
+
+def _style_docx_cell(cell, value, width, numeric, heading):
+    cell.text = value.replace(' to ', '\u00a0to\u00a0')
+    cell.width = width
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    for paragraph in cell.paragraphs:
+        paragraph.paragraph_format.space_before = Pt(2)
+        paragraph.paragraph_format.space_after = Pt(2)
+        paragraph.paragraph_format.line_spacing = 1
+        right = numeric if heading else numeric_cell(value) or (value in ('', 'NA', '—', 'Not estimable') and numeric)
+        paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT if right else WD_ALIGN_PARAGRAPH.LEFT
+        if heading:
+            paragraph.paragraph_format.keep_with_next = True
+        for run in paragraph.runs:
+            run.font.size = Pt(10)
+            run.bold = heading
+
+
+def _print_pdf_pages(document, writer, painter, width, height, scale, first_page=False):
+    from PyQt6.QtGui import QAbstractTextDocumentLayout
+    for number in range(document.pageCount()):
+        if number or first_page:
+            writer.newPage()
+        painter.save()
+        painter.scale(scale, scale)
+        painter.setClipRect(QRectF(0, 0, width, height))
+        painter.translate(0, -number * height)
+        context = QAbstractTextDocumentLayout.PaintContext()
+        context.clip = QRectF(0, number * height, width, height)
+        required(document.documentLayout(), "report document layout").draw(painter, context)
+        painter.restore()

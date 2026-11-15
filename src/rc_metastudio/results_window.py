@@ -399,13 +399,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._refresh_navigation_palette()
         navigation = []
         pages = {'Manuscript': self.manuscript_action, 'Text report': self.report_action, 'Tables': self.tables_action}
-        for index in range(min(9, self.nav_tree.topLevelItemCount())):
+        for index in range(self.nav_tree.topLevelItemCount()):
             item = required(self.nav_tree.topLevelItem(index), 'result navigation item')
             action = pages.get(item.text(0))
             if action is None:
                 action = QAction(item.text(0), self)
                 action.triggered.connect(lambda checked=False, item=item: self.nav_tree.setCurrentItem(item))
-            action.setShortcuts([*action.shortcuts(), QKeySequence(f'Ctrl+{index + 1}')])
+            if index < 9:
+                action.setShortcuts([*action.shortcuts(), QKeySequence(f'Ctrl+{index + 1}')])
             action.setEnabled(not item.isDisabled())
             self.addAction(action)
             navigation.append(action)
@@ -448,17 +449,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         study_count = dict(self.results.manuscript_model_info).get('Studies (k)')
         if study_count:
             details.append('k = ' + study_count)
-        models = []
-        confidence = []
-        for line in self.results.details.splitlines():
-            if line.startswith('Model: '):
-                models.append((line.removeprefix('Model: '), ''))
-            elif line.startswith('Estimator: ') and models:
-                model, estimator = models[-1]
-                value = line.removeprefix('Estimator: ')
-                models[-1] = (model, estimator + ', ' + value if estimator else value)
-            elif line.startswith('Confidence level: '):
-                confidence.append(line.removeprefix('Confidence level: ') + ' CI')
+        models, confidence = self._identity_model_details(self.results.details)
         details.extend(model + (f' ({estimator})' if estimator else '')
                        for model, estimator in dict.fromkeys(models))
         details.extend(line for line in self.results.details.splitlines() if line.startswith('Moderators: '))
@@ -473,6 +464,21 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.verticalLayout.setContentsMargins(margin, margin, margin, margin)
         self.verticalLayout.setSpacing(round(self.fontMetrics().height() * .5))
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+
+    @staticmethod
+    def _identity_model_details(details):
+        models = []
+        confidence = []
+        for line in details.splitlines():
+            if line.startswith('Model: '):
+                models.append((line.removeprefix('Model: '), ''))
+            elif line.startswith('Estimator: ') and models:
+                model, estimator = models[-1]
+                value = line.removeprefix('Estimator: ')
+                models[-1] = (model, estimator + ', ' + value if estimator else value)
+            elif line.startswith('Confidence level: '):
+                confidence.append(line.removeprefix('Confidence level: ') + ' CI')
+        return models, confidence
 
     def _setup_manuscript_page(self):
         from rc_metastudio.manuscript_report import ManuscriptReport
@@ -664,19 +670,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             metrics = header.fontMetrics()
             minimums = []
             for column, item in enumerate(headers):
-                minimum = max(
-                    header.minimumSectionSize(),
-                    max((metrics.horizontalAdvance(line) for line in required(item, "table header").text().splitlines()), default=0) + 8,
-                    table.sizeHintForColumn(column),
-                )
-                for row in range(table.rowCount()):
-                    cell = table.item(row, column)
-                    if cell is None:
-                        continue
-                    font = cell.data(Qt.ItemDataRole.FontRole)
-                    cell_metrics = QFontMetrics(font) if font is not None else table.fontMetrics()
-                    minimum = max(minimum, max((cell_metrics.horizontalAdvance(line)
-                                               for line in cell.text().splitlines()), default=0) + 8)
+                minimum = self._result_column_minimum(column, item, header, metrics)
                 minimums.append(minimum)
             for column, minimum in enumerate(minimums):
                 table.setColumnWidth(column, minimum + 16)
@@ -690,6 +684,23 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                                    + 2 * table.frameWidth() + scrollbar_height)
         finally:
             self._sizing_result_table = False
+
+    def _result_column_minimum(self, column, item, header, metrics):
+        table = self.result_table
+        minimum = max(
+            header.minimumSectionSize(),
+            max((metrics.horizontalAdvance(line) for line in required(item, "table header").text().splitlines()), default=0) + 8,
+            table.sizeHintForColumn(column),
+        )
+        for row in range(table.rowCount()):
+            cell = table.item(row, column)
+            if cell is None:
+                continue
+            font = cell.data(Qt.ItemDataRole.FontRole)
+            cell_metrics = QFontMetrics(font) if font is not None else table.fontMetrics()
+            minimum = max(minimum, max((cell_metrics.horizontalAdvance(line)
+                                       for line in cell.text().splitlines()), default=0) + 8)
+        return minimum
 
     def _table_rows(self, selected=False):
         table = self._report_tables[self.table_selector.currentIndex()]

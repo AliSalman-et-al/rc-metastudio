@@ -511,7 +511,7 @@ def test_continuous_variants_are_transactional_and_screen_bounded(monkeypatch, s
         assert not dialog.content_scroll.isAncestorOf(dialog.buttonBox)
         assert dialog.simple_group.title() == "Arm summaries"
         assert dialog.effect_group.title() == "Effect estimate"
-        assert dialog.effect_metric_label.text() == "Effect metric"
+        assert dialog.effect_metric_label.text() == "Effect measure"
         assert dialog.label_14.text() == "Estimate"
         assert dialog.lower_text_box.accessibleName() == "Lower confidence limit"
         assert dialog.upper_text_box.accessibleName() == "Upper confidence limit"

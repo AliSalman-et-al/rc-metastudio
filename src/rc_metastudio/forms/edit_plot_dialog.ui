@@ -258,7 +258,7 @@
       <item row="1" column="1">
        <widget class="QCheckBox" name="show_headers">
         <property name="text">
-         <string>Show column headings</string>
+         <string>Column headings</string>
         </property>
         <property name="checked">
          <bool>true</bool>

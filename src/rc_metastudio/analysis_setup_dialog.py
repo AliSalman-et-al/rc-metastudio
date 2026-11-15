@@ -1723,6 +1723,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             grid.setColumnMinimumWidth(0, label_width)
         for field in labels:
             field.setMaximumWidth(label_cap)
+        self._fit_method_rows(rows, leading, label_width)
+
+    def _fit_method_rows(self, rows, leading, label_width):
         for row_widget, layout, label, combo in rows:
             label.setWordWrap(label.fontMetrics().horizontalAdvance(label.text()) > label_width)
             label.setMaximumWidth(label_width)

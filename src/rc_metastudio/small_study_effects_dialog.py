@@ -495,15 +495,7 @@ class SmallStudyEffectsDialog(
         facts = [f"k = {len(self.model.get_studies())}"]
         report = self._eligibility_report
         if report is not None:
-            facts.append(f"{report.usable_studies} eligible")
-            for method in report.methods:
-                if method.available and method.role == 'primary':
-                    label = _TEST_LABELS.get(method.method, method.method)
-                    if method.method == 'deeks':
-                        version = dict(report.package_versions).get('meta')
-                        if version:
-                            label += f' (meta {version})'
-                    facts.append('Primary test ' + label)
+            facts.extend(_eligibility_identity(report))
         facts.append(f"{self.model.get_confidence_level():g}% CI")
         result = replace(result, identity="Small-study effects — " + dataset_identity(self.model, "Diagnostic odds ratio" if self.model.get_current_data_type() == "diagnostic" else None) + '\n' + ' · '.join(facts))
         details = next((section.value for section in result.sections if section.title == "Method details"), "")
@@ -513,3 +505,17 @@ class SmallStudyEffectsDialog(
         result = replace(result, manuscript_title="Small-study effects", manuscript_methods=(
             "Small-study effects procedures run: " + "; ".join(procedures) + "." if procedures else "No formal small-study effects procedure was run."))
         return result
+
+
+def _eligibility_identity(report):
+    facts = []
+    facts.append(f"{report.usable_studies} eligible")
+    for method in report.methods:
+        if method.available and method.role == 'primary':
+            label = _TEST_LABELS.get(method.method, method.method)
+            if method.method == 'deeks':
+                version = dict(report.package_versions).get('meta')
+                if version:
+                    label += f' (meta {version})'
+            facts.append('Primary test ' + label)
+    return facts
