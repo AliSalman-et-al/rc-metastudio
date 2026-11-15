@@ -804,8 +804,17 @@ def run(
                         if re.fullmatch(r"[\d.]+%", "".join(node.itertext()))]
         plotted_weights = [float("".join(node.itertext()).removesuffix("%"))
                            for node in sorted(weight_nodes, key=lambda node: float(node.attrib["y"]))]
-        plotted_weights.remove(100.0)
-        assert plotted_weights == [float(row[-1].removesuffix("%")) for row in rows], (plotted_weights, rows)
+        if dialog.current_param_vals["fp_style"] == "default":
+            assert not plotted_weights, plotted_weights
+            from rc_metastudio import r_bridge
+            r_bridge.load_in_r(str(next(iter(view.params_paths.values()))) + ".plotdata")
+            plotted_weights = [float(value) for value in r_bridge.ro.r("plot.data$weights")]
+            assert len(plotted_weights) == len(rows), (plotted_weights, rows)
+            assert all(abs(actual - float(row[-1].removesuffix("%"))) <= 0.051
+                       for actual, row in zip(plotted_weights, rows, strict=True)), (plotted_weights, rows)
+        else:
+            plotted_weights.remove(100.0)
+            assert plotted_weights == [float(row[-1].removesuffix("%")) for row in rows], (plotted_weights, rows)
         assert all(float(row[-1].removesuffix("%")) == 0 for row in omitted), omitted
         if method == "binary.fixed.mh":
             assert len(omitted) == 2 and figure.count("Not estimable") == 2, (rows, figure)

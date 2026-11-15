@@ -622,8 +622,9 @@ def plots(app, window, family, record, *, view=None):
             )):
                 dialog.favours_left.setText("Favours " + names[0])
                 dialog.favours_right.setText("Favours " + names[1])
-                for style in ("Default (metafor)", "RevMan", "BMJ"):
+                for style in ("Default", "RevMan", "BMJ"):
                     dialog.style_cbo.setCurrentText(style)
+                    assert dialog.style_cbo.currentText() == style
                     click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
                     from rc_metastudio import r_bridge
                     r_bridge.ro.globalenv["verified_footer_path"] = str(artifact.params_path) + ".plotdata"
@@ -757,8 +758,9 @@ def plots(app, window, family, record, *, view=None):
             assert actual == value, (name, params[name], value)
         if family == "regression":
             from xml.etree import ElementTree as ET
-            for style in ("Default (metafor)", "RevMan", "BMJ"):
+            for style in ("Default", "RevMan", "BMJ"):
                 dialog.style_cbo.setCurrentText(style)
+                assert dialog.style_cbo.currentText() == style
                 dialog.show_legend.setChecked(True)
                 for line, confidence, prediction in ((True, False, False), (False, True, False), (True, True, True), (False, False, False)):
                     dialog.show_regression_line.setChecked(line)
