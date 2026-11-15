@@ -701,11 +701,10 @@ def _run(app, window, work, root, record, analyze):
         subgroup.resize(subgroup.width() + table.columnCount() * 24, subgroup.height())
         app.processEvents()
         after = [header.sectionSize(c) for c in range(table.columnCount())]
-        gains = [b - a for a, b in zip(before, after)]
-        assert min(gains) > 0 and max(gains) - min(gains) <= 1, (before, after, gains)
-        assert sum(gains) == required(table.viewport()).width() - viewport_before
-        record('table-wide-font-even-width-sharing', subgroup, title=subgroup.table_selector.currentText(),
-               font=font.toString(), minimums=minimums, before=before, after=after, gains=gains)
+        assert after == before, (before, after)
+        record('table-wide-font-content-widths', subgroup, title=subgroup.table_selector.currentText(),
+               font=font.toString(), minimums=minimums, before=before, after=after,
+               viewport_before=viewport_before, viewport_after=required(table.viewport()).width())
     close_result(subgroup)
 
 

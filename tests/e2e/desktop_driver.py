@@ -425,12 +425,13 @@ def analysis_dialog(app, window):
         expected_inference = inference.currentText()
 
         key_click(toggle, QtCore.Qt.Key.Key_Return)
+        app.processEvents()
         assert not toggle.isChecked()
         assert digits.value() == 4
         assert "Decimal places 4" in toggle.toolTip()
         assert expected_inference in toggle.toolTip()
         assert toggle.text().startswith("Advanced · ") and toggle.arrowType() == QtCore.Qt.ArrowType.RightArrow and toggle.text().endswith(" changed")
-        assert toggle.width() >= toggle.fontMetrics().horizontalAdvance(toggle.text()) + 12
+        assert toggle.width() >= toggle.fontMetrics().horizontalAdvance(toggle.text()) + 12, (toggle.width(), toggle.sizeHint().width(), toggle.text())
         record_step("advanced-collapsed", form, sample=sample, summary=toggle.text(), changed_options=toggle.toolTip())
         from tests.e2e.analysis_layout import check as check_tab_layout
         check_tab_layout(app, form, sample, record_step)
@@ -1851,7 +1852,15 @@ def calculator(app, window, family):
                 assert dialog.raw_data_table.verticalScrollBar().maximum() == 0
                 assert "SE" in dialog.wald_readout.text() and "Two-sided P" in dialog.wald_readout.text()
                 widths = [dialog.metric_readout.columnWidth(i) for i in range(4)]
-                assert max(widths) - min(widths) <= 1, widths
+                header = required(dialog.metric_readout.horizontalHeader())
+                for col, width in enumerate(widths):
+                    text_width = max(header.fontMetrics().horizontalAdvance(line)
+                                     for line in required(dialog.metric_readout.horizontalHeaderItem(col)).text().splitlines())
+                    cell_width = max(dialog.metric_readout.fontMetrics().horizontalAdvance(
+                        required(dialog.metric_readout.item(row, col)).text())
+                                     for row in range(dialog.metric_readout.rowCount()))
+                    assert width >= max(text_width, cell_width), (col, width, text_width, cell_width)
+                assert dialog.metric_readout.horizontalScrollBar().maximum() == 0
             assert dialog.grab().save(str(WORK / f"slice8a-calculator-{family}.png"))
             for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
                 width = field.fontMetrics().horizontalAdvance(field.text())
@@ -2423,10 +2432,16 @@ try:
             header = exported.read(24)
         assert header[:8] == b"\x89PNG\r\n\x1a\n"
         width, height = struct.unpack(">II", header[16:24])
-        # The user export retains 600 dpi; it must not be decoded by Qt.
-        # Windows font metrics produce a slightly taller physical figure.
-        expected_height = 19694 if sys.platform == "win32" else 19679
-        assert (width, height) == (9676, expected_height), (width, height)
+        # Validate 600 pixels per SVG inch without decoding this huge bitmap.
+        # SVG physical extents are rounded to 0.01 pt; raster extents round up.
+        from xml.etree import ElementTree as ET
+        svg = ET.parse(artifact.display_path()).getroot()
+        assert all(svg.attrib[key].endswith("pt") for key in ("width", "height"))
+        expected_pixels = [float(svg.attrib[key].removesuffix("pt")) * 600 / 72
+                           for key in ("width", "height")]
+        assert all(abs(actual - expected) < 1.05 for actual, expected in
+                   zip((width, height), expected_pixels, strict=True)), ((width, height), expected_pixels)
+        assert width * height * 4 > 256 * 1024**2
         assert all(str(path).endswith(".svg") for _, path in view.manuscript.figures)
         record_step("meantime-raster-export", view, width=width, height=height)
         results = view.results
