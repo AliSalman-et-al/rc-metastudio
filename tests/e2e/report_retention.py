@@ -311,7 +311,11 @@ def expected_fit_table(result, section, source):
 def assert_exports(view, data):
     tables = [table for section in view.manuscript.sections for table in section.tables]
     expected = [[list(table.headers), *[list(row) for row in table.rows]] for table in tables]
-    assert data['docx_tables'] == expected, (data['docx_tables'], expected)
+    # Word keeps interval tokens together with nonbreaking spaces; only their
+    # layout whitespace differs from the producer's original cell text.
+    observed = [[[cell.replace('\u00a0', ' ') for cell in row] for row in table]
+                for table in data['docx_tables']]
+    assert observed == expected, (observed, expected)
     copied = (Path(data['directory']) / 'copy.txt').read_text(encoding="utf-8")
     # PDF wraps URLs and hyphenated labels. Compare whole tables while preserving
     # every digit, sign and punctuation mark across those physical line breaks.

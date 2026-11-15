@@ -10,6 +10,7 @@ import re
 from html import escape
 from pathlib import Path
 from rc_metastudio.svg_rendering import svg_bytes_for_qt
+from rc_metastudio.result_formatting import numeric_cell as _numeric_cell, numeric_columns
 from collections import Counter, namedtuple
 from dataclasses import replace
 from types import MappingProxyType
@@ -569,9 +570,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         header_font = QFont(self.result_table.font())
         header_font.setBold(True)
         required(self.result_table.horizontalHeader(), "result table header").setFont(header_font)
+        numeric = numeric_columns(table.rows) or (False,) * len(table.headers)
         for column_index in range(len(table.headers)):
-            values = [row[column_index] for row in table.rows if row[column_index] not in ('', '—', 'NA')]
-            alignment = Qt.AlignmentFlag.AlignRight if values and all(_numeric_cell(value) for value in values) else Qt.AlignmentFlag.AlignLeft
+            alignment = Qt.AlignmentFlag.AlignRight if numeric[column_index] else Qt.AlignmentFlag.AlignLeft
             required(self.result_table.horizontalHeaderItem(column_index), "result column header").setTextAlignment(alignment | Qt.AlignmentFlag.AlignVCenter)
         self._size_result_table_columns()
 
@@ -1699,10 +1700,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if viewport is None:
             raise RuntimeError("Results graphics view has no viewport")
         return viewport.width()
-
-
-def _numeric_cell(cell: str) -> bool:
-    return bool(re.match(r"^\s*(?:[<>]\s*)?[+−-]?(?:\d|\.\d)", cell))
 
 
 def _reference_html(text: str) -> str:

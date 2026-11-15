@@ -13,12 +13,18 @@ NUM_DIGITS = 2
 PERCENTAGE_DISPLAY_DIGITS = 1
 
 
+def numeric_cell(value: str) -> bool:
+    number = r'[+−-]?(?:(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+−-]?\d+)?|inf|∞)%?'
+    return bool(re.fullmatch(rf'\s*(?:[<>≤≥]\s*)?{number}(?:\s*(?:to|,|–)\s*{number})?\s*', value, re.IGNORECASE))
+
+
 def numeric_columns(rows: Sequence[Sequence[str]]) -> tuple[bool, ...]:
     if not rows:
         return ()
-    return tuple(all(not row[index] or row[index] in ('NA', '—', 'Not estimable')
-                     or re.match(r'^\s*(?:[<>]\s*)?[+−-]?(?:\d|\.\d)', row[index])
-                     for row in rows) for index in range(len(rows[0])))
+    columns = [[row[index] for row in rows if row[index] not in ('', 'NA', '—', 'Not estimable')]
+               for index in range(len(rows[0]))]
+    return tuple(bool(values) and sum(numeric_cell(value) for value in values) >= len(values) / 2
+                 for values in columns)
 
 
 def table_html(headers: Sequence[str], rows: Sequence[Sequence[str]]) -> str:
@@ -35,7 +41,7 @@ def table_html(headers: Sequence[str], rows: Sequence[Sequence[str]]) -> str:
     for index, row in enumerate(rows):
         parts.append('<tr>')
         for column, value in enumerate(row):
-            align = 'right' if numeric[column] else 'left'
+            align = 'right' if numeric_cell(value) or (value in ('', 'NA', '—', 'Not estimable') and numeric[column]) else 'left'
             border = 'border-bottom:1px solid black;' if index == len(rows) - 1 else ''
             parts.append(f'<td align="{align}" style="white-space:pre-wrap; {border}">{escape(value).replace(chr(10), "<br>")}</td>')
         parts.append('</tr>')
@@ -145,7 +151,7 @@ def format_effect_number(value: float, digits: int) -> str:
         required = math.ceil(-math.log10(abs(value))) + max(1, digits) - 1
         formatted = f"{value:.{required}f}" if required <= 6 else f"{value:.{max(1, digits)}e}"
         mantissa, separator, exponent = formatted.partition("e")
-        return mantissa.rstrip("0").rstrip(".") + separator + exponent
+        return mantissa.rstrip("0").rstrip(".") + separator + exponent if separator else formatted
     return f"{value:.{digits}f}"
 
 

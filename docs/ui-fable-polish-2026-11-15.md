@@ -129,3 +129,26 @@ menus. Link-colour refresh now stays on the relevant controls after initial app
 configuration. Its failed evidence remains retained. The corrected native shell
 tour passed at `20261115T171929Z-1e33c90c-ui-crawl`; strict typing and 73 existing
 GUI checks passed. Final frozen qualification remains pending.
+
+### Numbers and report layout
+
+HR/IRR scale switching caches exact field text, invalidates a stale opposite-scale
+draft after an edit, and provides a separate conversion preview. Full source
+precision remains authoritative. Small table effects retain significant trailing
+zeroes instead of stripping them from the fixed-format branch.
+
+HTML, Word and the Results table now share numeric-cell detection and header
+alignment. Detection matches the whole value, so labels beginning with `95%`
+stay left-aligned. Mixed numeric/text columns align each cell appropriately.
+Word uses measured content proportions, nonbreaking interval spaces, the PDF's
+Arial family and headers kept with their first data row. A retained first Word
+render exposed the previous serif fallback and orphan header; corrected page
+renders are `number-layout-word-final-1.png` and `-2.png` in the Fable bundle.
+
+The focused real Qt/R numeric phase passed at
+`20261115T173053Z-4ea2a50a-ui-design-direction`, including exact input round trips,
+the accepted double, subgroup output and complete report retention. An earlier
+observer rejected intentional nonbreaking whitespace; it now normalizes only
+that layout character, preserving all digits and punctuation. The original
+failed output is retained. The existing GUI/quantity suite passed 78 checks.
+No statistical oracle or tolerance changed.

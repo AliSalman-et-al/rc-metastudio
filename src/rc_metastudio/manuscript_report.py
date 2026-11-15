@@ -4,7 +4,7 @@ from dataclasses import dataclass, replace
 import re
 from rc_metastudio.analysis_results import ResultTable
 from rc_metastudio.svg_rendering import svg_bytes_for_qt
-from rc_metastudio.result_formatting import numeric_columns, table_html
+from rc_metastudio.result_formatting import numeric_cell, numeric_columns, table_html
 from html import escape
 import io
 from PyQt6.QtCore import QRectF, Qt
@@ -527,6 +527,15 @@ def _workflow_prose(workflow, parameters, details):
 
 def _docx_table(document, table):
     target = document.add_table(rows=1, cols=len(table.headers))
+    target.autofit = True
+    section = document.sections[-1]
+    available = section.page_width - section.left_margin - section.right_margin
+    lengths = [max(len(line) for row in (table.headers, *table.rows)
+                   for line in (row[column].splitlines() or [''])) for column in range(len(table.headers))]
+    weights = [max(5, min(45, length)) for length in lengths]
+    widths = [round(available * weight / sum(weights)) for weight in weights]
+    for column, width in zip(target.columns, widths):
+        column.width = width
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
     borders = OxmlElement('w:tblBorders')
@@ -540,10 +549,14 @@ def _docx_table(document, table):
     numeric = numeric_columns(table.rows) or (False,) * len(table.headers)
     for index, (row, values) in enumerate(zip([target.rows[0], *[target.add_row() for _ in table.rows]], (table.headers, *table.rows))):
         for column, (cell, value) in enumerate(zip(row.cells, values)):
-            cell.text = value
+            cell.text = value.replace(' to ', '\u00a0to\u00a0')
+            cell.width = widths[column]
             from docx.enum.text import WD_ALIGN_PARAGRAPH
             for paragraph in cell.paragraphs:
-                paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT if numeric[column] else WD_ALIGN_PARAGRAPH.LEFT
+                right = numeric[column] if index == 0 else numeric_cell(value) or (value in ('', 'NA', '—', 'Not estimable') and numeric[column])
+                paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT if right else WD_ALIGN_PARAGRAPH.LEFT
+                if index == 0:
+                    paragraph.paragraph_format.keep_with_next = True
                 for run in paragraph.runs:
                     from docx.shared import Pt
                     run.font.size = Pt(10)
@@ -574,6 +587,7 @@ def write_docx(report, path):
     from docx.shared import Pt
     document.styles['Normal'].font.size = Pt(11)
     for name in ('Normal', 'Title', 'Heading 1', 'Caption'):
+        document.styles[name].font.name = 'Arial'
         document.styles[name].font.color.rgb = RGBColor(0, 0, 0)
     section = document.sections[0]
     section.page_width = Mm(210)
