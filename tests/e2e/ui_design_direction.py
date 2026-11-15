@@ -28,8 +28,8 @@ def run(app, window, work, root, record, analyze):
         window.resize(1280, 800)
         window.activateWindow()
         wait(150)
-        if not window.sheet_strip.isAncestorOf(window.confidence_button):
-            failures.append('Sheet confidence control is detached from the outcomes')
+        if not window.statusbar.isAncestorOf(window.confidence_button):
+            failures.append('Sheet confidence control is not pinned in the status bar')
         original_name = window.model.current_sheet.name
         long_name = 'Catheter-related bloodstream infections'
         window.model.current_sheet.name = long_name

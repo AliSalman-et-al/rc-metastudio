@@ -326,6 +326,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.confidence_button.setAccessibleName("Sheet confidence level, 95%")
         self.confidence_button.setToolTip("Interval level for table effects and new analyses on this sheet. An individual analysis can override it.")
         self.confidence_button.clicked.connect(self.action_change_confidence_level.trigger)
+        self.statusbar.addPermanentWidget(self.confidence_button)
         self.confidence_button.hide()
 
         self.frame.hide()
@@ -1428,8 +1429,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             strip.addWidget(button)
         strip.addWidget(self.sheet_tab_scroll, 3)
         strip.addWidget(self.add_sheet_button)
-        strip.addSpacing(self.fontMetrics().height())
-        strip.addWidget(self.confidence_button)
         strip.addStretch(0)
         self.sheet_grid_scrollbar = QtWidgets.QScrollBar(Qt.Orientation.Horizontal, self.sheet_strip)
         strip.addWidget(self.sheet_grid_scrollbar, 2)
@@ -1466,7 +1465,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         em = self.sheet_tabs.fontMetrics().height()
         natural_width = sum(min(28 * em, self.sheet_tabs.fontMetrics().horizontalAdvance(self.sheet_tabs.tabText(index)) + 24)
                             for index in range(self.sheet_tabs.count()))
-        reserved = extent + self.confidence_button.sizeHint().width() + em
+        reserved = extent
         if self.sheet_grid_scrollbar.isVisible():
             reserved += 16 * em
         limit = (28 if natural_width <= self.sheet_strip.width() - reserved else 12) * em

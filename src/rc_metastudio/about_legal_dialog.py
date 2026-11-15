@@ -21,7 +21,7 @@ else:
 
 
 ABOUT_TEXT = """<table align="center" cellpadding="12" cellspacing="0">
-<tr><td><img src="rcms:about-logo" width="260" height="31" alt="RC MetaStudio"></td></tr>
+<tr><td><img src="rcms:about-logo" width="260" alt="RC MetaStudio"></td></tr>
 </table>
 <p>Version {version}</p>
 <p>RC MetaStudio is open-source desktop software for advanced meta-analysis.</p>
@@ -71,7 +71,7 @@ class AboutLegalDialog(QDialog, _ui_about_legal.Ui_AboutLegalDialog):
 
     def changeEvent(self, event: QEvent | None) -> None:
         super().changeEvent(event)
-        if event is not None and event.type() in (QEvent.Type.PaletteChange, QEvent.Type.ApplicationPaletteChange) and hasattr(self, "content_scroll_area"):
+        if event is not None and event.type() in (QEvent.Type.PaletteChange, QEvent.Type.ApplicationPaletteChange, QEvent.Type.DevicePixelRatioChange) and hasattr(self, "content_scroll_area"):
             QTimer.singleShot(0, self._refresh_links)
 
     def _refresh_links(self):
@@ -80,6 +80,11 @@ class AboutLegalDialog(QDialog, _ui_about_legal.Ui_AboutLegalDialog):
         position = scrollbar.value()
         logo = QPixmap(":/misc/about-logo.png")
         logo = logo.copy(QRegion(logo.mask()).boundingRect())
+        # QTextBrowser otherwise reduces the full-resolution image with fast
+        # sampling. Prepare screen pixels once and retain the native aspect ratio.
+        ratio = self.devicePixelRatioF()
+        logo = logo.scaledToWidth(round(260 * ratio), Qt.TransformationMode.SmoothTransformation)
+        logo.setDevicePixelRatio(ratio)
         if browser.palette().color(QPalette.ColorRole.Base).lightness() < 128:
             painter = QPainter(logo)
             painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceIn)

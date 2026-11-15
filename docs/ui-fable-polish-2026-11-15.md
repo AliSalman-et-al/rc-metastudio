@@ -220,3 +220,25 @@ All eight committed design batches are implemented. E1–E7 remain explicitly
 gated experiments; no opinion-only change to forest label colours, docking,
 statistical output, caption removal or coefficient height was adopted.
 Final qualification and external design review are pending.
+
+### User feedback: logo clarity and confidence placement
+
+The user overrode the brief's proposed CI placement after seeing it: the control
+is restored to the far right of the status bar, with its visible button styling
+and explanation retained. The outcome strip keeps its independent grid scrollbar
+and adaptive tab widths. Native `ui-design-direction` passed at
+`20261115T182810Z-fa591119-ui-design-direction` with the updated placement check.
+
+The About artwork is a 4096-pixel source with a 3586×418 visible wordmark. Qt's
+rich-text fast reduction made its edges jagged. The resource is now smoothly
+reduced to the current screen's physical pixel width before text rendering,
+records its device-pixel ratio and retains its natural aspect ratio. It refreshes
+on pixel-density changes as well as theme changes. No original artwork changed.
+Both themes were captured at scale factors 1, 1.25 and 2 (observed physical DPRs
+1.25, 1.5625 and 2.5 on this host) under
+`artifacts/verification/about-logo-2026-11-15/qualified-before` and
+`qualified-after`. The baseline loads the exact ba99c3db About implementation.
+The probe retains the command, environment, Qt platform, script hash and resource
+sizes. Earlier probe attempts lacked resource registration/application ordering;
+only the qualified captures establish the visual comparison. Strict typing and
+five compact-dialog layout checks passed. The probe is `build/about_logo_probe.py`.
