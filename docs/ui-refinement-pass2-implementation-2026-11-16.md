@@ -185,3 +185,25 @@ This recovery changes only one canonical UI form beyond the source qualified
 above; all analysis, numeric/report code, dependencies and scientific oracles
 remain byte-identical. The earlier full profile remains valid evidence of those
 unchanged paths, not a claim that it tested the new heading.
+
+
+The wizard recovery's complete pre-push rerun also passes with default fonts:
+557 fast/contract tests (1 platform skip), all 401 GUI tests and 144 packaging
+contracts (2 platform skips). The native B/C/S tour passes 56 steps; nine real
+Qt/R create/import workflows pass with supported test fonts. Their 462 artifact
+hashes match and all ten runs record clean source `58261cf6`. An earlier E2E
+attempt without the supported fonts failed its doctor glyph prerequisite before
+any workflow; it remains in `build/pr599-wizard-e2e.log`.
+
+## PR 599: native Results probe recovery
+
+CI's Core probe aborted with fatal Qt warnings because it did not register the
+application resource collection before constructing Results. The precise warning
+was `Cannot open file :/icons/actions/export.svg`. Ordinary startup and the
+calculator probe already register those resources. The Results probe now uses
+the same existing resource-registration helper. Once it reached validation, its
+old plot-last navigation expectation also needed to match the accepted
+figures-first design; the fixture uses that same exact order. Fatal warnings,
+DPR/capture checks and editor/export checks remain enabled. Strict win32 typing
+and native Results at both 1.0/1.5 scale pass, with evidence retained under
+`artifacts/verification/ui-pass2-2026-11-16/ci-native-results-recovery/`.
