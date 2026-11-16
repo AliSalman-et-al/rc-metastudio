@@ -344,7 +344,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             action.setToolTip(label + " (" + sequence + ")")
             action.triggered.connect(lambda checked=False, delta=delta: self.sheet_tabs.setCurrentIndex((self.sheet_tabs.currentIndex() + delta) % max(1, self.sheet_tabs.count())))
             self.addAction(action)
-            self.menuView.addAction(action)
             self.outcome_navigation_actions.append(action)
         self.add_outcome_action = QAction("Add outcome…", self)
         self.add_outcome_action.triggered.connect(self._add_sheet)
@@ -355,16 +354,34 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.rename_outcome_action.triggered.connect(lambda: self._rename_sheet(self.sheet_tabs.currentIndex()))
         self.menuDataset.addSeparator()
         self.menuDataset.addActions((self.add_outcome_action, self.rename_outcome_action))
-        for label, url in (("Project site", "https://github.com/AliSalman-et-al/rc-metastudio"),
-                           ("How to cite", "https://github.com/AliSalman-et-al/rc-metastudio/blob/master/CITATION.cff")):
-            action = QAction(label, self)
-            action.triggered.connect(lambda _checked=False, url=url: QtGui.QDesktopServices.openUrl(QtCore.QUrl(url)))
-            self.menuHelp.addAction(action)
+        from rc_metastudio.citation_dialog import CitationDialog
+        cite_action = QAction(QtGui.QIcon(':/icons/actions/cite.svg'), 'Cite…', self)
+        cite_action.triggered.connect(lambda: CitationDialog(self).exec())
+        self.menuHelp.addAction(cite_action)
+        self.action_about_legal.setText('About RCMS…')
+        self.add_outcome_action.setIcon(QtGui.QIcon(':/icons/actions/add.svg'))
+        self.rename_outcome_action.setIcon(QtGui.QIcon(':/icons/actions/edit-dataset.svg'))
+        theme_menu = self.menuView.addMenu('Theme')
+        theme_group = QtGui.QActionGroup(self)
+        theme_group.setExclusive(True)
+        schemes = {'System': Qt.ColorScheme.Unknown, 'Light': Qt.ColorScheme.Light, 'Dark': Qt.ColorScheme.Dark}
+        selected_theme = str(QtCore.QSettings().value('appearance/theme', 'System'))
+        def set_theme(name):
+            QtCore.QSettings().setValue('appearance/theme', name)
+            required(QApplication.styleHints(), 'style hints').setColorScheme(schemes[name])
+        for name in schemes:
+            theme_action = QAction(name, self)
+            theme_action.setCheckable(True)
+            theme_action.setChecked(name == selected_theme)
+            theme_group.addAction(theme_action)
+            required(theme_menu, 'Theme menu').addAction(theme_action)
+            theme_action.triggered.connect(lambda checked=False, name=name: set_theme(name))
+        set_theme(selected_theme if selected_theme in schemes else 'System')
         self.menuHelp.removeAction(self.action_about_legal)
         self.menuHelp.addSeparator()
         self.menuHelp.addAction(self.action_about_legal)
         self.menuDataset.addSeparator()
-        self.action_swap_arms = QAction("Swap intervention and control", self)
+        self.action_swap_arms = QAction(QtGui.QIcon(":/icons/actions/swap.svg"), "Swap intervention and control", self)
         self.menuDataset.addAction(self.action_swap_arms)
         self.menuDataset.aboutToShow.connect(self._update_swap_arms_enabled)
         self.action_swap_arms.triggered.connect(self._swap_sheet_arms)
@@ -538,7 +555,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             if action is self.action_go:
                 reason += " (Ctrl+R)"
             action.setToolTip(reason)
-            action.setStatusTip(reason)
         self._update_workspace_guidance()
 
     def _update_workspace_guidance(self):
@@ -546,7 +562,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.action_save.setEnabled(enable)
         self.action_save_as.setEnabled(enable)
         self.action_save.setToolTip("Save project (Ctrl+S)" if enable else "Create or open a project to save it")
-        self.action_save.setStatusTip(self.action_save.toolTip())
         self.start_page.setVisible(not enable)
         self.nav_frame.setVisible(enable)
         self.confidence_button.setVisible(enable)
@@ -564,7 +579,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             r_runtime.is_ready() and dataset_analysis_enabled and has_covariates
         )
         self.action_meta_regression.setToolTip("Meta-regression" if has_covariates else "Add a covariate to run meta-regression.")
-        self.action_meta_regression.setStatusTip(self.action_meta_regression.toolTip())
 
     def _enable_action_subgroup_ma(self, dataset_analysis_enabled=None):
         """Enables action_subgroup_ma if there are suitable covariate(s)
@@ -583,7 +597,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             r_runtime.is_ready() and dataset_analysis_enabled and has_factor_covariates
         )
         self.action_subgroup_ma.setToolTip("Subgroup meta-analysis" if has_factor_covariates else "Add a categorical covariate to run subgroup analysis.")
-        self.action_subgroup_ma.setStatusTip(self.action_subgroup_ma.toolTip())
 
     def disable_menu_options_that_require_dataset(self):
         self.toggle_menu_options_that_require_dataset(False)
@@ -633,7 +646,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 action_item.setEnabled(False)
             action_item.setData(str(dataset))
             action_item.setToolTip(str(dataset))
-            action_item.setStatusTip(str(dataset))
             self.action_open_recent_2.addAction(action_item)
             _connect_action(
                 action_item, lambda dataset=dataset: self.dataset_selected(dataset)
@@ -1053,7 +1065,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         sub_menu.setToolTip(
             "Choose a %s effect-size measure or calculator metric." % str(name).lower()
         )
-        sub_menu.setStatusTip(sub_menu.toolTip())
         self.menuMetric.addAction(sub_menu.menuAction())
         return sub_menu
 
@@ -1062,7 +1073,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         text = label if metric == "Mean" else f"{label} ({metric})"
         metric_action = QAction(text, self)
         metric_action.setToolTip(label)
-        metric_action.setStatusTip(label)
         metric_action.setData(metric)
         metric_action.setCheckable(True)
         metric_action.toggled.connect(
