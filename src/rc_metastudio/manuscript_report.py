@@ -742,6 +742,7 @@ def _style_docx_cell(cell, value, width, numeric, heading):
 
 def _print_pdf_pages(document, writer, painter, width, height, scale, first_page=False):
     from PyQt6.QtGui import QAbstractTextDocumentLayout
+    _keep_pdf_tables_together(document, height)
     for number in range(document.pageCount()):
         if number or first_page:
             writer.newPage()
@@ -753,3 +754,24 @@ def _print_pdf_pages(document, writer, painter, width, height, scale, first_page
         context.clip = QRectF(0, number * height, width, height)
         required(document.documentLayout(), "report document layout").draw(painter, context)
         painter.restore()
+
+
+def _keep_pdf_tables_together(document, page_height):
+    from PyQt6.QtGui import QTextCursor, QTextFormat, QTextTable
+
+    layout = required(document.documentLayout(), "report document layout")
+    for table in required(document.rootFrame(), "report root frame").childFrames():
+        if not isinstance(table, QTextTable):
+            continue
+        cursor = QTextCursor(document)
+        cursor.setPosition(table.firstPosition() - 1)
+        caption = layout.blockBoundingRect(cursor.block())
+        bottom = layout.frameBoundingRect(table).bottom()
+        formatting = cursor.blockFormat()
+        margin = 2 * document.documentMargin() + formatting.topMargin()
+        # Keep a short table and its caption intact; longer tables retain Qt's
+        # pagination and repeated headers.
+        if (bottom - caption.top() < page_height - margin
+                and int(caption.top() / page_height) != int((bottom - 1) / page_height)):
+            formatting.setPageBreakPolicy(QTextFormat.PageBreakFlag.PageBreak_AlwaysBefore)
+            cursor.setBlockFormat(formatting)

@@ -207,3 +207,35 @@ figures-first design; the fixture uses that same exact order. Fatal warnings,
 DPR/capture checks and editor/export checks remain enabled. Strict win32 typing
 and native Results at both 1.0/1.5 scale pass, with evidence retained under
 `artifacts/verification/ui-pass2-2026-11-16/ci-native-results-recovery/`.
+
+
+## PR 599: PDF table pagination recovery
+
+The two R-stack shard failures were the same PDF layout defect in three
+workflows: diagnostic regression with multiple moderators, cumulative diagnostic
+analysis and project-round6-polish. Each reproduced locally with Arial, CI's
+actual report font. The original Segoe-only local qualification did not exercise
+Arial's different line wrapping. The complete held data remained present, but a
+wrapped row label continued below the repeated header on the next page.
+
+PDF pagination now moves a caption and its table together when they fit on one
+page. Longer tables retain normal pagination and repeated headers. This trades
+some page whitespace for intact short tables, with no number, precision, row or
+caption changes. The exact report-retention comparator and all scientific
+oracles remain unchanged. The corrected coefficients page was rendered and
+reviewed; the reference label stays beside its row's statistics.
+
+The three original failures, Results presentation and split-vector PDF pass with
+Arial. Both complete manuscript-export workflows also pass with Arial plus
+Segoe UI fallback fonts. An initial Arial-only font directory lacked the H₀
+subscript glyph; those two failed attempts remain retained rather than relabelled
+as passes. Transcripts: `build/pr599-pdf-arial-before.log`,
+`build/pr599-pdf-arial-after.log`, and `build/pr599-pdf-arial-fallbacks.log`.
+The proof plan and corrected page are under
+`artifacts/verification/ui-pass2-2026-11-16/`.
+
+Final recovery qualification repeats the complete desktop matrix with the Arial
+and fallback font directory, pre-push with default fonts, and the exact native
+Core lane. Their final outcomes and the tested revision are recorded in PR 599
+and the per-command retained transcripts; the earlier full profile is not
+relabeled as having tested these later fixes.
