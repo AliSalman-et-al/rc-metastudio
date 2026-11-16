@@ -243,14 +243,14 @@ test_that("binary Default Forest Style builds a self-contained metafor render bu
 
   expect_true(file.exists(png_path))
   expect_gt(file.info(png_path)$size, 5000)
-  expect_false(file.exists(rcmetar.plot.canonical_svg_path(png_path)))
+  expect_false(file.exists(sub("[.][^.]*$", ".svg", png_path)))
   png_size <- read_png_dimensions(png_path)
   expect_gte(png_size[["width"]], 900)
   expect_gte(png_size[["height"]], 500)
 
   expect_true(file.exists(pdf_path))
   expect_gt(file.info(pdf_path)$size, 1000)
-  expect_false(file.exists(rcmetar.plot.canonical_svg_path(pdf_path)))
+  expect_false(file.exists(sub("[.][^.]*$", ".svg", pdf_path)))
   pdf.contract <- read_pdf_contract(pdf_path)
   expect_equal(pdf.contract$signature, "%PDF-")
   expect_equal(pdf.contract$pages, 1)
@@ -268,7 +268,7 @@ test_that("binary Default Forest Style builds a self-contained metafor render bu
   expect_true(file.exists(tiff_path))
   expect_gt(file.info(tiff_path)$size, 1000)
   expect_equal(rcmetar.plot.file.extension(tiff_path), "tiff")
-  expect_false(file.exists(rcmetar.plot.canonical_svg_path(tiff_path)))
+  expect_false(file.exists(sub("[.][^.]*$", ".svg", tiff_path)))
   expect_length(dim(tiff::readTIFF(tiff_path)), 3)
 
   expect_equal(rcmetar.plot.file.extension(contains_png_pdf_path), "pdf")
@@ -699,7 +699,7 @@ test_that("RevMan X-axis footer labels align to the plotted effect axis", {
     digits = fixture$params$digits
   )
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
-  layout <- rcmetar.revman.layout(bundle)
+  layout <- rcmetar.forest.revman.layout.coordinates(bundle)
   footer <- rcmetar.revman.axis.footer.layout(bundle, layout)
 
   expect_equal(footer$left.x, 0, tolerance = 1e-8)
@@ -723,7 +723,7 @@ test_that("RevMan X-axis footer labels align to the plotted effect axis", {
     digits = diagnostic.fixture$params$digits
   )
   diagnostic.bundle <- rcmetar.regenerate.plot.data(diagnostic.fixture$data, diagnostic.res, diagnostic.fixture$params)
-  diagnostic.layout <- rcmetar.revman.layout(diagnostic.bundle)
+  diagnostic.layout <- rcmetar.forest.revman.layout.coordinates(diagnostic.bundle)
   diagnostic.footer <- rcmetar.revman.axis.footer.layout(diagnostic.bundle, diagnostic.layout)
 
   expect_equal(diagnostic.footer$axis.x, mean(diagnostic.layout$alim), tolerance = 1e-8)
@@ -1007,7 +1007,7 @@ test_that("Default Forest Style panel toggles raw counts headers and annotation"
 
   expect_equal(ncol(bundle$ilab$matrix), 0)
   expect_equal(rcmetar.metafor.effect.header(bundle), "")
-  size <- rcmetar.measure.metafor.forest.device(bundle)
+  size <- rcmetar.forest.default.device.metrics(bundle)
   expect_equal(size$left_width, size$study_width + size$block_gap)
 
   png_path <- tempfile(fileext = ".png")
@@ -1071,7 +1071,7 @@ test_that("entered-effect-only RevMan plots degrade to weight columns", {
     expect_equal(bundle$ilab$headers, "Weight")
     expect_equal(bundle$ilab$groups, character(0))
     expect_equal(bundle$style_blocks$totals$weight, "100.0%")
-    layout <- rcmetar.revman.layout(bundle)
+    layout <- rcmetar.forest.revman.layout.coordinates(bundle)
     expect_gt(as.numeric(layout$ilab.xpos[[1]]), layout$xlim[[1]] + 0.45 * (layout$annotation.xpos - layout$xlim[[1]]))
 
     png_path <- tempfile(fileext = ".png")
@@ -1169,7 +1169,7 @@ test_that("Default Forest Style sizing reserves space for long group headers", {
   )
 
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
-  size <- rcmetar.measure.metafor.forest.device(bundle)
+  size <- rcmetar.forest.default.device.metrics(bundle)
   experimental.columns <- vapply(bundle$ilab$columns, function(column) column$group, character(1)) ==
     "Intervention With Long Header"
   experimental.width <- sum(size$column_widths[experimental.columns]) +
@@ -1237,7 +1237,7 @@ test_that("RevMan raw-column layouts reserve space for long study labels", {
     digits = short.fixture$params$digits
   )
   short.bundle <- rcmetar.regenerate.plot.data(short.fixture$data, short.res, short.fixture$params)
-  short.layout <- rcmetar.revman.layout(short.bundle)
+  short.layout <- rcmetar.forest.revman.layout.coordinates(short.bundle)
 
   long.fixture <- metafor_continuous_fixture()
   long.fixture$data@study.names <- paste(
@@ -1254,7 +1254,7 @@ test_that("RevMan raw-column layouts reserve space for long study labels", {
     digits = long.fixture$params$digits
   )
   long.bundle <- rcmetar.regenerate.plot.data(long.fixture$data, long.res, long.fixture$params)
-  long.layout <- rcmetar.revman.layout(long.bundle)
+  long.layout <- rcmetar.forest.revman.layout.coordinates(long.bundle)
 
   short.gap <- as.numeric(short.layout$ilab.xpos[[1]]) - short.layout$xlim[[1]]
   long.gap <- as.numeric(long.layout$ilab.xpos[[1]]) - long.layout$xlim[[1]]

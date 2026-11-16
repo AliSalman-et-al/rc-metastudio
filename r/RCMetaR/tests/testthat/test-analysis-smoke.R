@@ -134,7 +134,7 @@ test_that("forest analysis returns an explicit internal SVG display artifact", {
   )
   expect_true(file.exists(fixture$params$fp_outpath))
   expect_true(file.exists(fixture$params$fp_display_path))
-  expect_false(file.exists(rcmetar.plot.canonical_svg_path(fixture$params$fp_outpath)))
+  expect_false(file.exists(sub("[.][^.]*$", ".svg", fixture$params$fp_outpath)))
 
   fixture$params$fp_outpath <- tempfile(pattern = "forest-export-", fileext = ".svg")
   fixture$params$fp_display_path <- tempfile(

@@ -900,18 +900,6 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
     stop(sprintf("Workflow '%s' is not supported by the typed dispatcher.", request$workflow), call.=FALSE)
 }
 
-.rcmetar.meta.workflow.function <- function(data.type, workflow) {
-    functions <- list(
-        binary=list(cumulative="cum.ma.binary", "leave-one-out"="loo.ma.binary", subgroup="subgroup.ma.binary"),
-        continuous=list(cumulative="cum.ma.continuous", "leave-one-out"="loo.ma.continuous", subgroup="subgroup.ma.continuous"),
-        diagnostic=list(cumulative="cum.ma.diagnostic", "leave-one-out"="loo.ma.diagnostic", subgroup="subgroup.ma.diagnostic")
-    )
-    function.name <- functions[[data.type]][[workflow]]
-    if (is.null(function.name)) {
-        stop(sprintf("Workflow '%s' is not supported for %s data.", workflow, data.type), call.=FALSE)
-    }
-    function.name
-}
 
 .rcmetar.data.type <- function(om.data) {
     if (is(om.data, "RatioData")) return(if (om.data@metric == "HR") "time_to_event" else "event_rates")

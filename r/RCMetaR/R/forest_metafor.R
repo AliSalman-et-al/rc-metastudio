@@ -876,13 +876,7 @@ rcmetar.metafor.heterogeneity.measure.label <- function(bundle) {
     rcmetar.default.heterogeneity.measure.label(bundle)
 }
 
-rcmetar.measure.metafor.forest.device <- function(bundle) {
-    rcmetar.default.measure.forest.device(bundle)
-}
 
-rcmetar.metafor.wrap.header <- function(label, width=18) {
-    rcmetar.default.wrap.header(label, width=width)
-}
 
 rcmetar.metafor.group.headers <- function(bundle) {
     helper <- rcmetar.metafor.style.helper(bundle$fp_style, "group.headers")
@@ -892,13 +886,7 @@ rcmetar.metafor.group.headers <- function(bundle) {
     rcmetar.default.group.headers(bundle)
 }
 
-rcmetar.metafor.layout <- function(bundle, size, alim) {
-    rcmetar.default.layout(bundle, size, alim)
-}
 
-rcmetar.open.metafor_device <- function(outpath, size) {
-    rcmetar.open.svg_device(outpath, size)
-}
 
 rcmetar.draw.metafor.forest <- function(bundle, outpath) {
     bundle$params$measure <- .rcmetar.canonical.metric(bundle$params$measure)

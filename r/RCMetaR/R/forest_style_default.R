@@ -188,9 +188,6 @@ rcmetar.default.heterogeneity.measure.label <- function(bundle) {
     rcmetar.forest.model.label(bundle$res)
 }
 
-rcmetar.default.measure.forest.device <- function(bundle) {
-    rcmetar.forest.default.device.metrics(bundle)
-}
 
 rcmetar.default.wrap.header <- function(label, width=18) {
     label <- as.character(label)
@@ -210,9 +207,6 @@ rcmetar.default.group.headers <- function(bundle) {
     headers
 }
 
-rcmetar.default.layout <- function(bundle, size, alim) {
-    rcmetar.forest.default.layout.coordinates(bundle, size, alim)
-}
 
 rcmetar.draw.default.forest <- function(bundle, outpath) {
     plan <- rcmetar.forest.layout.preflight(bundle, style="default")

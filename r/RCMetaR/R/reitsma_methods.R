@@ -75,22 +75,7 @@ rcmetar.reitsma.validate.counts <- function(diagnostic.data, min.studies=5L) {
     invisible(vals)
 }
 
-rcmetar.reitsma.fpr.to.specificity <- function(x) {
-    if (is.null(x)) return(NULL)
-    x <- as.numeric(x)
-    if (length(x) == 0L) return(x)
-    1 - x
-}
 
-rcmetar.reitsma.interval.to.specificity <- function(interval) {
-    if (is.null(interval)) return(NULL)
-    interval <- as.matrix(interval)
-    if (ncol(interval) != 2L) return(interval)
-    out <- cbind(1 - interval[, 2], 1 - interval[, 1])
-    rownames(out) <- rownames(interval)
-    colnames(out) <- colnames(interval)
-    out
-}
 
 # Keep the FPR-to-specificity ordering in one place.  Both the operating
 # point and marginal prediction intervals are reported as estimate/lower/upper

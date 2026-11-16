@@ -14,19 +14,6 @@ rcmetar.plot.file.extension <- function(outpath) {
     ext
 }
 
-rcmetar.plot.canonical_svg_path <- function(outpath) {
-    path <- as.character(outpath)
-    ext <- rcmetar.plot.file.extension(path)
-    if (identical(ext, "svg") || identical(ext, "svgz")) {
-        return(path)
-    }
-
-    filename <- basename(path)
-    if (!grepl("[.]", filename)) {
-        return(paste(path, ".svg", sep=""))
-    }
-    sub("[.][^.]*$", ".svg", path)
-}
 
 rcmetar.plot.scalar_path <- function(path) {
     if (is.null(path) || length(path) != 1 || is.na(path) ||
